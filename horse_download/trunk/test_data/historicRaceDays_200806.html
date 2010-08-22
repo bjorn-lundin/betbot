@@ -1,0 +1,2769 @@
+
+
+
+
+
+
+
+
+
+
+
+<HTML>
+<HEAD>
+<TITLE>Travsport.se</TITLE>
+<!-- 090608-TDS-B -->
+<!-- ipapp2 -->
+<LINK REL='stylesheet' TYPE='text/css' HREF='/css/stcIeStyle.css'>
+<SCRIPT LANGUAGE='JavaScript' SRC='/scripts/menu.js'></SCRIPT>
+
+
+<SCRIPT LANGUAGE="JavaScript">
+/*function submitForm(myForm){
+.forms[myForm].submit();
+}
+*/
+
+function fixIeLinks(){
+for (a in document.links)
+document.links[a].onfocus = document.links[a].blur;
+}
+document.onmousedown = fixIeLinks;
+
+function oppnaHjelp(url, w, scroll, menubar) {
+	var h = screen.height*(4/5);
+	var top = (screen.height-h) / 2;
+	var left = (screen.width-w) / 2;
+	m = menubar;
+	//if(menubar) var m = "menubar=1";
+	window.open(url,'','width='+ w +',height='+ h +',top=' + top +',left=' + left +',scrollbars=' + scroll + ',resizable=0,'+ m + ',toolbar=0, status=yes');
+}
+
+function visaHestData(hestId) { //, w, scroll, menubar) {
+  var url = "/shestinfo?kommando=hestResultat&hestId="+hestId;
+  var w = "800";
+	var h = screen.height*(4/5);
+	var top = (screen.height-h) / 2;
+	var left = (screen.width-w) / 2;
+  var scroll = "yes";
+  var menubar = "yes";
+	m = menubar;
+	window.open(url,'','width='+ w +',height='+ h +',top=' + top +',left=' + left +',scrollbars=' + scroll + ',resizable=0,'+ m + ',toolbar=0, status=yes');
+} 
+ 
+</SCRIPT>
+
+
+<SCRIPT LANGUAGE="JavaScript" SRC="/scripts/formCheck.js"></SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+
+function checkDatum(datum) {
+var errorStr = "";
+ if (!checkFormDate(datum)) {
+   errorStr += "Du har fyllt i felaktigt datum.\n";
+   alert(errorStr);
+   window.focus();
+   return false;
+ }
+ else {
+   return true;
+ }
+}
+
+function checkLoppnr(nr) {
+var errorStr = "";
+ if (nr!=null && nr=="0") {
+   errorStr += "Loppnummer kan inte vara 0 (noll). Lämna blankt för hela tävlingsdagen.\n";
+   alert(errorStr);
+   window.focus();
+   return false;
+ }
+ else {
+   return true;
+ }
+}
+
+function checkBana(kForm) {
+var errorStr = "";
+ if (kForm.valdBana[kForm.valdBana.selectedIndex].value == "0") {
+   errorStr += "En bana måste väljas.\n";
+   alert(errorStr);
+   window.focus();
+   return false;
+ }
+ else {
+   return true;
+ }
+}
+
+function submitTDHemta(kalForm, month) {
+  kalForm.kommando.value = "tevlingsDagar";
+  kalForm.valdManad.value = month;
+  kalForm.submit();
+}
+
+function submitTDVisa(kalForm, id) {
+kalForm.kommando.value = "tevlingsdagVisa";
+kalForm.tevdagId.value = id;
+kalForm.loppId.value = "0";
+kalForm.submit();
+}
+
+function submitTDSok(kalForm) {
+if (checkBana(kalForm)) {
+  if (kalForm.valdDatum.value != "" && kalForm.valdDatum.value != null) {
+   if (checkDatum(kalForm.valdDatum.value)) { // && checkLoppnr(kalForm.valdLoppnr.value)) {
+     kalForm.kommando.value = "tevlingsdagSok";
+     if (kalForm.valdLoppnr.value == "" || kalForm.valdLoppnr.value == null) {
+       kalForm.valdLoppnr.value = "0";
+     }
+	 kalForm.tevdagId.value = "0";
+	 return true;
+  //   kalForm.submit();
+   } 
+   else {
+    return false;
+   }
+  } else {
+    kalForm.kommando.value = "tevlingsDagarBana";
+    kalForm.valdDatum.value = "";
+    kalForm.valdLoppnr.value = "";
+	kalForm.tevdagId.value = "0";
+	return true;
+  //  kalForm.submit();
+  }
+    
+} else {
+  return false;
+}
+}
+
+var popupWin;
+function openPopup (month){
+var URL = "/sresultat?kommando=printTevlingsDagar&valdManad="+month;
+if(!popupWin || popupWin.closed) {
+popupWin = window.open(URL, '',  'menubar=no,toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,dependent,width=700,height=750,left=50,top=50')
+} else {
+popupWin.focus();
+}
+}
+</SCRIPT>
+</HEAD>
+
+<BODY BGCOLOR="#EEEEEA" MARGINHEIGHT="0" MARGINWIDTH="0" TOPMARGIN="0" LEFTMARGIN="0" onLoad="init2(67);startAt(7);">
+
+
+<DIV ID="backgroundDiv" STYLE=" visibility:visible; position:absolute; z-index:0;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="772" HEIGHT="655" BACKGROUND="/staticFiles/ts/images/background_ny.gif">
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="divLogo" STYLE=" left:2; top:8; visibility:visible; position:absolute; z-index:5;">
+  <IMG SRC="/staticFiles/ts/images/menu/logoF_opt.gif" WIDTH="151" HEIGHT="112" BORDER="0">
+</DIV>
+
+<DIV ID="divMenu" STYLE=" left:30; top:118; width:125; height:500; visibility:visible; position:absolute; z-index:2;">
+
+<DIV ID="divLoggain" STYLE=" visibility:hidden; position:relative; z-index:5;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123">
+<TR>
+  <TD WIDTH="123" ALIGN="right" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="2" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif">
+
+    <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="123">
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+      <TD></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD >
+        <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">
+        <TR>
+          <TD CLASS="content" STYLE="padding-left:5px">
+            
+            <A HREF="https://www.travsport.se/slogin?kommando=inloggad" CLASS="menu">LOGGA IN</A>
+            
+          </TD>
+        </TR>
+        
+        <TR>
+          <TD ALIGN="right"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="50" BORDER="0"></TD><!-- 58 i höjd från början   -->
+        </TR>
+        
+        </TABLE>     
+      </TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="109" HEIGHT="2" BORDER="0"> </TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div0" STYLE=" visibility:hidden; position:relative; z-index:4;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123">
+  <TR>
+        <TD WIDTH="123" ALIGN="right" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+  </TR>
+  <TR>
+
+        <TD WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfs" CLASS="menu">FÖRSTA SIDAN</A></TD>
+
+  </TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div1" STYLE=" visibility:hidden; position:relative; z-index:4;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaOm" CLASS="menu">OM STC</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div2" STYLE=" visibility:hidden; position:relative; z-index:5;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD VALIGN="top"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(3);" CLASS="menu">NYHETER & NOTISER</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=nyhetsBrevet" CLASS="submenu">-Travnyttigt</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=notiser" CLASS="submenu">-Aktuella notiser</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div3" STYLE=" visibility:hidden; position:relative; z-index:6;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(4);" CLASS="menu">PROPOSITIONER</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=nySokning&sokTyp=hest" CLASS="submenu">-Sök utifrån häst</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=nySokning&sokTyp=allmen" CLASS="submenu">-Allmän sökning</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=tevlingsDagar" CLASS="submenu">-Tävlingsdagar</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=hemtaRikstoto" CLASS="submenu">-Visa alla rikstotolopp</A></TD>
+        </TR>
+
+  
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div4" STYLE=" visibility:hidden; position:relative; z-index:7;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sanmlista?kommando=dagar" CLASS="menu"><b>ANMÄLNINGSLISTOR</b></A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div5" STYLE=" visibility:hidden; position:relative; z-index:8;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhiteBig.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <!-- När man är inloggad samt TDS-kund byts länken Kalendarium ut mot TDS -->
+        <!-- if(inloggad && TDS) -->
+
+        
+        
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(6);" CLASS="menu">KALENDARIUM</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/skalendarium?kommando=kalendernHemta" CLASS="submenu">-Kalendern</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/skalendarium?kommando=kategoriSok" CLASS="submenu">-Sök via kategori</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        
+        <!-- End if(inloggad && TDS) -->
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+
+<DIV ID="div6" STYLE=" visibility:hidden; position:relative; z-index:9;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(7);" CLASS="menu">SÖK SPORTINFO</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/shestinfo?kommando=visa" CLASS="submenu">-Häst</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/slicensinfo?kommando=visa" CLASS="submenu">-Kusk/Ryttare/Tränare</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sresultat?kommando=tevlingsDagar" CLASS="submenu">-Tävlingsdagsresultat</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div7" STYLE=" visibility:hidden; position:relative; z-index:10;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+<!--  backWhiteBig används alltid då det är många menyalternativ, dvs fler än 5   -->
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhiteBig.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hestvetForstasida" CLASS="menu">HÄSTVETERINÄREN</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hvEmneStart" CLASS="submenu">-Faktabank</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=karensTider" CLASS="submenu">-Karenstider</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=smittInfo" CLASS="submenu">-Smittoinfo</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="http://www.hastklinikerna.se" TARGET="_blank" CLASS="submenu">-ATG Hästklinikerna</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=forskningHuvudsida" CLASS="submenu">-Forskningsinfo</A></TD>
+        </TR>
+       <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hestHallning" CLASS="submenu">-Hästhållning</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div8" STYLE=" visibility:hidden; position:relative; z-index:11;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(9);" CLASS="menu">INFO & REGLER</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=infoArkiv" CLASS="submenu">-Info & Regler</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaHistoria" CLASS="submenu">-Travsportens historia</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div9" STYLE=" visibility:hidden; position:relative; z-index:12;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sblankett" CLASS="menu">BLANKETTER</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div10" STYLE=" visibility:hidden; position:relative; z-index:13;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sbanor" CLASS="menu">TRAVBANOR</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div11" STYLE=" visibility:hidden; position:relative; z-index:14;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+    <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+    </TR>
+    <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/slenkar" CLASS="menu">LÄNKAR</A></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div12" STYLE=" visibility:hidden; position:relative; z-index:15;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(13);" CLASS="menu">FRÅGA STC</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfraga" CLASS="submenu">-Ställ fråga</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfaq" CLASS="submenu">-Vanliga frågor</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div13" STYLE=" visibility:hidden; position:relative; z-index:16;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=omSite" CLASS="menu">OM SITEN</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div14" STYLE=" visibility:hidden; position:relative; z-index:17;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/ssitesok" CLASS="menu">SÖK PÅ SITEN</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div15" STYLE=" visibility:hidden; position:relative; z-index:18;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif">
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/menu/backWhiteDown.gif" WIDTH="123" HEIGHT="7" BORDER="0"><BR><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="15" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="https://www.atg.se/index.jsp?chooseAtgse2=true#/department.atg.atgse2.channel.ws.bettingandstartlists/" CLASS="menuGrey" TARGET="_blank">STARTLISTOR&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+</TR>
+<!--
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="http://www.atg.se/ResultatForstaSidaServlet" CLASS="menuGrey" TARGET="_blank">RESULTAT&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+-->
+<!--  Copyright text  -->
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="14" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">Copyright/</A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">database right,</A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">AB Trav och Galopp&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+<!--  ***  -->
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="20" BORDER="0"></TD>
+</TR>
+
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/menu/menuBottom.gif" WIDTH="123" HEIGHT="5" BORDER="0"></TD>
+</TR>
+</TABLE>
+</DIV>
+</DIV>
+
+
+       
+
+
+<DIV ID="rightDiv" STYLE=" left:160; top:43; visibility:visible; position:absolute; z-index:1;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<!-- form -->
+
+<TR>
+<TD VALIGN="top">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="130">
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a01.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a02.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+    </TR>
+    <TR>
+      <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a05.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a06.gif" WIDTH="60" HEIGHT="60"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD VALIGN="top" COLSPAN="2">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD ROWSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerUppLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD VALIGN="top" COLSPAN="2" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/black.gif" WIDTH="200" HEIGHT="1" BORDER="0"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineHori6.gif" WIDTH="208" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD BGCOLOR="#FFFFFF" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+      
+      <TD BACKGROUND="/staticFiles/ts/images/gradientHorizon.gif" ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1">
+      
+    </TR>
+    <TR>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLine.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD BGCOLOR="#FFFFFF">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="318">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="8" HEIGHT="112" BORDER="0"></TD>
+          <TD VALIGN="top">
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="320" HEIGHT="4" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="2"><IMG SRC="/staticFiles/ts/images/sportinfo/resultat.gif" WIDTH="154" HEIGHT="30" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="2"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="10" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="ingress" COLSPAN="2" HEIGHT="60" VALIGN="top"><B>Tävlingsdagsresultat</B><BR>Här visas tävlingsdagar under innevarande månad.
+Sökning kan göras på bana, datum och loppnr.</TD>
+            </TR>
+            </TABLE>
+          </TD>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="8"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="8" HEIGHT="1" BORDER="0"></TD>
+          <TD WIDTH="300"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="300" HEIGHT="1" BORDER="0"></TD>
+          <TD WIDTH="10"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        </TABLE>
+      </TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerDownLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BGCOLOR="#ffffff" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD COLSPAN="2" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/black.gif" WIDTH="165" HEIGHT="1" BORDER="0"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineHori5.gif" WIDTH="188" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+<TR>
+  <TD WIDTH="130"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="130" HEIGHT="1" BORDER="0" ALT=""></TD>
+  <TD WIDTH="420"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="420" HEIGHT="1" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE>
+
+
+  
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerUppLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineUpp.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerUppRight.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineLeft.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+      <TD BGCOLOR="#FFFFFF">
+	  
+<!--  Sökförmulär  -->      
+      <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="500">
+        <FORM NAME="sokTevdag" ACTION="/sresultat" METHOD="POST" onSubmit="return submitTDSok(this);">
+       <INPUT TYPE="hidden" NAME="kommando" VALUE="tevlingsdagSok"> 
+	   <INPUT TYPE="hidden" NAME="tevdagId" VALUE="0"> 
+	   <INPUT TYPE="hidden" NAME="loppId" VALUE="0"> 
+       <TR>
+	      <TD ROWSPAN="6" WIDTH="6"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+          <TD CLASS="content" COLSPAN="4">Nedan kan du se den innevarande månadens tävlingsdagar. Välj den tävlingsdag du vill se resultat från genom att klicka på banans namn.<br>
+<br>
+Du kan också söka efter enstaka äldre loppresultat direkt genom att ange bana, datum (ÅÅMMDD) och loppnummer. Lämna datum och loppnummer tomt för att söka fram banans samtliga tävlingsdagar under året.
+</TD>
+          <TD ROWSPAN="6" WIDTH="6"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+       </TR>
+       <TR>
+          <TD COLSPAN="4"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="10"></TD>
+       </TR>
+        
+        <TR>
+          <TD WIDTH="160"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="160" HEIGHT="1"></TD>
+          <TD WIDTH="100"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="100" HEIGHT="1"></TD>
+          <TD WIDTH="70"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="70" HEIGHT="1"></TD>
+          <TD WIDTH="90"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="90" HEIGHT="1"></TD>
+        </TR>
+        <TR>
+          <TD CLASS="formHeadline"><B>Bana:</B></TD>
+		  <TD CLASS="formHeadline"><B>Datum:</B></TD>
+          <TD CLASS="formHeadline"><B>Loppnr:</B></TD>
+          <TD CLASS="formHeadline">&nbsp;</TD>
+        </TR>
+        <TR>
+
+          <TD CLASS="content"> 
+            <SELECT NAME="valdBana" CLASS="formInput" style="width:155px; border-width:1px; border-color:#000000; border-style:solid;">
+              <OPTION VALUE="0">Välj bana</OPTION>
+                               
+              <OPTION  VALUE="12">Arvika (Ar)</OPTION>
+                             
+              <OPTION  VALUE="4">Axevalla (Ax)</OPTION>
+                             
+              <OPTION  VALUE="5">Bergsåker (B)</OPTION>
+                             
+              <OPTION  VALUE="13">Boden (Bo)</OPTION>
+                             
+              <OPTION  VALUE="14">Bollnäs (Bs)</OPTION>
+                             
+              <OPTION  VALUE="15">Dannero (D)</OPTION>
+                             
+              <OPTION  VALUE="6">Eskilstuna (E)</OPTION>
+                             
+              <OPTION  VALUE="7">Färjestad (F)</OPTION>
+                             
+              <OPTION  VALUE="8">Gävle (G)</OPTION>
+                             
+              <OPTION  VALUE="1520">Göteborg Trav (Gt)</OPTION>
+                             
+              <OPTION  VALUE="1500">Hagfors (Hf)</OPTION>
+                             
+              <OPTION  VALUE="16">Hagmyren (H)</OPTION>
+                             
+              <OPTION  VALUE="9">Halmstad (Hd)</OPTION>
+                             
+              <OPTION  VALUE="17">Hoting (Hg)</OPTION>
+                             
+              <OPTION  VALUE="3">Jägersro (J)</OPTION>
+                             
+              <OPTION  VALUE="18">Kalmar (Kr)</OPTION>
+                             
+              <OPTION  VALUE="1240">Karlshamn (Kh)</OPTION>
+                             
+              <OPTION  VALUE="19">Lindesberg (L)</OPTION>
+                             
+              <OPTION  VALUE="20">Lycksele (Ly)</OPTION>
+                             
+              <OPTION  VALUE="21">Mantorp (Mp)</OPTION>
+                             
+              <OPTION  VALUE="22">Oviken (Ov)</OPTION>
+                             
+              <OPTION  VALUE="10">Romme (Ro)</OPTION>
+                             
+              <OPTION  VALUE="23">Rättvik (Rä)</OPTION>
+                             
+              <OPTION  VALUE="24">Skellefteå (Sk)</OPTION>
+                             
+              <OPTION  VALUE="1">Solvalla (S)</OPTION>
+                             
+              <OPTION  VALUE="25">Solänget (Sä)</OPTION>
+                             
+              <OPTION  VALUE="1480">Tingsryd (Ti)</OPTION>
+                             
+              <OPTION  VALUE="1320">Täby Trav (Tt)</OPTION>
+                             
+              <OPTION  VALUE="26">Umåker (U)</OPTION>
+                             
+              <OPTION  VALUE="34">Vaggeryd (Vg)</OPTION>
+                             
+              <OPTION  VALUE="2760">Vemdalen (Vd)</OPTION>
+                             
+              <OPTION  VALUE="27">Visby (Vi)</OPTION>
+                             
+              <OPTION  VALUE="2">Åby (Å)</OPTION>
+                             
+              <OPTION  VALUE="28">Åmål (Åm)</OPTION>
+                             
+              <OPTION  VALUE="1940">Åre Istrav (Åt)</OPTION>
+                             
+              <OPTION  VALUE="29">Årjäng (År)</OPTION>
+                             
+              <OPTION  VALUE="11">Örebro (Ö)</OPTION>
+                             
+              <OPTION  VALUE="30">Östersund (Ös)</OPTION>
+             
+            </SELECT>
+          </TD>
+
+          <TD>
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#E5E5DD"><INPUT TYPE="text" NAME="valdDatum" SIZE="14" CLASS="formInput" MAXLENGTH="6" VALUE=""></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+
+            </TABLE>          
+          </TD>
+          
+          <TD>
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#E5E5DD"><INPUT TYPE="text" NAME="valdLoppnr" SIZE="8" CLASS="formInput" MAXLENGTH="2" VALUE=""></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+			
+            </TABLE>          
+          </TD>
+<!--        
+          <TD ALIGN="right"><INPUT TYPE="image" SRC="/staticFiles/ts/images/sportinfo/buttonSok.gif" WIDTH="43" HEIGHT="15" border="0"></TD>
+		  
+-->		  
+		  <TD ALIGN="right"><INPUT TYPE="image" onClick="return submitTDSok(sokTevdag);" SRC="/staticFiles/ts/images/sportinfo/buttonSok.gif" WIDTH="43" HEIGHT="15" border="0"></TD>
+			
+        </TR>
+        <TR>
+          <TD COLSPAN="4"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="10"></TD>
+        </TR>
+
+        </FORM>
+	
+
+        </TABLE>
+      
+      </TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineRight.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+    </TR>
+
+    <TR>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerDownLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineDown.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerDownRight.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+    </TR>
+
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1" BORDER="0" ALT=""></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="542" HEIGHT="1" BORDER="0" ALT=""></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1" BORDER="0" ALT=""></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+
+<!-- Sökförmulär -->
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="554">
+<FORM NAME="tdForm" ACTION="/sresultat" METHOD="post" onSubmit="return okButton(this,true);">
+<INPUT TYPE="hidden" NAME="kommando" VALUE="tevlingsDagar">
+<INPUT TYPE="hidden" NAME="valdManad" VALUE="">
+<INPUT TYPE="hidden" NAME="tevdagId" VALUE="">
+<INPUT TYPE="hidden" NAME="loppId" VALUE="0">
+<INPUT TYPE="hidden" NAME="valdLoppnr" VALUE="0">
+<TR>
+<TD COLSPAN="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+<TR>
+<TD ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/propSearch/arrowLeft.gif" WIDTH="16" HEIGHT="16" BORDER="0" ALT=""></TD>
+<TD COLSPAN="3" BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/propSearch/arrowRight.gif" WIDTH="16" HEIGHT="16" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD HEIGHT="14" BGCOLOR="#ffffff" ALIGN="left"><A HREF="javascript:submitTDHemta(document.tdForm , '200805')" CLASS="linkHoover">Föregående månad</A></TD>
+<TD CLASS="content" ALIGN="center" BGCOLOR="#ffffff"><B>Juni 2008</B></TD>
+<TD ALIGN="right" BGCOLOR="#ffffff"><A HREF="javascript:submitTDHemta(document.tdForm , '200807')" CLASS="linkHoover">Nästa månad</A></TD>
+</TR>
+<TR>
+<TD BGCOLOR="#000000" WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+<TD BGCOLOR="#000000" WIDTH="222" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="222" HEIGHT="1" BORDER="0"></TD>
+<TD BGCOLOR="#000000" WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="554">
+<TR>
+<TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="3" BORDER="0"></TD>
+</TR>
+<TR>
+<TD BGCOLOR="#000000" COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+</TR>
+<TR>
+<TD BGCOLOR="#000000" WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="552" BGCOLOR="#FFFFFF" ALIGN="center">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD COLSPAN="2"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD CLASS="content" VALIGN="bottom" WIDTH="130"> </TD>
+<TD BGCOLOR="#FFFFFF" WIDTH="177" COLSPAN="3"></TD>
+<TD WIDTH="5" BGCOLOR="#EEEEEA"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">1</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Söndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493600')" CLASS="linkHoover">Axevalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Kronprinsessan Victorias Lopp</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494251')" CLASS="linkHoover">Hagmyren&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493473')" CLASS="linkHoover">Årjäng&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Breeders' Crown 3-åriga h/v</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">2</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Måndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494116')" CLASS="linkHoover">Arvika&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494208')" CLASS="linkHoover">Bollnäs&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Sleipner Cup</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492455')" CLASS="linkHoover">Halmstad&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493523')" CLASS="linkHoover">Mantorp&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Ina Scots Ära</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">3</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Tisdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492925')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493426')" CLASS="linkHoover">Oviken&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494311')" CLASS="linkHoover">Umåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">4</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Onsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494302')" CLASS="linkHoover">Skellefteå&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492372')" CLASS="linkHoover">Solvalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V64, Active Bowlers lopp</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493246')" CLASS="linkHoover">Visby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">5</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Torsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493395')" CLASS="linkHoover">Dannero&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493126')" CLASS="linkHoover">Gävle&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492926')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Dagens rätt</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493094')" CLASS="linkHoover">Åby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">6</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Fredag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492917')" CLASS="linkHoover">Lindesberg&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494162')" CLASS="linkHoover">Romme&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493214')" CLASS="linkHoover">Vaggeryd&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493494')" CLASS="linkHoover">Östersund&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, DubbelcupStoet, final</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">7</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Lördag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493495')" CLASS="linkHoover">Östersund&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V75, Jämtlands Stora Pris</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">8</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Söndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492986')" CLASS="linkHoover">Tingsryd&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">9</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Måndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494117')" CLASS="linkHoover">Arvika&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Arvikas Jubileumslopp</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493278')" CLASS="linkHoover">Rättvik&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494186')" CLASS="linkHoover">Visby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">10</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Tisdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492661')" CLASS="linkHoover">Eskilstuna&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493414')" CLASS="linkHoover">Hagmyren&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492927')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, KRAFFT Derby Trial</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494232')" CLASS="linkHoover">Åmål&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">11</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Onsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494272')" CLASS="linkHoover">Axevalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492715')" CLASS="linkHoover">Boden&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492373')" CLASS="linkHoover">Solvalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V64, Solvallaserien</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">12</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Torsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493127')" CLASS="linkHoover">Gävle&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492928')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Dagens rätt</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493095')" CLASS="linkHoover">Åby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">13</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Fredag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493351')" CLASS="linkHoover">Bergsåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492716')" CLASS="linkHoover">Boden&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492522')" CLASS="linkHoover">Romme&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Sleipner Cup, Final</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">14</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Lördag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492717')" CLASS="linkHoover">Boden&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V75, Norrbottens Stora Pris</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">15</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Söndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493476')" CLASS="linkHoover">Arvika&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494209')" CLASS="linkHoover">Bollnäs&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493387')" CLASS="linkHoover">Eskilstuna&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Dubbelcupen</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493739')" CLASS="linkHoover">Vaggeryd&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">16</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Måndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494371')" CLASS="linkHoover">Mantorp&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494324')" CLASS="linkHoover">Solänget&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494051')" CLASS="linkHoover">Örebro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, E3 - Uttagningslopp</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">17</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Tisdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492929')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494187')" CLASS="linkHoover">Visby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">18</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Onsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494273')" CLASS="linkHoover">Axevalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493352')" CLASS="linkHoover">Bergsåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492374')" CLASS="linkHoover">Solvalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V64, Sverigeloppet</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">19</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Torsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493398')" CLASS="linkHoover">Dannero&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Dubbelcupen</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492930')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Dagens rätt</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493279')" CLASS="linkHoover">Rättvik&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">20</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Fredag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493415')" CLASS="linkHoover">Hagmyren&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493193')" CLASS="linkHoover">Årjäng&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Dubbelcupen</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">21</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Lördag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492919')" CLASS="linkHoover">Lindesberg&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493427')" CLASS="linkHoover">Oviken&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493280')" CLASS="linkHoover">Rättvik&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Midsommarloppet</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492810')" CLASS="linkHoover">Skellefteå&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Midsommarkransen</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493194')" CLASS="linkHoover">Årjäng&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">22</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Söndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492576')" CLASS="linkHoover">Kalmar&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V75, Kalmarsundspokalen</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">23</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Måndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492458')" CLASS="linkHoover">Halmstad&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Genrepet</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493525')" CLASS="linkHoover">Mantorp&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494325')" CLASS="linkHoover">Solänget&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">24</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Tisdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493664')" CLASS="linkHoover">Axevalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492663')" CLASS="linkHoover">Eskilstuna&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492931')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'495657')" CLASS="linkHoover">Visby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">25</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Onsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492375')" CLASS="linkHoover">Solvalla&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V64, Malabar Circle Ås lopp</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494236')" CLASS="linkHoover">Årjäng&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494260')" CLASS="linkHoover">Östersund&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">26</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Torsdag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492932')" CLASS="linkHoover">Jägersro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Dagens rätt</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494064')" CLASS="linkHoover">Lindesberg&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494312')" CLASS="linkHoover">Umåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493096')" CLASS="linkHoover">Åby&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Henning Kraffts Minne</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">27</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Fredag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493353')" CLASS="linkHoover">Bergsåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, E3 - Stofinal</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494295')" CLASS="linkHoover">Boden&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494210')" CLASS="linkHoover">Bollnäs&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492577')" CLASS="linkHoover">Kalmar&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">28</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Lördag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493354')" CLASS="linkHoover">Bergsåker&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V75, E3 - Öppen klass, Final</TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">29</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Söndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494348')" CLASS="linkHoover">Lycksele&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494227')" CLASS="linkHoover">Åmål&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'494052')" CLASS="linkHoover">Örebro&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+<TR>
+<TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD COLSPAN="4" BACKGROUND="/staticFiles/ts/images/lineSeperatorDark.gif" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="552">
+<TR>
+<TD WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+<TD VALIGN="top" WIDTH="63">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="60">
+<TR>
+<TD CLASS="contentHeadline" ALIGN="center" WIDTH="60">30</TD>
+</TR>
+<TR>
+<TD CLASS="content" ALIGN="center">Måndag</TD>
+</TR>
+<TR>
+<TD WIDTH="60" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD VALIGN="top" WIDTH="430">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="430">
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493416')" CLASS="linkHoover">Hagmyren&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V65, Linje 5</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493526')" CLASS="linkHoover">Mantorp&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">Mantorpsloppet</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'492524')" CLASS="linkHoover">Romme&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content">V4, Dagens Rätt med V4</TD>
+</TR>
+
+<TR>
+<TD HEIGHT="10" VALIGN="top" WIDTH="10"><IMG SRC="/staticFiles/ts/images/propSearch/star.gif" WIDTH="3" HEIGHT="10" BORDER="0"></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="100"><A HREF="javascript:submitTDVisa(document.tdForm ,'493281')" CLASS="linkHoover">Rättvik&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD>
+
+<TD VALIGN="top" ALIGN="left" WIDTH="310" CLASS="content"></TD>
+</TR>
+
+
+<TR>
+<TD WIDTH="10" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="120" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="120" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</TD>
+<TD BGCOLOR="#EEEEEA" WIDTH="5">&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+</TD>
+<TD BGCOLOR="#000000" WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+</TR>
+<TR>
+<TD BGCOLOR="#000000" COLSPAN="3" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="554">
+<TR>
+<TD COLSPAN="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+</TR>
+<TR>
+<TD ROWSPAN="3" VALIGN="top"><IMG SRC="/staticFiles/ts/images/propSearch/arrowDownLeft.gif" WIDTH="16" HEIGHT="16" BORDER="0"></TD>
+<TD COLSPAN="3" BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD ROWSPAN="3" VALIGN="top"><IMG SRC="/staticFiles/ts/images/propSearch/arrowDownRight.gif" WIDTH="16" HEIGHT="16" BORDER="0"></TD>
+</TR>
+<TR>
+<TD HEIGHT="14" BGCOLOR="#ffffff" ALIGN="left"><A HREF="javascript:submitTDHemta(document.tdForm , '200805')" CLASS="linkHoover">Föregående månad</A></TD>
+<TD CLASS="content" ALIGN="center" BGCOLOR="#ffffff"><B>Juni 2008</B></TD>
+<TD ALIGN="right" BGCOLOR="#ffffff"><A HREF="javascript:submitTDHemta(document.tdForm , '200807')" CLASS="linkHoover">Nästa månad</A></TD>
+</TR>
+<TR>
+<TD BGCOLOR="#000000" WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+<TD BGCOLOR="#000000" WIDTH="222" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="222" HEIGHT="1" BORDER="0"></TD>
+<TD BGCOLOR="#000000" WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+</FORM>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="554">
+<TR>
+<TD WIDTH="460"></TD>
+<TD><A HREF="javascript:openPopup(200806)" CLASS="linkButton"><IMG SRC="/staticFiles/ts/images/sportinfo/buttonPrint.gif" WIDTH="128" HEIGHT="18" BORDER="0"></A></TD>
+<!-- <TD><A HREF="javascript:openPopup(200806)" CLASS="linkButton">&nbsp;Skriv ut&nbsp;<IMG SRC="/staticFiles/ts/images/arrow.gif" WIDTH="9" HEIGHT="7" BORDER="0"></A></TD> -->
+</TR>
+</TABLE>
+<BR>
+<BR>
+</DIV>
+&nbsp;
+</BODY>
+</HTML>
