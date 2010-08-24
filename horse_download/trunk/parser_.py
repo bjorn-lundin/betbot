@@ -20,7 +20,7 @@ def parse_raceday_ids(data):
     represents a number of races at a specific track and date'''
     races = []
     patternString = "document.tdForm ,'(\d+)'"
-    pattern = re.compile(patternString, re.DOTALL | re.IGNORECASE)
+    pattern = re.compile(patternString, re.DOTALL | re.IGNORECASE | re.UNICODE)
     resluts = re.finditer(pattern, data)
     for result in resluts:
         races.append(result.group(1))
@@ -34,12 +34,12 @@ def parse_race_ids(data):
     race_id = 'tevdagId=\d+&loppId=(\d+).*?'
     race_number = '<FONT.*?>(\d+)</FONT>'
     race_number_length = 0
-    race_number_pattern = re.compile(race_number, re.DOTALL | re.IGNORECASE)
+    race_number_pattern = re.compile(race_number, re.DOTALL | re.IGNORECASE | re.UNICODE)
     race_number_match = re.findall(race_number_pattern, data)
     if race_number_match:
         race_number_length = len(race_number_match)
     race_all = race_id + race_number
-    race_all_pattern = re.compile(race_all, re.DOTALL | re.IGNORECASE)
+    race_all_pattern = re.compile(race_all, re.DOTALL | re.IGNORECASE | re.UNICODE)
     race_all_match = re.findall(race_all_pattern, data)
     if race_all_match:
         if (race_number_length > 0
@@ -65,8 +65,8 @@ def get_race():
 def get_tracks(data):
     outerPattern = '.*?<SELECT.*?name="valdBana".*?>(.*?)</SELECT>'
     innerPattern = '.*?<OPTION  VALUE="(\d+)">(.*?)\((.*?)\)</OPTION>.*?'
-    outer = re.compile(outerPattern, re.DOTALL | re.IGNORECASE)
-    inner = re.compile(innerPattern, re.DOTALL | re.IGNORECASE)
+    outer = re.compile(outerPattern, re.DOTALL | re.IGNORECASE | re.UNICODE)
+    inner = re.compile(innerPattern, re.DOTALL | re.IGNORECASE | re.UNICODE)
     outerResult = outer.match(data)
     if outerResult:
         tracks = re.findall(inner, outerResult.group(1))
