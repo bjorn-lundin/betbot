@@ -4,13 +4,13 @@ import codecs
 
 def write_data(datadir, file, data):
     filepath = os.path.join(datadir, file)
-    file = codecs.open(filepath, 'w', encoding='utf-8')
+    file = codecs.open(filepath, 'w', encoding='iso-8859-1')
     file.write(data)
     file.close
 
 def read_data(datadir, file):
     filepath = os.path.join(datadir, file)
-    file = codecs.open(filepath, 'r', encoding='utf-8')
+    file = codecs.open(filepath, 'r', encoding='iso-8859-1')
     data = file.read()
     file.close
     return data
