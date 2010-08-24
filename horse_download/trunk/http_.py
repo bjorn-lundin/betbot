@@ -11,15 +11,17 @@ requestHeaders = {'User-agent' :
     'Gecko/20091102 Firefox/3.5.5'}
 requestTimeout = 10 # Request timeout in seconds
 requestRetries = 5  # If exceptions occur, retry this many times
-minDelayTime = 8    # Seconds
-maxDelayTime = 15   # Seconds
+#minDelayTime = 8    # Seconds
+#maxDelayTime = 15   # Seconds
+minDelayTime = 2    # Seconds
+maxDelayTime = 6   # Seconds
 socket.setdefaulttimeout(requestTimeout)
 
 def get_current_race_days(logger):
     requestUrl = 'http://www.travsport.se/sresultat?kommando=tevlingsDagar'
     requestData = {}
     httpResponse = http_request(requestUrl, requestData, logger)
-    data = httpResponse.read().decode('ISO-8859-1')
+    data = httpResponse.read().decode('iso-8859-1')
     return data 
 
 def get_monthly_race_days(time, logger):
@@ -27,14 +29,14 @@ def get_monthly_race_days(time, logger):
     requestUrl = 'http://www.travsport.se/sresultat'
     requestData = {'kommando':'tevlingsDagar', 'valdManad':time}
     httpResponse = http_request(requestUrl, requestData, logger)
-    data = httpResponse.read().decode('ISO-8859-1')
+    data = httpResponse.read().decode('iso-8859-1')
     return data 
 
 def get_first_race(raceDayId, logger):
     requestUrl = 'http://www.travsport.se/sresultat'
     requestData = {'kommando':'tevlingsdagVisa', 'tevdagId':raceDayId}
     httpResponse = http_request(requestUrl, requestData, logger)
-    data = httpResponse.read().decode('ISO-8859-1')
+    data = httpResponse.read().decode('iso-8859-1')
     return data
 
 def get_race(race_day_id, race_id, logger):
@@ -42,7 +44,7 @@ def get_race(race_day_id, race_id, logger):
     requestData = {'kommando':'tevlingsdagVisa', 'tevdagId':race_day_id,
         'loppId':race_id}
     httpResponse = http_request(requestUrl, requestData, logger)
-    data = httpResponse.read().decode('ISO-8859-1')
+    data = httpResponse.read().decode('iso-8859-1')
     return data
 
 def http_request(requestUrl, requestData, logger):
@@ -58,11 +60,11 @@ def http_request(requestUrl, requestData, logger):
         if tries <= requestRetries:
             try:
                 response = urllib2.urlopen(request)
-            except HTTPError, e:
+            except urllib2.HTTPError, e:
                 logger.log('HTTPError: ' + str(e.reason))
                 #print (e.reason)
                 continue
-            except URLError, e:
+            except urllib2.URLError, e:
                 logger.log('URLError: ' + str(e.reason))
                 #print (e.reason)
                 continue
