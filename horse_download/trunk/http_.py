@@ -11,10 +11,8 @@ requestHeaders = {'User-agent' :
     'Gecko/20091102 Firefox/3.5.5'}
 requestTimeout = 10 # Request timeout in seconds
 requestRetries = 5  # If exceptions occur, retry this many times
-#minDelayTime = 8    # Seconds
-#maxDelayTime = 15   # Seconds
-minDelayTime = 2    # Seconds
-maxDelayTime = 6   # Seconds
+minDelayTime = 8    # Seconds
+maxDelayTime = 15   # Seconds
 socket.setdefaulttimeout(requestTimeout)
 
 def get_current_race_days(logger):
