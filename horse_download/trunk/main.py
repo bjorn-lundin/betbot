@@ -36,7 +36,7 @@ def get_historic_raceday_ids():
     # current month
     historicRaces = {
         '2008':['01','02','03','04','05','06','07','08','09','10','11','12'],
-        '2009':['01','02','03','04','05','06','07','08','09','10','11'],
+        '2009':['01','02','03','04','05','06','07','08','09','10','11','12'],
     }
     filelist = util_.get_files(datadir, historic_prefix)
     for year in historicRaces:
