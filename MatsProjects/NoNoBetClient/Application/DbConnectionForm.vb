@@ -20,6 +20,7 @@ Public Class DbConnectionForm
     Private _DbConnectionString2 As String = "Server=Db.nonobet.com;Port=5432;User Id=kalle;Password=kalle;Database=kalle;"
     Private _DbConnectionString3 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=mats_test_01;SSL=True;"
     Private _DbConnectionString4 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=nonobet_data;SSL=True;Preload Reader=True;"
+    Private _DbConnectionString5 As String = "Server=localhost;Port=5432;User Id=test-db;Password=test-db;Database=test-db;Preload Reader=True;"
     Private WithEvents _DbConn As DbConnection
 
     Public ReadOnly Property GetDbConnection As DbConnection
@@ -132,6 +133,7 @@ Public Class DbConnectionForm
 
     Private Sub DbConnectionForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         txtHeader.Text = "Application path: " + _ApplicationPath
+        cboConnection.Items.Add(_DbConnectionString5)
         cboConnection.Items.Add(_DbConnectionString4)
         cboConnection.Items.Add(_DbConnectionString3)
         cboConnection.Items.Add(_DbConnectionString2)

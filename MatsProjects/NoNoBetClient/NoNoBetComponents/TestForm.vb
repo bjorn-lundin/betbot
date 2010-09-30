@@ -483,8 +483,8 @@ Public Class TestForm
     End Sub
 
     Private Sub GetRaceLine(ByVal raceId As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
-        Dim sql As String = "SELECT * FROM ekipage JOIN race_horse_driver ON (ekipage.id = race_horse_driver.ekipage_id AND " + _
-                            "race_horse_driver.race_id = " & raceId & ")"
+        Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id AND " + _
+                            "race_ekipage.race_id = " & raceId & ")"
 
         If checkStartPlaces.Checked Then
             If (textStartPlaces.Text IsNot Nothing) Then

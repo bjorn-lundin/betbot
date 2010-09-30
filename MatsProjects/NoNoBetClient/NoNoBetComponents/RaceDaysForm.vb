@@ -250,7 +250,7 @@ Public Class RaceDaysForm
                 raceId = CType(gridRaces.GetCurrentRowCellValue("id"), Integer)
                 sql = "SELECT ekipage.finish_place, ekipage.start_place, horse.name as horse, driver.name as driver, ekipage.winner_odds," + _
                       "ekipage.place_odds, ekipage.distance, ekipage.time, ekipage.time_comment FROM ekipage" + _
-                      " JOIN race_horse_driver ON (race_horse_driver.ekipage_id = ekipage.id AND race_horse_driver.race_id = " & raceId & ")" + _
+                      " JOIN race_ekipage ON (race_ekipage.ekipage_id = ekipage.id AND race_ekipage.race_id = " & raceId & ")" + _
                       " JOIN horse ON (ekipage.horse_id = horse.id)" + _
                       " JOIN driver ON (ekipage.driver_id = driver.id) ORDER BY ekipage.finish_place"
             Else
