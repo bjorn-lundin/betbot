@@ -49,6 +49,10 @@ Public Class TestForm
     Friend WithEvents checkDataTable As System.Windows.Forms.CheckBox
     Friend WithEvents Label9 As System.Windows.Forms.Label
     Friend WithEvents Label8 As System.Windows.Forms.Label
+    Friend WithEvents groupBottom2 As System.Windows.Forms.GroupBox
+    Friend WithEvents radioAuto As System.Windows.Forms.RadioButton
+    Friend WithEvents radioIgnore As System.Windows.Forms.RadioButton
+    Friend WithEvents radioVolt As System.Windows.Forms.RadioButton
     Private _EndTime As Date
 
     Private Sub InitializeComponent()
@@ -68,6 +72,8 @@ Public Class TestForm
         Me.radioStartdate = New System.Windows.Forms.RadioButton()
         Me.dateStart = New System.Windows.Forms.DateTimePicker()
         Me.groupBottom = New System.Windows.Forms.GroupBox()
+        Me.Label9 = New System.Windows.Forms.Label()
+        Me.Label8 = New System.Windows.Forms.Label()
         Me.checkDataTable = New System.Windows.Forms.CheckBox()
         Me.textTime = New System.Windows.Forms.TextBox()
         Me.textDataType = New System.Windows.Forms.TextBox()
@@ -84,12 +90,15 @@ Public Class TestForm
         Me.radioAllTracks = New System.Windows.Forms.RadioButton()
         Me.groupTrack = New System.Windows.Forms.GroupBox()
         Me.comboTracks = New System.Windows.Forms.ComboBox()
-        Me.Label8 = New System.Windows.Forms.Label()
-        Me.Label9 = New System.Windows.Forms.Label()
+        Me.groupBottom2 = New System.Windows.Forms.GroupBox()
+        Me.radioIgnore = New System.Windows.Forms.RadioButton()
+        Me.radioAuto = New System.Windows.Forms.RadioButton()
+        Me.radioVolt = New System.Windows.Forms.RadioButton()
         Me.groupTop.SuspendLayout()
         Me.groupBottom.SuspendLayout()
         Me.groupCenter.SuspendLayout()
         Me.groupTrack.SuspendLayout()
+        Me.groupBottom2.SuspendLayout()
         Me.SuspendLayout()
         '
         'Label4
@@ -187,9 +196,9 @@ Public Class TestForm
         Me.groupTop.Controls.Add(Me.radioStartdate)
         Me.groupTop.Controls.Add(Me.dateStart)
         Me.groupTop.Dock = System.Windows.Forms.DockStyle.Top
-        Me.groupTop.Location = New System.Drawing.Point(0, 100)
+        Me.groupTop.Location = New System.Drawing.Point(0, 94)
         Me.groupTop.Name = "groupTop"
-        Me.groupTop.Size = New System.Drawing.Size(1091, 120)
+        Me.groupTop.Size = New System.Drawing.Size(1091, 103)
         Me.groupTop.TabIndex = 1
         Me.groupTop.TabStop = False
         Me.groupTop.Text = "Select races"
@@ -248,12 +257,30 @@ Public Class TestForm
         Me.groupBottom.Controls.Add(Me.Label1)
         Me.groupBottom.Controls.Add(Me.textNmbrRaces)
         Me.groupBottom.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.groupBottom.Location = New System.Drawing.Point(0, 319)
+        Me.groupBottom.Location = New System.Drawing.Point(0, 366)
         Me.groupBottom.Name = "groupBottom"
-        Me.groupBottom.Size = New System.Drawing.Size(1091, 221)
+        Me.groupBottom.Size = New System.Drawing.Size(1091, 212)
         Me.groupBottom.TabIndex = 2
         Me.groupBottom.TabStop = False
         Me.groupBottom.Text = "Result"
+        '
+        'Label9
+        '
+        Me.Label9.AutoSize = True
+        Me.Label9.Location = New System.Drawing.Point(560, 149)
+        Me.Label9.Name = "Label9"
+        Me.Label9.Size = New System.Drawing.Size(84, 17)
+        Me.Label9.TabIndex = 22
+        Me.Label9.Text = "Data object:"
+        '
+        'Label8
+        '
+        Me.Label8.AutoSize = True
+        Me.Label8.Location = New System.Drawing.Point(515, 184)
+        Me.Label8.Name = "Label8"
+        Me.Label8.Size = New System.Drawing.Size(129, 17)
+        Me.Label8.TabIndex = 21
+        Me.Label8.Text = "Time elapsed (ms):"
         '
         'checkDataTable
         '
@@ -331,10 +358,10 @@ Public Class TestForm
         '
         Me.groupCenter.Controls.Add(Me.textStartPlaces)
         Me.groupCenter.Controls.Add(Me.checkStartPlaces)
-        Me.groupCenter.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.groupCenter.Location = New System.Drawing.Point(0, 220)
+        Me.groupCenter.Dock = System.Windows.Forms.DockStyle.Top
+        Me.groupCenter.Location = New System.Drawing.Point(0, 197)
         Me.groupCenter.Name = "groupCenter"
-        Me.groupCenter.Size = New System.Drawing.Size(1091, 99)
+        Me.groupCenter.Size = New System.Drawing.Size(1091, 79)
         Me.groupCenter.TabIndex = 3
         Me.groupCenter.TabStop = False
         Me.groupCenter.Text = "Select start places"
@@ -386,7 +413,7 @@ Public Class TestForm
         Me.groupTrack.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupTrack.Location = New System.Drawing.Point(0, 0)
         Me.groupTrack.Name = "groupTrack"
-        Me.groupTrack.Size = New System.Drawing.Size(1091, 100)
+        Me.groupTrack.Size = New System.Drawing.Size(1091, 94)
         Me.groupTrack.TabIndex = 4
         Me.groupTrack.TabStop = False
         Me.groupTrack.Text = "Select track"
@@ -399,30 +426,59 @@ Public Class TestForm
         Me.comboTracks.Size = New System.Drawing.Size(121, 24)
         Me.comboTracks.TabIndex = 8
         '
-        'Label8
+        'groupBottom2
         '
-        Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(515, 184)
-        Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(129, 17)
-        Me.Label8.TabIndex = 21
-        Me.Label8.Text = "Time elapsed (ms):"
+        Me.groupBottom2.Controls.Add(Me.radioVolt)
+        Me.groupBottom2.Controls.Add(Me.radioAuto)
+        Me.groupBottom2.Controls.Add(Me.radioIgnore)
+        Me.groupBottom2.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.groupBottom2.Location = New System.Drawing.Point(0, 276)
+        Me.groupBottom2.Name = "groupBottom2"
+        Me.groupBottom2.Size = New System.Drawing.Size(1091, 302)
+        Me.groupBottom2.TabIndex = 5
+        Me.groupBottom2.TabStop = False
+        Me.groupBottom2.Text = "Select start type"
         '
-        'Label9
+        'radioIgnore
         '
-        Me.Label9.AutoSize = True
-        Me.Label9.Location = New System.Drawing.Point(560, 149)
-        Me.Label9.Name = "Label9"
-        Me.Label9.Size = New System.Drawing.Size(84, 17)
-        Me.Label9.TabIndex = 22
-        Me.Label9.Text = "Data object:"
+        Me.radioIgnore.AutoSize = True
+        Me.radioIgnore.Location = New System.Drawing.Point(133, 16)
+        Me.radioIgnore.Name = "radioIgnore"
+        Me.radioIgnore.Size = New System.Drawing.Size(69, 21)
+        Me.radioIgnore.TabIndex = 0
+        Me.radioIgnore.TabStop = True
+        Me.radioIgnore.Text = "Ignore"
+        Me.radioIgnore.UseVisualStyleBackColor = True
+        '
+        'radioAuto
+        '
+        Me.radioAuto.AutoSize = True
+        Me.radioAuto.Location = New System.Drawing.Point(133, 46)
+        Me.radioAuto.Name = "radioAuto"
+        Me.radioAuto.Size = New System.Drawing.Size(58, 21)
+        Me.radioAuto.TabIndex = 1
+        Me.radioAuto.TabStop = True
+        Me.radioAuto.Text = "Auto"
+        Me.radioAuto.UseVisualStyleBackColor = True
+        '
+        'radioVolt
+        '
+        Me.radioVolt.AutoSize = True
+        Me.radioVolt.Location = New System.Drawing.Point(133, 73)
+        Me.radioVolt.Name = "radioVolt"
+        Me.radioVolt.Size = New System.Drawing.Size(53, 21)
+        Me.radioVolt.TabIndex = 2
+        Me.radioVolt.TabStop = True
+        Me.radioVolt.Text = "Volt"
+        Me.radioVolt.UseVisualStyleBackColor = True
         '
         'TestForm
         '
-        Me.ClientSize = New System.Drawing.Size(1091, 540)
+        Me.ClientSize = New System.Drawing.Size(1091, 578)
+        Me.Controls.Add(Me.groupBottom)
+        Me.Controls.Add(Me.groupBottom2)
         Me.Controls.Add(Me.groupCenter)
         Me.Controls.Add(Me.groupTop)
-        Me.Controls.Add(Me.groupBottom)
         Me.Controls.Add(Me.groupTrack)
         Me.Name = "TestForm"
         Me.Text = "NoNoBet Test"
@@ -434,6 +490,8 @@ Public Class TestForm
         Me.groupCenter.PerformLayout()
         Me.groupTrack.ResumeLayout(False)
         Me.groupTrack.PerformLayout()
+        Me.groupBottom2.ResumeLayout(False)
+        Me.groupBottom2.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -551,10 +609,30 @@ Public Class TestForm
         If radioStartdate.Checked Then
             If (Not whereAdded) Then
                 sql += " WHERE "
+                whereAdded = True
             Else
                 sql += " AND "
             End If
             sql += "(date >= " + DbConnection.DateToSqlString(dateStart.Value, DbConnection.DateFormatMode.DateOnly) + ")"
+        End If
+
+        If (Not radioIgnore.Checked) Then
+            Dim autoStartValue As String
+
+            If radioAuto.Checked Then
+                autoStartValue = "TRUE"
+            Else
+                autoStartValue = "FALSE"
+            End If
+
+            If (Not whereAdded) Then
+                sql += " WHERE "
+                whereAdded = True
+            Else
+                sql += " AND "
+            End If
+
+            sql += "(auto_start = " & autoStartValue & ")"
         End If
 
         If checkDataTable.Checked Then
@@ -581,7 +659,11 @@ Public Class TestForm
         ShowTimer()
 
         textStatus.Text = "Completed"
-        textWinFactor.Text = Decimal.Round(_TotWinAmount / _ToBetAmount, 4).ToString
+        If (_ToBetAmount > 0) And (_TotWinAmount > 0) Then
+            textWinFactor.Text = Decimal.Round(_TotWinAmount / _ToBetAmount, 4).ToString
+        Else
+            textWinFactor.Text = "0"
+        End If
     End Sub
 
     Private Sub radioAllDates_CheckedChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles radioAllDates.CheckedChanged, radioStartdate.CheckedChanged
@@ -638,6 +720,7 @@ Public Class TestForm
         comboTracks.Enabled = False
         checkStartPlaces.Checked = False
         textStartPlaces.Enabled = False
+        radioIgnore.Checked = True
         textStatus.Text = "Not Started"
         checkDataTable.Checked = False
         _IsLoaded = True
