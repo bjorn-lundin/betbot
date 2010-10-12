@@ -233,18 +233,37 @@ Public Class StatForm
     Private Sub buttonStartPosStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStartPosStats.Click
         Dim sql As String
 
-        sql = "SELECT ekipage.start_place, count(*) as cnt, race.track FROM ekipage " + _
-              "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
-              "JOIN race ON (race.id = race_ekipage.race_id) " + _
-              "WHERE (ekipage.finish_place = 1) "
+        'sql = "SELECT ekipage.start_place, count(*) as cnt, race.track FROM ekipage " + _
+        '      "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+        '      "JOIN race ON (race.id = race_ekipage.race_id) " + _
+        '      "WHERE (ekipage.finish_place = 1) "
+
+        sql = "SELECT * FROM (" + _
+                "SELECT TrackLineRec.track ""Track"",TrackLineRec.start_place ""StartPos"",TrackLineRec.cnt ""NmbrWinners"",ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt) ""%Winners"" FROM " + _
+                  "(SELECT race.track,count(*) as cnt FROM ekipage " + _
+                   "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+                   "JOIN race ON (race.id = race_ekipage.race_id) " + _
+                   "WHERE (ekipage.finish_place = 1) " + _
+                   "GROUP BY race.track) TrackRec " + _
+                "JOIN " + _
+                  "(SELECT ekipage.start_place,race.track,count(*) as cnt FROM ekipage " + _
+                   "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+                   "JOIN race ON (race.id = race_ekipage.race_id) " + _
+                   "WHERE (ekipage.finish_place = 1) " + _
+                   "GROUP BY race.track,ekipage.start_place) TrackLineRec " + _
+                "ON (TrackLineRec.track = TrackRec.track) " + _
+              ")TrackView "
+
 
         If (comboTracks.SelectedItem IsNot Nothing) Then
             Dim track As String = CType(comboTracks.SelectedItem, String)
-            sql += "AND (race.track = '" + track + "') "
+            'sql += "AND (race.track = '" + track + "') "
+            sql += "WHERE (""Track"" = '" + track + "') "
         End If
 
-        sql += "GROUP BY race.track,ekipage.start_place " + _
-               "ORDER BY race.track,cnt DESC"
+        'sql += "GROUP BY race.track,ekipage.start_place " + _
+        '       "ORDER BY race.track,cnt DESC"
+        sql += "ORDER BY ""Track"",""NmbrWinners"" DESC"
         gridStartPosStats.ExecuteSql(MyBase.DbConnection, sql)
 
     End Sub
