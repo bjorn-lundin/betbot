@@ -1,4 +1,3 @@
 [DEFAULT]
 file_path = /home/user/nonobet_new_all
 db_url = postgresql://test-db:test-db@localhost:5432/test-db
-test_setup = False
