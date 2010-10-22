@@ -32,8 +32,14 @@ def create_db_session(db_url, init_db):
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
     return Session()
-        
-def get_data(data_path, test, db_session):
+
+def get_persisted_files(db_session):
+    persisted_files = []
+    for file in db_session.query(Race.file_name):
+        persisted_files.append(file[0])
+    return persisted_files
+
+def get_data(data_path, test, db_session, persisted_files):
     file_source = []
     test_files = [
                   'raceday_492338_race_640915.html',
@@ -54,13 +60,17 @@ def get_data(data_path, test, db_session):
     else:
         file_source = get_files_and_ids(data_path)
 
-    for file_instance in file_source:
-        if file_instance['data_file'] in skip_files:
-            print ('Skipping file ' + file_instance['data_file'])
+    for file in file_source:
+        if file['file_name'] in persisted_files:
+            print ('File ' + file['file_name'] + ' already in database')
             continue
         
-        print ('Processing ' + file_instance['data_file'])
-        f = codecs.open(file_instance['data_file'], 'r', encoding='iso-8859-1')
+        if file['file_name'] in skip_files:
+            print ('Skipping file ' + file['file_name'])
+            continue
+        
+        print ('Processing ' + file['file_name'])
+        f = codecs.open(os.path.join(data_path, file['file_name']), 'r', encoding='iso-8859-1')
         data = prep_data(f)
         f.close()
 
@@ -77,7 +87,7 @@ def get_data(data_path, test, db_session):
                     pattern_table_index[key] = tables.index(table)
 
         error = ''
-        result1 = parse_race_date_bet_types(data, file_instance)
+        result1 = parse_race_date_bet_types(data, file)
         if not result1:
             error = error + '1'
             
@@ -98,7 +108,7 @@ def get_data(data_path, test, db_session):
             ekipage_data = []
             ekipage_data.extend(result2)
             
-            race = Race(race_data, file_instance)
+            race = Race(race_data, file)
             bettypes = []
             for data in race_data['race_bet_types']:
                 bettypes.append(BetType(data))
@@ -113,7 +123,7 @@ def get_data(data_path, test, db_session):
                 ekipage.append(Ekipage(data))
             race.ekipage = ekipage
         else:
-            race = Race(result1, file_instance, error)
+            race = Race(result1, file, error)
         # TODO For efficency use db_session.add(race)
         # instead when checking filenames before adding?
         db_session.merge(race)
@@ -136,11 +146,9 @@ def get_files_and_ids(data_path, test_files=None):
     else:
         data_files = os.listdir(data_path)
     for file in data_files:
-        data_files[data_files.index(file)] = os.path.join(data_path, file)
-    for file in data_files:
-        match = re.match(pattern, os.path.basename(file))
+        match = re.match(pattern, file)
         if match:
-            files_and_ids.append({'data_file':file, 
+            files_and_ids.append({'file_name':file, 
                                   'raceday_id':match.group(1), 
                                   'race_id':match.group(2)})
     return files_and_ids
@@ -382,7 +390,7 @@ class Race(Base):
     tvilling_odds = Column(Numeric)
     auto_start = Column(Boolean)
     raceday_id = Column(Integer)
-    data_file = Column(String)
+    file_name = Column(String)
     error = Column(String)
     bettypes = relation('BetType', secondary='race_bettype', backref='race')
     ekipage = relation('Ekipage', secondary='race_ekipage', backref='race')
@@ -395,7 +403,7 @@ class Race(Base):
         self.tvilling_odds = 9999
         self.auto_start = False
         self.raceday_id = file_instance['raceday_id']
-        self.data_file = file_instance['data_file']
+        self.file_name = file_instance['file_name']
         self.error = error
     def __repr__(self):
         return "<Race('%s','%s', '%s', '%s')>" % \
@@ -481,4 +489,5 @@ if __name__ == '__main__':
     init_db = True
     test = False
     db_session = create_db_session(db_url, init_db)
-    get_data(file_path, test, db_session)
+    persisted_files = get_persisted_files(db_session)
+    get_data(file_path, test, db_session, persisted_files)
