@@ -14,9 +14,6 @@ from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
 
-Base = declarative_base()
-metadata = Base.metadata
-
 def read_conf(conf):
     config_file = 'persist.conf'
     config_file_path = os.path.join(sys.path[0], config_file)
@@ -26,18 +23,16 @@ def read_conf(conf):
         print('Please create ' + config_file_path + ' before continuing!')
         exit(1)
 
-def db_connect(db_connect_string):
-    engine = create_engine(db_connect_string, echo=False)
-    return engine
+Base = declarative_base()
 
-def db_session(db_engine):
-    Session = sessionmaker(bind=db_engine)
+def create_db_session(db_url, init_db):
+    engine = create_engine(db_url, echo=False)
+    Session = sessionmaker(bind=engine)
+    if init_db:
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
     return Session()
-    
-def db_init(db_engine):
-    metadata.drop_all(db_engine)
-    metadata.create_all(db_engine)
-
+        
 def get_data(data_path, test, db_session):
     file_source = []
     test_files = [
@@ -117,13 +112,12 @@ def get_data(data_path, test, db_session):
                 db_session.merge(driver)
                 ekipage.append(Ekipage(data))
             race.ekipage = ekipage
-            
-            db_session.merge(race)
-            db_session.commit()
         else:
             race = Race(result1, file_instance, error)
-            db_session.add(race)
-            db_session.commit()
+        # TODO For efficency use db_session.add(race)
+        # instead when checking filenames before adding?
+        db_session.merge(race)
+        db_session.commit()
             
         if test:
             print ('parse_race_date_bet_types', result1)
@@ -469,12 +463,12 @@ class Ekipage(Base):
             (self.id, self.horse_id, self.driver_id)
 
 # Association tables
-race_bettype = Table('race_bettype', metadata,
+race_bettype = Table('race_bettype', Base.metadata,
                       Column('race_id', Integer, ForeignKey('race.id')),
                       Column('bettype_id', String, ForeignKey('bettype.id'))
                       )
 
-race_ekipage = Table('race_ekipage', metadata,
+race_ekipage = Table('race_ekipage', Base.metadata,
                      Column('race_id', Integer, ForeignKey('race.id')),
                      Column('ekipage_id', Integer, ForeignKey('ekipage.id')),
                      )
@@ -484,9 +478,7 @@ if __name__ == '__main__':
     read_conf(conf)
     file_path = conf.get('DEFAULT', 'file_path')
     db_url = conf.get('DEFAULT', 'db_url')
+    init_db = True
     test = False
-    
-    db_engine = db_connect(db_url)
-    db_session = db_session(db_engine)
-    db_init(db_engine)
+    db_session = create_db_session(db_url, init_db)
     get_data(file_path, test, db_session)
