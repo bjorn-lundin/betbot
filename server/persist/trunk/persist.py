@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+import ConfigParser
+import sys
 import re
 import datetime
 import decimal
@@ -14,6 +16,15 @@ from sqlalchemy.orm import sessionmaker, relation
 
 Base = declarative_base()
 metadata = Base.metadata
+
+def read_conf(conf):
+    config_file = 'persist.conf'
+    config_file_path = os.path.join(sys.path[0], config_file)
+    if os.path.exists(config_file_path):
+        conf.read(config_file_path)
+    else:
+        print('Please create ' + config_file_path + ' before continuing!')
+        exit(1)
 
 def db_connect(db_connect_string):
     engine = create_engine(db_connect_string, echo=False)
@@ -469,29 +480,13 @@ race_ekipage = Table('race_ekipage', metadata,
                      )
 
 if __name__ == '__main__':
-    # Collecting config strings to move to ini file
-    data_path = '/home/user/nonobet_new_all'
-    #data_path = '/data/nonobet/data'
-    #data_path = '/home/user/workspace/nonodev labs/regexp_lab/html_encode_test/all_converted'
-    #data_path = '/data/nonobet/data_conv_test'
-
+    conf = ConfigParser.SafeConfigParser()
+    read_conf(conf)
+    file_path = conf.get('DEFAULT', 'file_path')
+    db_url = conf.get('DEFAULT', 'db_url')
     test = False
-    db_connect_string = 'postgresql://test-db:test-db@localhost:5432/test-db'
     
-    # External server
-    #db_connect_string = 'postgresql://nonobet_data_user:nonobet_data_user@nonobet.com:5432/nonobet_data'
-    
-    db_engine = db_connect(db_connect_string)
+    db_engine = db_connect(db_url)
     db_session = db_session(db_engine)
     db_init(db_engine)
-    get_data(data_path, test, db_session)
-
-
-
-
-#...
-#Processing /data/nonobet/data/raceday_498423_race_688519.html
-#/usr/lib/pymodules/python2.6/sqlalchemy/types.py:54: UnicodeWarning: Unicode equal comparison failed to convert both arguments to Unicode - interpreting them as being unequal
-#  return x == y
-#Processing /data/nonobet/data/raceday_500549_race_687921.html
-#...
+    get_data(file_path, test, db_session)
