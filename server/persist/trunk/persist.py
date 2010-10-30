@@ -113,15 +113,21 @@ def get_data(data_path, test, db_session, persisted_files):
             for data in race_data['race_bet_types']:
                 bettypes.append(BetType(data))
             race.bettypes = bettypes
-
-            ekipage = []
+            
+            auto_start = False
+            all_ekipage = []
             for data in ekipage_data:
                 horse = Horse(data)
                 driver = Driver(data)
                 db_session.merge(horse)
                 db_session.merge(driver)
-                ekipage.append(Ekipage(data))
-            race.ekipage = ekipage
+                ekipage = Ekipage(data)
+                # If time_comment contains an 'a' the start method is auto
+                if ekipage.time_comment and 'a' in ekipage.time_comment:
+                    auto_start = True
+                all_ekipage.append(ekipage)
+            race.ekipage = all_ekipage
+            race.auto_start = auto_start
         else:
             race = Race(result1, file, error)
         # TODO For efficency use db_session.add(race)
