@@ -405,8 +405,14 @@ class Race(Base):
         self.track = data['race_track']
         self.date = data['race_date']
         self.number = data['race_number']
-        self.trio_odds = 9999
-        self.tvilling_odds = 9999
+        if data.has_key('race_odds_trio'):
+            self.trio_odds = data['race_odds_trio']
+        else:
+            self.trio_odds = None
+        if data.has_key('race_odds_tvilling'):
+            self.tvilling_odds = data['race_odds_tvilling']
+        else:
+            self.tvilling_odds = None
         self.auto_start = False
         self.raceday_id = file_instance['raceday_id']
         self.file_name = file_instance['file_name']
