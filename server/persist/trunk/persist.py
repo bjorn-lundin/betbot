@@ -35,7 +35,7 @@ def create_db_session(db_url, init_db):
 
 def get_persisted_files(db_session):
     persisted_files = []
-    for file in db_session.query(Race.file_name):
+    for file in db_session.query(Race.file):
         persisted_files.append(file[0])
     return persisted_files
 
@@ -403,7 +403,8 @@ class Race(Base):
     tvilling_odds = Column(Numeric)
     auto_start = Column(Boolean)
     raceday_id = Column(Integer)
-    file_name = Column(String)
+    file = Column(String)
+    url = Column(String)
     error = Column(String)
     bettypes = relation('BetType', secondary='race_bettype', backref='race')
     ekipage = relation('Ekipage', secondary='race_ekipage', backref='race')
@@ -422,7 +423,9 @@ class Race(Base):
             self.tvilling_odds = None
         self.auto_start = False
         self.raceday_id = file_instance['raceday_id']
-        self.file_name = file_instance['file_name']
+        self.file = file_instance['file_name']
+        self.url = 'http://www.travsport.se/sresultat?kommando=tevlingsdagVisa&tevdagId=' + \
+                    file_instance['raceday_id'] + '&loppId=' + file_instance['race_id']
         self.error = error
     def __repr__(self):
         return "<Race('%s','%s', '%s', '%s')>" % \
@@ -507,8 +510,8 @@ race_ekipage = Table('race_ekipage', Base.metadata,
 if __name__ == '__main__':
     conf = ConfigParser.SafeConfigParser()
     read_conf(conf)
-    file_path = conf.get('DEFAULT', 'file_path')
-    db_url = conf.get('DEFAULT', 'db_url')
+    file_path = conf.get('DEFAULT', 'client_file_path')
+    db_url = conf.get('DEFAULT', 'client_db_url')
     init_db = True
     test = False
     db_session = create_db_session(db_url, init_db)
