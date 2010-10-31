@@ -225,7 +225,8 @@ def parse_ekipage_data(data):
 
 def parse_horse_data(data):
     result = []
-    named_targets = ('finish_place', 'start_place', 'horse_id', 'horse_name', 'dist_start_place', 'distance')
+    named_targets = ('finish_place', 'start_place', 'horse_id', 'horse_name',
+                     'dist_start_place', 'distance', 'shoes_front', 'shoes_rear')
     p = re.compile('''
         <TD\sCLASS="contentHeadline"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding-top:1px;\spadding-bottom:1px;\spadding-left:
         1px;\spadding-right:10px"\sALIGN="right"><B>(?P<%s>[\d\w]+)</B></TD>
@@ -235,6 +236,10 @@ def parse_horse_data(data):
         <A\sHREF="/shestinfo\?kommando=hestResultat&hestId=(?P<%s>\d+)"\sCLASS="linkBlue10"><B>(?P<%s>.*?)</B></A><BR>
         .*?
         <TD\sCLASS="content"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding:2px"\sALIGN="right">(?P<%s>\d+)/(?P<%s>\d+)</TD>
+        .*?
+        (?P<%s>Sko.gif|EjSko.gif)
+        .*?
+        (?P<%s>Sko.gif|EjSko.gif)
         ''' % named_targets, (re.VERBOSE | re.DOTALL | re.IGNORECASE | re.UNICODE))
     iterator = p.finditer(data)
     for target in iterator:
@@ -243,6 +248,8 @@ def parse_horse_data(data):
             all_targets['finish_place'] = 900
         elif not all_targets['finish_place'].isdigit():
             all_targets['finish_place'] = 999
+        all_targets['shoes_front'] = all_targets['shoes_front'] == 'Sko.gif'
+        all_targets['shoes_rear'] = all_targets['shoes_rear'] == 'Sko.gif'
         result.append(all_targets)
     return result
 
@@ -460,6 +467,8 @@ class Ekipage(Base):
     finish_place = Column(Integer)
     dist_start_place = Column(Integer)
     distance = Column(Integer)
+    shoes_front = Column(Boolean)
+    shoes_rear = Column(Boolean)
     winner_odds = Column(Numeric)
     place_odds = Column(Numeric)
     time = Column(Numeric)
@@ -474,6 +483,8 @@ class Ekipage(Base):
         self.finish_place = data['finish_place']
         self.dist_start_place = data['dist_start_place']
         self.distance = data['distance']
+        self.shoes_front = data['shoes_front']
+        self.shoes_rear = data['shoes_rear']
         self.winner_odds = data['winner_odds']
         self.place_odds = data['place_odds']
         self.time = data['time']
