@@ -1,4 +1,5 @@
 import re
+import datetime
 
 swedish_months = {
     'januari':1,
@@ -48,20 +49,6 @@ def parse_race_ids(data):
                 race_ids[int(id[1])] = id[0]
     return race_ids
 
-def get_race():
-    '''Beginning of some kind of race parser, e.g. track and date...'''
-    #    dateTrackPatternString = '.*?<B>(\w+) \w+ (\d+) (\w+) (\d+)</B>'
-    #    dateTrackPattern = re.compile(dateTrackPatternString,
-    #                       re.DOTALL | re.IGNORECASE)
-    #    dateTrackMatch = re.match(dateTrackPattern, data)
-    #    if dateTrackMatch:
-    #        month = swedish_months[dateTrackMatch.group(3).lower()]
-    #        d = datetime.date(int(dateTrackMatch.group(4)), int(month),
-    #                          int(dateTrackMatch.group(2)))
-    #        result['track'] = dateTrackMatch.group(1).lower()
-    #        result['date'] = datetime.datetime.strftime(d, "%Y%m%d")
-    pass
-
 def get_tracks(data):
     outerPattern = '.*?<SELECT.*?name="valdBana".*?>(.*?)</SELECT>'
     innerPattern = '.*?<OPTION  VALUE="(\d+)">(.*?)\((.*?)\)</OPTION>.*?'
@@ -73,6 +60,20 @@ def get_tracks(data):
     else:
         tracks = None
     return tracks
+
+def get_date(data):
+    '''Get date from a race file'''
+    date = 'NODATE'
+    months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 
+              'augusti','september', 'oktober', 'november', 'december']
+    p = re.compile('(\w+) \w+ (\d{1,2}) (\w+) (\d{4})', (re.DOTALL | re.IGNORECASE | re.UNICODE))
+    f = p.search(data)
+    if f:
+        year = int(f.group(4))
+        month = int(months.index(f.group(3).lower()) + 1)
+        day = int(f.group(2))
+        date = datetime.date(year, month, day).strftime("%Y%m%d")
+    return date
 
 def main():
     f = open('test_data/historicRaceDays_200806.html', 'r')

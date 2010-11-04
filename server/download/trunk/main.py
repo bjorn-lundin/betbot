@@ -3,17 +3,19 @@
 import http_
 import parser_
 import util_
+import re
 
-datadir = '/opt/nonobet/data'
-logfile = '/opt/nonobet/log.txt'
+datadir = '/home/user/nonobet_new_gz_test'
+logfile = '/home/user/nonobet_new_gz_test/log.txt'
 historic_prefix = 'historicRaceDays_'
-raceday_prefix = 'raceday_'
-race_prefix = '_race_'
-file_postfix = '.html'
+raceday_date_pattern = '\d+'
+raceday_prefix = '_rd_'
+race_prefix = '_r_'
+file_postfix = '.html.gz'
 get_historic_data = False
 
 logger = util_.Logger(logfile)
-logger.doPrint = False
+logger.doPrint = True
 
 def get_current_raceday_ids():
     '''Get collection of current month's races.'''
@@ -71,16 +73,19 @@ def get_race_ids(raceday_ids):
                     race_id = races[race]
                     logger.log('Checking raceday/race id: ' + \
                         raceday_id + '/' + race_id)
-                    file = raceday_prefix + raceday_id + race_prefix + \
+                    file_ending = raceday_prefix + raceday_id + race_prefix + \
                         race_id + file_postfix
-                    if file not in filelist:
-                        logger.log('Downloading race id: ' + \
-                            raceday_id + ' ' + race_id)
-                        data = http_.get_race(raceday_id, race_id, logger)
-                        logger.log('Writing race id: ' + file)
-                        util_.write_data(datadir, file, data)
-                    else:
-                        logger.log('Already saved race id ' + file)
+                    for file in filelist:
+                        if not re.match(raceday_date_pattern + file_ending, file):
+                            logger.log('Downloading race id: ' + \
+                                raceday_id + ' ' + race_id)
+                            data = http_.get_race(raceday_id, race_id, logger)
+                            date = parser_.get_date(data)
+                            file = date + file_ending
+                            logger.log('Writing race id: ' + file)
+                            util_.write_data(datadir, file, data)
+                        else:
+                            logger.log('Already saved race id ' + file)
             else:
                 logger.log('No races found in ' + filelist[0])
         else:
@@ -96,8 +101,10 @@ def get_race_ids(raceday_ids):
                     # Sorting the keys so that e.g. race 2 can be the first key
                     sortedRaces = sorted(races.keys())
                     firstRaceId = races[sortedRaces[0]]
-                    file = raceday_prefix + raceday_id + race_prefix + \
+                    file_ending = raceday_prefix + raceday_id + race_prefix + \
                         firstRaceId + file_postfix
+                    date = parser_.get_date(data)
+                    file = date + file_ending
                     logger.log('Writing race id: ' + file)
                     util_.write_data(datadir, file, data)
                     # Recursive call since now there is data
@@ -125,4 +132,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

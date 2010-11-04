@@ -1,25 +1,28 @@
 import os
 import datetime
 import codecs
+import gzip
 
 def write_data(datadir, file, data):
     filepath = os.path.join(datadir, file)
-    file = codecs.open(filepath, 'w', encoding='iso-8859-1')
+    data = data.encode('iso-8859-1')
+    file = gzip.open(filepath, 'wb')
     file.write(data)
     file.close
-
+    
 def read_data(datadir, file):
     filepath = os.path.join(datadir, file)
-    file = codecs.open(filepath, 'r', encoding='iso-8859-1')
+    print ('Reading data from ', filepath)
+    file = gzip.open(filepath, 'rb')
     data = file.read()
     file.close
-    return data
+    return data.decode('iso-8859-1')
 
 def get_files(datadir, file_name_pattern):
     files = []
     datafiles = os.listdir(datadir)
     for datafile in datafiles:
-        if datafile.startswith(file_name_pattern):
+        if file_name_pattern in datafile:
             files.append(datafile)
     return files
 

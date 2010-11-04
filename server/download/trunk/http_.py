@@ -60,11 +60,9 @@ def http_request(requestUrl, requestData, logger):
                 response = urllib2.urlopen(request)
             except urllib2.HTTPError, e:
                 logger.log('HTTPError: ' + str(e.reason))
-                #print (e.reason)
                 continue
             except urllib2.URLError, e:
                 logger.log('URLError: ' + str(e.reason))
-                #print (e.reason)
                 continue
             except socket.error, e:
                 logger.log('Socket Error: ' + str(e))
