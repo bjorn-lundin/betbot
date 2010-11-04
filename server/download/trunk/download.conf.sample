@@ -1,0 +1,3 @@
+[DEFAULT]
+datadir = /opt/nonobet/data/nonobet_data
+logfile = /opt/nonobet/bin/download_log.txt

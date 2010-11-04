@@ -1,12 +1,24 @@
 #!/usr/bin/env python
 
+import ConfigParser
+import os
+import sys
 import http_
 import parser_
 import util_
 import re
 
-datadir = '/home/user/nonobet_new_gz_test'
-logfile = '/home/user/nonobet_new_gz_test/log.txt'
+conf = ConfigParser.SafeConfigParser()
+config_file = 'download.conf'
+config_file_path = os.path.join(sys.path[0], config_file)
+if os.path.exists(config_file_path):
+    conf.read(config_file_path)
+else:
+    print('Please create ' + config_file_path + ' before continuing!')
+    exit(1)
+
+datadir = conf.get('DEFAULT', 'datadir')
+logfile = conf.get('DEFAULT', 'logfile')
 historic_prefix = 'historicRaceDays_'
 raceday_date_pattern = '\d+'
 raceday_prefix = '_rd_'
