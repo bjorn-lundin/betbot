@@ -83,25 +83,23 @@ def get_race_ids(raceday_ids):
             if races:
                 for race in races.keys():
                     race_id = races[race]
-                    logger.log('Checking raceday/race id: ' + \
-                        raceday_id + '/' + race_id)
                     file_ending = raceday_prefix + raceday_id + race_prefix + \
                         race_id + file_postfix
+                    logger.log('Checking: ' + file_ending)
                     download = True
                     for file in filelist:
                         if re.match(raceday_date_pattern + file_ending, file):
                             download = False
                             break
                     if download:
-                        logger.log('Downloading race id: ' + \
-                            raceday_id + ' ' + race_id)
+                        logger.log('Downloading: ' + file_ending)
                         data = http_.get_race(raceday_id, race_id, logger)
                         date = parser_.get_date(data)
                         file = date + file_ending
-                        logger.log('Writing race id: ' + file)
+                        logger.log('Writing: ' + file)
                         util_.write_data(datadir, file, data)
                     else:
-                        logger.log('Already saved race id ' + file)
+                        logger.log('Already saved: ' + file)
             else:
                 logger.log('No races found in ' + filelist[0])
         else:
