@@ -12,7 +12,6 @@ def write_data(datadir, file, data):
     
 def read_data(datadir, file):
     filepath = os.path.join(datadir, file)
-    print ('Reading data from ', filepath)
     file = gzip.open(filepath, 'rb')
     data = file.read()
     file.close
