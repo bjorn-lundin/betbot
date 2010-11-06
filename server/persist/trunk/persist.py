@@ -536,7 +536,6 @@ race_ekipage = Table('race_ekipage', Base.metadata,
                      )
 
 if __name__ == '__main__':
-    print('Running...')
     conf = ConfigParser.SafeConfigParser()
     read_conf(conf)
     client_file_path = conf.get('DEFAULT', 'client_file_path')
