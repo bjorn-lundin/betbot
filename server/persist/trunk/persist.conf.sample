@@ -1,3 +1,10 @@
 [DEFAULT]
-file_path = /home/user/nonobet_new_all
-db_url = postgresql://test-db:test-db@localhost:5432/test-db
+client_file_path = /home/user/nonobet_data
+client_db_url = postgresql://test-db:test-db@localhost:5432/test-db
+client_db_init = no
+
+server_sync_do = no
+server_sync_dir = .server_sync
+server_sync_user = user
+server_sync_pass = password
+server_sync_url = https://nonobet.com/files
