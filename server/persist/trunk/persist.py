@@ -9,6 +9,7 @@ import datetime
 import decimal
 import os
 import codecs
+import gzip
 
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, Table, Numeric, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -25,13 +26,85 @@ def read_conf(conf):
 
 Base = declarative_base()
 
-def create_db_session(db_url, init_db):
-    engine = create_engine(db_url, echo=False)
+def create_db_session(client_db_url, db_init):
+    engine = create_engine(client_db_url, echo=False)
     Session = sessionmaker(bind=engine)
-    if init_db:
+    if db_init:
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
     return Session()
+
+def clean_tmp_download(client_file_path, tmp_download_dir, move_files=False):
+    if move_files:
+        print('Post-processing downloaded files...')
+        for file in os.listdir(tmp_download_dir):
+            os.rename(os.path.join(tmp_download_dir, file),
+                      os.path.join(client_file_path, file))
+        os.rmdir(tmp_download_dir)
+    else:
+        if os.path.exists(tmp_download_dir):
+            for file in os.listdir(tmp_download_dir):
+                os.remove(os.path.join(tmp_download_dir, file))
+            os.rmdir(tmp_download_dir)
+        os.mkdir(tmp_download_dir)
+
+def download_server_files(client_file_path, server_sync_dir, server_sync_user, server_sync_pass, server_sync_url):
+    import urllib2
+    client_files = []
+    for file in get_source_files(client_file_path):
+        client_files.append(file['file_name'])
+    download_dir = os.path.join(client_file_path, server_sync_dir)
+    clean_tmp_download(client_file_path, download_dir)
+
+    # Authentication example from http://docs.python.org/library/urllib2.html
+    # Create an OpenerDirector with support for Basic HTTP Authentication...
+    auth_handler = urllib2.HTTPBasicAuthHandler()
+    auth_handler.add_password(realm='Please login for access to nonobet.com',
+                              uri=server_sync_url,
+                              user=server_sync_user,
+                              passwd=server_sync_pass)
+    opener = urllib2.build_opener(auth_handler)
+    # Install it globally so it can be used with urlopen
+    urllib2.install_opener(opener)
+    response = urllib2.urlopen(server_sync_url)
+    #pattern = re.compile('<a href="(\d{4}/)">')
+    pattern = re.compile('<a href="(2010)/">')
+    iterator = pattern.finditer(response.read())
+    for matchdir in iterator:
+        server_files = []
+        response = urllib2.urlopen(server_sync_url + '/' + matchdir.group(1))
+        pattern = re.compile('<a href="(\d+_rd_\d+_r_\d+.html.gz)">')
+        iterator = pattern.finditer(response.read())
+        for matchfile in iterator:
+            server_files.append(matchfile.group(1))
+        for file in server_files:
+            if file not in client_files:
+                url = server_sync_url + '/' + matchdir.group(1) + '/' + file
+                print('Downloading ' + url)
+                response = urllib2.urlopen(url)
+                filepath = os.path.join(download_dir, file)
+                file = open(filepath, 'wb')
+                file.write(response.read())
+                file.close
+    
+    # Save files in temp directory, check for download errors, if none, move files
+    dlerrors = False
+    if not dlerrors:
+        clean_tmp_download(client_file_path, download_dir, True)
+
+def get_source_files(data_path):
+    source_files = []
+    files_and_ids = []
+    source_files = os.listdir(data_path)
+    #pattern = 'raceday_(\d+)_race_(\d+).'
+    pattern = '\d+_rd_(\d+)_r_(\d+).'
+    for file in source_files:
+        match = re.match(pattern, file)
+        if match:
+            files_and_ids.append({'file_name':file, 
+                                  'raceday_id':match.group(1), 
+                                  'race_id':match.group(2)})
+    return files_and_ids
 
 def get_persisted_files(db_session):
     persisted_files = []
@@ -39,44 +112,27 @@ def get_persisted_files(db_session):
         persisted_files.append(file[0])
     return persisted_files
 
-def get_data(data_path, test, db_session, persisted_files):
-    file_source = []
-    test_files = [
-                  'raceday_492338_race_640915.html',
-                  'raceday_507132_race_700937.html',
-                  'raceday_507646_race_709300.html', # Problem with trasched åäöÅÄÖ
-                  'raceday_494210_race_653094.html', # Decimal problem in parse_ekipage_odds_time()/string_to_decimal()
-                  'raceday_507130_race_700240.html', # Month problem in parse_race_date_bet_types()/month = int(months.index(f.group(3).lower()) + 1)
-                  'raceday_492788_race_645816.html', # No result what so ever...
-                  'raceday_507630_race_698161.html', # No track name extracted
-                  ]
-    skip_files = [
-                  #'raceday_507646_race_709300.html',
-                  #'raceday_493395_race_651321.html',
-#                  'raceday_507130_race_700240.html', # Problem with trasched åäöÅÄÖ (unsolved)
-                  ]
-    if test:
-        file_source = get_files_and_ids(data_path, test_files)
-    else:
-        file_source = get_files_and_ids(data_path)
-
+def get_data(data_path, db_session, persisted_files):
+    file_source = get_source_files(data_path)
     for file in file_source:
         if file['file_name'] in persisted_files:
             print ('File ' + file['file_name'] + ' already in database')
             continue
-        
-        if file['file_name'] in skip_files:
-            print ('Skipping file ' + file['file_name'])
-            continue
-        
         print ('Processing ' + file['file_name'])
-        f = codecs.open(os.path.join(data_path, file['file_name']), 'r', encoding='iso-8859-1')
-        data = prep_data(f)
-        f.close()
+        data = ''
+        if file['file_name'].endswith('.gz'):
+            fh = gzip.open(os.path.join(data_path, file['file_name']), 'rb')
+            data = fh.read()
+            fh.close
+            data = data.decode('iso-8859-1')
+        else:
+            fh = codecs.open(os.path.join(data_path, file['file_name']), 'r', 
+                             encoding='iso-8859-1')
+            data = fh.read()
+        data = prep_data(data)
 
         table = re.compile('<table.*?</table>', (re.VERBOSE | re.DOTALL | re.IGNORECASE | re.UNICODE))
         tables = table.findall(data)
-        
         horse_data_search = 'Plac'
         race_data_search = 'Omsättning\svinnare:'
         pattern_table_index = {horse_data_search:None, race_data_search:None}
@@ -90,11 +146,9 @@ def get_data(data_path, test, db_session, persisted_files):
         result1 = parse_race_date_bet_types(data, file)
         if not result1:
             error = error + '1'
-            
         result2 = parse_ekipage_data(data)
         if not result2:
             error = error + '2'
-            
         result3 = parse_race_turnover_odds(data)
         if not result3:
             error = error + '3'
@@ -135,39 +189,12 @@ def get_data(data_path, test, db_session, persisted_files):
         db_session.merge(race)
         db_session.commit()
             
-        if test:
-            print ('parse_race_date_bet_types', result1)
-            print (len(result1))
-            print ('parse_ekipage_data', result2)
-            print (len(result2))
-            print ('parse_race_turnover_odds', result3)
-            print (len(result3))
-
-def get_files_and_ids(data_path, test_files=None):
-    data_files = []
-    files_and_ids = []
-    pattern = 'raceday_(\d+)_race_(\d+).'
-    if test_files:
-        data_files = test_files
-    else:
-        data_files = os.listdir(data_path)
-    for file in data_files:
-        match = re.match(pattern, file)
-        if match:
-            files_and_ids.append({'file_name':file, 
-                                  'raceday_id':match.group(1), 
-                                  'race_id':match.group(2)})
-    return files_and_ids
-
-def prep_data(f):
-    data = []
-    for line in f:
-        line = line.strip(' \t\r\n')
-        if not line:
-            continue
-        else: 
-            data.append(line)
-    return ('\n'.join(data))
+def prep_data(data):
+    lines = data.splitlines(True)
+    outlines = []
+    for line in lines:
+        outlines.append(line.strip(' \t\r\n'))
+    return ('\n'.join(outlines))
 
 def parse_race_date_bet_types(data, file_instance):
     result = {}
@@ -291,7 +318,7 @@ def parse_ekipage_odds_time(data, horse_id_start_end):
                     'winner_odds2', 'place_odds2', 'time2', 'time_comment2')
     target_to_decimal = [named_targets[0], named_targets[1], named_targets[2]]
     p = re.compile('''
-        <TD\sCLASS="content"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding:2px"\sALIGN="center">\s<B>(?P<%s>[\d,]+)</B>\s</TD>
+        <TD\sCLASS="content"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding:2px"\sALIGN="center">\s*<B>(?P<%s>[\d,]+)</B>\s*</TD>
         .*?
         <TD\sCLASS="content"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding:2px"\sALIGN="center"><B>(?P<%s>[\d,]*)&nbsp;</B></TD>
         .*?
@@ -303,6 +330,7 @@ def parse_ekipage_odds_time(data, horse_id_start_end):
         .*?
         <TD\sCLASS="content"\sBGCOLOR="\#EEEEEA"\sSTYLE="padding:2px"\sALIGN="left">(?P<%s>[\d,]*)(?P<%s>\w*)</TD>
         ''' % named_targets, (re.VERBOSE | re.DOTALL | re.IGNORECASE | re.UNICODE))
+
     for horse in horse_id_start_end:
         match = p.search(data, horse['parse_start'], horse['parse_end'])
         odds_time = {}
@@ -508,12 +536,25 @@ race_ekipage = Table('race_ekipage', Base.metadata,
                      )
 
 if __name__ == '__main__':
+    print('Running...')
     conf = ConfigParser.SafeConfigParser()
     read_conf(conf)
-    file_path = conf.get('DEFAULT', 'client_file_path')
-    db_url = conf.get('DEFAULT', 'client_db_url')
-    init_db = True
-    test = False
-    db_session = create_db_session(db_url, init_db)
+    client_file_path = conf.get('DEFAULT', 'client_file_path')
+    client_db_url = conf.get('DEFAULT', 'client_db_url')
+    client_db_init = conf.get('DEFAULT', 'client_db_init')
+    server_sync_do = conf.get('DEFAULT', 'server_sync_do')
+    server_sync_dir = conf.get('DEFAULT', 'server_sync_dir')
+    server_sync_user = conf.get('DEFAULT', 'server_sync_user')
+    server_sync_pass = conf.get('DEFAULT', 'server_sync_pass')
+    server_sync_url = conf.get('DEFAULT', 'server_sync_url')
+    
+    db_init = False
+    if re.match('y|Y', client_db_init[0]):
+        db_init = True
+    if re.match('y|Y', server_sync_do[0]):
+        download_server_files(client_file_path, server_sync_dir, server_sync_user, 
+                              server_sync_pass, server_sync_url)
+
+    db_session = create_db_session(client_db_url, db_init)
     persisted_files = get_persisted_files(db_session)
-    get_data(file_path, test, db_session, persisted_files)
+    get_data(client_file_path, db_session, persisted_files)
