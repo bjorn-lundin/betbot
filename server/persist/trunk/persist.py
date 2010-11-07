@@ -85,8 +85,7 @@ def download_server_files(client_file_path, server_sync_dir, server_sync_user, s
                 filepath = os.path.join(download_dir, file)
                 file = open(filepath, 'wb')
                 file.write(response.read())
-                file.close
-    
+                file.close()
     # Save files in temp directory, check for download errors, if none, move files
     dlerrors = False
     if not dlerrors:
