@@ -48,49 +48,29 @@ def clean_tmp_download(client_file_path, tmp_download_dir, move_files=False):
             os.rmdir(tmp_download_dir)
         os.mkdir(tmp_download_dir)
 
-def download_server_files(client_file_path, server_sync_dir, server_sync_user, 
-                          server_sync_pass, server_sync_url, server_sync_realm):
+def download_server_files(client_file_path, server_sync_dir, server_sync_url):
     import urllib2
     client_files = []
     for file in get_source_files(client_file_path):
         client_files.append(file['file_name'])
     download_dir = os.path.join(client_file_path, server_sync_dir)
     clean_tmp_download(client_file_path, download_dir)
-    # Authentication example from http://docs.python.org/library/urllib2.html
-    # Create an OpenerDirector with support for Basic HTTP Authentication...
-    auth_handler = urllib2.HTTPBasicAuthHandler()
-    auth_handler.add_password(realm=server_sync_realm,
-                              uri=server_sync_url,
-                              user=server_sync_user,
-                              passwd=server_sync_pass)
-    opener = urllib2.build_opener(auth_handler)
-    response = opener.open(server_sync_url)
+    response = urllib2.urlopen(server_sync_url)
     pattern_d = re.compile('<a href="(2010)/">')
     pattern_f = re.compile('<a href="(\d+_rd_\d+_r_\d+.html.gz)">')
     iterator = pattern_d.finditer(response.read())
     for matchdir in iterator:
-        auth_handler.add_password(realm=server_sync_realm,
-                                  uri=matchdir.group(1),
-                                  user=server_sync_user,
-                                  passwd=server_sync_pass)
         server_files = []
-        response = opener.open(server_sync_url + '/' + matchdir.group(1))
+        response = urllib2.urlopen(server_sync_url + '/' + matchdir.group(1))
         pattern = re.compile('<a href="(\d+_rd_\d+_r_\d+.html.gz)">')
         iterator = pattern_f.finditer(response.read())
         for matchfile in iterator:
             server_files.append(matchfile.group(1))
-        file_auth_uris = []
-        for file in server_files:
-            file_auth_uris.append(server_sync_url + '/' + matchdir.group(1) + '/' + file)
-        auth_handler.add_password(realm=server_sync_realm,
-                                  uri=file_auth_uris,
-                                  user=server_sync_user,
-                                  passwd=server_sync_pass)
         for file in server_files:
             if file not in client_files:
                 url = server_sync_url + '/' + matchdir.group(1) + '/' + file
-                print('Downloading ' + url)
-                response = opener.open(url)
+                print('Downloading ' + file)
+                response = urllib2.urlopen(url)
                 filepath = os.path.join(download_dir, file)
                 file = open(filepath, 'wb')
                 file.write(response.read())
@@ -551,18 +531,13 @@ if __name__ == '__main__':
     client_db_init = conf.get('DEFAULT', 'client_db_init')
     server_sync_do = conf.get('DEFAULT', 'server_sync_do')
     server_sync_dir = conf.get('DEFAULT', 'server_sync_dir')
-    server_sync_user = conf.get('DEFAULT', 'server_sync_user')
-    server_sync_pass = conf.get('DEFAULT', 'server_sync_pass')
     server_sync_url = conf.get('DEFAULT', 'server_sync_url')
-    server_sync_realm = conf.get('DEFAULT', 'server_sync_realm')
-    
     db_init = False
     if re.match('y|Y', client_db_init[0]):
         db_init = True
     if re.match('y|Y', server_sync_do[0]):
-        download_server_files(client_file_path, server_sync_dir, server_sync_user, 
-                              server_sync_pass, server_sync_url, server_sync_realm)
-
+        download_server_files(client_file_path, server_sync_dir, 
+                              server_sync_url)
     db_session = create_db_session(client_db_url, db_init)
     persisted_files = get_persisted_files(db_session)
     get_data(client_file_path, db_session, persisted_files)

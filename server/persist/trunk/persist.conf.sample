@@ -5,7 +5,4 @@ client_db_init = no
 
 server_sync_do = no
 server_sync_dir = .server_sync
-server_sync_user = user
-server_sync_pass = password
-server_sync_url = https://nonobet.com/files
-server_sync_realm = Please login for access to nonobet.com
+server_sync_url = http://nonobet.com/files
