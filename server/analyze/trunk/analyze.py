@@ -5,10 +5,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import ConfigParser
 import os
 import sys
+import datetime
+import decimal
 
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, Table, Numeric, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relation
+from sqlalchemy.orm import sessionmaker, relation, eagerload
 
 def read_conf(conf):
     config_file = 'analyze.conf'
@@ -145,33 +147,97 @@ def get_persisted_files(db_session):
     for file in db_session.query(Race.file):
         persisted_files.append(file[0])
     return persisted_files
-    
+
+def date_range(db_session, start_date=None, end_date=None, debug=False):
+    if not start_date:
+        start_date = datetime.date(1990,01,01)
+        if debug:
+            print('start_date', start_date)
+    if not end_date:
+        end_date = datetime.date.today()
+        if debug:
+            print('end_date', end_date)
+    query = db_session.query(Race).\
+            order_by(Race.date, Race.number).\
+            options(eagerload('bettypes')).\
+            options(eagerload('ekipage')).\
+            filter(Race.date >= start_date).filter(Race.date <= end_date)
+    races = query.all()
+    if debug:
+        print([[race.date, race.number] for race in races])
+    return races
+
+def start_finish_stats(races, auto_start = True, track=None):
+    indices = []
+    index = -1
+    for race in races:
+        index += 1
+        if auto_start:
+            if race.auto_start:
+                indices.append(index)
+        else:
+            if not race.auto_start:
+                indices.append(index)
+    start_finish = {}
+    win_percentage = {}
+    place_percentage = {}
+    for race in indices:
+        for ekipage in races[race].ekipage:
+            if ekipage.finish_place < 900:
+                if ekipage.start_place not in start_finish:
+                    start_finish[ekipage.start_place] = {}
+                elif ekipage.finish_place not in start_finish[ekipage.start_place]:
+                    start_finish[ekipage.start_place][ekipage.finish_place] = 1
+                else:
+                    start_finish[ekipage.start_place][ekipage.finish_place] += 1
+    for start in start_finish:
+        decimal.getcontext().prec = 3
+        if start_finish[start].has_key(1) and start_finish[start].has_key(2) \
+                and start_finish[start].has_key(3):
+            win_perc = decimal.Decimal(start_finish[start][1])/decimal.Decimal(len(indices))
+            print('Start position', start, 'gives the following winning %:')
+            print((win_perc * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+            win_percentage[start] = win_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
+            place_accu = start_finish[start][1] + start_finish[start][2] + start_finish[start][3]
+            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(indices))
+            print('Start position', start, 'gives the following place %:')
+            print((place_perc * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+            place_percentage[start] = place_perc.quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN)
+    for x in sorted(win_percentage, key=win_percentage.get, reverse=True):
+        print(x, '   ', win_percentage[x])
+
+def bettype_range(races, search_bettype):
+    indices = []
+    index = -1
+    for race in races:
+        index += 1
+        for bettype in race.bettypes:
+            if search_bettype in bettype.id:
+                indices.append(index)
+                break
+    return indices
+
 if __name__ == '__main__':
     conf = ConfigParser.SafeConfigParser()
     read_conf(conf)
     client_db_url = conf.get('DEFAULT', 'client_db_url')
     db_session = create_db_session(client_db_url)
-    persisted_files = get_persisted_files(db_session)
-    print('Number of files:', len(persisted_files))
     
-    auto_dict = {}
-    for start_place, finish_place, time_comment in \
-        db_session.query(Ekipage.start_place, Ekipage.finish_place,
-        Ekipage.time_comment):
-        errors = 0
-        auto = False
-        try:
-            if time_comment and u'a' in time_comment:
-                auto = True
-        except:
-            errors += 1
-            continue
-        if auto:
-            if auto_dict.has_key(start_place):
-                auto_dict[start_place] = auto_dict[start_place] + finish_place
-            else:
-                auto_dict[start_place] = finish_place
-    print('Autostart')
-    for key in auto_dict.keys():
-        print('Start:', key, 'Sum of finish:', auto_dict[key])
-    print('Errors:', errors)
+    print('Number of races:', db_session.query(Race).count())
+    races = []
+    start_date = datetime.date(2009, 01, 01)
+    end_date = datetime.date(2009, 01, 31)
+    races = date_range(db_session, start_date, end_date, debug=True)
+    print('Number of races in date range:', len(races))
+    start_finish_stats(races, auto_start = True)
+    exit()
+    
+    bettype = 'trio'
+    hit_indices = bettype_range(races, bettype)
+    print('races2:', len(hit_indices))
+    
+    for i in hit_indices:
+        for e in races[i].ekipage:
+            print(e.horse.name, e.start_place, e.finish_place)
+    exit()
+    
