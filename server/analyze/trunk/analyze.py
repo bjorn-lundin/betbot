@@ -178,6 +178,7 @@ def start_finish_stats(races, auto_start = True, track=None):
         else:
             if not race.auto_start:
                 indices.append(index)
+    print('Number of races with auto start=' + str(auto_start), ':', len(indices))
     start_finish = {}
     win_percentage = {}
     place_percentage = {}
@@ -191,20 +192,22 @@ def start_finish_stats(races, auto_start = True, track=None):
                 else:
                     start_finish[ekipage.start_place][ekipage.finish_place] += 1
     for start in start_finish:
-        decimal.getcontext().prec = 3
         if start_finish[start].has_key(1) and start_finish[start].has_key(2) \
                 and start_finish[start].has_key(3):
             win_perc = decimal.Decimal(start_finish[start][1])/decimal.Decimal(len(indices))
-            print('Start position', start, 'gives the following winning %:')
-            print((win_perc * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
-            win_percentage[start] = win_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
+            #win_percentage[start] = win_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
+            win_percentage[start] = win_perc
             place_accu = start_finish[start][1] + start_finish[start][2] + start_finish[start][3]
             place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(indices))
-            print('Start position', start, 'gives the following place %:')
-            print((place_perc * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
-            place_percentage[start] = place_perc.quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN)
+            #place_percentage[start] = place_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
+            place_percentage[start] = place_perc
+    #decimal.getcontext().prec = 3
+    print('Winning %:')
     for x in sorted(win_percentage, key=win_percentage.get, reverse=True):
-        print(x, '   ', win_percentage[x])
+        print(x, '\t\t', (win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    print('Place %:')
+    for x in sorted(place_percentage, key=place_percentage.get, reverse=True):
+        print(x, '\t\t', (place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
 
 def bettype_range(races, search_bettype):
     indices = []
@@ -227,7 +230,7 @@ if __name__ == '__main__':
     races = []
     start_date = datetime.date(2009, 01, 01)
     end_date = datetime.date(2009, 01, 31)
-    races = date_range(db_session, start_date, end_date, debug=True)
+    races = date_range(db_session, start_date, end_date, debug=False)
     print('Number of races in date range:', len(races))
     start_finish_stats(races, auto_start = True)
     exit()
