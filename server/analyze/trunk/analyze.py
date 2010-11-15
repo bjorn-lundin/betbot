@@ -133,13 +133,13 @@ class Ekipage(Base):
 
 # Association tables
 race_bettype = Table('race_bettype', Base.metadata,
-                      Column('race_id', Integer, ForeignKey('race.id')),
-                      Column('bettype_id', String, ForeignKey('bettype.id'))
+                      Column('race_id', Integer, ForeignKey('race.id'), primary_key=True),
+                      Column('bettype_id', String, ForeignKey('bettype.id'), primary_key=True)
                       )
 
 race_ekipage = Table('race_ekipage', Base.metadata,
-                     Column('race_id', Integer, ForeignKey('race.id')),
-                     Column('ekipage_id', Integer, ForeignKey('ekipage.id')),
+                     Column('race_id', Integer, ForeignKey('race.id'), primary_key=True),
+                     Column('ekipage_id', Integer, ForeignKey('ekipage.id'), primary_key=True),
                      )
 
 def get_persisted_files(db_session):
