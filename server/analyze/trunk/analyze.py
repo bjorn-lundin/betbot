@@ -159,56 +159,94 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
             print('end_date', end_date)
     query = db_session.query(Race).\
             order_by(Race.date, Race.number).\
-            options(eagerload('bettypes')).\
             options(eagerload('ekipage')).\
+            options(eagerload('bettypes')).\
             filter(Race.date >= start_date).filter(Race.date <= end_date)
     races = query.all()
     if debug:
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, auto_start = True, track=None):
-    indices = []
+def start_finish_stats(races, track=None):
+    auto_indices = []
+    volt_indices = []
     index = -1
     for race in races:
         index += 1
-        if auto_start:
-            if race.auto_start:
-                indices.append(index)
+        if race.auto_start:
+            auto_indices.append(index)
         else:
-            if not race.auto_start:
-                indices.append(index)
-    print('Number of races with auto start=' + str(auto_start), ':', len(indices))
-    start_finish = {}
-    win_percentage = {}
-    place_percentage = {}
-    for race in indices:
+            volt_indices.append(index)
+    auto_start_finish = {}
+    auto_win_percentage = {}
+    auto_place_percentage = {}
+    volt_start_finish = {}
+    volt_win_percentage = {}
+    volt_place_percentage = {}
+    # Auto start races
+    for race in auto_indices:
         for ekipage in races[race].ekipage:
             if ekipage.finish_place < 900:
-                if ekipage.start_place not in start_finish:
-                    start_finish[ekipage.start_place] = {}
-                elif ekipage.finish_place not in start_finish[ekipage.start_place]:
-                    start_finish[ekipage.start_place][ekipage.finish_place] = 1
+                if ekipage.start_place not in auto_start_finish:
+                    auto_start_finish[ekipage.start_place] = {}
+                elif ekipage.finish_place not in auto_start_finish[ekipage.start_place]:
+                    auto_start_finish[ekipage.start_place][ekipage.finish_place] = 1
                 else:
-                    start_finish[ekipage.start_place][ekipage.finish_place] += 1
-    for start in start_finish:
-        if start_finish[start].has_key(1) and start_finish[start].has_key(2) \
-                and start_finish[start].has_key(3):
-            win_perc = decimal.Decimal(start_finish[start][1])/decimal.Decimal(len(indices))
-            #win_percentage[start] = win_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
-            win_percentage[start] = win_perc
-            place_accu = start_finish[start][1] + start_finish[start][2] + start_finish[start][3]
-            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(indices))
-            #place_percentage[start] = place_perc.quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
-            place_percentage[start] = place_perc
-    #decimal.getcontext().prec = 3
-    print('Winning %:')
-    for x in sorted(win_percentage, key=win_percentage.get, reverse=True):
-        print(x, '\t\t', (win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
-    print('Place %:')
-    for x in sorted(place_percentage, key=place_percentage.get, reverse=True):
-        print(x, '\t\t', (place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+                    auto_start_finish[ekipage.start_place][ekipage.finish_place] += 1
+    for start in auto_start_finish:
+        if auto_start_finish[start].has_key(1) and auto_start_finish[start].has_key(2) \
+                and auto_start_finish[start].has_key(3):
+            win_perc = decimal.Decimal(auto_start_finish[start][1])/decimal.Decimal(len(auto_indices))
+            auto_win_percentage[start] = win_perc
+            place_accu = auto_start_finish[start][1] + auto_start_finish[start][2] + auto_start_finish[start][3]
+            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(auto_indices))
+            auto_place_percentage[start] = place_perc
+    # Volt start races
+    for race in volt_indices:
+        for ekipage in races[race].ekipage:
+            if ekipage.finish_place < 900:
+                if ekipage.start_place not in volt_start_finish:
+                    volt_start_finish[ekipage.start_place] = {}
+                elif ekipage.finish_place not in volt_start_finish[ekipage.start_place]:
+                    volt_start_finish[ekipage.start_place][ekipage.finish_place] = 1
+                else:
+                    volt_start_finish[ekipage.start_place][ekipage.finish_place] += 1
+    for start in volt_start_finish:
+        if volt_start_finish[start].has_key(1) and volt_start_finish[start].has_key(2) \
+                and volt_start_finish[start].has_key(3):
+            win_perc = decimal.Decimal(volt_start_finish[start][1])/decimal.Decimal(len(volt_indices))
+            volt_win_percentage[start] = win_perc
+            place_accu = volt_start_finish[start][1] + volt_start_finish[start][2] + volt_start_finish[start][3]
+            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(volt_indices))
+            volt_place_percentage[start] = place_perc
+    print('Number of races:', len(races))
+    print('Number of races with auto start:', len(auto_indices))
+    print('Number of races with volt start:', len(volt_indices))
+    print('Auto winning %:')
+    for x in sorted(auto_win_percentage, key=auto_win_percentage.get, reverse=True):
+        print(x, '\t\t', (auto_win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    print('Auto place %:')
+    for x in sorted(auto_place_percentage, key=auto_place_percentage.get, reverse=True):
+        print(x, '\t\t', (auto_place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    print('Volt winning %:')
+    for x in sorted(volt_win_percentage, key=volt_win_percentage.get, reverse=True):
+        print(x, '\t\t', (volt_win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    print('Volt place %:')
+    for x in sorted(volt_place_percentage, key=volt_place_percentage.get, reverse=True):
+        print(x, '\t\t', (volt_place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
 
+def ekipage_form(races):
+    form = {}
+    for race in races:
+        for ekipage in race.ekipage:
+            if ekipage.horse_id not in form:
+                form[ekipage.horse_id] = {}
+            form[ekipage.horse_id][race.date] = ['start' + str(ekipage.start_place), 'finish' + str(ekipage.finish_place)]
+    for horse in form:
+        print(horse)
+        for r in form[horse].iteritems():
+            print('  ->  ', r)
+        
 def bettype_range(races, search_bettype):
     indices = []
     index = -1
@@ -226,13 +264,14 @@ if __name__ == '__main__':
     client_db_url = conf.get('DEFAULT', 'client_db_url')
     db_session = create_db_session(client_db_url)
     
-    print('Number of races:', db_session.query(Race).count())
     races = []
     start_date = datetime.date(2009, 01, 01)
     end_date = datetime.date(2009, 01, 31)
     races = date_range(db_session, start_date, end_date, debug=False)
-    print('Number of races in date range:', len(races))
-    start_finish_stats(races, auto_start = True)
+    #start_finish_stats(races)
+    ekipage_form(races)
+    
+    
     exit()
     
     bettype = 'trio'
