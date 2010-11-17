@@ -53,6 +53,9 @@ Public Class TestForm
     Friend WithEvents radioAuto As System.Windows.Forms.RadioButton
     Friend WithEvents radioIgnore As System.Windows.Forms.RadioButton
     Friend WithEvents radioVolt As System.Windows.Forms.RadioButton
+    Friend WithEvents textStartPos As System.Windows.Forms.TextBox
+    Friend WithEvents radioStartPlace As System.Windows.Forms.RadioButton
+    Friend WithEvents radioLowWinOdds As System.Windows.Forms.RadioButton
     Private _EndTime As Date
 
     Private Sub InitializeComponent()
@@ -91,9 +94,12 @@ Public Class TestForm
         Me.groupTrack = New System.Windows.Forms.GroupBox()
         Me.comboTracks = New System.Windows.Forms.ComboBox()
         Me.groupBottom2 = New System.Windows.Forms.GroupBox()
-        Me.radioIgnore = New System.Windows.Forms.RadioButton()
-        Me.radioAuto = New System.Windows.Forms.RadioButton()
         Me.radioVolt = New System.Windows.Forms.RadioButton()
+        Me.radioAuto = New System.Windows.Forms.RadioButton()
+        Me.radioIgnore = New System.Windows.Forms.RadioButton()
+        Me.radioLowWinOdds = New System.Windows.Forms.RadioButton()
+        Me.radioStartPlace = New System.Windows.Forms.RadioButton()
+        Me.textStartPos = New System.Windows.Forms.TextBox()
         Me.groupTop.SuspendLayout()
         Me.groupBottom.SuspendLayout()
         Me.groupCenter.SuspendLayout()
@@ -356,6 +362,9 @@ Public Class TestForm
         '
         'groupCenter
         '
+        Me.groupCenter.Controls.Add(Me.textStartPos)
+        Me.groupCenter.Controls.Add(Me.radioStartPlace)
+        Me.groupCenter.Controls.Add(Me.radioLowWinOdds)
         Me.groupCenter.Controls.Add(Me.textStartPlaces)
         Me.groupCenter.Controls.Add(Me.checkStartPlaces)
         Me.groupCenter.Dock = System.Windows.Forms.DockStyle.Top
@@ -368,7 +377,7 @@ Public Class TestForm
         '
         'textStartPlaces
         '
-        Me.textStartPlaces.Location = New System.Drawing.Point(189, 35)
+        Me.textStartPlaces.Location = New System.Drawing.Point(451, 21)
         Me.textStartPlaces.Name = "textStartPlaces"
         Me.textStartPlaces.Size = New System.Drawing.Size(218, 22)
         Me.textStartPlaces.TabIndex = 6
@@ -376,7 +385,7 @@ Public Class TestForm
         'checkStartPlaces
         '
         Me.checkStartPlaces.AutoSize = True
-        Me.checkStartPlaces.Location = New System.Drawing.Point(37, 37)
+        Me.checkStartPlaces.Location = New System.Drawing.Point(281, 22)
         Me.checkStartPlaces.Name = "checkStartPlaces"
         Me.checkStartPlaces.Size = New System.Drawing.Size(146, 21)
         Me.checkStartPlaces.TabIndex = 3
@@ -439,16 +448,16 @@ Public Class TestForm
         Me.groupBottom2.TabStop = False
         Me.groupBottom2.Text = "Select start type"
         '
-        'radioIgnore
+        'radioVolt
         '
-        Me.radioIgnore.AutoSize = True
-        Me.radioIgnore.Location = New System.Drawing.Point(133, 16)
-        Me.radioIgnore.Name = "radioIgnore"
-        Me.radioIgnore.Size = New System.Drawing.Size(69, 21)
-        Me.radioIgnore.TabIndex = 0
-        Me.radioIgnore.TabStop = True
-        Me.radioIgnore.Text = "Ignore"
-        Me.radioIgnore.UseVisualStyleBackColor = True
+        Me.radioVolt.AutoSize = True
+        Me.radioVolt.Location = New System.Drawing.Point(133, 73)
+        Me.radioVolt.Name = "radioVolt"
+        Me.radioVolt.Size = New System.Drawing.Size(53, 21)
+        Me.radioVolt.TabIndex = 2
+        Me.radioVolt.TabStop = True
+        Me.radioVolt.Text = "Volt"
+        Me.radioVolt.UseVisualStyleBackColor = True
         '
         'radioAuto
         '
@@ -461,16 +470,45 @@ Public Class TestForm
         Me.radioAuto.Text = "Auto"
         Me.radioAuto.UseVisualStyleBackColor = True
         '
-        'radioVolt
+        'radioIgnore
         '
-        Me.radioVolt.AutoSize = True
-        Me.radioVolt.Location = New System.Drawing.Point(133, 73)
-        Me.radioVolt.Name = "radioVolt"
-        Me.radioVolt.Size = New System.Drawing.Size(53, 21)
-        Me.radioVolt.TabIndex = 2
-        Me.radioVolt.TabStop = True
-        Me.radioVolt.Text = "Volt"
-        Me.radioVolt.UseVisualStyleBackColor = True
+        Me.radioIgnore.AutoSize = True
+        Me.radioIgnore.Location = New System.Drawing.Point(133, 16)
+        Me.radioIgnore.Name = "radioIgnore"
+        Me.radioIgnore.Size = New System.Drawing.Size(69, 21)
+        Me.radioIgnore.TabIndex = 0
+        Me.radioIgnore.TabStop = True
+        Me.radioIgnore.Text = "Ignore"
+        Me.radioIgnore.UseVisualStyleBackColor = True
+        '
+        'radioLowWinOdds
+        '
+        Me.radioLowWinOdds.AutoSize = True
+        Me.radioLowWinOdds.Location = New System.Drawing.Point(67, 21)
+        Me.radioLowWinOdds.Name = "radioLowWinOdds"
+        Me.radioLowWinOdds.Size = New System.Drawing.Size(160, 21)
+        Me.radioLowWinOdds.TabIndex = 7
+        Me.radioLowWinOdds.TabStop = True
+        Me.radioLowWinOdds.Text = "Lowest winnser odds"
+        Me.radioLowWinOdds.UseVisualStyleBackColor = True
+        '
+        'radioStartPlace
+        '
+        Me.radioStartPlace.AutoSize = True
+        Me.radioStartPlace.Location = New System.Drawing.Point(67, 52)
+        Me.radioStartPlace.Name = "radioStartPlace"
+        Me.radioStartPlace.Size = New System.Drawing.Size(137, 21)
+        Me.radioStartPlace.TabIndex = 8
+        Me.radioStartPlace.TabStop = True
+        Me.radioStartPlace.Text = "Specific start pos"
+        Me.radioStartPlace.UseVisualStyleBackColor = True
+        '
+        'textStartPos
+        '
+        Me.textStartPos.Location = New System.Drawing.Point(281, 52)
+        Me.textStartPos.Name = "textStartPos"
+        Me.textStartPos.Size = New System.Drawing.Size(137, 22)
+        Me.textStartPos.TabIndex = 9
         '
         'TestForm
         '
@@ -519,8 +557,15 @@ Public Class TestForm
         Dim winOdds As Decimal = 0
         Dim finishPlace As Integer = 0
 
-        GetRaceLine(raceId, winOdds, finishPlace)
-
+        If radioLowWinOdds.Checked Then
+            GetRaceLineByWinnerOdds(raceId, winOdds, finishPlace)
+        ElseIf radioStartPlace.Checked Then
+            Dim sPos As Integer = CType(textStartPos.Text, Integer)
+            GetRaceLineByStartPos(raceId, sPos, winOdds, finishPlace)
+        Else
+            Return
+        End If
+ 
         _NmbrRaces += 1
         _ToBetAmount += amount
 
@@ -540,7 +585,7 @@ Public Class TestForm
 
     End Sub
 
-    Private Sub GetRaceLine(ByVal raceId As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
+    Private Sub GetRaceLineByWinnerOdds(ByVal raceId As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
         Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id AND " + _
                             "race_ekipage.race_id = " & raceId & ")"
 
@@ -553,6 +598,20 @@ Public Class TestForm
         End If
 
         sql += " ORDER BY winner_odds"
+
+        Dim raceLineReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
+
+        If raceLineReader.Read Then
+            winOdds = CType(raceLineReader.Item("winner_odds"), Decimal)
+            finishPlace = CType(raceLineReader.Item("finish_place"), Integer)
+        End If
+
+        raceLineReader.Close()
+    End Sub
+
+    Private Sub GetRaceLineByStartPos(ByVal raceId As Integer, ByVal startPos As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
+        Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id AND " + _
+                            "race_ekipage.race_id = " & raceId & ") WHERE (ekipage.start_place = " & startPos & ") "
 
         Dim raceLineReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
 
@@ -632,7 +691,13 @@ Public Class TestForm
                 sql += " AND "
             End If
 
-            sql += "(auto_start = " & autoStartValue & ")"
+            sql += "("
+
+            If radioVolt.Checked Then
+                sql += "NOT "
+            End If
+
+            sql += "auto_start)"
         End If
 
         If checkDataTable.Checked Then
@@ -723,6 +788,7 @@ Public Class TestForm
         radioIgnore.Checked = True
         textStatus.Text = "Not Started"
         checkDataTable.Checked = False
+        radioLowWinOdds.Checked = True
         _IsLoaded = True
     End Sub
 

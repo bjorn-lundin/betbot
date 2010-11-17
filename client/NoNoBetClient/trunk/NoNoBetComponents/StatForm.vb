@@ -17,6 +17,7 @@ Public Class StatForm
     Friend WithEvents buttonStartPosStats As System.Windows.Forms.Button
     Friend WithEvents labelTrack As System.Windows.Forms.Label
     Friend WithEvents comboTracks As System.Windows.Forms.ComboBox
+    Friend WithEvents CheckAuto As System.Windows.Forms.CheckBox
     Friend WithEvents groupTop As System.Windows.Forms.GroupBox
 
     Private Sub InitializeComponent()
@@ -30,10 +31,11 @@ Public Class StatForm
         Me.buttonTotWinEquipages = New System.Windows.Forms.Button()
         Me.textToWinEquipages = New System.Windows.Forms.TextBox()
         Me.groupStartPosStat = New System.Windows.Forms.GroupBox()
-        Me.gridStartPosStats = New BaseComponents.BaseGrid()
-        Me.comboTracks = New System.Windows.Forms.ComboBox()
-        Me.labelTrack = New System.Windows.Forms.Label()
         Me.buttonStartPosStats = New System.Windows.Forms.Button()
+        Me.labelTrack = New System.Windows.Forms.Label()
+        Me.comboTracks = New System.Windows.Forms.ComboBox()
+        Me.gridStartPosStats = New BaseComponents.BaseGrid()
+        Me.CheckAuto = New System.Windows.Forms.CheckBox()
         Me.groupTop.SuspendLayout()
         Me.groupTotEcuipages.SuspendLayout()
         Me.groupTotWinEquipages.SuspendLayout()
@@ -127,6 +129,7 @@ Public Class StatForm
         '
         'groupStartPosStat
         '
+        Me.groupStartPosStat.Controls.Add(Me.CheckAuto)
         Me.groupStartPosStat.Controls.Add(Me.buttonStartPosStats)
         Me.groupStartPosStat.Controls.Add(Me.labelTrack)
         Me.groupStartPosStat.Controls.Add(Me.comboTracks)
@@ -138,23 +141,14 @@ Public Class StatForm
         Me.groupStartPosStat.TabStop = False
         Me.groupStartPosStat.Text = "Start position statistics"
         '
-        'gridStartPosStats
+        'buttonStartPosStats
         '
-        Me.gridStartPosStats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.gridStartPosStats.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 355)
-        Me.gridStartPosStats.Name = "gridStartPosStats"
-        Me.gridStartPosStats.RowTemplate.Height = 24
-        Me.gridStartPosStats.Size = New System.Drawing.Size(577, 219)
-        Me.gridStartPosStats.TabIndex = 0
-        '
-        'comboTracks
-        '
-        Me.comboTracks.FormattingEnabled = True
-        Me.comboTracks.Location = New System.Drawing.Point(12, 52)
-        Me.comboTracks.Name = "comboTracks"
-        Me.comboTracks.Size = New System.Drawing.Size(162, 24)
-        Me.comboTracks.TabIndex = 1
+        Me.buttonStartPosStats.Location = New System.Drawing.Point(433, 52)
+        Me.buttonStartPosStats.Name = "buttonStartPosStats"
+        Me.buttonStartPosStats.Size = New System.Drawing.Size(75, 23)
+        Me.buttonStartPosStats.TabIndex = 6
+        Me.buttonStartPosStats.Text = "Show"
+        Me.buttonStartPosStats.UseVisualStyleBackColor = True
         '
         'labelTrack
         '
@@ -165,14 +159,33 @@ Public Class StatForm
         Me.labelTrack.TabIndex = 2
         Me.labelTrack.Text = "Track"
         '
-        'buttonStartPosStats
+        'comboTracks
         '
-        Me.buttonStartPosStats.Location = New System.Drawing.Point(433, 52)
-        Me.buttonStartPosStats.Name = "buttonStartPosStats"
-        Me.buttonStartPosStats.Size = New System.Drawing.Size(75, 23)
-        Me.buttonStartPosStats.TabIndex = 6
-        Me.buttonStartPosStats.Text = "Show"
-        Me.buttonStartPosStats.UseVisualStyleBackColor = True
+        Me.comboTracks.FormattingEnabled = True
+        Me.comboTracks.Location = New System.Drawing.Point(12, 52)
+        Me.comboTracks.Name = "comboTracks"
+        Me.comboTracks.Size = New System.Drawing.Size(162, 24)
+        Me.comboTracks.TabIndex = 1
+        '
+        'gridStartPosStats
+        '
+        Me.gridStartPosStats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.gridStartPosStats.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 355)
+        Me.gridStartPosStats.Name = "gridStartPosStats"
+        Me.gridStartPosStats.RowTemplate.Height = 24
+        Me.gridStartPosStats.Size = New System.Drawing.Size(577, 219)
+        Me.gridStartPosStats.TabIndex = 0
+        '
+        'CheckAuto
+        '
+        Me.CheckAuto.AutoSize = True
+        Me.CheckAuto.Location = New System.Drawing.Point(216, 52)
+        Me.CheckAuto.Name = "CheckAuto"
+        Me.CheckAuto.Size = New System.Drawing.Size(91, 21)
+        Me.CheckAuto.TabIndex = 7
+        Me.CheckAuto.Text = "Auto start"
+        Me.CheckAuto.UseVisualStyleBackColor = True
         '
         'StatForm
         '
@@ -243,14 +256,24 @@ Public Class StatForm
                   "(SELECT race.track,count(*) as cnt FROM ekipage " + _
                    "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
                    "JOIN race ON (race.id = race_ekipage.race_id) " + _
-                   "WHERE (ekipage.finish_place = 1) " + _
-                   "GROUP BY race.track) TrackRec " + _
+                   "WHERE (ekipage.finish_place = 1 AND "
+
+        If (Not CheckAuto.Checked) Then
+            sql += "NOT "
+        End If
+
+        sql += "race.auto_start) GROUP BY race.track) TrackRec " + _
                 "JOIN " + _
                   "(SELECT ekipage.start_place,race.track,count(*) as cnt FROM ekipage " + _
                    "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
                    "JOIN race ON (race.id = race_ekipage.race_id) " + _
-                   "WHERE (ekipage.finish_place = 1) " + _
-                   "GROUP BY race.track,ekipage.start_place) TrackLineRec " + _
+                   "WHERE (ekipage.finish_place = 1 AND  "
+
+        If (Not CheckAuto.Checked) Then
+            sql += "NOT "
+        End If
+
+        sql += "race.auto_start) GROUP BY race.track,ekipage.start_place) TrackLineRec " + _
                 "ON (TrackLineRec.track = TrackRec.track) " + _
               ")TrackView "
 
@@ -260,6 +283,7 @@ Public Class StatForm
             'sql += "AND (race.track = '" + track + "') "
             sql += "WHERE (""Track"" = '" + track + "') "
         End If
+
 
         'sql += "GROUP BY race.track,ekipage.start_place " + _
         '       "ORDER BY race.track,cnt DESC"
