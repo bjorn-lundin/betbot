@@ -167,7 +167,7 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, track=None):
+def start_finish_stats(races, start_date, end_date, print_report=False, track=None):
     auto_indices = []
     volt_indices = []
     index = -1
@@ -219,6 +219,8 @@ def start_finish_stats(races, track=None):
             place_accu = volt_start_finish[start][1] + volt_start_finish[start][2] + volt_start_finish[start][3]
             place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(volt_indices))
             volt_place_percentage[start] = place_perc
+    print('Start date:', start_date.strftime("%Y-%m-%d"))
+    print('End date:', end_date.strftime("%Y-%m-%d"))
     print('Number of races:', len(races))
     print('Number of races with auto start:', len(auto_indices))
     print('Number of races with volt start:', len(volt_indices))
@@ -235,18 +237,158 @@ def start_finish_stats(races, track=None):
     for x in sorted(volt_place_percentage, key=volt_place_percentage.get, reverse=True):
         print(x, '\t\t', (volt_place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
 
-def ekipage_form(races):
+def horse_form(races):
     form = {}
+    start_odds = {}
+    finish_order = {}
     for race in races:
         for ekipage in race.ekipage:
             if ekipage.horse_id not in form:
                 form[ekipage.horse_id] = {}
             form[ekipage.horse_id][race.date] = ['start' + str(ekipage.start_place), 'finish' + str(ekipage.finish_place)]
-    for horse in form:
-        print(horse)
-        for r in form[horse].iteritems():
-            print('  ->  ', r)
+            start_odds[ekipage.horse_id] = ekipage.winner_odds
+            finish_order[ekipage.horse_id] = ekipage.finish_place
+        start_odds_order = {}
+        start_odds_place = 1
+        for so in sorted(start_odds, key=start_odds.get, reverse=False):
+            print(start_odds[so], so)
+            start_odds_order[so] = start_odds_place
+            start_odds_place += 1
+        # Get relative comparison between trust through odds order and 
+        # result according to finishing order
+        for soo in sorted(start_odds_order, key=start_odds_order.get, reverse=False):
+            print(start_odds_order[soo], soo)
+            print(finish_order[soo], soo)
+            print(start_odds_order[soo] - finish_order[soo])
+            print()
+        for horse in start_odds:
+            print()
+
+def test_bet_on_startplace(races):
+    '''
+    Auto winning %:
+    5          13.2 %
+    Auto place %:
+    5          34.0 %
+    Volt winning %:
+    1          11.5 %
+    Volt place %:
+    1          31.3 %
+    ''' 
+    
+    bet_size = 100
+    excel_data = {}
+    tries = [
+                ['Auto winning', True, True],
+                ['Auto place', False, True],
+                ['Volt winning', True, False],
+                ['Volt place', False, False],
+             ]
+    for header, winner, auto in tries:
+        bet = {}
+        bet_accu_winning = 0
+        equity_max = 0
+        equity_min = 0
+        number_wins = decimal.Decimal(0)
+        accu_odds = decimal.Decimal(0)
+        number_races = 0
         
+        optimized_start_place = 0
+        if auto:
+            optimized_start_place = 5
+        else:
+            optimized_start_place = 1
+        for race in races:
+            bet[race.id] = {}
+            bet[race.id]['date'] = race.date
+            if auto and race.auto_start:
+                number_races += 1
+            if not auto and not race.auto_start:
+                number_races += 1
+            for ekipage in race.ekipage:
+                if ekipage.start_place == optimized_start_place:
+                    if winner:
+                        if ekipage.finish_place == 1:
+                            bet[race.id]['result'] = bet_size * ekipage.winner_odds
+                            accu_odds += ekipage.winner_odds
+                            number_wins += 1
+                        else:
+                            bet[race.id]['result'] = bet_size * -1
+                    else:
+                        if ekipage.place_odds:
+                            bet[race.id]['result'] = bet_size * ekipage.place_odds
+                            accu_odds += ekipage.place_odds
+                            number_wins += 1
+                        else:
+                            bet[race.id]['result'] = bet_size * -1
+                    if not header in excel_data:
+                        excel_data[header] = []
+                    data = []
+                    data.append(bet[race.id]['date'].strftime("%Y-%m-%d"))
+                    data.append(race.track.decode('utf-8'))
+                    data.append(race.number)
+                    data.append(ekipage.horse.name.decode('utf-8'))
+                    data.append(optimized_start_place)
+                    data.append(ekipage.finish_place)
+                    data.append(bet[race.id]['result'])
+                    data.append(race.url)
+                    excel_data[header].append(data)
+            if 'result' in bet[race.id]:
+                bet_accu_winning += bet[race.id]['result']
+                if bet_accu_winning > equity_max:
+                    equity_max = bet_accu_winning
+                if bet_accu_winning < equity_min:
+                    equity_min = bet_accu_winning
+        print(header)
+        print('Betsize:', bet_size)
+        print('Total number of races:', len(bet))
+        print('Number of races in start method:', number_races)
+        print('Number of wins:', number_wins)
+        print('Average odds:', accu_odds/number_wins)
+        print('Equity min:', equity_min)
+        print('Equity max:', equity_max)
+        print('Total winnings:', bet_accu_winning)
+        print()
+    headers=['Date','Race track', 'Race number', 'Horse name', 'Start place', 'Finish place', 'Bet result', 'URL']
+    save_in_excel(headers, excel_data)
+
+def save_in_excel(headers, data):
+    from xlwt import Workbook, Font, XFStyle
+    wb = Workbook()
+    header_font=Font() #make a font object
+    header_font.bold=True
+    header_style = XFStyle(); header_style.font = header_font
+    for sheet in sorted(data):
+        ws = wb.add_sheet(sheet)
+        for col,value in enumerate(headers):
+            ws.write(0,col,value,header_style)
+        for row_num, row_values in enumerate(data[sheet]):
+            row_num += 1
+            for col, value in enumerate(row_values):
+                ws.write(row_num,col,value)
+    wb.save('nonobet_analysis_.xls')
+        
+def more_excel_example():
+    # sudo apt-get install python-setuptools python-dev build-essential
+    # http://www.python-excel.org/
+    # Examples
+    # http://www.developer.com/tech/article.php/3727616/Creating-Excel-Files-with-Python-and-Django.htm
+    # http://www.answermysearches.com/generate-an-excel-formatted-file-right-in-python/122/
+    from xlwt import Workbook, Formula
+    w = Workbook()
+    ws = w.add_sheet('Test 1')
+    ws.write(0, 0, Formula("-(1+1)"))
+    ws.write(1, 0, Formula("-(1+1)/(-2-2)"))
+    ws.write(2, 0, Formula("-(134.8780789+1)"))
+    ws.write(3, 0, Formula("-(134.8780789e-10+1)"))
+    ws.write(4, 0, Formula("-1/(1+1)+9344"))
+    ws.write(0, 1, Formula("-(1+1)"))
+    ws.write(1, 1, Formula("-(1+1)/(-2-2)"))
+    ws.write(2, 1, Formula("-(134.8780789+1)"))
+    ws.write(3, 1, Formula("-(134.8780789e-10+1)"))
+    ws.write(4, 1, Formula("-1/(1+1)+9344"))
+    w.save('formulas.xls')
+
 def bettype_range(races, search_bettype):
     indices = []
     index = -1
@@ -259,19 +401,39 @@ def bettype_range(races, search_bettype):
     return indices
 
 if __name__ == '__main__':
+    import time
+    t_start = time.time()
     conf = ConfigParser.SafeConfigParser()
     read_conf(conf)
     client_db_url = conf.get('DEFAULT', 'client_db_url')
     db_session = create_db_session(client_db_url)
     
     races = []
-    start_date = datetime.date(2009, 01, 01)
-    end_date = datetime.date(2009, 01, 31)
-    races = date_range(db_session, start_date, end_date, debug=False)
-    #start_finish_stats(races)
-    ekipage_form(races)
-    
-    
+    start_date = datetime.date(2009, 1, 1)
+    end_date = datetime.date(2009, 12, 31)
+
+    create_pickle = False
+    read_pickle = False
+    import pickle
+    if read_pickle:
+        pkl_file = open('races.pkl', 'rb')
+        races = pickle.load(pkl_file)
+        pkl_file.close()
+    else:
+        races = date_range(db_session, start_date, end_date, debug=False)
+    if create_pickle:
+        pkl_file = open('races.pkl', 'wb')
+        pickle.dump(races, pkl_file, pickle.HIGHEST_PROTOCOL)
+        pkl_file.close()
+
+    print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
+    start_finish_stats(races, start_date, end_date, print_report=True)
+    print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
+    #horse_form(races)
+    #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
+    test_bet_on_startplace(races)
+    print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
+    print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
     
     bettype = 'trio'
