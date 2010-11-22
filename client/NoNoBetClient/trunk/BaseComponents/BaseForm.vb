@@ -21,7 +21,8 @@ Public Class BaseForm
     ''' <remarks>Default StartPosition is CenterScreen</remarks>
     Public Sub StartForm()
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.ShowDialog()
+        'Me.ShowDialog()
+        Me.Show()
     End Sub
 
     ''' <summary>

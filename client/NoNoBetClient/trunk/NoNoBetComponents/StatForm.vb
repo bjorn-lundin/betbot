@@ -18,6 +18,10 @@ Public Class StatForm
     Friend WithEvents labelTrack As System.Windows.Forms.Label
     Friend WithEvents comboTracks As System.Windows.Forms.ComboBox
     Friend WithEvents CheckAuto As System.Windows.Forms.CheckBox
+    Friend WithEvents labelEndDate As System.Windows.Forms.Label
+    Friend WithEvents dpEndDate As System.Windows.Forms.DateTimePicker
+    Friend WithEvents labelStartDate As System.Windows.Forms.Label
+    Friend WithEvents dpStartdate As System.Windows.Forms.DateTimePicker
     Friend WithEvents groupTop As System.Windows.Forms.GroupBox
 
     Private Sub InitializeComponent()
@@ -31,11 +35,15 @@ Public Class StatForm
         Me.buttonTotWinEquipages = New System.Windows.Forms.Button()
         Me.textToWinEquipages = New System.Windows.Forms.TextBox()
         Me.groupStartPosStat = New System.Windows.Forms.GroupBox()
+        Me.CheckAuto = New System.Windows.Forms.CheckBox()
         Me.buttonStartPosStats = New System.Windows.Forms.Button()
         Me.labelTrack = New System.Windows.Forms.Label()
         Me.comboTracks = New System.Windows.Forms.ComboBox()
         Me.gridStartPosStats = New BaseComponents.BaseGrid()
-        Me.CheckAuto = New System.Windows.Forms.CheckBox()
+        Me.dpStartdate = New System.Windows.Forms.DateTimePicker()
+        Me.labelStartDate = New System.Windows.Forms.Label()
+        Me.labelEndDate = New System.Windows.Forms.Label()
+        Me.dpEndDate = New System.Windows.Forms.DateTimePicker()
         Me.groupTop.SuspendLayout()
         Me.groupTotEcuipages.SuspendLayout()
         Me.groupTotWinEquipages.SuspendLayout()
@@ -50,14 +58,14 @@ Public Class StatForm
         Me.groupTop.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupTop.Location = New System.Drawing.Point(0, 0)
         Me.groupTop.Name = "groupTop"
-        Me.groupTop.Size = New System.Drawing.Size(577, 84)
+        Me.groupTop.Size = New System.Drawing.Size(753, 68)
         Me.groupTop.TabIndex = 0
         Me.groupTop.TabStop = False
         Me.groupTop.Text = "Total number races"
         '
         'buttonTotRaces
         '
-        Me.buttonTotRaces.Location = New System.Drawing.Point(433, 42)
+        Me.buttonTotRaces.Location = New System.Drawing.Point(644, 21)
         Me.buttonTotRaces.Name = "buttonTotRaces"
         Me.buttonTotRaces.Size = New System.Drawing.Size(75, 23)
         Me.buttonTotRaces.TabIndex = 1
@@ -66,7 +74,7 @@ Public Class StatForm
         '
         'textTotRaces
         '
-        Me.textTotRaces.Location = New System.Drawing.Point(32, 44)
+        Me.textTotRaces.Location = New System.Drawing.Point(32, 21)
         Me.textTotRaces.Name = "textTotRaces"
         Me.textTotRaces.Size = New System.Drawing.Size(181, 22)
         Me.textTotRaces.TabIndex = 0
@@ -76,16 +84,16 @@ Public Class StatForm
         Me.groupTotEcuipages.Controls.Add(Me.buttonTotEquipages)
         Me.groupTotEcuipages.Controls.Add(Me.textTotEquipages)
         Me.groupTotEcuipages.Dock = System.Windows.Forms.DockStyle.Top
-        Me.groupTotEcuipages.Location = New System.Drawing.Point(0, 84)
+        Me.groupTotEcuipages.Location = New System.Drawing.Point(0, 68)
         Me.groupTotEcuipages.Name = "groupTotEcuipages"
-        Me.groupTotEcuipages.Size = New System.Drawing.Size(577, 86)
+        Me.groupTotEcuipages.Size = New System.Drawing.Size(753, 66)
         Me.groupTotEcuipages.TabIndex = 1
         Me.groupTotEcuipages.TabStop = False
         Me.groupTotEcuipages.Text = "Total number equipages"
         '
         'buttonTotEquipages
         '
-        Me.buttonTotEquipages.Location = New System.Drawing.Point(433, 39)
+        Me.buttonTotEquipages.Location = New System.Drawing.Point(644, 21)
         Me.buttonTotEquipages.Name = "buttonTotEquipages"
         Me.buttonTotEquipages.Size = New System.Drawing.Size(75, 23)
         Me.buttonTotEquipages.TabIndex = 3
@@ -94,7 +102,7 @@ Public Class StatForm
         '
         'textTotEquipages
         '
-        Me.textTotEquipages.Location = New System.Drawing.Point(32, 41)
+        Me.textTotEquipages.Location = New System.Drawing.Point(32, 21)
         Me.textTotEquipages.Name = "textTotEquipages"
         Me.textTotEquipages.Size = New System.Drawing.Size(181, 22)
         Me.textTotEquipages.TabIndex = 2
@@ -104,16 +112,16 @@ Public Class StatForm
         Me.groupTotWinEquipages.Controls.Add(Me.buttonTotWinEquipages)
         Me.groupTotWinEquipages.Controls.Add(Me.textToWinEquipages)
         Me.groupTotWinEquipages.Dock = System.Windows.Forms.DockStyle.Top
-        Me.groupTotWinEquipages.Location = New System.Drawing.Point(0, 170)
+        Me.groupTotWinEquipages.Location = New System.Drawing.Point(0, 134)
         Me.groupTotWinEquipages.Name = "groupTotWinEquipages"
-        Me.groupTotWinEquipages.Size = New System.Drawing.Size(577, 85)
+        Me.groupTotWinEquipages.Size = New System.Drawing.Size(753, 64)
         Me.groupTotWinEquipages.TabIndex = 2
         Me.groupTotWinEquipages.TabStop = False
         Me.groupTotWinEquipages.Text = "Total number winning equipages"
         '
         'buttonTotWinEquipages
         '
-        Me.buttonTotWinEquipages.Location = New System.Drawing.Point(433, 41)
+        Me.buttonTotWinEquipages.Location = New System.Drawing.Point(644, 21)
         Me.buttonTotWinEquipages.Name = "buttonTotWinEquipages"
         Me.buttonTotWinEquipages.Size = New System.Drawing.Size(75, 23)
         Me.buttonTotWinEquipages.TabIndex = 5
@@ -122,28 +130,42 @@ Public Class StatForm
         '
         'textToWinEquipages
         '
-        Me.textToWinEquipages.Location = New System.Drawing.Point(32, 43)
+        Me.textToWinEquipages.Location = New System.Drawing.Point(32, 21)
         Me.textToWinEquipages.Name = "textToWinEquipages"
         Me.textToWinEquipages.Size = New System.Drawing.Size(181, 22)
         Me.textToWinEquipages.TabIndex = 4
         '
         'groupStartPosStat
         '
+        Me.groupStartPosStat.Controls.Add(Me.labelEndDate)
+        Me.groupStartPosStat.Controls.Add(Me.dpEndDate)
+        Me.groupStartPosStat.Controls.Add(Me.labelStartDate)
+        Me.groupStartPosStat.Controls.Add(Me.dpStartdate)
         Me.groupStartPosStat.Controls.Add(Me.CheckAuto)
         Me.groupStartPosStat.Controls.Add(Me.buttonStartPosStats)
         Me.groupStartPosStat.Controls.Add(Me.labelTrack)
         Me.groupStartPosStat.Controls.Add(Me.comboTracks)
         Me.groupStartPosStat.Dock = System.Windows.Forms.DockStyle.Top
-        Me.groupStartPosStat.Location = New System.Drawing.Point(0, 255)
+        Me.groupStartPosStat.Location = New System.Drawing.Point(0, 198)
         Me.groupStartPosStat.Name = "groupStartPosStat"
-        Me.groupStartPosStat.Size = New System.Drawing.Size(577, 100)
+        Me.groupStartPosStat.Size = New System.Drawing.Size(753, 152)
         Me.groupStartPosStat.TabIndex = 3
         Me.groupStartPosStat.TabStop = False
         Me.groupStartPosStat.Text = "Start position statistics"
         '
+        'CheckAuto
+        '
+        Me.CheckAuto.AutoSize = True
+        Me.CheckAuto.Location = New System.Drawing.Point(500, 52)
+        Me.CheckAuto.Name = "CheckAuto"
+        Me.CheckAuto.Size = New System.Drawing.Size(91, 21)
+        Me.CheckAuto.TabIndex = 7
+        Me.CheckAuto.Text = "Auto start"
+        Me.CheckAuto.UseVisualStyleBackColor = True
+        '
         'buttonStartPosStats
         '
-        Me.buttonStartPosStats.Location = New System.Drawing.Point(433, 52)
+        Me.buttonStartPosStats.Location = New System.Drawing.Point(644, 52)
         Me.buttonStartPosStats.Name = "buttonStartPosStats"
         Me.buttonStartPosStats.Size = New System.Drawing.Size(75, 23)
         Me.buttonStartPosStats.TabIndex = 6
@@ -171,25 +193,47 @@ Public Class StatForm
         '
         Me.gridStartPosStats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.gridStartPosStats.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 355)
+        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 350)
         Me.gridStartPosStats.Name = "gridStartPosStats"
         Me.gridStartPosStats.RowTemplate.Height = 24
-        Me.gridStartPosStats.Size = New System.Drawing.Size(577, 219)
+        Me.gridStartPosStats.Size = New System.Drawing.Size(753, 267)
         Me.gridStartPosStats.TabIndex = 0
         '
-        'CheckAuto
+        'dpStartdate
         '
-        Me.CheckAuto.AutoSize = True
-        Me.CheckAuto.Location = New System.Drawing.Point(216, 52)
-        Me.CheckAuto.Name = "CheckAuto"
-        Me.CheckAuto.Size = New System.Drawing.Size(91, 21)
-        Me.CheckAuto.TabIndex = 7
-        Me.CheckAuto.Text = "Auto start"
-        Me.CheckAuto.UseVisualStyleBackColor = True
+        Me.dpStartdate.Location = New System.Drawing.Point(194, 53)
+        Me.dpStartdate.Name = "dpStartdate"
+        Me.dpStartdate.Size = New System.Drawing.Size(200, 22)
+        Me.dpStartdate.TabIndex = 8
+        '
+        'labelStartDate
+        '
+        Me.labelStartDate.AutoSize = True
+        Me.labelStartDate.Location = New System.Drawing.Point(191, 29)
+        Me.labelStartDate.Name = "labelStartDate"
+        Me.labelStartDate.Size = New System.Drawing.Size(70, 17)
+        Me.labelStartDate.TabIndex = 9
+        Me.labelStartDate.Text = "Start date"
+        '
+        'labelEndDate
+        '
+        Me.labelEndDate.AutoSize = True
+        Me.labelEndDate.Location = New System.Drawing.Point(191, 78)
+        Me.labelEndDate.Name = "labelEndDate"
+        Me.labelEndDate.Size = New System.Drawing.Size(65, 17)
+        Me.labelEndDate.TabIndex = 11
+        Me.labelEndDate.Text = "End date"
+        '
+        'dpEndDate
+        '
+        Me.dpEndDate.Location = New System.Drawing.Point(194, 102)
+        Me.dpEndDate.Name = "dpEndDate"
+        Me.dpEndDate.Size = New System.Drawing.Size(200, 22)
+        Me.dpEndDate.TabIndex = 10
         '
         'StatForm
         '
-        Me.ClientSize = New System.Drawing.Size(577, 574)
+        Me.ClientSize = New System.Drawing.Size(753, 617)
         Me.Controls.Add(Me.gridStartPosStats)
         Me.Controls.Add(Me.groupStartPosStat)
         Me.Controls.Add(Me.groupTotWinEquipages)
@@ -243,6 +287,38 @@ Public Class StatForm
         comboTracks.EndUpdate()
     End Sub
 
+    Private Function GetStartDateClause() As String
+        Return "(race.date >= " & DbConnection.DateToSqlString(dpStartdate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    End Function
+
+    Private Function GetEndDateClause() As String
+        Return "(race.date <= " & DbConnection.DateToSqlString(dpEndDate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    End Function
+
+    Private Function GetAutoStartClause() As String
+        Dim notStr As String
+
+        If CheckAuto.Checked Then
+            notStr = "NOT "
+        Else
+            notStr = ""
+        End If
+
+        Return "(" & notStr & "race.auto_start)"
+    End Function
+
+    Private Function UseTrack() As Boolean
+        Return (comboTracks.SelectedItem IsNot Nothing)
+    End Function
+
+    Private Function GetTrackSelectClause() As String
+        If UseTrack() Then
+            Return ""
+        Else
+            Return ""
+        End If
+    End Function
+
     Private Sub buttonStartPosStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStartPosStats.Click
         Dim sql As String
 
@@ -251,29 +327,58 @@ Public Class StatForm
         '      "JOIN race ON (race.id = race_ekipage.race_id) " + _
         '      "WHERE (ekipage.finish_place = 1) "
 
-        sql = "SELECT * FROM (" + _
-                "SELECT TrackLineRec.track ""Track"",TrackLineRec.start_place ""StartPos"",TrackLineRec.cnt ""NmbrWinners"",ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt) ""%Winners"" FROM " + _
-                  "(SELECT race.track,count(*) as cnt FROM ekipage " + _
-                   "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
-                   "JOIN race ON (race.id = race_ekipage.race_id) " + _
-                   "WHERE (ekipage.finish_place = 1 AND "
+        sql = "SELECT * FROM ("
+        sql &= "SELECT "
 
-        If (Not CheckAuto.Checked) Then
-            sql += "NOT "
+        If UseTrack() Then
+            sql &= "TrackLineRec.track ""Track"","
         End If
 
-        sql += "race.auto_start) GROUP BY race.track) TrackRec " + _
-                "JOIN " + _
-                  "(SELECT ekipage.start_place,race.track,count(*) as cnt FROM ekipage " + _
-                   "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
-                   "JOIN race ON (race.id = race_ekipage.race_id) " + _
-                   "WHERE (ekipage.finish_place = 1 AND  "
+        sql &= "TrackLineRec.start_place ""StartPos"",TrackLineRec.cnt ""NmbrWinners"",ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt) ""%Winners"" FROM "
+        sql &= "(SELECT "
 
-        If (Not CheckAuto.Checked) Then
-            sql += "NOT "
+        If UseTrack() Then
+            sql &= "race.track,"
         End If
 
-        sql += "race.auto_start) GROUP BY race.track,ekipage.start_place) TrackLineRec " + _
+        sql &= "count(*) as cnt FROM ekipage " + _
+               "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+               "JOIN race ON (race.id = race_ekipage.race_id) " + _
+               "WHERE (ekipage.finish_place = 1)"
+
+
+        sql &= " AND " & GetAutoStartClause()
+        sql &= " AND " & GetStartDateClause()
+        sql &= " AND " & GetEndDateClause()
+
+        If UseTrack() Then
+            sql &= " GROUP BY race.track"
+        End If
+
+        sql &= ") TrackRec " + _
+               "JOIN " + _
+               "(SELECT ekipage.start_place"
+
+        If UseTrack() Then
+            sql &= ",race.track"
+        End If
+
+        sql &= ",count(*) as cnt FROM ekipage " + _
+               "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+               "JOIN race ON (race.id = race_ekipage.race_id) " + _
+               "WHERE (ekipage.finish_place = 1)"
+
+        sql &= " AND " & GetAutoStartClause()
+        sql &= " AND " & GetStartDateClause()
+        sql &= " AND " & GetEndDateClause()
+
+        sql += " GROUP BY "
+
+        If UseTrack() Then
+            sql &= "race.track,"
+        End If
+
+        sql &= "ekipage.start_place) TrackLineRec " + _
                 "ON (TrackLineRec.track = TrackRec.track) " + _
               ")TrackView "
 
@@ -294,6 +399,9 @@ Public Class StatForm
 
     Private Sub StatForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         FillTracksComboBox()
+        comboTracks.SelectedIndex = 0
+        dpStartdate.Value = Today
+        dpEndDate.Value = Today
     End Sub
 
 End Class
