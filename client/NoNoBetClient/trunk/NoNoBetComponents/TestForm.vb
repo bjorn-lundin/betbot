@@ -553,19 +553,46 @@ Public Class TestForm
         _TotWins = 0
     End Sub
 
+    Public Function GetRaceEkipageByStartPos(ByVal raceId As Integer, ByVal startPos As Integer, _
+                                             ByRef finishPlace As Integer, ByRef winOdds As Decimal, ByRef placeOdds As Decimal) As Boolean
+        Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (race_ekipage.ekipage_id = ekipage.id) " & _
+                             "WHERE (race_ekipage.race_id = " & raceId & ") AND (ekipage.start_place = " & startPos & ")"
+
+        Dim dbReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
+
+        finishPlace = 0
+        winOdds = 0
+        placeOdds = 0
+
+        If dbReader.Read Then
+            finishPlace = CType(dbReader.Item("finish_place"), Integer)
+            winOdds = CType(dbReader.Item("winner_odds"), Decimal)
+            placeOdds = CType(dbReader.Item("place_odds"), Decimal)
+        Else
+            dbReader.Close()
+            Return False
+        End If
+
+        dbReader.Close()
+        Return True
+    End Function
+
     Private Sub BetRace(ByVal raceId As Integer, ByVal amount As Decimal)
         Dim winOdds As Decimal = 0
+        Dim placeOdds As Decimal = 0
         Dim finishPlace As Integer = 0
 
         If radioLowWinOdds.Checked Then
-            GetRaceLineByWinnerOdds(raceId, winOdds, finishPlace)
+            GetRaceEkipageByWinnerOdds(raceId, winOdds, finishPlace)
         ElseIf radioStartPlace.Checked Then
             Dim sPos As Integer = CType(textStartPos.Text, Integer)
-            GetRaceLineByStartPos(raceId, sPos, winOdds, finishPlace)
+            If GetRaceEkipageByStartPos(raceId, sPos, finishPlace, winOdds, placeOdds) Then
+
+            End If
         Else
             Return
         End If
- 
+
         _NmbrRaces += 1
         _ToBetAmount += amount
 
@@ -585,7 +612,7 @@ Public Class TestForm
 
     End Sub
 
-    Private Sub GetRaceLineByWinnerOdds(ByVal raceId As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
+    Private Sub GetRaceEkipageByWinnerOdds(ByVal raceId As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
         Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id AND " + _
                             "race_ekipage.race_id = " & raceId & ")"
 
@@ -609,7 +636,7 @@ Public Class TestForm
         raceLineReader.Close()
     End Sub
 
-    Private Sub GetRaceLineByStartPos(ByVal raceId As Integer, ByVal startPos As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
+    Private Sub GetRaceEkipageByStartPos(ByVal raceId As Integer, ByVal startPos As Integer, ByRef winOdds As Decimal, ByRef finishPlace As Integer)
         Dim sql As String = "SELECT * FROM ekipage JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id AND " + _
                             "race_ekipage.race_id = " & raceId & ") WHERE (ekipage.start_place = " & startPos & ") "
 

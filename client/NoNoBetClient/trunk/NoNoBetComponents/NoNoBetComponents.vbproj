@@ -84,6 +84,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="RaceBetSim.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="RaceDaysForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -100,6 +103,9 @@
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RaceBetSim.resx">
+      <DependentUpon>RaceBetSim.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RaceDaysForm.resx">
       <DependentUpon>RaceDaysForm.vb</DependentUpon>

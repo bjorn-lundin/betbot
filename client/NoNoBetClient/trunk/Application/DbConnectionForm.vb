@@ -146,4 +146,8 @@ Public Class DbConnectionForm
         _IsLoaded = True
     End Sub
 
+    Private Sub buttonBetSim_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonBetSim.Click
+        Dim betSimForm As RaceBetSim = New RaceBetSim
+        betSimForm.StartForm(_DbConn)
+    End Sub
 End Class

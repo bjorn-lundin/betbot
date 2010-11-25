@@ -265,34 +265,50 @@ Public Class StatForm
 
     Private Sub buttonTotRaces_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonTotRaces.Click
         textTotRaces.Text = MyBase.DbConnection.ExecuteSqlScalar("SELECT count(id) FROM race").ToString
+        Dim st As StartType
+        If CheckAuto.Checked Then
+            st = StartType.Auto
+        Else
+            st = StartType.Volt
+        End If
+
+        Dim pos1, pos2, pos3 As Integer
+        Dim win1, win2, win3 As Integer
+        Dim pcnt1, pcnt2, pcnt3 As Decimal
+
+        GetTrackBestStartPosData(comboTracks.SelectedItem.ToString, dpStartdate.Value, dpEndDate.Value, st, pos1, win1, pcnt1, pos2, win2, pcnt2, pos3, win3, pcnt3)
     End Sub
 
     Private Sub buttonTotWinEquipages_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonTotWinEquipages.Click
         textToWinEquipages.Text = MyBase.DbConnection.ExecuteSqlScalar("SELECT count(id) FROM ekipage WHERE finish_place = 1").ToString
     End Sub
 
-    Private Sub FillTracksComboBox()
-        comboTracks.BeginUpdate()
-        comboTracks.Items.Clear()
+    Public Shared Sub FillTracksComboBox(ByVal db As DbConnection, ByVal cb As ComboBox)
+        cb.BeginUpdate()
+        cb.Items.Clear()
 
         Dim sql As String = "SELECT DISTINCT track FROM race ORDER BY track"
-        Dim trackReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
+        Dim trackReader As Npgsql.NpgsqlDataReader = db.ExecuteSqlCommand(sql)
 
         While trackReader.Read
             Dim trackName As String = CType(trackReader.Item("track"), String)
-            comboTracks.Items.Add(trackName)
+            cb.Items.Add(trackName)
         End While
 
         trackReader.Close()
-        comboTracks.EndUpdate()
+        cb.EndUpdate()
     End Sub
 
     Private Function GetStartDateClause() As String
         Return "(race.date >= " & DbConnection.DateToSqlString(dpStartdate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
     End Function
 
-    Private Function GetEndDateClause() As String
-        Return "(race.date <= " & DbConnection.DateToSqlString(dpEndDate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    Private Function GetEndDateClause(ByVal endDate As Date) As String
+        Return "(race.date <= " & DbConnection.DateToSqlString(endDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    End Function
+
+    Private Function GetStartDateClause(ByVal startDate As Date) As String
+        Return "(race.date >= " & DbConnection.DateToSqlString(startDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
     End Function
 
     Private Function GetAutoStartClause() As String
@@ -307,6 +323,21 @@ Public Class StatForm
         Return "(" & notStr & "race.auto_start)"
     End Function
 
+    Private Function GetStartTypeClause(ByVal startType As StartType) As String
+        Select Case startType
+            Case startType.Auto
+                Return "(race.auto_start)"
+            Case startType.Volt
+                Return "(NOT race.auto_start)"
+            Case Else
+                Return ""
+        End Select
+    End Function
+
+    Private Function GetEndDateClause() As String
+        Return "(race.date <= " & DbConnection.DateToSqlString(dpEndDate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    End Function
+
     Private Function UseTrack() As Boolean
         Return (comboTracks.SelectedItem IsNot Nothing)
     End Function
@@ -319,86 +350,183 @@ Public Class StatForm
         End If
     End Function
 
-    Private Sub buttonStartPosStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStartPosStats.Click
-        Dim sql As String
+    Public Enum StartType As Integer
+        Ignore = 1
+        Auto = 2
+        Volt = 3
+    End Enum
 
-        'sql = "SELECT ekipage.start_place, count(*) as cnt, race.track FROM ekipage " + _
-        '      "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
-        '      "JOIN race ON (race.id = race_ekipage.race_id) " + _
-        '      "WHERE (ekipage.finish_place = 1) "
+    Public Sub GetTrackBestStartPosData(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType, _
+                                        ByRef startPos1 As Integer, ByRef winners1 As Integer, ByRef winnersPercent1 As Decimal, _
+                                        ByRef startPos2 As Integer, ByRef winners2 As Integer, ByRef winnersPercent2 As Decimal, _
+                                        ByRef startPos3 As Integer, ByRef winners3 As Integer, ByRef winnersPercent3 As Decimal)
+        Dim sql As String = BuildSingleTrackSql(trackName, startDate, endDate, startType)
+        Dim dReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
+
+        startPos1 = 0
+        startPos2 = 0
+        startPos3 = 0
+        winners1 = 0
+        winners2 = 0
+        winners3 = 0
+        winnersPercent1 = 0.0
+        winnersPercent2 = 0.0
+        winnersPercent3 = 0.0
+
+        If dReader.Read Then
+            startPos1 = CType(dReader.Item("startpos"), Integer)
+            winners1 = CType(dReader.Item("nmbrwinners"), Integer)
+            winnersPercent1 = CType(dReader.Item("%Winners"), Integer)
+        End If
+
+        If dReader.Read Then
+            startPos2 = CType(dReader.Item("startpos"), Integer)
+            winners2 = CType(dReader.Item("nmbrwinners"), Integer)
+            winnersPercent2 = CType(dReader.Item("%Winners"), Integer)
+        End If
+
+        If dReader.Read Then
+            startPos3 = CType(dReader.Item("startpos"), Integer)
+            winners3 = CType(dReader.Item("nmbrwinners"), Integer)
+            winnersPercent3 = CType(dReader.Item("%Winners"), Integer)
+        End If
+
+        dReader.Close()
+    End Sub
+
+    Public Function BuildSingleTrackSql(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType) As String
+        Dim sql As String
+        Dim startTypeClauseStr As String = Nothing
 
         sql = "SELECT * FROM ("
-        sql &= "SELECT "
 
-        If UseTrack() Then
-            sql &= "TrackLineRec.track ""Track"","
-        End If
-
-        sql &= "TrackLineRec.start_place ""StartPos"",TrackLineRec.cnt ""NmbrWinners"",ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt) ""%Winners"" FROM "
-        sql &= "(SELECT "
-
-        If UseTrack() Then
-            sql &= "race.track,"
-        End If
-
-        sql &= "count(*) as cnt FROM ekipage " + _
+        sql &= "SELECT TrackLineRec.track as track, TrackLineRec.start_place as startpos,TrackLineRec.cnt as nmbrwinners,ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt,2) ""%Winners"" FROM "
+        sql &= "(SELECT race.track, count(*) as cnt FROM ekipage " + _
                "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
                "JOIN race ON (race.id = race_ekipage.race_id) " + _
                "WHERE (ekipage.finish_place = 1)"
 
-
-        sql &= " AND " & GetAutoStartClause()
-        sql &= " AND " & GetStartDateClause()
-        sql &= " AND " & GetEndDateClause()
-
-        If UseTrack() Then
-            sql &= " GROUP BY race.track"
+        startTypeClauseStr = GetStartTypeClause(startType)
+        If (startTypeClauseStr.Length > 0) Then
+            sql &= " AND " & startTypeClauseStr
         End If
 
-        sql &= ") TrackRec " + _
-               "JOIN " + _
-               "(SELECT ekipage.start_place"
+        sql &= " AND " & GetStartDateClause(startDate)
+        sql &= " AND " & GetEndDateClause(endDate)
 
-        If UseTrack() Then
-            sql &= ",race.track"
+        sql &= " GROUP BY race.track) TrackRec" + _
+               " JOIN " + _
+               "(SELECT ekipage.start_place,race.track,count(*) as cnt FROM ekipage " + _
+                "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+                "JOIN race ON (race.id = race_ekipage.race_id) " + _
+                "WHERE (ekipage.finish_place = 1)"
+
+        If (startTypeClauseStr.Length > 0) Then
+            sql &= " AND " & startTypeClauseStr
         End If
 
-        sql &= ",count(*) as cnt FROM ekipage " + _
-               "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
-               "JOIN race ON (race.id = race_ekipage.race_id) " + _
-               "WHERE (ekipage.finish_place = 1)"
+        sql &= " AND " & GetStartDateClause(startDate)
+        sql &= " AND " & GetEndDateClause(endDate)
 
-        sql &= " AND " & GetAutoStartClause()
-        sql &= " AND " & GetStartDateClause()
-        sql &= " AND " & GetEndDateClause()
-
-        sql += " GROUP BY "
-
-        If UseTrack() Then
-            sql &= "race.track,"
-        End If
-
-        sql &= "ekipage.start_place) TrackLineRec " + _
+        sql += " GROUP BY race.track, ekipage.start_place) TrackLineRec " + _
                 "ON (TrackLineRec.track = TrackRec.track) " + _
               ")TrackView "
 
+        sql += "WHERE (track = '" + trackName + "') "
+        sql += "ORDER BY track,nmbrwinners DESC"
 
-        If (comboTracks.SelectedItem IsNot Nothing) Then
-            Dim track As String = CType(comboTracks.SelectedItem, String)
-            'sql += "AND (race.track = '" + track + "') "
-            sql += "WHERE (""Track"" = '" + track + "') "
+        Return sql
+    End Function
+
+    Private Sub buttonStartPosStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStartPosStats.Click
+        Dim sql As String
+        Dim startType As StartType
+
+        If CheckAuto.Checked Then
+            startType = startType.Auto
+        Else
+            startType = startType.Volt
         End If
 
+        sql = BuildSingleTrackSql(CType(comboTracks.SelectedItem, String), dpStartdate.Value, dpEndDate.Value, startType)
 
-        'sql += "GROUP BY race.track,ekipage.start_place " + _
-        '       "ORDER BY race.track,cnt DESC"
-        sql += "ORDER BY ""Track"",""NmbrWinners"" DESC"
+        ''sql = "SELECT ekipage.start_place, count(*) as cnt, race.track FROM ekipage " + _
+        ''      "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+        ''      "JOIN race ON (race.id = race_ekipage.race_id) " + _
+        ''      "WHERE (ekipage.finish_place = 1) "
+
+        'sql = "SELECT * FROM ("
+        'sql &= "SELECT "
+
+        'If UseTrack() Then
+        '    sql &= "TrackLineRec.track ""Track"","
+        'End If
+
+        'sql &= "TrackLineRec.start_place ""StartPos"",TrackLineRec.cnt ""NmbrWinners"",ROUND(100.0*TrackLineRec.cnt/TrackRec.cnt) ""%Winners"" FROM "
+        'sql &= "(SELECT "
+
+        'If UseTrack() Then
+        '    sql &= "race.track,"
+        'End If
+
+        'sql &= "count(*) as cnt FROM ekipage " + _
+        '       "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+        '       "JOIN race ON (race.id = race_ekipage.race_id) " + _
+        '       "WHERE (ekipage.finish_place = 1)"
+
+
+        'sql &= " AND " & GetAutoStartClause()
+        'sql &= " AND " & GetStartDateClause()
+        'sql &= " AND " & GetEndDateClause()
+
+        'If UseTrack() Then
+        '    sql &= " GROUP BY race.track"
+        'End If
+
+        'sql &= ") TrackRec " + _
+        '       "JOIN " + _
+        '       "(SELECT ekipage.start_place"
+
+        'If UseTrack() Then
+        '    sql &= ",race.track"
+        'End If
+
+        'sql &= ",count(*) as cnt FROM ekipage " + _
+        '       "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
+        '       "JOIN race ON (race.id = race_ekipage.race_id) " + _
+        '       "WHERE (ekipage.finish_place = 1)"
+
+        'sql &= " AND " & GetAutoStartClause()
+        'sql &= " AND " & GetStartDateClause()
+        'sql &= " AND " & GetEndDateClause()
+
+        'sql += " GROUP BY "
+
+        'If UseTrack() Then
+        '    sql &= "race.track,"
+        'End If
+
+        'sql &= "ekipage.start_place) TrackLineRec " + _
+        '        "ON (TrackLineRec.track = TrackRec.track) " + _
+        '      ")TrackView "
+
+
+        'If (comboTracks.SelectedItem IsNot Nothing) Then
+        '    Dim track As String = CType(comboTracks.SelectedItem, String)
+        '    'sql += "AND (race.track = '" + track + "') "
+        '    sql += "WHERE (""Track"" = '" + track + "') "
+        'End If
+
+
+        ''sql += "GROUP BY race.track,ekipage.start_place " + _
+        ''       "ORDER BY race.track,cnt DESC"
+        'sql += "ORDER BY ""Track"",""NmbrWinners"" DESC"
         gridStartPosStats.ExecuteSql(MyBase.DbConnection, sql)
 
     End Sub
 
     Private Sub StatForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
-        FillTracksComboBox()
+        FillTracksComboBox(MyBase.DbConnection, comboTracks)
         comboTracks.SelectedIndex = 0
         dpStartdate.Value = Today
         dpEndDate.Value = Today
