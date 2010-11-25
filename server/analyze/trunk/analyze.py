@@ -172,6 +172,8 @@ def start_finish_stats(races, start_date, end_date, print_report=False, track=No
     volt_indices = []
     index = -1
     for race in races:
+        if track and race.track != track:
+                continue
         index += 1
         if race.auto_start:
             auto_indices.append(index)
@@ -189,7 +191,7 @@ def start_finish_stats(races, start_date, end_date, print_report=False, track=No
             if ekipage.finish_place < 900:
                 if ekipage.start_place not in auto_start_finish:
                     auto_start_finish[ekipage.start_place] = {}
-                elif ekipage.finish_place not in auto_start_finish[ekipage.start_place]:
+                if ekipage.finish_place not in auto_start_finish[ekipage.start_place]:
                     auto_start_finish[ekipage.start_place][ekipage.finish_place] = 1
                 else:
                     auto_start_finish[ekipage.start_place][ekipage.finish_place] += 1
@@ -221,7 +223,8 @@ def start_finish_stats(races, start_date, end_date, print_report=False, track=No
             volt_place_percentage[start] = place_perc
     print('Start date:', start_date.strftime("%Y-%m-%d"))
     print('End date:', end_date.strftime("%Y-%m-%d"))
-    print('Number of races:', len(races))
+    print('Track:', track, '(None = all tracks)')
+    print('Number of races:', index + 1)
     print('Number of races with auto start:', len(auto_indices))
     print('Number of races with volt start:', len(volt_indices))
     print('Auto winning %:')
@@ -409,8 +412,8 @@ if __name__ == '__main__':
     db_session = create_db_session(client_db_url)
     
     races = []
-    start_date = datetime.date(2009, 1, 1)
-    end_date = datetime.date(2009, 12, 31)
+    start_date = datetime.date(2010, 1, 1)
+    end_date = datetime.date(2010, 1, 31)
 
     create_pickle = False
     read_pickle = False
@@ -427,12 +430,13 @@ if __name__ == '__main__':
         pkl_file.close()
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
-    start_finish_stats(races, start_date, end_date, print_report=True)
+    track = 'jägersro'
+    start_finish_stats(races, start_date, end_date, print_report=True, track=track)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
-    test_bet_on_startplace(races)
-    print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
+    #test_bet_on_startplace(races)
+    #print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
     
