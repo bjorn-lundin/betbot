@@ -167,78 +167,73 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, start_date, end_date, print_report=False, track=None):
-    auto_indices = []
-    volt_indices = []
-    index = -1
+def start_finish_stats(races, start_date, end_date, print_report=False, track_select=None):
+    number_of_races = {'auto':0, 'volt':0}
+    result = {
+              'auto':{'win':{}, 'place':{}},
+              'volt':{'win':{}, 'place':{}}
+              }
     for race in races:
-        if track and race.track != track:
-                continue
-        index += 1
+        if track_select and race.track != track_select:
+            continue
+        track = race.track
         if race.auto_start:
-            auto_indices.append(index)
+            number_of_races['auto'] += 1
+            for ekipage in race.ekipage:
+                if ekipage.finish_place == 1:
+                    if ekipage.start_place not in result['auto']['win']:
+                        result['auto']['win'][ekipage.start_place] = 0
+                    result['auto']['win'][ekipage.start_place] += 1
+                if ekipage.finish_place > 0 and ekipage.finish_place < 4:
+                    if ekipage.start_place not in result['auto']['place']:
+                        result['auto']['place'][ekipage.start_place] = 0
+                    result['auto']['place'][ekipage.start_place] += 1
         else:
-            volt_indices.append(index)
-    auto_start_finish = {}
-    auto_win_percentage = {}
-    auto_place_percentage = {}
-    volt_start_finish = {}
-    volt_win_percentage = {}
-    volt_place_percentage = {}
-    # Auto start races
-    for race in auto_indices:
-        for ekipage in races[race].ekipage:
-            if ekipage.finish_place < 900:
-                if ekipage.start_place not in auto_start_finish:
-                    auto_start_finish[ekipage.start_place] = {}
-                if ekipage.finish_place not in auto_start_finish[ekipage.start_place]:
-                    auto_start_finish[ekipage.start_place][ekipage.finish_place] = 1
-                else:
-                    auto_start_finish[ekipage.start_place][ekipage.finish_place] += 1
-    for start in auto_start_finish:
-        if auto_start_finish[start].has_key(1) and auto_start_finish[start].has_key(2) \
-                and auto_start_finish[start].has_key(3):
-            win_perc = decimal.Decimal(auto_start_finish[start][1])/decimal.Decimal(len(auto_indices))
-            auto_win_percentage[start] = win_perc
-            place_accu = auto_start_finish[start][1] + auto_start_finish[start][2] + auto_start_finish[start][3]
-            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(auto_indices))
-            auto_place_percentage[start] = place_perc
-    # Volt start races
-    for race in volt_indices:
-        for ekipage in races[race].ekipage:
-            if ekipage.finish_place < 900:
-                if ekipage.start_place not in volt_start_finish:
-                    volt_start_finish[ekipage.start_place] = {}
-                elif ekipage.finish_place not in volt_start_finish[ekipage.start_place]:
-                    volt_start_finish[ekipage.start_place][ekipage.finish_place] = 1
-                else:
-                    volt_start_finish[ekipage.start_place][ekipage.finish_place] += 1
-    for start in volt_start_finish:
-        if volt_start_finish[start].has_key(1) and volt_start_finish[start].has_key(2) \
-                and volt_start_finish[start].has_key(3):
-            win_perc = decimal.Decimal(volt_start_finish[start][1])/decimal.Decimal(len(volt_indices))
-            volt_win_percentage[start] = win_perc
-            place_accu = volt_start_finish[start][1] + volt_start_finish[start][2] + volt_start_finish[start][3]
-            place_perc = decimal.Decimal(place_accu)/decimal.Decimal(len(volt_indices))
-            volt_place_percentage[start] = place_perc
+            number_of_races['volt'] += 1
+            for ekipage in race.ekipage:
+                if ekipage.finish_place == 1:
+                    if ekipage.start_place not in result['volt']['win']:
+                        result['volt']['win'][ekipage.start_place] = 0
+                    result['volt']['win'][ekipage.start_place] += 1
+                if ekipage.finish_place > 0 and ekipage.finish_place < 4:
+                    if ekipage.start_place not in result['volt']['place']:
+                        result['volt']['place'][ekipage.start_place] = 0
+                    result['volt']['place'][ekipage.start_place] += 1
+
     print('Start date:', start_date.strftime("%Y-%m-%d"))
     print('End date:', end_date.strftime("%Y-%m-%d"))
-    print('Track:', track, '(None = all tracks)')
-    print('Number of races:', index + 1)
-    print('Number of races with auto start:', len(auto_indices))
-    print('Number of races with volt start:', len(volt_indices))
+    print('Track:', track_select, '(None = all tracks)')
+    print('Number of races:', number_of_races['auto'] + number_of_races['volt'])
+    print('Number of races with auto start_place:', number_of_races['auto'])
+    print('Number of races with volt start_place:', number_of_races['volt'])
+
     print('Auto winning %:')
-    for x in sorted(auto_win_percentage, key=auto_win_percentage.get, reverse=True):
-        print(x, '\t\t', (auto_win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    percent = {}
+    for start_place in result['auto']['win'].keys():
+        percent[start_place] = decimal.Decimal(result['auto']['win'][start_place])/decimal.Decimal(number_of_races['auto'])
+    for x in sorted(percent, key=percent.get, reverse=True):
+        print(x, '\t\t', (percent[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+
     print('Auto place %:')
-    for x in sorted(auto_place_percentage, key=auto_place_percentage.get, reverse=True):
-        print(x, '\t\t', (auto_place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    percent = {}
+    for start_place in result['auto']['place'].keys():
+        percent[start_place] = decimal.Decimal(result['auto']['place'][start_place])/decimal.Decimal(number_of_races['auto'])
+    for x in sorted(percent, key=percent.get, reverse=True):
+        print(x, '\t\t', (percent[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+
     print('Volt winning %:')
-    for x in sorted(volt_win_percentage, key=volt_win_percentage.get, reverse=True):
-        print(x, '\t\t', (volt_win_percentage[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    percent = {}
+    for start_place in result['volt']['win'].keys():
+        percent[start_place] = decimal.Decimal(result['volt']['win'][start_place])/decimal.Decimal(number_of_races['volt'])
+    for x in sorted(percent, key=percent.get, reverse=True):
+        print(x, '\t\t', (percent[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+
     print('Volt place %:')
-    for x in sorted(volt_place_percentage, key=volt_place_percentage.get, reverse=True):
-        print(x, '\t\t', (volt_place_percentage[x]* 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
+    percent = {}
+    for start_place in result['volt']['place'].keys():
+        percent[start_place] = decimal.Decimal(result['volt']['place'][start_place])/decimal.Decimal(number_of_races['volt'])
+    for x in sorted(percent, key=percent.get, reverse=True):
+        print(x, '\t\t', (percent[x] * 100).quantize(decimal.Decimal('.1'), rounding=decimal.ROUND_DOWN), '%')
 
 def horse_form(races):
     form = {}
@@ -431,7 +426,8 @@ if __name__ == '__main__':
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
     track = 'jägersro'
-    start_finish_stats(races, start_date, end_date, print_report=True, track=track)
+    #track = None
+    start_finish_stats(races, start_date, end_date, print_report=True, track_select=track)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
