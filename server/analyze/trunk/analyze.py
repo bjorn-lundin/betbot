@@ -167,7 +167,7 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, start_date, end_date, report=False, track_filter=None):
+def start_finish_stats(races, start_date, end_date, screen_report=False, track_filter=None):
     number_of_races = {}
     result = {}
     number_of_races['TOTAL'] = {'auto':0, 'volt':0}
@@ -231,7 +231,19 @@ def start_finish_stats(races, start_date, end_date, report=False, track_filter=N
                 x[i][2][start_place] = \
                     decimal.Decimal(x[i][0][start_place])/\
                     decimal.Decimal(x[i][1])
-    if report:
+    result_order = {}
+    for track in result_perc:
+        if track not in result_order:
+            result_order[track] = {'auto':{'win':[], 'place':[]}, 'volt':{'win':[], 'place':[]}}
+        x = [
+             [result_perc[track]['auto']['win'], result_order[track]['auto']['win']],
+             [result_perc[track]['auto']['place'], result_order[track]['auto']['place']],
+             [result_perc[track]['volt']['win'], result_order[track]['volt']['win']],
+             [result_perc[track]['volt']['place'], result_order[track]['volt']['place']],
+             ]
+        for i in range(len(x)):
+            x[i][1].extend(sorted(x[i][0], key=x[i][0].get, reverse=True))
+    if screen_report:
         print('Start date:', start_date.strftime("%Y-%m-%d"))
         print('End date:', end_date.strftime("%Y-%m-%d"))
         print('Track filter:', track_filter, '(None = all tracks)')
@@ -249,7 +261,9 @@ def start_finish_stats(races, start_date, end_date, report=False, track_filter=N
                 for startplace in sorted(x[i], key=x[i].get, reverse=True):
                     reportline += '{0:>5}{1:>7.1%} '.format(startplace, x[i][startplace])
                 print(reportline)
-    return result_perc
+        for track in result_order:
+            print(track, '->', result_order[track])
+    return result_order
 
 def horse_form(races):
     form = {}
@@ -278,18 +292,7 @@ def horse_form(races):
         for horse in start_odds:
             print()
 
-def test_bet_on_startplace(races):
-    '''
-    Auto winning %:
-    5          13.2 %
-    Auto place %:
-    5          34.0 %
-    Volt winning %:
-    1          11.5 %
-    Volt place %:
-    1          31.3 %
-    ''' 
-    
+def test_bet_on_startplace(races, result_order, screen_report=False):
     bet_size = 100
     excel_data = {}
     tries = [
@@ -298,41 +301,61 @@ def test_bet_on_startplace(races):
                 ['Volt winning', True, False],
                 ['Volt place', False, False],
              ]
-    for header, winner, auto in tries:
-        bet = {}
-        bet_accu_winning = 0
-        equity_max = 0
-        equity_min = 0
-        number_wins = decimal.Decimal(0)
-        accu_odds = decimal.Decimal(0)
-        number_races = 0
-        
-        optimized_start_place = 0
-        if auto:
-            optimized_start_place = 5
-        else:
-            optimized_start_place = 1
-        for race in races:
+    bet = {}
+    bet_accu_winning = {}
+    equity_max = {}
+    equity_min = {}
+    number_wins = {}
+    accu_odds = {}
+    number_races = {}
+    for t in tries:
+        bet_accu_winning[t[0]] = 0
+        equity_max[t[0]] = 0
+        equity_min[t[0]] = 0
+        number_wins[t[0]] = 0
+        accu_odds[t[0]] = decimal.Decimal(0)
+        number_races[t[0]] = 0
+    for race in races:
+        for header, winner, auto in tries:
+            optimized_start_place = 0
+            bet_type = ''
+            start_method = ''
+            if winner:
+                bet_type = 'win'
+            else:
+                bet_type = 'place'
+            if auto:
+                start_method = 'auto'
+            else:
+                start_method = 'volt'
+            try:
+                optimized_start_place = result_order[race.track][start_method][bet_type][0]
+            except:
+                print('optimized_start_place exception for:')
+                print(race.track)
+                print(start_method)
+                print(bet_type)
+                continue
             bet[race.id] = {}
             bet[race.id]['date'] = race.date
             if auto and race.auto_start:
-                number_races += 1
+                number_races[header] += 1
             if not auto and not race.auto_start:
-                number_races += 1
+                number_races[header] += 1
             for ekipage in race.ekipage:
                 if ekipage.start_place == optimized_start_place:
                     if winner:
                         if ekipage.finish_place == 1:
                             bet[race.id]['result'] = bet_size * ekipage.winner_odds
-                            accu_odds += ekipage.winner_odds
-                            number_wins += 1
+                            accu_odds[header] += ekipage.winner_odds
+                            number_wins[header] += 1
                         else:
                             bet[race.id]['result'] = bet_size * -1
                     else:
                         if ekipage.place_odds:
                             bet[race.id]['result'] = bet_size * ekipage.place_odds
-                            accu_odds += ekipage.place_odds
-                            number_wins += 1
+                            accu_odds[header] += ekipage.place_odds
+                            number_wins[header] += 1
                         else:
                             bet[race.id]['result'] = bet_size * -1
                     if not header in excel_data:
@@ -348,21 +371,22 @@ def test_bet_on_startplace(races):
                     data.append(race.url)
                     excel_data[header].append(data)
             if 'result' in bet[race.id]:
-                bet_accu_winning += bet[race.id]['result']
-                if bet_accu_winning > equity_max:
-                    equity_max = bet_accu_winning
-                if bet_accu_winning < equity_min:
-                    equity_min = bet_accu_winning
-        print(header)
-        print('Betsize:', bet_size)
-        print('Total number of races:', len(bet))
-        print('Number of races in start method:', number_races)
-        print('Number of wins:', number_wins)
-        print('Average odds:', accu_odds/number_wins)
-        print('Equity min:', equity_min)
-        print('Equity max:', equity_max)
-        print('Total winnings:', bet_accu_winning)
-        print()
+                bet_accu_winning[header] += bet[race.id]['result']
+                if bet_accu_winning[header] > equity_max[header]:
+                    equity_max[header] = bet_accu_winning[header]
+                if bet_accu_winning[header] < equity_min[header]:
+                    equity_min[header] = bet_accu_winning[header]
+    if screen_report:
+        for t in tries:
+            print(t[0])
+            print('Betsize:', bet_size)
+            print('Total number of races:', len(bet))
+            print('Number of races in start method:', number_races[t[0]])
+            print('Number of wins:', number_wins[t[0]])
+            print('Equity min:', equity_min[t[0]])
+            print('Equity max:', equity_max[t[0]])
+            print('Total winnings:', bet_accu_winning[t[0]])
+            print()
     headers=['Date','Race track', 'Race number', 'Horse name', 'Start place', 'Finish place', 'Bet result', 'URL']
     save_in_excel(headers, excel_data)
 
@@ -423,11 +447,11 @@ if __name__ == '__main__':
     db_session = create_db_session(client_db_url)
     
     races = []
-    start_date = datetime.date(2010, 1, 1)
-    end_date = datetime.date(2010, 3, 31)
+    start_date = datetime.date(2009, 1, 1)
+    end_date = datetime.date(2009, 12, 31)
 
     create_pickle = False
-    read_pickle = True
+    read_pickle = False
     import pickle
     if read_pickle:
         pkl_file = open('races.pkl', 'rb')
@@ -443,12 +467,12 @@ if __name__ == '__main__':
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
     #tracks = ['jägersro', 'halmstad']
     tracks = None
-    start_finish_stats(races, start_date, end_date, report=True, track_filter=tracks)
+    result_order = start_finish_stats(races, start_date, end_date, screen_report=True, track_filter=tracks)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
-    #test_bet_on_startplace(races)
-    #print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
+    test_bet_on_startplace(races, result_order, screen_report=True)
+    print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
     
