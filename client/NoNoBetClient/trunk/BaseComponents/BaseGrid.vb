@@ -10,6 +10,29 @@ Public Class BaseGrid
         MyBase.New()
     End Sub
 
+    Public Shared Function GetCellIntValue(ByVal cell As DataGridViewCell) As Integer
+        If IsDBNull(cell.Value) Then
+            Return 0
+        Else
+            Return CType(cell.Value, Integer)
+        End If
+    End Function
+
+    Public Shared Function GetCellDecimalValue(ByVal cell As DataGridViewCell) As Decimal
+        If IsDBNull(cell.Value) Then
+            Return CType(0, Decimal)
+        Else
+            Return CType(cell.Value, Decimal)
+        End If
+    End Function
+
+    Public Shared Function GetCellDoubleValue(ByVal cell As DataGridViewCell) As Double
+        If IsDBNull(cell.Value) Then
+            Return CType(0, Double)
+        Else
+            Return CType(cell.Value, Double)
+        End If
+    End Function
 
     Public Function GetColumnValueType(ByVal colName As String) As System.Type
         If (Me.Columns IsNot Nothing) Then

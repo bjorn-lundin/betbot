@@ -1,6 +1,7 @@
 ﻿Imports System.Windows.Forms
 Imports BaseComponents
 Imports DbInterface
+Imports NoNoBetComponents.RaceBetSim
 
 Public Class StatForm
     Inherits BaseForm
@@ -17,11 +18,17 @@ Public Class StatForm
     Friend WithEvents buttonStartPosStats As System.Windows.Forms.Button
     Friend WithEvents labelTrack As System.Windows.Forms.Label
     Friend WithEvents comboTracks As System.Windows.Forms.ComboBox
-    Friend WithEvents CheckAuto As System.Windows.Forms.CheckBox
     Friend WithEvents labelEndDate As System.Windows.Forms.Label
     Friend WithEvents dpEndDate As System.Windows.Forms.DateTimePicker
     Friend WithEvents labelStartDate As System.Windows.Forms.Label
     Friend WithEvents dpStartdate As System.Windows.Forms.DateTimePicker
+    Friend WithEvents groupStartType As System.Windows.Forms.GroupBox
+    Friend WithEvents radioAuto As System.Windows.Forms.RadioButton
+    Friend WithEvents radioIgnore As System.Windows.Forms.RadioButton
+    Friend WithEvents radioVolt As System.Windows.Forms.RadioButton
+    Friend WithEvents groupBetType As System.Windows.Forms.GroupBox
+    Friend WithEvents radioBetTypeWinner As System.Windows.Forms.RadioButton
+    Friend WithEvents radioBetTypePlace As System.Windows.Forms.RadioButton
     Friend WithEvents groupTop As System.Windows.Forms.GroupBox
 
     Private Sub InitializeComponent()
@@ -35,20 +42,28 @@ Public Class StatForm
         Me.buttonTotWinEquipages = New System.Windows.Forms.Button()
         Me.textToWinEquipages = New System.Windows.Forms.TextBox()
         Me.groupStartPosStat = New System.Windows.Forms.GroupBox()
-        Me.CheckAuto = New System.Windows.Forms.CheckBox()
+        Me.labelEndDate = New System.Windows.Forms.Label()
+        Me.dpEndDate = New System.Windows.Forms.DateTimePicker()
+        Me.labelStartDate = New System.Windows.Forms.Label()
+        Me.dpStartdate = New System.Windows.Forms.DateTimePicker()
         Me.buttonStartPosStats = New System.Windows.Forms.Button()
         Me.labelTrack = New System.Windows.Forms.Label()
         Me.comboTracks = New System.Windows.Forms.ComboBox()
         Me.gridStartPosStats = New BaseComponents.BaseGrid()
-        Me.dpStartdate = New System.Windows.Forms.DateTimePicker()
-        Me.labelStartDate = New System.Windows.Forms.Label()
-        Me.labelEndDate = New System.Windows.Forms.Label()
-        Me.dpEndDate = New System.Windows.Forms.DateTimePicker()
+        Me.groupStartType = New System.Windows.Forms.GroupBox()
+        Me.radioAuto = New System.Windows.Forms.RadioButton()
+        Me.radioIgnore = New System.Windows.Forms.RadioButton()
+        Me.radioVolt = New System.Windows.Forms.RadioButton()
+        Me.groupBetType = New System.Windows.Forms.GroupBox()
+        Me.radioBetTypeWinner = New System.Windows.Forms.RadioButton()
+        Me.radioBetTypePlace = New System.Windows.Forms.RadioButton()
         Me.groupTop.SuspendLayout()
         Me.groupTotEcuipages.SuspendLayout()
         Me.groupTotWinEquipages.SuspendLayout()
         Me.groupStartPosStat.SuspendLayout()
         CType(Me.gridStartPosStats, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.groupStartType.SuspendLayout()
+        Me.groupBetType.SuspendLayout()
         Me.SuspendLayout()
         '
         'groupTop
@@ -58,7 +73,7 @@ Public Class StatForm
         Me.groupTop.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupTop.Location = New System.Drawing.Point(0, 0)
         Me.groupTop.Name = "groupTop"
-        Me.groupTop.Size = New System.Drawing.Size(753, 68)
+        Me.groupTop.Size = New System.Drawing.Size(754, 68)
         Me.groupTop.TabIndex = 0
         Me.groupTop.TabStop = False
         Me.groupTop.Text = "Total number races"
@@ -86,7 +101,7 @@ Public Class StatForm
         Me.groupTotEcuipages.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupTotEcuipages.Location = New System.Drawing.Point(0, 68)
         Me.groupTotEcuipages.Name = "groupTotEcuipages"
-        Me.groupTotEcuipages.Size = New System.Drawing.Size(753, 66)
+        Me.groupTotEcuipages.Size = New System.Drawing.Size(754, 66)
         Me.groupTotEcuipages.TabIndex = 1
         Me.groupTotEcuipages.TabStop = False
         Me.groupTotEcuipages.Text = "Total number equipages"
@@ -114,7 +129,7 @@ Public Class StatForm
         Me.groupTotWinEquipages.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupTotWinEquipages.Location = New System.Drawing.Point(0, 134)
         Me.groupTotWinEquipages.Name = "groupTotWinEquipages"
-        Me.groupTotWinEquipages.Size = New System.Drawing.Size(753, 64)
+        Me.groupTotWinEquipages.Size = New System.Drawing.Size(754, 64)
         Me.groupTotWinEquipages.TabIndex = 2
         Me.groupTotWinEquipages.TabStop = False
         Me.groupTotWinEquipages.Text = "Total number winning equipages"
@@ -137,31 +152,54 @@ Public Class StatForm
         '
         'groupStartPosStat
         '
+        Me.groupStartPosStat.Controls.Add(Me.groupBetType)
+        Me.groupStartPosStat.Controls.Add(Me.groupStartType)
         Me.groupStartPosStat.Controls.Add(Me.labelEndDate)
         Me.groupStartPosStat.Controls.Add(Me.dpEndDate)
         Me.groupStartPosStat.Controls.Add(Me.labelStartDate)
         Me.groupStartPosStat.Controls.Add(Me.dpStartdate)
-        Me.groupStartPosStat.Controls.Add(Me.CheckAuto)
         Me.groupStartPosStat.Controls.Add(Me.buttonStartPosStats)
         Me.groupStartPosStat.Controls.Add(Me.labelTrack)
         Me.groupStartPosStat.Controls.Add(Me.comboTracks)
         Me.groupStartPosStat.Dock = System.Windows.Forms.DockStyle.Top
         Me.groupStartPosStat.Location = New System.Drawing.Point(0, 198)
         Me.groupStartPosStat.Name = "groupStartPosStat"
-        Me.groupStartPosStat.Size = New System.Drawing.Size(753, 152)
+        Me.groupStartPosStat.Size = New System.Drawing.Size(754, 188)
         Me.groupStartPosStat.TabIndex = 3
         Me.groupStartPosStat.TabStop = False
         Me.groupStartPosStat.Text = "Start position statistics"
         '
-        'CheckAuto
+        'labelEndDate
         '
-        Me.CheckAuto.AutoSize = True
-        Me.CheckAuto.Location = New System.Drawing.Point(500, 52)
-        Me.CheckAuto.Name = "CheckAuto"
-        Me.CheckAuto.Size = New System.Drawing.Size(91, 21)
-        Me.CheckAuto.TabIndex = 7
-        Me.CheckAuto.Text = "Auto start"
-        Me.CheckAuto.UseVisualStyleBackColor = True
+        Me.labelEndDate.AutoSize = True
+        Me.labelEndDate.Location = New System.Drawing.Point(191, 78)
+        Me.labelEndDate.Name = "labelEndDate"
+        Me.labelEndDate.Size = New System.Drawing.Size(65, 17)
+        Me.labelEndDate.TabIndex = 11
+        Me.labelEndDate.Text = "End date"
+        '
+        'dpEndDate
+        '
+        Me.dpEndDate.Location = New System.Drawing.Point(194, 102)
+        Me.dpEndDate.Name = "dpEndDate"
+        Me.dpEndDate.Size = New System.Drawing.Size(200, 22)
+        Me.dpEndDate.TabIndex = 10
+        '
+        'labelStartDate
+        '
+        Me.labelStartDate.AutoSize = True
+        Me.labelStartDate.Location = New System.Drawing.Point(191, 29)
+        Me.labelStartDate.Name = "labelStartDate"
+        Me.labelStartDate.Size = New System.Drawing.Size(70, 17)
+        Me.labelStartDate.TabIndex = 9
+        Me.labelStartDate.Text = "Start date"
+        '
+        'dpStartdate
+        '
+        Me.dpStartdate.Location = New System.Drawing.Point(194, 53)
+        Me.dpStartdate.Name = "dpStartdate"
+        Me.dpStartdate.Size = New System.Drawing.Size(200, 22)
+        Me.dpStartdate.TabIndex = 8
         '
         'buttonStartPosStats
         '
@@ -193,47 +231,93 @@ Public Class StatForm
         '
         Me.gridStartPosStats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.gridStartPosStats.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 350)
+        Me.gridStartPosStats.Location = New System.Drawing.Point(0, 386)
         Me.gridStartPosStats.Name = "gridStartPosStats"
         Me.gridStartPosStats.RowTemplate.Height = 24
-        Me.gridStartPosStats.Size = New System.Drawing.Size(753, 267)
+        Me.gridStartPosStats.Size = New System.Drawing.Size(754, 231)
         Me.gridStartPosStats.TabIndex = 0
         '
-        'dpStartdate
+        'groupStartType
         '
-        Me.dpStartdate.Location = New System.Drawing.Point(194, 53)
-        Me.dpStartdate.Name = "dpStartdate"
-        Me.dpStartdate.Size = New System.Drawing.Size(200, 22)
-        Me.dpStartdate.TabIndex = 8
+        Me.groupStartType.Controls.Add(Me.radioAuto)
+        Me.groupStartType.Controls.Add(Me.radioIgnore)
+        Me.groupStartType.Controls.Add(Me.radioVolt)
+        Me.groupStartType.Location = New System.Drawing.Point(406, 52)
+        Me.groupStartType.Name = "groupStartType"
+        Me.groupStartType.Size = New System.Drawing.Size(94, 117)
+        Me.groupStartType.TabIndex = 25
+        Me.groupStartType.TabStop = False
+        Me.groupStartType.Text = "Start typ"
         '
-        'labelStartDate
+        'radioAuto
         '
-        Me.labelStartDate.AutoSize = True
-        Me.labelStartDate.Location = New System.Drawing.Point(191, 29)
-        Me.labelStartDate.Name = "labelStartDate"
-        Me.labelStartDate.Size = New System.Drawing.Size(70, 17)
-        Me.labelStartDate.TabIndex = 9
-        Me.labelStartDate.Text = "Start date"
+        Me.radioAuto.AutoSize = True
+        Me.radioAuto.Location = New System.Drawing.Point(16, 49)
+        Me.radioAuto.Name = "radioAuto"
+        Me.radioAuto.Size = New System.Drawing.Size(58, 21)
+        Me.radioAuto.TabIndex = 20
+        Me.radioAuto.TabStop = True
+        Me.radioAuto.Text = "Auto"
+        Me.radioAuto.UseVisualStyleBackColor = True
         '
-        'labelEndDate
+        'radioIgnore
         '
-        Me.labelEndDate.AutoSize = True
-        Me.labelEndDate.Location = New System.Drawing.Point(191, 78)
-        Me.labelEndDate.Name = "labelEndDate"
-        Me.labelEndDate.Size = New System.Drawing.Size(65, 17)
-        Me.labelEndDate.TabIndex = 11
-        Me.labelEndDate.Text = "End date"
+        Me.radioIgnore.AutoSize = True
+        Me.radioIgnore.Location = New System.Drawing.Point(16, 73)
+        Me.radioIgnore.Name = "radioIgnore"
+        Me.radioIgnore.Size = New System.Drawing.Size(69, 21)
+        Me.radioIgnore.TabIndex = 21
+        Me.radioIgnore.TabStop = True
+        Me.radioIgnore.Text = "Ignore"
+        Me.radioIgnore.UseVisualStyleBackColor = True
         '
-        'dpEndDate
+        'radioVolt
         '
-        Me.dpEndDate.Location = New System.Drawing.Point(194, 102)
-        Me.dpEndDate.Name = "dpEndDate"
-        Me.dpEndDate.Size = New System.Drawing.Size(200, 22)
-        Me.dpEndDate.TabIndex = 10
+        Me.radioVolt.AutoSize = True
+        Me.radioVolt.Location = New System.Drawing.Point(16, 25)
+        Me.radioVolt.Name = "radioVolt"
+        Me.radioVolt.Size = New System.Drawing.Size(53, 21)
+        Me.radioVolt.TabIndex = 19
+        Me.radioVolt.TabStop = True
+        Me.radioVolt.Text = "Volt"
+        Me.radioVolt.UseVisualStyleBackColor = True
+        '
+        'groupBetType
+        '
+        Me.groupBetType.Controls.Add(Me.radioBetTypeWinner)
+        Me.groupBetType.Controls.Add(Me.radioBetTypePlace)
+        Me.groupBetType.Location = New System.Drawing.Point(512, 52)
+        Me.groupBetType.Name = "groupBetType"
+        Me.groupBetType.Size = New System.Drawing.Size(92, 117)
+        Me.groupBetType.TabIndex = 26
+        Me.groupBetType.TabStop = False
+        Me.groupBetType.Text = "Speltyp"
+        '
+        'radioBetTypeWinner
+        '
+        Me.radioBetTypeWinner.AutoSize = True
+        Me.radioBetTypeWinner.Location = New System.Drawing.Point(12, 36)
+        Me.radioBetTypeWinner.Name = "radioBetTypeWinner"
+        Me.radioBetTypeWinner.Size = New System.Drawing.Size(78, 21)
+        Me.radioBetTypeWinner.TabIndex = 20
+        Me.radioBetTypeWinner.TabStop = True
+        Me.radioBetTypeWinner.Text = "Vinnare"
+        Me.radioBetTypeWinner.UseVisualStyleBackColor = True
+        '
+        'radioBetTypePlace
+        '
+        Me.radioBetTypePlace.AutoSize = True
+        Me.radioBetTypePlace.Location = New System.Drawing.Point(12, 66)
+        Me.radioBetTypePlace.Name = "radioBetTypePlace"
+        Me.radioBetTypePlace.Size = New System.Drawing.Size(60, 21)
+        Me.radioBetTypePlace.TabIndex = 21
+        Me.radioBetTypePlace.TabStop = True
+        Me.radioBetTypePlace.Text = "Plats"
+        Me.radioBetTypePlace.UseVisualStyleBackColor = True
         '
         'StatForm
         '
-        Me.ClientSize = New System.Drawing.Size(753, 617)
+        Me.ClientSize = New System.Drawing.Size(754, 617)
         Me.Controls.Add(Me.gridStartPosStats)
         Me.Controls.Add(Me.groupStartPosStat)
         Me.Controls.Add(Me.groupTotWinEquipages)
@@ -250,6 +334,10 @@ Public Class StatForm
         Me.groupStartPosStat.ResumeLayout(False)
         Me.groupStartPosStat.PerformLayout()
         CType(Me.gridStartPosStats, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.groupStartType.ResumeLayout(False)
+        Me.groupStartType.PerformLayout()
+        Me.groupBetType.ResumeLayout(False)
+        Me.groupBetType.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -259,24 +347,36 @@ Public Class StatForm
         InitializeComponent()
     End Sub
 
+    Private Function GetStartType() As StartType
+        If radioAuto.Checked Then
+            Return StartType.Auto
+        ElseIf radioVolt.Checked Then
+            Return StartType.Volt
+        Else
+            Return StartType.Ignore
+        End If
+    End Function
+
+    Private Function GetBetType() As RaceBetSim.BetType
+        If radioBetTypePlace.Checked Then
+            Return RaceBetSim.BetType.Place
+        Else
+            Return RaceBetSim.BetType.Winner
+        End If
+    End Function
+
     Private Sub buttonTotEquipages_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonTotEquipages.Click
         textTotEquipages.Text = MyBase.DbConnection.ExecuteSqlScalar("SELECT count(id) FROM ekipage").ToString
     End Sub
 
     Private Sub buttonTotRaces_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonTotRaces.Click
         textTotRaces.Text = MyBase.DbConnection.ExecuteSqlScalar("SELECT count(id) FROM race").ToString
-        Dim st As StartType
-        If CheckAuto.Checked Then
-            st = StartType.Auto
-        Else
-            st = StartType.Volt
-        End If
 
         Dim pos1, pos2, pos3 As Integer
         Dim win1, win2, win3 As Integer
         Dim pcnt1, pcnt2, pcnt3 As Decimal
 
-        GetTrackBestStartPosData(comboTracks.SelectedItem.ToString, dpStartdate.Value, dpEndDate.Value, st, pos1, win1, pcnt1, pos2, win2, pcnt2, pos3, win3, pcnt3)
+        GetTrackBestStartPosData(comboTracks.SelectedItem.ToString, dpStartdate.Value, dpEndDate.Value, GetStartType(), GetBetType(), pos1, win1, pcnt1, pos2, win2, pcnt2, pos3, win3, pcnt3)
     End Sub
 
     Private Sub buttonTotWinEquipages_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonTotWinEquipages.Click
@@ -311,19 +411,19 @@ Public Class StatForm
         Return "(race.date >= " & DbConnection.DateToSqlString(startDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
     End Function
 
-    Private Function GetAutoStartClause() As String
-        Dim notStr As String
+    'Private Function GetAutoStartClause() As String
+    '    Dim notStr As String
 
-        If CheckAuto.Checked Then
-            notStr = "NOT "
-        Else
-            notStr = ""
-        End If
+    '    If CheckAuto.Checked Then
+    '        notStr = "NOT "
+    '    Else
+    '        notStr = ""
+    '    End If
 
-        Return "(" & notStr & "race.auto_start)"
-    End Function
+    '    Return "(" & notStr & "race.auto_start)"
+    'End Function
 
-    Private Function GetStartTypeClause(ByVal startType As StartType) As String
+    Public Shared Function GetStartTypeClause(ByVal startType As StartType) As String
         Select Case startType
             Case startType.Auto
                 Return "(race.auto_start)"
@@ -356,11 +456,11 @@ Public Class StatForm
         Volt = 3
     End Enum
 
-    Public Sub GetTrackBestStartPosData(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType, _
+    Public Sub GetTrackBestStartPosData(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType, ByVal betType As RaceBetSim.BetType, _
                                         ByRef startPos1 As Integer, ByRef winners1 As Integer, ByRef winnersPercent1 As Decimal, _
                                         ByRef startPos2 As Integer, ByRef winners2 As Integer, ByRef winnersPercent2 As Decimal, _
                                         ByRef startPos3 As Integer, ByRef winners3 As Integer, ByRef winnersPercent3 As Decimal)
-        Dim sql As String = BuildSingleTrackSql(trackName, startDate, endDate, startType)
+        Dim sql As String = BuildSingleTrackSql(trackName, startDate, endDate, startType, betType)
         Dim dReader As Npgsql.NpgsqlDataReader = MyBase.DbConnection.ExecuteSqlCommand(sql)
 
         startPos1 = 0
@@ -394,9 +494,10 @@ Public Class StatForm
         dReader.Close()
     End Sub
 
-    Public Function BuildSingleTrackSql(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType) As String
+    Public Function BuildSingleTrackSql(ByVal trackName As String, ByVal startDate As Date, ByVal endDate As Date, ByVal startType As StartType, ByVal betType As RaceBetSim.BetType) As String
         Dim sql As String
         Dim startTypeClauseStr As String = Nothing
+
 
         sql = "SELECT * FROM ("
 
@@ -404,7 +505,13 @@ Public Class StatForm
         sql &= "(SELECT race.track, count(*) as cnt FROM ekipage " + _
                "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
                "JOIN race ON (race.id = race_ekipage.race_id) " + _
-               "WHERE (ekipage.finish_place = 1)"
+               "WHERE (ekipage.finish_place "
+
+        If (betType = RaceBetSim.BetType.Winner) Then
+            sql &= "= 1)"
+        ElseIf betType = RaceBetSim.BetType.Place Then
+            sql &= "in (1,2,3))"
+        End If
 
         startTypeClauseStr = GetStartTypeClause(startType)
         If (startTypeClauseStr.Length > 0) Then
@@ -419,7 +526,13 @@ Public Class StatForm
                "(SELECT ekipage.start_place,race.track,count(*) as cnt FROM ekipage " + _
                 "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
                 "JOIN race ON (race.id = race_ekipage.race_id) " + _
-                "WHERE (ekipage.finish_place = 1)"
+                "WHERE (ekipage.finish_place "
+
+        If (betType = RaceBetSim.BetType.Winner) Then
+            sql &= "= 1)"
+        ElseIf betType = RaceBetSim.BetType.Place Then
+            sql &= "in (1,2,3))"
+        End If
 
         If (startTypeClauseStr.Length > 0) Then
             sql &= " AND " & startTypeClauseStr
@@ -440,15 +553,8 @@ Public Class StatForm
 
     Private Sub buttonStartPosStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStartPosStats.Click
         Dim sql As String
-        Dim startType As StartType
 
-        If CheckAuto.Checked Then
-            startType = startType.Auto
-        Else
-            startType = startType.Volt
-        End If
-
-        sql = BuildSingleTrackSql(CType(comboTracks.SelectedItem, String), dpStartdate.Value, dpEndDate.Value, startType)
+        sql = BuildSingleTrackSql(CType(comboTracks.SelectedItem, String), dpStartdate.Value, dpEndDate.Value, GetStartType(), GetBetType())
 
         ''sql = "SELECT ekipage.start_place, count(*) as cnt, race.track FROM ekipage " + _
         ''      "JOIN race_ekipage ON (ekipage.id = race_ekipage.ekipage_id) " + _
@@ -530,6 +636,7 @@ Public Class StatForm
         comboTracks.SelectedIndex = 0
         dpStartdate.Value = Today
         dpEndDate.Value = Today
+
     End Sub
 
 End Class
