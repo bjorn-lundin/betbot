@@ -294,100 +294,68 @@ def horse_form(races):
 
 def test_bet_on_startplace(races, result_order, screen_report=False):
     bet_size = 100
-    excel_data = {}
-    tries = [
-                ['Auto winning', True, True],
-                ['Auto place', False, True],
-                ['Volt winning', True, False],
-                ['Volt place', False, False],
-             ]
+    excel_data = {'auto win':[], 'auto place':[], \
+                  'volt win':[], 'volt place':[]}
     bet = {}
-    bet_accu_winning = {}
-    equity_max = {}
-    equity_min = {}
-    number_wins = {}
-    accu_odds = {}
-    number_races = {}
-    for t in tries:
-        bet_accu_winning[t[0]] = 0
-        equity_max[t[0]] = 0
-        equity_min[t[0]] = 0
-        number_wins[t[0]] = 0
-        accu_odds[t[0]] = decimal.Decimal(0)
-        number_races[t[0]] = 0
     for race in races:
-        for header, winner, auto in tries:
-            optimized_start_place = 0
-            bet_type = ''
-            start_method = ''
-            if winner:
-                bet_type = 'win'
-            else:
-                bet_type = 'place'
-            if auto:
-                start_method = 'auto'
-            else:
-                start_method = 'volt'
-            try:
-                optimized_start_place = result_order[race.track][start_method][bet_type][0]
-            except:
-                print('optimized_start_place exception for:')
-                print(race.track)
-                print(start_method)
-                print(bet_type)
-                continue
-            bet[race.id] = {}
-            bet[race.id]['date'] = race.date
-            if auto and race.auto_start:
-                number_races[header] += 1
-            if not auto and not race.auto_start:
-                number_races[header] += 1
-            for ekipage in race.ekipage:
-                if ekipage.start_place == optimized_start_place:
-                    if winner:
-                        if ekipage.finish_place == 1:
-                            bet[race.id]['result'] = bet_size * ekipage.winner_odds
-                            accu_odds[header] += ekipage.winner_odds
-                            number_wins[header] += 1
-                        else:
-                            bet[race.id]['result'] = bet_size * -1
-                    else:
-                        if ekipage.place_odds:
-                            bet[race.id]['result'] = bet_size * ekipage.place_odds
-                            accu_odds[header] += ekipage.place_odds
-                            number_wins[header] += 1
-                        else:
-                            bet[race.id]['result'] = bet_size * -1
-                    if not header in excel_data:
-                        excel_data[header] = []
-                    data = []
-                    data.append(bet[race.id]['date'].strftime("%Y-%m-%d"))
-                    data.append(race.track.decode('utf-8'))
-                    data.append(race.number)
-                    data.append(ekipage.horse.name.decode('utf-8'))
-                    data.append(optimized_start_place)
-                    data.append(ekipage.finish_place)
-                    data.append(bet[race.id]['result'])
-                    data.append(race.url)
-                    excel_data[header].append(data)
-            if 'result' in bet[race.id]:
-                bet_accu_winning[header] += bet[race.id]['result']
-                if bet_accu_winning[header] > equity_max[header]:
-                    equity_max[header] = bet_accu_winning[header]
-                if bet_accu_winning[header] < equity_min[header]:
-                    equity_min[header] = bet_accu_winning[header]
-    if screen_report:
-        for t in tries:
-            print(t[0])
-            print('Betsize:', bet_size)
-            print('Total number of races:', len(bet))
-            print('Number of races in start method:', number_races[t[0]])
-            print('Number of wins:', number_wins[t[0]])
-            print('Equity min:', equity_min[t[0]])
-            print('Equity max:', equity_max[t[0]])
-            print('Total winnings:', bet_accu_winning[t[0]])
-            print()
-    headers=['Date','Race track', 'Race number', 'Horse name', 'Start place', 'Finish place', 'Bet result', 'URL']
+        track_start_place_win = 0
+        track_start_place_place = 0
+        start_method = ''
+        if race.auto_start:
+            start_method = 'auto'
+        else:
+            start_method = 'volt'
+        try:
+            track_start_place_win = result_order[race.track][start_method]['win'][0]
+            track_start_place_place = result_order[race.track][start_method]['place'][0]
+        except:
+            print('No optimized start position:', race.date, race.track, start_method)
+            continue
+        bet[race.id] = {}
+        bet[race.id]['date'] = race.date
+        win_header = start_method + ' win'
+        place_header = start_method + ' place'
+        for ekipage in race.ekipage:
+            report_win = False
+            report_place = False
+            # Win
+            if ekipage.start_place == track_start_place_win:
+                if ekipage.finish_place == 1:
+                    bet[race.id]['win_result'] = bet_size * ekipage.winner_odds
+                else:
+                    bet[race.id]['win_result'] = bet_size * -1
+                report_win = True
+            # Place
+            if ekipage.start_place == track_start_place_place:
+                if ekipage.place_odds:
+                    bet[race.id]['place_result'] = bet_size * ekipage.place_odds
+                else:
+                    bet[race.id]['place_result'] = bet_size * -1
+                report_place = True
+            if report_win:
+                data = []
+                data.append(bet[race.id]['date'].strftime("%Y-%m-%d"))
+                data.append(race.track.decode('utf-8'))
+                data.append(race.number)
+                data.append(ekipage.horse.name.decode('utf-8'))
+                data.append(track_start_place_win)
+                data.append(ekipage.finish_place)
+                data.append(bet[race.id]['win_result'])
+                data.append(race.url)
+                excel_data[win_header].append(data)
+            if report_place:
+                data = []
+                data.append(bet[race.id]['date'].strftime("%Y-%m-%d"))
+                data.append(race.track.decode('utf-8'))
+                data.append(race.number)
+                data.append(ekipage.horse.name.decode('utf-8'))
+                data.append(track_start_place_place)
+                data.append(ekipage.finish_place)
+                data.append(bet[race.id]['place_result'])
+                data.append(race.url)
+                excel_data[place_header].append(data)
+    headers=['Date','Race track', 'Race number', 'Horse name', \
+             'Start place', 'Finish place', 'Bet result', 'URL']
     save_in_excel(headers, excel_data)
 
 def save_in_excel(headers, data):
