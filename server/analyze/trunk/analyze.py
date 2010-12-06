@@ -305,12 +305,14 @@ def horse_form(races):
         for horse in start_odds:
             print()
 
-def test_bet_on_startplace(races, result_order, screen_report=False):
+def test_bet_on_startplace(races, result_order, track_filter=None):
     bet_size = 100
     excel_data = {'auto win':[], 'auto place':[], \
                   'volt win':[], 'volt place':[]}
     bet = {}
     for race in races:
+        if track_filter and race.track not in track_filter:
+            continue
         track_start_place_win = 0
         track_start_place_place = 0
         start_method = ''
@@ -448,12 +450,12 @@ if __name__ == '__main__':
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
     tracks = ['jägersro', 'solvalla']
     #tracks = None
-    result_order = start_finish_stats(races, start_date, end_date, screen_report=True, track_filter=tracks)
+    result_order = start_finish_stats(races, start_date, end_date, screen_report=False, track_filter=tracks)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
-    #test_bet_on_startplace(races, result_order, screen_report=True)
-    #print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
+    test_bet_on_startplace(races, result_order, track_filter=tracks)
+    print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
     
