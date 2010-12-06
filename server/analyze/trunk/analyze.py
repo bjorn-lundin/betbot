@@ -168,102 +168,115 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
     return races
 
 def start_finish_stats(races, start_date, end_date, screen_report=False, track_filter=None):
-    number_of_races = {}
+    start_types = ['auto', 'volt']
+    bet_types = ['win', 'place']
     result = {}
-    number_of_races['TOTAL'] = {'auto':0, 'volt':0}
-    result['TOTAL'] = {'auto':{'win':{}, 'place':{}}, 'volt':{'win':{}, 'place':{}}}
+    class Result:
+        track_results = {}
+        total_number_of_races = {}
+        for start_type in start_types:
+            total_number_of_races[start_type] = {}
+            for bet_type in bet_types:
+                total_number_of_races[start_type][bet_type] = 0
+        def __init__(self, track):
+            if track in self.track_results.keys():
+                self.number_of_races = self.track_results[track].number_of_races
+            else:
+                self.number_of_races = {}
+                self.result_percentage = {}
+                for start_type in start_types:
+                    self.number_of_races[start_type] = {}
+                    self.result_percentage[start_type] = {}
+                    for bet_type in bet_types:
+                        self.number_of_races[start_type][bet_type] = {}
+                        self.result_percentage[start_type][bet_type] = {}
+                self.track_results[track] = self
+        def add_race(self, start_type, bet_type, start_place):
+            self.number_of_races[start_type][bet_type].setdefault(start_place, 0)
+            self.number_of_races[start_type][bet_type][start_place] += 1
+            self.total_number_of_races[start_type][bet_type] += 1
+        def add_result_percentage(self, start_type, bet_type, start_place, percentage):
+            self.result_percentage[start_type][bet_type].setdefault(start_place, 0.0)
+            self.result_percentage[start_type][bet_type][start_place] = percentage
     for race in races:
         if track_filter and race.track not in track_filter:
             continue
-        track = race.track
+        track_result = Result(race.track)
+        start_type = start_types[0]
+        if not race.auto_start:
+            start_type = start_types[1]
+        for ekipage in race.ekipage:
+            if ekipage.finish_place == 1:
+                track_result.add_race(start_type, bet_types[0], ekipage.start_place)
+            if ekipage.finish_place > 0 and ekipage.finish_place < 4:
+                track_result.add_race(start_type, bet_types[1], ekipage.start_place)
+    # Calculate percentages
+    for track in Result.track_results.keys():
+        for s_t in start_types:
+            number_races_start_type = 0
+            for b_t in bet_types:
+                number_races_start_type += sum(v for v in Result.track_results[track].number_of_races[s_t][b_t].values())
+            for b_t in bet_types:
+                for s_p in Result.track_results[track].number_of_races[s_t][b_t].keys():
+                    number_of_races = Result.track_results[track].number_of_races[s_t][b_t][s_p]
+                    Result.track_results[track].add_result_percentage(s_t, b_t, s_p, number_of_races/number_races_start_type)
+    # Create ordered result lists per track
+    for track in Result.track_results.keys():
         if track not in result:
-            result[track] = {'auto':{'win':{}, 'place':{}}, 'volt':{'win':{}, 'place':{}}}
-        if track not in number_of_races:
-            number_of_races[track] = {'auto':0, 'volt':0}
-        if race.auto_start:
-            number_of_races[track]['auto'] += 1
-            number_of_races['TOTAL']['auto'] += 1
-            for ekipage in race.ekipage:
-                if ekipage.finish_place == 1:
-                    if ekipage.start_place not in result[track]['auto']['win']:
-                        result[track]['auto']['win'][ekipage.start_place] = 0
-                    if ekipage.start_place not in result['TOTAL']['auto']['win']:
-                        result['TOTAL']['auto']['win'][ekipage.start_place] = 0
-                    result[track]['auto']['win'][ekipage.start_place] += 1
-                    result['TOTAL']['auto']['win'][ekipage.start_place] += 1
-                if ekipage.finish_place > 0 and ekipage.finish_place < 4:
-                    if ekipage.start_place not in result[track]['auto']['place']:
-                        result[track]['auto']['place'][ekipage.start_place] = 0
-                    if ekipage.start_place not in result['TOTAL']['auto']['place']:
-                        result['TOTAL']['auto']['place'][ekipage.start_place] = 0
-                    result[track]['auto']['place'][ekipage.start_place] += 1
-                    result['TOTAL']['auto']['place'][ekipage.start_place] += 1
-        else:
-            number_of_races[track]['volt'] += 1
-            number_of_races['TOTAL']['volt'] += 1
-            for ekipage in race.ekipage:
-                if ekipage.finish_place == 1:
-                    if ekipage.start_place not in result[track]['volt']['win']:
-                        result[track]['volt']['win'][ekipage.start_place] = 0
-                    if ekipage.start_place not in result['TOTAL']['volt']['win']:
-                        result['TOTAL']['volt']['win'][ekipage.start_place] = 0
-                    result[track]['volt']['win'][ekipage.start_place] += 1
-                    result['TOTAL']['volt']['win'][ekipage.start_place] += 1
-                if ekipage.finish_place > 0 and ekipage.finish_place < 4:
-                    if ekipage.start_place not in result[track]['volt']['place']:
-                        result[track]['volt']['place'][ekipage.start_place] = 0
-                    if ekipage.start_place not in result['TOTAL']['volt']['place']:
-                        result['TOTAL']['volt']['place'][ekipage.start_place] = 0
-                    result[track]['volt']['place'][ekipage.start_place] += 1
-                    result['TOTAL']['volt']['place'][ekipage.start_place] += 1
-    result_perc = {}
-    for track in result:
-        if track not in result_perc:
-            result_perc[track] = {'auto':{'win':{}, 'place':{}}, 'volt':{'win':{}, 'place':{}}}
-        x = [
-             [result[track]['auto']['win'], number_of_races[track]['auto'], result_perc[track]['auto']['win']],
-             [result[track]['auto']['place'], number_of_races[track]['auto'], result_perc[track]['auto']['place']],
-             [result[track]['volt']['win'], number_of_races[track]['volt'], result_perc[track]['volt']['win']],
-             [result[track]['volt']['place'], number_of_races[track]['volt'], result_perc[track]['volt']['place']]
-             ]
-        for i in range(len(x)):
-            for start_place in x[i][0].keys():
-                x[i][2][start_place] = \
-                    decimal.Decimal(x[i][0][start_place])/\
-                    decimal.Decimal(x[i][1])
-    result_order = {}
-    for track in result_perc:
-        if track not in result_order:
-            result_order[track] = {'auto':{'win':[], 'place':[]}, 'volt':{'win':[], 'place':[]}}
-        x = [
-             [result_perc[track]['auto']['win'], result_order[track]['auto']['win']],
-             [result_perc[track]['auto']['place'], result_order[track]['auto']['place']],
-             [result_perc[track]['volt']['win'], result_order[track]['volt']['win']],
-             [result_perc[track]['volt']['place'], result_order[track]['volt']['place']],
-             ]
-        for i in range(len(x)):
-            x[i][1].extend(sorted(x[i][0], key=x[i][0].get, reverse=True))
+            result[track] = {'auto':{'win':[], 'place':[]}, 'volt':{'win':[], 'place':[]}}
+        for s_t in start_types:
+            for b_t in bet_types:
+                percentage = Result.track_results[track].result_percentage[s_t][b_t]
+                result[track][s_t][b_t].extend(sorted(percentage, key=percentage.get, reverse=True))
     if screen_report:
         print('Start date:', start_date.strftime("%Y-%m-%d"))
         print('End date:', end_date.strftime("%Y-%m-%d"))
-        print('Track filter:', track_filter, '(None = all tracks)')
-        for track in result_perc:
-            x = [
-                 result_perc[track]['auto']['win'],
-                 result_perc[track]['auto']['place'],
-                 result_perc[track]['volt']['win'],
-                 result_perc[track]['volt']['place'],
-                 ]
-            y = ['aw', 'ap', 'vw', 'vp']
-            for i in range(4):
-                reportline = '{0:<12}'.format(unicode(track))
-                reportline += '{0:<3}'.format(y[i])
-                for startplace in sorted(x[i], key=x[i].get, reverse=True):
-                    reportline += '{0:>5}{1:>7.1%} '.format(startplace, x[i][startplace])
-                print(reportline)
-        for track in result_order:
-            print(track, '->', result_order[track])
-    return result_order
+        t = ''
+        if not track_filter:
+            t = 'None'
+        else:
+            for track in track_filter:
+                t += unicode(track) + ' '
+        print('Track filter:', t, '(None = all tracks)')
+        # Report total number of races
+        tot = 0
+        for s_t in start_types:
+            tot += sum(v for v in Result.total_number_of_races[s_t].values())
+        print('Total', tot)
+        # Report total number of auto and volt
+        for s_t in start_types:
+            print('Total', s_t, sum(v for v in Result.total_number_of_races[s_t].values()))
+        report_col_1 = '{0:<11}'
+        report_col_2 = '{0:>4}'
+        # Report per track
+        for track in Result.track_results.keys():
+            print('-' * 10)
+            print(track.upper())
+            # Report number of races
+            tot = 0
+            for s_t in start_types:
+                for b_t in bet_types:
+                    tot += sum(v for v in Result.track_results[track].number_of_races[s_t][b_t].values())
+            print(report_col_1.format('total'), report_col_2.format(tot))
+            # Report number of auto and volt
+            for s_t in start_types:
+                tot = 0
+                for b_t in bet_types:
+                    tot += sum(v for v in Result.track_results[track].number_of_races[s_t][b_t].values())
+                print(report_col_1.format(s_t), report_col_2.format(tot))
+            # Report percentage per start position
+            for s_t in start_types:
+                number_races_start_type = 0
+                for b_t in bet_types:
+                    number_races_start_type += sum(v for v in Result.track_results[track].number_of_races[s_t][b_t].values())
+                for b_t in bet_types:
+                    report_line = report_col_1.format(s_t + ' ' + b_t)
+                    for s_p in Result.track_results[track].number_of_races[s_t][b_t].keys():
+                        number_of_races = Result.track_results[track].number_of_races[s_t][b_t][s_p]
+                        prep = '{0}({1})->{2:>3.1%}  '.format(s_p, number_of_races, number_of_races/number_races_start_type)
+                        report_line += '{0:<14}'.format(prep)
+                    print(report_line)
+    return result
 
 def horse_form(races):
     form = {}
@@ -433,14 +446,14 @@ if __name__ == '__main__':
         pkl_file.close()
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
-    #tracks = ['jägersro', 'halmstad']
-    tracks = None
+    tracks = ['jägersro', 'solvalla']
+    #tracks = None
     result_order = start_finish_stats(races, start_date, end_date, screen_report=True, track_filter=tracks)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
-    test_bet_on_startplace(races, result_order, screen_report=True)
-    print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
+    #test_bet_on_startplace(races, result_order, screen_report=True)
+    #print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
     
