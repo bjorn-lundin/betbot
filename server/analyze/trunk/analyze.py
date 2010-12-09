@@ -167,7 +167,7 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, start_date, end_date, screen_report=False, track_filter=None):
+def start_finish_stats(races, start_date, end_date, track_filter=None, screen_report=False, excel_report=False):
     start_types = ['auto', 'volt']
     bet_types = ['win', 'place']
     result = {}
@@ -276,6 +276,31 @@ def start_finish_stats(races, start_date, end_date, screen_report=False, track_f
                         prep = '{0}({1})->{2:>3.1%}  '.format(s_p, number_of_races, number_of_races/number_races_start_type)
                         report_line += '{0:<14}'.format(prep)
                     print(report_line)
+    if excel_report:
+        from xlwt import Workbook, Font, XFStyle
+        headers=['Start type','Bet type', 'Start 1', 'Start 2', 'Start 3', 'Start 4', 'Start 5']
+        wb = Workbook()
+        header_font=Font()
+        header_font.bold=True
+        header_style = XFStyle(); header_style.font = header_font
+        for track in sorted(result):
+            ws = wb.add_sheet(unicode(track).capitalize())
+            for column, value in enumerate(headers):
+                ws.write(0, column, value, header_style)
+            row_num = 0
+            for s_t in result[track]:
+                for b_t in result[track][s_t]:
+                    row_values = [s_t, b_t]
+                    max_positions = 5
+                    for position in range(len(result[track][s_t][b_t])):
+                        if position < max_positions:
+                            row_values.append(result[track][s_t][b_t][position])
+                        else:
+                            break
+                    row_num += 1
+                    for column, value in enumerate(row_values):
+                        ws.write(row_num, column, value)
+        wb.save('nonobet_statistics_win_place_.xls')
     return result
 
 def horse_form(races):
@@ -305,7 +330,7 @@ def horse_form(races):
         for horse in start_odds:
             print()
 
-def test_bet_on_startplace(races, result_order, track_filter=None):
+def test_bet_on_startplace(races, result_order, track_filter=None, excel_report=False):
     bet_size = 100
     excel_data = {'auto win':[], 'auto place':[], \
                   'volt win':[], 'volt place':[]}
@@ -369,26 +394,24 @@ def test_bet_on_startplace(races, result_order, track_filter=None):
                 data.append(bet[race.id]['place_result'])
                 data.append(race.url)
                 excel_data[place_header].append(data)
-    headers=['Date','Race track', 'Race number', 'Horse name', \
-             'Start place', 'Finish place', 'Bet result', 'URL']
-    save_in_excel(headers, excel_data)
+    if excel_report:
+        from xlwt import Workbook, Font, XFStyle
+        headers=['Date','Race track', 'Race number', 'Horse name', \
+                 'Start place', 'Finish place', 'Bet result', 'URL']
+        wb = Workbook()
+        header_font=Font()
+        header_font.bold=True
+        header_style = XFStyle(); header_style.font = header_font
+        for sheet in sorted(excel_data):
+            ws = wb.add_sheet(sheet)
+            for col,value in enumerate(headers):
+                ws.write(0,col,value,header_style)
+            for row_num, row_values in enumerate(excel_data[sheet]):
+                row_num += 1
+                for col, value in enumerate(row_values):
+                    ws.write(row_num,col,value)
+        wb.save('nonobet_analysis_win_place_.xls')
 
-def save_in_excel(headers, data):
-    from xlwt import Workbook, Font, XFStyle
-    wb = Workbook()
-    header_font=Font() #make a font object
-    header_font.bold=True
-    header_style = XFStyle(); header_style.font = header_font
-    for sheet in sorted(data):
-        ws = wb.add_sheet(sheet)
-        for col,value in enumerate(headers):
-            ws.write(0,col,value,header_style)
-        for row_num, row_values in enumerate(data[sheet]):
-            row_num += 1
-            for col, value in enumerate(row_values):
-                ws.write(row_num,col,value)
-    wb.save('nonobet_analysis_.xls')
-        
 def more_excel_example():
     # sudo apt-get install python-setuptools python-dev build-essential
     # http://www.python-excel.org/
@@ -431,7 +454,7 @@ if __name__ == '__main__':
     
     races = []
     start_date = datetime.date(2009, 1, 1)
-    end_date = datetime.date(2009, 12, 31)
+    end_date = datetime.date(2009, 1, 31)
 
     create_pickle = False
     read_pickle = False
@@ -448,13 +471,16 @@ if __name__ == '__main__':
         pkl_file.close()
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
-    tracks = ['jägersro', 'solvalla']
-    #tracks = None
-    result_order = start_finish_stats(races, start_date, end_date, screen_report=False, track_filter=tracks)
+    #tracks = ['jägersro', 'solvalla']
+    #tracks = ['färjestad']
+    tracks = None
+    result_order = start_finish_stats(races, start_date, end_date, track_filter=tracks,
+                                      screen_report=False, excel_report=True)
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
-    test_bet_on_startplace(races, result_order, track_filter=tracks)
+    
+    #test_bet_on_startplace(races, result_order, track_filter=tracks, excel_report=True)
     print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
