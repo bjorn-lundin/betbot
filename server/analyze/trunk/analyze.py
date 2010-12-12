@@ -434,7 +434,7 @@ def horse_form(races):
         for horse in start_odds:
             print()
 
-def test_bet_on_startplace(races, result_order, track_filter=None, excel_report=False):
+def test_bet_on_startplace(races, result_order, track_filter=None, excel_report=False, monthly=False):
     bet_size = 100
     excel_data = {'auto win':[], 'auto place':[], \
                   'volt win':[], 'volt place':[]}
@@ -449,12 +449,20 @@ def test_bet_on_startplace(races, result_order, track_filter=None, excel_report=
             start_method = 'auto'
         else:
             start_method = 'volt'
-        try:
-            track_start_place_win = result_order[race.track][start_method]['win'][0]
-            track_start_place_place = result_order[race.track][start_method]['place'][0]
-        except:
-            print('No optimized start position:', race.date, race.track, start_method)
-            continue
+        if monthly:
+            try:
+                track_start_place_win = result_order[race.track][race.date.month][start_method]['win'][0]
+                track_start_place_place = result_order[race.track][race.date.month][start_method]['place'][0]
+            except:
+                print('No optimized start position:', race.date, race.track, start_method)
+                continue
+        else:
+            try:
+                track_start_place_win = result_order[race.track][start_method]['win'][0]
+                track_start_place_place = result_order[race.track][start_method]['place'][0]
+            except:
+                print('No optimized start position:', race.date, race.track, start_method)
+                continue
         bet[race.id] = {}
         bet[race.id]['date'] = race.date
         win_header = start_method + ' win'
@@ -557,8 +565,8 @@ if __name__ == '__main__':
     db_session = create_db_session(client_db_url)
     
     races = []
-    start_date = datetime.date(2009, 1, 1)
-    end_date = datetime.date(2009, 3, 31)
+    start_date = datetime.date(2010, 1, 1)
+    end_date = datetime.date(2010, 12, 5)
     
     create_pickle = False
     read_pickle = False
@@ -575,20 +583,20 @@ if __name__ == '__main__':
         pkl_file.close()
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
-    tracks = ['jägersro', 'solvalla']
+    #tracks = ['jägersro', 'solvalla']
     #tracks = ['färjestad']
-    #tracks = None
+    tracks = None
 #    result_order = start_finish_stats(races, start_date, end_date, track_filter=tracks,
 #                                      screen_report=False, excel_report=True)
-
+    monthly = True
     result_order = win_place_statistics(races, start_date, end_date, track_filter=tracks,
-                                        screen_report=False, excel_report=True, monthly=True)
+                                        screen_report=False, excel_report=True, monthly=monthly)
     
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
     
-    #test_bet_on_startplace(races, result_order, track_filter=tracks, excel_report=True)
+    test_bet_on_startplace(races, result_order, track_filter=tracks, excel_report=True, monthly=monthly)
     print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
     print('\nTotal execution time: %.1f sec' % (time.time() - t_start))
     exit()
