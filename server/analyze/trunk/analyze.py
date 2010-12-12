@@ -167,7 +167,13 @@ def date_range(db_session, start_date=None, end_date=None, debug=False):
         print([[race.date, race.number] for race in races])
     return races
 
-def start_finish_stats(races, start_date, end_date, track_filter=None, screen_report=False, excel_report=False):
+def win_place_statistics(races, start_date, end_date, track_filter=None, screen_report=False, excel_report=False, monthly=False):
+    if monthly:
+        return win_place_statistics_track_month(races, start_date, end_date, track_filter, screen_report, excel_report)
+    else:
+        return win_place_statistics_track(races, start_date, end_date, track_filter, screen_report, excel_report)
+
+def win_place_statistics_track(races, start_date, end_date, track_filter=None, screen_report=False, excel_report=False):
     start_types = ['auto', 'volt']
     bet_types = ['win', 'place']
     result = {}
@@ -301,6 +307,104 @@ def start_finish_stats(races, start_date, end_date, track_filter=None, screen_re
                     for column, value in enumerate(row_values):
                         ws.write(row_num, column, value)
         wb.save('nonobet_statistics_win_place_.xls')
+    return result
+
+def win_place_statistics_track_month(races, start_date, end_date, track_filter=None, screen_report=False, excel_report=False):
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
+              'August', 'September', 'October', 'November', 'December']
+    start_types = ['auto', 'volt']
+    bet_types = ['win', 'place']
+    total_number_of_races = {}
+    for start_type in start_types:
+        total_number_of_races[start_type] = 0
+    track_results = {}
+    number_of_races = {}
+    percentage = {}
+    result = {}
+    def get_result_struct(start_type_sum = False, bet_type_struct = None):
+        rs = {}
+        for m in range(12):
+            month = m + 1
+            rs[month] = {}
+            for start_type in start_types:
+                if start_type_sum:
+                    rs[month][start_type] = 0
+                else:
+                    rs[month][start_type] = {}
+                if bet_type_struct and bet_type_struct == 'dict':
+                    for bet_type in bet_types:
+                        rs[month][start_type][bet_type] = {}
+                elif bet_type_struct and bet_type_struct == 'list':
+                    for bet_type in bet_types:
+                        rs[month][start_type][bet_type] = []
+        return rs
+    for race in races:
+        track = race.track
+        month = race.date.month
+        if track_filter and track not in track_filter:
+            continue
+        start_type = start_types[0]
+        if not race.auto_start:
+            start_type = start_types[1]
+        if not track in track_results:
+            track_results[race.track] = get_result_struct(False, 'dict')
+        if not track in number_of_races:
+            number_of_races[track] = get_result_struct(True)
+        number_of_races[track][month][start_type] += 1
+        for ekipage in race.ekipage:
+            if ekipage.finish_place == 1:
+                track_results[track][month][start_type][bet_types[0]].setdefault(ekipage.start_place, 0)
+                track_results[track][month][start_type][bet_types[0]][ekipage.start_place] += 1
+            if ekipage.finish_place > 0 and ekipage.finish_place < 4:
+                track_results[track][month][start_type][bet_types[1]].setdefault(ekipage.start_place, 0)
+                track_results[track][month][start_type][bet_types[1]][ekipage.start_place] += 1
+    # Calculate percentages
+    for track in track_results.keys():
+        if track not in percentage:
+            percentage[track] = get_result_struct(False, 'dict')
+        for month in track_results[track]:
+            for s_t in start_types:
+                no_of_races = number_of_races[track][month][s_t]
+                for b_t in bet_types:
+                    for s_p in track_results[track][month][s_t][b_t].keys():
+                        no_of_hits = track_results[track][month][s_t][b_t][s_p]
+                        percentage[track][month][s_t][b_t][s_p] = no_of_hits / no_of_races
+    # Create ordered result lists per track
+    for track in track_results.keys():
+        if track not in result:
+            result[track] = get_result_struct(False, 'list')
+        for month in track_results[track]:
+            for s_t in start_types:
+                for b_t in bet_types:
+                    p = percentage[track][month][s_t][b_t]
+                    result[track][month][s_t][b_t].extend(sorted(p, key=p.get, reverse=True))
+    if excel_report:
+        from xlwt import Workbook, Font, XFStyle
+        headers=['Month', 'Start type', 'Bet type', 'Start 1', 'Start 2', 'Start 3', 'Start 4', 'Start 5']
+        wb = Workbook()
+        header_font=Font()
+        header_font.bold=True
+        header_style = XFStyle(); header_style.font = header_font
+        for track in sorted(result):
+            ws = wb.add_sheet(unicode(track).capitalize())
+            for column, value in enumerate(headers):
+                ws.write(0, column, value, header_style)
+            row_num = 0
+            for month in sorted(result[track]):
+                for s_t in result[track][month]:
+                    for b_t in result[track][month][s_t]:
+                        row_values = [months[month - 1], s_t, b_t]
+                        max_positions = 5
+                        for position in range(len(result[track][month][s_t][b_t])):
+                            if position < max_positions:
+                                row_values.append(result[track][month][s_t][b_t][position])
+                            else:
+                                break
+                        row_num += 1
+                        for column, value in enumerate(row_values):
+                            print(row_num, column, value)
+                            ws.write(row_num, column, value)
+        wb.save('nonobet_statistics_win_place_month_.xls')
     return result
 
 def horse_form(races):
@@ -454,8 +558,8 @@ if __name__ == '__main__':
     
     races = []
     start_date = datetime.date(2009, 1, 1)
-    end_date = datetime.date(2009, 1, 31)
-
+    end_date = datetime.date(2009, 3, 31)
+    
     create_pickle = False
     read_pickle = False
     import pickle
@@ -471,11 +575,15 @@ if __name__ == '__main__':
         pkl_file.close()
 
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
-    #tracks = ['jägersro', 'solvalla']
+    tracks = ['jägersro', 'solvalla']
     #tracks = ['färjestad']
-    tracks = None
-    result_order = start_finish_stats(races, start_date, end_date, track_filter=tracks,
-                                      screen_report=False, excel_report=True)
+    #tracks = None
+#    result_order = start_finish_stats(races, start_date, end_date, track_filter=tracks,
+#                                      screen_report=False, excel_report=True)
+
+    result_order = win_place_statistics(races, start_date, end_date, track_filter=tracks,
+                                        screen_report=False, excel_report=True, monthly=True)
+    
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
