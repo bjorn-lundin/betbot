@@ -636,7 +636,7 @@ Public Class StatForm
         comboTracks.SelectedIndex = 0
         dpStartdate.Value = Today
         dpEndDate.Value = Today
-
+        gridStartPosStats.SetReadOnlyMode()
     End Sub
 
 End Class

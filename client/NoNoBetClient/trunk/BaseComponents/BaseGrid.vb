@@ -74,13 +74,19 @@ Public Class BaseGrid
         Return Nothing
     End Function
 
-    Function GetCurrentRowCellValue(ByVal colName As String) As Object
+    Public Function GetCurrentRowCellValue(ByVal colName As String) As Object
         Return GetRowColumnValue(Me.CurrentRow, colName)
     End Function
 
-    Function GetCurrentRowCellValue(ByVal colIndex As Integer) As Object
+    Public Function GetCurrentRowCellValue(ByVal colIndex As Integer) As Object
         Return GetRowColumnValue(Me.CurrentRow, colIndex)
     End Function
+
+    Public Sub SetReadOnlyMode()
+        Me.ReadOnly = True
+        Me.AllowUserToAddRows = False
+        Me.AllowUserToDeleteRows = False
+    End Sub
 
     ''' <summary>
     ''' Execute specified SQL and bind the result to grid
@@ -91,6 +97,7 @@ Public Class BaseGrid
     Public Sub ExecuteSql(ByVal dbCon As DbInterface.DbConnection, ByVal sql As String)
         Cursor = Cursors.WaitCursor
         _Sql = sql
+        'Me.Clear()
         Me.AutoGenerateColumns = True
         MyBase.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
@@ -108,7 +115,7 @@ Public Class BaseGrid
     ''' </summary>
     ''' <remarks></remarks>
     Public Sub Clear()
-        MyBase.Rows.Clear()
+        Me.Rows.Clear()
     End Sub
 
     Private Sub BaseGrid_MouseDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDoubleClick

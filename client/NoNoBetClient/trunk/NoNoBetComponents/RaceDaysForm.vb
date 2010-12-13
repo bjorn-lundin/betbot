@@ -264,6 +264,9 @@ Public Class RaceDaysForm
 
     Private Sub RaceDaysForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Me.Text = "Race days"
+        gridRaceDays.SetReadOnlyMode()
+        gridRaces.SetReadOnlyMode()
+        gridRaceEquipages.SetReadOnlyMode()
         gridRaceDays.ExecuteSql(Me.DbConnection, "SELECT date,track FROM race WHERE null = null")
         'gridRaces.ExecuteSql(MyBase.DbConnection, "SELECT * FROM ekipage WHERE null = null")
         gridRaces.ExecuteSql(Me.DbConnection, "SELECT id,date,track FROM race WHERE null = null")

@@ -44,9 +44,9 @@ Public Class RaceBetSim
     Friend WithEvents textStartPos As System.Windows.Forms.TextBox
 
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.groupTop = New System.Windows.Forms.GroupBox()
         Me.groupTopBottom = New System.Windows.Forms.GroupBox()
         Me.groupSelectionType = New System.Windows.Forms.GroupBox()
@@ -73,6 +73,7 @@ Public Class RaceBetSim
         Me.Label1 = New System.Windows.Forms.Label()
         Me.textBetAmount = New System.Windows.Forms.TextBox()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.textWinPercent = New System.Windows.Forms.TextBox()
         Me.textWinAmount = New System.Windows.Forms.TextBox()
         Me.textNmbrWins = New System.Windows.Forms.TextBox()
         Me.textSumBetAmount = New System.Windows.Forms.TextBox()
@@ -84,7 +85,6 @@ Public Class RaceBetSim
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.Label6 = New System.Windows.Forms.Label()
         Me.textTotNmbrRaces = New System.Windows.Forms.TextBox()
-        Me.textWinPercent = New System.Windows.Forms.TextBox()
         Me.groupTop.SuspendLayout()
         Me.groupTopBottom.SuspendLayout()
         Me.groupSelectionType.SuspendLayout()
@@ -97,8 +97,8 @@ Public Class RaceBetSim
         '
         'groupTop
         '
-        Me.groupTop.Controls.Add(Me.groupTopBottom)
         Me.groupTop.Controls.Add(Me.gridRaces)
+        Me.groupTop.Controls.Add(Me.groupTopBottom)
         Me.groupTop.Dock = System.Windows.Forms.DockStyle.Fill
         Me.groupTop.Location = New System.Drawing.Point(0, 0)
         Me.groupTop.Name = "groupTop"
@@ -283,36 +283,36 @@ Public Class RaceBetSim
         '
         'gridRaces
         '
-        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle7.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.gridRaces.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.gridRaces.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.gridRaces.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle8.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.gridRaces.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.gridRaces.DefaultCellStyle = DataGridViewCellStyle2
         Me.gridRaces.Dock = System.Windows.Forms.DockStyle.Fill
         Me.gridRaces.Location = New System.Drawing.Point(3, 18)
         Me.gridRaces.Name = "gridRaces"
-        DataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle9.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.gridRaces.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
+        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.gridRaces.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.gridRaces.RowTemplate.Height = 24
-        Me.gridRaces.Size = New System.Drawing.Size(990, 406)
+        Me.gridRaces.Size = New System.Drawing.Size(990, 242)
         Me.gridRaces.TabIndex = 0
         '
         'butttonBet
@@ -392,6 +392,13 @@ Public Class RaceBetSim
         Me.GroupBox1.TabIndex = 25
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Resultat"
+        '
+        'textWinPercent
+        '
+        Me.textWinPercent.Location = New System.Drawing.Point(233, 101)
+        Me.textWinPercent.Name = "textWinPercent"
+        Me.textWinPercent.Size = New System.Drawing.Size(48, 22)
+        Me.textWinPercent.TabIndex = 29
         '
         'textWinAmount
         '
@@ -488,13 +495,6 @@ Public Class RaceBetSim
         Me.textTotNmbrRaces.Name = "textTotNmbrRaces"
         Me.textTotNmbrRaces.Size = New System.Drawing.Size(63, 22)
         Me.textTotNmbrRaces.TabIndex = 26
-        '
-        'textWinPercent
-        '
-        Me.textWinPercent.Location = New System.Drawing.Point(233, 101)
-        Me.textWinPercent.Name = "textWinPercent"
-        Me.textWinPercent.Size = New System.Drawing.Size(48, 22)
-        Me.textWinPercent.TabIndex = 29
         '
         'RaceBetSim
         '
@@ -629,43 +629,44 @@ Public Class RaceBetSim
 
         For i = 0 To gridRaces.Rows.Count - 1
             Dim currRow As DataGridViewRow = gridRaces.Rows(i)
-            Dim currCell As DataGridViewCell = Nothing
+            If (Not currRow.IsNewRow) Then
+                Dim currCell As DataGridViewCell = Nothing
 
-            currCell = currRow.Cells("raceid")
-            Dim raceId As Integer = BaseGrid.GetCellIntValue(currCell)
+                currCell = currRow.Cells("raceid")
+                Dim raceId As Integer = BaseGrid.GetCellIntValue(currCell)
 
-            currCell = currRow.Cells("finish_place")
-            Dim finishPlace As Integer = BaseGrid.GetCellIntValue(currCell)
+                currCell = currRow.Cells("finish_place")
+                Dim finishPlace As Integer = BaseGrid.GetCellIntValue(currCell)
 
-            Dim odds As Decimal = 0
-            Dim aWinner As Boolean = False
-            Select Case betType
-                Case betType.Winner
-                    If (finishPlace = 1) Then
-                        currCell = currRow.Cells("winner_odds")
-                        odds = BaseGrid.GetCellDecimalValue(currCell)
-                        aWinner = True
-                    End If
-                Case betType.Place
-                    If (finishPlace >= 1) And (finishPlace <= 3) Then
-                        currCell = currRow.Cells("place_odds")
-                        odds = BaseGrid.GetCellDecimalValue(currCell)
-                        aWinner = True
-                    End If
-            End Select
+                Dim odds As Decimal = 0
+                Dim aWinner As Boolean = False
+                Select Case betType
+                    Case betType.Winner
+                        If (finishPlace = 1) Then
+                            currCell = currRow.Cells("winner_odds")
+                            odds = BaseGrid.GetCellDecimalValue(currCell)
+                            aWinner = True
+                        End If
+                    Case betType.Place
+                        If (finishPlace >= 1) And (finishPlace <= 3) Then
+                            currCell = currRow.Cells("place_odds")
+                            odds = BaseGrid.GetCellDecimalValue(currCell)
+                            aWinner = True
+                        End If
+                End Select
 
-            _NmbrBets += 1
-            textNmbrRaces.Text = _NmbrBets.ToString
-            _SumBetAmount += _BetAmount
-            textSumBetAmount.Text = _SumBetAmount.ToString
+                _NmbrBets += 1
+                textNmbrRaces.Text = _NmbrBets.ToString
+                _SumBetAmount += _BetAmount
+                textSumBetAmount.Text = _SumBetAmount.ToString
 
-            If aWinner Then
-                _NmbrWinners += 1
-                textNmbrWins.Text = _NmbrWinners.ToString
-                _WinAmount += (odds * _BetAmount)
-                textWinAmount.Text = _WinAmount.ToString
+                If aWinner Then
+                    _NmbrWinners += 1
+                    textNmbrWins.Text = _NmbrWinners.ToString
+                    _WinAmount += (odds * _BetAmount)
+                    textWinAmount.Text = _WinAmount.ToString
+                End If
             End If
-
             Application.DoEvents()
         Next
     End Sub
@@ -714,6 +715,7 @@ Public Class RaceBetSim
         textSumBetAmount.Text = "0"
         textWinAmount.Text = "0"
         textTotNmbrRaces.Text = "0"
+        gridRaces.SetReadOnlyMode()
         _IsLoaded = True
     End Sub
 
