@@ -402,7 +402,6 @@ def win_place_statistics_track_month(races, start_date, end_date, track_filter=N
                                 break
                         row_num += 1
                         for column, value in enumerate(row_values):
-                            print(row_num, column, value)
                             ws.write(row_num, column, value)
         wb.save('nonobet_statistics_win_place_month_.xls')
     return result
@@ -473,14 +472,14 @@ def test_bet_on_startplace(races, result_order, track_filter=None, excel_report=
             # Win
             if ekipage.start_place == track_start_place_win:
                 if ekipage.finish_place == 1:
-                    bet[race.id]['win_result'] = bet_size * ekipage.winner_odds
+                    bet[race.id]['win_result'] = bet_size * ekipage.winner_odds - bet_size
                 else:
                     bet[race.id]['win_result'] = bet_size * -1
                 report_win = True
             # Place
             if ekipage.start_place == track_start_place_place:
                 if ekipage.place_odds:
-                    bet[race.id]['place_result'] = bet_size * ekipage.place_odds
+                    bet[race.id]['place_result'] = bet_size * ekipage.place_odds - bet_size
                 else:
                     bet[race.id]['place_result'] = bet_size * -1
                 report_place = True
@@ -564,10 +563,10 @@ if __name__ == '__main__':
     client_db_url = conf.get('DEFAULT', 'client_db_url')
     db_session = create_db_session(client_db_url)
     
+    # Statistics
     races = []
-    start_date = datetime.date(2010, 1, 1)
-    end_date = datetime.date(2010, 12, 5)
-    
+    start_date = datetime.date(2008, 1, 1)
+    end_date = datetime.date(2009, 12, 31)
     create_pickle = False
     read_pickle = False
     import pickle
@@ -585,16 +584,37 @@ if __name__ == '__main__':
     print('\nExecution time after data collection: %.1f sec' % (time.time() - t_start))
     #tracks = ['jägersro', 'solvalla']
     #tracks = ['färjestad']
-    tracks = None
+    tracks = ['axevalla', 'bergsåker', 'eskilstuna', 'färjestad', 'gävle', 'halmstad', 'jägersro', 'kalmar', 'mantorp', 'romme', 'solvalla', 'åby', 'örebro', 'östersund']
+    #tracks = None
 #    result_order = start_finish_stats(races, start_date, end_date, track_filter=tracks,
 #                                      screen_report=False, excel_report=True)
-    monthly = True
+    monthly = False
+    
     result_order = win_place_statistics(races, start_date, end_date, track_filter=tracks,
                                         screen_report=False, excel_report=True, monthly=monthly)
     
     print('\nExecution time after start_finish_stats: %.1f sec' % (time.time() - t_start))
     #horse_form(races)
     #print('\nExecution time after horse_form: %.1f sec' % (time.time() - t_start))
+
+    # Test betting
+    races = []
+    start_date = datetime.date(2009, 1, 1)
+    end_date = datetime.date(2009, 1, 31)
+    create_pickle = False
+    read_pickle = False
+    import pickle
+    if read_pickle:
+        pkl_file = open('races.pkl', 'rb')
+        races = pickle.load(pkl_file)
+        pkl_file.close()
+    else:
+        races = date_range(db_session, start_date, end_date, debug=False)
+    if create_pickle:
+        pkl_file = open('races.pkl', 'wb')
+        pickle.dump(races, pkl_file, pickle.HIGHEST_PROTOCOL)
+        pkl_file.close()
+
     
     test_bet_on_startplace(races, result_order, track_filter=tracks, excel_report=True, monthly=monthly)
     print('\nExecution time after test_bet_on_startplace: %.1f sec' % (time.time() - t_start))
