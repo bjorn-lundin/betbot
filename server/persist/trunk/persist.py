@@ -36,7 +36,7 @@ def create_db_session(client_db_url, db_init):
 
 def clean_tmp_download(client_file_path, tmp_download_dir, move_files=False):
     if move_files:
-        print('Post-processing downloaded files...')
+        print('Processing downloaded files...')
         for file in os.listdir(tmp_download_dir):
             os.rename(os.path.join(tmp_download_dir, file),
                       os.path.join(client_file_path, file))
@@ -102,11 +102,11 @@ def get_persisted_files(db_session):
 
 def get_data(data_path, db_session, persisted_files):
     file_source = get_source_files(data_path)
+    print ('Checking file status in database...')
     for file in file_source:
         if file['file_name'] in persisted_files:
-            print ('File ' + file['file_name'] + ' already in database')
             continue
-        print ('Processing ' + file['file_name'])
+        print ('Adding ' + file['file_name'] + ' to database')
         data = ''
         if file['file_name'].endswith('.gz'):
             fh = gzip.open(os.path.join(data_path, file['file_name']), 'rb')
@@ -176,6 +176,7 @@ def get_data(data_path, db_session, persisted_files):
         # instead when checking filenames before adding?
         db_session.merge(race)
         db_session.commit()
+    print('Database up to date!')
             
 def prep_data(data):
     lines = data.splitlines(True)
