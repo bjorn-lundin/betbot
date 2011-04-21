@@ -27,7 +27,9 @@ public class Main {
         boolean ignoreSSLHostnameMatch = true;
         Browser browser = new Browser(config, ignoreSSLTrustedCert,
                 ignoreSSLHostnameMatch);
-        browser.basicLogin();
+        browser.FormLogin(browser.basicLogin());
+        String html = browser.get("https://nonodev.com/its/my/page");
+        System.out.println(html);
         browser.shutdownClient();
     }
 
