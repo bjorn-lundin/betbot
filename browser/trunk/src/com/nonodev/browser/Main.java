@@ -27,6 +27,10 @@ public class Main {
         boolean ignoreSSLHostnameMatch = true;
         Browser browser = new Browser(config, ignoreSSLTrustedCert,
                 ignoreSSLHostnameMatch);
+        //System.out.println(browser.get("https://secure.pensionsmyndigheten.se/"));
+        //System.out.println(browser.get("http://pensionsmyndigheten.se/"));
+        System.out.println(browser.get("https://nonodev.com"));
+        System.exit(99);
         browser.FormLogin(browser.basicLogin());
         String html = browser.get("https://nonodev.com/its/my/page");
         System.out.println(html);

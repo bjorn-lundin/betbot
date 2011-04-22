@@ -1,13 +1,17 @@
 package com.nonodev.browser;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
@@ -25,17 +29,24 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
@@ -50,20 +61,20 @@ class Browser {
     private String url = null;
     private String useragent = null;
     private String basicRealm = null;
-    private boolean ignoreSSLTrustedCert = true;
+    private boolean ignoreHostnameVerifier = true;
     private boolean ignoreSSLHostnameMatch = true;
     private DefaultHttpClient httpclient = null;
 
-    public Browser(Map<String, String> config, boolean ignoreSSLTrustedCert,
+    public Browser(Map<String, String> config, boolean ignoreHostnameVerifier,
             boolean ignoreSSLHostnameMatch) {
         this.useragent = config.get("useragent");
         this.username = config.get("username");
         this.password = config.get("password");
         this.url = config.get("url");
         this.basicRealm = config.get("basicRealm");
-        this.ignoreSSLTrustedCert = ignoreSSLTrustedCert;
+        this.ignoreHostnameVerifier = ignoreHostnameVerifier;
         this.ignoreSSLHostnameMatch = ignoreSSLHostnameMatch;
-        initClient();
+        initClient2();
     }
 
     public void shutdownClient() {
@@ -71,7 +82,12 @@ class Browser {
     }
 
     private void initClient() {
-        if (ignoreSSLTrustedCert) {
+        //HttpsURLConnection huc;
+
+        //TrustStrategy
+
+
+        if (ignoreHostnameVerifier) {
             try {
                 SSLSocketFactory sf = null;
                 // Set up a TrustManager that trusts
@@ -79,21 +95,23 @@ class Browser {
                 SSLContext sslContext = SSLContext.getInstance("SSL");
                 sslContext.init(null, new TrustManager[] {
                     new X509TrustManager() {
+                        @Override
                         public X509Certificate[] getAcceptedIssuers() {
                             return null;
                         }
 
+                        @Override
                         public void checkClientTrusted(X509Certificate[] certs,
                                 String authType) {
                         }
 
+                        @Override
                         public void checkServerTrusted(X509Certificate[] certs,
                                 String authType) {
                         }
                     }
                 }, new SecureRandom());
                 sf = new SSLSocketFactory(sslContext);
-
                 if (ignoreSSLHostnameMatch) {
                     sf.setHostnameVerifier(new X509HostnameVerifier() {
                         public boolean verify(String hostname,
@@ -115,6 +133,8 @@ class Browser {
                     });
                 }
 
+
+
                 Scheme httpsScheme = new Scheme("https", sf, 443);
                 SchemeRegistry schemeRegistry = new SchemeRegistry();
                 schemeRegistry.register(httpsScheme);
@@ -129,6 +149,35 @@ class Browser {
             httpclient = new DefaultHttpClient();
         }
         httpclient.getParams().setParameter("USER_AGENT", useragent);
+        httpclient.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy() {
+            @Override
+            public long getKeepAliveDuration(HttpResponse response,
+                    HttpContext context) {
+                long keepAlive = super.getKeepAliveDuration(response, context);
+                if (keepAlive == -1) {
+                    // Keep connections alive 5 seconds if a keep-alive value
+                    // has not be explicitly set by the server
+                    keepAlive = 5000;
+                }
+                return keepAlive;
+            }
+        });
+    }
+
+    private void initClient2() {
+        httpclient = new DefaultHttpClient();
+        TrustStrategy trustStrategy = new TrustSelfSignedStrategy();
+        X509HostnameVerifier hostnameVerifier = new AllowAllHostnameVerifier();
+        try {
+            SSLSocketFactory sf =
+                    new SSLSocketFactory(trustStrategy, hostnameVerifier);
+            Scheme sch = new Scheme("https", 443, sf);
+            httpclient.getConnectionManager().getSchemeRegistry().register(sch);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        httpclient.getParams().setParameter(HttpProtocolParams.USER_AGENT, useragent);
         httpclient.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy() {
             @Override
             public long getKeepAliveDuration(HttpResponse response,
