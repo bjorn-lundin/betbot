@@ -2,6 +2,7 @@
 
 Public Class BaseForm
     Inherits Form
+    Implements IBaseForm
 
     Private _DbConnection As DbInterface.DbConnection
 
@@ -9,17 +10,20 @@ Public Class BaseForm
         MyBase.New()
     End Sub
 
-    Public ReadOnly Property DbConnection As DbInterface.DbConnection
+    Public Property DbConnection As DbInterface.DbConnection Implements IBaseComponent.DbConnection
         Get
             Return _DbConnection
         End Get
+        Set(ByVal value As DbInterface.DbConnection)
+            _DbConnection = value
+        End Set
     End Property
 
     ''' <summary>
     ''' Start the BaseForm
     ''' </summary>
     ''' <remarks>Default StartPosition is CenterScreen</remarks>
-    Public Sub StartForm()
+    Public Sub StartForm() Implements IBaseForm.StartForm
         Me.StartPosition = FormStartPosition.CenterScreen
         'Me.ShowDialog()
         Me.Show()
@@ -30,7 +34,7 @@ Public Class BaseForm
     ''' </summary>
     ''' <param name="dbCon">Database connection object</param>
     ''' <remarks>Default StartPosition is CenterScreen</remarks>
-    Public Sub StartForm(ByVal dbCon As DbInterface.DbConnection)
+    Public Sub StartForm(ByVal dbCon As DbInterface.DbConnection) Implements IBaseForm.StartForm
         _DbConnection = dbCon
         StartForm()
     End Sub
@@ -39,11 +43,12 @@ Public Class BaseForm
     ''' End (close) the BaseForm
     ''' </summary>
     ''' <remarks></remarks>
-    Public Sub EndForm()
+    Public Sub EndForm() Implements IBaseForm.EndForm
         MyBase.Close()
     End Sub
 
     Private Sub BaseForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
 
     End Sub
+
 End Class

@@ -118,11 +118,38 @@ Public Class BaseGrid
         Me.Rows.Clear()
     End Sub
 
-    Private Sub BaseGrid_MouseDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDoubleClick
-        If (_Sql IsNot Nothing) Then
-            MessageBox.Show("SQL: " + _Sql, Me.Name)
-        Else
-            MessageBox.Show("SQL: ", Me.Name)
+    ''' <summary>
+    ''' Set visibility of specified column
+    ''' </summary>
+    ''' <param name="columnName">Column name</param>
+    ''' <param name="visible">True/False</param>
+    ''' <remarks></remarks>
+    Public Sub SetColumnVisible(ByVal columnName As String, ByVal visible As Boolean)
+        If Me.Columns.Contains(columnName) Then
+            Me.Columns(columnName).Visible = visible
         End If
+    End Sub
+
+    ''' <summary>
+    ''' Set width of specified column
+    ''' </summary>
+    ''' <param name="columnName">Column name</param>
+    ''' <param name="width">The width, in pixels, of the column. The default is 100</param>
+    ''' <remarks></remarks>
+    Public Sub SetColumnWidth(ByVal columnName As String, ByVal width As Integer)
+        If Me.Columns.Contains(columnName) Then
+            Me.Columns(columnName).Width = width
+        End If
+    End Sub
+
+    Private Sub BaseGrid_MouseDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDoubleClick
+        Dim msg As String = "SQL: "
+        If (_Sql IsNot Nothing) Then
+            msg += _Sql
+        End If
+
+        msg += vbCrLf + vbCrLf + "Number rows: " & Me.RowCount
+
+        MessageBox.Show(msg, Me.Name)
     End Sub
 End Class

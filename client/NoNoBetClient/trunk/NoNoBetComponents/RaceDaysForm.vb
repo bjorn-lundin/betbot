@@ -5,6 +5,7 @@ Imports BaseComponents
 Imports DbInterface
 Imports DbInterface.DbConnection
 Imports NoNoBetComponents
+Imports NoNoBetDb
 
 Public Class RaceDaysForm
     Inherits BaseForm
@@ -212,13 +213,13 @@ Public Class RaceDaysForm
     End Sub
 
     Private Sub buttonShow_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles buttonShow.Click
-        Dim sql As String = "SELECT DISTINCT date,track FROM race "
+        Dim sql As String = String.Empty
 
         If radioStartdate.Checked Then
-            sql += "WHERE date >= " + DbConnection.DateToSqlString(dateStart.Value, DateFormatMode.DateOnly)
+            sql = Race.BuildRacesSelectSql(dateStart.Value, True)
+        Else
+            sql = Race.BuildRacesSelectSql(True)
         End If
-
-        sql += " ORDER BY date"
 
         gridRaceDays.ExecuteSql(MyBase.DbConnection, sql)
     End Sub
@@ -232,9 +233,9 @@ Public Class RaceDaysForm
             If (gridRaceDays.CurrentRow) IsNot Nothing Then
                 trackName = CType(gridRaceDays.GetCurrentRowCellValue("track"), String)
                 raceDate = CType(gridRaceDays.GetCurrentRowCellValue("date"), Date)
-                sql = "SELECT id,date,track FROM race WHERE track = '" + trackName + "' AND date = " + DbConnection.DateToSqlString(raceDate, DateFormatMode.DateOnly) + " ORDER BY id"
+                sql = Race.BuildTrackRacesSelectSql(raceDate, trackName, True)
             Else
-                sql = "SELECT id,date,track FROM race WHERE null = null"
+                sql = Race.BuildNullTrackRacesSelectSql()
             End If
 
             gridRaces.ExecuteSql(Me.DbConnection, sql)

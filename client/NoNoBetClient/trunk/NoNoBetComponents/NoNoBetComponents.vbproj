@@ -137,6 +137,10 @@
       <Project>{CD23EB3D-FF2E-477D-B7A8-14C606B3A33B}</Project>
       <Name>DbInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NoNoBetDb\NoNoBetDb.vbproj">
+      <Project>{2E3D3A88-22E2-44D7-A298-88A9021AEC38}</Project>
+      <Name>NoNoBetDb</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
