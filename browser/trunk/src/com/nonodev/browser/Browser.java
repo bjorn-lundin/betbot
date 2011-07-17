@@ -1,10 +1,8 @@
 package com.nonodev.browser;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
-import java.util.ResourceBundle;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -12,6 +10,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -24,225 +23,186 @@ import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.apache.log4j.Logger;
 
 public class Browser {
-    private String username = null;
-    private String password = null;
-    private String url = null;
-    private String useragent = null;
-    private String basicRealm = null;
-    private boolean allowAllHostname = false;
-    private DefaultHttpClient httpclient = null;
+	static Logger logger = Logger.getLogger(Browser.class.getName());
+	private DefaultHttpClient httpclient = null;
 
-    public Browser(ResourceBundle properties) {
-        this.useragent = properties.getString("useragent");
-        this.username = properties.getString("username");
-        this.password = properties.getString("password");
-        this.url = properties.getString("url");
-        this.allowAllHostname = Boolean.parseBoolean(
-        		properties.getString("allowAllHostname").toLowerCase());
-        initClient();
-    }
+	public Browser(String useragent, boolean allowAllHostname) {
+		initClient(useragent, allowAllHostname);
+	}
 
-    public void shutdownClient() {
-        httpclient.getConnectionManager().shutdown();
-    }
+	private void initClient(String useragent, boolean allowAllHostname) {
+		/*
+		 * Learn more and adjust
+		 * http://hc.apache.org/httpcomponents-client-ga/examples.html
+		 * example "Threaded request execution"
+		 */
+		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+		cm.setMaxTotal(10);
+		httpclient = new DefaultHttpClient(cm);
 
-    private void initClient() {
-        httpclient = new DefaultHttpClient();
-        
-        if (allowAllHostname) {
-	        TrustStrategy trustStrategy = new TrustSelfSignedStrategy();
-	        X509HostnameVerifier hostnameVerifier = 
-	        		new AllowAllHostnameVerifier();
-	        try {
-	            SSLSocketFactory sf =
-	                    new SSLSocketFactory(trustStrategy, hostnameVerifier);
-	            Scheme scheme = new Scheme("https", 443, sf);
-	            httpclient.getConnectionManager().getSchemeRegistry().
-	            		register(scheme);
-	        }
-	        catch (Exception e) {
-	            e.getStackTrace();
-	        }
-        }
-        
-        httpclient.getParams().setParameter(
-        		HttpProtocolParams.USER_AGENT, useragent);
-        httpclient.setKeepAliveStrategy(
-        		new DefaultConnectionKeepAliveStrategy() {
-            @Override
-            public long getKeepAliveDuration(HttpResponse response,
-                    HttpContext context) {
-                long keepAlive = super.getKeepAliveDuration(response, context);
-                if (keepAlive == -1) {
-                    // Keep connections alive 5 seconds if a keep-alive value
-                    // has not be explicitly set by the server
-                    keepAlive = 5000;
-                }
-                return keepAlive;
-            }
-        });
-    }
+		if (allowAllHostname) {
+			TrustStrategy trustStrategy = new TrustSelfSignedStrategy();
+			X509HostnameVerifier hostnameVerifier = 
+					new AllowAllHostnameVerifier();
+			try {
+				SSLSocketFactory sf =
+						new SSLSocketFactory(trustStrategy, hostnameVerifier);
+				Scheme scheme = new Scheme("https", 443, sf);
+				httpclient.getConnectionManager().getSchemeRegistry().
+				register(scheme);
+			}
+			catch (Exception e) {
+				e.getStackTrace();
+			}
+		}
 
-    private String getContent(HttpEntity he) {
-        StringBuilder sb = null;
-        try {
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(he.getContent()));
-            sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-              sb.append(line);
-              sb.append("\n");
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return sb.toString();
-    }
+		httpclient.getParams().setParameter(
+				HttpProtocolParams.USER_AGENT, useragent);
+		httpclient.setKeepAliveStrategy(
+				new DefaultConnectionKeepAliveStrategy() {
+					@Override
+					public long getKeepAliveDuration(HttpResponse response,
+							HttpContext context) {
+						long keepAlive = 
+								super.getKeepAliveDuration(response, context);
+						if (keepAlive == -1) {
+							// Keep connections alive 5 seconds if a keep-alive value
+							// has not be explicitly set by the server
+							keepAlive = 5000;
+						}
+						return keepAlive;
+					}
+				});
+		logger.info("USERAGENT " + " " + 
+				httpclient.getParams().
+				getParameter(HttpProtocolParams.USER_AGENT));
+	}
 
-    public String get(String url) {
-        HttpGet httpget = new HttpGet(url);
-        HttpResponse response = null;
-        String content = null;
-        
-        try {
-            response = httpclient.execute(httpget);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        if (null != response) {
-        	content = getContent(response.getEntity());
-        }
-        return content;
-    }
+	public void shutdownClient() {
+		httpclient.getConnectionManager().shutdown();
+		logger.info("Client shutdown");
+	}
 
-    public String basicLogin() {
-        String authToken = null;
-        System.out.println("httpclient user-agent parameter:");
-        System.out.println(httpclient.getParams().getParameter("USER_AGENT"));
-        try {
-            httpclient.getCredentialsProvider().setCredentials(
-                    new AuthScope(basicRealm, 443),
-                    new UsernamePasswordCredentials(username, password));
-            HttpGet httpget = new HttpGet(url);
-            System.out.println("executing request" + httpget.getRequestLine());
-            HttpResponse response = httpclient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
-                System.out.println("ContentEncoding: " +
-                        entity.getContentEncoding());
-                System.out.println("ContentType: " +
-                        entity.getContentType());
-                System.out.println("Response content length: " +
-                        entity.getContentLength());
-                /*
-                 * Working
-                 */
-                /*
-                Document doc = Jsoup.parse(entity.getContent(), null, "");
-                Element content = doc.getElementById("login-form");
-                System.out.println(content);
-                Element form = content.getElementsByTag("form").first();
-                System.out.println(form);
-                Element input = form.getElementsByTag("input").first();
-                System.out.println(input.attr("value"));
-                */
-                Document doc = Jsoup.parse(entity.getContent(), null, "");
-                Element at =
-                        doc.select("input[name=authenticity_token]").first();
-                System.out.println(at.attr("value"));
-                authToken = at.attr("value");
-                System.out.println(getContent(entity));
-            }
-            EntityUtils.consume(entity);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            //httpclient.getConnectionManager().shutdown();
-        }
-        return authToken;
-    }
+	public InputStream get(String url) {
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = null;
+		HttpEntity entity = null;
+		InputStream content = null;
+		try {
+			response = httpclient.execute(httpget);
+			entity = response.getEntity();
+			content = entity.getContent();
+		} catch (ClientProtocolException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} finally {
+			//httpclient.getConnectionManager().shutdown();
+		}
 
-    public String FormLogin(String authToken) {
-        String redirectLocation = null;
-        try {
-            HttpGet httpget = new HttpGet(url);
-            HttpResponse response = httpclient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-            System.out.println("Login form get: " + response.getStatusLine());
-            EntityUtils.consume(entity);
-            System.out.println("Initial set of cookies:");
-            List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }
-            HttpPost httpost = new HttpPost("https://nonodev.com/its/login");
-            HttpContext context = new BasicHttpContext();
-            List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-            nvps.add(new BasicNameValuePair("authenticity_token", authToken));
-            nvps.add(new BasicNameValuePair("username", username));
-            nvps.add(new BasicNameValuePair("password", password));
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-            response = httpclient.execute(httpost, context);
-            /*
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
-                throw new IOException(response.getStatusLine().toString());
-            
-            HttpUriRequest currentReq = (HttpUriRequest) context.getAttribute( 
-                    ExecutionContext.HTTP_REQUEST);
-            HttpHost currentHost = (HttpHost)  context.getAttribute( 
-                    ExecutionContext.HTTP_TARGET_HOST);
-            String currentUrl = currentHost.toURI() + currentReq.getURI();
-            */
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                Header[] headers = response.getHeaders("Location");
-                if (headers != null && headers.length != 0) {
-                    redirectLocation = headers[headers.length - 1].getValue();
-                }
-            }
-            System.out.println("Location: " + response. getAllHeaders());
-            entity = response.getEntity();
-            System.out.println(getContent(entity));
-            EntityUtils.consume(entity);
-            System.out.println("Login form get: " + response.getStatusLine());
-            System.out.println("Post logon cookies:");
-            cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            //httpclient.getConnectionManager().shutdown();
-        }
-        return redirectLocation;
-    }
+		logger.info("GET " + url + " " + 
+				response.getStatusLine() + " " + 
+				response.getEntity().getContentLength());
+
+		return content;
+	}
+
+	/**
+	 * 
+	 * @param url
+	 * @param basicRealm
+	 * @param username
+	 * @param password
+	 * @return
+	 */
+	public void basicLogin(String url, String basicRealm, String username,
+			String password) {
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = null;
+		HttpEntity entity = null;
+		try {
+			httpclient.getCredentialsProvider().setCredentials(
+					new AuthScope(basicRealm, 443),
+					new UsernamePasswordCredentials(username, password));
+			response = httpclient.execute(httpget);
+			entity = response.getEntity();
+			EntityUtils.consume(entity);
+		} catch (ClientProtocolException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} finally {
+			//httpclient.getConnectionManager().shutdown();
+		}
+
+		logger.info("BASIC LOGIN " + url + " " + 
+				response.getStatusLine() + " " + 
+				response.getEntity().getContentLength());
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("USERNAME " + username);
+			logger.debug("PASSWORD " + password);
+		}
+	}
+
+	public String FormLogin(String url, List <NameValuePair> nvps) {
+		String redirectLocation = null;
+		HttpResponse response = null;
+		HttpEntity entity = null;
+
+		try {
+			HttpPost httpost = new HttpPost(url);
+			HttpContext context = new BasicHttpContext();
+			httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+			response = httpclient.execute(httpost, context);
+			entity = response.getEntity();
+			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+				Header[] headers = response.getHeaders("Location");
+				if (headers != null && headers.length != 0) {
+					redirectLocation = headers[headers.length - 1].getValue();
+				}
+			}
+			EntityUtils.consume(entity);
+		} catch (Exception e) {
+			e.getStackTrace();
+		} finally {
+			//httpclient.getConnectionManager().shutdown();
+		}
+
+		logger.info("FORM LOGIN " + url + " " + 
+				response.getStatusLine() + " " + 
+				response.getEntity().getContentLength());
+
+		logger.info("REDIRECT " + redirectLocation);
+
+		if (logger.isDebugEnabled()) {
+			List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+			if (cookies != null) {
+				for (int i = 0; i < cookies.size(); i++) {
+					logger.debug("COOKIE " + cookies.get(i).toString());
+				}
+			}
+
+			if (nvps != null) {
+				for (int i = 0; i < nvps.size(); i++) {
+					logger.debug("FORM PARAM " + nvps.get(i).toString());
+				}
+			}
+		}
+
+		return redirectLocation;
+	}
 }
-
