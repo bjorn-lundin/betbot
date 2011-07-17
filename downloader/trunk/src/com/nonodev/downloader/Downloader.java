@@ -7,6 +7,14 @@ public abstract class Downloader implements Runnable {
 	Browser browser;
 
 	public Downloader(ResourceBundle properties) {
-		this.browser = new Browser(properties);
+		initBrowser(properties);
 	}
-}
+
+	private void initBrowser(ResourceBundle properties) {
+		String useragent = properties.getString("useragent");
+		boolean allowAllHostname = 
+				Boolean.parseBoolean(properties.
+						getString("allowAllHostname").toLowerCase());
+		this.browser = new Browser(useragent, allowAllHostname);
+	}
+}		
