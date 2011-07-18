@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.PropertyConfigurator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -55,11 +53,12 @@ public class Main {
         		doc.select("input[name=authenticity_token]").first();
         authToken = at.attr("value");
 		
-        List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-        nvps.add(new BasicNameValuePair("authenticity_token", authToken));
-        nvps.add(new BasicNameValuePair("username", username));
-        nvps.add(new BasicNameValuePair("password", password));
-        String redirectLocation = browser.FormLogin(url, nvps);
+        Map <String, String> keyValuePairs = new HashMap<String, String>();
+		keyValuePairs.put("authenticity_token", authToken);
+		keyValuePairs.put("username", username);
+		keyValuePairs.put("password", password);
+
+		String redirectLocation = browser.FormLogin(url, keyValuePairs);
         
         InputStream in = browser.get(redirectLocation);
         OutputStream out = System.out;

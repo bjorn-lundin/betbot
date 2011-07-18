@@ -2,7 +2,10 @@ package com.nonodev.browser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,6 +27,7 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
@@ -158,15 +162,20 @@ public class Browser {
 		}
 	}
 
-	public String FormLogin(String url, List <NameValuePair> nvps) {
+	public String FormLogin(String url, Map<String, String> keyValuePairs) {
 		String redirectLocation = null;
 		HttpResponse response = null;
 		HttpEntity entity = null;
+		List <NameValuePair> nvp = null;
 
 		try {
 			HttpPost httpost = new HttpPost(url);
 			HttpContext context = new BasicHttpContext();
-			httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+	        nvp = new ArrayList <NameValuePair>();
+	        for (String key : keyValuePairs.keySet()) {
+	        	nvp.add(new BasicNameValuePair(key, keyValuePairs.get(key)));
+			}
+			httpost.setEntity(new UrlEncodedFormEntity(nvp, HTTP.UTF_8));
 			response = httpclient.execute(httpost, context);
 			entity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -195,10 +204,9 @@ public class Browser {
 					logger.debug("COOKIE " + cookies.get(i).toString());
 				}
 			}
-
-			if (nvps != null) {
-				for (int i = 0; i < nvps.size(); i++) {
-					logger.debug("FORM PARAM " + nvps.get(i).toString());
+			if (nvp != null) {
+				for (int i = 0; i < nvp.size(); i++) {
+					logger.debug("FORM PARAM " + nvp.get(i).toString());
 				}
 			}
 		}
