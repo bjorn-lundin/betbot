@@ -563,10 +563,11 @@ Public Class TestForm
         finishPlace = 0
         winOdds = 0
         placeOdds = 0
-
+        Dim o As Object = Nothing
         If dbReader.Read Then
             finishPlace = CType(dbReader.Item("finish_place"), Integer)
             winOdds = CType(dbReader.Item("winner_odds"), Decimal)
+            o = dbReader.Item("place_odds")
             placeOdds = CType(dbReader.Item("place_odds"), Decimal)
         Else
             dbReader.Close()

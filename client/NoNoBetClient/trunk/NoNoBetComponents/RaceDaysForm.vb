@@ -20,6 +20,7 @@ Public Class RaceDaysForm
     Friend WithEvents SplitContainer2 As System.Windows.Forms.SplitContainer
     Friend WithEvents gridRaceEquipages As BaseComponents.BaseGrid
     Friend WithEvents buttonClose As System.Windows.Forms.Button
+    Friend WithEvents HorseStat As System.Windows.Forms.Button
 
     Private _IsLoaded As Boolean = False
 
@@ -40,6 +41,7 @@ Public Class RaceDaysForm
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.gridRaceEquipages = New BaseComponents.BaseGrid()
+        Me.HorseStat = New System.Windows.Forms.Button()
         Me.panelTop.SuspendLayout()
         CType(Me.gridRaceDays, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.gridRaces, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -56,6 +58,7 @@ Public Class RaceDaysForm
         '
         'panelTop
         '
+        Me.panelTop.Controls.Add(Me.HorseStat)
         Me.panelTop.Controls.Add(Me.buttonClose)
         Me.panelTop.Controls.Add(Me.buttonShow)
         Me.panelTop.Controls.Add(Me.dateStart)
@@ -69,6 +72,7 @@ Public Class RaceDaysForm
         '
         'buttonClose
         '
+        Me.buttonClose.DialogResult = System.Windows.Forms.DialogResult.Cancel
         Me.buttonClose.Location = New System.Drawing.Point(1141, 51)
         Me.buttonClose.Name = "buttonClose"
         Me.buttonClose.Size = New System.Drawing.Size(75, 23)
@@ -180,6 +184,15 @@ Public Class RaceDaysForm
         Me.gridRaceEquipages.Size = New System.Drawing.Size(1360, 199)
         Me.gridRaceEquipages.TabIndex = 0
         '
+        'HorseStat
+        '
+        Me.HorseStat.Location = New System.Drawing.Point(849, 52)
+        Me.HorseStat.Name = "HorseStat"
+        Me.HorseStat.Size = New System.Drawing.Size(114, 23)
+        Me.HorseStat.TabIndex = 5
+        Me.HorseStat.Text = "Show Horse"
+        Me.HorseStat.UseVisualStyleBackColor = True
+        '
         'RaceDaysForm
         '
         Me.CancelButton = Me.buttonClose
@@ -249,7 +262,7 @@ Public Class RaceDaysForm
 
             If gridRaces.CurrentRow IsNot Nothing Then
                 raceId = CType(gridRaces.GetCurrentRowCellValue("id"), Integer)
-                sql = "SELECT ekipage.finish_place, ekipage.start_place, horse.name as horse, driver.name as driver, ekipage.winner_odds," + _
+                sql = "SELECT ekipage.finish_place, ekipage.start_place, horse.name as horse,horse.id as horse_id, driver.name as driver, ekipage.winner_odds," + _
                       "ekipage.place_odds, ekipage.distance, ekipage.time, ekipage.time_comment FROM ekipage" + _
                       " JOIN race_ekipage ON (race_ekipage.ekipage_id = ekipage.id AND race_ekipage.race_id = " & raceId & ")" + _
                       " JOIN horse ON (ekipage.horse_id = horse.id)" + _
@@ -278,5 +291,11 @@ Public Class RaceDaysForm
 
     Private Sub buttonClose_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonClose.Click
         Me.EndForm()
+    End Sub
+
+    Private Sub HorseStat_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles HorseStat.Click
+        Dim horseId As Integer = CType(gridRaceEquipages.GetCurrentRowCellValue("horse_id"), Integer)
+        Dim horseFrm As HorseStatForm = New HorseStatForm
+        horseFrm.StartForm(Me.DbConnection, horseId)
     End Sub
 End Class

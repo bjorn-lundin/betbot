@@ -34,7 +34,7 @@ Public Class BaseForm
     ''' </summary>
     ''' <param name="dbCon">Database connection object</param>
     ''' <remarks>Default StartPosition is CenterScreen</remarks>
-    Public Sub StartForm(ByVal dbCon As DbInterface.DbConnection) Implements IBaseForm.StartForm
+    Public Overridable Sub StartForm(ByVal dbCon As DbInterface.DbConnection) Implements IBaseForm.StartForm
         _DbConnection = dbCon
         StartForm()
     End Sub
@@ -43,7 +43,7 @@ Public Class BaseForm
     ''' End (close) the BaseForm
     ''' </summary>
     ''' <remarks></remarks>
-    Public Sub EndForm() Implements IBaseForm.EndForm
+    Public Overloads Sub EndForm() Implements IBaseForm.EndForm
         MyBase.Close()
     End Sub
 
