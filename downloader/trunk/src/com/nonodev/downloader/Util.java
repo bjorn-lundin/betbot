@@ -3,6 +3,7 @@ package com.nonodev.downloader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -25,19 +27,28 @@ import java.nio.charset.CodingErrorAction;
 public class Util {
 
 	public static void main(String[] args) {
-		try {
-			Util.fileToFileConvertEncoding(null, null, null, null);
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String p1 = "C:/_dev/workspace/downloader/data";
+		String p2 = "C:\\_dev\\workspace\\downloader\\data";
+		String p3 = "C:/_dev/workspace/downloader/data/";
+		String p4 = "C:\\_dev\\workspace\\downloader\\data\\";
+
+		System.out.println(platformPath(p1));
+		System.out.println(platformPath(p2));
+		System.out.println(platformPath(p3));
+		System.out.println(platformPath(p4));
+	}
+
+	public static String platformPath(String path) {
+		String[] parts = path.split("[/\\\\]");
+		StringBuilder result = new StringBuilder();
+		for (String part:parts) {
+			result.append(part + File.separator);
 		}
+		return result.toString();
 	}
 
 	public static void fileToFileConvertEncoding(File infile, 
-			File outfile, Charset from, Charset to)
+			File outfile, String from, String to)
 					throws IOException, UnsupportedEncodingException {
 		// Set up byte streams.
 		InputStream in;
@@ -54,10 +65,10 @@ public class Util {
 		// Use default encoding if no encoding is specified.
 		if (from == null)
 			//from = System.getProperty("file.encoding");
-			from = Charset.defaultCharset();
+			from = Charset.defaultCharset().toString();
 		if (to == null)
 			//			to = System.getProperty("file.encoding");
-			to = Charset.defaultCharset();
+			to = Charset.defaultCharset().toString();
 
 		// Set up character streams.
 		Reader r = new BufferedReader(new InputStreamReader(in, from));
@@ -78,15 +89,15 @@ public class Util {
 	}
 
 	public static void streamToFileConvertEncoding(
-			InputStream inStream, File outFile, Charset from, Charset to)
+			InputStream inStream, File outFile, String from, String to)
 					throws IOException, UnsupportedEncodingException {
 		if (from == null)
-			from = Charset.defaultCharset();
+			from = Charset.defaultCharset().toString();
 		if (to == null)
-			to = Charset.defaultCharset();
+			to = Charset.defaultCharset().toString();
 
-		CharsetDecoder decoder = from.newDecoder();
-		CharsetEncoder encoder = to.newEncoder();
+		CharsetDecoder decoder = Charset.forName(from).newDecoder();
+		CharsetEncoder encoder = Charset.forName(to).newEncoder();
 		decoder.onMalformedInput(CodingErrorAction.IGNORE);
 		decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
 		encoder.onMalformedInput(CodingErrorAction.IGNORE);
@@ -113,6 +124,20 @@ public class Util {
 		wChannel.close();
 	}
 
+	public static void streamToFileRaw(InputStream inStream, File outFile)
+			throws IOException {
+		OutputStream out = new FileOutputStream(outFile);
+		int read=0;
+		final int BUFFER_SIZE = 10000;
+		byte[] bytes = new byte[BUFFER_SIZE];
+		while((read = inStream.read(bytes))!= -1){
+			out.write(bytes, 0, read);
+		}
+		inStream.close();
+		out.flush();
+		out.close();	
+	}
+
 	/**
 	 * 
 	 * @param inStream
@@ -123,15 +148,15 @@ public class Util {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static void streamToStreamConvertEncoding(
-			InputStream inStream, OutputStream outStream, Charset from,
-			Charset to) throws IOException, UnsupportedEncodingException {
+			InputStream inStream, OutputStream outStream, String from,
+			String to) throws IOException, UnsupportedEncodingException {
 		if (from == null)
-			from = Charset.defaultCharset();
+			from = Charset.defaultCharset().toString();
 		if (to == null)
-			to = Charset.defaultCharset();
+			to = Charset.defaultCharset().toString();
 
-		CharsetDecoder decoder = from.newDecoder();
-		CharsetEncoder encoder = to.newEncoder();
+		CharsetDecoder decoder = Charset.forName(from).newDecoder();
+		CharsetEncoder encoder = Charset.forName(to).newEncoder();
 		decoder.onMalformedInput(CodingErrorAction.IGNORE);
 		decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
 		encoder.onMalformedInput(CodingErrorAction.IGNORE);
@@ -155,5 +180,99 @@ public class Util {
 		buffer = new byte[encByteBuffer.capacity()];
 		encByteBuffer.get(buffer, 0, buffer.length);
 		outStream.write(buffer);
+	}
+
+	public static InputStream fileToStream(File file)
+			throws IOException {
+		FileInputStream fis = null;
+		DataInputStream dis = null;
+		try {
+			fis = new FileInputStream(file);
+			dis = new DataInputStream(fis);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return dis;
+	}
+
+	public static String streamToStringSetEncoding(InputStream inStream,
+			String encoding) throws IOException {
+		String result = null;
+		if (inStream != null) {
+			Writer writer = new StringWriter();
+			char[] buffer = new char[1024];
+			try {
+				Reader reader = new BufferedReader(
+						new InputStreamReader(inStream, encoding));
+				int n;
+				while ((n = reader.read(buffer)) != -1) {
+					writer.write(buffer, 0, n);
+				}
+			}
+			finally {
+				inStream.close();
+			}
+			result = writer.toString();
+		}
+		return result;
+	}
+
+	public static StringBuilder streamToStringBuilderSetEncoding(InputStream inStream,
+			String encoding) throws IOException {
+		StringBuilder result = null;
+		if (inStream != null) {
+			Writer writer = new StringWriter();
+			char[] buffer = new char[1024];
+			try {
+				Reader reader = new BufferedReader(
+						new InputStreamReader(inStream, encoding));
+				int n;
+				while ((n = reader.read(buffer)) != -1) {
+					writer.write(buffer, 0, n);
+				}
+			}
+			finally {
+				inStream.close();
+			}
+			result = new StringBuilder(writer.toString());
+		}
+		return result;
+	}
+
+	public static String fileToStringSetEncoding(File file,
+			String encoding) throws IOException {
+		String result = null;
+		if (file != null) {
+			FileInputStream fis = new FileInputStream(file);
+			Reader reader = new BufferedReader(
+					new InputStreamReader(fis, encoding));
+			Writer writer = new StringWriter();
+			char[] buffer = new char[1024];
+			int n;
+			while ((n = reader.read(buffer)) > -1) {
+					writer.write(buffer, 0, n);
+				}
+			result = writer.toString();
+		}
+		return result;
+	}
+
+	public static StringBuilder fileToStringBuilderSetEncoding(File file,
+			String encoding) throws IOException {
+		StringBuilder result = null;
+		if (file != null) {
+			FileInputStream fis = new FileInputStream(file);
+			Reader reader = new BufferedReader(
+					new InputStreamReader(fis, encoding));
+			Writer writer = new StringWriter();
+			char[] buffer = new char[1024];
+			int n;
+			while ((n = reader.read(buffer)) > -1) {
+				writer.write(buffer, 0, n);
+			}
+			result = new StringBuilder(writer.toString());
+		}
+		return result;
 	}
 }
