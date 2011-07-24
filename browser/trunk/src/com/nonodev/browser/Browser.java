@@ -121,7 +121,50 @@ public class Browser {
 
 		return content;
 	}
+	
+	public InputStream post(String url, Map<String, String> keyValuePairs) {
+		HttpResponse response = null;
+		HttpEntity entity = null;
+		List <NameValuePair> nvp = null;
+		InputStream content = null;
 
+		try {
+			HttpPost httpost = new HttpPost(url);
+			HttpContext context = new BasicHttpContext();
+	        nvp = new ArrayList <NameValuePair>();
+	        for (String key : keyValuePairs.keySet()) {
+	        	nvp.add(new BasicNameValuePair(key, keyValuePairs.get(key)));
+			}
+			httpost.setEntity(new UrlEncodedFormEntity(nvp, HTTP.UTF_8));
+			response = httpclient.execute(httpost, context);
+			entity = response.getEntity();
+			content = entity.getContent();
+		} catch (Exception e) {
+			e.getStackTrace();
+		} finally {
+			//httpclient.getConnectionManager().shutdown();
+		}
+
+		logger.info("POST " + url + " " + 
+				response.getStatusLine() + " " + 
+				response.getEntity().getContentLength());
+
+		if (logger.isDebugEnabled()) {
+			List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+			if (cookies != null) {
+				for (int i = 0; i < cookies.size(); i++) {
+					logger.debug("COOKIE " + cookies.get(i).toString());
+				}
+			}
+			if (nvp != null) {
+				for (int i = 0; i < nvp.size(); i++) {
+					logger.debug("FORM PARAM " + nvp.get(i).toString());
+				}
+			}
+		}
+		return content;
+	}
+	
 	/**
 	 * 
 	 * @param url
@@ -162,6 +205,12 @@ public class Browser {
 		}
 	}
 
+	/**
+	 * 
+	 * @param url
+	 * @param keyValuePairs
+	 * @return
+	 */
 	public String FormLogin(String url, Map<String, String> keyValuePairs) {
 		String redirectLocation = null;
 		HttpResponse response = null;
