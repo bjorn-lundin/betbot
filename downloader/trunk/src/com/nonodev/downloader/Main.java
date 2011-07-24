@@ -2,10 +2,16 @@ package com.nonodev.downloader;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ResourceBundle;
+
+import org.apache.log4j.PropertyConfigurator;
 
 public class Main {
 	public static void main(String[] args) {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    	URL log4jUrl = loader.getResource("log4j.properties");
+    	PropertyConfigurator.configure(log4jUrl);
 
 		String propertyFile = null;
 		if (args.length < 1) {
@@ -27,11 +33,10 @@ public class Main {
 			System.exit(-1);
 		}
 		
-		Downloader downloader = 
-				getDownloader(properties, classPath);
-		
-		Thread thread = new Thread(downloader);
-		thread.run();
+		Downloader downloader = getDownloader(properties, classPath);
+		Thread thread = new Thread(downloader, 
+				downloader.getClass().getSimpleName());
+		thread.start();
 	}
 
 	private static String getClassPath(String className) {
