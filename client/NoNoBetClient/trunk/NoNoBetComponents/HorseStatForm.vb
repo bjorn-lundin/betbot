@@ -136,6 +136,9 @@
     End Sub
 
     Private Sub HorseStatForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Me.Text = "Horse statistics"
+        Grid.SetReadOnlyMode()
+
         If (_HorseId > 0) Then
             HorseIdText.Text = _HorseId.ToString
         End If

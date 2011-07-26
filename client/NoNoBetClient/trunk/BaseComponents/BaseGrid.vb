@@ -115,7 +115,11 @@ Public Class BaseGrid
     ''' </summary>
     ''' <remarks></remarks>
     Public Sub Clear()
-        Me.Rows.Clear()
+        If (Me.Rows IsNot Nothing) Then
+            If (Me.Rows.Count > 0) Then
+                Me.Rows.Clear()
+            End If
+        End If
     End Sub
 
     ''' <summary>
@@ -142,14 +146,25 @@ Public Class BaseGrid
         End If
     End Sub
 
-    Private Sub BaseGrid_MouseDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDoubleClick
+    Private Sub ShowInternalMessage()
         Dim msg As String = "SQL: "
         If (_Sql IsNot Nothing) Then
             msg += _Sql
         End If
 
         msg += vbCrLf + vbCrLf + "Number rows: " & Me.RowCount
+        msg += vbCrLf + vbCrLf + "ReadOnly: " + Me.ReadOnly.ToString
+        msg += vbCrLf + "AllowUserToAddRows: " + Me.AllowUserToAddRows.ToString
+        msg += vbCrLf + "AllowUserToDeleteRows: " + Me.AllowUserToDeleteRows.ToString
+
 
         MessageBox.Show(msg, Me.Name)
+    End Sub
+
+    Private Sub BaseGrid_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles Me.KeyDown
+        If (e.KeyCode = Keys.F1) Then
+            ShowInternalMessage()
+            e.Handled = True
+        End If
     End Sub
 End Class
