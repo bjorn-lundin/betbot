@@ -7,10 +7,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
 
 public class DownloaderKanal75 extends Downloader {
-	static Logger logger = Logger.getLogger(DownloaderKanal75.class.getName());
+//	static Logger logger = Logger.getLogger(DownloaderKanal75.class.getName());
 	private String path = null;
 	private String username = null;
 	private String password = null;
@@ -44,6 +43,7 @@ public class DownloaderKanal75 extends Downloader {
 		try {
 			if (fromNet) {
 				Util.streamToFileConvertEncoding(browser.get(url), kanal75_1, utfEnc, isoEnc);
+				downloadDelay();
 			}
 			workSB = Util.fileToStringBuilderSetEncoding(kanal75_1, isoEnc);
 		} catch (IOException e) {
@@ -81,6 +81,7 @@ public class DownloaderKanal75 extends Downloader {
 		if (fromNet) {
 			actionUrl = browser.FormLogin(actionUrl, keyValuePairs);
 			logger.info("ACTION URL " + actionUrl);
+			downloadDelay();
 		}
 		
 		// Manually copied from iframe tag
@@ -92,6 +93,7 @@ public class DownloaderKanal75 extends Downloader {
 		try {
 			if (fromNet) {
 				Util.streamToFileConvertEncoding(browser.get(actionUrl), kanal75_2, utfEnc, isoEnc);
+				downloadDelay();
 			}
 			workSB = Util.fileToStringBuilderSetEncoding(kanal75_2, isoEnc);
 		} catch (IOException e) {
@@ -122,6 +124,7 @@ public class DownloaderKanal75 extends Downloader {
 		try {
 			if (fromNet) {
 				Util.streamToFileConvertEncoding(browser.get(url + actionUrl), kanal75_3, utfEnc, isoEnc);
+				downloadDelay();
 			}
 			workSB = Util.fileToStringBuilderSetEncoding(kanal75_3, isoEnc);
 		} catch (IOException e) {
@@ -145,6 +148,7 @@ public class DownloaderKanal75 extends Downloader {
 			if (fromNet) {
 				Util.streamToFileConvertEncoding(browser.get(url + actionUrl), 
 						new File(path + "kanal75_4.html"), utfEnc, isoEnc);
+				downloadDelay();
 			}
 			workSB = Util.fileToStringBuilderSetEncoding(
 					new File(path + "kanal75_4.html"), isoEnc);
@@ -173,6 +177,7 @@ public class DownloaderKanal75 extends Downloader {
 			if (fromNet) {
 				Util.streamToFileRaw(browser.get(url + actionUrl), 
 						new File(path + "res_kompl.txt"));
+				downloadDelay();
 			}
 			workSB = Util.fileToStringBuilderSetEncoding(
 					new File(path + "res_kompl.txt"), utfEnc);
