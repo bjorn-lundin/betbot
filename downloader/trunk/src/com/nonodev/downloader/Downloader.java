@@ -14,9 +14,9 @@ public abstract class Downloader implements Runnable {
 	public Downloader(ResourceBundle properties) {
 		initBrowser(properties);
 		this.minDownloadDelay = 
-				Integer.parseInt(properties.getString("minDownloadPause"));
+				Integer.parseInt(properties.getString("minDownloadDelay"));
 		this.maxDownloadDelay = 
-				Integer.parseInt(properties.getString("maxDownloadPause"));
+				Integer.parseInt(properties.getString("maxDownloadDelay"));
 	}
 
 	private void initBrowser(ResourceBundle properties) {

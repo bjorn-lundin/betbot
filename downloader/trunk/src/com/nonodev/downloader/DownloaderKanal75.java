@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DownloaderKanal75 extends Downloader {
-//	static Logger logger = Logger.getLogger(DownloaderKanal75.class.getName());
 	private String path = null;
 	private String username = null;
 	private String password = null;
