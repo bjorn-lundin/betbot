@@ -14,7 +14,7 @@ import org.apache.log4j.PropertyConfigurator;
 public class Main {
 	public static void main(String[] args) {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		URL log4jUrl = loader.getResource("log4j.properties");
+		URL log4jUrl = loader.getResource("browser-log4j.properties");
 		PropertyConfigurator.configure(log4jUrl);
 
 		ResourceBundle properties = null;
