@@ -121,7 +121,33 @@ public class Browser {
 
 		return content;
 	}
-	
+
+	public String getAsString(String url) {
+		HttpGet httpget = new HttpGet(url);
+		HttpResponse response = null;
+		HttpEntity entity = null;
+		String content = null;
+		try {
+			response = httpclient.execute(httpget);
+			entity = response.getEntity();
+			content = EntityUtils.toString(entity);
+		} catch (ClientProtocolException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} finally {
+			//httpclient.getConnectionManager().shutdown();
+		}
+
+		logger.info("GET " + url + " " + 
+				response.getStatusLine() + " " + 
+				response.getEntity().getContentLength());
+
+		return content;
+	}
+
 	public InputStream post(String url, Map<String, String> keyValuePairs) {
 		HttpResponse response = null;
 		HttpEntity entity = null;
