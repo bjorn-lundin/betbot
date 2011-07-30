@@ -24,7 +24,7 @@ public abstract class Downloader implements Runnable {
 		boolean allowAllHostname = 
 				Boolean.parseBoolean(properties.
 						getString("allowAllHostname").toLowerCase());
-		this.browser = new Browser(useragent, allowAllHostname);
+		this.browser = new Browser(useragent, allowAllHostname, false);
 	}
 	
 	protected void downloadDelay() {
