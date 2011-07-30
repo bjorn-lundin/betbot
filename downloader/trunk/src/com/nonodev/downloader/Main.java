@@ -10,7 +10,7 @@ import org.apache.log4j.PropertyConfigurator;
 public class Main {
 	public static void main(String[] args) {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-    	URL log4jUrl = loader.getResource("log4j.properties");
+    	URL log4jUrl = loader.getResource("downloader-log4j.properties");
     	PropertyConfigurator.configure(log4jUrl);
 
 		String propertyFile = null;
