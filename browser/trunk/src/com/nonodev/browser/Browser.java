@@ -39,20 +39,23 @@ public class Browser {
 	static Logger logger = Logger.getLogger(Browser.class.getName());
 	private DefaultHttpClient httpclient = null;
 
-	public Browser(String useragent, boolean allowAllHostname) {
-		initClient(useragent, allowAllHostname);
+	public Browser(String useragent, boolean allowAllHostname, boolean threadSafe) {
+		initClient(useragent, allowAllHostname, threadSafe);
 	}
 
-	private void initClient(String useragent, boolean allowAllHostname) {
-		/*
-		 * Learn more and adjust
-		 * http://hc.apache.org/httpcomponents-client-ga/examples.html
-		 * example "Threaded request execution"
-		 */
-		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
-		cm.setMaxTotal(10);
-		httpclient = new DefaultHttpClient(cm);
-
+	private void initClient(String useragent, boolean allowAllHostname, boolean threadSafe) {
+		if (threadSafe) {
+			/*
+			 * http://hc.apache.org/httpcomponents-client-ga/examples.html
+			 * example "Threaded request execution"
+			 */
+			ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+			cm.setMaxTotal(10);
+			httpclient = new DefaultHttpClient(cm);
+		} else {
+			httpclient = new DefaultHttpClient();
+		}
+		
 		if (allowAllHostname) {
 			TrustStrategy trustStrategy = new TrustSelfSignedStrategy();
 			X509HostnameVerifier hostnameVerifier = 

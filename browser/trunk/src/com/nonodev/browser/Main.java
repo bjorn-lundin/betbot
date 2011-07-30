@@ -31,8 +31,7 @@ public class Main {
 		String useragent = properties.getString("useragent");
 		boolean allowAllHostname = Boolean.parseBoolean(
 				properties.getString("allowAllHostname").toLowerCase());
-		Browser browser = new Browser(useragent, allowAllHostname);
-
+		Browser browser = new Browser(useragent, allowAllHostname, false);
 
 		String url = properties.getString("url");
 		String username = properties.getString("username");
