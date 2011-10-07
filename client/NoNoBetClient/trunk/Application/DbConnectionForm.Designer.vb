@@ -39,12 +39,13 @@ Partial Class DbConnectionForm
         Me.cboConnection = New System.Windows.Forms.ComboBox()
         Me.txtHeader = New System.Windows.Forms.TextBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.buttonBetSim = New System.Windows.Forms.Button()
         Me.buttonStats = New System.Windows.Forms.Button()
         Me.buttonClose = New System.Windows.Forms.Button()
         Me.btnTest = New System.Windows.Forms.Button()
         Me.btnBrowse = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
-        Me.buttonBetSim = New System.Windows.Forms.Button()
+        Me.btnRaceDays = New System.Windows.Forms.Button()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
@@ -213,6 +214,7 @@ Partial Class DbConnectionForm
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.btnRaceDays)
         Me.GroupBox2.Controls.Add(Me.buttonBetSim)
         Me.GroupBox2.Controls.Add(Me.buttonStats)
         Me.GroupBox2.Controls.Add(Me.buttonClose)
@@ -226,6 +228,16 @@ Partial Class DbConnectionForm
         Me.GroupBox2.Size = New System.Drawing.Size(578, 163)
         Me.GroupBox2.TabIndex = 5
         Me.GroupBox2.TabStop = False
+        '
+        'buttonBetSim
+        '
+        Me.buttonBetSim.Location = New System.Drawing.Point(334, 23)
+        Me.buttonBetSim.Margin = New System.Windows.Forms.Padding(4)
+        Me.buttonBetSim.Name = "buttonBetSim"
+        Me.buttonBetSim.Size = New System.Drawing.Size(114, 28)
+        Me.buttonBetSim.TabIndex = 19
+        Me.buttonBetSim.Text = "Bet simulator"
+        Me.buttonBetSim.UseVisualStyleBackColor = True
         '
         'buttonStats
         '
@@ -278,15 +290,14 @@ Partial Class DbConnectionForm
         Me.GroupBox3.TabIndex = 6
         Me.GroupBox3.TabStop = False
         '
-        'buttonBetSim
+        'btnRaceDays
         '
-        Me.buttonBetSim.Location = New System.Drawing.Point(334, 23)
-        Me.buttonBetSim.Margin = New System.Windows.Forms.Padding(4)
-        Me.buttonBetSim.Name = "buttonBetSim"
-        Me.buttonBetSim.Size = New System.Drawing.Size(114, 28)
-        Me.buttonBetSim.TabIndex = 19
-        Me.buttonBetSim.Text = "Bet simulator"
-        Me.buttonBetSim.UseVisualStyleBackColor = True
+        Me.btnRaceDays.Location = New System.Drawing.Point(476, 23)
+        Me.btnRaceDays.Name = "btnRaceDays"
+        Me.btnRaceDays.Size = New System.Drawing.Size(90, 23)
+        Me.btnRaceDays.TabIndex = 20
+        Me.btnRaceDays.Text = "RaceDays"
+        Me.btnRaceDays.UseVisualStyleBackColor = True
         '
         'DbConnectionForm
         '
@@ -331,4 +342,5 @@ Partial Class DbConnectionForm
     Friend WithEvents buttonClose As System.Windows.Forms.Button
     Friend WithEvents buttonStats As System.Windows.Forms.Button
     Friend WithEvents buttonBetSim As System.Windows.Forms.Button
+    Friend WithEvents btnRaceDays As System.Windows.Forms.Button
 End Class

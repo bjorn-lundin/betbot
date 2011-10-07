@@ -93,6 +93,9 @@
     <Compile Include="RaceDaysForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="RaceDaysFrm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="StatForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -115,6 +118,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="RaceDaysForm.resx">
       <DependentUpon>RaceDaysForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RaceDaysFrm.resx">
+      <DependentUpon>RaceDaysFrm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="StatForm.resx">
       <DependentUpon>StatForm.vb</DependentUpon>

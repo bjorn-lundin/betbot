@@ -64,6 +64,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BetType.vb" />
     <Compile Include="Driver.vb" />
     <Compile Include="Equipage.vb" />
     <Compile Include="Horse.vb" />

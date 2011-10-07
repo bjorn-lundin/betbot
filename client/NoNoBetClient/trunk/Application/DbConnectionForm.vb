@@ -150,4 +150,9 @@ Public Class DbConnectionForm
         Dim betSimForm As RaceBetSim = New RaceBetSim
         betSimForm.StartForm(_DbConn)
     End Sub
+
+    Private Sub btnRaceDays_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRaceDays.Click
+        Dim rFrm As RaceDaysFrm = New RaceDaysFrm
+        rFrm.StartForm(_DbConn)
+    End Sub
 End Class

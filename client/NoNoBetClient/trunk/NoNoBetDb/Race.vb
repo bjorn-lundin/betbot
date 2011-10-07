@@ -16,6 +16,7 @@ Public Class Race
     Private Const _dd_types As String = "'dd-1','dd-2'"
     Private Const _ld_types As String = "'ld-1','ld-2'"
 
+
     ''' <summary>
     ''' Build: SELECT DISTINCT date,track FROM race ORDER BY date,track
     ''' </summary>
