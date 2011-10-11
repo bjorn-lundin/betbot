@@ -6,6 +6,7 @@ Public Class Race
     Private Const _TrackRacesSelect As String = "SELECT id,date,track FROM " & _TableName
     Private Const _OrderByDateTrackClause As String = " ORDER BY date,track"
     Private Const _OrderByDateTrackIdClause As String = " ORDER BY date,track,id"
+
     Private Const _OrderByIdClause As String = " ORDER BY id"
     Private Const _WhereNullClause As String = " WHERE null = null"
     Private Const _v75_types As String = "'v75-1','v75-2','v75-3','v75-4','v75-5','v75-6','v75-7'"
@@ -15,8 +16,21 @@ Public Class Race
     Private Const _v5_types As String = "'v5-1','v5-2','v5-3','v5-4','v5-5'"
     Private Const _dd_types As String = "'dd-1','dd-2'"
     Private Const _ld_types As String = "'ld-1','ld-2'"
-
-
+    Private Const _BetTypeRaceDaySelectSql As String = "SELECT DISTINCT race.date,race.track FROM race JOIN race_bettype ON race.id = race_bettype.race_id "
+    Private Const _V75RaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'v75-1')"
+    Private Const _V64RaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'v64-1')"
+    Private Const _V5RaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'v5-1')"
+    Private Const _V4RaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'v4-1')"
+    Private Const _V3RaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'v3-1')"
+    Private Const _LDRaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'ld-1')"
+    Private Const _DDRaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                    "WHERE (race_bettype.bettype_id = 'dd-1')"
     ''' <summary>
     ''' Build: SELECT DISTINCT date,track FROM race ORDER BY date,track
     ''' </summary>
@@ -141,15 +155,175 @@ Public Class Race
         Return _TrackRacesSelect + _WhereNullClause
     End Function
 
+    Private Shared Function BuildWhereDateClause(ByVal startDate As Date, ByVal endDate As Date) As String
+        Return " AND (race.date >= " + DateToSqlString(startDate, DateFormatMode.DateOnly) + ")" + _
+               " AND (race.date <= " + DateToSqlString(endDate, DateFormatMode.DateOnly) + ")"
+
+    End Function
+
     Public Shared Function BuildV75RacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
         Dim s As String = Nothing
 
-        s = "SELECT DISTINCT race.date,race.track FROM race JOIN race_bettype ON race.id = race_bettype.race_id " + _
-            "WHERE (race_bettype.bettype_id = 'v75-1')" + _
-                  " AND (race.date >= " + DateToSqlString(startDate, DateFormatMode.DateOnly) + ")" + _
-                  " AND (race.date <= " + DateToSqlString(endDate, DateFormatMode.DateOnly) + ")"
+        s = _V75RaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
         If addOrderBy Then
-            s += " ORDER BY race.date"
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV75RacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V75RaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV64RacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V64RaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV64RacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V64RaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV5RacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V5RaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV5RacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V5RaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV4RacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V4RaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV4RacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V4RaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV3RacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V3RaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildV3RacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _V3RaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildDDRacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _DDRaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildDDRacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _DDRaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildLDRacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _LDRaceDaysSelectSql + BuildWhereDateClause(startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildLDRacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = Nothing
+
+        s = _LDRaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
         End If
 
         Return s

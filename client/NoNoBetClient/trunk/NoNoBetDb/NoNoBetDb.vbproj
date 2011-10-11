@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BetType.vb" />
+    <Compile Include="BetTypeRaceDay.vb" />
     <Compile Include="Driver.vb" />
     <Compile Include="Equipage.vb" />
     <Compile Include="Horse.vb" />

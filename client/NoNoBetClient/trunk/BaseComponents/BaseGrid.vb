@@ -4,10 +4,28 @@ Imports System.Windows.Forms.DataGridView
 Public Class BaseGrid
     Inherits DataGridView
 
-    Private _Sql As String
+    Private Shared _MenuHandler As BaseGridMenuHandler = Nothing
+
+    Private _Sql As String = Nothing
+    Private _Id As String = Nothing
+    Private _Menu As ContextMenuStrip = Nothing
+
+
+    Private Sub InitGrid()
+        If (_MenuHandler Is Nothing) Then
+            _MenuHandler = New BaseGridMenuHandler
+        End If
+    End Sub
 
     Public Sub New()
         MyBase.New()
+        InitGrid()
+    End Sub
+
+    Public Sub New(ByVal id As String)
+        MyBase.New()
+        _Id = id
+        InitGrid()
     End Sub
 
     Public Shared Function GetCellIntValue(ByVal cell As DataGridViewCell) As Integer
@@ -165,6 +183,19 @@ Public Class BaseGrid
         If (e.KeyCode = Keys.F1) Then
             ShowInternalMessage()
             e.Handled = True
+        End If
+    End Sub
+
+    Private Sub BaseGrid_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseClick
+        If (e.Button = MouseButtons.Right) Then
+            If (_Menu Is Nothing) Then
+                _Menu = BaseGridMenuHandler.MenuCreate(_Id)
+            End If
+
+            If (_Menu IsNot Nothing) Then
+                BaseGridMenuHandler.MenuShow(_Menu, Me.CurrentRow, e.Location)
+            End If
+
         End If
     End Sub
 End Class
