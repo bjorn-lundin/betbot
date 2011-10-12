@@ -193,7 +193,9 @@ Public Class BaseGrid
             End If
 
             If (_Menu IsNot Nothing) Then
-                BaseGridMenuHandler.MenuShow(_Menu, Me.CurrentRow, e.Location)
+                'Dim p As System.Drawing.Point = Me.PointToClient(e.Location)
+                Dim p As System.Drawing.Point = Me.PointToScreen(e.Location)
+                BaseGridMenuHandler.MenuShow(_Menu, Me.CurrentRow, p)
             End If
 
         End If

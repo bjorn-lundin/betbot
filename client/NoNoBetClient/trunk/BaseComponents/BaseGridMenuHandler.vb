@@ -6,10 +6,12 @@ Public Class BaseGridMenuHandler
     Public Shared Function MenuCreate(ByVal menuName As String) As ContextMenuStrip
         Dim m As ContextMenuStrip = New ContextMenuStrip
         m.Name = menuName
+        m.Text = menuName
 
         Select Case menuName
             Case Else
-                AddItem(m, "Do It", "itemDo")
+                AddItem(m, "Do...", "itemDo")
+                AddItem(m, "Undo...", "itemUndo")
         End Select
 
         Return m
@@ -42,6 +44,10 @@ Public Class BaseGridMenuHandler
 
         Select Case item.Name
             Case "itemDo"
+                MessageBox.Show("Doing something...")
+                Return True
+            Case "itemUndo"
+                MessageBox.Show("Undoing something...")
                 Return True
             Case Else
 
