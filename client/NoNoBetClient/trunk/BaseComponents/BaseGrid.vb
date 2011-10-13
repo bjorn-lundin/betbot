@@ -153,6 +153,26 @@ Public Class BaseGrid
     End Sub
 
     ''' <summary>
+    ''' Hide specified column (equal to SetColumnVisible(columnNane, False)) 
+    ''' </summary>
+    ''' <param name="columnName">Column name</param>
+    ''' <remarks></remarks>
+    Public Sub HideColumn(ByVal columnName As String)
+        Me.SetColumnVisible(columnName, False)
+    End Sub
+
+    ''' <summary>
+    ''' Hide specified columns
+    ''' </summary>
+    ''' <param name="columnNames">Array of column names</param>
+    ''' <remarks></remarks>
+    Public Sub HideColumns(ByVal columnNames() As String)
+        For i As Integer = 0 To UBound(columnNames)
+            Me.HideColumn(columnNames(i))
+        Next
+    End Sub
+
+    ''' <summary>
     ''' Set width of specified column
     ''' </summary>
     ''' <param name="columnName">Column name</param>
