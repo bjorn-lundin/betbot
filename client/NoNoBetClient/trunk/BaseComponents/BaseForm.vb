@@ -4,11 +4,21 @@ Public Class BaseForm
     Inherits Form
     Implements IBaseForm
 
+
     Private _DbConnection As DbInterface.DbConnection
 
     Public Sub New()
         MyBase.New()
     End Sub
+
+    Public Property FormTitle As String Implements IBaseForm.FormTitle
+        Get
+            Return Me.Text
+        End Get
+        Set(ByVal value As String)
+            Me.Text = value
+        End Set
+    End Property
 
     Public Property DbConnection As DbInterface.DbConnection Implements IBaseComponent.DbConnection
         Get

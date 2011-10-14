@@ -1,4 +1,5 @@
-﻿
+﻿Imports System.Windows.Forms
+
 Public Class BetType
 
     Public Enum eBetType As Integer
@@ -41,6 +42,20 @@ Public Class BetType
             Case eBetType.DD
                 _BetTypeStr = "DD"
         End Select
+    End Sub
+
+    Public Shared Sub FillCombo(ByVal cbo As ComboBox)
+        cbo.BeginUpdate()
+        cbo.Items.Clear()
+        cbo.Items.Add(New BetType(BetType.eBetType.V75))
+        cbo.Items.Add(New BetType(BetType.eBetType.V64))
+        cbo.Items.Add(New BetType(BetType.eBetType.V5))
+        cbo.Items.Add(New BetType(BetType.eBetType.V4))
+        cbo.Items.Add(New BetType(BetType.eBetType.V3))
+        cbo.Items.Add(New BetType(BetType.eBetType.LD))
+        cbo.Items.Add(New BetType(BetType.eBetType.DD))
+        cbo.EndUpdate()
+        cbo.SelectedIndex = 0
     End Sub
 
     Public Overrides Function ToString() As String

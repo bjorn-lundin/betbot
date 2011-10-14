@@ -28,6 +28,22 @@ Public Class BaseGrid
         InitGrid()
     End Sub
 
+    ''' <summary>
+    ''' Grid id (name). Couples Grid to a menu
+    ''' </summary>
+    ''' <value></value>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Public Property Id() As String
+        Get
+            Return _Id
+        End Get
+        Set(ByVal value As String)
+            _Id = value
+        End Set
+    End Property
+
+
     Public Shared Function GetCellIntValue(ByVal cell As DataGridViewCell) As Integer
         If IsDBNull(cell.Value) Then
             Return 0

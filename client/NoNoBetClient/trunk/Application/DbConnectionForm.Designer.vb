@@ -39,13 +39,13 @@ Partial Class DbConnectionForm
         Me.cboConnection = New System.Windows.Forms.ComboBox()
         Me.txtHeader = New System.Windows.Forms.TextBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.btnRaceDays = New System.Windows.Forms.Button()
         Me.buttonBetSim = New System.Windows.Forms.Button()
         Me.buttonStats = New System.Windows.Forms.Button()
         Me.buttonClose = New System.Windows.Forms.Button()
         Me.btnTest = New System.Windows.Forms.Button()
         Me.btnBrowse = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
-        Me.btnRaceDays = New System.Windows.Forms.Button()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
@@ -229,6 +229,15 @@ Partial Class DbConnectionForm
         Me.GroupBox2.TabIndex = 5
         Me.GroupBox2.TabStop = False
         '
+        'btnRaceDays
+        '
+        Me.btnRaceDays.Location = New System.Drawing.Point(18, 67)
+        Me.btnRaceDays.Name = "btnRaceDays"
+        Me.btnRaceDays.Size = New System.Drawing.Size(108, 23)
+        Me.btnRaceDays.TabIndex = 20
+        Me.btnRaceDays.Text = "Race Selector"
+        Me.btnRaceDays.UseVisualStyleBackColor = True
+        '
         'buttonBetSim
         '
         Me.buttonBetSim.Location = New System.Drawing.Point(334, 23)
@@ -289,15 +298,6 @@ Partial Class DbConnectionForm
         Me.GroupBox3.Size = New System.Drawing.Size(578, 49)
         Me.GroupBox3.TabIndex = 6
         Me.GroupBox3.TabStop = False
-        '
-        'btnRaceDays
-        '
-        Me.btnRaceDays.Location = New System.Drawing.Point(476, 23)
-        Me.btnRaceDays.Name = "btnRaceDays"
-        Me.btnRaceDays.Size = New System.Drawing.Size(90, 23)
-        Me.btnRaceDays.TabIndex = 20
-        Me.btnRaceDays.Text = "RaceDays"
-        Me.btnRaceDays.UseVisualStyleBackColor = True
         '
         'DbConnectionForm
         '

@@ -78,18 +78,7 @@ Public Class RaceDaysFrm
     End Sub
 
     Private Sub InitComboBetTypes()
-        ComboBetTypes.BeginUpdate()
-        ComboBetTypes.Items.Clear()
-
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.V75))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.V64))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.V5))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.V4))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.V3))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.LD))
-        ComboBetTypes.Items.Add(New BetType(BetType.eBetType.DD))
-        ComboBetTypes.EndUpdate()
-        ComboBetTypes.SelectedIndex = 0
+        BetType.FillCombo(ComboBetTypes)
     End Sub
 
     Private Sub ComboBetTypes_SelectedIndexChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles ComboBetTypes.SelectedIndexChanged

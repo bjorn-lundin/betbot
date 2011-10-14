@@ -74,10 +74,14 @@
     <Compile Include="BaseForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="BaseGridForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="BaseGridMenuHandler.vb" />
     <Compile Include="IBaseComponent.vb" />
     <Compile Include="IBaseDialog.vb" />
     <Compile Include="IBaseForm.vb" />
+    <Compile Include="IBaseGridForm.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -100,6 +104,9 @@
   <ItemGroup>
     <EmbeddedResource Include="BaseDialog.resx">
       <DependentUpon>BaseDialog.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BaseGridForm.resx">
+      <DependentUpon>BaseGridForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>

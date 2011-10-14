@@ -152,7 +152,7 @@ Public Class DbConnectionForm
     End Sub
 
     Private Sub btnRaceDays_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRaceDays.Click
-        Dim rFrm As RaceDaysFrm = New RaceDaysFrm
+        Dim rFrm As RaceSelectForm = New RaceSelectForm
         rFrm.StartForm(_DbConn)
     End Sub
 End Class
