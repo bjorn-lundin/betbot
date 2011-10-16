@@ -201,11 +201,20 @@ Public Class BaseGrid
     End Sub
 
     Private Sub ShowInternalMessage()
-        Dim msg As String = "SQL: "
-        If (_Sql IsNot Nothing) Then
-            msg += _Sql
+        Dim msg As String = ""
+        Dim GridIdStr As String = "Grid Id: "
+        Dim GridSqlStr As String = "Grid SQL: "
+
+        If (_Id IsNot Nothing) Then
+            GridIdStr += _Id
         End If
 
+        If (_Sql IsNot Nothing) Then
+            GridSqlStr += _Sql
+        End If
+
+        msg += GridIdStr
+        msg += vbCrLf + vbCrLf + GridSqlStr
         msg += vbCrLf + vbCrLf + "Number rows: " & Me.RowCount
         msg += vbCrLf + vbCrLf + "ReadOnly: " + Me.ReadOnly.ToString
         msg += vbCrLf + "AllowUserToAddRows: " + Me.AllowUserToAddRows.ToString

@@ -10,6 +10,7 @@ Public Class BetType
         V3
         DD
         LD
+        UNDEF
     End Enum
 
     Private _BetType As eBetType
