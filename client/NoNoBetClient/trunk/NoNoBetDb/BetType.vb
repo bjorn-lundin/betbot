@@ -4,13 +4,15 @@ Public Class BetType
 
     Public Enum eBetType As Integer
         V75 = 1
+        V65
         V64
         V5
         V4
         V3
         DD
         LD
-        UNDEF
+        TVILLING
+        ANY
     End Enum
 
     Private _BetType As eBetType
@@ -30,6 +32,8 @@ Public Class BetType
         Select Case betType
             Case eBetType.V75
                 _BetTypeStr = "V75"
+            Case eBetType.V65
+                _BetTypeStr = "V65"
             Case eBetType.V64
                 _BetTypeStr = "V64"
             Case eBetType.V5
@@ -42,6 +46,10 @@ Public Class BetType
                 _BetTypeStr = "LD"
             Case eBetType.DD
                 _BetTypeStr = "DD"
+            Case eBetType.TVILLING
+                _BetTypeStr = "Tvilling"
+            Case eBetType.ANY
+                _BetTypeStr = "Any"
         End Select
     End Sub
 
@@ -55,6 +63,8 @@ Public Class BetType
         cbo.Items.Add(New BetType(BetType.eBetType.V3))
         cbo.Items.Add(New BetType(BetType.eBetType.LD))
         cbo.Items.Add(New BetType(BetType.eBetType.DD))
+        cbo.Items.Add(New BetType(BetType.eBetType.TVILLING))
+        cbo.Items.Add(New BetType(BetType.eBetType.ANY))
         cbo.EndUpdate()
         cbo.SelectedIndex = 0
     End Sub

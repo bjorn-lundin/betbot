@@ -36,6 +36,8 @@ Public Class RaceSelectForm
         Select Case bType
             Case BetType.eBetType.V75
                 sql = Race.BuildV75RacedaysSelectSql(fromDate, Today, True)
+            Case BetType.eBetType.V65
+                sql = Race.BuildV65RacedaysSelectSql(fromDate, Today, True)
             Case BetType.eBetType.V64
                 sql = Race.BuildV64RacedaysSelectSql(fromDate, Today, True)
             Case BetType.eBetType.V5
@@ -48,6 +50,11 @@ Public Class RaceSelectForm
                 sql = Race.BuildDDRacedaysSelectSql(fromDate, Today, True)
             Case BetType.eBetType.LD
                 sql = Race.BuildLDRacedaysSelectSql(fromDate, Today, True)
+            Case BetType.eBetType.TVILLING
+                sql = Race.BuildTvillingRacedaysSelectSql(fromDate, Today, True)
+            Case BetType.eBetType.ANY
+                sql = Race.BuildAnyRacedaysSelectSql(fromDate, Today, True)
+
         End Select
 
         Return sql
@@ -58,7 +65,7 @@ Public Class RaceSelectForm
             Dim betTypeObj As BetType = CType(ComboBetTypes.SelectedItem, BetType)
             Return betTypeObj.Value
         Else
-            Return BetType.eBetType.UNDEF
+            Return BetType.eBetType.ANY
         End If
     End Function
 
