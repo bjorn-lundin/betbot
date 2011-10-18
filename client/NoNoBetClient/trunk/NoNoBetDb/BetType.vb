@@ -12,6 +12,7 @@ Public Class BetType
         DD
         LD
         TVILLING
+        TRIO
         ANY
     End Enum
 
@@ -48,6 +49,8 @@ Public Class BetType
                 _BetTypeStr = "DD"
             Case eBetType.TVILLING
                 _BetTypeStr = "Tvilling"
+            Case eBetType.TRIO
+                _BetTypeStr = "Trio"
             Case eBetType.ANY
                 _BetTypeStr = "Any"
         End Select
@@ -64,6 +67,7 @@ Public Class BetType
         cbo.Items.Add(New BetType(BetType.eBetType.LD))
         cbo.Items.Add(New BetType(BetType.eBetType.DD))
         cbo.Items.Add(New BetType(BetType.eBetType.TVILLING))
+        cbo.Items.Add(New BetType(BetType.eBetType.TRIO))
         cbo.Items.Add(New BetType(BetType.eBetType.ANY))
         cbo.EndUpdate()
         cbo.SelectedIndex = 0

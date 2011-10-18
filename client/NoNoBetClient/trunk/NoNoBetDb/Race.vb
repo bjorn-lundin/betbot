@@ -39,6 +39,8 @@ Public Class Race
                                                     "WHERE (bettype = 'dd')"
     Private Const _TvillingRaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
                                                          "WHERE (bettype = 'tvilling')"
+    Private Const _TrioRaceDaysSelectSql As String = _BetTypeRaceDaySelectSql + _
+                                                         "WHERE (bettype = 'trio')"
     ''' <summary>
     ''' Build: SELECT DISTINCT date,track FROM race ORDER BY date,track
     ''' </summary>
@@ -358,6 +360,26 @@ Public Class Race
 
     Public Shared Function BuildTvillingRacedaysSelectSql(ByVal addOrderBy As Boolean) As String
         Dim s As String = _TvillingRaceDaysSelectSql
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildTrioRacedaysSelectSql(ByVal startDate As Date, ByVal endDate As Date, ByVal addOrderBy As Boolean) As String
+        Dim s As String = _TrioRaceDaysSelectSql + BuildWhereDateClause(False, startDate, endDate)
+
+        If addOrderBy Then
+            s += _OrderByDateTrackClause
+        End If
+
+        Return s
+    End Function
+
+    Public Shared Function BuildTrioRacedaysSelectSql(ByVal addOrderBy As Boolean) As String
+        Dim s As String = _TrioRaceDaysSelectSql
 
         If addOrderBy Then
             s += _OrderByDateTrackClause

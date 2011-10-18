@@ -52,6 +52,8 @@ Public Class RaceSelectForm
                 sql = Race.BuildLDRacedaysSelectSql(fromDate, Today, True)
             Case BetType.eBetType.TVILLING
                 sql = Race.BuildTvillingRacedaysSelectSql(fromDate, Today, True)
+            Case BetType.eBetType.TRIO
+                sql = Race.BuildTrioRacedaysSelectSql(fromDate, Today, True)
             Case BetType.eBetType.ANY
                 sql = Race.BuildAnyRacedaysSelectSql(fromDate, Today, True)
 
