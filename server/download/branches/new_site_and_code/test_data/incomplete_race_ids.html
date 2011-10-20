@@ -1,0 +1,1797 @@
+
+
+
+
+
+
+
+
+
+
+
+
+<HTML>
+<HEAD>
+<TITLE>Travsport.se</TITLE>
+<!-- 090608-TDS-B -->
+<!-- ipapp2 -->
+<LINK REL='stylesheet' TYPE='text/css' HREF='/css/stcIeStyle.css'>
+<SCRIPT LANGUAGE='JavaScript' SRC='/scripts/menu.js'></SCRIPT>
+
+
+<SCRIPT LANGUAGE="JavaScript">
+/*function submitForm(myForm){
+.forms[myForm].submit();
+}
+*/
+
+function fixIeLinks(){
+for (a in document.links)
+document.links[a].onfocus = document.links[a].blur;
+}
+document.onmousedown = fixIeLinks;
+
+function oppnaHjelp(url, w, scroll, menubar) {
+	var h = screen.height*(4/5);
+	var top = (screen.height-h) / 2;
+	var left = (screen.width-w) / 2;
+	m = menubar;
+	//if(menubar) var m = "menubar=1";
+	window.open(url,'','width='+ w +',height='+ h +',top=' + top +',left=' + left +',scrollbars=' + scroll + ',resizable=0,'+ m + ',toolbar=0, status=yes');
+}
+
+function visaHestData(hestId) { //, w, scroll, menubar) {
+  var url = "/shestinfo?kommando=hestResultat&hestId="+hestId;
+  var w = "800";
+	var h = screen.height*(4/5);
+	var top = (screen.height-h) / 2;
+	var left = (screen.width-w) / 2;
+  var scroll = "yes";
+  var menubar = "yes";
+	m = menubar;
+	window.open(url,'','width='+ w +',height='+ h +',top=' + top +',left=' + left +',scrollbars=' + scroll + ',resizable=0,'+ m + ',toolbar=0, status=yes');
+} 
+ 
+</SCRIPT>
+
+
+<SCRIPT LANGUAGE="JavaScript" SRC="/scripts/formCheck.js"></SCRIPT>
+<SCRIPT LANGUAGE="JavaScript">
+
+function checkDatum(datum) {
+var errorStr = "";
+   if (!checkFormDate(datum)) {
+     errorStr += "Du har fyllt i felaktigt datum.\n";
+     alert(errorStr);
+     window.focus();
+     return false;
+   }
+   else {
+     return true;
+   }
+}
+
+function checkLoppnr(nr) {
+var errorStr = "";
+ if (nr!=null && nr=="0") {
+   errorStr += "Loppnummer kan inte vara 0 (noll). Lämna blankt för hela tävlingsdagen.\n";
+   alert(errorStr);
+   window.focus();
+   return false;
+ }
+ else {
+   return true;
+ }
+}
+
+function checkBana(kForm) {
+var errorStr = "";
+ if (kForm.valdBana[kForm.valdBana.selectedIndex].value == "0") {
+   errorStr += "En bana måste väljas.\n";
+   alert(errorStr);
+   window.focus();
+   return false;
+ }
+ else {
+   return true;
+ }
+}
+
+
+function submitTDSok(kalForm, tdId) {
+if (checkBana(kalForm)) {
+if (kalForm.valdDatum.value != "" && kalForm.valdDatum.value != null) {
+ if (checkDatum(kalForm.valdDatum.value)) { // && checkLoppnr(kalForm.valdLoppnr.value)) {
+   kalForm.kommando.value = "tevlingsdagSok";
+   if (kalForm.valdLoppnr.value == "" || kalForm.valdLoppnr.value == null) {
+     kalForm.valdLoppnr.value = "0";
+   }
+   kalForm.tevdagId.value = "498626";
+   return true;
+//   kalForm.submit();
+ } 
+ else {
+  return false;
+ }
+} else {
+  kalForm.kommando.value = "tevlingsDagarBana";
+  kalForm.valdDatum.value = "";
+  kalForm.valdLoppnr.value = "";
+  kalForm.tevdagId.value = "0";
+  return true;
+//  kalForm.submit();
+}  
+} else {
+  return false;
+}
+}
+
+var popupWin;
+function openPopup (tevdagId, loppId){
+  var URL = "/sresultat?kommando=printTevlingsdag&tevdagId="+tevdagId +"&loppId="+loppId;
+  if(!popupWin || popupWin.closed) {
+    popupWin = window.open(URL, '',  'menubar=no,toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,dependent,width=700,height=450,left=50,top=50')
+  } else {
+    popupWin.focus();
+  }
+}
+</SCRIPT>
+
+</HEAD>
+
+
+<BODY BGCOLOR="#EEEEEA" MARGINHEIGHT="0" MARGINWIDTH="0" TOPMARGIN="0" LEFTMARGIN="0" onLoad="init2(67); startAt(7);">
+
+
+
+<DIV ID="backgroundDiv" STYLE=" visibility:visible; position:absolute; z-index:0;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="772" HEIGHT="655" BACKGROUND="/staticFiles/ts/images/background_ny.gif">
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="divLogo" STYLE=" left:2; top:8; visibility:visible; position:absolute; z-index:5;">
+  <IMG SRC="/staticFiles/ts/images/menu/logoF_opt.gif" WIDTH="151" HEIGHT="112" BORDER="0">
+</DIV>
+
+<DIV ID="divMenu" STYLE=" left:30; top:118; width:125; height:500; visibility:visible; position:absolute; z-index:2;">
+
+<DIV ID="divLoggain" STYLE=" visibility:hidden; position:relative; z-index:5;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123">
+<TR>
+  <TD WIDTH="123" ALIGN="right" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="2" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif">
+
+    <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="123">
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+      <TD></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD >
+        <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">
+        <TR>
+          <TD CLASS="content" STYLE="padding-left:5px">
+            
+            <A HREF="https://www.travsport.se/slogin?kommando=inloggad" CLASS="menu">LOGGA IN</A>
+            
+          </TD>
+        </TR>
+        
+        <TR>
+          <TD ALIGN="right"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="50" BORDER="0"></TD><!-- 58 i höjd från början   -->
+        </TR>
+        
+        </TABLE>     
+      </TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="109" HEIGHT="2" BORDER="0"> </TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div0" STYLE=" visibility:hidden; position:relative; z-index:4;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123">
+  <TR>
+        <TD WIDTH="123" ALIGN="right" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+  </TR>
+  <TR>
+
+        <TD WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfs" CLASS="menu">FÖRSTA SIDAN</A></TD>
+
+  </TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div1" STYLE=" visibility:hidden; position:relative; z-index:4;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaOm" CLASS="menu">OM STC</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div2" STYLE=" visibility:hidden; position:relative; z-index:5;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD VALIGN="top"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(3);" CLASS="menu">NYHETER & NOTISER</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=nyhetsBrevet" CLASS="submenu">-Travnyttigt</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=notiser" CLASS="submenu">-Aktuella notiser</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div3" STYLE=" visibility:hidden; position:relative; z-index:6;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(4);" CLASS="menu">PROPOSITIONER</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=nySokning&sokTyp=hest" CLASS="submenu">-Sök utifrån häst</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=nySokning&sokTyp=allmen" CLASS="submenu">-Allmän sökning</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=tevlingsDagar" CLASS="submenu">-Tävlingsdagar</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sprop?kommando=hemtaRikstoto" CLASS="submenu">-Visa alla rikstotolopp</A></TD>
+        </TR>
+
+  
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div4" STYLE=" visibility:hidden; position:relative; z-index:7;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sanmlista?kommando=dagar" CLASS="menu"><b>ANMÄLNINGSLISTOR</b></A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div5" STYLE=" visibility:hidden; position:relative; z-index:8;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhiteBig.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <!-- När man är inloggad samt TDS-kund byts länken Kalendarium ut mot TDS -->
+        <!-- if(inloggad && TDS) -->
+
+        
+        
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(6);" CLASS="menu">KALENDARIUM</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/skalendarium?kommando=kalendernHemta" CLASS="submenu">-Kalendern</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/skalendarium?kommando=kategoriSok" CLASS="submenu">-Sök via kategori</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        
+        <!-- End if(inloggad && TDS) -->
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+
+<DIV ID="div6" STYLE=" visibility:hidden; position:relative; z-index:9;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(7);" CLASS="menu">SÖK SPORTINFO</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/shestinfo?kommando=visa" CLASS="submenu">-Häst</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/slicensinfo?kommando=visa" CLASS="submenu">-Kusk/Ryttare/Tränare</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sresultat?kommando=tevlingsDagar" CLASS="submenu">-Tävlingsdagsresultat</A><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div7" STYLE=" visibility:hidden; position:relative; z-index:10;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+<!--  backWhiteBig används alltid då det är många menyalternativ, dvs fler än 5   -->
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhiteBig.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hestvetForstasida" CLASS="menu">HÄSTVETERINÄREN</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hvEmneStart" CLASS="submenu">-Faktabank</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=karensTider" CLASS="submenu">-Karenstider</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=smittInfo" CLASS="submenu">-Smittoinfo</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="http://www.hastklinikerna.se" TARGET="_blank" CLASS="submenu">-ATG Hästklinikerna</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=forskningHuvudsida" CLASS="submenu">-Forskningsinfo</A></TD>
+        </TR>
+       <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/svetfraga?kommando=hestHallning" CLASS="submenu">-Hästhållning</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div8" STYLE=" visibility:hidden; position:relative; z-index:11;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(9);" CLASS="menu">INFO & REGLER</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=infoArkiv" CLASS="submenu">-Info & Regler</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaHistoria" CLASS="submenu">-Travsportens historia</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div9" STYLE=" visibility:hidden; position:relative; z-index:12;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sblankett" CLASS="menu">BLANKETTER</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div10" STYLE=" visibility:hidden; position:relative; z-index:13;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sbanor" CLASS="menu">TRAVBANOR</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div11" STYLE=" visibility:hidden; position:relative; z-index:14;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+    <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+    </TR>
+    <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/slenkar" CLASS="menu">LÄNKAR</A></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+<DIV ID="div12" STYLE=" visibility:hidden; position:relative; z-index:15;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="JavaScript: menu(13);" CLASS="menu">FRÅGA STC</A></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfraga" CLASS="submenu">-Ställ fråga</A></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sfaq" CLASS="submenu">-Vanliga frågor</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div13" STYLE=" visibility:hidden; position:relative; z-index:16;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backWhite.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=omSite" CLASS="menu">OM SITEN</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div14" STYLE=" visibility:hidden; position:relative; z-index:17;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD BACKGROUND="/staticFiles/ts/images/menu/backGray.gif">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="7" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="123"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/ssitesok" CLASS="menu">SÖK PÅ SITEN</A></TD>
+        </TR>
+        </TABLE>
+  </TD>
+</TR>
+</TABLE>
+</DIV>
+
+<DIV ID="div15" STYLE=" visibility:hidden; position:relative; z-index:18;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="123" BACKGROUND="/staticFiles/ts/images/menu/backTop.gif">
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/menu/backWhiteDown.gif" WIDTH="123" HEIGHT="7" BORDER="0"><BR><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="15" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="https://www.atg.se/index.jsp?chooseAtgse2=true#/department.atg.atgse2.channel.ws.bettingandstartlists/" CLASS="menuGrey" TARGET="_blank">STARTLISTOR&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="4" BORDER="0"></TD>
+</TR>
+<!--
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="http://www.atg.se/ResultatForstaSidaServlet" CLASS="menuGrey" TARGET="_blank">RESULTAT&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+-->
+<!--  Copyright text  -->
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="14" BORDER="0"></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">Copyright/</A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">database right,</A></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="7" HEIGHT="1" BORDER="0"><A HREF="/sinfo?kommando=visaCopyright" CLASS="contentSmalGray">AB Trav och Galopp&nbsp;<IMG SRC="/staticFiles/ts/images/menu/blackArrow.gif" WIDTH="5" HEIGHT="7" BORDER="0"></A></TD>
+</TR>
+<!--  ***  -->
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="20" BORDER="0"></TD>
+</TR>
+
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/menu/menuBottom.gif" WIDTH="123" HEIGHT="5" BORDER="0"></TD>
+</TR>
+</TABLE>
+</DIV>
+</DIV>
+
+
+       
+
+
+
+<DIV ID="rightDiv" STYLE=" left:160; top:43; visibility:visible; position:absolute; z-index:1;">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+  <TD VALIGN="top">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="130">
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a01.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a02.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+    </TR>
+    <TR>
+      <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5"></TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a05.gif" WIDTH="60" HEIGHT="60"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="5" HEIGHT="1"></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/propSearch/a06.gif" WIDTH="60" HEIGHT="60"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD VALIGN="top" COLSPAN="2">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD ROWSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerUppLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD VALIGN="top" COLSPAN="2" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/black.gif" WIDTH="200" HEIGHT="1" BORDER="0"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineHori6.gif" WIDTH="208" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD BGCOLOR="#FFFFFF" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+      
+      <TD BACKGROUND="/staticFiles/ts/images/gradientHorizon.gif" ROWSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="60" HEIGHT="1">
+      
+    </TR>
+    <TR>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLine.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD BGCOLOR="#FFFFFF">
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="318">
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="8" HEIGHT="112" BORDER="0"></TD>
+          <TD VALIGN="top">
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="320" HEIGHT="4" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="2"><IMG SRC="/staticFiles/ts/images/sportinfo/resultat.gif" WIDTH="154" HEIGHT="30" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="2"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="10" BORDER="0"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="ingress" COLSPAN="2" HEIGHT="60" VALIGN="top"><B>Tävlingsdagsresultat</B><BR>Information om en tävlingsdag och samtliga loppresultat.</TD>
+            </TR>
+            </TABLE>
+          </TD>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        <TR>
+          <TD WIDTH="8"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="8" HEIGHT="1" BORDER="0"></TD>
+          <TD WIDTH="300"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="300" HEIGHT="1" BORDER="0"></TD>
+          <TD WIDTH="10"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="10" HEIGHT="1" BORDER="0"></TD>
+        </TR>
+        </TABLE>
+      </TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerDownLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BGCOLOR="#ffffff" HEIGHT="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD COLSPAN="2" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/black.gif" WIDTH="165" HEIGHT="1" BORDER="0"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineHori5.gif" WIDTH="188" HEIGHT="1" BORDER="0"></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+<TR>
+  <TD WIDTH="130"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="130" HEIGHT="1" BORDER="0" ALT=""></TD>
+  <TD WIDTH="420"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="420" HEIGHT="1" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE>
+
+<!-- ********************************************************** -->
+  
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="3" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerUppLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineUpp.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerUppRight.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+    </TR>
+    <TR>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineLeft.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+      <TD BGCOLOR="#FFFFFF">
+	  
+<!--  Sökförmulär  -->      
+      <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="500">
+        <FORM NAME="sokTevdag" ACTION="/sresultat" METHOD="POST" onSubmit="return submitTDSok(this);">
+       <INPUT TYPE="hidden" NAME="kommando" VALUE="tevlingsdagSok"> 
+	   <INPUT TYPE="hidden" NAME="tevdagId" VALUE="498626">  
+	   <INPUT TYPE="hidden" NAME="loppId" VALUE="0"> 
+        <TR>
+          <TD WIDTH="160"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="160" HEIGHT="1"></TD>
+          <TD WIDTH="100"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="100" HEIGHT="1"></TD>
+          <TD WIDTH="70"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="70" HEIGHT="1"></TD>
+          <TD WIDTH="90"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="90" HEIGHT="1"></TD>
+        </TR>
+        <TR>
+          <TD CLASS="formHeadline"><B>Bana:</B></TD>
+		  <TD CLASS="formHeadline"><B>Datum:</B></TD>
+          <TD CLASS="formHeadline"><B>Loppnr:</B></TD>
+          <TD CLASS="formHeadline">&nbsp;</TD>
+        </TR>
+        <TR>
+
+          <TD CLASS="content"> 
+            <SELECT NAME="valdBana" CLASS="formInput" style="width:155; border-width:1px; border-color:#000000; border-style:solid;">
+              <OPTION VALUE="0">Välj bana</OPTION>
+                               
+              <OPTION  VALUE="12">Arvika (Ar)</OPTION>
+                             
+              <OPTION  VALUE="4">Axevalla (Ax)</OPTION>
+                             
+              <OPTION  VALUE="5">Bergsåker (B)</OPTION>
+                             
+              <OPTION  VALUE="13">Boden (Bo)</OPTION>
+                             
+              <OPTION  VALUE="14">Bollnäs (Bs)</OPTION>
+                             
+              <OPTION  VALUE="15">Dannero (D)</OPTION>
+                             
+              <OPTION  VALUE="6">Eskilstuna (E)</OPTION>
+                             
+              <OPTION  VALUE="7">Färjestad (F)</OPTION>
+                             
+              <OPTION  VALUE="8">Gävle (G)</OPTION>
+                             
+              <OPTION  VALUE="1520">Göteborg Trav (Gt)</OPTION>
+                             
+              <OPTION  VALUE="1500">Hagfors (Hf)</OPTION>
+                             
+              <OPTION  VALUE="16">Hagmyren (H)</OPTION>
+                             
+              <OPTION  VALUE="9">Halmstad (Hd)</OPTION>
+                             
+              <OPTION  VALUE="17">Hoting (Hg)</OPTION>
+                             
+              <OPTION  VALUE="3">Jägersro (J)</OPTION>
+                             
+              <OPTION  VALUE="18">Kalmar (Kr)</OPTION>
+                             
+              <OPTION  VALUE="1240">Karlshamn (Kh)</OPTION>
+                             
+              <OPTION  VALUE="19">Lindesberg (L)</OPTION>
+                             
+              <OPTION  VALUE="20">Lycksele (Ly)</OPTION>
+                             
+              <OPTION  VALUE="21">Mantorp (Mp)</OPTION>
+                             
+              <OPTION  VALUE="22">Oviken (Ov)</OPTION>
+                             
+              <OPTION  VALUE="10">Romme (Ro)</OPTION>
+                             
+              <OPTION  VALUE="23">Rättvik (Rä)</OPTION>
+                             
+              <OPTION  VALUE="24">Skellefteå (Sk)</OPTION>
+                             
+              <OPTION  VALUE="1">Solvalla (S)</OPTION>
+                             
+              <OPTION  VALUE="25">Solänget (Sä)</OPTION>
+                             
+              <OPTION  VALUE="1480">Tingsryd (Ti)</OPTION>
+                             
+              <OPTION  VALUE="1320">Täby Trav (Tt)</OPTION>
+                             
+              <OPTION  VALUE="26">Umåker (U)</OPTION>
+                             
+              <OPTION  VALUE="34">Vaggeryd (Vg)</OPTION>
+                             
+              <OPTION  VALUE="2760">Vemdalen (Vd)</OPTION>
+                             
+              <OPTION  VALUE="27">Visby (Vi)</OPTION>
+                             
+              <OPTION  VALUE="2">Åby (Å)</OPTION>
+                             
+              <OPTION  VALUE="28">Åmål (Åm)</OPTION>
+                             
+              <OPTION  VALUE="1940">Åre Istrav (Åt)</OPTION>
+                             
+              <OPTION  VALUE="29">Årjäng (År)</OPTION>
+                             
+              <OPTION  VALUE="11">Örebro (Ö)</OPTION>
+                             
+              <OPTION  VALUE="30">Östersund (Ös)</OPTION>
+             
+            </SELECT>
+          </TD>
+
+          <TD>            
+		   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#E5E5DD"><INPUT TYPE="text" NAME="valdDatum" SIZE="14" CLASS="formInput" MAXLENGTH="6" VALUE=""></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+
+            </TABLE>          
+           </TD>
+          
+          <TD>
+		   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#E5E5DD"><INPUT TYPE="text" NAME="valdLoppnr" SIZE="8" CLASS="formInput" MAXLENGTH="2" VALUE=""></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+			
+            </TABLE>          
+             </TD>
+		  <TD ALIGN="right"><INPUT TYPE="image" onClick="return submitTDSok(sokTevdag);" SRC="/staticFiles/ts/images/sportinfo/buttonSok.gif" WIDTH="43" HEIGHT="15" border="0"></TD>
+			
+        </TR>
+        <TR>
+          <TD COLSPAN="4"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="3"></TD>
+        </TR>
+
+        </FORM>
+		
+        </TABLE>
+	 
+      
+      </TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineRight.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+    </TR>
+
+    <TR>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerDownLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BACKGROUND="/staticFiles/ts/images/backVertLineDown.gif"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+      <TD WIDTH="6"><IMG SRC="/staticFiles/ts/images/cornerDownRight.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+    </TR>
+
+    <TR>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1" BORDER="0" ALT=""></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="542" HEIGHT="1" BORDER="0" ALT=""></TD>
+      <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1" BORDER="0" ALT=""></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+</TABLE>
+
+<!-- ************************************************************ -->
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="554">
+<TR>
+  <TD VALIGN="top" ALIGN="left">    
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD COLSPAN="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="3" BORDER="0"></TD>
+    </TR>
+    
+    <TR>
+      <TD COLSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerUppLeft.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+      <TD BGCOLOR="#FFFFFF" VALIGN="top"><IMG SRC="/staticFiles/ts/images/black.gif" WIDTH="541" HEIGHT="1" BORDER="0"></TD>
+      <TD COLSPAN="2" VALIGN="top"><IMG SRC="/staticFiles/ts/images/cornerUppRight.gif" WIDTH="6" HEIGHT="6" BORDER="0"></TD>
+    </TR>
+	
+    <TR>
+      <TD WIDTH="1" BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD BGCOLOR="#FFFFFF" WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+      <TD BGCOLOR="#FFFFFF" VALIGN="top">
+
+
+      <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="541">
+	    <TR>
+          <TD ROWSPAN="100"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="10" BORDER="0"></TD>
+          <TD ROWSPAN="100"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="6" HEIGHT="1"></TD>
+        </TR>
+
+        <TR>
+          <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+        </TR>
+	
+        <TR>
+          <TD CLASS="content">
+             
+
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525"> 
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5"></TD>
+</TR>
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+<TR>
+  <TD BGCOLOR="#D1D1CA" COLSPAN="4"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+<TR>
+  <TD WIDTH="1" BGCOLOR="#D1D1CA"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD CLASS="content" COLSPAN="1" STYLE="padding:6px" WIDTH="453"><FONT CLASS="content14"><B>ÅBY TISDAG 29 DECEMBER 2009</B></FONT></TD>
+  <TD ALIGN="right" STYLE="padding:6px" WIDTH="70"><A HREF="javascript:oppnaHjelp('/sinfo?kommando=visa_hjelp&kategori=tevlingsdag_resultat', '577','yes','yes');"><IMG SRC="/staticFiles/ts/images/sportinfo/buttonHelp.gif" WIDTH="53" HEIGHT="15" BORDER="0"></A></TD>
+  <TD WIDTH="1" BGCOLOR="#D1D1CA"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+<TR>
+  <TD BGCOLOR="#EEEEEA" WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD BGCOLOR="#EEEEEA" CLASS="content" VALIGN="top" WIDTH="100">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD CLASS="content">&nbsp;</TD>
+      <TD CLASS="content" STYLE="padding:2px"><B>Dagsomsättning</B><BR>294 865 kr</TD>
+      <TD CLASS="content">&nbsp;</TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD BGCOLOR="#EEEEEA" CLASS="content" VALIGN="top" WIDTH="155">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD CLASS="content">&nbsp;</TD>
+      <TD CLASS="content" STYLE="padding:2px"><B>Spelformer</B><BR>V4, LD, Trio, Tvilling</TD>
+      <TD CLASS="content">&nbsp;</TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD BGCOLOR="#EEEEEA" CLASS="content" VALIGN="top" WIDTH="150">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD CLASS="content">&nbsp;</TD>
+      <TD CLASS="content" STYLE="padding:2px"><nobr><B>Utdelade prispengar</B></nobr><BR>59 500 kr</TD>
+      <TD CLASS="content">&nbsp;</TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD BGCOLOR="#EEEEEA" CLASS="content" VALIGN="top" WIDTH="120">
+    <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+      <TD CLASS="content">&nbsp;</TD>
+      <TD CLASS="content" STYLE="padding:2px"><B>Publik</B><BR>-</TD>
+      <TD CLASS="content">&nbsp;</TD>
+    </TR>
+    </TABLE>
+  </TD>
+  <TD BGCOLOR="#EEEEEA" WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+<TR>
+  <TD COLSPAN="8"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="5"></TD>
+</TR>
+</TABLE>
+
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="500"> 
+<TR>
+<TD ROWSPAN="3"><A HREF="/sresultat?kommando=tevlingsdagVisa&tevdagId=498625"><IMG SRC="/staticFiles/ts/images/sportinfo/arrowLeft.gif" WIDTH="16" HEIGHT="16" BORDER="0" ALT="tisdag 22 december 2009"></A></TD>
+<TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1" BORDER="0"></TD>
+<TD ROWSPAN="3">&nbsp;</TD>
+</TR>
+<TR>
+<TD HEIGHT="14" ALIGN="left" TITLE="tisdag 22 december 2009"><A HREF="/sresultat?kommando=tevlingsdagVisa&tevdagId=498625" CLASS="linkHoover">Föregående tävlingsdag</A></TD>
+<TD CLASS="content" ALIGN="center">&nbsp;&nbsp;</TD>
+<TD ALIGN="right" TITLE="">&nbsp;</TD>
+</TR>
+<TR>
+<TD WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="195" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="195" HEIGHT="1" BORDER="0"></TD>
+<TD WIDTH="150" HEIGHT="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="150" HEIGHT="1" BORDER="0"></TD>
+</TR>
+</TABLE>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525"> 
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+</TABLE>
+
+			<BR>
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+<TR>
+
+      <TD ROWSPAN="3" WIDTH="16"><IMG SRC="/staticFiles/ts/images/sportinfo/selectedLeftStartBig.gif" WIDTH="16" HEIGHT="34"></TD>
+    
+	  
+      <TD ROWSPAN="3" WIDTH="26" BACKGROUND="/staticFiles/ts/images/sportinfo/selectedBackBig.gif" CLASS="content" ALIGN="center" TITLE="&nbsp;V4-1&nbsp;"><B><A HREF="/sresultat?kommando=tevlingsdagVisa&tevdagId=498626&loppId=695403" CLASS="linkHoover"><FONT CLASS="content14">1</FONT></A></B></TD>
+	  
+      <TD ROWSPAN="3" WIDTH="5"><IMG SRC="/staticFiles/ts/images/sportinfo/selectedtoUnselectedBig.gif" WIDTH="5" HEIGHT="34"></TD>
+  
+   
+   	  <TD ROWSPAN="3" WIDTH="26" BACKGROUND="/staticFiles/ts/images/sportinfo/unselectedBackBig.gif" CLASS="content" ALIGN="center" TITLE="&nbsp;V4-2, LD-1&nbsp;"><B><FONT CLASS="contentGray14">2</FONT></B></TD>
+   
+      <TD ROWSPAN="3" WIDTH="5"><IMG SRC="/staticFiles/ts/images/sportinfo/unselectedtoUnselectedBig.gif" WIDTH="5" HEIGHT="34"></TD>
+   
+   
+   	  <TD ROWSPAN="3" WIDTH="26" BACKGROUND="/staticFiles/ts/images/sportinfo/unselectedBackBig.gif" CLASS="content" ALIGN="center" TITLE="&nbsp;V4-3, LD-2&nbsp;"><B><FONT CLASS="contentGray14">3</FONT></B></TD>
+   
+      <TD ROWSPAN="3" WIDTH="5"><IMG SRC="/staticFiles/ts/images/sportinfo/unselectedtoUnselectedBig.gif" WIDTH="5" HEIGHT="34"></TD>
+   
+   
+   	  <TD ROWSPAN="3" WIDTH="26" BACKGROUND="/staticFiles/ts/images/sportinfo/unselectedBackBig.gif" CLASS="content" ALIGN="center" TITLE="&nbsp;V4-4, Trio&nbsp;"><B><FONT CLASS="contentGray14">4</FONT></B></TD>
+   
+      <TD ROWSPAN="3" WIDTH="5"><IMG SRC="/staticFiles/ts/images/sportinfo/unselectedtoUnselectedBig.gif" WIDTH="5" HEIGHT="34"></TD>
+   
+   
+   	  <TD ROWSPAN="3" WIDTH="26" BACKGROUND="/staticFiles/ts/images/sportinfo/unselectedBackBig.gif" CLASS="content" ALIGN="center" TITLE="&nbsp;Lopp 5&nbsp;"><B><FONT CLASS="contentGray14">5</FONT></B></TD>
+   
+      <TD ROWSPAN="3" WIDTH="5"><IMG SRC="/staticFiles/ts/images/sportinfo/unselectedRightEndBig.gif" WIDTH="5" HEIGHT="34"></TD>                  
+   
+  <TD WIDTH="354"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="32"></TD>
+</TR>
+<TR>
+  <TD VALIGN="bottom" ALIGN="right" BGCOLOR="000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+<TR>
+  <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+</TABLE>
+
+
+                        
+            
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525"> 
+            <TR>
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+			<!--
+            <TR>
+              <TD ALIGN="right"><A HREF="javascript:history.back()" CLASS="linkButton"><IMG SRC="/staticFiles/ts/images/arrowBack.gif" WIDTH="9" HEIGHT="7" BORDER="0">&nbsp;Tillbaka till kalender&nbsp;<IMG SRC="/staticFiles/ts/images/star2.gif" WIDTH="3" HEIGHT="10" BORDER="0"></A></TD>
+            </TR>
+			-->
+            </TABLE>
+            <BR>
+            <B>Lopp 1. V4-1, Tvilling.</B>&nbsp;&nbsp;12.20
+            <BR><BR>
+            
+                <B>52.001 - 100.000 kr</B>. Körsvenskrav kat. 2.<BR>
+            
+                <B>2640 m.</B> Autostart.<BR>
+            
+                Pris: 25.000-12.500-8.000-5.000-3.000-2.000-2.000-2.000 (8 priser)<BR>
+            
+            <BR>
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+            <TR>
+              <TD WIDTH="37"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="37" HEIGHT="1"></TD>
+              <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="241"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="241" HEIGHT="1"></TD>
+			  
+			  <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="40"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="40" HEIGHT="1"></TD>
+			  
+              <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="35"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="35" HEIGHT="1"></TD>
+              <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="60"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="65" HEIGHT="1"></TD>
+              <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="47"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="48" HEIGHT="1"></TD>
+              <TD WIDTH="1"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="46"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="45" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>Plac</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>Häst</B></TD>
+
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>Dist</B></TD>
+
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>Skor</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>(Ev)Odds</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>Plats</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left"><B>Tid</B></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>1</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>2</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=549320" CLASS="linkBlue10"><B>CUT</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=6027" CLASS="linkBlue9">Söderkvist Stefan</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=148965" CLASS="linkBlue9">Ljungblad Gert</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">2/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              
+	              
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              <B>4,89</B>
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>1,57&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">17,4a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>2</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>6</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=575505" CLASS="linkBlue10"><B>MR MORIQUE</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=5517" CLASS="linkBlue9">Norberg Peter</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=86425" CLASS="linkBlue9">Stolt Karl</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">6/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              
+	              
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (59)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>1,93&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">17,7a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>3</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>9</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=558391" CLASS="linkBlue10"><B>TURBO TIM</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=42633" CLASS="linkBlue9">Untersteiner Peter</A>
+              
+          
+		      
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">9/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	              
+	              
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (205)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>3,12&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">17,8a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>4</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>3</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=520220" CLASS="linkBlue10"><B>TINA BLAZE</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=5599" CLASS="linkBlue9">Widell Kaj</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=564857" CLASS="linkBlue9">Prytz Pethra</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">3/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	              
+	              
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (177)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">18,8a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>5</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>4</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=589806" CLASS="linkBlue10"><B>SINGING TUA</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=79408" CLASS="linkBlue9">Nordström Per</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=166404" CLASS="linkBlue9">Stenströmer Ulf</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">4/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      <IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11">
+	              
+	              
+	              
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (53)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">18,9a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>6</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>1</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=516974" CLASS="linkBlue10"><B>ALFRIDA FAGER</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=70433" CLASS="linkBlue9">Aarum Dagfinn</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=1217" CLASS="linkBlue9">Martinsson Björn</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">1/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	              
+	              
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (345)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">19,8a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>7</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>8</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=613382" CLASS="linkBlue10"><B>ARRAS QUEEN</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=145709" CLASS="linkBlue9">Sjöberg Patrik</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=166404" CLASS="linkBlue9">Stenströmer Ulf</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">8/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      <IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/EjSko.gif" WIDTH="12" HEIGHT="11">
+	              
+	              
+	              
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (285)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">19,9a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>8</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>7</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=597209" CLASS="linkBlue10"><B>GOOD SPEED</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=184586" CLASS="linkBlue9">Forssell Anna</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=54995" CLASS="linkBlue9">Widell Thomas</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">7/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              
+	              
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (25)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">20,1ag</TD>
+            </TR>
+        
+            <TR>
+              <TD CLASS="content" COLSPAN="13"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="8"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" COLSPAN="13" BGCOLOR="#EEEEEA"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" COLSPAN="13"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="8"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>0</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>10</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=643629" CLASS="linkBlue10"><B>TOPHILL'S DART* (FI)</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=161638" CLASS="linkBlue9">Linderoth Mikael Å</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=65127" CLASS="linkBlue9">Medin Christina</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">10/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              
+	              
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (311)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">20,3a</TD>
+            </TR>
+               
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+                 
+            <TR>
+              <TD CLASS="contentHeadline" BGCOLOR="#EEEEEA" STYLE="padding-top:1px; padding-bottom:1px; padding-left:1px; padding-right:10px" ALIGN="right"><B>0</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px"><B>5</B>&nbsp;
+              
+              <A HREF="/shestinfo?kommando=hestResultat&hestId=593691" CLASS="linkBlue10"><B>MAJESTY OF COURSE</B></A><BR>
+              
+               
+               <A HREF="/slicensinfo?kommando=visalicens&licensId=84269" CLASS="linkBlue9">Andersson Mikael J</A>
+              
+          
+		      
+               
+               <FONT CLASS="contentSmal">(</FONT><A HREF="/slicensinfo?kommando=trenarstat&licensId=20055" CLASS="linkBlue9">Svanstedt Åke</A><FONT CLASS="contentSmal">)</FONT>
+              
+			  
+              </TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="right">5/2640</TD>
+			  
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+			  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center" VALIGN="center">
+			      
+	              
+	              
+	              <IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11"><IMG SRC="/staticFiles/ts/images/sportinfo/Sko.gif" WIDTH="12" HEIGHT="11">
+	                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center">
+              
+              (104)
+                
+              </TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="center"><B>&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px" ALIGN="left">ua</TD>
+            </TR>
+        
+            <TR>
+              <TD CLASS="content" COLSPAN="9"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            </TABLE>
+            <BR>
+
+
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Strukna:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="410" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              
+              -
+                
+              </TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+           <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Startförbud:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              
+                      <nobr><B>5</B> <A HREF="/shestinfo?kommando=hestResultat&hestId=593691" CLASS="linkBlue10"><B>MAJESTY OF COURSE</B></A> (hälta, 10 dgr)&nbsp;</nobr> 
+              
+                      <nobr><B>7</B> <A HREF="/shestinfo?kommando=hestResultat&hestId=597209" CLASS="linkBlue10"><B>GOOD SPEED</B></A> (hälta, 10 dgr)&nbsp;</nobr> 
+                
+              </TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Tempo:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              första 500 14.3 (3 Tina Blaze), 1000 15.5 (5 Majesty of Course)<br>2000 18.1 (5 Majesty of Course), sista 500 14.7
+              </TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Segermarginal:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              3.5 längd
+              </TD>
+            </TR>
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Banförhållande:</B>&nbsp;</TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              Lätt bana
+              </TD>
+            </TR>
+
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+           <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Bestraffningar:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              
+              <A HREF="/slicensinfo?kommando=visalicens&licensId=1217" CLASS="linkBlue10">Martinsson Björn</A>, 
+			  
+			  500 kr, för att ha använt/försökt använda otillåten utrustning.<BR>
+	<!--		  (<A HREF="/shestinfo?kommando=visaHerstamning&hestId=0" CLASS="linkBlue10"></A>) --> 
+                
+              </TD>
+            </TR>
+
+            <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+           <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Dopningsprov:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              
+              -
+                
+              </TD>
+            </TR>
+			
+            </TABLE>
+<!--
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px"><B>Segermarginal:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">3.5 längd</TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px"><B>Banförhållande:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" ALIGN="right">Lätt bana</TD>
+            </TR>
+-->
+			
+<br>			
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+
+<TR>
+  <TD WIDTH="70" CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Segrare:</B></TD>
+  <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD COLSPAN="5" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px">
+    
+       <A HREF="/shestinfo?kommando=visaHerstamning&hestId=549320" CLASS="linkBlue10">CUT</A>
+     
+  6 br. v  
+    <nobr> e
+    
+      <A HREF="/shestinfo?kommando=visaHerstamning&hestId=7948" CLASS="linkBlue10">ATAS HERO L.</A>
+     
+   </nobr> - <nobr>
+       
+      <A HREF="/shestinfo?kommando=visaHerstamning&hestId=188310" CLASS="linkBlue10">POOH</A>
+     
+    </nobr> e <nobr>
+    
+      <A HREF="/shestinfo?kommando=visaHerstamning&hestId=134253" CLASS="linkBlue10">PROBE (US)</A>
+     
+    </nobr>
+    </TD>
+</TR>
+
+<TR>
+  <TD COLSPAN="7"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+<TR>
+  <TD WIDTH="70" CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Ägare:</B></TD>
+  <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px">Ljungblad Gert & Inger</TD>
+</TR>
+<TR>
+  <TD COLSPAN="7"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+</TR>
+<TR>  
+<!--  <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD> -->
+  <TD WIDTH="70" CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Uppfödare:</B>&nbsp;</TD>
+  <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+  <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:2px">Grahn Ronnie, Rimbo</TD>
+</TR>
+
+</TABLE>
+
+<BR>
+
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+			<TR>
+              <TD COLSPAN="7"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            
+			 <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" ALIGN="left"><B>Omsättning vinnare:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="120" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" ALIGN="left">138 332 kr</TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" ALIGN="left"><B>Omsättning plats:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="120" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" ALIGN="left">53 689 kr</TD>
+            </TR>
+			
+            
+            <TR>
+              <TD COLSPAN="7"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" VALIGN="top" ALIGN="left"><B>Tvilling res/odds:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="120" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" VALIGN="top" ALIGN="left">2-6&nbsp;&nbsp;17,01</TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" VALIGN="top" ALIGN="left"><B>Omsättning tvilling:</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="120" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px" VALIGN="top" ALIGN="left">102 844 kr</TD>
+            </TR>
+            
+            
+            </TABLE>
+
+<BR>
+			
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525">
+	        <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            <TR>
+              <TD WIDTH="55" CLASS="content" BGCOLOR="#EEEEEA" VALIGN="top" STYLE="padding:1px"><B>Info:&nbsp;&nbsp;</B></TD>
+              <TD WIDTH="1" CLASS="content"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD WIDTH="465" CLASS="content" BGCOLOR="#EEEEEA" STYLE="padding:1px">
+              Måldomare: Björn Persson
+Måldomarnämnd: Jussi Magnusson, Lennart S Sjölund
+Bandomare: Håkan Leandersson
+Bandomarnämnd: Thomas Lindholm, Hans Olsson
+Huvudstarter: Gösta Johansson
+Ekipagekontrollant: Marlene Hammargren
+Banveterinär : Mårten Hansson
+Dopningsprovtagare: Åke Jansson
+<br>Väderlek: Måttlig västlig vind. + 1 grad.<br>Alkotest har avlagts av samtliga kuskar under tävlingsdagen, varvid alla prov var negativa.
+              </TD>
+            </TR>
+	        <TR>
+              <TD COLSPAN="3"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+            </TR>
+            </TABLE>
+           <BR>
+
+
+            
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="525"> 
+            <TR>
+<!--              <TD><A HREF="javascript:history.back()" CLASS="linkButton"> <IMG SRC="/staticFiles/ts/images/arrowBack.gif" WIDTH="9" HEIGHT="7" BORDER="0">&nbsp;Tillbaka till kalender&nbsp;<IMG SRC="/staticFiles/ts/images/star2.gif" WIDTH="3" HEIGHT="10" BORDER="0"></A></TD>  -->
+              <TD><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+              <TD ALIGN="right"><A HREF="javascript:openPopup(498626,)"><IMG SRC="/staticFiles/ts/images/sportinfo/buttonPrint.gif" WIDTH="128" HEIGHT="18" BORDER="0"></A></TD>
+            </TR>
+            </TABLE>
+            
+            
+          </TD>
+        </TR>
+        </TABLE>
+      </TD>
+      <TD BGCOLOR="#ffffff" WIDTH="5"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+      <TD WIDTH="1" BGCOLOR="#000000"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="1"></TD>
+    </TR>
+    <TR>
+      <TD WIDTH="1" VALIGN="top"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineVert1.gif" WIDTH="1" HEIGHT="60" BORDER="0" ALT=""></TD>
+      
+      <TD BACKGROUND="/staticFiles/ts/images/gradientVertical.gif" COLSPAN="3">
+      
+      <IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="1" HEIGHT="40"></TD>
+      <TD WIDTH="1" VALIGN="top"><IMG SRC="/staticFiles/ts/images/dottedLines/dottedLineVert1.gif" WIDTH="1" HEIGHT="60" BORDER="0" ALT=""></TD>
+    </TR>
+    </TABLE>
+  </TD>
+</TR>
+<TR>
+  <TD WIDTH="554"><IMG SRC="/staticFiles/ts/images/pix.gif" WIDTH="554" HEIGHT="1" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE><BR>
+</DIV>
+&nbsp;
+</BODY>
+</HTML>
