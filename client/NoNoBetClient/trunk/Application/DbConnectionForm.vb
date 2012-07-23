@@ -8,6 +8,7 @@ Imports System.IO
 Imports Npgsql
 Imports DbInterface
 Imports DbInterface.DbConnection
+Imports Microsoft.Win32
 
 Public Class DbConnectionForm
 
@@ -143,6 +144,14 @@ Public Class DbConnectionForm
         txtInfo.Text = ""
         txtPID.Text = ""
         'LoadSites()
+
+        'Dim connectObj As DbConnectionString = New DbConnectionString
+
+        'connectObj.Save()
+
+        'Dim s As String = connectObj.BuildConnectionString
+
+
         _IsLoaded = True
     End Sub
 

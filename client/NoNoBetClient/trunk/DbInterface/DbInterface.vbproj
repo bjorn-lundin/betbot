@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="DbCommand.vb" />
     <Compile Include="DbConnection.vb" />
+    <Compile Include="DbConnectionString.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
