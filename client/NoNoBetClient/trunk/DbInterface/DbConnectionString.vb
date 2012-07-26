@@ -9,6 +9,7 @@ Public Class DbConnectionString
     Private _UserId As String = ""
     Private _Password As String = ""
     Private _Database As String = ""
+    Private _SSL As Boolean = True
     Private _PreloadReader As Boolean = True
 
     Private Const _RegistrySubKeyName As String = "Software\NoNoBet\NoNoBetClient\DbAccess"
@@ -17,6 +18,7 @@ Public Class DbConnectionString
     Private Const _UserIdParamName As String = "User Id"
     Private Const _PasswordParamName As String = "Password"
     Private Const _DatabaseParamName As String = "Database"
+    Private Const _SSLParamName As String = "SSL"
     Private Const _PreloadReaderParamName As String = "Preload Reader"
 
     ''' <summary>
@@ -114,6 +116,14 @@ Public Class DbConnectionString
         End Set
     End Property
 
+    Public Property SSL() As Boolean
+        Get
+            Return _SSL
+        End Get
+        Set(value As Boolean)
+            _SSL = value
+        End Set
+    End Property
     ''' <summary>
     ''' Value of "Preload Reader" parameter in connection string
     ''' </summary>
@@ -168,6 +178,10 @@ Public Class DbConnectionString
             _Database = Convert.ToString(regSubKey.GetValue(_DatabaseParamName))
         End If
 
+        If (regSubKey.GetValue(_SSLParamName) IsNot Nothing) Then
+            _SSL = Convert.ToBoolean(regSubKey.GetValue(_SSLParamName))
+        End If
+
         If (regSubKey.GetValue(_PreloadReaderParamName) IsNot Nothing) Then
             _PreloadReader = Convert.ToBoolean(regSubKey.GetValue(_PreloadReaderParamName))
         End If
@@ -192,6 +206,7 @@ Public Class DbConnectionString
         regSubKey.SetValue(_UserIdParamName, _UserId)
         regSubKey.SetValue(_PasswordParamName, _Password)
         regSubKey.SetValue(_DatabaseParamName, _Database)
+        regSubKey.SetValue(_SSLParamName, _SSL)
         regSubKey.SetValue(_PreloadReaderParamName, _PreloadReader)
     End Sub
 
@@ -204,7 +219,7 @@ Public Class DbConnectionString
     ''' <remarks></remarks>
     Public Function BuildConnectionString() As String
         Return _ServerParamName + "=" + _Server + ";" + _PortParamName + "=" + _Port + ";" + _UserIdParamName + "=" + _UserId + ";" + _
-               _PasswordParamName + "=" + _Password + ";" + _DatabaseParamName + "=" + _Database + ";" + _PreloadReaderParamName + "=" + _PreloadReader.ToString + ";"
+               _PasswordParamName + "=" + _Password + ";" + _DatabaseParamName + "=" + _Database + ";" + _SSLParamName + "=" + _SSL.ToString + ";" + _PreloadReaderParamName + "=" + _PreloadReader.ToString + ";"
     End Function
 
 End Class

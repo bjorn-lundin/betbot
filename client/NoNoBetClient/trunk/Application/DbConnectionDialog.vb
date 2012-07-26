@@ -15,10 +15,10 @@
         Me.labelPassword = New System.Windows.Forms.Label()
         Me.txtDatabase = New System.Windows.Forms.TextBox()
         Me.labelDatabase = New System.Windows.Forms.Label()
-        Me.chkPreloadReader = New System.Windows.Forms.CheckBox()
         Me.ConnectButton = New System.Windows.Forms.Button()
         Me.txtConnectionString = New System.Windows.Forms.TextBox()
         Me.grpConnectionParams = New System.Windows.Forms.GroupBox()
+        Me.chkSSL = New System.Windows.Forms.CheckBox()
         Me.ButtonSaveParams = New System.Windows.Forms.Button()
         Me.grpConnectionTest = New System.Windows.Forms.GroupBox()
         Me.DisconnectButton = New System.Windows.Forms.Button()
@@ -144,16 +144,6 @@
         Me.labelDatabase.TabIndex = 9
         Me.labelDatabase.Text = "Database"
         '
-        'chkPreloadReader
-        '
-        Me.chkPreloadReader.AutoSize = True
-        Me.chkPreloadReader.Location = New System.Drawing.Point(64, 167)
-        Me.chkPreloadReader.Name = "chkPreloadReader"
-        Me.chkPreloadReader.Size = New System.Drawing.Size(100, 17)
-        Me.chkPreloadReader.TabIndex = 11
-        Me.chkPreloadReader.Text = "Preload Reader"
-        Me.chkPreloadReader.UseVisualStyleBackColor = True
-        '
         'ConnectButton
         '
         Me.ConnectButton.Location = New System.Drawing.Point(15, 179)
@@ -168,16 +158,16 @@
         Me.txtConnectionString.Location = New System.Drawing.Point(9, 48)
         Me.txtConnectionString.Name = "txtConnectionString"
         Me.txtConnectionString.ReadOnly = True
-        Me.txtConnectionString.Size = New System.Drawing.Size(554, 20)
+        Me.txtConnectionString.Size = New System.Drawing.Size(569, 20)
         Me.txtConnectionString.TabIndex = 13
         '
         'grpConnectionParams
         '
+        Me.grpConnectionParams.Controls.Add(Me.chkSSL)
         Me.grpConnectionParams.Controls.Add(Me.ButtonSaveParams)
         Me.grpConnectionParams.Controls.Add(Me.txtPort)
         Me.grpConnectionParams.Controls.Add(Me.labelServer)
         Me.grpConnectionParams.Controls.Add(Me.txtServer)
-        Me.grpConnectionParams.Controls.Add(Me.chkPreloadReader)
         Me.grpConnectionParams.Controls.Add(Me.labelPort)
         Me.grpConnectionParams.Controls.Add(Me.txtDatabase)
         Me.grpConnectionParams.Controls.Add(Me.labelUserId)
@@ -192,6 +182,16 @@
         Me.grpConnectionParams.TabIndex = 14
         Me.grpConnectionParams.TabStop = False
         Me.grpConnectionParams.Text = "Connection parameters"
+        '
+        'chkSSL
+        '
+        Me.chkSSL.AutoSize = True
+        Me.chkSSL.Location = New System.Drawing.Point(64, 163)
+        Me.chkSSL.Name = "chkSSL"
+        Me.chkSSL.Size = New System.Drawing.Size(46, 17)
+        Me.chkSSL.TabIndex = 13
+        Me.chkSSL.Text = "SSL"
+        Me.chkSSL.UseVisualStyleBackColor = True
         '
         'ButtonSaveParams
         '
@@ -319,7 +319,6 @@
     Friend WithEvents labelPassword As System.Windows.Forms.Label
     Friend WithEvents txtDatabase As System.Windows.Forms.TextBox
     Friend WithEvents labelDatabase As System.Windows.Forms.Label
-    Friend WithEvents chkPreloadReader As System.Windows.Forms.CheckBox
     Friend WithEvents ConnectButton As System.Windows.Forms.Button
     Friend WithEvents txtConnectionString As System.Windows.Forms.TextBox
 
@@ -336,6 +335,7 @@
     Friend WithEvents labelPID As System.Windows.Forms.Label
     Friend WithEvents txtCondition As System.Windows.Forms.TextBox
     Friend WithEvents DisconnectButton As System.Windows.Forms.Button
+    Friend WithEvents chkSSL As System.Windows.Forms.CheckBox
     Private _DialogResult As Boolean = False
 
     Public Sub New()
@@ -425,7 +425,7 @@
         txtDatabase.Text = _DbConnectionString.Database
         txtPassword.Text = _DbConnectionString.Password
         txtUserId.Text = _DbConnectionString.UserId
-        chkPreloadReader.Checked = _DbConnectionString.PreloadReader
+        chkSSL.Checked = _DbConnectionString.SSL
         txtConnectionString.Text = String.Empty
     End Sub
 
@@ -435,7 +435,7 @@
         _DbConnectionString.Database = txtDatabase.Text.Trim
         _DbConnectionString.UserId = txtUserId.Text.Trim
         _DbConnectionString.Password = txtPassword.Text
-        _DbConnectionString.PreloadReader = chkPreloadReader.Checked
+        _DbConnectionString.SSL = chkSSL.Checked
     End Sub
 
     Private Sub DbConnectionDialog_Load(sender As Object, e As System.EventArgs) Handles Me.Load
