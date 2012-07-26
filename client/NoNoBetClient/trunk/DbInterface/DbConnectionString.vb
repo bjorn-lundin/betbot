@@ -30,7 +30,11 @@ Public Class DbConnectionString
             Return _Server
         End Get
         Set(value As String)
-            _Server = value
+            If (value Is Nothing) Then
+                _Server = String.Empty
+            Else
+                _Server = value
+            End If
         End Set
     End Property
 
@@ -45,7 +49,11 @@ Public Class DbConnectionString
             Return _Port
         End Get
         Set(value As String)
-            _Port = value
+            If (value Is Nothing) Then
+                _Port = String.Empty
+            Else
+                _Port = value
+            End If
         End Set
     End Property
 
@@ -60,7 +68,11 @@ Public Class DbConnectionString
             Return _UserId
         End Get
         Set(value As String)
-            _UserId = value
+            If (value Is Nothing) Then
+                _UserId = String.Empty
+            Else
+                _UserId = value
+            End If
         End Set
     End Property
 
@@ -75,7 +87,11 @@ Public Class DbConnectionString
             Return _Password
         End Get
         Set(value As String)
-            _Password = value
+            If (value Is Nothing) Then
+                _Password = String.Empty
+            Else
+                _Password = value
+            End If
         End Set
     End Property
 
@@ -90,7 +106,11 @@ Public Class DbConnectionString
             Return _Database
         End Get
         Set(value As String)
-            _Database = value
+            If (value Is Nothing) Then
+                _Database = String.Empty
+            Else
+                _Database = value
+            End If
         End Set
     End Property
 
@@ -132,23 +152,23 @@ Public Class DbConnectionString
             _Server = Convert.ToString(regSubKey.GetValue(_ServerParamName))
         End If
 
-        If (regSubKey.GetValue(_PortParamName) Is Nothing) Then
+        If (regSubKey.GetValue(_PortParamName) IsNot Nothing) Then
             _Port = Convert.ToString(regSubKey.GetValue(_PortParamName))
         End If
 
-        If (regSubKey.GetValue(_UserIdParamName) Is Nothing) Then
+        If (regSubKey.GetValue(_UserIdParamName) IsNot Nothing) Then
             _UserId = Convert.ToString(regSubKey.GetValue(_UserIdParamName))
         End If
 
-        If (regSubKey.GetValue(_PasswordParamName) Is Nothing) Then
+        If (regSubKey.GetValue(_PasswordParamName) IsNot Nothing) Then
             _Password = Convert.ToString(regSubKey.GetValue(_PasswordParamName))
         End If
 
-        If (regSubKey.GetValue(_DatabaseParamName) Is Nothing) Then
+        If (regSubKey.GetValue(_DatabaseParamName) IsNot Nothing) Then
             _Database = Convert.ToString(regSubKey.GetValue(_DatabaseParamName))
         End If
 
-        If (regSubKey.GetValue(_PreloadReaderParamName) Is Nothing) Then
+        If (regSubKey.GetValue(_PreloadReaderParamName) IsNot Nothing) Then
             _PreloadReader = Convert.ToBoolean(regSubKey.GetValue(_PreloadReaderParamName))
         End If
 

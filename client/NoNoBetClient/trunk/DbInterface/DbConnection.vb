@@ -172,9 +172,23 @@ Public Class DbConnection
         End Get
     End Property
 
-    Public ReadOnly Property Version As String
+    Public ReadOnly Property VersionShort As String
         Get
             Return _Connection.PostgreSqlVersion.ToString
+        End Get
+    End Property
+
+    Public ReadOnly Property VersionLong As String
+        Get
+            If (_Connection Is Nothing) Then
+                Return String.Empty
+            Else
+                If (_Connection.State <> ConnectionState.Broken) And (_Connection.State <> ConnectionState.Closed) Then
+                    Return GetVersionLong()
+                Else
+                    Return String.Empty
+                End If
+            End If
         End Get
     End Property
 
@@ -186,6 +200,23 @@ Public Class DbConnection
             MsgBox("Connection create error: " + ex.Message)
         End Try
     End Sub
+
+    Private Function GetVersionLong() As String
+        Dim verStr As String
+        Dim dbCmd As NpgsqlCommand = Me.NewCommand("SELECT version()")
+        Try
+            verStr = dbCmd.ExecuteScalar().ToString()
+        Catch ex As Exception
+            MsgBox("Execute command error: " + ex.Message)
+            verStr = String.Empty
+        Finally
+            dbCmd.Dispose()
+            dbCmd = Nothing
+        End Try
+
+        Return verStr
+    End Function
+
 
     Public Function Open() As Boolean
         If Not (_Connection Is Nothing) Then

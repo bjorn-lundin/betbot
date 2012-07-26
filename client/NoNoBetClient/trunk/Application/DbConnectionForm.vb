@@ -46,16 +46,14 @@ Public Class DbConnectionForm
 
 
     Private Sub GetVersion()
-        Dim dbCmd As NpgsqlCommand = _DbConn.NewCommand("SELECT version()")
+        'Dim dbCmd As NpgsqlCommand = _DbConn.NewCommand("SELECT version()")
         Try
-            txtVersionBySql.Text = dbCmd.ExecuteScalar().ToString()
-            txtVersionByProp.Text = _DbConn.Version
+            txtVersionBySql.Text = _DbConn.VersionLong
+            txtVersionByProp.Text = _DbConn.VersionShort
         Catch ex As Exception
             MsgBox("Execute command error: " + ex.Message)
             txtVersionBySql.Text = ""
         Finally
-            dbCmd.Dispose()
-            dbCmd = Nothing
         End Try
 
     End Sub
@@ -83,8 +81,9 @@ Public Class DbConnectionForm
             _DbConn.Dispose()
             _DbConn = Nothing
         End If
-
-        _DbConn = New DbConnection(CType(cboConnection.SelectedItem, String))
+        Dim conStr As String = "Server=localhost;Port=5432;User Id=nonobetmats;Password=nonobet0088;Database=nonobet-testdb;Preload Reader=True;"
+        _DbConn = New DbConnection(conStr)
+        '_DbConn = New DbConnection(CType(cboConnection.SelectedItem, String))
         _DbConn.Open()
         UpdateConnectionData()
     End Sub
@@ -145,11 +144,9 @@ Public Class DbConnectionForm
         txtPID.Text = ""
         'LoadSites()
 
-        'Dim connectObj As DbConnectionString = New DbConnectionString
-
-        'connectObj.Save()
-
-        'Dim s As String = connectObj.BuildConnectionString
+        Dim conString As DbConnectionString = New DbConnectionString
+        Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
+        dbConDialog.StartDialog(conString)
 
 
         _IsLoaded = True

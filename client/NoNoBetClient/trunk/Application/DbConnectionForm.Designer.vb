@@ -69,37 +69,32 @@ Partial Class DbConnectionForm
         Me.GroupBox1.Controls.Add(Me.cboConnection)
         Me.GroupBox1.Dock = System.Windows.Forms.DockStyle.Top
         Me.GroupBox1.Location = New System.Drawing.Point(0, 0)
-        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(4)
-        Me.GroupBox1.Size = New System.Drawing.Size(578, 249)
+        Me.GroupBox1.Size = New System.Drawing.Size(434, 202)
         Me.GroupBox1.TabIndex = 4
         Me.GroupBox1.TabStop = False
         '
         'Label8
         '
         Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(10, 193)
-        Me.Label8.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label8.Location = New System.Drawing.Point(8, 157)
         Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(133, 17)
+        Me.Label8.Size = New System.Drawing.Size(98, 13)
         Me.Label8.TabIndex = 23
         Me.Label8.Text = "Version by Property"
         '
         'txtVersionByProp
         '
-        Me.txtVersionByProp.Location = New System.Drawing.Point(8, 214)
-        Me.txtVersionByProp.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtVersionByProp.Location = New System.Drawing.Point(6, 174)
         Me.txtVersionByProp.Name = "txtVersionByProp"
-        Me.txtVersionByProp.Size = New System.Drawing.Size(560, 22)
+        Me.txtVersionByProp.Size = New System.Drawing.Size(421, 20)
         Me.txtVersionByProp.TabIndex = 22
         '
         'btnDisconnect
         '
-        Me.btnDisconnect.Location = New System.Drawing.Point(7, 109)
-        Me.btnDisconnect.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnDisconnect.Location = New System.Drawing.Point(5, 89)
         Me.btnDisconnect.Name = "btnDisconnect"
-        Me.btnDisconnect.Size = New System.Drawing.Size(128, 28)
+        Me.btnDisconnect.Size = New System.Drawing.Size(96, 23)
         Me.btnDisconnect.TabIndex = 21
         Me.btnDisconnect.Text = "Disconnect"
         Me.btnDisconnect.UseVisualStyleBackColor = True
@@ -107,81 +102,72 @@ Partial Class DbConnectionForm
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(13, 146)
-        Me.Label7.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label7.Location = New System.Drawing.Point(10, 119)
         Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(107, 17)
+        Me.Label7.Size = New System.Drawing.Size(80, 13)
         Me.Label7.TabIndex = 20
         Me.Label7.Text = "Version by SQL"
         '
         'txtVersionBySql
         '
-        Me.txtVersionBySql.Location = New System.Drawing.Point(11, 167)
-        Me.txtVersionBySql.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtVersionBySql.Location = New System.Drawing.Point(8, 136)
         Me.txtVersionBySql.Name = "txtVersionBySql"
-        Me.txtVersionBySql.Size = New System.Drawing.Size(560, 22)
+        Me.txtVersionBySql.Size = New System.Drawing.Size(421, 20)
         Me.txtVersionBySql.TabIndex = 19
         '
         'Label6
         '
         Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(194, 133)
-        Me.Label6.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label6.Location = New System.Drawing.Point(146, 108)
         Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(67, 17)
+        Me.Label6.Size = New System.Drawing.Size(51, 13)
         Me.Label6.TabIndex = 18
         Me.Label6.Text = "Condition"
         '
         'Label5
         '
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(217, 100)
-        Me.Label5.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label5.Location = New System.Drawing.Point(163, 81)
         Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(31, 17)
+        Me.Label5.Size = New System.Drawing.Size(25, 13)
         Me.Label5.TabIndex = 17
         Me.Label5.Text = "Info"
         '
         'txtPID
         '
-        Me.txtPID.Location = New System.Drawing.Point(269, 70)
-        Me.txtPID.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtPID.Location = New System.Drawing.Point(202, 57)
         Me.txtPID.Name = "txtPID"
-        Me.txtPID.Size = New System.Drawing.Size(302, 22)
+        Me.txtPID.Size = New System.Drawing.Size(228, 20)
         Me.txtPID.TabIndex = 16
         '
         'txtInfo
         '
-        Me.txtInfo.Location = New System.Drawing.Point(269, 100)
-        Me.txtInfo.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtInfo.Location = New System.Drawing.Point(202, 81)
         Me.txtInfo.Name = "txtInfo"
-        Me.txtInfo.Size = New System.Drawing.Size(304, 22)
+        Me.txtInfo.Size = New System.Drawing.Size(229, 20)
         Me.txtInfo.TabIndex = 15
         '
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(217, 73)
-        Me.Label4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label4.Location = New System.Drawing.Point(163, 59)
         Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(30, 17)
+        Me.Label4.Size = New System.Drawing.Size(25, 13)
         Me.Label4.TabIndex = 14
         Me.Label4.Text = "PID"
         '
         'txtCondition
         '
-        Me.txtCondition.Location = New System.Drawing.Point(269, 130)
-        Me.txtCondition.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtCondition.Location = New System.Drawing.Point(202, 106)
         Me.txtCondition.Name = "txtCondition"
-        Me.txtCondition.Size = New System.Drawing.Size(304, 22)
+        Me.txtCondition.Size = New System.Drawing.Size(229, 20)
         Me.txtCondition.TabIndex = 13
         '
         'btnConnect
         '
-        Me.btnConnect.Location = New System.Drawing.Point(8, 73)
-        Me.btnConnect.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnConnect.Location = New System.Drawing.Point(6, 59)
         Me.btnConnect.Name = "btnConnect"
-        Me.btnConnect.Size = New System.Drawing.Size(128, 28)
+        Me.btnConnect.Size = New System.Drawing.Size(96, 23)
         Me.btnConnect.TabIndex = 12
         Me.btnConnect.Text = "Connect"
         Me.btnConnect.UseVisualStyleBackColor = True
@@ -189,27 +175,26 @@ Partial Class DbConnectionForm
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(8, 11)
-        Me.Label3.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Label3.Location = New System.Drawing.Point(6, 9)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(118, 17)
+        Me.Label3.Size = New System.Drawing.Size(89, 13)
         Me.Label3.TabIndex = 11
         Me.Label3.Text = "Connection string"
         '
         'cboConnection
         '
         Me.cboConnection.FormattingEnabled = True
-        Me.cboConnection.Location = New System.Drawing.Point(7, 31)
+        Me.cboConnection.Location = New System.Drawing.Point(5, 25)
+        Me.cboConnection.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
         Me.cboConnection.Name = "cboConnection"
-        Me.cboConnection.Size = New System.Drawing.Size(564, 24)
+        Me.cboConnection.Size = New System.Drawing.Size(424, 21)
         Me.cboConnection.TabIndex = 2
         '
         'txtHeader
         '
-        Me.txtHeader.Location = New System.Drawing.Point(8, 14)
-        Me.txtHeader.Margin = New System.Windows.Forms.Padding(4)
+        Me.txtHeader.Location = New System.Drawing.Point(6, 11)
         Me.txtHeader.Name = "txtHeader"
-        Me.txtHeader.Size = New System.Drawing.Size(457, 22)
+        Me.txtHeader.Size = New System.Drawing.Size(344, 20)
         Me.txtHeader.TabIndex = 2
         '
         'GroupBox2
@@ -221,39 +206,36 @@ Partial Class DbConnectionForm
         Me.GroupBox2.Controls.Add(Me.btnTest)
         Me.GroupBox2.Controls.Add(Me.btnBrowse)
         Me.GroupBox2.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.GroupBox2.Location = New System.Drawing.Point(0, 249)
-        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(4)
+        Me.GroupBox2.Location = New System.Drawing.Point(0, 202)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(4)
-        Me.GroupBox2.Size = New System.Drawing.Size(578, 163)
+        Me.GroupBox2.Size = New System.Drawing.Size(434, 133)
         Me.GroupBox2.TabIndex = 5
         Me.GroupBox2.TabStop = False
         '
         'btnRaceDays
         '
-        Me.btnRaceDays.Location = New System.Drawing.Point(18, 67)
+        Me.btnRaceDays.Location = New System.Drawing.Point(14, 54)
+        Me.btnRaceDays.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
         Me.btnRaceDays.Name = "btnRaceDays"
-        Me.btnRaceDays.Size = New System.Drawing.Size(108, 23)
+        Me.btnRaceDays.Size = New System.Drawing.Size(81, 19)
         Me.btnRaceDays.TabIndex = 20
         Me.btnRaceDays.Text = "Race Selector"
         Me.btnRaceDays.UseVisualStyleBackColor = True
         '
         'buttonBetSim
         '
-        Me.buttonBetSim.Location = New System.Drawing.Point(334, 23)
-        Me.buttonBetSim.Margin = New System.Windows.Forms.Padding(4)
+        Me.buttonBetSim.Location = New System.Drawing.Point(250, 19)
         Me.buttonBetSim.Name = "buttonBetSim"
-        Me.buttonBetSim.Size = New System.Drawing.Size(114, 28)
+        Me.buttonBetSim.Size = New System.Drawing.Size(86, 23)
         Me.buttonBetSim.TabIndex = 19
         Me.buttonBetSim.Text = "Bet simulator"
         Me.buttonBetSim.UseVisualStyleBackColor = True
         '
         'buttonStats
         '
-        Me.buttonStats.Location = New System.Drawing.Point(234, 23)
-        Me.buttonStats.Margin = New System.Windows.Forms.Padding(4)
+        Me.buttonStats.Location = New System.Drawing.Point(176, 19)
         Me.buttonStats.Name = "buttonStats"
-        Me.buttonStats.Size = New System.Drawing.Size(92, 28)
+        Me.buttonStats.Size = New System.Drawing.Size(69, 23)
         Me.buttonStats.TabIndex = 18
         Me.buttonStats.Text = "Stats"
         Me.buttonStats.UseVisualStyleBackColor = True
@@ -261,30 +243,27 @@ Partial Class DbConnectionForm
         'buttonClose
         '
         Me.buttonClose.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.buttonClose.Location = New System.Drawing.Point(476, 62)
-        Me.buttonClose.Margin = New System.Windows.Forms.Padding(4)
+        Me.buttonClose.Location = New System.Drawing.Point(357, 50)
         Me.buttonClose.Name = "buttonClose"
-        Me.buttonClose.Size = New System.Drawing.Size(92, 28)
+        Me.buttonClose.Size = New System.Drawing.Size(69, 23)
         Me.buttonClose.TabIndex = 17
         Me.buttonClose.Text = "Close"
         Me.buttonClose.UseVisualStyleBackColor = True
         '
         'btnTest
         '
-        Me.btnTest.Location = New System.Drawing.Point(126, 23)
-        Me.btnTest.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnTest.Location = New System.Drawing.Point(94, 19)
         Me.btnTest.Name = "btnTest"
-        Me.btnTest.Size = New System.Drawing.Size(87, 28)
+        Me.btnTest.Size = New System.Drawing.Size(65, 23)
         Me.btnTest.TabIndex = 16
         Me.btnTest.Text = "Runt Test"
         Me.btnTest.UseVisualStyleBackColor = True
         '
         'btnBrowse
         '
-        Me.btnBrowse.Location = New System.Drawing.Point(16, 23)
-        Me.btnBrowse.Margin = New System.Windows.Forms.Padding(4)
+        Me.btnBrowse.Location = New System.Drawing.Point(12, 19)
         Me.btnBrowse.Name = "btnBrowse"
-        Me.btnBrowse.Size = New System.Drawing.Size(92, 28)
+        Me.btnBrowse.Size = New System.Drawing.Size(69, 23)
         Me.btnBrowse.TabIndex = 15
         Me.btnBrowse.Text = "Browse"
         Me.btnBrowse.UseVisualStyleBackColor = True
@@ -293,22 +272,23 @@ Partial Class DbConnectionForm
         '
         Me.GroupBox3.Controls.Add(Me.txtHeader)
         Me.GroupBox3.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.GroupBox3.Location = New System.Drawing.Point(0, 363)
+        Me.GroupBox3.Location = New System.Drawing.Point(0, 295)
+        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Size = New System.Drawing.Size(578, 49)
+        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.GroupBox3.Size = New System.Drawing.Size(434, 40)
         Me.GroupBox3.TabIndex = 6
         Me.GroupBox3.TabStop = False
         '
         'DbConnectionForm
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.buttonClose
-        Me.ClientSize = New System.Drawing.Size(578, 412)
+        Me.ClientSize = New System.Drawing.Size(434, 335)
         Me.Controls.Add(Me.GroupBox3)
         Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.GroupBox1)
-        Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "DbConnectionForm"
         Me.Text = "Database Connection"
         Me.GroupBox1.ResumeLayout(False)
