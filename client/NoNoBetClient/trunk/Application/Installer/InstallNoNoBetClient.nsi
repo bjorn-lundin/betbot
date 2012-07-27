@@ -15,7 +15,7 @@ Page InstFiles
 Section ""
 
 SetOutPath $INSTDIR
-File ..\bin\Release\Application.exe
+File ..\bin\Release\NoNoBetClient.exe
 File ..\bin\Release\BaseComponents.dll
 File ..\bin\Release\DbInterface.dll
 File ..\bin\Release\NoNoBetComponents.dll 
@@ -30,7 +30,7 @@ SectionEnd
 
 Section "Uninstall"
 
-Delete $INSTDIR\Application.exe
+Delete $INSTDIR\NoNoBetClient.exe
 Delete $INSTDIR\BaseComponents.dll
 Delete $INSTDIR\DbInterface.dll
 Delete $INSTDIR\NoNoBetComponents.dll 
