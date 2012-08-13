@@ -15,6 +15,7 @@ Page InstFiles
 Section ""
 
 SetOutPath $INSTDIR
+
 File ..\bin\Release\NoNoBetClient.exe
 File ..\bin\Release\BaseComponents.dll
 File ..\bin\Release\DbInterface.dll
@@ -23,10 +24,11 @@ File ..\bin\Release\NoNoBetDb.dll
 File ..\bin\Release\Npgsql.dll
 File ..\bin\Release\policy.2.0.Npgsql.dll
 File ..\bin\Release\Mono.Security.dll
+File ..\images\pic1.ico
 
 WriteUninstaller $INSTDIR\UninstallNoNoBetClient.exe
-SectionEnd
 
+SectionEnd
 
 Section "Uninstall"
 
@@ -38,6 +40,8 @@ Delete $INSTDIR\NoNoBetDb.dll
 Delete $INSTDIR\Npgsql.dll
 Delete $INSTDIR\policy.2.0.Npgsql.dll
 Delete $INSTDIR\Mono.Security.dll
+Delete $INSTDIR\pic1.ico
 
 Delete $INSTDIR\UninstallNoNoBetClient.exe
+
 SectionEnd
