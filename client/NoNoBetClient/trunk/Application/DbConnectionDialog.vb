@@ -2,6 +2,7 @@
     Inherits BaseComponents.BaseForm
 
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(DbConnectionDialog))
         Me.panelBottom = New System.Windows.Forms.Panel()
         Me.ButtonCancel = New System.Windows.Forms.Button()
         Me.OkButton = New System.Windows.Forms.Button()
@@ -297,6 +298,7 @@
         Me.Controls.Add(Me.grpConnectionTest)
         Me.Controls.Add(Me.grpConnectionParams)
         Me.Controls.Add(Me.panelBottom)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "DbConnectionDialog"
         Me.panelBottom.ResumeLayout(False)
         Me.grpConnectionParams.ResumeLayout(False)

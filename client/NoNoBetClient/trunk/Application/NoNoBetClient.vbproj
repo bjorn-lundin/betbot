@@ -201,6 +201,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="images\pic1.jpg" />
     <Content Include="Installer\Readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
