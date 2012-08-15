@@ -20,13 +20,13 @@ Public Class StartUp
         Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
         workingDir = currDirectoryInfo.Parent.FullName
 
-        Dim conString As DbConnectionString = New DbConnectionString
-        Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
-        dbConDialog.StartDialog(conString)
+        'Dim conString As DbConnectionString = New DbConnectionString
+        'Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
+        'dbConDialog.StartDialog(conString)
 
-        'Dim connectDialog As DbConnectionForm = New DbConnectionForm
+        Dim connectDialog As DbConnectionForm = New DbConnectionForm
 
-        'connectDialog.ExeceuteDialog(workingDir)
+        connectDialog.ExeceuteDialog(workingDir)
 
         Return 0
     End Function

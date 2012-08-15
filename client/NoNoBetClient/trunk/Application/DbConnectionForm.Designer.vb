@@ -22,6 +22,7 @@ Partial Class DbConnectionForm
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(DbConnectionForm))
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.Label8 = New System.Windows.Forms.Label()
         Me.txtVersionByProp = New System.Windows.Forms.TextBox()
@@ -46,6 +47,7 @@ Partial Class DbConnectionForm
         Me.btnTest = New System.Windows.Forms.Button()
         Me.btnBrowse = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.buttonManage = New System.Windows.Forms.Button()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
@@ -53,6 +55,7 @@ Partial Class DbConnectionForm
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.buttonManage)
         Me.GroupBox1.Controls.Add(Me.Label8)
         Me.GroupBox1.Controls.Add(Me.txtVersionByProp)
         Me.GroupBox1.Controls.Add(Me.btnDisconnect)
@@ -70,7 +73,7 @@ Partial Class DbConnectionForm
         Me.GroupBox1.Dock = System.Windows.Forms.DockStyle.Top
         Me.GroupBox1.Location = New System.Drawing.Point(0, 0)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(434, 202)
+        Me.GroupBox1.Size = New System.Drawing.Size(473, 202)
         Me.GroupBox1.TabIndex = 4
         Me.GroupBox1.TabStop = False
         '
@@ -177,15 +180,15 @@ Partial Class DbConnectionForm
         Me.Label3.AutoSize = True
         Me.Label3.Location = New System.Drawing.Point(6, 9)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(89, 13)
+        Me.Label3.Size = New System.Drawing.Size(140, 13)
         Me.Label3.TabIndex = 11
-        Me.Label3.Text = "Connection string"
+        Me.Label3.Text = "Select database connection"
         '
         'cboConnection
         '
         Me.cboConnection.FormattingEnabled = True
         Me.cboConnection.Location = New System.Drawing.Point(5, 25)
-        Me.cboConnection.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.cboConnection.Margin = New System.Windows.Forms.Padding(2)
         Me.cboConnection.Name = "cboConnection"
         Me.cboConnection.Size = New System.Drawing.Size(424, 21)
         Me.cboConnection.TabIndex = 2
@@ -208,14 +211,14 @@ Partial Class DbConnectionForm
         Me.GroupBox2.Dock = System.Windows.Forms.DockStyle.Fill
         Me.GroupBox2.Location = New System.Drawing.Point(0, 202)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(434, 133)
+        Me.GroupBox2.Size = New System.Drawing.Size(473, 133)
         Me.GroupBox2.TabIndex = 5
         Me.GroupBox2.TabStop = False
         '
         'btnRaceDays
         '
         Me.btnRaceDays.Location = New System.Drawing.Point(14, 54)
-        Me.btnRaceDays.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.btnRaceDays.Margin = New System.Windows.Forms.Padding(2)
         Me.btnRaceDays.Name = "btnRaceDays"
         Me.btnRaceDays.Size = New System.Drawing.Size(81, 19)
         Me.btnRaceDays.TabIndex = 20
@@ -273,24 +276,34 @@ Partial Class DbConnectionForm
         Me.GroupBox3.Controls.Add(Me.txtHeader)
         Me.GroupBox3.Dock = System.Windows.Forms.DockStyle.Bottom
         Me.GroupBox3.Location = New System.Drawing.Point(0, 295)
-        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(2)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(2, 2, 2, 2)
-        Me.GroupBox3.Size = New System.Drawing.Size(434, 40)
+        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(2)
+        Me.GroupBox3.Size = New System.Drawing.Size(473, 40)
         Me.GroupBox3.TabIndex = 6
         Me.GroupBox3.TabStop = False
+        '
+        'buttonManage
+        '
+        Me.buttonManage.Location = New System.Drawing.Point(437, 23)
+        Me.buttonManage.Name = "buttonManage"
+        Me.buttonManage.Size = New System.Drawing.Size(28, 23)
+        Me.buttonManage.TabIndex = 24
+        Me.buttonManage.Text = "..."
+        Me.buttonManage.UseVisualStyleBackColor = True
         '
         'DbConnectionForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.buttonClose
-        Me.ClientSize = New System.Drawing.Size(434, 335)
+        Me.ClientSize = New System.Drawing.Size(473, 335)
         Me.Controls.Add(Me.GroupBox3)
         Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.GroupBox1)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "DbConnectionForm"
-        Me.Text = "Database Connection"
+        Me.Text = "NoNoBet Start"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         Me.GroupBox2.ResumeLayout(False)
@@ -323,4 +336,5 @@ Partial Class DbConnectionForm
     Friend WithEvents buttonStats As System.Windows.Forms.Button
     Friend WithEvents buttonBetSim As System.Windows.Forms.Button
     Friend WithEvents btnRaceDays As System.Windows.Forms.Button
+    Friend WithEvents buttonManage As System.Windows.Forms.Button
 End Class

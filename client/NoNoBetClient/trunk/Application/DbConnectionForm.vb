@@ -17,11 +17,11 @@ Public Class DbConnectionForm
     Private _XmlWriter As XmlWriter
     Private _ApplicationPath As String
     Private _ResultOk As Boolean = False
-    Private _DbConnectionString1 As String = "Server=127.0.0.1;Port=5432;User Id=pokerheroes;Password=pokerheroes;Database=pokerheroes;"
-    Private _DbConnectionString2 As String = "Server=Db.nonobet.com;Port=5432;User Id=kalle;Password=kalle;Database=kalle;"
-    Private _DbConnectionString3 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=mats_test_01;SSL=True;"
-    Private _DbConnectionString4 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=nonobet_data;SSL=True;Preload Reader=True;"
-    Private _DbConnectionString5 As String = "Server=localhost;Port=5432;User Id=test-db;Password=test-db;Database=test-db;Preload Reader=True;"
+    'Private _DbConnectionString1 As String = "Server=127.0.0.1;Port=5432;User Id=pokerheroes;Password=pokerheroes;Database=pokerheroes;"
+    'Private _DbConnectionString2 As String = "Server=Db.nonobet.com;Port=5432;User Id=kalle;Password=kalle;Database=kalle;"
+    'Private _DbConnectionString3 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=mats_test_01;SSL=True;"
+    'Private _DbConnectionString4 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=nonobet_data;SSL=True;Preload Reader=True;"
+    'Private _DbConnectionString5 As String = "Server=localhost;Port=5432;User Id=test-db;Password=test-db;Database=test-db;Preload Reader=True;"
     Private WithEvents _DbConn As DbConnection
 
     Public ReadOnly Property GetDbConnection As DbConnection
@@ -76,15 +76,18 @@ Public Class DbConnectionForm
     End Sub
 
     Private Sub btnConnect_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnConnect.Click
-        If Not (_DbConn Is Nothing) Then
+        If (_DbConn IsNot Nothing) Then
             _DbConn.Close()
             _DbConn.Dispose()
             _DbConn = Nothing
         End If
-        Dim conStr As String = "Server=localhost;Port=5432;User Id=nonobetmats;Password=nonobet0088;Database=nonobet-testdb;Preload Reader=True;"
-        _DbConn = New DbConnection(conStr)
+
+        If GetSelectedDbConnection() IsNot Nothing Then
+            _DbConn = New DbConnection(GetSelectedDbConnection.BuildConnectionString)
+            _DbConn.Open()
+        End If
+        'Dim conStr As String = "Server=localhost;Port=5432;User Id=nonobetmats;Password=nonobet0088;Database=nonobet-testdb;Preload Reader=True;"
         '_DbConn = New DbConnection(CType(cboConnection.SelectedItem, String))
-        _DbConn.Open()
         UpdateConnectionData()
     End Sub
 
@@ -131,23 +134,40 @@ Public Class DbConnectionForm
         Me.Close()
     End Sub
 
+    Private Function GetSelectedDbConnection() As DbConnectionString
+        If (cboConnection.SelectedItem Is Nothing) Then
+            Return Nothing
+        Else
+            Return CType(cboConnection.SelectedItem, DbConnectionString)
+        End If
+
+    End Function
+
+    Private Sub LoadCombo()
+        'Dim myRegistry As RegistryKey = Registry.CurrentUser
+        Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
+        Dim dbStrObj As DbConnectionString = Nothing
+
+        cboConnection.Items.Clear()
+
+        For Each conName As String In regSubKey.GetSubKeyNames
+            dbStrObj = New DbConnectionString
+            dbStrObj.LoadFromRegistry(conName)
+            cboConnection.Items.Add(dbStrObj)
+        Next
+
+        If (cboConnection.Items.Count > 0) Then
+            cboConnection.SelectedIndex = 0
+        End If
+    End Sub
     Private Sub DbConnectionForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         txtHeader.Text = "Application path: " + _ApplicationPath
-        cboConnection.Items.Add(_DbConnectionString5)
-        cboConnection.Items.Add(_DbConnectionString4)
-        cboConnection.Items.Add(_DbConnectionString3)
-        cboConnection.Items.Add(_DbConnectionString2)
-        cboConnection.Items.Add(_DbConnectionString1)
-        cboConnection.SelectedIndex = 0
+
+        LoadCombo()
+
         txtCondition.Text = ""
         txtInfo.Text = ""
         txtPID.Text = ""
-        'LoadSites()
-
-        Dim conString As DbConnectionString = New DbConnectionString
-        Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
-        dbConDialog.StartDialog(conString)
-
 
         _IsLoaded = True
     End Sub
@@ -160,5 +180,20 @@ Public Class DbConnectionForm
     Private Sub btnRaceDays_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRaceDays.Click
         Dim rFrm As RaceSelectForm = New RaceSelectForm
         rFrm.StartForm(_DbConn)
+    End Sub
+
+    Private Sub buttonManage_Click(sender As System.Object, e As System.EventArgs) Handles buttonManage.Click
+        Dim conStringObj As DbConnectionString = GetSelectedDbConnection()
+        If (conStringObj Is Nothing) Then
+            conStringObj = New DbConnectionString()
+        End If
+
+        Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
+        dbConDialog.StartDialog(conStringObj)
+        dbConDialog.Dispose()
+        dbConDialog = Nothing
+
+        'Reload combo from Registry
+        LoadCombo()
     End Sub
 End Class

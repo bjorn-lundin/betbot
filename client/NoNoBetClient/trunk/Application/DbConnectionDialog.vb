@@ -1,4 +1,7 @@
-﻿Public Class DbConnectionDialog
+﻿Imports Microsoft.Win32
+Imports DbInterface
+
+Public Class DbConnectionDialog
     Inherits BaseComponents.BaseForm
 
     Private Sub InitializeComponent()
@@ -19,6 +22,7 @@
         Me.ConnectButton = New System.Windows.Forms.Button()
         Me.txtConnectionString = New System.Windows.Forms.TextBox()
         Me.grpConnectionParams = New System.Windows.Forms.GroupBox()
+        Me.buttonClearRegistry = New System.Windows.Forms.Button()
         Me.chkSSL = New System.Windows.Forms.CheckBox()
         Me.ButtonSaveParams = New System.Windows.Forms.Button()
         Me.grpConnectionTest = New System.Windows.Forms.GroupBox()
@@ -40,7 +44,7 @@
         Me.panelBottom.Controls.Add(Me.ButtonCancel)
         Me.panelBottom.Controls.Add(Me.OkButton)
         Me.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.panelBottom.Location = New System.Drawing.Point(0, 458)
+        Me.panelBottom.Location = New System.Drawing.Point(0, 418)
         Me.panelBottom.Name = "panelBottom"
         Me.panelBottom.Size = New System.Drawing.Size(590, 52)
         Me.panelBottom.TabIndex = 0
@@ -165,7 +169,6 @@
         'grpConnectionParams
         '
         Me.grpConnectionParams.Controls.Add(Me.chkSSL)
-        Me.grpConnectionParams.Controls.Add(Me.ButtonSaveParams)
         Me.grpConnectionParams.Controls.Add(Me.txtPort)
         Me.grpConnectionParams.Controls.Add(Me.labelServer)
         Me.grpConnectionParams.Controls.Add(Me.txtServer)
@@ -179,10 +182,19 @@
         Me.grpConnectionParams.Dock = System.Windows.Forms.DockStyle.Top
         Me.grpConnectionParams.Location = New System.Drawing.Point(0, 0)
         Me.grpConnectionParams.Name = "grpConnectionParams"
-        Me.grpConnectionParams.Size = New System.Drawing.Size(590, 238)
+        Me.grpConnectionParams.Size = New System.Drawing.Size(590, 201)
         Me.grpConnectionParams.TabIndex = 14
         Me.grpConnectionParams.TabStop = False
         Me.grpConnectionParams.Text = "Connection parameters"
+        '
+        'buttonClearRegistry
+        '
+        Me.buttonClearRegistry.Location = New System.Drawing.Point(433, 179)
+        Me.buttonClearRegistry.Name = "buttonClearRegistry"
+        Me.buttonClearRegistry.Size = New System.Drawing.Size(145, 23)
+        Me.buttonClearRegistry.TabIndex = 26
+        Me.buttonClearRegistry.Text = "Clear Saved Connections"
+        Me.buttonClearRegistry.UseVisualStyleBackColor = True
         '
         'chkSSL
         '
@@ -196,16 +208,18 @@
         '
         'ButtonSaveParams
         '
-        Me.ButtonSaveParams.Location = New System.Drawing.Point(13, 202)
+        Me.ButtonSaveParams.Location = New System.Drawing.Point(286, 179)
         Me.ButtonSaveParams.Name = "ButtonSaveParams"
         Me.ButtonSaveParams.Size = New System.Drawing.Size(111, 23)
         Me.ButtonSaveParams.TabIndex = 12
-        Me.ButtonSaveParams.Text = "Save parameters"
+        Me.ButtonSaveParams.Text = "Save Connection"
         Me.ButtonSaveParams.UseVisualStyleBackColor = True
         '
         'grpConnectionTest
         '
+        Me.grpConnectionTest.Controls.Add(Me.buttonClearRegistry)
         Me.grpConnectionTest.Controls.Add(Me.DisconnectButton)
+        Me.grpConnectionTest.Controls.Add(Me.ButtonSaveParams)
         Me.grpConnectionTest.Controls.Add(Me.labelCondition)
         Me.grpConnectionTest.Controls.Add(Me.labelInfo)
         Me.grpConnectionTest.Controls.Add(Me.txtPID)
@@ -216,7 +230,7 @@
         Me.grpConnectionTest.Controls.Add(Me.ConnectButton)
         Me.grpConnectionTest.Controls.Add(Me.txtConnectionString)
         Me.grpConnectionTest.Dock = System.Windows.Forms.DockStyle.Top
-        Me.grpConnectionTest.Location = New System.Drawing.Point(0, 238)
+        Me.grpConnectionTest.Location = New System.Drawing.Point(0, 201)
         Me.grpConnectionTest.Name = "grpConnectionTest"
         Me.grpConnectionTest.Size = New System.Drawing.Size(590, 217)
         Me.grpConnectionTest.TabIndex = 15
@@ -294,12 +308,14 @@
         '
         'DbConnectionDialog
         '
-        Me.ClientSize = New System.Drawing.Size(590, 510)
+        Me.ClientSize = New System.Drawing.Size(590, 470)
         Me.Controls.Add(Me.grpConnectionTest)
         Me.Controls.Add(Me.grpConnectionParams)
         Me.Controls.Add(Me.panelBottom)
+        Me.FormTitle = "Manage Database Connections"
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "DbConnectionDialog"
+        Me.Text = "Manage Database Connections"
         Me.panelBottom.ResumeLayout(False)
         Me.grpConnectionParams.ResumeLayout(False)
         Me.grpConnectionParams.PerformLayout()
@@ -338,6 +354,7 @@
     Friend WithEvents txtCondition As System.Windows.Forms.TextBox
     Friend WithEvents DisconnectButton As System.Windows.Forms.Button
     Friend WithEvents chkSSL As System.Windows.Forms.CheckBox
+    Friend WithEvents buttonClearRegistry As System.Windows.Forms.Button
     Private _DialogResult As Boolean = False
 
     Public Sub New()
@@ -409,6 +426,7 @@
             txtInfo.Text = _DbConnection.VersionLong
         End If
     End Sub
+
     Private Sub ButtonSaveParams_Click(sender As System.Object, e As System.EventArgs) Handles ButtonSaveParams.Click
         'Save input to ConnectionStringObject
         SaveToConnectionStringObject()
@@ -417,6 +435,7 @@
     End Sub
 
     Private Sub ConnectButton_Click(sender As System.Object, e As System.EventArgs) Handles ConnectButton.Click
+        SaveToConnectionStringObject()
         ConnectDb()
         UpdateConnectionInfo()
     End Sub
@@ -441,12 +460,15 @@
     End Sub
 
     Private Sub DbConnectionDialog_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-        Me.FormTitle = "NoNoBet Database Connection"
         InitDialog()
     End Sub
 
     Private Sub DisconnectButton_Click(sender As System.Object, e As System.EventArgs) Handles DisconnectButton.Click
         DisconnectDb()
         UpdateConnectionInfo()
+    End Sub
+
+    Private Sub buttonClearRegistry_Click(sender As System.Object, e As System.EventArgs) Handles buttonClearRegistry.Click
+        DbConnectionString.ClearRegistry()
     End Sub
 End Class

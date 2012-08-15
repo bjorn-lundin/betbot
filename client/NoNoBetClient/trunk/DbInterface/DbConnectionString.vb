@@ -12,7 +12,8 @@ Public Class DbConnectionString
     Private _SSL As Boolean = True
     Private _PreloadReader As Boolean = True
 
-    Private Const _RegistrySubKeyName As String = "Software\NoNoBet\NoNoBetClient\DbAccess"
+    Public Const RegistrySubKeyName As String = "Software\NoNoBet\NoNoBetClient\DbAccess"
+
     Private Const _ServerParamName As String = "Server"
     Private Const _PortParamName As String = "Port"
     Private Const _UserIdParamName As String = "User Id"
@@ -139,6 +140,13 @@ Public Class DbConnectionString
         End Set
     End Property
 
+    Public ReadOnly Property Name() As String
+        Get
+            Return _Server + ":" + _Database
+        End Get
+    End Property
+
+
     ''' <summary>
     ''' Create a new DbConnectionString object
     ''' </summary>
@@ -146,46 +154,68 @@ Public Class DbConnectionString
     ''' Intial values are loaded from Registry (if any)
     ''' </remarks>
     Public Sub New()
-        LoadFromRegistry()
+        ' LoadFromRegistry()
     End Sub
 
-    Private Sub LoadFromRegistry()
-        Dim myRegistry As RegistryKey = Registry.CurrentUser
-        Dim regSubKey As RegistryKey = myRegistry.OpenSubKey(_RegistrySubKeyName, True)
+    Public Shared Function GetRegistryKeyObject() As RegistryKey
+        Return Registry.CurrentUser.OpenSubKey(RegistrySubKeyName, True)
+    End Function
+
+    Public Shared Sub ClearRegistry()
+        Dim regSubKey As RegistryKey = GetRegistryKeyObject()
+
+        For Each valName As String In regSubKey.GetValueNames
+            regSubKey.DeleteValue(valName)
+        Next
+
+        For Each conName As String In regSubKey.GetSubKeyNames
+            regSubKey.DeleteSubKeyTree(conName)
+        Next
+    End Sub
+
+
+    Public Sub LoadFromRegistry(connectionName As String)
+        Dim regSubKey As RegistryKey = GetRegistryKeyObject()
 
         If (regSubKey Is Nothing) Then
             'Nothing in Registry. Keep default values
             Return
         End If
 
-        If (regSubKey.GetValue(_ServerParamName) IsNot Nothing) Then
-            _Server = Convert.ToString(regSubKey.GetValue(_ServerParamName))
+        Dim connectionKey As RegistryKey = regSubKey.OpenSubKey(connectionName, True)
+
+        If (connectionKey Is Nothing) Then
+            'Sub key not found. Keep default values
+            Return
         End If
 
-        If (regSubKey.GetValue(_PortParamName) IsNot Nothing) Then
-            _Port = Convert.ToString(regSubKey.GetValue(_PortParamName))
+        If (connectionKey.GetValue(_ServerParamName) IsNot Nothing) Then
+            _Server = Convert.ToString(connectionKey.GetValue(_ServerParamName))
         End If
 
-        If (regSubKey.GetValue(_UserIdParamName) IsNot Nothing) Then
-            _UserId = Convert.ToString(regSubKey.GetValue(_UserIdParamName))
+        If (connectionKey.GetValue(_PortParamName) IsNot Nothing) Then
+            _Port = Convert.ToString(connectionKey.GetValue(_PortParamName))
         End If
 
-        If (regSubKey.GetValue(_PasswordParamName) IsNot Nothing) Then
-            _Password = Convert.ToString(regSubKey.GetValue(_PasswordParamName))
+        If (connectionKey.GetValue(_UserIdParamName) IsNot Nothing) Then
+            _UserId = Convert.ToString(connectionKey.GetValue(_UserIdParamName))
         End If
 
-        If (regSubKey.GetValue(_DatabaseParamName) IsNot Nothing) Then
-            _Database = Convert.ToString(regSubKey.GetValue(_DatabaseParamName))
+        If (connectionKey.GetValue(_PasswordParamName) IsNot Nothing) Then
+            _Password = Convert.ToString(connectionKey.GetValue(_PasswordParamName))
         End If
 
-        If (regSubKey.GetValue(_SSLParamName) IsNot Nothing) Then
-            _SSL = Convert.ToBoolean(regSubKey.GetValue(_SSLParamName))
+        If (connectionKey.GetValue(_DatabaseParamName) IsNot Nothing) Then
+            _Database = Convert.ToString(connectionKey.GetValue(_DatabaseParamName))
         End If
 
-        If (regSubKey.GetValue(_PreloadReaderParamName) IsNot Nothing) Then
-            _PreloadReader = Convert.ToBoolean(regSubKey.GetValue(_PreloadReaderParamName))
+        If (connectionKey.GetValue(_SSLParamName) IsNot Nothing) Then
+            _SSL = Convert.ToBoolean(connectionKey.GetValue(_SSLParamName))
         End If
 
+        If (connectionKey.GetValue(_PreloadReaderParamName) IsNot Nothing) Then
+            _PreloadReader = Convert.ToBoolean(connectionKey.GetValue(_PreloadReaderParamName))
+        End If
     End Sub
 
     ''' <summary>
@@ -194,21 +224,27 @@ Public Class DbConnectionString
     ''' <remarks></remarks>
     Public Sub Save()
         Dim myRegistry As RegistryKey = Registry.CurrentUser
-        Dim regSubKey As RegistryKey = myRegistry.OpenSubKey(_RegistrySubKeyName, True)
+        Dim regSubKey As RegistryKey = myRegistry.OpenSubKey(RegistrySubKeyName, True)
+        Dim connectionKey As RegistryKey = Nothing
 
         If (regSubKey Is Nothing) Then
             'Registry key does not exist. Create it!
-            regSubKey = myRegistry.CreateSubKey(_RegistrySubKeyName)
+            regSubKey = myRegistry.CreateSubKey(RegistrySubKeyName)
         End If
 
-        regSubKey.SetValue(_ServerParamName, _Server)
-        regSubKey.SetValue(_PortParamName, _Port)
-        regSubKey.SetValue(_UserIdParamName, _UserId)
-        regSubKey.SetValue(_PasswordParamName, _Password)
-        regSubKey.SetValue(_DatabaseParamName, _Database)
-        regSubKey.SetValue(_SSLParamName, _SSL)
-        regSubKey.SetValue(_PreloadReaderParamName, _PreloadReader)
+        connectionKey = regSubKey.CreateSubKey(Me.Name())
+        connectionKey.SetValue(_ServerParamName, _Server)
+        connectionKey.SetValue(_PortParamName, _Port)
+        connectionKey.SetValue(_UserIdParamName, _UserId)
+        connectionKey.SetValue(_PasswordParamName, _Password)
+        connectionKey.SetValue(_DatabaseParamName, _Database)
+        connectionKey.SetValue(_SSLParamName, _SSL)
+        connectionKey.SetValue(_PreloadReaderParamName, _PreloadReader)
     End Sub
+
+    Public Overrides Function ToString() As String
+        Return Me.Name()
+    End Function
 
     '"Server=localhost;Port=5432;User Id=test-db;Password=test-db;Database=test-db;Preload Reader=True;"
 
