@@ -187,6 +187,7 @@ class Live_Feeder(object):
     URL_LIVE_SCORE = "http://www.xmlsoccer.com/FootballDataDemo.asmx/GetLiveScore?ApiKey=" + API_KEY
     
     conn = None
+    get_all_teams = True
     
     def __init__(self):
         rps = 1/31.0 # Refreshes Per Second
@@ -196,13 +197,8 @@ class Live_Feeder(object):
     def get_feed(self):
         """get the feed"""
         # return the root element (XMLSOCCER.COM)
-#        tree = etree.parse('/Users/bnl/Dropbox/betfair/demo_live_data.xml')
-#        return tree.getroot()        
         response = urllib2.urlopen(self.URL_LIVE_SCORE)
         xmlstring = response.read()
-#        print 'get_feed',xmlstring
-#        print 'wwwwwwwwwwwwww'
-#        print ' etree.fromstring(xmlstring)',  etree.fromstring(xmlstring)
         return etree.fromstring(xmlstring)        
 
     def get_teams(self):
@@ -210,26 +206,30 @@ class Live_Feeder(object):
         # return the root element (XMLSOCCER.COM)
         response = urllib2.urlopen(self.URL_ALL_TEAMS)
         xmlstring = response.read()
-#        print 'get_teams',xmlstring
         return etree.fromstring(xmlstring)        
         
     def do_throttle(self):
         """return only when it is safe to send another data request"""
         wait = self.throttle['next_req'] - time()
-        if wait > 0: sleep(wait)
+        if wait > 0: 
+            print 'Wait for', int(wait), 'seconds'
+            sleep(wait)
         self.throttle['next_req'] = time() + self.throttle['rps']
         
     def start(self):
         """start the main loop"""
-#        teamroot = self.get_teams()
-#        print 'teamroot', teamroot
-#        for t in teamroot :
-#            print(t)
-#            team = Team(t)
-#            team.print_me()
-#            if team.Id:
-#                team.update_db(self.conn)
-
+        if self.get_all_teams :
+            teamroot = self.get_teams()
+            print 'teamroot', teamroot
+            for t in teamroot :
+                print(t)
+                team = Team(t)
+                team.print_me()
+                if team.Id:
+                    team.update_db(self.conn)
+            self.get_all_teams = False
+            
+            
         gameroot = self.get_feed()
 #        print 'gameroot', gameroot
         elem_count = 0
@@ -265,7 +265,6 @@ while True:
     print '------------------ loop start:', datetime.datetime.now(), '-----------------------'
     try:
         feed.start() 
-        feed.do_throttle()
     except urllib2.URLError as ex:
         print "URLError error({0}): {1}".format(ex.errno, ex.strerror)
         print 'Lost network. Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
@@ -282,6 +281,7 @@ while True:
         sleep (feed.NETWORK_FAILURE_DELAY)
 
     print '------------------ loop stop:', datetime.datetime.now(), '-----------------------'    
+    feed.do_throttle()
 
 # main loop ended...
 print 'MAIN LOOP ENDED...\n---------------------------------------------'

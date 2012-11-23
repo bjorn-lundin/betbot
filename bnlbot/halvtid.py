@@ -223,6 +223,16 @@ class SimpleBot(object):
                           'Home_Team_Id', my_market.away_team_id
                     return    
 
+                try :
+                    actual_time_in_game = (datetime.datetime.now() - my_market.ts).total_seconds()/60 
+                    if actual_time_in_game > 47 : 
+                        print 'Halftime, to late for bets (47 min)'
+                        return
+                    my_game.time_in_game = actual_time_in_game 
+                except :
+                    print 'Failed to get better time, using xmlsoccer time in game'
+                    actual_time_in_game = my_game.time_in_game
+                    
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
                 print 'odds hemmaseger : ', odds_home_victory
