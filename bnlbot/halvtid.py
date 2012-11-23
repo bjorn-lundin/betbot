@@ -25,7 +25,7 @@ class SimpleBot(object):
     HALV_TIME_ONE_GOAL_LEAD_TIME = 40
     HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 35
     HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 25
-    HIGH_ODDS_DIFF = 14.0
+    HIGH_ODDS_DIFF = 20.0
     conn = None
     
     def __init__(self):
@@ -47,14 +47,12 @@ class SimpleBot(object):
 ############################# end login
 
 
-
-
     def insert_market(self, market):
         m = market[1]
         cur = self.conn.cursor()
-        cur.execute("select * from MARKETS where MARKET_ID="+ m['market_id'])
+        cur.execute("select * from MARKETS where MARKET_ID = %s", (m['market_id'],))
         if cur.rowcount == 0 :
-            ts = str(datetime.datetime.fromtimestamp(int(m['last_refresh'])/1000))
+            last_refresh = str(datetime.datetime.fromtimestamp(int(m['last_refresh'])/1000))
             # extract teams from path, if possible
             #\Fotboll\england\premier leauge\10 november\stoke - arsenal
             #\Fotboll\england\premier leauge\10 november\stoke vs arsenal
@@ -94,23 +92,22 @@ class SimpleBot(object):
                       %s,%s,%s,%s,%s,%s,%s,%s,%s)",
                       (m['market_id'],     m['bsp_market'],      \
                        m['market_type'],   m['event_hierarchy'], \
-                       ts  ,               m['turning_in_play'], \
+                       last_refresh ,      m['turning_in_play'], \
                        m['menu_path'],     m['bet_delay'], \
                        m['exchange_id'],   m['country_code'],    \
                        m['market_name'],   m['market_status'], \
                        m['event_date'],    m['no_of_runners'],   \
                        m['total_matched'], m['no_of_winners'],
                        home_team, away_team, None, None))
-                       #datetime.datetime.fromtimestamp(m['last_refresh']/1000)
             cur.close()
-            for t in list_teams :
+            for team in list_teams :
                 cur2 = self.conn.cursor()
                 cur2.execute("select * from TEAM_ALIASES \
-                              where TEAM_ALIAS= '" + t +"'")
+                              where TEAM_ALIAS = %s", (team,))
                 rc = cur2.rowcount
                 cur2.close()
                 if rc == 0 :
-                    print 'Team not found in TEAM_ALIASES:', t
+                    print 'Team not found in TEAM_ALIASES:', team
                     cur3 = self.conn.cursor()
                     cur3.execute("SAVEPOINT A")
                     cur3.close()
@@ -118,7 +115,7 @@ class SimpleBot(object):
                         cur4 = self.conn.cursor()
                         cur4.execute("insert into UNIDENTIFIED_TEAMS \
                                      (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                                     (t,m['country_code']))
+                                     (team, m['country_code']))
                         cur4.close()
                     except psycopg2.IntegrityError:
                         cur5 = self.conn.cursor()
@@ -126,24 +123,23 @@ class SimpleBot(object):
                         cur5.close()
                         
                                                 
-        self.conn.commit()
 ############################# end insert_market
         
 
-    def insert_bet(self, bet, resp):
+    def insert_bet(self, bet, resp, bet_type):
         print 'insert bet', bet, resp
         cur = self.conn.cursor()
-        cur.execute("select * from BETS where BET_ID="+ resp['bet_id'])
+        cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
         if cur.rowcount == 0 :
             print 'insert bet', resp['bet_id']
             cur.execute("insert into BETS ( \
                          BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE ) \
+                         CODE, SUCCESS, SIZE, BET_TYPE ) \
                          values \
-                         (%s,%s,%s,%s,%s,%s,%s)", \
+                         (%s,%s,%s,%s,%s,%s,%s,%s)", \
                (resp['bet_id'],bet['marketId'], bet['selectionId'], \
-                resp['price'], resp['code'], resp['success'], resp['size']))
-        self.conn.commit()
+                resp['price'], resp['code'], resp['success'], \
+                resp['size'], bet_type))
         cur.close()
 ############################# end insert_bet
 
@@ -154,8 +150,8 @@ class SimpleBot(object):
         markets = self.api.get_all_markets(
               events = ['1','14'],
               hours = self.HOURS_TO_MATCH_START,
-              countries = None)
-#              countries = ['GBR'])
+              countries = ['GBR'])
+#              countries = None)
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
@@ -235,6 +231,8 @@ class SimpleBot(object):
                 print 'Tid förflutet', my_game.time_in_game
                 print 'Hemma mål', my_game.home_goals
                 print 'Borta mål', my_game.away_goals
+                
+                bet_category = None
 
                 #away victory? 2 goal lead, early, and big odds diff
                 if odds_away_victory and \
@@ -247,6 +245,7 @@ class SimpleBot(object):
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
+                    bet_category = 'AWAY_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
 
                 #home victory? 2 goal lead, early, and big odds diff
                 elif odds_away_victory and \
@@ -259,6 +258,7 @@ class SimpleBot(object):
 
                     back_price = odds_home_victory
                     selection = selection_home_victory
+                    bet_category = 'HOME_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
 
                 #away victory? 2 goal lead, early, and big odds diff
                 elif odds_away_victory and \
@@ -271,6 +271,7 @@ class SimpleBot(object):
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
+                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
 
                 #home victory? 2 goal lead, early, and big odds diff
                 elif odds_away_victory and \
@@ -283,6 +284,7 @@ class SimpleBot(object):
 
                     back_price = odds_home_victory
                     selection = selection_home_victory
+                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
 
                 #home victory? 1 goal lead, fairly soon end halftime
                 elif odds_home_victory and \
@@ -293,6 +295,7 @@ class SimpleBot(object):
                    
                     back_price = odds_home_victory
                     selection = selection_home_victory
+                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_LEAD_TIME'
 
                 #away victory? 1 goal lead, fairly soon end halftime
                 elif odds_away_victory and \
@@ -303,6 +306,7 @@ class SimpleBot(object):
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
+                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_LEAD_TIME'
 
                 #tie halftime victory?  soon end halftime
                 elif odds_draw and \
@@ -313,6 +317,7 @@ class SimpleBot(object):
 
                     back_price = odds_draw
                     selection = selection_draw
+                    bet_category = 'TIE_HALV_TIME_ZERO_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -345,7 +350,7 @@ class SimpleBot(object):
                     s += 'Place bets response: ' + str(resp) + '\n'
                     s += '---------------------------------------------'
                     print s
-                    self.insert_bet(bets[0], resp[0])
+                    self.insert_bet(bets[0], resp[0], bet_category)
 #                    a=d
                     # check session
                     if resp == 'API_ERROR: NO_SESSION':
@@ -415,6 +420,7 @@ class SimpleBot(object):
                          str(login_status) + '\n'
                     s += '---------------------------------------------'
                     print s
+            self.conn.commit()
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'
@@ -427,10 +433,14 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 bot = SimpleBot()
 print 'Starting up:', datetime.datetime.now()
-bot.conn = psycopg2.connect("dbname='betting' \
+#bot.conn = psycopg2.connect("dbname='betting' \
+#                             user='bnl' \
+#                             host='192.168.0.24' \
+#                             password=None") 
+bot.conn = psycopg2.connect("dbname='bnl' \
                              user='bnl' \
-                             host='192.168.0.24' \
-                             password=None") 
+                             host='nonodev.com' \
+                             password='BettingFotboll1$'") 
 while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api

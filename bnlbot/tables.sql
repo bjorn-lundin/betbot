@@ -66,8 +66,12 @@ create table bets (
   code varchar,
   success boolean,
   size float,
+  bet_type varchar,
   primary key (bet_id)
   );
+  
+--alter table BETS add column bet_type varchar;  
+
 
 create or replace view betinfo as
 select 
