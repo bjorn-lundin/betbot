@@ -11,7 +11,6 @@ class Funding(object):
     TRANSFER_SUM = 1000.0
     MAX_EXPOSURE = 700.0
 
-
     def __init__(self, api):
         self.api = api
         self.funds = self.api.get_account_funds()
@@ -28,14 +27,11 @@ class Funding(object):
             return False
           
         funds_ok = False
-        if avail_balance > self.MAX_SALDO :
-            print 'funds too big, transfer', self.TRANSFER_SUM, \
-                  'from', avail_balance
-            print 'transfer is not implementet yet'
-            print 'REFUSING TO CONTINUE INSTEAD'
-        elif avail_balance < self.MIN_SALDO :  
+        if int(avail_balance) > self.MAX_SALDO :
+            self.transfer_to_visa()
+        elif int(avail_balance) < self.MIN_SALDO :  
             print 'ALARM, insufficient funds', avail_balance, 'left!!'
-        elif exposure > self.MAX_EXPOSURE :  
+        elif int(exposure) > self.MAX_EXPOSURE :  
             print 'ALARM, too much exposure', exposure, '>',  self.MAX_EXPOSURE
         else:  
             print 'avail_balance', avail_balance, 'exposure', exposure
@@ -43,3 +39,10 @@ class Funding(object):
             
         self.funds_ok = funds_ok
 ############################# end check_and_fix_funds
+    def transfer_to_visa(self):
+        """send money to Visa card"""
+        print 'ALARM, funds too big, transfer', self.TRANSFER_SUM, \
+                 'from', avail_balance
+        print 'transfer is not implementet yet'
+        print 'REFUSING TO CONTINUE INSTEAD'
+############################# end transfer_to_visa

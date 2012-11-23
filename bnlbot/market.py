@@ -37,7 +37,7 @@ class Market(object):
             # 17  away_team       | character varying           | 
             # 18  ts              | timestamp without time zone | 
             # 19  xml_soccer_id   | integer                     | 
-            print 'Market.init', row 
+#            print 'Market.init', row 
 
             self.market_id = row[0]       
             self.bsp_market = row[1]
@@ -78,10 +78,8 @@ class Market(object):
                     self.away_team_id = self.away_team 
                 cur3.close()
             except :
-                self.conn.commit()
                 print 'Market.init, no hit - market_id', market_id 
                 return None
-        self.conn.commit()
         
         
     def try_set_gamestart(self) :
@@ -90,7 +88,6 @@ class Market(object):
                 cur = self.conn.cursor()
                 cur.execute("update MARKETS set ts = %s where ts is null and market_id = %s ", (datetime.datetime.now(), self.market_id))
                 cur.close()
-                self.conn.commit()
         except AttributeError :
             return    
         
@@ -125,7 +122,6 @@ class Market(object):
         if cur.rowcount == 1 :
             found = True
         cur.close()
-        self.conn.commit()
         return found
        ############################# end market_in_xmlfeed
 

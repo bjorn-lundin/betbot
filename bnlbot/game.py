@@ -1,3 +1,4 @@
+# coding=iso-8859-15
 """ The game Object """
 #import datetime 
 #import psycopg2
@@ -37,7 +38,6 @@ class Game(object):
             self.away_goals = row[6] 
             self.found = True
         cur.close()
-        conn.commit()
         try : 
             i = int(self.time_in_game)
             self.time_in_game_numeric = True
