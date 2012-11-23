@@ -1,0 +1,97 @@
+market 
+{'bsp_market': 'N', 
+'market_type': 'O',
+ 'event_hierarchy': '/1/78601/26916996/26917004/107293544', 
+ 'last_refresh': '1352318107435',
+  'market_id': '107293544', 
+ 'turning_in_play': 'Y',
+  'menu_path': '\\Fotboll\\UEFA Champions League\\Matcher 07 november\\Juventus - FC Nordsj',
+   'bet_delay': 8, 
+   'exchange_id': '1',
+    'country_code': 'ITA',
+    'market_name': 'Matchodds', 
+    'market_status': 'ACTIVE', 
+    'event_date': datetime.datetime(2012, 11, 7, 19, 45), 
+    'no_of_runners': 3, 
+    'total_matched': 854075.08999999997, 
+    'no_of_winners': 1}
+
+Found 1 markets. Checking strategy...
+prices 
+{'status': 'ACTIVE', 
+'info': '', 
+'refresh_time': '1352318189633', 
+'market_id': '107293544', 
+'base_rate': 5.0, 
+'currency': 'SEK', 
+'none_runners': '', 
+'bsp_market': 'N', 
+'no_of_winners': 1, 
+'discount_allowed': 'true', 
+'runners': [
+     {'back_prices': [
+                       {'depth': '1', 'price': 1.05, 'type': 'L', 'amount': 44701.330000000002}, 
+                       {'depth': '2', 'price': 1.04, 'type': 'L', 'amount': 485727.25}, 
+                       {'depth': '3', 'price': 1.03, 'type': 'L', 'amount': 209337.82999999999}
+                    ], 
+      'handicap': '', 
+      'vacant': 'false', 
+      'far_sp': '', 
+      'actual_sp': '', 
+      'order_index': '1', 
+      'selection_id': '2423', 
+      'lay_prices': [
+                       {'depth': '1', 'price': 1.0600000000000001, 'type': 'B', 'amount': 271950.41999999998}, 
+                       {'depth': '2', 'price': 1.0700000000000001, 'type': 'B', 'amount': 33128.669999999998}, 
+                       {'depth': '3', 'price': 1.0800000000000001, 'type': 'B', 'amount': 35261.949999999997}
+                      ], 
+      'last_price_matched': 1.0600000000000001, 
+      'near_sp': '', 
+      'total_matched': 9814141.1600000001, 
+      'reduction_factor': ''
+      }, 
+      {'back_prices': [
+                        {'depth': '1', 'price': 130.0, 'type': 'L', 'amount': 133.75999999999999}, 
+                        {'depth': '2', 'price': 110.0, 'type': 'L', 'amount': 460.07999999999998}, 
+                        {'depth': '3', 'price': 100.0, 'type': 'L', 'amount': 206.18000000000001}
+                        ], 
+       'handicap': '', 
+       'vacant': 'false', 
+       'far_sp': '', 
+       'actual_sp': '', 
+       'order_index': '2', 
+       'selection_id': '996168', 
+       'lay_prices': [
+                        {'depth': '1', 'price': 140.0, 'type': 'B', 'amount': 2180.29}, 
+                        {'depth': '2', 'price': 150.0, 'type': 'B', 'amount': 85.359999999999999}, 
+                        {'depth': '3', 'price': 170.0, 'type': 'B', 'amount': 54.740000000000002}
+                    ], 
+       'last_price_matched': 140.0, 
+       'near_sp': '', 
+       'total_matched': 156345.85999999999, 
+       'reduction_factor': ''
+       }, 
+       {'back_prices': [
+                        {'depth': '1', 'price': 23.0, 'type': 'L', 'amount': 764.08000000000004},
+                        {'depth': '2', 'price': 22.0, 'type': 'L', 'amount': 74.819999999999993}, 
+                        {'depth': '3', 'price': 21.0, 'type': 'L', 'amount': 1194.52}
+                        ], 
+        'handicap': '', 
+        'vacant': 'false', 
+        'far_sp': '', 
+        'actual_sp': '', 
+        'order_index': '3', 
+        'selection_id': '58805', 
+        'lay_prices': [
+                        {'depth': '1', 'price': 26.0, 'type': 'B', 'amount': 3879.2199999999998}, 
+                        {'depth': '2', 'price': 27.0, 'type': 'B', 'amount': 595.14999999999998}, 
+                        {'depth': '3', 'price': 28.0, 'type': 'B', 'amount': 315.82999999999998}
+                        ], 
+        'last_price_matched': 25.0, 
+        'near_sp': '', 
+        'total_matched': 141498.82000000001, 
+        'reduction_factor': ''
+        }
+], 
+'in_play_delay': '8'}
+ 
