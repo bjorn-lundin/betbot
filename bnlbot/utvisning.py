@@ -17,16 +17,18 @@ class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
     MIN_ODDS = 1.04
+    MAX_ODDS = 2.04
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
-    HALV_TIME_ZERO_GOAL_LEAD_TIME = 45
-    HALV_TIME_ONE_GOAL_LEAD_TIME = 41
-    HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 37
-    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 28
+    HALV_TIME_ZERO_GOAL_LEAD_TIME = 43
+    HALV_TIME_ONE_GOAL_LEAD_TIME = 40
+    HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 35
+    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 25
     HIGH_ODDS_DIFF = 30.0
     conn = None
+    HALV_TIME_PASSED_TIME = 42
     
     def __init__(self):
         rps = 1/4.0 # Refreshes Per Second
@@ -143,22 +145,21 @@ class SimpleBot(object):
         cur.close()
 ############################# end insert_bet
 
-
     def get_markets(self):
         """returns a list of markets or an error string"""
         # NOTE: get_all_markets is NOT subject to data charges!
         markets = self.api.get_all_markets(
               events = ['1','14'],
               hours = self.HOURS_TO_MATCH_START,
-              countries = ['GBR'])
-#              countries = None)
+              countries = None)
+#              countries = ['GBR'])
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
                 markets.remove(market)
-                if (    market['market_name'] == 'Halvtid' # 
+                if (    market['market_name'] == 'Utvisning?' # Redcard
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
@@ -202,12 +203,10 @@ class SimpleBot(object):
                 back_price = None 
                 selection = None
                 try :
-                    odds_home_victory = prices['runners'][0]['back_prices'][0]['price']
-                    odds_away_victory = prices['runners'][1]['back_prices'][0]['price']
-                    odds_draw = prices['runners'][2]['back_prices'][0]['price']
-                    selection_home_victory = prices['runners'][0]['selection_id']
-                    selection_away_victory = prices['runners'][1]['selection_id']
-                    selection_draw = prices['runners'][2]['selection_id']
+                    odds_yes      = prices['runners'][0]['back_prices'][0]['price']
+                    selection_yes = prices['runners'][0]['selection_id']
+                    odds_no       = prices['runners'][1]['back_prices'][0]['price']
+                    selection_no  = prices['runners'][1]['selection_id']
                 except:
                     print '#############################################3'
                     print 'prices missing some fields, do return'
@@ -215,119 +214,34 @@ class SimpleBot(object):
                     print '#############################################3'
                     return
 
-                my_game = Game(self.conn, my_market.home_team_id, \
-                               my_market.away_team_id)    
-                if not my_game.found :
-                    print datetime.datetime.now(), 'game not found home_team_id', \
-                          my_market.home_team_id, \
-                          'Home_Team_Id', my_market.away_team_id
-                    return    
-
                 try :
                     actual_time_in_game = (datetime.datetime.now() - my_market.ts).total_seconds()/60 
                     if actual_time_in_game > 47 : 
                         print 'Halftime, to late for bets (47 min)'
                         return
-                    my_game.time_in_game = actual_time_in_game 
                 except :
-                    print 'Failed to get better time, using xmlsoccer time in game'
-                    actual_time_in_game = my_game.time_in_game
-                    
+                    print 'Failed to get better time, skipping', \
+                       my_market.home_team_name, ' - ', \
+                       my_market.away_team_name
+                       return
+                       
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                print 'odds hemmaseger : ', odds_home_victory
-                print 'odds bortaseger : ', odds_away_victory
-                print 'odds oavgjort   : ', odds_draw
-                print 'Tid förflutet', my_game.time_in_game
-                print 'Hemma mål', my_game.home_goals
-                print 'Borta mål', my_game.away_goals
-                
+                print 'odds utvisning - ja : ', odds_yes
+                print 'odds utvisning - nej : ', odds_no
+                print 'Tid förflutet', actual_time_in_game
                 bet_category = None
 
-                #away victory? 2 goal lead, early, and big odds diff
-                if odds_away_victory and \
-                   odds_home_victory and \
-                   odds_away_victory >= self.MIN_ODDS and \
-                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
-                   my_game.away_goals - my_game.home_goals  >= 2 and \
-                   my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
+                #no sending off
+                if odds_no and \
+                   odds_no >= self.MIN_ODDS and \
+                   odds_no <= self.MAX_ODDS and \
+                   int(actual_time_in_game) > self.HALV_TIME_PASSED_TIME :
 
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
+                    back_price = odds_no
+                    selection = selection_no
+                    bet_category = 'SENDING_OFF_AFTER_HALV_TIME_PASSED_TIME'
 
-                #home victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                     odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
-                     my_game.home_goals - my_game.away_goals  >= 2 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
-
-                #away victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                   odds_home_victory and \
-                   odds_away_victory >= self.MIN_ODDS and \
-                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
-                   my_game.away_goals - my_game.home_goals  >= 1 and \
-                   my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                     odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 1 goal lead, fairly soon end halftime
-                elif odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-                   
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #away victory? 1 goal lead, fairly soon end halftime
-                elif odds_away_victory and \
-                     odds_away_victory >= self.MIN_ODDS and \
-                     my_game.away_goals - my_game.home_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #tie halftime victory?  soon end halftime
-                elif odds_draw and \
-                     odds_draw >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  == 0 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
-
-                    back_price = odds_draw
-                    selection = selection_draw
-                    bet_category = 'TIE_HALV_TIME_ZERO_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
