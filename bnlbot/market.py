@@ -65,17 +65,17 @@ class Market(object):
                 self.away_team_name = self.away_team 
                 cur2 = self.conn.cursor()
                 cur2.execute("select TEAM_ID from TEAM_ALIASES \
-                              where TEAM_ALIAS = '" + self.home_team_name + "'")
+                              where TEAM_ALIAS = %s", (self.home_team_name,))
                 row = cur2.fetchone()
                 if cur2.rowcount == 1 :
-                    self.home_team_id = self.home_team
+                    self.home_team_id = row[0]
                 cur2.close()
                 cur3 = self.conn.cursor()
                 cur3.execute("select TEAM_ID from TEAM_ALIASES \
-                              where TEAM_ALIAS = '" + self.away_team_name + "'")
+                              where TEAM_ALIAS = %s", (self.away_team_name,))
                 row = cur3.fetchone()
                 if cur3.rowcount == 1 :
-                    self.away_team_id = self.away_team 
+                    self.away_team_id = row[0] 
                 cur3.close()
             except :
                 print 'Market.init, no hit - market_id', market_id 
@@ -86,7 +86,7 @@ class Market(object):
         try :
             if not self.ts and int(self.bet_delay) > 0 :
                 cur = self.conn.cursor()
-                cur.execute("update MARKETS set ts = %s where ts is null and market_id = %s ", (datetime.datetime.now(), self.market_id))
+                cur.execute("update MARKETS set TS = %s where TS is null and MARKET_ID = %s ", (datetime.datetime.now(), self.market_id))
                 cur.close()
         except AttributeError :
             return    

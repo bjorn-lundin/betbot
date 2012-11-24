@@ -203,11 +203,11 @@ class Live_Feeder(object):
         
     def do_throttle(self):
         """return only when it is safe to send another data request"""
-        wait = self.throttle['next_req'] - time()
-        if wait > 0: 
-            print 'Wait for', int(wait +1 ), 'seconds'
-            sleep(wait + 1 )
-        self.throttle['next_req'] = time() + self.throttle['rps']
+#        wait = self.throttle['next_req'] - time()
+#        if wait > 0: 
+        print 'Wait for', 32, 'seconds'
+        sleep(32)
+#        self.throttle['next_req'] = time() + self.throttle['rps']
         
     def start(self):
         """start the main loop"""
