@@ -205,8 +205,8 @@ class Live_Feeder(object):
         """return only when it is safe to send another data request"""
         wait = self.throttle['next_req'] - time()
         if wait > 0: 
-            print 'Wait for', int(wait), 'seconds'
-            sleep(wait)
+            print 'Wait for', int(wait +1 ), 'seconds'
+            sleep(wait + 1 )
         self.throttle['next_req'] = time() + self.throttle['rps']
         
     def start(self):
@@ -247,10 +247,16 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 feed = Live_Feeder()
 print 'Starting up:', datetime.datetime.now()
-feed.conn = psycopg2.connect("dbname='bnl' \
+
+#bot.conn = psycopg2.connect("dbname='bnl' \
+#                             user='bnl' \
+#                             host='nonodev.com' \
+#                             password='BettingFotboll1$'") 
+
+feed.conn = psycopg2.connect("dbname='betting' \
                               user='bnl' \
-                              host='localhost' \
-                              password='BettingFotboll1$'")
+                              host='192.168.0.24' \
+                              password='None'")
 feed.do_throttle()
 while True:
     print '------------------ loop start:', datetime.datetime.now(), '-----------------------'

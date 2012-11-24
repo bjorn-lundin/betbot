@@ -357,14 +357,14 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 bot = SimpleBot()
 print 'Starting up:', datetime.datetime.now()
-#bot.conn = psycopg2.connect("dbname='betting' \
-#                             user='bnl' \
-#                             host='192.168.0.24' \
-#                             password=None") 
-bot.conn = psycopg2.connect("dbname='bnl' \
+bot.conn = psycopg2.connect("dbname='betting' \
                              user='bnl' \
-                             host='nonodev.com' \
-                             password='BettingFotboll1$'") 
+                             host='192.168.0.24' \
+                             password=None") 
+#bot.conn = psycopg2.connect("dbname='bnl' \
+#                             user='bnl' \
+#                             host='nonodev.com' \
+#                             password='BettingFotboll1$'") 
 while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
