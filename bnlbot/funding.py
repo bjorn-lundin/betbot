@@ -9,7 +9,7 @@ class Funding(object):
     MAX_SALDO = 3100.0
     MIN_SALDO = 300.0
     TRANSFER_SUM = 1000.0
-    MAX_EXPOSURE = 700.0
+    MAX_EXPOSURE = 400.0
 
     def __init__(self, api):
         self.api = api
