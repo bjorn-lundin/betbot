@@ -8,7 +8,7 @@ import urllib2
 import ssl
 import os
 import sys
-from game import Game
+
 from market import Market
 from funding import Funding
 import socket
@@ -223,7 +223,7 @@ class SimpleBot(object):
                     print 'Failed to get better time, skipping', \
                        my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                       return
+                    return
                        
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name

@@ -62,7 +62,6 @@ class Team(object):
              (self.Id, self.Name, self.Country, self.Stadium, \
               self.Home_Page_URL, self.WIKI_Link))
              
-        conn.commit()
         cur.close()
     
 ###########################################################                    
@@ -81,12 +80,8 @@ class Game(object):
         self.Info = None
         self.tag_count = 0
 
-
-#        print 'root', root
         for elem in root:
-#            print 'elem', elem
             self.tag_count +=1
-
             if   elem.tag == 'Id' :
                 self.Xml_Soccer_Id = elem.text
                 self.Found = True
@@ -105,7 +100,6 @@ class Game(object):
                 self.Away_Goals = elem.text
             elif elem.tag == 'AccountInformation' :
                 self.Info = elem.text
-
 
         if self.tag_count == 0 and root.tag == 'AccountInformation' :
            self.Info = root.text
@@ -137,7 +131,7 @@ class Game(object):
 
     def update_db(self, conn):
         cur = conn.cursor()
-        cur.execute("select * from GAMES where XML_SOCCER_ID= %s", \
+        cur.execute("select * from GAMES where XML_SOCCER_ID = %s", \
                      (self.Xml_Soccer_Id,))
         if cur.rowcount == 0 :
             print 'insert Game', self.Xml_Soccer_Id
@@ -148,8 +142,8 @@ class Game(object):
                         values \
                         (%s,%s,%s,%s,%s,%s,%s)", \
              (self.Xml_Soccer_Id, self.Kickoff, self.Home_Team_Id, \
-             self.Away_Team_Id, self.Time_In_Game, \
-             self.Home_Goals, self.Away_Goals))
+              self.Away_Team_Id, self.Time_In_Game, \
+              self.Home_Goals, self.Away_Goals))
         else : 
             print 'update Game', self.Xml_Soccer_Id
             cur.execute("update GAMES \
@@ -159,8 +153,8 @@ class Game(object):
              (self.Kickoff, self.Time_In_Game, self.Home_Goals, \
               self.Away_Goals, self.Xml_Soccer_Id))
              
-        cur2 = conn.cursor()
         print 'insert Game into stats', self.Xml_Soccer_Id
+        cur2 = conn.cursor()
         cur2.execute("insert into GAMES_STATS ( \
                         XML_SOCCER_ID, KICKOFF, HOME_TEAM_ID, \
                         AWAY_TEAM_ID, TIME_IN_GAME, \
@@ -172,7 +166,6 @@ class Game(object):
               self.Home_Goals, self.Away_Goals))
         cur.close()
         cur2.close()
-        conn.commit()
         
         #####################################################
 
@@ -220,7 +213,7 @@ class Live_Feeder(object):
         """start the main loop"""
         if self.get_all_teams :
             teamroot = self.get_teams()
-            print 'teamroot', teamroot
+#            print 'teamroot', teamroot
             for t in teamroot :
                 print(t)
                 team = Team(t)
@@ -243,13 +236,11 @@ class Live_Feeder(object):
                 if liveGame.Found  :
                     liveGame.print_me_nice()
                     liveGame.update_db(self.conn)
-                liveGame.print_info()
         else:
             liveGame = Game(gameroot)  
             liveGame.print_info()
+        self.conn.commit()    
 ###################################################################
-
-
 
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
