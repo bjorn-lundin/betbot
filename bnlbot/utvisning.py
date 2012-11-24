@@ -16,7 +16,7 @@ import socket
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.04
+    MIN_ODDS = 1.25
     MAX_ODDS = 2.04
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
@@ -51,33 +51,35 @@ class SimpleBot(object):
 
     def insert_market(self, market):
         m = market[1]
-        cur = self.conn.cursor()
-        cur.execute("select * from MARKETS where MARKET_ID = %s", (m['market_id'],))
-        if cur.rowcount == 0 :
-            last_refresh = str(datetime.datetime.fromtimestamp(int(m['last_refresh'])/1000))
-            # extract teams from path, if possible
-            #\Fotboll\england\premier leauge\10 november\stoke - arsenal
-            #\Fotboll\england\premier leauge\10 november\stoke vs arsenal
-            #\Fotboll\england\premier leauge\10 november\stoke versus arsenal
-            # make path to list, split on '\', and use last item
-            
-            path_as_list = m['menu_path'].split('\\')
-            teams = path_as_list[len(path_as_list) -1].lower()
-            
-            teams = teams.replace(' - ','|')
-            teams = teams.replace(' v ','|')
-            teams = teams.replace(' vs ','|')
-            teams = teams.replace(' versus ','|')
-            list_teams = teams.split('|')
-            try: 
-                home_team = list_teams[0]
-            except :
-                home_team = None
-            try: 
-                away_team = list_teams[1]
-            except :
-                away_team = None        
-            
+        last_refresh = str(datetime.datetime.fromtimestamp(int(m['last_refresh'])/1000))
+        # extract teams from path, if possible
+        #\Fotboll\england\premier leauge\10 november\stoke - arsenal
+        #\Fotboll\england\premier leauge\10 november\stoke vs arsenal
+        #\Fotboll\england\premier leauge\10 november\stoke versus arsenal
+        # make path to list, split on '\', and use last item
+        
+        path_as_list = m['menu_path'].split('\\')
+        teams = path_as_list[len(path_as_list) -1].lower()
+        
+        teams = teams.replace(' - ','|')
+        teams = teams.replace(' v ','|')
+        teams = teams.replace(' vs ','|')
+        teams = teams.replace(' versus ','|')
+        list_teams = teams.split('|')
+        try: 
+            home_team = list_teams[0]
+        except :
+            home_team = None
+        try: 
+            away_team = list_teams[1]
+        except :
+            away_team = None        
+        
+        cur7 = self.conn.cursor()
+        cur7.execute("SAVEPOINT B")
+        cur7.close()
+        try  :
+            cur = self.conn.cursor()
             cur.execute("insert into MARKETS ( \
                        MARKET_ID, BSP_MARKET, \
                        MARKET_TYPE, EVENT_HIERARCHY, \
@@ -102,29 +104,34 @@ class SimpleBot(object):
                        m['total_matched'], m['no_of_winners'],
                        home_team, away_team, None, None))
             cur.close()
-            for team in list_teams :
-                cur2 = self.conn.cursor()
-                cur2.execute("select * from TEAM_ALIASES \
-                              where TEAM_ALIAS = %s", (team,))
-                rc = cur2.rowcount
-                cur2.close()
-                if rc == 0 :
-                    print 'Team not found in TEAM_ALIASES:', team
-                    cur3 = self.conn.cursor()
-                    cur3.execute("SAVEPOINT A")
-                    cur3.close()
-                    try  :
-                        cur4 = self.conn.cursor()
-                        cur4.execute("insert into UNIDENTIFIED_TEAMS \
-                                     (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                                     (team, m['country_code']))
-                        cur4.close()
-                    except psycopg2.IntegrityError:
-                        cur5 = self.conn.cursor()
-                        cur5.execute("ROLLBACK TO SAVEPOINT A" )
-                        cur5.close()
-                        
-                                                
+            print 'insert into markets ', m['market_id']
+            print 'insert into markets ', home_team, '-', away_team
+            
+        except psycopg2.IntegrityError:
+            cur.close()
+            cur6 = self.conn.cursor()
+            cur6.execute("ROLLBACK TO SAVEPOINT B" )
+            cur6.close()
+#            print 'ROLLBACK on insert into markets ', home_team, '-', away_team
+        
+        
+        for team in list_teams :
+            cur3 = self.conn.cursor()
+            cur3.execute("SAVEPOINT A")
+            cur3.close()
+            try  :
+                cur4 = self.conn.cursor()
+                cur4.execute("insert into UNIDENTIFIED_TEAMS \
+                             (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
+                             (team, m['country_code']))
+                cur4.close()
+                print 'Team not found in TEAM_ALIASES:', team
+            except psycopg2.IntegrityError:
+                cur4.close()
+                cur5 = self.conn.cursor()
+                cur5.execute("ROLLBACK TO SAVEPOINT A" )
+                cur5.close()
+                                                            
 ############################# end insert_market
         
 
@@ -163,14 +170,14 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
-                    and market['bet_delay'] > 0 # started
+#                    and market['bet_delay'] > 0 # started
                     ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds
                     print 'market', market['market_id'], market['menu_path'], \
-                       'will start in', sec_til_start, 'seconds Halvtid'
+                       'will start in', sec_til_start, 'seconds Utvisning'
                     temp = [sec_til_start, market]
                     markets.append(temp)
             markets.sort() # sort into time order (earliest game first)
@@ -202,23 +209,23 @@ class SimpleBot(object):
                 bets = []
                 back_price = None 
                 selection = None
+                
                 try :
                     odds_yes      = prices['runners'][0]['back_prices'][0]['price']
                     selection_yes = prices['runners'][0]['selection_id']
                     odds_no       = prices['runners'][1]['back_prices'][0]['price']
                     selection_no  = prices['runners'][1]['selection_id']
                 except:
-                    print '#############################################3'
+                    print '#############################################'
                     print 'prices missing some fields, do return'
-                    print prices
-                    print '#############################################3'
+                    print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
+                    print 'Avspark ', my_market.ts
+                    print 'nu      ', datetime.datetime.now()
+                    print '#############################################'
                     return
 
                 try :
-                    actual_time_in_game = (datetime.datetime.now() - my_market.ts).total_seconds()/60 
-                    if actual_time_in_game > 47 : 
-                        print 'Halftime, to late for bets (47 min)'
-                        return
+                    actual_time_in_game = int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
                 except :
                     print 'Failed to get better time, skipping', \
                        my_market.home_team_name, ' - ', \
@@ -230,13 +237,14 @@ class SimpleBot(object):
                 print 'odds utvisning - ja : ', odds_yes
                 print 'odds utvisning - nej : ', odds_no
                 print 'Tid förflutet', actual_time_in_game
+                print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
                 bet_category = None
 
                 #no sending off
                 if odds_no and \
                    odds_no >= self.MIN_ODDS and \
                    odds_no <= self.MAX_ODDS and \
-                   int(actual_time_in_game) > self.HALV_TIME_PASSED_TIME :
+                   actual_time_in_game >= self.HALV_TIME_PASSED_TIME :
 
                     back_price = odds_no
                     selection = selection_no
@@ -298,10 +306,10 @@ class SimpleBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    s = 'No markets found. Sleeping for', \
-                         self.DELAY_BETWEEN_TURNS_NO_MARKETS, ' seconds...'
-                    print datetime.datetime.now(), s
-                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
+                    print datetime.datetime.now(), \
+                         'UTVISNING, no markets found. Sleep', \
+                         self.DELAY_BETWEEN_TURNS_NO_MARKETS, 's.'
+                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) #bandwidth saver
                 else:
                     print datetime.datetime.now(), 'Found', len(markets), \
                           'markets. Checking strategy...'
@@ -310,32 +318,25 @@ class SimpleBot(object):
                         # do we have bets on this market?
                         market_id = market[1]['market_id']
                         my_market = Market(market_id, self.conn)
-                        my_market.try_set_gamestart()
-                        
-                        if not my_market.market_in_xmlfeed() :
-                            print datetime.datetime.now(), \
-                                  'market not in xmlfeed', \
-                                   market[1]['menu_path']
-                        else :
-                            mu_bets = self.api.get_mu_bets(market_id)
-                            if mu_bets == 'NO_RESULTS':
-                                print 'We have no bets on market', market_id, \
-                                        'path-', market[1]['menu_path']
-                                # we have no bets on this market...
+                        my_market.try_set_gamestart()                       
+                        mu_bets = self.api.get_mu_bets(market_id)
+                        if mu_bets == 'NO_RESULTS':
+                            print 'We have no bets on market', market_id, \
+                                    'path-', market[1]['menu_path']
+                            # we have no bets on this market...
+                            self.do_throttle()
+                            funds = Funding(self.api)
+                            self.do_throttle()
+                            funds.check_and_fix_funds()
+                            if funds.funds_ok:
                                 self.do_throttle()
-                                funds = Funding(self.api)
-                                self.do_throttle()
-                                funds.check_and_fix_funds()
-                                if funds.funds_ok:
-                                    self.do_throttle()
-                                    self.check_strategy(market_id, market[1]['menu_path'])
-                                else :    
-                                    print 'Something happened with funds', funds 
-                                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
-                            else : 
-                                print mu_bets, \
-                                'We have ALREADY bets on market', \
-                                market_id, 'path-',  market[1]['menu_path']
+                                self.check_strategy(market_id, market[1]['menu_path'])
+                            else :    
+                                print 'Something happened with funds', funds 
+                                sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                        else : 
+                            print 'We have ALREADY bets on market', \
+                            market_id, 'path-',  market[1]['menu_path']
                                     
                 # check if session is still OK
                 if self.no_session:

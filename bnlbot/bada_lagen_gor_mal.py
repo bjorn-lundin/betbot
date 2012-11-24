@@ -8,7 +8,7 @@ import urllib2
 import ssl
 import os
 import sys
-from game import Game
+
 from market import Market
 from funding import Funding
 import socket
@@ -16,16 +16,12 @@ import socket
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.04
-    HOURS_TO_MATCH_START = 0.25
+    MIN_ODDS = 1.65
+    MAX_ODDS = 20.04
+    HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
-    HALV_TIME_ZERO_GOAL_LEAD_TIME = 44
-    HALV_TIME_ONE_GOAL_LEAD_TIME = 41
-    HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 37
-    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 28
-    HIGH_ODDS_DIFF = 30.0
     conn = None
     
     def __init__(self):
@@ -114,29 +110,22 @@ class SimpleBot(object):
         
         
         for team in list_teams :
-            cur2 = self.conn.cursor()
-            cur2.execute("select * from TEAM_ALIASES \
-                          where TEAM_ALIAS = %s", (team,))
-            rc = cur2.rowcount
-            cur2.close()
-            if rc == 0 :
+            cur3 = self.conn.cursor()
+            cur3.execute("SAVEPOINT A")
+            cur3.close()
+            try  :
+                cur4 = self.conn.cursor()
+                cur4.execute("insert into UNIDENTIFIED_TEAMS \
+                             (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
+                             (team, m['country_code']))
+                cur4.close()
                 print 'Team not found in TEAM_ALIASES:', team
-                cur3 = self.conn.cursor()
-                cur3.execute("SAVEPOINT A")
-                cur3.close()
-                try  :
-                    cur4 = self.conn.cursor()
-                    cur4.execute("insert into UNIDENTIFIED_TEAMS \
-                                 (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                                 (team, m['country_code']))
-                    cur4.close()
-                except psycopg2.IntegrityError:
-                    cur5 = self.conn.cursor()
-                    cur5.execute("ROLLBACK TO SAVEPOINT A" )
-                    cur5.close()
-                    
-        print 'insert into markets ', m['market_id'], 'done'
-                                        
+            except psycopg2.IntegrityError:
+                cur4.close()
+                cur5 = self.conn.cursor()
+                cur5.execute("ROLLBACK TO SAVEPOINT A" )
+                cur5.close()
+                                                            
 ############################# end insert_market
         
 
@@ -157,34 +146,32 @@ class SimpleBot(object):
         cur.close()
 ############################# end insert_bet
 
-
     def get_markets(self):
         """returns a list of markets or an error string"""
         # NOTE: get_all_markets is NOT subject to data charges!
         markets = self.api.get_all_markets(
               events = ['1','14'],
               hours = self.HOURS_TO_MATCH_START,
-#              countries = None)
-              countries = ['GBR'])
+              countries = None)
+#              countries = ['GBR'])
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
                 markets.remove(market)
-                if (    market['market_name'] == 'Halvtid' # 
+                if (    market['market_name'] == 'Båda lagen gör mål?' # Redcard
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
-#                    and market['bet_delay'] > 0 # started -
-#                     make start loop checkif started instead
+#                    and market['bet_delay'] > 0 # started
                     ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds
-                    print 'market', market['market_id'], market['menu_path'], \
-                       'will start in', sec_til_start, 'seconds Halvtid'
+                    print 'market', market['market_id'], market['market_name'], market['menu_path'], \
+                       'will start in', sec_til_start, 'seconds Utvisning'
                     temp = [sec_til_start, market]
                     markets.append(temp)
             markets.sort() # sort into time order (earliest game first)
@@ -216,139 +203,45 @@ class SimpleBot(object):
                 bets = []
                 back_price = None 
                 selection = None
-
-                my_game = Game(self.conn, my_market.home_team_id, \
-                               my_market.away_team_id)    
-                if not my_game.found :
-                    print datetime.datetime.now(), 'game not found home_team_id', \
-                          my_market.home_team_id, \
-                          'away_team_id', my_market.away_team_id
-                    return    
+                
+                try :
+                    odds_yes      = prices['runners'][0]['back_prices'][0]['price']
+                    selection_yes = prices['runners'][0]['selection_id']
+                    odds_no       = prices['runners'][1]['back_prices'][0]['price']
+                    selection_no  = prices['runners'][1]['selection_id']
+                except:
+                    print '#############################################'
+                    print 'prices missing some fields, do return'
+                    print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
+                    print 'Avspark ', my_market.ts
+                    print 'nu      ', datetime.datetime.now()
+                    print '#############################################'
+                    return
 
                 try :
                     actual_time_in_game = int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
-                    if actual_time_in_game > 47 : 
-                        print 'Halftime, to late for bets (47 min)'
-                        print 'Tid förflutet', my_game.time_in_game
-                        print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
-                        return
-                    my_game.time_in_game = actual_time_in_game
                 except :
-                    print 'Failed to get better time, using xmlsoccer time in game'
-                    
-                    
-                try :
-                    odds_home_victory = prices['runners'][0]['back_prices'][0]['price']
-                    odds_away_victory = prices['runners'][1]['back_prices'][0]['price']
-                    odds_draw = prices['runners'][2]['back_prices'][0]['price']
-                    selection_home_victory = prices['runners'][0]['selection_id']
-                    selection_away_victory = prices['runners'][1]['selection_id']
-                    selection_draw = prices['runners'][2]['selection_id']
-                except:
-                    print '#############################################3'
-                    print 'prices missing some fields, do return'
-                    print prices
-                    print '#############################################3'
-                    return
-
-
-                    
+                    print 'Failed to get better time, skipping', \
+                       my_market.home_team_name, ' - ', \
+                       my_market.away_team_name
+                       
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                print 'odds hemmaseger : ', odds_home_victory
-                print 'odds bortaseger : ', odds_away_victory
-                print 'odds oavgjort   : ', odds_draw
-                print 'Hemma mål', my_game.home_goals
-                print 'Borta mål', my_game.away_goals
-                print 'Tid förflutet', my_game.time_in_game
+                print 'odds utvisning - ja : ', odds_yes
+                print 'odds utvisning - nej : ', odds_no
+                print 'Tid förflutet', actual_time_in_game
                 print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
-                
                 bet_category = None
 
-                #away victory? 2 goal lead, early, and big odds diff
-                if odds_away_victory and \
-                   odds_home_victory and \
-                   odds_away_victory >= self.MIN_ODDS and \
-                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
-                   my_game.away_goals - my_game.home_goals  >= 2 and \
-                   my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
+                #both scores
+                if odds_yes and \
+                   odds_yes >= self.MIN_ODDS and \
+                   odds_yes <= self.MAX_ODDS and :
 
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
+                    back_price = odds_yes
+                    selection = selection_yes
+                    bet_category = 'BOTH_TEAMS_SCORES'
 
-                #home victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                     odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
-                     my_game.home_goals - my_game.away_goals  >= 2 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
-
-                #away victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                   odds_home_victory and \
-                   odds_away_victory >= self.MIN_ODDS and \
-                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
-                   my_game.away_goals - my_game.home_goals  >= 1 and \
-                   my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 2 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                     odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 1 goal lead, fairly soon end halftime
-                elif odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-                   
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #away victory? 1 goal lead, fairly soon end halftime
-                elif odds_away_victory and \
-                     odds_away_victory >= self.MIN_ODDS and \
-                     my_game.away_goals - my_game.home_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #tie halftime victory?  soon end halftime
-                elif odds_draw and \
-                     odds_draw >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  == 0 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
-
-                    back_price = odds_draw
-                    selection = selection_draw
-                    bet_category = 'TIE_HALV_TIME_ZERO_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -405,44 +298,37 @@ class SimpleBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    print datetime.datetime.now(), 'HALVTID No markets found. Sleep', \
-                          self.DELAY_BETWEEN_TURNS_NO_MARKETS, 's.'
+                    print datetime.datetime.now(), \
+                         'BÅDA GÖR MÅL  no markets found. Sleep', \
+                         self.DELAY_BETWEEN_TURNS_NO_MARKETS, 's.'
                     sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) #bandwidth saver
                 else:
                     print datetime.datetime.now(), 'Found', len(markets), \
                           'markets. Checking strategy...'
                     for market in markets:
-                        market_id = market[1]['market_id']
-                        print 'will insert market, market_id', market_id, 'path', market[1]['menu_path']
                         self.insert_market(market)
-                        print 'has inserted market, market_id', market_id, 'path', market[1]['menu_path']
                         # do we have bets on this market?
+                        market_id = market[1]['market_id']
                         my_market = Market(market_id, self.conn)
-                        my_market.try_set_gamestart()
-                        
-                        if not my_market.market_in_xmlfeed() :
-                            print datetime.datetime.now(), \
-                                  'market not in xmlfeed', \
-                                   market[1]['menu_path']
-                        else :
-                            mu_bets = self.api.get_mu_bets(market_id)
-                            if mu_bets == 'NO_RESULTS':
-                                print 'We have no bets on market', market_id, \
-                                        'path-', market[1]['menu_path']
-                                # we have no bets on this market...
+                        my_market.try_set_gamestart()                       
+                        mu_bets = self.api.get_mu_bets(market_id)
+                        if mu_bets == 'NO_RESULTS':
+                            print 'We have no bets on market', market_id, \
+                                    'path-', market[1]['menu_path']
+                            # we have no bets on this market...
+                            self.do_throttle()
+                            funds = Funding(self.api)
+                            self.do_throttle()
+                            funds.check_and_fix_funds()
+                            if funds.funds_ok:
                                 self.do_throttle()
-                                funds = Funding(self.api)
-                                self.do_throttle()
-                                funds.check_and_fix_funds()
-                                if funds.funds_ok:
-                                    self.do_throttle()
-                                    self.check_strategy(market_id, market[1]['menu_path'])
-                                else :    
-                                    print 'Something happened with funds', funds 
-                                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
-                            else : 
-                                print 'We have ALREADY bets on market', \
-                                market_id, 'path-',  market[1]['menu_path']
+                                self.check_strategy(market_id, market[1]['menu_path'])
+                            else :    
+                                print 'Something happened with funds', funds 
+                                sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                        else : 
+                            print 'We have ALREADY bets on market', \
+                            market_id, 'path-',  market[1]['menu_path']
                                     
                 # check if session is still OK
                 if self.no_session:
@@ -452,7 +338,6 @@ class SimpleBot(object):
                     s += '---------------------------------------------'
                     print s
             self.conn.commit()
-            print 'COMMIT'
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'
