@@ -1,0 +1,13 @@
+[TEST]
+url: https://media.atg.se/infostub/PartnerInfoEmulator/version8?WSDL
+username: xyz
+password: xyz
+datadir: data
+db_url: postgresql://user:password@localhost:5432/db
+
+[PRODUCTION]
+url:
+username:
+password:
+datadir:
+db_url: 
