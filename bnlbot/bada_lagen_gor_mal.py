@@ -16,12 +16,13 @@ import socket
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.65
+    MIN_ODDS = 1.7
     MAX_ODDS = 20.04
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
+    SLEEP_BETWEEN_TURNS = 5.0
     conn = None
     
     def __init__(self):
@@ -152,18 +153,21 @@ class SimpleBot(object):
         markets = self.api.get_all_markets(
               events = ['1','14'],
               hours = self.HOURS_TO_MATCH_START,
-              countries = None)
-#              countries = ['GBR'])
+              countries = ['GBR'])
+#              countries = None)
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
+                if market['menu_path'].find('Barclays Premier League') > 0 and market['market_name'].find('da lagen g') > 0:
+                    print 'market name', market['market_name'],market['market_status'], market['market_type'],market['no_of_winners']
                 markets.remove(market)
-                if (    market['market_name'] == 'Båda lagen gör mål?' # Redcard
+                if (    market['market_name'].find('da lagen g') > 0 # Båda lagen gör mål
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
+                    and market['menu_path'].find('Barclays Premier League') > 0 # bara engelsk premier league
 #                    and market['bet_delay'] > 0 # started
                     ):
                     # calc seconds til start of game
@@ -200,6 +204,9 @@ class SimpleBot(object):
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
                 my_market = Market(market_id, self.conn)                
+                if prices['in_play_delay'] :                 
+                    my_market.try_set_gamestart(prices['in_play_delay'])                       
+
                 bets = []
                 back_price = None 
                 selection = None
@@ -212,8 +219,11 @@ class SimpleBot(object):
                 except:
                     print '#############################################'
                     print 'prices missing some fields, do return'
-                    print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
-                    print 'Avspark ', my_market.ts
+                    try :
+                        print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
+                        print 'Avspark ', my_market.ts
+                    except : 
+                        print 'exception in my_market'                              
                     print 'nu      ', datetime.datetime.now()
                     print '#############################################'
                     return
@@ -224,19 +234,24 @@ class SimpleBot(object):
                     print 'Failed to get better time, skipping', \
                        my_market.home_team_name, ' - ', \
                        my_market.away_team_name
+                    actual_time_in_game = -1   
                        
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                print 'odds utvisning - ja : ', odds_yes
-                print 'odds utvisning - nej : ', odds_no
+                print 'odds båda gör mål      - ja : ', odds_yes
+                print 'odds båda gör INTE mål - nej : ', odds_no
                 print 'Tid förflutet', actual_time_in_game
-                print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
+                try :
+                    print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
+                except : 
+                        print 'exception in my_market'      
+                        
                 bet_category = None
 
                 #both scores
                 if odds_yes and \
                    odds_yes >= self.MIN_ODDS and \
-                   odds_yes <= self.MAX_ODDS and :
+                   odds_yes <= self.MAX_ODDS  :
 
                     back_price = odds_yes
                     selection = selection_yes
@@ -309,8 +324,6 @@ class SimpleBot(object):
                         self.insert_market(market)
                         # do we have bets on this market?
                         market_id = market[1]['market_id']
-                        my_market = Market(market_id, self.conn)
-                        my_market.try_set_gamestart()                       
                         mu_bets = self.api.get_mu_bets(market_id)
                         if mu_bets == 'NO_RESULTS':
                             print 'We have no bets on market', market_id, \
@@ -330,6 +343,7 @@ class SimpleBot(object):
                             print 'We have ALREADY bets on market', \
                             market_id, 'path-',  market[1]['menu_path']
                                     
+                        self.conn.commit()
                 # check if session is still OK
                 if self.no_session:
                     login_status = self.login(uname, pword, prod_id, vend_id)
@@ -337,7 +351,8 @@ class SimpleBot(object):
                          str(login_status) + '\n'
                     s += '---------------------------------------------'
                     print s
-            self.conn.commit()
+            print 'sleep between turns', self.SLEEP_BETWEEN_TURNS, 's'
+            sleep(self.SLEEP_BETWEEN_TURNS)
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'
