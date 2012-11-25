@@ -82,9 +82,10 @@ class Market(object):
                 return None
         
         
-    def try_set_gamestart(self) :
+    def try_set_gamestart(self, in_play_delay) :
         try :
-            if not self.ts and int(self.bet_delay) > 0 :
+            # try set game start time, if not set
+            if int(in_play_delay) > 0 :
                 cur = self.conn.cursor()
                 cur.execute("update MARKETS set TS = %s where TS is null and MARKET_ID = %s ", (datetime.datetime.now(), self.market_id))
                 cur.close()

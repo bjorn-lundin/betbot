@@ -29,6 +29,7 @@ class SimpleBot(object):
     HIGH_ODDS_DIFF = 30.0
     conn = None
     HALV_TIME_PASSED_TIME = 42
+    SLEEP_BETWEEN_TURNS = 5.0
     
     def __init__(self):
         rps = 1/4.0 # Refreshes Per Second
@@ -205,7 +206,11 @@ class SimpleBot(object):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                my_market = Market(market_id, self.conn)                
+                my_market = Market(market_id, self.conn)    
+
+                if prices['in_play_delay'] :                 
+                    my_market.try_set_gamestart(prices['in_play_delay'])                       
+                
                 bets = []
                 back_price = None 
                 selection = None
@@ -218,8 +223,11 @@ class SimpleBot(object):
                 except:
                     print '#############################################'
                     print 'prices missing some fields, do return'
-                    print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
-                    print 'Avspark ', my_market.ts
+                    try :
+                        print 'time in game', int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
+                        print 'Avspark ', my_market.ts
+                    except : 
+                        print 'exception in my_market'                              
                     print 'nu      ', datetime.datetime.now()
                     print '#############################################'
                     return
@@ -317,8 +325,6 @@ class SimpleBot(object):
                         self.insert_market(market)
                         # do we have bets on this market?
                         market_id = market[1]['market_id']
-                        my_market = Market(market_id, self.conn)
-                        my_market.try_set_gamestart()                       
                         mu_bets = self.api.get_mu_bets(market_id)
                         if mu_bets == 'NO_RESULTS':
                             print 'We have no bets on market', market_id, \
@@ -337,7 +343,9 @@ class SimpleBot(object):
                         else : 
                             print 'We have ALREADY bets on market', \
                             market_id, 'path-',  market[1]['menu_path']
-                                    
+                            
+                        self.conn.commit()
+            
                 # check if session is still OK
                 if self.no_session:
                     login_status = self.login(uname, pword, prod_id, vend_id)
@@ -345,7 +353,8 @@ class SimpleBot(object):
                          str(login_status) + '\n'
                     s += '---------------------------------------------'
                     print s
-            self.conn.commit()
+            print 'sleep between turns', self.SLEEP_BETWEEN_TURNS, 's'
+            sleep(self.SLEEP_BETWEEN_TURNS)
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'
