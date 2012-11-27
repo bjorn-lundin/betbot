@@ -161,11 +161,11 @@ class SimpleBot(object):
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
                 markets.remove(market)
-                market_ok = market['menu_path'].find('Bundesliga') > 0 and market['market_name'].find('Udda eller j') > 0
+                market_ok = market['menu_path'].find('Bundesliga') > 0 and market['market_name'].find('Udda eller j') > -1
                 if not market_ok :
-                    market_ok = market['menu_path'].find('Clydesdale Bank Premier') > 0 and market['market_name'].find('Udda eller j') > 0
+                    market_ok = market['menu_path'].find('Clydesdale Bank Premier') > 0 and market['market_name'].find('Udda eller j') > -1
                 if not market_ok :
-                    market_ok = market['menu_path'].find('Ligue 1 Orange') > 0 and market['market_name'].find('Udda eller j') > 0
+                    market_ok = market['menu_path'].find('Ligue 1 Orange') > 0 and market['market_name'].find('Udda eller j') > -1
                 
                 if ( market_ok   
                     and market['market_status'] == 'ACTIVE' # market is active
