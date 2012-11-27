@@ -160,7 +160,7 @@ class SimpleBot(object):
             # sort markets by start time + filter
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
-                if market['menu_path'].find('Barclays Premier League') > 0 and market['market_name'].find('da lagen g') > 0:
+                if market['menu_path'].find('Barclays Premier League') > 0 and market['market_name'].find('da lagen g') > -1:
                     print 'market name', market['market_name'],market['market_status'], market['market_type'],market['no_of_winners']
                 markets.remove(market)
                 if (    market['market_name'].find('da lagen g') > 0 # Båda lagen gör mål
