@@ -1,0 +1,152 @@
+
+
+--antal matcher per liga och säsong med 'båda gör mål'
+select 
+  league, 
+  season, 
+  count('a') 
+from score_statistics
+where 
+  home_goals > 0
+  and away_goals > 0 
+group by 
+  league,
+  season 
+order by 
+  league,
+  season
+;
+
+       league       |  season   | count 
+--------------------+-----------+-------
+ allsvenskan        | 2011/2012 |   116
+ allsvenskan        | 2012/2013 |   134
+ bundesliga         | 2011/2012 |   167
+ bundesliga         | 2012/2013 |    57
+ eredivise          | 2011/2012 |   168
+ eredivise          | 2012/2013 |    67
+ la_liga            | 2011/2012 |   192
+ la_liga            | 2012/2013 |    67
+ ligue_1            | 2011/2012 |   200
+ ligue_1            | 2012/2013 |    70
+ premier_leauge_eng | 2011/2012 |   201
+ premier_leauge_eng | 2012/2013 |    73
+ premier_leauge_sco | 2011/2012 |    98
+ premier_leauge_sco | 2012/2013 |    44
+ serie_a            | 2011/2012 |   181
+ serie_a            | 2012/2013 |    68
+
+
+
+--antal matcher per liga och säsong
+select 
+  league, 
+  season, 
+  count('a') 
+from score_statistics
+group by 
+  league,
+  season 
+order by 
+  league,
+  season
+;
+      league       |  season   | count 
+--------------------+-----------+-------
+ allsvenskan        | 2011/2012 |   240
+ allsvenskan        | 2012/2013 |   240
+ bundesliga         | 2011/2012 |   306
+ bundesliga         | 2012/2013 |   108
+ eredivise          | 2011/2012 |   306
+ eredivise          | 2012/2013 |   117
+ la_liga            | 2011/2012 |   380
+ la_liga            | 2012/2013 |   120
+ ligue_1            | 2011/2012 |   380
+ ligue_1            | 2012/2013 |   129
+ premier_leauge_eng | 2011/2012 |   380
+ premier_leauge_eng | 2012/2013 |   119
+ premier_leauge_sco | 2011/2012 |   228
+ premier_leauge_sco | 2012/2013 |    77
+ serie_a            | 2011/2012 |   380
+ serie_a            | 2012/2013 |   130
+
+
+-- avg summa mål i match per säsong och liga
+select 
+  league, 
+  season, 
+  avg(home_goals + away_goals) 
+from score_statistics
+group by 
+  league,
+  season 
+order by 
+  league,
+  season
+;
+
+      league       |  season   |        avg         
+--------------------+-----------+--------------------
+ allsvenskan        | 2011/2012 | 2.61
+ allsvenskan        | 2012/2013 | 2.70
+ bundesliga         | 2011/2012 | 2.85
+ bundesliga         | 2012/2013 | 2.92
+ eredivise          | 2011/2012 | 3.25
+ eredivise          | 2012/2013 | 3.21
+ la_liga            | 2011/2012 | 2.76
+ la_liga            | 2012/2013 | 2.95
+ ligue_1            | 2011/2012 | 2.51
+ ligue_1            | 2012/2013 | 2.68
+ premier_leauge_eng | 2011/2012 | 2.80
+ premier_leauge_eng | 2012/2013 | 2.87
+ premier_leauge_sco | 2011/2012 | 2.63
+ premier_leauge_sco | 2012/2013 | 2.76
+ serie_a            | 2011/2012 | 2.55
+ serie_a            | 2012/2013 | 2.69
+(16 rows)
+
+
+
+
+-- summa mål per match 
+
+-- (select count('*') from score_statistics b where a.league=b.league and a.season=b.season)
+
+select 
+  league,
+  season,
+  away_goals + home_goals 
+from score_statistics 
+group by
+  league,
+  season
+having 
+  away_goals + home_goals = 0 or 
+  away_goals + home_goals = 2 or
+  away_goals + home_goals = 4 or
+  away_goals + home_goals = 6 or
+  away_goals + home_goals = 8 or
+  away_goals + home_goals = 10 or
+  away_goals + home_goals = 12 or
+  away_goals + home_goals = 14 or
+  away_goals + home_goals = 16
+order by 
+  league,
+  season
+;
+
+
+
+select 
+  league,
+  season,
+  away_goals + home_goals 
+from score_statistics 
+order by 
+  league,
+  season
+;
+
+
+
+

@@ -16,19 +16,13 @@ import socket
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.20
-    MAX_ODDS = 2.04
+    MIN_ODDS = 1.90
+    MAX_ODDS = 2.50
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
-    HALV_TIME_ZERO_GOAL_LEAD_TIME = 43
-    HALV_TIME_ONE_GOAL_LEAD_TIME = 40
-    HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 35
-    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 25
-    HIGH_ODDS_DIFF = 30.0
     conn = None
-    HALV_TIME_PASSED_TIME = 42
     SLEEP_BETWEEN_TURNS = 5.0
     
     def __init__(self):
@@ -167,7 +161,13 @@ class SimpleBot(object):
             for market in markets[:]:
             # loop through a COPY of markets as we're modifying it on the fly...
                 markets.remove(market)
-                if (    market['market_name'] == 'Utvisning?' # Redcard
+                market_ok = market['menu_path'].find('Bundesliga') > 0 and market['market_name'].find('Udda eller j') > 0
+                if not market_ok :
+                    market_ok = market['menu_path'].find('Clydesdale Bank Premier') > 0 and market['market_name'].find('Udda eller j') > 0
+                if not market_ok :
+                    market_ok = market['menu_path'].find('Ligue 1 Orange') > 0 and market['market_name'].find('Udda eller j') > 0
+                
+                if ( market_ok   
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
@@ -216,10 +216,10 @@ class SimpleBot(object):
                 selection = None
                 
                 try :
-                    odds_yes      = prices['runners'][0]['back_prices'][0]['price']
-                    selection_yes = prices['runners'][0]['selection_id']
-                    odds_no       = prices['runners'][1]['back_prices'][0]['price']
-                    selection_no  = prices['runners'][1]['selection_id']
+                    odds_odd        = prices['runners'][0]['back_prices'][0]['price']
+                    selection_odd   = prices['runners'][0]['selection_id']
+                    odds_even       = prices['runners'][1]['back_prices'][0]['price']
+                    selection_even  = prices['runners'][1]['selection_id']
                 except:
                     print '#############################################'
                     print 'prices missing some fields, do return'
@@ -232,31 +232,23 @@ class SimpleBot(object):
                     print '#############################################'
                     return
 
-                try :
-                    actual_time_in_game = int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
-                except :
-                    print 'Failed to get better time, skipping', \
-                       my_market.home_team_name, ' - ', \
-                       my_market.away_team_name
-                    return
                        
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                print 'odds utvisning - ja : ', odds_yes
-                print 'odds utvisning - nej : ', odds_no
+                print 'odds Udda : ', odds_odd
+                print 'odds Jämnt: ', odds_even
                 print 'Tid förflutet', actual_time_in_game
                 print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
                 bet_category = None
 
-                #no sending off
-                if odds_no and \
-                   odds_no >= self.MIN_ODDS and \
-                   odds_no <= self.MAX_ODDS and \
-                   actual_time_in_game >= self.HALV_TIME_PASSED_TIME :
+                #jämnt resultat
+                if odds_even and \
+                   odds_even >= self.MIN_ODDS and \
+                   odds_even <= self.MAX_ODDS :
 
-                    back_price = odds_no
-                    selection = selection_no
-                    bet_category = 'SENDING_OFF_AFTER_HALV_TIME_PASSED_TIME'
+                    back_price = odds_even
+                    selection = selection_even
+                    bet_category = 'SCORE_SUM_IS_EVEN'
 
 
                 if back_price and selection:
@@ -315,7 +307,7 @@ class SimpleBot(object):
                 if len(markets) == 0:
                     # no markets found...
                     print datetime.datetime.now(), \
-                         'UTVISNING, no markets found. Sleep', \
+                         'JÄMN SUMMA MÅL, no markets found. Sleep', \
                          self.DELAY_BETWEEN_TURNS_NO_MARKETS, 's.'
                     sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) #bandwidth saver
                 else:
