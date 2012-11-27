@@ -179,3 +179,22 @@ create table unidentified_teams (
   primary key(id)
 );
 CREATE UNIQUE INDEX unidentified_teams_name ON unidentified_teams (team_name);
+
+
+
+create sequence score_statistics_serial;
+
+create table score_statistics (
+  id    integer default nextval('score_statistics_serial'),
+  league varchar not null,
+  season varchar not null,
+  event_date timestamp,
+  home_team varchar not null,
+  away_team varchar not null,
+  home_goals int not null,
+  away_goals int not null,
+  primary key(id)
+);
+
+
+
