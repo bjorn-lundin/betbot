@@ -101,8 +101,9 @@ create table teams (
   primary key (team_id)  
 );  
 
+create sequence xml_soccer_id_serial;
 create table games (
-  xml_soccer_id integer,
+  xml_soccer_id integer default nextval('xml_soccer_id_serial'),
   kickoff timestamp,
   home_team_id integer,
   away_team_id integer,
@@ -117,6 +118,9 @@ create table team_aliases (
   team_alias varchar,
   primary key(team_id,team_alias)
 );
+
+CREATE UNIQUE INDEX team_aliases_team_alias ON team_aliases (team_alias);
+
 
 create table test_timestamp (
   id integer,
