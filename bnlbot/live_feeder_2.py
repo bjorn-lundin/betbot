@@ -299,7 +299,8 @@ class Live_Feeder(object):
         signal.alarm(60)  # 1 minute
         
         self.LAST_TIMESTAMP = str(time())
-        self.my_list = subprocess.check_output("lynx \
+        try : 
+            self.my_list = subprocess.check_output("lynx \
                                                 -dump \
                                                 --image_links=0 \
                                                 --hiddenlinks=ignore \
@@ -309,6 +310,10 @@ class Live_Feeder(object):
                                                 '?tmp=' + \
                                                 self.LAST_TIMESTAMP, \
                                                 shell=True)
+        except subprocess.CalledProcessError :
+            signal.alarm(0)
+            raise             
+                                                
         #reset the alarm
         signal.alarm(0)
         self.lines = self.my_list.split("\n")

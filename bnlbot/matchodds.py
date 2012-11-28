@@ -417,6 +417,7 @@ class SimpleBot(object):
         login_status = self.login(uname, pword, prod_id, vend_id)
         while login_status == 'OK':
             # get list of markets starting soon
+            print '-----------------------------------------------------------'
             markets = self.get_markets()
             if type(markets) is list:
                 if len(markets) == 0:
