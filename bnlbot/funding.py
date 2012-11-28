@@ -2,6 +2,7 @@
 """ The Funding Object """
 
 import sys
+from time import sleep, time
 
 
 class Funding(object):
