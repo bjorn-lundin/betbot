@@ -22,14 +22,15 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
     HALV_TIME_ZERO_GOAL_LEAD_TIME = 44
-    HALV_TIME_ONE_GOAL_LEAD_TIME = 41
+    HALV_TIME_ONE_GOAL_LEAD_TIME = 43
     HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 37
     HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 28
     HIGH_ODDS_DIFF = 30.0
+    DELAY_BETWEEN_TURNS = 5.0
     conn = None
     
     def __init__(self):
-        rps = 1/4.0 # Refreshes Per Second
+        rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
@@ -72,6 +73,26 @@ class SimpleBot(object):
             away_team = list_teams[1]
         except :
             away_team = None        
+
+        game_id = None
+        
+        cur8 = self.conn.cursor()
+        cur8.execute("select GAMES.XML_SOCCER_ID from \
+                MARKETS, \
+                GAMES, \
+                TEAM_ALIASES HOME_ALIASES, \
+                TEAM_ALIASES AWAY_ALIASES \
+                where MARKETS.HOME_TEAM = HOME_ALIASES.TEAM_ALIAS \
+                and   MARKETS.AWAY_TEAM = AWAY_ALIASES.TEAM_ALIAS \
+                and   GAMES.HOME_TEAM_ID = HOME_ALIASES.TEAM_ID \
+                and   GAMES.AWAY_TEAM_ID = AWAY_ALIASES.TEAM_ID \
+                and   MARKETS.MARKET_ID = %s", (m['market_id'],))
+        row = cur8.fetchone()
+        if cur8.rowcount >= 1 :
+            game_id = row[0]
+                        
+        cur8.close()
+
         
         cur7 = self.conn.cursor()
         cur7.execute("SAVEPOINT B")
@@ -100,10 +121,10 @@ class SimpleBot(object):
                        m['market_name'],   m['market_status'], \
                        m['event_date'],    m['no_of_runners'],   \
                        m['total_matched'], m['no_of_winners'],
-                       home_team, away_team, None, None))
+                       home_team, away_team, None, game_id))
             cur.close()
-            print 'insert into markets ', m['market_id']
-            print 'insert into markets ', home_team, '-', away_team
+#            print 'insert into markets ', m['market_id']
+#            print 'insert into markets ', home_team, '-', away_team
             
         except psycopg2.IntegrityError:
             cur.close()
@@ -111,6 +132,14 @@ class SimpleBot(object):
             cur6.execute("ROLLBACK TO SAVEPOINT B" )
             cur6.close()
 #            print 'ROLLBACK on insert into markets ', home_team, '-', away_team
+            if game_id :
+                cur7 = self.conn.cursor()
+                cur7.execute("update MARKETS set XML_SOCCER_ID = %s \
+                              where MARKET_ID = %s \
+                              and XML_SOCCER_ID is null", 
+                              (game_id, m['market_id']))
+                cur7.close()
+        
         
         
         for team in list_teams :
@@ -135,7 +164,7 @@ class SimpleBot(object):
                     cur5.execute("ROLLBACK TO SAVEPOINT A" )
                     cur5.close()
                     
-        print 'insert into markets ', m['market_id'], 'done'
+#        print 'insert into markets ', m['market_id'], 'done'
                                         
 ############################# end insert_market
         
@@ -164,8 +193,8 @@ class SimpleBot(object):
         markets = self.api.get_all_markets(
               events = ['1','14'],
               hours = self.HOURS_TO_MATCH_START,
-#              countries = None)
-              countries = ['GBR'])
+              countries = None)
+#              countries = ['GBR'])
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
@@ -176,15 +205,14 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
-#                    and market['bet_delay'] > 0 # started -
-#                     make start loop checkif started instead
+                    and market['bet_delay'] > 0 # started -
                     ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds
-                    print 'market', market['market_id'], market['menu_path'], \
-                       'will start in', sec_til_start, 'seconds Halvtid'
+#                    print 'market', market['market_id'], market['menu_path'], \
+#                       'will start in', sec_til_start, 'seconds Halvtid'
                     temp = [sec_til_start, market]
                     markets.append(temp)
             markets.sort() # sort into time order (earliest game first)
@@ -225,16 +253,15 @@ class SimpleBot(object):
                           'away_team_id', my_market.away_team_id
                     return    
 
-                try :
-                    actual_time_in_game = int((datetime.datetime.now() - my_market.ts).total_seconds()/60)
-                    if actual_time_in_game > 47 : 
-                        print 'Halftime, to late for bets (47 min)'
-                        print 'Tid förflutet', my_game.time_in_game
-                        print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
-                        return
-                    my_game.time_in_game = actual_time_in_game
-                except :
-                    print 'Failed to get better time, using xmlsoccer time in game'
+                try:
+                    my_time = int(my_game.time_in_game)
+                except ValueError:
+                    my_time = 1000                         
+
+                if my_time > 47 : 
+                    print 'Halftime, to late for bets (47 min)'
+                    print 'Tid förflutet', my_game.time_in_game
+                    return
                     
                     
                 try :
@@ -245,23 +272,24 @@ class SimpleBot(object):
                     selection_away_victory = prices['runners'][1]['selection_id']
                     selection_draw = prices['runners'][2]['selection_id']
                 except:
-                    print '#############################################3'
-                    print 'prices missing some fields, do return'
-                    print prices
-                    print '#############################################3'
+                    print '#############################################'
+                    print 'prices missing some fields, do return', \
+                           my_market.home_team_name, '-', \
+                           my_market.away_team_name
+#                    print prices
+                    print '#############################################'
                     return
 
 
                     
                 print 'game :' , my_market.home_team_name, ' - ', \
                        my_market.away_team_name
-                print 'odds hemmaseger : ', odds_home_victory
-                print 'odds bortaseger : ', odds_away_victory
-                print 'odds oavgjort   : ', odds_draw
-                print 'Hemma mål', my_game.home_goals
-                print 'Borta mål', my_game.away_goals
-                print 'Tid förflutet', my_game.time_in_game
-                print 'Avspark ', my_market.ts, 'nu', datetime.datetime.now()
+                print 'odds hemmaseger :', odds_home_victory
+                print 'odds bortaseger :', odds_away_victory
+                print 'odds oavgjort   :', odds_draw
+                print 'Hemma           :', my_game.home_goals
+                print 'Borta           :', my_game.away_goals
+                print 'Tid             :', my_game.time_in_game
                 
                 bet_category = None
 
@@ -272,7 +300,7 @@ class SimpleBot(object):
                    odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
                    my_game.away_goals - my_game.home_goals  >= 2 and \
                    my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
+                   int(my_game.time_in_game) >= self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
@@ -285,7 +313,7 @@ class SimpleBot(object):
                      odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
                      my_game.home_goals - my_game.away_goals  >= 2 and \
                      my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
+                     int(my_game.time_in_game) >= self.HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF :
 
                     back_price = odds_home_victory
                     selection = selection_home_victory
@@ -298,7 +326,7 @@ class SimpleBot(object):
                    odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
                    my_game.away_goals - my_game.home_goals  >= 1 and \
                    my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
+                   int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
@@ -311,7 +339,7 @@ class SimpleBot(object):
                      odds_home_victory - odds_away_victory > self.HIGH_ODDS_DIFF and \
                      my_game.home_goals - my_game.away_goals  >= 1 and \
                      my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
+                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
 
                     back_price = odds_home_victory
                     selection = selection_home_victory
@@ -322,7 +350,7 @@ class SimpleBot(object):
                      odds_home_victory >= self.MIN_ODDS and \
                      my_game.home_goals - my_game.away_goals  >= 1 and \
                      my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
+                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
                    
                     back_price = odds_home_victory
                     selection = selection_home_victory
@@ -333,7 +361,7 @@ class SimpleBot(object):
                      odds_away_victory >= self.MIN_ODDS and \
                      my_game.away_goals - my_game.home_goals  >= 1 and \
                      my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ONE_GOAL_LEAD_TIME :
+                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
 
                     back_price = odds_away_victory
                     selection = selection_away_victory
@@ -344,7 +372,7 @@ class SimpleBot(object):
                      odds_draw >= self.MIN_ODDS and \
                      my_game.home_goals - my_game.away_goals  == 0 and \
                      my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) > self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
+                     int(my_game.time_in_game) >= self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
 
                     back_price = odds_draw
                     selection = selection_draw
@@ -367,11 +395,12 @@ class SimpleBot(object):
                         'asianLineId': '0'
                         }
                     bets.append(bet)
-                    print datetime.datetime.now(), 'bet', bet, 'path', path
+#                    print datetime.datetime.now(), 'bet', bet, 'path', path
                 else:
                     print datetime.datetime.now(),  \
                          'bad odds or time in game -> no bet on market', \
-                          market_id, 'path', path
+                          market_id, my_market.home_team_name, '-', \
+                                 my_market.away_team_name
                 # place bets (if any have been created)
                 if bets:
 #                    resp = 'bnl-no-bet'
@@ -413,22 +442,23 @@ class SimpleBot(object):
                           'markets. Checking strategy...'
                     for market in markets:
                         market_id = market[1]['market_id']
-                        print 'will insert market, market_id', market_id, 'path', market[1]['menu_path']
+#                        print 'will insert market, market_id', market_id, 'path', market[1]['menu_path']
                         self.insert_market(market)
-                        print 'has inserted market, market_id', market_id, 'path', market[1]['menu_path']
+#                        print 'has inserted market, market_id', market_id, 'path', market[1]['menu_path']
                         # do we have bets on this market?
                         my_market = Market(market_id, self.conn)
-                        my_market.try_set_gamestart()
+                        my_market.try_set_gamestart(market[1]['bet_delay'])
                         
                         if not my_market.market_in_xmlfeed() :
                             print datetime.datetime.now(), \
                                   'market not in xmlfeed', \
-                                   market[1]['menu_path']
+                                   my_market.home_team_name, '-', \
+                                   my_market.away_team_name
                         else :
                             mu_bets = self.api.get_mu_bets(market_id)
                             if mu_bets == 'NO_RESULTS':
-                                print 'We have no bets on market', market_id, \
-                                        'path-', market[1]['menu_path']
+#                                print 'We have no bets on market', market_id, \
+#                                        'path-', market[1]['menu_path']
                                 # we have no bets on this market...
                                 self.do_throttle()
                                 funds = Funding(self.api)
@@ -442,8 +472,11 @@ class SimpleBot(object):
                                     sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
                             else : 
                                 print 'We have ALREADY bets on market', \
-                                market_id, 'path-',  market[1]['menu_path']
+                                       market_id,  \
+                                       my_market.home_team_name, '-', \
+                                       my_market.away_team_name
                                     
+                        self.conn.commit()
                 # check if session is still OK
                 if self.no_session:
                     login_status = self.login(uname, pword, prod_id, vend_id)
@@ -451,8 +484,8 @@ class SimpleBot(object):
                          str(login_status) + '\n'
                     s += '---------------------------------------------'
                     print s
-            self.conn.commit()
-            print 'COMMIT'
+            print 'sleeping', self.DELAY_BETWEEN_TURNS, 's between turns'
+            sleep(self.DELAY_BETWEEN_TURNS)
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'

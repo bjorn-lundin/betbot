@@ -10,7 +10,15 @@ import os
 import sys
 import socket
 import subprocess
- 
+import signal
+    
+    
+    
+class Alarm(Exception):
+    pass
+
+def alarm_handler(signum, frame):
+    raise Alarm    
     
 ###########################################################                    
 
@@ -63,6 +71,12 @@ class Game(object):
         elif len(line) >= 6 and line.find('Postp.') > -1 :
 #            print 'Postponed', '|' + line + '|'
             return
+        elif len(line) >= 4 and line.find('Pen.') > -1 :
+#            print 'Postponed', '|' + line + '|'
+            return
+        elif len(line) >= 5 and line.find('Aban.') > -1 :
+#            print 'Postponed', '|' + line + '|'
+            return
             
         else :
             try :
@@ -112,21 +126,56 @@ class Game(object):
         cur2.execute("select TEAM_ID from TEAM_ALIASES \
                       where TEAM_ALIAS = %s", (self.home_team,))
         row = cur2.fetchone()
-        if cur2.rowcount == 1 :
+        rc = cur2.rowcount
+        cur2.close()
+
+        if rc == 1 :
             self.home_team_id = row[0]
         else :
             print self.home_team, 'is missing in TEAM_ALIASES'
-        cur2.close()
+            cur20 = self.conn.cursor()
+            cur20.execute("SAVEPOINT A")
+            cur20.close()
+            try  :
+                cur21 = self.conn.cursor()
+                cur21.execute("insert into UNIDENTIFIED_TEAMS \
+                             (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
+                             (self.home_team, 'UNK'))
+                cur21.close()
+            except psycopg2.IntegrityError:
+                cur22 = self.conn.cursor()
+                cur22.execute("ROLLBACK TO SAVEPOINT A" )
+                cur22.close()
+        
+        
         
         cur3 = self.conn.cursor()
         cur3.execute("select TEAM_ID from TEAM_ALIASES \
                       where TEAM_ALIAS = %s", (self.away_team,))
         row = cur3.fetchone()
-        if cur3.rowcount == 1 :
+        rc = cur3.rowcount
+        cur3.close()
+        
+        if rc == 1 :
             self.away_team_id = row[0] 
         else :
             print self.away_team, 'is missing in TEAM_ALIASES'
-        cur3.close()
+            cur10 = self.conn.cursor()
+            cur10.execute("SAVEPOINT A")
+            cur10.close()
+            try  :
+                cur11 = self.conn.cursor()
+                cur11.execute("insert into UNIDENTIFIED_TEAMS \
+                             (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
+                             (self.away_team, 'UNK'))
+                cur11.close()
+            except psycopg2.IntegrityError:
+                cur12 = self.conn.cursor()
+                cur12.execute("ROLLBACK TO SAVEPOINT A" )
+                cur12.close()
+            
+            
+            
 
         # now ,get the match id
         cur4 = self.conn.cursor()
@@ -137,7 +186,7 @@ class Game(object):
         if cur4.rowcount == 1 :
             self.id = row[0]
         else :
-            print self.home_team, 'is missing in TEAM_ALIASES'
+            print self.home_team, self.away_team, 'are missing in GAMES'
         cur4.close()
 
 
@@ -173,8 +222,18 @@ class Game(object):
         cur.execute("select * from GAMES where HOME_TEAM_ID = %s \
                      and AWAY_TEAM_ID = %s", \
                      (self.home_team_id, self.away_team_id))
+                     
+        if self.home_team_id is None :
+            return
+        if self.away_team_id is None :
+            return
+        if self.home_goals == '?' :
+            self.home_goals = 0
+        if self.away_goals == '?' :
+            self.away_goals = 0
+                
         if cur.rowcount == 0 :
-            print 'insert Game', self.id
+            print 'insert Game', self.id, self.home_team, ' - ', self.away_team
             cur.execute("insert into GAMES ( \
                         KICKOFF, HOME_TEAM_ID, \
                         AWAY_TEAM_ID, TIME_IN_GAME, \
@@ -185,7 +244,8 @@ class Game(object):
               self.away_team_id, self.time_in_game, \
               self.home_goals, self.away_goals))
         else : 
-            print 'update Game', self.id
+            print 'update Game', self.id, self.home_team, ' - ', self.away_team, self.time_in_game, \
+                  '[', self.home_goals, '-', self.away_goals, ']'
             cur.execute("update GAMES \
                          set TIME_IN_GAME = %s , \
                          HOME_GOALS = %s , AWAY_GOALS = %s \
@@ -193,7 +253,7 @@ class Game(object):
              (self.time_in_game, self.home_goals, \
               self.away_goals, self.id))
              
-        print 'insert Game into stats', self.id
+#        print 'insert Game into stats', self.id
         cur2 = self.conn.cursor()
         cur2.execute("insert into GAMES_STATS ( \
                         XML_SOCCER_ID, KICKOFF, HOME_TEAM_ID, \
@@ -233,6 +293,11 @@ class Live_Feeder(object):
 
     def get_feed(self): 
         """get the feed"""
+        
+
+        signal.signal(signal.SIGALRM, alarm_handler)
+        signal.alarm(60)  # 1 minute
+        
         self.LAST_TIMESTAMP = str(time())
         self.my_list = subprocess.check_output("lynx \
                                                 -dump \
@@ -244,6 +309,8 @@ class Live_Feeder(object):
                                                 '?tmp=' + \
                                                 self.LAST_TIMESTAMP, \
                                                 shell=True)
+        #reset the alarm
+        signal.alarm(0)
         self.lines = self.my_list.split("\n")
         
     def do_throttle(self):
@@ -259,7 +326,7 @@ class Live_Feeder(object):
                         break
                 my_game = Game(stripped_line, self.conn)
                 if my_game.found :
-                    my_game.print_me_nice()
+#                    my_game.print_me_nice()
                     my_game.update_db()
                     
         self.conn.commit()    
@@ -289,20 +356,13 @@ while True:
     try:
         feed.get_feed()
         feed.start() 
-    except urllib2.URLError as ex:
-        print "URLError error({0}): {1}".format(ex.errno, ex.strerror)
-        print 'Lost network. Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
-        sleep (feed.NETWORK_FAILURE_DELAY) 
 
-    except ssl.SSLError as ex:
-        print "URLError error({0}): {1}".format(ex.errno, ex.strerror)
-        print 'Lost network (ssl error). Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
+    except subprocess.CalledProcessError as ex:
+        print 'Lost network ? . Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
         sleep (feed.NETWORK_FAILURE_DELAY)
 
-    except socket.error as ex:
-        print "URLError error({0}): {1}".format(ex.errno, ex.strerror)
-        print 'Lost network (socket error). Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
-        sleep (feed.NETWORK_FAILURE_DELAY)
+    except Alarm:
+        print "Oops, feede took too long, try again next turn!"
 
     print '------------------ loop stop:', datetime.datetime.now(), '-----------------------'    
     feed.do_throttle()
