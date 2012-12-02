@@ -202,3 +202,18 @@ create table score_statistics (
 
 
 
+
+create table prospects (
+  id    integer not null ,
+  team_id    integer not null ,
+  team_name varchar not null,
+  country_code varchar,
+  eventtime timestamp without time zone default Localtimestamp not null,
+  primary key(id,team_id,team_name)
+);
+
+
+
+
+
+

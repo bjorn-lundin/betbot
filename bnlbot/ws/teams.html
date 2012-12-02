@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang='sv'>
+   <head>
+     <META http-equiv="Content-Type" content="text/html;" charset="latin1">
+     <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+     <link rel="stylesheet" type="text/css" href="teams.css" title='Default'/> 
+     <title>Unmatched teams</title>
+     <script type='text/javascript' src='teams.js' charset='ISO-8859-1'></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  </head>
+
+  <body onLoad='setup()'> 
+    <div id='unknown_team'>
+        <fieldset>
+          <legend>Lag:</legend>
+          Name: <input type="text" id='team_name' value="Arsenal">
+          Id: <input type="text" id='id_in_unknown' value="23"><br/>
+        </fieldset>
+    
+        <ul class='action'> 
+          <li class='onerow even'>
+            <a href='javascript:Associate(id_in_unknown.value, sugg_1.innerHTML )'>${name_1}<span id='sugg_1' class='accuracy'>${id_1}</span></a>
+          </li>
+          <li class='onerow'>
+            <a href='javascript:Associate(id_in_unknown.value, sugg_2.innerHTML )'>${name_2}<span id='sugg_2' class='accuracy'>${id_2}</span></a>
+          </li>
+          <li class='onerow even'>
+            <a href='javascript:Associate(id_in_unknown.value, sugg_3.innerHTML )'>${name_3}<span id='sugg_3' class='accuracy'>${id_3}</span></a>
+          </li>
+        </ul>
+        <fieldset>
+          <legend>Navigering</legend>
+          <input type="button" name='previous' value=&lt; >
+          <input type="button" name='delete' value="delete">
+          <input type="button" name='next' value=&gt; >
+        </fieldset>
+        
+        
+    </div> <!--shot-->
+
+    <div id='vars'>
+      <form id='hid'>
+       <input id='hidFromLat' type='text' class='hidden' value='' />
+       <input id='hidFromLon' type='text' class='hidden' value='' />
+       <input id='hidFromAcc' type='text' class='hidden' value='' />
+       <input id='hidToLat' type='text' class='hidden' value='' />
+       <input id='hidToLon' type='text' class='hidden' value='' />
+       <input id='hidToAcc' type='text' class='hidden' value='' />    
+      </form>
+    </div> <!--vars-->
+
+
+  </body>
+</html>
