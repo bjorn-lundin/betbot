@@ -60,8 +60,8 @@ function Trim(text) {
 }
 
 function Associate(unk_id,sugg_id) {
-  var requestString = "?action=update&unk_id="+unk_id+"&sugg_id="+sugg_id;
-  alert("start Associate" + unk_id + " + " + sugg_id + " '" + requestString + "'");
+  var requestString = "?action=true&update&unk_id="+unk_id+"&sugg_id="+sugg_id;
+//  alert("start Associate" + unk_id + " + " + sugg_id + " '" + requestString + "'");
   createRequest(requestString)  ;
-  alert("done Associate" + unk_id + " + " + sugg_id + " '" + requestString + "'");
+//  alert("done Associate" + unk_id + " + " + sugg_id + " '" + requestString + "'");
 }
