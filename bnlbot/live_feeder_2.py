@@ -114,12 +114,30 @@ class Game(object):
         vals = line.split("|")
         temp = dict(zip(keys, vals))
         
-        self.home_team = temp['home_team'].strip().lower()
-        self.away_team = temp['away_team'].strip().lower()
-        scores = temp["score"].split('-')
-        self.home_goals = scores[0]
-        self.away_goals = scores[1]
+	
+	if  temp['home_team'] :
+            self.home_team = temp['home_team'].strip().lower()
+	else:
+            self.home_team = ""
+		
+	if  temp['away_team'] :
+            self.away_team = temp['away_team'].strip().lower()
+	else:
+            self.away_team = ""
+	    
+        if temp["score"] :
+            scores = temp["score"].split('-')
+            self.home_goals = scores[0]
+            self.away_goals = scores[1]
+	else:
+            scores = ""
+           
+            self.away_goals = -1
 
+        if self.home_goals == "" : 
+            self.home_goals = -2
+        if self.away_goals == "" : 
+            self.away_goals = -2
 
         # see if we have the teams in team aliases
         cur2 = self.conn.cursor()
