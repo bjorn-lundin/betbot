@@ -115,17 +115,17 @@ class Game(object):
         temp = dict(zip(keys, vals))
         
 	
-	if  temp['home_team'] :
+	if  'home_team' in temp.keys() :
             self.home_team = temp['home_team'].strip().lower()
 	else:
             self.home_team = ""
 		
-	if  temp['away_team'] :
+	if  'away_team' in temp.keys()  :
             self.away_team = temp['away_team'].strip().lower()
 	else:
             self.away_team = ""
 	    
-        if temp["score"] :
+        if  'score' in temp.keys()   :
             scores = temp["score"].split('-')
             self.home_goals = scores[0]
             self.away_goals = scores[1]
