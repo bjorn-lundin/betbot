@@ -327,7 +327,7 @@ class SimpleBot(object):
                             if mu_bets == 'NO_RESULTS':
                                 # we have no bets on this market...
                                 self.do_throttle()
-                                funds = Funding(self.api)
+                                funds = Funding(self.api, self.log)
                                 self.do_throttle()
                                 funds.check_and_fix_funds()
                                 if funds.funds_ok:
