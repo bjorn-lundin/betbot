@@ -168,12 +168,12 @@ class SimpleBot(object):
 
                 self.log.info( 'game :' + my_market.home_team_name+ ' - ' + \
                                  my_market.away_team_name)
-                self.log.info( 'odds hemmaseger :' + odds_home_victory)
-                self.log.info( 'odds bortaseger :' + odds_away_victory)
-                self.log.info( 'odds oavgjort   :' + odds_draw)
-                self.log.info( 'Hemma           :' + my_game.home_goals)
-                self.log.info( 'Borta           :' + my_game.away_goals)
-                self.log.info( 'Tid             :' + my_game.time_in_game)
+                self.log.info( 'odds hemmaseger :' + str(odds_home_victory))
+                self.log.info( 'odds bortaseger :' + str(odds_away_victory))
+                self.log.info( 'odds oavgjort   :' + str(odds_draw))
+                self.log.info( 'Hemma           :' + str(my_game.home_goals))
+                self.log.info( 'Borta           :' + str(my_game.away_goals))
+                self.log.info( 'Tid             :' + str(my_game.time_in_game))
                 
                 bet_category = None
 
@@ -396,20 +396,23 @@ while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
     except urllib2.URLError :
-        self.log.error('Lost network. \
+        log.error('Lost network. \
                Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY) 
 
     except ssl.SSLError :
-        self.log.error( 'Lost network (ssl error). \
+        log.error( 'Lost network (ssl error). \
               Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        self.log.error( 'Lost network (socket error). \
+        log.error( 'Lost network (socket error). \
                Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
+        
+    except KeyboardInterrupt :
+        break
     
-self.log.info('Ending application')
+log.info('Ending application')
 logging.shutdown()
 
