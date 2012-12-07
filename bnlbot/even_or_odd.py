@@ -8,6 +8,7 @@ import urllib2
 import ssl
 import os
 import sys
+from db import Db
 
 from market import Market
 from funding import Funding
@@ -30,6 +31,8 @@ class SimpleBot(object):
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
+        db = Db() 
+        self.conn = db.conn 
 ############################# end __init__
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
@@ -43,92 +46,6 @@ class SimpleBot(object):
             return 'login() ERROR: INCORRECT_INPUT_PARAMETERS'
 ############################# end login
 
-
-    def insert_market(self, market):
-        m = market[1]
-        last_refresh = str(datetime.datetime.fromtimestamp(int(m['last_refresh'])/1000))
-        # extract teams from path, if possible
-        #\Fotboll\england\premier leauge\10 november\stoke - arsenal
-        #\Fotboll\england\premier leauge\10 november\stoke vs arsenal
-        #\Fotboll\england\premier leauge\10 november\stoke versus arsenal
-        # make path to list, split on '\', and use last item
-        
-        path_as_list = m['menu_path'].split('\\')
-        teams = path_as_list[len(path_as_list) -1].lower()
-        
-        teams = teams.replace(' - ','|')
-        teams = teams.replace(' v ','|')
-        teams = teams.replace(' vs ','|')
-        teams = teams.replace(' versus ','|')
-        list_teams = teams.split('|')
-        try: 
-            home_team = list_teams[0]
-        except :
-            home_team = None
-        try: 
-            away_team = list_teams[1]
-        except :
-            away_team = None        
-        
-        cur7 = self.conn.cursor()
-        cur7.execute("SAVEPOINT B")
-        cur7.close()
-        try  :
-            cur = self.conn.cursor()
-            cur.execute("insert into MARKETS ( \
-                       MARKET_ID, BSP_MARKET, \
-                       MARKET_TYPE, EVENT_HIERARCHY, \
-                       LAST_REFRESH, TURNING_IN_PLAY, \
-                       MENU_PATH, BET_DELAY, \
-                       EXCHANGE_ID, COUNTRY_CODE, \
-                       MARKET_NAME, MARKET_STATUS, \
-                       EVENT_DATE, NO_OF_RUNNERS, \
-                       TOTAL_MATCHED, NO_OF_WINNERS, \
-                       HOME_TEAM, AWAY_TEAM, \
-                       TS, XML_SOCCER_ID) \
-                       values \
-                      (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, \
-                      %s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                      (m['market_id'],     m['bsp_market'],      \
-                       m['market_type'],   m['event_hierarchy'], \
-                       last_refresh ,      m['turning_in_play'], \
-                       m['menu_path'],     m['bet_delay'], \
-                       m['exchange_id'],   m['country_code'],    \
-                       m['market_name'],   m['market_status'], \
-                       m['event_date'],    m['no_of_runners'],   \
-                       m['total_matched'], m['no_of_winners'],
-                       home_team, away_team, None, None))
-            cur.close()
-            print 'insert into markets ', m['market_id']
-            print 'insert into markets ', home_team, '-', away_team
-            
-        except psycopg2.IntegrityError:
-            cur.close()
-            cur6 = self.conn.cursor()
-            cur6.execute("ROLLBACK TO SAVEPOINT B" )
-            cur6.close()
-#            print 'ROLLBACK on insert into markets ', home_team, '-', away_team
-        
-        
-        for team in list_teams :
-            cur3 = self.conn.cursor()
-            cur3.execute("SAVEPOINT A")
-            cur3.close()
-            try  :
-                cur4 = self.conn.cursor()
-                cur4.execute("insert into UNIDENTIFIED_TEAMS \
-                             (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                             (team, m['country_code']))
-                cur4.close()
-                print 'Team not found in TEAM_ALIASES:', team
-            except psycopg2.IntegrityError:
-                cur4.close()
-                cur5 = self.conn.cursor()
-                cur5.execute("ROLLBACK TO SAVEPOINT A" )
-                cur5.close()
-                                                            
-############################# end insert_market
-        
 
     def insert_bet(self, bet, resp, bet_type):
         print 'insert bet', bet, resp
@@ -197,7 +114,7 @@ class SimpleBot(object):
 ############################# end do_throttle
 
 
-    def check_strategy(self, market_id = '', path=''):
+    def check_strategy(self, market_id):
         """check market for suitable bet"""
         if market_id:
             # get market prices
@@ -206,10 +123,7 @@ class SimpleBot(object):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                my_market = Market(market_id, self.conn)    
-
-                if prices['in_play_delay'] :                 
-                    my_market.try_set_gamestart(prices['in_play_delay'])                       
+                my_market = Market(self.conn, market_id = market_id)    
                 
                 bets = []
                 back_price = None 
@@ -314,27 +228,32 @@ class SimpleBot(object):
                     print datetime.datetime.now(), 'Found', len(markets), \
                           'markets. Checking strategy...'
                     for market in markets:
-                        self.insert_market(market)
-                        # do we have bets on this market?
-                        market_id = market[1]['market_id']
-                        mu_bets = self.api.get_mu_bets(market_id)
-                        if mu_bets == 'NO_RESULTS':
-                            print 'We have no bets on market', market_id, \
-                                    'path-', market[1]['menu_path']
-                            # we have no bets on this market...
-                            self.do_throttle()
-                            funds = Funding(self.api)
-                            self.do_throttle()
-                            funds.check_and_fix_funds()
-                            if funds.funds_ok:
+                        my_market = Market(self.conn, market_dict = market[1])
+                        my_market.insert()
+                        my_market.try_set_gamestart()
+                        if not my_market.market_in_xmlfeed() :
+                            print datetime.datetime.now(), 'market not in xmlfeed: ', \
+                                  my_market.home_team_name, '-', \
+                                  my_market.away_team_name
+                        else :
+                            mu_bets = self.api.get_mu_bets(my_market.market_id)
+                            if mu_bets == 'NO_RESULTS':
+                                # we have no bets on this market...
                                 self.do_throttle()
-                                self.check_strategy(market_id, market[1]['menu_path'])
-                            else :    
-                                print 'Something happened with funds', funds 
-                                sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
-                        else : 
-                            print 'We have ALREADY bets on market', \
-                            market_id, 'path-',  market[1]['menu_path']
+                                funds = Funding(self.api)
+                                self.do_throttle()
+                                funds.check_and_fix_funds()
+                                if funds.funds_ok:
+                                    self.do_throttle()
+                                    self.check_strategy(market_id)
+                                else :    
+                                    print 'Something happened with funds', funds 
+                                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                            else : 
+                                print 'We have ALREADY bets on market', \
+                                       my_market.market_id,  \
+                                       my_market.home_team_name, '-', \
+                                       my_market.away_team_name
                             
                         self.conn.commit()
             
@@ -359,14 +278,6 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 bot = SimpleBot()
 print 'Starting up:', datetime.datetime.now()
-bot.conn = psycopg2.connect("dbname='betting' \
-                             user='bnl' \
-                             host='192.168.0.24' \
-                             password=None") 
-#bot.conn = psycopg2.connect("dbname='bnl' \
-#                             user='bnl' \
-#                             host='nonodev.com' \
-#                             password='BettingFotboll1$'") 
 while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
