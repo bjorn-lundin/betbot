@@ -269,8 +269,8 @@ class SimpleBot(object):
                         }
                     bets.append(bet)
                 else:
-                    self.log.info('bad odds or time in game -> no bet on market' + \
-                         market_id, my_market.home_team_name + '-' + \
+                    self.log.info('bad odds or time in game -> no bet on market ' +
+                         str(market_id) + ' ' + my_market.home_team_name + '-' + 
                                  my_market.away_team_name)
                 # place bets (if any have been created)
                 if bets:
