@@ -176,7 +176,7 @@ class Market(object):
         path_as_list = self.menu_path.split('\\')
         teams = path_as_list[len(path_as_list) -1].lower()
         
-        teams = teams.replace('-','|')
+        teams = teams.replace(' - ','|')
         teams = teams.replace(' v ','|')
         teams = teams.replace(' vs ','|')
         teams = teams.replace(' versus ','|')

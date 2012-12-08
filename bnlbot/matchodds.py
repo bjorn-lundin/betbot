@@ -29,9 +29,9 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
-    TWO_GOAL_LEAD_TIME = 75
+    TWO_GOAL_LEAD_TIME = 65
     ONE_GOAL_LEAD_TIME = 87
-    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 70
+    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 60
     HIGH_ODDS_DIFF = 20.0
     conn = None
     
@@ -277,17 +277,25 @@ class SimpleBot(object):
                 # place bets (if any have been created)
                 if bets:
 #                    resp = 'bnl-no-bet'
-                    resp = self.api.place_bets(bets)
-                    s = 'PLACING BETS...\n'
-                    s += 'Bets: ' + str(bets) + '\n'
-                    s += 'Place bets response: ' + str(resp) + '\n'
-                    s += '---------------------------------------------'
-                    self.log.info(s)
-                    if resp != 'EVENT_SUSPENDED' :
-                        self.insert_bet(bets[0], resp[0], bet_category)
-                    # check session
-                    if resp == 'API_ERROR: NO_SESSION':
-                        self.no_session = True
+                    funds = Funding(self.api, self.log)
+                    self.do_throttle()
+                    funds.check_and_fix_funds()
+                    if funds.funds_ok:
+                        self.do_throttle()
+                        resp = self.api.place_bets(bets)
+                        s = 'PLACING BETS...\n'
+                        s += 'Bets: ' + str(bets) + '\n'
+                        s += 'Place bets response: ' + str(resp) + '\n'
+                        s += '---------------------------------------------'
+                        self.log.info(s)
+                        if resp != 'EVENT_SUSPENDED' :
+                            self.insert_bet(bets[0], resp[0], bet_category)
+                        if resp == 'API_ERROR: NO_SESSION':
+                            self.no_session = True
+                    else :
+                        self.log.warning( 'Something happened with funds: ' + str(funds))  
+                        sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
@@ -319,7 +327,8 @@ class SimpleBot(object):
                     for market in markets:
                         num += 1
                         my_market = Market(self.conn, self.log, market_dict = market[1])
-                        self.log.info( '--++--++ market # ' + str(num) + ' ' + \
+                        self.log.info( '--++--++ market # ' + str(num) + '/' + \
+                                       str(len(markets)) + ' ' + \
                                        my_market.home_team_name + '-' + \
                                        my_market.away_team_name + ' --++--++ ')
                         my_market.insert()
@@ -330,20 +339,8 @@ class SimpleBot(object):
                                   my_market.home_team_name + '-' + 
                                   my_market.away_team_name)
                         else :
-#                            mu_bets = self.api.get_mu_bets(my_market.market_id)
-#                            if mu_bets == 'NO_RESULTS':
                             if not my_market.bet_exists_already() :    
-                                # we have no bets on this market...
-                                self.do_throttle()
-                                funds = Funding(self.api, self.log)
-                                self.do_throttle()
-                                funds.check_and_fix_funds()
-                                if funds.funds_ok:
-                                    self.do_throttle()
-                                    self.check_strategy(my_market.market_id)
-                                else :    
-                                    self.log.warning( 'Something happened with funds: ' + sdtr(funds))  
-                                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                                self.check_strategy(my_market.market_id)
                             else : 
                                 self.log.info( 'We have ALREADY bets on market ' + \
                                        my_market.market_id + ' ' + \
