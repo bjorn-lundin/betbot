@@ -292,7 +292,8 @@ class SimpleBot(object):
                     s += 'Place bets response: ' + str(resp) + '\n'
                     s += '---------------------------------------------'
                     self.log.info(s)
-                    self.insert_bet(bets[0], resp[0], bet_category)
+                    if resp != 'EVENT_SUSPENDED' :
+                        self.insert_bet(bets[0], resp[0], bet_category)
 #                    a=d
                     # check session
                     if resp == 'API_ERROR: NO_SESSION':
@@ -324,18 +325,24 @@ class SimpleBot(object):
                 else:
                     self.log.info( 'Found ' + str(len(markets)) + \
                           ' markets. Checking strategy...')
+                    num = 0
                     for market in markets:
+                        num += 1
                         my_market = Market(self.conn, self.log,  market_dict = market[1])
+                        self.log.info( '--++--++ market # ' + str(num) + ' ' + \
+                                       my_market.home_team_name + '-' + \
+                                       my_market.away_team_name + ' --++--++ ')
                         my_market.insert()
                         my_market.try_set_gamestart()
                         
                         if not my_market.market_in_xmlfeed() :
-                            self.log.info( 'market not in xmlfeed: ' + \
-                                  my_market.home_team_name + '-' + \
+                            self.log.info( 'market not in xmlfeed: ' + 
+                                  my_market.home_team_name + '-' + 
                                   my_market.away_team_name)
                         else :
-                            mu_bets = self.api.get_mu_bets(my_market.market_id)
-                            if mu_bets == 'NO_RESULTS':
+#                            mu_bets = self.api.get_mu_bets(my_market.market_id)
+#                            if mu_bets == 'NO_RESULTS':
+                            if not my_market.bet_exists_already() :    
                                 # we have no bets on this market...
                                 self.do_throttle()
                                 funds = Funding(self.api, self.log)
@@ -388,7 +395,7 @@ log.info('Starting application')
 
 
 #make print flush now!
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 bot = SimpleBot(log)
 

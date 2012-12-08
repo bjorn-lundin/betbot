@@ -31,7 +31,7 @@ class SimpleBot(object):
     NETWORK_FAILURE_DELAY = 60.0
     TWO_GOAL_LEAD_TIME = 75
     ONE_GOAL_LEAD_TIME = 87
-    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 46
+    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 70
     HIGH_ODDS_DIFF = 20.0
     conn = None
     
@@ -194,6 +194,7 @@ class SimpleBot(object):
 
                        back_price = odds_away_victory
                        selection = selection_away_victory
+                       bet_category = 'AWAY_TWO_GOAL_LEAD_TIME_HIGH_ODDS'
 
                 #home victory? 2 goal lead, early, and big odds diff
                 elif odds_away_victory and \
@@ -206,6 +207,7 @@ class SimpleBot(object):
 
                          back_price = odds_home_victory
                          selection = selection_home_victory
+                         bet_category = 'HOME_TWO_GOAL_LEAD_TIME_HIGH_ODDS'
                    
                 #home victory? 2 goal lead, fairly soon end game
                 if   odds_home_victory and \
@@ -281,8 +283,8 @@ class SimpleBot(object):
                     s += 'Place bets response: ' + str(resp) + '\n'
                     s += '---------------------------------------------'
                     self.log.info(s)
-                    self.insert_bet(bets[0], resp[0], bet_category)
-#                    a=d
+                    if resp != 'EVENT_SUSPENDED' :
+                        self.insert_bet(bets[0], resp[0], bet_category)
                     # check session
                     if resp == 'API_ERROR: NO_SESSION':
                         self.no_session = True
@@ -313,8 +315,13 @@ class SimpleBot(object):
                 else:
                     self.log.info( 'Found ' + str(len(markets)) + \
                           ' markets. Checking strategy...')
+                    num = 0
                     for market in markets:
+                        num += 1
                         my_market = Market(self.conn, self.log, market_dict = market[1])
+                        self.log.info( '--++--++ market # ' + str(num) + ' ' + \
+                                       my_market.home_team_name + '-' + \
+                                       my_market.away_team_name + ' --++--++ ')
                         my_market.insert()
                         my_market.try_set_gamestart()
                         
@@ -323,8 +330,9 @@ class SimpleBot(object):
                                   my_market.home_team_name + '-' + 
                                   my_market.away_team_name)
                         else :
-                            mu_bets = self.api.get_mu_bets(my_market.market_id)
-                            if mu_bets == 'NO_RESULTS':
+#                            mu_bets = self.api.get_mu_bets(my_market.market_id)
+#                            if mu_bets == 'NO_RESULTS':
+                            if not my_market.bet_exists_already() :    
                                 # we have no bets on this market...
                                 self.do_throttle()
                                 funds = Funding(self.api, self.log)
@@ -376,7 +384,7 @@ log.addHandler(FH)
 log.info('Starting application')
 
 #make print flush now!
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 bot = SimpleBot(log)
 

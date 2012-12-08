@@ -11,7 +11,9 @@ import sys
 import socket
 import subprocess
 import signal
+import logging.handlers
     
+from db import Db
     
     
 class Alarm(Exception):
@@ -25,6 +27,8 @@ def alarm_handler(signum, frame):
 class Game(object):
 ###########################################################
     def __init__(self, line, conn):
+        
+
         self.conn = conn
         self.id = None
         self.kickoff = None
@@ -89,15 +93,12 @@ class Game(object):
                 else :
                     pass    
                     return
-                    #print '???', '|' + line + '|'                  
                 if dummy :        
-#                    print 'game started', dummy, 'minutes ago', '|' + line + '|'
                     self.time_in_game = dummy
 
             except : 
                 pass
                 return
-#                print 'failed to get time in game', line
             
         # [FT|HT|0-120]  'Football' [#] home_team  [home_score-away_score] away_team 'Football'
         #now parse the line. We have the time, and the line is a valid game
@@ -150,7 +151,7 @@ class Game(object):
         if rc == 1 :
             self.home_team_id = row[0]
         else :
-            print self.home_team, 'is missing in TEAM_ALIASES'
+            log.warning( self.home_team + ' is missing in TEAM_ALIASES')
             cur20 = self.conn.cursor()
             cur20.execute("SAVEPOINT A")
             cur20.close()
@@ -177,7 +178,7 @@ class Game(object):
         if rc == 1 :
             self.away_team_id = row[0] 
         else :
-            print self.away_team, 'is missing in TEAM_ALIASES'
+            log.warning( self.away_team + ' is missing in TEAM_ALIASES')
             cur10 = self.conn.cursor()
             cur10.execute("SAVEPOINT A")
             cur10.close()
@@ -204,10 +205,8 @@ class Game(object):
         if cur4.rowcount == 1 :
             self.id = row[0]
         else :
-            print self.home_team, self.away_team, 'are missing in GAMES'
+            log.warning( self.home_team + ', ' + self.away_team + ' are missing in GAMES')
         cur4.close()
-
-
 
 
     #############################################################   
@@ -232,7 +231,7 @@ class Game(object):
               'away_team_id:', self.away_team_id
     ################################################################
     def print_info(self) :
-        print 'info', self.info
+        log.info( 'info ' + self.info)
     ###############################################################
 
     def update_db(self):
@@ -251,7 +250,7 @@ class Game(object):
             self.away_goals = 0
                 
         if cur.rowcount == 0 :
-            print 'insert Game', self.id, self.home_team, ' - ', self.away_team
+            log.info('insert Game ' + str(self.id) + ' ' + self.home_team + ' - ' + self.away_team)
             cur.execute("insert into GAMES ( \
                         KICKOFF, HOME_TEAM_ID, \
                         AWAY_TEAM_ID, TIME_IN_GAME, \
@@ -262,8 +261,9 @@ class Game(object):
               self.away_team_id, self.time_in_game, \
               self.home_goals, self.away_goals))
         else : 
-            print 'update Game', self.id, self.home_team, ' - ', self.away_team, self.time_in_game, \
-                  '[', self.home_goals, '-', self.away_goals, ']'
+            log.info('update Game   ' + str(self.id) + ' ' + self.home_team + ' - ' + \
+                       self.away_team + '   ' + str(self.time_in_game) + \
+                  '    [' + str(self.home_goals) + '-' + str(self.away_goals) + ']')
             cur.execute("update GAMES \
                          set TIME_IN_GAME = %s , \
                          HOME_GOALS = %s , AWAY_GOALS = %s \
@@ -271,7 +271,6 @@ class Game(object):
              (self.time_in_game, self.home_goals, \
               self.away_goals, self.id))
              
-#        print 'insert Game into stats', self.id
         cur2 = self.conn.cursor()
         cur2.execute("insert into GAMES_STATS ( \
                         XML_SOCCER_ID, KICKOFF, HOME_TEAM_ID, \
@@ -299,16 +298,21 @@ class Live_Feeder(object):
 
     NETWORK_FAILURE_DELAY = 60.0
     URL_LIVE_SCORE = "http://www.goalserve.com/updaters/soccerupdate.aspx"
-    
+    SLEEP_TIME_BETWEEN_TURNS = 1
     conn = None
     get_all_teams = True
     lines = None
     
-    def __init__(self):
+    def __init__(self, log):
         rps = 1/31.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
+        db = Db() 
+        self.conn = db.conn 
+        self.log = log
 
+        
+        
     def get_feed(self): 
         """get the feed"""
         
@@ -338,8 +342,8 @@ class Live_Feeder(object):
         
     def do_throttle(self):
         """return only when it is safe to send another data request"""
-        print 'Wait for', 15, 'seconds'
-        sleep(15)       
+        log.info('Wait for ' + str(self.SLEEP_TIME_BETWEEN_TURNS) + ' seconds')
+        sleep(self.SLEEP_TIME_BETWEEN_TURNS)       
         
     def start(self):
         """start the main loop"""
@@ -349,49 +353,53 @@ class Live_Feeder(object):
                         break
                 my_game = Game(stripped_line, self.conn)
                 if my_game.found :
-#                    my_game.print_me_nice()
                     my_game.update_db()
                     
         self.conn.commit()    
 ###################################################################
 
 #make print flush now!
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+FH = logging.handlers.RotatingFileHandler(
+    'logs/live_feeder_2.log',
+    mode = 'a',
+    maxBytes = 500000,
+    backupCount = 10,
+    encoding = 'iso-8859-15',
+    delay = False
+) 
+FH.setLevel(logging.DEBUG)
+FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+FH.setFormatter(FORMATTER)
+log.addHandler(FH)
+log.info('Starting application')
 
 
 
-feed = Live_Feeder()
+feed = Live_Feeder(log)
 
-print 'Starting up:', datetime.datetime.now()
-
-#bot.conn = psycopg2.connect("dbname='bnl' \
-#                             user='bnl' \
-#                             host='nonodev.com' \
-#                             password='BettingFotboll1$'") 
-
-feed.conn = psycopg2.connect("dbname='betting' \
-                              user='bnl' \
-                              host='192.168.0.24' \
-                              password='None'")
 
 while True:
-    print '------------------ loop start:', datetime.datetime.now(), '-----------------------'
+    log.info( '------------------ LOOP START -----------------------')
     try:
         feed.get_feed()
         feed.start() 
-
     except subprocess.CalledProcessError as ex:
-        print 'Lost network ? . Retry in', feed.NETWORK_FAILURE_DELAY, 'seconds'
+        log.error( 'Lost network ? . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (feed.NETWORK_FAILURE_DELAY)
 
     except Alarm:
-        print "Oops, feede took too long, try again next turn!"
+        log.error( "Oops, feed took too long, try again next turn!")
 
-    print '------------------ loop stop:', datetime.datetime.now(), '-----------------------'    
+    except KeyboardInterrupt :
+        break
+        
+    log.info( '------------------ LOOP STOP -----------------------')
     feed.do_throttle()
 
 # main loop ended...
-print 'MAIN LOOP ENDED...\n---------------------------------------------'
-print 'Ending:', datetime.datetime.now()
-
+log.info('Ending application')
+logging.shutdown()
 

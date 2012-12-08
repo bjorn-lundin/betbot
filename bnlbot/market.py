@@ -176,19 +176,19 @@ class Market(object):
         path_as_list = self.menu_path.split('\\')
         teams = path_as_list[len(path_as_list) -1].lower()
         
-        teams = teams.replace(' - ','|')
+        teams = teams.replace('-','|')
         teams = teams.replace(' v ','|')
         teams = teams.replace(' vs ','|')
         teams = teams.replace(' versus ','|')
         list_teams = teams.split('|')
         try: 
-            home_team = list_teams[0]
+            home_team = list_teams[0].strip()
         except :
-            home_team = None
+            home_team = ""
         try: 
-            away_team = list_teams[1]
+            away_team = list_teams[1].strip()
         except :
-            away_team = None        
+            away_team = ""
 
         game_id = None
         
@@ -256,11 +256,11 @@ class Market(object):
         for team in list_teams :
             cur2 = self.conn.cursor()
             cur2.execute("select * from TEAM_ALIASES \
-                          where TEAM_ALIAS = %s", (team,))
+                          where TEAM_ALIAS = %s", (team.strip(),))
             rc = cur2.rowcount
             cur2.close()
             if rc == 0 :
-                self.log.warning( 'Team not found in TEAM_ALIASES: ' + team)
+                self.log.warning( 'Team not found in TEAM_ALIASES: ' + team.strip())
                 cur3 = self.conn.cursor()
                 cur3.execute("SAVEPOINT MARKET_A")
                 cur3.close()
@@ -268,13 +268,25 @@ class Market(object):
                     cur4 = self.conn.cursor()
                     cur4.execute("insert into UNIDENTIFIED_TEAMS \
                                  (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                                 (team, self.country_code))
+                                 (team.strip(), self.country_code))
                     cur4.close()
                 except psycopg2.IntegrityError:
                     cur5 = self.conn.cursor()
                     cur5.execute("ROLLBACK TO SAVEPOINT MARKET_A" )
                     cur5.close()
                     
-    ##############################################################                                        
+    ##############################################################           
+    def bet_exists_already(self) :
+        """do we have a bet on this market already?"""
+
+        cur = self.conn.cursor()
+        cur.execute("select * from BETS \
+                     where MARKET_ID = %s",(self.market_id,))
+        row = cur.fetchone()
+        row_count = cur.rowcount
+        cur.close()
+#        self.log.info('Market.init, # hits ' + str(row_count) + '  market_id ' + str(self.market_id) )
+        return row_count >= 1 
+    #######################################################
             
 ###############################  end Market
