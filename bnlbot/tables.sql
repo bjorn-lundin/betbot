@@ -132,7 +132,7 @@ create sequence games_stats_serial;
 
 create table games_stats (
   id    integer  default nextval('games_stats_serial'),
-  eventtime timestamp without time zone default Localtimestamp not null,
+  eventtime timestamp without time zone default localtimestamp not null,
   xml_soccer_id integer,
   kickoff timestamp,
   home_team_id integer,
@@ -143,6 +143,19 @@ create table games_stats (
   primary key(id)
 );
 
+
+create table games_stats_uniq (
+  id            integer not null,
+  eventtime     timestamp without time zone not null,
+  xml_soccer_id integer,
+  kickoff       timestamp,
+  home_team_id  integer,
+  away_team_id  integer,
+  time_in_game  varchar,
+  home_goals    integer,
+  away_goals    integer,
+  primary key(id)
+);
 
 
 select count('a') from

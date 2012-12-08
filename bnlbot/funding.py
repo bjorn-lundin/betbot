@@ -25,7 +25,7 @@ class Funding(object):
             avail_balance = self.funds['availBalance']
             exposure     = abs(self.funds['exposure'])
         except :
-            self.log.error( "check_and_fix_funds Unexpected error:" + sys.exc_info()[0])
+            self.log.error( "check_and_fix_funds Unexpected error:" + str(sys.exc_info()[0]))
             return False
           
         funds_ok = False
