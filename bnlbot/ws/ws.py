@@ -4,20 +4,29 @@ import sys
 import mimetypes 
 import psycopg2
 import difflib
+from db import Db
+import logging.handlers
 
 from string import Template
 
 class MyHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
-    server_version= "MyHandler/1.1"
+    
+    
+    def __init__(self, log):
+        server_version= "pybnl/1.0"
+        db = Db() 
+        self.conn = db.conn 
+        self.log = log
+    
         
     #########################################################
     def do_GET(self):
         
-        self.conn = psycopg2.connect("dbname='betting' \
-                             user='bnl' \
-                             host='192.168.0.24' \
-                             password=None") 
-        
+#        self.conn = psycopg2.connect("dbname='betting' \
+#                             user='bnl' \
+#                             host='192.168.0.24' \
+#                             password=None") 
+#        
         try:
             filepath1 = self.path.lstrip('/') 
             # remove any char after a ?, inclusive
@@ -106,10 +115,10 @@ class MyHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
 
     #########################################################
     def do_POST( self ):
-        self.conn = psycopg2.connect("dbname='betting' \
-                             user='bnl' \
-                             host='192.168.0.24' \
-                             password=None") 
+#        self.conn = psycopg2.connect("dbname='betting' \
+#                             user='bnl' \
+#                             host='192.168.0.24' \
+#                             password=None") 
         self.log_message( "Command: %s Path: %s Headers: %r"
                           % ( self.command, self.path, self.headers.items() ) )
         if self.headers.has_key('content-length'):
@@ -132,7 +141,25 @@ class MyHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
     #########################################################
 
 def httpd(handler_class=MyHandler, server_address = ('', 8008), ):
-    srvr = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.DEBUG)
+    FH = logging.handlers.RotatingFileHandler(
+        '../logs/httpd.log',
+        mode = 'a',
+        maxBytes = 500000,
+        backupCount = 10,
+        encoding = 'iso-8859-15',
+        delay = False
+    ) 
+    FH.setLevel(logging.DEBUG)
+    FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+    FH.setFormatter(FORMATTER)
+    log.addHandler(FH)
+    log.info('Starting application')
+
+
+    
+    srvr = BaseHTTPServer.HTTPServer(server_address, handler_class(log))
 #    srvr.handle_request() # serve_forever
 #    srvr.conn = psycopg2.connect("dbname='betting' \
 #                             user='bnl' \
@@ -141,7 +168,12 @@ def httpd(handler_class=MyHandler, server_address = ('', 8008), ):
     srvr.serve_forever()
 
 if __name__ == "__main__":
-    httpd( )
+    try:
+       httpd( )
+    except KeyboardInterrupt :
+       pass     
+    log.info('Ending application')
+    logging.shutdown()
 
     
     

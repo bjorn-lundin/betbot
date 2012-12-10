@@ -1,4 +1,4 @@
-# coding=iso-8859-15
+# -*- coding: iso-8859-1 -*- 
 from time import sleep, time
 import datetime
 import psycopg2
@@ -81,6 +81,9 @@ class Game(object):
         elif len(line) >= 5 and line.find('Aban.') > -1 :
 #            print 'Postponed', '|' + line + '|'
             return
+        elif len(line) >= 2 and line.find('WO') > -1 :
+#            print 'Walk Over', '|' + line + '|'
+            return
             
         else :
             try :
@@ -151,7 +154,7 @@ class Game(object):
         if rc == 1 :
             self.home_team_id = row[0]
         else :
-            log.warning( self.home_team + ' is missing in TEAM_ALIASES')
+            log.warning( self.home_team.decode("iso-8859-1") + ' is missing in TEAM_ALIASES')
             cur20 = self.conn.cursor()
             cur20.execute("SAVEPOINT A")
             cur20.close()
@@ -178,7 +181,7 @@ class Game(object):
         if rc == 1 :
             self.away_team_id = row[0] 
         else :
-            log.warning( self.away_team + ' is missing in TEAM_ALIASES')
+            log.warning( self.away_team.decode("iso-8859-1") + ' is missing in TEAM_ALIASES')
             cur10 = self.conn.cursor()
             cur10.execute("SAVEPOINT A")
             cur10.close()
@@ -205,7 +208,8 @@ class Game(object):
         if cur4.rowcount == 1 :
             self.id = row[0]
         else :
-            log.warning( self.home_team + ', ' + self.away_team + ' are missing in GAMES')
+            if self.home_team and self.away_team :
+                log.warning( self.home_team.decode("iso-8859-1") + ', ' + self.away_team.decode("iso-8859-1") + ' are missing in GAMES')
         cur4.close()
 
 
@@ -215,15 +219,15 @@ class Game(object):
         print 'kickoff', self.kickoff 
         print 'home_team_id', self.home_team_id
         print 'away_team_id', self.away_team_id
-        print 'home_team', self.home_team
-        print 'away_team', self.away_team
+        print 'home_team', self.home_team.decode("iso-8859-1")
+        print 'away_team', self.away_team.decode("iso-8859-1")
         print 'time_in_game', self.time_in_game
         print 'home_goals', self.home_goals
         print 'away_goals', self.away_goals
     ################################################################    
     def print_me_nice(self): 
-        print 'home_team:', self.home_team, \
-              'away_team:', self.away_team, \
+        print 'home_team:', self.home_team.decode("iso-8859-1"), \
+              'away_team:', self.away_team.decode("iso-8859-1"), \
               'time_in_game:', self.time_in_game, \
               'home_goals:', self.home_goals, \
               'away_goals:', self.away_goals, \
@@ -250,7 +254,7 @@ class Game(object):
             self.away_goals = 0
                 
         if cur.rowcount == 0 :
-            log.info('insert Game ' + str(self.id) + ' ' + self.home_team + ' - ' + self.away_team)
+            log.info('insert Game ' + str(self.id) + ' ' + self.home_team.decode("iso-8859-1") + ' - ' + self.away_team.decode("iso-8859-1"))
             cur.execute("insert into GAMES ( \
                         KICKOFF, HOME_TEAM_ID, \
                         AWAY_TEAM_ID, TIME_IN_GAME, \
@@ -261,8 +265,8 @@ class Game(object):
               self.away_team_id, self.time_in_game, \
               self.home_goals, self.away_goals))
         else : 
-            log.info('update Game   ' + str(self.id) + ' ' + self.home_team + ' - ' + \
-                       self.away_team + '   ' + str(self.time_in_game) + \
+            log.info('update Game ' + str(self.id) + ' ' + self.home_team.decode("iso-8859-1") + ' - ' + \
+                       self.away_team.decode("iso-8859-1") + '   ' + str(self.time_in_game) + \
                   '    [' + str(self.home_goals) + '-' + str(self.away_goals) + ']')
             cur.execute("update GAMES \
                          set TIME_IN_GAME = %s , \
@@ -310,12 +314,11 @@ class Live_Feeder(object):
         db = Db() 
         self.conn = db.conn 
         self.log = log
-
+    ####################################
         
         
     def get_feed(self): 
         """get the feed"""
-        
 
         signal.signal(signal.SIGALRM, alarm_handler)
         signal.alarm(60)  # 1 minute
@@ -367,7 +370,7 @@ FH = logging.handlers.RotatingFileHandler(
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
-    encoding = 'iso-8859-15',
+    encoding = 'iso-8859-1',
     delay = False
 ) 
 FH.setLevel(logging.DEBUG)

@@ -33,7 +33,7 @@ class Game_Stats_Compresssor(object):
     def treat_row(self, row):
         self.log.debug('treat ' + str(row))
         #1 - finns raden i games_stats_uniq?
-        #dvs finns en rad med samma XML_SOCCER_ID, TIME_IN_GAME, HOME_GOALS och AWAY_GOALS?
+        #dvs finns en rad med samma XML_SOCCER_ID,  HOME_GOALS och AWAY_GOALS?
         #nej -> insert into games_stats_uniq, delete from games_stats
         #ja  ->                               delete from games_stats_uniq
         id            = row[0]
@@ -49,10 +49,9 @@ class Game_Stats_Compresssor(object):
         cur = self.conn.cursor()
         cur.execute("select * from GAMES_STATS_UNIQ \
                      where XML_SOCCER_ID = %s \
-                     and TIME_IN_GAME = %s \
                      and HOME_GOALS = %s \
                      and AWAY_GOALS = %s", \
-                     (xml_soccer_id, time_in_game,
+                     (xml_soccer_id, 
                       home_goals, away_goals))
          
         rc_games_stats_uniq = cur.rowcount

@@ -1,4 +1,4 @@
-# coding=iso-8859-15
+# -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
@@ -18,7 +18,7 @@ import logging.handlers
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.05
+    MIN_ODDS = 1.01
     HOURS_TO_MATCH_START = 0.25
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
@@ -26,8 +26,8 @@ class SimpleBot(object):
     HALV_TIME_ZERO_GOAL_LEAD_TIME = 45
     HALV_TIME_ONE_GOAL_LEAD_TIME = 44
     HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME = 41
-    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 25
-    HIGH_ODDS_DIFF = 30.0
+    HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 0 #25
+    HIGH_ODDS_DIFF = 0.0 #30
     DELAY_BETWEEN_TURNS = 5.0
     conn = None
     
@@ -137,7 +137,7 @@ class SimpleBot(object):
                 if not my_game.found :
                     self.log.info('game not found home_team_id ' + 
                          str(my_market.home_team_id) + 
-                        ' home_team_id', str(my_market.away_team_id))
+                        ' home_team_id ' + str(my_market.away_team_id))
                     return    
 
                 try:
@@ -147,7 +147,7 @@ class SimpleBot(object):
 
                 if my_time > 47 : 
                     self.log.info('Halftime, to late for bets (47 min)' + \
-                             'Tid förflutet: ' + str(my_game.time_in_game))
+                             'Tid förflutet: '.decode("iso-8859-1") + str(my_game.time_in_game))
                     return
                     
                     
@@ -161,13 +161,13 @@ class SimpleBot(object):
                 except:
                     self.log.info( '#############################################')
                     self.log.info( 'prices missing some fields, do return ' +
-                           my_market.home_team_name + ' - ' + 
-                           my_market.away_team_name)
+                           my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
+                           my_market.away_team_name.decode("iso-8859-1"))
                     self.log.info( '#############################################')
                     return
 
-                self.log.info( 'game :' + my_market.home_team_name+ ' - ' + \
-                                 my_market.away_team_name)
+                self.log.info( 'game :' + my_market.home_team_name.decode("iso-8859-1") + ' - ' + \
+                                 my_market.away_team_name.decode("iso-8859-1"))
                 self.log.info( 'odds hemmaseger :' + str(odds_home_victory))
                 self.log.info( 'odds bortaseger :' + str(odds_away_victory))
                 self.log.info( 'odds oavgjort   :' + str(odds_draw))
@@ -204,63 +204,63 @@ class SimpleBot(object):
                     bet_category = 'HOME_HALV_TIME_TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF'
 
                 #away victory? 1 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                   odds_home_victory and \
-                   odds_away_victory >= self.MIN_ODDS and \
-                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
-                   my_game.away_goals - my_game.home_goals  >= 1 and \
-                   my_game.time_in_game_numeric and \
-                   int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 1 goal lead, early, and big odds diff
-                elif odds_away_victory and \
-                     odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     odds_away_victory - odds_home_victory> self.HIGH_ODDS_DIFF and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
-
-                #home victory? 1 goal lead, fairly soon end halftime
-                elif odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-                   
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #away victory? 1 goal lead, fairly soon end halftime
-                elif odds_away_victory and \
-                     odds_away_victory >= self.MIN_ODDS and \
-                     my_game.away_goals - my_game.home_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_LEAD_TIME'
-
-                #tie halftime victory?  soon end halftime
-                elif odds_draw and \
-                     odds_draw >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  == 0 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
-
-                    back_price = odds_draw
-                    selection = selection_draw
-                    bet_category = 'TIE_HALV_TIME_ZERO_GOAL_LEAD_TIME'
+#                elif odds_away_victory and \
+#                   odds_home_victory and \
+#                   odds_away_victory >= self.MIN_ODDS and \
+#                   odds_away_victory - odds_home_victory > self.HIGH_ODDS_DIFF and \
+#                   my_game.away_goals - my_game.home_goals  >= 1 and \
+#                   my_game.time_in_game_numeric and \
+#                   int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
+#
+#                    back_price = odds_away_victory
+#                    selection = selection_away_victory
+#                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
+#
+#                #home victory? 1 goal lead, early, and big odds diff
+#                elif odds_away_victory and \
+#                     odds_home_victory and \
+#                     odds_home_victory >= self.MIN_ODDS and \
+#                     odds_away_victory - odds_home_victory> self.HIGH_ODDS_DIFF and \
+#                     my_game.home_goals - my_game.away_goals  >= 1 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME :
+#
+#                    back_price = odds_home_victory
+#                    selection = selection_home_victory
+#                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_HIGH_ODDS_DIFF_LEAD_TIME'
+#
+#                #home victory? 1 goal lead, fairly soon end halftime
+#                elif odds_home_victory and \
+#                     odds_home_victory >= self.MIN_ODDS and \
+#                     my_game.home_goals - my_game.away_goals  >= 1 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
+#                   
+#                    back_price = odds_home_victory
+#                    selection = selection_home_victory
+#                    bet_category = 'HOME_HALV_TIME_ONE_GOAL_LEAD_TIME'
+#
+#                #away victory? 1 goal lead, fairly soon end halftime
+#                elif odds_away_victory and \
+#                     odds_away_victory >= self.MIN_ODDS and \
+#                     my_game.away_goals - my_game.home_goals  >= 1 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.HALV_TIME_ONE_GOAL_LEAD_TIME :
+#
+#                    back_price = odds_away_victory
+#                    selection = selection_away_victory
+#                    bet_category = 'AWAY_HALV_TIME_ONE_GOAL_LEAD_TIME'
+#
+#                #tie halftime victory?  soon end halftime
+#                elif odds_draw and \
+#                     odds_draw >= self.MIN_ODDS and \
+#                     my_game.home_goals - my_game.away_goals  == 0 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.HALV_TIME_ZERO_GOAL_LEAD_TIME :
+#
+#                    back_price = odds_draw
+#                    selection = selection_draw
+#                    bet_category = 'TIE_HALV_TIME_ZERO_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -281,8 +281,8 @@ class SimpleBot(object):
                     bets.append(bet)
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
-                         str(market_id) + ' ' + my_market.home_team_name + '-' + 
-                                 my_market.away_team_name)
+                         str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
+                                 my_market.away_team_name.decode("iso-8859-1"))
                 # place bets (if any have been created)
                 if bets:
 #                    resp = 'bnl-no-bet'
@@ -340,15 +340,15 @@ class SimpleBot(object):
                         my_market = Market(self.conn, self.log,  market_dict = market[1])
                         self.log.info( '--++--++ market # ' + str(num) + '/' + \
                                        str(len(markets)) + ' ' + \
-                                       my_market.home_team_name + '-' + \
-                                       my_market.away_team_name + ' --++--++ ')
+                                       my_market.home_team_name.decode("iso-8859-1") + '-' + \
+                                       my_market.away_team_name.decode("iso-8859-1") + ' --++--++ ')
                         my_market.insert()
                         my_market.try_set_gamestart()
                         
                         if not my_market.market_in_xmlfeed() :
                             self.log.info( 'market not in xmlfeed: ' + 
-                                  my_market.home_team_name + '-' + 
-                                  my_market.away_team_name)
+                                  my_market.home_team_name.decode("iso-8859-1") + '-' + 
+                                  my_market.away_team_name.decode("iso-8859-1"))
                         else :
 #                            mu_bets = self.api.get_mu_bets(my_market.market_id)
 #                            if mu_bets == 'NO_RESULTS':
@@ -364,8 +364,8 @@ class SimpleBot(object):
                             else : 
                                 self.log.info( 'We have ALREADY bets on market ' + \
                                        my_market.market_id + ' ' + \
-                                       my_market.home_team_name + ' - ' + \
-                                       my_market.away_team_name)
+                                       my_market.home_team_name.decode("iso-8859-1") + ' - ' + \
+                                       my_market.away_team_name.decode("iso-8859-1"))
                                     
                         self.conn.commit()
                 # check if session is still OK
@@ -391,7 +391,7 @@ FH = logging.handlers.RotatingFileHandler(
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
-    encoding = 'iso-8859-15',
+    encoding = 'iso-8859-1',
     delay = False
 ) 
 FH.setLevel(logging.DEBUG)
@@ -410,19 +410,16 @@ while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
     except urllib2.URLError :
-        log.error('Lost network. \
-               Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY) 
+        log.error( 'Lost network ? . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
 
     except ssl.SSLError :
-        log.error( 'Lost network (ssl error). \
-              Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (ssl error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        log.error( 'Lost network (socket error). \
-               Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (socket error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
         
     except KeyboardInterrupt :
         break
