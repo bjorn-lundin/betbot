@@ -1,4 +1,4 @@
-# coding=iso-8859-15
+# -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
@@ -23,16 +23,16 @@ class SimpleBot(object):
     MIN_SALDO = 300.0
     TRANSFER_SUM = 1000.0
     MAX_EXPOSURE = 700.0
-    MIN_ODDS = 1.01
+    MIN_ODDS = 1.05
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
-    TWO_GOAL_LEAD_TIME = 65
+    TWO_GOAL_LEAD_TIME = 0 #65
     ONE_GOAL_LEAD_TIME = 87
-    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 60
-    HIGH_ODDS_DIFF = 20.0
+    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 0 # 60
+    HIGH_ODDS_DIFF = 0 # 20.0
     conn = None
     
     def __init__(self, log):
@@ -161,8 +161,8 @@ class SimpleBot(object):
                 except:
                     self.log.info( '#############################################')
                     self.log.info( 'prices missing some fields, do return ' +
-                           my_market.home_team_name + ' - ' + 
-                           my_market.away_team_name)
+                           my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
+                           my_market.away_team_name.decode("iso-8859-1"))
                     self.log.info( '#############################################')
                     return
                 
@@ -171,11 +171,11 @@ class SimpleBot(object):
                 if not my_game.found :
                     self.log.info('game not found home_team_id ' + 
                          str(my_market.home_team_id) + 
-                        ' home_team_id', str(my_market.away_team_id))
+                        ' home_team_id ' + str(my_market.away_team_id))
                     return    
                   
-                self.log.info( 'game :' + my_market.home_team_name+ ' - ' + 
-                                 my_market.away_team_name)
+                self.log.info( 'game :' + my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
+                                 my_market.away_team_name.decode("iso-8859-1") )
                 self.log.info( 'odds hemmaseger :' + str(odds_home_victory))
                 self.log.info( 'odds bortaseger :' + str(odds_away_victory))
                 self.log.info( 'odds oavgjort   :' + str(odds_draw))
@@ -232,26 +232,26 @@ class SimpleBot(object):
                     bet_category = 'AWAY_FULL_TWO_GOAL_LEAD_TIME'
 
                 #home victory? 1 goal lead, soon end game
-                elif odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
-
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_FULL_ONE_GOAL_LEAD_TIME'
-
-                #away victory? 1 goal lead, soon end game
-                elif odds_away_victory and \
-                     odds_away_victory >= self.MIN_ODDS and \
-                     my_game.away_goals - my_game.home_goals  >= 1 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
-
-                    back_price = odds_away_victory
-                    selection = selection_away_victory
-                    bet_category = 'AWAY_FULL_ONE_GOAL_LEAD_TIME'
+#                elif odds_home_victory and \
+#                     odds_home_victory >= self.MIN_ODDS and \
+#                     my_game.home_goals - my_game.away_goals  >= 1 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
+#
+#                    back_price = odds_home_victory
+#                    selection = selection_home_victory
+#                    bet_category = 'HOME_FULL_ONE_GOAL_LEAD_TIME'
+#
+#                #away victory? 1 goal lead, soon end game
+#                elif odds_away_victory and \
+#                     odds_away_victory >= self.MIN_ODDS and \
+#                     my_game.away_goals - my_game.home_goals  >= 1 and \
+#                     my_game.time_in_game_numeric and \
+#                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
+#
+#                    back_price = odds_away_victory
+#                    selection = selection_away_victory
+#                    bet_category = 'AWAY_FULL_ONE_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -272,8 +272,8 @@ class SimpleBot(object):
                     bets.append(bet)
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
-                         str(market_id) + ' ' + my_market.home_team_name + '-' + 
-                                 my_market.away_team_name)
+                         str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
+                                 my_market.away_team_name.decode("iso-8859-1"))
                 # place bets (if any have been created)
                 if bets:
 #                    resp = 'bnl-no-bet'
@@ -329,23 +329,23 @@ class SimpleBot(object):
                         my_market = Market(self.conn, self.log, market_dict = market[1])
                         self.log.info( '--++--++ market # ' + str(num) + '/' + \
                                        str(len(markets)) + ' ' + \
-                                       my_market.home_team_name + '-' + \
-                                       my_market.away_team_name + ' --++--++ ')
+                                       my_market.home_team_name.decode("iso-8859-1") + '-' + \
+                                       my_market.away_team_name.decode("iso-8859-1") + ' --++--++ ')
                         my_market.insert()
                         my_market.try_set_gamestart()
                         
                         if not my_market.market_in_xmlfeed() :
                             self.log.info( 'market not in xmlfeed: ' + 
-                                  my_market.home_team_name + '-' + 
-                                  my_market.away_team_name)
+                                  my_market.home_team_name.decode("iso-8859-1") + '-' + 
+                                  my_market.away_team_name.decode("iso-8859-1"))
                         else :
                             if not my_market.bet_exists_already() :    
                                 self.check_strategy(my_market.market_id)
                             else : 
                                 self.log.info( 'We have ALREADY bets on market ' + \
                                        my_market.market_id + ' ' + \
-                                       my_market.home_team_name + ' - ' + \
-                                       my_market.away_team_name)
+                                       my_market.home_team_name.decode("iso-8859-1") + ' - ' + \
+                                       my_market.away_team_name.decode("iso-8859-1"))
                         self.conn.commit()
                 # check if session is still OK
                 if self.no_session:
@@ -371,7 +371,7 @@ FH = logging.handlers.RotatingFileHandler(
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
-    encoding = 'iso-8859-15',
+    encoding = 'iso-8859-1',
     delay = False
 ) 
 FH.setLevel(logging.DEBUG)
@@ -389,19 +389,16 @@ while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
     except urllib2.URLError :
-        log.error('Lost network. \
-               Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY) 
+        log.error( 'Lost network ? . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
 
     except ssl.SSLError :
-        log.error( 'Lost network (ssl error). \
-              Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (ssl error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        log.error( 'Lost network (socket error). \
-               Retry in', bot.NETWORK_FAILURE_DELAY, 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (socket error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (feed.NETWORK_FAILURE_DELAY)
 
     except KeyboardInterrupt :
         break

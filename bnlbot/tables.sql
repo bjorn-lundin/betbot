@@ -227,6 +227,18 @@ create table prospects (
 
 
 
-
+create or replace view time_first_goal as
+select 
+  time_in_game,
+  count(time_in_game)
+  from games_stats_uniq
+  where (
+          ( home_goals = 0 and away_goals = 1 ) or 
+          ( home_goals = 1 and away_goals = 0 )
+        )  
+  and time_in_game not in ( 'HT' , 'FT')
+  group by time_in_game
+  order by time_in_game::int
+;
 
 
