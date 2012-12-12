@@ -26,7 +26,7 @@ class Game_Stats_Compresssor(object):
         db = Db() 
         self.conn = db.conn 
         self.log = log
- 
+        self.SLEEP_TIME_BETWEEN_TURNS = 30
 
     ###############################################################
 
@@ -95,6 +95,7 @@ class Game_Stats_Compresssor(object):
         while True :
             row = cur.fetchone()
             if not row : 
+                self.do_throttle()   
                 break
             self.treat_row(row)    
         cur.close()
