@@ -410,16 +410,16 @@ while True:
     try:
         bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
     except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (feed.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
 
     except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (feed.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + str(feed.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (feed.NETWORK_FAILURE_DELAY)
+        log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
         
     except KeyboardInterrupt :
         break
