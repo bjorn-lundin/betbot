@@ -28,5 +28,7 @@ class Db(object):
                                           password='BettingFotboll1$'") 
         else :
             raise Exception("Bad hostname: " + self.hostname)
+            
+        self.conn.set_client_encoding('latin1')
         ######## end init ##########
 ######## end class ########## 
