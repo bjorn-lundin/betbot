@@ -27,8 +27,12 @@ class Game_Stats_Compresssor(object):
         self.conn = db.conn 
         self.log = log
         self.SLEEP_TIME_BETWEEN_TURNS = 30
+        self.NETWORK_FAILURE_DELAY = 60
 
     ###############################################################
+    def reconnect(self):
+        db = Db() 
+        self.conn = db.conn 
 
     def treat_row(self, row):
         self.log.debug('treat ' + str(row))
@@ -127,6 +131,12 @@ while True:
     log.info( '------------------ MAIN LOOP START -----------------------')
     try:
         compressor.start() 
+	
+    except psycopg2.DatabaseError :
+        log.error( 'Lost db contact . Retry in ' + str(compressor.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (compressor.NETWORK_FAILURE_DELAY)
+        compressor.reconnect()
+	
     except KeyboardInterrupt :
         break
         

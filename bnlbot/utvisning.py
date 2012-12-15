@@ -36,6 +36,9 @@ class SimpleBot(object):
         self.log = log
 
 ############################# end __init__
+    def reconnect(self):
+        db = Db() 
+        self.conn = db.conn 
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
@@ -318,6 +321,11 @@ while True:
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
+
+    except psycopg2.DatabaseError :
+        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
+        bot.reconnect()
         
     except KeyboardInterrupt :
         break

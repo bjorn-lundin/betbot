@@ -29,9 +29,9 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
-    TWO_GOAL_LEAD_TIME = 0 #65
+    TWO_GOAL_LEAD_TIME = 65
     ONE_GOAL_LEAD_TIME = 87
-    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 0 # 60
+    TWO_GOAL_LEAD_TIME_HIGH_ODDS_DIFF = 60
     HIGH_ODDS_DIFF = 0 # 20.0
     conn = None
     
@@ -45,6 +45,9 @@ class SimpleBot(object):
         self.log = log
         
 ############################# end __init__
+    def reconnect(self):
+        db = Db() 
+        self.conn = db.conn 
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
@@ -400,6 +403,11 @@ while True:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
+    except psycopg2.DatabaseError :
+        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
+        bot.reconnect()
+	
     except KeyboardInterrupt :
         break
     
