@@ -260,7 +260,7 @@ class Market(object):
             rc = cur2.rowcount
             cur2.close()
             if rc == 0 :
-                self.log.warning( 'Team not found in TEAM_ALIASES: ' + team.strip())
+                self.log.warning( 'Team not found in TEAM_ALIASES: ' + team.strip().decode("iso-8859-1"))
                 cur3 = self.conn.cursor()
                 cur3.execute("SAVEPOINT MARKET_A")
                 cur3.close()
