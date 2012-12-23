@@ -55,7 +55,7 @@ class SimpleBot(object):
 
 
 
-    def insert_bet(self, bet, resp, bet_type):
+    def insert_bet(self, bet, resp, bet_type, name):
         self.log.info( 'insert bet' )
         cur = self.conn.cursor()
         cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
@@ -63,12 +63,12 @@ class SimpleBot(object):
             self.log.debug( 'insert bet' + resp['bet_id'])
             cur.execute("insert into BETS ( \
                          BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE, BET_TYPE ) \
+                         CODE, SUCCESS, SIZE, BET_TYPE, NAME ) \
                          values \
-                         (%s,%s,%s,%s,%s,%s,%s,%s)", \
+                         (%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
                (resp['bet_id'],bet['marketId'], bet['selectionId'], \
                 resp['price'], resp['code'], resp['success'], \
-                resp['size'], bet_type))
+                resp['size'], bet_type, name))
         cur.close()
 ############################# end insert_bet
 
@@ -173,74 +173,67 @@ class SimpleBot(object):
                     race_list.append(t)    
 
                 sorted_list = sorted(race_list, reverse=True)
-
+                i = 0  
+                
+                selection = None
+                lay_odds = None
+                back_odds = None
+                name = None
+                index = None
                 for dct in sorted_list :
+                    i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                    if dct[1] <= self.MAX_ODDS :
+                    if dct[1] <= self.MAX_ODDS and i <= 3 :
                        self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                        
-                
-                
-                
-                    
-                try :
-                    odds_home_victory = prices['runners'][0]['back_prices'][0]['price']
-                    odds_away_victory = prices['runners'][1]['back_prices'][0]['price'] 
-                    odds_draw = prices['runners'][2]['back_prices'][0]['price'] 
-                    selection_home_victory = prices['runners'][0]['selection_id']
-                    selection_away_victory = prices['runners'][1]['selection_id']
-                    selection_draw = prices['runners'][2]['selection_id']
-                except:
-                    self.log.info( '#############################################')
-                    self.log.info( 'prices missing some fields, do return ' +
-                           my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
-                           my_market.away_team_name.decode("iso-8859-1"))
-                    self.log.info( '#############################################')
+                       selection = dct[2] 
+                       lay_odds  = dct[1] 
+                       back_odds = dct[0] 
+                       index     = dct[3] 
+                       break 
+ 
+                if not selection :
+                    self.log.info( 'No good runner found, exit check_strategy')
                     return
+ 
                 
-                my_game = Game(self.conn, my_market.home_team_id, \
-                               my_market.away_team_id)
-                if not my_game.found :
-                    self.log.info('game not found home_team_id ' + 
-                         str(my_market.home_team_id) + 
-                        ' home_team_id ' + str(my_market.away_team_id))
-                    return    
+                # get the name
+                if selection : 
+                    self.throttle()
+                    bf_market = self.get_market(market_id)
+                    if bf_market and bf_market.resp_code == 'OK' :
+                        for runner in bf_market.runners :
+                            if runner['selection_id'] == selection :
+                                name = runner['name']
+                                break
+
+                if not name :
+                    self.log.info( 'No name for chosen runner found, exit check_strategy')
+                    return
+                                
+                # we have a name,selection and layodds.
                   
-                self.log.info( 'game :' + my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
-                                 my_market.away_team_name.decode("iso-8859-1") )
-                self.log.info( 'odds hemmaseger :' + str(odds_home_victory))
-                self.log.info( 'odds bortaseger :' + str(odds_away_victory))
-                self.log.info( 'odds oavgjort   :' + str(odds_draw))
-                self.log.info( 'Hemma           :' + str(my_game.home_goals))
-                self.log.info( 'Borta           :' + str(my_game.away_goals))
-                self.log.info( 'Tid             :' + str(my_game.time_in_game))
+                self.log.info( 'odds back : ' + str(back_odds))
+                self.log.info( 'odds lay  : ' + str(lay_odds))
+                self.log.info( 'selection : ' + str(selection))
+                self.log.info( 'name      : ' + str(name))
+                self.log.info( 'index     : ' + str(index))
                 
 
-                
-                #home victory? 2 goal lead, fairly soon end game
-                if   odds_home_victory and \
-                     odds_home_victory >= self.MIN_ODDS and \
-                     my_game.home_goals - my_game.away_goals  >= 2 and \
-                     my_game.time_in_game_numeric and \
-                     int(my_game.time_in_game) >= self.TWO_GOAL_LEAD_TIME :
-                   
-                    back_price = odds_home_victory
-                    selection = selection_home_victory
-                    bet_category = 'HOME_FULL_TWO_GOAL_LEAD_TIME'
+                bet_category = 'HORSES_LAY_BET'
 
                     
-                if back_price and selection:
+                if lay_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = back_price, pips = -1)
+                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -1)
                     bet_size = self.BETTING_SIZE # my stake
                     bet = {
                         'marketId': market_id,
@@ -255,9 +248,8 @@ class SimpleBot(object):
                         }
                     bets.append(bet)
                 else:
-                    self.log.info('bad odds or time in game -> no bet on market ' +
-                         str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
-                                 my_market.away_team_name.decode("iso-8859-1"))
+                    self.log.info('bad odds  -> no bet on market ' +
+                         str(market_id) + ' ' + my_market.menu_path.decode("iso-8859-1") )
                 # place bets (if any have been created)
                 if bets:
                     funds = Funding(self.api, self.log)
@@ -273,7 +265,7 @@ class SimpleBot(object):
                         s += '---------------------------------------------'
                         self.log.info(s)
                         if resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category)
+                            self.insert_bet(bets[0], resp[0], bet_category, name)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
                     else :

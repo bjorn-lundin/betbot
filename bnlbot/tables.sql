@@ -67,10 +67,12 @@ create table bets (
   success boolean,
   size float,
   bet_type varchar,
+  runner_name  varchar,
   primary key (bet_id)
   );
   
 --alter table BETS add column bet_type varchar;  
+--alter table BETS add column runner_name varchar;  
 
 
 create or replace view betinfo as
