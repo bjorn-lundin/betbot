@@ -21,13 +21,15 @@ class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
     MAX_ODDS = 12.0
-    HOURS_TO_MATCH_START = 1.5 #.08 # 4,8 min
+    HOURS_TO_MATCH_START = 0.08 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    
+    DRY_RUN = True     
+
+     
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
@@ -58,17 +60,32 @@ class SimpleBot(object):
     def insert_bet(self, bet, resp, bet_type, name):
         self.log.info( 'insert bet' )
         cur = self.conn.cursor()
-        cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
+        
+        if self.DRY_RUN :
+            # get a new bet id, we are in dry_run mode
+            cur.execute("select * from BETS where MARKET_ID = %s and SELECTION_ID = %s", 
+                 (bet['marketId'],bet['selectionId']))
+        else:
+            cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
+            
         if cur.rowcount == 0 :
-            self.log.debug( 'insert bet' + resp['bet_id'])
+            if self.DRY_RUN :
+               cur2 = self.conn.cursor()
+               cur2.execute("select nextval('bet_id_serial')")
+               row = cur2.fetchone()
+               cur2.close()
+               resp['bet_id'] = row[0]
+                            
+            self.log.debug( 'insert bet ' + str(resp['bet_id']))
+                       
             cur.execute("insert into BETS ( \
                          BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE, BET_TYPE, NAME ) \
+                         CODE, SUCCESS, SIZE, BET_TYPE, RUNNER_NAME, BET_WON ) \
                          values \
-                         (%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
-               (resp['bet_id'],bet['marketId'], bet['selectionId'], \
+                         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
+               (resp['bet_id'], bet['marketId'], bet['selectionId'], \
                 resp['price'], resp['code'], resp['success'], \
-                resp['size'], bet_type, name))
+                resp['size'], bet_type, name, None))
         cur.close()
 ############################# end insert_bet
 
@@ -81,17 +98,17 @@ class SimpleBot(object):
 #  'Horse Racing': '7', 
 
         markets = self.api.get_all_markets(
-              events = ['7'],
+              events = ['7','13'],
               hours = self.HOURS_TO_MATCH_START,
-               countries = None)
-#             countries = ['GBR'])
+             countries = ['GBR'])
+#               countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-#                self.log.info( 'market :' + str(market))
+                self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
                 markets.remove(market)
@@ -206,10 +223,11 @@ class SimpleBot(object):
                 
                 # get the name
                 if selection : 
-                    self.throttle()
-                    bf_market = self.get_market(market_id)
-                    if bf_market and bf_market.resp_code == 'OK' :
-                        for runner in bf_market.runners :
+                    self.do_throttle()
+                    bf_market = self.api.get_market(market_id)
+                    if bf_market and type(bf_market) is dict :
+                        self.log.info('bf_market ' + str(bf_market))
+                        for runner in bf_market['runners'] :
                             if runner['selection_id'] == selection :
                                 name = runner['name']
                                 break
@@ -226,8 +244,10 @@ class SimpleBot(object):
                 self.log.info( 'name      : ' + str(name))
                 self.log.info( 'index     : ' + str(index))
                 
-
-                bet_category = 'HORSES_LAY_BET'
+                if self.DRY_RUN :
+                    bet_category = 'DRY_RUN_HORSES_LAY_BET'
+                else:     
+                    bet_category = 'HORSES_LAY_BET'
 
                     
                 if lay_odds and selection:
@@ -251,23 +271,35 @@ class SimpleBot(object):
                     self.log.info('bad odds  -> no bet on market ' +
                          str(market_id) + ' ' + my_market.menu_path.decode("iso-8859-1") )
                 # place bets (if any have been created)
-                if bets:
+                if bets:    
                     funds = Funding(self.api, self.log)
                     self.do_throttle()
                     funds.check_and_fix_funds()
                     if funds.funds_ok:
                         self.do_throttle()
-                        resp = 'EVENT_SUSPENDED'
-                    #    resp = self.api.place_bets(bets)
-                        s = 'PLACING BETS...\n'
+                        if self.DRY_RUN :
+                            s = 'WOULD PLACE BET...\n'
+                            resp1 = {                            
+                                     'bet_id'  : -1 ,
+                                     'price'   : bet['price'], 
+                                     'code'    : 'OK',
+                                     'success' : True, 
+                                     'size'    : bet['size']
+                            }
+                            resp = []
+                            resp.append(resp1)
+                        else:
+                            s = 'PLACING BETS...\n'
+                            resp = self.api.place_bets(bets)
+                            
                         s += 'Bets: ' + str(bets) + '\n'
                         s += 'Place bets response: ' + str(resp) + '\n'
                         s += '---------------------------------------------'
                         self.log.info(s)
-                        if resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category, name)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
+                        if not self.no_session and resp != 'EVENT_SUSPENDED' :
+                            self.insert_bet(bets[0], resp[0], bet_category, name)
                     else :
                         self.log.warning( 'Something happened with funds: ' + str(funds))  
                         sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
@@ -285,7 +317,7 @@ class SimpleBot(object):
         """start the main loop"""
         # login/monitor status
         login_status = self.login(uname, pword, prod_id, vend_id)
-        while login_status == 'OK':
+        while login_status == 'OK': 
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------------------')
             markets = self.get_markets()
@@ -369,13 +401,14 @@ while True:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
-    except psycopg2.DatabaseError :
-        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-        bot.reconnect()
+#    except psycopg2.DatabaseError :
+#        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+#        sleep (bot.NETWORK_FAILURE_DELAY)
+#        bot.reconnect()
 	
     except KeyboardInterrupt :
         break
-    
+
 log.info('Ending application')
 logging.shutdown()
+    
