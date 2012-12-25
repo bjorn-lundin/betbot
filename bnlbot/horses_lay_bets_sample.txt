@@ -1,0 +1,192 @@
+2012-12-23 16:25:45,186 __main__ INFO Starting application
+2012-12-23 16:25:47,112 __main__ INFO -----------------------------------------------------------
+2012-12-23 16:25:47,200 __main__ INFO Found 3 markets. Checking strategy...
+2012-12-23 16:25:47,369 __main__ INFO --++--++ market # 1/3 pau (fra) 23rd dec- --++--++ 
+2012-12-23 16:25:47,412 __main__ WARNING Team not found in TEAM_ALIASES: pau (fra) 23rd dec
+2012-12-23 16:25:47,535 __main__ INFO prices :{'status': 'SUSPENDED', 'info': 'NR (CET) &lt;br&gt;Usta(4.4%,1405)', 'refresh_time': '1356276327593', 'market_id': '107800943', 'base_rate': 5.0, 'currency': 'SEK', 'none_runners': 'USTA,13.05,4.392;', 'bsp_market': 'N', 'no_of_winners': 3, 'discount_allowed': 'true', 'runners': [{'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '0', 'selection_id': '5988587', 'lay_prices': [], 'last_price_matched': 1.86, 'near_sp': '', 'total_matched': 96.63, 'reduction_factor': 19.486}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '1', 'selection_id': '6677897', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 14.004}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '2', 'selection_id': '5912302', 'lay_prices': [], 'last_price_matched': 2.34, 'near_sp': '', 'total_matched': 146.63, 'reduction_factor': 13.63}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '3', 'selection_id': '6908714', 'lay_prices': [], 'last_price_matched': 3.3, 'near_sp': '', 'total_matched': 42.38, 'reduction_factor': 10.656}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '4', 'selection_id': '6934044', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 9.29}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '5', 'selection_id': '6896681', 'lay_prices': [], 'last_price_matched': 3.95, 'near_sp': '', 'total_matched': 10.59, 'reduction_factor': 8.739}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '6', 'selection_id': '5690575', 'lay_prices': [], 'last_price_matched': 3.9, 'near_sp': '', 'total_matched': 141.97, 'reduction_factor': 8.739}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '7', 'selection_id': '6283527', 'lay_prices': [], 'last_price_matched': 5.9, 'near_sp': '', 'total_matched': 42.38, 'reduction_factor': 7.794}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '8', 'selection_id': '6111794', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 7.338}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '9', 'selection_id': '6908709', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.657}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '10', 'selection_id': '6081210', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.657}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '11', 'selection_id': '6231242', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.693}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '12', 'selection_id': '6908704', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.597}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '13', 'selection_id': '6677902', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.25}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '14', 'selection_id': '6695015', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.056}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '15', 'selection_id': '6934045', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 1.852}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '16', 'selection_id': '6453304', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 1.659}], 'in_play_delay': '0'}
+2012-12-23 16:25:47,900 __main__ INFO --++--++ market # 2/3 thurl 23rd dec- --++--++ 
+2012-12-23 16:25:47,940 __main__ WARNING Team not found in TEAM_ALIASES: thurl 23rd dec
+2012-12-23 16:25:49,518 __main__ INFO 
+prices :
+ {
+   'status': 'ACTIVE',
+   'info': '', 
+   'refresh_time': '1356276349431', 
+   'market_id': '107799744',
+   'base_rate': 5.0, 
+   'currency': 'SEK',
+   'none_runners': '', 
+   'bsp_market': 'Y',
+   'no_of_winners': 3,
+   'discount_allowed': 'true', 
+   'runners': [
+                  {
+                        'back_prices': [
+                                          {'depth': '1', 'price': 1.39, 'type': 'L', 'amount': 265.94}, 
+                                          {'depth': '2', 'price': 1.38, 'type': 'L', 'amount': 210.84},
+                                          {'depth': '3', 'price': 1.37, 'type': 'L', 'amount': 1119.6}
+                                      ], 
+                        'handicap': '', 
+                        'vacant': 'false', 
+                        'far_sp': 1.22, 
+                        'actual_sp': '', 
+                        'order_index': '0', 
+                        'selection_id': '6329758',
+                        'lay_prices': [
+                                          {'depth': '1', 'price': 1.4, 'type': 'B', 'amount': 2484.38}, 
+                                          {'depth': '2', 'price': 1.41, 'type': 'B', 'amount': 471.8}, 
+                                          {'depth': '3', 'price': 1.42, 'type': 'B', 'amount': 1101.06}
+                                      ],
+                        'last_price_matched': 1.4,
+                        'near_sp': 1.38,
+                        'total_matched': 174996.21, 
+                        'reduction_factor': 38.308
+                    }, 
+                    {   'back_prices': [
+                                          {'depth': '1', 'price': 1.89, 'type': 'L', 'amount': 1181.37}, 
+                                          {'depth': '2', 'price': 1.87, 'type': 'L', 'amount': 1048.93}, 
+                                          {'depth': '3', 'price': 1.86, 'type': 'L', 'amount': 518.31}
+                                       ], 
+                        'handicap': '', 
+                        'vacant': 'false', 
+                        'far_sp': 1.87, 
+                        'actual_sp': '', 
+                        'order_index': '1', 
+                        'selection_id': '6933882',
+                        'lay_prices': [
+                                          {'depth': '1', 'price': 1.9, 'type': 'B', 'amount': 296.03}, 
+                                          {'depth': '2', 'price': 1.91, 'type': 'B', 'amount': 916.49}, 
+                                          {'depth': '3', 'price': 1.93, 'type': 'B', 'amount': 116.54}
+                                      ], 
+                        'last_price_matched': 1.9,
+                        'near_sp': 1.9,
+                        'total_matched': 53663.07,
+                        'reduction_factor': 29.421
+                    },
+       {'back_prices': [
+         {'depth': '1', 'price': 1.52, 'type': 'L', 'amount': 1036.63},
+         {'depth': '2', 'price': 1.51, 'type': 'L', 'amount': 2974.73}, 
+         {'depth': '3', 'price': 1.5, 'type': 'L', 'amount': 3472.29}], 'handicap': '', 'vacant': 'false', 'far_sp': 1.65,
+         'actual_sp': '', 'order_index': '2', 'selection_id': '6297073',
+      'lay_prices': [
+         {'depth': '1', 'price': 1.54, 'type': 'B', 'amount': 184.35}, 
+         {'depth': '2', 'price': 1.55, 'type': 'B', 'amount': 1991.91}, 
+         {'depth': '3', 'price': 1.56, 'type': 'B', 'amount': 593.33}], 'last_price_matched': 1.54, 'near_sp': 1.56, 
+         'total_matched': 150894.66, 'reduction_factor': 26.575},
+      {'back_prices': [
+         {'depth': '1', 'price': 2.94, 'type': 'L', 'amount': 476.78},
+         {'depth': '2', 'price': 2.92, 'type': 'L', 'amount': 539.61}, 
+         {'depth': '3', 'price': 2.9, 'type': 'L', 'amount': 31.78}], 'handicap': '', 'vacant': 'false', 'far_sp': 1.28, 
+         'actual_sp': '', 'order_index': '3', 'selection_id': '6685794', 
+      'lay_prices': [
+         {'depth': '1', 'price': 2.96, 'type': 'B', 'amount': 30.84}, 
+         {'depth': '2', 'price': 2.98, 'type': 'B', 'amount': 281.96}, 
+         {'depth': '3', 'price': 3.0, 'type': 'B', 'amount': 2286.88}], 
+      'last_price_matched': 2.98, 'near_sp': 2.86, 'total_matched': 91344.83, 'reduction_factor': 22.698},
+      {'back_prices': [
+         {'depth': '1', 'price': 4.5, 'type': 'L', 'amount': 116.54}, 
+         {'depth': '2', 'price': 4.3, 'type': 'L', 'amount': 356.0}, 
+         {'depth': '3', 'price': 4.1, 'type': 'L', 'amount': 74.16}], 
+         'handicap': '', 'vacant': 'false', 'far_sp': 3.12, 'actual_sp': '', 'order_index': '4', 'selection_id': '6843531',
+      'lay_prices': [
+         {'depth': '1', 'price': 9.6, 'type': 'B', 'amount': 291.37},
+         {'depth': '2', 'price': 9.8, 'type': 'B', 'amount': 21.19}, 
+         {'depth': '3', 'price': 10.5, 'type': 'B', 'amount': 291.37}], 'last_price_matched': 4.4, 'near_sp': 4.43,
+         'total_matched': 14915.0, 'reduction_factor': 16.524}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 3.85, 'type': 'L', 'amount': 822.51}, 
+         {'depth': '2', 'price': 3.8, 'type': 'L', 'amount': 642.39}, 
+         {'depth': '3', 'price': 3.75, 'type': 'L', 'amount': 953.57}], 'handicap': '', 'vacant': 'false', 'far_sp': 1.85,
+         'actual_sp': '', 'order_index': '5', 'selection_id': '6933883', 
+      'lay_prices': [
+         {'depth': '1', 'price': 3.9, 'type': 'B', 'amount': 224.93}, 
+         {'depth': '2', 'price': 3.95, 'type': 'B', 'amount': 518.31}, 
+         {'depth': '3', 'price': 4.8, 'type': 'B', 'amount': 152.89}], 'last_price_matched': 3.9
+      'near_sp': 3.75, 'total_matched': 25391.0, 'reduction_factor': 7.34}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 12.5, 'type': 'L', 'amount': 52.97}, 
+         {'depth': '2', 'price': 11.5, 'type': 'L', 'amount': 193.89}, 
+         {'depth': '3', 'price': 10.5, 'type': 'L', 'amount': 114.53}], 'handicap': '', 'vacant': 'false', 'far_sp': 8.51,
+         'actual_sp': '', 'order_index': '6', 'selection_id': '6773871',
+      'lay_prices': [
+         {'depth': '1', 'price': 13.0, 'type': 'B', 'amount': 240.08}, 
+         {'depth': '2', 'price': 13.5, 'type': 'B', 'amount': 79.49}, 
+         {'depth': '3', 'price': 14.5, 'type': 'B', 'amount': 57.85}], 'last_price_matched': 12.0, 'near_sp': 12.47,
+         'total_matched': 7369.66, 'reduction_factor': 5.777}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 25.0, 'type': 'L', 'amount': 21.19}, 
+         {'depth': '2', 'price': 23.0, 'type': 'L', 'amount': 55.2}, 
+         {'depth': '3', 'price': 22.0, 'type': 'L', 'amount': 30.4}], 'handicap': '', 'vacant': 'false', 'far_sp': 13.03,
+         'actual_sp': '', 'order_index': '7', 'selection_id': '6933885', 
+      'lay_prices': [
+         {'depth': '1', 'price': 28.0, 'type': 'B', 'amount': 66.96},
+         {'depth': '2', 'price': 29.0, 'type': 'B', 'amount': 152.89},
+         {'depth': '3', 'price': 30.0, 'type': 'B', 'amount': 25.53}], 'last_price_matched': 26.0, 'near_sp': 23.44,
+         'total_matched': 2092.14, 'reduction_factor': 4.772}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 34.0, 'type': 'L', 'amount': 21.19}, 
+         {'depth': '2', 'price': 32.0, 'type': 'L', 'amount': 42.38}, 
+         {'depth': '3', 'price': 30.0, 'type': 'L', 'amount': 21.19}], 'handicap': '', 'vacant': 'false', 'far_sp': 12.6
+      'actual_sp': '', 'order_index': '8', 'selection_id': '6933886', 
+      'lay_prices': [
+         {'depth': '1', 'price': 38.0, 'type': 'B', 'amount': 22.83}, 
+         {'depth': '2', 'price': 40.0, 'type': 'B', 'amount': 21.19}, 
+         {'depth': '3', 'price': 42.0, 'type': 'B', 'amount': 52.97}], 'last_price_matched': 27.0, 'near_sp': 29.34,
+      'total_matched': 1103.81, 'reduction_factor': 4.575}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 14.0, 'type': 'L', 'amount': 76.39}, 
+         {'depth': '2', 'price': 13.5, 'type': 'L', 'amount': 133.92}, 
+         {'depth': '3', 'price': 10.5, 'type': 'L', 'amount': 53.5}], 'handicap': '', 'vacant': 'false', 'far_sp': 8.69,
+      'actual_sp': '', 'order_index': '9', 'selection_id': '6221872', 
+      'lay_prices': [
+         {'depth': '1', 'price': 15.5, 'type': 'B', 'amount': 96.75}, 
+         {'depth': '2', 'price': 16.0, 'type': 'B', 'amount': 44.07},
+         {'depth': '3', 'price': 21.0, 'type': 'B', 'amount': 46.19}], 'last_price_matched': 14.0, 'near_sp': 14.0, 
+         'total_matched': 8373.67, 'reduction_factor': 4.225}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 13.5, 'type': 'L', 'amount': 29.98}, 
+         {'depth': '2', 'price': 13.0, 'type': 'L', 'amount': 148.33}, 
+         {'depth': '3', 'price': 12.5, 'type': 'L', 'amount': 193.36}], 'handicap': '', 'vacant': 'false', 'far_sp': 7.03,
+         'actual_sp': '', 'order_index': '10', 'selection_id': '5658174',
+      'lay_prices': [
+         {'depth': '1', 'price': 14.5, 'type': 'B', 'amount': 42.38}, 
+         {'depth': '2', 'price': 15.0, 'type': 'B', 'amount': 40.89}, 
+         {'depth': '3', 'price': 15.5, 'type': 'B', 'amount': 136.68}], 'last_price_matched': 14.5, 'near_sp': 12.52, 
+         'total_matched': 5884.84, 'reduction_factor': 3.059}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 70.0, 'type': 'L', 'amount': 21.19},
+         {'depth': '2', 'price': 65.0, 'type': 'L', 'amount': 52.97},
+         {'depth': '3', 'price': 50.0, 'type': 'L', 'amount': 21.19}], 'handicap': '', 'vacant': 'false', 'far_sp': 60.32,
+      'actual_sp': '', 'order_index': '11', 'selection_id': '6933884', 
+      'lay_prices': [
+         {'depth': '1', 'price': 85.0, 'type': 'B', 'amount': 24.89}, 
+         {'depth': '2', 'price': 130.0, 'type': 'B', 'amount': 21.19}, 
+         {'depth': '3', 'price': 980.0, 'type': 'B', 'amount': 34.09}], 'last_price_matched': 65.0, 'near_sp': 70.0, 
+         'total_matched': 1081.35, 'reduction_factor': 2.162}, 
+      {'back_prices': [
+         {'depth': '1', 'price': 65.0, 'type': 'L', 'amount': 48.39},
+         {'depth': '2', 'price': 55.0, 'type': 'L', 'amount': 21.19}, 
+         {'depth': '3', 'price': 50.0, 'type': 'L', 'amount': 124.81}], 'handicap': '', 'vacant': 'false', 'far_sp': 9.35,
+         'actual_sp': '', 'order_index': '12', 'selection_id': '6525317', 
+      'lay_prices': [
+         {'depth': '1', 'price': 970.0, 'type': 'B', 'amount': 21.19}, 
+         {'depth': '2', 'price': 980.0, 'type': 'B', 'amount': 34.09}],
+         'last_price_matched': 65.0, 'near_sp': 59.65, 'total_matched': 842.75, 'reduction_factor': 1.093}
+         ],
+         'in_play_delay': '0'}
+
+
+
+2012-12-23 16:25:49,529 __main__ INFO game not found home_team_id None home_team_id None
+2012-12-23 16:25:49,542 __main__ INFO --++--++ market # 3/3 pau (fra) 23rd dec- --++--++ 
+2012-12-23 16:25:49,569 __main__ WARNING Team not found in TEAM_ALIASES: pau (fra) 23rd dec
+2012-12-23 16:25:51,525 __main__ INFO prices :{'status': 'ACTIVE', 'info': '', 'refresh_time': '1356276285455', 'market_id': '107800944', 'base_rate': 5.0, 'currency': 'SEK', 'none_runners': '', 'bsp_market': 'N', 'no_of_winners': 4, 'discount_allowed': 'true', 'runners': [{'back_prices': [{'depth': '1', 'price': 1.62, 'type': 'L', 'amount': 100.0}, {'depth': '2', 'price': 1.6, 'type': 'L', 'amount': 882.9}, {'depth': '3', 'price': 1.46, 'type': 'L', 'amount': 158.93}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '0', 'selection_id': '5182324', 'lay_prices': [{'depth': '1', 'price': 21.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 17.444}, {'back_prices': [{'depth': '1', 'price': 1.98, 'type': 'L', 'amount': 100.0}, {'depth': '2', 'price': 1.96, 'type': 'L', 'amount': 158.93}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '1', 'selection_id': '4951128', 'lay_prices': [{'depth': '1', 'price': 27.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 15.38}, {'back_prices': [{'depth': '1', 'price': 2.28, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 1.92, 'type': 'L', 'amount': 158.93}, {'depth': '3', 'price': 1.57, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '2', 'selection_id': '6000119', 'lay_prices': [{'depth': '1', 'price': 27.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 13.667}, {'back_prices': [{'depth': '1', 'price': 2.24, 'type': 'L', 'amount': 91.08}, {'depth': '2', 'price': 2.18, 'type': 'L', 'amount': 137.73}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '3', 'selection_id': '6102752', 'lay_prices': [{'depth': '1', 'price': 28.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 12.778}, {'back_prices': [{'depth': '1', 'price': 1.57, 'type': 'L', 'amount': 100.0}, {'depth': '2', 'price': 1.55, 'type': 'L', 'amount': 963.21}, {'depth': '3', 'price': 1.41, 'type': 'L', 'amount': 158.93}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '4', 'selection_id': '5265808', 'lay_prices': [{'depth': '1', 'price': 24.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 12.778}, {'back_prices': [{'depth': '1', 'price': 2.42, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.38, 'type': 'L', 'amount': 116.54}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '5', 'selection_id': '5939684', 'lay_prices': [{'depth': '1', 'price': 29.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 11.177}, {'back_prices': [{'depth': '1', 'price': 2.5, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.46, 'type': 'L', 'amount': 105.95}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '6', 'selection_id': '5628299', 'lay_prices': [{'depth': '1', 'price': 27.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 10.528}, {'back_prices': [{'depth': '1', 'price': 1.96, 'type': 'L', 'amount': 100.0}, {'depth': '2', 'price': 1.57, 'type': 'L', 'amount': 929.42}, {'depth': '3', 'price': 1.46, 'type': 'L', 'amount': 158.93}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '7', 'selection_id': '237961', 'lay_prices': [{'depth': '1', 'price': 29.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 6.89}, {'back_prices': [{'depth': '1', 'price': 2.5, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.46, 'type': 'L', 'amount': 105.95}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '8', 'selection_id': '5674334', 'lay_prices': [{'depth': '1', 'price': 22.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 6.306}, {'back_prices': [{'depth': '1', 'price': 2.48, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.46, 'type': 'L', 'amount': 105.95}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '9', 'selection_id': '6934046', 'lay_prices': [{'depth': '1', 'price': 25.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 5.595}, {'back_prices': [{'depth': '1', 'price': 2.88, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.84, 'type': 'L', 'amount': 84.76}, {'depth': '3', 'price': 2.14, 'type': 'L', 'amount': 275.47}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '10', 'selection_id': '5424864', 'lay_prices': [{'depth': '1', 'price': 16.5, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 5.353}, {'back_prices': [{'depth': '1', 'price': 3.4, 'type': 'L', 'amount': 55.0}, {'depth': '2', 'price': 3.3, 'type': 'L', 'amount': 74.16}, {'depth': '3', 'price': 2.42, 'type': 'L', 'amount': 222.5}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '11', 'selection_id': '5233831', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.802}, {'back_prices': [{'depth': '1', 'price': 2.48, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.28, 'type': 'L', 'amount': 127.14}, {'depth': '3', 'price': 1.8, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '12', 'selection_id': '5256526', 'lay_prices': [{'depth': '1', 'price': 32.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.469}, {'back_prices': [{'depth': '1', 'price': 2.36, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.1, 'type': 'L', 'amount': 148.33}, {'depth': '3', 'price': 1.69, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '13', 'selection_id': '5445188', 'lay_prices': [{'depth': '1', 'price': 28.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.021}, {'back_prices': [{'depth': '1', 'price': 2.16, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 1.92, 'type': 'L', 'amount': 158.93}, {'depth': '3', 'price': 1.57, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '14', 'selection_id': '5145527', 'lay_prices': [{'depth': '1', 'price': 34.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.744}, {'back_prices': [{'depth': '1', 'price': 2.56, 'type': 'L', 'amount': 70.0}, {'depth': '2', 'price': 2.46, 'type': 'L', 'amount': 105.95}, {'depth': '3', 'price': 1.92, 'type': 'L', 'amount': 317.85}], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '15', 'selection_id': '5969261', 'lay_prices': [{'depth': '1', 'price': 20.0, 'type': 'B', 'amount': 37.08}], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.628}], 'in_play_delay': '0'}
+2012-12-23 16:25:51,542 __main__ INFO game not found home_team_id None home_team_id None
+2012-12-23 16:25:51,546 __main__ INFO sleeping 5.0 s between turns
+2012-12-23 16:25:56,552 __main__ INFO -----------------------------------------------------------
+2012-12-23 16:25:56,718 __main__ INFO Found 3 markets. Checking strategy...
+2012-12-23 16:25:56,741 __main__ INFO --++--++ market # 1/3 pau (fra) 23rd dec- --++--++ 
+2012-12-23 16:25:56,866 __main__ WARNING Team not found in TEAM_ALIASES: pau (fra) 23rd dec
+2012-12-23 16:25:57,151 __main__ INFO prices :{'status': 'SUSPENDED', 'info': 'NR (CET) &lt;br&gt;Usta(4.4%,1405)', 'refresh_time': '1356276331864', 'market_id': '107800943', 'base_rate': 5.0, 'currency': 'SEK', 'none_runners': 'USTA,13.05,4.392;', 'bsp_market': 'N', 'no_of_winners': 3, 'discount_allowed': 'true', 'runners': [{'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '0', 'selection_id': '5988587', 'lay_prices': [], 'last_price_matched': 1.86, 'near_sp': '', 'total_matched': 96.63, 'reduction_factor': 19.486}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '1', 'selection_id': '6677897', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 14.004}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '2', 'selection_id': '5912302', 'lay_prices': [], 'last_price_matched': 2.34, 'near_sp': '', 'total_matched': 146.63, 'reduction_factor': 13.63}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '3', 'selection_id': '6908714', 'lay_prices': [], 'last_price_matched': 3.3, 'near_sp': '', 'total_matched': 42.38, 'reduction_factor': 10.656}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '4', 'selection_id': '6934044', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 9.29}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '5', 'selection_id': '6896681', 'lay_prices': [], 'last_price_matched': 3.95, 'near_sp': '', 'total_matched': 10.59, 'reduction_factor': 8.739}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '6', 'selection_id': '5690575', 'lay_prices': [], 'last_price_matched': 3.9, 'near_sp': '', 'total_matched': 141.97, 'reduction_factor': 8.739}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '7', 'selection_id': '6283527', 'lay_prices': [], 'last_price_matched': 5.9, 'near_sp': '', 'total_matched': 42.38, 'reduction_factor': 7.794}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '8', 'selection_id': '6111794', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 7.338}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '9', 'selection_id': '6908709', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.657}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '10', 'selection_id': '6081210', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 4.657}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '11', 'selection_id': '6231242', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.693}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '12', 'selection_id': '6908704', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.597}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '13', 'selection_id': '6677902', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.25}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '14', 'selection_id': '6695015', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 3.056}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '15', 'selection_id': '6934045', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 1.852}, {'back_prices': [], 'handicap': '', 'vacant': 'false', 'far_sp': '', 'actual_sp': '', 'order_index': '16', 'selection_id': '6453304', 'lay_prices': [], 'last_price_matched': '', 'near_sp': '', 'total_matched': 0.0, 'reduction_factor': 1.659}], 'in_play_delay': '0'}
+2012-12-23 16:25:57,173 __main__ INFO --++--++ market # 2/3 thurl 23rd dec- --++--++ 
+2012-12-23 16:25:57,607 __main__ WARNING Team not found in TEAM_ALIASES: thurl 23rd dec

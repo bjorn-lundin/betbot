@@ -68,11 +68,16 @@ create table bets (
   size float,
   bet_type varchar,
   runner_name  varchar,
+  runner_name  varchar,
+  bet_won  boolean ,
   primary key (bet_id)
+  bet_won float,
   );
   
+-- alter table BETS add column   bet_won float;  
 --alter table BETS add column bet_type varchar;  
 --alter table BETS add column runner_name varchar;  
+--alter table BETS add column bet_won  boolean default null;
 
 
 create or replace view betinfo as
@@ -90,6 +95,9 @@ select
   bets.code, 
   bets.success, 
   bets.size
+  bets.runner_name,
+  bets.bet_won,
+  bets.profit
 from markets, bets
 where markets.market_id = bets.market_id;
   
@@ -244,3 +252,4 @@ select
 ;
 
 
+create sequence bet_id_serial;
