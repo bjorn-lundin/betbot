@@ -15,12 +15,13 @@ from db import Db
 import socket
 import logging.handlers
 from operator import itemgetter, attrgetter
-
+import httplib2
 
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
     MAX_ODDS = 12.0
+    MIN_ODDS = 2.5
     HOURS_TO_MATCH_START = 0.08 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
@@ -115,8 +116,8 @@ class SimpleBot(object):
                 if (    market['market_name'] == 'Plats' # 
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] >= 3 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] >= 8 # (plats...) kan vara fler än 3
+                    and market['no_of_winners'] == 3 # (plats...) kan vara fler än 3
+                    and market['no_of_runners'] >= 8 # 
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
@@ -204,7 +205,9 @@ class SimpleBot(object):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                    if dct[1] <= self.MAX_ODDS and i <= 3 :
+			    #pick the first hore with reasonable odds, but it must 
+			    #be 1 of the 3 from the top of the reversed list
+                    if dct[1] <= self.MAX_ODDS and  dct[1] >= self.MIN_ODDS and i <= 3 :
                        self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -400,7 +403,10 @@ while True:
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-
+	
+    except httplib2.ServerNotFoundError :
+        log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
 #    except psycopg2.DatabaseError :
 #        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
