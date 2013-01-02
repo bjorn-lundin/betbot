@@ -70,11 +70,11 @@ create table bets (
   runner_name  varchar,
   runner_name  varchar,
   bet_won  boolean ,
+  profit float,
   primary key (bet_id)
-  bet_won float,
   );
   
--- alter table BETS add column   bet_won float;  
+--alter table BETS add column profit float;  
 --alter table BETS add column bet_type varchar;  
 --alter table BETS add column runner_name varchar;  
 --alter table BETS add column bet_won  boolean default null;
@@ -94,10 +94,11 @@ select
   bets.price, 
   bets.code, 
   bets.success, 
-  bets.size
+  bets.size,
   bets.runner_name,
   bets.bet_won,
-  bets.profit
+  bets.profit,
+  bets.bet_type
 from markets, bets
 where markets.market_id = bets.market_id;
   
