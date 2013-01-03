@@ -20,9 +20,9 @@ import httplib2
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 12.0
-    MIN_ODDS = 2.5
-    HOURS_TO_MATCH_START = 0.02 #  min
+    MAX_ODDS = 15.0
+    MIN_ODDS = 5.0
+    HOURS_TO_MATCH_START = 0.04 #  min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
@@ -249,9 +249,9 @@ class SimpleBot(object):
                 self.log.info( 'index     : ' + str(index))
                 
                 if self.DRY_RUN :
-                    bet_category = 'DRY_RUN_HORSES_LAY_BET'
+                    bet_category = 'DRY_RUN_HORSES_PLACE_LAY_BET'
                 else:     
-                    bet_category = 'HORSES_LAY_BET'
+                    bet_category = 'HORSES_PLACE_LAY_BET'
 
                     
                 if lay_odds and selection:
@@ -372,9 +372,9 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/horses_lay_bets.log',
+    'logs/horses_place_lay_bets.log',
     mode = 'a',
-    maxBytes = 500000,
+    maxBytes = 5000000,
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
