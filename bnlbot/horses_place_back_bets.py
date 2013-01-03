@@ -22,13 +22,13 @@ class SimpleBot(object):
     BETTING_SIZE = 30.0
     MAX_ODDS = 2.0
     MIN_ODDS = 1.05
-    HOURS_TO_MATCH_START = 0.02 # 4,8 min
+    HOURS_TO_MATCH_START = 0.04 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    DRY_RUN = True     
+    DRY_RUN = False
 
      
     def __init__(self, log):
@@ -206,7 +206,7 @@ class SimpleBot(object):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-			    #pick the first hore with reasonable odds, but it must 
+			    #pick the first horse with reasonable odds, but it must 
 			    #be 1 of the 3 from the top of the unreversed list
                     if dct[1] <= self.MAX_ODDS and  dct[1] >= self.MIN_ODDS and i <= 3 :
                        self.log.info( 'will bet on ' + \
@@ -249,9 +249,9 @@ class SimpleBot(object):
                 self.log.info( 'index     : ' + str(index))
                 
                 if self.DRY_RUN :
-                    bet_category = 'DRY_RUN_HORSES_BACK_BET'
+                    bet_category = 'DRY_RUN_HORSES_PLACE_BACK_BET'
                 else:     
-                    bet_category = 'HORSES_BACK_BET'
+                    bet_category = 'HORSES_PLACE_BACK_BET'
 
                     
                 if lay_odds and selection:
@@ -372,9 +372,9 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/horses_back_bets.log',
+    'logs/horses_place_back_bets.log',
     mode = 'a',
-    maxBytes = 500000,
+    maxBytes = 5000000,
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
