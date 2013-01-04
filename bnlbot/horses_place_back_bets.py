@@ -22,14 +22,13 @@ class SimpleBot(object):
     BETTING_SIZE = 30.0
     MAX_ODDS = 2.0
     MIN_ODDS = 1.05
-    HOURS_TO_MATCH_START = 0.03 # 4,8 min
+    HOURS_TO_MATCH_START = 0.02 # 1.2 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
-    DELAY_BETWEEN_TURNS =  5.0
-    NETWORK_FAILURE_DELAY = 60.0
+    DELAY_BETWEEN_TURNS_NO_MARKETS  = 15.0
+    DELAY_BETWEEN_TURNS             =  5.0
+    NETWORK_FAILURE_DELAY           = 60.0
     conn = None
     DRY_RUN = False
-
      
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
@@ -125,8 +124,6 @@ class SimpleBot(object):
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds 
-#                    print 'market', market['market_id'], 'will start in', \
-#                           sec_til_start,'seconds Matchodds'
                     temp = [sec_til_start, market]
                     markets.append(temp)
             markets.sort() # sort into time order (earliest game first)
@@ -257,7 +254,7 @@ class SimpleBot(object):
                 if lay_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -2)
+                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -5)
                     bet_size = self.BETTING_SIZE # my stake
                     bet = {
                         'marketId': market_id,
