@@ -41,10 +41,10 @@ class Funding(object):
         funds_ok = False
         if int(self.avail_balance) > self.MAX_SALDO :
             self.transfer_to_visa()
-#            try :
-            self.alert_via_mail()
-#            except:
-#                self.log.info('exception when sending mail')
+            try :
+                self.alert_via_mail()
+            except:
+                self.log.info('exception when sending mail')
                 
         elif int(self.avail_balance) < self.MIN_SALDO :  
             self.log.warning( 'ALARM, insufficient funds, only  ' + str(self.avail_balance) +' kr left!!')
