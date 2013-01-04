@@ -22,7 +22,7 @@ class SimpleBot(object):
     BETTING_SIZE = 30.0
     MAX_ODDS = 2.0
     MIN_ODDS = 1.05
-    HOURS_TO_MATCH_START = 0.04 # 4,8 min
+    HOURS_TO_MATCH_START = 0.03 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
@@ -102,7 +102,7 @@ class SimpleBot(object):
               events = ['7'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR','USA','ZAF','FRA'])
+              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
 #               countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
