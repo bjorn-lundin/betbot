@@ -24,7 +24,7 @@ class SimpleBot(object):
     MIN_ODDS = 1.05
     HOURS_TO_MATCH_START = 0.04 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
+    DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
@@ -102,7 +102,7 @@ class SimpleBot(object):
               events = ['7'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR'])
+              countries = ['GBR','USA','ZAF','FRA'])
 #               countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
@@ -257,7 +257,7 @@ class SimpleBot(object):
                 if lay_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -1)
+                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -2)
                     bet_size = self.BETTING_SIZE # my stake
                     bet = {
                         'marketId': market_id,
