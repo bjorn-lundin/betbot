@@ -27,8 +27,8 @@ class Funding(object):
         self.timestamp_last_mail_sent = self.modification_date() 
         
         try:
-            avail_balance = self.funds['availBalance']
-            exposure     = abs(self.funds['exposure'])
+            self.avail_balance = self.funds['availBalance']
+            self.exposure     = abs(self.funds['exposure'])
         except :
             self.log.error( "check_and_fix_funds Unexpected error:" + str(sys.exc_info()[0]))
             return False
@@ -39,19 +39,19 @@ class Funding(object):
 #        print 'funds', funds
           
         funds_ok = False
-        if int(avail_balance) > self.MAX_SALDO :
+        if int(self.avail_balance) > self.MAX_SALDO :
             self.transfer_to_visa()
-            try :
-                self.alert_via_mail()
-            except:
-                self.log.info('exception when sending mail')
+#            try :
+            self.alert_via_mail()
+#            except:
+#                self.log.info('exception when sending mail')
                 
-        elif int(avail_balance) < self.MIN_SALDO :  
-            self.log.warning( 'ALARM, insufficient funds, only  ' + str(avail_balance) +' kr left!!')
-        elif int(exposure) > self.MAX_EXPOSURE :  
-            self.log.warning( 'ALARM, too much exposure ' + str(exposure) + ' > ' + str(self.MAX_EXPOSURE))
+        elif int(self.avail_balance) < self.MIN_SALDO :  
+            self.log.warning( 'ALARM, insufficient funds, only  ' + str(self.avail_balance) +' kr left!!')
+        elif int(self.exposure) > self.MAX_EXPOSURE :  
+            self.log.warning( 'ALARM, too much exposure ' + str(self.exposure) + ' > ' + str(self.MAX_EXPOSURE))
         else:  
-            self.log.info( 'avail_balance ' + str(avail_balance) +  ' kr exposure ' + str(exposure) + ' kr')
+            self.log.info( 'avail_balance ' + str(self.avail_balance) +  ' kr exposure ' + str(self.exposure) + ' kr')
             funds_ok = True
             
         self.funds_ok = funds_ok
@@ -61,12 +61,12 @@ class Funding(object):
     def transfer_to_visa(self):
         """send money to Visa card"""
         self.log.warning('ALARM, funds too big, transfer ' + str(self.TRANSFER_SUM) +
-                          ' kr from saldo of ' + str(avail_balance) + ' kr')
+                          ' kr from saldo of ' + str(self.avail_balance) + ' kr')
         self.log.warning( 'transfer is not implementet yet')
         self.log.warning( 'REFUSING TO CONTINUE INSTEAD')
 ############################# end transfer_to_visa
 
-    def modification_date():
+    def modification_date(self):
         try :
             t = os.path.getmtime(self.LAST_MAIL_FILE)
             return datetime.datetime.fromtimestamp(t)
@@ -81,7 +81,7 @@ class Funding(object):
              
     def alert_via_mail(self) :
 
-        if self.modification_date() + datetime.timedelta(hours = 1) > datetime.datetime.now() :
+        if self.modification_date() + datetime.timedelta(hours = 1) < datetime.datetime.now() :
             self.log.info('Send mail to remind of overflow')
 
             sender = 'bnlbetbot@gmail.com'
@@ -101,7 +101,7 @@ class Funding(object):
                        "Content-Type: text/html"]
             headers = "\r\n".join(headers)
  
-            session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
  
             session.ehlo()
             session.starttls()
