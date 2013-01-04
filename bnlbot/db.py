@@ -21,6 +21,12 @@ class Db(object):
                                           host='192.168.0.24' \
                                           password=None") 
                                           
+        elif self.hostname == 'Rebecca.local' :
+            self.conn = psycopg2.connect("dbname='betting' \
+                                          user='bnl' \
+                                          host='192.168.0.24' \
+                                          password=None") 
+                                                                                    
         elif self.hostname == 'ip-10-64-5-16' :                     
             self.conn = psycopg2.connect("dbname='bnl' \
                                           user='bnl' \
