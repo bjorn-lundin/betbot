@@ -1360,4 +1360,35 @@ class API(object):
             self.__make_templates()
             self.__load_templates()
 
+    #bnl start get bet
+    def get_bet(self, bet_id ):
+        """Get a bet by its ID """
+        # build xml request string
+        req_xml = self.templates[self.exchange]["getBet"]
+        req_xml = self.remove_string(req_xml, "<locale>", "</locale>\n")
+        req_xml = self.set_value(req_xml, "<betId>", str(bet_id), "</betId>")
 
+        # send request
+        resp_xml = self.__send_request(False, req_xml, "getBet")
+        
+        resp_code = self.get_value(resp_xml, "GetBetErrorEnum'>", "</")
+        if resp_code == "OK":
+            # parse response
+            temp = {}
+
+            info = self.get_value(resp_xml, "<bet xsi:type='n2:Bet'>", "</bet>")
+            info = self.remove_string(info, "<matches xsi:type='n2:ArrayOfMatch'>", "</matches>")
+            for field in info.split("</"):
+                key = self.get_value(field, "<", " ")
+                val = field.rpartition(">")[2]
+                if key: temp[key] = val
+            return temp
+        else:
+            if resp_code == "API_ERROR":
+                resp_code += ": " + self.get_value(resp_xml,
+                    "<errorCode xsi:type='n2:APIErrorEnum'>", "</errorCode>")
+            elif resp_code == '':
+                resp_code = "SERVER_RESPONSE_ERROR: Response XML = " + resp_xml
+        return resp_code
+    
+    #bnl stop get bet
