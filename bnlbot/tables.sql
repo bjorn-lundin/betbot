@@ -108,6 +108,69 @@ select
 from markets, bets
 where markets.market_id = bets.market_id;
   
+  
+
+
+create or replace view bet_with_commission as
+select * from
+(
+(
+select 
+  markets.market_id,
+  markets.market_type,
+  markets.menu_path,
+  markets.market_name,
+  markets.market_status,
+  markets.event_date,   
+  markets.bet_delay,  
+  bets.bet_id,
+  bets.selection_id, 
+  bets.price, 
+  bets.code, 
+  bets.success, 
+  bets.size,
+  bets.runner_name,
+  0.95 * bets.profit as profit,
+  bets.bet_placed,
+  bets.full_market_name,
+  bets.bet_type,
+  bets.bet_won
+from markets, bets
+where markets.market_id = bets.market_id
+and bets.profit >= 0.0
+) 
+union (
+select 
+  markets.market_id,
+  markets.market_type,
+  markets.menu_path,
+  markets.market_name,
+  markets.market_status,
+  markets.event_date,   
+  markets.bet_delay,  
+  bets.bet_id,
+  bets.selection_id, 
+  bets.price, 
+  bets.code, 
+  bets.success, 
+  bets.size,
+  bets.runner_name,
+  bets.profit,
+  bets.bet_placed,
+  bets.full_market_name,
+  bets.bet_type,
+  bets.bet_won
+from markets, bets
+where markets.market_id = bets.market_id
+and bets.profit < 0.0
+) 
+) tmp
+
+
+
+
+ 
+  
 create table teams (
   team_id integer,
   team_name varchar,

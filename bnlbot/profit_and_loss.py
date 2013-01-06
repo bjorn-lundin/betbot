@@ -52,15 +52,6 @@ class SimpleBot(object):
 ############################# end login
 
 
-    def update_zeroed_bet(self):
-        self.log.info( 'update bets with 0.0 price to 0.0 profit' )
-        cur = self.conn.cursor()        
-        cur.execute("update BETS set profit = %s, BET_WON = %s where PROFIT is null and PRICE = 0.0", (0.0, True))
-        cur.close()
-        self.conn.commit()
-############################# end update_zeroed_bet
-# self.update_bet(bet['betId'],bet['profitAndLoss'], bet['betStatus'], bet['matchedSize'], bet['avgPrice']) 
-
     def update_bet(self, bet ):        
         betid = bet['betId'], 
         profit = bet['profitAndLoss']
@@ -88,42 +79,48 @@ class SimpleBot(object):
         self.conn.commit()
 ############################# end update_bet
 
+    def delete_bet(self, bet ):        
+        betid = bet['betId'], 
+        status = bet['betStatus']
 
-    def get_unsettled_bet_history(self, bet_type):
+        self.log.info( 'delete bet:' + str(betid) + ' status= ' + str(status) + ' bet = ' + str(bet) )
+        cur = self.conn.cursor()        
+        cur.execute("delete from BETS where BET_ID = %s", (betid,))
+        cur.close()
+        self.conn.commit()
+############################# end delete_bet
+
+    def get_unsettled_bets(self):
         """returns a list of markets with no profit in db or an error string"""
 
-        self.log.info( 'calling bet_history : ' )
+        self.log.info( 'calling get_unsettled_bets : ' )
+        betids = []
         cur = self.conn.cursor()        
-        cur.execute("select count('a'), EVENT_DATE from BETINFO"  \
-                    " where PROFIT is null"  \
-                    " and BET_TYPE not like 'DRY_RUN%'"  \
-                    " group by EVENT_DATE"  \
-                    " order by EVENT_DATE")
+        cur.execute("select BET_ID from BETINFO"  \
+                    " where CODE <> 'S'"  \
+                    " and BET_TYPE not like 'DRY_RUN%'" \
+                    " order by BET_ID")
+
         row = cur.fetchone()
+        while row:
+            betids.append(int(row[0]))
+            row = cur.fetchone()
+            
         cur.close()
         self.conn.commit()
         
-        if row:
-            the_date = row[1]
-            self.log.info( 'call bet_history for : ' + str(the_date) + ' +- 1 day')
-#            print 'row', row          
-            from_date = datetime.datetime(the_date.year, the_date.month, the_date.day,  0,  0,  0) - datetime.timedelta(days=1)
-            to_date   = datetime.datetime(the_date.year, the_date.month, the_date.day, 23, 59, 59) + datetime.timedelta(days=1)
-#        placed_date_to = datetime.datetime(2012, 11, 28, 23, 59, 59))        
-          
-            bet_history = self.api.get_bet_history(bet_types_included = bet_type,
-                                                   event_type_ids = [1,7],
-                                                   market_types_included = ['O'],
-                                                   placed_date_from = from_date, 
-                                                   placed_date_to = to_date)        
-            self.log.info( 'bet_history : ' + str(bet_history))            
-        else :
-            self.log.info( 'NO_UNSETTLED_BETS')
-            bet_history = 'NO_UNSETTLED_BETS'
-        return bet_history
+        bets = []
+        for betid in betids :
+            self.do_throttle()
+            bet = self.api.get_bet(betid) 
+            self.log.info( 'betid : ' + str(betid) + ' -> ' + str(bet))            
+            if type(bet) is dict :
+                bets.append(bet)
+        return bets
         
     ############################# end get_unsettled_bet_history
 
+    
     def do_throttle(self):
         """return only when it is safe to send another data request"""
         wait = self.throttle['next_req'] - time()
@@ -138,30 +135,41 @@ class SimpleBot(object):
         while login_status == 'OK': 
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------------------')
-            for bet_type in ['V','C','L','S'] :
-                bet_history = self.get_unsettled_bet_history(bet_type)
-                if type(bet_history) is dict:
-                    if bet_history['total_record_count'] == 0:
-                        # no markets found...
-                        s = 'PROFIT_AND_LOSS No unsettled bets found. Sleeping for ' + \
-                             str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
-                        self.log.info(s)
-                        sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
-                    else:                    
-#                        self.update_zeroed_bet() 
-                        for bet in bet_history['bets']:
-                            self.log.info( bet_type + ' - marketname:' + \
-                                           bet['fullMarketName'].decode("iso-8859-1") + \
-                                           str(bet) )
+            bets = self.get_unsettled_bets()
+            if type(bets) is list:
+                if len(bets) == 0:
+                    # no markets found...
+                    s = 'PROFIT_AND_LOSS No unsettled bets found. Sleeping for ' + \
+                         str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
+                    self.log.info(s)
+                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
+                else:
+#                     self.update_zeroed_bet() 
+                    for bet in bets:
+                        self.log.info( ' marketname:' + \
+                                       bet['fullMarketName'].decode("iso-8859-1") + \
+                                       str(bet) )
+                        if bet['betStatus'] == 'S' :
                             self.update_bet(bet) 
-    
-                        # check if session is still OK
-                    if self.no_session:
-                        login_status = self.login(uname, pword, prod_id, vend_id)
-                        s = 'API ERROR: NO_SESSION. Login resp =' + \
-                             str(login_status) + '\n'
-                        s += '---------------------------------------------'
-                        self.log.info(s)
+                        elif bet['betStatus'] == 'L' :    
+                            self.delete_bet(bet) 
+                        elif bet['betStatus'] == 'V' :    
+                            self.delete_bet(bet) 
+                        elif bet['betStatus'] == 'C' :    
+                            self.delete_bet(bet) 
+                        else :
+                            self.log.info( ' not settled yet, betStatus: ' + bet['betStatus'] + '  ' + \
+                                       bet['fullMarketName'].decode("iso-8859-1") )
+                            
+                            
+
+                    # check if session is still OK
+                if self.no_session:
+                    login_status = self.login(uname, pword, prod_id, vend_id)
+                    s = 'API ERROR: NO_SESSION. Login resp =' + \
+                         str(login_status) + '\n'
+                    s += '---------------------------------------------'
+                    self.log.info(s)
             self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
             sleep(self.DELAY_BETWEEN_TURNS)
         # main loop ended...
