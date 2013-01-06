@@ -71,9 +71,13 @@ create table bets (
   runner_name  varchar,
   bet_won  boolean ,
   profit float,
+  bet_placed timestamp,
+  full_market_name varchar,
   primary key (bet_id)
   );
   
+
+--alter table BETS add column bet_placed timestamp;  
 --alter table BETS add column profit float;  
 --alter table BETS add column bet_type varchar;  
 --alter table BETS add column runner_name varchar;  
@@ -96,9 +100,11 @@ select
   bets.success, 
   bets.size,
   bets.runner_name,
-  bets.bet_won,
   bets.profit,
-  bets.bet_type
+  bets.bet_placed,
+  bets.full_market_name,
+  bets.bet_type,
+  bets.bet_won
 from markets, bets
 where markets.market_id = bets.market_id;
   
