@@ -110,6 +110,14 @@ class Funding(object):
  
             session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
             session.quit()
+            try :
+                file = open(self.LAST_MAIL_FILE, 'w+')
+                try :
+                    file.write(str(datetime.datetime.now()) + ' ' + str(self.avail_balance))
+                finally :
+                    file.close()
+            except :
+                pass   
         else :    
             self.log.info('Less than 1 hour since last Send mail to remind of overflow')
 ############################# end alert_via_mail
