@@ -13,6 +13,9 @@ class Funding(object):
     LAST_MAIL_FILE = './mail_file'
     SMTP_SERVER = 'smtp.gmail.com'
     SMTP_PORT = 587
+    SENDER = 'bnlbetbot@gmail.com'
+    RECIPIENT = 'b.f.lundin@gmail.com'
+    PASSWORD = 'Alice2010'
     
     MAX_SALDO = 2000.0
     MIN_SALDO = 300.0
@@ -80,23 +83,19 @@ class Funding(object):
 ############################# end modification_date
              
     def alert_via_mail(self) :
-
         if self.modification_date() + datetime.timedelta(hours = 1) < datetime.datetime.now() :
             self.log.info('Send mail to remind of overflow')
 
-            sender = 'bnlbetbot@gmail.com'
-            recipient = 'b.f.lundin@gmail.com'
             subject = 'BetBot Saldo Overflow'
             body = 'Dags att flytta betbot-pengar'
-            password = 'Alice2010'
  
             "Sends an e-mail to the specified recipient."
  
             body = "" + body + ""
  
-            headers = ["From: " + sender,
+            headers = ["From: " + self.SENDER,
                        "Subject: " + subject,
-                       "To: " + recipient,
+                       "To: " + self.RECIPIENT,
                        "MIME-Version: 1.0",
                        "Content-Type: text/html"]
             headers = "\r\n".join(headers)
@@ -106,9 +105,9 @@ class Funding(object):
             session.ehlo()
             session.starttls()
             session.ehlo
-            session.login(sender, password)
+            session.login(self.SENDER, self.PASSWORD)
  
-            session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
+            session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
             session.quit()
             try :
                 file = open(self.LAST_MAIL_FILE, 'w+')
@@ -121,4 +120,35 @@ class Funding(object):
         else :    
             self.log.info('Less than 1 hour since last Send mail to remind of overflow')
 ############################# end alert_via_mail
+
+    def mail_saldo(self) :
+        self.log.info('Send mail with daily saldo report')
+
+        subject = 'BetBot Saldo Report'
+        body = 'Dagen saldo-rapport\n'
+        body += 'saldo:    ' + str( self.avail_balance )
+        body += 'exposure: ' + str( self.exposure )
+
+        
+        "Sends an e-mail to the specified recipient."
+
+        body = "" + body + ""
+
+        headers = ["From: " + self.SENDER,
+                   "Subject: " + subject,
+                   "To: " + self.RECIPIENT,
+                   "MIME-Version: 1.0",
+                   "Content-Type: text/html"]
+        headers = "\r\n".join(headers)
+
+        session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
+
+        session.ehlo()
+        session.starttls()
+        session.ehlo
+        session.login(self.SENDER, self.PASSWORD)
+
+        session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
+        session.quit()
+############################# end mail_saldo
 
