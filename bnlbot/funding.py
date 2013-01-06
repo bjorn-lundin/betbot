@@ -127,9 +127,9 @@ class Funding(object):
         subject = 'BetBot Saldo Report'
         
         body = 'Dagens saldo-rapport '
-        body += '\r\n saldo:    ' + str( self.avail_balance )
-        body += '\r\n exposure: ' + str( self.exposure )
-        body += '\r\n exposure: ' + str( self.exposure )
+        body += '\r\n saldo:     ' + str( self.avail_balance )
+        body += '\r\n exposure:  ' + str( self.exposure )
+        body += '\r\n timestamp: ' + str( datetime.datetime.now() )
 
         
         "Sends an e-mail to the specified recipient."
