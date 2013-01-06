@@ -125,9 +125,11 @@ class Funding(object):
         self.log.info('Send mail with daily saldo report')
 
         subject = 'BetBot Saldo Report'
-        body = 'Dagen saldo-rapport\n'
-        body += 'saldo:    ' + str( self.avail_balance )
-        body += 'exposure: ' + str( self.exposure )
+        
+        body = 'Dagens saldo-rapport '
+        body += '\r\n saldo:    ' + str( self.avail_balance )
+        body += '\r\n exposure: ' + str( self.exposure )
+        body += '\r\n exposure: ' + str( self.exposure )
 
         
         "Sends an e-mail to the specified recipient."
