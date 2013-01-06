@@ -288,9 +288,9 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/utvisning.log',
+    'logs/sendoff.log',
     mode = 'a',
-    maxBytes = 500000,
+    maxBytes = 5000000,
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
