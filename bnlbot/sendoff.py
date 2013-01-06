@@ -23,7 +23,7 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     NETWORK_FAILURE_DELAY = 60.0
-    DELAY_BETWEEN_TURNS = 5.0
+    DELAY_BETWEEN_TURNS = 30.0
     conn = None
     
     def __init__(self, log):
