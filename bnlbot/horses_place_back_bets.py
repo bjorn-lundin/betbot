@@ -22,7 +22,7 @@ class SimpleBot(object):
     BETTING_SIZE = 30.0
     MAX_ODDS = 2.0
     MIN_ODDS = 1.15
-    HOURS_TO_MATCH_START = 0.03 # 4,8 min
+    HOURS_TO_MATCH_START = 0.02 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
@@ -118,7 +118,7 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 3 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] >= 8 # 
+#                    and market['no_of_runners'] >= 8 # 
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
@@ -208,7 +208,7 @@ class SimpleBot(object):
                             str(dct[3])                         )
 			    #pick the first horse with reasonable odds, but it must 
 			    #be 1 of the 3 from the top of the unreversed list
-                    if dct[1] <= self.MAX_ODDS and  dct[1] >= self.MIN_ODDS and i <= 1 :
+                    if dct[0] <= self.MAX_ODDS and  dct[0] >= self.MIN_ODDS and i <= 1 :
                        self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
