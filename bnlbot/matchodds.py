@@ -19,7 +19,7 @@ import logging.handlers
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_SALDO = 2000.0
+    MAX_SALDO = 3100.0
     MIN_SALDO = 300.0
     TRANSFER_SUM = 1000.0
     MAX_EXPOSURE = 700.0
@@ -212,12 +212,12 @@ class SimpleBot(object):
 #                         selection = selection_home_victory
 #                         bet_category = 'HOME_TWO_GOAL_LEAD_TIME_HIGH_ODDS'
 #                   
-#                #home victory? 2 goal lead, fairly soon end game
+ #               #home victory? 2 goal lead, fairly soon end game
 #                if   odds_home_victory and \
 #                     odds_home_victory >= self.MIN_ODDS and \
 #                     my_game.home_goals - my_game.away_goals  >= 2 and \
 #                     my_game.time_in_game_numeric and \
-#                     int(my_game.time_in_game) >= self.TWO_GOAL_LEAD_TIME :
+ #                    int(my_game.time_in_game) >= self.TWO_GOAL_LEAD_TIME :
 #                   
 #                    back_price = odds_home_victory
 #                    selection = selection_home_victory
@@ -230,31 +230,31 @@ class SimpleBot(object):
 #                     my_game.time_in_game_numeric and \
 #                     int(my_game.time_in_game) >= self.TWO_GOAL_LEAD_TIME :
 #
-#                   back_price = odds_away_victory
+#                    back_price = odds_away_victory
 #                    selection = selection_away_victory
 #                    bet_category = 'AWAY_FULL_TWO_GOAL_LEAD_TIME'
 #
 #                #home victory? 1 goal lead, soon end game
-                 if odds_home_victory and \
-                      odds_home_victory >= self.MIN_ODDS and \
-                      my_game.home_goals - my_game.away_goals  >= 1 and \
-                      my_game.time_in_game_numeric and \
-                      int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
- 
-                     back_price = odds_home_victory
-                     selection = selection_home_victory
-                     bet_category = 'HOME_FULL_ONE_GOAL_LEAD_TIME'
- 
-                 #away victory? 1 goal lead, soon end game
-                 elif odds_away_victory and \
-                      odds_away_victory >= self.MIN_ODDS and \
-                      my_game.away_goals - my_game.home_goals  >= 1 and \
-                      my_game.time_in_game_numeric and \
-                      int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
- 
-                     back_price = odds_away_victory
-                     selection = selection_away_victory
-                     bet_category = 'AWAY_FULL_ONE_GOAL_LEAD_TIME'
+                if odds_home_victory and \
+                     odds_home_victory >= self.MIN_ODDS and \
+                     my_game.home_goals - my_game.away_goals  >= 1 and \
+                     my_game.time_in_game_numeric and \
+                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
+
+                    back_price = odds_home_victory
+                    selection = selection_home_victory
+                    bet_category = 'HOME_FULL_ONE_GOAL_LEAD_TIME'
+
+                #away victory? 1 goal lead, soon end game
+                elif odds_away_victory and \
+                     odds_away_victory >= self.MIN_ODDS and \
+                     my_game.away_goals - my_game.home_goals  >= 1 and \
+                     my_game.time_in_game_numeric and \
+                     int(my_game.time_in_game) >= self.ONE_GOAL_LEAD_TIME :
+
+                    back_price = odds_away_victory
+                    selection = selection_away_victory
+                    bet_category = 'AWAY_FULL_ONE_GOAL_LEAD_TIME'
 
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -372,7 +372,7 @@ log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
     'logs/matchodds.log',
     mode = 'a',
-    maxBytes = 5000000,
+    maxBytes = 500000,
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
