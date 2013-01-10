@@ -1,0 +1,7 @@
+...
+SQLAlchemy==0.7.9
+argparse==1.2.1
+boto==2.6.0
+psycopg2==2.4.5
+suds==0.4
+...
