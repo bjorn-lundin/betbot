@@ -14,8 +14,8 @@ EMAIL_LOG_ERRORS = False
 AIS_TYPE = 'test'
 
 if AIS_TYPE == 'test':
-    AIS_WS_URL = AIS_WS_HOST + 'infostub/PartnerInfoEmulator/version'\
-               + AIS_VERSION + '?WSDL'
+    AIS_WS_URL = AIS_WS_HOST + 'infostub/PartnerInfoEmulator/version' + \
+                 AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
     AIS_DATADIR = 'test_data'
@@ -30,13 +30,14 @@ if AIS_TYPE == 'test':
     EMAIL_LOG_TLS = False
 
 elif AIS_TYPE == 'prod':
-    AIS_WS_URL = AIS_WS_HOST + 'info/PartnerInfoService/version'\
-               + AIS_VERSION + '?WSDL'
+    AIS_WS_URL = AIS_WS_HOST + 'info/PartnerInfoService/version' + \
+                 AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
     AIS_DATADIR = 'prod_data'
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/ais_prod_db'
     EMAIL_LOG_HOST = ''
+    EMAIL_LOG_PORT = ''
     EMAIL_LOG_FROM = ''
     EMAIL_LOG_TO = []
     EMAIL_LOG_SUBJECT = 'AIS ERROR'
