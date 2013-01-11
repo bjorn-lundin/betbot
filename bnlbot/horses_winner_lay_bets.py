@@ -102,7 +102,7 @@ class SimpleBot(object):
               events = ['7'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR'])
+              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
 #              countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
