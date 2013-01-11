@@ -20,15 +20,15 @@ import httplib2
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 2.0
-    MIN_ODDS = 1.15
-    HOURS_TO_MATCH_START = 0.01 # 36 s min
+    MAX_ODDS = 15.0
+    MIN_ODDS = 2.0
+    HOURS_TO_MATCH_START = 0.02 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    DRY_RUN = False
+    DRY_RUN = True     
 
      
     def __init__(self, log):
@@ -96,29 +96,71 @@ class SimpleBot(object):
         # NOTE: get_all_markets is NOT subject to data charges!
 #        print datetime.datetime.now(), 'api.get_all_markets start'
 #  'Horse Racing': '7', 
-#  'Greyhound Racing': '4339', 
-
+#self.HOURS_TO_MATCH_START
+#               countries = None)
         markets = self.api.get_all_markets(
               events = ['4339'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
               countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
-#               countries = None)
+#              countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-                self.log.info( 'market :' + str(market))
+#                self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
                 markets.remove(market)
-                if (    market['market_name'] == 'Plats' # 
+                market_ok = market['menu_path'].lower().find("special") == -1 
+                if market_ok :
+                    market_ok = market['market_name'] != 'Plats'
+                if market_ok :
+                    market_ok = market['market_name'].lower().find("forecast") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("reverse") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find(" v ") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("without ") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("winning stall") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find(" vs ") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find(" rfc ") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find(" fc ") == -1 
+                if market_ok :
+                    market_ok = market['market_name'].lower().find("less than") == -1 
+                if market_ok :
+                    market_ok = market['market_name'].lower().find("more than") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("lengths") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("winning dist") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("top jockey") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("dist") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("finish") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("isp %") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("winbsp") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("fav sp") == -1 
+                if market_ok : 
+                    market_ok = market['market_name'].lower().find("the field") == -1
+                
+                if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == 2 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] >= 6 # 
+                    and market['no_of_winners'] == 1 # winner
+                    and market['no_of_runners'] >= 6 # minst 8 hundar
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
@@ -129,6 +171,7 @@ class SimpleBot(object):
 #                           sec_til_start,'seconds Matchodds'
                     temp = [sec_til_start, market]
                     markets.append(temp)
+                    self.log.info( 'market :' + str(market))
             markets.sort() # sort into time order (earliest game first)
             return markets
         elif markets == 'API_ERROR: NO_SESSION':
@@ -191,7 +234,7 @@ class SimpleBot(object):
                     t = (bp,lp,sel_id,idx)
                     race_list.append(t)    
 
-                sorted_list = sorted(race_list, reverse=False)
+                sorted_list = sorted(race_list, reverse=True)
                 i = 0  
                 
                 selection = None
@@ -199,6 +242,8 @@ class SimpleBot(object):
                 back_odds = None
                 name = None
                 index = None
+                number_of_runners = len(sorted_list)
+                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
@@ -206,9 +251,7 @@ class SimpleBot(object):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-			    #pick the first hound with reasonable odds, but it must 
-			    #be 1 of the 3 from the top of the unreversed list
-                    if dct[0] <= self.MAX_ODDS and  dct[0] >= self.MIN_ODDS and i <= 1 :
+                    if  self.MIN_ODDS <= dct[1] and dct[1] <= self.MAX_ODDS and i <= max_turns :
                        self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -222,8 +265,7 @@ class SimpleBot(object):
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
-                    return
- 
+                    return 
                 
                 # get the name
                 if selection : 
@@ -249,20 +291,19 @@ class SimpleBot(object):
                 self.log.info( 'index     : ' + str(index))
                 
                 if self.DRY_RUN :
-                    bet_category = 'DRY_RUN_HOUNDS_PLACE_BACK_BET'
+                    bet_category = 'DRY_RUN_HOUNDS_WINNER_LAY_BET'
                 else:     
-                    bet_category = 'HOUNDS_PLACE_BACK_BET'
-
+                    bet_category = 'HOUNDS_WINNER_LAY_BET'
                     
-                if back_odds and selection:
+                if lay_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = back_odds, pips = -4)
+                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -1)
                     bet_size = self.BETTING_SIZE # my stake
                     bet = {
                         'marketId': market_id,
                         'selectionId': selection,
-                        'betType': 'B', # we bet winners
+                        'betType': 'L', # we bet loosers
                         'price': '%.2f' % bet_price, # set string to 2 decimals
                         'size': '%.2f' % bet_size,
                         'betCategoryType': 'E',
@@ -328,7 +369,7 @@ class SimpleBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    s = 'GREYHOUND_BACK_BETS No markets found. Sleeping for ' + \
+                    s = 'HOUNDS_LAY_BETS No markets found. Sleeping for ' + \
                          str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
                     self.log.info(s)
                     sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
@@ -372,7 +413,7 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/greyhounds_place_back_bets.log',
+    'logs/greyhounds_winner_lay_bets.log',
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,

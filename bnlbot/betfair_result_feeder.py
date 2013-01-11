@@ -27,8 +27,9 @@ import logging.handlers
 #  </market>
  
 class Market(object):
-    def __init__(self, root, conn):
-        self.id = None
+    def __init__(self, root, conn, log):
+        self.bet_id = None
+        self.market_id = None
         self.display_name = None
         self.market_type = None
         self.selection_id_list = None
@@ -39,49 +40,75 @@ class Market(object):
         self.price = None
         
         self.conn = conn
+	self.log = log
          
+#        print 'root', root
+	if root.tag == 'market' :
+	    self.market_id = root.get('id')
+#	    print 'self.market_id', self.market_id 
         for elem in root :
-#            print 'elem', elem
-            if   elem.tag == 'market' :
-                self.id = elem.get('id')
-            elif elem.tag == 'Name' :
-                self.display_name = elem.get('displayName')
+ #           print 'elem', elem
+            if   elem.tag == 'name' :
+	        self.display_name = elem.get('displayName')
             elif elem.tag == 'marketType' :
+#		print 'elem.text', elem.text
                 self.market_type = elem.text
             elif elem.tag == 'winners' :
                 self.selection_id_list = []
-            elif elem.tag == 'winner' :
-                self.selection_id_list.append(elem.get('selectionId'))
+		for w in elem :
+#		    print 'w',w
+	            if w.tag == 'winner' :
+#         		print 'w.get(selid)', w.get('selectionId')
+                        self.selection_id_list.append(w.get('selectionId'))
 
     def print_me(self):         
-        self.log.info('id: ' + str(self.id) + \
+#	if type(self.selection_id_list) is None :
+            self.log.info('market_id: ' + str(self.market_id) + \
                       ' name: ' + self.display_name + \
                       ' market_type: ' + str(self.market_type) + \
-                      ' selection_id_list: ' + str(self.selection_id_list) )
+                      ' selection_id_list: None'  )
+#        else :
+#            self.log.info('id: ' + str(self.id) + \
+#                      ' name: ' + self.display_name + \
+#                      ' market_type: ' + str(self.market_type) + \
+#                      ' selection_id_list: ' + str(self.selection_id_list)  )
 
 
     def bet_exists(self):
         cur = self.conn.cursor()
         cur.execute("select BET_ID, SELECTION_ID, BET_TYPE, " \
-                    "SIZE, PRICE from BETS where BET_ID= %s", 
-                      (self.id,))
-        num = cur.rowcount
-        if num > 0 :
-            row = cur.fetchone()
+                    "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null", 
+                      (self.market_id,))
+        eos = True
+	row = cur.fetchone()
+        if row  :
             self.bet_id = int(row[0])
             self.selection_id = int(row[1])
             self.bet_type = row[2]
             self.size = float(row[3])
             self.price = float(row[4])
+	    eos = False
         cur.close()
-        return num > 0
+	self.conn.commit()
+        self.log.info('market_id: ' + str(self.market_id) + \
+                      ' bet_exists: ' + str(not eos)  )
+	
+        return not eos
         
     def treat(self):
 
+        print 'bet_type',self.bet_type
+        print 'self.selection_id', self.selection_id
+        print 'self.selection_id_list',self.selection_id_list
+
         selection_in_winners = False
         for s in self.selection_id_list:
-           if s == self.selection : 
-               selection_in_winners = True               
+           print 's', s 
+           if int(s) == int(self.selection_id) : 
+               selection_in_winners = True
+               
+        print 'selection_in_winners', selection_in_winners 
+	       
         bet_won = False
         back_bet = True
         
@@ -129,22 +156,22 @@ class Market(object):
         cur = self.conn.cursor()
         
         profit = 0.0
-
+        # let view take care of 5% commission
         if bet_won :
             if back_bet :
-                profit = 0.95 * size *(price -1)
+                profit = 1.0 * self.size * (self.price -1)
             else:
-                profit = 0.95 * size
+                profit = 1.0 * self.size
         else:
             if back_bet :
-                profit = -size         
+                profit = -self.size         
             else:
-                profit = -size * price         
+                profit = -self.size * self.price         
         
         cur.execute("update BETS set PROFIT = %s, " \
-                    "BET_PLACED = EVENT_DATE",
                     "BET_WON = %s where BET_ID = %s",
                    (profit, bet_won, self.bet_id))
+#                    "BET_PLACED = EVENT_DATE, " \
 
              
         cur.close()
@@ -160,12 +187,13 @@ class Market(object):
 class Result_Feeder(object):
     """get xml feeds"""
 
+    DELAY_BETWEEN_TURNS = 60.0
     NETWORK_FAILURE_DELAY = 60.0
     URL = 'http://rss.betfair.com/RSS.aspx?format=xml&sportID='
     URL_HORSES = URL + '7'
     URL_HOUNDS = URL + '4339'
     URL_SOCCER = URL + '1'
-    get_horses = True
+    get_horses = False
     get_hounds = True
     get_soccer = False
     conn = None
@@ -207,27 +235,33 @@ class Result_Feeder(object):
     def start(self):
         """start the main loop"""
         if self.get_horses :
+	    self.log.info('Fetcing horses')
             markets = self.fetch_horses()
             for m in markets :
-                self.log.info(str(m))
-                market = Market(m, self.conn)
+  #              self.log.info(str(m))
+                market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
+		    #market.print_me()
                     market.treat()
                     
         if self.get_hounds :
+	    self.log.info('Fetcing hounds')
             markets = self.fetch_hounds()
             for m in markets :
-                self.log.info(str(m))
-                market = Market(m, self.conn)
+#                self.log.info(str(m))
+                market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
+		    #market.print_me()
                     market.treat()
                     
         if self.get_soccer :
+	    self.log.info('Fetcing soccer')
             markets = self.fetch_soccer()
             for m in markets :
-                self.log.info(str(m))
-                market = Market(m, self.conn)
+  #              self.log.info(str(m))
+                market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
+		    #market.print_me()
                     market.treat()
 
         self.conn.commit()    
@@ -258,6 +292,9 @@ bot = Result_Feeder(log)
 while True:
     try:
         bot.start() 
+        log.info( 'sleep between turns ' + str(bot.DELAY_BETWEEN_TURNS) + 'seconds')
+        sleep (bot.DELAY_BETWEEN_TURNS)
+	
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
