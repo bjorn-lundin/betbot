@@ -20,7 +20,7 @@ import httplib2
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 15.0
+    MAX_ODDS = 7.0
     MIN_ODDS = 2.0
     HOURS_TO_MATCH_START = 0.02 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0

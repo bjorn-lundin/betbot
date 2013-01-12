@@ -20,9 +20,9 @@ import httplib2
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 15.0
+    MAX_ODDS = 10.0
     MIN_ODDS = 5.0
-    HOURS_TO_MATCH_START = 0.04 # 4,8 min
+    HOURS_TO_MATCH_START = 0.02 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
@@ -102,7 +102,7 @@ class SimpleBot(object):
               events = ['7'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
+              countries = ['GBR','ZAF','FRA','IRL','NZL'])
 #              countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
@@ -243,7 +243,7 @@ class SimpleBot(object):
                 name = None
                 index = None
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 5  # there must be at least 5 runners with lower odds
+                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \

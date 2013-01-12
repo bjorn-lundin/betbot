@@ -102,7 +102,7 @@ class SimpleBot(object):
               events = ['7'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
+              countries = ['GBR','ZAF','FRA','IRL','NZL'])
 #               countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
@@ -118,7 +118,7 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 3 # (plats...) kan vara fler än 3
-#                    and market['no_of_runners'] >= 8 # 
+                    and market['no_of_runners'] <= 9 # 
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game

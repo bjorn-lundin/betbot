@@ -28,7 +28,7 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    DRY_RUN = False
+    DRY_RUN = True
 
      
     def __init__(self, log):
@@ -118,7 +118,7 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 2 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] >= 6 # 
+                    and market['no_of_runners'] == 6 # 
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
