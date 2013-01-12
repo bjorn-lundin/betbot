@@ -25,7 +25,8 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
-    LAST_TIME_FOR_BET_MORE_THAN_0_5_GOALS = 25
+    
+    DRY_RUN = True
     conn = None
     
     def __init__(self, log):
@@ -199,7 +200,11 @@ class SimpleBot(object):
 
                        back_price = odds_over
                        selection = selection_over
-                       bet_category = 'MORE_THAN_0.5_GOALS'
+                       if.DRY_RUN :
+                           bet_category = 'DRY_RUN_MORE_THAN_0.5_GOALS'
+                       else :
+                           bet_category = 'MORE_THAN_0.5_GOALS'
+
                        
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -223,27 +228,38 @@ class SimpleBot(object):
                          str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
                                  my_market.away_team_name.decode("iso-8859-1"))
                 # place bets (if any have been created)
-                if bets:
+                if bets:    
                     funds = Funding(self.api, self.log)
                     self.do_throttle()
                     funds.check_and_fix_funds()
                     if funds.funds_ok:
                         self.do_throttle()
-                        resp = self.api.place_bets(bets)
-#                        resp = 'EVENT_SUSPENDED'
-                        s = 'PLACING BETS...\n'
+                        if self.DRY_RUN :
+                            s = 'WOULD PLACE BET...\n'
+                            resp1 = {                            
+                                     'bet_id'  : -1 ,
+                                     'price'   : bet['price'], 
+                                     'code'    : 'OK',
+                                     'success' : True, 
+                                     'size'    : bet['size']
+                            }
+                            resp = []
+                            resp.append(resp1)
+                        else:
+                            s = 'PLACING BETS...\n'
+                            resp = self.api.place_bets(bets)
+                            
                         s += 'Bets: ' + str(bets) + '\n'
                         s += 'Place bets response: ' + str(resp) + '\n'
                         s += '---------------------------------------------'
                         self.log.info(s)
-                        if resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
+                        if not self.no_session and resp != 'EVENT_SUSPENDED' :
+                            self.insert_bet(bets[0], resp[0], bet_category, name)
                     else :
                         self.log.warning( 'Something happened with funds: ' + str(funds))  
                         sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
-
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:

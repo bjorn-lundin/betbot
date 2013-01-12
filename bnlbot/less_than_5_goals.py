@@ -25,9 +25,10 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
-    LAST_TIME_FOR_BET_MORE_THAN_0_5_GOALS = 25
-    conn = None
     
+    conn = None
+    DRY_RUN = True
+         
     def __init__(self, log):
         rps = 1/4.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
@@ -103,7 +104,7 @@ class SimpleBot(object):
                 
                 
 #                market_ok = market['market_name'].find('ver/under 4.5 m') > -1
-                if (  market_ok # 'ver/under 045 m'
+                if (  market_ok # 'ver/under 4.5 m'
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
@@ -194,12 +195,15 @@ class SimpleBot(object):
                 #odds_over, ie more than 0 goals
                 if odds_under and \
                    odds_under >= self.MIN_ODDS :
-#                   my_game.time_in_game_numeric and \
- #                  int(my_game.time_in_game) > self.LAST_TIME_FOR_BET_MORE_THAN_0_5_GOALS :
+
 
                        back_price = odds_under
                        selection = selection_under
-                       bet_category = 'LESS_THAN_4.5_GOALS'
+                       if.DRY_RUN :
+                           bet_category = 'DRY_RUN_LESS_THAN_4.5_GOALS'
+                       else :
+                           bet_category = 'LESS_THAN_4.5_GOALS'
+                           
                        
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -223,27 +227,38 @@ class SimpleBot(object):
                          str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
                                  my_market.away_team_name.decode("iso-8859-1"))
                 # place bets (if any have been created)
-                if bets:
+                if bets:    
                     funds = Funding(self.api, self.log)
                     self.do_throttle()
                     funds.check_and_fix_funds()
                     if funds.funds_ok:
                         self.do_throttle()
-                        resp = self.api.place_bets(bets)
-#                        resp = 'EVENT_SUSPENDED'
-                        s = 'PLACING BETS...\n'
+                        if self.DRY_RUN :
+                            s = 'WOULD PLACE BET...\n'
+                            resp1 = {                            
+                                     'bet_id'  : -1 ,
+                                     'price'   : bet['price'], 
+                                     'code'    : 'OK',
+                                     'success' : True, 
+                                     'size'    : bet['size']
+                            }
+                            resp = []
+                            resp.append(resp1)
+                        else:
+                            s = 'PLACING BETS...\n'
+                            resp = self.api.place_bets(bets)
+                            
                         s += 'Bets: ' + str(bets) + '\n'
                         s += 'Place bets response: ' + str(resp) + '\n'
                         s += '---------------------------------------------'
                         self.log.info(s)
-                        if resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
+                        if not self.no_session and resp != 'EVENT_SUSPENDED' :
+                            self.insert_bet(bets[0], resp[0], bet_category, name)
                     else :
                         self.log.warning( 'Something happened with funds: ' + str(funds))  
                         sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
-
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
@@ -360,3 +375,4 @@ while True:
     
 log.info('Ending application')
 logging.shutdown()
+
