@@ -79,6 +79,7 @@ class Market(object):
         cur.execute("select BET_ID, SELECTION_ID, BET_TYPE, " \
                     "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null", 
                       (self.market_id,))
+
         eos = True
 	row = cur.fetchone()
         if row  :
@@ -90,8 +91,8 @@ class Market(object):
 	    eos = False
         cur.close()
 	self.conn.commit()
-        self.log.info('market_id: ' + str(self.market_id) + \
-                      ' bet_exists: ' + str(not eos)  )
+#        self.log.info('market_id: ' + str(self.market_id) + \
+#                      ' bet_exists: ' + str(not eos)  )
 	
         return not eos
         
@@ -113,47 +114,46 @@ class Market(object):
         back_bet = True
         
         if   self.bet_type == "DRY_RUN_HORSES_WINNER_LAY_BET" :
-            if selection_in_winners :
-                bet_won = False
-                back_bet = False
+	    bet_won = not  selection_in_winners
+            back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET" :
-            if selection_in_winners :
-                bet_won = True
+	    bet_won = selection_in_winners
                 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
-            if selection_in_winners :
-                bet_won = False
-                back_bet = False
+	    bet_won = not  selection_in_winners
+            back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
-            if selection_in_winners :
-                bet_won = True
+	    bet_won = selection_in_winners
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET" :
-            if selection_in_winners :
-                bet_won = False
-                back_bet = False
+	    bet_won = not  selection_in_winners
+            back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
-            if selection_in_winners :
-                bet_won = True
+	    bet_won = selection_in_winners
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_LAY_BET" :
-            if selection_in_winners :
-                bet_won = False
-                back_bet = False
+	    bet_won = not  selection_in_winners
+            back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_BACK_BET" :
-            if selection_in_winners :
-                bet_won = True
+	    bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_LESS_THAN_3.5_GOALS" :
+	    bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_LESS_THAN_4.5_GOALS" :
+	    bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
+	    bet_won = selection_in_winners
                 
         else :
           return
 
 
-        #update db         
-        cur = self.conn.cursor()
         
         profit = 0.0
         # let view take care of 5% commission
@@ -168,13 +168,21 @@ class Market(object):
             else:
                 profit = -self.size * self.price         
         
+        #update db         
+        cur = self.conn.cursor()
         cur.execute("update BETS set PROFIT = %s, " \
-                    "BET_WON = %s where BET_ID = %s",
-                   (profit, bet_won, self.bet_id))
-#                    "BET_PLACED = EVENT_DATE, " \
-
-             
+                    "BET_WON = %s, CODE = %s where BET_ID = %s",
+                   (profit, bet_won, 'S', self.bet_id))
+#                    "BET_PLACED = EVENT_DATE, " \             
         cur.close()
+	
+        cur2 = self.conn.cursor()
+        cur2.execute("update BETS set BET_PLACED = (select EVENT_DATE from MARKETS where MARKETS.MARKET_ID = BETS.MARKET_ID ) " \
+                    "where BET_ID = %s and BET_PLACED is null",
+                   (self.bet_id,))
+        cur2.close()
+	
+	
         self.conn.commit() 
 
         self.log.info('bet_won ' + str(bet_won) + \
@@ -193,9 +201,9 @@ class Result_Feeder(object):
     URL_HORSES = URL + '7'
     URL_HOUNDS = URL + '4339'
     URL_SOCCER = URL + '1'
-    get_horses = False
+    get_horses = True
     get_hounds = True
-    get_soccer = False
+    get_soccer = True
     conn = None
     
     def __init__(self, log):
@@ -210,7 +218,8 @@ class Result_Feeder(object):
 
     def fetch(self, url):
         """get the feed"""
-        response = urllib2.urlopen(url)
+        response = urllib2.urlopen(url, timeout = 30)
+	#catch the timeout at main loop
         xmlstring = response.read()
         return etree.fromstring(xmlstring)        
         
@@ -234,9 +243,12 @@ class Result_Feeder(object):
         
     def start(self):
         """start the main loop"""
+	print 'last round: ', str(datetime.datetime.now())
         if self.get_horses :
 	    self.log.info('Fetcing horses')
+            print str(datetime.datetime.now()), 'Fetch horses'
             markets = self.fetch_horses()
+            print str(datetime.datetime.now()), 'Fetched horses'
             for m in markets :
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
@@ -246,7 +258,9 @@ class Result_Feeder(object):
                     
         if self.get_hounds :
 	    self.log.info('Fetcing hounds')
+            print str(datetime.datetime.now()), 'Fetch hounds'
             markets = self.fetch_hounds()
+            print str(datetime.datetime.now()), 'Fetched hounds'
             for m in markets :
 #                self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
@@ -256,7 +270,9 @@ class Result_Feeder(object):
                     
         if self.get_soccer :
 	    self.log.info('Fetcing soccer')
+            print str(datetime.datetime.now()), 'Fetch soccer'
             markets = self.fetch_soccer()
+            print str(datetime.datetime.now()), 'Fetched soccer'
             for m in markets :
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
