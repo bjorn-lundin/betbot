@@ -35,11 +35,11 @@ def init_logging():
     '''
     ais_log_level = logging.INFO
     LOG.setLevel(ais_log_level)
-    
+    logfile = os.path.join(conf.AIS_LOGDIR, conf.AIS_LOGFILE)
+    logfile = os.path.normpath(logfile)
     filehandler = logging.handlers.RotatingFileHandler(
-        conf.AIS_LOGDIR + '/ais.log',
-        mode='a', maxBytes=5000000, backupCount=10, 
-        encoding='utf-8', delay=0)
+        logfile, mode='a', maxBytes=5000000, 
+        backupCount=10, encoding='utf-8', delay=0)
     filehandler.setLevel(ais_log_level)
     format_string = '%(asctime)s %(name)s %(levelname)s %(message)s'
     formatter = logging.Formatter(format_string)
