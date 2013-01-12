@@ -7,7 +7,7 @@ from __future__ import print_function, unicode_literals
 
 AIS_WS_HOST = 'https://media.atg.se/'
 AIS_VERSION = '8'
-AIS_LOGDIR = 'logs'
+AIS_LOGDIR = 'log'
 AIS_METADIR = 'meta_data'
 EMAIL_LOG_ERRORS = False
 
