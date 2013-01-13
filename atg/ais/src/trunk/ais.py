@@ -269,7 +269,7 @@ def load_calendar_history_into_db(params=None):
 def download_history_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic
-    data at late at night every day.
+    data late at night every day.
     '''
     # Bettype name_code to service name mapping
     bettype_loopup = {
@@ -295,7 +295,6 @@ def download_history_via_calendar(params=None):
     raceday_calendar(params=params)
     event_array_service(params=params)
     racedays = db.Raceday.read_all()
-#    fetch_winner_list={}
 #    now = datetime.datetime.now() - datetime.timedelta(days=1)
     now = datetime.datetime.now()
     date_now = datetime.date(now.year, now.month, now.day)
@@ -304,9 +303,6 @@ def download_history_via_calendar(params=None):
         date = raceday.raceday_date
         track = raceday.track_id
         raceday_date = datetime.date(date.year, date.month, date.day)
-        
-#        if date not in fetch_winner_list.keys():
-#            fetch_winner_list[date]=False
         
         # If upcomming raceday
         if raceday_date == (date_now + datetime.timedelta(days=1)):
@@ -328,9 +324,6 @@ def download_history_via_calendar(params=None):
             )
             for race in raceday.races:
                 for bettype in race.bettypes:
-#                    if bt.name_code in \
-#                        ['V4', 'V5', 'V64', 'V65', 'V75', 'V86']:
-#                        fetch_winner_list[date] = True
                     bettype = bettype_loopup[bettype.name_code]
                     pool_info_service(
                         params=params, 
@@ -346,9 +339,3 @@ def download_history_via_calendar(params=None):
                         track=track,
                         ret_if_local=False
                     )
-# TODO: Why error NoDataFoundException all the time!!! 
-#    for fetch_date in fetch_winner_list.keys():
-#        if fetch_date <= date_now:
-#            if fetch_winner_list[fetch_date]:
-#                winner_list_service(params=params, date=fetch_date,
-#                                    ret_if_local=False)
