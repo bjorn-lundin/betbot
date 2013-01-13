@@ -243,7 +243,7 @@ class Result_Feeder(object):
         
     def start(self):
         """start the main loop"""
-	print 'last round: ', str(datetime.datetime.now())
+        print str(datetime.datetime.now()), 'Last round'
         if self.get_horses :
 	    self.log.info('Fetcing horses')
             print str(datetime.datetime.now()), 'Fetch horses'
