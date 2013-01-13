@@ -84,17 +84,17 @@ def main():
     db.init_db_client(conf.AIS_DB_URL, db_init=False)
     
     init_db = 'init_db'
-    meta_files = 'write_meta_files'
-    ais_racedays = 'get_ais_racedays'
+    init_local_racedays = 'init_local_racedays'
     daily_download = 'daily_download'
+    meta_files = 'write_meta_files'
     usage = \
         "usage: %(prog)s [%(com0)s|%(com1)s|%(com2)s|%(com3)s]" % \
         {
             'prog':'%prog',
             'com0':init_db,
-            'com1':meta_files,
-            'com2':ais_racedays, 
-            'com3':daily_download
+            'com1':init_local_racedays,
+            'com2':daily_download, 
+            'com3':meta_files
         }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]
@@ -103,11 +103,8 @@ def main():
     if init_db in args:
         LOG.info('Running ' + init_db)
         db.init_db_client(conf.AIS_DB_URL, db_init=True)
-    if meta_files in args:
-        LOG.info('Running ' + meta_files)
-        util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
-    if ais_racedays in args:
-        LOG.info('Running ' + ais_racedays)
+    if init_local_racedays in args:
+        LOG.info('Running ' + init_local_racedays)
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -116,7 +113,7 @@ def main():
             'ais_type':conf.AIS_TYPE,
             'save_soap_file':True
         }
-        ais.raceday_calendar(params)
+        ais.load_calendar_history_into_db(params)
     if daily_download in args:
         LOG.info('Running ' + daily_download)
         params = {
@@ -128,6 +125,9 @@ def main():
             'save_soap_file':True
         }
         ais.download_history_via_calendar(params)
+    if meta_files in args:
+        LOG.info('Running ' + meta_files)
+        util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
     LOG.info('Ending application')
     logging.shutdown()    
     exit(0)
