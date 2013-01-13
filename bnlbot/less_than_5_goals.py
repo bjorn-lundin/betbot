@@ -56,22 +56,38 @@ class SimpleBot(object):
 
 
 
-    def insert_bet(self, bet, resp, bet_type):
+    def insert_bet(self, bet, resp, bet_type, name):
         self.log.info( 'insert bet' )
         cur = self.conn.cursor()
-        cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
+        
+        if self.DRY_RUN :
+            # get a new bet id, we are in dry_run mode
+            cur.execute("select * from BETS where MARKET_ID = %s and SELECTION_ID = %s", 
+                 (bet['marketId'],bet['selectionId']))
+        else:
+            cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
+            
         if cur.rowcount == 0 :
-            self.log.debug( 'insert bet' + resp['bet_id'])
+            if self.DRY_RUN :
+               cur2 = self.conn.cursor()
+               cur2.execute("select nextval('bet_id_serial')")
+               row = cur2.fetchone()
+               cur2.close()
+               resp['bet_id'] = row[0]
+                            
+            self.log.debug( 'insert bet ' + str(resp['bet_id']))
+                       
             cur.execute("insert into BETS ( \
                          BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE, BET_TYPE ) \
+                         CODE, SUCCESS, SIZE, BET_TYPE, RUNNER_NAME, BET_WON ) \
                          values \
-                         (%s,%s,%s,%s,%s,%s,%s,%s)", \
-               (resp['bet_id'],bet['marketId'], bet['selectionId'], \
+                         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
+               (resp['bet_id'], bet['marketId'], bet['selectionId'], \
                 resp['price'], resp['code'], resp['success'], \
-                resp['size'], bet_type))
+                resp['size'], bet_type, name, None))
         cur.close()
 ############################# end insert_bet
+
 
 
     def get_markets(self):
@@ -199,7 +215,7 @@ class SimpleBot(object):
 
                        back_price = odds_under
                        selection = selection_under
-                       if.DRY_RUN :
+                       if self.DRY_RUN :
                            bet_category = 'DRY_RUN_LESS_THAN_4.5_GOALS'
                        else :
                            bet_category = 'LESS_THAN_4.5_GOALS'
@@ -255,7 +271,7 @@ class SimpleBot(object):
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
                         if not self.no_session and resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category, name)
+                            self.insert_bet(bets[0], resp[0], bet_category, None)
                     else :
                         self.log.warning( 'Something happened with funds: ' + str(funds))  
                         sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
