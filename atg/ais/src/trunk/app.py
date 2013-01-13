@@ -13,11 +13,13 @@ import logging.handlers
 import ais
 import db
 import util
+import time
 
-# Set timezone Europe/Stockholm
-# -> central european time, UTC+1
-# -> central european summer time, UTC+2
-os.putenv('TZ','Europe/Stockholm')
+# Make sure this application runs under
+# tz CET / Europe/Stockholm
+if time.tzname[0] != 'CET':
+    os.putenv('TZ', 'Europe/Stockholm')
+    time.tzset()
 
 LOG = logging.getLogger('AIS')
 
