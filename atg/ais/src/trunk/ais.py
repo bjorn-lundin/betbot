@@ -11,6 +11,7 @@ import db
 import util
 import socket
 import datetime
+import re
 
 LOG = logging.getLogger('AIS')
 
@@ -44,7 +45,7 @@ def call_ais_service(params=None, date=None,
     result = None
     file_name_dict = None
     xml_data = None
-
+    
     if date and track:
         file_name_dict = util.generate_file_name(
             datadir=params['datadir'],
@@ -56,7 +57,8 @@ def call_ais_service(params=None, date=None,
         )
     elif date and not track:
         # The parameters show this is a filename
-        # for fetchWinnersList
+        # for fetchWinnersList or fetchRaceDayCalendar
+        # from local history file
         file_name_dict = util.generate_file_name(
             datadir=params['datadir'],
             ais_service=params['service'],
@@ -67,7 +69,7 @@ def call_ais_service(params=None, date=None,
         )
     else:
         # The parameters show this is a filename
-        # for fetchRaceDayCalendar
+        # for fetchRaceDayCalendar fetched today
         file_name_dict = util.generate_file_name(
             datadir=params['datadir'],
             ais_service=params['service'],
@@ -141,12 +143,12 @@ def call_ais_service(params=None, date=None,
                             file_name_dict=file_name_dict)
     return result
     
-def raceday_calendar(params=None):
+def raceday_calendar(params=None, date=None):
     '''
     Calls AIS service fetchRaceDayCalendar
     '''
     params['service'] = 'fetchRaceDayCalendar'
-    result = call_ais_service(params=params, ret_if_local=True)
+    result = call_ais_service(params=params, date=date, ret_if_local=True)
     if result:
         for racedayinfo in result.raceDayInfos.RaceDayInfo:
             # Get raceday
@@ -246,6 +248,24 @@ def event_array_service(params=None, ret_if_local=False):
     params['service'] = 'fetchEventArray'
     call_ais_service(params=params, ret_if_local=ret_if_local)
 
+def load_calendar_history_into_db(params=None):
+    '''
+    Iterate over all saved (local) raceday calendar files to
+    make sure all history is saved to database. This enables
+    setting up a new database from scratch.
+    '''
+    filelist = sorted(util.list_files_in_dir(params['datadir']))
+    calendar_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
+    pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d).*?') # r = raw string
+    for filename in calendar_filelist:
+        result = re.match(pattern, filename)
+        raceday_date = datetime.date(
+            int(result.group(1)),
+            int(result.group(2)),
+            int(result.group(3))
+        )
+        raceday_calendar(params=params, date=raceday_date)
+        
 def download_history_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic
@@ -271,9 +291,7 @@ def download_history_via_calendar(params=None):
         'V75':'V75',
         'V86':'V86'
     }
-    # TODO: Add iteration over all
-    # saved racedays to eventually enable
-    # loading db from scratch with local data
+
     raceday_calendar(params=params)
     event_array_service(params=params)
     racedays = db.Raceday.read_all()
