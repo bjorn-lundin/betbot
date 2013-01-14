@@ -7,8 +7,8 @@ from __future__ import print_function, unicode_literals
 
 AIS_WS_HOST = 'https://media.atg.se/'
 AIS_VERSION = '8'
-AIS_LOGDIR = 'log'
-AIS_METADIR = 'meta_data'
+AIS_LOGDIR = '/home/sejoabi/workspace/ais/trunk/log'
+AIS_METADIR = '/home/sejoabi/workspace/ais/trunk/meta_data'
 EMAIL_LOG_ERRORS = False
 
 AIS_TYPE = 'test'
@@ -18,7 +18,7 @@ if AIS_TYPE == 'test':
                  AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = 'test_data'
+    AIS_DATADIR = '/home/sejoabi/workspace/ais/trunk/test_data'
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/ais_test_db'
     AIS_LOGFILE = 'ais_test.log'
     EMAIL_LOG_HOST = 'smtprelay1.telia.com'
@@ -35,7 +35,7 @@ elif AIS_TYPE == 'prod':
                  AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = 'prod_data'
+    AIS_DATADIR = '/home/sejoabi/workspace/ais/trunk/prod_data'
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/ais_prod_db'
     AIS_LOGFILE = 'ais.log'
     EMAIL_LOG_HOST = ''
