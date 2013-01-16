@@ -20,7 +20,7 @@ import ConfigParser
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MIN_ODDS = 1.05
+    MIN_ODDS = 1.02
     HOURS_TO_MATCH_START = 0.1
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
@@ -349,7 +349,7 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/more_than_0_goals.log',
+    'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
@@ -364,6 +364,7 @@ log.info('Starting application')
 
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
 
 config = ConfigParser.ConfigParser()
 config.read('betfair.ini')

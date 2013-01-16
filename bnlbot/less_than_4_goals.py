@@ -347,7 +347,7 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/less_than_4_goals.log',
+    'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
