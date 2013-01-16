@@ -18,20 +18,20 @@ from operator import itemgetter, attrgetter
 import httplib2
 import ConfigParser
 
+
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 10.0
-    MIN_ODDS = 5.0
-    HOURS_TO_MATCH_START = 0.02 #  min
+    MAX_ODDS = 15.0
+    MIN_ODDS = 2.0
+    HOURS_TO_MATCH_START = 0.01 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
     DRY_RUN = True     
-    BET_CATEGORY = 'HORSES_PLACE_LAY_BET'
-
+    BET_CATEGORY = 'HOUNDS_PLACE_LAY_BET'
      
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
@@ -97,30 +97,32 @@ class SimpleBot(object):
         """returns a list of markets or an error string"""
         # NOTE: get_all_markets is NOT subject to data charges!
 #        print datetime.datetime.now(), 'api.get_all_markets start'
-#  'Horse Racing - Todays Card': '13', 
 #  'Horse Racing': '7', 
-
+#self.HOURS_TO_MATCH_START
+#               countries = None)
         markets = self.api.get_all_markets(
-              events = ['7'],
+              events = ['4339'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR','ZAF','FRA','IRL','NZL'])
-#               countries = None)
+              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
+#              countries = None)
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-                self.log.info( 'market :' + str(market))
+#                self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
                 markets.remove(market)
-                if (    market['market_name'] == 'Plats' # 
+                market_ok = market['market_name'] == 'Plats'
+                
+                if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == 3 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] >= 8 # 
+                    and market['no_of_winners'] == 2 # winner
+                    and market['no_of_runners'] >= 6 # minst 8 hundar
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
@@ -131,6 +133,7 @@ class SimpleBot(object):
 #                           sec_til_start,'seconds Matchodds'
                     temp = [sec_til_start, market]
                     markets.append(temp)
+                    self.log.info( 'market :' + str(market))
             markets.sort() # sort into time order (earliest game first)
             return markets
         elif markets == 'API_ERROR: NO_SESSION':
@@ -188,7 +191,7 @@ class SimpleBot(object):
                     d = {}
                     d['bp'] = bp 
                     d['lp'] = lp 
-                    d['sel_id'] = sel_id 
+                    d['sel_id'] = sel_id
                     d['idx'] = idx 
                     t = (bp,lp,sel_id,idx)
                     race_list.append(t)    
@@ -201,6 +204,8 @@ class SimpleBot(object):
                 back_odds = None
                 name = None
                 index = None
+                number_of_runners = len(sorted_list)
+                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
@@ -208,9 +213,7 @@ class SimpleBot(object):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-			    #pick the first hore with reasonable odds, but it must 
-			    #be 1 of the 3 from the top of the reversed list
-                    if dct[1] <= self.MAX_ODDS and  dct[1] >= self.MIN_ODDS and i <= 3 :
+                    if  self.MIN_ODDS <= dct[1] and dct[1] <= self.MAX_ODDS and i <= max_turns :
                        self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -224,8 +227,7 @@ class SimpleBot(object):
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
-                    return
- 
+                    return 
                 
                 # get the name
                 if selection : 
@@ -254,7 +256,6 @@ class SimpleBot(object):
                     bet_category = 'DRY_RUN_' + self.BET_CATEGORY
                 else:
                     bet_category = self.BET_CATEGORY
-
                     
                 if lay_odds and selection:
                     # set price to current back price - 1 pip 
@@ -330,7 +331,7 @@ class SimpleBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    s = 'HORSES_LAY_BETS No markets found. Sleeping for ' + \
+                    s = 'HOUNDS_PLACE_LAY_BETS No markets found. Sleeping for ' + \
                          str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
                     self.log.info(s)
                     sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
@@ -374,7 +375,7 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/horses_place_lay_bets.log',
+    'logs/greyhounds_place_lay_bets.log',
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,
@@ -389,6 +390,7 @@ log.info('Starting application')
 
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
 
 config = ConfigParser.ConfigParser()
 config.read('betfair.ini')
