@@ -27,6 +27,7 @@ import logging.handlers
 #  </market>
  
 class Market(object):
+	
     def __init__(self, root, conn, log):
         self.bet_id = None
         self.market_id = None
@@ -148,6 +149,12 @@ class Market(object):
 	    bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
+	    bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_SENDOFF_NO" :
+	    bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_SCORE_SUM_IS_EVEN" :
 	    bet_won = selection_in_winners
                 
         else :

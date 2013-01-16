@@ -16,11 +16,12 @@ import socket
 import logging.handlers
 from operator import itemgetter, attrgetter
 import httplib2
+import ConfigParser
 
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 2.0
+    MAX_ODDS = 2.5
     MIN_ODDS = 1.15
     HOURS_TO_MATCH_START = 0.01 # 36 s min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
@@ -29,6 +30,7 @@ class SimpleBot(object):
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
     DRY_RUN = True
+    BET_CATEGORY = 'HOUNDS_PLACE_BACK_BET'
 
      
     def __init__(self, log):
@@ -249,9 +251,9 @@ class SimpleBot(object):
                 self.log.info( 'index     : ' + str(index))
                 
                 if self.DRY_RUN :
-                    bet_category = 'DRY_RUN_HOUNDS_PLACE_BACK_BET'
-                else:     
-                    bet_category = 'HOUNDS_PLACE_BACK_BET'
+                    bet_category = 'DRY_RUN_' + self.BET_CATEGORY
+                else:
+                    bet_category = self.BET_CATEGORY
 
                     
                 if back_odds and selection:
@@ -344,7 +346,7 @@ class SimpleBot(object):
                                        my_market.menu_path.decode("iso-8859-1") + ' --++--++ ')
                         my_market.insert()
                         
-                        if not my_market.bet_exists_already() :    
+                        if not my_market.bet_exists_already(self.BET_CATEGORY) :    
                             self.check_strategy(my_market.market_id)
                         else : 
                             self.log.info( 'We have ALREADY bets on market ' + \
@@ -388,11 +390,17 @@ log.info('Starting application')
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
+config = ConfigParser.ConfigParser()
+config.read('betfair.ini')
+
+username = config.get('Login', 'username') 
+password =  config.get('Login', 'password')
+
 bot = SimpleBot(log)
 
 while True:
     try:
-        bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
+        bot.start(username, password, '82', '0') # product id 82 = free api
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)

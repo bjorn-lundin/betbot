@@ -14,6 +14,7 @@ from funding import Funding
 from db import Db
 import socket
 import logging.handlers
+import ConfigParser
 
 
 class SimpleBot(object):
@@ -335,11 +336,17 @@ log.info('Starting application')
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
+config = ConfigParser.ConfigParser()
+config.read('betfair.ini')
+
+username = config.get('Login', 'username') 
+password =  config.get('Login', 'password')
+
 bot = SimpleBot(log)
 
 while True:
     try:
-        bot.start('bnlbnl', 'rebecca1', '82', '0') # product id 82 = free api
+        bot.start(username, password, '82', '0') # product id 82 = free api
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)

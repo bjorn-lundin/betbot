@@ -276,12 +276,18 @@ class Market(object):
                     cur5.close()
                     
     ##############################################################           
-    def bet_exists_already(self) :
+    def bet_exists_already(self, bet_type = None) :
         """do we have a bet on this market already?"""
 
         cur = self.conn.cursor()
-        cur.execute("select * from BETS \
+	if bet_type is None :
+            cur.execute("select * from BETS \
                      where MARKET_ID = %s",(self.market_id,))
+	else :
+            cur.execute("select * from BETS \
+                     where MARKET_ID = %s and BET_TYPE = %s",
+		               (self.market_id, bet_type))
+		
         row = cur.fetchone()
         row_count = cur.rowcount
         cur.close()
