@@ -5,6 +5,7 @@ import psycopg2
 import sys
 from time import sleep, time
 
+# IS NEEDED???
 
 class Bet(object):
     """ The Funding Object """
@@ -20,15 +21,36 @@ class Bet(object):
     ############################# end __init__
         
 
-    def exists_on_market(self, market_id):
-        """do we have a bet on this market already?"""
 
+
+    def insert_bet(self, bet, resp, bet_type, name):
+        self.log.info( 'insert bet' )
         cur = self.conn.cursor()
-        cur.execute("select * from BETS \
-                     where MARKET_ID = %s",(market_id,))
-        row = cur.fetchone()
-        row_count = cur.rowcount
+        
+        if self.DRY_RUN :
+            # get a new bet id, we are in dry_run mode
+            cur.execute("select * from BETS where MARKET_ID = %s and SELECTION_ID = %s", 
+                 (bet['marketId'],bet['selectionId']))
+        else:
+            cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
+            
+        if cur.rowcount == 0 :
+            if self.DRY_RUN :
+               cur2 = self.conn.cursor()
+               cur2.execute("select nextval('bet_id_serial')")
+               row = cur2.fetchone()
+               cur2.close()
+               resp['bet_id'] = row[0]
+                            
+            self.log.debug( 'insert bet ' + str(resp['bet_id']))
+                       
+            cur.execute("insert into BETS ( \
+                         BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
+                         CODE, SUCCESS, SIZE, BET_TYPE, RUNNER_NAME, BET_WON ) \
+                         values \
+                         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
+               (resp['bet_id'], bet['marketId'], bet['selectionId'], \
+                resp['price'], resp['code'], resp['success'], \
+                resp['size'], bet_type, name, None))
         cur.close()
-        return row_count >= 1        
-
-    ############################# end exists_on_market
+############################# end insert_bet

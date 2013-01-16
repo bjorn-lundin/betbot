@@ -6,7 +6,7 @@ import logging.handlers
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
-    'logs/test_log.log',
+    'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
     maxBytes = 500000,
     backupCount = 10,
