@@ -17,6 +17,43 @@
 --'no_of_winners': 1}],
 
 
+create table dry_markets (
+  market_id  integer,
+  bsp_market  varchar,
+  market_type  varchar,
+  event_hierarchy  varchar,
+  last_refresh  timestamp,
+  turning_in_play  varchar,
+  menu_path  varchar,
+  bet_delay  integer,
+  exchange_id  integer,
+  country_code  varchar,
+  market_name  varchar,
+  market_status  varchar,
+  event_date  timestamp,
+  no_of_runners  integer, 
+  total_matched  integer, 
+  no_of_winners  integer,
+  primary key(market_id)
+);
+
+create table dry_runners (
+  market_id  integer,
+  selection_id  integer,
+  index  integer,
+  back_price  float,
+  lay_price  float,
+  runner_name  varchar,
+  primary key(market_id, selection_id)
+);
+
+create table dry_results (
+  market_id integer,
+  selection_id integer,
+  primary key(market_id, selection_id)
+);
+
+
 create table markets (
   market_id  integer,
   bsp_market  varchar,
@@ -296,14 +333,28 @@ create table score_statistics (
 
 
 
+
+
+
 create table prospects (
+
   id    integer not null ,
+
   team_id    integer not null ,
+
   team_name varchar not null,
+
   country_code varchar,
+
   eventtime timestamp without time zone default Localtimestamp not null,
+
   primary key(id,team_id,team_name)
+
 );
+
+
+
+
 
 
 
@@ -320,6 +371,9 @@ select
   group by time_in_game
   order by time_in_game::int
 ;
+
+
+
 
 
 create sequence bet_id_serial;
