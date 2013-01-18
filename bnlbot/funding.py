@@ -34,7 +34,7 @@ class Funding(object):
             self.exposure     = abs(self.funds['exposure'])
         except :
             self.log.error( "check_and_fix_funds Unexpected error:" + str(sys.exc_info()[0]))
-            return False
+            return None
 
 
     def check_and_fix_funds(self):
