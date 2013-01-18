@@ -23,7 +23,7 @@ class SimpleBot(object):
     BETTING_SIZE = 30.0
     MAX_ODDS = 2.5
     MIN_ODDS = 1.15
-    HOURS_TO_MATCH_START = 0.01 # 36 s min
+    HOURS_TO_MATCH_START = 0.02 # 36 s min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
@@ -119,8 +119,8 @@ class SimpleBot(object):
                 if (    market['market_name'] == 'Plats' # 
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == 2 # (plats...) kan vara fler än 3
-                    and market['no_of_runners'] == 6 # 
+                    and market['no_of_winners'] >= 2 # (plats...) kan vara fler än 3
+                    and market['no_of_runners'] >= 6 # 
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
@@ -279,29 +279,30 @@ class SimpleBot(object):
                 # place bets (if any have been created)
                 if bets:    
                     funds = Funding(self.api, self.log)
-                    self.do_throttle()
-                    funds.check_and_fix_funds()
-                    if funds.funds_ok:
+		    if funds :
                         self.do_throttle()
-                        if self.DRY_RUN :
-                            s = 'WOULD PLACE BET...\n'
-                            resp1 = {                            
+                        funds.check_and_fix_funds()
+                        if funds.funds_ok:
+                            self.do_throttle()
+                            if self.DRY_RUN :
+                                s = 'WOULD PLACE BET...\n'
+                                resp1 = {                            
                                      'bet_id'  : -1 ,
                                      'price'   : bet['price'], 
                                      'code'    : 'OK',
                                      'success' : True, 
                                      'size'    : bet['size']
-                            }
-                            resp = []
-                            resp.append(resp1)
-                        else:
-                            s = 'PLACING BETS...\n'
-                            resp = self.api.place_bets(bets)
+                                }
+                                resp = []
+                                resp.append(resp1)
+                            else:
+                                s = 'PLACING BETS...\n'
+                                resp = self.api.place_bets(bets)
                             
-                        s += 'Bets: ' + str(bets) + '\n'
-                        s += 'Place bets response: ' + str(resp) + '\n'
-                        s += '---------------------------------------------'
-                        self.log.info(s)
+                            s += 'Bets: ' + str(bets) + '\n'
+                            s += 'Place bets response: ' + str(resp) + '\n'
+                            s += '---------------------------------------------'
+                            self.log.info(s)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
                         if not self.no_session and resp != 'EVENT_SUSPENDED' :

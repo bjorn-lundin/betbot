@@ -21,7 +21,7 @@ import ConfigParser
 class SimpleBot(object):
     """put bet on games with low odds"""
     BETTING_SIZE = 30.0
-    MAX_ODDS = 10.0
+    MAX_ODDS = 11.6
     MIN_ODDS = 5.0
     HOURS_TO_MATCH_START = 0.02 # 4,8 min
     DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
@@ -29,7 +29,7 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    DRY_RUN = True     
+    DRY_RUN = False
     BET_CATEGORY = 'HORSES_WINNER_LAY_BET'
 
      
@@ -320,29 +320,30 @@ class SimpleBot(object):
                 # place bets (if any have been created)
                 if bets:    
                     funds = Funding(self.api, self.log)
-                    self.do_throttle()
-                    funds.check_and_fix_funds()
-                    if funds.funds_ok:
+		    if funds :
                         self.do_throttle()
-                        if self.DRY_RUN :
-                            s = 'WOULD PLACE BET...\n'
-                            resp1 = {                            
+                        funds.check_and_fix_funds()
+                        if funds.funds_ok:
+                            self.do_throttle()
+                            if self.DRY_RUN :
+                                s = 'WOULD PLACE BET...\n'
+                                resp1 = {                            
                                      'bet_id'  : -1 ,
                                      'price'   : bet['price'], 
                                      'code'    : 'OK',
                                      'success' : True, 
                                      'size'    : bet['size']
-                            }
-                            resp = []
-                            resp.append(resp1)
-                        else:
-                            s = 'PLACING BETS...\n'
-                            resp = self.api.place_bets(bets)
+                                }
+                                resp = []
+                                resp.append(resp1)
+                            else:
+                                s = 'PLACING BETS...\n'
+                                resp = self.api.place_bets(bets)
                             
-                        s += 'Bets: ' + str(bets) + '\n'
-                        s += 'Place bets response: ' + str(resp) + '\n'
-                        s += '---------------------------------------------'
-                        self.log.info(s)
+                            s += 'Bets: ' + str(bets) + '\n'
+                            s += 'Place bets response: ' + str(resp) + '\n'
+                            s += '---------------------------------------------'
+                            self.log.info(s)
                         if resp == 'API_ERROR: NO_SESSION':
                             self.no_session = True
                         if not self.no_session and resp != 'EVENT_SUSPENDED' :
