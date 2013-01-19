@@ -7,8 +7,8 @@ from market import Market
 class DryMarket(Market):
     """The DryMarket object"""
     
-    def __init__(self, conn, log, market_id = None, market_dict = None):
-        super(Market, self).__init__()
+    def __init__(self, conn, log, market_dict):
+        Market.__init__(self, conn, log, market_dict = market_dict )
 
 
     def insert(self):

@@ -42,40 +42,51 @@ class Market(object):
         self.conn = conn
         self.log = log
          
+#        print 'root.tag: ', root.tag , 'text',  root.text
         if root.tag == 'market' :
             self.market_id = root.get('id')
+#	    print 'self.market_id', self.market_id 
             
-        for elem in root :
-            if   elem.tag == 'name' :
-                self.display_name = elem.get('displayName')
-            elif elem.tag == 'marketType' :
-                self.market_type = elem.text
-            elif elem.tag == 'winners' :
-                self.selection_id_list = []
-            for w in elem :
-                if w.tag == 'winner' :
-                    self.selection_id_list.append(w.get('selectionId'))
+            for elem in root :
+                if   elem.tag == 'name' :
+                    self.display_name = elem.get('displayName')
+                elif elem.tag == 'marketType' :
+                    self.market_type = elem.text
+                elif elem.tag == 'winners' :
+                    self.selection_id_list = []
+                for w in elem :
+                    if w.tag == 'winner' :
+                        self.selection_id_list.append(w.get('selectionId'))
 
 
 
     def result_exists(self):
-        cur = self.conn.cursor()
-        cur.execute("select * from DRY_RESULTS MARKET_ID = %s and SELECTION_ID = %s", 
-                      (self.market_id, self.selection_id))
+        eos = False
+	if self.selection_id_list :
+            for sid in self.selection_id_list :
+                cur = self.conn.cursor()
+                cur.execute("select * from DRY_RESULTS where MARKET_ID = %s and SELECTION_ID = %s", 
+                      (self.market_id, sid))
+                eos = True
+                row = cur.fetchone()
+                cur.close()
+                if row  :
+                    eos = False
 
-        eos = True
-        row = cur.fetchone()
-        if row  :
-            eos = False
-        cur.close()
+                if eos:
+	            break
+ 	    
         return not eos
 
 
     def result_insert(self):
-        cur = self.conn.cursor()
-        cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)", 
-                      (self.market_id, self.selection_id))
-        cur.close()
+#	print 'resultinsert',self.market_id, self.selection_id_list 
+	if self.selection_id_list :
+            for sid in self.selection_id_list :
+                cur = self.conn.cursor()
+                cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)", 
+                          (self.market_id, sid))
+                cur.close()
     
     
 #########################################################################
@@ -91,7 +102,7 @@ class Result_Feeder(object):
     URL_SOCCER = URL + '1'
     get_horses = True
     get_hounds = True
-    get_soccer = True
+    get_soccer = False
     conn = None
     
     def __init__(self, log):
@@ -139,7 +150,7 @@ class Result_Feeder(object):
             print str(datetime.datetime.now()), 'Fetched horses'
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if not market.result_exists() :
+                if not market.market_id and market.result_exists() :
                     market.result_insert()
                     
         if self.get_hounds :
@@ -149,7 +160,7 @@ class Result_Feeder(object):
             print str(datetime.datetime.now()), 'Fetched hounds'
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if not market.result_exists() :
+                if market.market_id and not market.result_exists() :
                     market.result_insert()
                     
         if self.get_soccer :
@@ -159,7 +170,7 @@ class Result_Feeder(object):
             print str(datetime.datetime.now()), 'Fetched soccer'
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if not market.result_exists() :
+                if market.market_id and not market.result_exists() :
                     market.result_insert()
 
         self.conn.commit()    

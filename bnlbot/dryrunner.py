@@ -11,11 +11,11 @@ class DryRunner(object):
         self.conn = conn
         self.log = log
 
-        self.market_id    = runner_dict['market_id']       
-        self.selection_id = runner_dict['sel_id']
-        self.back_price   = runner['bp']        
-        self.lay_price    = runner['lp']        
-        self.index        = runner['idx']        
+        self.market_id     = runner_dict['market_id']       
+        self.selection_id  = runner_dict['sel_id']
+        self.back_price    = runner_dict['bp']        
+        self.lay_price     = runner_dict['lp']        
+        self.index         = runner_dict['idx']        
 
 
     ###############################################################################        
