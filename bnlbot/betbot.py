@@ -23,19 +23,19 @@ class SessionError(Exception):
     pass
 
 
-class SimpleBot(object):
+class BetBot(object):
     """put bet on games with low odds"""
-    BETTING_SIZE = 30.0
-    MAX_ODDS = 2.5
-    MIN_ODDS = 1.15
-    HOURS_TO_MATCH_START = 0.02 # 36 s min
-    DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
-    DELAY_BETWEEN_TURNS =  5.0
-    NETWORK_FAILURE_DELAY = 60.0
+    BETTING_SIZE = None
+    MAX_ODDS = None
+    MIN_ODDS = None
+    HOURS_TO_MATCH_START = None
+    DELAY_BETWEEN_TURNS_BAD_FUNDING = None
+    DELAY_BETWEEN_TURNS_NO_MARKETS =  None
+    DELAY_BETWEEN_TURNS =  None
+    NETWORK_FAILURE_DELAY = None
     conn = None
     DRY_RUN = True
-    BET_CATEGORY = 'HOUNDS_PLACE_BACK_BET'
+    BET_CATEGORY = None
     
     USERNAME = None 
     PASSWORD = None 
@@ -392,7 +392,7 @@ class SimpleBot(object):
         self.log.info(tmp_str)
 ############################# end start
 
-    def initialize(bet_category): 
+    def initialize(self, bet_category): 
             
         config = ConfigParser.ConfigParser()
         config.read('betfair.ini')
@@ -406,6 +406,7 @@ class SimpleBot(object):
         self.DELAY_BETWEEN_TURNS             = float(config.get(bet_category, 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get(bet_category, 'network_failure_delay'))
         self.DRY_RUN                         = bool (config.get(bet_category, 'dry_run'))
+        self.BET_CATEGORY = bet_category
         if self.DRY_RUN :
             self.BET_CATEGORY = 'DRY_RUN_' + self.BET_CATEGORY
 
@@ -417,72 +418,4 @@ class SimpleBot(object):
 ############################# end initialize
 
 
-
-
-
-######## main ###########
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-FH = logging.handlers.RotatingFileHandler(
-    'logs/' + __file__.split('.')[0] +'.log',
-    mode = 'a',
-    maxBytes = 5000000,
-    backupCount = 10,
-    encoding = 'iso-8859-1',
-    delay = False
-) 
-FH.setLevel(logging.DEBUG)
-FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-FH.setFormatter(FORMATTER)
-log.addHandler(FH)
-log.info('Starting application')
-
-#make print flush now!
-#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
-
-
-bot = SimpleBot(log)
-self.BET_CATEGORY = 'HOUNDS_PLACE_BACK_BET'
-bot.initialize(self.BET_CATEGORY)
-
-while True:
-    try:
-        bot.start()
-    except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + \
-                    str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-       
-    except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-	
-    except httplib2.ServerNotFoundError :
-        log.error( 'Lost network (server not found error) . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-        
-    except SessionError:
-        log.error( 'Lost session.  Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-             
-#    except psycopg2.DatabaseError :
-#        log.error( 'Lost db contact . Retry in ' + \
-#          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-#        sleep (bot.NETWORK_FAILURE_DELAY)
-#        bot.reconnect()
-	
-    except KeyboardInterrupt :
-        break
-
-log.info('Ending application')
-logging.shutdown()
     
