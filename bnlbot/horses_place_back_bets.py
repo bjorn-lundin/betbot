@@ -277,6 +277,7 @@ class SimpleBot(object):
                     self.log.info('bad odds  -> no bet on market ' +
                          str(market_id) + ' ' + my_market.menu_path.decode("iso-8859-1") )
                 # place bets (if any have been created)
+                resp = None
                 if bets:    
                     funds = Funding(self.api, self.log)
 		    if funds :
@@ -303,13 +304,13 @@ class SimpleBot(object):
                             s += 'Place bets response: ' + str(resp) + '\n'
                             s += '---------------------------------------------'
                             self.log.info(s)
-                        if resp == 'API_ERROR: NO_SESSION':
-                            self.no_session = True
-                        if not self.no_session and resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category, name)
-                    else :
-                        self.log.warning( 'Something happened with funds: ' + str(funds))  
-                        sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                            if resp == 'API_ERROR: NO_SESSION':
+                                self.no_session = True
+                            if not self.no_session and resp != 'EVENT_SUSPENDED' :
+                                self.insert_bet(bets[0], resp[0], bet_category, name)
+                        else :
+                            self.log.warning( 'Something happened with funds: ' + str(funds))  
+                            sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True

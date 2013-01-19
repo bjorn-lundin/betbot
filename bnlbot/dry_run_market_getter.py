@@ -86,7 +86,8 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['bet_delay'] == 0 # not started
-                    ):
+                    and market['no_of_runners'] >= 3 # 
+                   ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
@@ -152,7 +153,7 @@ class SimpleBot(object):
                     d['sel_id'] = sel_id
                     d['idx'] = idx 
                     
-                    dr = DryRunner(d)
+                    dr = DryRunner(self.conn, self.log, d)
                     dr.insert()
 
 
