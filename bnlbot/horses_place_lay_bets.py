@@ -15,7 +15,7 @@ import ssl
 #import sys
 #from game import Game
 #from market import Market
-from funding import Funding
+#from funding import Funding
 #from db import Db
 import socket
 import logging.handlers
@@ -89,20 +89,19 @@ class HorsesPlaceLayBetBot(BetBot):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                bets = []
-                lay_price = None 
+#                lay_price = None 
                 selection = None
                 
                 race_list = []
                 for runner in prices['runners'] :
                     try :
-                        bp = runner['back_prices'][0]['price']
+                        tmp_bp = runner['back_prices'][0]['price']
                     except:
-                        bp = 1001                        
+                        tmp_bp = 1001                        
                     try :
-                        lp = runner['lay_prices'][0]['price']
+                        tmp_lp = runner['lay_prices'][0]['price']
                     except:
-                        lp = 1001                        
+                        tmp_lp = 1001                        
                     try :
                         sel_id = runner['selection_id']
                     except:
@@ -113,17 +112,12 @@ class HorsesPlaceLayBetBot(BetBot):
                         idx = -1                        
                         
                     self.log.info( 'UNSORTED back/lay/selection/idx ' + \
-                            str(bp) + '/' + \
-                            str(lp) + '/' + \
+                            str(tmp_bp) + '/' + \
+                            str(tmp_lp) + '/' + \
                             str(sel_id) + '/' + \
                             str(idx)                         )
-                    d = {}
-                    d['bp'] = bp 
-                    d['lp'] = lp 
-                    d['sel_id'] = sel_id 
-                    d['idx'] = idx 
-                    t = (bp,lp,sel_id,idx)
-                    race_list.append(t)    
+                    tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
+                    race_list.append(tmp_tuple)    
 
                 sorted_list = sorted(race_list, reverse=True)
                 i = 0  
@@ -183,67 +177,17 @@ class HorsesPlaceLayBetBot(BetBot):
                 self.log.info( 'index     : ' + str(index))
                                     
                 if lay_odds and selection:
-                    # set price to current back price - 1 pip 
-                    #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -1)
-                    bet_size = self.BETTING_SIZE # my stake
-                    bet = {
-                        'marketId': market_id,
-                        'selectionId': selection,
-                        'betType': 'L', # we bet loosers
-                        'price': '%.2f' % bet_price, # set string to 2 decimals
-                        'size': '%.2f' % bet_size,
-                        'betCategoryType': 'E',
-                        'betPersistenceType': 'NONE',
-                        'bspLiability': '0',
-                        'asianLineId': '0'
-                        }
-                    bets.append(bet)
+                    self.place_bet(market_id, selection, lay_odds, name)
                 else:
-                    self.log.info('bad odds  -> no bet on market ' +
-                         str(market_id) )
-                # place bets (if any have been created)
-                resp = None
-                if bets:    
-                    funds = Funding(self.api, self.log)
-                    if funds :
-                        self.do_throttle()
-                        funds.check_and_fix_funds()
-                        if funds.funds_ok:
-                            self.do_throttle()
-                            if self.DRY_RUN :
-                                s = 'WOULD PLACE BET...\n'
-                                resp1 = {                            
-                                     'bet_id'  : -1 ,
-                                     'price'   : bet['price'], 
-                                     'code'    : 'OK',
-                                     'success' : True, 
-                                     'size'    : bet['size']
-                                }
-                                resp = []
-                                resp.append(resp1)
-                            else:
-                                s = 'PLACING BETS...\n'
-                                resp = self.api.place_bets(bets)
-                            
-                            s += 'Bets: ' + str(bets) + '\n'
-                            s += 'Place bets response: ' + str(resp) + '\n'
-                            s += '---------------------------------------------'
-                            self.log.info(s)
-                            if resp == 'API_ERROR: NO_SESSION':
-                                self.no_session = True
-                            if not self.no_session and resp != 'EVENT_SUSPENDED' :
-                                self.insert_bet(bets[0], resp[0], self.BET_CATEGORY, name)
-                        else :
-                            self.log.warning( 'Something happened with funds: ' + str(funds))  
-                            sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                    self.log.info('bad odds or time in game -> no bet on market ' +
+                        str(market_id))
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
-                s = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
-                s += '---------------------------------------------'
-                self.log.info(s)
+                tmp_str = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
+                tmp_str += '---------------------------------------------'
+                self.log.info(tmp_str)
 ############################# check_strategy
 
 

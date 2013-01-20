@@ -13,7 +13,7 @@ import ssl
 #import sys
 #from game import Game
 #from market import Market
-from funding import Funding
+#from funding import Funding
 #from db import Db
 import socket
 import logging.handlers
@@ -75,10 +75,8 @@ class SendOff(BetBot):
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
                 name = None
-                bets = []
                 back_price = None 
                 selection = None
-
 
                 try :
                     odds_yes      = prices['runners'][0]['back_prices'][0]['price']
@@ -102,60 +100,11 @@ class SendOff(BetBot):
                     back_price = odds_no
                     selection = selection_no
 
-                if back_price and selection:
-                    # set price to current back price - 1 pip 
-                    #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = back_price, pips = -1)
-                    bet_size = self.BETTING_SIZE # my stake
-                    bet = {
-                        'marketId': market_id,
-                        'selectionId': selection,
-                        'betType': 'B', # we bet on winner, not loose
-                        'price': '%.2f' % bet_price, # set string to 2 decimals
-                        'size': '%.2f' % bet_size,
-                        'betCategoryType': 'E',
-                        'betPersistenceType': 'NONE',
-                        'bspLiability': '0',
-                        'asianLineId': '0'
-                        }
-                    bets.append(bet)
+                    self.place_bet(market_id, selection, back_price, name)
+                    
                 else:
-                    self.log.info('bad odds or time in game -> no bet on market ' )
-                # place bets (if any have been created)
-                resp = None
-                if bets:    
-                    funds = Funding(self.api, self.log)
-                    if funds :
-                        self.do_throttle()
-                        funds.check_and_fix_funds()
-                        if funds.funds_ok:
-                            self.do_throttle()
-                            if self.DRY_RUN :
-                                tmp_str = 'WOULD PLACE BET...\n'
-                                resp1 = {                            
-                                     'bet_id'  : -1 ,
-                                     'price'   : bet['price'], 
-                                     'code'    : 'OK',
-                                     'success' : True, 
-                                     'size'    : bet['size']
-                                }
-                                resp = []
-                                resp.append(resp1)
-                            else:
-                                tmp_str = 'PLACING BETS...\n'
-                                resp = self.api.place_bets(bets)
-                            
-                            tmp_str += 'Bets: ' + str(bets) + '\n'
-                            tmp_str += 'Place bets response: ' + str(resp) + '\n'
-                            tmp_str += '---------------------------------------------'
-                            self.log.info(tmp_str)
-                            if resp == 'API_ERROR: NO_SESSION':
-                                self.no_session = True
-                            if not self.no_session and resp != 'EVENT_SUSPENDED' :
-                                self.insert_bet(bets[0], resp[0], self.BET_CATEGORY, name)
-                        else :
-                            self.log.warning( 'Something happened with funds: ' + str(funds))  
-                            sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                    self.log.info('bad odds or time in game -> no bet on market ' +
+                        str(market_id))
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
