@@ -240,7 +240,7 @@ class GreyHoundPlaceBackBetBot(BetBot):
                             if not self.no_session and \
                                   resp != 'EVENT_SUSPENDED' :
                                 self.insert_bet(bets[0], resp[0], \
-                                             bet_category, name)
+                                             self.BET_CATEGORY, name)
                         else :
                             self.log.warning('Something happened with funds: ' +
                             str(funds))  
