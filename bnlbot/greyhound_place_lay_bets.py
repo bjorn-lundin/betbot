@@ -234,7 +234,7 @@ class GreyHoundPlaceLayBetBot(BetBot):
                             if resp == 'API_ERROR: NO_SESSION':
                                 self.no_session = True
                             if not self.no_session and resp != 'EVENT_SUSPENDED' :
-                                self.insert_bet(bets[0], resp[0], bet_category, name)
+                                self.insert_bet(bets[0], resp[0], self.BET_CATEGORY, name)
                         else :
                             self.log.warning( 'Something happened with funds: ' + str(funds))  
                             sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     

@@ -46,7 +46,7 @@ class GreyHoundWinnerFavoriteLayBetBot(BetBot):
 
         markets = self.api.get_all_markets(
               events = ['4339'],
-              hours = 0.02,  #self.HOURS_TO_MATCH_START,
+              hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
               countries = None)
 #              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
