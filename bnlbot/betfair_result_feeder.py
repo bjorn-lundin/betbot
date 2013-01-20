@@ -234,7 +234,7 @@ class Result_Feeder(object):
     def fetch(self, url):
         """get the feed"""
         response = urllib2.urlopen(url, timeout = 30)
-	#catch the timeout at main loop
+       #catch the timeout at main loop
         xmlstring = response.read()
         return etree.fromstring(xmlstring)        
         
@@ -260,7 +260,7 @@ class Result_Feeder(object):
         """start the main loop"""
         print str(datetime.datetime.now()), 'Last round'
         if self.get_horses :
-	    self.log.info('Fetcing horses')
+            self.log.info('Fetcing horses')
             print str(datetime.datetime.now()), 'Fetch horses'
             markets = self.fetch_horses()
             print str(datetime.datetime.now()), 'Fetched horses'
@@ -268,11 +268,11 @@ class Result_Feeder(object):
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
-		    #market.print_me()
+                    #market.print_me()
                     market.treat()
                     
         if self.get_hounds :
-	    self.log.info('Fetcing hounds')
+            self.log.info('Fetcing hounds')
             print str(datetime.datetime.now()), 'Fetch hounds'
             markets = self.fetch_hounds()
             print str(datetime.datetime.now()), 'Fetched hounds'
@@ -280,11 +280,11 @@ class Result_Feeder(object):
 #                self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
-		    #market.print_me()
+                    #market.print_me()
                     market.treat()
                     
         if self.get_soccer :
-	    self.log.info('Fetcing soccer')
+            self.log.info('Fetcing soccer')
             print str(datetime.datetime.now()), 'Fetch soccer'
             markets = self.fetch_soccer()
             print str(datetime.datetime.now()), 'Fetched soccer'
@@ -292,7 +292,7 @@ class Result_Feeder(object):
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
-		    #market.print_me()
+                    #market.print_me()
                     market.treat()
 
         self.conn.commit()    
@@ -325,7 +325,7 @@ while True:
         bot.start() 
         log.info( 'sleep between turns ' + str(bot.DELAY_BETWEEN_TURNS) + 'seconds')
         sleep (bot.DELAY_BETWEEN_TURNS)
-	
+
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -337,7 +337,7 @@ while True:
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-	
+
     except httplib2.ServerNotFoundError :
         log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -345,7 +345,7 @@ while True:
 #        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
 #        bot.reconnect()
-	
+
     except KeyboardInterrupt :
         break
 
