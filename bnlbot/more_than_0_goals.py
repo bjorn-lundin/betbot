@@ -31,47 +31,6 @@ class MoreThan0Goals(BetBot):
 ############################# end __init__
 
 
-    def get_markets(self):
-        """returns a list of markets or an error string"""
-        # NOTE: get_all_markets is NOT subject to data charges!
-#        print datetime.datetime.now(), 'api.get_all_markets start'
-        markets = self.api.get_all_markets(
-              events = ['1','14'],
-              hours = self.HOURS_TO_MATCH_START,
-              countries = None)
-#              countries = ['GBR'])
-
-              #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
-              #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
-        if type(markets) is list:
-            # sort markets by start time + filter
-            for market in markets[:]:
-             # loop through a COPY of markets 
-             #as we're modifying it on the fly...
-                markets.remove(market)
-               
-                market_ok = market['market_name'].find('ver/under 0.5 m') > -1
-
-                if (  market_ok # 'ver/under 0.5 m'
-                    and market['market_status'] == 'ACTIVE' # market is active
-                    and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == 1 # single winner market
-                    and market['bet_delay'] == 0 # not started, but 0.1 hours until start
-                    ):
-                    # calc seconds til start of game
-                    delta = market['event_date'] - self.api.API_TIMESTAMP
-                    # 1 day = 86400 sec
-                    sec_til_start = delta.days * 86400 + delta.seconds 
-                    temp = [sec_til_start, market]
-                    markets.append(temp)
-            markets.sort() # sort into time order (earliest game first)
-            return markets
-        elif markets == 'API_ERROR: NO_SESSION':
-            self.no_session = True
-        else:
-            return markets
-############################# end get_markets
-
 
     def check_strategy(self, market_id ):
         """check market for suitable bet"""

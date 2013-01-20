@@ -1,26 +1,12 @@
 # -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
 from betbot import BetBot, SessionError
-
-
-#from betfair.api import API
 from time import sleep
-#, time
-#import datetime 
-#import psycopg2
 import urllib2
 import ssl
-#import os
-#import sys
-#from game import Game
-#from market import Market
-#from funding import Funding
-#from db import Db
 import socket
 import logging.handlers
-#from operator import itemgetter, attrgetter
 import httplib2
-#import ConfigParser
 
 class GreyHoundPlaceBackBetBot(BetBot):
     """put bet on games with low odds"""
@@ -29,52 +15,6 @@ class GreyHoundPlaceBackBetBot(BetBot):
         super(GreyHoundPlaceBackBetBot, self).__init__(log)
         
 ############################# end __init__
-
-
-
-    def get_markets(self):
-        """returns a list of markets or an error string"""
-        # NOTE: get_all_markets is NOT subject to data charges!
-#        print datetime.datetime.now(), 'api.get_all_markets start'
-#  'Horse Racing': '7', 
-#  'Greyhound Racing': '4339', 
-
-        markets = self.api.get_all_markets(
-              events = ['4339'],
-              hours = self.HOURS_TO_MATCH_START,
-              include_started = False, # exclude in-play markets
-              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
-#               countries = None)
-#        print datetime.datetime.now(), 'api.get_all_markets stop'
-              #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
-              #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
-        if type(markets) is list:
-            # sort markets by start time + filter
-            for market in markets[:]:
-                self.log.info( 'market :' + str(market))
-             # loop through a COPY of markets 
-             #as we're modifying it on the fly...
-                markets.remove(market)
-                if (    market['market_name'] == 'Plats' # 
-                    and market['market_status'] == 'ACTIVE' #
-                    and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] >= 2 # kan vara fler än 3
-                    and market['no_of_runners'] >= 6 # 
-                    and market['bet_delay'] == 0 # not started
-                    ):
-                    # calc seconds til start of game
-                    delta = market['event_date'] - self.api.API_TIMESTAMP
-                    # 1 day = 86400 sec
-                    sec_til_start = delta.days * 86400 + delta.seconds 
-                    temp = [sec_til_start, market]
-                    markets.append(temp)
-            markets.sort() # sort into time order (earliest game first)
-            return markets
-        elif markets == 'API_ERROR: NO_SESSION':
-            self.no_session = True
-        else:
-            return markets
-############################# end get_markets
 
 
     def check_strategy(self, market_id ):
