@@ -354,11 +354,13 @@ class BetBot(object):
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
 
+        login = ConfigParser.ConfigParser()
+        login.read('betfair_login.ini')
 
-        self.USERNAME                        = config.get('Login', 'username') 
-        self.PASSWORD                        = config.get('Login', 'password')
-        self.PRODUCT_ID                      = config.get('Login', 'product_id')
-        self.VENDOR_ID                       = config.get('Login', 'vendor_id')
+        self.USERNAME                        = login.get('Login', 'username') 
+        self.PASSWORD                        = login.get('Login', 'password')
+        self.PRODUCT_ID                      = login.get('Login', 'product_id')
+        self.VENDOR_ID                       = login.get('Login', 'vendor_id')
 
 ############################# end initialize
 
