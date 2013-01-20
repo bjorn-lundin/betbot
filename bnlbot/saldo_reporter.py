@@ -103,7 +103,7 @@ log.info('Starting application')
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 config = ConfigParser.ConfigParser()
-config.read('betfair.ini')
+config.read('betfair_login.ini')
 
 username = config.get('Login', 'username') 
 password =  config.get('Login', 'password')
