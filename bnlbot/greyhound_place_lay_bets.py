@@ -1,96 +1,35 @@
 # -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
-from betfair.api import API
-from time import sleep, time
-import datetime 
-import psycopg2
+from betbot import BetBot, SessionError
+
+#from betfair.api import API
+from time import sleep
+#, time
+#import datetime 
+#import psycopg2
 import urllib2
 import ssl
-import os
-import sys
-from game import Game
-from market import Market
+#import os
+#import sys
+#from game import Game
+#from market import Market
 from funding import Funding
-from db import Db
+#from db import Db
 import socket
 import logging.handlers
-from operator import itemgetter, attrgetter
+#from operator import itemgetter, attrgetter
 import httplib2
-import ConfigParser
+#import ConfigParser
 
 
-class SimpleBot(object):
+class GreyHoundPlaceLayBetBot(BetBot):
     """put bet on games with low odds"""
-    BETTING_SIZE = 30.0
-    MAX_ODDS = 10.0
-    MIN_ODDS = 2.0
-    HOURS_TO_MATCH_START = 0.02 # 4,8 min
-    DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
-    DELAY_BETWEEN_TURNS =  5.0
-    NETWORK_FAILURE_DELAY = 60.0
-    conn = None
-    DRY_RUN = True
-    BET_CATEGORY = 'HOUNDS_PLACE_LAY_BET'
+
      
     def __init__(self, log):
-        rps = 1/2.0 # Refreshes Per Second
-        self.api = API('uk') # exchange ('uk' or 'aus')
-        self.no_session = True
-        self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
-        self.log = log
+        super(GreyHoundPlaceLayBetBot, self).__init__(log)
         
 ############################# end __init__
-    def reconnect(self):
-        db = Db() 
-        self.conn = db.conn 
-
-    def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
-        """login to betfair"""
-        if uname and pword and prod_id and vend_id:
-            resp = self.api.login(uname, pword, prod_id, vend_id)
-            if resp == 'OK': 
-                self.no_session = False
-            return resp
-        else:
-            return 'login() ERROR: INCORRECT_INPUT_PARAMETERS'
-############################# end login
-
-
-
-    def insert_bet(self, bet, resp, bet_type, name):
-        self.log.info( 'insert bet' )
-        cur = self.conn.cursor()
-        
-        if self.DRY_RUN :
-            # get a new bet id, we are in dry_run mode
-            cur.execute("select * from BETS where MARKET_ID = %s and SELECTION_ID = %s", 
-                 (bet['marketId'],bet['selectionId']))
-        else:
-            cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
-            
-        if cur.rowcount == 0 :
-            if self.DRY_RUN :
-               cur2 = self.conn.cursor()
-               cur2.execute("select nextval('bet_id_serial')")
-               row = cur2.fetchone()
-               cur2.close()
-               resp['bet_id'] = row[0]
-                            
-            self.log.debug( 'insert bet ' + str(resp['bet_id']))
-                       
-            cur.execute("insert into BETS ( \
-                         BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE, BET_TYPE, RUNNER_NAME, BET_WON ) \
-                         values \
-                         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", \
-               (resp['bet_id'], bet['marketId'], bet['selectionId'], \
-                resp['price'], resp['code'], resp['success'], \
-                resp['size'], bet_type, name, None))
-        cur.close()
-############################# end insert_bet
 
 
     def get_markets(self):
@@ -122,15 +61,13 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 2 # winner
-                    and market['no_of_runners'] >= 6 # minst 8 hundar
+                    and market['no_of_runners'] >= 6 # minst 6 hundar
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds 
-#                    print 'market', market['market_id'], 'will start in', \
-#                           sec_til_start,'seconds Matchodds'
                     temp = [sec_til_start, market]
                     markets.append(temp)
                     self.log.info( 'market :' + str(market))
@@ -142,12 +79,7 @@ class SimpleBot(object):
             return markets
 ############################# end get_markets
 
-    def do_throttle(self):
-        """return only when it is safe to send another data request"""
-        wait = self.throttle['next_req'] - time()
-        if wait > 0: sleep(wait)
-        self.throttle['next_req'] = time() + self.throttle['rps']
-############################# end do_throttle
+
 
     def check_strategy(self, market_id ):
         """check market for suitable bet"""
@@ -159,7 +91,6 @@ class SimpleBot(object):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                my_market = Market(self.conn, self.log, market_id = market_id)                
                 bets = []
                 lay_price = None 
                 selection = None
@@ -260,7 +191,7 @@ class SimpleBot(object):
                 if lay_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = -1)
+                    bet_price = self.api.set_betfair_odds(price = lay_odds, pips = 1)
                     bet_size = self.BETTING_SIZE # my stake
                     bet = {
                         'marketId': market_id,
@@ -276,12 +207,12 @@ class SimpleBot(object):
                     bets.append(bet)
                 else:
                     self.log.info('bad odds  -> no bet on market ' +
-                         str(market_id) + ' ' + my_market.menu_path.decode("iso-8859-1") )
+                         str(market_id)  )
                 # place bets (if any have been created)
-		resp = None
+                resp = None
                 if bets:    
                     funds = Funding(self.api, self.log)
-		    if funds :
+                    if funds :
                         self.do_throttle()
                         funds.check_and_fix_funds()
                         if funds.funds_ok:
@@ -322,60 +253,10 @@ class SimpleBot(object):
 ############################# check_strategy
 
 
-    def start(self, uname = '', pword = '', prod_id = '', vend_id = ''):
-        """start the main loop"""
-        # login/monitor status
-        login_status = self.login(uname, pword, prod_id, vend_id)
-        while login_status == 'OK': 
-            # get list of markets starting soon
-            self.log.info( '-----------------------------------------------------------')
-            markets = self.get_markets()
-            if type(markets) is list:
-                if len(markets) == 0:
-                    # no markets found...
-                    s = 'HOUNDS_PLACE_LAY_BETS No markets found. Sleeping for ' + \
-                         str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
-                    self.log.info(s)
-                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
-                else:
-                    self.log.info( 'Found ' + str(len(markets)) + \
-                          ' markets. Checking strategy...')
-                    num = 0
-                    for market in markets:
-                        num += 1
-                        my_market = Market(self.conn, self.log, market_dict = market[1])
-                        self.log.info( '--++--++ market # ' + str(num) + '/' + \
-                                       str(len(markets)) + ' ' + \
-                                       my_market.menu_path.decode("iso-8859-1") + ' --++--++ ')
-                        my_market.insert()
-                        
-                        if not my_market.bet_exists_already(self.BET_CATEGORY) :    
-                            self.check_strategy(my_market.market_id)
-                        else : 
-                            self.log.info( 'We have ALREADY bets on market ' + \
-                                   my_market.market_id + ' ' + \
-                                   my_market.home_team_name.decode("iso-8859-1") + ' - ' + \
-                                   my_market.away_team_name.decode("iso-8859-1"))
-                        self.conn.commit()
-                # check if session is still OK
-                if self.no_session:
-                    login_status = self.login(uname, pword, prod_id, vend_id)
-                    s = 'API ERROR: NO_SESSION. Login resp =' + \
-                         str(login_status) + '\n'
-                    s += '---------------------------------------------'
-                    self.log.info(s)
-                self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
-                sleep(self.DELAY_BETWEEN_TURNS)
-        # main loop ended...
-        s = 'login_status = ' + str(login_status) + '\n'
-        s += 'MAIN LOOP ENDED...\n'
-        s += '---------------------------------------------'
-        self.log.info(s)
-############################# end start
 
 ######## main ###########
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+alog = logging.getLogger(__name__)
+alog.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
     'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
@@ -387,47 +268,54 @@ FH = logging.handlers.RotatingFileHandler(
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
-log.addHandler(FH)
-log.info('Starting application')
+alog.addHandler(FH)
+alog.info('Starting application')
 
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 
-config = ConfigParser.ConfigParser()
-config.read('betfair.ini')
 
-username = config.get('Login', 'username') 
-password =  config.get('Login', 'password')
-
-bot = SimpleBot(log)
+bot = GreyHoundPlaceLayBetBot(alog)
+bot.initialize('HOUNDS_PLACE_LAY_BET')
 
 while True:
     try:
-        bot.start(username, password, '82', '0') # product id 82 = free api
+        bot.start()
     except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network ? . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network (ssl error) . Retry in ' + \
+                    str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network (socket error) . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-	
+
     except httplib2.ServerNotFoundError :
-        log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network (server not found error) . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
+        
+    except SessionError:
+        alog.error( 'Lost session.  Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
+             
 #    except psycopg2.DatabaseError :
-#        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+#        alog.error( 'Lost db contact . Retry in ' + \
+#          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
 #        bot.reconnect()
-	
+
     except KeyboardInterrupt :
         break
 
-log.info('Ending application')
+alog.info('Ending application')
 logging.shutdown()
     
