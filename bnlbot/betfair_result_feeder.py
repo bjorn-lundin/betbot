@@ -110,53 +110,61 @@ class Market(object):
                selection_in_winners = True
                
         print 'selection_in_winners', selection_in_winners 
-	       
+
         bet_won = False
         back_bet = True
         
         if   self.bet_type == "DRY_RUN_HORSES_WINNER_LAY_BET" :
-	    bet_won = not  selection_in_winners
+            bet_won = not selection_in_winners
             back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
                 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
-	    bet_won = not  selection_in_winners
+            bet_won = not selection_in_winners
             back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET" :
-	    bet_won = not  selection_in_winners
+            bet_won = not selection_in_winners
             back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET" :
+            bet_won = not selection_in_winners
+            back_bet = False
                 
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET" :
+            bet_won = not selection_in_winners
+            back_bet = False
+                                
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_LAY_BET" :
-	    bet_won = not  selection_in_winners
+            bet_won = not selection_in_winners
             back_bet = False
                 
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_BACK_BET" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_LESS_THAN_3.5_GOALS" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_LESS_THAN_4.5_GOALS" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_SENDOFF_NO" :
-	    bet_won = selection_in_winners
+            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_SCORE_SUM_IS_EVEN" :
-	    bet_won = selection_in_winners
-                
+            bet_won = selection_in_winners
+
         else :
           return
 

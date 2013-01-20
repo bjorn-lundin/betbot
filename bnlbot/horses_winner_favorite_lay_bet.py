@@ -62,10 +62,10 @@ class HorseWinnerFavoriteLayBetBot(BetBot):
 
         markets = self.api.get_all_markets(
               events = ['7'],
-              hours = self.HOURS_TO_MATCH_START,
+              hours = 0.02, #self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
-              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
-#               countries = None)
+              countries = None)
+#              countries = ['GBR','USA','ZAF','FRA','IRL','NZL'])
 #        print datetime.datetime.now(), 'api.get_all_markets stop'
               #http://en.wikipedia.org/wiki/List_of_FIFA_country_codes
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
@@ -327,7 +327,7 @@ alog.info('Starting application')
 
 
 bot = HorseWinnerFavoriteLayBetBot(alog)
-bot.initialize('HORSE_WINNER_FAVORITE_LAY_BET')
+bot.initialize('HORSES_WINNER_FAVORITE_LAY_BET')
 
 while True:
     try:
