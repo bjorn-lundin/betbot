@@ -126,6 +126,22 @@ class BetBot(object):
 ############################# check_strategy
 
 
+
+    def market_in_xmlfeed(self, market_id) :
+        Found = False
+        cur = self.conn.cursor()
+        cur.execute("select * from MARKET_IN_XML_FEED \
+                     where MARKET_ID = " + str(market_id))
+        row = cur.fetchone()
+        rc = cur.rowcount
+        cur.close()
+        if rc == 1 :
+            Found = True
+        return Found
+############################# market_in_xmlfeed
+        
+        
+
     def start(self):
         """start the main loop"""
         # login/monitor status
@@ -138,7 +154,7 @@ class BetBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    tmp_str = self.BET_CATEGORY + ' No markets found.' + \
+                    tmp_str = 'GREYHOUND_BACK_BETS No markets found.' + \
                               ' Sleeping for ' + \
                          str(self.DELAY_BETWEEN_TURNS_NO_MARKETS) + \
                          ' seconds...'
@@ -199,18 +215,6 @@ class BetBot(object):
         self.PASSWORD                        = config.get('Login', 'password')
         self.PRODUCT_ID                      = config.get('Login', 'product_id')
         self.VENDOR_ID                       = config.get('Login', 'vendor_id')
-
-
-        self.log.info('betting_size ' + str(self.BETTING_SIZE))
-        self.log.info('max_odds ' + str(self.MAX_ODDS))
-        self.log.info('min_odds '+ str(self.MIN_ODDS))
-        self.log.info('hours_to_match_start '+ str(self.HOURS_TO_MATCH_START))
-        self.log.info('dry_run '+ str(self.DRY_RUN))
-        self.log.info('delay_between_turns_bad_funding '+ str(self.DELAY_BETWEEN_TURNS_BAD_FUNDING))
-        self.log.info('delay_between_turns_no_markets '+ str(self.DELAY_BETWEEN_TURNS_NO_MARKETS))
-        self.log.info('delay_between_turns '+ str(self.DELAY_BETWEEN_TURNS))
-        self.log.info('network_failure_delay '+ str(self.NETWORK_FAILURE_DELAY))
-
 
 ############################# end initialize
 

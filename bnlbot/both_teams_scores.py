@@ -1,77 +1,34 @@
 # -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
-from betfair.api import API
-from time import sleep, time
-import datetime 
-import psycopg2
+from betbot import BetBot, SessionError
+
+#from betfair.api import API
+from time import sleep
+#, time
+#import datetime 
+#import psycopg2
 import urllib2
 import ssl
-import os
-import sys
-from game import Game
-from market import Market
+#import os
+#import sys
+#from game import Game
+#from market import Market
 from funding import Funding
-from db import Db
+#from db import Db
 import socket
 import logging.handlers
-import ConfigParser
+#from operator import itemgetter, attrgetter
+import httplib2
+#import ConfigParser
 
 
-class SimpleBot(object):
+class BothTeamsScores(BetBot):
     """put bet on games with low odds"""
-    BETTING_SIZE = 30.0
-    MIN_ODDS = 1.7
-    MAX_ODDS = 20.04
-    HOURS_TO_MATCH_START = 0.1
-    DELAY_BETWEEN_TURNS_BAD_FUNDING = 60.0
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  60.0
-    NETWORK_FAILURE_DELAY = 60.0
-    DELAY_BETWEEN_TURNS = 5.0
-    conn = None
-    
+
     def __init__(self, log):
-        rps = 1/4.0 # Refreshes Per Second
-        self.api = API('uk') # exchange ('uk' or 'aus')
-        self.no_session = True
-        self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
-        self.log = log
+        super(BothTeamsScores, self).__init__(log)
         
 ############################# end __init__
-    def reconnect(self):
-        db = Db() 
-        self.conn = db.conn 
-
-    def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
-        """login to betfair"""
-        if uname and pword and prod_id and vend_id:
-            resp = self.api.login(uname, pword, prod_id, vend_id)
-            if resp == 'OK': 
-                self.no_session = False
-            return resp
-        else:
-            return 'login() ERROR: INCORRECT_INPUT_PARAMETERS'
-############################# end login
-
-
-
-    def insert_bet(self, bet, resp, bet_type):
-        self.log.info( 'insert bet' )
-        cur = self.conn.cursor()
-        cur.execute("select * from BETS where BET_ID = %s", (resp['bet_id'],))
-        if cur.rowcount == 0 :
-            self.log.debug( 'insert bet' + resp['bet_id'])
-            cur.execute("insert into BETS ( \
-                         BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
-                         CODE, SUCCESS, SIZE, BET_TYPE ) \
-                         values \
-                         (%s,%s,%s,%s,%s,%s,%s,%s)", \
-               (resp['bet_id'],bet['marketId'], bet['selectionId'], \
-                resp['price'], resp['code'], resp['success'], \
-                resp['size'], bet_type))
-        cur.close()
-############################# end insert_bet
 
 
     def get_markets(self):
@@ -93,19 +50,7 @@ class SimpleBot(object):
              #as we're modifying it on the fly...
                 markets.remove(market)
                 market_ok  = market['market_name'].find('da lagen g') > -1
- #               market_ok  = market['menu_path'].find('Barclays Premier League') > 0 and market['market_name'].find('da lagen g') > -1               
-#                market_ok = market['market_name'].find('ver/under 4.5 m') > -1
-#                if market_ok :
-#                    print 'name', market['market_name'], \
-#                       'ok:', market_ok, \
-#                       'status:', market['market_status'], \
-#                       'type:', market['market_type'], \
-#                       '#win:', market['no_of_winners'], \
-#                       'delay', market['bet_delay']
-                
-                
-#                market_ok = market['market_name'].find('ver/under 4.5 m') > -1
-                if (  market_ok # 'ver/under 045 m'
+                if (  market_ok 
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['no_of_winners'] == 1 # single winner market
@@ -115,8 +60,6 @@ class SimpleBot(object):
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
                     sec_til_start = delta.days * 86400 + delta.seconds 
-#                    print 'market', market['market_id'], 'will start in', \
-#                           sec_til_start,'seconds Matchodds'
                     temp = [sec_til_start, market]
                     markets.append(temp)
             markets.sort() # sort into time order (earliest game first)
@@ -127,24 +70,8 @@ class SimpleBot(object):
             return markets
 ############################# end get_markets
 
-    def do_throttle(self):
-        """return only when it is safe to send another data request"""
-        wait = self.throttle['next_req'] - time()
-        if wait > 0: sleep(wait)
-        self.throttle['next_req'] = time() + self.throttle['rps']
-############################# end do_throttle
 
-    def market_in_xmlfeed(self, market_id) :
-        Found = False
-        cur = self.conn.cursor()
-        cur.execute("select * from MARKET_IN_XML_FEED \
-                     where MARKET_ID = " + str(market_id))
-        row = cur.fetchone()
-        rc = cur.rowcount
-        cur.close()
-        if rc == 1 :
-            Found = True
-        return Found
+
         
 ############################## END market_in_xmlfeed
 
@@ -157,7 +84,6 @@ class SimpleBot(object):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                my_market = Market(self.conn, self.log, market_id = market_id)                
                 bets = []
                 back_price = None 
                 selection = None
@@ -166,34 +92,17 @@ class SimpleBot(object):
                     odds_yes      = prices['runners'][0]['back_prices'][0]['price']
                     selection_yes = prices['runners'][0]['selection_id']
                     odds_no       = prices['runners'][1]['back_prices'][0]['price']
-                    selection_no  = prices['runners'][1]['selection_id']
+#                    selection_no  = prices['runners'][1]['selection_id']
 
                 except:
                     self.log.info( '#############################################')
-                    self.log.info( 'prices missing some fields, do return ' +
-                           my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
-                           my_market.away_team_name.decode("iso-8859-1"))
+                    self.log.info( 'prices missing some fields, do return ' )
                     self.log.info( '#############################################')
                     return
                 
-                my_game = Game(self.conn, my_market.home_team_id, \
-                               my_market.away_team_id)
-                if not my_game.found :
-                    self.log.info('game not found home_team_id ' + 
-                         str(my_market.home_team_id) + 
-                        ' home_team_id ' + str(my_market.away_team_id))
-#                    return    
-                  
-                if my_game.found :
-                    self.log.info( 'game :' + my_market.home_team_name.decode("iso-8859-1") + ' - ' + 
-                                 my_market.away_team_name.decode("iso-8859-1"))
-                                 
+                name = None                 
                 self.log.info( 'odds both scores      : ' + str(odds_yes))
                 self.log.info( 'odds nor both scores  : ' + str(odds_no))
-                if my_game.found :
-                    self.log.info( 'Hemma      : ' + str(my_game.home_goals))
-                    self.log.info( 'Borta      : ' + str(my_game.away_goals))
-                    self.log.info( 'Tid        : ' + str(my_game.time_in_game))
                 
                 #odds_over, ie more than 0 goals
                 if odds_yes and \
@@ -202,7 +111,6 @@ class SimpleBot(object):
 
                     back_price = odds_yes
                     selection = selection_yes
-                    bet_category = 'BOTH_TEAMS_SCORES'
                        
                 if back_price and selection:
                     # set price to current back price - 1 pip 
@@ -223,29 +131,43 @@ class SimpleBot(object):
                     bets.append(bet)
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
-                         str(market_id) + ' ' + my_market.home_team_name.decode("iso-8859-1") + '-' + 
-                                 my_market.away_team_name.decode("iso-8859-1"))
+                         str(market_id))
                 # place bets (if any have been created)
-                if bets:
+                resp = None
+                if bets:    
                     funds = Funding(self.api, self.log)
-                    self.do_throttle()
-                    funds.check_and_fix_funds()
-                    if funds.funds_ok:
+                    if funds :
                         self.do_throttle()
-                        resp = self.api.place_bets(bets)
-#                        resp = 'EVENT_SUSPENDED'
-                        s = 'PLACING BETS...\n'
-                        s += 'Bets: ' + str(bets) + '\n'
-                        s += 'Place bets response: ' + str(resp) + '\n'
-                        s += '---------------------------------------------'
-                        self.log.info(s)
-                        if resp != 'EVENT_SUSPENDED' :
-                            self.insert_bet(bets[0], resp[0], bet_category)
-                        if resp == 'API_ERROR: NO_SESSION':
-                            self.no_session = True
-                    else :
-                        self.log.warning( 'Something happened with funds: ' + str(funds))  
-                        sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                        funds.check_and_fix_funds()
+                        if funds.funds_ok:
+                            self.do_throttle()
+                            if self.DRY_RUN :
+                                tmp_str = 'WOULD PLACE BET...\n'
+                                resp1 = {                            
+                                     'bet_id'  : -1 ,
+                                     'price'   : bet['price'], 
+                                     'code'    : 'OK',
+                                     'success' : True, 
+                                     'size'    : bet['size']
+                                }
+                                resp = []
+                                resp.append(resp1)
+                            else:
+                                tmp_str = 'PLACING BETS...\n'
+                                resp = self.api.place_bets(bets)
+                            
+                            tmp_str += 'Bets: ' + str(bets) + '\n'
+                            tmp_str += 'Place bets response: ' + str(resp) + '\n'
+                            tmp_str += '---------------------------------------------'
+                            self.log.info(tmp_str)
+                            if resp == 'API_ERROR: NO_SESSION':
+                                self.no_session = True
+                            if not self.no_session and resp != 'EVENT_SUSPENDED' :
+                                self.insert_bet(bets[0], resp[0], self.BET_CATEGORY, name)
+                        else :
+                            self.log.warning( 'Something happened with funds: ' + str(funds))  
+                            sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
@@ -256,73 +178,15 @@ class SimpleBot(object):
 ############################# check_strategy
 
 
-    def start(self, uname = '', pword = '', prod_id = '', vend_id = ''):
-        """start the main loop"""
-        # login/monitor status
-        self.do_throttle()
-        login_status = self.login(uname, pword, prod_id, vend_id)
-        while login_status == 'OK':
-            # get list of markets starting soon
-            self.log.info( '-----------------------------------------------------------')
-            self.do_throttle()
-            markets = self.get_markets()
-            if type(markets) is list:
-                if len(markets) == 0:
-                    # no markets found...
-                    s = 'BOTH SCORES No markets found. Sleeping for ' + \
-                         str( self.DELAY_BETWEEN_TURNS_NO_MARKETS) + ' seconds...'
-                    self.log.info(s)
-                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # bandwidth saver!
-                else:
-                    self.log.info( 'Found ' + str(len(markets)) + \
-                          ' markets. Checking strategy...')
-                    num = 0
-                    for market in markets:
-                        num += 1
-                        my_market = Market(self.conn, self.log, market_dict = market[1])
-                        self.log.info( '--++--++ market # ' + str(num) + '/' + \
-                                       str(len(markets)) + ' ' + \
-                                       my_market.home_team_name.decode("iso-8859-1") + '-' + \
-                                       my_market.away_team_name.decode("iso-8859-1") + ' --++--++ ')
-                        my_market.insert()
-                        my_market.try_set_gamestart()
-                        
-                        if not my_market.market_in_xmlfeed() :
-                            self.log.info( 'market not in xmlfeed, but that is ok here: ' + 
-                                  my_market.home_team_name.decode("iso-8859-1") + '-' + 
-                                  my_market.away_team_name.decode("iso-8859-1"))
-#                        else :
-                        if not my_market.bet_exists_already() :    
-                            self.check_strategy(my_market.market_id)
-                        else : 
-                            self.log.info( 'We have ALREADY bets on market ' + \
-                                       my_market.market_id + ' ' + \
-                                       my_market.home_team_name.decode("iso-8859-1") + ' - ' + \
-                                       my_market.away_team_name.decode("iso-8859-1"))
-                        self.conn.commit()
-                # check if session is still OK
-                if self.no_session:
-                    login_status = self.login(uname, pword, prod_id, vend_id)
-                    s = 'API ERROR: NO_SESSION. Login resp =' + \
-                         str(login_status) + '\n'
-                    s += '---------------------------------------------'
-                    self.log.info(s)
-                self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
-                sleep(self.DELAY_BETWEEN_TURNS)
-        # main loop ended...
-        s = 'login_status = ' + str(login_status) + '\n'
-        s += 'MAIN LOOP ENDED...\n'
-        s += '---------------------------------------------'
-        self.log.info(s)
-############################# end start
+
 
 ######## main ###########
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+alog = logging.getLogger(__name__)
+alog.setLevel(logging.DEBUG)
 FH = logging.handlers.RotatingFileHandler(
     'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
-    maxBytes = 500000,
+    maxBytes = 5000000,
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
@@ -330,42 +194,54 @@ FH = logging.handlers.RotatingFileHandler(
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
-log.addHandler(FH)
-log.info('Starting application')
+alog.addHandler(FH)
+alog.info('Starting application')
 
 #make print flush now!
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-config = ConfigParser.ConfigParser()
-config.read('betfair.ini')
 
-username = config.get('Login', 'username') 
-password =  config.get('Login', 'password')
 
-bot = SimpleBot(log)
+bot = BothTeamsScores(alog)
+bot.initialize('BOTH_TEAMS_SCORES')
 
 while True:
     try:
-        bot.start(username, password, '82', '0') # product id 82 = free api
+        bot.start()
     except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network ? . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network (ssl error) . Retry in ' + \
+                    str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
        
     except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error( 'Lost network (socket error) . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-	
-    except psycopg2.DatabaseError :
-        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+
+    except httplib2.ServerNotFoundError :
+        alog.error( 'Lost network (server not found error) . Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-        bot.reconnect()
-	
+        
+    except SessionError:
+        alog.error( 'Lost session.  Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
+             
+#    except psycopg2.DatabaseError :
+#        alog.error( 'Lost db contact . Retry in ' + \
+#          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+#        sleep (bot.NETWORK_FAILURE_DELAY)
+#        bot.reconnect()
+
     except KeyboardInterrupt :
         break
-    
-log.info('Ending application')
+
+alog.info('Ending application')
 logging.shutdown()
+    
