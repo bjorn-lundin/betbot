@@ -29,7 +29,7 @@ class SimpleBot(object):
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
-    DRY_RUN = False
+    DRY_RUN = True
     BET_CATEGORY = 'HORSES_PLACE_BACK_BET'
 
      
