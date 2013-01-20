@@ -1,25 +1,12 @@
 # coding=iso-8859-15
 """put bet on games with low odds"""
 from betbot import BetBot, SessionError
-
-#from betfair.api import API
 from time import sleep
-#, time
-#import datetime 
-#import psycopg2
 import urllib2
 import ssl
-#import os
-#import sys
-#from game import Game
-#from market import Market
-#from funding import Funding
-#from db import Db
 import socket
 import logging.handlers
-#from operator import itemgetter, attrgetter
 import httplib2
-#import ConfigParser
 
 
 class EvenOrOdd(BetBot):
@@ -29,49 +16,6 @@ class EvenOrOdd(BetBot):
         super(EvenOrOdd, self).__init__(log)
 
 ############################# end __init__
-
-    def get_markets(self):
-        """returns a list of markets or an error string"""
-        # NOTE: get_all_markets is NOT subject to data charges!
-        markets = self.api.get_all_markets(
-              events = ['1','14'],
-              hours = self.HOURS_TO_MATCH_START,
-              countries = None)
-#              countries = ['GBR'])
-              #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
-        if type(markets) is list:
-            # sort markets by start time + filter
-            for market in markets[:]:
-            # loop through a COPY of markets as we're modifying it on the fly...
-                markets.remove(market)
-                market_ok = market['menu_path'].find('Bundesliga') > 0 and market['market_name'].find('Udda eller j') > -1
-                if not market_ok :
-                    market_ok = market['menu_path'].find('Clydesdale Bank Premier') > 0 and market['market_name'].find('Udda eller j') > -1
-                if not market_ok :
-                    market_ok = market['menu_path'].find('Ligue 1 Orange') > 0 and market['market_name'].find('Udda eller j') > -1
-                
-                if ( market_ok   
-                    and market['market_status'] == 'ACTIVE' # market is active
-                    and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == 1 # single winner market
-#                    and market['bet_delay'] > 0 # started
-                    ):
-                    # calc seconds til start of game
-                    delta = market['event_date'] - self.api.API_TIMESTAMP
-                    # 1 day = 86400 sec
-                    sec_til_start = delta.days * 86400 + delta.seconds
-#                    print 'market', market['market_id'], market['menu_path'], \
-#                       'will start in', sec_til_start, 'seconds Utvisning'
-                    temp = [sec_til_start, market]
-                    markets.append(temp)
-            markets.sort() # sort into time order (earliest game first)
-            return markets
-        elif markets == 'API_ERROR: NO_SESSION':
-            self.no_session = True
-        else:
-            return markets
-############################# end get_markets
-
 
     def check_strategy(self, market_id):
         """check market for suitable bet"""

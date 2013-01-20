@@ -3,25 +3,12 @@
 
 from betbot import BetBot, SessionError
 
-
-#from betfair.api import API
 from time import sleep
-#, time
-#import datetime 
-#import psycopg2
 import urllib2
 import ssl
-#import os
-#import sys
-#from game import Game
-#from market import Market
-#from funding import Funding
-#from db import Db
 import socket
 import logging.handlers
-#from operator import itemgetter, attrgetter
 import httplib2
-#import ConfigParser
 
 
 class HorsesWinnerFavoriteLayBetBot(BetBot):
