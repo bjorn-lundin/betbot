@@ -14,7 +14,7 @@ import ssl
 #import sys
 #from game import Game
 #from market import Market
-from funding import Funding
+#from funding import Funding
 #from db import Db
 import socket
 import logging.handlers
@@ -87,7 +87,6 @@ class GreyHoundPlaceBackBetBot(BetBot):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                bets = []
                 selection = None
                 
                 race_list = []
@@ -186,72 +185,17 @@ class GreyHoundPlaceBackBetBot(BetBot):
                 self.log.info( 'index     : ' + str(index))
                                     
                 if back_odds and selection:
-                    # set price to current back price - 1 pip 
-                    #(i.e.accept the next worse odds too)
-                    bet_price = self.api.set_betfair_odds(price = back_odds, \
-                                                          pips = -4)
-                    bet_size = self.BETTING_SIZE # my stake
-                    bet = {
-                        'marketId': market_id,
-                        'selectionId': selection,
-                        'betType': 'B', # we bet winners
-                        'price': '%.2f' % bet_price, #set string to 2 decimals
-                        'size': '%.2f' % bet_size,
-                        'betCategoryType': 'E',
-                        'betPersistenceType': 'NONE',
-                        'bspLiability': '0',
-                        'asianLineId': '0'
-                        }
-                    bets.append(bet)
+                    self.place_bet(market_id, selection, back_odds, name)
                 else:
-                    self.log.info('bad odds  -> no bet on market ' +
-                         str(market_id) )
-                # place bets (if any have been created)
-                resp = None
-                if bets:    
-                    funds = Funding(self.api, self.log)
-                    if funds :
-                        self.do_throttle()
-                        funds.check_and_fix_funds()
-                        if funds.funds_ok:
-                            self.do_throttle()
-                            if self.DRY_RUN :
-                                tmp_str = 'WOULD PLACE BET...\n'
-                                resp1 = {                            
-                                     'bet_id'  : -1 ,
-                                     'price'   : bet['price'], 
-                                     'code'    : 'OK',
-                                     'success' : True, 
-                                     'size'    : bet['size']
-                                }
-                                resp = []
-                                resp.append(resp1)
-                            else:
-                                tmp_str = 'PLACING BETS...\n'
-                                resp = self.api.place_bets(bets)
-                            
-                            tmp_str += 'Bets: ' + str(bets) + '\n'
-                            tmp_str += 'Place bets response: ' + \
-                                        str(resp) + '\n'
-                            tmp_str += '--------------------------------------'
-                            self.log.info(tmp_str)
-                            if resp == 'API_ERROR: NO_SESSION':
-                                self.no_session = True
-                            if not self.no_session and \
-                                  resp != 'EVENT_SUSPENDED' :
-                                self.insert_bet(bets[0], resp[0], \
-                                             self.BET_CATEGORY, name)
-                        else :
-                            self.log.warning('Something happened with funds: ' +
-                            str(funds))  
-                            sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                    self.log.info('bad odds or time in game -> no bet on market ' +
+                        str(market_id))
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
-                s = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
-                s += '---------------------------------------------'
-                self.log.info(s)
+                tmp_str = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
+                tmp_str += '---------------------------------------------'
+                self.log.info(tmp_str)
 ############################# check_strategy
 
 
