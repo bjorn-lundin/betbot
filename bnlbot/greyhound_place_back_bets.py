@@ -184,13 +184,7 @@ class GreyHoundPlaceBackBetBot(BetBot):
                 self.log.info( 'selection : ' + str(selection))
                 self.log.info( 'name      : ' + str(name))
                 self.log.info( 'index     : ' + str(index))
-                
-                if self.DRY_RUN :
-                    bet_category = 'DRY_RUN_' + self.BET_CATEGORY
-                else:
-                    bet_category = self.BET_CATEGORY
-
-                    
+                                    
                 if back_odds and selection:
                     # set price to current back price - 1 pip 
                     #(i.e.accept the next worse odds too)

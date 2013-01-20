@@ -1,8 +1,8 @@
  # -*- coding: iso-8859-1 -*- 
 """put bet on games with low odds"""
 
-from betbot import BetBot
-from betbot import SessionError
+from betbot import BetBot, SessionError
+
 
 #from betfair.api import API
 from time import sleep
@@ -24,30 +24,11 @@ import httplib2
 #import ConfigParser
 
 
-
-
-class HorseWinnerFavoriteLayBetBot(BetBot):
+class HorsesWinnerFavoriteLayBetBot(BetBot):
     """put bet on games with low odds"""
-    BETTING_SIZE = None
-    MAX_ODDS = None
-    MIN_ODDS = None
-    HOURS_TO_MATCH_START = None
-    DELAY_BETWEEN_TURNS_BAD_FUNDING = None
-    DELAY_BETWEEN_TURNS_NO_MARKETS =  None
-    DELAY_BETWEEN_TURNS =  None
-    NETWORK_FAILURE_DELAY = None
-    conn = None
-    DRY_RUN = True
-    BET_CATEGORY = None
-    
-    USERNAME = None 
-    PASSWORD = None 
-    PRODUCT_ID = None
-    VENDOR_ID = None
-
      
     def __init__(self, log):
-        super(HorseWinnerFavoriteLayBetBot, self).__init__(log)
+        super(HorsesWinnerFavoriteLayBetBot, self).__init__(log)
             
         
 ############################# end __init__
@@ -326,7 +307,7 @@ alog.info('Starting application')
 
 
 
-bot = HorseWinnerFavoriteLayBetBot(alog)
+bot = HorsesWinnerFavoriteLayBetBot(alog)
 bot.initialize('HORSES_WINNER_FAVORITE_LAY_BET')
 
 while True:
