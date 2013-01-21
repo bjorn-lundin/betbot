@@ -148,7 +148,7 @@ class BetBot(object):
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
-            for market in markets[:]:
+            for market in markets[:]: 
                 self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
@@ -156,14 +156,16 @@ class BetBot(object):
                 
                 #check for NOT allowd names..
                 market_ok = True
-                for not_allowed in self.NOT_ALLOWED_MARKET_NAMES :
-                    market_ok = market_ok and market['market_name'].lower().find(not_allowed) == -1
+                if  self.NOT_ALLOWED_MARKET_NAMES:
+                    for not_allowed in self.NOT_ALLOWED_MARKET_NAMES :
+                        market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(not_allowed) == -1
+                        self.log.info('Not_allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + not_allowed + ' ' + str(market_ok))
                 
                 # we now check for allowed market name, if noting was found above
-                if market_ok : 
+                if self.ALLOWED_MARKET_NAMES and market_ok : 
                     for allowed in self.ALLOWED_MARKET_NAMES :
-                        market_ok = market_ok and market['market_name'].lower().find(allowed) > -1
-                
+                        market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
+                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
                 
                 if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
@@ -356,8 +358,14 @@ class BetBot(object):
         self.INCLUDE_STARTED                 = bool (config.get(bet_category, 'include_started'))
         tmp_string_3                         = config.get(bet_category, 'not_allowed_market_names')
         self.NOT_ALLOWED_MARKET_NAMES        = tmp_string_3.split(',')
+        if self.NOT_ALLOWED_MARKET_NAMES[0] == 'None':
+            self.NOT_ALLOWED_MARKET_NAMES = None
+
         tmp_string_4                         = config.get(bet_category, 'allowed_market_names')        
         self.ALLOWED_MARKET_NAMES            = tmp_string_4.split(',')
+        if self.ALLOWED_MARKET_NAMES[0] == 'None':
+            self.ALLOWED_MARKET_NAMES = None
+
         self.NO_OF_WINNERS                   = int (config.get(bet_category, 'no_of_winners'))
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
