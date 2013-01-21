@@ -331,14 +331,16 @@ class BetBot(object):
         config = ConfigParser.ConfigParser()
         config.read('betfair.ini')
             
+        self.DELAY_BETWEEN_TURNS_BAD_FUNDING = float(config.get('Global', 'delay_between_turns_bad_funding'))
+        self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
+        self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
+        self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
+
+
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))
         self.MAX_ODDS                        = float(config.get(bet_category, 'max_odds'))
         self.MIN_ODDS                        = float(config.get(bet_category, 'min_odds'))
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
-        self.DELAY_BETWEEN_TURNS_BAD_FUNDING = float(config.get(bet_category, 'delay_between_turns_bad_funding'))
-        self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get(bet_category, 'delay_between_turns_no_markets'))
-        self.DELAY_BETWEEN_TURNS             = float(config.get(bet_category, 'delay_between_turns'))
-        self.NETWORK_FAILURE_DELAY           = float(config.get(bet_category, 'network_failure_delay'))
         self.DRY_RUN                         = bool (config.get(bet_category, 'dry_run'))
         self.BET_CATEGORY = bet_category
         if self.DRY_RUN :
