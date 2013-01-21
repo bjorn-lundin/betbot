@@ -149,7 +149,7 @@ class BetBot(object):
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-#                self.log.info( 'market :' + str(market))
+                self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
                 markets.remove(market)
@@ -284,7 +284,7 @@ class BetBot(object):
             if type(markets) is list:
                 if len(markets) == 0:
                     # no markets found...
-                    tmp_str = 'GREYHOUND_BACK_BETS No markets found.' + \
+                    tmp_str = 'No markets found.' + \
                               ' Sleeping for ' + \
                          str(self.DELAY_BETWEEN_TURNS_NO_MARKETS) + \
                          ' seconds...'
@@ -316,6 +316,9 @@ class BetBot(object):
                 self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) +
                 ' s between turns')
                 sleep(self.DELAY_BETWEEN_TURNS)
+            else:
+                self.log.info('market not list ' + str(markets))     
+
         # main loop ended...
         tmp_str = 'login_status = ' + str(login_status) + '\n'
         tmp_str += 'MAIN LOOP ENDED...\n'
@@ -345,6 +348,9 @@ class BetBot(object):
         self.EVENTS                          = tmp_string_1.split(',') 
         tmp_string_2                         = config.get(bet_category, 'countries')
         self.COUNTRIES                       = tmp_string_2.split(',') 
+        if self.COUNTRIES[0] == 'None' :
+            self.COUNTRIES = None
+            
         self.INCLUDE_STARTED                 = bool (config.get(bet_category, 'include_started'))
         tmp_string_3                         = config.get(bet_category, 'not_allowed_market_names')
         self.NOT_ALLOWED_MARKET_NAMES        = tmp_string_3.split(',')
@@ -361,6 +367,9 @@ class BetBot(object):
         self.PASSWORD                        = login.get('Login', 'password')
         self.PRODUCT_ID                      = login.get('Login', 'product_id')
         self.VENDOR_ID                       = login.get('Login', 'vendor_id')
+
+        self.log.info('Countries' + str(self.COUNTRIES))
+
 
 ############################# end initialize
 
