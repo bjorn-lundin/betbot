@@ -5,8 +5,8 @@ import psycopg2
 
 class Market(object):
     """The Market object"""
-    home_team_name = ""
-    away_team_name = ""
+    home_team_name = None
+    away_team_name = None
     home_team_id = None
     away_team_id = None
     
@@ -59,10 +59,10 @@ class Market(object):
                 self.no_of_runners = row[13]
                 self.total_matched = row[14]
                 self.no_of_winners = row[15]
-                self.home_team = row[16]
-                self.away_team = row[17]
-                self.ts = row[18]
-                self.xml_soccer_id = row[19]   
+                self.home_team = None
+                self.away_team = None
+                self.ts = None
+                self.xml_soccer_id = None   
         elif market_dict != None :
             self.market_id        = market_dict['market_id']       
             self.bsp_market       = market_dict['bsp_market']
@@ -80,44 +80,14 @@ class Market(object):
             self.no_of_runners    = market_dict['no_of_runners']
             self.total_matched    = market_dict['total_matched']
             self.no_of_winners    = market_dict['no_of_winners']
-            self.home_team        = ""
-            self.away_team        = ""
+            self.home_team        = None
+            self.away_team        = None
             self.ts               = None
             self.xml_soccer_id    = None   
             
             # try read the missing values from db.
-            cur = self.conn.cursor()
-            cur.execute("select * from MARKETS \
-                         where MARKET_ID = %s",(self.market_id,))
-            row = cur.fetchone()
-            cur.close()
-            if row != None : 
-                self.home_team = row[16]
-                self.away_team = row[17]
-                self.ts = row[18]
-                self.xml_soccer_id = row[19]   
             
             
-        try:
-            self.home_team_name = self.home_team
-            self.away_team_name = self.away_team 
-            cur2 = self.conn.cursor()
-            cur2.execute("select TEAM_ID from TEAM_ALIASES \
-                          where TEAM_ALIAS = %s", (self.home_team_name,))
-            row = cur2.fetchone()
-            if cur2.rowcount == 1 :
-                self.home_team_id = row[0]
-            cur2.close()
-            cur3 = self.conn.cursor()
-            cur3.execute("select TEAM_ID from TEAM_ALIASES \
-                          where TEAM_ALIAS = %s", (self.away_team_name,))
-            row = cur3.fetchone()
-            if cur3.rowcount == 1 :
-                self.away_team_id = row[0] 
-            cur3.close()
-        except :
-            self.log.info('Market.init, no hit - market_id ' + str(market_id) )
-            return None
     ###############################################################################        
         
     def try_set_gamestart(self) :
@@ -133,22 +103,7 @@ class Market(object):
         
     def print_me(self):
         """ Simple printout """
-        if self.home_team_name :
-            self.log.info( 'home_team_name ' + self.home_team_name)
-        else:
-            self.log.info( 'home_team_name not found')
-        if self.away_team_name :
-            self.log.info( 'away_team_name ' + self.away_team_name)
-        else:
-            self.log.info( 'away_team_name not found')
-        if self.home_team_id :
-            self.log.info( 'home_team_id ' +  str(self.home_team_id))
-        else:
-            self.log.info( 'home_team_id not found')
-        if self.away_team_id :
-            self.log.info( 'away_team_id ' +  str(self.away_team_id))
-        else:
-            self.log.info('away_team_id not found')
+        self.log.info('nothing to print ...')
     ############################# end print me
             
  
@@ -167,47 +122,7 @@ class Market(object):
 
     def insert(self):
         last_refresh = str(datetime.datetime.fromtimestamp(int(self.last_refresh)/1000))
-        # extract teams from path, if possible
-        #\Fotboll\england\premier leauge\10 november\stoke - arsenal
-        #\Fotboll\england\premier leauge\10 november\stoke vs arsenal
-        #\Fotboll\england\premier leauge\10 november\stoke versus arsenal
-        # make path to list, split on '\', and use last item
         
-        path_as_list = self.menu_path.split('\\')
-        teams = path_as_list[len(path_as_list) -1].lower()
-        
-        teams = teams.replace(' - ','|')
-        teams = teams.replace(' v ','|')
-        teams = teams.replace(' vs ','|')
-        teams = teams.replace(' versus ','|')
-        list_teams = teams.split('|')
-        try: 
-            home_team = list_teams[0].strip()
-        except :
-            home_team = ""
-        try: 
-            away_team = list_teams[1].strip()
-        except :
-            away_team = ""
-
-        game_id = None
-        
-        cur8 = self.conn.cursor()
-        cur8.execute("select GAMES.XML_SOCCER_ID from \
-                MARKETS, \
-                GAMES, \
-                TEAM_ALIASES HOME_ALIASES, \
-                TEAM_ALIASES AWAY_ALIASES \
-                where MARKETS.HOME_TEAM = HOME_ALIASES.TEAM_ALIAS \
-                and   MARKETS.AWAY_TEAM = AWAY_ALIASES.TEAM_ALIAS \
-                and   GAMES.HOME_TEAM_ID = HOME_ALIASES.TEAM_ID \
-                and   GAMES.AWAY_TEAM_ID = AWAY_ALIASES.TEAM_ID \
-                and   MARKETS.MARKET_ID = %s", (self.market_id,))
-        row = cur8.fetchone()
-        if cur8.rowcount >= 1 :
-            game_id = row[0]
-        cur8.close()
-
         
         cur7 = self.conn.cursor()
         cur7.execute("SAVEPOINT MARKET_B")
@@ -236,7 +151,7 @@ class Market(object):
                        self.market_name,   self.market_status, \
                        self.event_date,    self.no_of_runners,   \
                        self.total_matched, self.no_of_winners,
-                       home_team, away_team, None, game_id))
+                       None, None, None, None))
             cur.close()
             
         except psycopg2.IntegrityError:
@@ -244,50 +159,21 @@ class Market(object):
             cur6 = self.conn.cursor()
             cur6.execute("ROLLBACK TO SAVEPOINT MARKET_B" )
             cur6.close()
-            if game_id :
-                cur7 = self.conn.cursor()
-                cur7.execute("update MARKETS set XML_SOCCER_ID = %s \
-                              where MARKET_ID = %s \
-                              and XML_SOCCER_ID is null", 
-                              (game_id, self.market_id))
-                cur7.close()
-        
-        
-        for team in list_teams :
-            cur2 = self.conn.cursor()
-            cur2.execute("select * from TEAM_ALIASES \
-                          where TEAM_ALIAS = %s", (team.strip(),))
-            rc = cur2.rowcount
-            cur2.close()
-            if rc == 0 :
-                self.log.warning( 'Team not found in TEAM_ALIASES: ' + team.strip().decode("iso-8859-1"))
-                cur3 = self.conn.cursor()
-                cur3.execute("SAVEPOINT MARKET_A")
-                cur3.close()
-                try  :
-                    cur4 = self.conn.cursor()
-                    cur4.execute("insert into UNIDENTIFIED_TEAMS \
-                                 (TEAM_NAME,COUNTRY_CODE) values (%s,%s)",
-                                 (team.strip(), self.country_code))
-                    cur4.close()
-                except psycopg2.IntegrityError:
-                    cur5 = self.conn.cursor()
-                    cur5.execute("ROLLBACK TO SAVEPOINT MARKET_A" )
-                    cur5.close()
+
                     
     ##############################################################           
     def bet_exists_already(self, bet_type = None) :
         """do we have a bet on this market already?"""
 
         cur = self.conn.cursor()
-	if bet_type is None :
+        if bet_type is None :
             cur.execute("select * from BETS \
                      where MARKET_ID = %s",(self.market_id,))
-	else :
+        else :
             cur.execute("select * from BETS \
                      where MARKET_ID = %s and BET_TYPE = %s",
-		               (self.market_id, bet_type))
-		
+                       (self.market_id, bet_type))
+        
         row = cur.fetchone()
         row_count = cur.rowcount
         cur.close()

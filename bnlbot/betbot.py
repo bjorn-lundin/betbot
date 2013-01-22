@@ -219,22 +219,24 @@ class BetBot(object):
             bet_type = 'L'
          
 
-            # set price to current back price - 1 pip 
-            #(i.e.accept the next worse odds too)
-            bet_price = self.api.set_betfair_odds(price = wanted_price, pips = pip)
-            bet_size = self.BETTING_SIZE # my stake
-            bet = {
-                'marketId': market_id,
-                'selectionId': selection,
-                'betType': bet_type, # set above
-                'price': '%.2f' % bet_price, # set string to 2 decimals
-                'size': '%.2f' % bet_size,
-                'betCategoryType': 'E',
-                'betPersistenceType': 'NONE',
-                'bspLiability': '0',
-                'asianLineId': '0'
-                }
-            bets.append(bet)
+        # set price to current back price - 1 pip 
+        #(i.e.accept the next worse odds too)
+        bet_price = self.api.set_betfair_odds(price = wanted_price, pips = pip)
+        bet_size = self.BETTING_SIZE # my stake
+        bet = {
+            'marketId': market_id,
+            'selectionId': selection,
+            'betType': bet_type, # set above
+            'price': '%.2f' % bet_price, # set string to 2 decimals
+            'size': '%.2f' % bet_size,
+            'betCategoryType': 'E',
+            'betPersistenceType': 'NONE',
+            'bspLiability': '0',
+            'asianLineId': '0'
+            }
+        self.log.info('will place ' +str(bet))
+    
+        bets.append(bet)
         # place bets (if any have been created)
         resp = None
         if bets:    
