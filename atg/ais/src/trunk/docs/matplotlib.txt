@@ -4,15 +4,6 @@ http://matplotlib.org
 http://matplotlib.org/faq/howto_faq.html
 http://matplotlib.org/examples/pylab_examples/
 
-Install numpy
--------------
-pip install numpy (Python virtenv)
-
-Install matplotlib
-------------------
-sudo apt-get install libfreetype6-dev libpng12-dev 
-pip install matplotlib (Python virtenv)
-
 Ran example in http://matplotlib.org/examples/pylab_examples/finance_work2.html.
 To generate image file I replaced plt.show() at the end of the code with pylab.savefig('pelle.png') (and kalle.pdf)
 See http://stackoverflow.com/questions/9622163/matplotlib-save-plot-to-image-file-instead-of-displaying-it-so-can-be-used-in-b
