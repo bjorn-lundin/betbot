@@ -4,11 +4,13 @@ AIS configuration file
 '''
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
+import os
 
+AIS_HOME = '/home/sejoabi/workspace/ais/trunk'
 AIS_WS_HOST = 'https://media.atg.se/'
 AIS_VERSION = '8'
-AIS_LOGDIR = '/home/sejoabi/workspace/ais/trunk/log'
-AIS_METADIR = '/home/sejoabi/workspace/ais/trunk/meta_data'
+AIS_LOGDIR = os.path.normpath(os.path.join(AIS_HOME, 'log'))
+AIS_METADIR = os.path.normpath(os.path.join(AIS_HOME, 'meta_data'))
 EMAIL_LOG_ERRORS = False
 
 AIS_TYPE = 'test'
@@ -18,7 +20,7 @@ if AIS_TYPE == 'test':
                  AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = '/home/sejoabi/workspace/ais/trunk/test_data'
+    AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'test_data'))
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/ais_test_db'
     AIS_LOGFILE = 'ais_test.log'
     EMAIL_LOG_HOST = 'smtprelay1.telia.com'
@@ -35,7 +37,7 @@ elif AIS_TYPE == 'prod':
                  AIS_VERSION + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = '/home/sejoabi/workspace/ais/trunk/prod_data'
+    AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'prod_data'))
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/ais_prod_db'
     AIS_LOGFILE = 'ais.log'
     EMAIL_LOG_HOST = ''
