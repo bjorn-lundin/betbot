@@ -1,0 +1,31 @@
+#!/bin/bash
+
+
+
+
+INPUT_FILE=$1
+
+bet_type_list="DRY_RUN_HORSES_WINNER_LAY_BET \
+DRY_RUN_HOUNDS_WINNER_LAY_BET \
+DRY_RUN_HORSES_PLACE_BACK_BET \
+DRY_RUN_HOUNDS_PLACE_BACK_BET \
+DRY_RUN_HORSES_PLACE_LAY_BET \
+DRY_RUN_HOUNDS_PLACE_LAY_BET \
+DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET \
+DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET \
+DRY_RUN_LESS_THAN_3.5_GOALS \
+DRY_RUN_LESS_THAN_4.5_GOALS \
+DRY_RUN_MORE_THAN_0.5_GOALS \
+DRY_RUN_SCORE_SUM_IS_EVEN \
+DRY_RUN_SENDOFF_NO"
+
+
+date_list="13 14 15 16 17 18 19 20 21 22 23"
+
+for TYP in $bet_type_list ; do 
+  for d in $date_list ; do 
+      typ=$(echo $TYP | tr '[A-Z]' '[a-z]')
+      echo "$typ $d "
+      grep $TYP $INPUT_FILE | grep "2013, 1, $d" > target/$typ\_$d.dat
+  done
+done
