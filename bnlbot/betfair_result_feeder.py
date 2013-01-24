@@ -164,6 +164,9 @@ class Market(object):
 
         elif self.bet_type == "DRY_RUN_SCORE_SUM_IS_EVEN" :
             bet_won = selection_in_winners
+            
+        elif self.bet_type == "DRY_RUN_TIE_NO_BET" :
+            bet_won = selection_in_winners
 
         else :
           return
