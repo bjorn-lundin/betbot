@@ -96,7 +96,7 @@ class ProfitTester(object):
                 profit += p
                 if p < 0.0 : 
                     d_last_loss = d
-
+            
         print  typ, start_date, delay, min_price, max_price, profit
         self.conn.close()   
         self.tuple = (start_date, stop_date, typ, delay, profit, min_price, max_price)
@@ -124,7 +124,7 @@ parser.add_option("-x", "--max_price", dest="max_price", action="store", type="f
 
 first_bet = ProfitTester()
 #first_bet.get_bet_dates('2013-01-01', '2013-01-31')
-first_bet.get_bet_types('2013-01-01', '2013-01-31')
+first_bet.get_bet_types('2013-01-18', '2013-01-31')
 first_bet.conn.close()
 #first_bet.bet_type_list = ['DRY_RUN_HOUNDS_PLACE_BACK_BET']
 #first_bet.bet_type_list = ['DRY_RUN_HOUNDS_PLACE_LAY_BET']
@@ -145,11 +145,10 @@ max_price = options.max_price
 grand_sum = []
 
 lay_price_list = [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-back_price_list = [1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, \
+back_price_list = [1.0, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, \
                    1.40, 1.45, 1.50, 1.55, 1.60, 1.65, 1.70, \
                    1.75, 1.80, 1.85, 1.90, 1.95, 2.0]
-#price_list = [12]
-#delay_list = [0,6]
+
 delay_list = [0,1,2,3,4,5,6]
 
 for typ in first_bet.bet_type_list :

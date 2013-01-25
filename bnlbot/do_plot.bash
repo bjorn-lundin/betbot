@@ -20,6 +20,7 @@ bet_type_list="dry_run_less_than_3.5_goals \
  dry_run_horses_place_lay_bet \
  dry_run_sendoff_no \
  dry_run_tie_no_bet \
+ dry_run_both_teams_scores \
  dry_run_score_sum_is_even \
  dry_run_less_than_4.5_goals"
 
@@ -32,6 +33,6 @@ for TYP in $bet_type_list ; do
 #  for d in $date_list ; do 
       typ=$(echo $TYP | tr '[A-Z]' '[a-z]')
       echo $typ
-      gnuplot -e "typ='$typ'" -e "dat='Jan-13'" -e "is_lay=$is_lay" plot_bets.cmd
+      gnuplot -e "typ='$typ'" -e "dat='Jan 17-25'" -e "is_lay=$is_lay" plot_bets.cmd
 #  done
 done
