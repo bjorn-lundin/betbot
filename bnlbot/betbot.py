@@ -149,7 +149,7 @@ class BetBot(object):
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]: 
-                self.log.info( 'market :' + str(market))
+#                self.log.info( 'market :' + str(market))
              # loop through a COPY of markets 
              #as we're modifying it on the fly...
                 markets.remove(market)
@@ -159,20 +159,27 @@ class BetBot(object):
                 if  self.NOT_ALLOWED_MARKET_NAMES:
                     for not_allowed in self.NOT_ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(not_allowed) == -1
-                        self.log.info('Not_allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + not_allowed + ' ' + str(market_ok))
-                
-                # we now check for allowed market name, if noting was found above
+#                        self.log.info('Not_allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + not_allowed + ' ' + str(market_ok))
+                        if not market_ok : 
+                            break
+                # we now check for allowed market name, if nothing was found above
                 if self.ALLOWED_MARKET_NAMES and market_ok : 
                     for allowed in self.ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
-                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
+#                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
+                        if market_ok : 
+                            break
+
+                if market_ok:
+                    self.log.info('market ' +  market['market_name'].decode("iso-8859-1") + ' ' + str(market))
+
                 
                 if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
-                    and market['no_of_winners'] == self.NO_OF_WINNERS # winner
-                    and market['no_of_runners'] >= self.MIN_NO_OF_RUNNERS # minst MIN kusar
-                    and market['no_of_runners'] <= self.MAX_NO_OF_RUNNERS # max MAX kusar
+                    and int(market['no_of_winners']) == int(self.NO_OF_WINNERS) # winner
+                    and int(market['no_of_runners']) >= int(self.MIN_NO_OF_RUNNERS) # minst MIN kusar
+                    and int(market['no_of_runners']) <= int(self.MAX_NO_OF_RUNNERS) # max MAX kusar
                     and market['bet_delay'] == 0 # not started
                     ):
                     # calc seconds til start of game
