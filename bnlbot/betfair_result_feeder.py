@@ -27,7 +27,7 @@ import logging.handlers
 #  </market>
  
 class Market(object):
-	
+
     def __init__(self, root, conn, log):
         self.bet_id = None
         self.market_id = None
@@ -41,7 +41,7 @@ class Market(object):
         self.price = None
         
         self.conn = conn
-	self.log = log
+        self.log = log
          
 #        print 'root', root
 	if root.tag == 'market' :
@@ -50,13 +50,13 @@ class Market(object):
         for elem in root :
  #           print 'elem', elem
             if   elem.tag == 'name' :
-	        self.display_name = elem.get('displayName')
+                self.display_name = elem.get('displayName')
             elif elem.tag == 'marketType' :
 #		print 'elem.text', elem.text
                 self.market_type = elem.text
             elif elem.tag == 'winners' :
                 self.selection_id_list = []
-		for w in elem :
+                for w in elem :
 #		    print 'w',w
 	            if w.tag == 'winner' :
 #         		print 'w.get(selid)', w.get('selectionId')
@@ -82,21 +82,21 @@ class Market(object):
                       (self.market_id,))
 
         eos = True
-	row = cur.fetchone()
+        row = cur.fetchone()
         if row  :
             self.bet_id = int(row[0])
             self.selection_id = int(row[1])
             self.bet_type = row[2]
             self.size = float(row[3])
             self.price = float(row[4])
-	    eos = False
+            eos = False
         cur.close()
-	self.conn.commit()
+        self.conn.commit()
 #        self.log.info('market_id: ' + str(self.market_id) + \
 #                      ' bet_exists: ' + str(not eos)  )
 	
-        return not eos
-        
+	return not eos
+
     def treat(self):
 
         print 'bet_type',self.bet_type
@@ -165,6 +165,9 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_SCORE_SUM_IS_EVEN" :
             bet_won = selection_in_winners
             
+        elif self.bet_type == "DRY_RUN_BOTH_TEAMS_SCORES" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_TIE_NO_BET" :
             bet_won = selection_in_winners
 
@@ -193,15 +196,15 @@ class Market(object):
                    (profit, bet_won, 'S', self.bet_id))
 #                    "BET_PLACED = EVENT_DATE, " \             
         cur.close()
-	
+
         cur2 = self.conn.cursor()
         cur2.execute("update BETS set BET_PLACED = (select EVENT_DATE from MARKETS where MARKETS.MARKET_ID = BETS.MARKET_ID ) " \
                     "where BET_ID = %s and BET_PLACED is null",
                    (self.bet_id,))
         cur2.close()
+
 	
-	
-        self.conn.commit() 
+	self.conn.commit() 
 
         self.log.info('bet_won ' + str(bet_won) + \
                       ' profit ' + str(profit) + \
