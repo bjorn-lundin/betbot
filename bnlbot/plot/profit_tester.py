@@ -151,6 +151,8 @@ parser.add_option("-t", "--bet_type", dest="bet_type", action="store", type="str
 parser.add_option("-s", "--start_date", dest="start_date", action="store", type="string", help="start date")
 parser.add_option("-e", "--stop_date", dest="stop_date", action="store", type="string", help="stop date")
 parser.add_option("-q", "--quit_one", dest="quit_one", action="store_true", help="stop after one action", default=False)
+parser.add_option("-d", "--print_dates", dest="print_dates", action="store_true", help="print_dates", default=False)
+parser.add_option("-g", "--print_types", dest="print_types", action="store_true", help="print_types", default=False)
 
                   
 (options, args) = parser.parse_args()
@@ -178,8 +180,14 @@ first_bet.get_bet_dates(start_date, stop_date)
 first_bet.get_bet_types(bet_type, start_date, stop_date)
 first_bet.conn.close()
 
-first_bet.print_bet_types()
-first_bet.print_bet_dates()
+if options.print_types and quit_one :
+    first_bet.print_bet_types(False)
+    sys.exit()
+
+if options.print_dates and quit_one :
+    first_bet.print_bet_dates(False)
+    sys.exit()
+    
 
 if quit_one :
     sys.exit()
