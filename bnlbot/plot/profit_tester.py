@@ -2,30 +2,11 @@
 from time import sleep, time
 import datetime
 import psycopg2
-#import urllib2
-#import httplib2
-#import ssl
-#import xml.etree.ElementTree as etree 
 import os
 import sys
-#import socket
 from db import Db
 from optparse import OptionParser
 
-#  <market id="107893032" displayName="USA / Aque (US) 9th Jan - 17:30 TO BE PLACED">
-#    <name>TO BE PLACED</name>
-#    <country countryID="2">USA</country>
-#    <menuHint>USA / Aque (US) 9th Jan</menuHint>
-#    <startDate date="09/01/2013" time="17:30" sort="634933494000000000">09-Jan 17:30</startDate>
-#    <marketType>Place</marketType>
-#    <betType>Odds</betType>
-#    <nonRunners list=""/>
-#    <winners count="2" list=" Raffies Star,  Fit Fightin Feline" selectionIdList="6969167, 6969171">
-#      <winner selectionId="6969167" raceNumber="1"> Raffies Star</winner>
-#      <winner selectionId="6969171" raceNumber="7"> Fit Fightin Feline</winner>
-#    </winners>
-#  </market>
- 
 class ProfitTester(object):
     
     def __init__(self):
@@ -54,7 +35,6 @@ class ProfitTester(object):
         for row in rows:
             self.bet_type_list.append(row[0])  
         
-#        self.bet_type_list = cur.fetchall()
         cur.close()
         self.conn.commit()    
     ########################    
@@ -67,7 +47,7 @@ class ProfitTester(object):
                      and BET_PLACED::date <= %s \
                      order by BET_PLACED::date", 
                       (start_date, stop_date))
-#        self.bet_date_list = cur.fetchall()
+
         rows = cur.fetchall()
         for row in rows:
             self.bet_date_list.append(row[0])  
@@ -86,10 +66,6 @@ class ProfitTester(object):
                      order by BET_PLACED", 
                       (start_date, stop_date, bet_type, min_price, max_price))
         self.bet_list = cur.fetchall()
-
-#        rows = cur.fetchall()
-#        for row in rows:
-#            self.bet_list.append(row)  
 
         cur.close()
         self.conn.commit()    
@@ -202,7 +178,7 @@ back_price_list = [1.0, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, \
 delay_list = [0,1,2,3,4,5,6]
 
 for typ in first_bet.bet_type_list :
-   if typ[0].lower().find('lay') > -1 :
+   if typ.lower().find('lay') > -1 :
         for delay in delay_list:
             for mprice in lay_price_list:
                 bet = ProfitTester()
@@ -211,7 +187,7 @@ for typ in first_bet.bet_type_list :
 
 
 for typ in first_bet.bet_type_list :
-   if typ[0].lower().find('lay') == -1 :
+   if typ.lower().find('lay') == -1 :
         for delay in delay_list:
             for bprice in back_price_list:
                 bet = ProfitTester()

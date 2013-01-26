@@ -1,13 +1,25 @@
 #makefile for splitting full bet.dat file, rename the parts and plot the files
 
 
-TODAY=$(shell date -j -v-0d "+%Y-%m-%d")
-ONE_WEEK_AGO=$(shell date -j -v-6d "+%Y-%m-%d")
+TODAY=$(shell date -j -v-0d "+%Y_%m_%d")
+ONE_WEEK_AGO=$(shell date -j -v-6d "+%Y_%m_%d")
 
 all: target profit.dat split plot
 
 target :
 	mkdir target
+
+.PHONY : reports
+reports : weekly daily
+
+
+.PHONY : weekly
+weekly:  weekly_types
+	@echo "weekly"
+
+.PHONY : daily
+daily :  daily_types
+	@echo "daily"
 
 
 .PHONY : params
@@ -22,32 +34,34 @@ profit.dat : profit_tester.py
 split : target profit.dat
 	./split.bash profit.dat
 
-.PHONY :dates
-dates :
-	python profit_tester.py --min_price=1 \
-	                        --max_price=25 \
-	                        --start_date=$(ONE_WEEK_AGO) \
-	                        --stop_date=$(TODAY) \
-	                        --print_dates \
-	                        --quit_one > dates
 
-.PHONY :types
-types :
+.PHONY : weekly_types
+weekly_types :
 	python profit_tester.py --min_price=1 \
 	                        --max_price=25 \
 	                        --start_date=$(ONE_WEEK_AGO) \
 	                        --stop_date=$(TODAY) \
 	                        --print_types \
-	                        --quit_one > types
+	                        --quit_one > weekly_types
+
+
+.PHONY : daily_types
+daily_types :
+	python profit_tester.py --min_price=1 \
+	                        --max_price=25 \
+	                        --start_date=$(ONE_WEEK_AGO) \
+	                        --stop_date=$(TODAY) \
+	                        --print_types \
+	                        --quit_one > daily_types
+
+
+.PHONY : weekly_dats
+weekly_dats : weekly_types
+	./make_dats.bash $(ONE_WEEK_AGO) $(TODAY) weekly_types
 
 
 gplot : 
-	gnuplot \
-        -e "typ='dry_run_hounds_winner_lay_bet'" \
-        -e "start_date='2013-01-25'" \
-        -e "stop_date='2013-01-26'" \
-        -e "is_lay=1" \
-        plot_bets.gpl
+	./do_plot.bash
 
 
 ## pattern rule, make a .png file from a .dat file
@@ -63,5 +77,6 @@ plot:
 
 .PHONY : clean
 clean:
-	rm -rf target
-	rm -f profit.dat
+	rm -f *.dat
+	rm -f *.png
+	rm -f weekly_types daily_types
