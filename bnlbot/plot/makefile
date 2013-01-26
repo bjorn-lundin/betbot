@@ -2,31 +2,31 @@
 
 TODAY=$(shell date -j -v-0d "+%Y_%m_%d")
 ONE_WEEK_AGO=$(shell date -j -v-6d "+%Y_%m_%d")
-WEEKLY_DIR=$(TODAY)\_$(ONE_WEEK_AGO)
+WEEKLY_DIR=$(TODAY)\-$(ONE_WEEK_AGO)
 DAILY_DIR=$(TODAY)
 
 .PHONY : all
 all: daily weekly
 
 weekly_dir :
-	mkdir $(WEEKLY_DIR)
+	mkdir -p $(WEEKLY_DIR)
 	
 daily_dir :
-	mkdir $(DAILY_DIR)
+	mkdir -p $(DAILY_DIR)
 
 
 .PHONY : weekly
-weekly:  weekly_dats
-	rm -f *.png
+weekly: weekly_dir weekly_dats 
+#	rm -f *.png
 	./do_plot.bash
-	for i in *.png; do mv $i $(WEEKLY_DIR)/; done
+	./do_move.bash png $(WEEKLY_DIR)
 
-
-.PHONY : daily
-daily :  daily_dats
-	rm -f *.png
+	
+.PHONY : daily 
+daily :  daily_dir daily_dats
+#	rm -f *.png
 	./do_plot.bash
-	for i in *.png; do mv $i $(DAILY_DIR)/; done
+	./do_move.bash png $(DAILY_DIR)
 
 
 .PHONY : weekly_types
@@ -43,7 +43,7 @@ weekly_types :
 daily_types :
 	python profit_tester.py --min_price=1 \
 	                        --max_price=25 \
-	                        --start_date=$(ONE_WEEK_AGO) \
+	                        --start_date=$(TODAY) \
 	                        --stop_date=$(TODAY) \
 	                        --print_types \
 	                        --quit_one > daily_types
@@ -54,8 +54,8 @@ weekly_dats : weekly_types weekly_dir
 	./make_dats.bash $(ONE_WEEK_AGO) $(TODAY) weekly_types
 
 .PHONY : daily_dats 
-daily_dats : weekly_types daily_dir
-	./make_dats.bash $(ONE_WEEK_AGO) $(TODAY) weekly_types
+daily_dats : daily_types daily_dir
+	./make_dats.bash $(TODAY) $(TODAY) daily_types
 
 
 gplot : 
