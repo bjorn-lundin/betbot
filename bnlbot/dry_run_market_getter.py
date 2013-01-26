@@ -67,7 +67,7 @@ class SimpleBot(object):
 #self.HOURS_TO_MATCH_START
 #               countries = None)
         markets = self.api.get_all_markets(
-              events = ['7','4339'],
+              events = ['7','4339', '1'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
               countries = None)
@@ -86,7 +86,7 @@ class SimpleBot(object):
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['bet_delay'] == 0 # not started
-                    and market['no_of_runners'] >= 3 # 
+                    and market['no_of_runners'] >= 2 # 
                    ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
