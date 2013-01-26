@@ -2,13 +2,13 @@
 from time import sleep, time
 import datetime
 import psycopg2
-import urllib2
-import httplib2
-import ssl
-import xml.etree.ElementTree as etree 
+#import urllib2
+#import httplib2
+#import ssl
+#import xml.etree.ElementTree as etree 
 import os
 import sys
-import socket
+#import socket
 from db import Db
 from optparse import OptionParser
 
@@ -31,20 +31,30 @@ class ProfitTester(object):
     def __init__(self):
         self.Db = Db()
         self.conn = self.Db.conn
-        self.bet_type_list = None
-        self.bet_date_list = None
-        self.bet_list = None
+        self.bet_type_list = []
+        self.bet_date_list = []
+        self.bet_list = []
         self.tuple = None
     ########################## 	    
     
-    def get_bet_types(self, start_date, stop_date):
+    def get_bet_types(self, bet_type, start_date, stop_date):
+    
+        if bet_type != None:
+            self.bet_type_list.append(bet_type)
+            return
+    
         cur = self.conn.cursor()
         cur.execute("select distinct(BET_TYPE) from \
                      BET_WITH_COMMISSION \
                      where BET_PLACED::date >= %s \
                      and BET_PLACED::date <= %s",
                       (start_date, stop_date))
-        self.bet_type_list = cur.fetchall()
+
+        rows = cur.fetchall()
+        for row in rows:
+            self.bet_type_list.append(row[0])  
+        
+#        self.bet_type_list = cur.fetchall()
         cur.close()
         self.conn.commit()    
     ########################    
@@ -57,7 +67,11 @@ class ProfitTester(object):
                      and BET_PLACED::date <= %s \
                      order by BET_PLACED::date", 
                       (start_date, stop_date))
-        self.bet_date_list = cur.fetchall()
+#        self.bet_date_list = cur.fetchall()
+        rows = cur.fetchall()
+        for row in rows:
+            self.bet_date_list.append(row[0])  
+
         cur.close()
         self.conn.commit()    
     ########################    
@@ -72,8 +86,31 @@ class ProfitTester(object):
                      order by BET_PLACED", 
                       (start_date, stop_date, bet_type, min_price, max_price))
         self.bet_list = cur.fetchall()
+
+#        rows = cur.fetchall()
+#        for row in rows:
+#            self.bet_list.append(row)  
+
         cur.close()
         self.conn.commit()    
+    ########################
+
+    def print_bet_types(self, as_comment = True) : 
+        tmp_list = sorted(self.bet_type_list)
+        for row in tmp_list :
+            if as_comment : 
+                print '#', row
+            else :
+                print row
+        
+    ########################
+    def print_bet_dates(self, as_comment = True) : 
+        tmp_list = sorted(self.bet_date_list)
+        for row in tmp_list :
+            if as_comment : 
+                print '#', row
+            else :
+                print row
     ########################
 
 #datetime.datetime(2013, 1, 19, 12, 17))
@@ -85,7 +122,7 @@ class ProfitTester(object):
         profit = 0.0
         d_last_loss = None
         for rec in self.bet_list:
-#            print  rec
+#            print 'rec', rec
             p = float(rec[0])
             d = rec[1]
             ok = True
@@ -97,25 +134,39 @@ class ProfitTester(object):
                 if p < 0.0 : 
                     d_last_loss = d
             
-        print  typ, start_date, delay, min_price, max_price, profit
+        print delay, min_price, max_price, profit
         self.conn.close()   
         self.tuple = (start_date, stop_date, typ, delay, profit, min_price, max_price)
         
 
 ###################################################################
 
-
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
 
 parser = OptionParser()
 parser.add_option("-n", "--min_price", dest="min_price", action="store", type="float", help="min odds")
 parser.add_option("-x", "--max_price", dest="max_price", action="store", type="float", help="max odds")
-                  
+parser.add_option("-t", "--bet_type", dest="bet_type", action="store", type="string", help="list bet types")
+parser.add_option("-s", "--start_date", dest="start_date", action="store", type="string", help="start date")
+parser.add_option("-e", "--stop_date", dest="stop_date", action="store", type="string", help="stop date")
+parser.add_option("-q", "--quit_one", dest="quit_one", action="store_true", help="stop after one action", default=False)
+
                   
 (options, args) = parser.parse_args()
 
+min_price = options.min_price
+max_price = options.max_price
+start_date = options.start_date
+stop_date = options.stop_date
+bet_type = options.bet_type
+quit_one = options.quit_one
+
+if bet_type == "":
+    bet_type = None
+
+if quit_one == None:
+    quit_one = False
 
 
 #print 'options', options
@@ -123,24 +174,15 @@ parser.add_option("-x", "--max_price", dest="max_price", action="store", type="f
 
 
 first_bet = ProfitTester()
-#first_bet.get_bet_dates('2013-01-01', '2013-01-31')
-first_bet.get_bet_types('2013-01-18', '2013-01-31')
+first_bet.get_bet_dates(start_date, stop_date)
+first_bet.get_bet_types(bet_type, start_date, stop_date)
 first_bet.conn.close()
-#first_bet.bet_type_list = ['DRY_RUN_HOUNDS_PLACE_BACK_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HOUNDS_PLACE_LAY_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HOUNDS_WINNER_LAY_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HORSES_PLACE_BACK_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HORSES_PLACE_LAY_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HORSES_WINNER_LAY_BET']
-#first_bet.bet_type_list = ['DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET']
-#first_bet.bet_type_list = ['%ORSES_PLACE_BACK_BET']
 
+first_bet.print_bet_types()
+first_bet.print_bet_dates()
 
-#min_price = float(options.min_price)
-#max_price = float(options.max_price)
-min_price = options.min_price
-max_price = options.max_price
+if quit_one :
+    sys.exit()
 
 grand_sum = []
 
@@ -156,7 +198,7 @@ for typ in first_bet.bet_type_list :
         for delay in delay_list:
             for mprice in lay_price_list:
                 bet = ProfitTester()
-                bet.start('2013-01-17', '2013-01-31', typ, delay, min_price, mprice) 
+                bet.start(start_date, stop_date, typ, delay, min_price, mprice) 
                 grand_sum.append(bet.tuple)
 
 
@@ -165,5 +207,5 @@ for typ in first_bet.bet_type_list :
         for delay in delay_list:
             for bprice in back_price_list:
                 bet = ProfitTester()
-                bet.start('2013-01-17', '2013-01-31', typ, delay, bprice, max_price) 
+                bet.start(start_date, stop_date, typ, delay, bprice, max_price) 
                 grand_sum.append(bet.tuple)	
