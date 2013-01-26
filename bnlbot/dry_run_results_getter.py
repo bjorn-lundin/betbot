@@ -150,7 +150,7 @@ class Result_Feeder(object):
             print str(datetime.datetime.now()), 'Fetched horses'
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if not market.market_id and market.result_exists() :
+                if market.market_id and not market.result_exists() :
                     market.result_insert()
                     
         if self.get_hounds :
