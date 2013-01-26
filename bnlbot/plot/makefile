@@ -1,38 +1,32 @@
 #makefile for splitting full bet.dat file, rename the parts and plot the files
 
-
 TODAY=$(shell date -j -v-0d "+%Y_%m_%d")
 ONE_WEEK_AGO=$(shell date -j -v-6d "+%Y_%m_%d")
+WEEKLY_DIR=$(TODAY)\_$(ONE_WEEK_AGO)
+DAILY_DIR=$(TODAY)
 
-all: target profit.dat split plot
+.PHONY : all
+all: daily weekly
 
-target :
-	mkdir target
-
-.PHONY : reports
-reports : weekly daily
+weekly_dir :
+	mkdir $(WEEKLY_DIR)
+	
+daily_dir :
+	mkdir $(DAILY_DIR)
 
 
 .PHONY : weekly
-weekly:  weekly_types
-	@echo "weekly"
+weekly:  weekly_dats
+	rm -f *.png
+	./do_plot.bash
+	for i in *.png; do mv $i $(WEEKLY_DIR)/; done
+
 
 .PHONY : daily
-daily :  daily_types
-	@echo "daily"
-
-
-.PHONY : params
-params :
-	echo $(TODAY)
-
-
-profit.dat : profit_tester.py
-	python profit_tester.py  -n 1 -x 25| tee profit.dat
-
-.PHONY : split
-split : target profit.dat
-	./split.bash profit.dat
+daily :  daily_dats
+	rm -f *.png
+	./do_plot.bash
+	for i in *.png; do mv $i $(DAILY_DIR)/; done
 
 
 .PHONY : weekly_types
@@ -55,8 +49,12 @@ daily_types :
 	                        --quit_one > daily_types
 
 
-.PHONY : weekly_dats
-weekly_dats : weekly_types
+.PHONY : weekly_dats 
+weekly_dats : weekly_types weekly_dir
+	./make_dats.bash $(ONE_WEEK_AGO) $(TODAY) weekly_types
+
+.PHONY : daily_dats 
+daily_dats : weekly_types daily_dir
 	./make_dats.bash $(ONE_WEEK_AGO) $(TODAY) weekly_types
 
 
@@ -64,16 +62,15 @@ gplot :
 	./do_plot.bash
 
 
+
+
+
+
 ## pattern rule, make a .png file from a .dat file
 #%.png: %.dat 
 #	java BitmapExperiment $< > $@  
 
 
-# draw the plot
-.PHONY : plot
-plot: 
-	./do_plot.bash target
-#	gnuplot -e "typ='dry_run_hounds_winner_lay_bet'" -e "dat=22" plot_bets.cmd
 
 .PHONY : clean
 clean:
