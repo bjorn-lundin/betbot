@@ -62,7 +62,7 @@ class Market(object):
 
     def result_exists(self):
         eos = False
-	if self.selection_id_list :
+        if self.selection_id_list :
             for sid in self.selection_id_list :
                 cur = self.conn.cursor()
                 cur.execute("select * from DRY_RESULTS where MARKET_ID = %s and SELECTION_ID = %s", 
@@ -102,7 +102,7 @@ class Result_Feeder(object):
     URL_SOCCER = URL + '1'
     get_horses = True
     get_hounds = True
-    get_soccer = False
+    get_soccer = True
     conn = None
     
     def __init__(self, log):
