@@ -86,7 +86,8 @@ class BetSimulator(object):
 
 
     def print_saldo(self):
-        print 'saldo', self.saldo                          
+#        print 'saldo', self.saldo                          
+        print self.saldo                          
 
     #############################
     def check_result(self) :
@@ -129,7 +130,7 @@ class BetSimulator(object):
 
         
         self.saldo += profit         
-        print 'bet won', str(self.bet_won)
+#        print 'bet won', str(self.bet_won)
     #############################
     
     def make_bet(self) : 
@@ -225,8 +226,8 @@ parser.add_option("-a", "--animal",    dest="animal",    action="store", type="s
 (options, args) = parser.parse_args()
 
 
-print 'options', options
-print 'args', args
+#print 'options', options
+#print 'args', args
 
 
 simrun = BetSimulator(options.min_price, 
@@ -248,21 +249,23 @@ for market in simrun.markets :
     simrun.get_runners(market[0])
     simrun.get_winners(market[0])
     simrun.make_bet()
-    
-    if simrun.selection_id is not None :
-        simrun.print_saldo()                          
-        simrun.check_result()
-        
+    simrun.print_saldo()                          
     if  simrun.saldo < min_saldo : 
         min_saldo = simrun.saldo
+    
+    if simrun.selection_id is not None :
+        simrun.check_result()
+        simrun.print_saldo()                          
+        
     if  simrun.saldo > max_saldo : 
         max_saldo = simrun.saldo
-
+	
 print '------'  
 print 'min', min_saldo                
 print 'max', max_saldo                
+print 'res', simrun.saldo      
                         
-#lay_price_list = [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+#lay_price_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 #back_price_list = [1.0, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, \
 #                   1.40, 1.45, 1.50, 1.55, 1.60, 1.65, 1.70, \
 #                   1.75, 1.80, 1.85, 1.90, 1.95, 2.0]
