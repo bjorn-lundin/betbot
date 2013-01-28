@@ -13,8 +13,16 @@ back_price_list="1.0 1.20 1.40 1.60 1.80 \
                  4.0 4.20 4.40 4.60 4.80 \
                  5.0 5.20 5.40 5.60 5.80 " 
                    
-date_list="2013-01-18 2013-01-19 2013-01-20 2013-01-21 2013-01-22 2013-01-23 \
-           2013-01-24 2013-01-25 2013-01-26" 
+#hound_date_list="2013-01-18 2013-01-19 2013-01-20 2013-01-21 2013-01-22 2013-01-23 \
+#           2013-01-24 2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
+#
+#horse_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
+#human_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
+
+hound_date_list="2013-01-28" 
+horse_date_list="2013-01-28" 
+human_date_list="2013-01-28" 
+
                    
 #delay_list = "0 1 2 3 4 5 6"
 
@@ -38,6 +46,7 @@ fi
 
 case "$animal" in
     hound )
+           date_list=$hound_date_list
            if [ $bet_type == "lay" ] ; then
                price_list=$lay_price_list
                
@@ -54,6 +63,7 @@ case "$animal" in
            fi    
            ;;
     horse )
+           date_list=$horse_date_list
            if [ $bet_type == "lay" ] ; then
                price_list=$lay_price_list
            elif [ $bet_type == "back" ] ; then
@@ -64,6 +74,7 @@ case "$animal" in
            fi    
            ;;
     human )
+           date_list=$human_date_list
            if [ $bet_type == "lay" ] ; then
                price_list=$lay_price_list
            elif [ $bet_type == "back" ] ; then
@@ -107,4 +118,6 @@ for the_date in $date_list; do
             -e "stop_date='$the_date'" \
             -e "datafil='$filname'" \
             -e "datadir='$datadir'" plot_simulation.gpl
+    rm -f /Users/bnl/Dropbox/betfair/png/sim/$fil.png
+    cp $fil.png /Users/bnl/Dropbox/betfair/png/sim/
 done

@@ -33,6 +33,6 @@ set zlabel "skr"
 
 set xyplane at 10000
 
-splot datadir."/".datafil using 4:5:7 notitle
+splot datadir."/".datafil using 4:5:8 notitle
 
 

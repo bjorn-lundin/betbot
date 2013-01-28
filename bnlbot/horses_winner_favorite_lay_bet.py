@@ -38,28 +38,27 @@ class HorsesWinnerFavoriteLayBetBot(BetBot):
                 race_list = []
                 for runner in prices['runners'] :
                     try :
-                        tmp_bp = runner['back_prices'][0]['price']
+                        tmp_bp = float(runner['back_prices'][0]['price'])
                     except:
-                        tmp_bp = 1001                        
+                        tmp_bp = 1001.0                      
                     try :
-                        tmp_lp = runner['lay_prices'][0]['price']
+                        tmp_lp = float(runner['lay_prices'][0]['price'])
                     except:
-                        tmp_lp = 1001                        
+                        tmp_lp = 1001.0                        
                     try :
-                        sel_id = runner['selection_id']
+                        sel_id = int(runner['selection_id'])
                     except:
                         sel_id = -1                        
                     try :
-                        idx = runner['order_index']
+                        idx = int(runner['order_index'])
                     except:
                         idx = -1                        
                         
-                    self.log.info( 'UNSORTED back/lay/selection/idx ' + \
-                            str(tmp_bp) + '/' + \
-                            str(tmp_lp) + '/' + \
-                            str(sel_id) + '/' + \
+                    self.log.info( 'UNSORTED back/lay/selection/idx ' + 
+                            str(tmp_bp) + '/' + 
+                            str(tmp_lp) + '/' + 
+                            str(sel_id) + '/' + 
                             str(idx)                         )
-                   
                     tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                     race_list.append(tmp_tuple)    
 
@@ -79,7 +78,8 @@ class HorsesWinnerFavoriteLayBetBot(BetBot):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                    if  self.MIN_ODDS <= dct[1] and dct[1] <= self.MAX_ODDS :
+                    if (self.MIN_ODDS <= float(dct[1]) and
+                        float(dct[1]) <= self.MAX_ODDS) :
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -89,7 +89,7 @@ class HorsesWinnerFavoriteLayBetBot(BetBot):
                         lay_odds  = dct[1] 
                         back_odds = dct[0] 
                         index     = dct[3] 
-                        break 
+                    break  # only 1 can be favorite, if badd odds- do not play 
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
