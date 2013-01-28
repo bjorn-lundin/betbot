@@ -30,7 +30,7 @@ class TieNoBet(BetBot):
                 selection = None
                 name = None
                 try :
-                    odds_0        = (float(prices['runners'][0]['back_prices'][0]['price'])
+                    odds_0        = float(prices['runners'][0]['back_prices'][0]['price'])
                     selection_0   = int(prices['runners'][0]['selection_id'])
                     odds_1       = float(prices['runners'][1]['back_prices'][0]['price'])
                     selection_1  = int(prices['runners'][1]['selection_id'])
