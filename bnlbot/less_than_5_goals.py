@@ -44,9 +44,9 @@ class LessThan5Goals(BetBot):
                 back_price = None 
                 selection = None
                 try :
-                    odds_under      = prices['runners'][0]['back_prices'][0]['price']
-                    selection_under = prices['runners'][0]['selection_id']
-                    odds_over       = prices['runners'][1]['back_prices'][0]['price']
+                    odds_under      = float(prices['runners'][0]['back_prices'][0]['price'])
+                    selection_under = int(prices['runners'][0]['selection_id'])
+                    odds_over       = float(prices['runners'][1]['back_prices'][0]['price'])
 #                    selection_over  = prices['runners'][1]['selection_id']
                 except:
                     self.log.info( '#############################################')

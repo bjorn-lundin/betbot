@@ -45,10 +45,10 @@ class MoreThan0Goals(BetBot):
                 back_price = None 
                 selection = None
                 try :
-                    odds_under      = prices['runners'][0]['back_prices'][0]['price']
+                    float(odds_under      = prices['runners'][0]['back_prices'][0]['price'])
 #                    selection_under = prices['runners'][0]['selection_id']
-                    odds_over       = prices['runners'][1]['back_prices'][0]['price']
-                    selection_over  = prices['runners'][1]['selection_id']
+                    float(odds_over       = prices['runners'][1]['back_prices'][0]['price'])
+                    int(selection_over  = prices['runners'][1]['selection_id'])
                 except:
                     self.log.info( '#############################################')
                     self.log.info( 'prices missing some fields, do return ')

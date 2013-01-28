@@ -30,10 +30,10 @@ class TieNoBet(BetBot):
                 selection = None
                 name = None
                 try :
-                    odds_0        = prices['runners'][0]['back_prices'][0]['price']
-                    selection_0   = prices['runners'][0]['selection_id']
-                    odds_1       = prices['runners'][1]['back_prices'][0]['price']
-                    selection_1  = prices['runners'][1]['selection_id']
+                    odds_0        = (float(prices['runners'][0]['back_prices'][0]['price'])
+                    selection_0   = int(prices['runners'][0]['selection_id'])
+                    odds_1       = float(prices['runners'][1]['back_prices'][0]['price'])
+                    selection_1  = int(prices['runners'][1]['selection_id'])
                 except:
                     self.log.info( '#############################################')
                     self.log.info( 'prices missing some fields, do return ')
@@ -43,7 +43,7 @@ class TieNoBet(BetBot):
                 self.log.info( 'odds odd : ' + str(odds_1))
                 self.log.info( 'odds even: ' + str(odds_1))
 
-		bet_category = None
+                bet_category = None
 
                 #go favorite if odds diff is good, and odds is good
                 if odds_0 and odds_1 and \

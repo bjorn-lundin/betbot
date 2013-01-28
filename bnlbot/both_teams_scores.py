@@ -29,9 +29,9 @@ class BothTeamsScores(BetBot):
                 selection = None
                 
                 try :
-                    odds_yes      = prices['runners'][0]['back_prices'][0]['price']
-                    selection_yes = prices['runners'][0]['selection_id']
-                    odds_no       = prices['runners'][1]['back_prices'][0]['price']
+                    odds_yes      = float(prices['runners'][0]['back_prices'][0]['price'])
+                    selection_yes = int(prices['runners'][0]['selection_id'])
+                    odds_no       = float(prices['runners'][1]['back_prices'][0]['price'])
 #                    selection_no  = prices['runners'][1]['selection_id']
 
                 except:
