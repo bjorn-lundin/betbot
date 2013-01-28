@@ -68,8 +68,6 @@ class BetSimulator(object):
              (self.date, animal))
 
 
-challenge tbp forecast fc reverse without
-
         self.markets = cur.fetchall()
 #        print 'markets', self.markets
 #        print 'date', self.date
@@ -137,10 +135,8 @@ challenge tbp forecast fc reverse without
                     price = float(runner[4])
 
         else :
-            print 'Bad bet type', self.bet_type, 'must be back or lay'    
-            a = 1/0
-
-
+            sys.stderr.write('Bad bet type', self.bet_type, 'must be back or lay' + '\n')
+            sys.exit(1)
 
         profit = 0.0
         # take care of 5% commission here
@@ -150,7 +146,7 @@ challenge tbp forecast fc reverse without
             else:
                 profit = 0.95 * self.size + self.size * price 
 
-        self.saldo += profit         
+        self.saldo = self.saldo + profit         
 
     #############################
     
@@ -177,15 +173,14 @@ challenge tbp forecast fc reverse without
             name = None
             index = None
 
-
             max_turns = 0
             number_of_runners = len(sorted_list)
-            if self.options.animal == 'horse':
+            if self.animal == 'horse':
                 max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
-            elif self.options.animal == 'hound':
+            elif self.animal == 'hound':
                 max_turns = number_of_runners - 2  # there must be at least 3 runners with lower odds
             else :
-                sys.stderr.write('lay bet not implemented for ' + self.options.animal)
+                sys.stderr.write('lay bet not implemented for ' + self.animal + '\n')
                 sys.exit(1)
                                 
             for dct in sorted_list :
@@ -196,10 +191,10 @@ challenge tbp forecast fc reverse without
                     back_odds = float(dct[0]) 
                     index     = int(dct[3]) 
                     self.selection_id = int(selection) 
-                    self.saldo -= self.size * float(lay_odds) 
+                    self.saldo = self.saldo - (self.size * float(lay_odds)) 
                     break 
-            if selection is None :
-                sys.stderr.write('No runner is good enough, skipping this market')
+#            if selection is None :
+#                sys.stderr.write('No runner is good enough, skipping this market' + '\n')
 
         elif self.bet_type == 'back' :
             for runner in self.runners :
@@ -222,6 +217,7 @@ challenge tbp forecast fc reverse without
 
             number_of_runners = len(sorted_list)
             max_turns = 1 #number_of_runners - 4  # there must be at least 5 runners with lower odds
+#            sys.stderr.write('runner to choose from ' + str(sorted_list) + '\n')
             for dct in sorted_list :
                 i += 1
                 if  self.min_price <= float(dct[0]) and float(dct[0]) <= self.max_price and i <= max_turns :
@@ -230,10 +226,19 @@ challenge tbp forecast fc reverse without
                     back_odds = int(dct[0]) 
                     index     = int(dct[3]) 
                     self.selection_id = int(selection) 
-                    self.saldo -=  self.size         
+                    self.saldo = self.saldo - self.size         
+#                    sys.stderr.write('good runner ' + str(dct) + '\n')
                     break 
+#                else: 
+#                    sys.stderr.write('bad  runner ' + str(dct) + '\n')
+                
+                
+                   
+#            if selection is None :
+#                sys.stderr.write('No runner is good enough, skipping this market' + '\n')
+                    
         else :
-            sys.stderr.write('Bad bet type', self.bet_type, 'must be back or lay')
+            sys.stderr.write('Bad bet type', self.bet_type, 'must be back or lay' + '\n')
             sys.exit(1)
             
         ##############################################
@@ -272,11 +277,15 @@ simrun.get_markets()
 min_saldo = simrun.saldo
 max_saldo = simrun.saldo
 for market in simrun.markets :
+    sys.stderr.write('market ' + str(market[0]) + '\n')
+
     simrun.print_saldo()                          
     simrun.get_runners(market[0])
     simrun.get_winners(market[0])
     simrun.make_bet()
     simrun.print_saldo()                          
+    if  simrun.saldo > max_saldo : 
+        max_saldo = simrun.saldo
     if  simrun.saldo < min_saldo : 
         min_saldo = simrun.saldo
     
@@ -286,6 +295,8 @@ for market in simrun.markets :
         
     if  simrun.saldo > max_saldo : 
         max_saldo = simrun.saldo
+    if  simrun.saldo < min_saldo : 
+        min_saldo = simrun.saldo
 	
 if simrun.summary :
     print options.animal, options.bet_name, \

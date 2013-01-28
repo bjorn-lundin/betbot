@@ -32,19 +32,19 @@ class GreyHoundPlaceBackBetBot(BetBot):
                 race_list = []
                 for runner in prices['runners'] :
                     try :
-                        tmp_bp = runner['back_prices'][0]['price']
+                        tmp_bp = float(runner['back_prices'][0]['price'])
                     except:
-                        tmp_bp = 1001                        
+                        tmp_bp = 1001.0                      
                     try :
-                        tmp_lp = runner['lay_prices'][0]['price']
+                        tmp_lp = float(runner['lay_prices'][0]['price'])
                     except:
-                        tmp_lp = 1001                        
+                        tmp_lp = 1001.0                        
                     try :
-                        sel_id = runner['selection_id']
+                        sel_id = int(runner['selection_id'])
                     except:
                         sel_id = -1                        
                     try :
-                        idx = runner['order_index']
+                        idx = int(runner['order_index'])
                     except:
                         idx = -1                        
                         
@@ -53,11 +53,6 @@ class GreyHoundPlaceBackBetBot(BetBot):
                             str(tmp_lp) + '/' + 
                             str(sel_id) + '/' + 
                             str(idx)                         )
-                    tmp_dict = {}
-                    tmp_dict['bp'] = tmp_bp 
-                    tmp_dict['lp'] = tmp_lp 
-                    tmp_dict['sel_id'] = sel_id 
-                    tmp_dict['idx'] = idx 
                     tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                     race_list.append(tmp_tuple)    
 
@@ -80,8 +75,8 @@ class GreyHoundPlaceBackBetBot(BetBot):
                             #but it must 
                             #be 1 of the 3 from the top of the unreversed 
                             #list
-                    if ( dct[0] <= self.MAX_ODDS and  
-                         dct[0] >= self.MIN_ODDS and 
+                    if ( float(dct[0]) <= self.MAX_ODDS and  
+                         float(dct[0]) >= self.MIN_ODDS and 
                          i <= 1
                        ) :
                         self.log.info( 'will bet on ' + \
