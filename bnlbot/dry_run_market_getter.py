@@ -67,7 +67,7 @@ class SimpleBot(object):
 #self.HOURS_TO_MATCH_START
 #               countries = None)
         markets = self.api.get_all_markets(
-              events = ['7','4339', '1'],
+              events = ['1','7','4339'],
               hours = self.HOURS_TO_MATCH_START,
               include_started = False, # exclude in-play markets
               countries = None)
