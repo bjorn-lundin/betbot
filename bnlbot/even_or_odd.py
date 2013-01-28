@@ -30,10 +30,10 @@ class EvenOrOdd(BetBot):
                 selection = None
                 name = None
                 try :
-                    odds_odd        = prices['runners'][0]['back_prices'][0]['price']
-                    selection_odd   = prices['runners'][0]['selection_id']
-                    odds_even       = prices['runners'][1]['back_prices'][0]['price']
-                    selection_even  = prices['runners'][1]['selection_id']
+                    odds_odd        = float(prices['runners'][0]['back_prices'][0]['price'])
+                    selection_odd   = int(prices['runners'][0]['selection_id'])
+                    odds_even       = float(prices['runners'][1]['back_prices'][0]['price'])
+                    selection_even  = int(prices['runners'][1]['selection_id'])
                 except:
                     self.log.info( '#############################################')
                     self.log.info( 'prices missing some fields, do return ')
