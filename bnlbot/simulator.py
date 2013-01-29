@@ -134,7 +134,7 @@ class BetSimulator(object):
                     self.bet_won = False
                     break        
                     
-            sys.stderr.write('bet won ' + str(self.bet_won) + '\n')
+#            sys.stderr.write('bet won ' + str(self.bet_won) + '\n')
 
             for runner in self.runners:
                 if int(self.selection_id) == int(runner[1]) :
@@ -212,8 +212,8 @@ class BetSimulator(object):
                     #312,59 -> 233.09. bet 30@3.65
                     #312.59 - (30*3.65) + 30 = 233.09 
                     self.saldo = self.saldo - (self.size * float(lay_odds)) + self.size
-                    sys.stderr.write('lay bet on market:' + str(market_id) + \
-                    ' - selection id ' + str(selection) + ' layodds ' + str(lay_odds) + '\n')
+#                    sys.stderr.write('lay bet on market:' + str(market_id) + \
+#                    ' - selection id ' + str(selection) + ' layodds ' + str(lay_odds) + '\n')
                     break 
 #            if selection is None :
 #                sys.stderr.write('No runner is good enough, skipping this market' + '\n')
@@ -321,20 +321,10 @@ for market in simrun.markets :
         min_saldo = simrun.saldo
 
 
-    sys.stderr.write('min/max/res ' + str(min_saldo) + '/' + str(max_saldo) + '/' + str(simrun.saldo) + '\n')
+#    sys.stderr.write('min/max/res ' + str(min_saldo) + '/' + str(max_saldo) + '/' + str(simrun.saldo) + '\n')
 	
 if simrun.summary :
     print options.animal, options.bet_name, \
           options.bet_type, options.min_price, \
           options.max_price, min_saldo, simrun.saldo, max_saldo
-#    print 'min', min_saldo                
-#    print 'max', max_saldo                
-#    print 'res', simrun.saldo      
-                        
-#lay_price_list = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-#back_price_list = [1.0, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, \
-#                   1.40, 1.45, 1.50, 1.55, 1.60, 1.65, 1.70, \
-#                   1.75, 1.80, 1.85, 1.90, 1.95, 2.0]
-#delay_list = [0,1,2,3,4,5,6]
-
 
