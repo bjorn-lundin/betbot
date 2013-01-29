@@ -111,27 +111,32 @@ class BetSimulator(object):
 
     #############################
     def check_result(self) :
+        if self.selection_id is None :
+            return
+    
         price = 0.0
         if self.bet_type == 'back' :
             self.bet_won = False
             for winner in self.winners :
-                if self.selection_id == int(winner[1]) :
+                if int(self.selection_id) == int(winner[1]) :
                     self.bet_won = True
                     break        
         
             for runner in self.runners:
-                if self.selection_id == int(runner[1]) :
+                if int(self.selection_id) == int(runner[1]) :
                     price = float(runner[3])
 
         elif self.bet_type == 'lay' :
             self.bet_won = True
             for winner in self.winners :
-                if self.selection_id == winner[1] :
+                if int(self.selection_id) == int(winner[1]) :
                     self.bet_won = False
                     break        
+                    
+            sys.stderr.write('bet won ' + str(self.bet_won) + '\n')
 
             for runner in self.runners:
-                if self.selection_id == runner[1] :
+                if int(self.selection_id) == int(runner[1]) :
                     price = float(runner[4])
 
         else :
@@ -143,10 +148,19 @@ class BetSimulator(object):
         if self.bet_won :
             if self.bet_type == 'back' :
                 profit = 0.95 * self.size * price 
-            else:
-                profit = 0.95 * self.size + self.size * price 
+            elif self.bet_type == 'lay' :
+                #312.59 -> 341.09 ( 5% commission?)
+                # 30 * 3.65 = 109,5
+                #233.09 + 109.5 - (30 * 0.05) = 341.09
+                profit = (self.size * price) - (self.size * 0.05) 
 
-        self.saldo = self.saldo + profit         
+                    #312,59 -> 233.09. bet 30@3.65
+                    #312.59 - (30*3.65) + 30 = 233.09 
+            else :
+                sys.stderr.write('Bad bet type', self.bet_type, 'must be back or lay' + '\n')
+                sys.exit(1)
+        self.saldo = self.saldo + profit
+
 
     #############################
     
@@ -154,13 +168,13 @@ class BetSimulator(object):
         self.selection_id = None
         race_list = []
         if self.bet_type == 'lay' :
-     
+            market_id = 0
             for runner in self.runners :
                 tmp_bp = float(runner[3]) 
                 tmp_lp = float(runner[4])  
                 sel_id = int(runner[1]) 
                 idx    = int(runner[2])  
-           
+                market_id = int(runner[0])
                 tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                 race_list.append(tmp_tuple)    
 
@@ -191,7 +205,10 @@ class BetSimulator(object):
                     back_odds = float(dct[0]) 
                     index     = int(dct[3]) 
                     self.selection_id = int(selection) 
-                    self.saldo = self.saldo - (self.size * float(lay_odds)) 
+                    #312,59 -> 233.09. bet 30@3.65
+                    #312.59 - (30*3.65) + 30 = 233.09 
+                    self.saldo = self.saldo - (self.size * float(lay_odds)) + self.size
+                    sys.stderr.write('lay bet on market:' + str(market_id) + ' - selection id ' + str(selection) + '\n')
                     break 
 #            if selection is None :
 #                sys.stderr.write('No runner is good enough, skipping this market' + '\n')
@@ -277,7 +294,7 @@ simrun.get_markets()
 min_saldo = simrun.saldo
 max_saldo = simrun.saldo
 for market in simrun.markets :
-    sys.stderr.write('market ' + str(market[0]) + '\n')
+#    sys.stderr.write('market ' + str(market[0]) + '\n')
 
     simrun.print_saldo()                          
     simrun.get_runners(market[0])
@@ -297,6 +314,9 @@ for market in simrun.markets :
         max_saldo = simrun.saldo
     if  simrun.saldo < min_saldo : 
         min_saldo = simrun.saldo
+
+
+    sys.stderr.write('min/max/res ' + str(min_saldo) + '/' + str(max_saldo) + '/' + str(simrun.saldo) + '\n')
 	
 if simrun.summary :
     print options.animal, options.bet_name, \

@@ -91,7 +91,7 @@ class GreyHoundWinnerFavoriteLayBetBot(BetBot):
                         lay_odds  = dct[1] 
                         back_odds = dct[0] 
                         index     = dct[3] 
-                    break  # only 1 can be favorite, if badd odds- do not play 
+                    break  # only 1 can be favorite, if bad odds- do not play 
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
