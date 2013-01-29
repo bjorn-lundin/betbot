@@ -8,6 +8,7 @@ import ssl
 import socket
 import logging.handlers
 import httplib2
+from market import Market
 
 
 
@@ -67,6 +68,11 @@ class HorsesPlaceLayBetBot(BetBot):
                 back_odds = None
                 name = None
                 index = None
+                market = Market(self.conn, self.log, market_id = market_id)
+                # there must be at least 3 runners with lower odds
+                number_of_runners = len(sorted_list)
+                max_turns = number_of_runners - 2 - market.no_of_winners                
+                
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
@@ -74,11 +80,11 @@ class HorsesPlaceLayBetBot(BetBot):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                            #pick the first hore with reasonable odds, but it must 
+                            #pick the first horse with reasonable odds, but it must 
                             #be 1 of the 3 from the top of the reversed list
                     if ( float(dct[1]) <= self.MAX_ODDS and 
                          float(dct[1]) >= self.MIN_ODDS and 
-                         i <= 3 ) :
+                         i <= max_turns ) :
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \

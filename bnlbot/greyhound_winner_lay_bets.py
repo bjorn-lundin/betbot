@@ -12,7 +12,7 @@ import socket
 import logging.handlers
 
 import httplib2
-
+from market import Market
 
 
 class GreyHoundWinnerLayBetBot(BetBot):
@@ -72,8 +72,11 @@ class GreyHoundWinnerLayBetBot(BetBot):
                 back_odds = None
                 name = None
                 index = None
+                
+                market = Market(self.conn, self.log, market_id = market_id)
+                # there must be at least 3 runners with lower odds
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
+                max_turns = number_of_runners - 2 - market.no_of_winners
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \

@@ -73,8 +73,7 @@ class HorsesPlaceBackBetBot(BetBot):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                            #pick the first horse with reasonable odds, but it must 
-                            #be 1 of the 3 from the top of the unreversed list
+                            #pick the first horse with reasonable odds
                     if (float(dct[0]) <= self.MAX_ODDS and  
                         float(dct[0]) >= self.MIN_ODDS and 
                         i <= 1 ) :

@@ -72,9 +72,6 @@ class GreyHoundPlaceBackBetBot(BetBot):
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
                             #pick the first hound with reasonable odds, 
-                            #but it must 
-                            #be 1 of the 3 from the top of the unreversed 
-                            #list
                     if ( float(dct[0]) <= self.MAX_ODDS and  
                          float(dct[0]) >= self.MIN_ODDS and 
                          i <= 1

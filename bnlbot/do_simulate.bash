@@ -5,7 +5,6 @@
 trap "exit" SIGINT SIGTERM
 
 hound_place_lay_price_list="1 2 3 4 5 6 7 8 9 10"
-
 lay_price_list="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20"
 back_price_list="1.0 1.20 1.40 1.60 1.80 \
                  2.0 2.20 2.40 2.60 2.80 \
@@ -15,13 +14,13 @@ back_price_list="1.0 1.20 1.40 1.60 1.80 \
                    
 #hound_date_list="2013-01-18 2013-01-19 2013-01-20 2013-01-21 2013-01-22 2013-01-23 \
 #           2013-01-24 2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
-#
+
 #horse_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
 #human_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
 
-hound_date_list="2013-01-28" 
-horse_date_list="2013-01-28" 
-human_date_list="2013-01-28" 
+hound_date_list="2013-01-29" 
+horse_date_list="2013-01-29" 
+human_date_list="2013-01-29" 
 
                    
 #delay_list = "0 1 2 3 4 5 6"
@@ -95,9 +94,9 @@ for the_date in $date_list; do
     fil=$datadir/$filname
     rm -rf $fil
     rm -rf $fil.dat
-    for max_price in $price_list; do
-        for min_price in $price_list; do
-            echo "Treating $the_date $max_price - $min_price to $fil"
+    for min_price in $price_list; do
+        for max_price in $price_list; do
+            echo "Treating $the_date $min_price - $max_price to $fil"
             
             python simulator.py \
                 --bet_type=$bet_type \
