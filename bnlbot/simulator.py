@@ -5,6 +5,7 @@ import psycopg2
 import os
 import sys
 from db import Db
+from market import Market
 from optparse import OptionParser
 
 class BetSimulator(object):
@@ -189,10 +190,13 @@ class BetSimulator(object):
 
             max_turns = 0
             number_of_runners = len(sorted_list)
+            market = Market(self.conn, None, market_id = market_id)
             if self.animal == 'horse':
-                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
+#                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
+                max_turns = number_of_runners - 2 - market.no_of_winners
             elif self.animal == 'hound':
-                max_turns = number_of_runners - 2  # there must be at least 3 runners with lower odds
+                max_turns = number_of_runners - 2 - market.no_of_winners
+#                max_turns = number_of_runners - 2  # there must be at least 3 runners with lower odds
             else :
                 sys.stderr.write('lay bet not implemented for ' + self.animal + '\n')
                 sys.exit(1)
@@ -208,7 +212,8 @@ class BetSimulator(object):
                     #312,59 -> 233.09. bet 30@3.65
                     #312.59 - (30*3.65) + 30 = 233.09 
                     self.saldo = self.saldo - (self.size * float(lay_odds)) + self.size
-                    sys.stderr.write('lay bet on market:' + str(market_id) + ' - selection id ' + str(selection) + '\n')
+                    sys.stderr.write('lay bet on market:' + str(market_id) + \
+                    ' - selection id ' + str(selection) + ' layodds ' + str(lay_odds) + '\n')
                     break 
 #            if selection is None :
 #                sys.stderr.write('No runner is good enough, skipping this market' + '\n')

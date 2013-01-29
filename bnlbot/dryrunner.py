@@ -35,8 +35,8 @@ class DryRunner(object):
                        values \
                       (%s,%s,%s,%s,%s,%s)",
                       (self.market_id,  self.selection_id,      \
-                       self.back_price, self.lay_price, \
-                       self.index,      None))
+                       self.index, self.back_price,  \
+                       self.lay_price,  None))
             cur.close()
             
         except psycopg2.IntegrityError:
