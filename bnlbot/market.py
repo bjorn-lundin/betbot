@@ -9,16 +9,43 @@ class Market(object):
     away_team_name = None
     home_team_id = None
     away_team_id = None
+    market_id = None       
+    bsp_market = None
+    market_type = None
+    event_hierarchy = None
+    last_refresh = None
+    turning_in_play = None
+    menu_path = None
+    bet_delay = None
+    exchange_id = None
+    country_code = None
+    market_name = None
+    market_status = None
+    event_date = None
+    no_of_runners = 0
+    total_matched = None
+    no_of_winners = 0
+    home_team = None
+    away_team = None
+    ts = None
+    xml_soccer_id = None   
+
+
     
-    def __init__(self, conn, log, market_id = None, market_dict = None):
+    def __init__(self, conn, log, market_id = None, market_dict = None, simulate = False):
         self.conn = conn
         self.log = log
         
         self.conn = conn    
-        if market_id != None :
+        if market_id != None  :
             cur = self.conn.cursor()
-            cur.execute("select * from MARKETS \
+            if not simulate :
+                cur.execute("select * from MARKETS \
                          where MARKET_ID = %s",(market_id,))
+            else :
+                cur.execute("select * from DRY_MARKETS \
+                         where MARKET_ID = %s",(market_id,))
+                         
             row = cur.fetchone()
             cur.close()
             if row != None : 
