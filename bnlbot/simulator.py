@@ -190,7 +190,7 @@ class BetSimulator(object):
 
             max_turns = 0
             number_of_runners = len(sorted_list)
-            market = Market(self.conn, None, market_id = market_id)
+            market = Market(self.conn, None, market_id = market_id, simulate = True)
             if self.animal == 'horse':
 #                max_turns = number_of_runners - 4  # there must be at least 5 runners with lower odds
                 max_turns = number_of_runners - 2 - market.no_of_winners

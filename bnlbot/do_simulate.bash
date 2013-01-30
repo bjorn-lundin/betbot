@@ -18,9 +18,9 @@ back_price_list="1.0 1.20 1.40 1.60 1.80 \
 #horse_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
 #human_date_list="2013-01-25 2013-01-26 2013-01-27 2013-01-28" 
 
-hound_date_list="2013-01-29" 
-horse_date_list="2013-01-29" 
-human_date_list="2013-01-29" 
+hound_date_list="2013-01-30" 
+horse_date_list="2013-01-30" 
+human_date_list="2013-01-30" 
 
                    
 #delay_list = "0 1 2 3 4 5 6"
