@@ -99,7 +99,7 @@ class GreyHoundPlaceBackBetBot(BetBot):
                     if bf_market and type(bf_market) is dict :
                         self.log.info('bf_market ' + str(bf_market))
                         for runner in bf_market['runners'] :
-                            if runner['selection_id'] == selection :
+                            if int(runner['selection_id']) == int(selection) :
                                 name = runner['name']
                                 break
 
