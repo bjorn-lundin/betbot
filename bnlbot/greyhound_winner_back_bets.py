@@ -7,15 +7,12 @@ import ssl
 import socket
 import logging.handlers
 import httplib2
-from market import Market
 
-
-class GreyHoundPlaceLayBetBot(BetBot):
+class GreyHoundWinnerBackBetBot(BetBot):
     """put bet on games with low odds"""
-
-     
+    
     def __init__(self, log):
-        super(GreyHoundPlaceLayBetBot, self).__init__(log)
+        super(GreyHoundWinnerBackBetBot, self).__init__(log)
         
 ############################# end __init__
 
@@ -30,7 +27,6 @@ class GreyHoundPlaceLayBetBot(BetBot):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                lay_price = None 
                 selection = None
                 
                 race_list = []
@@ -60,7 +56,7 @@ class GreyHoundPlaceLayBetBot(BetBot):
                     tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                     race_list.append(tmp_tuple)    
 
-                sorted_list = sorted(race_list, reverse=True)
+                sorted_list = sorted(race_list, reverse=False)
                 i = 0  
                 
                 selection = None
@@ -68,10 +64,6 @@ class GreyHoundPlaceLayBetBot(BetBot):
                 back_odds = None
                 name = None
                 index = None
-                market = Market(self.conn, self.log, market_id = market_id)
-                # there must be at least 3 runners with lower odds
-                number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 2 - market.no_of_winners
                 for dct in sorted_list :
                     i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
@@ -79,9 +71,11 @@ class GreyHoundPlaceLayBetBot(BetBot):
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                    if  (self.MIN_ODDS <= float(dct[1]) and 
-                         float(dct[1]) <= self.MAX_ODDS and 
-                                     i <= max_turns ) :
+                            #pick the first hound with reasonable odds, 
+                    if ( float(dct[0]) <= self.MAX_ODDS and  
+                         float(dct[0]) >= self.MIN_ODDS and 
+                         i <= 1
+                       ) :
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -95,7 +89,8 @@ class GreyHoundPlaceLayBetBot(BetBot):
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
-                    return 
+                    return
+ 
                 
                 # get the name
                 if selection : 
@@ -109,7 +104,8 @@ class GreyHoundPlaceLayBetBot(BetBot):
                                 break
 
                 if not name :
-                    self.log.info( 'No name for chosen runner found, exit check_strategy')
+                    self.log.info( 'No name for chosen runner found, \
+                                   exit check_strategy')
                     return
                                 
                 # we have a name,selection and layodds.
@@ -120,8 +116,8 @@ class GreyHoundPlaceLayBetBot(BetBot):
                 self.log.info( 'name      : ' + str(name))
                 self.log.info( 'index     : ' + str(index))
                                     
-                if lay_odds and selection:
-                    self.place_bet(market_id, selection, lay_odds, name)
+                if back_odds and selection:
+                    self.place_bet(market_id, selection, back_odds, name)
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
                         str(market_id))
@@ -133,6 +129,7 @@ class GreyHoundPlaceLayBetBot(BetBot):
                 tmp_str += '---------------------------------------------'
                 self.log.info(tmp_str)
 ############################# check_strategy
+
 
 
 
@@ -158,8 +155,8 @@ alog.info('Starting application')
 
 
 
-bot = GreyHoundPlaceLayBetBot(alog)
-bot.initialize('HOUNDS_PLACE_LAY_BET')
+bot = GreyHoundWinnerBackBetBot(alog)
+bot.initialize('HOUNDS_WINNER_BACK_BET')
 
 while True:
     try:

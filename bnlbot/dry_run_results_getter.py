@@ -74,19 +74,31 @@ class Market(object):
                     eos = False
 
                 if eos:
-	            break
- 	    
+                    break
+
         return not eos
 
 
     def result_insert(self):
 #	print 'resultinsert',self.market_id, self.selection_id_list 
-	if self.selection_id_list :
+        if self.selection_id_list :
             for sid in self.selection_id_list :
-                cur = self.conn.cursor()
-                cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)", 
-                          (self.market_id, sid))
-                cur.close()
+            
+                cur7 = self.conn.cursor()
+                cur7.execute("SAVEPOINT RES_GET_B")
+                cur7.close()
+                try  :
+ 
+                    cur = self.conn.cursor()
+                    cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)", 
+                       (self.market_id, sid))
+                    cur.close()
+                except psycopg2.IntegrityError:
+                    print 'duplicate index self.market_id, sid', str(self.market_id), str(sid)
+                    cur.close()
+                    cur6 = self.conn.cursor()
+                    cur6.execute("ROLLBACK TO SAVEPOINT RES_GET_B" )
+                    cur6.close()
     
     
 #########################################################################
