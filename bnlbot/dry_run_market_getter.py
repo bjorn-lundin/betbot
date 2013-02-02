@@ -151,7 +151,7 @@ class SimpleBot(object):
                     d['bp'] = bp 
                     d['lp'] = lp 
                     d['sel_id'] = sel_id
-                    d['idx'] = idx 
+                    d['idx'] = idx 	
                     
                     dr = DryRunner(self.conn, self.log, d)
                     dr.insert()

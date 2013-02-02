@@ -16,13 +16,16 @@ class BetSimulator(object):
         self.saldo = options.saldo
         self.min_price = options.min_price
         self.max_price = options.max_price
-        self.date = options.date
+        self.start_date = options.start_date
+        self.stop_date = options.stop_date
         self.next_bet_time = None
         self.bet_type = options.bet_type
         self.bet_name = options.bet_name
         self.markets = []
         self.runners = []
         self.winners = []
+        self.all_runners = []
+        self.all_winners = []
         self.selection_id = None
         self.bet_won = False
         self.size = options.size
@@ -32,6 +35,10 @@ class BetSimulator(object):
     ########################## 	    
     
     def get_markets(self):
+
+
+#        sys.stderr.write('self.start_date, self.stop_date ' + str(self.start_date) + ',' + str(self.stop_date))
+
         
         if self.animal == 'horse' :
             animal = '%/7/%'
@@ -41,33 +48,43 @@ class BetSimulator(object):
             animal = '%/1/%'
         else :
             animal = 'not found'
-        
+#        print 'animal',animal
         cur = self.conn.cursor()
         
         if self.bet_name.lower() == 'plats' :
         
             cur.execute("select * from \
                      DRY_MARKETS \
-                     where EVENT_DATE::date = %s \
+                     where EVENT_DATE::date >= %s \
+                     and EVENT_DATE::date <= %s \
                      and MARKET_NAME = %s \
                      and EVENT_HIERARCHY like %s \
                      and exists (select 'x' from DRY_RESULTS where \
                                  DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) \
                      order by EVENT_DATE",
-             (self.date, self.bet_name, animal))
+             (self.start_date, self.stop_date, self.bet_name, animal))
         elif self.bet_name.lower() == 'vinnare' :
+        # psycopg needs %% instead of % when literal ...
             cur.execute("select * from \
                      DRY_MARKETS \
-                     where EVENT_DATE::date = %s \
-                     and lower(MARKET_NAME) not in \
-                     ('challenge', 'tbp', 'forecast', 'fc', \
-                     'reverse', 'without', 'plats', 'place')   \
+                     where EVENT_DATE::date >= %s \
+                     and EVENT_DATE::date <= %s \
+                      and lower(MARKET_NAME) not like '%% v %%'  \
+                      and lower(MARKET_NAME) not like '%%forecast%%'  \
+                      and lower(MARKET_NAME) not like '%%tbp%%'  \
+                      and lower(MARKET_NAME) not like '%%challenge%%'  \
+                      and lower(MARKET_NAME) not like '%%fc%%'  \
+                      and lower(MENU_PATH) not like '%%daily win%%'  \
+                      and lower(MARKET_NAME) not like '%%reverse%%'  \
+                      and lower(MARKET_NAME) not like '%%plats%%'  \
+                      and lower(MARKET_NAME) not like '%%place%%'  \
+                      and lower(MARKET_NAME) not like '%%without%%'  \
                      and EVENT_HIERARCHY like %s \
                      and exists (select 'x' from DRY_RESULTS where \
                                  DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) \
                      order by EVENT_DATE",
-             (self.date, animal))
-
+             (self.start_date, self.stop_date, animal))
+ 
 
         self.markets = cur.fetchall()
 #        print 'markets', self.markets
@@ -78,7 +95,25 @@ class BetSimulator(object):
         self.conn.commit()
     ########################    
     
+
+    def get_all_runners(self):
+        cur = self.conn.cursor()
+        cur.execute("select * \
+                     from DRY_RUNNERS ")
+
+        self.all_runners = cur.fetchall()
+
+        cur.close()
+        self.conn.commit()    
+    ########################    
+
     def get_runners(self, market_id):
+        self.runners = []
+        for runner in self.all_runners :
+            if int(runner[0]) == int(market_id):
+                self.runners.append(runner)
+        
+        return   
         cur = self.conn.cursor()
         cur.execute("select * \
                      from DRY_RUNNERS  \
@@ -93,6 +128,12 @@ class BetSimulator(object):
     ########################    
 
     def get_winners(self,market_id):
+        self.winners = []
+        for winner in self.all_winners :
+            if int(winner[0]) == int(market_id):
+                self.winners.append(winner)
+        
+        return 
         cur = self.conn.cursor()
         cur.execute("select * \
                      from DRY_RESULTS  \
@@ -100,6 +141,16 @@ class BetSimulator(object):
                       (market_id,))
 
         self.winners = cur.fetchall()
+
+        cur.close()
+        self.conn.commit()    
+    ########################    
+    def get_all_winners(self):
+        cur = self.conn.cursor()
+        cur.execute("select * \
+                     from DRY_RESULTS")
+
+        self.all_winners = cur.fetchall()
 
         cur.close()
         self.conn.commit()    
@@ -161,7 +212,6 @@ class BetSimulator(object):
                 sys.stderr.write('Bad bet type', self.bet_type, 'must be back or lay' + '\n')
                 sys.exit(1)
         self.saldo = self.saldo + profit
-
 
     #############################
     
@@ -276,55 +326,123 @@ parser.add_option("-n", "--min_price", dest="min_price", action="store", type="f
 parser.add_option("-x", "--max_price", dest="max_price", action="store", type="float", help="max odds")
 parser.add_option("-t", "--bet_type",  dest="bet_type",  action="store", type="string", help="bet type")
 parser.add_option("-b", "--bet_name",  dest="bet_name",  action="store", type="string", help="bet name")
-parser.add_option("-d", "--date",      dest="date",      action="store", type="string", help="date")
+parser.add_option("-d", "--start_date",dest="start_date",action="store", type="string", help="start date")
+parser.add_option("-g", "--stop_date", dest="stop_date", action="store", type="string", help="stop date")
 parser.add_option("-s", "--saldo",     dest="saldo",     action="store", type="float", help="start sum")
 parser.add_option("-z", "--size",      dest="size",      action="store", type="float", help="bet size")
 parser.add_option("-a", "--animal",    dest="animal",    action="store", type="string", help="animal")
 parser.add_option("-v", "--verbose",   dest="verbose",   action="store_true", help="verbose", default=False)
 parser.add_option("-e", "--summary",   dest="summary",   action="store_true", help="summary", default=False)
 
-                  
 (options, args) = parser.parse_args()
 
-
-#print 'options', options
+#sys.stderr.write('options ' + str(options))
 #print 'args', args
 
+## start test
+hound_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+back_price_list=[1.0, 1.20, 1.40, 1.60, 1.80, \
+                 2.0, 2.20, 2.40, 2.60, 2.80, \
+                 3.0, 3.20, 3.40, 3.60, 3.80, \
+                 4.0, 4.20, 4.40, 4.60, 4.80, \
+                 5.0, 5.20, 5.40, 5.60, 5.80 ]
+
+
+hound_date_list = ['2013-01-30', '2013-01-31'] 
+horse_date_list = hound_date_list
+human_date_list = hound_date_list 
+
+price_list = ""
+if options.bet_type == "lay"  :
+    price_list = lay_price_list
+elif  options.bet_type == "back" :
+    price_list = back_price_list
+else:
+    sys.stderr.write( "bad bet_type " + str(options.bet_type))
+    sys.exit(1)
+
+
+
+if options.animal == 'hound' :
+    date_list = hound_date_list
+    if options.bet_type == "lay" :
+        price_list = lay_price_list
+               
+        if options.bet_name == "Plats" :
+            price_list = hound_place_lay_price_list
+
+        elif options.bet_type == "back" :
+            price_list = back_price_list
+
+elif options.animal == 'horse' :
+    date_list = horse_date_list
+    if options.bet_type == "lay" :
+        price_list = lay_price_list
+    elif options.bet_type == "back" :
+        price_list = back_price_list
+
+elif options.animal == 'human':
+    date_list = human_date_list
+    if options.bet_type == "lay" :
+        price_list = lay_price_list
+    elif options.bet_type == "back"  :
+        price_list = back_price_list
+
+
+##stop test
 
 simrun = BetSimulator(options)
-                          
-                          
-simrun.get_markets()
+simrun.get_all_runners()
+simrun.get_all_winners()
 
-min_saldo = simrun.saldo
-max_saldo = simrun.saldo
-for market in simrun.markets :
+for the_date in date_list :
+    for minimum_price in price_list:
+        for maximum_price in price_list:
+            simrun.min_price = minimum_price    
+            simrun.max_price = maximum_price 
+            simrun.saldo = options.saldo   
+            datadir = 'sims'
+            filname = 'simulation-' + simrun.animal +'-' + simrun.bet_name + '-' + simrun.bet_type \
+                + '-' + simrun.start_date + '-' + simrun.stop_date + '.dat'
+            fil = datadir + '/' + filname                      
+                          
+            simrun.get_markets()
+
+            min_saldo = simrun.saldo
+            max_saldo = simrun.saldo
+            for market in simrun.markets :
 #    sys.stderr.write('market ' + str(market[0]) + '\n')
 
-    simrun.print_saldo()                          
-    simrun.get_runners(market[0])
-    simrun.get_winners(market[0])
-    simrun.make_bet()
-    simrun.print_saldo()                          
-    if  simrun.saldo > max_saldo : 
-        max_saldo = simrun.saldo
-    if  simrun.saldo < min_saldo : 
-        min_saldo = simrun.saldo
+                simrun.print_saldo()                          
+                simrun.get_runners(market[0])
+                simrun.get_winners(market[0])
+                simrun.make_bet()
+                simrun.print_saldo()                          
+                if  simrun.saldo > max_saldo : 
+                    max_saldo = simrun.saldo
+                if  simrun.saldo < min_saldo : 
+                    min_saldo = simrun.saldo
     
-    if simrun.selection_id is not None :
-        simrun.check_result()
-        simrun.print_saldo()                          
+                if simrun.selection_id is not None :
+                    simrun.check_result()
+                    simrun.print_saldo()                          
         
-    if  simrun.saldo > max_saldo : 
-        max_saldo = simrun.saldo
-    if  simrun.saldo < min_saldo : 
-        min_saldo = simrun.saldo
+                if  simrun.saldo > max_saldo : 
+                    max_saldo = simrun.saldo
+                if  simrun.saldo < min_saldo : 
+                    min_saldo = simrun.saldo
+            line = options.animal + ' ' + options.bet_name + ' ' + \
+                      options.bet_type + ' ' + str(minimum_price) + ' ' + \
+                      str(maximum_price) + ' ' + str(min_saldo) + ' ' + \
+                      str(simrun.saldo) + ' ' + str(max_saldo)
+            if simrun.summary :
+                print line
+                with open(fil, 'a') as text_file:
+                    text_file.write(line + '\n')
+
+
 
 
 #    sys.stderr.write('min/max/res ' + str(min_saldo) + '/' + str(max_saldo) + '/' + str(simrun.saldo) + '\n')
 	
-if simrun.summary :
-    print options.animal, options.bet_name, \
-          options.bet_type, options.min_price, \
-          options.max_price, min_saldo, simrun.saldo, max_saldo
-

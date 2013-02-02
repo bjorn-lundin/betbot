@@ -16,6 +16,7 @@ set terminal png medium size 800,600 background '#ffffffff'
 set output datadir."/".datafil.".png"
 
 set style data linespoints
+set dgrid3d ,,100
 set surface 
 set contour base
 #set contour surface
@@ -24,7 +25,6 @@ set view 60, 60, 1, 1
 
 #set key right
 set key off
-set dgrid3d
 set pm3d
 set title "profit f(minprice, maxprice) for ".animal." ".bet_name." ".bet_type." ".start_date."-".stop_date
 set ylabel "max price"
@@ -33,6 +33,10 @@ set zlabel "skr"
 
 set xyplane at 10000
 
-splot datadir."/".datafil using 4:5:8 notitle
+splot datadir."/".datafil using 4:5:7
 
+
+#set style data lines
+
+#splot 'sims/simulation-hound-Plats-lay-2013-01-31-2013-01-31.dat' using 4:5:7
 
