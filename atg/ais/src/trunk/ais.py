@@ -28,7 +28,7 @@ def init_ws_client(url, username, password):
         url,
         username=username,
         password=password,
-        timeout=30  #timeout in seconds
+        timeout=180  #timeout in seconds
     )
     cache = ws_client.options.cache
     cache.setduration(days=10) #months, weeks, days, hours, seconds
