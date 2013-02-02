@@ -90,7 +90,7 @@ def call_ais_service(params=None, date=None,
                 LOG.info('Using excisting file ' + file_name)
                 xml_data = util.read_file(file_name_dict=file_name_dict)
             else:
-                LOG.info('Data already saved in {file_name}'
+                LOG.debug('Data already saved in {file_name}'
                          .format(file_name=file_name))
                 return result
     try:
