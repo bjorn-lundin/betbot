@@ -124,7 +124,8 @@ def main():
             'metadir':conf.AIS_METADIR,
             'ais_version':conf.AIS_VERSION,
             'ais_type':conf.AIS_TYPE,
-            'save_soap_file':True
+            'save_soap_file':True,
+            'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE
         }
         ais.download_history_via_calendar(params)
     if meta_files in args:
