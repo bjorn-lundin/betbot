@@ -313,12 +313,22 @@ def download_history_via_calendar(params=None):
              .format(track=track, date=raceday_date))
             continue
         
-        # If upcomming raceday
+        # Upcomming raceday
         if raceday_date == (date_now + datetime.timedelta(days=1)):
             pass
         
-        # If raceday with result
-        if raceday_date <= date_now:
+        # Raceday with result in ATG database, from today and 
+        # backwards according to AIS_RACEDAY_HISTORY
+        date_then = None
+        if params['ais_type'] == 'test':
+            print('test')
+            date_then = raceday_date
+        else:
+            raceday_history = params['raceday_history']
+            date_then = date_now - datetime.timedelta(days=raceday_history)
+        
+        if raceday_date <= date_now and \
+                raceday_date >= date_then:
             racing_card_service(
                 params=params, 
                 date=date, 

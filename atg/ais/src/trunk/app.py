@@ -125,6 +125,7 @@ def main():
             'ais_version':conf.AIS_VERSION,
             'ais_type':conf.AIS_TYPE,
             'save_soap_file':True,
+            'raceday_history':conf.AIS_RACEDAY_HISTORY,
             'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE
         }
         ais.download_history_via_calendar(params)
