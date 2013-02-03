@@ -13,8 +13,6 @@ class GreyHoundWinnerBackBetBot(BetBot):
     
     def __init__(self, log):
         super(GreyHoundWinnerBackBetBot, self).__init__(log)
-        self.PRICE = self.MAX_ODDS
-        self.DELTA = self.MIN_ODDS
         
 ############################# end __init__
 
