@@ -390,6 +390,10 @@ class BetBot(object):
         self.log.info('Countries' + str(self.COUNTRIES))
 
 
+
+        if self.MIN_ODDS > self.MAX_ODDS :
+            raise Exception('min odds bigger than max odds! impossible ..')
+
 ############################# end initialize
 
 
