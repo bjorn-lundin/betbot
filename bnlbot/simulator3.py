@@ -16,8 +16,8 @@ class BetSimulator(object):
         self.Db = Db()
         self.conn = self.Db.conn
         self.saldo = opts.saldo
-        self.min_price = opts.min_price
-        self.max_price = opts.max_price
+        self.price = opts.price
+        self.delta_price = opts.delta_price
         self.start_date = opts.start_date
         self.stop_date = opts.stop_date
         self.next_bet_time = None
@@ -269,7 +269,7 @@ class BetSimulator(object):
         self.start_timer()
         self.selection_id = None
         race_list = []
-        if self.bet_type == 'lay' :
+        if self.bet_type == 'lay_will_be_impl' :
             market_id = 0
             for runner in self.runners :
                 tmp_bp = float(runner[3]) 
@@ -342,8 +342,8 @@ class BetSimulator(object):
     
                 for dct in sorted_list :
                     i += 1
-                    if ( self.min_price <= float(dct[0]) and 
-                         float(dct[0]) <= self.max_price and 
+                    if ( self.price - self.delta_price <= float(dct[0]) and 
+                         float(dct[0]) <= self.price + self.delta_price and 
                          i <= max_turns ):
                         selection = float(dct[2])
     #                    lay_odds  = float(dct[1]) 
@@ -352,8 +352,11 @@ class BetSimulator(object):
                         self.selection_id = int(selection) 
                         self.saldo = self.saldo - self.size         
     #                    sys.stderr.write('good runner ' + str(dct) + '\n')
-                        break 
-            elif self.animal == 'human':
+                    break 
+                        
+                        
+                        
+            elif self.animal == 'human_will_be_impl':
                 if self.bet_name.lower() == 'utvisning?' :         
                  #fotboll med ja/nej alternativ, där vi väljer NEJ
 #                        odds_yes      = prices['runners'][0]['back_prices'][0]['price']
@@ -377,6 +380,9 @@ class BetSimulator(object):
                         ):
                         self.selection_id = sel_id
                         self.saldo = self.saldo - self.size         
+            else :
+                sys.stderr.write('Bad animla', self.animal, \
+                              'must be horse or hound' + '\n')
         else :
             sys.stderr.write('Bad bet type', self.bet_type, \
                               'must be back or lay' + '\n')
@@ -392,10 +398,10 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
 parser = OptionParser()
-parser.add_option("-n", "--min_price", dest="min_price", action="store", \
-                  type="float", help="min odds")
-parser.add_option("-x", "--max_price", dest="max_price", action="store", \
-                  type="float", help="max odds")
+parser.add_option("-n", "--price", dest="price", action="store", \
+                  type="float", help="avg odds")
+parser.add_option("-x", "--delta_price", dest="delta_price", action="store", \
+                  type="float", help="delta odds")
 parser.add_option("-t", "--bet_type",  dest="bet_type",  action="store", \
                   type="string", help="bet type")
 parser.add_option("-b", "--bet_name",  dest="bet_name",  action="store", \
@@ -424,6 +430,9 @@ parser.add_option("-p", "--plot",      dest="plot"   ,   action="store_true", \
 
 ## start test
 hound_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+horse_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+
 lay_price_list = [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, \
                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
@@ -435,14 +444,31 @@ back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
                    7.0, 7.20, 7.40, 7.60, 7.80, \
                    8.0, 8.20, 8.40, 8.60, 8.80]
 
+
+hound_place_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
+                   2.0, 2.20, 2.40, 2.60, 2.80, \
+                   3.0, 3.20, 3.40, 3.60, 3.80 ]
+
+horse_place_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
+                   2.0, 2.20, 2.40, 2.60, 2.80, \
+                   3.0, 3.20, 3.40, 3.60, 3.80 ]
+
+
+hound_winner_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
+                   2.0, 2.20, 2.40, 2.60, 2.80, \
+                   3.0, 3.20, 3.40, 3.60, 3.80, \
+                   4.0, 4.20, 4.40, 4.60, 4.80, \
+                   5.0, 5.20, 5.40, 5.60, 5.80, 6.00]
+
+horse_winner_back_price_list = back_price_list
+
+
 sendoff_price_list = [1.00, 1.05, 1.10, 1.15, 1.20, 1.25, \
                       1.30, 1.35, 1.40, 1.45, 1.50, 1.55, \
                       1.60, 1.65, 1.70, 1.75, 1.80, 1.85, \
                       1.90, 1.95, 2.00, 2.05, 2.10, 2.15 ]
 
-hound_date_list = ['2013-01-30', '2013-01-31'] 
-horse_date_list = hound_date_list
-human_date_list = hound_date_list 
+delta_list = [0.1, 0.2, 0.3, 0.4, 0.5]
 
 price_list = ""
 if options.bet_type == "lay"  :
@@ -454,29 +480,32 @@ else:
     sys.exit(1)
 
 if options.animal == 'hound' :
-    date_list = hound_date_list
     if options.bet_type == "lay" :
         price_list = lay_price_list
                
         if options.bet_name == "Plats" :
             price_list = hound_place_lay_price_list
 
-        elif options.bet_type == "back" :
-            price_list = back_price_list
+    elif options.bet_type == "back" :
+        if options.bet_name == "Plats" :    
+            price_list = hound_place_back_price_list
+        elif options.bet_name == "Vinnare" :    
+            price_list = hound_winner_back_price_list
 
 elif options.animal == 'horse' :
-    date_list = horse_date_list
     if options.bet_type == "lay" :
         price_list = lay_price_list
     elif options.bet_type == "back" :
-        price_list = back_price_list
+        if options.bet_name == "Plats" :    
+            price_list = horse_place_back_price_list
+        elif options.bet_name == "Vinnare" :    
+            price_list = horse_winner_back_price_list
 
 elif options.animal == 'human':
-    date_list = human_date_list
     if options.bet_type == "lay" :
         price_list = lay_price_list
     elif options.bet_type == "back"  :
-        price_list = sendoff_price_list
+        price_list = back_price_list
 
 
 ##stop test
@@ -484,27 +513,26 @@ elif options.animal == 'human':
 simrun = BetSimulator(options)
 datadir = ''
 filname = ''
-for minimum_price in price_list:
-    for maximum_price in price_list:
+for price in price_list:
+    for delta in delta_list:
         simrun.saldo = options.saldo
-        simrun.max_price = maximum_price
-        simrun.min_price = minimum_price
-                
+        simrun.price = price            
+        simrun.delta_price = delta            
         datadir = 'sims'
-        filname = 'simulation-' + simrun.animal +'-' + \
-        simrun.bet_name + '-' + simrun.bet_type \
-            + '-' + simrun.start_date + '-' + simrun.stop_date + '.dat'
+        filname = 'simulation3-' + simrun.animal +'-' + \
+            simrun.bet_name + '-' + simrun.bet_type \
+                + '-' + simrun.start_date + '-' + simrun.stop_date + '.dat'
         fil = datadir + '/' + filname                      
-
-#        sys.exit(0)
-                      
+        
+#            sys.exit(0)
+                        
         simrun.get_markets()
-
+        
         min_saldo = simrun.saldo
         max_saldo = simrun.saldo
         for market in simrun.markets :
         #sys.stderr.write('market ' + str(market[0]) + '\n')
-
+        
             simrun.print_saldo()                          
             simrun.get_runners(market[0])
             simrun.get_winners(market[0])
@@ -514,24 +542,24 @@ for minimum_price in price_list:
                 max_saldo = simrun.saldo
             if  simrun.saldo < min_saldo : 
                 min_saldo = simrun.saldo
-
+        
             if simrun.selection_id is not None :
                 simrun.check_result()
                 simrun.print_saldo()                          
-    
+        
             if  simrun.saldo > max_saldo : 
                 max_saldo = simrun.saldo
             if  simrun.saldo < min_saldo : 
                 min_saldo = simrun.saldo
-
+        
         line = options.animal + ' ' + options.bet_name + ' ' + \
-                  options.bet_type + ' ' + str(minimum_price) + ' ' + \
-                  str(maximum_price) + ' ' + str(min_saldo) + ' ' + \
-                  str(simrun.saldo) + ' ' + str(max_saldo)
-
+                options.bet_type + ' ' + str(delta) + ' ' \
+                + str(price) + ' ' + str(min_saldo) + ' ' + \
+                str(simrun.saldo) + ' ' + str(max_saldo)
+        
         if simrun.summary :
-            print line
-
+                print line
+        
         simrun.start_timer()
         with open(fil, 'a') as text_file:
             text_file.write(line + '\n')
@@ -545,6 +573,6 @@ if simrun.plot :
     -e \"start_date=\'" + simrun.start_date + "\'\" \
     -e \"stop_date=\'" + simrun.stop_date + "\'\" \
     -e \"datafil=\'" + filname + "\'\" \
-    -e \"datadir=\'" + datadir + "\'\" plot_simulation.gpl"
+    -e \"datadir=\'" + datadir + "\'\" plot_simulation3.gpl"
 
     p = subprocess.Popen(cmd, shell=True)

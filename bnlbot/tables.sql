@@ -37,6 +37,12 @@ create table dry_markets (
   primary key(market_id)
 );
 
+create index dry_markets_event_date on dry_markets (event_date);
+create index dry_markets_menu_path on dry_markets (menu_path);
+create index dry_markets_event_hierarchy on dry_markets (event_hierarchy);
+create index dry_markets_market_name on dry_markets (market_name);
+create index dry_markets_market_id on dry_markets (market_id);
+
 create table dry_runners (
   market_id  integer,
   selection_id  integer,
@@ -47,12 +53,16 @@ create table dry_runners (
   primary key(market_id, selection_id)
 );
 
+create index dry_runners_market_id on dry_markets (market_id);
+
+
 create table dry_results (
   market_id integer,
   selection_id integer,
   primary key(market_id, selection_id)
 );
 
+create index dry_results_market_id on dry_results (market_id);
 
 create table markets (
   market_id  integer,
@@ -337,19 +347,12 @@ create table score_statistics (
 
 
 create table prospects (
-
   id    integer not null ,
-
   team_id    integer not null ,
-
   team_name varchar not null,
-
   country_code varchar,
-
   eventtime timestamp without time zone default Localtimestamp not null,
-
   primary key(id,team_id,team_name)
-
 );
 
 

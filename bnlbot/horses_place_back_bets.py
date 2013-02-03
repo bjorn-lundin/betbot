@@ -15,6 +15,8 @@ class HorsesPlaceBackBetBot(BetBot):
 
     def __init__(self, log):
         super(HorsesPlaceBackBetBot, self).__init__(log)
+        self.PRICE = self.MAX_ODDS
+        self.DELTA = self.DELTA_PRICE
         
 ############################# end __init__
 
@@ -74,9 +76,9 @@ class HorsesPlaceBackBetBot(BetBot):
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
                             #pick the first horse with reasonable odds
-                    if (float(dct[0]) <= self.MAX_ODDS and  
-                        float(dct[0]) >= self.MIN_ODDS and 
-                        i <= 1 ) :
+                    if ( self.PRICE - self.DELTA_ <= float(dct[0]) and 
+                         float(dct[0]) <= self.PRICE + self.DELTA and 
+                         i <= 1 ):
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
