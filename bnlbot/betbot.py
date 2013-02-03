@@ -349,8 +349,26 @@ class BetBot(object):
 
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))
-        self.MAX_ODDS                        = float(config.get(bet_category, 'max_odds'))
-        self.MIN_ODDS                        = float(config.get(bet_category, 'min_odds'))
+        try :
+            self.MAX_ODDS                        = float(config.get(bet_category, 'max_odds'))
+        except ConfigParser.NoOptionError :
+            self.MAX_ODDS = 0.0
+
+        try :
+            self.MIN_ODDS                        = float(config.get(bet_category, 'min_odds'))
+        except ConfigParser.NoOptionError :
+            self.MIN_ODDS = 0.0
+
+        try :
+            self.DELTA                           = float(config.get(bet_category, 'delta'))
+        except ConfigParser.NoOptionError :
+            self.DELTA = 0.0
+
+        try :
+            self.PRICE                           = float(config.get(bet_category, 'price'))
+        except ConfigParser.NoOptionError :
+            self.PRICE = 0.0
+
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
         self.DRY_RUN                         = bool (config.get(bet_category, 'dry_run'))
         self.BET_CATEGORY = bet_category
