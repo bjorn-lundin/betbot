@@ -298,11 +298,20 @@ def download_history_via_calendar(params=None):
 #    now = datetime.datetime.now() - datetime.timedelta(days=1)
     now = datetime.datetime.now()
     date_now = datetime.date(now.year, now.month, now.day)
-
+    raceday_exclude = params['raceday_exclude']
+    
     for raceday in racedays:
         date = raceday.raceday_date
         track = raceday.track_id
         raceday_date = datetime.date(date.year, date.month, date.day)
+        
+        # Some racedays don't have the data they should. Check if
+        # current raceday is stated in exclude list
+        if track in raceday_exclude and \
+                str(raceday_date) == raceday_exclude[track]:
+            LOG.info('Raceday exclude date={date}, track={track}'
+             .format(track=track, date=raceday_date))
+            continue
         
         # If upcomming raceday
         if raceday_date == (date_now + datetime.timedelta(days=1)):

@@ -11,6 +11,7 @@ AIS_WS_HOST = 'https://media.atg.se/'
 AIS_VERSION = '8'
 AIS_LOGDIR = os.path.normpath(os.path.join(AIS_HOME, 'log'))
 AIS_METADIR = os.path.normpath(os.path.join(AIS_HOME, 'meta_data'))
+AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22'}
 EMAIL_LOG_ERRORS = False
 
 AIS_TYPE = 'test'
