@@ -76,7 +76,7 @@ class HorsesPlaceBackBetBot(BetBot):
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
                             #pick the first horse with reasonable odds
-                    if ( self.PRICE - self.DELTA_ <= float(dct[0]) and 
+                    if ( self.PRICE - self.DELTA <= float(dct[0]) and 
                          float(dct[0]) <= self.PRICE + self.DELTA and 
                          i <= 1 ):
                         self.log.info( 'will bet on ' + \
