@@ -45,7 +45,7 @@ class EvenOrOdd(BetBot):
 
 		bet_category = None
 
-                #jämnt resultat
+
                 if odds_even and \
                    odds_even >= self.MIN_ODDS and \
                    odds_even <= self.MAX_ODDS :

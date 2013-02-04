@@ -3,6 +3,7 @@ set datafile separator whitespace
 #    gnuplot -e "animal='$animal'" \
 #            -e "bet_name='$bet_name'" \
 #            -e "bet_type='$bet_type'" \
+#            -e "index='" + str(simrun.index) + "\'\" \
 #            -e "start_date='$the_date'" \
 #            -e "stop_date='$the_date'" \
 #            -e "datafil='$filname'" \
@@ -26,7 +27,7 @@ set view 60, 60, 1, 1
 #set key right
 set key off
 set pm3d
-set title "profit f(price, delta) for ".animal." ".bet_name." ".bet_type." ".start_date."-".stop_date
+set title "profit f(price, delta) for ".animal." ".bet_name." ".bet_type." ".start_date."-".stop_date."-".index
 set ylabel "price"
 set xlabel "delta"
 set zlabel "skr"
