@@ -30,6 +30,8 @@ class BetBot(object):
     BETTING_SIZE = None
     MAX_ODDS = None
     MIN_ODDS = None
+    DELTA = None
+    PRICE = None
     HOURS_TO_MATCH_START = None
     DELAY_BETWEEN_TURNS_BAD_FUNDING = None
     DELAY_BETWEEN_TURNS_NO_MARKETS =  None

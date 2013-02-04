@@ -36,8 +36,8 @@ class Db(object):
         elif self.hostname == 'sebjlun-deb' :
             self.conn = psycopg2.connect("dbname='betting' \
                                           user='bnl' \
-                                          host='192.168.0.24' \
-                                          password=None") 
+                                          host='localhost' \
+                                          password='bnl'") 
                                           
                                           
         else :
