@@ -59,7 +59,6 @@ class HorsesWinnerBackBetBot(BetBot):
                     race_list.append(tmp_tuple)    
 
                 sorted_list = sorted(race_list, reverse=False)
-                i = 0  
                 
                 selection = None
                 lay_odds = None
@@ -67,7 +66,6 @@ class HorsesWinnerBackBetBot(BetBot):
                 name = None
                 index = None
                 for dct in sorted_list :
-                    i += 1
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -75,8 +73,7 @@ class HorsesWinnerBackBetBot(BetBot):
                             str(dct[3])                         )
                             #pick the first horse with reasonable odds
                     if ( self.PRICE - self.DELTA <= float(dct[0]) and 
-                         float(dct[0]) <= self.PRICE + self.DELTA and 
-                         i <= 1 ):
+                         float(dct[0]) <= self.PRICE + self.DELTA ):
                             
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
@@ -87,7 +84,8 @@ class HorsesWinnerBackBetBot(BetBot):
                         lay_odds  = dct[1] 
                         back_odds = dct[0] 
                         index     = dct[3] 
-                        break 
+                    break
+                        
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')

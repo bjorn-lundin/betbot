@@ -30,7 +30,7 @@ class GreyHoundPlaceLayBetBot(BetBot):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                lay_price = None 
+#                lay_price = None 
                 selection = None
                 
                 race_list = []
@@ -73,15 +73,21 @@ class GreyHoundPlaceLayBetBot(BetBot):
                 number_of_runners = len(sorted_list)
                 max_turns = number_of_runners - 2 - market.no_of_winners
                 for dct in sorted_list :
-                    i += 1
+                    i = i + 1
+                    if i >= max_turns  :
+                        self.log.info('number_of_runners = ' \
+                            + str(number_of_runners) + \
+                            'max turns = ' + str(max_turns) + ' i = ' + str(i))
+                        self.log.info('Too close to winner positon, exit')
+                        return 
+                    
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                    if  (self.MIN_ODDS <= float(dct[1]) and 
-                         float(dct[1]) <= self.MAX_ODDS and 
-                                     i <= max_turns ) :
+                    if ( self.PRICE - self.DELTA <= float(dct[0]) and 
+                         float(dct[0]) <= self.PRICE + self.DELTA ):
                         self.log.info( 'will bet on ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -109,7 +115,8 @@ class GreyHoundPlaceLayBetBot(BetBot):
                                 break
 
                 if not name :
-                    self.log.info( 'No name for chosen runner found, exit check_strategy')
+                    self.log.info( 'No name for chosen runner \
+                                found, exit check_strategy')
                     return
                                 
                 # we have a name,selection and layodds.
@@ -123,13 +130,14 @@ class GreyHoundPlaceLayBetBot(BetBot):
                 if lay_odds and selection:
                     self.place_bet(market_id, selection, lay_odds, name)
                 else:
-                    self.log.info('bad odds or time in game -> no bet on market ' +
-                        str(market_id))
+                    self.log.info('bad odds or time in game -> \
+                    no bet on market ' +   str(market_id))
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
-                tmp_str = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
+                tmp_str = 'check_strategy() ERROR: prices = ' \
+                           + str(prices) + '\n'
                 tmp_str += '---------------------------------------------'
                 self.log.info(tmp_str)
 ############################# check_strategy

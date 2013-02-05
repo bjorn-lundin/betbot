@@ -284,7 +284,7 @@ class BetSimulator(object):
         self.start_timer()
         self.selection_id = None
         race_list = []
-        if self.bet_type == 'lay_will_be_impl' :
+        if self.bet_type == 'lay' :
             market_id = 0
             for runner in self.runners :
                 tmp_bp = float(runner[3]) 
@@ -317,9 +317,9 @@ class BetSimulator(object):
                 sys.exit(1)
                                 
             for dct in sorted_list :
-                i += 1
-                if ( self.price - self.delta_price <= tmp_bp and 
-                     tmp_bp <= self.price + self.delta_price and
+                i = i + 1
+                if ( self.MIN_ODDS  <= tmp_bp and 
+                     tmp_bp <= self.MAX_ODDS and
                      i <= max_turns 
                      ) :
                     selection = int(dct[2]) 
@@ -395,7 +395,7 @@ class BetSimulator(object):
 #                        odds_no       = prices['runners'][1]['back_prices'][0]['price']
 #                        selection_no  = prices['runners'][1]['selection_id']
                     # index 1 = ja, index 2 = nej
-                    
+                    found = False
                     tmp_bp = -1
                     for runner in self.runners :
                         tmp_bp = float(runner[3])  
@@ -403,11 +403,12 @@ class BetSimulator(object):
                         sel_id = int(runner[1])  
                         idx    = int(runner[2])  
                         if idx == int(self.index) :
+                            found = True   
 #                            sys.stderr.write('found ix=1, tmp_bp= ' + str(tmp_bp) + '\n')
                             break
                         # we have the alternative  
                     if ( self.price - self.delta_price <= tmp_bp and 
-                         tmp_bp <= self.price + self.delta_price 
+                         tmp_bp <= self.price + self.delta_price and found
                          ):
                         self.selection_id = sel_id
                         self.saldo = self.saldo - self.size    
@@ -472,7 +473,13 @@ horse_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 lay_price_list = [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, \
-                  11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
+                  21, 22, 23, 24, 25, 26, 27, 28, 29, 30, \
+                  31, 32, 33, 34, 35, 36, 37, 38, 39, 40, \
+                  41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+
+
+
 back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
                    2.0, 2.20, 2.40, 2.60, 2.80, \
                    3.0, 3.20, 3.40, 3.60, 3.80, \
@@ -521,7 +528,8 @@ over_x_goal_price_list = \
  3.90, 3.95, 4.00, 4.05, 4.10, 4.15 ]
 
 
-delta_list = [0.1, 0.2, 0.3, 0.4, 0.5]
+delta_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, \
+              1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
 
 price_list = ""
 if options.bet_type == "lay"  :
@@ -536,8 +544,8 @@ if options.animal == 'hound' :
     if options.bet_type == "lay" :
         price_list = lay_price_list
                
-        if options.bet_name == "Plats" :
-            price_list = hound_place_lay_price_list
+#        if options.bet_name == "Plats" :
+#            price_list = hound_place_lay_price_list
 
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :    
