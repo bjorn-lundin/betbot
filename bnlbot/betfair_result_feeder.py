@@ -150,13 +150,31 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_BACK_BET" :
             bet_won = selection_in_winners
 
+        elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_MORE_THAN_1.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_MORE_THAN_2.5_GOALS" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_LESS_THAN_3.5_GOALS" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_LESS_THAN_4.5_GOALS" :
             bet_won = selection_in_winners
 
-        elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
+        elif self.bet_type == "DRY_RUN_LESS_THAN_5.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_LESS_THAN_6.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_LESS_THAN_7.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_LESS_THAN_8.5_GOALS" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_SENDOFF_NO" :
