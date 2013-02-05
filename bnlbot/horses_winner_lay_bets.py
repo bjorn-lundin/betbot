@@ -74,7 +74,14 @@ class HorsesWinnerLayBetBot(BetBot):
                 max_turns = number_of_runners - 2 - market.no_of_winners                                
                 
                 for dct in sorted_list :
-                    i += 1
+                    i = i + 1
+                    if i >= max_turns  :
+                        self.log.info('number_of_runners = ' \
+                            + str(number_of_runners) + \
+                            'max turns = ' + str(max_turns) + ' i = ' + str(i))
+                        self.log.info('Too close to winner positon, exit')
+                        return 
+
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
