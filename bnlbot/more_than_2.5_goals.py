@@ -103,7 +103,7 @@ alog.info('Starting application')
 
 
 bot = MoreThan2Goals(alog)
-bot.initialize('MORE_THAN_2_GOALS')
+bot.initialize('MORE_THAN_2.5_GOALS')
 
 while True:
     try:
