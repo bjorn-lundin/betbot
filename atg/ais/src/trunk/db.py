@@ -241,8 +241,8 @@ class Bettype(BASE):
 engine = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level
 # for global knowledge of connections, pool etc:
-session = sessionmaker(bind=engine)
-DB_SESSION = session()
+Session = sessionmaker(bind=engine)
+DB_SESSION = Session()
 
 def init_db_client(db_init=False):
     '''
