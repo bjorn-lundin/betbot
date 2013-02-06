@@ -221,8 +221,8 @@ class Market(object):
                    (self.bet_id,))
         cur2.close()
 
-	
-	self.conn.commit() 
+
+        self.conn.commit() 
 
         self.log.info('bet_won ' + str(bet_won) + \
                       ' profit ' + str(profit) + \

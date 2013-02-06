@@ -1,5 +1,5 @@
 # coding=iso-8859-15
-#from time import sleep, time
+#from time import sleep
 import datetime
 #import psycopg2
 import os
@@ -38,6 +38,7 @@ class BetSimulator(object):
         self.stop_timer_value = None
         self.plot = opts.plot
         self.index = opts.index
+        self.graph_type = opts.graph_type
         
     ########################## 	    
     
@@ -130,48 +131,19 @@ class BetSimulator(object):
                      order by EVENT_DATE",
              (self.start_date, self.stop_date, 
                '%' + self.bet_name.lower() + '%', animal))
- 
 
         self.markets = cur.fetchall()
-#        print 'markets', self.markets
-#        print 'date', self.date
-#        print 'name', self.bet_name
         cur.close()
         self.conn.commit()
-#        for market in self.markets :
-#        #sys.stderr.write('market ' + str(market[0]) + '\n')
-#            self.get_runners(market[0])
-#            self.markets[market[0]].runners = self.runners 
-#            self.get_winners(market[0])
-#            self.markets[market[0]].winners = self.winners 
+
         
 
         self.stop_and_print_timer('get_markets ')
     ########################    
     
-
-    def get_all_runners(self):
-        self.start_timer()
-        cur = self.conn.cursor()
-        cur.execute("select * \
-                     from DRY_RUNNERS ")
-
-        self.all_runners = cur.fetchall()
-
-        cur.close()
-        self.conn.commit()    
-        sys.stderr.write('get_all_runners stop ' + \
-             str(datetime.datetime.now()) +'\n')
-        self.stop_and_print_timer('get_all_runners')
-    ########################    
-
     def get_runners(self, market_id):
         self.start_timer()
         self.runners = []
-#        for runner in self.all_runners :
-#            if int(runner[0]) == int(market_id):
-#                self.runners.append(runner)
-#        
         cur = self.conn.cursor()
         cur.execute("select * \
                      from DRY_RUNNERS  \
@@ -188,10 +160,6 @@ class BetSimulator(object):
     def get_winners(self, market_id):
         self.start_timer()
         self.winners = []
-#        for winner in self.all_winners :
-#            if int(winner[0]) == int(market_id):
-#                self.winners.append(winner)
-
         cur = self.conn.cursor()
         cur.execute("select * \
                      from DRY_RESULTS  \
@@ -204,19 +172,6 @@ class BetSimulator(object):
         self.conn.commit()    
         self.stop_and_print_timer('get_winners ')
     ########################    
-    def get_all_winners(self):
-        self.start_timer()
-        cur = self.conn.cursor()
-        cur.execute("select * \
-                     from DRY_RESULTS")
-
-        self.all_winners = cur.fetchall()
-
-        cur.close()
-        self.conn.commit()    
-        self.stop_and_print_timer('get_all_winners')
-    ########################    
-
 
     def print_saldo(self):
         if self.verbose :
@@ -246,8 +201,6 @@ class BetSimulator(object):
                 if int(self.selection_id) == int(winner[1]) :
                     self.bet_won = False
                     break        
-                    
-#            sys.stderr.write('bet won ' + str(self.bet_won) + '\n')
 
             for runner in self.runners:
                 if int(self.selection_id) == int(runner[1]) :
@@ -324,8 +277,6 @@ class BetSimulator(object):
                      ) :
                     selection = int(dct[2]) 
                     lay_odds  = float(dct[1])
-#                    back_odds = float(dct[0]) 
-#                    index     = int(dct[3]) 
                     self.selection_id = int(selection) 
                     #312,59 -> 233.09. bet 30@3.65
                     #312.59 - (30*3.65) + 30 = 233.09 
@@ -361,16 +312,10 @@ class BetSimulator(object):
                          float(dct[0]) <= self.price + self.delta_price and 
                          i <= max_turns ):
                         selection = float(dct[2])
-    #                    lay_odds  = float(dct[1]) 
-    #                    back_odds = int(dct[0]) 
-    #                    index     = int(dct[3]) 
                         self.selection_id = int(selection) 
                         self.saldo = self.saldo - self.size         
-    #                    sys.stderr.write('good runner ' + str(dct) + '\n')
                     break 
-                        
-                        
-                        
+                                                
             elif self.animal == 'human':
                     
                 if (self.bet_name.lower().find('utvisning') > -1 or
@@ -404,7 +349,6 @@ class BetSimulator(object):
                         idx    = int(runner[2])  
                         if idx == int(self.index) :
                             found = True   
-#                            sys.stderr.write('found ix=1, tmp_bp= ' + str(tmp_bp) + '\n')
                             break
                         # we have the alternative  
                     if ( self.price - self.delta_price <= tmp_bp and 
@@ -429,6 +373,17 @@ class BetSimulator(object):
 
 ###################################################################
 
+def list_creator(start, increment, stop):
+    tmp_list = []
+    tmp_value = start
+    while tmp_value <= stop :
+        str_tmp = str('%.2f' % tmp_value)
+        tmp_list.append(float(str_tmp))
+        tmp_value += increment 
+    return tmp_list
+    
+##################################################################
+
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
@@ -444,7 +399,7 @@ parser.add_option("-b", "--bet_name",  dest="bet_name",  action="store", \
                   type="string", help="bet name")
 parser.add_option("-d", "--start_date", dest="start_date", action="store", \
                   type="string", help="start date")
-parser.add_option("-g", "--stop_date", dest="stop_date", action="store", \
+parser.add_option("-f", "--stop_date", dest="stop_date", action="store", \
                   type="string", help="stop date")
 parser.add_option("-s", "--saldo",     dest="saldo",     action="store", \
                   type="float", help="start sum")
@@ -452,15 +407,16 @@ parser.add_option("-z", "--size",      dest="size",      action="store", \
                   type="float", help="bet size")
 parser.add_option("-a", "--animal",    dest="animal",    action="store", \
                   type="string", help="animal")
-parser.add_option("-v", "--verbose",   dest="verbose",   action="store_true", \
+parser.add_option("-v", "--verbose",   dest="verbose",  action="store_true", \
                   help="verbose", default=False)
-parser.add_option("-e", "--summary",   dest="summary",   action="store_true", \
+parser.add_option("-e", "--summary",   dest="summary",  action="store_true", \
                   help="summary", default=False)
-parser.add_option("-p", "--plot",      dest="plot"   ,   action="store_true", \
+parser.add_option("-p", "--plot",      dest="plot"   ,  action="store_true", \
                   help="plot",    default=False)
 parser.add_option("-i", "--index",      dest="index"   ,   action="store", \
                   help="index")
-
+parser.add_option("-g", "--graph_type", dest="graph_type",  action="store", \
+                  help="graph type")
 
 (options, args) = parser.parse_args()
 
@@ -468,70 +424,19 @@ parser.add_option("-i", "--index",      dest="index"   ,   action="store", \
 #print 'args', args
 
 ## start test
-hound_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-horse_place_lay_price_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-
-lay_price_list = [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, \
-                  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
-                  21, 22, 23, 24, 25, 26, 27, 28, 29, 30, \
-                  31, 32, 33, 34, 35, 36, 37, 38, 39, 40, \
-                  41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
-
-
-
-back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
-                   2.0, 2.20, 2.40, 2.60, 2.80, \
-                   3.0, 3.20, 3.40, 3.60, 3.80, \
-                   4.0, 4.20, 4.40, 4.60, 4.80, \
-                   5.0, 5.20, 5.40, 5.60, 5.80, \
-                   6.0, 6.20, 6.40, 6.60, 6.80, \
-                   7.0, 7.20, 7.40, 7.60, 7.80, \
-                   8.0, 8.20, 8.40, 8.60, 8.80]
-
-
-hound_place_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
-                   2.0, 2.20, 2.40, 2.60, 2.80, \
-                   3.0, 3.20, 3.40, 3.60, 3.80 ]
-
-horse_place_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
-                   2.0, 2.20, 2.40, 2.60, 2.80, \
-                   3.0, 3.20, 3.40, 3.60, 3.80 ]
-
-
-hound_winner_back_price_list = [1.0, 1.20, 1.40, 1.60, 1.80, \
-                   2.0, 2.20, 2.40, 2.60, 2.80, \
-                   3.0, 3.20, 3.40, 3.60, 3.80, \
-                   4.0, 4.20, 4.40, 4.60, 4.80, \
-                   5.0, 5.20, 5.40, 5.60, 5.80, 6.00]
-
+hound_place_lay_price_list = list_creator(1, 1, 10)
+horse_place_lay_price_list = list_creator(1, 1, 10)
+lay_price_list = list_creator(1, 1, 10)
+back_price_list = list_creator(1, 0.2, 9)
+hound_place_back_price_list = list_creator(1, 0.2, 4)
+horse_place_back_price_list = list_creator(1, 0.2, 4)
+hound_winner_back_price_list = list_creator(1, 0.2, 6)
 horse_winner_back_price_list = back_price_list
-
-
-sendoff_price_list = [1.00, 1.05, 1.10, 1.15, 1.20, 1.25, \
-                      1.30, 1.35, 1.40, 1.45, 1.50, 1.55, \
-                      1.60, 1.65, 1.70, 1.75, 1.80, 1.85, \
-                      1.90, 1.95, 2.00, 2.05, 2.10, 2.15 ]
-                      
-over_x_goal_price_list = \
-[1.00, 1.05, 1.10, 1.15, 1.20, 1.25, \
- 1.30, 1.35, 1.40, 1.45, 1.50, 1.55, \
- 1.60, 1.65, 1.70, 1.75, 1.80, 1.85, \
- 1.90, 1.95, \
- 2.00, 2.05, 2.10, 2.15, 2.20, 2.25, \
- 2.30, 2.35, 2.40, 2.45, 2.50, 2.55, \
- 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, \
- 2.90, 2.95, 3.00, 3.05, 3.10, 3.15, \
- 3.20, 3.25, \
- 3.30, 3.35, 3.40, 3.45, 3.50, 3.55, \
- 3.60, 3.65, 3.70, 3.75, 3.80, 3.85, \
- 3.90, 3.95, 4.00, 4.05, 4.10, 4.15 ]
-
-
-delta_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, \
-              1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-
+sendoff_price_list = list_creator(1, 0.05, 2.15)
+over_x_goal_price_list = list_creator(1, 0.05, 4.15)
+delta_list = list_creator(0.1, 0.1, 2)
 price_list = ""
+
 if options.bet_type == "lay"  :
     price_list = lay_price_list
 elif  options.bet_type == "back" :
@@ -592,11 +497,10 @@ for price in price_list:
         max_saldo = simrun.saldo
         for market in simrun.markets :
 
-#            simrun.print_saldo()                          
             simrun.get_runners(market[0])
             simrun.get_winners(market[0])
             simrun.make_bet()
-#            simrun.print_saldo()                          
+            
             if  simrun.saldo > max_saldo : 
                 max_saldo = simrun.saldo
             if  simrun.saldo < min_saldo : 
@@ -604,7 +508,6 @@ for price in price_list:
         
             if simrun.selection_id is not None :
                 simrun.check_result()
-#                simrun.print_saldo()                          
         
             if  simrun.saldo > max_saldo : 
                 max_saldo = simrun.saldo
