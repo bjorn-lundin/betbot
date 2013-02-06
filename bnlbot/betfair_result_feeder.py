@@ -156,13 +156,22 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_MORE_THAN_1.5_GOALS" :
             bet_won = selection_in_winners
 
+        elif self.bet_type == "DRY_RUN_LESS_THAN_2.5_GOALS" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_MORE_THAN_2.5_GOALS" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_LESS_THAN_3.5_GOALS" :
             bet_won = selection_in_winners
 
+        elif self.bet_type == "DRY_RUN_MORE_THAN_3.5_GOALS" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_LESS_THAN_4.5_GOALS" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_MORE_THAN_4.5_GOALS" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_LESS_THAN_5.5_GOALS" :
