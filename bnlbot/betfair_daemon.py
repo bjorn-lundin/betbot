@@ -12,15 +12,37 @@ class BetfairDaemon(object) :
     section_list = None
     config = None 
     process_list = []
-    
+
+    ##############################################    
     def read_config(self) :
         self.config = ConfigParser.ConfigParser()
         self.config.read('betfair_daemon.ini')
         self.section_list = self.config.sections()
+    ##############################################
+    
+    def process_is_alive(self, process) :
+        result = process.poll()
+        return result is None 
+    ##############################################
+
+    def check_processes(self) :
+        list_of_procs_to_remove = []
+        for proc in self.process_list :
+            if self.process_is_alive(proc) :
+                if not self.check_is_active(proc):
+                    proc.terminate()
+                    list_of_procs_to_remove.append(proc)
+            else :
+                list_of_procs_to_remove.append(proc)
+
+        tmp_process_list = [i for i in self.process_list if i \
+                            not in list_of_procs_to_remove]
+                            
+        self.process_list = tmp_process_list
+    ##############################################
 
 
-
-###############################3
+###############################
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
@@ -42,10 +64,9 @@ for section in daemon.section_list :
     if run:
         args = []
         args.append('/usr/bin/python')
-#        args.append('/home/bnl/bnlbot/' + name)
         args.append(name)
-        print args
-        my_process =  subprocess.Popen(args)  
+#        print args
+        my_process = subprocess.Popen(args)  
         daemon.process_list.append(my_process)
 
 
@@ -75,17 +96,3 @@ print "done"
 
 
 
-#proc_list = []
-#
-#myProc = Process("myprogram.app")
-#
-#while True:
-#    # check to see if process has ended
-#    poll = myProc.wait(os.WNOHANG)
-#    if poll != None:
-#        break
-#    # print any new output
-#    out = myProc.read()
-#    if out != "":
-#        print out
-#
