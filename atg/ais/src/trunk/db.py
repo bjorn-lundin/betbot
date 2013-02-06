@@ -10,6 +10,7 @@ from sqlalchemy import Date, Time, Boolean, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
 import util
+import conf
 
 BASE = declarative_base()
 
@@ -237,16 +238,16 @@ class Bettype(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
 
-DB_SESSION = None
+engine = create_engine(conf.AIS_DB_URL, echo=False)
+# Important to have sessionmaker at top level
+# for global knowledge of connections, pool etc:
+session = sessionmaker(bind=engine)
+DB_SESSION = session()
 
-def init_db_client(db_url, db_init=False):
+def init_db_client(db_init=False):
     '''
     Database initiation
     '''
-    global DB_SESSION #pylint: disable-msg=W0603
-    engine = create_engine(db_url, echo=False)
-    session = sessionmaker(bind=engine)
-    DB_SESSION = session()
     if db_init:
         BASE.metadata.drop_all(engine)
         BASE.metadata.create_all(engine)

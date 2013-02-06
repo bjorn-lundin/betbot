@@ -83,8 +83,6 @@ def main():
     LOG.info('Starting application')
     ws_client = ais.init_ws_client(conf.AIS_WS_URL, conf.AIS_USERNAME, 
                                    conf.AIS_PASSWORD)
-    db.init_db_client(conf.AIS_DB_URL, db_init=False)
-    
     init_db = 'init_db'
     init_local_racedays = 'init_local_racedays'
     daily_download = 'daily_download'
@@ -104,7 +102,7 @@ def main():
         parser.error("Please state command to run!")
     if init_db in args:
         LOG.info('Running ' + init_db)
-        db.init_db_client(conf.AIS_DB_URL, db_init=True)
+        db.init_db_client(db_init=True)
     if init_local_racedays in args:
         LOG.info('Running ' + init_local_racedays)
         params = {
