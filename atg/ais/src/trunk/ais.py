@@ -313,7 +313,6 @@ def download_history_via_calendar(params=None):
         # backwards according to AIS_RACEDAY_HISTORY
         date_then = None
         if params['ais_type'] == 'test':
-            print('test')
             date_then = raceday_date
         else:
             raceday_history = params['raceday_history']
