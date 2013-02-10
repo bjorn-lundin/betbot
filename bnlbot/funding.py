@@ -16,9 +16,9 @@ class Funding(object):
     SENDER = 'bnlbetbot@gmail.com'
     RECIPIENT = 'b.f.lundin@gmail.com'
     PASSWORD = 'Alice2010'
-    
+
     MAX_SALDO = 2000.0
-    MIN_SALDO = 2.0
+    MIN_SALDO = 500.0
     TRANSFER_SUM = 1000.0
     MAX_EXPOSURE = 600.0
 
@@ -27,8 +27,8 @@ class Funding(object):
         self.funds = self.api.get_account_funds()
         self.funds_ok = None
         self.log = log
-        self.timestamp_last_mail_sent = self.modification_date() 
-        
+        self.timestamp_last_mail_sent = self.modification_date()
+
         try:
             self.avail_balance = self.funds['availBalance']
             self.exposure     = abs(self.funds['exposure'])
@@ -41,7 +41,7 @@ class Funding(object):
     def check_and_fix_funds(self):
         """do we have enough, or too much?"""
 #        print 'funds', funds
-          
+
         funds_ok = False
         if int(self.avail_balance) > self.MAX_SALDO :
             self.transfer_to_visa()
@@ -49,15 +49,15 @@ class Funding(object):
                 self.alert_via_mail()
             except:
                 self.log.info('exception when sending mail')
-                
-        elif int(self.avail_balance) < self.MIN_SALDO :  
+
+        elif int(self.avail_balance) < self.MIN_SALDO :
             self.log.warning( 'ALARM, insufficient funds, only  ' + str(self.avail_balance) +' kr left!!')
-        elif int(self.exposure) > self.MAX_EXPOSURE :  
+        elif int(self.exposure) > self.MAX_EXPOSURE :
             self.log.warning( 'ALARM, too much exposure ' + str(self.exposure) + ' > ' + str(self.MAX_EXPOSURE))
-        else:  
+        else:
             self.log.info( 'avail_balance ' + str(self.avail_balance) +  ' kr exposure ' + str(self.exposure) + ' kr')
             funds_ok = True
-            
+
         self.funds_ok = funds_ok
 ############################# end check_and_fix_funds
 
@@ -79,35 +79,35 @@ class Funding(object):
                 file = open(self.LAST_MAIL_FILE, 'w+')
                 file.close()
             except :
-                return self.modification_date()    
-            
+                return self.modification_date()
+
 ############################# end modification_date
-             
+
     def alert_via_mail(self) :
         if self.modification_date() + datetime.timedelta(hours = 1) < datetime.datetime.now() :
             self.log.info('Send mail to remind of overflow')
 
             subject = 'BetBot Saldo Overflow'
             body = 'Dags att flytta betbot-pengar'
- 
+
             "Sends an e-mail to the specified recipient."
- 
+
             body = "" + body + ""
- 
+
             headers = ["From: " + self.SENDER,
                        "Subject: " + subject,
                        "To: " + self.RECIPIENT,
                        "MIME-Version: 1.0",
                        "Content-Type: text/html"]
             headers = "\r\n".join(headers)
- 
+
             session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
- 
+
             session.ehlo()
             session.starttls()
             session.ehlo
             session.login(self.SENDER, self.PASSWORD)
- 
+
             session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
             session.quit()
             try :
@@ -117,8 +117,8 @@ class Funding(object):
                 finally :
                     file.close()
             except :
-                pass   
-        else :    
+                pass
+        else :
             self.log.info('Less than 1 hour since last Send mail to remind of overflow')
 ############################# end alert_via_mail
 
@@ -126,13 +126,13 @@ class Funding(object):
         self.log.info('Send mail with daily saldo report')
 
         subject = 'BetBot Saldo Report'
-        
+
         body = 'Dagens saldo-rapport '
         body += '\r\n saldo:     ' + str( self.avail_balance )
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
 
-        
+
         "Sends an e-mail to the specified recipient."
 
         body = "" + body + ""

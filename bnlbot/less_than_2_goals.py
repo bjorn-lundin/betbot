@@ -9,7 +9,11 @@ from time import sleep
 #import psycopg2
 import urllib2
 import ssl
-
+#import os
+#import sys
+#from game import Game
+#from market import Market
+#from funding import Funding
 #from db import Db
 import socket
 import logging.handlers
@@ -17,16 +21,13 @@ import logging.handlers
 import httplib2
 #import ConfigParser
 
-
-class MoreThan2Goals(BetBot):
+class LessThan2Goals(BetBot):
     """put bet on games with low odds"""
 
     def __init__(self, log):
-        super(MoreThan2Goals, self).__init__(log)
+        super(LessThan2Goals, self).__init__(log)
 
 ############################# end __init__
-
-
 
     def check_strategy(self, market_id ):
         """check market for suitable bet"""
@@ -37,12 +38,12 @@ class MoreThan2Goals(BetBot):
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
-                name = None
                 back_price = None
                 selection = None
+                name = None
                 try :
                     odds_under      = float(prices['runners'][0]['back_prices'][0]['price'])
-#                    selection_under = prices['runners'][0]['selection_id']
+                    selection_under = int(prices['runners'][0]['selection_id'])
                     odds_over       = float(prices['runners'][1]['back_prices'][0]['price'])
                     selection_over  = int(prices['runners'][1]['selection_id'])
                 except:
@@ -54,12 +55,13 @@ class MoreThan2Goals(BetBot):
                 self.log.info( 'odds under : ' + str(odds_under))
                 self.log.info( 'odds over  : ' + str(odds_over))
 
+                #odds_over, ie more than 0 goals
                 if ( self.PRICE - self.DELTA <= odds_over and
                      odds_over <= self.PRICE + self.DELTA
                          ):
 
-                    back_price = odds_over
-                    selection = selection_over
+                    back_price = odds_under
+                    selection = selection_under
 
                     self.place_bet(market_id, selection, back_price, name)
 
@@ -70,11 +72,10 @@ class MoreThan2Goals(BetBot):
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
             elif type(prices) is not dict:
-                tmp_str = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
-                tmp_str += '---------------------------------------------'
-                self.log.info(tmp_str)
+                s = 'check_strategy() ERROR: prices = ' + str(prices) + '\n'
+                s += '---------------------------------------------'
+                self.log.info(s)
 ############################# check_strategy
-
 
 
 
@@ -102,8 +103,8 @@ alog.info('Starting application')
 
 
 
-bot = MoreThan2Goals(alog)
-bot.initialize('MORE_THAN_2.5_GOALS')
+bot = LessThan2Goals(alog)
+bot.initialize('LESS_THAN_1.5_GOALS')
 
 while True:
     try:
