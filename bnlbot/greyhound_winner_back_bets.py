@@ -110,11 +110,11 @@ class GreyHoundWinnerBackBetBot(BetBot):
                 self.log.info( 'odds back : ' + str(back_odds))
                 self.log.info( 'odds lay  : ' + str(lay_odds))
                 self.log.info( 'selection : ' + str(selection))
-                self.log.info( 'name      : ' + str(name))
+                self.log.info( 'name      : ' + str(name).decode("iso-8859-1"))
                 self.log.info( 'index     : ' + str(index))
                                     
                 if back_odds and selection:
-                    self.place_bet(market_id, selection, back_odds, name)
+                    self.place_bet(market_id, str(selection), back_odds, name)
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
                         str(market_id))

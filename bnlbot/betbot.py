@@ -30,8 +30,6 @@ class BetBot(object):
     BETTING_SIZE = None
     MAX_ODDS = None
     MIN_ODDS = None
-    DELTA = None
-    PRICE = None
     HOURS_TO_MATCH_START = None
     DELAY_BETWEEN_TURNS_BAD_FUNDING = None
     DELAY_BETWEEN_TURNS_NO_MARKETS =  None
@@ -372,10 +370,16 @@ class BetBot(object):
             self.PRICE = 0.0
 
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
-        self.DRY_RUN                         = bool (config.get(bet_category, 'dry_run'))
+        self.DRY_RUN                         = config.getboolean(bet_category, 'dry_run')
         self.BET_CATEGORY = bet_category
+
+
         if self.DRY_RUN :
             self.BET_CATEGORY                = 'DRY_RUN_' + self.BET_CATEGORY
+
+        self.log.info('Bet_category ' + self.BET_CATEGORY)
+        self.log.info('dry_run ' + str(self.DRY_RUN))
+
 
         tmp_string_1                         = config.get(bet_category, 'events')
         self.EVENTS                          = tmp_string_1.split(',') 
@@ -384,7 +388,7 @@ class BetBot(object):
         if self.COUNTRIES[0] == 'None' :
             self.COUNTRIES = None
             
-        self.INCLUDE_STARTED                 = bool (config.get(bet_category, 'include_started'))
+        self.INCLUDE_STARTED                 = config.getboolean(bet_category, 'include_started')
         tmp_string_3                         = config.get(bet_category, 'not_allowed_market_names')
         self.NOT_ALLOWED_MARKET_NAMES        = tmp_string_3.split(',')
         if self.NOT_ALLOWED_MARKET_NAMES[0] == 'None':
@@ -398,6 +402,9 @@ class BetBot(object):
         self.NO_OF_WINNERS                   = int (config.get(bet_category, 'no_of_winners'))
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
+
+        self.log.info('config ' + str(config))
+
 
         login = ConfigParser.ConfigParser()
         login.read('betfair_login.ini')
