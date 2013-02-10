@@ -2,15 +2,16 @@
 
 names="Vinnare Plats"
 animals="horse hound"
-bet_types="lay back"
-names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
-#names_football="2.5 3.5 4.5 udda"
+#bet_types="lay back"
+bet_types="back"
+#names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
+names_football="1.5 2.5 3.5"
 val="1 2"
-start_date="2013-02-01"
-stop_date="2013-02-07"
+start_date="2013-02-02"
+stop_date="2013-02-08"
 
-#date_list="2013-01-31 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 2013-02-06"
-date_list="2013-02-07"
+date_list="2013-01-31 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 2013-02-06 2013-02-07 2013-02-08"
+#date_list="2013-02-08"
 
 
 
@@ -74,10 +75,10 @@ case "$what" in
           *)
            echo "fel 1"
           ;;
-        esac    
-    ;;         
-             
-    animals )  
+        esac
+    ;;
+
+    animals )
         case "$time_type" in
             daily )
                 for d in $date_list ; do
@@ -98,7 +99,7 @@ case "$what" in
                     done
                 done
             ;;
-        
+
             weekly)
                 for bet_name in $names ; do
                     for bet_type in $bet_types ; do
@@ -119,11 +120,11 @@ case "$what" in
           *)
            echo "fel 2"
           ;;
-        esac     
+        esac
     ;;
- 
+
     *)
        echo "$0 [football|animals]"
      ;;
-     
+
 esac
