@@ -2,53 +2,53 @@
 
 #make some simulations, first day, by day
 
-#./do_simulate.bash -b lay  -a hound -n Plats 
-#./do_simulate.bash -b back -a hound -n Plats
-#./do_simulate.bash -b lay  -a horse -n Plats 
-#./do_simulate.bash -b back -a horse -n Plats
-#./do_simulate.bash -b lay  -a hound -n Vinnare 
-#./do_simulate.bash -b back -a hound -n Vinnare
-#./do_simulate.bash -b lay  -a horse -n Vinnare
-#./do_simulate.bash -b back -a horse -n Vinnare
+animal_names="Vinnare Plats"
+animals="horse hound"
+#bet_types="lay back"
+bet_types="back"
+football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
+val="1 2"
 
-## then over two days
-#./do_simulate.bash -b lay  -a hound -n Plats   -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b back -a hound -n Plats   -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b lay  -a horse -n Plats   -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b back -a horse -n Plats   -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b lay  -a hound -n Vinnare -u -s "2013-01-30" -t "2013-01-31" 
-#./do_simulate.bash -b back -a hound -n Vinnare -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b lay  -a horse -n Vinnare -u -s "2013-01-30" -t "2013-01-31"
-#./do_simulate.bash -b back -a horse -n Vinnare -u -s "2013-01-30" -t "2013-01-31"
+#date_list="2013-02-06 2013-02-07 2013-02-08 2013-02-09"
+date_list="2013-02-09"
 
+#names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
 
+for d in $date_list ; do
+    start_date=$(date -d "$d -7 days" +"%Y-%m-%d")
+    for bet_name in $football_names ; do
+        for valet in $val ; do
+                python simulator3.py \
+                    --bet_type=back \
+                    --bet_name=$bet_name \
+                    --saldo=10000 \
+                    --start_date=$start_date \
+                    --stop_date=$d \
+                    --size=30 \
+                    --animal=human \
+                    --index=$valet \
+                    --summary --plot &
+        done
+    done
+done
 
-(python simulator.py --bet_type=lay --bet_name=Plats \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=horse --min_price=1.0 --max_price=30 --summary  && \
-python simulator.py --bet_type=back --bet_name=Plats \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=horse --min_price=1.0 --max_price=30 --summary  ) &
-  
-(python simulator.py --bet_type=lay --bet_name=Plats \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=hound --min_price=1.0 --max_price=30 --summary  && \
-python simulator.py --bet_type=back --bet_name=Plats \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=hound --min_price=1.0 --max_price=30 --summary  ) &
-
-(python simulator.py --bet_type=lay --bet_name=Vinnare \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=horse --min_price=1.0 --max_price=30 --summary  && \
-python simulator.py --bet_type=back --bet_name=Vinnare \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=horse --min_price=1.0 --max_price=30 --summary  ) &
-
-(python simulator.py --bet_type=lay --bet_name=Vinnare \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=hound --min_price=1.0 --max_price=30 --summary  && \
-python simulator.py --bet_type=back --bet_name=Vinnare \
-  --start_date=2013-01-30 --stop_date=2013-02-01 --saldo=10000 \
-  --size=30 --animal=hound --min_price=1.0 --max_price=30 --summary ) &
+for d in $date_list ; do
+    start_date=$(date -d "$d -7 days" +"%Y-%m-%d")
+    for bet_name in $animal_names ; do
+        for bet_type in $bet_types ; do
+            for animal in $animals ; do
+                python simulator3.py \
+                    --bet_type=back \
+                    --bet_name=$bet_name \
+                    --saldo=10000 \
+                    --start_date=$start_date \
+                    --stop_date=$d \
+                    --size=30 \
+                    --animal=$animal \
+                    --summary --plot &
+            done
+        done
+    done
+done
 
 
