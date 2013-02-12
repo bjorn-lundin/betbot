@@ -1,8 +1,8 @@
-# -*- coding: iso-8859-1 -*- 
+# -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
-import datetime 
+import datetime
 import psycopg2
 import urllib2
 import ssl
@@ -38,7 +38,7 @@ class BetBot(object):
     conn = None
     DRY_RUN = True
     BET_CATEGORY = None
-    
+
     MIN_NO_OF_RUNNERS = None
     INCLUDE_STARTED = None
     EVENTS = None
@@ -46,33 +46,33 @@ class BetBot(object):
     NO_OF_WINNERS = None
     COUNTRIES = None
     MAX_NO_OF_RUNNERS = None
-    NOT_ALLOWED_MARKET_NAMES = None    
-    
-    USERNAME = None 
-    PASSWORD = None 
+    NOT_ALLOWED_MARKET_NAMES = None
+
+    USERNAME = None
+    PASSWORD = None
     PRODUCT_ID = None
     VENDOR_ID = None
 
-     
+
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
         self.log = log
-        
+
 ############################# end __init__
     def reconnect(self):
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
         if uname and pword and prod_id and vend_id:
             resp = self.api.login(uname, pword, prod_id, vend_id)
-            if resp == 'OK': 
+            if resp == 'OK':
                 self.no_session = False
             return resp
         else:
@@ -84,16 +84,16 @@ class BetBot(object):
     def insert_bet(self, bet, resp, bet_type, name):
         self.log.info( 'insert bet' )
         cur = self.conn.cursor()
-        
+
         if self.DRY_RUN :
             # get a new bet id, we are in dry_run mode
             cur.execute("select * from BETS where MARKET_ID = %s and \
-                        SELECTION_ID = %s", 
+                        SELECTION_ID = %s",
                  (bet['marketId'],bet['selectionId']))
         else:
             cur.execute("select * from BETS where BET_ID = %s", \
                (resp['bet_id'],))
-            
+
         if cur.rowcount == 0 :
             if self.DRY_RUN :
                 cur2 = self.conn.cursor()
@@ -101,9 +101,9 @@ class BetBot(object):
                 row = cur2.fetchone()
                 cur2.close()
                 resp['bet_id'] = row[0]
-                            
+
             self.log.debug( 'insert bet ' + str(resp['bet_id']))
-                       
+
             cur.execute("insert into BETS ( \
                          BET_ID, MARKET_ID, SELECTION_ID, PRICE, \
                          CODE, SUCCESS, SIZE, BET_TYPE, \
@@ -138,7 +138,7 @@ class BetBot(object):
 #################### start get-markets-test
     def get_markets(self):
         """returns a list of markets or an error string"""
-        
+
         markets = self.api.get_all_markets(
               events = self.EVENTS,
               hours = self.HOURS_TO_MATCH_START,
@@ -148,32 +148,32 @@ class BetBot(object):
               #http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
         if type(markets) is list:
             # sort markets by start time + filter
-            for market in markets[:]: 
+            for market in markets[:]:
 #                self.log.info( 'market :' + str(market))
-             # loop through a COPY of markets 
+             # loop through a COPY of markets
              #as we're modifying it on the fly...
                 markets.remove(market)
-                
+
                 #check for NOT allowd names..
                 market_ok = True
                 if  self.NOT_ALLOWED_MARKET_NAMES:
                     for not_allowed in self.NOT_ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(not_allowed) == -1
 #                        self.log.info('Not_allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + not_allowed + ' ' + str(market_ok))
-                        if not market_ok : 
+                        if not market_ok :
                             break
                 # we now check for allowed market name, if nothing was found above
-                if self.ALLOWED_MARKET_NAMES and market_ok : 
+                if self.ALLOWED_MARKET_NAMES and market_ok :
                     for allowed in self.ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
 #                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
-                        if market_ok : 
+                        if market_ok :
                             break
 
                 if market_ok:
                     self.log.info('market ' +  market['market_name'].decode("iso-8859-1") + ' ' + str(market))
 
-                
+
                 if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
@@ -185,7 +185,7 @@ class BetBot(object):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
-                    sec_til_start = delta.days * 86400 + delta.seconds 
+                    sec_til_start = delta.days * 86400 + delta.seconds
                     temp = [sec_til_start, market]
                     markets.append(temp)
                     self.log.info( 'market :' + str(market))
@@ -212,9 +212,9 @@ class BetBot(object):
             Found = True
         return Found
 ############################# market_in_xmlfeed
-        
-        
-        
+
+
+
     def place_bet(self, market_id, selection, wanted_price, name):
         bets = []
 
@@ -222,11 +222,11 @@ class BetBot(object):
         pip = -1 # default to BACK
         bet_type = 'B'
         if self.BET_CATEGORY.find('LAY') > -1 :
-            pip = 1         
+            pip = 1
             bet_type = 'L'
-         
 
-        # set price to current back price - 1 pip 
+
+        # set price to current back price - 1 pip
         #(i.e.accept the next worse odds too)
         bet_price = self.api.set_betfair_odds(price = wanted_price, pips = pip)
         bet_size = self.BETTING_SIZE # my stake
@@ -242,11 +242,11 @@ class BetBot(object):
             'asianLineId': '0'
             }
         self.log.info('will place ' +str(bet))
-    
+
         bets.append(bet)
         # place bets (if any have been created)
         resp = None
-        if bets:    
+        if bets:
             funds = Funding(self.api, self.log)
             if funds :
                 self.do_throttle()
@@ -255,11 +255,11 @@ class BetBot(object):
                     self.do_throttle()
                     if self.DRY_RUN :
                         tmp_str = 'WOULD PLACE BET...\n'
-                        resp1 = {                            
+                        resp1 = {
                              'bet_id'  : -1 ,
-                             'price'   : bet['price'], 
+                             'price'   : bet['price'],
                              'code'    : 'OK',
-                             'success' : True, 
+                             'success' : True,
                              'size'    : bet['size']
                         }
                         resp = []
@@ -267,7 +267,7 @@ class BetBot(object):
                     else:
                         tmp_str = 'PLACING BETS...\n'
                         resp = self.api.place_bets(bets)
-                    
+
                     tmp_str += 'Bets: ' + str(bets) + '\n'
                     tmp_str += 'Place bets response: ' + str(resp) + '\n'
                     tmp_str += '---------------------------------------------'
@@ -277,20 +277,28 @@ class BetBot(object):
                     if not self.no_session and resp != 'EVENT_SUSPENDED' :
                         self.insert_bet(bets[0], resp[0], self.BET_CATEGORY, name)
                 else :
-                    self.log.warning( 'Something happened with funds: ' + str(funds))  
-                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)     
+                    self.log.warning( 'Something happened with funds: ' + str(funds))
+                    sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)
 
-############################ place_bet        
-                
+    ############################ place_bet
+
+    def db_keep_alive(self):
+         cur = self.conn.cursor()
+         cur.execute("select * from DRY_MARKETS where market_id =-1")
+         row = cur.fetchone()
+         cur.close()
+         self.conn.commit()
+    #################################
 
     def start(self):
         """start the main loop"""
         # login/monitor status
         login_status = self.login(self.USERNAME, self.PASSWORD, \
                                   self.PRODUCT_ID, self.VENDOR_ID)
-        while login_status == 'OK': 
+        while login_status == 'OK':
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------')
+            self.db_keep_alive()
             markets = self.get_markets()
             if type(markets) is list:
                 if len(markets) == 0:
@@ -300,7 +308,7 @@ class BetBot(object):
                          str(self.DELAY_BETWEEN_TURNS_NO_MARKETS) + \
                          ' seconds...'
                     self.log.info(tmp_str)
-                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) # 
+                    sleep(self.DELAY_BETWEEN_TURNS_NO_MARKETS) #
                 else:
                     self.log.info( 'Found ' + str(len(markets)) +
                           ' markets. Checking strategy...')
@@ -314,21 +322,21 @@ class BetBot(object):
                         my_market.menu_path.decode("iso-8859-1") +
                         ' --++--++ ')
                         my_market.insert()
-                        
+
                         if not my_market.bet_exists_already(self.BET_CATEGORY) :
                             self.check_strategy(my_market.market_id)
-                        else : 
+                        else :
                             self.log.info( 'We have ALREADY bets on market ' +
                                    my_market.market_id)
                         self.conn.commit()
                 # check if session is still OK
                 if self.no_session:
-                    raise SessionError('Start - lost session') 
+                    raise SessionError('Start - lost session')
                 self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) +
                 ' s between turns')
                 sleep(self.DELAY_BETWEEN_TURNS)
             else:
-                self.log.info('market not list ' + str(markets))     
+                self.log.info('market not list ' + str(markets))
 
         # main loop ended...
         tmp_str = 'login_status = ' + str(login_status) + '\n'
@@ -337,11 +345,11 @@ class BetBot(object):
         self.log.info(tmp_str)
 ############################# end start
 
-    def initialize(self, bet_category): 
-            
+    def initialize(self, bet_category):
+
         config = ConfigParser.ConfigParser()
         config.read('betfair.ini')
-            
+
         self.DELAY_BETWEEN_TURNS_BAD_FUNDING = float(config.get('Global', 'delay_between_turns_bad_funding'))
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
@@ -382,19 +390,19 @@ class BetBot(object):
 
 
         tmp_string_1                         = config.get(bet_category, 'events')
-        self.EVENTS                          = tmp_string_1.split(',') 
+        self.EVENTS                          = tmp_string_1.split(',')
         tmp_string_2                         = config.get(bet_category, 'countries')
-        self.COUNTRIES                       = tmp_string_2.split(',') 
+        self.COUNTRIES                       = tmp_string_2.split(',')
         if self.COUNTRIES[0] == 'None' :
             self.COUNTRIES = None
-            
+
         self.INCLUDE_STARTED                 = config.getboolean(bet_category, 'include_started')
         tmp_string_3                         = config.get(bet_category, 'not_allowed_market_names')
         self.NOT_ALLOWED_MARKET_NAMES        = tmp_string_3.split(',')
         if self.NOT_ALLOWED_MARKET_NAMES[0] == 'None':
             self.NOT_ALLOWED_MARKET_NAMES = None
 
-        tmp_string_4                         = config.get(bet_category, 'allowed_market_names')        
+        tmp_string_4                         = config.get(bet_category, 'allowed_market_names')
         self.ALLOWED_MARKET_NAMES            = tmp_string_4.split(',')
         if self.ALLOWED_MARKET_NAMES[0] == 'None':
             self.ALLOWED_MARKET_NAMES = None
@@ -409,7 +417,7 @@ class BetBot(object):
         login = ConfigParser.ConfigParser()
         login.read('betfair_login.ini')
 
-        self.USERNAME                        = login.get('Login', 'username') 
+        self.USERNAME                        = login.get('Login', 'username')
         self.PASSWORD                        = login.get('Login', 'password')
         self.PRODUCT_ID                      = login.get('Login', 'product_id')
         self.VENDOR_ID                       = login.get('Login', 'vendor_id')
@@ -424,4 +432,3 @@ class BetBot(object):
 ############################# end initialize
 
 
-    
