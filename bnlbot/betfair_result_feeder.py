@@ -5,7 +5,7 @@ import psycopg2
 import urllib2
 import httplib2
 import ssl
-import xml.etree.ElementTree as etree 
+import xml.etree.ElementTree as etree
 import os
 import sys
 import socket
@@ -25,7 +25,7 @@ import logging.handlers
 #      <winner selectionId="6969171" raceNumber="7"> Fit Fightin Feline</winner>
 #    </winners>
 #  </market>
- 
+
 class Market(object):
 
     def __init__(self, root, conn, log):
@@ -39,14 +39,14 @@ class Market(object):
         self.bet_type = None
         self.size = None
         self.price = None
-        
+
         self.conn = conn
         self.log = log
-         
+
 #        print 'root', root
 	if root.tag == 'market' :
 	    self.market_id = root.get('id')
-#	    print 'self.market_id', self.market_id 
+#	    print 'self.market_id', self.market_id
         for elem in root :
  #           print 'elem', elem
             if   elem.tag == 'name' :
@@ -62,7 +62,7 @@ class Market(object):
 #         		print 'w.get(selid)', w.get('selectionId')
                         self.selection_id_list.append(w.get('selectionId'))
 
-    def print_me(self):         
+    def print_me(self):
 #	if type(self.selection_id_list) is None :
             self.log.info('market_id: ' + str(self.market_id) + \
                       ' name: ' + self.display_name + \
@@ -78,7 +78,7 @@ class Market(object):
     def bet_exists(self):
         cur = self.conn.cursor()
         cur.execute("select BET_ID, SELECTION_ID, BET_TYPE, " \
-                    "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null", 
+                    "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null",
                       (self.market_id,))
 
         eos = True
@@ -94,59 +94,58 @@ class Market(object):
         self.conn.commit()
 #        self.log.info('market_id: ' + str(self.market_id) + \
 #                      ' bet_exists: ' + str(not eos)  )
-	
+
 	return not eos
 
     def treat(self):
 
-        print 'bet_type',self.bet_type
-        print 'self.selection_id', self.selection_id
-        print 'self.selection_id_list',self.selection_id_list
+        self.log.info('bet_type '  + str(self.bet_type) + ', self.selection_id ' + \
+        str(self.selection_id) + ' self.selection_id_list ' +  str(self.selection_id_list))
 
         selection_in_winners = False
         for s in self.selection_id_list:
-           print 's', s 
-           if int(s) == int(self.selection_id) : 
+           self.log.info('s '  + str(s))
+           if int(s) == int(self.selection_id) :
                selection_in_winners = True
-               
-        print 'selection_in_winners', selection_in_winners 
+
+        self.log.info('selection_in_winners '  + str(selection_in_winners) )
 
         bet_won = False
         back_bet = True
-        
+
         if   self.bet_type == "DRY_RUN_HORSES_WINNER_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                
+
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET" :
             bet_won = selection_in_winners
-                
+
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                
+
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
             bet_won = selection_in_winners
-                
+
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                
+
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                
+
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                                
+
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
-                
+
         elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_BACK_BET" :
             bet_won = selection_in_winners
 
@@ -191,7 +190,7 @@ class Market(object):
 
         elif self.bet_type == "DRY_RUN_SCORE_SUM_IS_EVEN" :
             bet_won = selection_in_winners
-            
+
         elif self.bet_type == "DRY_RUN_BOTH_TEAMS_SCORES" :
             bet_won = selection_in_winners
 
@@ -202,7 +201,7 @@ class Market(object):
           return
 
 
-        
+
         profit = 0.0
         # let view take care of 5% commission
         if bet_won :
@@ -212,16 +211,16 @@ class Market(object):
                 profit = 1.0 * self.size
         else:
             if back_bet :
-                profit = -self.size         
+                profit = -self.size
             else:
-                profit = -self.size * self.price         
-        
-        #update db         
+                profit = -self.size * self.price
+
+        #update db
         cur = self.conn.cursor()
         cur.execute("update BETS set PROFIT = %s, " \
                     "BET_WON = %s, CODE = %s where BET_ID = %s",
                    (profit, bet_won, 'S', self.bet_id))
-#                    "BET_PLACED = EVENT_DATE, " \             
+#                    "BET_PLACED = EVENT_DATE, " \
         cur.close()
 
         cur2 = self.conn.cursor()
@@ -231,7 +230,7 @@ class Market(object):
         cur2.close()
 
 
-        self.conn.commit() 
+        self.conn.commit()
 
         self.log.info('bet_won ' + str(bet_won) + \
                       ' profit ' + str(profit) + \
@@ -253,13 +252,13 @@ class Result_Feeder(object):
     get_hounds = True
     get_soccer = True
     conn = None
-    
+
     def __init__(self, log):
         rps = 1/4.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
         self.log = log
 
 
@@ -269,58 +268,55 @@ class Result_Feeder(object):
         response = urllib2.urlopen(url, timeout = 30)
        #catch the timeout at main loop
         xmlstring = response.read()
-        return etree.fromstring(xmlstring)        
-        
+        return etree.fromstring(xmlstring)
+
     def fetch_horses(self):
-        return self.fetch(self.URL_HORSES) 
+        return self.fetch(self.URL_HORSES)
 
     def fetch_hounds(self):
-        return self.fetch(self.URL_HOUNDS) 
+        return self.fetch(self.URL_HOUNDS)
 
     def fetch_soccer(self):
-        return self.fetch(self.URL_SOCCER) 
+        return self.fetch(self.URL_SOCCER)
 
-        
+
     def do_throttle(self):
         """return only when it is safe to send another data request"""
 #        wait = self.throttle['next_req'] - time()
-#        if wait > 0: 
-        print 'Wait for', 32, 'seconds'
+#        if wait > 0:
+        self.log.info('Wait for '  + str(s) + ' seconds')
         sleep(32)
 #        self.throttle['next_req'] = time() + self.throttle['rps']
-        
+
     def start(self):
         """start the main loop"""
-        print str(datetime.datetime.now()), 'Last round'
+
         if self.get_horses :
             self.log.info('Fetcing horses')
-            print str(datetime.datetime.now()), 'Fetch horses'
             markets = self.fetch_horses()
-            print str(datetime.datetime.now()), 'Fetched horses'
+            self.log.info('Fetched horses')
             for m in markets :
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
                     #market.print_me()
                     market.treat()
-                    
+
         if self.get_hounds :
-            self.log.info('Fetcing hounds')
-            print str(datetime.datetime.now()), 'Fetch hounds'
+            self.log.info('Fetching hounds')
             markets = self.fetch_hounds()
-            print str(datetime.datetime.now()), 'Fetched hounds'
+            self.log.info('Fetched hounds')
             for m in markets :
 #                self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
                 if market.bet_exists() :
                     #market.print_me()
                     market.treat()
-                    
+
         if self.get_soccer :
-            self.log.info('Fetcing soccer')
-            print str(datetime.datetime.now()), 'Fetch soccer'
+            self.log.info('Fetching soccer')
             markets = self.fetch_soccer()
-            print str(datetime.datetime.now()), 'Fetched soccer'
+            self.log.info('Fetched soccer')
             for m in markets :
   #              self.log.info(str(m))
                 market = Market(m, self.conn, self.log)
@@ -328,7 +324,7 @@ class Result_Feeder(object):
                     #market.print_me()
                     market.treat()
 
-        self.conn.commit()    
+        self.conn.commit()
 ###################################################################
 
 ######## main ###########
@@ -341,7 +337,7 @@ FH = logging.handlers.RotatingFileHandler(
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
-) 
+)
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
@@ -355,7 +351,7 @@ bot = Result_Feeder(log)
 
 while True:
     try:
-        bot.start() 
+        bot.start()
         log.info( 'sleep between turns ' + str(bot.DELAY_BETWEEN_TURNS) + 'seconds')
         sleep (bot.DELAY_BETWEEN_TURNS)
 
@@ -366,7 +362,7 @@ while True:
     except ssl.SSLError :
         log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-       
+
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -384,4 +380,3 @@ while True:
 
 log.info('Ending application')
 logging.shutdown()
-    

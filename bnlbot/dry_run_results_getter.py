@@ -5,7 +5,7 @@ import psycopg2
 import urllib2
 import httplib2
 import ssl
-import xml.etree.ElementTree as etree 
+import xml.etree.ElementTree as etree
 import os
 import sys
 import socket
@@ -25,9 +25,9 @@ import logging.handlers
 #      <winner selectionId="6969171" raceNumber="7"> Fit Fightin Feline</winner>
 #    </winners>
 #  </market>
- 
+
 class Market(object):
-    
+
     def __init__(self, root, conn, log):
         self.bet_id = None
         self.market_id = None
@@ -41,12 +41,12 @@ class Market(object):
         self.price = None
         self.conn = conn
         self.log = log
-         
+
 #        print 'root.tag: ', root.tag , 'text',  root.text
         if root.tag == 'market' :
             self.market_id = root.get('id')
-#	    print 'self.market_id', self.market_id 
-            
+#	    print 'self.market_id', self.market_id
+
             for elem in root :
                 if   elem.tag == 'name' :
                     self.display_name = elem.get('displayName')
@@ -65,7 +65,7 @@ class Market(object):
         if self.selection_id_list :
             for sid in self.selection_id_list :
                 cur = self.conn.cursor()
-                cur.execute("select * from DRY_RESULTS where MARKET_ID = %s and SELECTION_ID = %s", 
+                cur.execute("select * from DRY_RESULTS where MARKET_ID = %s and SELECTION_ID = %s",
                       (self.market_id, sid))
                 eos = True
                 row = cur.fetchone()
@@ -80,27 +80,27 @@ class Market(object):
 
 
     def result_insert(self):
-#	print 'resultinsert',self.market_id, self.selection_id_list 
+#	print 'resultinsert',self.market_id, self.selection_id_list
         if self.selection_id_list :
             for sid in self.selection_id_list :
-            
+
                 cur7 = self.conn.cursor()
                 cur7.execute("SAVEPOINT RES_GET_B")
                 cur7.close()
                 try  :
- 
+
                     cur = self.conn.cursor()
-                    cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)", 
+                    cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)",
                        (self.market_id, sid))
                     cur.close()
                 except psycopg2.IntegrityError:
-                    print 'duplicate index self.market_id, sid', str(self.market_id), str(sid)
+                    self.log.info('duplicate index self.market_id, sid ' +  str(self.market_id) + ' ' + str(sid))
                     cur.close()
                     cur6 = self.conn.cursor()
                     cur6.execute("ROLLBACK TO SAVEPOINT RES_GET_B" )
                     cur6.close()
-    
-    
+
+
 #########################################################################
 
 class Result_Feeder(object):
@@ -116,13 +116,13 @@ class Result_Feeder(object):
     get_hounds = True
     get_soccer = True
     conn = None
-    
+
     def __init__(self, log):
         rps = 1/4.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
         self.log = log
 
 
@@ -132,60 +132,57 @@ class Result_Feeder(object):
         response = urllib2.urlopen(url, timeout = 30)
     #catch the timeout at main loop
         xmlstring = response.read()
-        return etree.fromstring(xmlstring)        
-        
+        return etree.fromstring(xmlstring)
+
     def fetch_horses(self):
-        return self.fetch(self.URL_HORSES) 
+        return self.fetch(self.URL_HORSES)
 
     def fetch_hounds(self):
-        return self.fetch(self.URL_HOUNDS) 
+        return self.fetch(self.URL_HOUNDS)
 
     def fetch_soccer(self):
-        return self.fetch(self.URL_SOCCER) 
+        return self.fetch(self.URL_SOCCER)
 
-        
+
     def do_throttle(self):
         """return only when it is safe to send another data request"""
 #        wait = self.throttle['next_req'] - time()
-#        if wait > 0: 
-        print 'Wait for', 32, 'seconds'
+#        if wait > 0:
+        self.log.info('Wait for '  + str(s) + ' seconds')
         sleep(32)
 #        self.throttle['next_req'] = time() + self.throttle['rps']
-        
+
     def start(self):
         """start the main loop"""
-        print str(datetime.datetime.now()), 'Last round'
+
         if self.get_horses :
             self.log.info('Fetcing horses')
-            print str(datetime.datetime.now()), 'Fetch horses'
             markets = self.fetch_horses()
-            print str(datetime.datetime.now()), 'Fetched horses'
-            for m in markets :
-                market = Market(m, self.conn, self.log)
-                if market.market_id and not market.result_exists() :
-                    market.result_insert()
-                    
-        if self.get_hounds :
-            self.log.info('Fetcing hounds')
-            print str(datetime.datetime.now()), 'Fetch hounds'
-            markets = self.fetch_hounds()
-            print str(datetime.datetime.now()), 'Fetched hounds'
-            for m in markets :
-                market = Market(m, self.conn, self.log)
-                if market.market_id and not market.result_exists() :
-                    market.result_insert()
-                    
-        if self.get_soccer :
-            self.log.info('Fetcing soccer')
-            print str(datetime.datetime.now()), 'Fetch soccer'
-            markets = self.fetch_soccer()
-            print str(datetime.datetime.now()), 'Fetched soccer'
+            self.log.info('Fetched horses')
             for m in markets :
                 market = Market(m, self.conn, self.log)
                 if market.market_id and not market.result_exists() :
                     market.result_insert()
 
-        self.conn.commit()    
+        if self.get_hounds :
+            self.log.info('Fetcing hounds')
+            markets = self.fetch_hounds()
+            self.log.info('Fetched hounds')
+            for m in markets :
+                market = Market(m, self.conn, self.log)
+                if market.market_id and not market.result_exists() :
+                    market.result_insert()
+
+        if self.get_soccer :
+            self.log.info('Fetcing soccer')
+            markets = self.fetch_soccer()
+            self.log.info('Fetched soccer')
+            for m in markets :
+                market = Market(m, self.conn, self.log)
+                if market.market_id and not market.result_exists() :
+                    market.result_insert()
+
+        self.conn.commit()
 ###################################################################
 
 ######## main ###########
@@ -198,7 +195,7 @@ FH = logging.handlers.RotatingFileHandler(
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
-) 
+)
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
@@ -212,10 +209,10 @@ bot = Result_Feeder(log)
 
 while True:
     try:
-        bot.start() 
+        bot.start()
         log.info( 'sleep between turns ' + str(bot.DELAY_BETWEEN_TURNS) + 'seconds')
         sleep (bot.DELAY_BETWEEN_TURNS)
-    
+
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -223,11 +220,11 @@ while True:
     except ssl.SSLError :
         log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-       
+
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-    
+
     except httplib2.ServerNotFoundError :
         log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -235,10 +232,9 @@ while True:
 #        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
 #        bot.reconnect()
-    
+
     except KeyboardInterrupt :
         break
 
 log.info('Ending application')
 logging.shutdown()
-    
