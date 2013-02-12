@@ -1,0 +1,65 @@
+set datafile commentschars '#'
+set datafile separator whitespace
+#    gnuplot \
+#            -e "graph_type='weekly'" \
+#            -e "animal='$animal'" \
+#            -e "bet_name='$bet_name'" \
+#            -e "bet_type='$bet_type'" \
+#            -e "index='" + str(simrun.index) + "\'\" \
+#            -e "start_date='$the_date'" \
+#            -e "stop_date='$the_date'" \
+#            -e "datafil='$filname'" \
+#            -e "datadir='$datadir'" plot_simulation.gpl
+
+set terminal png medium size 800,600 background '#ffffff'
+set output datadir."/".datafil.".png"
+
+
+idx="not set"
+if (bet_type eq "0.5" && index eq "1")  idx="under"
+if (bet_type eq "1.5" && index eq "1")  idx="under"
+if (bet_type eq "2.5" && index eq "1")  idx="under"
+if (bet_type eq "3.5" && index eq "1")  idx="under"
+if (bet_type eq "4.5" && index eq "1")  idx="under"
+
+if (bet_type eq "udda" && index eq "1")  idx="even"
+if (bet_type eq "straff" && index eq "1")  idx="yes"
+
+
+if (bet_type eq "0.5" && index eq "2")  idx="over"
+if (bet_type eq "1.5" && index eq "2")  idx="over"
+if (bet_type eq "2.5" && index eq "2")  idx="over"
+if (bet_type eq "3.5" && index eq "2")  idx="over"
+if (bet_type eq "4.5" && index eq "2")  idx="over"
+
+if (bet_type eq "udda" && index eq "2")  idx="odd"
+if (bet_type eq "straff" && index eq "2")  idx="no"
+
+
+#defaults
+set cbrange [9800:11600]
+set cbtics 9800,50,11600
+
+if (graph_type eq "daily") set cbrange [9800:10600]
+if (graph_type eq "daily") set cbtics 9800,50,10600
+
+if (graph_type eq "weekly") set cbrange [9800:11600]
+if (graph_type eq "weekly") set cbtics 9800,50,11600
+
+set key off
+
+# rainbow
+#set palette rgbformulae 33,13,10
+set palette rgbformulae 7,5,15
+
+set title "profit f(price, delta) for ".animal." ".bet_name." ".bet_type." ".start_date."-".stop_date."-".idx
+set ylabel "price"
+set xlabel "delta"
+
+plot  datadir."/".datafil using 4:5:7 with image
+
+
+
+
+
+
