@@ -575,6 +575,7 @@ if simrun.plot :
 #    p = subprocess.Popen(cmd, shell=True)
 
     cmd2 = \
+       "graph_type=\'" + simrun.graph_type + "\'" + '\n' \
        "animal=\'" + simrun.animal + "\'" + '\n' \
        "bet_name=\'" + simrun.bet_type + "\'" + '\n' \
        "bet_type=\'" + simrun.bet_name + "\'" + '\n' \

@@ -4,34 +4,33 @@
 
 #animal_names="Vinnare Plats"
 #animals="horse hound"
+#date_list="2013-01-31 \
+# 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 \
+# 2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10"
+#names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
+#football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
+#val="1 2"
+#bet_types="lay back"
+
 
 animal_names="Vinnare"
 animals="hound"
-#bet_types="lay back"
 bet_types="back"
-#football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
 football_names_1="straff"
 football_names_2="3.5 4.5"
-#val="1 2"
 
-date_list="2013-01-31 \
- 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 \
- 2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10"
-date_list=" 2013-02-05 2013-02-10"
-#date_list="2013-02-07"
+date_list="2013-02-11"
 
-#names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
-
-report_type=daily
-#report_type=weekly
+graph_type=daily
+#graph_type=weekly
 
 for d in $date_list ; do
-    if [ "$report_type" == 'daily' ] ; then
+    if [ "$graph_type" == 'daily' ] ; then
       start_date=$d
-    elif [ "$report_type" == 'weekly' ] ; then
+    elif [ "$graph_type" == 'weekly' ] ; then
       start_date=$(date -d "$d -7 days" +"%Y-%m-%d")
     else
-      echo "bad report_type - $report_type" >&2
+      echo "bad graph_type - $graph_type" >&2
       exit 1
     fi
 
@@ -42,6 +41,7 @@ for d in $date_list ; do
                     --saldo=10000 \
                     --start_date=$start_date \
                     --stop_date=$d \
+                    --graph_type=$graph_type \
                     --size=30 \
                     --animal=human \
                     --index=2 \
@@ -50,12 +50,12 @@ for d in $date_list ; do
 done
 
 for d in $date_list ; do
-    if [ "$report_type" == 'daily' ] ; then
+    if [ "$graph_type" == 'daily' ] ; then
       start_date=$d
-    elif [ "$report_type" == 'weekly' ] ; then
+    elif [ "$graph_type" == 'weekly' ] ; then
       start_date=$(date -d "$d -7 days" +"%Y-%m-%d")
     else
-      echo "bad report_type - $report_type" >&2
+      echo "bad graph_type - $graph_type" >&2
       exit 1
     fi
     for bet_name in $football_names_1 ; do
@@ -65,6 +65,7 @@ for d in $date_list ; do
                     --saldo=10000 \
                     --start_date=$start_date \
                     --stop_date=$d \
+                    --graph_type=$graph_type \
                     --size=30 \
                     --animal=human \
                     --index=1 \
@@ -74,12 +75,12 @@ done
 
 
 for d in $date_list ; do
-    if [ "$report_type" == 'daily' ] ; then
+    if [ "$graph_type" == 'daily' ] ; then
       start_date=$d
-    elif [ "$report_type" == 'weekly' ] ; then
+    elif [ "$graph_type" == 'weekly' ] ; then
       start_date=$(date -d "$d -7 days" +"%Y-%m-%d")
     else
-      echo "bad report_type - $report_type" >&2
+      echo "bad graph_type - $graph_type" >&2
       exit 1
     fi
     for bet_name in $animal_names ; do
@@ -91,6 +92,7 @@ for d in $date_list ; do
                     --saldo=10000 \
                     --start_date=$start_date \
                     --stop_date=$d \
+                    --graph_type=$graph_type \
                     --size=30 \
                     --animal=$animal \
                     --summary --plot &
