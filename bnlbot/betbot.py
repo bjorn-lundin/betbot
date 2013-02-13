@@ -19,6 +19,9 @@ from db import Db
 import ConfigParser
 
 
+class TooCloseToLossError(Exception):
+    pass
+
 class SessionError(Exception):
     pass
 
@@ -310,7 +313,7 @@ class BetBot(object):
                 self.LAST_LOSS = None
             else :
                 #no betting allowed, to soon since last loss
-                raise SessionError('To soon to start betting again, lost bet ' + \
+                raise TooCloseToLossError('To soon to start betting again, lost bet ' + \
                 str(self.LAST_LOSS) + ' config says wait for ' + str(self.LOSS_HOURS) + ' hours' )
 ############################ check_last_loss
 
