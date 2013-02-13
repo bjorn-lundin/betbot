@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
-from betbot import BetBot, SessionError
+from betbot import BetBot, SessionError, TooCloseToLossError
 
 #from betfair.api import API
 from time import sleep
@@ -127,6 +127,12 @@ while True:
     except httplib2.ServerNotFoundError :
         alog.error( 'Lost network (server not found error) . Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        sleep (bot.NETWORK_FAILURE_DELAY)
+
+    except TooCloseToLossError as e :
+        alog.error( 'Too close in time to last loss.  Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except SessionError:
