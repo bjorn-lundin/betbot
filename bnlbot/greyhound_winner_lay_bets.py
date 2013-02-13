@@ -1,27 +1,18 @@
-
 # -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
 from betbot import BetBot, SessionError
-
 from time import sleep
-
 import urllib2
 import ssl
-
 import socket
 import logging.handlers
-
 import httplib2
-
-
 
 class GreyHoundWinnerLayBetBot(BetBot):
     """put bet on games with low odds"""
 
     def __init__(self, log):
         super(GreyHoundWinnerLayBetBot, self).__init__(log)
-
-
 ############################# end __init__
 
 
@@ -190,6 +181,7 @@ while True:
     except SessionError:
         alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error(SessionError)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
 #    except psycopg2.DatabaseError :
