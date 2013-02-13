@@ -3,19 +3,19 @@
 from betfair.api import API
 from time import sleep, time
 import datetime
-import psycopg2
-import urllib2
-import ssl
-import os
-import sys
+#import psycopg2
+#import urllib2
+#import ssl
+#import os
+#import sys
 #from game import Game
 from market import Market
 from funding import Funding
 from db import Db
-import socket
-import logging.handlers
+#import socket
+#import logging.handlers
 #from operator import itemgetter, attrgetter
-import httplib2
+#import httplib2
 import ConfigParser
 
 
@@ -47,6 +47,14 @@ class BetBot(object):
     COUNTRIES = None
     MAX_NO_OF_RUNNERS = None
     NOT_ALLOWED_MARKET_NAMES = None
+    PRICE = None
+    DELTA = None
+
+
+    # stop-loss
+    LAST_LOSS = None
+    LOSS_HOURS = None
+
 
     USERNAME = None
     PASSWORD = None
@@ -280,25 +288,45 @@ class BetBot(object):
                     self.log.warning( 'Something happened with funds: ' + str(funds))
                     sleep(self.DELAY_BETWEEN_TURNS_BAD_FUNDING)
 
-    ############################ place_bet
+############################ place_bet
 
-    def db_keep_alive(self):
-         cur = self.conn.cursor()
-         cur.execute("select * from DRY_MARKETS where market_id =-1")
-         row = cur.fetchone()
-         cur.close()
-         self.conn.commit()
-    #################################
+    def check_last_loss (self) :
+        cur = self.conn.cursor()
+        cur.execute("select BET_PLACED from BETS " + \
+                    "where not BET_WON " + \
+                    "and not BET_WON is null " + \
+                    "and not BET_TYPE = %s " + \
+                    "order by BET_PLACED desc", (self.BET_CATEGORY,))
+        row = cur.fetchone()
+        cur.close()
+        self.conn.commit()
+        if row :
+            self.LAST_LOSS = row[0]
+        else :
+            self.LAST_LOSS = None
+
+        if not self.LAST_LOSS is None and not self.LOSS_HOURS is None :
+            if datetime.datetime.now() > self.LAST_LOSS + datetime.timedelta(hours=self.LOSS_HOURS) :
+                self.LAST_LOSS = None
+            else :
+                #no betting allowed, to soon since last loss
+                raise SessionError('To soon to start betting again, lost bet ' + \
+                str(self.LAST_LOSS) + ' config says wait for ' + str(self.LOSS_HOURS) + ' hours' )
+############################ check_last_loss
+
+
 
     def start(self):
         """start the main loop"""
+
+        self.check_last_loss()
         # login/monitor status
         login_status = self.login(self.USERNAME, self.PASSWORD, \
                                   self.PRODUCT_ID, self.VENDOR_ID)
         while login_status == 'OK':
+            self.check_last_loss()
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------')
-            self.db_keep_alive()
             markets = self.get_markets()
             if type(markets) is list:
                 if len(markets) == 0:
@@ -354,6 +382,7 @@ class BetBot(object):
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
+        self.LOSS_HOURS                      = int(config.get('Global', 'loss_hours'))
 
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))
@@ -410,6 +439,7 @@ class BetBot(object):
         self.NO_OF_WINNERS                   = int (config.get(bet_category, 'no_of_winners'))
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
+
 
         self.log.info('config ' + str(config))
 

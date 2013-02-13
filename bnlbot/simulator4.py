@@ -290,7 +290,6 @@ class BetSimulator(object):
 
             sorted_list = sorted(race_list, reverse=True)
 #            sorted_list = sorted(race_list, reverse=False)
-            i = 0
 
             selection = None
             lay_odds = None
