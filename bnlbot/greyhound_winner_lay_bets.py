@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
-from betbot import BetBot, SessionError
+from betbot import BetBot, SessionError, TooCloseToLossError
 from time import sleep
 import urllib2
 import ssl
@@ -178,10 +178,16 @@ while True:
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
-    except SessionError:
+    except TooCloseToLossError as e :
+        alog.error( 'Too close in time to last loss.  Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error(e.args)
+        sleep (bot.NETWORK_FAILURE_DELAY)
+
+
+    except SessionError as e:
         alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.error(SessionError)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
 #    except psycopg2.DatabaseError :
