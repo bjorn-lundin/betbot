@@ -178,10 +178,10 @@ while True:
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
-    except TooCloseToLossError  :
+    except TooCloseToLossError as e :
         alog.error( 'Too close in time to last loss.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        #alog.error(e.args)
+        alog.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except SessionError:

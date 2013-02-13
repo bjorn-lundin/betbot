@@ -184,7 +184,6 @@ while True:
         alog.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
-
     except SessionError as e:
         alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')

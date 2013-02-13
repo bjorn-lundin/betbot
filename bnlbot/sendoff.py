@@ -1,6 +1,6 @@
-# -*- coding: iso-8859-1 -*- 
+# -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
-from betbot import BetBot, SessionError
+from betbot import BetBot, SessionError, TooCloseToLossError
 
 from time import sleep
 import urllib2
@@ -28,7 +28,7 @@ class SendOff(BetBot):
                 # loop through runners and prices and create bets
                 # the no-red-card runner is [1]
                 name = None
-                back_price = None 
+                back_price = None
                 selection = None
 
                 try :
@@ -44,17 +44,17 @@ class SendOff(BetBot):
 
                 self.log.info( 'odds utvisning -ja  : ' + str(odds_yes))
                 self.log.info( 'odds utvisning -nej :' + str(odds_no))
-                
+
 
                 #no sendoff
                 if odds_no and \
                    odds_no >= self.MIN_ODDS :
-   
+
                     back_price = odds_no
                     selection = selection_no
 
                     self.place_bet(market_id, selection, back_price, name)
-                    
+
                 else:
                     self.log.info('bad odds or time in game -> no bet on market ' +
                         str(market_id))
@@ -85,7 +85,7 @@ FH = logging.handlers.RotatingFileHandler(
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
-) 
+)
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
@@ -112,7 +112,7 @@ while True:
         alog.error( 'Lost network (ssl error) . Retry in ' + \
                     str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-       
+
     except socket.error as ex:
         alog.error( 'Lost network (socket error) . Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
@@ -122,12 +122,18 @@ while True:
         alog.error( 'Lost network (server not found error) . Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-        
+
+    except TooCloseToLossError as e :
+        alog.error( 'Too close in time to last loss.  Retry in ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.error(e.args)
+        sleep (bot.NETWORK_FAILURE_DELAY)
+
     except SessionError:
         alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-             
+
 #    except psycopg2.DatabaseError :
 #        alog.error( 'Lost db contact . Retry in ' + \
 #          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
@@ -139,4 +145,3 @@ while True:
 
 alog.info('Ending application')
 logging.shutdown()
-    
