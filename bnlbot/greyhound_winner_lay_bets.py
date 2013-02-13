@@ -12,7 +12,7 @@ import socket
 import logging.handlers
 
 import httplib2
-from market import Market
+
 
 
 class GreyHoundWinnerLayBetBot(BetBot):
@@ -73,37 +73,30 @@ class GreyHoundWinnerLayBetBot(BetBot):
                 name = None
                 index = None
                 
-                market = Market(self.conn, self.log, market_id = market_id)
-                # there must be at least 3 runners with lower odds
+                #it MUST be the one with highest odds
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 2 - market.no_of_winners
-                for dct in sorted_list :
+                turns = 1
+                for list_item in sorted_list :
                     i = i + 1
-                    if i >= max_turns  :
-                        self.log.info('number_of_runners = ' \
-                            + str(number_of_runners) + \
-                            'max turns = ' + str(max_turns) + ' i = ' + str(i))
-                        self.log.info('Too close to winner positon, exit')
-                        return 
-                        
+                    lay_odds  = float(list_item[1])
+                    
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
-                            str(dct[0]) + '/' + \
-                            str(dct[1]) + '/' + \
-                            str(dct[2]) + '/' + \
-                            str(dct[3])                         )
-                    if (self.MIN_ODDS <= float(dct[1]) and 
-                        float(dct[1]) <= self.MAX_ODDS and 
-                        i <= max_turns ) :
+                            str(list_item)                      )
+                    if (self.MIN_ODDS <= lay_odds and 
+                        lay_odds <= self.MAX_ODDS and 
+                        number_of_runners == 6 and  # GBR num of hounds
+                        i == turns 
+                        ) :
+                        
+                        back_odds = float(list_item[0])
+                        index     = int(list_item[3])                 
+                        selection = int(list_item[2]) 
+
                         self.log.info( 'will bet on ' + \
-                             str(dct[0]) + '/' + \
-                             str(dct[1]) + '/' + \
-                             str(dct[2]) + '/' + \
-                             str(dct[3])                         )
-                        selection = dct[2] 
-                        lay_odds  = dct[1] 
-                        back_odds = dct[0] 
-                        index     = dct[3] 
-                        break 
+                            str(back_odds) + '/' + \
+                            str(lay_odds) + '/' + \
+                            str(selection) + '/' + \
+                            str(index)                         )
  
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
@@ -131,12 +124,9 @@ class GreyHoundWinnerLayBetBot(BetBot):
                 self.log.info( 'selection : ' + str(selection))
                 self.log.info( 'name      : ' + str(name))
                 self.log.info( 'index     : ' + str(index))
-                                    
-                if lay_odds and selection:
-                    self.place_bet(market_id, selection, lay_odds, name)
-                else:
-                    self.log.info('bad odds or time in game -> no bet on market ' +
-                        str(market_id))
+                
+                #place the bet                    
+                self.place_bet(market_id, selection, lay_odds, name)
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
