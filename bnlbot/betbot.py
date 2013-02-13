@@ -19,9 +19,6 @@ from db import Db
 import ConfigParser
 
 
-class TooCloseToLossError(Exception):
-    pass
-
 class SessionError(Exception):
     pass
 
@@ -53,11 +50,9 @@ class BetBot(object):
     PRICE = None
     DELTA = None
 
-
     # stop-loss
     LAST_LOSS = None
     LOSS_HOURS = None
-
 
     USERNAME = None
     PASSWORD = None
@@ -127,12 +122,6 @@ class BetBot(object):
         cur.close()
 ############################# end insert_bet
 
-
-#    def get_markets(self):
-#        self.log.debug( 'get_markets from BetBot!!!')
-#        raise OverrideError('BetBot.get_market MUST be overrridden!!!')
-############################# end get_markets
-
     def do_throttle(self):
         """return only when it is safe to send another data request"""
         wait = self.throttle['next_req'] - time()
@@ -146,7 +135,7 @@ class BetBot(object):
 ############################# check_strategy
 
 
-#################### start get-markets-test
+#################### start get-markets
     def get_markets(self):
         """returns a list of markets or an error string"""
 
@@ -160,7 +149,7 @@ class BetBot(object):
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-#                self.log.info( 'market :' + str(market))
+
              # loop through a COPY of markets
              #as we're modifying it on the fly...
                 markets.remove(market)
@@ -170,14 +159,14 @@ class BetBot(object):
                 if  self.NOT_ALLOWED_MARKET_NAMES:
                     for not_allowed in self.NOT_ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(not_allowed) == -1
-#                        self.log.info('Not_allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + not_allowed + ' ' + str(market_ok))
+
                         if not market_ok :
                             break
                 # we now check for allowed market name, if nothing was found above
                 if self.ALLOWED_MARKET_NAMES and market_ok :
                     for allowed in self.ALLOWED_MARKET_NAMES :
                         market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
-#                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
+
                         if market_ok :
                             break
 
@@ -206,24 +195,7 @@ class BetBot(object):
             self.no_session = True
         else:
             return markets
-############################# end get_markets test
-
-
-
-############################################### get_markets
-    def market_in_xmlfeed(self, market_id) :
-        Found = False
-        cur = self.conn.cursor()
-        cur.execute("select * from MARKET_IN_XML_FEED \
-                     where MARKET_ID = " + str(market_id))
-        row = cur.fetchone()
-        rc = cur.rowcount
-        cur.close()
-        if rc == 1 :
-            Found = True
-        return Found
-############################# market_in_xmlfeed
-
+############################# end get_markets
 
 
     def place_bet(self, market_id, selection, wanted_price, name):
@@ -313,7 +285,7 @@ class BetBot(object):
                 self.LAST_LOSS = None
             else :
                 #no betting allowed, to soon since last loss
-                raise TooCloseToLossError('To soon to start betting again, lost bet ' + \
+                raise SessionError('To soon to start betting again, lost bet ' + \
                 str(self.LAST_LOSS) + ' config says wait for ' + str(self.LOSS_HOURS) + ' hours' )
 ############################ check_last_loss
 
@@ -413,13 +385,11 @@ class BetBot(object):
         self.DRY_RUN                         = config.getboolean(bet_category, 'dry_run')
         self.BET_CATEGORY = bet_category
 
-
         if self.DRY_RUN :
             self.BET_CATEGORY                = 'DRY_RUN_' + self.BET_CATEGORY
 
         self.log.info('Bet_category ' + self.BET_CATEGORY)
         self.log.info('dry_run ' + str(self.DRY_RUN))
-
 
         tmp_string_1                         = config.get(bet_category, 'events')
         self.EVENTS                          = tmp_string_1.split(',')
@@ -443,9 +413,7 @@ class BetBot(object):
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
 
-
         self.log.info('config ' + str(config))
-
 
         login = ConfigParser.ConfigParser()
         login.read('betfair_login.ini')
@@ -455,7 +423,7 @@ class BetBot(object):
         self.PRODUCT_ID                      = login.get('Login', 'product_id')
         self.VENDOR_ID                       = login.get('Login', 'vendor_id')
 
-        self.log.info('Countries' + str(self.COUNTRIES))
+        self.log.info('Countries ' + str(self.COUNTRIES))
 
 
 
