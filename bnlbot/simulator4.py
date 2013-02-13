@@ -41,7 +41,12 @@ class BetSimulator(object):
         self.plot = opts.plot
         self.index = opts.index
         self.graph_type = opts.graph_type
-        self.once = opts.once
+        self.num_won_bets = 0
+        self.num_lost_bets = 0
+        self.num_possible_bets = 0
+        self.num_taken_bets = 0
+        self.last_loss = None
+        self.loss_hours = opts.loss_hours
 
     ##########################
 
@@ -85,6 +90,8 @@ class BetSimulator(object):
                      and EVENT_HIERARCHY like %s \
                      and exists (select 'x' from DRY_RESULTS where \
                          DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) \
+                     and exists (select 'x' from DRY_RUNNERS where \
+                         DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) \
                      order by EVENT_DATE",
              (self.start_date, self.stop_date, self.bet_name, animal))
         elif self.bet_name.lower() == 'vinnare' :
@@ -106,6 +113,8 @@ class BetSimulator(object):
                      and EVENT_HIERARCHY like %s \
                      and exists (select 'x' from DRY_RESULTS where \
                         DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) \
+                     and exists (select 'x' from DRY_RUNNERS where \
+                         DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) \
                      order by EVENT_DATE",
              (self.start_date, self.stop_date, animal))
 
@@ -131,6 +140,8 @@ class BetSimulator(object):
                      and EVENT_HIERARCHY like %s \
                      and exists (select 'x' from DRY_RESULTS where \
                          DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) \
+                     and exists (select 'x' from DRY_RUNNERS where \
+                         DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) \
                      order by EVENT_DATE",
              (self.start_date, self.stop_date,
                '%' + self.bet_name.lower() + '%', animal))
@@ -157,6 +168,11 @@ class BetSimulator(object):
 
         cur.close()
         self.conn.commit()
+        if len(self.runners) == 0 :
+            sys.stderr.write('market ' +  str(market_id) + \
+                             ' has no runners' + '\n')
+
+
         self.stop_and_print_timer('get_runners ')
     ########################
 
@@ -173,6 +189,9 @@ class BetSimulator(object):
 
         cur.close()
         self.conn.commit()
+        if len(self.winners) == 0 :
+            sys.stderr.write('market ' +  str(market_id) + \
+                             ' has no winners' + '\n')
         self.stop_and_print_timer('get_winners ')
     ########################
 
@@ -181,9 +200,10 @@ class BetSimulator(object):
             print self.saldo
 
     #############################
-    def check_result(self) :
+    def check_result(self, event_date) :
         self.start_timer()
         if self.selection_id is None :
+            self.stop_and_print_timer('check_result')
             return
 
         local_price = 0.0
@@ -217,6 +237,7 @@ class BetSimulator(object):
         profit = 0.0
         # take care of 5% commission here
         if self.bet_won :
+            self.num_won_bets = self.num_won_bets + 1
             if self.bet_type == 'back' :
                 profit = 0.95 * self.size * local_price
             elif self.bet_type == 'lay' :
@@ -231,14 +252,30 @@ class BetSimulator(object):
                 sys.stderr.write('Bad bet type', self.bet_type, \
                                  'must be back or lay' + '\n')
                 sys.exit(1)
+        else :
+            self.num_lost_bets = self.num_lost_bets + 1
+            self.last_loss = event_date
+
         self.saldo = self.saldo + profit
 
         self.stop_and_print_timer('check_result')
     #############################
 
-    def make_bet(self) :
+    def make_bet(self, event_date) :
         self.start_timer()
         self.selection_id = None
+
+        if not self.last_loss is None and not self.loss_hours is None :
+#            sys.stderr.write( \
+#                      'event_date=' +str(event_date) + ' ' + \
+#                      'sum=' +str(self.last_loss + datetime.timedelta(hours=self.loss_hours)) + '\n')
+            if event_date > self.last_loss + datetime.timedelta(hours=self.loss_hours) :
+                self.last_loss = None
+            else :
+                #no betting allowed, to soon since last loss
+                self.stop_and_print_timer('make_bet    ')
+                return
+
         race_list = []
         if self.bet_type == 'lay' :
             market_id = 0
@@ -252,12 +289,13 @@ class BetSimulator(object):
                 race_list.append(tmp_tuple)
 
             sorted_list = sorted(race_list, reverse=True)
+#            sorted_list = sorted(race_list, reverse=False)
             i = 0
 
             selection = None
             lay_odds = None
 
-            max_turns = 1
+            turns = 0
             number_of_runners = len(sorted_list)
 #            my_market = Market(self.conn, None, \
 #                      market_id = market_id, simulate = True)
@@ -277,7 +315,7 @@ class BetSimulator(object):
                 lay_odds  = float(dct[1])
                 if ( self.min_price  <= lay_odds and
                      lay_odds <= self.max_price and
-                     i <= max_turns
+                     i == turns
                      ) :
                     selection = int(dct[2])
                     self.selection_id = int(selection)
@@ -286,16 +324,14 @@ class BetSimulator(object):
                     self.saldo = self.saldo - \
                         (self.size * lay_odds) + self.size
                     found = True
+                    self.num_taken_bets = self.num_taken_bets + 1
 #                    sys.stderr.write( \
 #                      'min=' +str(self.min_price) + ' ' + \
 #                      'odds=' +str(tmp_bp) + ' ' + \
 #                      'max=' +str(self.max_price) + '\n')
                     break
-#                sys.stdout.write( \
-#                      'min=' +str(self.min_price) + ' ' + \
-#                      'odds=' +str(lay_odds) + ' ' + \
-#                      'max=' +str(self.max_price) + ' ' + \
-#                      'Found: ' + str(found) + '\n')
+                i = i + 1
+
 
 
         elif self.bet_type == 'back' :
@@ -327,6 +363,7 @@ class BetSimulator(object):
                         selection = float(dct[2])
                         self.selection_id = int(selection)
                         self.saldo = self.saldo - self.size
+                        self.num_taken_bets = self.num_taken_bets + 1
                     break
 
             elif self.animal == 'human':
@@ -368,6 +405,7 @@ class BetSimulator(object):
                          tmp_bp <= self.price + self.delta_price and found
                          ):
                         self.selection_id = sel_id
+                        self.num_taken_bets = self.num_taken_bets + 1
                         self.saldo = self.saldo - self.size
                 else :
                     sys.stderr.write('Bad bet name', self.bet_name, \
@@ -433,10 +471,10 @@ parser.add_option("-p", "--plot",      dest="plot"   ,  action="store_true", \
 parser.add_option("-i", "--index",      dest="index"   ,   action="store", \
                   help="index")
 parser.add_option("-g", "--graph_type", dest="graph_type",  action="store", \
-                  help="graph type")
+                  type="string", help="graph type")
+parser.add_option("-l", "--loss_hours", dest="loss_hours",  action="store", \
+                   type="int", help="loss hours")
 
-parser.add_option("-o", "--once", dest="once",  action="store_true", \
-                  help="no loop", default=False)
 
 
 (options, args) = parser.parse_args()
@@ -446,56 +484,9 @@ sys.stderr.write('options ' + str(options))
 
 ## start test
 
-if options.animal == 'hound' :
-    if options.bet_type == "lay" :
-        if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 20)
-            delta_list = list_creator(1, 1, 20)
-        elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 1, 30)
-            delta_list = list_creator(1, 1, 30)
-    elif options.bet_type == "back" :
-        if options.bet_name == "Plats" :
-            price_list = list_creator(1, 0.2, 4)
-            delta_list = list_creator(0.1, 0.1, 2)
-        elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 0.2, 6)
-            delta_list = list_creator(0.1, 0.1, 2)
-
-    else:
-        sys.stderr.write( "bad bet_type " + str(options.bet_type))
-        sys.exit(1)
-
-elif options.animal == 'horse' :
-    if options.bet_type == "lay" :
-        if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 20)
-            delta_list = list_creator(1, 1, 20)
-        elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 1, 25)
-            delta_list = list_creator(1, 1, 25)
-    elif options.bet_type == "back" :
-        if options.bet_name == "Plats" :
-            price_list =  list_creator(1, 0.2, 4)
-            delta_list = list_creator(0.1, 0.1, 2)
-        elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 0.2, 9)
-            delta_list = list_creator(0.1, 0.1, 2)
-    else:
-        sys.stderr.write( "bad bet_type " + str(options.bet_type))
-        sys.exit(1)
-
-elif options.animal == 'human':
-    if options.bet_type == "lay" :
-        price_list = list_creator(1, 1, 10)
-        delta_list = list_creator(1, 1, 10)
-    elif options.bet_type == "back"  :
-        price_list = list_creator(1, 0.05, 7.0)
-        delta_list = list_creator(0.1, 0.1, 2)
-    else:
-        sys.stderr.write( "bad bet_type " + str(options.bet_type))
-        sys.exit(1)
-
+if options.animal == 'hound' : pass
+elif options.animal == 'horse' : pass
+elif options.animal == 'human': pass
 else:
     sys.stderr.write( "bad animal " + str(options.animal))
     sys.exit(1)
@@ -503,91 +494,47 @@ else:
 ##stop test
 
 simrun = BetSimulator(options)
-datadir = ''
-filname = ''
-
 
 simrun.get_markets()
 
-for price in price_list:
-    for delta in delta_list:
-        simrun.saldo = options.saldo
+simrun.saldo = options.saldo
+min_saldo = simrun.saldo
+max_saldo = simrun.saldo
+for market in simrun.markets :
 
-        if not options.once :
-            if options.bet_type == "back" :
-                simrun.price = price
-                simrun.delta_price = delta
-            elif options.bet_type == "lay" :
-                simrun.min_price = price
-                simrun.max_price = delta
+    simrun.num_possible_bets = simrun.num_possible_bets + 1
+    simrun.get_runners(market[0]) # 12 = market_id
+    simrun.get_winners(market[0])
+    simrun.make_bet(market[12]) # 12 = event_date
 
-        datadir = 'sims'
-        filname = 'simulation3-' + simrun.animal +'-' + \
-            simrun.bet_name + '-' + simrun.bet_type \
-                + '-' + simrun.start_date + '-' \
-                + simrun.stop_date + "-" + str(simrun.index) + '.dat'
-        fil = datadir + '/' + filname
-        fil_gpi = datadir + '/' + filname + '.gpi'
-
-#        simrun.get_markets()
-
-        min_saldo = simrun.saldo
+    if  simrun.saldo > max_saldo :
         max_saldo = simrun.saldo
-        for market in simrun.markets :
+    if  simrun.saldo < min_saldo :
+        min_saldo = simrun.saldo
 
-            simrun.get_runners(market[0])
-            simrun.get_winners(market[0])
-            simrun.make_bet()
+    if simrun.selection_id is not None :
+        simrun.check_result(market[12]) # 12 = event_date
 
-            if  simrun.saldo > max_saldo :
-                max_saldo = simrun.saldo
-            if  simrun.saldo < min_saldo :
-                min_saldo = simrun.saldo
+    if  simrun.saldo > max_saldo :
+        max_saldo = simrun.saldo
+    if  simrun.saldo < min_saldo :
+        min_saldo = simrun.saldo
 
-            if simrun.selection_id is not None :
-                simrun.check_result()
+line = options.animal + ' ' + options.bet_name + ' ' + \
+        options.bet_type + ' ' + str(simrun.min_price) + ' ' \
+        + str(simrun.max_price) + ' ' + str(min_saldo) + ' ' + \
+        str(simrun.saldo) + ' ' + str(max_saldo)
+betstats_info = "poss  taken  won lost"
+betstats = str(simrun.num_possible_bets) + ' ' + \
+           str(simrun.num_taken_bets) + ' ' + \
+           str(simrun.num_won_bets) + ' ' + \
+           str(simrun.num_lost_bets)
 
-            if  simrun.saldo > max_saldo :
-                max_saldo = simrun.saldo
-            if  simrun.saldo < min_saldo :
-                min_saldo = simrun.saldo
+if simrun.summary :
+    print '-------------------------------------------'
+    print line
+    print betstats_info
+    print betstats
+    print 'win ratio: ' + '%.2f' % (100 * float(simrun.num_won_bets)/float(simrun.num_taken_bets))
 
-        line = options.animal + ' ' + options.bet_name + ' ' + \
-                options.bet_type + ' ' + str(delta) + ' ' \
-                + str(price) + ' ' + str(min_saldo) + ' ' + \
-                str(simrun.saldo) + ' ' + str(max_saldo)
-
-        if simrun.summary :
-            print line
-
-        simrun.start_timer()
-        with open(fil, 'a') as text_file:
-            text_file.write(line + '\n')
-        simrun.stop_and_print_timer('write       ')
-
-if simrun.plot :
-#    cmd = "gnuplot \
-#    -e \"animal=\'" + simrun.animal + "\'\" \
-#    -e \"bet_name=\'" + simrun.bet_type + "\'\" \
-#    -e \"bet_type=\'" + simrun.bet_name + "\'\" \
-#    -e \"index=\'" + str(simrun.index) + "\'\" \
-#    -e \"start_date=\'" + simrun.start_date + "\'\" \
-#    -e \"stop_date=\'" + simrun.stop_date + "\'\" \
-#    -e \"datafil=\'" + filname + "\'\" \
-#    -e \"datadir=\'" + datadir + "\'\" plot_simulation3.gpl"
-#
-#    p = subprocess.Popen(cmd, shell=True)
-
-    cmd2 = \
-       "graph_type=\'" + simrun.graph_type + "\'" + '\n' \
-       "animal=\'" + simrun.animal + "\'" + '\n' \
-       "bet_name=\'" + simrun.bet_type + "\'" + '\n' \
-       "bet_type=\'" + simrun.bet_name + "\'" + '\n' \
-       "index=\'" + str(simrun.index) + "\'" + '\n' \
-       "start_date=\'" + simrun.start_date + "\'" + '\n' \
-       "stop_date=\'" + simrun.stop_date + "\'" + '\n' \
-       "datafil=\'" + filname + "\'" + '\n' \
-       "datadir=\'" + datadir + "\'"
-    with open(fil_gpi, 'w') as text_file:
-            text_file.write(cmd2 + '\n')
 
