@@ -76,26 +76,29 @@ class Market(object):
 
 
     def bet_exists(self):
-        cur = self.conn.cursor()
-        cur.execute("select BET_ID, SELECTION_ID, BET_TYPE, " \
-                    "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null",
-                      (self.market_id,))
+        if self.market_id :
+            cur = self.conn.cursor()
+            cur.execute("select BET_ID, SELECTION_ID, BET_TYPE, " \
+                        "SIZE, PRICE from BETS where MARKET_ID= %s and BET_WON is null",
+                          (self.market_id,))
 
-        eos = True
-        row = cur.fetchone()
-        if row  :
-            self.bet_id = int(row[0])
-            self.selection_id = int(row[1])
-            self.bet_type = row[2]
-            self.size = float(row[3])
-            self.price = float(row[4])
-            eos = False
-        cur.close()
-        self.conn.commit()
-#        self.log.info('market_id: ' + str(self.market_id) + \
-#                      ' bet_exists: ' + str(not eos)  )
+            eos = True
+            row = cur.fetchone()
+            if row  :
+                self.bet_id = int(row[0])
+                self.selection_id = int(row[1])
+                self.bet_type = row[2]
+                self.size = float(row[3])
+                self.price = float(row[4])
+                eos = False
+            cur.close()
+            self.conn.commit()
 
-	return not eos
+            return not eos
+        else :
+            self.log.error('market_id is None')
+            return False
+
 
     def treat(self):
 

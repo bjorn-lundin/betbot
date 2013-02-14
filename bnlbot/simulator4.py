@@ -47,7 +47,7 @@ class BetSimulator(object):
         self.num_taken_bets = 0
         self.last_loss = None
         self.loss_hours = opts.loss_hours
-
+        self.betstat = opts.betstat
     ##########################
 
 
@@ -473,12 +473,14 @@ parser.add_option("-g", "--graph_type", dest="graph_type",  action="store", \
                   type="string", help="graph type")
 parser.add_option("-l", "--loss_hours", dest="loss_hours",  action="store", \
                    type="int", help="loss hours")
+parser.add_option("-j", "--betstat",   dest="betstat",  action="store_true", \
+                  help="betstat", default=False)
 
 
 
 (options, args) = parser.parse_args()
 
-sys.stderr.write('options ' + str(options))
+sys.stderr.write('options ' + str(options) + '\n')
 #print 'args', args
 
 ## start test
@@ -523,15 +525,17 @@ line = options.animal + ' ' + options.bet_name + ' ' + \
         options.bet_type + ' ' + str(simrun.min_price) + ' ' \
         + str(simrun.max_price) + ' ' + str(min_saldo) + ' ' + \
         str(simrun.saldo) + ' ' + str(max_saldo)
-betstats_info = "poss  taken  won lost"
-betstats = str(simrun.num_possible_bets) + ' ' + \
-           str(simrun.num_taken_bets) + ' ' + \
-           str(simrun.num_won_bets) + ' ' + \
-           str(simrun.num_lost_bets)
 
 if simrun.summary :
     print '-------------------------------------------'
     print line
+
+if simrun.betstat :
+    betstats_info = "poss  taken  won lost"
+    betstats = str(simrun.num_possible_bets) + ' ' + \
+           str(simrun.num_taken_bets) + ' ' + \
+           str(simrun.num_won_bets) + ' ' + \
+           str(simrun.num_lost_bets)
     print betstats_info
     print betstats
     print 'win ratio: ' + '%.2f' % (100 * float(simrun.num_won_bets)/float(simrun.num_taken_bets))
