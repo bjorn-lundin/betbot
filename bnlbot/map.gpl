@@ -46,6 +46,9 @@ if (graph_type eq "daily") set cbtics 9800,50,10600
 if (graph_type eq "weekly") set cbrange [9800:11600]
 if (graph_type eq "weekly") set cbtics 9800,50,11600
 
+if (graph_type eq "biweekly") set cbrange [9800:12600]
+if (graph_type eq "biweekly") set cbtics 9800,50,12600
+
 set key off
 
 # rainbow
