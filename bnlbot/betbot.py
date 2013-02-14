@@ -270,7 +270,7 @@ class BetBot(object):
         cur.execute("select BET_PLACED from BETS " + \
                     "where not BET_WON " + \
                     "and not BET_WON is null " + \
-                    "and not BET_TYPE = %s " + \
+                    "and BET_TYPE = %s " + \
                     "order by BET_PLACED desc", (self.BET_CATEGORY,))
         row = cur.fetchone()
         cur.close()
@@ -284,6 +284,7 @@ class BetBot(object):
             if datetime.datetime.now() > self.LAST_LOSS + datetime.timedelta(hours=self.LOSS_HOURS) :
                 self.LAST_LOSS = None
             else :
+                self.log.warning( 'bet_type: ' + self.BET_CATEGORY)
                 #no betting allowed, to soon since last loss
                 raise SessionError('To soon to start betting again, lost bet ' + \
                 str(self.LAST_LOSS) + ' config says wait for ' + str(self.LOSS_HOURS) + ' hours' )
@@ -357,7 +358,6 @@ class BetBot(object):
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
-        self.LOSS_HOURS                      = int(config.get('Global', 'loss_hours'))
 
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))
@@ -384,6 +384,10 @@ class BetBot(object):
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
         self.DRY_RUN                         = config.getboolean(bet_category, 'dry_run')
         self.BET_CATEGORY = bet_category
+
+        self.LOSS_HOURS                      = int(config.get(bet_category, 'loss_hours'))
+
+
 
         if self.DRY_RUN :
             self.BET_CATEGORY                = 'DRY_RUN_' + self.BET_CATEGORY

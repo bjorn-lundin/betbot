@@ -89,6 +89,7 @@ class GreyHoundWinnerLayBet1619Bot(BetBot):
                             str(lay_odds) + '/' + \
                             str(selection) + '/' + \
                             str(index)                         )
+                        break
 
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
