@@ -25,7 +25,6 @@ if (bet_type eq "4.5" && index eq "1")  idx="under"
 if (bet_type eq "udda" && index eq "1")  idx="even"
 if (bet_type eq "straff" && index eq "1")  idx="yes"
 
-
 if (bet_type eq "0.5" && index eq "2")  idx="over"
 if (bet_type eq "1.5" && index eq "2")  idx="over"
 if (bet_type eq "2.5" && index eq "2")  idx="over"
@@ -55,13 +54,12 @@ set key off
 #set palette rgbformulae 33,13,10
 set palette rgbformulae 7,5,15
 
-set title "profit f(price, delta) for ".animal." ".bet_name." ".bet_type." ".start_date."-".stop_date."-".idx
+set title "profit f(price, delta) for ".animal." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date."-".idx
 set ylabel "price"
 set xlabel "delta"
 
-if (bet_name eq "lay")  set ylabel "min price"
-if (bet_name eq "lay")  set xlabel "max price"
-
+if (bet_name eq "lay") set ylabel "min price"
+if (bet_name eq "lay") set xlabel "max price"
 
 plot  datadir."/".datafil using 4:5:7 with image
 

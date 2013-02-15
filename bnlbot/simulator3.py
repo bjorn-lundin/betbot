@@ -49,7 +49,7 @@ class BetSimulator(object):
         self.last_loss = None
         self.loss_hours = opts.loss_hours
         self.betstat = opts.betstat
-
+        self.variant = opts.variant
     ##########################
 
 
@@ -268,9 +268,9 @@ class BetSimulator(object):
                 #no betting allowed, to soon since last loss
                 self.stop_and_print_timer('make_bet    ')
                 return
-
         race_list = []
         if self.bet_type == 'lay' :
+            is_favorite_lay_bet = self.variant.lower() == "favorite_lay"
             market_id = 0
             for runner in self.runners :
                 tmp_bp = float(runner[3])
@@ -281,29 +281,19 @@ class BetSimulator(object):
                 tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                 race_list.append(tmp_tuple)
 
-            sorted_list = sorted(race_list, reverse=True)
-#            sorted_list = sorted(race_list, reverse=False)
+            if is_favorite_lay_bet :
+                sorted_list = sorted(race_list, reverse=False)
+            else :
+                sorted_list = sorted(race_list, reverse=True)
 
             selection = None
             lay_odds = None
-
-            turns = 0
+            turns = 1
             number_of_runners = len(sorted_list)
-#            my_market = Market(self.conn, None, \
-#                      market_id = market_id, simulate = True)
-#            if self.animal == 'horse':
-## there must be at least 3 runners with lower odds
-#                max_turns = number_of_runners - 3 - my_market.no_of_winners
-#            elif self.animal == 'hound':
-## there must be at least 3 runners with lower odds
-#                max_turns = number_of_runners - 3 - my_market.no_of_winners
-#            else :
-#                sys.stderr.write('lay bet not implemented for '\
-#                                  + self.animal + '\n')
-#                sys.exit(1)
             found = False
-            i = 0
-            for dct in sorted_list :
+            i = 1
+            
+             for dct in sorted_list :
                 lay_odds  = float(dct[1])
                 if ( self.min_price  <= lay_odds and
                      lay_odds <= self.max_price and
@@ -315,14 +305,13 @@ class BetSimulator(object):
                     #312.59 - (30*3.65) + 30 = 233.09
                     self.saldo = self.saldo - \
                         (self.size * lay_odds) + self.size
-                    found = True
+#                    found = True
                     self.num_taken_bets = self.num_taken_bets + 1
 #                    sys.stderr.write( \
 #                      'min=' +str(self.min_price) + ' ' + \
 #                      'odds=' +str(tmp_bp) + ' ' + \
 #                      'max=' +str(self.max_price) + '\n')
-                    break
-                i = i + 1
+                break
 
 
 
@@ -473,6 +462,10 @@ parser.add_option("-l", "--loss_hours", dest="loss_hours",  action="store", \
 parser.add_option("-j", "--betstat",   dest="betstat",  action="store_true", \
                   help="betstat", default=False)
 
+parser.add_option("-v", "--variant",    dest="variant",    action="store", \
+                  type="string", help="variant")
+
+
 
 (options, args) = parser.parse_args()
 
@@ -484,14 +477,14 @@ sys.stderr.write('options ' + str(options) + '\n')
 if options.animal == 'hound' :
     if options.bet_type == "lay" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 20)
-            delta_list = list_creator(1, 1, 20)
+            price_list = list_creator(1, 1, 30)
+            delta_list = list_creator(1, 1, 30)
         elif options.bet_name == "Vinnare" :
             price_list = list_creator(1, 1, 50)
             delta_list = list_creator(1, 1, 50)
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 0.2, 4)
+            price_list = list_creator(1, 0.2, 6)
             delta_list = list_creator(0.1, 0.1, 2)
         elif options.bet_name == "Vinnare" :
             price_list = list_creator(1, 0.2, 6)
@@ -504,17 +497,17 @@ if options.animal == 'hound' :
 elif options.animal == 'horse' :
     if options.bet_type == "lay" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 20)
-            delta_list = list_creator(1, 1, 20)
+            price_list = list_creator(1, 1, 30)
+            delta_list = list_creator(1, 1, 30)
         elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 1, 25)
-            delta_list = list_creator(1, 1, 25)
+            price_list = list_creator(1, 1, 50)
+            delta_list = list_creator(1, 1, 50)
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
-            price_list =  list_creator(1, 0.2, 4)
+            price_list =  list_creator(1, 0.2, 6)
             delta_list = list_creator(0.1, 0.1, 2)
         elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 0.2, 9)
+            price_list = list_creator(1, 0.2, 7)
             delta_list = list_creator(0.1, 0.1, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
@@ -525,7 +518,7 @@ elif options.animal == 'human':
         price_list = list_creator(1, 1, 10)
         delta_list = list_creator(1, 1, 10)
     elif options.bet_type == "back"  :
-        price_list = list_creator(1, 0.05, 7.0)
+        price_list = list_creator(1, 0.1, 7)
         delta_list = list_creator(0.1, 0.1, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
@@ -620,6 +613,7 @@ if simrun.plot :
        "animal=\'" + simrun.animal + "\'" + '\n' \
        "bet_name=\'" + simrun.bet_type + "\'" + '\n' \
        "bet_type=\'" + simrun.bet_name + "\'" + '\n' \
+       "variant=\'" + str(simrun.variant) + "\'" + '\n' \
        "index=\'" + str(simrun.index) + "\'" + '\n' \
        "start_date=\'" + simrun.start_date + "\'" + '\n' \
        "stop_date=\'" + simrun.stop_date + "\'" + '\n' \
