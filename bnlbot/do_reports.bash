@@ -23,11 +23,11 @@ date_list=" \
  2013-02-11 2013-02-12 2013-02-13"
 
 
-date_list="2013-02-13"
+date_list="2013-02-14"
 
-graph_type=daily
-graph_type=weekly
-#graph_type=biweekly
+#graph_type=daily
+#graph_type=weekly
+graph_type=biweekly
 
 
 #backbet s football choise = 2 - no/odd/over

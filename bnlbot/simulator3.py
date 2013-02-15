@@ -558,7 +558,7 @@ for price in price_list:
 
         datadir = 'sims'
         filname = 'simulation3-' + simrun.animal +'-' + \
-            simrun.bet_name + '-' + simrun.bet_type \
+            str(simrun.graph_type) + '-' + simrun.bet_name + '-' + simrun.bet_type \
                 + '-' + simrun.start_date + '-' \
                 + simrun.stop_date + "-" + str(simrun.index) + '.dat'
         fil = datadir + '/' + filname
