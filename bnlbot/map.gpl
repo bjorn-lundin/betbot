@@ -59,6 +59,10 @@ set title "profit f(price, delta) for ".animal." ".bet_name." ".bet_type." ".sta
 set ylabel "price"
 set xlabel "delta"
 
+if (bet_name eq "lay")  set ylabel "min price"
+if (bet_name eq "lay")  set xlabel "max price"
+
+
 plot  datadir."/".datafil using 4:5:7 with image
 
 
