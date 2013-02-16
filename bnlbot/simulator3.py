@@ -270,7 +270,7 @@ class BetSimulator(object):
                 return
         race_list = []
         if self.bet_type == 'lay' :
-            is_favorite_lay_bet = self.variant.lower() == "favorite_lay"
+            is_favorite_lay_bet = self.variant.lower() == "favorite_lay_bet"
             market_id = 0
             for runner in self.runners :
                 tmp_bp = float(runner[3])
@@ -477,18 +477,18 @@ sys.stderr.write('options ' + str(options) + '\n')
 if options.animal == 'hound' :
     if options.bet_type == "lay" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 30)
-            delta_list = list_creator(1, 1, 30)
+            price_list = list_creator(1, 1, 25)
+            delta_list = list_creator(1, 1, 25)
         elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 1, 50)
-            delta_list = list_creator(1, 1, 50)
+            price_list = list_creator(1, 1, 25)
+            delta_list = list_creator(1, 1, 25)
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 0.2, 6)
-            delta_list = list_creator(0.1, 0.1, 2)
+            price_list = list_creator(1, 0.2, 7)
+            delta_list = list_creator(0.1, 0.2, 2)
         elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 0.2, 6)
-            delta_list = list_creator(0.1, 0.1, 2)
+            price_list = list_creator(1, 0.2, 7)
+            delta_list = list_creator(0.1, 0.2, 2)
 
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
@@ -497,18 +497,18 @@ if options.animal == 'hound' :
 elif options.animal == 'horse' :
     if options.bet_type == "lay" :
         if options.bet_name == "Plats" :
-            price_list = list_creator(1, 1, 30)
-            delta_list = list_creator(1, 1, 30)
+            price_list = list_creator(1, 1, 25)
+            delta_list = list_creator(1, 1, 25)
         elif options.bet_name == "Vinnare" :
-            price_list = list_creator(1, 1, 50)
-            delta_list = list_creator(1, 1, 50)
+            price_list = list_creator(1, 1, 25)
+            delta_list = list_creator(1, 1, 25)
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
             price_list =  list_creator(1, 0.2, 6)
-            delta_list = list_creator(0.1, 0.1, 2)
+            delta_list = list_creator(0.1, 0.2, 2)
         elif options.bet_name == "Vinnare" :
             price_list = list_creator(1, 0.2, 7)
-            delta_list = list_creator(0.1, 0.1, 2)
+            delta_list = list_creator(0.1, 0.2, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
         sys.exit(1)
@@ -518,8 +518,8 @@ elif options.animal == 'human':
         price_list = list_creator(1, 1, 10)
         delta_list = list_creator(1, 1, 10)
     elif options.bet_type == "back"  :
-        price_list = list_creator(1, 0.1, 7)
-        delta_list = list_creator(0.1, 0.1, 2)
+        price_list = list_creator(1, 0.2, 7)
+        delta_list = list_creator(0.1, 0.2, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
         sys.exit(1)
