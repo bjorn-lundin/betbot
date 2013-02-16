@@ -62,6 +62,7 @@ for d in $date_list ; do
                     --graph_type=$graph_type \
                     --size=30 \
                     --animal=human \
+                    --variant=normal \
                     --index=2 \
                     --summary --plot &
     done
@@ -90,13 +91,14 @@ for d in $date_list ; do
                     --graph_type=$graph_type \
                     --size=30 \
                     --animal=human \
+                    --variant=normal \
                     --index=1 \
                     --summary --plot &
     done
 done
 
 
-#back/lay bet on horses/hound winner/place
+#back bet on horses/hound winner/place
 
 for d in $date_list ; do
     if [ "$graph_type" == 'daily' ] ; then
@@ -110,11 +112,43 @@ for d in $date_list ; do
       exit 1
     fi
     for bet_name in $animal_names ; do
-        for bet_type in $bet_types ; do
+
             for animal in $animals ; do
                 for variant in $variants ; do
                     python simulator3.py \
-                        --bet_type=$bet_type \
+                        --bet_type=back \
+                        --bet_name=$bet_name \
+                        --saldo=10000 \
+                        --start_date=$start_date \
+                        --stop_date=$d \
+                        --graph_type=$graph_type \
+                        --size=30 \
+                        --variant=normal \
+                        --animal=$animal \
+                        --summary --plot &
+                done
+            done
+
+    done
+done
+
+#back bet on horses/hound winner/place
+for d in $date_list ; do
+    if [ "$graph_type" == 'daily' ] ; then
+      start_date=$d
+    elif [ "$graph_type" == 'weekly' ] ; then
+      start_date=$(date -d "$d -6 days" +"%Y-%m-%d")
+    elif [ "$graph_type" == 'biweekly' ] ; then
+      start_date=$(date -d "$d -13 days" +"%Y-%m-%d")
+    else
+      echo "bad graph_type - $graph_type" >&2
+      exit 1
+    fi
+    for bet_name in $animal_names ; do
+            for animal in $animals ; do
+                for variant in $variants ; do
+                    python simulator3.py \
+                        --bet_type=lay \
                         --bet_name=$bet_name \
                         --saldo=10000 \
                         --start_date=$start_date \
@@ -126,7 +160,6 @@ for d in $date_list ; do
                         --summary --plot &
                 done
             done
-        done
     done
 done
 
