@@ -292,8 +292,8 @@ class BetSimulator(object):
             number_of_runners = len(sorted_list)
             found = False
             i = 1
-            
-             for dct in sorted_list :
+
+            for dct in sorted_list :
                 lay_odds  = float(dct[1])
                 if ( self.min_price  <= lay_odds and
                      lay_odds <= self.max_price and
@@ -462,7 +462,7 @@ parser.add_option("-l", "--loss_hours", dest="loss_hours",  action="store", \
 parser.add_option("-j", "--betstat",   dest="betstat",  action="store_true", \
                   help="betstat", default=False)
 
-parser.add_option("-v", "--variant",    dest="variant",    action="store", \
+parser.add_option("-w", "--variant",    dest="variant",    action="store", \
                   type="string", help="variant")
 
 
@@ -552,7 +552,7 @@ for price in price_list:
         datadir = 'sims'
         filname = 'simulation3-' + simrun.animal +'-' + \
             str(simrun.graph_type) + '-' + simrun.bet_name + '-' + simrun.bet_type \
-                + '-' + simrun.start_date + '-' \
+            + '-' + str(simrun.variant) + '-' + simrun.start_date + '-' \
                 + simrun.stop_date + "-" + str(simrun.index) + '.dat'
         fil = datadir + '/' + filname
         fil_gpi = datadir + '/' + filname + '.gpi'
