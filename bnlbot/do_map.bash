@@ -32,13 +32,14 @@ done
 filelist=$(ls sims/*.gpi)
 
 
-#for input in $filelist ; do
-#  output=""
-#  while read line ; do
-#    output="$output -e $line "
-#  done < $input
-#  gnuplot $output map.gpl
-#done
+for input in $filelist ; do
+  output=""
+  while read line ; do
+    output="$output -e $line "
+  done < $input
+  echo "plotting $input"
+  gnuplot $output map.gpl
+done
 
 
 #graph_type='biweekly'
@@ -59,7 +60,7 @@ for input in $filelist ; do
 #      echo $line
       key=$(echo $line | cut -f1 -d=)
       value=$(echo $line | cut -f2 -d\')
-      
+
       if [ $key == "graph_type" ] ; then
          graph_type=$value
       elif [ $key == "animal" ] ; then
@@ -74,26 +75,40 @@ for input in $filelist ; do
          datafil=$value
       elif [ $key == "datadir" ] ; then
          datadir=$value
-      fi      
-      
+      fi
+
     done < $input
-    #remove .gpi 
-    dat=${datafil%%.*}.dat
-    gpi=$input
+    #remove .gpi
+    base=$(basename $input)
+
+
+    dat=${base%.*}
+    gpi=$dat.gpi
     png=$dat.png
 
-#    echo "dat $dat" 
-#    echo "gpi $gpi" 
-#    echo "png $png" 
+#    echo "------------"
+#    echo "input $input"
+#    echo "dat   $dat"
+#    echo "gpi   $gpi"
+#    echo "png   $png"
 
     DESTINATION=$animal/$bet_type/$graph_type/$bet_name/$variant
     DESTINATION_DAT=dat
-    echo "input $input"
+
+#    echo "dest $DESTINATION"
+#    echo "dest $DESTINATION_DAT"
+
     [ ! -d $TARGET_ROOT/$DESTINATION ] && mkdir -p $TARGET_ROOT/$DESTINATION
-    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/
-    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/
-    [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/
-    
+    [ ! -d $TARGET_ROOT/$DESTINATION/$DESTINATION_DAT ] && mkdir -p $TARGET_ROOT/$DESTINATION_DAT
+
+#    echo "mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/"
+#    echo "mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/"
+#    echo "mv $datadir/$png $TARGET_ROOT/$DESTINATION/"
+
+
+    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$dat"
+    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$gpi"
+    [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/     && echo "moved $datadir/$png"
 
 done
 
