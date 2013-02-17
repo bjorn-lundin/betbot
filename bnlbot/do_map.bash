@@ -32,15 +32,13 @@ done
 filelist=$(ls sims/*.gpi)
 
 
-for input in $filelist ; do
-  output=""
-
-  while read line ; do
-    output="$output -e $line "
-  done < $input
-
-  gnuplot $output map.gpl
-done
+#for input in $filelist ; do
+#  output=""
+#  while read line ; do
+#    output="$output -e $line "
+#  done < $input
+#  gnuplot $output map.gpl
+#done
 
 
 #graph_type='biweekly'
@@ -58,7 +56,7 @@ TARGET_ROOT=~/Dropbox/graphs
 
 for input in $filelist ; do
     while read line ; do
-      echo $line
+#      echo $line
       key=$(echo $line | cut -f1 -d=)
       value=$(echo $line | cut -f2 -d\')
       
@@ -89,11 +87,11 @@ for input in $filelist ; do
 #    echo "png $png" 
 
     DESTINATION=$animal/$bet_type/$graph_type/$bet_name/$variant
-#    echo "input $input"
+    echo "input $input"
     [ ! -d $TARGET_ROOT/$DESTINATION ] && mkdir -p $TARGET_ROOT/$DESTINATION
     [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION/
-    [ -f $datadir/$dat ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION/
-    [ -f $datadir/$dat ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/
+    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION/
+    [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/
     
 
 done
