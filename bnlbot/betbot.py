@@ -94,8 +94,8 @@ class BetBot(object):
         if self.DRY_RUN :
             # get a new bet id, we are in dry_run mode
             cur.execute("select * from BETS where MARKET_ID = %s and \
-                        SELECTION_ID = %s",
-                 (bet['marketId'],bet['selectionId']))
+                        BET_TYPE = %s",
+                 (bet['marketId'], self.BET_CATEGORY))
         else:
             cur.execute("select * from BETS where BET_ID = %s", \
                (resp['bet_id'],))
