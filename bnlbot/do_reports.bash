@@ -7,7 +7,7 @@ animals="horse hound"
 #names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
 #football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
 #val="1 2"
-bet_types="lay back"
+#bet_types="lay back"
 
 
 #animal_names="Plats"
@@ -27,14 +27,15 @@ date_list=" \
  2013-02-11 2013-02-12 2013-02-13 2012-02-14 2013-02-15"
 
 
-date_list="2013-02-08 2013-02-09 2013-02-10 \
- 2013-02-11 2013-02-12 2013-02-13 2012-02-14 2013-02-15"
+date_list="2013-01-31 2013-02-01 2013-02-02 2013-02-03 \
+ 2013-02-04 2013-02-05 2013-02-06 2013-02-07"
 
 
-date_list="2012-02-14 2013-02-15"
-#graph_type=daily
+date_list="2013-02-13 2012-02-14 2013-02-15"
+date_list="2013-02-16"
+graph_type=daily
 graph_type=weekly
-#graph_type=biweekly
+graph_type=biweekly
 
 variants="favorite_lay_bet normal_lay_bet"
 
@@ -114,7 +115,6 @@ for d in $date_list ; do
     for bet_name in $animal_names ; do
 
             for animal in $animals ; do
-                for variant in $variants ; do
                     python simulator3.py \
                         --bet_type=back \
                         --bet_name=$bet_name \
@@ -127,7 +127,6 @@ for d in $date_list ; do
                         --animal=$animal \
                         --summary --plot &
                 done
-            done
 
     done
 done

@@ -328,20 +328,16 @@ class BetSimulator(object):
                     race_list.append(tmp_tuple)
 
                 sorted_list = sorted(race_list, reverse=False)
-                i = 0
 
                 selection = None
                 lay_odds = None
 
-                number_of_runners = len(sorted_list)
-                max_turns = 1 #number_of_runners - 4
-                # there must be at least 5 runners with lower odds
-
                 for dct in sorted_list :
-                    i += 1
-                    if ( self.price - self.delta_price <= float(dct[0]) and
-                         float(dct[0]) <= self.price + self.delta_price and
-                         i <= max_turns ):
+                    back_odds = float(dct[0])
+#                    print self.price, self.delta_price, self.price - self.delta_price, back_odds, self.price + self.delta_price,  self.price - self.delta_price <= back_odds and  back_odds <= self.price + self.delta_price
+                    if ( self.price - self.delta_price <= back_odds and
+                         back_odds <= self.price + self.delta_price
+                         ):
                         selection = float(dct[2])
                         self.selection_id = int(selection)
                         self.num_taken_bets = self.num_taken_bets + 1
@@ -556,6 +552,7 @@ for price in price_list:
                 + simrun.stop_date + "-" + str(simrun.index) + '.dat'
         fil = datadir + '/' + filname
         fil_gpi = datadir + '/' + filname + '.gpi'
+#        fil_opt = datadir + '/' + filname + '.opt'
 
 #        simrun.get_markets()
 
@@ -621,6 +618,10 @@ if simrun.plot :
        "datadir=\'" + datadir + "\'"
     with open(fil_gpi, 'w') as text_file:
             text_file.write(cmd2 + '\n')
+
+#    with open(fil_opt, 'w') as text_file:
+#            text_file.write(str(options) + '\n')
+
 
 if simrun.betstat :
     betstats_info = "poss  taken  won lost"
