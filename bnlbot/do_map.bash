@@ -87,10 +87,11 @@ for input in $filelist ; do
 #    echo "png $png" 
 
     DESTINATION=$animal/$bet_type/$graph_type/$bet_name/$variant
+    DESTINATION_DAT=dat
     echo "input $input"
     [ ! -d $TARGET_ROOT/$DESTINATION ] && mkdir -p $TARGET_ROOT/$DESTINATION
-    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION/
-    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION/
+    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/
+    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/
     [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/
     
 
