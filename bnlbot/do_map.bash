@@ -32,33 +32,69 @@ done
 filelist=$(ls sims/*.gpi)
 
 
-#for input in $filelist ; do
-#  output=""
-#
-#  while read line ; do
-#    output="$output -e $line "
-#  done < $input
-#
-#  gnuplot $output map.gpl
-#done
+for input in $filelist ; do
+  output=""
+
+  while read line ; do
+    output="$output -e $line "
+  done < $input
+
+  gnuplot $output map.gpl
+done
 
 
-TARGET_ROOT=~/Dropbox/tstmv
+#graph_type='biweekly'
+#animal='horse'
+#bet_name='back'
+#bet_type='Plats'
+#variant='normal_lay_bet'
+#index='None'
+#start_date='2013-01-30'
+#stop_date='2013-02-13'
+#datafil='simulation3-horse-Plats-back-2013-01-30-2013-02-13-None.dat'
+#datadir='sims'
+
+TARGET_ROOT=~/Dropbox/graphs
 
 for input in $filelist ; do
     while read line ; do
       echo $line
-      key=$(cut -f1 -d= $line)
-      value=$(cut -f2 -d= $line)
-      echo "key $key"
-      echo "val $value"
+      key=$(echo $line | cut -f1 -d=)
+      value=$(echo $line | cut -f2 -d\')
       
-#      if [ $line == ]
-      
-      
-      
+      if [ $key == "graph_type" ] ; then
+         graph_type=$value
+      elif [ $key == "animal" ] ; then
+         animal=$value
+      elif [ $key == "bet_name" ] ; then
+         bet_name=$value
+      elif [ $key == "bet_type" ] ; then
+         bet_type=$value
+      elif [ $key == "variant" ] ; then
+         variant=$value
+      elif [ $key == "datafil" ] ; then
+         datafil=$value
+      elif [ $key == "datadir" ] ; then
+         datadir=$value
+      fi      
       
     done < $input
+    #remove .gpi 
+    dat=${datafil%%.*}.dat
+    gpi=$input
+    png=$dat.png
+
+#    echo "dat $dat" 
+#    echo "gpi $gpi" 
+#    echo "png $png" 
+
+    DESTINATION=$animal/$bet_type/$graph_type/$bet_name/$variant
+#    echo "input $input"
+    [ ! -d $TARGET_ROOT/$DESTINATION ] && mkdir -p $TARGET_ROOT/$DESTINATION
+    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION/
+    [ -f $datadir/$dat ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION/
+    [ -f $datadir/$dat ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/
+    
 
 done
 
