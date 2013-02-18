@@ -14,21 +14,6 @@
 
 
 
-
-while getopts "i:t:" opt; do
-  case $opt in
-    i)
-      input=$OPTARG
-      ;;
-
-    *)
-      echo "$0 -w [football|animals] -t [daily|weekly|monthly]" >&2
-      exit 1
-      ;;
-  esac
-done
-
-
 filelist=$(ls sims/*.gpi)
 
 
