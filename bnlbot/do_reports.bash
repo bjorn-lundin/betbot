@@ -12,13 +12,8 @@ animals="horse hound"
 
 #animal_names="Plats"
 #animals="hound"
-football_names_1="straff"
-football_names_2="3.5 4.5"
-
-date_list=" \
-                                  2013-01-31 2013-02-01 2013-02-02 2013-02-03 \
- 2013-02-04 2013-02-05 2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10 \
- 2013-02-11 2013-02-12 2013-02-13 2012-02-14"
+#football_names_1="straff"
+#football_names_2="3.5 4.5"
 
 
 date_list=" \
@@ -27,15 +22,14 @@ date_list=" \
  2013-02-11 2013-02-12 2013-02-13 2012-02-14 2013-02-15"
 
 
-date_list="2013-01-31 2013-02-01 2013-02-02 2013-02-03 \
- 2013-02-04 2013-02-05 2013-02-06 2013-02-07"
+date_list="2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10 \
+ 2013-02-11 2013-02-12 2013-02-13"
 
 
-date_list="2013-02-13 2012-02-14 2013-02-15"
-date_list="2013-02-16"
+date_list="2013-02-17"
 graph_type=daily
-graph_type=weekly
-graph_type=biweekly
+#graph_type=weekly
+#graph_type=biweekly
 
 variants="favorite_lay_bet normal_lay_bet"
 

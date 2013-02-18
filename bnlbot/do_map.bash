@@ -92,7 +92,7 @@ for input in $filelist ; do
 #    echo "gpi   $gpi"
 #    echo "png   $png"
 
-    DESTINATION=$animal/$bet_type/$graph_type/$bet_name/$variant
+    DESTINATION=$animal/$bet_name/$bet_type/$variant/$graph_type
     DESTINATION_DAT=dat
 
 #    echo "dest $DESTINATION"
