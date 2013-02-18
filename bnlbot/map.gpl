@@ -54,12 +54,19 @@ set key off
 #set palette rgbformulae 33,13,10
 set palette rgbformulae 7,5,15
 
-set title "profit f(price, delta) for ".animal." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date."-".idx
-set ylabel "price"
-set xlabel "delta"
+
+if (bet_name eq "back") set ylabel "price"
+if (bet_name eq "back") set xlabel "delta"
 
 if (bet_name eq "lay") set ylabel "min price"
 if (bet_name eq "lay") set xlabel "max price"
+
+if (bet_name eq "back" && idx ne "not set") set title "profit f(price, delta) for ".animal." ".graph_type." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date."-".idx
+if (bet_name eq "lay" && idx ne "not set") set title "profit f(min price, max price) for ".animal." ".graph_type." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date."-".idx
+
+if (bet_name eq "back" && idx eq "not set") set title "profit f(price, delta) for ".animal." ".graph_type." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date
+if (bet_name eq "lay" && idx eq "not set") set title "profit f(min price, max price) for ".animal." ".graph_type." ".bet_name." ".variant." ".bet_type." ".start_date."-".stop_date
+
 
 plot  datadir."/".datafil using 4:5:7 with image
 
