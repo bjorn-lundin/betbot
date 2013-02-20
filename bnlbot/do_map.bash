@@ -12,8 +12,6 @@
 #            -e "datadir='$datadir'" plot_simulation.gpl
 
 
-
-
 filelist=$(ls sims/*.gpi)
 
 
@@ -25,7 +23,6 @@ for input in $filelist ; do
   echo "plotting $input"
   gnuplot $output map.gpl
 done
-
 
 #graph_type='biweekly'
 #animal='horse'

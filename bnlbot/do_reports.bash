@@ -2,7 +2,6 @@
 
 #make some simulations, first day, by day
 
-
 function the_start_date {
     the_stop_date=$1
     the_graph_type=$2
@@ -11,11 +10,19 @@ function the_start_date {
       start_date=$the_stop_date
     elif [ "$the_graph_type" == 'weekly' ] ; then
       start_date=$(date -d "$the_stop_date -6 days" +"%Y-%m-%d")
+      if [ $start_date \< "2013-01-30" ] ; then
+#          echo "$start_date $the_graph_type " >&2
+          start_date="2013-01-01"
+      fi
     elif [ "$the_graph_type" == 'biweekly' ] ; then
       start_date=$(date -d "$the_stop_date -13 days" +"%Y-%m-%d")
+      if [ $start_date \< "2013-01-30" ] ; then
+#          echo "$start_date $the_graph_type " >&2
+          start_date="2013-01-01"
+      fi
     else
       echo "bad graph_type - $the_graph_type" >&2
-      exit 1
+      start_date="2013-01-01"
     fi
     echo $start_date
 }
@@ -71,8 +78,21 @@ fi
 #we have no data for today...
 yesterday=$(date +%Y-%m-%d -d "-1 day")
 
+echo "yesterday = $yesterday"
 start_date=$(the_start_date $yesterday $graph_type)
-date_list=$(the_date_list $start_date $yesterday)
+echo "start_date = $start_date"
+
+
+#date_list=$(the_date_list $start_date $yesterday)
+date_list=$yesterday
+date_list="2013-01-30 2013-01-31 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 \
+2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10 2013-02-11 2013-02-12 \
+2013-02-13"
+#2013-02-14 2013-02-15 2013-02-16"
+
+date_list="2013-02-18 2013-02-19"
+
+echo "date_list = $date_list"
 
 
 animal_names="Vinnare Plats"
@@ -92,14 +112,21 @@ animals="horse hound"
 #graph_type=weekly
 #graph_type=biweekly
 
-variants="favorite_lay_bet normal_lay_bet"
+variants="normal"
 
 #back bet on horses/hound winner/place
 
 for d in $date_list ; do
     start_date=$(the_start_date $d $graph_type)
-    for bet_name in $animal_names ; do
+    if [  $start_date == "2013-01-01" ] ; then
+      echo "graph_type - $graph_type"
+      echo "start_date is first date -> continue with next"
+      continue
+    fi
 
+    echo "$d - $start_date"
+    for bet_name in $animal_names ; do
+        for variant in $variants ; do
             for animal in $animals ; do
                     python simulator3.py \
                         --bet_type=back \
@@ -109,20 +136,27 @@ for d in $date_list ; do
                         --stop_date=$d \
                         --graph_type=$graph_type \
                         --size=30 \
-                        --variant=normal \
+                        --variant=$variant \
                         --animal=$animal \
                         --summary --plot &
-                done
-
+            done
+        done
     done
 done
 
 #back bet on horses/hound winner/place
 for d in $date_list ; do
     start_date=$(the_start_date $d $graph_type)
+    if [  $start_date == "2013-01-01" ] ; then
+      echo "graph_type - $graph_type"
+      echo "start_date is first date -> continue with next"
+      continue
+    fi
+
+    echo "$d - $start_date"
     for bet_name in $animal_names ; do
-            for animal in $animals ; do
-                for variant in $variants ; do
+        for animal in $animals ; do
+            for variant in $variants ; do
                     python simulator3.py \
                         --bet_type=lay \
                         --bet_name=$bet_name \
@@ -134,8 +168,8 @@ for d in $date_list ; do
                         --variant=$variant \
                         --animal=$animal \
                         --summary --plot &
-                done
             done
+        done
     done
 done
 
