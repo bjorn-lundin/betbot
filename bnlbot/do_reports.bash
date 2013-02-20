@@ -87,16 +87,16 @@ echo "start_date = $start_date"
 date_list=$yesterday
 date_list="2013-01-30 2013-01-31 2013-02-01 2013-02-02 2013-02-03 2013-02-04 2013-02-05 \
 2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10 2013-02-11 2013-02-12 \
-2013-02-13"
-#2013-02-14 2013-02-15 2013-02-16"
+2013-02-13 2013-02-14 2013-02-15 2013-02-16 2013-02-17 2013-02-18"
 
-date_list="2013-02-18 2013-02-19"
+date_list="2013-02-19"
 
-echo "date_list = $date_list"
+#echo "date_list = $date_list"
 
 
 animal_names="Vinnare Plats"
 animals="horse hound"
+
 #names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
 #football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
 #val="1 2"
@@ -112,7 +112,7 @@ animals="horse hound"
 #graph_type=weekly
 #graph_type=biweekly
 
-variants="normal"
+variants="back_max_5"
 
 #back bet on horses/hound winner/place
 
@@ -136,6 +136,7 @@ for d in $date_list ; do
                         --stop_date=$d \
                         --graph_type=$graph_type \
                         --size=30 \
+                        --max_profit_factor=7 \
                         --variant=$variant \
                         --animal=$animal \
                         --summary --plot &
@@ -165,6 +166,7 @@ for d in $date_list ; do
                         --stop_date=$d \
                         --graph_type=$graph_type \
                         --size=30 \
+                        --max_profit_factor=7 \
                         --variant=$variant \
                         --animal=$animal \
                         --summary --plot &

@@ -15,6 +15,7 @@ class BetSimulator(object):
     def __init__(self, opts):
         self.Db = Db()
         self.conn = self.Db.conn
+        self.start_saldo = opts.saldo
         self.saldo = opts.saldo
         self.price = opts.price
         self.delta_price = opts.delta_price
@@ -50,6 +51,9 @@ class BetSimulator(object):
         self.loss_hours = opts.loss_hours
         self.betstat = opts.betstat
         self.variant = opts.variant
+        self.max_profit_factor = opts.max_profit_factor
+        self.current_date = None
+
     ##########################
 
 
@@ -197,6 +201,7 @@ class BetSimulator(object):
     def check_result(self, event_date) :
         self.start_timer()
         if self.selection_id is None :
+            self.stop_and_print_timer('check_result')
             return
 
         local_price = 0.0
@@ -252,6 +257,7 @@ class BetSimulator(object):
 
         self.saldo = self.saldo + profit
         self.stop_and_print_timer('check_result')
+
     #############################
 
     def make_bet(self, event_date) :
@@ -268,6 +274,24 @@ class BetSimulator(object):
                 #no betting allowed, to soon since last loss
                 self.stop_and_print_timer('make_bet    ')
                 return
+
+        if self.max_profit_factor > 0.0 :
+            if not self.current_date:
+                self.current_date = event_date
+
+            # same date == same day of year ...
+            if (self.saldo > (self.start_saldo + (self.max_profit_factor * self.size) ) and
+               self.current_date.timetuple().tm_yday == event_date.timetuple().tm_yday):
+                sys.stderr.write( \
+                      'too much profit, saldo =' +str(self.saldo) + ' ' + \
+                      'max profit=' + str(self.max_profit_factor * self.size) + '\n')
+                self.stop_and_print_timer('make_bet    ')
+                return
+            # same date == same day of year ...
+            if not self.current_date.timetuple().tm_yday == event_date.timetuple().tm_yday:
+                 self.current_date = event_date
+
+
         race_list = []
         if self.bet_type == 'lay' :
             is_favorite_lay_bet = self.variant.lower() == "favorite_lay_bet"
@@ -460,6 +484,8 @@ parser.add_option("-j", "--betstat",   dest="betstat",  action="store_true", \
 
 parser.add_option("-w", "--variant",    dest="variant",    action="store", \
                   type="string", help="variant")
+parser.add_option("-P", "--max_profit_factor", dest="max_profit_factor", action="store", \
+                  type="float", help="max profit per day * price")
 
 
 
@@ -549,7 +575,7 @@ with open(fil, 'w') as text_file:
 for price in price_list:
     for delta in delta_list:
         simrun.saldo = options.saldo
-
+        simrun.profit = 0.0
         if not options.once :
             if options.bet_type == "back" :
                 simrun.price = price
