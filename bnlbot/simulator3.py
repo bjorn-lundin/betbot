@@ -481,10 +481,10 @@ if options.animal == 'hound' :
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
             price_list = list_creator(1, 0.2, 7)
-            delta_list = list_creator(0.1, 0.2, 2)
+            delta_list = list_creator(0.0, 0.1, 2)
         elif options.bet_name == "Vinnare" :
             price_list = list_creator(1, 0.2, 7)
-            delta_list = list_creator(0.1, 0.2, 2)
+            delta_list = list_creator(0.0, 0.1, 2)
 
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
@@ -501,10 +501,10 @@ elif options.animal == 'horse' :
     elif options.bet_type == "back" :
         if options.bet_name == "Plats" :
             price_list =  list_creator(1, 0.2, 6)
-            delta_list = list_creator(0.1, 0.2, 2)
+            delta_list = list_creator(0.0, 0.1, 2)
         elif options.bet_name == "Vinnare" :
             price_list = list_creator(1, 0.2, 7)
-            delta_list = list_creator(0.1, 0.2, 2)
+            delta_list = list_creator(0.0, 0.1, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
         sys.exit(1)
@@ -515,7 +515,7 @@ elif options.animal == 'human':
         delta_list = list_creator(1, 1, 10)
     elif options.bet_type == "back"  :
         price_list = list_creator(1, 0.2, 7)
-        delta_list = list_creator(0.1, 0.2, 2)
+        delta_list = list_creator(0.1, 0.1, 2)
     else:
         sys.stderr.write( "bad bet_type " + str(options.bet_type))
         sys.exit(1)
@@ -533,6 +533,19 @@ filname = ''
 
 simrun.get_markets()
 
+datadir = 'sims'
+filname = 'simulation3-' + simrun.animal +'-' + \
+     str(simrun.graph_type) + '-' + simrun.bet_name + '-' + simrun.bet_type \
+     + '-' + str(simrun.variant) + '-' + simrun.start_date + '-' \
+         + simrun.stop_date + "-" + str(simrun.index) + '.dat'
+fil = datadir + '/' + filname
+fil_gpi = datadir + '/' + filname + '.gpi'
+#  fil_opt = datadir + '/' + filname + '.opt'
+with open(fil, 'w') as text_file:
+    text_file.write('')
+
+
+
 for price in price_list:
     for delta in delta_list:
         simrun.saldo = options.saldo
@@ -544,17 +557,6 @@ for price in price_list:
             elif options.bet_type == "lay" :
                 simrun.min_price = price
                 simrun.max_price = delta
-
-        datadir = 'sims'
-        filname = 'simulation3-' + simrun.animal +'-' + \
-            str(simrun.graph_type) + '-' + simrun.bet_name + '-' + simrun.bet_type \
-            + '-' + str(simrun.variant) + '-' + simrun.start_date + '-' \
-                + simrun.stop_date + "-" + str(simrun.index) + '.dat'
-        fil = datadir + '/' + filname
-        fil_gpi = datadir + '/' + filname + '.gpi'
-#        fil_opt = datadir + '/' + filname + '.opt'
-
-#        simrun.get_markets()
 
         min_saldo = simrun.saldo
         max_saldo = simrun.saldo
