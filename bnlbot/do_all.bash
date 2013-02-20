@@ -4,10 +4,10 @@
 dow=$(date +"%u")
 
 #drop the old db and import the new db
-./do_deploy_db_backup.bash -n $dow
+#./do_deploy_db_backup.bash -n $dow
 
 report_type_list="daily weekly biweekly"
-#report_type_list="biweekly"
+#report_type_list="daily"
 
 for report in $report_type_list ; do
     echo "report - $report"
