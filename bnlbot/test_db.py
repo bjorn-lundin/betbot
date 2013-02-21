@@ -14,7 +14,7 @@ class test_db(object):
         return   
     
     def connect_db(self):
-        self.conn = psycopg2.connect("dbname='betting' user='bnl' host='192.168.0.24' password=None") 
+        self.conn = psycopg2.connect("dbname='betting' user='bnl' host='192.168.0.13' password=None") 
     
     def start(self):
         """start the main loop"""
@@ -75,9 +75,9 @@ print 'starting:',datetime.datetime.now()
 tst = test_db()
 tst.connect_db() 
 
-mark = Market(1234,tst.conn)
-mark.try_set_gamestart()
-#tst.print_team_names()
+#mark = Market(1234,tst.conn)
+#mark.try_set_gamestart()
+tst.print_team_names()
 #tst.insert_timestamp()
 print 'Ending:',datetime.datetime.now()
 
