@@ -282,9 +282,9 @@ class BetSimulator(object):
             # same date == same day of year ...
             if (self.saldo > (self.start_saldo + (self.max_profit_factor * self.size) ) and
                self.current_date.timetuple().tm_yday == event_date.timetuple().tm_yday):
-                sys.stderr.write( \
-                      'too much profit, saldo =' +str(self.saldo) + ' ' + \
-                      'max profit=' + str(self.max_profit_factor * self.size) + '\n')
+#                sys.stderr.write( \
+#                      'too much profit, saldo =' +str(self.saldo) + ' ' + \
+#                      'max profit=' + str(self.max_profit_factor * self.size) + '\n')
                 self.stop_and_print_timer('make_bet    ')
                 return
             # same date == same day of year ...

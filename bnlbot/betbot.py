@@ -52,7 +52,7 @@ class BetBot(object):
     NOT_ALLOWED_MARKET_NAMES = None
     PRICE = None
     DELTA = None
-
+    MAX_DAILY_PROFIT = None
 
     # stop-loss
     LAST_LOSS = None
@@ -208,8 +208,6 @@ class BetBot(object):
             return markets
 ############################# end get_markets test
 
-
-
 ############################################### get_markets
     def market_in_xmlfeed(self, market_id) :
         Found = False
@@ -225,9 +223,50 @@ class BetBot(object):
 ############################# market_in_xmlfeed
 
 
+    def profit_today(self) :
+        day = datetime.datetime.now() # + datetime.timedelta(days = delta_days)
+        day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
+        day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+        result = 0.0
 
+        cur = self.conn.cursor()
+        cur.execute("select " \
+                         "sum(PROFIT), " \
+                         "BET_PLACED::date " \
+                     "from " \
+                         "BET_WITH_COMMISSION " \
+                     "where " \
+                         "BET_TYPE = %s " \
+                     "and " \
+                         "CODE = %s " \
+                     "and " \
+                         "BET_PLACED >= %s " \
+                     "and " \
+                         "BET_PLACED <= %s " \
+                     "group by " \
+                         "BET_PLACED::date " \
+                     "order by " \
+                         "BET_PLACED::date desc ",
+                       (self.BET_CATEGORY,'S',day_start,day_stop))
+
+        if cur.rowcount >= 1 :
+            row = cur.fetchone()
+            if row :
+              result = float(row[0])
+
+        cur.close()
+        self.conn.commit()
+        return result
+
+################################################# won_enough_today
     def place_bet(self, market_id, selection, wanted_price, name):
         bets = []
+
+        todays_profit = self.profit_today()
+        if todays_profit >= self.MAX_DAILY_PROFIT :
+            self.log.info('YES!! we have won enought today, no more bets..')
+            self.log.info('we won ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_PROFIT))
+            return
 
         #check type of bet. in not BACKor LAY in self.BET_CATEGORY, assume BACK
         pip = -1 # default to BACK
@@ -386,6 +425,7 @@ class BetBot(object):
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
+        self.MAX_DAILY_PROFIT                = float(config.get('Global', 'max_daily_profit'))
 
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))

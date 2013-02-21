@@ -2,6 +2,26 @@
 
 #make some simulations, first day, by day
 
+
+
+function the_profit_factor {
+    variant=$1
+    max_profit_factor=0
+
+
+    if [ "$variant" == 'normal' ] ; then
+        max_profit_factor=0
+    elif [ "$variant" == 'max_5' ] ; then
+        max_profit_factor=5
+    elif [ "$variant" == 'max_7' ] ; then
+        max_profit_factor=7
+    else
+      echo "bad variant - $variant" >&2
+    fi
+    echo $max_profit_factor
+}
+
+
 function the_start_date {
     the_stop_date=$1
     the_graph_type=$2
@@ -89,13 +109,20 @@ date_list="2013-01-30 2013-01-31 2013-02-01 2013-02-02 2013-02-03 2013-02-04 201
 2013-02-06 2013-02-07 2013-02-08 2013-02-09 2013-02-10 2013-02-11 2013-02-12 \
 2013-02-13 2013-02-14 2013-02-15 2013-02-16 2013-02-17 2013-02-18"
 
-date_list="2013-02-19"
+date_list="2013-02-15 2013-02-16 2013-02-17"
 
 #echo "date_list = $date_list"
+
+date_list=$yesterday
 
 
 animal_names="Vinnare Plats"
 animals="horse hound"
+
+
+animal_names="Vinnare"
+animals="horse hound"
+
 
 #names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
 #football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
@@ -112,7 +139,9 @@ animals="horse hound"
 #graph_type=weekly
 #graph_type=biweekly
 
-variants="back_max_5"
+variants="normal max_5 max_7"
+
+
 
 #back bet on horses/hound winner/place
 
@@ -127,6 +156,7 @@ for d in $date_list ; do
     echo "$d - $start_date"
     for bet_name in $animal_names ; do
         for variant in $variants ; do
+            profit_factor=$(the_profit_factor $variant)
             for animal in $animals ; do
                     python simulator3.py \
                         --bet_type=back \
@@ -136,7 +166,7 @@ for d in $date_list ; do
                         --stop_date=$d \
                         --graph_type=$graph_type \
                         --size=30 \
-                        --max_profit_factor=7 \
+                        --max_profit_factor=$profit_factor \
                         --variant=$variant \
                         --animal=$animal \
                         --summary --plot &
@@ -158,6 +188,7 @@ for d in $date_list ; do
     for bet_name in $animal_names ; do
         for animal in $animals ; do
             for variant in $variants ; do
+            profit_factor=$(the_profit_factor $variant)
                     python simulator3.py \
                         --bet_type=lay \
                         --bet_name=$bet_name \
@@ -166,7 +197,7 @@ for d in $date_list ; do
                         --stop_date=$d \
                         --graph_type=$graph_type \
                         --size=30 \
-                        --max_profit_factor=7 \
+                        --max_profit_factor=$profit_factor \
                         --variant=$variant \
                         --animal=$animal \
                         --summary --plot &
