@@ -52,9 +52,12 @@ class BetBot(object):
     NOT_ALLOWED_MARKET_NAMES = None
     PRICE = None
     DELTA = None
-    MAX_DAILY_PROFIT = None
 
     # stop-loss
+
+    MAX_DAILY_PROFIT = None
+    MAX_DAILY_LOSS = None
+
     LAST_LOSS = None
     LOSS_HOURS = None
 
@@ -124,6 +127,8 @@ class BetBot(object):
                (resp['bet_id'], bet['marketId'], bet['selectionId'], \
                 resp['price'], resp['code'], resp['success'], \
                 resp['size'], bet_type, name, None))
+        else :
+            self.log.info( 'Did not insert bet' )
         cur.close()
 ############################# end insert_bet
 
@@ -264,8 +269,12 @@ class BetBot(object):
 
         todays_profit = self.profit_today()
         if todays_profit >= self.MAX_DAILY_PROFIT :
-            self.log.info('YES!! we have won enought today, no more bets..')
+            self.log.info('YES!! we have won enough for today, no more bets..')
             self.log.info('we won ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_PROFIT))
+            return
+        if todays_profit <= self.MAX_DAILY_LOSS :
+            self.log.info('NO!! we have lost enough for today, no more bets..')
+            self.log.info('we lost ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_LOSS))
             return
 
         #check type of bet. in not BACKor LAY in self.BET_CATEGORY, assume BACK
@@ -281,8 +290,8 @@ class BetBot(object):
         bet_price = self.api.set_betfair_odds(price = wanted_price, pips = pip)
         bet_size = self.BETTING_SIZE # my stake
         bet = {
-            'marketId': market_id,
-            'selectionId': selection,
+            'marketId': str(market_id),
+            'selectionId': str(selection),
             'betType': bet_type, # set above
             'price': '%.2f' % bet_price, # set string to 2 decimals
             'size': '%.2f' % bet_size,
@@ -426,6 +435,7 @@ class BetBot(object):
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
         self.MAX_DAILY_PROFIT                = float(config.get('Global', 'max_daily_profit'))
+        self.MAX_DAILY_LOSS                  = float(config.get('Global', 'max_daily_loss'))
 
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))

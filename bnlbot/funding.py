@@ -18,8 +18,8 @@ class Funding(object):
     PASSWORD = 'Alice2010'
 
     MAX_SALDO = 2000.0
-    MIN_SALDO = 500.0
-    TRANSFER_SUM = 1000.0
+    MIN_SALDO = 150.0
+    TRANSFER_SUM = 500.0
     MAX_EXPOSURE = 600.0
 
     def __init__(self, api, log):
