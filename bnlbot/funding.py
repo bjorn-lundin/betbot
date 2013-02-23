@@ -131,10 +131,6 @@ class Funding(object):
         body += '\r\n saldo:     ' + str( self.avail_balance )
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
-
-
-        "Sends an e-mail to the specified recipient."
-
         body = "" + body + ""
 
         headers = ["From: " + self.SENDER,
@@ -153,5 +149,15 @@ class Funding(object):
 
         session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
         session.quit()
+        
+        cur = self.conn.cursor()
+        
+        cur.execute("insert into BALANCE ( \
+                         SALDO, EVENTDATE ) \
+                         values (%s,%s)", \
+               (self.avail_balance, datetime.datetime.now()))
+        cur.close()
+        self.conn.commit()
+        
 ############################# end mail_saldo
 
