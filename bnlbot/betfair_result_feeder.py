@@ -138,6 +138,14 @@ class Market(object):
             bet_won = not selection_in_winners
             back_bet = False
 
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_1000" :
+            bet_won = not selection_in_winners
+            back_bet = False
+
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_LAST" :
+            bet_won = not selection_in_winners
+            back_bet = False
+
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
             bet_won = selection_in_winners
 
