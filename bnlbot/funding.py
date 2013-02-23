@@ -17,7 +17,7 @@ class Funding(object):
     RECIPIENT = 'b.f.lundin@gmail.com'
     PASSWORD = 'Alice2010'
 
-    MAX_SALDO = 2000.0
+    MAX_SALDO = 20000.0
     MIN_SALDO = 150.0
     TRANSFER_SUM = 500.0
     MAX_EXPOSURE = 600.0
@@ -35,7 +35,7 @@ class Funding(object):
         except :
             self.log.error( "check_and_fix_funds Unexpected error:" + str(sys.exc_info()[0]))
             self.avail_balance = -999999999
-	    self.exposure  = 999999999
+            self.exposure  = 999999999
 
 
     def check_and_fix_funds(self):
