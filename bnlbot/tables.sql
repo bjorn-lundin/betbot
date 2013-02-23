@@ -380,3 +380,13 @@ select
 
 
 create sequence bet_id_serial;
+
+
+
+
+create table balance (
+  saldo     float not null ,
+  eventdate timestamp without time zone,
+  primary key(eventdate)
+);
+
