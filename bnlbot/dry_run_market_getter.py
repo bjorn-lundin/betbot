@@ -25,7 +25,7 @@ import ConfigParser
 
 class SimpleBot(object):
     """put bet on games with low odds"""
-    HOURS_TO_MATCH_START = 0.02 # 4,8 min
+    HOURS_TO_MATCH_START = 0.01 # 4,8 min
     DELAY_BETWEEN_TURNS_NO_MARKETS =  15.0
     DELAY_BETWEEN_TURNS =  5.0
     NETWORK_FAILURE_DELAY = 60.0
