@@ -264,6 +264,23 @@ class BetBot(object):
         return result
 
 ################################################# won_enough_today
+
+    def bet_in_the_air(self) :
+        cur = self.conn.cursor()
+        bet_id = 0
+        cur.execute("select BET_ID from BETS " \
+                    "where BET_TYPE = %s and BET_WON is null", \
+               (self.BET_CATEGORY,))
+        cur.close()
+        if cur.rowcount > 0 :
+            row = cur.fetchone()
+            if row :
+              bet_id = int(row[0])
+        self.conn.commit()
+        return bet_id
+        
+################################################# bet_in_the_air
+
     def place_bet(self, market_id, selection, wanted_price, name):
         bets = []
 
@@ -276,6 +293,13 @@ class BetBot(object):
             self.log.info('NO!! we have lost enough for today, no more bets..')
             self.log.info('we lost ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_LOSS))
             return
+
+        bet_id = self.bet_in_the_air()
+        if bet_id > 0 :
+            self.log.info('Bet in the air!')
+            self.log.info('No bet! Waiting for result of bet_id: ' + str(bet_id))
+            return
+        
 
         #check type of bet. in not BACKor LAY in self.BET_CATEGORY, assume BACK
         pip = -1 # default to BACK
