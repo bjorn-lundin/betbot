@@ -1,16 +1,15 @@
 #!/bin/bash
 
-#make some simulations, first day, by day
-
-
+#make some simulations, first day by day
 
 function the_profit_factor {
     variant=$1
     max_profit_factor=0
 
-
     if [ "$variant" == 'normal' ] ; then
         max_profit_factor=0
+    elif [ "$variant" == 'max_3' ] ; then
+        max_profit_factor=3
     elif [ "$variant" == 'max_5' ] ; then
         max_profit_factor=5
     elif [ "$variant" == 'max_7' ] ; then
@@ -20,7 +19,7 @@ function the_profit_factor {
     fi
     echo $max_profit_factor
 }
-
+###################
 
 function the_start_date {
     the_stop_date=$1
@@ -46,6 +45,7 @@ function the_start_date {
     fi
     echo $start_date
 }
+#######################
 
 function the_date_list {
     the_start_date=$1
@@ -111,13 +111,9 @@ date_list=$yesterday
 
 animal_names="Vinnare Plats"
 animals="horse hound"
-variants="normal max_5 max_7"
-#variants="max_5"
+variants="normal max_3 max_4 max_5"
 
-
-#date_list="2013-02-15 2013-02-16 2013-02-17 2013-02-18"
-
-
+#date_list="2013-02-15 2013-02-16 2013-02-17 2013-02-18 2013-02-19 2013-02-20 2013-02-21 2013-02-22"
 
 #names_football="Utvisning udda 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff"
 #football_names="0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 8.5 lagen straff udda utvisning"
@@ -133,8 +129,6 @@ variants="normal max_5 max_7"
 #graph_type=daily
 #graph_type=weekly
 #graph_type=biweekly
-
-
 
 
 #back bet on horses/hound winner/place
