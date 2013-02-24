@@ -151,10 +151,7 @@ class Funding(object):
         session.quit()
         
         cur = self.conn.cursor()
-        
-        cur.execute("insert into BALANCE ( \
-                         SALDO, EVENTDATE ) \
-                         values (%s,%s)", \
+        cur.execute("insert into BALANCE (SALDO, EVENTDATE) values (%s, %s)", \
                (self.avail_balance, datetime.datetime.now()))
         cur.close()
         self.conn.commit()
