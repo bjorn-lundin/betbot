@@ -296,18 +296,7 @@ class BetSimulator(object):
 
             turns = 0
             number_of_runners = len(sorted_list)
-#            my_market = Market(self.conn, None, \
-#                      market_id = market_id, simulate = True)
-#            if self.animal == 'horse':
-## there must be at least 3 runners with lower odds
-#                max_turns = number_of_runners - 3 - my_market.no_of_winners
-#            elif self.animal == 'hound':
-## there must be at least 3 runners with lower odds
-#                max_turns = number_of_runners - 3 - my_market.no_of_winners
-#            else :
-#                sys.stderr.write('lay bet not implemented for '\
-#                                  + self.animal + '\n')
-#                sys.exit(1)
+
             found = False
             i = 0
             for dct in sorted_list :
@@ -365,50 +354,6 @@ class BetSimulator(object):
                         self.num_taken_bets = self.num_taken_bets + 1
                     break
 
-            elif self.animal == 'human':
-
-                if (self.bet_name.lower().find('utvisning') > -1 or
-                    self.bet_name.lower().find('0.5') > -1 or
-                    self.bet_name.lower().find('1.5') > -1 or
-                    self.bet_name.lower().find('2.5') > -1 or
-                    self.bet_name.lower().find('3.5') > -1 or
-                    self.bet_name.lower().find('4.5') > -1 or
-                    self.bet_name.lower().find('5.5') > -1 or
-                    self.bet_name.lower().find('6.5') > -1 or
-                    self.bet_name.lower().find('7.5') > -1 or
-                    self.bet_name.lower().find('8.5') > -1 or
-                    self.bet_name.lower().find('lagen') > -1 or
-                    self.bet_name.lower().find('straff') > -1 or
-                    self.bet_name.lower().find('udda') > -1 ):
-
-                 #fotboll med ja/nej alternativ, där vi väljer ett av två värden.
-#                 index = 1 = ja/even/under
-#                 index = 2 = nej/udda/över
-#                        odds_yes      = prices['runners'][0]['back_prices'][0]['price']
-#                        selection_yes = prices['runners'][0]['selection_id']
-#                        odds_no       = prices['runners'][1]['back_prices'][0]['price']
-#                        selection_no  = prices['runners'][1]['selection_id']
-                    # index 1 = ja, index 2 = nej
-                    found = False
-                    tmp_bp = -1
-                    for runner in self.runners :
-                        tmp_bp = float(runner[3])
-                        tmp_lp = float(runner[4])
-                        sel_id = int(runner[1])
-                        idx    = int(runner[2])
-                        if idx == int(self.index) :
-                            found = True
-                            break
-                        # we have the alternative
-                    if ( self.price - self.delta_price <= tmp_bp and
-                         tmp_bp <= self.price + self.delta_price and found
-                         ):
-                        self.selection_id = sel_id
-                        self.num_taken_bets = self.num_taken_bets + 1
-                        self.saldo = self.saldo - self.size
-                else :
-                    sys.stderr.write('Bad bet name', self.bet_name, \
-                              'Utvisning?' + '\n')
 
             else :
                 sys.stderr.write('Bad animal', self.animal, \
@@ -504,7 +449,7 @@ max_saldo = simrun.saldo
 for market in simrun.markets :
 
     simrun.num_possible_bets = simrun.num_possible_bets + 1
-    simrun.get_runners(market[0]) # 12 = market_id
+    simrun.get_runners(market[0]) # 0 = market_id
     simrun.get_winners(market[0])
     simrun.make_bet(market[12]) # 12 = event_date
 

@@ -39,8 +39,8 @@ if (bet_type eq "straff" && index eq "2")  idx="no"
 set cbrange [9800:11600]
 set cbtics 9800,50,11600
 
-if (graph_type eq "daily" && variant eq "normal") set cbrange [9800:10600]
-if (graph_type eq "daily" && variant eq "normal") set cbtics 9800,50,10600
+if (graph_type eq "daily" && variant eq "normal") set cbrange [9800:11000]
+if (graph_type eq "daily" && variant eq "normal") set cbtics 9800,50,11000
 
 if (graph_type eq "weekly" && variant eq "normal") set cbrange [9800:11600]
 if (graph_type eq "weekly" && variant eq "normal") set cbtics 9800,50,11600
@@ -49,44 +49,44 @@ if (graph_type eq "biweekly" && variant eq "normal") set cbrange [9800:12600]
 if (graph_type eq "biweekly" && variant eq "normal") set cbtics 9800,50,12600
 #####
 
-if (graph_type eq "daily" && variant eq "max_3") set cbrange [9800:10220]
-if (graph_type eq "daily" && variant eq "max_3") set cbtics 9800,10,10220
+if (graph_type eq "daily" && variant eq "max_3") set cbrange [9900:10220]
+if (graph_type eq "daily" && variant eq "max_3") set cbtics 9900,10,10220
 
-if (graph_type eq "weekly" && variant eq "max_3") set cbrange [9800:11000]
-if (graph_type eq "weekly" && variant eq "max_3") set cbtics 9800,20,11000
+if (graph_type eq "weekly" && variant eq "max_3") set cbrange [9900:10600]
+if (graph_type eq "weekly" && variant eq "max_3") set cbtics 9900,25,10600
 
-if (graph_type eq "biweekly" && variant eq "max_3") set cbrange [9800:12000]
-if (graph_type eq "biweekly" && variant eq "max_3") set cbtics 9800,50,12000
+if (graph_type eq "biweekly" && variant eq "max_3") set cbrange [9900:12000]
+if (graph_type eq "biweekly" && variant eq "max_3") set cbtics 9900,50,12000
 #####
 
-if (graph_type eq "daily" && variant eq "max_4") set cbrange [9800:10220]
-if (graph_type eq "daily" && variant eq "max_4") set cbtics 9800,10,10220
+if (graph_type eq "daily" && variant eq "max_4") set cbrange [9900:10220]
+if (graph_type eq "daily" && variant eq "max_4") set cbtics 9900,20,10220
 
-if (graph_type eq "weekly" && variant eq "max_4") set cbrange [9800:11000]
-if (graph_type eq "weekly" && variant eq "max_4") set cbtics 9800,20,11000
+if (graph_type eq "weekly" && variant eq "max_4") set cbrange [9900:10600]
+if (graph_type eq "weekly" && variant eq "max_4") set cbtics 9900,25,10600
 
-if (graph_type eq "biweekly" && variant eq "max_4") set cbrange [9800:12000]
-if (graph_type eq "biweekly" && variant eq "max_4") set cbtics 9800,50,12000
+if (graph_type eq "biweekly" && variant eq "max_4") set cbrange [9900:11200]
+if (graph_type eq "biweekly" && variant eq "max_4") set cbtics 9900,50,12000
 #####
 
-if (graph_type eq "daily" && variant eq "max_5") set cbrange [9800:10220]
-if (graph_type eq "daily" && variant eq "max_5") set cbtics 9800,10,10220
+if (graph_type eq "daily" && variant eq "max_5") set cbrange [9900:10220]
+if (graph_type eq "daily" && variant eq "max_5") set cbtics 9900,10,10220
 
-if (graph_type eq "weekly" && variant eq "max_5") set cbrange [9800:11000]
-if (graph_type eq "weekly" && variant eq "max_5") set cbtics 9800,20,11000
+if (graph_type eq "weekly" && variant eq "max_5") set cbrange [9900:11000]
+if (graph_type eq "weekly" && variant eq "max_5") set cbtics 9900,20,11000
 
-if (graph_type eq "biweekly" && variant eq "max_5") set cbrange [9800:12000]
-if (graph_type eq "biweekly" && variant eq "max_5") set cbtics 9800,50,12000
+if (graph_type eq "biweekly" && variant eq "max_5") set cbrange [9900:12000]
+if (graph_type eq "biweekly" && variant eq "max_5") set cbtics 9900,50,12000
 #####
 
-if (graph_type eq "daily" && variant eq "max_7") set cbrange [9800:10220]
-if (graph_type eq "daily" && variant eq "max_7") set cbtics 9800,10,10220
+if (graph_type eq "daily" && variant eq "max_7") set cbrange [9900:10220]
+if (graph_type eq "daily" && variant eq "max_7") set cbtics 9900,10,10220
 
-if (graph_type eq "weekly" && variant eq "max_7") set cbrange [9800:11000]
-if (graph_type eq "weekly" && variant eq "max_7") set cbtics 9800,20,11000
+if (graph_type eq "weekly" && variant eq "max_7") set cbrange [9900:11000]
+if (graph_type eq "weekly" && variant eq "max_7") set cbtics 9900,20,11000
 
-if (graph_type eq "biweekly" && variant eq "max_7") set cbrange [9800:12000]
-if (graph_type eq "biweekly" && variant eq "max_7") set cbtics 9800,50,12000
+if (graph_type eq "biweekly" && variant eq "max_7") set cbrange [9900:12000]
+if (graph_type eq "biweekly" && variant eq "max_7") set cbtics 9900,50,12000
 #####
 
 
