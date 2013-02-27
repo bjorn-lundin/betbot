@@ -149,12 +149,6 @@ class Funding(object):
 
         session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
         session.quit()
-        
-        cur = self.conn.cursor()
-        cur.execute("insert into BALANCE (SALDO, EVENTDATE) values (%s, %s)", \
-               (self.avail_balance, datetime.datetime.now()))
-        cur.close()
-        self.conn.commit()
-        
+                
 ############################# end mail_saldo
 
