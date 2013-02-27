@@ -71,6 +71,11 @@ class SimpleBot(object):
                     funds = Funding(self.api, self.log)
                     self.do_throttle()
                     funds.mail_saldo()
+                    cur = self.conn.cursor()
+                    cur.execute("insert into BALANCE (SALDO, EVENTDATE) values (%s, %s)", \
+                           (funds.avail_balance, datetime.datetime.now()))
+                    cur.close()
+                    self.conn.commit()
 
 
             self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
