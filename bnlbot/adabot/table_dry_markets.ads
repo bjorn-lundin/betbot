@@ -10,11 +10,11 @@
 
 pragma Warnings(Off);
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Sattmate_Types, Sattmate_Calendar, Uniface_Request, Sql, Simple_List_Class;
+with Sattmate_Types, Sattmate_Calendar,  Sql, Simple_List_Class;
 
 package Table_Dry_markets is
 
-  use Sattmate_Types, Sattmate_Calendar, Uniface_Request;
+  use Sattmate_Types, Sattmate_Calendar;
 
   type Data_Type is record
       Market_id :    Integer_4  := 0 ; -- Primary Key
@@ -171,27 +171,7 @@ package Table_Dry_markets is
   procedure Delete_Market_name(Data  : in     Table_Dry_markets.Data_Type);
   --------------------------------------------
 
-
-  -- Procedures for DBMS UD4
-
-  --------------------------------------------
-  procedure Get_Values(Request : in     Request_Type;
-                       Data    : in out Table_Dry_markets.Data_Type);
-  --------------------------------------------
-
-  procedure Set_Values(Reply  : in out Request_Type;
-                       Data   : in     Table_Dry_markets.Data_Type);
-  --------------------------------------------
-
-  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;
-                              Operation	: in     Operation_Type := Get_One_Record);
-  --------------------------------------------
-
-  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;
-                              Data      : in     Table_Dry_markets.Data_Type;
-                              Operation	: in     Operation_Type := Get_One_Record);
-  --------------------------------------------
-
+  
 
 
 
@@ -199,12 +179,6 @@ package Table_Dry_markets is
 
   function To_String(Data : in Table_Dry_markets.Data_Type) return String;
 
-  function To_Xml(Data      : in Table_Dry_markets.Data_Type;
-                  Ret_Start : in Boolean;
-                  Ret_Data  : in Boolean;
-                  Ret_End   : in Boolean) return String;
-
-  procedure From_Xml(Xml_Filename : in Unbounded_String;
-                     A_List       : in out Dry_markets_List_Pack.List_Type);
+  
 
 end Table_Dry_markets ;
