@@ -1,0 +1,22 @@
+
+with "global";
+
+project Adabot is
+
+   Sub_System := "bot";
+
+   AL    := Global.Abr & "/local";
+ 
+   for Exec_Dir use Global.Abr & "/exe"  ;
+   for Source_Dirs use (AL & "/" & Sub_System);
+   for Object_Dir use Global'Object_Dir & "/" & Sub_System;
+   for Main use ("simulator.adb");
+
+   package Compiler renames Global.Compiler;
+   package Binder   renames Global.Binder;
+   package Linker   renames Global.Linker;
+--   package Ide      renames Global.Ide;
+
+
+end Adabot;
+

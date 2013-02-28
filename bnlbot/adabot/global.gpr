@@ -1,0 +1,77 @@
+project Global is
+
+   Os_Architecture := external ("OS_ARCHITECTURE");
+   type Target_Type is ("lnx_x86", "win_x86");
+--      ("aix_ppc", "lnx_x86", "win_x86");
+--   Target_Machine : Target_Type := Os_Architecture;
+   Target_Machine : Target_Type := "lnx_x86";
+
+--   type Data_Base_Type is ("ORACLE10", "ORACLE11", "SQLSERVER", "POSTGRESQL", "OCI");
+   type Data_Base_Type is ("POSTGRESQL");
+   
+   Data_Base : Data_Base_Type := "POSTGRESQL";
+   
+   Pg_Bin := external ("PG_BIN2", "/../../../tools/database/PostgreSQL/8.2/bin");
+   Lib_Sattmate := external ("SATTMATE_A", "SATTMATE_A_not_set");
+   Application_Type := external ("APPLICATION_TYPE", "SATTMATE_A_not_set");
+
+-- AdaBotRoot
+   Abr := ".";
+   Platform_Independent_Compiler_Switches := ("-g", 
+                                              "-gnat05", 
+                                              "-O0");
+
+   package Compiler is
+      case Target_Machine is
+         when "lnx_x86" =>
+            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+         when "win_x86" =>
+            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Linker is
+      case Data_Base is
+
+         when "POSTGRESQL" =>
+            case Target_Machine is                                   
+               when "lnx_x86" => 
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+               when "win_x86" => 
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+
+            end case;
+      end case;
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
+   end Builder;
+
+   for Object_Dir use "objects";
+   
+--   Xml_Source := (Smsk & "/xml/xmlada/dom", 
+--                  Smsk & "/xml/xmlada/sax", 
+--                  Smsk & "/xml/xmlada/input_sources", 
+--                  Smsk & "/xml/xmlada/schema", 
+--                  Smsk & "/xml/xmlada/unicode", 
+--                  Smsk & "/xml/xpath", 
+--                  Smsk & "/xml/xpath/booch4xia");
+                  
+--   Aws_Source := (Smsk & "/utility/aws", 
+--                  Smsk & "/utility/aws/choises", 
+--                  Smsk & "/utility/aws/" & Target_Machine);
+                  
+   for Source_Dirs use ( "local", "global") ;
+
+   package Ide is
+      for Compiler_Command ("ada") use "gnatmake";
+      for Compiler_Command ("c") use "gcc";
+   end Ide;
+
+
+end Global;
