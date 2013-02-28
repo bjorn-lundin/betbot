@@ -11,7 +11,7 @@
 
 
 pragma Warnings(Off);
-with General_Routines, Text_Io, ;
+with General_Routines, Text_Io;
 with Ada.Strings.Fixed;
 
 package body Table_Dry_markets is

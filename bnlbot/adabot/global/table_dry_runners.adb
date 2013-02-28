@@ -11,10 +11,10 @@
 
 
 pragma Warnings(Off);
-with   Text_Io, ;
+with  General_Routines, Text_Io;
 with Ada.Strings.Fixed;
 
-package body Table_Dry_results is
+package body Table_Dry_runners is
 
   Stm_Select,
   Stm_Delete,
@@ -32,8 +32,8 @@ package body Table_Dry_results is
 
   -- Procedures for DBMS DEF
   -- Primary key
-  function Get(Stm : in Sql.Statement_Type) return Table_Dry_results.Data_Type is
-    Data : Table_Dry_results.Data_Type;
+  function Get(Stm : in Sql.Statement_Type) return Table_Dry_runners.Data_Type is
+    Data : Table_Dry_runners.Data_Type;
   begin
     if not Sql.Is_Null(Stm, "MARKET_ID") then
       Sql.Get(Stm, "MARKET_ID", Data.Market_id);
@@ -45,13 +45,33 @@ package body Table_Dry_results is
     else
       Data.Selection_id := 0;
     end if;
+    if not Sql.Is_Null(Stm, "INDEX") then
+      Sql.Get(Stm, "INDEX", Data.Index);
+    else
+      Data.Index := 0;
+    end if;
+    if not Sql.Is_Null(Stm, "BACK_PRICE") then
+      Sql.Get(Stm, "BACK_PRICE", Data.Back_price);
+    else
+      Data.Back_price := 0.0;
+    end if;
+    if not Sql.Is_Null(Stm, "LAY_PRICE") then
+      Sql.Get(Stm, "LAY_PRICE", Data.Lay_price);
+    else
+      Data.Lay_price := 0.0;
+    end if;
+    if not Sql.Is_Null(Stm, "RUNNER_NAME") then
+      Sql.Get(Stm, "RUNNER_NAME", Data.Runner_name);
+    else
+      Data.Runner_name := (others => ' ');
+    end if;
   return Data;
   end Get;
 ---------------------------------------------
 
   function Get(Market_id : Integer_4;
-                       Selection_id : Integer_4) return Table_Dry_results.Data_Type is
-    Data       : Table_Dry_results.Data_Type;
+                       Selection_id : Integer_4) return Table_Dry_runners.Data_Type is
+    Data       : Table_Dry_runners.Data_Type;
     End_Of_Set : Boolean := True;
   begin
     Data.Market_id := Market_id;
@@ -61,7 +81,7 @@ package body Table_Dry_results is
   end Get;
 --------------------------------------------
 
-  procedure Read_All(List  : in out Dry_results_List_Pack.List_Type;
+  procedure Read_All(List  : in out Dry_runners_List_Pack.List_Type;
                      Order : in     Boolean := False;
                      Max   : in     Integer_4 := Integer_4'Last) is
     use Sql;
@@ -70,10 +90,10 @@ package body Table_Dry_results is
   begin
     if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
     if Order then
-      Sql.Prepare(Stm_Select_All_O, "select * from DRY_RESULTS order by MARKET_ID, SELECTION_ID");
+      Sql.Prepare(Stm_Select_All_O, "select * from DRY_RUNNERS order by MARKET_ID, SELECTION_ID");
       Read_List(Stm_Select_All_O, List, Max);
     else
-      Sql.Prepare(Stm_Select_All, "select * from DRY_RESULTS");
+      Sql.Prepare(Stm_Select_All, "select * from DRY_RUNNERS");
       Read_List(Stm_Select_All, List, Max);
     end if;
     if Start_Trans then Sql.Commit(Transaction); end if;
@@ -82,11 +102,11 @@ package body Table_Dry_results is
 
 
   procedure Read_List(Stm  : in     Sql.Statement_Type;
-                      List : in out Dry_results_List_Pack.List_Type;
+                      List : in out Dry_runners_List_Pack.List_Type;
                       Max  : in     Integer_4 := Integer_4'Last) is
     use Sql;
     Count       : Integer_4 := 0;
-    Data        : Table_Dry_results.Data_Type;
+    Data        : Table_Dry_runners.Data_Type;
     Eos         : Boolean := False;
     Start_Trans : constant Boolean := (Sql.Transaction_Status = Sql.None);
     Transaction  : Sql.Transaction_Type;
@@ -97,7 +117,7 @@ package body Table_Dry_results is
       Sql.Fetch(Stm, Eos); 
       exit when Eos or Count > Max;
       Data := Get(Stm);
-      Dry_results_List_Pack.Insert_At_Tail(List, Data);
+      Dry_runners_List_Pack.Insert_At_Tail(List, Data);
       Count := Count +1;
     end loop;
     Sql.Close_Cursor(Stm);
@@ -107,7 +127,7 @@ package body Table_Dry_results is
 
   function Is_Existing(Market_id : Integer_4;
                        Selection_id : Integer_4) return Boolean is
-    Data       : Table_Dry_results.Data_Type;
+    Data       : Table_Dry_runners.Data_Type;
     End_Of_Set : Boolean := True;
   begin
     Data.Market_id := Market_id;
@@ -117,14 +137,14 @@ package body Table_Dry_results is
   end Is_Existing;
 --------------------------------------------
 
-  procedure Read(Data       : in out Table_Dry_results.Data_Type;
+  procedure Read(Data       : in out Table_Dry_runners.Data_Type;
                  End_Of_Set : in out Boolean) is
     use Sql;
     Start_Trans   : constant Boolean := (Sql.Transaction_Status = Sql.None);
     Transaction   : Sql.Transaction_Type;
   begin
     if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
-    Sql.Prepare(Stm_Select, " select * from DRY_RESULTS " & 
+    Sql.Prepare(Stm_Select, " select * from DRY_RUNNERS " & 
             "where MARKET_ID=:MARKET_ID" &
             " and SELECTION_ID=:SELECTION_ID" ) ;
     Sql.Set(Stm_Select, "MARKET_ID", Data.Market_id);
@@ -140,9 +160,9 @@ package body Table_Dry_results is
   end Read;
 ---------------------------------------------
 
-  procedure Delete(Data : in Table_Dry_results.Data_Type) is
+  procedure Delete(Data : in Table_Dry_runners.Data_Type) is
   begin
-    Sql.Prepare(Stm_Delete, " delete from DRY_RESULTS " & 
+    Sql.Prepare(Stm_Delete, " delete from DRY_RUNNERS " & 
             "where MARKET_ID=:MARKET_ID" &
             " and SELECTION_ID=:SELECTION_ID" ) ;
     Sql.Set(Stm_Delete, "MARKET_ID", Data.Market_id);
@@ -152,17 +172,52 @@ package body Table_Dry_results is
   end Delete;
 --------------------------------------------
 
-  procedure Insert(Data : in out Table_Dry_results.Data_Type; Keep_Timestamp : in Boolean := False) is
-    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+  procedure Update(Data : in out Table_Dry_runners.Data_Type; Keep_Timestamp : in Boolean := False) is
+  begin
+    Sql.Prepare(Stm_Update, "update DRY_RUNNERS set " &
+            "INDEX=:INDEX," &
+            "BACK_PRICE=:BACK_PRICE," &
+            "LAY_PRICE=:LAY_PRICE," &
+            "RUNNER_NAME=:RUNNER_NAME " &
+            "where MARKET_ID=:MARKET_ID " &
+            "and SELECTION_ID=:SELECTION_ID " ) ;
+    Sql.Set(Stm_Update, "MARKET_ID",Data.Market_id);
+    Sql.Set(Stm_Update, "SELECTION_ID",Data.Selection_id);
+    if Data.Index = 0 then
+      Sql.Set_Null(Stm_Update, "INDEX");
+    else
+      Sql.Set(Stm_Update, "INDEX",Data.Index);
+    end if;
+    Sql.Set(Stm_Update, "BACK_PRICE",Data.Back_price);
+    Sql.Set(Stm_Update, "LAY_PRICE",Data.Lay_price);
+    Sql.Set(Stm_Update, "RUNNER_NAME",Data.Runner_name);
+
+    Sql.Execute(Stm_Update);
+  end Update;
+--------------------------------------------
+
+  procedure Insert(Data : in out Table_Dry_runners.Data_Type; Keep_Timestamp : in Boolean := False) is
   begin
     if not Keep_Timestamp then
       null; --for tables without IXX*
     end if;
-    Sql.Prepare(Stm_Insert, "insert into DRY_RESULTS values (" &
+    Sql.Prepare(Stm_Insert, "insert into DRY_RUNNERS values (" &
             ":MARKET_ID, " &
-            ":SELECTION_ID) " ) ;
+            ":SELECTION_ID, " &
+            ":INDEX, " &
+            ":BACK_PRICE, " &
+            ":LAY_PRICE, " &
+            ":RUNNER_NAME) " ) ;
     Sql.Set(Stm_Insert, "MARKET_ID",Data.Market_id);
     Sql.Set(Stm_Insert, "SELECTION_ID",Data.Selection_id);
+    if Data.Index = 0 then
+      Sql.Set_Null(Stm_Insert, "INDEX");
+    else
+      Sql.Set(Stm_Insert, "INDEX",Data.Index);
+    end if;
+    Sql.Set(Stm_Insert, "BACK_PRICE",Data.Back_price);
+    Sql.Set(Stm_Insert, "LAY_PRICE",Data.Lay_price);
+    Sql.Set(Stm_Insert, "RUNNER_NAME",Data.Runner_name);
 
     Sql.Execute(Stm_Insert);
   end Insert;
@@ -170,8 +225,8 @@ package body Table_Dry_results is
 
   -- Primary key, when several fields
 
-  procedure Read_I1_Market_id(Data  : in     Table_Dry_results.Data_Type;
-                       List  : in out Dry_results_List_Pack.List_Type;
+  procedure Read_I1_Market_id(Data  : in     Table_Dry_runners.Data_Type;
+                       List  : in out Dry_runners_List_Pack.List_Type;
                        Order : in     Boolean := False;
                        Max   : in     Integer_4 := Integer_4'Last) is
     use Sql;
@@ -180,14 +235,14 @@ package body Table_Dry_results is
   begin
     if (Start_Trans) then Sql.Start_Read_Write_Transaction(Transaction); end if;
     if Order then
-      Sql.Prepare(Stm_Select_I1_Market_id_O, " select * from DRY_RESULTS " & 
+      Sql.Prepare(Stm_Select_I1_Market_id_O, " select * from DRY_RUNNERS " & 
             "where MARKET_ID=:MARKET_ID" &
             " order by MARKET_ID, SELECTION_ID"); 
       Sql.Set(Stm_Select_I1_Market_id_O, "MARKET_ID", Data.Market_id);
  
       Read_List(Stm_Select_I1_Market_id_O, List, Max);
     else
-      Sql.Prepare(Stm_Select_I1_Market_id, " select * from DRY_RESULTS " & 
+      Sql.Prepare(Stm_Select_I1_Market_id, " select * from DRY_RUNNERS " & 
             "where MARKET_ID=:MARKET_ID" ) ; 
       Sql.Set(Stm_Select_I1_Market_id, "MARKET_ID", Data.Market_id);
  
@@ -197,9 +252,9 @@ package body Table_Dry_results is
   end Read_I1_Market_id;
   --------------------------------------------
 
-  procedure Delete_I1_Market_id(Data  : in     Table_Dry_results.Data_Type) is
+  procedure Delete_I1_Market_id(Data  : in     Table_Dry_runners.Data_Type) is
   begin
-      Sql.Prepare(Stm_Delete_I1_Market_id, " delete from DRY_RESULTS " & 
+      Sql.Prepare(Stm_Delete_I1_Market_id, " delete from DRY_RUNNERS " & 
             "where MARKET_ID=:MARKET_ID" ) ; 
       Sql.Set(Stm_Delete_I1_Market_id, "MARKET_ID", Data.Market_id);
  
@@ -207,27 +262,35 @@ package body Table_Dry_results is
   end Delete_I1_Market_id;
   --------------------------------------------
 
-
-  
   -- Procedures for all DBMS
 
 
+  function Date_To_String(Date : in Sattmate_Calendar.Time_Type) return String is
+    package Integer_2_Io is new Text_Io.Integer_Io(Integer_2);
+    Date_String : String(1..10) := "yyyy-mm-dd";
+  begin
+    Integer_2_Io.Put(Date_String(9..10), Date.Day);
+    Integer_2_Io.Put(Date_String(6..7), Date.Month);
+    Integer_2_Io.Put(Date_String(1..4), Date.Year);
+    if Date_String(9) = ' ' then Date_String(9) := '0'; end if;
+    if Date_String(6) = ' ' then Date_String(6) := '0'; end if;
+    return Date_String;
+  end Date_To_String;
 --------------------------------------------
 
-
-
-  function To_String(Data : in Table_Dry_results.Data_Type) return String is
+  function To_String(Data : in Table_Dry_runners.Data_Type) return String is
   begin
     return
           " Market_id = " & Integer_4'Image(Data.Market_id) &
           " Selection_id = " & Integer_4'Image(Data.Selection_id) &
+          " Index = " & Integer_4'Image(Data.Index) &
+          " Back_price = " &  General_Routines.F8_To_String(Data.Back_price) &
+          " Lay_price = " &  General_Routines.F8_To_String(Data.Lay_price) &
+          " Runner_name = " & General_Routines.Skip_Trailing_Blanks(Data.Runner_name) &
           "";
   end To_String;
 --------------------------------------------
 
- 
---------------------------------------------
 
-
-end Table_Dry_results ;
+end Table_Dry_runners ;
 

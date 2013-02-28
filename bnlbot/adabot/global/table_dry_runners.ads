@@ -92,16 +92,7 @@ package Table_Dry_runners is
   procedure Delete_I1_Market_id(Data  : in     Table_Dry_runners.Data_Type);
   --------------------------------------------
 
-  function Is_Existing_I1(
-                 Market     : in Ada_Type - Found no matching type ;
-                 id     : in Ada_Type - Found no matching type )      return Boolean;
-
-
-
-
-
-
-
+ 
   -- Procedures for all DBMS
 
   function To_String(Data : in Table_Dry_runners.Data_Type) return String;
