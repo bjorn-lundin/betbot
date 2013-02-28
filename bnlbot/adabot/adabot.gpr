@@ -6,7 +6,7 @@ project Adabot is
    Sub_System := "bot";
 
    AL    := Global.Abr & "/local";
- 
+
    for Exec_Dir use Global.Abr & "/exe"  ;
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
