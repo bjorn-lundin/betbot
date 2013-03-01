@@ -6,10 +6,10 @@
 --
 --	RESPONSIBLE	Henrik Dannberg
 --
---	DESCRIPTION	This package is used by all processes in a SattMate 
+--	DESCRIPTION	This package is used by all processes in a SattMate
 --			system that interact with a database handler via the
 --			SQL package. The body of procedure OPEN and START
---			are project specific and should open/close a SQL 
+--			are project specific and should open/close a SQL
 --			session to the database handler currently used.
 --
 --------------------------------------------------------------------------------
@@ -21,10 +21,10 @@
 --
 --------------------------------------------------------------------------------
 
-package SATTMATE_SQL_SESSION is
+package Sattmate_Sql_Session is
 
-  procedure OPEN;
+   procedure Open;
 
-  procedure CLOSE;
+   procedure Close;
 
-end SATTMATE_SQL_SESSION;
+end Sattmate_Sql_Session;
