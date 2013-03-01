@@ -40,7 +40,7 @@
 --
 --	VERSION		5.1
 --	AUTHOR		Ingvar Hedgarde		14-Feb-1992
---	VERIFIED BY	
+--	VERIFIED BY
 --	DESCRIPTION	The type declarations for the array types have been
 --			modified to include 0 in the array range.
 --
@@ -48,7 +48,7 @@
 --
 --	VERSION		9.7-SKF
 --	AUTHOR		Björn Lundin		03-12-2008
---	VERIFIED BY	
+--	VERIFIED BY
 --	DESCRIPTION	Type CLOB and NCLOB introduced (for sql-ifc)
 --
 --------------------------------------------------------------------------------
@@ -57,134 +57,134 @@
 --with SYSTEM;
 with Ada.Strings.Unbounded;
 
-package SATTMATE_TYPES is
+package Sattmate_Types is
 
-  type BYTE is range 0..255;
-  for  BYTE'SIZE use 8;
+   type Byte is range 0 .. 255;
+   for  Byte'Size use 8;
 
-  type INTEGER_2 is range -32_768..32_767;
-  for  INTEGER_2'SIZE use 16;
+   type Integer_2 is range -32_768 .. 32_767;
+   for  Integer_2'Size use 16;
 
-  type INTEGER_4 is range -2_147_483_648..2_147_483_647;
-  for  INTEGER_4'SIZE use 32;
+   type Integer_4 is range -2_147_483_648 .. 2_147_483_647;
+   for  Integer_4'Size use 32;
 
---  type FLOAT_4 is new SYSTEM.F_FLOAT;		-- VAX/Ada
---  type FLOAT_8 is new SYSTEM.D_FLOAT;		-- VAX/Ada
+   --  type FLOAT_4 is new SYSTEM.F_FLOAT;		-- VAX/Ada
+   --  type FLOAT_8 is new SYSTEM.D_FLOAT;		-- VAX/Ada
 
-  type FLOAT_4 is new FLOAT;            	-- Alsys Ada on AIX and NT
-  type FLOAT_8 is new LONG_FLOAT;       	-- Alsys Ada on AIX and NT
+   type Float_4 is new Float;            	-- Alsys Ada on AIX and NT
+   type Float_8 is new Long_Float;       	-- Alsys Ada on AIX and NT
 
---    type FLOAT_4 is new SHORT_FLOAT;		-- Verdix Ada on AIX
---    type FLOAT_8 is new FLOAT;		-- Verdix Ada on AIX
+   --    type FLOAT_4 is new SHORT_FLOAT;		-- Verdix Ada on AIX
+   --    type FLOAT_8 is new FLOAT;		-- Verdix Ada on AIX
 
---    type FLOAT_4 is new FLOAT;		-- IBM Ada on AIX
---    type FLOAT_8 is new LONG_FLOAT;		-- IBM Ada on AIX
+   --    type FLOAT_4 is new FLOAT;		-- IBM Ada on AIX
+   --    type FLOAT_8 is new LONG_FLOAT;		-- IBM Ada on AIX
 
-    -- General declaration of FLOAT types :
+   -- General declaration of FLOAT types :
 
---  type FLOAT_4 is digits 6 range 2.5E-26 .. 1.9E+25;
---  type FLOAT_8 is digits 9 range 2.0E-38 .. 2.0E+37;
+   --  type FLOAT_4 is digits 6 range 2.5E-26 .. 1.9E+25;
+   --  type FLOAT_8 is digits 9 range 2.0E-38 .. 2.0E+37;
 
---  for FLOAT_4'SIZE use 32;
---  for FLOAT_8'SIZE use 64;
+   --  for FLOAT_4'SIZE use 32;
+   --  for FLOAT_8'SIZE use 64;
 
-  --9.7-SKF
-  subtype  CLOB is Ada.Strings.Unbounded.Unbounded_String;
-  subtype NCLOB is Ada.Strings.Unbounded.Unbounded_String;
-  subtype  BLOB is Ada.Strings.Unbounded.Unbounded_String;
-
-
-  type BIT_ARRAY is array (NATURAL range <>) of BOOLEAN;            -- V5.1
-  pragma PACK (BIT_ARRAY);
-
-  type BYTE_ARRAY      is array (NATURAL range <>) of BYTE;         -- V5.1
-  type INTEGER_2_ARRAY is array (NATURAL range <>) of INTEGER_2;    -- V5.1
-  type INTEGER_4_ARRAY is array (NATURAL range <>) of INTEGER_4;    -- V5.1
-  type FLOAT_4_ARRAY   is array (NATURAL range <>) of FLOAT_4;      -- V5.1
-  type FLOAT_8_ARRAY   is array (NATURAL range <>) of FLOAT_8;      -- V5.1
-
-  subtype BIT_ARRAY_8  is BIT_ARRAY (1..8);
-  subtype BIT_ARRAY_16 is BIT_ARRAY (1..16);
-  subtype BIT_ARRAY_32 is BIT_ARRAY (1..32);
-
-  subtype BYTE_ARRAY_2 is BYTE_ARRAY (1..2);
-  subtype BYTE_ARRAY_4 is BYTE_ARRAY (1..4);
-
-  function "not" (X: BYTE)           return BYTE;
-  function "and" (LEFT, RIGHT: BYTE) return BYTE;
-  function "or"  (LEFT, RIGHT: BYTE) return BYTE;
-  function "xor" (LEFT, RIGHT: BYTE) return BYTE;
-
-  function "&" (LEFT: BYTE;       RIGHT: BYTE)       return BYTE_ARRAY;
-  function "&" (LEFT: BYTE_ARRAY; RIGHT: BYTE)       return BYTE_ARRAY;
-  function "&" (LEFT: BYTE;       RIGHT: BYTE_ARRAY) return BYTE_ARRAY;
-  function "&" (LEFT: BYTE_ARRAY; RIGHT: BYTE_ARRAY) return BYTE_ARRAY;
+   --9.7-SKF
+   subtype  Clob is Ada.Strings.Unbounded.Unbounded_String;
+   subtype Nclob is Ada.Strings.Unbounded.Unbounded_String;
+   subtype  Blob is Ada.Strings.Unbounded.Unbounded_String;
 
 
-  -- The results of the following conversion routines will always be the same,
-  -- independent of the operating system used. The conversion rules are as
-  -- follows :
-  --
-  --     1) The first bit in a BIT_ARRAY_8 corresponds to the least
-  --        significant bit in a byte.
-  --
-  --     2) The first eight bits in a BIT_ARRAY_16 corresponds to the least
-  --        significant byte in an integer_2.
-  --
-  --     2) The first eight bits in a BIT_ARRAY_32 corresponds to the least
-  --        significant byte in the first word of an integer_4.
-  --
-  -- The following figure further illustrates the conversion rules :
-  --
-  --                32      25 24      17 16       9 8        1
-  --               !----------!----------!----------!----------!
-  --               !  byte 4  !  byte 3  !  byte 2  !  byte 1  !
-  --               !----------!----------!----------!----------!
-  --               !                 INTEGER_4                 !
-  --               !----------!----------!----------!----------!
-  --                                     !     INTEGER_2       !
-  --                                     !----------!----------!
-  --                                                !   BYTE   !
-  --                                                !----------!
+   type Bit_Array is array (Natural range <>) of Boolean;            -- V5.1
+   pragma Pack (Bit_Array);
 
-  function TO_BIT_ARRAY_8  (X: BYTE)         return BIT_ARRAY_8;
+   type Byte_Array      is array (Natural range <>) of Byte;         -- V5.1
+   type Integer_2_Array is array (Natural range <>) of Integer_2;    -- V5.1
+   type Integer_4_Array is array (Natural range <>) of Integer_4;    -- V5.1
+   type Float_4_Array   is array (Natural range <>) of Float_4;      -- V5.1
+   type Float_8_Array   is array (Natural range <>) of Float_8;      -- V5.1
 
-  function TO_BIT_ARRAY_16 (X: BYTE_ARRAY_2) return BIT_ARRAY_16;	-- V3.0
-  function TO_BIT_ARRAY_16 (X: INTEGER_2)    return BIT_ARRAY_16;
+   subtype Bit_Array_8  is Bit_Array (1 .. 8);
+   subtype Bit_Array_16 is Bit_Array (1 .. 16);
+   subtype Bit_Array_32 is Bit_Array (1 .. 32);
 
-  function TO_BIT_ARRAY_32 (X: BYTE_ARRAY_4) return BIT_ARRAY_32;	-- V3.0
-  function TO_BIT_ARRAY_32 (X: INTEGER_4)    return BIT_ARRAY_32;
+   subtype Byte_Array_2 is Byte_Array (1 .. 2);
+   subtype Byte_Array_4 is Byte_Array (1 .. 4);
 
-  function TO_BYTE         (X: BIT_ARRAY_8)  return BYTE;
+   function "not" (X : Byte)           return Byte;
+   function "and" (Left, Right : Byte) return Byte;
+   function "or"  (Left, Right : Byte) return Byte;
+   function "xor" (Left, Right : Byte) return Byte;
 
-  function TO_BYTE_ARRAY_2 (X: BIT_ARRAY_16) return BYTE_ARRAY_2;	-- V3.0
-  function TO_BYTE_ARRAY_2 (X: INTEGER_2)    return BYTE_ARRAY_2;
-  
-  function TO_BYTE_ARRAY_4 (X: BIT_ARRAY_32) return BYTE_ARRAY_4;	-- V3.0
-  function TO_BYTE_ARRAY_4 (X: INTEGER_4)    return BYTE_ARRAY_4;
-
-  function TO_INTEGER_2    (X: BIT_ARRAY_16) return INTEGER_2;
-  function TO_INTEGER_2    (X: BYTE_ARRAY_2) return INTEGER_2;
-
-  function TO_INTEGER_4    (X: BIT_ARRAY_32) return INTEGER_4;
-  function TO_INTEGER_4    (X: BYTE_ARRAY_4) return INTEGER_4;
-
--- CONSTRAINT_ERROR will be raised in function TO_STRING if X contains illegal
--- CHARACTER values.
-
-  function TO_STRING       (X: BYTE_ARRAY)   return STRING;		-- V3.0
-  function TO_BYTE_ARRAY   (X: STRING)       return BYTE_ARRAY;		-- V3.0
+   function "&" (Left : Byte;       Right : Byte)       return Byte_Array;
+   function "&" (Left : Byte_Array; Right : Byte)       return Byte_Array;
+   function "&" (Left : Byte;       Right : Byte_Array) return Byte_Array;
+   function "&" (Left : Byte_Array; Right : Byte_Array) return Byte_Array;
 
 
-  -- The following function calculates a "xor" checksum. The checksum is
-  -- initially set to 0 and then a new checksum is repeatingly calculated,
-  -- using the following formula :
-  --
-  --	CHECKSUM := CHECKSUM xor B (I)
-  -- 
-  -- where I loops through B'RANGE.
+   -- The results of the following conversion routines will always be the same,
+   -- independent of the operating system used. The conversion rules are as
+   -- follows :
+   --
+   --     1) The first bit in a BIT_ARRAY_8 corresponds to the least
+   --        significant bit in a byte.
+   --
+   --     2) The first eight bits in a BIT_ARRAY_16 corresponds to the least
+   --        significant byte in an integer_2.
+   --
+   --     2) The first eight bits in a BIT_ARRAY_32 corresponds to the least
+   --        significant byte in the first word of an integer_4.
+   --
+   -- The following figure further illustrates the conversion rules :
+   --
+   --                32      25 24      17 16       9 8        1
+   --               !----------!----------!----------!----------!
+   --               !  byte 4  !  byte 3  !  byte 2  !  byte 1  !
+   --               !----------!----------!----------!----------!
+   --               !                 INTEGER_4                 !
+   --               !----------!----------!----------!----------!
+   --                                     !     INTEGER_2       !
+   --                                     !----------!----------!
+   --                                                !   BYTE   !
+   --                                                !----------!
 
-  function XOR_CHECK_SUM (X: BYTE_ARRAY) return BYTE;
+   function To_Bit_Array_8  (X : Byte)         return Bit_Array_8;
+
+   function To_Bit_Array_16 (X : Byte_Array_2) return Bit_Array_16; 	-- V3.0
+   function To_Bit_Array_16 (X : Integer_2)    return Bit_Array_16;
+
+   function To_Bit_Array_32 (X : Byte_Array_4) return Bit_Array_32; 	-- V3.0
+   function To_Bit_Array_32 (X : Integer_4)    return Bit_Array_32;
+
+   function To_Byte         (X : Bit_Array_8)  return Byte;
+
+   function To_Byte_Array_2 (X : Bit_Array_16) return Byte_Array_2; 	-- V3.0
+   function To_Byte_Array_2 (X : Integer_2)    return Byte_Array_2;
+
+   function To_Byte_Array_4 (X : Bit_Array_32) return Byte_Array_4; 	-- V3.0
+   function To_Byte_Array_4 (X : Integer_4)    return Byte_Array_4;
+
+   function To_Integer_2    (X : Bit_Array_16) return Integer_2;
+   function To_Integer_2    (X : Byte_Array_2) return Integer_2;
+
+   function To_Integer_4    (X : Bit_Array_32) return Integer_4;
+   function To_Integer_4    (X : Byte_Array_4) return Integer_4;
+
+   -- CONSTRAINT_ERROR will be raised in function TO_STRING if X contains illegal
+   -- CHARACTER values.
+
+   function To_String       (X : Byte_Array)   return String; 		-- V3.0
+   function To_Byte_Array   (X : String)       return Byte_Array; 		-- V3.0
 
 
-end SATTMATE_TYPES;
+   -- The following function calculates a "xor" checksum. The checksum is
+   -- initially set to 0 and then a new checksum is repeatingly calculated,
+   -- using the following formula :
+   --
+   --	CHECKSUM := CHECKSUM xor B (I)
+   --
+   -- where I loops through B'RANGE.
+
+   function Xor_Check_Sum (X : Byte_Array) return Byte;
+
+
+end Sattmate_Types;

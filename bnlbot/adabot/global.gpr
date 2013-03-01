@@ -17,10 +17,22 @@ project Global is
 
 -- AdaBotRoot
    Abr := ".";
+   
+-- -gnatwalK -  w - Activate warnings (w)
+--              a - activate all warnings  (a)
+--              l - for missing elaboration pragmas too
+--              K - but no warnings like '...is not modified, could be declared constant'
+-- -gnatvoUN    v - verbose
+--              o - Activate runtime overflow checks
+--              U - Tag all error messages with the unique string "error:"
+-- -gnat05      No warnings when Ada05 featues are used                 9.6-10368
+-- -gnatwW - Do not warn if we assume a string to start at index 1
+   
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
-                                              "-O0");
-
+                                              "-O0",
+                                              "-gnatwlaKW");
+                                              
    package Compiler is
       case Target_Machine is
          when "lnx_x86" =>

@@ -45,489 +45,489 @@
 --
 --------------------------------------------------------------------------------
 --9.4.1-8146 BNL 23-sep-2005
--- Merged the x86 and ppc versions of this package 
+-- Merged the x86 and ppc versions of this package
 --------------------------------------------------------------------------------
 
-with SYSTEM;                  --9.4.1-8146
-with UNCHECKED_CONVERSION;
+with System;                  --9.4.1-8146
+with Unchecked_Conversion;
 
 
 
-package body SATTMATE_TYPES is
+package body Sattmate_Types is
 
-  use type SYSTEM.BIT_ORDER ; --9.4.1-8146
-  
-  -----------------------------------------------------------------------------
-  function "not" (X: BYTE) return BYTE is
-  begin 
-    return TO_BYTE (not TO_BIT_ARRAY_8(X)); 
-  end "not";
-  -----------------------------------------------------------------------------
-  function "and" (LEFT, RIGHT: BYTE) return BYTE is
-  begin 
-    return TO_BYTE (TO_BIT_ARRAY_8(LEFT) and TO_BIT_ARRAY_8(RIGHT)); 
-  end "and";
-  -----------------------------------------------------------------------------
-  function "or" (LEFT, RIGHT: BYTE) return BYTE is
-  begin 
-    return TO_BYTE (TO_BIT_ARRAY_8(LEFT) or TO_BIT_ARRAY_8(RIGHT)); 
-  end "or";
-  -----------------------------------------------------------------------------
-  function "xor" (LEFT, RIGHT: BYTE) return BYTE is
-  begin 
-    return TO_BYTE (TO_BIT_ARRAY_8(LEFT) xor TO_BIT_ARRAY_8(RIGHT)); 
-  end "xor";
-  -----------------------------------------------------------------------------
-  function "&" (LEFT: BYTE; RIGHT: BYTE) return BYTE_ARRAY is
-  begin 
-    return (LEFT,RIGHT); 
-  end "&";
-  -----------------------------------------------------------------------------
-  function "&" (LEFT: BYTE_ARRAY; RIGHT: BYTE) return BYTE_ARRAY is
-    RESULT : BYTE_ARRAY (LEFT'FIRST..LEFT'LAST+1);
-  begin
-    RESULT (LEFT'FIRST..LEFT'LAST) := LEFT;
-    RESULT (LEFT'LAST+1)           := RIGHT;
-    return RESULT;
-  end "&";
-  -----------------------------------------------------------------------------
-  function "&" (LEFT: BYTE; RIGHT: BYTE_ARRAY) return BYTE_ARRAY is
-    RESULT : BYTE_ARRAY (RIGHT'FIRST..RIGHT'LAST+1);
-  begin
-    RESULT (RIGHT'FIRST)                 := LEFT;
-    RESULT (RIGHT'FIRST+1..RIGHT'LAST+1) := RIGHT;
-    return RESULT;
-  end "&";
-  -----------------------------------------------------------------------------
-  function "&" (LEFT: BYTE_ARRAY; RIGHT: BYTE_ARRAY) return BYTE_ARRAY is
-    RESULT : BYTE_ARRAY (LEFT'FIRST..LEFT'LAST+RIGHT'LENGTH);
-  begin
-    if LEFT'LENGTH = 0 then
-      return RIGHT;
-    elsif RIGHT'LENGTH = 0 then
-      return LEFT;
-    else
-      RESULT (LEFT'FIRST..LEFT'LAST)    := LEFT;
-      RESULT (LEFT'LAST+1..RESULT'LAST) := RIGHT;
-      return RESULT;
-    end if;
-  end "&";
-  -----------------------------------------------------------------------------
- --9.4.1-8146 from ppc start
-  procedure MIRROR (BITS: in out BIT_ARRAY) is
-    RESULT : BIT_ARRAY(BITS'RANGE);
-  begin
-    for i in BITS'range loop
-      RESULT(RESULT'LAST-I+1) := BITS(I);
-    end loop;
-    BITS := RESULT;
-  end MIRROR;
-  -----------------------------------------------------------------------------
-  procedure SWAP2 (BYTES: in out BYTE_ARRAY_2) is
-    RESULT : BYTE_ARRAY_2;
-  begin
-    RESULT := (1 => BYTES(2), 2 => BYTES(1));
-    BYTES := RESULT;
-  end SWAP2;
-  -----------------------------------------------------------------------------
-  procedure SWAP4 (BYTES: in out BYTE_ARRAY_4) is
-    RESULT : BYTE_ARRAY_4;
-  begin
-    RESULT := (1 => BYTES(4), 2 => BYTES(3), 3 => BYTES(2), 4 => BYTES(1));
-    BYTES := RESULT;
-  end SWAP4;
-  -----------------------------------------------------------------------------
---9.4.1-8146 from ppc stop
+   use type System.Bit_Order ; --9.4.1-8146
 
- --9.4.1-8146 from ppc but common start
+   -----------------------------------------------------------------------------
+   function "not" (X : Byte) return Byte is
+   begin
+      return To_Byte (not To_Bit_Array_8 (X));
+   end "not";
+   -----------------------------------------------------------------------------
+   function "and" (Left, Right : Byte) return Byte is
+   begin
+      return To_Byte (To_Bit_Array_8 (Left) and To_Bit_Array_8 (Right));
+   end "and";
+   -----------------------------------------------------------------------------
+   function "or" (Left, Right : Byte) return Byte is
+   begin
+      return To_Byte (To_Bit_Array_8 (Left) or To_Bit_Array_8 (Right));
+   end "or";
+   -----------------------------------------------------------------------------
+   function "xor" (Left, Right : Byte) return Byte is
+   begin
+      return To_Byte (To_Bit_Array_8 (Left) xor To_Bit_Array_8 (Right));
+   end "xor";
+   -----------------------------------------------------------------------------
+   function "&" (Left : Byte; Right : Byte) return Byte_Array is
+   begin
+      return (Left, Right);
+   end "&";
+   -----------------------------------------------------------------------------
+   function "&" (Left : Byte_Array; Right : Byte) return Byte_Array is
+      Result : Byte_Array (Left'First .. Left'Last + 1);
+   begin
+      Result (Left'First .. Left'Last) := Left;
+      Result (Left'Last + 1)           := Right;
+      return Result;
+   end "&";
+   -----------------------------------------------------------------------------
+   function "&" (Left : Byte; Right : Byte_Array) return Byte_Array is
+      Result : Byte_Array (Right'First .. Right'Last + 1);
+   begin
+      Result (Right'First)                 := Left;
+      Result (Right'First + 1 .. Right'Last + 1) := Right;
+      return Result;
+   end "&";
+   -----------------------------------------------------------------------------
+   function "&" (Left : Byte_Array; Right : Byte_Array) return Byte_Array is
+      Result : Byte_Array (Left'First .. Left'Last + Right'Length);
+   begin
+      if Left'Length = 0 then
+         return Right;
+      elsif Right'Length = 0 then
+         return Left;
+      else
+         Result (Left'First .. Left'Last)    := Left;
+         Result (Left'Last + 1 .. Result'Last) := Right;
+         return Result;
+      end if;
+   end "&";
+   -----------------------------------------------------------------------------
+   --9.4.1-8146 from ppc start
+   procedure Mirror (Bits : in out Bit_Array) is
+      Result : Bit_Array (Bits'Range);
+   begin
+      for I in Bits'Range loop
+         Result (Result'Last - I + 1) := Bits (I);
+      end loop;
+      Bits := Result;
+   end Mirror;
+   -----------------------------------------------------------------------------
+   procedure Swap2 (Bytes : in out Byte_Array_2) is
+      Result : Byte_Array_2;
+   begin
+      Result := (1 => Bytes (2), 2 => Bytes (1));
+      Bytes := Result;
+   end Swap2;
+   -----------------------------------------------------------------------------
+   procedure Swap4 (Bytes : in out Byte_Array_4) is
+      Result : Byte_Array_4;
+   begin
+      Result := (1 => Bytes (4), 2 => Bytes (3), 3 => Bytes (2), 4 => Bytes (1));
+      Bytes := Result;
+   end Swap4;
+   -----------------------------------------------------------------------------
+   --9.4.1-8146 from ppc stop
 
-  function BYTE_TO_BIT8   is new UNCHECKED_CONVERSION (SOURCE => BYTE,
-                                                       TARGET => BIT_ARRAY_8);
-  -----------------------------------------------------------------------------
-  function BYTE2_TO_BIT16 is new UNCHECKED_CONVERSION (SOURCE => BYTE_ARRAY_2,
-                                                       TARGET => BIT_ARRAY_16);
-  -----------------------------------------------------------------------------
-  function I2_TO_BIT16    is new UNCHECKED_CONVERSION (SOURCE => INTEGER_2, 
-                                                       TARGET => BIT_ARRAY_16);
-  -----------------------------------------------------------------------------
-  function BYTE4_TO_BIT32 is new UNCHECKED_CONVERSION (SOURCE => BYTE_ARRAY_4,
-                                                       TARGET => BIT_ARRAY_32);
-  -----------------------------------------------------------------------------
-  function I4_TO_BIT32    is new UNCHECKED_CONVERSION (SOURCE => INTEGER_4, 
-                                                       TARGET => BIT_ARRAY_32);
-  -----------------------------------------------------------------------------
-  function BIT8_TO_BYTE   is new UNCHECKED_CONVERSION (SOURCE => BIT_ARRAY_8,
-                                                       TARGET => BYTE);
-  -----------------------------------------------------------------------------
-  function BIT16_TO_BYTE2 is new UNCHECKED_CONVERSION (SOURCE => BIT_ARRAY_16,
-                                                       TARGET => BYTE_ARRAY_2);
-  -----------------------------------------------------------------------------
-  function I2_TO_BYTE2    is new UNCHECKED_CONVERSION (SOURCE => INTEGER_2,
-                                                       TARGET => BYTE_ARRAY_2);
-  -----------------------------------------------------------------------------
-  function BIT32_TO_BYTE4 is new UNCHECKED_CONVERSION (SOURCE => BIT_ARRAY_32,
-                                                       TARGET => BYTE_ARRAY_4);
-  -----------------------------------------------------------------------------
-  function I4_TO_BYTE4    is new UNCHECKED_CONVERSION (SOURCE => INTEGER_4,
-                                                       TARGET => BYTE_ARRAY_4);
-  -----------------------------------------------------------------------------
-  function BIT16_TO_I2    is new UNCHECKED_CONVERSION (SOURCE => BIT_ARRAY_16,
-                                                       TARGET => INTEGER_2);
-  -----------------------------------------------------------------------------
-  function BYTE2_TO_I2    is new UNCHECKED_CONVERSION (SOURCE => BYTE_ARRAY_2,
-                                                       TARGET => INTEGER_2);
-  -----------------------------------------------------------------------------
-  function BIT32_TO_I4    is new UNCHECKED_CONVERSION (SOURCE => BIT_ARRAY_32,
-                                                       TARGET => INTEGER_4);
-  -----------------------------------------------------------------------------
-  function BYTE4_TO_I4    is new UNCHECKED_CONVERSION (SOURCE => BYTE_ARRAY_4,
-                                                       TARGET => INTEGER_4);
-  -----------------------------------------------------------------------------
- --9.4.1-8146 from ppc but common stop
---x86 start
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_8_X86 (X: BYTE) return BIT_ARRAY_8 is
-  begin 
-    return BYTE_TO_BIT8(X);
-  end TO_BIT_ARRAY_8_X86;	
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16_X86 (X: BYTE_ARRAY_2) return BIT_ARRAY_16 is	
-  begin 
-    return BYTE2_TO_BIT16(X);
-  end TO_BIT_ARRAY_16_X86;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16_X86 (X: INTEGER_2) return BIT_ARRAY_16 is
-  begin 
-    return I2_TO_BIT16(X);
-  end TO_BIT_ARRAY_16_X86;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32_X86 (X: BYTE_ARRAY_4) return BIT_ARRAY_32 is	
-  begin 
-    return BYTE4_TO_BIT32(X);
-  end TO_BIT_ARRAY_32_X86;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32_X86 (X: INTEGER_4) return BIT_ARRAY_32 is
-  begin 
-    return I4_TO_BIT32(X);
-  end TO_BIT_ARRAY_32_X86;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_X86 (X: BIT_ARRAY_8) return BYTE is
-  begin 
-    return BIT8_TO_BYTE(X);
-  end TO_BYTE_X86;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2_X86 (X: BIT_ARRAY_16) return BYTE_ARRAY_2 is	
-  begin 
-    return BIT16_TO_BYTE2(X);
-  end TO_BYTE_ARRAY_2_X86;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2_X86 (X: INTEGER_2) return BYTE_ARRAY_2 is
-  begin 
-    return I2_TO_BYTE2(X);
-  end TO_BYTE_ARRAY_2_X86;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4_X86 (X: BIT_ARRAY_32) return BYTE_ARRAY_4 is	
-  begin 
-    return BIT32_TO_BYTE4(X);
-  end TO_BYTE_ARRAY_4_X86;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4_X86 (X: INTEGER_4) return BYTE_ARRAY_4 is
-  begin 
-    return I4_TO_BYTE4(X);
-  end TO_BYTE_ARRAY_4_X86;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2_X86 (X: BIT_ARRAY_16) return INTEGER_2 is
-  begin 
-    return BIT16_TO_I2(X); 
-  end TO_INTEGER_2_X86;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2_X86 (X: BYTE_ARRAY_2) return INTEGER_2 is
-  begin 
-    return BYTE2_TO_I2(X);
-  end TO_INTEGER_2_X86;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4_X86 (X: BIT_ARRAY_32) return INTEGER_4 is
-  begin 
-    return BIT32_TO_I4(X); 
-  end TO_INTEGER_4_X86;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4_X86 (X: BYTE_ARRAY_4) return INTEGER_4 is
-  begin 
-    return BYTE4_TO_I4(X);
-  end TO_INTEGER_4_X86;
-  -----------------------------------------------------------------------------
---x86 stop
---ppc start
-  function TO_BIT_ARRAY_8_PPC (X: BYTE) return BIT_ARRAY_8 is
-    RESULT : BIT_ARRAY_8;
-  begin
-    RESULT := BYTE_TO_BIT8(X);
-    MIRROR(RESULT);
-    return RESULT;
-  end TO_BIT_ARRAY_8_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16_PPC (X: BYTE_ARRAY_2) return BIT_ARRAY_16 is	
-    TEMP   : BYTE_ARRAY_2;
-    RESULT : BIT_ARRAY_16;
-  begin
-    TEMP := X;
-    SWAP2(TEMP);
-    RESULT := BYTE2_TO_BIT16(TEMP);
-    MIRROR(RESULT);
-    return RESULT;
-  end TO_BIT_ARRAY_16_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16_PPC (X: INTEGER_2) return BIT_ARRAY_16 is
-    RESULT : BIT_ARRAY_16;
-  begin
-    RESULT := I2_TO_BIT16(X);
-    MIRROR(RESULT);
-    return RESULT;
-  end TO_BIT_ARRAY_16_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32_PPC (X: BYTE_ARRAY_4) return BIT_ARRAY_32 is	
-    TEMP   : BYTE_ARRAY_4;
-    RESULT : BIT_ARRAY_32;
-  begin 
-    TEMP := X;
-    SWAP4(TEMP);
-    RESULT := BYTE4_TO_BIT32(TEMP);
-    MIRROR(RESULT);
-    return RESULT;
-  end TO_BIT_ARRAY_32_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32_PPC (X: INTEGER_4) return BIT_ARRAY_32 is
-    RESULT : BIT_ARRAY_32;
-  begin
-    RESULT := I4_TO_BIT32(X);
-    MIRROR(RESULT);
-    return RESULT;
-  end TO_BIT_ARRAY_32_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_PPC (X: BIT_ARRAY_8) return BYTE is
-    TEMP   : BIT_ARRAY_8;
-    RESULT : BYTE;
-  begin
-    TEMP   := X;
-    MIRROR(TEMP);
-    RESULT := BIT8_TO_BYTE(TEMP);
-    return RESULT;
-  end TO_BYTE_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2_PPC (X: BIT_ARRAY_16) return BYTE_ARRAY_2 is	
-  begin
-    return (1 => TO_BYTE(X(1..8)),
-            2 => TO_BYTE(BIT_ARRAY_8(X(9..16))));
-  end TO_BYTE_ARRAY_2_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2_PPC (X: INTEGER_2) return BYTE_ARRAY_2 is
-    RESULT: BYTE_ARRAY_2;
-  begin
-    RESULT := I2_TO_BYTE2(X);
-    SWAP2(RESULT);
-    return RESULT;
-  end TO_BYTE_ARRAY_2_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4_PPC (X: BIT_ARRAY_32) return BYTE_ARRAY_4 is	
-    TEMP  : BIT_ARRAY_32;
-    RESULT: BYTE_ARRAY_4;
-  begin
-    TEMP   := X;
-    MIRROR(TEMP);
-    RESULT := BIT32_TO_BYTE4(TEMP);
-    SWAP4(RESULT);
-    return RESULT;
-  end TO_BYTE_ARRAY_4_PPC;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4_PPC (X: INTEGER_4) return BYTE_ARRAY_4 is
-    RESULT: BYTE_ARRAY_4;
-  begin 
-    RESULT := I4_TO_BYTE4(X);
-    SWAP4(RESULT);
-    return RESULT;
-  end TO_BYTE_ARRAY_4_PPC;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2_PPC (X: BIT_ARRAY_16) return INTEGER_2 is
-    TEMP  : BIT_ARRAY_16;
-    RESULT: INTEGER_2;
-  begin
-    TEMP   := X;
-    MIRROR(TEMP);
-    RESULT := BIT16_TO_I2(TEMP);
-    return RESULT;
-  end TO_INTEGER_2_PPC;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2_PPC (X: BYTE_ARRAY_2) return INTEGER_2 is
-    TEMP   : BYTE_ARRAY_2;
-    RESULT : INTEGER_2;
-  begin
-    TEMP := X;
-    SWAP2(TEMP);
-    RESULT := BYTE2_TO_I2(TEMP);
-    return RESULT;
-  end TO_INTEGER_2_PPC;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4_PPC (X: BIT_ARRAY_32) return INTEGER_4 is
-    TEMP   : BIT_ARRAY_32;
-    RESULT : INTEGER_4;
-  begin
-    TEMP := X;
-    MIRROR(TEMP);
-    RESULT := BIT32_TO_I4(TEMP);
-    return RESULT;
-  end TO_INTEGER_4_PPC;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4_PPC (X: BYTE_ARRAY_4) return INTEGER_4 is
-    TEMP   : BYTE_ARRAY_4;
-    RESULT : INTEGER_4;
-  begin
-    TEMP := X;
-    SWAP4(TEMP);
-    RESULT := BYTE4_TO_I4(TEMP);
-    return RESULT;
-  end TO_INTEGER_4_PPC;
+   --9.4.1-8146 from ppc but common start
 
--- generic start
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_8  (X: BYTE)         return BIT_ARRAY_8 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BIT_ARRAY_8_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BIT_ARRAY_8_X86(X); --x86
-    end case;
-  end TO_BIT_ARRAY_8;
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16 (X: BYTE_ARRAY_2) return BIT_ARRAY_16 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BIT_ARRAY_16_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BIT_ARRAY_16_X86(X); --x86
-    end case;
-  end TO_BIT_ARRAY_16;   	
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_16 (X: INTEGER_2)    return BIT_ARRAY_16 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BIT_ARRAY_16_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BIT_ARRAY_16_X86(X); --x86
-    end case;
-  end TO_BIT_ARRAY_16;   	
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32 (X: BYTE_ARRAY_4) return BIT_ARRAY_32 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BIT_ARRAY_32_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BIT_ARRAY_32_X86(X); --x86
-    end case;
-  end TO_BIT_ARRAY_32;   		
-  -----------------------------------------------------------------------------
-  function TO_BIT_ARRAY_32 (X: INTEGER_4)    return BIT_ARRAY_32 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BIT_ARRAY_32_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BIT_ARRAY_32_X86(X); --x86
-    end case;
-  end TO_BIT_ARRAY_32;   	
-  -----------------------------------------------------------------------------
-  function TO_BYTE         (X: BIT_ARRAY_8)  return BYTE is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BYTE_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BYTE_X86(X); --x86
-    end case;
-  end TO_BYTE;   	
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2 (X: BIT_ARRAY_16) return BYTE_ARRAY_2 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BYTE_ARRAY_2_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BYTE_ARRAY_2_X86(X); --x86
-    end case;
-  end TO_BYTE_ARRAY_2;	
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_2 (X: INTEGER_2)    return BYTE_ARRAY_2 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BYTE_ARRAY_2_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BYTE_ARRAY_2_X86(X); --x86
-    end case;
-  end TO_BYTE_ARRAY_2;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4 (X: BIT_ARRAY_32) return BYTE_ARRAY_4 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BYTE_ARRAY_4_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BYTE_ARRAY_4_X86(X); --x86
-    end case;
-  end TO_BYTE_ARRAY_4;	
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY_4 (X: INTEGER_4)    return BYTE_ARRAY_4 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_BYTE_ARRAY_4_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_BYTE_ARRAY_4_X86(X); --x86
-    end case;
-  end TO_BYTE_ARRAY_4;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2    (X: BIT_ARRAY_16) return INTEGER_2 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_INTEGER_2_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_INTEGER_2_X86(X); --x86
-    end case;
-  end TO_INTEGER_2;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_2    (X: BYTE_ARRAY_2) return INTEGER_2 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_INTEGER_2_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_INTEGER_2_X86(X); --x86
-    end case;
-  end TO_INTEGER_2;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4    (X: BIT_ARRAY_32) return INTEGER_4 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_INTEGER_4_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_INTEGER_4_X86(X); --x86
-    end case;
-  end TO_INTEGER_4;
-  -----------------------------------------------------------------------------
-  function TO_INTEGER_4    (X: BYTE_ARRAY_4) return INTEGER_4 is
-  begin
-    case SYSTEM.DEFAULT_BIT_ORDER is  
-      when SYSTEM.HIGH_ORDER_FIRST => return TO_INTEGER_4_PPC(X); --ppc        
-      when SYSTEM. LOW_ORDER_FIRST => return TO_INTEGER_4_X86(X); --x86
-    end case;
-  end TO_INTEGER_4;
-  -----------------------------------------------------------------------------
-  function TO_STRING (X: BYTE_ARRAY) return STRING is			-- V3.0
-    RESULT : STRING(X'RANGE);
-  begin
-    for I in X'RANGE loop
-      RESULT(I) := CHARACTER'VAL(INTEGER(X(I)));      
-    end loop;
-    return RESULT;
-  end TO_STRING;
-  -----------------------------------------------------------------------------
-  function TO_BYTE_ARRAY (X: STRING) return BYTE_ARRAY is		-- V3.0
-    RESULT : BYTE_ARRAY(X'RANGE);
-  begin
-    for I in X'RANGE loop
-      RESULT(I) := BYTE(CHARACTER'POS(X(I)));
-    end loop;
-    return RESULT;
-  end TO_BYTE_ARRAY;
-  -----------------------------------------------------------------------------
-  function XOR_CHECK_SUM (X: BYTE_ARRAY) return BYTE is
-    CHECK_SUM : BYTE := 0;
-  begin
-    for INDEX in X'FIRST..X'LAST loop
-      CHECK_SUM := CHECK_SUM xor X(INDEX);
-    end loop;
-    return CHECK_SUM;
-  end XOR_CHECK_SUM;
-  -----------------------------------------------------------------------------
+   function Byte_To_Bit8   is new Unchecked_Conversion (Source => Byte,
+                                                        Target => Bit_Array_8);
+   -----------------------------------------------------------------------------
+   function Byte2_To_Bit16 is new Unchecked_Conversion (Source => Byte_Array_2,
+                                                        Target => Bit_Array_16);
+   -----------------------------------------------------------------------------
+   function I2_To_Bit16    is new Unchecked_Conversion (Source => Integer_2,
+                                                        Target => Bit_Array_16);
+   -----------------------------------------------------------------------------
+   function Byte4_To_Bit32 is new Unchecked_Conversion (Source => Byte_Array_4,
+                                                        Target => Bit_Array_32);
+   -----------------------------------------------------------------------------
+   function I4_To_Bit32    is new Unchecked_Conversion (Source => Integer_4,
+                                                        Target => Bit_Array_32);
+   -----------------------------------------------------------------------------
+   function Bit8_To_Byte   is new Unchecked_Conversion (Source => Bit_Array_8,
+                                                        Target => Byte);
+   -----------------------------------------------------------------------------
+   function Bit16_To_Byte2 is new Unchecked_Conversion (Source => Bit_Array_16,
+                                                        Target => Byte_Array_2);
+   -----------------------------------------------------------------------------
+   function I2_To_Byte2    is new Unchecked_Conversion (Source => Integer_2,
+                                                        Target => Byte_Array_2);
+   -----------------------------------------------------------------------------
+   function Bit32_To_Byte4 is new Unchecked_Conversion (Source => Bit_Array_32,
+                                                        Target => Byte_Array_4);
+   -----------------------------------------------------------------------------
+   function I4_To_Byte4    is new Unchecked_Conversion (Source => Integer_4,
+                                                        Target => Byte_Array_4);
+   -----------------------------------------------------------------------------
+   function Bit16_To_I2    is new Unchecked_Conversion (Source => Bit_Array_16,
+                                                        Target => Integer_2);
+   -----------------------------------------------------------------------------
+   function Byte2_To_I2    is new Unchecked_Conversion (Source => Byte_Array_2,
+                                                        Target => Integer_2);
+   -----------------------------------------------------------------------------
+   function Bit32_To_I4    is new Unchecked_Conversion (Source => Bit_Array_32,
+                                                        Target => Integer_4);
+   -----------------------------------------------------------------------------
+   function Byte4_To_I4    is new Unchecked_Conversion (Source => Byte_Array_4,
+                                                        Target => Integer_4);
+   -----------------------------------------------------------------------------
+   --9.4.1-8146 from ppc but common stop
+   --x86 start
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_8_X86 (X : Byte) return Bit_Array_8 is
+   begin
+      return Byte_To_Bit8 (X);
+   end To_Bit_Array_8_X86;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16_X86 (X : Byte_Array_2) return Bit_Array_16 is
+   begin
+      return Byte2_To_Bit16 (X);
+   end To_Bit_Array_16_X86;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16_X86 (X : Integer_2) return Bit_Array_16 is
+   begin
+      return I2_To_Bit16 (X);
+   end To_Bit_Array_16_X86;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32_X86 (X : Byte_Array_4) return Bit_Array_32 is
+   begin
+      return Byte4_To_Bit32 (X);
+   end To_Bit_Array_32_X86;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32_X86 (X : Integer_4) return Bit_Array_32 is
+   begin
+      return I4_To_Bit32 (X);
+   end To_Bit_Array_32_X86;
+   -----------------------------------------------------------------------------
+   function To_Byte_X86 (X : Bit_Array_8) return Byte is
+   begin
+      return Bit8_To_Byte (X);
+   end To_Byte_X86;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2_X86 (X : Bit_Array_16) return Byte_Array_2 is
+   begin
+      return Bit16_To_Byte2 (X);
+   end To_Byte_Array_2_X86;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2_X86 (X : Integer_2) return Byte_Array_2 is
+   begin
+      return I2_To_Byte2 (X);
+   end To_Byte_Array_2_X86;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4_X86 (X : Bit_Array_32) return Byte_Array_4 is
+   begin
+      return Bit32_To_Byte4 (X);
+   end To_Byte_Array_4_X86;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4_X86 (X : Integer_4) return Byte_Array_4 is
+   begin
+      return I4_To_Byte4 (X);
+   end To_Byte_Array_4_X86;
+   -----------------------------------------------------------------------------
+   function To_Integer_2_X86 (X : Bit_Array_16) return Integer_2 is
+   begin
+      return Bit16_To_I2 (X);
+   end To_Integer_2_X86;
+   -----------------------------------------------------------------------------
+   function To_Integer_2_X86 (X : Byte_Array_2) return Integer_2 is
+   begin
+      return Byte2_To_I2 (X);
+   end To_Integer_2_X86;
+   -----------------------------------------------------------------------------
+   function To_Integer_4_X86 (X : Bit_Array_32) return Integer_4 is
+   begin
+      return Bit32_To_I4 (X);
+   end To_Integer_4_X86;
+   -----------------------------------------------------------------------------
+   function To_Integer_4_X86 (X : Byte_Array_4) return Integer_4 is
+   begin
+      return Byte4_To_I4 (X);
+   end To_Integer_4_X86;
+   -----------------------------------------------------------------------------
+   --x86 stop
+   --ppc start
+   function To_Bit_Array_8_Ppc (X : Byte) return Bit_Array_8 is
+      Result : Bit_Array_8;
+   begin
+      Result := Byte_To_Bit8 (X);
+      Mirror (Result);
+      return Result;
+   end To_Bit_Array_8_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16_Ppc (X : Byte_Array_2) return Bit_Array_16 is
+      Temp   : Byte_Array_2;
+      Result : Bit_Array_16;
+   begin
+      Temp := X;
+      Swap2 (Temp);
+      Result := Byte2_To_Bit16 (Temp);
+      Mirror (Result);
+      return Result;
+   end To_Bit_Array_16_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16_Ppc (X : Integer_2) return Bit_Array_16 is
+      Result : Bit_Array_16;
+   begin
+      Result := I2_To_Bit16 (X);
+      Mirror (Result);
+      return Result;
+   end To_Bit_Array_16_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32_Ppc (X : Byte_Array_4) return Bit_Array_32 is
+      Temp   : Byte_Array_4;
+      Result : Bit_Array_32;
+   begin
+      Temp := X;
+      Swap4 (Temp);
+      Result := Byte4_To_Bit32 (Temp);
+      Mirror (Result);
+      return Result;
+   end To_Bit_Array_32_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32_Ppc (X : Integer_4) return Bit_Array_32 is
+      Result : Bit_Array_32;
+   begin
+      Result := I4_To_Bit32 (X);
+      Mirror (Result);
+      return Result;
+   end To_Bit_Array_32_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Byte_Ppc (X : Bit_Array_8) return Byte is
+      Temp   : Bit_Array_8;
+      Result : Byte;
+   begin
+      Temp   := X;
+      Mirror (Temp);
+      Result := Bit8_To_Byte (Temp);
+      return Result;
+   end To_Byte_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2_Ppc (X : Bit_Array_16) return Byte_Array_2 is
+   begin
+      return (1 => To_Byte (X (1 .. 8)),
+              2 => To_Byte (Bit_Array_8 (X (9 .. 16))));
+   end To_Byte_Array_2_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2_Ppc (X : Integer_2) return Byte_Array_2 is
+      Result : Byte_Array_2;
+   begin
+      Result := I2_To_Byte2 (X);
+      Swap2 (Result);
+      return Result;
+   end To_Byte_Array_2_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4_Ppc (X : Bit_Array_32) return Byte_Array_4 is
+      Temp   : Bit_Array_32;
+      Result : Byte_Array_4;
+   begin
+      Temp   := X;
+      Mirror (Temp);
+      Result := Bit32_To_Byte4 (Temp);
+      Swap4 (Result);
+      return Result;
+   end To_Byte_Array_4_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4_Ppc (X : Integer_4) return Byte_Array_4 is
+      Result : Byte_Array_4;
+   begin
+      Result := I4_To_Byte4 (X);
+      Swap4 (Result);
+      return Result;
+   end To_Byte_Array_4_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Integer_2_Ppc (X : Bit_Array_16) return Integer_2 is
+      Temp   : Bit_Array_16;
+      Result : Integer_2;
+   begin
+      Temp   := X;
+      Mirror (Temp);
+      Result := Bit16_To_I2 (Temp);
+      return Result;
+   end To_Integer_2_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Integer_2_Ppc (X : Byte_Array_2) return Integer_2 is
+      Temp   : Byte_Array_2;
+      Result : Integer_2;
+   begin
+      Temp := X;
+      Swap2 (Temp);
+      Result := Byte2_To_I2 (Temp);
+      return Result;
+   end To_Integer_2_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Integer_4_Ppc (X : Bit_Array_32) return Integer_4 is
+      Temp   : Bit_Array_32;
+      Result : Integer_4;
+   begin
+      Temp := X;
+      Mirror (Temp);
+      Result := Bit32_To_I4 (Temp);
+      return Result;
+   end To_Integer_4_Ppc;
+   -----------------------------------------------------------------------------
+   function To_Integer_4_Ppc (X : Byte_Array_4) return Integer_4 is
+      Temp   : Byte_Array_4;
+      Result : Integer_4;
+   begin
+      Temp := X;
+      Swap4 (Temp);
+      Result := Byte4_To_I4 (Temp);
+      return Result;
+   end To_Integer_4_Ppc;
 
-end SATTMATE_TYPES;
+   -- generic start
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_8  (X : Byte)         return Bit_Array_8 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Bit_Array_8_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Bit_Array_8_X86 (X); --x86
+      end case;
+   end To_Bit_Array_8;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16 (X : Byte_Array_2) return Bit_Array_16 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Bit_Array_16_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Bit_Array_16_X86 (X); --x86
+      end case;
+   end To_Bit_Array_16;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_16 (X : Integer_2)    return Bit_Array_16 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Bit_Array_16_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Bit_Array_16_X86 (X); --x86
+      end case;
+   end To_Bit_Array_16;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32 (X : Byte_Array_4) return Bit_Array_32 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Bit_Array_32_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Bit_Array_32_X86 (X); --x86
+      end case;
+   end To_Bit_Array_32;
+   -----------------------------------------------------------------------------
+   function To_Bit_Array_32 (X : Integer_4)    return Bit_Array_32 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Bit_Array_32_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Bit_Array_32_X86 (X); --x86
+      end case;
+   end To_Bit_Array_32;
+   -----------------------------------------------------------------------------
+   function To_Byte         (X : Bit_Array_8)  return Byte is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Byte_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Byte_X86 (X); --x86
+      end case;
+   end To_Byte;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2 (X : Bit_Array_16) return Byte_Array_2 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Byte_Array_2_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Byte_Array_2_X86 (X); --x86
+      end case;
+   end To_Byte_Array_2;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_2 (X : Integer_2)    return Byte_Array_2 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Byte_Array_2_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Byte_Array_2_X86 (X); --x86
+      end case;
+   end To_Byte_Array_2;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4 (X : Bit_Array_32) return Byte_Array_4 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Byte_Array_4_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Byte_Array_4_X86 (X); --x86
+      end case;
+   end To_Byte_Array_4;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array_4 (X : Integer_4)    return Byte_Array_4 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Byte_Array_4_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Byte_Array_4_X86 (X); --x86
+      end case;
+   end To_Byte_Array_4;
+   -----------------------------------------------------------------------------
+   function To_Integer_2    (X : Bit_Array_16) return Integer_2 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Integer_2_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Integer_2_X86 (X); --x86
+      end case;
+   end To_Integer_2;
+   -----------------------------------------------------------------------------
+   function To_Integer_2    (X : Byte_Array_2) return Integer_2 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Integer_2_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Integer_2_X86 (X); --x86
+      end case;
+   end To_Integer_2;
+   -----------------------------------------------------------------------------
+   function To_Integer_4    (X : Bit_Array_32) return Integer_4 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Integer_4_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Integer_4_X86 (X); --x86
+      end case;
+   end To_Integer_4;
+   -----------------------------------------------------------------------------
+   function To_Integer_4    (X : Byte_Array_4) return Integer_4 is
+   begin
+      case System.Default_Bit_Order is
+         when System.High_Order_First => return To_Integer_4_Ppc (X); --ppc
+         when System. Low_Order_First => return To_Integer_4_X86 (X); --x86
+      end case;
+   end To_Integer_4;
+   -----------------------------------------------------------------------------
+   function To_String (X : Byte_Array) return String is			-- V3.0
+      Result : String (X'Range);
+   begin
+      for I in X'Range loop
+         Result (I) := Character'Val (Integer (X (I)));
+      end loop;
+      return Result;
+   end To_String;
+   -----------------------------------------------------------------------------
+   function To_Byte_Array (X : String) return Byte_Array is		-- V3.0
+      Result : Byte_Array (X'Range);
+   begin
+      for I in X'Range loop
+         Result (I) := Byte (Character'Pos (X (I)));
+      end loop;
+      return Result;
+   end To_Byte_Array;
+   -----------------------------------------------------------------------------
+   function Xor_Check_Sum (X : Byte_Array) return Byte is
+      Check_Sum : Byte := 0;
+   begin
+      for Index in X'First .. X'Last loop
+         Check_Sum := Check_Sum xor X (Index);
+      end loop;
+      return Check_Sum;
+   end Xor_Check_Sum;
+   -----------------------------------------------------------------------------
+
+end Sattmate_Types;
 
