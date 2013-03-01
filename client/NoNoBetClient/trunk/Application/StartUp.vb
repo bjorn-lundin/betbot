@@ -3,7 +3,6 @@ Imports System.Data
 Imports System.IO
 Imports System.IO.Directory
 Imports BaseComponents
-Imports Npgsql
 Imports NoNoBetComponents
 Imports DbInterface
 

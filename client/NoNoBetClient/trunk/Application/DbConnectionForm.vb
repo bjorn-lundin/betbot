@@ -5,7 +5,6 @@ Imports System.Data
 Imports System.Windows.Forms
 Imports System.Xml
 Imports System.IO
-Imports Npgsql
 Imports DbInterface
 Imports DbInterface.DbConnection
 Imports Microsoft.Win32
