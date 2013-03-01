@@ -43,16 +43,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Security">
-      <HintPath>..\..\..\..\Program Files (x86)\PostgreSQL\Npgsql\ms.net4.0\Mono.Security.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\Mono.Security.dll</HintPath>
     </Reference>
-    <Reference Include="Npgsql">
-      <HintPath>..\..\..\..\Program Files (x86)\PostgreSQL\Npgsql\ms.net4.0\Npgsql.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Npgsql, Version=2.0.12.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="policy.2.0.Npgsql">
-      <HintPath>..\..\..\..\Program Files (x86)\PostgreSQL\Npgsql\ms.net4.0\policy.2.0.Npgsql.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="policy.2.0.Npgsql, Version=0.0.0.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\policy.2.0.Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -115,6 +112,7 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
