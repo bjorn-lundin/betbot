@@ -157,9 +157,15 @@ Public Class DbConnectionString
         ' LoadFromRegistry()
     End Sub
 
-    Public Shared Function GetRegistryKeyObject() As RegistryKey
-        Return Registry.CurrentUser.OpenSubKey(RegistrySubKeyName, True)
-    End Function
+  Public Shared Function GetRegistryKeyObject() As RegistryKey
+    Dim regSubKey As RegistryKey = Nothing
+    Try
+      regSubKey = Registry.CurrentUser.OpenSubKey(RegistrySubKeyName, True)
+      Return regSubKey
+    Catch ex As Exception
+      Return Nothing
+    End Try
+  End Function
 
     Public Shared Sub ClearRegistry()
         Dim regSubKey As RegistryKey = GetRegistryKeyObject()
