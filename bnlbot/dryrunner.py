@@ -16,6 +16,7 @@ class DryRunner(object):
         self.back_price    = runner_dict['bp']        
         self.lay_price     = runner_dict['lp']        
         self.index         = runner_dict['idx']        
+        self.name          = runner_dict['name']        
 
 
     ###############################################################################        
@@ -36,7 +37,7 @@ class DryRunner(object):
                       (%s,%s,%s,%s,%s,%s)",
                       (self.market_id,  self.selection_id,      \
                        self.index, self.back_price,  \
-                       self.lay_price,  None))
+                       self.lay_price,  self.name))
             cur.close()
             
         except psycopg2.IntegrityError:
