@@ -112,7 +112,10 @@ class SimpleBot(object):
 
     def check_strategy(self, market_id ):
         """check market for suitable bet"""
-        if market_id:
+        if market_id:        
+            self.do_throttle()
+            bf_market = self.api.get_market(market_id)
+        
             # get market prices
             self.do_throttle()
             prices = self.api.get_market_prices(market_id)
@@ -152,9 +155,20 @@ class SimpleBot(object):
                     d['lp'] = lp 
                     d['sel_id'] = sel_id
                     d['idx'] = idx 	
+                    # get the name, and thus the track#
+                    name = "100. not found"
+                    if bf_market and type(bf_market) is dict :
+                        for runner in bf_market['runners'] :
+                            if int(runner['selection_id']) == int(sel_id) :
+                                name = runner['name']
+                                break
+                    d['name'] = name 	
                     
                     dr = DryRunner(self.conn, self.log, d)
                     dr.insert()
+
+
+
 
 
     def start(self, uname = '', pword = '', prod_id = '', vend_id = ''):
