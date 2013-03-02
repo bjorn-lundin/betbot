@@ -7,11 +7,15 @@ with Gnat.Strings;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Races;
 with Logging; use Logging;
+--with Ada.Directories;
+with Gnat.Os_Lib;
+with Ada.Characters.Latin_1;
 
 procedure Simulator is
    Not_Implemented,
    Bad_Animal,
    Bad_Bet_Type,
+   Bad_Graph_Type,
    Bad_Name_Type : exception;
 
    Eol                      : Boolean := False;
@@ -38,16 +42,18 @@ procedure Simulator is
    Race                                 : Races.Race_Type;
 
 
-   Global_Animal                               : Races.Animal_Type;
-   Global_Bet_Name                             : Races.Bet_Name_Type;
-   Global_Bet_Type                             : Races.Bet_Type_Type;
-   Global_Profit                               : Races.Profit_Type := 0.0;
-   Global_Saldo                                : Races.Saldo_Type := 0.0;
+   Global_Animal                                  : Races.Animal_Type;
+   Global_Bet_Name                                : Races.Bet_Name_Type;
+   Global_Bet_Type                                : Races.Bet_Type_Type;
+   Global_Graph_Type                              : Races.Graph_Type;
+
+   Global_Profit                                  : Races.Profit_Type := 0.0;
+   Global_Saldo                                   : Races.Saldo_Type := 0.0;
    ---   Global_Date                          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-   Global_Max_Daily_Loss                       : Races.Max_Daily_Loss_Type := 0.0;
-   Global_Max_Profit_Factor                    : Races.Max_Profit_Factor_Type := 0.0;
-   Global_Bet_Laid                             : Boolean := False;
-   Global_Size                                 : Races.Size_Type := 0.0;
+   Global_Max_Daily_Loss                          : Races.Max_Daily_Loss_Type := 0.0;
+   Global_Max_Profit_Factor                       : Races.Max_Profit_Factor_Type := 0.0;
+   Global_Bet_Laid                                : Boolean := False;
+   Global_Size                                    : Races.Size_Type := 0.0;
    --   Global_Min_Price                            : Races.Min_Price_Type := 0.0;
    --   Global_Max_Price                            : Races.Max_Price_Type := 0.0;
 
@@ -59,14 +65,19 @@ procedure Simulator is
    type Max_Price_Index_Type is range 1 .. 25 ;
    type Min_Price_Index_Type is range 1 .. 25 ;
 
-   Filename : Unbounded_String := Null_Unbounded_String;
-   Fil : Unbounded_String := Null_Unbounded_String;
-   Data_Dir : Unbounded_String := Null_Unbounded_String;
-   Fil_Gpi : Unbounded_String := Null_Unbounded_String;
+   Filename      : Unbounded_String := Null_Unbounded_String;
+   Fil           : Unbounded_String := Null_Unbounded_String;
+   Data_Dir      : Unbounded_String := Null_Unbounded_String;
+   Fil_Gpi       : Unbounded_String := Null_Unbounded_String;
+   Contents_Gpi  : Unbounded_String := Null_Unbounded_String;
 
-   Target : Text_Io.File_Type;
+   Target_Dat : Text_Io.File_Type;
+   Target_Gpi : Text_Io.File_Type;
 
+   Global_Directory_Separator : String (1 .. 1) ;
 begin
+
+   Global_Directory_Separator (1) := Gnat.Os_Lib.Directory_Separator;
 
    Define_Switch (Config, Sa_Price'Access,
                   "-n:", Long_Switch => "--price=",
@@ -132,39 +143,55 @@ begin
    --   Display_Help (Config);
 
 
+   begin
+      if Sa_Animal.all = "hound" then
+         Global_Animal := Races.Hound ;
+      elsif Sa_Animal.all = "horse" then
+         Global_Animal := Races.Horse ;
+      else
+         raise Bad_Animal with "Not supported animal: '" & Sa_Animal.all & "'";
+      end if;
 
-   if Sa_Animal.all = "hound" then
-      Global_Animal := Races.Hound ;
-   elsif Sa_Animal.all = "horse" then
-      Global_Animal := Races.Horse ;
-   else
-      raise Bad_Animal with "Not supported animal: '" & Sa_Animal.all & "'";
-   end if;
+      if Sa_Bet_Name.all = "winner" then
+         Global_Bet_Name := Races.Winner ;
+      elsif Sa_Bet_Name.all = "place" then
+         Global_Bet_Name := Races.Place ;
+      else
+         raise Bad_Name_Type with "Not supported bet name: '" & Sa_Bet_Name.all & "'";
+      end if;
 
-   if Sa_Bet_Name.all = "winner" then
-      Global_Bet_Name := Races.Winner ;
-   elsif Sa_Bet_Name.all = "place" then
-      Global_Bet_Name := Races.Place ;
-   else
-      raise Bad_Name_Type with "Not supported bet name: '" & Sa_Bet_Name.all & "'";
-   end if;
+      if Sa_Bet_Type.all = "lay" then
+         Global_Bet_Type := Races.Lay ;
+      elsif Sa_Bet_Type.all = "back" then
+         Global_Bet_Type := Races.Back ;
+      else
+         raise Bad_Bet_Type with "Not supported bet type: '" & Sa_Bet_Type.all & "'";
+      end if;
 
-   if Sa_Bet_Type.all = "lay" then
-      Global_Bet_Type := Races.Lay ;
-   elsif Sa_Bet_Type.all = "back" then
-      Global_Bet_Type := Races.Back ;
-   else
-      raise Bad_Bet_Type with "Not supported bet type: '" & Sa_Bet_Type.all & "'";
-   end if;
-
-
-   --  Global_Min_Price := Races.Min_Price_Type'Value (Sa_Min_Price.all);
-   --  Global_Max_Price := Races.Max_Price_Type'Value (Sa_Max_Price.all);
-   Global_Size := Races.Size_Type'Value (Sa_Size.all);
-   Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type'Value (Sa_Max_Profit_Factor.all);
-   Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
+      if Sa_Graph_Type.all = "daily" then
+         Global_Graph_Type := Races.Daily ;
+      elsif Sa_Graph_Type.all = "weekly" then
+         Global_Graph_Type := Races.Weekly ;
+      elsif Sa_Graph_Type.all = "biweekly" then
+         Global_Graph_Type := Races.Biweekly ;
+      elsif Sa_Graph_Type.all = "monthly" then
+         Global_Graph_Type := Races.Monthly ;
+      else
+         raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
+      end if;
 
 
+      --  Global_Min_Price := Races.Min_Price_Type'Value (Sa_Min_Price.all);
+      --  Global_Max_Price := Races.Max_Price_Type'Value (Sa_Max_Price.all);
+      Global_Size := Races.Size_Type'Value (Sa_Size.all);
+      Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type'Value (Sa_Max_Profit_Factor.all);
+      Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
+      Global_Saldo := Races.Saldo_Type'Value (Sa_Saldo.all);
+   exception
+      when Constraint_Error =>
+         Display_Help (Config);
+         return;
+   end;
 
 
    Races.Get_Database_Data (Race_List  => Race_List,
@@ -185,19 +212,22 @@ begin
                                     --   Sa_Index.all  & "-" &
                                       ".dat");
 
-   Data_Dir := To_Unbounded_String ("sims");
-   Fil := Data_Dir & To_Unbounded_String ("/") & Filename;
-   Fil_Gpi := Data_Dir & To_Unbounded_String ("/") & Filename & To_Unbounded_String (".gpi");
-   begin
-      -- create file if not exists
-      Text_Io.Create (Mode => Text_Io.Out_File,
-                      Name => To_String (Fil),
-                      File => Target);
+   Log ("Filename: '" & To_String (Filename) & "'");
 
-      Text_Io.Close (Target);
-   exception
-      when others => null;
-   end;
+   Data_Dir := To_Unbounded_String ("sims");
+   Fil := Data_Dir & To_Unbounded_String (Global_Directory_Separator) & Filename;
+   Fil_Gpi := Data_Dir & To_Unbounded_String ("/") & Filename & To_Unbounded_String (".gpi");
+   Log ("Filename: '" & To_String (Filename) & "'");
+   --   begin
+   -- create file if not exists
+   Text_Io.Create (Mode => Text_Io.Out_File,
+                   Name => To_String (Fil),
+                   File => Target_Dat);
+
+   Text_Io.Close (Target_Dat);
+   --   exception
+   --      when others => null;
+   --   end;
 
 
    for Max_Price in Max_Price_Index_Type' Range loop
@@ -254,20 +284,39 @@ begin
          end if; -- min_price < Max_Price
          Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
          -- Append To file
-         begin
-            -- create file if not exists
-            Text_Io.Open (Mode => Text_Io.Append_File,
-                          Name => To_String (Fil),
-                          File => Target);
-            Text_Io.Put_Line (Target, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
-            Text_Io.Close (Target);
-         exception
-            when others => null;
-         end;
+         --         begin
+         -- create file if not exists
+         Text_Io.Open (Mode => Text_Io.Append_File,
+                       Name => To_String (Fil),
+                       File => Target_Dat);
+         Text_Io.Put_Line (Target_Dat, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
+         Text_Io.Close (Target_Dat);
+         --         exception
+         --            when others => null;
+         --         end;
 
 
       end loop;
    end loop;
+
+   Contents_Gpi := To_Unbounded_String (
+                                        "graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "bet_name='" & Sa_Bet_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "variant='" & Sa_Variant.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
+                                          "start_date='" & Sa_Start_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+                                          "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
+                                          "datadir='" & To_String (Data_Dir) & "'");
+
+   Text_Io.Create (Mode => Text_Io.Out_File,
+                   Name => To_String (Fil_Gpi),
+                   File => Target_Gpi);
+   Text_Io.Put_Line (Target_Gpi, To_String (Contents_Gpi) );
+   Text_Io.Close (Target_Gpi);
+
 
 
 end Simulator;
