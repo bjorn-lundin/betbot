@@ -1,23 +1,25 @@
-with Text_Io;
+--with Text_Io;
 with Sattmate_Calendar;
 with Gnat.Command_Line; use Gnat.Command_Line;
---with Sattmate_Types; use Sattmate_Types;
+with Sattmate_Types; use Sattmate_Types;
 with Gnat.Strings;
 --with Simple_List_Class;
 
 with Races;
-
+with Logging; use Logging;
 
 procedure Simulator is
+   Not_Implemented,
+   Bad_Animal,
+   Bad_Bet_Type,
+   Bad_Name_Type : exception;
 
-   Bad_Animal, Bad_Bet_Type : exception;
    Eol                      : Boolean := False;
-
 
    Sa_Price                             : aliased Gnat.Strings.String_Access;
    Sa_Delta_Price                       : aliased Gnat.Strings.String_Access;
-   Sa_Min_Price                         : aliased Gnat.Strings.String_Access;
-   Sa_Max_Price                         : aliased Gnat.Strings.String_Access;
+ --  Sa_Min_Price                         : aliased Gnat.Strings.String_Access;
+ --  Sa_Max_Price                         : aliased Gnat.Strings.String_Access;
    Sa_Bet_Type                          : aliased Gnat.Strings.String_Access;
    Sa_Graph_Type                        : aliased Gnat.Strings.String_Access;
    Sa_Start_Date                        : aliased Gnat.Strings.String_Access;
@@ -27,18 +29,35 @@ procedure Simulator is
    Sa_Animal                            : aliased Gnat.Strings.String_Access;
    Sa_Variant                           : aliased Gnat.Strings.String_Access;
    Sa_Max_Profit_Factor                 : aliased Gnat.Strings.String_Access;
+   Sa_Max_Daily_Loss                    : aliased Gnat.Strings.String_Access;
    Sa_Bet_Name                          : aliased Gnat.Strings.String_Access;
 
    Config                               :  Command_Line_Configuration;
 
-
-
-   Animal                               : Races.Animal_Type;
-   Bet_Type                             : Races.Bet_Type_Type;
-
    Race_List                            : Races.Race_Package.List_Type := Races.Race_Package.Create;
    Race                                 : Races.Race_Type;
 
+
+   Global_Animal                               : Races.Animal_Type;
+   Global_Bet_Name                             : Races.Bet_Name_Type;
+   Global_Bet_Type                             : Races.Bet_Type_Type;
+   Global_Profit                               : Races.Profit_Type := 0.0;
+   Global_Saldo                                : Races.Saldo_Type := 0.0;
+   ---   Global_Date                          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   Global_Max_Daily_Loss                       : Races.Max_Daily_Loss_Type := 0.0;
+   Global_Max_Profit_Factor                    : Races.Max_Profit_Factor_Type := 0.0;
+   Global_Bet_Laid                             : Boolean := False;
+   Global_Size                                 : Races.Size_Type := 0.0;
+--   Global_Min_Price                            : Races.Min_Price_Type := 0.0;
+--   Global_Max_Price                            : Races.Max_Price_Type := 0.0;
+
+   use type Races.Saldo_Type;
+
+   Global_Last_Loss                            : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   Global_Race_Date                            : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+
+   type Max_Price_Index_Type is range 1 .. 25 ;
+   type Min_Price_Index_Type is range 1 .. 25 ;
 
 
 begin
@@ -51,13 +70,13 @@ begin
                   "-x:",  Long_Switch => "--delta_price=",
                   Help            => "+/- fluctuation of price");
 
-   Define_Switch (Config, Sa_Min_Price'Access,
-                  "-N:",  Long_Switch => "--max_price=",
-                  Help            => "max price");
+--   Define_Switch (Config, Sa_Max_Price'Access,
+--                  "-X:",  Long_Switch => "--max_price=",
+--                  Help            => "max price");
 
-   Define_Switch (Config, Sa_Max_Price'Access,
-                  "-X:",  Long_Switch => "--min_price=",
-                  Help            => "min price");
+--   Define_Switch (Config, Sa_Min_Price'Access,
+--                  "-N:",  Long_Switch => "--min_price=",
+--                  Help            => "min price");
 
    Define_Switch (Config, Sa_Bet_Type'Access,
                   "-t:",  Long_Switch => "--bet_type=",
@@ -95,58 +114,116 @@ begin
                   "-P:",  Long_Switch => "--max_profit_factor=",
                   Help            => "if > 0, Quit when profit of the day > max_profit_factor * size ");
 
+   Define_Switch (Config, Sa_Max_Daily_Loss'Access,
+                  "-P:",  Long_Switch => "--max_daily_loss=",
+                  Help            => "How much loss is allowed to continue betting this day");
+
    Define_Switch (Config, Sa_Bet_Name'Access,
                   "-b:",  Long_Switch => "--bet_name=",
                   Help            => "'winner' or 'place'");
 
    Getopt (Config);  -- process the command line
-   Display_Help (Config);
+   --   Display_Help (Config);
 
 
 
    if Sa_Animal.all = "hound" then
-      Animal := Races.Hound ;
+      Global_Animal := Races.Hound ;
    elsif Sa_Animal.all = "horse" then
-      Animal := Races.Horse ;
+      Global_Animal := Races.Horse ;
    else
       raise Bad_Animal with "Not supported animal: '" & Sa_Animal.all & "'";
    end if;
 
-   if Sa_Bet_Type.all = "winner" then
-      Bet_Type := Races.Winner ;
-   elsif Sa_Bet_Type.all = "place" then
-      Bet_Type := Races.Place ;
+   if Sa_Bet_Name.all = "winner" then
+      Global_Bet_Name := Races.Winner ;
+   elsif Sa_Bet_Name.all = "place" then
+      Global_Bet_Name := Races.Place ;
+   else
+      raise Bad_Name_Type with "Not supported bet name: '" & Sa_Bet_Name.all & "'";
+   end if;
+
+   if Sa_Bet_Type.all = "lay" then
+      Global_Bet_Type := Races.Lay ;
+   elsif Sa_Bet_Type.all = "back" then
+      Global_Bet_Type := Races.Back ;
    else
       raise Bad_Bet_Type with "Not supported bet type: '" & Sa_Bet_Type.all & "'";
    end if;
 
 
+ --  Global_Min_Price := Races.Min_Price_Type'Value (Sa_Min_Price.all);
+ --  Global_Max_Price := Races.Max_Price_Type'Value (Sa_Max_Price.all);
+   Global_Size := Races.Size_Type'Value (Sa_Size.all);
+   Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type'Value (Sa_Max_Profit_Factor.all);
+   Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
 
 
 
 
    Races.Get_Database_Data (Race_List  => Race_List,
-                            Bet_Type   => Bet_Type,
-                            Animal     => Animal,
+                            Bet_Type   => Global_Bet_Name,
+                            Animal     => Global_Animal,
                             Start_Date => Sattmate_Calendar.To_Time_Type (Sa_Start_Date.all, "00:00:00.000"),
                             Stop_Date  => Sattmate_Calendar.To_Time_Type (Sa_Stop_Date.all, "23:59:59:999")
                            ) ;
 
 
+   for Max_Price in Max_Price_Index_Type' Range loop
+      for Min_Price in Min_Price_Index_Type'Range loop
+
+         Global_Saldo := Races.Saldo_Type'Value (Sa_Saldo.all);
+
+         if Integer(Min_Price) < Integer(Max_Price) then
+
+            Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
+            Races.Race_Package.Get_First (Race_List, Race, Eol);
+            loop
+               exit when Eol;
+               Log ("---  main loop start " & Race.Market.Market_Id'Img & " saldo :" & Integer (Global_Saldo)'Img & " -----------------" );
+               if Global_Race_Date.Day /= Race.Market.Event_Date.Day or else
+                 Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
+                 Global_Race_Date.Year /= Race.Market.Event_Date.Year then
+                  Global_Race_Date := Race.Market.Event_Date;
+                  Global_Profit := 0.0;
+                  Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
+               end if;
 
 
-   Races.Race_Package.Get_First (Race_List, Race, Eol);
-   loop
-      exit when Eol;
-      Text_Io.Put_Line ("------------------------------" );
-      Text_Io.Put_Line ("marketid: " & Race.Market.Market_Id'Img & " " &  Race.No_Of_Runners'Img & "/" & Race.No_Of_Winners'Img );
-      Text_Io.Put_Line ("--++--++--++--++--++--++--++--" );
-      Race.Show_Runners;
+               Race.Show_Runners;
+               case Global_Bet_Type is
+                  when Races.Lay =>
+                     Race. Make_Lay_Bet ( Bet_Laid         => Global_Bet_Laid,
+                                         Profit            => Global_Profit,
+                                         Saldo             => Global_Saldo,
+                                         Last_Loss         => Global_Last_Loss,
+                                         Max_Daily_Loss    => Global_Max_Daily_Loss,
+                                         Max_Profit_Factor => Global_Max_Profit_Factor,
+                                         --                                Bet_Name          => Global_Bet_Name,
+                                         Size              => Global_Size,
+                                         Min_Price         => Races.Min_Price_Type (Min_Price),
+                                         Max_Price         => Races.Max_Price_Type (Max_Price)) ;
 
-      Races.Race_Package.Get_Next (Race_List, Race, Eol);
+                     if Global_Bet_Laid then
+                        Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------" );
+                        Race.Check_Result (Profit    => Global_Profit,
+                                           Saldo     => Global_Saldo,
+                                           Last_Loss => Global_Last_Loss,
+                                           Bet_Type  => Global_Bet_Type);
+                     end if;
+                     Log ("main - Global_Profit : " & Integer (Global_Profit)'Img );
+
+                  when Races.Back => raise Not_Implemented with "Bets of type Back not implemented yet";
+               end case;
+               Log ("---  main loop stop " & Race.Market.Market_Id'Img & " profit :" & Integer (Global_Profit)'Img & " -----------------" );
+               Races.Race_Package.Get_Next (Race_List, Race, Eol);
+            end loop;
+
+            Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
+         end if; -- min_price < Max_Price
+         Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
+      end loop;
    end loop;
-
-
 
 
 end Simulator;
