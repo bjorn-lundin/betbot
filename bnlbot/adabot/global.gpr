@@ -11,7 +11,7 @@ project Global is
 
    Data_Base : Data_Base_Type := "POSTGRESQL";
 
-   Pg_Bin := external ("PG_BIN2", "/../../../tools/database/PostgreSQL/8.2/bin");
+   Pg_Bin := external ("PG_BIN2", "/usr/lib");
    Lib_Sattmate := external ("SATTMATE_A", "SATTMATE_A_not_set");
    Application_Type := external ("APPLICATION_TYPE", "SATTMATE_A_not_set");
 
