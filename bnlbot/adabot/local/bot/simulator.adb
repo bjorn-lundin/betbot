@@ -1,10 +1,10 @@
---with Text_Io;
+with Text_Io;
 with Sattmate_Calendar;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Sattmate_Types; use Sattmate_Types;
 with Gnat.Strings;
 --with Simple_List_Class;
-
+with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Races;
 with Logging; use Logging;
 
@@ -18,8 +18,8 @@ procedure Simulator is
 
    Sa_Price                             : aliased Gnat.Strings.String_Access;
    Sa_Delta_Price                       : aliased Gnat.Strings.String_Access;
- --  Sa_Min_Price                         : aliased Gnat.Strings.String_Access;
- --  Sa_Max_Price                         : aliased Gnat.Strings.String_Access;
+   --  Sa_Min_Price                         : aliased Gnat.Strings.String_Access;
+   --  Sa_Max_Price                         : aliased Gnat.Strings.String_Access;
    Sa_Bet_Type                          : aliased Gnat.Strings.String_Access;
    Sa_Graph_Type                        : aliased Gnat.Strings.String_Access;
    Sa_Start_Date                        : aliased Gnat.Strings.String_Access;
@@ -48,8 +48,8 @@ procedure Simulator is
    Global_Max_Profit_Factor                    : Races.Max_Profit_Factor_Type := 0.0;
    Global_Bet_Laid                             : Boolean := False;
    Global_Size                                 : Races.Size_Type := 0.0;
---   Global_Min_Price                            : Races.Min_Price_Type := 0.0;
---   Global_Max_Price                            : Races.Max_Price_Type := 0.0;
+   --   Global_Min_Price                            : Races.Min_Price_Type := 0.0;
+   --   Global_Max_Price                            : Races.Max_Price_Type := 0.0;
 
    use type Races.Saldo_Type;
 
@@ -59,6 +59,12 @@ procedure Simulator is
    type Max_Price_Index_Type is range 1 .. 25 ;
    type Min_Price_Index_Type is range 1 .. 25 ;
 
+   Filename : Unbounded_String := Null_Unbounded_String;
+   Fil : Unbounded_String := Null_Unbounded_String;
+   Data_Dir : Unbounded_String := Null_Unbounded_String;
+   Fil_Gpi : Unbounded_String := Null_Unbounded_String;
+
+   Target : Text_Io.File_Type;
 
 begin
 
@@ -70,13 +76,13 @@ begin
                   "-x:",  Long_Switch => "--delta_price=",
                   Help            => "+/- fluctuation of price");
 
---   Define_Switch (Config, Sa_Max_Price'Access,
---                  "-X:",  Long_Switch => "--max_price=",
---                  Help            => "max price");
+   --   Define_Switch (Config, Sa_Max_Price'Access,
+   --                  "-X:",  Long_Switch => "--max_price=",
+   --                  Help            => "max price");
 
---   Define_Switch (Config, Sa_Min_Price'Access,
---                  "-N:",  Long_Switch => "--min_price=",
---                  Help            => "min price");
+   --   Define_Switch (Config, Sa_Min_Price'Access,
+   --                  "-N:",  Long_Switch => "--min_price=",
+   --                  Help            => "min price");
 
    Define_Switch (Config, Sa_Bet_Type'Access,
                   "-t:",  Long_Switch => "--bet_type=",
@@ -152,8 +158,8 @@ begin
    end if;
 
 
- --  Global_Min_Price := Races.Min_Price_Type'Value (Sa_Min_Price.all);
- --  Global_Max_Price := Races.Max_Price_Type'Value (Sa_Max_Price.all);
+   --  Global_Min_Price := Races.Min_Price_Type'Value (Sa_Min_Price.all);
+   --  Global_Max_Price := Races.Max_Price_Type'Value (Sa_Max_Price.all);
    Global_Size := Races.Size_Type'Value (Sa_Size.all);
    Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type'Value (Sa_Max_Profit_Factor.all);
    Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
@@ -169,12 +175,37 @@ begin
                            ) ;
 
 
+   -- what filename to write this to ?
+   Filename := To_Unbounded_String ("simulation_ada1-" & Sa_Animal.all & "-" &
+                                      Sa_Graph_Type.all & "-" &
+                                      Sa_Bet_Name.all  & "-" &
+                                      Sa_Bet_Type.all  & "-" &
+                                      Sa_Start_Date.all  & "-" &
+                                      Sa_Stop_Date.all  &
+                                    --   Sa_Index.all  & "-" &
+                                      ".dat");
+
+   Data_Dir := To_Unbounded_String ("sims");
+   Fil := Data_Dir & To_Unbounded_String ("/") & Filename;
+   Fil_Gpi := Data_Dir & To_Unbounded_String ("/") & Filename & To_Unbounded_String (".gpi");
+   begin
+      -- create file if not exists
+      Text_Io.Create (Mode => Text_Io.Out_File,
+                      Name => To_String (Fil),
+                      File => Target);
+
+      Text_Io.Close (Target);
+   exception
+      when others => null;
+   end;
+
+
    for Max_Price in Max_Price_Index_Type' Range loop
       for Min_Price in Min_Price_Index_Type'Range loop
 
          Global_Saldo := Races.Saldo_Type'Value (Sa_Saldo.all);
 
-         if Integer(Min_Price) < Integer(Max_Price) then
+         if Integer (Min_Price) < Integer (Max_Price) then
 
             Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
             Races.Race_Package.Get_First (Race_List, Race, Eol);
@@ -222,6 +253,19 @@ begin
             Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
          end if; -- min_price < Max_Price
          Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
+         -- Append To file
+         begin
+            -- create file if not exists
+            Text_Io.Open (Mode => Text_Io.Append_File,
+                          Name => To_String (Fil),
+                          File => Target);
+            Text_Io.Put_Line (Target, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img );
+            Text_Io.Close (Target);
+         exception
+            when others => null;
+         end;
+
+
       end loop;
    end loop;
 
