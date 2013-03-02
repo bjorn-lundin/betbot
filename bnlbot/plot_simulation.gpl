@@ -18,8 +18,9 @@ set output datadir."/".datafil.".png"
 set style data linespoints
 set dgrid3d ,,100
 set surface 
-set contour base
+#set contour base
 #set contour surface
+set contour both
 
 set view 60, 60, 1, 1
 
