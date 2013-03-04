@@ -461,42 +461,55 @@ class BetBot(object):
         self.MAX_DAILY_PROFIT                = float(config.get('Global', 'max_daily_profit'))
         self.MAX_DAILY_LOSS                  = float(config.get('Global', 'max_daily_loss'))
 
+        self.log.info('max_daily_profit ' + str(self.MAX_DAILY_PROFIT))
+        self.log.info('max_daily_loss ' + str(self.MAX_DAILY_LOSS))
 
         self.BETTING_SIZE                    = float(config.get(bet_category, 'betting_size'))
+        self.log.info('betting_size ' + str(self.BETTING_SIZE))
+
         try :
             self.MAX_ODDS                        = float(config.get(bet_category, 'max_odds'))
         except ConfigParser.NoOptionError :
             self.MAX_ODDS = 0.0
+        self.log.info('max_odds ' + str(self.MAX_ODDS))
 
         try :
             self.MIN_ODDS                        = float(config.get(bet_category, 'min_odds'))
         except ConfigParser.NoOptionError :
             self.MIN_ODDS = 0.0
+        self.log.info('min_odds ' + str(self.MIN_ODDS))
 
         try :
             self.DELTA                           = float(config.get(bet_category, 'delta'))
         except ConfigParser.NoOptionError :
             self.DELTA = 0.0
+        self.log.info('delta ' + str(self.DELTA))
 
         try :
             self.PRICE                           = float(config.get(bet_category, 'price'))
         except ConfigParser.NoOptionError :
             self.PRICE = 0.0
+        self.log.info('price ' + str(self.PRICE))
 
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
+        self.log.info('hours_to_match_start ' + str(self.HOURS_TO_MATCH_START))
+
+
+
         self.DRY_RUN                         = config.getboolean(bet_category, 'dry_run')
+        self.log.info('dry_run ' + str(self.DRY_RUN))
+
         self.BET_CATEGORY = bet_category
+        self.log.info('Bet_category ' + self.BET_CATEGORY)
 
 
         self.LOSS_HOURS                      = int(config.get(bet_category, 'loss_hours'))
+        self.log.info('not used ? loss_hours ' + str(self.LOSS_HOURS))
 
 
 
         if self.DRY_RUN :
             self.BET_CATEGORY                = 'DRY_RUN_' + self.BET_CATEGORY
-
-        self.log.info('Bet_category ' + self.BET_CATEGORY)
-        self.log.info('dry_run ' + str(self.DRY_RUN))
 
 
         tmp_string_1                         = config.get(bet_category, 'events')
@@ -518,11 +531,14 @@ class BetBot(object):
             self.ALLOWED_MARKET_NAMES = None
 
         self.NO_OF_WINNERS                   = int (config.get(bet_category, 'no_of_winners'))
+        self.log.info('no_of_winners ' + str(self.NO_OF_WINNERS))
+
         self.MIN_NO_OF_RUNNERS               = int (config.get(bet_category, 'min_no_of_runners'))
+        self.log.info('min_no_of_runners ' + str(self.MIN_NO_OF_RUNNERS))
+
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
+        self.log.info('max_no_of_runners ' + str(self.MAX_NO_OF_RUNNERS))
 
-
-        self.log.info('config ' + str(config))
 
 
         login = ConfigParser.ConfigParser()
