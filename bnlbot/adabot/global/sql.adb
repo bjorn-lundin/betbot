@@ -10,7 +10,7 @@ with Ada.Strings.Fixed;
 --with PGAda_Unicode;
 
 package body Sql is
-  
+
 
    Global_Statement_Index_Counter : Natural := 0;
    Global_Connection              : Connection_Type;  -- the default connection;
@@ -76,7 +76,7 @@ package body Sql is
       if Statement.Private_Statement = null then
          Statement.Private_Statement := new Private_Statement_Type;
          Statement.Private_Statement.Do_Initialize;
-      end if;  
+      end if;
    end Do_Initialize;
 
    procedure Finalize (Statement : in out Statement_Type) is
@@ -267,14 +267,14 @@ package body Sql is
    end Fill_Data_In_Prepared_Statement;
 
 
-  
-  
-  
+
+
+
    ------------------------------------------------------------
    -- start local procs
    ------------------------------------------------------------
 
-  
+
    ------------------------------------------------------------
 
 
@@ -323,7 +323,7 @@ package body Sql is
    exception
       when Constraint_Error =>
          Put_Line ("Failed to convert : '" & Mytime & "' to a time");
-         raise Conversion_Error; 
+         raise Conversion_Error;
    end Convert_To_Time;
 
    --------------------------------------------------------------------------------
@@ -338,15 +338,15 @@ package body Sql is
    exception
       when Constraint_Error =>
          Put_Line ("Failed to convert : '" & Mydate & "' to a date");
-         raise Conversion_Error; 
+         raise Conversion_Error;
    end Convert_To_Date;
 
    ------------------------------------------------------------
    function Convert_To_Timestamp (Mytimestamp : String) return Sattmate_Calendar.Time_Type is
       Local_Timestamp : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-   begin -- '2002-01-06 11:22:32.123' or  
-      -- '2002-01-06 11:22:32.1' or 
-      -- '2002-01-06 11:22:32.1' or 
+   begin -- '2002-01-06 11:22:32.123' or
+      -- '2002-01-06 11:22:32.1' or
+      -- '2002-01-06 11:22:32.1' or
       -- '2002-01-06 11:22:32'
       Local_Timestamp.Year        := Sattmate_Calendar.Year_Type'Value (Mytimestamp (1 .. 4));
       Local_Timestamp.Month       := Sattmate_Calendar.Month_Type'Value (Mytimestamp (6 .. 7));
@@ -366,7 +366,7 @@ package body Sql is
    exception
       when Constraint_Error =>
          Put_Line ("Failed to convert : '" & Mytimestamp & "' to a timestamp");
-         raise Conversion_Error; 
+         raise Conversion_Error;
    end Convert_To_Timestamp;
 
    ------------------------------------------------------------
@@ -402,13 +402,13 @@ package body Sql is
          when Connection_Ok =>
             Global_Connection.Set_Connected (True);
             Set_Transaction_Isolation_Level (Read_Commited, Session);
-            --      declare 
+            --      declare
             --        Enc : String := Global_Connection.Database_Encoding;
             begin
                Global_Connection.Set_Encoding (Latin_1);
                Global_Connection.Set_Client_Encoding ("LATIN1");
                --          if Enc = "UTF8" then
-            end;  
+            end;
 
          when Connection_Bad =>
             Global_Connection.Set_Connected (False);
@@ -449,9 +449,9 @@ package body Sql is
             --reset transactions
             begin
                Rollback (Global_Transaction);
-            exception 
+            exception
                when Transaction_Error => null; --rollback what we did not start...
-            end; 		
+            end;
             Global_Transaction.Counter := Transaction_Identity_Type'First;
          end if;
          Global_Statement_Index_Counter := 0;
@@ -694,7 +694,7 @@ package body Sql is
    -- end transaction handling procs
    --------------------------------------------------------------
 
-  
+
    --------------------------------------------------------------
    -- start public cursor handling procs
    --------------------------------------------------------------
@@ -754,7 +754,7 @@ package body Sql is
 
    function Determine_Errors (Result : Result_Type; Stm_String : String) return Error_Array_Type is
    -- see http://www.postgresql.org/docs/8.3/interactive/errcodes-appendix.html
-      Local_Array : Error_Array_Type := (others => False); 
+      Local_Array : Error_Array_Type := (others => False);
       Sql_State   : String := Error_Sql_State (Result);
       -----------------------------------------------------
       procedure Print_Diagnostics (Label, Content : String) is
@@ -788,12 +788,12 @@ package body Sql is
          Local_Array (Error_No_Such_Column) := True;
       elsif Sql_State = "42P01" then                 --	UNDEFINED TABLE
          Local_Array (Error_No_Such_Object) := True;
-      else  
+      else
          Print_All_Diagnostics;                       -- only print info on unknown errors
-      end if;  
+      end if;
       return Local_Array;
    end Determine_Errors;
-   --------------------------------------- 
+   ---------------------------------------
    function Determine_Errors (Private_Statement : Private_Statement_Type) return Error_Array_Type is
       Ea : Error_Array_Type := Determine_Errors (Private_Statement.Result, To_String (Private_Statement.Prepared_Statement));
    begin
@@ -801,7 +801,7 @@ package body Sql is
       --        if EA(i) then
       --          Put_Line(To_String(Private_Statement.Prepared_Statement));
       --          exit;
-      --        end if; 
+      --        end if;
       --      end loop;
       return Ea;
    end Determine_Errors;
@@ -831,7 +831,7 @@ package body Sql is
          Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
-    
+
       declare
          Declare_String : String :=
                             "declare " & Private_Statement.Cursor_Name & " cursor without hold for " &
@@ -842,8 +842,8 @@ package body Sql is
          Status := Result_Status (Dml_Result);
          if Pgerror (Status) then
             Print_Errors ("Open_Cursor", Status);
-            declare  
-               Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);         
+            declare
+               Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);
             begin
                Clear (Dml_Result);
                Global_Connection.Exec ("rollback to savepoint a_select", Savepoint_Result);
@@ -860,11 +860,11 @@ package body Sql is
                   raise No_Such_Object;
                elsif Errors (Error_No_Such_Column) then
                   raise No_Such_Column;
-               end if;  
+               end if;
             end;
             raise Postgresql_Error;
          end if;
-      end;        
+      end;
 
       Global_Connection.Exec ("release savepoint a_select", Savepoint_Result);
       Status := Result_Status (Savepoint_Result);
@@ -901,12 +901,12 @@ package body Sql is
          -- we need to get another Private_Statement.Number_To_Fetch rows into
          -- our result set
          declare
-            Fetch_String : String := 
+            Fetch_String : String :=
                              "fetch forward" & Natural'Image (Private_Statement.Number_To_Fetch) & " in " & Private_Statement.Cursor_Name;
-         begin     
+         begin
             Log ("Fetch: " & Fetch_String);
             Global_Connection.Exec (Fetch_String, Private_Statement.Result);
-         end;        
+         end;
          Dml_Status := Result_Status (Private_Statement.Result);
          Log ("Fetched from db");
 
@@ -914,7 +914,7 @@ package body Sql is
             Print_Errors ("Fetch", Dml_Status);
             raise Postgresql_Error;
          end if;
-         --      Private_Statement.Result.Set_Encoding(Global_Connection.Get_Encoding); 
+         --      Private_Statement.Result.Set_Encoding(Global_Connection.Get_Encoding);
          begin
             Ntpl := Rows_Affected (Private_Statement.Result);
          exception
@@ -949,10 +949,10 @@ package body Sql is
       begin
          declare
             Close_String : String := "close " & Cursor_Name;
-         begin  
+         begin
             Global_Connection.Exec (Close_String,  Dml_Result);
             Log ("Close_This_Cursor -> " & Close_String);
-         end;  
+         end;
          Dml_Status := Result_Status (Dml_Result);
          Clear (Dml_Result);
          if Pgerror (Dml_Status) then
@@ -993,7 +993,7 @@ package body Sql is
                       No_Of_Affected_Rows         : out Natural) is
       Status : Exec_Status_Type;
       type Savepoint_Handling_Type is (Insert, Remove, Rollback_To);
-    
+
       -------------------------------------------------------------------------
 
       -------------------------------------------------------------------------
@@ -1003,17 +1003,17 @@ package body Sql is
          Dml_Status  : Exec_Status_Type;
          Dml_Result  : Result_Type;
       begin
-         if Clear_Statement then 
+         if Clear_Statement then
             Clear (P_Stm.Result);
          end if;
          case How is
             when Insert =>
-               Global_Connection.Exec ("savepoint " & 
+               Global_Connection.Exec ("savepoint " &
                                          Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
-            when Remove =>  
-               Global_Connection.Exec ("release savepoint " & 
+            when Remove =>
+               Global_Connection.Exec ("release savepoint " &
                                          Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
-            when Rollback_To =>  
+            when Rollback_To =>
                Global_Connection.Exec ("rollback to savepoint " &
                                          Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
          end case;
@@ -1023,33 +1023,33 @@ package body Sql is
          if Pgerror (Dml_Status) then
             case How is
                when Insert =>
-                  Print_Errors ("savepoint " & 
+                  Print_Errors ("savepoint " &
                                   Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
-               when Remove =>  
-                  Print_Errors ("release savepoint " & 
+               when Remove =>
+                  Print_Errors ("release savepoint " &
                                   Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
 
-               when Rollback_To =>  
-                  Print_Errors ("rollback to savepoint " & 
+               when Rollback_To =>
+                  Print_Errors ("rollback to savepoint " &
                                   Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
             end case;
             raise Postgresql_Error;
          end if;
-      end Handle_Savepoint;  
+      end Handle_Savepoint;
       -------------------------------------------------------------------------
       procedure Handle_Error (P_Stm : in out Private_Statement_Type; Clear_Statement : in Boolean) is
-         Errors      : Error_Array_Type  := Determine_Errors (P_Stm);         
+         Errors      : Error_Array_Type  := Determine_Errors (P_Stm);
       begin
-         --      Log("Handle_Error -> '" & Err_String & "'" ); 
-         if Clear_Statement then 
+         --      Log("Handle_Error -> '" & Err_String & "'" );
+         if Clear_Statement then
             Clear (P_Stm.Result);
          end if;
-         -- rollback to the savepoint 
+         -- rollback to the savepoint
          Handle_Savepoint (How => Rollback_To, P_Stm => P_Stm);
 
          -- remove the savepoint
          Handle_Savepoint (How => Remove, P_Stm => P_Stm);
-      
+
          if    Errors (Error_Duplicate_Index) then
             raise Duplicate_Index;
          elsif Errors (Error_No_Such_Object) then
@@ -1106,7 +1106,7 @@ package body Sql is
 
             if Pgerror (Status) then
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
-            end if;  
+            end if;
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
 
@@ -1117,22 +1117,22 @@ package body Sql is
             No_Of_Affected_Rows := Natural'Last;
 
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
-        
+
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
             Status := Result_Status (Private_Statement.Result);
 
             if Pgerror (Status) then
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
-            end if;  
-      
-            No_Of_Affected_Rows := Rows_Affected (Private_Statement.Result);        
+            end if;
+
+            No_Of_Affected_Rows := Rows_Affected (Private_Statement.Result);
             Private_Statement.Result.Clear;
- 
+
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
-        
+
             Log ("Execute.Delete end");
-       
+
          when An_Update =>
             Log ("Execute.Update start");
             No_Of_Affected_Rows := Natural'Last;
@@ -1144,7 +1144,7 @@ package body Sql is
 
             if Pgerror (Status) then
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
-            end if;                 
+            end if;
 
             No_Of_Affected_Rows := Rows_Affected (Private_Statement.Result);
             Private_Statement.Result.Clear;
@@ -1161,7 +1161,7 @@ package body Sql is
             Status := Result_Status (Private_Statement.Result);
             if Pgerror (Status) then
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
-            end if;                 
+            end if;
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
             Log ("Execute.DDL end");
@@ -1360,6 +1360,7 @@ package body Sql is
       end if;
    exception
       when Constraint_Error =>
+         ada.text_io.put_line("local_string: '" & local_string & "'");
          Put_Line ("No such column: " & Positive'Image (Parameter));
          raise No_Such_Column;
    end Get;
@@ -1638,7 +1639,7 @@ package body Sql is
       return "Error_Message not implemented";
    end Error_Message;
 
-  
+
    procedure Get_Column_Info
      (Statement   : Statement_Type;
       Parameter   : Positive;
@@ -1654,8 +1655,8 @@ package body Sql is
    begin
       return 0;
    end Get_Nbr_Columns;
-  
-  
+
+
    --------------------------------------------------------------
    -- end unimplemented procs
    ------------------------------------------------------------

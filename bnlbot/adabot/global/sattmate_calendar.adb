@@ -190,10 +190,14 @@ package body Sattmate_Calendar is
       end Month;
    begin
 
-      if Date_Str'Length >= 11 then
+      if Date_Str'Length = 11 then
          A_Time_Type.Year  := Year_Type'Value (Date (8 .. 11));
          A_Time_Type.Month := Month (Date (4 .. 6)); --     chg-25546
          A_Time_Type.Day   := Day_Type'Value (Date (1 .. 2));
+      elsif Date_Str'Length = 10 then
+         A_Time_Type.Year  := Year_Type'Value (Date (1 .. 4));
+         A_Time_Type.Month := Month_Type'VAlue (Date (6 .. 7));
+         A_Time_Type.Day   := Day_Type'Value (Date (9 .. 10));
       end if;
 
 

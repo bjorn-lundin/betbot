@@ -98,8 +98,8 @@ package body Races is
          when Place =>
             Sql.Prepare (Select_Markets, "select * from " &
                            "DRY_MARKETS " &
-                           "where EVENT_DATE >= :START_DATE " &
-                           "and EVENT_DATE <= :STOP_DATE " &
+                           "where cast(EVENT_DATE as date) >= :START_DATE " &
+                           "and cast(EVENT_DATE as date) <= :STOP_DATE " &
                            "and MARKET_NAME = :MARKET_NAME " &
                            "and EVENT_HIERARCHY like :EVENT_HIERARCHY " &
                            "and exists (select 'x' from DRY_RESULTS where " &
@@ -107,8 +107,8 @@ package body Races is
                            "and exists (select 'x' from DRY_RUNNERS where " &
                            "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
                            "order by EVENT_DATE");
-            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
+            Sql.Set_Date (Select_Markets, "START_DATE", Start_Date);
+            Sql.Set_Date (Select_Markets, "STOP_DATE", Stop_Date);
             Sql.Set (Select_Markets, "MARKET_NAME", "Plats");
             case Animal is
                when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
@@ -119,8 +119,8 @@ package body Races is
               (Select_Markets,
                "select * from " &
                  "DRY_MARKETS " &
-                 "where EVENT_DATE >= :START_DATE " &
-                 "and EVENT_DATE <= :STOP_DATE " &
+                 "where cast(EVENT_DATE as date) >= :START_DATE " &
+                 "and cast(EVENT_DATE as date) <= :STOP_DATE " &
                  "and lower(MARKET_NAME) not like '%% v %%'  " &
                  "and lower(MARKET_NAME) not like '%%forecast%%'  " &
                  "and lower(MARKET_NAME) not like '%%tbp%%'  " &
@@ -137,8 +137,8 @@ package body Races is
                  "and exists (select 'x' from DRY_RESULTS where " &
                  "   DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) " &
                  "order by EVENT_DATE");
-            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
+            Sql.Set_Date (Select_Markets, "START_DATE", Start_Date);
+            Sql.Set_Date (Select_Markets, "STOP_DATE", Stop_Date);
             case Animal is
                when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
                when Hound =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/4339/%");
@@ -226,7 +226,8 @@ package body Races is
          Found := True;
          Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
       end loop;
-
+      Log ("last runner: " & Table_Dry_Runners.To_String (Runner));
+      Log ("min price/maxprice: " & integer(Min_Price)'img & "/" & Integer(Max_Price)'img);
       if Found then
          if Min_Price <= Min_Price_Type (Runner.Lay_Price) and then
            Max_Price_Type (Runner.Lay_Price) <= Max_Price then
@@ -241,11 +242,11 @@ package body Races is
             --          #312.59 - (30*3.65) + 30 = 233.09
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
---            Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
+            Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
 --            Log ("make_lay_bet - saldo after bet  " & Integer (Saldo)'Img);
          else
             -- no good runner found !
---            Log ("make_lay_bet - No good runner found, no bet");
+            Log ("make_lay_bet - No good runner found, no bet");
             Bet_Laid := False;
             return;
          end if;

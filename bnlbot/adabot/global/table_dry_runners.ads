@@ -22,7 +22,7 @@ package Table_Dry_Runners is
       Index        :    Integer_4  := 0 ; --
       Back_Price   :    Float_8  := 0.0 ; --
       Lay_Price    :    Float_8  := 0.0 ; --
-      Runner_Name  :    String (1 .. 0) := (others => ' ') ; --
+      Runner_Name  :    String (1 .. 50) := (others => ' ') ; --
    end record;
    Empty_Data : Table_Dry_Runners.Data_Type;
    --
