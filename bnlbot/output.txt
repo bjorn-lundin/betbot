@@ -1,4 +1,0 @@
-  File "test_db.py", line 20
-    \Fotboll\Engelsk fotboll\Barclays Premier League\Matcher 17 november\West Brom - Chelsea
-                                                                                           ^
-SyntaxError: unexpected character after line continuation character

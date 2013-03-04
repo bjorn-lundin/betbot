@@ -10,6 +10,7 @@ with Logging; use Logging;
 --with Ada.Directories;
 with Gnat.Os_Lib;
 with Ada.Characters.Latin_1;
+with Sattmate_Exception;
 
 procedure Simulator is
    Not_Implemented,
@@ -35,6 +36,7 @@ procedure Simulator is
    Sa_Max_Profit_Factor                 : aliased Gnat.Strings.String_Access;
    Sa_Max_Daily_Loss                    : aliased Gnat.Strings.String_Access;
    Sa_Bet_Name                          : aliased Gnat.Strings.String_Access;
+   Ba_Quiet                             : aliased Boolean;
 
    Config                               :  Command_Line_Configuration;
 
@@ -139,11 +141,18 @@ begin
                   "-b:",  Long_Switch => "--bet_name=",
                   Help            => "'winner' or 'place'");
 
-   Getopt (Config);  -- process the command line
+   Define_Switch (Config, Ba_Quiet'Access,
+                  "-q",  Long_Switch => "--quiet",
+                  Help            => "no log output");
+
+  Getopt (Config);  -- process the command line
    --   Display_Help (Config);
 
 
    begin
+      Logging.Set_Quiet(Ba_Quiet);
+
+
       if Sa_Animal.all = "hound" then
          Global_Animal := Races.Hound ;
       elsif Sa_Animal.all = "horse" then
@@ -173,9 +182,9 @@ begin
       elsif Sa_Graph_Type.all = "weekly" then
          Global_Graph_Type := Races.Weekly ;
       elsif Sa_Graph_Type.all = "biweekly" then
-         Global_Graph_Type := Races.Biweekly ;
-      elsif Sa_Graph_Type.all = "monthly" then
-         Global_Graph_Type := Races.Monthly ;
+         Global_Graph_Type := Races.Bi_Weekly ;
+      elsif Sa_Graph_Type.all = "quadweekly" then
+         Global_Graph_Type := Races.Quad_Weekly ;
       else
          raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
       end if;
@@ -207,6 +216,7 @@ begin
                                       Sa_Graph_Type.all & "-" &
                                       Sa_Bet_Name.all  & "-" &
                                       Sa_Bet_Type.all  & "-" &
+                                      Sa_Variant.all  & "-" &
                                       Sa_Start_Date.all  & "-" &
                                       Sa_Stop_Date.all  &
                                     --   Sa_Index.all  & "-" &
@@ -234,6 +244,7 @@ begin
       for Min_Price in Min_Price_Index_Type'Range loop
 
          Global_Saldo := Races.Saldo_Type'Value (Sa_Saldo.all);
+         Global_Profit := 0.0;
 
          if Integer (Min_Price) < Integer (Max_Price) then
 
@@ -299,17 +310,16 @@ begin
       end loop;
    end loop;
 
-   Contents_Gpi := To_Unbounded_String (
-                                        "graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "bet_name='" & Sa_Bet_Type.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "variant='" & Sa_Variant.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
-                                          "start_date='" & Sa_Start_Date.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
-                                          "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
-                                          "datadir='" & To_String (Data_Dir) & "'");
+   Contents_Gpi := To_Unbounded_String ("graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "bet_name='" & Sa_Bet_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "variant='" & Sa_Variant.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
+                                        "start_date='" & Sa_Start_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+                                        "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
+                                        "datadir='" & To_String (Data_Dir) & "'");
 
    Text_Io.Create (Mode => Text_Io.Out_File,
                    Name => To_String (Fil_Gpi),
@@ -318,5 +328,7 @@ begin
    Text_Io.Close (Target_Gpi);
 
 
-
+exception
+  when E: Others =>
+    Sattmate_Exception.Tracebackinfo(E) ;
 end Simulator;

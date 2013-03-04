@@ -14,7 +14,7 @@ package Races is
    type Bet_Name_Type is (Place, Winner);
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
-   type Graph_Type is (Daily, Weekly, Biweekly, Monthly);
+   type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
 
    type Profit_Type is new Float_8;
    type Saldo_Type is new Float_8;

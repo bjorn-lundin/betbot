@@ -1,6 +1,6 @@
 project Global is
 
-   Os_Architecture := external ("OS_ARCHITECTURE");
+--   Os_Architecture := external ("OS_ARCHITECTURE");
    type Target_Type is ("lnx_x86", "win_x86", "mac_x64");
 --      ("aix_ppc", "lnx_x86", "win_x86");
 --   Target_Machine : Target_Type := Os_Architecture;
@@ -17,7 +17,7 @@ project Global is
 
 -- AdaBotRoot
    Abr := ".";
-   
+
 -- -gnatwalK -  w - Activate warnings (w)
 --              a - activate all warnings  (a)
 --              l - for missing elaboration pragmas too
@@ -27,12 +27,12 @@ project Global is
 --              U - Tag all error messages with the unique string "error:"
 -- -gnat05      No warnings when Ada05 featues are used                 9.6-10368
 -- -gnatwW - Do not warn if we assume a string to start at index 1
-   
+
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
                                               "-O0",
                                               "-gnatwlaKW");
-                                              
+
    package Compiler is
       case Target_Machine is
          when "lnx_x86" =>
