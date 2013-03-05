@@ -24,7 +24,6 @@ procedure Simulator is
    Sa_Saldo             : aliased Gnat.Strings.String_Access;
    Sa_Size              : aliased Gnat.Strings.String_Access;
    Sa_Animal            : aliased Gnat.Strings.String_Access;
-   Sa_Max_Profit_Factor : aliased Gnat.Strings.String_Access;
    Sa_Max_Daily_Loss    : aliased Gnat.Strings.String_Access;
    Sa_Bet_Name          : aliased Gnat.Strings.String_Access;
    Ba_Quiet             : aliased Boolean;
@@ -111,14 +110,6 @@ begin
 
    Define_Switch
      (Config,
-      Sa_Max_Profit_Factor'Access,
-      "-P:",
-      Long_Switch => "--max_profit_factor=",
-      Help        =>
-        "if > 0, Quit when profit of the day > max_profit_factor * size ");
-
-   Define_Switch
-     (Config,
       Sa_Max_Daily_Loss'Access,
       "-P:",
       Long_Switch => "--max_daily_loss=",
@@ -174,7 +165,6 @@ begin
 
 
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
-      Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type'Value (Sa_Max_Profit_Factor.all);
       Global_Max_Daily_Loss    := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
    exception
@@ -217,6 +207,13 @@ begin
 
    for Bet_Type in Races.Bet_Type_Type'Range loop
       for Variant in Races.Variant_Type'Range loop
+
+         case Variant is
+            when Races.Normal => Global_Max_Profit_Factor := 0.0;
+            when Races.Max_3  => Global_Max_Profit_Factor := 3.0;
+            when Races.Max_4  => Global_Max_Profit_Factor := 4.0;
+            when Races.Max_5  => Global_Max_Profit_Factor := 5.0;
+         end case;
 
          -- new type of simulation, reset dates
          Global_Last_Loss := Sattmate_Calendar.Time_Type_First;
