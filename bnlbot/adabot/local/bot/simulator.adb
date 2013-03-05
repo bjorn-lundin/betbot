@@ -207,7 +207,6 @@ begin
    Data_Dir := To_Unbounded_String ("sims");
 
    for Bet_Type in Races.Bet_Type_Type'Range loop
-      for Graph_Type in Races.Graph_Type'Range loop
          for Variant in Races.Variant_Type'Range loop
 
             -- new type of simulation, reset dates
@@ -218,7 +217,7 @@ begin
             Filename := To_Unbounded_String
               ("simulation_ada1-" &
                  Sa_Animal.all &  "-" &
-                 Lower_Case (Graph_Type'Img) & "-" &
+                 Lower_Case (Sa_Graph_Type.all) & "-" &
                  Sa_Bet_Name.all & "-" &
                  Lower_Case (Bet_Type'Img) & "-" &
                  Lower_Case (Variant'Img) & "-" &
@@ -387,45 +386,17 @@ begin
 
             Contents_Gpi :=
               To_Unbounded_String
-                ("graph_type='" &
-                   Lower_Case (Graph_Type'Img) &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "animal='" &
-                   Sa_Animal.all &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "bet_name='" &
-                   Lower_Case (Bet_Type'Img) &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "bet_type='" &
-                   Sa_Bet_Name.all &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "variant='" &
-                   Lower_Case (Variant'Img) &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "index='" &
-                   "not_supported" &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "start_date='" &
-                   Sattmate_Calendar.String_Date_Iso (Global_Start_Date) &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "stop_date='" &
-                   Sa_Stop_Date.all &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "datafil='" &
-                   To_String (Filename) &
-                   "'" &
-                   Ada.Characters.Latin_1.Lf &
-                   "datadir='" &
-                   To_String (Data_Dir) &
-                   "'");
+                ("graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+                   "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
+                   "bet_name='" & Lower_Case (Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
+                   "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
+                   "variant='" & Lower_Case (Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
+                   "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
+                   "start_date='" & Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "'" & Ada.Characters.Latin_1.Lf &
+                   "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+                   "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
+                   "datadir='" & To_String (Data_Dir) & "'");
+
 
             Text_Io.Create
               (Mode => Text_Io.Out_File,
@@ -435,7 +406,6 @@ begin
             Text_Io.Close (Target_Gpi);
 
          end loop;
-      end loop;
    end loop;
 
 exception
