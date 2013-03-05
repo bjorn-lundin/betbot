@@ -46,6 +46,7 @@ procedure Simulator is
 
    use type Races.Saldo_Type;
    use type Races.Delta_Price_Type;
+   use type Races.Back_Price_Type;
    use type Sattmate_Calendar.Time_Type;
    use type Sattmate_Calendar.Interval_Type;
 
@@ -54,10 +55,10 @@ procedure Simulator is
    Global_Start_Date : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
    Global_Stop_Date  : Sattmate_Calendar.Time_Type :=  Sattmate_Calendar.Time_Type_First;
 
-   type Max_Price_Index_Type   is range 1 .. 25;
-   type Min_Price_Index_Type   is range 1 .. 25;
-   type Back_Price_Index_Type  is range 1 .. 10;
-   type Delta_Price_Index_Type is range 1 .. 10;
+   type Max_Price_Index_Type   is range 1 .. 25;  -- use integers only
+   type Min_Price_Index_Type   is range 1 .. 25;  -- use integers only
+   type Back_Price_Index_Type  is range 1 .. 100; -- will divide by 10
+   type Delta_Price_Index_Type is range 1 .. 10;  -- will divide by 10
 
    Filename     : Unbounded_String := Null_Unbounded_String;
    Fil          : Unbounded_String := Null_Unbounded_String;
@@ -253,7 +254,7 @@ begin
          --   end;
 
 
-         Race.Show_Runners;
+--         Race.Show_Runners;
          case Bet_Type is
             when Races.Lay =>
                for Max_Price in Max_Price_Index_Type'Range loop
@@ -350,8 +351,8 @@ begin
                            Max_Daily_Loss    => Global_Max_Daily_Loss,
                            Max_Profit_Factor => Global_Max_Profit_Factor,
                            Size              => Global_Size,
-                           Back_Price        => Races.Back_Price_Type (Back_Price),
-                           Delta_Price       => Races.Delta_Price_Type (Races.Delta_Price_Type (Delta_Price) / 10.0));
+                           Back_Price        => Races.Back_Price_Type (Back_Price) / 10.0,
+                           Delta_Price       => Races.Delta_Price_Type (Delta_Price) / 10.0);
 
                         if Global_Bet_Laid then
                            Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------");
@@ -365,7 +366,9 @@ begin
                      end loop;
                      Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
                      Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
-                     Print (Integer (Back_Price)'Img & " " & Integer (Delta_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                     Print (Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
+                              Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
+                              Integer (Global_Saldo)'Img);
                      -- Append To file
                      --         begin
                      -- create file if not exists
@@ -375,7 +378,9 @@ begin
                         File => Target_Dat);
                      Text_Io.Put_Line
                        (Target_Dat,
-                        Integer (Back_Price)'Img & " " & Integer (Delta_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                        Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
+                              Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
+                              Integer (Global_Saldo)'Img);
                      Text_Io.Close (Target_Dat);
                      --         exception
                      --            when others => null;
