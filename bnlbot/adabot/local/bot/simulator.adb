@@ -258,25 +258,23 @@ begin
             when Races.Lay =>
                for Max_Price in Max_Price_Index_Type'Range loop
                   for Min_Price in Min_Price_Index_Type'Range loop
+                     Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
+                     Global_Profit := 0.0;
+                     Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
                      if Integer (Min_Price) < Integer (Max_Price) then
-                        Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
-                        Global_Profit := 0.0;
-                        Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         Races.Race_Package.Get_First (Race_List, Race, Eol);
                         loop
                            exit when Eol;
                            Log ("---  main loop start " &  Race.Market.Market_Id'Img &
                                   " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
                            -- reset the daily profit when new day is treated
-                           if Global_Race_Date.Day   /= Race.Market.Event_Date.Day or else
+                           if Global_Race_Date.Day  /= Race.Market.Event_Date.Day or else
                              Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
                              Global_Race_Date.Year  /=  Race.Market.Event_Date.Year then
                               Global_Race_Date := Race.Market.Event_Date;
                               Global_Profit    := 0.0;
                               Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
                            end if;
-
-
 
                            Race.Make_Lay_Bet
                              (Bet_Laid          => Global_Bet_Laid,
@@ -299,6 +297,7 @@ begin
                            end if;
                            Races.Race_Package.Get_Next (Race_List, Race, Eol);
                         end loop;
+                     end if; -- min_price < Max_Price
                         Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
 
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
@@ -318,8 +317,6 @@ begin
                         --         end;
                         Log ("---  main loop stop " & Race.Market.Market_Id'Img &
                                " profit :" & Integer (Global_Profit)'Img & " -----------------");
-
-                     end if; -- min_price < Max_Price
                   end loop;
                end loop;
 
