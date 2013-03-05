@@ -12,7 +12,8 @@ package Races is
    Not_Implemented : exception;
 
    type Bet_Name_Type is (Place, Winner);
-   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
+--     type Bet_Type_Type is (Lay, Back, Lay_Favorite);
+   type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
    type Variant_Type is (Normal, Max_3, Max_4, Max_5);

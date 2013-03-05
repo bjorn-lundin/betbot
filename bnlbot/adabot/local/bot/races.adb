@@ -20,14 +20,12 @@ package body Races is
       Table_Dry_Runners.Dry_Runners_List_Pack.Remove_All ( Race.Runners_List);
       Table_Dry_Results.Dry_Results_List_Pack.Remove_All ( Race.Winners_List);
       Race.Market := Table_Dry_Markets.Empty_Data;
-      --      Race.Last_Loss  := Sattmate_Calendar.Time_Type_Last;
    end Clear;
 
    ------------------------------------------------------------------------------
 
    procedure Get_Runners (Race : in out Race_Type) is
    begin
-      --      Log ("Get_Runners, Market_Id=" & Race.Market.Market_Id'Img);
       Sql.Prepare (Select_Runners, "select * from DRY_RUNNERS where MARKET_ID = :MARKET_ID order by BACK_PRICE");
       Sql.Set (Select_Runners, "MARKET_ID", Race.Market.Market_Id);
       Table_Dry_Runners.Read_List (Select_Runners, Race.Runners_List);
@@ -36,7 +34,6 @@ package body Races is
 
    procedure Get_Winners (Race : in out Race_Type) is
    begin
-      --      Log ("Get_Winners, Market_Id=" & Race.Market.Market_Id'Img);
       Sql.Prepare (Select_Winners, "select * from DRY_RESULTS where MARKET_ID = :MARKET_ID");
       Sql.Set (Select_Winners, "MARKET_ID", Race.Market.Market_Id);
       Table_Dry_Results.Read_List (Select_Winners, Race.Winners_List);
@@ -76,9 +73,7 @@ package body Races is
                                 Stop_Date   : Sattmate_Calendar.Time_Type
                                ) is
       T               : Sql.Transaction_Type;
-      --      Race            : Race_Type;
       Race_Ptr        : Race_Pointer_Type;
-      --      Eol             : Boolean := False;
       Market_List     : Table_Dry_Markets.Dry_Markets_List_Pack.List_Type := Table_Dry_Markets.Dry_Markets_List_Pack.Create;
       Market          : Table_Dry_Markets.Data_Type;
       Cnt             : Natural;
@@ -107,8 +102,8 @@ package body Races is
                            "and exists (select 'x' from DRY_RUNNERS where " &
                            "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
                            "order by EVENT_DATE");
-            Sql.Set_Date (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Date (Select_Markets, "STOP_DATE", Stop_Date);
+            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
+            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
             Sql.Set (Select_Markets, "MARKET_NAME", "Plats");
             case Animal is
                when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
@@ -137,8 +132,8 @@ package body Races is
                  "and exists (select 'x' from DRY_RESULTS where " &
                  "   DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) " &
                  "order by EVENT_DATE");
-            Sql.Set_Date (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Date (Select_Markets, "STOP_DATE", Stop_Date);
+            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
+            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
             case Animal is
                when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
                when Hound =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/4339/%");
@@ -183,17 +178,15 @@ package body Races is
         Last_Loss.Month = Event_Date.Month and then
         Last_Loss.Year = Event_Date.Year then
 
-         --         Log ("make_lay_bet - check if lost too much: profit: " & Integer (Profit)'img &
-         --                " max loss: " & Integer(Max_Daily_Loss)'img);
          if Profit < Profit_Type (Max_Daily_Loss) then
-            Log ("make_lay_bet - Lost too much, no more bets today");
+            Log ("Ok_To_Make_Bet - Lost too much, no more bets today");
             Bet_Laid := False;
          end if;
       end if;
       -- won too much already today ?
       if Max_Profit_Factor > 0.0 then
          if Profit >= Profit_Type ((Size_Type (Max_Profit_Factor) * Size ) * 0.95 ) then
-            Log ("make_lay_bet - won enough for today, no more bets today");
+            Log ("Ok_To_Make_Bet - won enough for today, no more bets today");
             Bet_Laid := False;
          end if;
       end if;
@@ -217,11 +210,9 @@ package body Races is
       Eol      : Boolean := False;
       Found    : Boolean := False;
    begin
-      --      Log ("make_lay_bet - start market_id: " & Race.Market.Market_Id'Img);
       Race.Selection_Id := 0;
       Race.Price := 0.0;
       Race.Size := 0.0;
-      --      Log ("Make_Lay_Bet - market: " & Table_Dry_Markets.To_String (Race.Market));
 
       if not Ok_To_Make_Bet (Last_Loss         => Last_Loss,
                              Event_Date        => Race.Market.Event_Date,
@@ -231,7 +222,6 @@ package body Races is
                              Size              => Size) then
          return;
       end if;
-
 
       -- ok see if we can make a bet.
       -- we want the last runner in the list, since the list
@@ -255,7 +245,6 @@ package body Races is
             Race.Selection_Id := Runner.Selection_Id;
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Lay_Price);
-            --            Log ("make_lay_bet - saldo before bet  " & Integer (Saldo)'Img);
             Saldo := Saldo - Saldo_Type ((Size * Size_Type (Runner.Lay_Price)))  + Saldo_Type (Size);
             Bet_Laid := True;
             --          #312,59 -> 233.09. bet 30@3.65
@@ -263,7 +252,6 @@ package body Races is
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
-            --            Log ("make_lay_bet - saldo after bet  " & Integer (Saldo)'Img);
          else
             -- no good runner found !
             Log ("make_lay_bet - No good runner found, no bet");
@@ -276,7 +264,6 @@ package body Races is
          Bet_Laid := False;
          return;
       end if;
-      --      Log ("make_lay_bet - stop market_id: " & Race.Market.Market_Id'Img);
    end Make_Lay_Bet;
    ------------------------------------------------------------------------------
    procedure Make_Lay_Favorite_Bet
@@ -294,11 +281,9 @@ package body Races is
       Eol      : Boolean := False;
       Found    : Boolean := False;
    begin
-      --      Log ("make_lay_bet - start market_id: " & Race.Market.Market_Id'Img);
       Race.Selection_Id := 0;
       Race.Price := 0.0;
       Race.Size := 0.0;
-      --      Log ("Make_Lay_Bet - market: " & Table_Dry_Markets.To_String (Race.Market));
 
       if not Ok_To_Make_Bet (Last_Loss         => Last_Loss,
                              Event_Date        => Race.Market.Event_Date,
@@ -327,7 +312,6 @@ package body Races is
             Race.Selection_Id := Runner.Selection_Id;
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Lay_Price);
-            --            Log ("make_lay_bet - saldo before bet  " & Integer (Saldo)'Img);
             Saldo := Saldo - Saldo_Type ((Size * Size_Type (Runner.Lay_Price)))  + Saldo_Type (Size);
             Bet_Laid := True;
             --          #312,59 -> 233.09. bet 30@3.65
@@ -335,14 +319,12 @@ package body Races is
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_lay_favorite_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
-            --            Log ("make_lay_bet - saldo after bet  " & Integer (Saldo)'Img);
       else
          -- no runner found !
          Log ("make_lay_favorite_bet - No runner (at all) found, no bet");
          Bet_Laid := False;
          return;
       end if;
-      --      Log ("make_lay_bet - stop market_id: " & Race.Market.Market_Id'Img);
    end Make_Lay_Favorite_Bet;
 
    ------------------------------------------------------------------------------
@@ -360,11 +342,9 @@ package body Races is
       Eol      : Boolean := False;
       Found    : Boolean := False;
    begin
-      --      Log ("make_lay_bet - start market_id: " & Race.Market.Market_Id'Img);
       Race.Selection_Id := 0;
       Race.Price := 0.0;
       Race.Size := 0.0;
-      --      Log ("Make_Lay_Bet - market: " & Table_Dry_Markets.To_String (Race.Market));
 
       if not Ok_To_Make_Bet (Last_Loss         => Last_Loss,
                              Event_Date        => Race.Market.Event_Date,
@@ -375,7 +355,6 @@ package body Races is
          return;
       end if;
 
-
       -- ok see if we can make a bet.
       -- we want the first runner in the list, since the list
       -- is sorted on back-price, lowest first.
@@ -385,7 +364,7 @@ package body Races is
 
       Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       Found := not Eol;
-      Log ("last runner: " & Table_Dry_Runners.To_String (Runner));
+      Log ("first runner: " & Table_Dry_Runners.To_String (Runner));
       Log ("min price/deltaprice: " & Back_Price'Img & "/" & Delta_Price'Img);
       if Found then
          if Back_Price - Back_Price_Type(Delta_Price) <= Back_Price_Type(Runner.Back_Price) and then
@@ -394,12 +373,10 @@ package body Races is
             Race.Selection_Id := Runner.Selection_Id;
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Back_Price);
-            --            Log ("make_back_bet - saldo before bet  " & Integer (Saldo)'Img);
             Saldo := Saldo - Saldo_Type (Size);
             Bet_Laid := True;
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_back_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
-            --            Log ("make_back_bet - saldo after bet  " & Integer (Saldo)'Img);
          else
             -- no good runner found !
             Log ("make_back_bet - No good runner found, no bet");
@@ -412,7 +389,6 @@ package body Races is
          Bet_Laid := False;
          return;
       end if;
-      --      Log ("make_lay_bet - stop market_id: " & Race.Market.Market_Id'Img);
    end Make_Back_Bet;
    -----------------------------------------------------------------------------
    procedure Check_Result (Race              : in out Race_Type;
@@ -425,15 +401,14 @@ package body Races is
       Eol         : Boolean := False;
       Race_Profit : Profit_Type := 0.0;
    begin
-      --      Log ("check_result - start market_id: " & Race.Market.Market_Id'Img);
-
       if Race.Selection_Id = 0 then
-         --         Log ("check_result - No selection was made, no bet assumed");
+         Log ("check_result - No selection was made, no bet assumed");
          return;
       end if;
 
       case Bet_Type is
-         when Lay | Lay_Favorite =>
+--           when Lay | Lay_Favorite =>
+         when Lay =>
             Bet_Won := True;
             -- we win if selection not in winners
             Table_Dry_Results.Dry_Results_List_Pack.Get_First (Race.Winners_List, Winner, Eol);
@@ -454,14 +429,11 @@ package body Races is
                Race_Profit := Profit_Type  (Race.Size * 0.95);
 
                Saldo := Saldo + Saldo_Type ((Race.Size * Size_Type (Race.Price)) - (Race.Size * 0.05));
-               --               Log ("check_result - saldo after check_result  " & Integer (Saldo)'Img);
             else
                Race_Profit :=  Profit_Type ( - ( (Race.Size * Size_Type (Race.Price)) + Race.Size));
                Last_Loss := Race.Market.Event_Date;
             end if;
             Profit := Profit + Race_Profit;
-            --            Log ("check_result -  market_id: " & Race.Market.Market_Id'Img & "  Race_Profit : " & Integer(Race_Profit)'Img );
-
 
          when Back =>
             Bet_Won := False;
@@ -486,10 +458,7 @@ package body Races is
                Last_Loss := Race.Market.Event_Date;
             end if;
             Profit := Profit + Race_Profit;
-            --            Log ("check_result -  market_id: " & Race.Market.Market_Id'Img & "  Race_Profit : " & Integer(Race_Profit)'Img );
       end case;
-
-      --      Log ("check_result -  market_id: " & Race.Market.Market_Id'Img & "  bet_won: " & Bet_Won'Img );
    end Check_Result;
 
    ------------------------------------------------------------------------------
