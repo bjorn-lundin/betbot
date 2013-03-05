@@ -279,7 +279,73 @@ package body Races is
       --      Log ("make_lay_bet - stop market_id: " & Race.Market.Market_Id'Img);
    end Make_Lay_Bet;
    ------------------------------------------------------------------------------
+   procedure Make_Lay_Favorite_Bet
+                          (Race              : in out Race_Type;
+                           Bet_Laid          : in out Boolean ;
+                           Profit            : in  Profit_Type ;
+                           Last_Loss         : in Sattmate_Calendar.Time_Type;
+                           Saldo             : in out Saldo_Type ;
+                           Max_Daily_Loss    : in Max_Daily_Loss_Type;
+                           Max_Profit_Factor : in Max_Profit_Factor_Type ;
+                           Size              : in Size_Type;
+                           Min_Price         : in Min_Price_Type;
+                           Max_Price         : in Max_Price_Type ) is
+      Runner   : Table_Dry_Runners.Data_Type;
+      Eol      : Boolean := False;
+      Found    : Boolean := False;
+   begin
+      --      Log ("make_lay_bet - start market_id: " & Race.Market.Market_Id'Img);
+      Race.Selection_Id := 0;
+      Race.Price := 0.0;
+      Race.Size := 0.0;
+      --      Log ("Make_Lay_Bet - market: " & Table_Dry_Markets.To_String (Race.Market));
 
+      if not Ok_To_Make_Bet (Last_Loss         => Last_Loss,
+                             Event_Date        => Race.Market.Event_Date,
+                             Profit            => Profit,
+                             Max_Daily_Loss    => Max_Daily_Loss,
+                             Max_Profit_Factor => Max_Profit_Factor,
+                             Size              => Size) then
+         return;
+      end if;
+
+
+      -- ok see if we can make a bet.
+      -- we will ALWAYS bet on the favorite will loose
+      -- we want the first runner in the list, since the list
+      -- is sorted on back-price, lowest first.
+      -- we are looking for the runner with LOWEST back-price.
+      -- So get the last item in list
+
+
+      Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
+      Found := not Eol;
+      Log ("make_lay_favorite_bet - first runner: " & Table_Dry_Runners.To_String (Runner));
+      Log ("make_lay_favorite_bet  -min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
+      if Found then
+            -- runner found ! make bet
+            Race.Selection_Id := Runner.Selection_Id;
+            Race.Size := Size;
+            Race.Price := Price_Type (Runner.Lay_Price);
+            --            Log ("make_lay_bet - saldo before bet  " & Integer (Saldo)'Img);
+            Saldo := Saldo - Saldo_Type ((Size * Size_Type (Runner.Lay_Price)))  + Saldo_Type (Size);
+            Bet_Laid := True;
+            --          #312,59 -> 233.09. bet 30@3.65
+            --          #312.59 - (30*3.65) + 30 = 233.09
+            --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
+            --           self.num_taken_bets = self.num_taken_bets + 1
+            Log ("make_lay_favorite_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
+            --            Log ("make_lay_bet - saldo after bet  " & Integer (Saldo)'Img);
+      else
+         -- no runner found !
+         Log ("make_lay_favorite_bet - No runner (at all) found, no bet");
+         Bet_Laid := False;
+         return;
+      end if;
+      --      Log ("make_lay_bet - stop market_id: " & Race.Market.Market_Id'Img);
+   end Make_Lay_Favorite_Bet;
+
+   ------------------------------------------------------------------------------
    procedure Make_Back_Bet (Race              : in out Race_Type;
                             Bet_Laid          : in out Boolean ;
                             Profit            : in  Profit_Type ;
@@ -367,7 +433,7 @@ package body Races is
       end if;
 
       case Bet_Type is
-         when Lay =>
+         when Lay | Lay_Favorite =>
             Bet_Won := True;
             -- we win if selection not in winners
             Table_Dry_Results.Dry_Results_List_Pack.Get_First (Race.Winners_List, Winner, Eol);

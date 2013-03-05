@@ -12,7 +12,7 @@ package Races is
    Not_Implemented : exception;
 
    type Bet_Name_Type is (Place, Winner);
-   type Bet_Type_Type is (Lay, Back);
+   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
    type Variant_Type is (Normal, Max_3, Max_4, Max_5);
@@ -58,6 +58,17 @@ package Races is
                            Min_Price         : in Min_Price_Type;
                            Max_Price         : in Max_Price_Type ) ;
 
+   procedure Make_Lay_Favorite_Bet
+                          (Race              : in out Race_Type;
+                           Bet_Laid          : in out Boolean ;
+                           Profit            : in  Profit_Type ;
+                           Last_Loss         : in Sattmate_Calendar.Time_Type;
+                           Saldo             : in out Saldo_Type ;
+                           Max_Daily_Loss    : in Max_Daily_Loss_Type;
+                           Max_Profit_Factor : in Max_Profit_Factor_Type ;
+                           Size              : in Size_Type;
+                           Min_Price         : in Min_Price_Type;
+                           Max_Price         : in Max_Price_Type ) ;
 
 
    procedure Make_Back_Bet (Race                   : in out Race_Type;

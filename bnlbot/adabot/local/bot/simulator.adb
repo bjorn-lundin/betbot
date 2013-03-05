@@ -321,6 +321,71 @@ begin
                   end loop;
                end loop;
 
+            when Races.Lay_Favorite =>
+               for Max_Price in Max_Price_Index_Type'Range loop
+                  for Min_Price in Min_Price_Index_Type'Range loop
+                     Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
+                     Global_Profit := 0.0;
+                     Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
+                     if Integer (Min_Price) < Integer (Max_Price) then
+                        Races.Race_Package.Get_First (Race_List, Race, Eol);
+                        loop
+                           exit when Eol;
+                           Log ("---  main loop start " &  Race.Market.Market_Id'Img &
+                                  " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
+                           -- reset the daily profit when new day is treated
+                           if Global_Race_Date.Day  /= Race.Market.Event_Date.Day or else
+                             Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
+                             Global_Race_Date.Year  /=  Race.Market.Event_Date.Year then
+                              Global_Race_Date := Race.Market.Event_Date;
+                              Global_Profit    := 0.0;
+                              Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
+                           end if;
+
+                           Race.Make_Lay_Favorite_Bet
+                             (Bet_Laid          => Global_Bet_Laid,
+                              Profit            => Global_Profit,
+                              Saldo             => Global_Saldo,
+                              Last_Loss         => Global_Last_Loss,
+                              Max_Daily_Loss    => Global_Max_Daily_Loss,
+                              Max_Profit_Factor => Global_Max_Profit_Factor,
+                              Size              => Global_Size,
+                              Min_Price         => Races.Min_Price_Type (Min_Price),
+                              Max_Price         => Races.Max_Price_Type (Max_Price));
+
+                           if Global_Bet_Laid then
+                              Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------");
+                              Race.Check_Result
+                                (Profit    => Global_Profit,
+                                 Saldo     => Global_Saldo,
+                                 Last_Loss => Global_Last_Loss,
+                                 Bet_Type  => Bet_Type);
+                           end if;
+                           Races.Race_Package.Get_Next (Race_List, Race, Eol);
+                        end loop;
+                     end if; -- min_price < Max_Price
+                        Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
+
+                        Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
+                        Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                        -- Append To file
+                        --         begin
+                        -- create file if not exists
+                        Text_Io.Open
+                          (Mode => Text_Io.Append_File,
+                           Name => To_String (Fil),
+                           File => Target_Dat);
+                        Text_Io.Put_Line
+                          (Target_Dat, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                        Text_Io.Close (Target_Dat);
+                        --         exception
+                        --            when others => null;
+                        --         end;
+                        Log ("---  main loop stop " & Race.Market.Market_Id'Img &
+                               " profit :" & Integer (Global_Profit)'Img & " -----------------");
+                  end loop;
+               end loop;
+
             when Races.Back =>
                for Back_Price in Back_Price_Index_Type'Range loop
                   for Delta_Price in Delta_Price_Index_Type'Range loop
