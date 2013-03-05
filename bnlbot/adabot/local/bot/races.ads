@@ -15,6 +15,7 @@ package Races is
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
+   type Variant_Type is (Normal, Max_3, Max_4, Max_5);
 
    type Profit_Type is new Float_8;
    type Saldo_Type is new Float_8;
@@ -24,6 +25,8 @@ package Races is
    type Min_Price_Type is new Float_8;
    type Size_Type is new Float_8;
    type Price_Type is new Float_8;
+   type Back_Price_Type is new Float_8;
+   type Delta_Price_Type is new Float_8;
 
 
    type Race_Type is tagged record
@@ -47,14 +50,26 @@ package Races is
    procedure Make_Lay_Bet (Race              : in out Race_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
-                           Last_Loss         : in out Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
                            Max_Profit_Factor : in Max_Profit_Factor_Type ;
---                           Bet_Name          : in Bet_Name_Type;
                            Size              : in Size_Type;
                            Min_Price         : in Min_Price_Type;
                            Max_Price         : in Max_Price_Type ) ;
+
+
+
+   procedure Make_Back_Bet (Race                   : in out Race_Type;
+                            Bet_Laid               : in out Boolean ;
+                            Profit                 : in  Profit_Type ;
+                            Last_Loss              : in  Sattmate_Calendar.Time_Type;
+                            Saldo                  : in out Saldo_Type ;
+                            Max_Daily_Loss         : in Max_Daily_Loss_Type;
+                            Max_Profit_Factor      : in Max_Profit_Factor_Type ;
+                            Size                   : in Size_Type;
+                            Back_Price             : in Back_Price_Type;
+                            Delta_Price            : in Delta_Price_Type )  ;
 
    procedure Check_Result (Race              : in out Race_Type;
                            Profit            : in out Profit_Type;

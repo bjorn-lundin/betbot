@@ -1329,6 +1329,20 @@ package body Sattmate_Calendar is
       end;
    end String_Date;
 
+   function String_Date_ISO (Date : in Time_Type) return String is
+   begin
+      declare
+         Date_String : String (1 .. 10) := "yyyy-mm-dd";
+      begin
+         Integer_2_Io.Put (Date_String (1 .. 4), Date.Year);
+         Integer_2_Io.Put (Date_String (6 .. 7), Date.Month);
+         Integer_2_Io.Put (Date_String (9 .. 10), Date.Day);
+         if Date_String (6) = ' ' then Date_String (6) := '0'; end if;
+         if Date_String (9) = ' ' then Date_String (9) := '0'; end if;
+         return Date_String;
+      end;
+   end String_Date_ISO;
+
 
    function String_Time
      (Date         : in Time_Type;
