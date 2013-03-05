@@ -75,13 +75,6 @@ class HorsesPlaceLayBet610Bot(BetBot):
 
                 for dct in sorted_list :
                     i = i + 1
-                    if i >= max_turns  :
-                        self.log.info('number_of_runners = ' \
-                            + str(number_of_runners) + \
-                            'max turns = ' + str(max_turns) + ' i = ' + str(i))
-                        self.log.info('Too close to winner positon, exit')
-                        return
-
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
@@ -101,7 +94,7 @@ class HorsesPlaceLayBet610Bot(BetBot):
                         lay_odds  = dct[1]
                         back_odds = dct[0]
                         index     = dct[3]
-                        break
+                    break
 
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
