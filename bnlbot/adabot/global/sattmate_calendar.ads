@@ -303,6 +303,10 @@ package Sattmate_Calendar is
    function String_Date
      (Date : in Calendar.Time := To_Calendar_Time (Clock))
       return String;
+
+   function String_Date_ISO (Date : in Time_Type) return String ;
+
+
    function String_Time
    --           (DATE         : in CALENDAR.TIME := CALENDAR.CLOCK;
      (Date         : in Calendar.Time := To_Calendar_Time (Clock);
