@@ -1,6 +1,6 @@
 project serial_talker is
 
-   type Target_Machine_Type is ("lnx_x86","lnx_arm")
+   type Target_Machine_Type is ("lnx_x86","lnx_arm");
    Target_Machine : Target_Machine_Type := "lnx_arm";
     
    type Data_Base_Type is ("POSTGRESQL");
