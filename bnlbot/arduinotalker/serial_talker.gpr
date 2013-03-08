@@ -1,0 +1,66 @@
+project serial_talker is
+
+   type Target_Machine_Type is ("lnx_x86","lnx_arm")
+   Target_Machine : Target_Machine_Type := "lnx_arm";
+    
+   type Data_Base_Type is ("POSTGRESQL");
+   Data_Base : Data_Base_Type := "POSTGRESQL";
+
+   Pg_Bin := external ("PG_BIN2", "/usr/lib");
+
+-- SerialTalkerRoot
+   str := ".";
+
+-- -gnatwalK -  w - Activate warnings (w)
+--              a - activate all warnings  (a)
+--              l - for missing elaboration pragmas too
+--              K - but no warnings like '...is not modified, could be declared constant'
+-- -gnatvoUN    v - verbose
+--              o - Activate runtime overflow checks
+--              U - Tag all error messages with the unique string "error:"
+-- -gnat05      No warnings when Ada05 featues are used                 9.6-10368
+-- -gnatwW - Do not warn if we assume a string to start at index 1
+
+   Platform_Independent_Compiler_Switches := ("-g",
+                                              "-gnat05",
+                                              "-O0",
+                                              "-gnatwlaKW");
+
+   package Compiler is
+      for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Linker is
+      case Data_Base is
+
+         when "POSTGRESQL" =>
+            case Target_Machine is
+               when "lnx_x86" =>
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+               when "lnx_arm" =>
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+            end case;
+      end case;
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
+   end Builder;
+
+   for Object_Dir use Str & "/objects";
+   for Exec_Dir use Str & "/exe"  ;
+   for Main use ("serial_talker.adb");
+
+   for Source_Dirs use (".") ;
+
+   package Ide is
+      for Compiler_Command ("ada") use "gnatmake";
+      for Compiler_Command ("c") use "gcc";
+   end Ide;
+
+
+end serial_talker;
