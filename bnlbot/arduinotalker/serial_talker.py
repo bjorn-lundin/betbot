@@ -55,20 +55,11 @@ def get_row(conn, bet_type, delta_days)  :
     return result 
     ################################## end get_row
 def main():
-  global connected
   # Main program block
-
-  
-#  row1 = {today:0, yest:0, dbyest:0}
-#  row2 = {today:0, yest:0, dbyest:0}
-
-  if not connected :
-
-      conn = psycopg2.connect("dbname='betting' \
+  conn = psycopg2.connect("dbname='betting' \
                              user='bnl' \
                              host='192.168.0.13' \
                              password=None") 
-      connected = True
   row1 = {}
   row2 = {}    
   row1['today']  = get_row(conn, "DRY_RUN_HORSES_PLACE_LAY_BET_6_10", 0)
@@ -93,15 +84,14 @@ def main():
     baudrate=9600,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS
-)
+    bytesize=serial.EIGHTBITS)
 
 
-ser.open()
-ser.write('1') # clear display
-ser.write('3,0,0,HOUNDS_WINNER_LAY_BET') # string
-ser.write('2,0,1,'+lcd_row_1) # string
-ser.close()
+  ser.open()
+  ser.write('1') # clear display
+  ser.write('3,0,0,HOUNDS_WINNER_LAY_BET') # string
+  ser.write('2,0,1,'+lcd_row_1) # string
+  ser.close()
 
     
   
@@ -109,4 +99,4 @@ if __name__ == '__main__':
   #make print flush now!
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
   main()
-pi@raspberrypi ~ $ 
+
