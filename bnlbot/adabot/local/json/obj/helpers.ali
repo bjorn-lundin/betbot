@@ -1,0 +1,226 @@
+V "GNAT Lib v4.6"
+A -O0
+A -g
+A -gnat05
+A -gnatwl
+A -gnatwa
+A -gnatwK
+A -gnatwW
+A -gnatA
+P SS ZX
+R nnnnnnnnnnnnnnnvnnvnnvnnvvvnnvnnnnvnnnnnnvnnvnnnnnnnnvnnnnvnvvnnvnnnnnnnnnnnnnnn
+
+U helpers%b		helpers.adb		005b7633 NE OO PK
+W ada%s			ada.ads			ada.ali
+W ada.direct_io%s
+W ada.directories%s	a-direct.adb		a-direct.ali
+W ada.exceptions%s	a-except.adb		a-except.ali
+W ada.finalization.list_controller%s  a-filico.adb  a-filico.ali
+W ada.io_exceptions%s	a-ioexce.ads		a-ioexce.ali
+W ada.tags%s		a-tags.adb		a-tags.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W ada.unchecked_conversion%s
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c_streams%s  i-cstrea.adb		i-cstrea.ali
+W system%s		system.ads		system.ali
+W system.concat_2%s	s-conca2.adb		s-conca2.ali
+W system.concat_3%s	s-conca3.adb		s-conca3.ali
+W system.crtl%s		s-crtl.ads		s-crtl.ali
+W system.direct_io%s	s-direio.adb		s-direio.ali
+W system.file_control_block%s  s-ficobl.ads	s-ficobl.ali
+W system.file_io%s	s-fileio.adb		s-fileio.ali
+W system.finalization_implementation%s  s-finimp.adb  s-finimp.ali
+W system.finalization_root%s  s-finroo.adb	s-finroo.ali
+W system.img_bool%s	s-imgboo.adb		s-imgboo.ali
+W system.img_int%s	s-imgint.adb		s-imgint.ali
+W system.img_real%s	s-imgrea.adb		s-imgrea.ali
+W system.secondary_stack%s  s-secsta.adb	s-secsta.ali
+W system.soft_links%s	s-soflin.adb		s-soflin.ali
+W system.standard_library%s  s-stalib.adb	s-stalib.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+
+U helpers%s		helpers.ads		5293226a EE NE OO PK
+W gnatcoll%s		gnatcoll.ads		gnatcoll.ali
+W gnatcoll.json%s	gnatcoll-json.adb	gnatcoll-json.ali
+
+D ada.ads		20070406091342 3ffc8e18
+D a-calend.ads		20090409150019 343c83dd
+D a-charac.ads		20070912115821 2d3ec45b
+D a-chlat1.ads		20070912115821 2825df20
+D a-contai.ads		20101025135029 61e5e089
+D a-cohata.ads		20101026104202 f4016a1a
+D a-cihama.ads		20090409150019 2e09bd21
+D a-convec.ads		20090416105848 49c793e4
+D a-direio.ads		20090410151215 5842da07
+D a-direio.adb		20090409150019 ddb08ceb
+D a-direct.ads		20101220072657 9d42e46d
+D a-except.ads		20090727140100 0c711ac9
+D a-finali.ads		20090409150019 e5e85fa4
+D a-filico.ads		20090409150019 872dc219
+D a-ioexce.ads		20091130110856 8b9de6cd
+D a-stream.ads		20090409150019 2ca4ee37
+D a-string.ads		20070406091342 90ac6797
+D a-strhas.ads		20091130110856 0fca75f9
+D a-strmap.ads		20090409150019 9cb836fb
+D a-strunb.ads		20101008130255 fe8d9a91
+D a-tags.ads		20101021101406 c7695348
+D a-textio.ads		20091028140912 386df5d4
+D a-unccon.ads		20070406091342 f9eb8f06
+D a-uncdea.ads		20070406091342 f15a5ed1
+D gnatcoll.ads		20111220093209 6a5da479
+D gnatcoll-json.ads	20120411143615 9dd4f3b4
+D helpers.ads		20130310132334 cf47d1de
+D helpers.adb		20130310132326 32716c53
+D interfac.ads		20090409150019 f77d8799
+D i-cstrea.ads		20100622165701 1bd72c32
+D system.ads		20121016202718 2d1a1afa
+D s-conca2.ads		20090420091404 fbd0f2fc
+D s-conca3.ads		20090420091404 762a026a
+D s-crtl.ads		20100617122610 ac77b159
+D s-direio.ads		20090409150019 068812e8
+D s-exctab.ads		20090417131547 66e51330
+D s-ficobl.ads		20100909103250 443b9d66
+D s-fileio.ads		20091027141444 529bb6b9
+D s-finimp.ads		20090409150019 46853fe8
+D s-finroo.ads		20090409150019 dbb860c9
+D s-imgboo.ads		20090409150019 f5d971eb
+D s-imgint.ads		20090409150019 02dbe0c2
+D s-imgrea.ads		20090409150019 c7a851e2
+D s-parame.ads		20091130110856 9c5d83fa
+D s-secsta.ads		20090707124243 eea35a36
+D s-soflin.ads		20090729085153 9414c974
+D s-stache.ads		20090417130712 596fc1b4
+D s-stalib.ads		20101021102512 c4241c00
+D s-stoele.ads		20090417130712 facd7d98
+D s-stoele.adb		20100617152355 afc5dc80
+D s-stratt.ads		20100909123135 aedef97e
+D s-string.ads		20090417130712 46b01415
+D s-ststop.ads		20090417130712 ee472be4
+D s-traent.ads		20090417130712 5221ee41
+D s-unstyp.ads		20090409150019 6ae15c76
+D s-wchcon.ads		20090417130712 bfeb2e3d
+X 1 ada.ads
+16K9*Ada 19e8 28|22r6 23r6 24r6 139r11 189r11 194r30
+X 9 a-direio.ads
+43k13*Direct_IO 191e18 28|22w10 194r34
+53P9 File_Type(35|53R9) 28|196r32[194]
+55E9 File_Mode
+55n23 In_File{55E9[28|194]} 28|200r37[194]
+80U14 Open 28|199s15[194]
+81p7 File{53P9[28|194]} 28|199r21[194]
+82e7 Mode{55E9[28|194]} 28|200r21[194]
+83s7 Name{string} 28|201r21[194]
+86U14 Close 28|204s15[194]
+86p22 File{53P9[28|194]} 28|204r22[194]
+106U14 Read 28|202s15[194]
+107p7 File{53P9[28|194]} 28|202r21[194]
+108a7 Item{string} 28|203r21[194]
+X 11 a-direct.ads
+76K13*Directories 487e20 28|23w10 189r15
+292I9*File_Size<long_long_integer>
+306V13*Size{292I9} 28|191s51
+X 22 a-textio.ads
+49K13*Text_IO 472e16 28|24w10 139r15
+167U14*New_Line 28|169s16
+243U14*Put 28|158s16 162s19 165s22 168s16
+264U14*Put_Line 28|143s13 145s13 147s13 149s13 151s13 172s13
+X 25 gnatcoll.ads
+24K9*GNATCOLL 26e13 27|22r6 26r8
+X 26 gnatcoll-json.ads
+31K18*JSON 291e18 27|22w15 26r17
+34n7*JSON_Null_Type{33E9} 28|142r15
+35n7*JSON_Boolean_Type{33E9} 28|144r15
+36n7*JSON_Int_Type{33E9} 28|146r15
+37n7*JSON_Float_Type{33E9} 28|148r15
+38n7*JSON_String_Type{33E9} 28|150r15
+39n7*JSON_Array_Type{33E9} 28|152r15
+40n7*JSON_Object_Type{33E9} 28|171r15
+44A12*UTF8_String{string}<integer> 27|30r24 31r24 32r24 33r24 34r24 41r28
+. 43r28 44r28 45r28 46r28 51r22 52r22 53r22 57r18 28|34r28 36r28 37r28 38r28
+. 39r28 99r22 100r22 101r22 136r18 215r24 216r24 217r24 218r24 219r24
+54R9*JSON_Value 250e14 27|29r24 40r28 50r22 58r18 28|33r28 41r31 98r22 103r30
+. 137r18 155r31 214r24
+55R9*JSON_Array 268e14 28|42r22 104r21 154r40
+61V13*Length{natural} 28|156s51
+62V13*Get{54R9} 28|160s35
+62r18 Arr{55R9} 28|160r40
+62i36 Index{positive} 28|161r40
+63U14*Append 28|81s7 123s7
+63r22 Arr{55R9} 28|81r15 123r15
+63r47 Val{54R9} 28|82r15 124r15
+106V13*Create_Object{54R9} 28|41s46 103s45
+125U14*Set_Field 28|61s7
+126r7 Val{54R9} 28|61r18
+127a7 Field_Name{44A12} 28|62r18
+128i7 Field{integer} 28|63r18
+137U14*Set_Field 28|53s7 65s7 69s7 73s7 77s7 111s7 115s7 119s7 222s7 226s7
+. 230s7 234s7 238s7
+138r7 Val{54R9} 28|53r18 65r18 69r18 73r18 77r18 111r18 115r18 119r18 222r18
+. 226r18 230r18 234r18 238r18
+139a7 Field_Name{44A12} 28|54r18 66r18 70r18 74r18 78r18 112r18 116r18 120r18
+. 223r18 227r18 231r18 235r18 239r18
+140a7 Field{44A12} 28|55r18 67r18 71r18 75r18 79r18 113r18 117r18 121r18
+. 224r18 228r18 232r18 236r18 240r18
+149U14*Set_Field 28|87s7 126s7
+150r7 Val{54R9} 28|87r18 126r18
+151a7 Field_Name{44A12} 28|88r18 127r18
+152r7 Field{55R9} 28|89r18 128r18
+158V13*Kind{33E9} 28|141s12
+158r19 Val{54R9} 28|141r18
+160V13*Get{boolean} 28|145s60
+163V13*Get{integer} 28|147s60
+166V13*Get{float} 28|149s56
+169V13*Get{44A12} 28|151s44 162s24
+175V13*Get{55R9} 28|154s54
+175r18 Val{54R9} 28|154r59
+178V13*Has_Field{boolean} 28|44s10 106s10
+211V13*Get{55R9} 28|45s25 107s24
+211r18 Val{54R9} 28|45r30 107r29
+211a36 Field{44A12} 28|46r30 108r29
+216U14*Map_JSON_Object 28|173s13
+217r7 Val{54R9} 28|173r30
+218p7 CB 28|174r30
+X 27 helpers.ads
+24K9*Helpers 66l5 66e12 28|26b14 243l5 243t12
+28U14*Set_Core_Company_Data 29=7 30>7 31>7 32>7 33>7 34>7 28|213b14 241l8
+. 241t29
+29r7 Obj{26|54R9} 28|214b7 222r32 226r32 230r32 234r32 238r32
+30a7 Name{26|44A12} 28|215b7 224r32
+31a7 VAT_No{26|44A12} 28|216b7 228r32
+32a7 Hours{26|44A12} 28|217b7 232r32
+33a7 Product{26|44A12} 28|218b7 236r32
+34a7 Web{26|44A12} 28|219b7 240r32
+39U14*Add_Company_Address 40=7 41>7 42>7 43>7 44>7 45>7 46>7 28|32b14 91l8
+. 91t27
+40r7 Obj{26|54R9} 28|33b7 44r21 45r39 87r32
+41a7 Street_Name{26|44A12} 28|34b7 55r32
+42i7 Street_No{positive} 28|35b7 63r32
+43a7 Zip_Code{26|44A12} 28|36b7 67r32
+44a7 City_Name{26|44A12} 28|37b7 71r32
+45a7 Phone{26|44A12} 28|38b7 75r32
+46a7 Comment{26|44A12} 28|39b7 79r32
+49U14*Add_Person 50=7 51>7 52>7 53>7 28|97b14 129l8 129t18
+50r7 Obj{26|54R9} 28|98b7 106r21 107r38 126r32
+51a7 Name{26|44A12} 28|99b7 113r32
+52a7 Title{26|44A12} 28|100b7 117r32
+53a7 Email{26|44A12} 28|101b7 121r32
+56U14*Handler 57>7 58>7 28|135b14 174r37 179l8 179t15
+57a7 Name{26|44A12} 28|136b7 143r23 145r23 147r23 149r23 151r23 158r21 172r23
+58r7 Value{26|54R9} 28|137b7 141r25 145r65 147r65 149r61 151r49 154r66 173r37
+61V13*Load_File{string} 62>7 28|185b13 207l8 207t17
+62s7 Filename{string} 28|186b7 191r57 201r29
+X 28 helpers.adb
+41r7 Address_JSON{26|54R9} 53r32 61r32 65r32 69r32 73r32 77r32 82r22
+42r7 Address_Arr{26|55R9} 45m10 81m22 89r32
+103r7 Person_JSON{26|54R9} 111r32 115r32 119r32 124r22
+104r7 Person_Arr{26|55R9} 107m10 123m22 128r32
+154r16 A_JSON_Array{26|55R9} 156r59 160r49
+155r16 A_JSON_Value{26|54R9} 160m19 162r29
+156i16 Array_Length{natural} 159r30 164r26
+159i20 J{integer} 161r49 164r22
+191i7 File_Size{natural} 193r45
+193A15 Test_JSON_Str{string}<integer> 194r45 197r24
+194K15 File_IO[9|43] 196r24 199r7 200r29 202r7 204r7
+196p7 File{9|53P9[194]} 199m29 202r29 204m30
+197a7 String_Content{193A15} 203m29 206r14
+

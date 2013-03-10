@@ -1,0 +1,128 @@
+V "GNAT Lib v4.6"
+M P W=b
+A -O0
+A -g
+A -gnat05
+A -gnatwl
+A -gnatwa
+A -gnatwK
+A -gnatwW
+A -gnatA
+P SS ZX
+R nnnnnnnnnnnnnnnnnnvvnvnnnvnnnnnnnnvnnnnnnvnnvnnnnnnnnnnnnnvnnvnnnnnnnnnnnnnnnnnn
+
+U json_test%b		json_test.adb		effce097 NE OO SU
+W ada%s			ada.ads			ada.ali
+W ada.exceptions%s	a-except.adb		a-except.ali
+W ada.finalization.list_controller%s  a-filico.adb  a-filico.ali
+W ada.tags%s		a-tags.adb		a-tags.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W gnatcoll%s		gnatcoll.ads		gnatcoll.ali
+W gnatcoll.json%s	gnatcoll-json.adb	gnatcoll-json.ali
+W helpers%s		helpers.adb		helpers.ali
+W sattmate_exception%s	sattmate_exception.adb	sattmate_exception.ali
+W system.finalization_implementation%s  s-finimp.adb  s-finimp.ali
+W system.finalization_root%s  s-finroo.adb	s-finroo.ali
+W system.secondary_stack%s  s-secsta.adb	s-secsta.ali
+W system.soft_links%s	s-soflin.adb		s-soflin.ali
+W system.standard_library%s  s-stalib.adb	s-stalib.ali
+
+D ada.ads		20070406091342 3ffc8e18
+D a-charac.ads		20070912115821 2d3ec45b
+D a-chlat1.ads		20070912115821 2825df20
+D a-contai.ads		20101025135029 61e5e089
+D a-cohata.ads		20101026104202 f4016a1a
+D a-cihama.ads		20090409150019 2e09bd21
+D a-convec.ads		20090416105848 49c793e4
+D a-except.ads		20090727140100 0c711ac9
+D a-finali.ads		20090409150019 e5e85fa4
+D a-filico.ads		20090409150019 872dc219
+D a-ioexce.ads		20091130110856 8b9de6cd
+D a-stream.ads		20090409150019 2ca4ee37
+D a-string.ads		20070406091342 90ac6797
+D a-strhas.ads		20091130110856 0fca75f9
+D a-strmap.ads		20090409150019 9cb836fb
+D a-strunb.ads		20101008130255 fe8d9a91
+D a-tags.ads		20101021101406 c7695348
+D a-textio.ads		20091028140912 386df5d4
+D a-unccon.ads		20070406091342 f9eb8f06
+D a-uncdea.ads		20070406091342 f15a5ed1
+D gnatcoll.ads		20111220093209 6a5da479
+D gnatcoll-json.ads	20120411143615 9dd4f3b4
+D helpers.ads		20130310132334 cf47d1de
+D interfac.ads		20090409150019 f77d8799
+D i-cstrea.ads		20100622165701 1bd72c32
+D json_test.adb		20130310135701 f74419a8
+D sattmate_exception.ads  20130304101318 72462e81
+D system.ads		20121016202718 2d1a1afa
+D s-crtl.ads		20100617122610 ac77b159
+D s-exctab.ads		20090417131547 66e51330
+D s-ficobl.ads		20100909103250 443b9d66
+D s-finimp.ads		20090409150019 46853fe8
+D s-finroo.ads		20090409150019 dbb860c9
+D s-parame.ads		20091130110856 9c5d83fa
+D s-secsta.ads		20090707124243 eea35a36
+D s-soflin.ads		20090729085153 9414c974
+D s-stache.ads		20090417130712 596fc1b4
+D s-stalib.ads		20101021102512 c4241c00
+D s-stoele.ads		20090417130712 facd7d98
+D s-stoele.adb		20100617152355 afc5dc80
+D s-stratt.ads		20100909123135 aedef97e
+D s-string.ads		20090417130712 46b01415
+D s-ststop.ads		20090417130712 ee472be4
+D s-traent.ads		20090417130712 5221ee41
+D s-unstyp.ads		20090409150019 6ae15c76
+D s-wchcon.ads		20090417130712 bfeb2e3d
+X 1 ada.ads
+16K9*Ada 19e8 26|20r6 27r8
+X 18 a-textio.ads
+49K13*Text_IO 472e16 26|20w10 27r12
+167U14*New_Line 26|85s4 89s4 101s4
+264U14*Put_Line 26|86s4 87s4 88s4 97s4 100s4
+X 21 gnatcoll.ads
+24K9*GNATCOLL 26e13 26|21r6 28r8
+X 22 gnatcoll-json.ads
+31K18*JSON 291e18 26|21w15 28r17
+44A12*UTF8_String{string}<integer>
+54R9*JSON_Value 250e14 26|31r19 35r19
+73V13*Read{54R9} 26|92s17
+73s19 Strm{string} 26|92r23
+73s25 Filename{string} 26|93r23
+74V13*Write{string} 26|87s14
+106V13*Create_Object{54R9} 26|31s33
+216U14*Map_JSON_Object 26|98s4
+217r7 Val{54R9} 26|98r21
+218p7 CB 26|99r21
+X 23 helpers.ads
+24K9*Helpers 66e12 26|22w6 29r8
+28U14*Set_Core_Company_Data 26|40s4
+29r7 Obj{22|54R9} 26|40r27
+30a7 Name{22|44A12} 26|41r27
+31a7 VAT_No{22|44A12} 26|42r27
+32a7 Hours{22|44A12} 26|43r27
+33a7 Product{22|44A12} 26|44r27
+34a7 Web{22|44A12} 26|45r27
+39U14*Add_Company_Address 26|47s4 55s4
+40r7 Obj{22|54R9} 26|47r25 55r25
+41a7 Street_Name{22|44A12} 26|48r25 56r25
+42i7 Street_No{positive} 26|49r25 57r25
+43a7 Zip_Code{22|44A12} 26|50r25 58r25
+44a7 City_Name{22|44A12} 26|51r25 59r25
+45a7 Phone{22|44A12} 26|52r25 60r25
+46a7 Comment{22|44A12} 26|53r25 61r25
+49U14*Add_Person 26|63s4 68s4 73s4 78s4
+50r7 Obj{22|54R9} 26|63r16 68r16 73r16 78r16
+51a7 Name{22|44A12} 26|64r16 69r16 74r16 79r16
+52a7 Title{22|44A12} 26|65r16 70r16 75r16 80r16
+53a7 Email{22|44A12} 26|66r16 71r16 76r16 81r16
+56U14*Handler 26|99r30
+61V13*Load_File{string} 26|92s35
+X 26 json_test.adb
+26U11*JSON_Test 26b11 106l5 106t14
+31r4 Company_JSON{22|54R9} 40m38 47m40 55m40 63m25 68m25 73m25 78m25 87r21
+35r4 Test_JSON{22|54R9} 92m4 98r30
+104r9 E{8|68R9} 105r40
+X 27 sattmate_exception.ads
+32K9*Sattmate_Exception 26|24w6 105r7 27|46e23
+39U13*Tracebackinfo 26|105s26
+

@@ -82,7 +82,7 @@ project Global is
 --                  Smsk & "/utility/aws/choises",
 --                  Smsk & "/utility/aws/" & Target_Machine);
 
-   for Source_Dirs use ( "local", "global") ;
+   for Source_Dirs use ( "local", "global", "global/gnatcoll") ;
 
    package Ide is
       for Compiler_Command ("ada") use "gnatmake";
