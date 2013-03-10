@@ -62,21 +62,22 @@ def main():
                              password=None") 
   row1 = {}
   row2 = {}    
-  row1['today']  = get_row(conn, "DRY_RUN_HORSES_PLACE_LAY_BET_6_10", 0)
-  row1['yest']   = get_row(conn, "HOUNDS_WINNER_LAY_BET", 0)
-  row1['dbyest'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19", 0)
+  row1['today']  = get_row(conn, "HOUNDS_WINNER_LAY_BET", 0)
+  row1['yest']   = get_row(conn, "HOUNDS_WINNER_LAY_BET", 1)
+  row1['dbyest'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", 2)
 
-  row2['today']  = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18", 0)
-  row2['yest']   = get_row(conn, "DRY_RUN_HORSES_WINNER_LAY_BET", 0)
-  row2['dbyest'] = get_row(conn, "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9", 0)
+  row2['today']  = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 0)
+  row2['yest']   = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 1)
+  row2['dbyest'] = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 2)
 
-  lcd_row_1 = '-%(today)5d%(yest)5d%(dbyest)5d' % row1
-  lcd_row_2 = '-%(today)5d%(yest)5d%(dbyest)5d' % row2
+  lcd_row_1 = 'G%(today)5d%(yest)5d%(dbyest)5d' % row1
+  lcd_row_2 = 'H%(today)5d%(yest)5d%(dbyest)5d' % row2
 
   print lcd_row_1
   print lcd_row_2
   print row1
   print row2
+
 
 
   ser = serial.Serial(
@@ -89,8 +90,9 @@ def main():
 
   ser.open()
   ser.write('1') # clear display
-  ser.write('3,0,0,HOUNDS_WINNER_LAY_BET') # string
-  ser.write('2,0,1,'+lcd_row_1) # string
+  ser.write('3,0,0,'+ lcd_row_1) # string
+  ser.write('3,1,0,'+ lcd_row_1) # string
+#  ser.write('2,0,3,'+lcd_row_1) # numeric
   ser.close()
 
     
