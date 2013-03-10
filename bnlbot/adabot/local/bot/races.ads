@@ -21,6 +21,7 @@ package Races is
    type Profit_Type is new Float_8;
    type Saldo_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
+   type Max_Daily_Loss_Type_Type is (A_100, A_200, A_300, A_400, A_500, A_600);
    type Max_Profit_Factor_Type is new Float_8;
    type Max_Price_Type is new Float_8;
    type Min_Price_Type is new Float_8;
