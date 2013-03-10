@@ -83,26 +83,46 @@ def main():
     LOG.info('Starting application')
     ws_client = ais.init_ws_client(conf.AIS_WS_URL, conf.AIS_USERNAME, 
                                    conf.AIS_PASSWORD)
+    cloud_storage_connection = None
+    cloud_storage_bucket = None
+    if conf.AIS_S3_STORE:
+        cloud_storage_connection = util.get_aws_s3_connections(
+            username=conf.AIS_S3_USER,
+            password=conf.AIS_S3_PASSWORD
+        )
+        cloud_storage_bucket = util.init_aws_s3_bucket(
+            connection=cloud_storage_connection,
+            bucketname=conf.AIS_S3_BUCKET
+        )
     init_db = 'init_db'
     init_local_racedays = 'init_local_racedays'
     daily_download = 'daily_download'
     meta_files = 'write_meta_files'
-    usage = \
-        "usage: %(prog)s [%(com0)s|%(com1)s|%(com2)s|%(com3)s]" % \
+    save_files_in_cloud = 'save_files_in_cloud'
+    get_files_from_cloud = 'get_files_from_cloud'
+    
+    usage_string = "usage: %(prog)s " + \
+        "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
+        "%(com4)s|%(com5)s]"
+    usage = usage_string % \
         {
             'prog':'%prog',
             'com0':init_db,
             'com1':init_local_racedays,
             'com2':daily_download, 
-            'com3':meta_files
+            'com3':meta_files,
+            'com4':save_files_in_cloud,
+            'com5':get_files_from_cloud
         }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]
     if len(args) < 1:
         parser.error("Please state command to run!")
+    
     if init_db in args:
         LOG.info('Running ' + init_db)
         db.init_db_client(db_init=True)
+    
     if init_local_racedays in args:
         LOG.info('Running ' + init_local_racedays)
         params = {
@@ -114,6 +134,7 @@ def main():
             'save_soap_file':True
         }
         ais.load_calendar_history_into_db(params)
+    
     if daily_download in args:
         LOG.info('Running ' + daily_download)
         params = {
@@ -127,9 +148,23 @@ def main():
             'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE
         }
         ais.download_history_via_calendar(params)
+    
     if meta_files in args:
         LOG.info('Running ' + meta_files)
         util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
+    
+    if save_files_in_cloud in args:
+        LOG.info('Running ' + save_files_in_cloud)
+        util.save_files_in_aws_s3_bucket(from_datadir=conf.AIS_DATADIR,
+                                         bucket=cloud_storage_bucket)
+    
+    if get_files_from_cloud in args:
+        LOG.info('Running ' + get_files_from_cloud)
+        util.get_files_from_aws_s3(to_datadir=conf.AIS_DATADIR,
+                                   bucket=cloud_storage_bucket)
+    if cloud_storage_connection:
+        cloud_storage_connection.close()
+        
     LOG.info('Ending application')
     logging.shutdown()    
     exit(0)
