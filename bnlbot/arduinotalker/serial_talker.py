@@ -41,7 +41,7 @@ def get_row(conn, bet_type, delta_days)  :
                      "BET_PLACED::date desc ", 
                    (bet_type,'S',day_start,day_stop))
   
-    print bet_type, 'rc', cur.rowcount
+    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
      
     if cur.rowcount >= 1 :
         row = cur.fetchone()
