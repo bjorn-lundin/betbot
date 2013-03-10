@@ -18,12 +18,17 @@
 #                                                                             #
 ###############################################################################
 
-all:
+all: json_test adabot
+
+.PHONY : json_test simulator
+
+json_test :
 	gnatmake -P json_test
 
-debug:
-	BUILDTYPE=Debug gnatmake -P json_test
+adabot :
+	gnatmake -P adabot
 
 clean:
 	gnatclean -P json_test
-	BUILDTYPE=Debug gnatclean -P json_test
+	gnatclean -P adabot
+	gnatclean -P global
