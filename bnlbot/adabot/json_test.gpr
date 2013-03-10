@@ -17,51 +17,22 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with "../../global";
+with "global";
 
 Project JSON_Test is
+   Sub_System := "json";
 
+   AL    := Global.Abr & "/local";
 
-   for Source_Dirs use ("src");
-
+   for Exec_Dir use Global.Abr & "/exe"  ;
+   for Source_Dirs use (AL & "/" & Sub_System);
+   for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("json_test.adb");
 
-   for Exec_Dir use "exe";
-
-   for Object_Dir use "obj";
-
-   package Ide is
-
-      --  Adjust this to point to the compiler you want to use.
-      for Compiler_Command ("ada") use "gnatmake";
-
-   end Ide;
-
---   package Compiler is
---      for Default_Switches ("Ada")
---              use ("-gnatwa",
---                   "-gnata",
---                   "-gnatVa",
---                   "-gnaty3abcdefhiklmnoprstux",
---                   "-Wall",
---                   "-O1",
---                   "-gnat05",
---                   "-g");
-
-   Platform_Independent_Compiler_Switches := ("-g",
-                                              "-gnat05",
-                                              "-O0",
-                                              "-gnatwlaKW");
-
-   package Compiler is
-      for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
-   end Compiler;
-
-   package Binder is
-      for Default_Switches ("ada") use ("-E");
-   end Binder;
-
-
+   package Compiler renames Global.Compiler;
+   package Binder   renames Global.Binder;
+   package Linker   renames Global.Linker;
+   package Ide      renames Global.Ide;
 
 
 end JSON_Test;

@@ -15,7 +15,7 @@ project Adabot is
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;
    package Linker   renames Global.Linker;
---   package Ide      renames Global.Ide;
+   package Ide      renames Global.Ide;
 
 
 end Adabot;
