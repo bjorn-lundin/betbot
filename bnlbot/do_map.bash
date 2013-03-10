@@ -57,6 +57,8 @@ for input in $filelist ; do
          datafil=$value
       elif [ $key == "datadir" ] ; then
          datadir=$value
+      elif [ $key == "max_daily_loss" ] ; then
+         max_daily_loss=$value
       fi
 
     done < $input
@@ -74,7 +76,7 @@ for input in $filelist ; do
 #    echo "gpi   $gpi"
 #    echo "png   $png"
 
-    DESTINATION=$animal/$bet_name/$bet_type/$graph_type/$variant
+    DESTINATION=$animal/$bet_name/$bet_type/$graph_type/$variant/$max_daily_loss
     DESTINATION_DAT=dat
 
 #    echo "dest $DESTINATION"
