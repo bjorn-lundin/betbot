@@ -84,7 +84,7 @@ def call_ais_service(params=None, date=None,
     # web service
     if params['save_soap_file']:
         file_name = file_name_dict['filename']
-        file_list = util.list_files_in_dir(params['datadir'])
+        file_list = util.list_files(params['datadir'])
         if file_list and file_name in file_list:
             if ret_if_local:
                 LOG.info('Using excisting file ' + file_name)
@@ -254,7 +254,7 @@ def load_calendar_history_into_db(params=None):
     make sure all history is saved to database. This enables
     setting up a new database from scratch.
     '''
-    filelist = sorted(util.list_files_in_dir(params['datadir']))
+    filelist = sorted(util.list_files(params['datadir']))
     calendar_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
     pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d).*?') # r = raw string
     for filename in calendar_filelist:
