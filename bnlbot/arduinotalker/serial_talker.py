@@ -63,12 +63,12 @@ def main():
   row1 = {}
   row2 = {}    
   row1['today']  = get_row(conn, "HOUNDS_WINNER_LAY_BET", 0)
-  row1['yest']   = get_row(conn, "HOUNDS_WINNER_LAY_BET", 1)
-  row1['dbyest'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", 2)
+  row1['yest']   = get_row(conn, "HOUNDS_WINNER_LAY_BET", -1)
+  row1['dbyest'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -2)
 
   row2['today']  = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 0)
-  row2['yest']   = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 1)
-  row2['dbyest'] = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", 2)
+  row2['yest']   = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", -1)
+  row2['dbyest'] = get_row(conn, "HORSES_PLACE_LAY_BET_6_10", -2)
 
   lcd_row_1 = 'G%(today)5d%(yest)5d%(dbyest)5d' % row1
   lcd_row_2 = 'H%(today)5d%(yest)5d%(dbyest)5d' % row2
