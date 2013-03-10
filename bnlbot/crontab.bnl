@@ -1,1 +1,2 @@
-25 3 * * * /home/bnl/bnlbot/do_backup_db.bash
+#25 3 * * * /home/bnl/bnlbot/do_backup_db.bash
+* * * * * /usr/bin/python /home/pi/bnlbot/arduinotalker/serial_talker.py
