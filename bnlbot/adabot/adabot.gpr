@@ -10,7 +10,7 @@ project Adabot is
    for Exec_Dir use Global.Abr & "/exe"  ;
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
-   for Main use ("simulator.adb");
+   for Main use ("simulator.adb", "dry_runner_mover.adb");
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;

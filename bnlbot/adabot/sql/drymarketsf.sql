@@ -1,22 +1,22 @@
 
 begin;
-create table DRYMARKETSF ( 
+create table DRYMARKETSF (
   MARKETID integer default 1 not null , -- Primary Key
-  BSPMARKET varchar default ' ' not null , 
-  MARKETTYPE varchar default ' ' , 
+  BSPMARKET varchar default ' ' not null ,
+  MARKETTYPE varchar default ' ' ,
   EVENTHIERARCHY varchar default ' ' not null , -- non unique index 2
-  LASTREFRESH timestamp without time zone  not null , 
-  TURNINGINPLAY varchar default ' ' not null , 
-  MENUPATH varchar default ' ' , 
-  BETDELAY integer default 1 not null , 
-  EXCHANGEID integer default 1 not null , 
-  COUNTRYCODE varchar default ' ' not null , 
+  LASTREFRESH timestamp without time zone  not null ,
+  TURNINGINPLAY varchar default ' ' not null ,
+  MENUPATH varchar default ' ' ,
+  BETDELAY integer default 1 not null ,
+  EXCHANGEID integer default 1 not null ,
+  COUNTRYCODE varchar default ' ' not null ,
   MARKETNAME varchar default ' ' , -- non unique index 3
-  MARKETSTATUS integer default 1 , 
+  MARKETSTATUS varchar default ' ' ,
   EVENTDATE timestamp without time zone  , -- non unique index 4
-  NOOFRUNNERS integer default 1 , 
-  TOTALMATCHED integer default 1 , 
-  NOOFWINNERS integer default 1 
+  NOOFRUNNERS integer default 1 ,
+  TOTALMATCHED integer default 1 ,
+  NOOFWINNERS integer default 1
 ) without OIDS ;
 
 alter table DRYMARKETSF add constraint DRYMARKETSFP1 primary key (

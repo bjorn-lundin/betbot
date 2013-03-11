@@ -339,5 +339,13 @@ package Pgada.Thin is
    pragma Import (C, Pq_Escape_String_Conn, "PQescapeStringConn");
 
 
+--  char *PQescapeLiteral(PGconn *conn, const char *str, size_t length);
+
+   function Pq_Escape_Literal     (Conn   : Pg_Conn_Access;
+                                   Source : Chars_Ptr;
+                                   Len    : Size_T) return  Chars_Ptr;
+   pragma Import (C, Pq_Escape_Literal, "PQescapeLiteral");
+
+
 end Pgada.Thin;
 

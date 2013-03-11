@@ -776,17 +776,42 @@ package body Pgada.Database is
    end Error_Source_Function;
    ---------------------------------------------------------------------------
 
+--     function Escape (Conn   : in Connection_Type;
+--                      Source : in String) return String is
+--
+--        Local_Source :  String (1 .. Source'Length) := Source;
+--        Local_Target :  String (1 .. 2 * Local_Source'Length + 1) := (others => ' ');
+--        Err          : aliased Int := 0;
+--        Num          : Size_T;
+--        Lsp          : Chars_Ptr := New_String (Local_Source);
+--        Ltp          : Chars_Ptr := New_String (Local_Target);
+--     begin
+--        Num := Pq_Escape_String_Conn (Conn.Actual, Ltp, Lsp, Local_Source'Length, Err'Access);
+--        declare
+--           Result : String := Value (Ltp);
+--        begin
+--           --      Text_Io.Put_Line("------------------");
+--           --      Text_Io.Put_Line("s: '" & Source & "' " & Integer'Image(Source'length));
+--           --      Text_Io.Put_Line("r: '" & Result & "' " & Integer'Image(Result'length));
+--           --      Text_Io.Put_Line("n: " & size_t'Image(num));
+--           --      Text_Io.Put_Line("------------------");
+--           Free (Lsp);
+--           Free (Ltp);
+--           return "'" & Result (1 .. Integer (Num)) & "'";
+--        end;
+--   end Escape;
+   ---------------------------------------------------------------------------
    function Escape (Conn   : in Connection_Type;
                     Source : in String) return String is
 
       Local_Source :  String (1 .. Source'Length) := Source;
-      Local_Target :  String (1 .. 2 * Local_Source'Length + 1) := (others => ' ');
-      Err          : aliased Int := 0;
-      Num          : Size_T;
       Lsp          : Chars_Ptr := New_String (Local_Source);
-      Ltp          : Chars_Ptr := New_String (Local_Target);
+      Ltp          : Chars_Ptr := Pq_Escape_Literal(Conn.Actual, Lsp, Size_T(Local_Source'Length));
+
    begin
-      Num := Pq_Escape_String_Conn (Conn.Actual, Ltp, Lsp, Local_Source'Length, Err'Access);
+
+      pragma Compile_Time_Warning(True,"pqfreemem");
+--      Num := Pq_Escape_String_Conn (Conn.Actual, Ltp, Lsp, Local_Source'Length, Err'Access);
       declare
          Result : String := Value (Ltp);
       begin
@@ -797,10 +822,10 @@ package body Pgada.Database is
          --      Text_Io.Put_Line("------------------");
          Free (Lsp);
          Free (Ltp);
-         return "'" & Result (1 .. Integer (Num)) & "'";
+         return Result;
+--         return "'" & Result (1 .. Integer (Num)) & "'";
       end;
    end Escape;
-   ---------------------------------------------------------------------------
 
 
 
