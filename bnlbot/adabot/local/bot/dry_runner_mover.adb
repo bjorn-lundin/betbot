@@ -46,7 +46,7 @@ begin
    Sql.Start_Read_Write_Transaction (T);
    Sql.Prepare (Select_Football_Markets,
                 "select * from DRY_MARKETS where EVENT_HIERARCHY like '%/1/%'");
-   Table_Dry_Markets.Read_List (Stm => Select_Football_Markets, List => Dry_Markets_List, Max => 100);
+   Table_Dry_Markets.Read_List (Stm => Select_Football_Markets, List => Dry_Markets_List, Max => 100_000);
 
    while not Table_Dry_Markets.Dry_Markets_List_Pack.Is_Empty (List => Dry_Markets_List) loop
       Table_Dry_Markets.Dry_Markets_List_Pack.Remove_From_Head (List => Dry_Markets_List, Element => Dry_Markets);
@@ -79,6 +79,7 @@ begin
                      );
 
       Table_Drymarketsf.Insert (Data => Drymarketsf);
+      Table_Dry_Markets.Delete(Data => Dry_Markets);
 
       while not Table_Dry_Runners.Dry_Runners_List_Pack.Is_Empty (List => Dry_Runners_List) loop
          Table_Dry_Runners.Dry_Runners_List_Pack.Remove_From_Head (List => Dry_Runners_List, Element => Dry_Runners);
@@ -91,6 +92,7 @@ begin
                          Runnername  => Dry_Runners.Runner_Name
                         );
          Table_Dryrunnersf.Insert (Dryrunnersf);
+         Table_Dry_Runners.Delete(Data => Dry_Runners);
       end loop;
 
       while not Table_Dry_Results.Dry_Results_List_Pack.Is_Empty (List => Dry_Results_List) loop
@@ -101,7 +103,7 @@ begin
                     );
 
       Table_Dryresultsf.Insert (Data => Dryresultsf);
-
+      Table_Dry_Results.Delete(Data => Dry_Results);
    end loop;
 
 
