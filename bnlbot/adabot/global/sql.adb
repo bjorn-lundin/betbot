@@ -1354,13 +1354,13 @@ package body Sql is
                                   Field_Index_Type (Parameter));
    begin
       if Local_String'Length = 0 then
-         Value := "";
+         Value := (others => ' ');
       else
          Value (1 .. Local_String'Length) := Local_String;
       end if;
    exception
       when Constraint_Error =>
-         ada.text_io.put_line("local_string: '" & local_string & "'");
+         ada.text_io.put_line	("local_string: '" & local_string & "'");
          Put_Line ("No such column: " & Positive'Image (Parameter));
          raise No_Such_Column;
    end Get;
