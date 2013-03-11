@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Wiz="3" Desc="collected markets " Name="DRYMARKETSF" Tablespace="" LicId="0" LogMask="0" LogicId="0" SafeAdd="0" Loadable="1" StorageClass="0" CleanSetup="0" CleanProd="0">
+        <SnapshotSettings SnapshotBase="1" TruncateBase="1" SnapshotData="1" TruncateData="1" SnapshotEdu="1" TruncateEdu="1" SnapshotFull="1" TruncateFull="1"/>
+        <Column Name="marketid" Primary="1" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="market id"/>
+        <Column Name="bspmarket" Primary="0" Size="0" Type="1" Foreign="1" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="bsp_market"/>
+        <Column Name="markettype" Primary="0" Size="0" Type="1" Foreign="0" Indexed="1" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="market_type"/>
+        <Column Name="eventhierarchy" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="event_hierarchy"/>
+        <Column Name="lastrefresh" Primary="0" Size="23" Type="15" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="last_refresh"/>
+        <Column Name="turninginplay" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="turning_in_play"/>
+        <Column Name="menupath" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="menu_path"/>
+        <Column Name="betdelay" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="bet_delay"/>
+        <Column Name="exchangeid" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="exchange_id"/>
+        <Column Name="countrycode" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="country_code"/>
+        <Column Name="marketname" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="market_name"/>
+        <Column Name="marketstatus" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="market_status"/>
+        <Column Name="eventdate" Primary="0" Size="23" Type="15" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="event_date"/>
+        <Column Name="noofrunners" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="no_of_runners"/>
+        <Column Name="totalmatched" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="total_matched"/>
+        <Column Name="noofwinners" Primary="0" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="no_of_winners"/>
+        <Index Columns="marketid" type="primary"/>
+        <Index Columns="eventdate" type="index"/>
+        <Index Columns="eventhierarchy" type="index"/>
+        <Index Columns="marketname" type="index"/>
+    </Table>
+</MaAstro>
+
