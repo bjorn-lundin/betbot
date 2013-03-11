@@ -23,7 +23,7 @@ package Table_Dry_Markets is
       Event_Hierarchy :    String (1 .. 50) := (others => ' ') ; -- non unique index 2
       Last_Refresh :    Time_Type  := Time_Type_First ; --
       Turning_In_Play :    String (1 .. 1) := (others => ' ') ; --
-      Menu_Path  :    String (1 .. 100) := (others => ' ') ; --
+      Menu_Path  :    String (1 .. 200) := (others => ' ') ; --
       Bet_Delay  :    Integer_4  := 0 ; --
       Exchange_Id :    Integer_4  := 0 ; --
       Country_Code :    String (1 .. 3) := (others => ' ') ; --
