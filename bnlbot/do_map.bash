@@ -90,11 +90,14 @@ for input in $filelist ; do
 #    echo "mv $datadir/$png $TARGET_ROOT/$DESTINATION/"
 
 
-    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$dat"
-    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$gpi"
+#    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$dat"
+#    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$gpi"
     [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/     && echo "moved $datadir/$png"
 
 done
 
+tar_gz_file=dat-$(date +%Y-%m-%d).tar.gz
+echo "taring .gpi- and .dat-files"
+tar -cvzf $tar_gz_file sims/*.gpi sims/*.dat
 
-
+[ -f $tar_gz_file ] && mv $tar_gz_file $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $tar_gz_file"
