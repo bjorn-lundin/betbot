@@ -1,16 +1,25 @@
 
+begin;
 create table DRYRUNNERSF ( 
-  MARKETID integer  default 1 not null , -- Primary Key
-  SELECTIONID integer  default 1 not null , -- Primary Key
-  INDEX integer  default 1 , 
-  BACKPRICE float  default 0.0 not null , 
-  LAYPRICE float  default 0.0 not null , 
-  RUNNERNAME varchar(0) COLLATE SQL_Latin1_General_CP1_CS_AS default ' ' not null 
-)
-go
+  MARKETID integer default 1 not null , -- Primary Key
+  SELECTIONID integer default 1 not null , -- Primary Key
+  INDEX integer default 1 , 
+  BACKPRICE float default 0.0 not null , 
+  LAYPRICE float default 0.0 not null , 
+  RUNNERNAME varchar default ' ' not null 
+) without OIDS ;
 
 alter table DRYRUNNERSF add constraint DRYRUNNERSFP1 primary key (
   marketid,selectionid
-)
-go
+) ;
+
+comment on table  DRYRUNNERSF is 'collected runners ' ;
+comment on column DRYRUNNERSF.marketid is 'market id' ;
+comment on column DRYRUNNERSF.selectionid is 'selection_id' ;
+comment on column DRYRUNNERSF.index is 'index' ;
+comment on column DRYRUNNERSF.backprice is 'back_price' ;
+comment on column DRYRUNNERSF.layprice is 'lay_price' ;
+comment on column DRYRUNNERSF.runnername is 'runner_name' ;
+
+commit;
 
