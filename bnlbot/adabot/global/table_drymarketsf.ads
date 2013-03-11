@@ -23,7 +23,7 @@ package Table_Drymarketsf is
       Eventhierarchy :    String (1..50) := (others => ' ') ; -- non unique index 2
       Lastrefresh :    Time_Type  := Time_Type_First ; --
       Turninginplay :    String (1..1) := (others => ' ') ; --
-      Menupath :    String (1..100) := (others => ' ') ; --
+      Menupath :    String (1..200) := (others => ' ') ; --
       Betdelay :    Integer_4  := 0 ; --
       Exchangeid :    Integer_4  := 0 ; --
       Countrycode :    String (1..3) := (others => ' ') ; --
