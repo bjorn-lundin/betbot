@@ -20,7 +20,7 @@ package Table_Dry_Markets is
       Market_Id  :    Integer_4  := 0 ; -- Primary Key
       Bsp_Market :    String (1 .. 1) := (others => ' ') ; --
       Market_Type :    String (1 .. 1) := (others => ' ') ; --
-      Event_Hierarchy :    String (1 .. 50) := (others => ' ') ; -- non unique index 2
+      Event_Hierarchy :    String (1 .. 150) := (others => ' ') ; -- non unique index 2
       Last_Refresh :    Time_Type  := Time_Type_First ; --
       Turning_In_Play :    String (1 .. 1) := (others => ' ') ; --
       Menu_Path  :    String (1 .. 200) := (others => ' ') ; --

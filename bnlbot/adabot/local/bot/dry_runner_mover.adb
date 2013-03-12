@@ -33,7 +33,7 @@ procedure Dry_Runner_Mover is
                         Table_Dry_Results.Dry_Results_List_Pack.Create;
 
 
-   T                : Sql.Transaction_Type;
+   T                       : Sql.Transaction_Type;
    Select_Football_Markets : Sql.Statement_Type;
 begin
    Log ("Connect db");
@@ -46,7 +46,7 @@ begin
    Sql.Start_Read_Write_Transaction (T);
    Sql.Prepare (Select_Football_Markets,
                 "select * from DRY_MARKETS where EVENT_HIERARCHY like '%/1/%'");
-   Table_Dry_Markets.Read_List (Stm => Select_Football_Markets, List => Dry_Markets_List, Max => 100_000);
+   Table_Dry_Markets.Read_List (Stm => Select_Football_Markets, List => Dry_Markets_List, Max => 1000);
 
    while not Table_Dry_Markets.Dry_Markets_List_Pack.Is_Empty (List => Dry_Markets_List) loop
       Table_Dry_Markets.Dry_Markets_List_Pack.Remove_From_Head (List => Dry_Markets_List, Element => Dry_Markets);
@@ -77,9 +77,14 @@ begin
                       Noofwinners    => Dry_Markets.No_Of_Winners,
                       Totalmatched   => Dry_Markets.Total_Matched
                      );
+      begin
+         Table_Drymarketsf.Insert (Data => Drymarketsf);
+      exception
+         when Sql.Duplicate_Index =>
+            Log ("Drymarketsf - Duplicate_Index on marketid" & Drymarketsf.Marketid'Img);
+      end;
 
-      Table_Drymarketsf.Insert (Data => Drymarketsf);
-      Table_Dry_Markets.Delete(Data => Dry_Markets);
+      Table_Dry_Markets.Delete (Data => Dry_Markets);
 
       while not Table_Dry_Runners.Dry_Runners_List_Pack.Is_Empty (List => Dry_Runners_List) loop
          Table_Dry_Runners.Dry_Runners_List_Pack.Remove_From_Head (List => Dry_Runners_List, Element => Dry_Runners);
@@ -91,33 +96,42 @@ begin
                          Layprice    => Dry_Runners.Lay_Price,
                          Runnername  => Dry_Runners.Runner_Name
                         );
-         Table_Dryrunnersf.Insert (Dryrunnersf);
-         Table_Dry_Runners.Delete(Data => Dry_Runners);
+         begin
+            Table_Dryrunnersf.Insert (Dryrunnersf);
+         exception
+            when Sql.Duplicate_Index =>
+               Log ("Dryrunnersf - Duplicate_Index on marketid" & Drymarketsf.Marketid'Img);
+               Table_Dry_Runners.Delete (Data => Dry_Runners);
+         end;
       end loop;
 
       while not Table_Dry_Results.Dry_Results_List_Pack.Is_Empty (List => Dry_Results_List) loop
-      Table_Dry_Results.Dry_Results_List_Pack.Remove_From_Head (List =>  Dry_Results_List, Element => Dry_Results);
-      Dryresultsf := (
-                     Marketid    => Dry_Results.Market_Id,
-                     Selectionid => Dry_Results.Selection_Id
-                    );
+         Table_Dry_Results.Dry_Results_List_Pack.Remove_From_Head (List =>  Dry_Results_List, Element => Dry_Results);
+         Dryresultsf := (
+                         Marketid    => Dry_Results.Market_Id,
+                         Selectionid => Dry_Results.Selection_Id
+                        );
+         begin
+            Table_Dryresultsf.Insert (Data => Dryresultsf);
+         exception
+            when Sql.Duplicate_Index =>
+               Log ("Dryresults - Duplicate_Index on marketid" & Drymarketsf.Marketid'Img);
+               Table_Dry_Results.Delete (Data => Dry_Results);
+         end;
+      end loop;
 
-      Table_Dryresultsf.Insert (Data => Dryresultsf);
-      Table_Dry_Results.Delete(Data => Dry_Results);
+
    end loop;
 
 
-end loop;
 
 
 
-
-
-Sql.Commit (T);
-Sql.Close_Session;
+   Sql.Commit (T);
+   Sql.Close_Session;
 
 
 exception
-when E : others =>
-   Sattmate_Exception.Tracebackinfo (E);
+   when E : others =>
+      Sattmate_Exception.Tracebackinfo (E);
 end Dry_Runner_Mover;

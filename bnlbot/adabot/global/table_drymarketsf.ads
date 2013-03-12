@@ -20,7 +20,7 @@ package Table_Drymarketsf is
       Marketid :    Integer_4  := 0 ; -- Primary Key
       Bspmarket :    String (1..1) := (others => ' ') ; --
       Markettype :    String (1..1) := (others => ' ') ; --
-      Eventhierarchy :    String (1..50) := (others => ' ') ; -- non unique index 2
+      Eventhierarchy :    String (1..150) := (others => ' ') ; -- non unique index 2
       Lastrefresh :    Time_Type  := Time_Type_First ; --
       Turninginplay :    String (1..1) := (others => ' ') ; --
       Menupath :    String (1..200) := (others => ' ') ; --
