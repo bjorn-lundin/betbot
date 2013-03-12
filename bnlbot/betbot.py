@@ -181,8 +181,23 @@ class BetBot(object):
                 # we now check for allowed market name, if nothing was found above
                 if self.ALLOWED_MARKET_NAMES and market_ok :
                     for allowed in self.ALLOWED_MARKET_NAMES :
-                        market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
-#                        self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
+                        if allowed == 'vinnare' :
+                           #digit-letter-space or letter-digit-space for winners both in hounds
+                           #and horses
+                           #where market_name ~ '^[0-9][a-z] ' or
+                           #market_name ~ '^[0-9][A-Z] ' or
+                           #market_name ~ '^[A-Z][0-9] ' or
+                           #market_name ~ '^[a-z][0-9] '                            
+                           q1 = re.compile("[a-z][0-9] ", re.IGNORECASE)
+                           q2 = re.compile("[0-9][a-z] ", re.IGNORECASE)
+                           # match is from beginning of string
+                           m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
+                           m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
+                           market_ok = market_ok and (m1 != None or m2 != None)                        
+                           
+                        else :
+                            market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
+#                           self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
                         if market_ok :
                             break
 
