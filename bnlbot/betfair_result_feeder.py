@@ -123,6 +123,12 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET" :
             bet_won = selection_in_winners
 
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_54_04" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_52_02" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
             bet_won = not selection_in_winners
             back_bet = False
@@ -132,6 +138,9 @@ class Market(object):
             back_bet = False
 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_6_09" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET" :
@@ -150,6 +159,10 @@ class Market(object):
             bet_won = not selection_in_winners
             back_bet = False
 
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18" :
+            bet_won = not selection_in_winners
+            back_bet = False
+
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_1000" :
             bet_won = not selection_in_winners
             back_bet = False
@@ -159,6 +172,9 @@ class Market(object):
             back_bet = False
 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET" :
