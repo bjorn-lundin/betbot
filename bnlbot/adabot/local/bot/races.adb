@@ -5,6 +5,7 @@ with Sql;
 
 with Logging ; use Logging;
 
+pragma Elaborate_All(Sql);
 
 package body Races is
 
@@ -110,8 +111,15 @@ package body Races is
                  "DRY_MARKETS " &
                  "where EVENT_DATE >= :START_DATE " &
                  "and EVENT_DATE <= :STOP_DATE " &
-                 "and (lower(MARKET_NAME) ~ '^[0-9][a-z] ' or " & -- start with digit-letter-space
-                 "     lower(MARKET_NAME) ~ '^[a-z][0-9] ') " &   -- or letter-digit-space
+                 "and (lower(MARKET_NAME) ~ '^[0-9][a-z]' or " & -- start with digit-letter-space
+                 "     lower(MARKET_NAME) ~ '^[a-z][0-9]') " &   -- or letter-digit-space
+                 "and ( " &
+                 "  (lower(MARKET_NAME) like 'hp%') or " &
+                 "  (lower(MARKET_NAME) like 'hc%') or " &
+                 "  (lower(MARKET_NAME) like 'OR%') or " &
+                 "  (lower(MARKET_NAME) like 'IV%') " &
+                 ") " &
+                 "and BSP_MARKET = 'Y' " & 
                  "and lower(MARKET_NAME) not like '%% v %%'  " &
                  "and lower(MARKET_NAME) not like '%%forecast%%'  " &
                  "and lower(MARKET_NAME) not like '%%tbp%%'  " &
