@@ -7,7 +7,8 @@
 #2013-02-12 2013-02-13 2013-02-14 2013-02-15 2013-02-16 2013-02-17 2013-02-18 \
 #2013-02-19 2013-02-20 2013-02-21 2013-02-22 2013-02-23 2013-02-24 2013-02-25 \
 #2013-02-26 2013-02-20 2013-02-27 2013-02-28 2013-03-01 2013-03-02 2013-03-03 \
-#2013-03-04 2013-03-05 2013-03-06 2012-03-07 2013-03-08"
+#2013-03-04 2013-03-05 2013-03-06 2012-03-07 2013-03-08 2013-03-09 2013-03-10 \
+"2013-03-11 2013-03-12 2013-03-13"
 
 yesterday=$(date +%Y-%m-%d -d "-1 day")
 echo "yesterday = $yesterday"
@@ -17,6 +18,7 @@ animal_names="winner place"
 animals="horse hound"
 
 date_list=$yesterday
+
 
 #back/lay, , normal,max_3,max_4,max_5 in simulator
 #loop here on date, daily/weekly/biweekly/quadweekly, winner/place, horses/hound

@@ -9,7 +9,7 @@ with Logging ; use Logging;
 package body Races is
 
 
-   Select_Markets : Sql.Statement_Type;
+   Select_Markets : array (Bet_Name_Type'range) of Sql.Statement_Type;
    Select_Runners : Sql.Statement_Type;
    Select_Winners : Sql.Statement_Type;
 
@@ -91,10 +91,10 @@ package body Races is
 
       case Bet_Type is
          when Place =>
-            Sql.Prepare (Select_Markets, "select * from " &
+            Sql.Prepare (Select_Markets(Bet_Type), "select * from " &
                            "DRY_MARKETS " &
-                           "where cast(EVENT_DATE as date) >= :START_DATE " &
-                           "and cast(EVENT_DATE as date) <= :STOP_DATE " &
+                           "where EVENT_DATE >= :START_DATE " &
+                           "and EVENT_DATE <= :STOP_DATE " &
                            "and MARKET_NAME = :MARKET_NAME " &
                            "and EVENT_HIERARCHY like :EVENT_HIERARCHY " &
                            "and exists (select 'x' from DRY_RESULTS where " &
@@ -102,20 +102,14 @@ package body Races is
                            "and exists (select 'x' from DRY_RUNNERS where " &
                            "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
                            "order by EVENT_DATE");
-            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
-            Sql.Set (Select_Markets, "MARKET_NAME", "Plats");
-            case Animal is
-               when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
-               when Hound =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/4339/%");
-            end case;
+            Sql.Set (Select_Markets(Bet_Type), "MARKET_NAME", "Plats");
          when Winner =>
             Sql.Prepare
-              (Select_Markets,
+              (Select_Markets(Bet_Type),
                "select * from " &
                  "DRY_MARKETS " &
-                 "where cast(EVENT_DATE as date) >= :START_DATE " &
-                 "and cast(EVENT_DATE as date) <= :STOP_DATE " &
+                 "where EVENT_DATE >= :START_DATE " &
+                 "and EVENT_DATE <= :STOP_DATE " &
                  "and lower(MARKET_NAME) not like '%% v %%'  " &
                  "and lower(MARKET_NAME) not like '%%forecast%%'  " &
                  "and lower(MARKET_NAME) not like '%%tbp%%'  " &
@@ -132,15 +126,19 @@ package body Races is
                  "and exists (select 'x' from DRY_RESULTS where " &
                  "   DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) " &
                  "order by EVENT_DATE");
-            Sql.Set_Timestamp (Select_Markets, "START_DATE", Start_Date);
-            Sql.Set_Timestamp (Select_Markets, "STOP_DATE", Stop_Date);
-            case Animal is
-               when Horse =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/7/%");
-               when Hound =>  Sql.Set (Select_Markets, "EVENT_HIERARCHY", "%/4339/%");
-            end case;
       end case;
+
+
+      case Animal is
+        when Horse =>  Sql.Set (Select_Markets(Bet_Type), "EVENT_HIERARCHY", "/7/%");
+        when Hound =>  Sql.Set (Select_Markets(Bet_Type), "EVENT_HIERARCHY", "/4339/%");
+      end case;
+
+      Sql.Set_Timestamp (Select_Markets(Bet_Type), "START_DATE", Start_Date);
+      Sql.Set_Timestamp (Select_Markets(Bet_Type), "STOP_DATE", Stop_Date);
+
       Log ("reading markets from db into list");
-      Table_Dry_Markets.Read_List (Select_Markets, Market_List);
+      Table_Dry_Markets.Read_List (Select_Markets(Bet_Type), Market_List);
       Log ("reading markets into list done");
       Cnt := Table_Dry_Markets.Dry_Markets_List_Pack.Get_Count (Market_List);
       Log ("antal marknader: " & Cnt'Img);

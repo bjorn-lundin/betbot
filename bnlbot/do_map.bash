@@ -95,9 +95,14 @@ for input in $filelist ; do
     [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/     && echo "moved $datadir/$png"
 
 done
-
-tar_gz_file=dat-$(date +%Y-%m-%d).tar.gz
+yesterday=$(date +%Y-%m-%d -d "-1 day")
+tar_gz_file=dat-$yesterday.tgz
 echo "taring .gpi- and .dat-files"
 tar -cvzf $tar_gz_file sims/*.gpi sims/*.dat
+R=$?
 
-[ -f $tar_gz_file ] && mv $tar_gz_file $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $tar_gz_file"
+if [ $R -eq 0 ] ; then
+  [ -f $tar_gz_file ] && mv $tar_gz_file $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $tar_gz_file"
+  rm sims/*.gpi sims/*.dat  && echo "deleted tar()d dat and gpi files"
+fi
+
