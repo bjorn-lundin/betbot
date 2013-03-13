@@ -473,9 +473,11 @@ class BetBot(object):
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
         self.DELAY_BETWEEN_TURNS             = float(config.get('Global', 'delay_between_turns'))
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
-        self.MAX_DAILY_PROFIT                = float(config.get('Global', 'max_daily_profit'))
-        self.MAX_DAILY_LOSS                  = float(config.get('Global', 'max_daily_loss'))
 
+#       ---------------------------------
+ 
+        self.MAX_DAILY_PROFIT                = float(config.get(bet_category, 'max_daily_profit'))
+        self.MAX_DAILY_LOSS                  = float(config.get(bet_category, 'max_daily_loss'))
         self.log.info('max_daily_profit ' + str(self.MAX_DAILY_PROFIT))
         self.log.info('max_daily_loss ' + str(self.MAX_DAILY_LOSS))
 
@@ -518,14 +520,8 @@ class BetBot(object):
         self.log.info('Bet_category ' + self.BET_CATEGORY)
 
 
-#        self.LOSS_HOURS                      = int(config.get(bet_category, 'loss_hours'))
-#        self.log.info('not used ? loss_hours ' + str(self.LOSS_HOURS))
-
-
-
         if self.DRY_RUN :
             self.BET_CATEGORY                = 'DRY_RUN_' + self.BET_CATEGORY
-
 
         tmp_string_1                         = config.get(bet_category, 'events')
         self.EVENTS                          = tmp_string_1.split(',')
@@ -554,6 +550,7 @@ class BetBot(object):
         self.MAX_NO_OF_RUNNERS               = int (config.get(bet_category, 'max_no_of_runners'))
         self.log.info('max_no_of_runners ' + str(self.MAX_NO_OF_RUNNERS))
 
+#       ---------------------------------
 
 
         login = ConfigParser.ConfigParser()
