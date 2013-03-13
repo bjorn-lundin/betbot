@@ -17,7 +17,7 @@ from db import Db
 #from operator import itemgetter, attrgetter
 #import httplib2
 import ConfigParser
-
+import re
 
 class TooCloseToLossError(Exception):
     pass
@@ -188,13 +188,13 @@ class BetBot(object):
                            #market_name ~ '^[0-9][A-Z] ' or
                            #market_name ~ '^[A-Z][0-9] ' or
                            #market_name ~ '^[a-z][0-9] '
-                           q1 = re.compile("[a-z][0-9] ", re.IGNORECASE)
-                           q2 = re.compile("[0-9][a-z] ", re.IGNORECASE)
+                           q1 = re.compile("[a-z][0-9]", re.IGNORECASE)
+                           q2 = re.compile("[0-9][a-z]", re.IGNORECASE)
                            # match is from beginning of string
                            m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
                            m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
                            market_ok = market_ok and (m1 != None or m2 != None)
-
+                           market_ok = market_ok and market['bsp_market'] == 'Y'
                         else :
                             market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
 #                           self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
