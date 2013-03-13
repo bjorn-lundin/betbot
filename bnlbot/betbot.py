@@ -191,9 +191,16 @@ class BetBot(object):
                            q1 = re.compile("[a-z][0-9]", re.IGNORECASE)
                            q2 = re.compile("[0-9][a-z]", re.IGNORECASE)
                            # match is from beginning of string
+                           two_first = market['market_name'].decode("iso-8859-1").lower()[0:1]
                            m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
                            m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
-                           market_ok = market_ok and (m1 != None or m2 != None)
+                           market_ok = market_ok and (
+                               (m1 != None or m2 != None) or 
+                               (two_first == 'HP') or
+                               (two_first == 'HC') or
+                               (two_first == 'OR') or
+                               (two_first == 'IV')
+                             )
                            market_ok = market_ok and market['bsp_market'] == 'Y'
                         else :
                             market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
