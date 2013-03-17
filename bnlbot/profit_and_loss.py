@@ -167,14 +167,15 @@ class SimpleBot(object):
 
 
                     # check if session is still OK
-                    if self.no_session:
-                        login_status = self.login(uname, pword, prod_id, vend_id)
-                        s = 'API ERROR: NO_SESSION. Login resp =' + \
+            if self.no_session:
+                login_status = self.login(uname, pword, prod_id, vend_id)
+                s = 'API ERROR: NO_SESSION. Login resp =' + \
                              str(login_status) + '\n'
-                        s += '---------------------------------------------'
-                        self.log.info(s)
-            self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
-            sleep(self.DELAY_BETWEEN_TURNS)
+                s += '---------------------------------------------'
+                self.log.info(s)
+            else :
+                self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
+                sleep(self.DELAY_BETWEEN_TURNS)
         # main loop ended...
         s = 'login_status = ' + str(login_status) + '\n'
         s += 'MAIN LOOP ENDED...\n'
