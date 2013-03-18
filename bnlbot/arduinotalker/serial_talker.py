@@ -69,7 +69,6 @@ def main():
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS)
 
-
   ser.open()
                              
   bets = ['HOUNDS_WINNER_LAY_BET',
@@ -84,7 +83,25 @@ def main():
           "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9",
           "DRY_RUN_HOUNDS_WINNER_BACK_BET"   ]
              
-  ser.write('----------------------------------------------\r\n')
+  ser.write('-----------------------------------------------------------------------------\r\n')
+
+  row0 = {}
+  row0['0'] = 0
+  row0['1'] = 1
+  row0['2'] = 2
+  row0['3'] = 3
+  row0['4'] = 4
+  row0['5'] = 5
+  row0['6'] = 6
+  row0['typ'] = 'Typ av bet/Antal dagar sedan'
+  
+  lcd_row_0 = '%(typ)35s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  ser.write(lcd_row_0 + '\r\n')
+
+
+  ser.write('-----------------------------------------------------------------------------\r\n')
+
+
   for bet in bets :                               
     row1 = {}
     row1['0'] = get_row(conn, bet, 0)
@@ -100,8 +117,10 @@ def main():
     ser.write(lcd_row_1 + '\r\n')
     
     
-  ser.write('----------------------------------------------\r\n')
-  ser.write('\r\n')
+  ser.write('-----------------------------------------------------------------------------\r\n')
+  ser.write('\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n')
+ 
+
   ser.close()
 
 
