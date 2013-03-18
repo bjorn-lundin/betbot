@@ -61,42 +61,7 @@ def main():
                              user='bnl' \
                              host='192.168.0.13' \
                              password=None") 
-  row1 = {}
-  row2 = {}    
-  row1['0'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", 0)
-  row1['1'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -1)
-  row1['2'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -2)
-  row1['3'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -3)
-  row1['4'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -4)
-  row1['5'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -5)
-  row1['6'] = get_row(conn, "HOUNDS_WINNER_LAY_BET", -6)
-
-
-
-  row2['0'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", 0)
-  row2['1'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -1)
-  row2['2'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -2)
-  row2['3'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -3) 
-  row2['4'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -4)
-  row2['5'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -5)
-  row2['6'] = get_row(conn, "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18", -6)
-
-
-  lcd_row_1 = 'HOUNDS_WINNER_LAY_BET               %(0)5d%(1)5d%(2)5d%(3)5d%(4)5d%(5)5d%(6)5d' % row1
-  lcd_row_2 = 'DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18 %(0)5d%(1)5d%(2)5d%(3)5d%(4)5d%(5)5d%(6)5d' % row2
-
-#  print lcd_row_1
-#  print lcd_row_2
-#  print row1
-#  print row2
-
-
-
-#  lcd_row_1 = 'G%(today)5d%(yest)5d%(dbyest)5d' % row1
-#  lcd_row_2 = 'H%(today)5d%(yest)5d%(dbyest)5d' % row2
-
-
-
+                             
   ser = serial.Serial(
     port='/dev/ttyUSB0',
     baudrate=38400,
@@ -106,6 +71,39 @@ def main():
 
 
   ser.open()
+                             
+  bets = ['HOUNDS_WINNER_LAY_BET',
+          'HORSES_PLACE_LAY_BET_6_10',
+          'HOUNDS_WINNER_LAY_BET_13_14',
+          "DRY_RUN_HORSES_WINNER_LAY_BET",
+          "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18",
+          "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19",
+          "DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18",
+          "DRY_RUN_HOUNDS_WINNER_LAY_BET_LAST",
+          "DRY_RUN_HOUNDS_PLACE_LAY_BET",
+          "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9",
+          "DRY_RUN_HOUNDS_WINNER_BACK_BET"   ]
+             
+  ser.write('----------------------------------------------\r\n')
+  for bet in bets :                               
+    row1 = {}
+    row1['0'] = get_row(conn, bet, 0)
+    row1['1'] = get_row(conn, bet, -1)
+    row1['2'] = get_row(conn, bet, -2)
+    row1['3'] = get_row(conn, bet, -3)
+    row1['4'] = get_row(conn, bet, -4)
+    row1['5'] = get_row(conn, bet, -5)
+    row1['6'] = get_row(conn, bet, -6)
+    row1['typ'] = bet
+    lcd_row_1 = '%(typ)35s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
+#    print lcd_row_1
+    ser.write(lcd_row_1 + '\r\n')
+    
+    
+  ser.write('----------------------------------------------\r\n')
+  ser.write('\r\n')
+  ser.close()
+
 
 #  ser.write('1') # clear display
 #  sleep(1)
@@ -114,9 +112,6 @@ def main():
 #  ser.write('3,1,0,'+ lcd_row_2) # string
 #  ser.write('2,0,3,'+lcd_row_1) # numeric
 
-  ser.write(lcd_row_1 + '\r\n')
-  ser.write(lcd_row_2 + '\r\n')
-  ser.close()
 
     
   
