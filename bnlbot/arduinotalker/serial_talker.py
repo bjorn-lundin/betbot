@@ -18,32 +18,21 @@ def get_row_days(conn, bet_type, delta_days)  :
     result = 0
     today = datetime.datetime.now() 
     day = today + datetime.timedelta(days = delta_days) 
-    day_start = datetime.datetime(today.year, today.month, today.day,  0,  0,  0)
-    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+    day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
+    day_stop  = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
 
 #    print day_start, day_stop
     
     cur = conn.cursor()
-    cur.execute("select " \
-                     "sum(PROFIT), " \
-                     "BET_PLACED::date " \
-                 "from " \
-                     "BET_WITH_COMMISSION " \
-                 "where " \
-                     "BET_TYPE = %s " \
-                 "and " \
-                     "CODE = %s " \
-                 "and " \
-                     "BET_PLACED >= %s " \
-                 "and " \
-                     "BET_PLACED <= %s " \
-                 "group by " \
-                     "BET_PLACED::date " \
-                 "order by " \
-                     "BET_PLACED::date desc ", 
+    cur.execute("select sum(PROFIT) " \
+                 "from BET_WITH_COMMISSION " \
+                 "where BET_TYPE = %s " \
+                 "and CODE = %s " \
+                 "and BET_PLACED >= %s " \
+                 "and BET_PLACED <= %s " ,
                    (bet_type,'S',day_start,day_stop))
   
- #   print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
+#    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
      
     if cur.rowcount >= 1 :
         row = cur.fetchone()
@@ -53,7 +42,12 @@ def get_row_days(conn, bet_type, delta_days)  :
           result = 0
     cur.close()
     conn.commit()
-   
+    if result == None :
+       result = 0   
+
+#    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop, result
+
+  
     return result 
     ################################## end get_row_days
 
@@ -130,7 +124,7 @@ def main():
 #          "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9",
           "DRY_RUN_HOUNDS_WINNER_BACK_BET"   ]
              
-  ser.write('-----------------------------------------------------------------------------\r\n')
+#  ser.write('-----------------------------------------------------------------------------\r\n')
 
   row0 = {}
   row0['0'] = 0
@@ -162,7 +156,12 @@ def main():
 #    print lcd_row_1
     ser.write(lcd_row_1 + '\r\n')
     
+  ser.write('-----------------------------------------------------------------------------\r\n')
   row0['typ'] = 'Typ av bet/result veckor tillbaka'    
+  lcd_row_0 = '%(typ)35s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  ser.write(lcd_row_0 + '\r\n')
+  ser.write('-----------------------------------------------------------------------------\r\n')
+
   for bet in bets :                               
     row2 = {}
     row2['0'] = get_row_days(conn, bet, -6)
@@ -177,8 +176,8 @@ def main():
 #    print lcd_row_1
     ser.write(lcd_row_2 + '\r\n')
     
-  ser.write('-----------------------------------------------------------------------------\r\n')
-  ser.write('\r\n\r\n\r\n\r\n\r\n\r\n')
+#  ser.write('-----------------------------------------------------------------------------\r\n')
+#  ser.write('\r\n\r\n\r\n\r\n\r\n\r\n')
  
 
   ser.close()
