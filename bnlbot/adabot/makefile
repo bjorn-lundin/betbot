@@ -18,6 +18,9 @@
 #                                                                             #
 ###############################################################################
 
+DAT := plot/balance.dat
+TMP := plot/balance.tmp
+
 all: json_test adabot
 
 .PHONY : json_test simulator
@@ -27,6 +30,16 @@ json_test :
 
 adabot :
 	gnatmake -P adabot
+
+.PHONY : balance_plot
+balance_plot:
+	/opt/local/bin/psql92 -h 192.168.0.13 --command="select cast(eventdate as date), saldo from balance order by eventdate" betting > $(DAT)
+	cat $(DAT) | grep -v event > $(TMP)
+	cat $(TMP) | grep -v rows > $(DAT)
+	cat $(DAT) | grep -v "\-\-" > $(TMP)
+	cat $(TMP) > $(DAT)
+	rm $(TMP)
+	cd plot && gnuplot balance.gpl
 
 clean:
 	gnatclean -P json_test
