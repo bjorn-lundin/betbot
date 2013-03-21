@@ -118,7 +118,8 @@ class SimpleBot(object):
             if type(bet) is dict :
                 bets.append(bet)
             elif bet == 'API_ERROR: NO_SESSION':
-                self.no_session = False
+                self.no_session = True
+                break
         return bets
 
     ############################# end get_unsettled_bet_history
