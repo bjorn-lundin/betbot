@@ -14,12 +14,13 @@ import serial
 
 
  
-def get_row_days(conn, bet_type, delta_days)  :
+def get_row_weeks_back(conn, bet_type, delta_days)  :
     result = 0
     today = datetime.datetime.now() 
-    day = today + datetime.timedelta(days = delta_days) 
-    day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
-    day_stop  = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
+    day = today + datetime.timedelta(days = int(delta_days * 7)) 
+    day_stop = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+    ds = day_stop - datetime.timedelta(days = -6) 
+    day_start  = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
 
 #    print day_start, day_stop
     
@@ -164,13 +165,13 @@ def main():
 
   for bet in bets :                               
     row2 = {}
-    row2['0'] = get_row_days(conn, bet, -6)
-    row2['1'] = get_row_days(conn, bet, -13)
-    row2['2'] = get_row_days(conn, bet, -20)
-    row2['3'] = get_row_days(conn, bet, -27)
-    row2['4'] = get_row_days(conn, bet, -34)
-    row2['5'] = get_row_days(conn, bet, -41)
-    row2['6'] = get_row_days(conn, bet, -48)
+    row2['0'] = get_row_weeks_back(conn, bet, 0)
+    row2['1'] = get_row_weeks_back(conn, bet, -1)
+    row2['2'] = get_row_weeks_back(conn, bet, -2)
+    row2['3'] = get_row_weeks_back(conn, bet, -3)
+    row2['4'] = get_row_weeks_back(conn, bet, -4)
+    row2['5'] = get_row_weeks_back(conn, bet, -5)
+    row2['6'] = get_row_weeks_back(conn, bet, -6)
     row2['typ'] = bet
     lcd_row_2 = '%(typ)35s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
 #    print lcd_row_1
