@@ -453,6 +453,7 @@ class BetBot(object):
         """start the main loop"""
 
         self.check_last_loss()
+        self.check_has_lost_today()
         # login/monitor status
         login_status = self.login(self.USERNAME, self.PASSWORD, \
                                   self.PRODUCT_ID, self.VENDOR_ID)
