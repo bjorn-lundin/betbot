@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 
 
@@ -14,13 +13,14 @@ import serial
 
 
  
-def get_row_weeks_back(conn, bet_type, delta_days)  :
+def get_row_weeks_back(conn, bet_type, delta_weeks)  :
     result = 0
     today = datetime.datetime.now() 
-    day = today + datetime.timedelta(days = int(delta_days * 7)) 
-    day_stop = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-    ds = day_stop - datetime.timedelta(days = -6) 
-    day_start  = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
+    day = today + datetime.timedelta(days = int(delta_weeks * 7))
+    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+
+    ds = day_stop - datetime.timedelta(days = 6) 
+    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
 
 #    print day_start, day_stop
     
@@ -31,7 +31,7 @@ def get_row_weeks_back(conn, bet_type, delta_days)  :
                  "and CODE = %s " \
                  "and BET_PLACED >= %s " \
                  "and BET_PLACED <= %s " ,
-                   (bet_type,'S',day_start,day_stop))
+                   (bet_type, 'S', day_start, day_stop))
   
 #    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
      
