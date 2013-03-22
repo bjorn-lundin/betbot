@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
-from betbot import BetBot, SessionError, TooCloseToLossError
+from betbot import BetBot, SessionError, TooCloseToLossError, RecoveredFromLossError
 from time import sleep
 import urllib2
 import ssl

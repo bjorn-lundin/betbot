@@ -198,7 +198,7 @@ class BetBot(object):
                            m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
                            m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
                            market_ok = market_ok and (
-                               (m1 != None or m2 != None) or 
+                               (m1 != None or m2 != None) or
                                (two_first == 'HP') or
                                (two_first == 'HC') or
                                (two_first == 'OR') or
@@ -418,13 +418,13 @@ class BetBot(object):
     def check_has_lost_today (self) :
         profit = 0.0
         cur = self.conn.cursor()
-                    
+
         cur.execute("select * from BETINFO " + \
                     "where cast(EVENT_DATE as date) = current_date " + \
                     "and CODE = 'S' " + \
-                    "and bet_type like '%LAY%' " + \
+                    "and bet_type like %s " + \
                     "and bet_type = %s " + \
-                    "and profit < 0.0 ", (self.BET_CATEGORY,))
+                    "and profit < 0.0 " , ("%LAY%", self.BET_CATEGORY))
         row = cur.fetchone()
         cur.close()
         self.conn.commit()
@@ -433,13 +433,13 @@ class BetBot(object):
         else :
             self.HAS_LOST_LAY_BET_TODAY = False
 
+        self.log.info( 'LAY-bet: ' + self.BET_CATEGORY + ' has lost today: ' + str(self.HAS_LOST_LAY_BET_TODAY )  )
+
         if self.HAS_LOST_LAY_BET_TODAY  :
-            self.info.warning( 'bet_type: ' + self.BET_CATEGORY + ' has lost today' )
             profit = self.profit_today()
-            
-            self.log.info( 'profit today = ' + str(profit))
-                
-            if profit > 0.0 :        
+            self.log.warning( 'profit today = ' + str(profit))
+
+            if profit > 0.0 :
                 self.log.warning( 'bet_type: ' + self.BET_CATEGORY + ' positive profit now. ' + \
                   'won ' + str(profit) + '. ')
                 #no betting allowed, to soon since last loss
@@ -518,7 +518,7 @@ class BetBot(object):
         self.NETWORK_FAILURE_DELAY           = float(config.get('Global', 'network_failure_delay'))
 
 #       ---------------------------------
- 
+
         self.MAX_DAILY_PROFIT                = float(config.get(bet_category, 'max_daily_profit'))
         self.MAX_DAILY_LOSS                  = float(config.get(bet_category, 'max_daily_loss'))
         self.log.info('max_daily_profit ' + str(self.MAX_DAILY_PROFIT))
