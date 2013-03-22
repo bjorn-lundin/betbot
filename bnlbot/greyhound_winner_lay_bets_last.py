@@ -177,6 +177,12 @@ while True:
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
 
+    except RecoveredFromLossError as e :
+        alog.info( 'won enough - waiting for tomorrow ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.info(e.args)
+        sleep (bot.NETWORK_FAILURE_DELAY)
+
     except TooCloseToLossError as e :
         alog.error( 'Too close in time to last loss.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')

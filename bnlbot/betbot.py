@@ -19,6 +19,9 @@ from db import Db
 import ConfigParser
 import re
 
+class RecoveredFromLossError(Exception):
+    pass
+
 class TooCloseToLossError(Exception):
     pass
 
@@ -60,7 +63,7 @@ class BetBot(object):
 
     LAST_LOSS = None
     LOSS_HOURS = None
-
+    HAS_LOST_LAY_BET_TODAY = None
 
     USERNAME = None
     PASSWORD = None
@@ -323,7 +326,7 @@ class BetBot(object):
             return
 
 
-        #check type of bet. in not BACKor LAY in self.BET_CATEGORY, assume BACK
+        #check type of bet. if not BACK or LAY in self.BET_CATEGORY, assume BACK
         pip = -1 # default to BACK
         bet_type = 'B'
         if self.BET_CATEGORY.find('LAY') > -1 :
@@ -411,6 +414,38 @@ class BetBot(object):
                 raise TooCloseToLossError('To soon to start betting again, lost bet ' + \
                 str(self.LAST_LOSS) + ' config says wait for ' + str(self.LOSS_HOURS) + ' hours' )
 ############################ check_last_loss
+
+    def check_has_lost_today (self) :
+        profit = 0.0
+        cur = self.conn.cursor()
+                    
+        cur.execute("select * from BETINFO " + \
+                    "where cast(EVENT_DATE as date) = current_date " + \
+                    "and CODE = 'S' " + \
+                    "and bet_type like '%LAY%' " + \
+                    "and bet_type = %s " + \
+                    "and profit < 0.0 ", (self.BET_CATEGORY,))
+        row = cur.fetchone()
+        cur.close()
+        self.conn.commit()
+        if row :
+            self.HAS_LOST_LAY_BET_TODAY = True
+        else :
+            self.HAS_LOST_LAY_BET_TODAY = False
+
+        if self.HAS_LOST_LAY_BET_TODAY  :
+            self.info.warning( 'bet_type: ' + self.BET_CATEGORY + ' has lost today' )
+            profit = self.profit_today()
+            
+            self.log.info( 'profit today = ' + str(profit))
+                
+            if profit > 0.0 :        
+                self.log.warning( 'bet_type: ' + self.BET_CATEGORY + ' positive profit now. ' + \
+                  'won ' + str(profit) + '. ')
+                #no betting allowed, to soon since last loss
+                raise RecoveredFromLossError('has lost today - but positive profit now. ' + \
+                  'won ' + str(profit) + '. Good enough for today.' )
+############################ end has_lost_today
 
 
 
