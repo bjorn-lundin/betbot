@@ -187,6 +187,12 @@ while True:
         alog.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
+    except RecoveredFromLossError as e :
+        alog.info( 'won enough - waiting for tomorrow ' + \
+        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+        alog.info(e.args)
+        sleep (bot.NETWORK_FAILURE_DELAY)
+
     except SessionError:
         alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
