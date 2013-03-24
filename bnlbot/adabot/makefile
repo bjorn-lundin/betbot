@@ -26,11 +26,13 @@ UNAME := $(shell uname)
 ifeq ($(UNAME),Linux)
   PSQL := /usr/bin/psql
   HOST := localhost
+  SHOW_PNG := display
 endif
 
 ifeq ($(UNAME),Darwin)
   PSQL := /opt/local/bin/psql92
   HOST := 192.168.0.13
+  SHOW_PNG := open
 endif
 
 
@@ -54,9 +56,7 @@ balance_plot:
 	cat $(TMP) > $(DAT)
 	rm $(TMP)
 	cd plot && gnuplot balance.gpl
-ifeq ($(UNAME),Linux)
-	cd plot && display balance.png
-endif
+	cd plot && $(SHOW_PNG) balance.png
 
 
 
