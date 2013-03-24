@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TARGET_ROOT=~/Dropbox/graphs
+DESTINATION_DAT=dat
 
 
 #    gnuplot -e "animal='$animal'" \
@@ -35,7 +37,6 @@ done
 #datafil='simulation3-horse-Plats-back-2013-01-30-2013-02-13-None.dat'
 #datadir='sims'
 
-TARGET_ROOT=~/Dropbox/graphs
 
 for input in $filelist ; do
     while read line ; do
@@ -62,9 +63,8 @@ for input in $filelist ; do
       fi
 
     done < $input
-    #remove .gpi
-    base=$(basename $input)
 
+    base=$(basename $input)
 
     dat=${base%.*}
     gpi=$dat.gpi
@@ -77,32 +77,49 @@ for input in $filelist ; do
 #    echo "png   $png"
 
     DESTINATION=$animal/$bet_name/$bet_type/$graph_type/$variant/$max_daily_loss
-    DESTINATION_DAT=dat
 
-#    echo "dest $DESTINATION"
-#    echo "dest $DESTINATION_DAT"
 
     [ ! -d $TARGET_ROOT/$DESTINATION ] && mkdir -p $TARGET_ROOT/$DESTINATION
-    [ ! -d $TARGET_ROOT/$DESTINATION/$DESTINATION_DAT ] && mkdir -p $TARGET_ROOT/$DESTINATION_DAT
-
-#    echo "mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/"
-#    echo "mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/"
-#    echo "mv $datadir/$png $TARGET_ROOT/$DESTINATION/"
-
-
-#    [ -f $datadir/$dat ] && mv $datadir/$dat $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$dat"
-#    [ -f $datadir/$gpi ] && mv $datadir/$gpi $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $datadir/$gpi"
-    [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/     && echo "moved $datadir/$png"
+    [ -f $datadir/$png ] && mv $datadir/$png $TARGET_ROOT/$DESTINATION/ && echo "moved $datadir/$png"
 
 done
-yesterday=$(date +%Y-%m-%d -d "-1 day")
-tar_gz_file=dat-$yesterday.tgz
-echo "taring .gpi- and .dat-files"
-tar -cvzf $tar_gz_file sims/*.gpi sims/*.dat
-R=$?
 
-if [ $R -eq 0 ] ; then
+#tar them max 1000 file at a time
+
+yesterday=$(date +%Y-%m-%d -d "-1 day")
+
+OLD_PWD=$(pwd)
+cd sims
+
+[ ! -d $TARGET_ROOT/$DESTINATION/$DESTINATION_DAT ] && mkdir -p $TARGET_ROOT/$DESTINATION_DAT
+
+let cnt=0
+while true ; do
+  let cnt=$cnt+1
+  filelist=$(ls | head -n 1000)
+  if [[ $filelist == "" ]] ; then
+      echo "No more files, exit"
+      break
+  fi
+
+  tar_gz_file=dat-$yesterday-$cnt.tgz
+  echo "taring .gpi- and .dat-files to $tar_gz_file"
+  tar -cvzf $tar_gz_file $filelist
   [ -f $tar_gz_file ] && mv $tar_gz_file $TARGET_ROOT/$DESTINATION_DAT/ && echo "moved $tar_gz_file"
-  rm sims/*.gpi sims/*.dat  && echo "deleted tar()d dat and gpi files"
-fi
+  rm $filelist
+done
+
+
+cd $OLD_PWD
+
+
+
+
+
+
+
+
+
+
+
 
