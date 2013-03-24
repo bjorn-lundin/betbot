@@ -21,6 +21,20 @@
 DAT := plot/balance.dat
 TMP := plot/balance.tmp
 
+UNAME := $(shell uname)
+
+ifeq ($(UNAME),Linux)
+  PSQL := /usr/bin/psql
+  HOST := localhost
+endif
+
+ifeq ($(UNAME),Darwin)
+  PSQL := /opt/local/bin/psql92
+  HOST := 192.168.0.13
+endif
+
+
+
 all: json_test adabot
 
 .PHONY : json_test simulator
@@ -33,13 +47,18 @@ adabot :
 
 .PHONY : balance_plot
 balance_plot:
-	/opt/local/bin/psql92 -h 192.168.0.13 --command="select cast(eventdate as date), saldo from balance order by eventdate" betting > $(DAT)
+	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo from balance order by eventdate" betting > $(DAT)
 	cat $(DAT) | grep -v event > $(TMP)
 	cat $(TMP) | grep -v rows > $(DAT)
 	cat $(DAT) | grep -v "\-\-" > $(TMP)
 	cat $(TMP) > $(DAT)
 	rm $(TMP)
 	cd plot && gnuplot balance.gpl
+ifeq ($(UNAME),Linux)
+	cd plot && display balance.png
+endif
+
+
 
 clean:
 	gnatclean -P json_test

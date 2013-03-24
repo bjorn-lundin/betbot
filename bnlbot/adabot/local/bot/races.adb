@@ -104,22 +104,23 @@ package body Races is
                            "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
                            "order by EVENT_DATE");
             Sql.Set (Select_Markets(Bet_Type), "MARKET_NAME", "Plats");
-         when Winner =>
+
+        when Winner =>
             Sql.Prepare
               (Select_Markets(Bet_Type),
                "select * from " &
                  "DRY_MARKETS " &
                  "where EVENT_DATE >= :START_DATE " &
                  "and EVENT_DATE <= :STOP_DATE " &
-                 "and (lower(MARKET_NAME) ~ '^[0-9][a-z]' or " & -- start with digit-letter-space
-                 "     lower(MARKET_NAME) ~ '^[a-z][0-9]') " &   -- or letter-digit-space
                  "and ( " &
-                 "  (lower(MARKET_NAME) like 'hp%') or " &
-                 "  (lower(MARKET_NAME) like 'hc%') or " &
-                 "  (lower(MARKET_NAME) like 'OR%') or " &
-                 "  (lower(MARKET_NAME) like 'IV%') " &
-                 ") " &
-                 "and BSP_MARKET = 'Y' " & 
+                 "  lower(MARKET_NAME) ~ '^[0-9][a-z]' or " &  -- start with digit-letter
+                 "  lower(MARKET_NAME) ~ '^[a-z][0-9]' or " &  -- or letter-digit
+                 "  lower(MARKET_NAME) like 'hp%' or  " &
+                 "  lower(MARKET_NAME) like 'hc%' or  " &
+                 "  lower(MARKET_NAME) like 'or%' or  " &
+                 "  lower(MARKET_NAME) like 'iv%'  " &
+                 ")  " &
+                 "and BSP_MARKET = 'Y' " &
                  "and lower(MARKET_NAME) not like '%% v %%'  " &
                  "and lower(MARKET_NAME) not like '%%forecast%%'  " &
                  "and lower(MARKET_NAME) not like '%%tbp%%'  " &

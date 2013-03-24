@@ -75,11 +75,12 @@ begin
 
    Global_Directory_Separator (1) := Gnat.Os_Lib.Directory_Separator;
 
-   Define_Switch (Config,
-                  Sa_Graph_Type'Access,
-                  "-g:",
-                  Long_Switch => "--graph_type=",
-                  Help        => "type of graph, 'daily', 'weekly' or 'biweekly'");
+   Define_Switch
+     (Config,
+      Sa_Graph_Type'Access,
+      "-g:",
+      Long_Switch => "--graph_type=",
+      Help        => "type of graph, 'daily', 'weekly' or 'biweekly'");
 
    Define_Switch
      (Config,
@@ -108,14 +109,6 @@ begin
       "-a:",
       Long_Switch => "--animal=",
       Help        => "type of animal, 'hound' or 'horse'");
-
-
-   --   Define_Switch
-   --     (Config,
-   --      Sa_Max_Daily_Loss'Access,
-   --      "-P:",
-   --      Long_Switch => "--max_daily_loss=",
-   --      Help        => "How much loss is allowed to continue betting this day");
 
    Define_Switch
      (Config,
@@ -165,9 +158,7 @@ begin
          raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
       end if;
 
-
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
-      --      Global_Max_Daily_Loss    := Races.Max_Daily_Loss_Type'Value (Sa_Max_Daily_Loss.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
    exception
       when Constraint_Error =>
@@ -208,28 +199,11 @@ begin
    Data_Dir := To_Unbounded_String ("sims");
 
    for Bet_Type in Races.Bet_Type_Type'Range loop
-      for Variant in Races.Variant_Type'Range loop
+      for The_Variant in Races.Variant_Type'Range loop
          for Max_Daily_Loss in Races.Max_Daily_Loss_Type_Type'Range loop
 
-
-            case Variant is
-               when Races.Normal => Global_Max_Profit_Factor := 0.0;
-               when Races.Max_3  => Global_Max_Profit_Factor := 3.0;
-               when Races.Max_4  => Global_Max_Profit_Factor := 4.0;
-               when Races.Max_5  => Global_Max_Profit_Factor := 5.0;
-            end case;
-
-            case Max_Daily_Loss is
-               when Races.A_100 => Global_Max_Daily_Loss := -100.0;
-               when Races.A_200 => Global_Max_Daily_Loss := -200.0;
-               when Races.A_300 => Global_Max_Daily_Loss := -300.0;
-               when Races.A_400 => Global_Max_Daily_Loss := -400.0;
-               when Races.A_500 => Global_Max_Daily_Loss := -500.0;
-               when Races.A_600 => Global_Max_Daily_Loss := -600.0;
-            end case;
-
-
-
+            Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type(Races.Variant(The_Variant));
+            Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type(Races.Max_Daily_Loss(Max_Daily_Loss));
 
             -- new type of simulation, reset dates
             Global_Last_Loss := Sattmate_Calendar.Time_Type_First;
@@ -242,7 +216,7 @@ begin
                Lower_Case (Sa_Graph_Type.all) & "-" &
                Sa_Bet_Name.all & "-" &
                Lower_Case (Bet_Type'Img) & "-" &
-               Lower_Case (Variant'Img) & "-" &
+               Lower_Case (The_Variant'Img) & "-" &
                Lower_Case (Max_Daily_Loss'Img) & "-" &
                Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "-" &
                Sa_Stop_Date.all &
@@ -479,7 +453,7 @@ begin
                  "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
                  "bet_name='" & Lower_Case (Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
                  "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "variant='" & Lower_Case (Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
+                 "variant='" & Lower_Case (The_Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
                  "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
                  "max_daily_loss='" & Lower_Case (Max_Daily_Loss'Img) & "'" & Ada.Characters.Latin_1.Lf &
                  "start_date='" & Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "'" & Ada.Characters.Latin_1.Lf &

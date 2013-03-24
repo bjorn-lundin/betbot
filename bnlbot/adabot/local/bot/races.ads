@@ -7,6 +7,7 @@ with Table_Dry_Results;
 with Simple_List_Class;
 pragma Elaborate_All (Simple_List_Class);
 with Sattmate_Calendar;
+with Unchecked_Conversion;
 
 package Races is
    Not_Implemented : exception;
@@ -16,12 +17,26 @@ package Races is
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
-   type Variant_Type is (Normal, Max_3, Max_4, Max_5);
+
+   type Variant_Type is (Normal, Max_1, Max_2, Max_3);
+   for Variant_Type'Size use Integer_4'Size ;
+   for Variant_Type use (Normal => 0, Max_1 => 1, Max_2 => 2, Max_3 => 3);
+   function Variant is new Unchecked_Conversion(Variant_Type, Integer_4);
+   function Variant is new Unchecked_Conversion(Integer_4, Variant_Type);
+
+
 
    type Profit_Type is new Float_8;
    type Saldo_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
-   type Max_Daily_Loss_Type_Type is (A_100, A_200, A_300, A_400, A_500, A_600);
+   type Max_Daily_Loss_Type_Type is (Minus_800, Minus_500, Minus_100  );
+   for Max_Daily_Loss_Type_Type'Size use Integer_4'Size ;
+   for Max_Daily_Loss_Type_Type use (Minus_800 => -800, Minus_500 => -500, Minus_100 => -100);
+   function Max_Daily_Loss is new Unchecked_Conversion(Max_Daily_Loss_Type_Type, Integer_4);
+   function Max_Daily_Loss is new Unchecked_Conversion(Integer_4, Max_Daily_Loss_Type_Type);
+
+
+
    type Max_Profit_Factor_Type is new Float_8;
    type Max_Price_Type is new Float_8;
    type Min_Price_Type is new Float_8;
