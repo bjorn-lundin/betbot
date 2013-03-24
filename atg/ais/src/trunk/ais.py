@@ -12,6 +12,7 @@ import util
 import socket
 import datetime
 import re
+import time
 
 LOG = logging.getLogger('AIS')
 
@@ -34,8 +35,8 @@ def init_ws_client(url, username, password):
     cache.setduration(days=10) #months, weeks, days, hours, seconds
     return ws_client
 
-def call_ais_service(params=None, date=None, 
-                     track=None, ret_if_local=False):
+def call_ais_service(params=None, date=None, track=None, 
+                     ret_if_local=False, download_delay=0):
     '''
     Call an AIS web service
     '''
@@ -122,6 +123,11 @@ def call_ais_service(params=None, date=None,
                 result = service_method(__inject={'reply':xml_data})
             else:
                 result = service_method()
+
+        download_delay = params['download_delay']
+        if download_delay > 0:
+            LOG.debug('Delaying download with ' + str(download_delay) + ' seconds')
+            time.sleep(download_delay)
     except URLError:
         LOG.exception(params['service'])
     except MethodNotFound:
@@ -266,10 +272,10 @@ def load_calendar_history_into_db(params=None):
         )
         raceday_calendar(params=params, date=raceday_date)
         
-def download_history_via_calendar(params=None):
+def eod_download_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic
-    data late at night every day.
+    an/or end of day data late at night every day.
     '''
     # Bettype name_code to service name mapping
     bettype_loopup = {
@@ -335,12 +341,14 @@ def download_history_via_calendar(params=None):
                 track=track,
                 ret_if_local = False
             )
+            
             track_bet_info_service(
                 params=params, 
                 date=date, 
                 track=track,
                 ret_if_local = False
             )
+
             for race in raceday.races:
                 for bettype in race.bettypes:
                     bettype = bettype_loopup[bettype.name_code]
@@ -351,6 +359,7 @@ def download_history_via_calendar(params=None):
                         track=track, 
                         ret_if_local=False
                     )
+                    
                     result_service(
                         params=params, 
                         bettype=bettype, 

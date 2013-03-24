@@ -14,6 +14,7 @@ import ais
 import db
 import util
 import time
+import s3_mgmt
 
 # Make sure this application runs under
 # tz CET / Europe/Stockholm
@@ -83,37 +84,24 @@ def main():
     LOG.info('Starting application')
     ws_client = ais.init_ws_client(conf.AIS_WS_URL, conf.AIS_USERNAME, 
                                    conf.AIS_PASSWORD)
-    cloud_storage_connection = None
-    cloud_storage_bucket = None
-    if conf.AIS_S3_STORE:
-        cloud_storage_connection = util.get_aws_s3_connections(
-            username=conf.AIS_S3_USER,
-            password=conf.AIS_S3_PASSWORD
-        )
-        cloud_storage_bucket = util.init_aws_s3_bucket(
-            connection=cloud_storage_connection,
-            bucketname=conf.AIS_S3_BUCKET
-        )
     init_db = 'init_db'
     init_local_racedays = 'init_local_racedays'
-    daily_download = 'daily_download'
+    eod_download = 'eod_download'
     meta_files = 'write_meta_files'
     save_files_in_cloud = 'save_files_in_cloud'
-    get_files_from_cloud = 'get_files_from_cloud'
     
     usage_string = "usage: %(prog)s " + \
         "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
-        "%(com4)s|%(com5)s]"
+        "%(com4)s]"
     usage = usage_string % \
-        {
-            'prog':'%prog',
-            'com0':init_db,
-            'com1':init_local_racedays,
-            'com2':daily_download, 
-            'com3':meta_files,
-            'com4':save_files_in_cloud,
-            'com5':get_files_from_cloud
-        }
+    {
+        'prog':'%prog',
+        'com0':init_db,
+        'com1':init_local_racedays,
+        'com2':eod_download, 
+        'com3':meta_files,
+        'com4':save_files_in_cloud,
+    }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]
     if len(args) < 1:
@@ -135,8 +123,8 @@ def main():
         }
         ais.load_calendar_history_into_db(params)
     
-    if daily_download in args:
-        LOG.info('Running ' + daily_download)
+    if eod_download in args:
+        LOG.info('Running ' + eod_download)
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -145,9 +133,10 @@ def main():
             'ais_type':conf.AIS_TYPE,
             'save_soap_file':True,
             'raceday_history':conf.AIS_RACEDAY_HISTORY,
-            'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE
+            'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE,
+            'download_delay':conf.AIS_EOD_DOWNLOAD_DELAY
         }
-        ais.download_history_via_calendar(params)
+        ais.eod_download_via_calendar(params)
     
     if meta_files in args:
         LOG.info('Running ' + meta_files)
@@ -155,15 +144,19 @@ def main():
     
     if save_files_in_cloud in args:
         LOG.info('Running ' + save_files_in_cloud)
-        util.save_files_in_aws_s3_bucket(from_datadir=conf.AIS_DATADIR,
-                                         bucket=cloud_storage_bucket)
-    
-    if get_files_from_cloud in args:
-        LOG.info('Running ' + get_files_from_cloud)
-        util.get_files_from_aws_s3(to_datadir=conf.AIS_DATADIR,
-                                   bucket=cloud_storage_bucket)
-    if cloud_storage_connection:
-        cloud_storage_connection.close()
+        connection = s3_mgmt.get_aws_s3_connections(
+            username=conf.AIS_S3_USER,
+            password=conf.AIS_S3_PASSWORD
+        )
+        bucket = s3_mgmt.init_aws_s3_bucket(
+            connection=connection,
+            bucketname=conf.AIS_S3_BUCKET
+        )
+        s3_mgmt.save_files_in_aws_s3_bucket(
+            from_datadir=conf.AIS_DATADIR, bucket=bucket
+        )
+        if connection:
+            connection.close()
         
     LOG.info('Ending application')
     logging.shutdown()    
