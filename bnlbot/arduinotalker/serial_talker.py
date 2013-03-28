@@ -173,7 +173,7 @@ def main():
     row2['5'] = get_row_weeks_back(conn, bet, -5)
     row2['6'] = get_row_weeks_back(conn, bet, -6)
     row2['typ'] = bet
-    lcd_row_2 = '%(typ)35s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
+    lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
 #    print lcd_row_1
     ser.write(lcd_row_2 + '\r\n')
     
