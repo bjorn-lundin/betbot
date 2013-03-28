@@ -10,6 +10,12 @@ set ytics 100
 set title "Saldo vid midnatt Betfair"
 set xlabel "Datum"
 set ylabel "Saldo skr"
+
+set y2range [500:3000]
+set y2tics 100
+set y2label "Saldo skr"
+
+
 #set boxwidth 1
 
 set grid
