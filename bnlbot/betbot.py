@@ -451,14 +451,14 @@ class BetBot(object):
 
     def start(self):
         """start the main loop"""
-
-        self.check_last_loss()
         self.check_has_lost_today()
+        self.check_last_loss()
         # login/monitor status
         login_status = self.login(self.USERNAME, self.PASSWORD, \
                                   self.PRODUCT_ID, self.VENDOR_ID)
         while login_status == 'OK':
             self.check_last_loss()
+            self.check_has_lost_today()
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------')
             markets = self.get_markets()
