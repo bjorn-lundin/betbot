@@ -115,15 +115,16 @@ def main():
                              
   bets = ['HOUNDS_WINNER_LAY_BET',
           'HORSES_PLACE_LAY_BET_6_10',
-          'HOUNDS_WINNER_LAY_BET_13_14',
-          "DRY_RUN_HORSES_WINNER_LAY_BET",
-          "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18",
-          "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19",
-          "DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18",
+          'HOUNDS_WINNER_BACK_BET', 
+#          'HOUNDS_WINNER_LAY_BET_13_14',
+          'DRY_RUN_HORSES_WINNER_LAY_BET',
+          'DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18',
+          'DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19',
+          'DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18',
 #          "DRY_RUN_HOUNDS_WINNER_LAY_BET_LAST",
-          "DRY_RUN_HOUNDS_PLACE_LAY_BET",
+          'DRY_RUN_HOUNDS_PLACE_LAY_BET',
 #          "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9",
-          "DRY_RUN_HOUNDS_WINNER_BACK_BET"   ]
+          'DRY_RUN_HOUNDS_WINNER_BACK_BET_38_02'   ]
              
 #  ser.write('-----------------------------------------------------------------------------\r\n')
 
