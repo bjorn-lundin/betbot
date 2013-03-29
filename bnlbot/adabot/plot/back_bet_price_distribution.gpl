@@ -1,0 +1,40 @@
+set datafile commentschars '#'
+set datafile separator whitespace
+set terminal png medium size 800,600 background '#ffffff'
+set output "back_bet_price_distribution.png"
+
+set key off
+set style fill solid
+set yrange [1:20]
+set ytics 0.5
+set ylabel "Antal"
+
+set title "Distribution hundar vinnarodds"
+set xlabel "Odds"
+set xrange [1:10]
+set xtics 0.5
+
+
+set yrange [1:150]
+set ytics 5
+set ylabel "Antal"
+
+
+#set boxwidth 1
+
+set grid
+
+#set xdata time
+#set timefmt "%Y-%m-%d"
+#set xtics format "%b-%d"
+set style fill transparent solid 0.5
+
+#varfor funkar inte? manual sid 121
+#set label 1 "Varmepump" at first "2010-10-01",10 rotate front
+#set label 2 "Fonsterbyte" at first "2011-07-01",10 rotate front
+#set label 3 "Lucas flytt" at first "2012-09-01",10 rotate front
+
+plot 'back_bet_price_distribution.dat' using 3:1 with boxes
+
+#show label
+#show timefmt

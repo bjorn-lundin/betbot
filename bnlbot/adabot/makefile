@@ -20,6 +20,8 @@
 
 DAT := plot/balance.dat
 TMP := plot/balance.tmp
+DAT2 := plot/back_bet_price_distribution.dat
+TMP2 := plot/back_bet_price_distribution.tmp
 
 UNAME := $(shell uname)
 
@@ -59,8 +61,23 @@ balance_plot:
 	cd plot && $(SHOW_PNG) balance.png
 
 
+.PHONY : back_bet_price_distribution
+back_bet_price_distribution:
+	$(PSQL) -h $(HOST) --command="select count(DRY_RUNNERS.*), DRY_RUNNERS.BACK_PRICE from DRY_MARKETS , DRY_RESULTS, DRY_RUNNERS where ( lower(MARKET_NAME) ~ '^[0-9][a-z]' or lower(MARKET_NAME) ~ '^[a-z][0-9]' or lower(MARKET_NAME) like 'hp%' or lower(MARKET_NAME) like 'hc%' or   lower(MARKET_NAME) like 'or%' or    lower(MARKET_NAME) like 'iv%' ) and BSP_MARKET = 'Y' and lower(MARKET_NAME) not like '%% v %%' and lower(MARKET_NAME) not like '%%forecast%%' and lower(MARKET_NAME) not like '%%tbp%%' and lower(MARKET_NAME) not like '%%challenge%%' and lower(MARKET_NAME) not like '%%fc%%' and lower(MENU_PATH) not like '%%daily win%%' and lower(MARKET_NAME) not like '%%reverse%%' and lower(MARKET_NAME) not like '%%plats%%' and lower(MARKET_NAME) not like '%%place%%' and lower(MARKET_NAME) not like '%%without%%' and EVENT_HIERARCHY like '/4339/%' and DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID and DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID and DRY_RESULTS.SELECTION_ID = DRY_RUNNERS.SELECTION_ID group by DRY_RUNNERS.BACK_PRICE order by DRY_RUNNERS.BACK_PRICE " betting > $(DAT2)
+	cat $(DAT2) | grep -v event > $(TMP2)
+	cat $(TMP2) | grep -v rows > $(DAT2)
+	cat $(DAT2) | grep -v "\-\-" > $(TMP2)
+	cat $(TMP2) > $(DAT2)
+	rm $(TMP2)
+	cd plot && gnuplot back_bet_price_distribution.gpl
+	cd plot && $(SHOW_PNG) back_bet_price_distribution.png
+
+
 
 clean:
 	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
+	rm plot/*.dat plot/*.png
+
+
