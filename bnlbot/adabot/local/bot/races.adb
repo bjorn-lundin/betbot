@@ -121,16 +121,16 @@ package body Races is
                  "  lower(MARKET_NAME) like 'iv%'  " &
                  ")  " &
                  "and BSP_MARKET = 'Y' " &
-                 "and lower(MARKET_NAME) not like '%% v %%'  " &
-                 "and lower(MARKET_NAME) not like '%%forecast%%'  " &
-                 "and lower(MARKET_NAME) not like '%%tbp%%'  " &
-                 "and lower(MARKET_NAME) not like '%%challenge%%'  " &
-                 "and lower(MARKET_NAME) not like '%%fc%%'  " &
-                 "and lower(MENU_PATH) not like '%%daily win%%'  " &
-                 "and lower(MARKET_NAME) not like '%%reverse%%'  " &
-                 "and lower(MARKET_NAME) not like '%%plats%%'  " &
-                 "and lower(MARKET_NAME) not like '%%place%%'  " &
-                 "and lower(MARKET_NAME) not like '%%without%%'  " &
+                 "and lower(MARKET_NAME) not like '% v %'  " &
+                 "and lower(MARKET_NAME) not like '%forecast%'  " &
+                 "and lower(MARKET_NAME) not like '%tbp%'  " &
+                 "and lower(MARKET_NAME) not like '%challenge%'  " &
+                 "and lower(MARKET_NAME) not like '%fc%'  " &
+                 "and lower(MENU_PATH) not like '%daily win%'  " &
+                 "and lower(MARKET_NAME) not like '%reverse%'  " &
+                 "and lower(MARKET_NAME) not like '%plats%'  " &
+                 "and lower(MARKET_NAME) not like '%place%'  " &
+                 "and lower(MARKET_NAME) not like '%without%'  " &
                  "and EVENT_HIERARCHY like :EVENT_HIERARCHY " &
                  "and exists (select 'x' from DRY_RUNNERS where " &
                  "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
