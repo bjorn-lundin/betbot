@@ -238,19 +238,19 @@ class Bettype(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
 
-engine = create_engine(conf.AIS_DB_URL, echo=False)
+ENGINE = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level
 # for global knowledge of connections, pool etc:
-Session = sessionmaker(bind=engine)
-DB_SESSION = Session()
+SESSION = sessionmaker(bind=ENGINE)
+DB_SESSION = SESSION()
 
 def init_db_client(db_init=False):
     '''
     Database initiation
     '''
     if db_init:
-        BASE.metadata.drop_all(engine)
-        BASE.metadata.create_all(engine)
+        BASE.metadata.drop_all(ENGINE)
+        BASE.metadata.create_all(ENGINE)
 
 if __name__ == '__main__':
     exit(0)
