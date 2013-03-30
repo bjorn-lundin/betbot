@@ -69,10 +69,10 @@ def read_file(file_name_dict=None):
     Read a file
     '''
     result = None
-    LOG.info('Reading file ' + file_name_dict['filename'])
     filepath = os.path.join(file_name_dict['path'], 
                             file_name_dict['filename'])
     if os.path.exists(filepath):
+        LOG.info('Reading file ' + file_name_dict['filename'])
         try:
             filehandle = open(filepath, 'r')
             result = filehandle.read()
@@ -82,6 +82,9 @@ def read_file(file_name_dict=None):
             LOG.exception('Unexpected error!')
         finally:
             filehandle.close()
+    else:
+        LOG.info('Could not read file ' + file_name_dict['filename'] + 
+                 ' (file does not exist)')
     return result
 
 def generate_file_name(datadir = None, ais_service = None,
