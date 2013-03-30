@@ -14,7 +14,7 @@ import ais
 import db
 import util
 import time
-import s3_mgmt
+import aws_services
 
 # Make sure this application runs under
 # tz CET / Europe/Stockholm
@@ -86,7 +86,7 @@ def email_log_stats_and_errors():
     body += 'Number of errors: %d' % (error_count)
     body += '\n'
     body += 'Total number of data files: %d' % (nbr_of_data_files)
-    s3_mgmt.send_ses_email(
+    aws_services.send_ses_email(
         username=conf.EMAIL_LOG_USERNAME,
         password=conf.EMAIL_LOG_PASSWORD,
         from_address=conf.EMAIL_LOG_FROM,
@@ -160,15 +160,15 @@ def main():
     
     if cp.SAVE_FILES_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
-        connection = s3_mgmt.get_aws_s3_connections(
+        connection = aws_services.get_aws_s3_connections(
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
-        bucket = s3_mgmt.init_aws_s3_bucket(
+        bucket = aws_services.init_aws_s3_bucket(
             connection=connection,
             bucketname=conf.AIS_S3_BUCKET
         )
-        s3_mgmt.save_files_in_aws_s3_bucket(
+        aws_services.save_files_in_aws_s3_bucket(
             from_datadir=conf.AIS_DATADIR, bucket=bucket
         )
         if connection:
