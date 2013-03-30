@@ -14,7 +14,6 @@ AIS_LOGDIR = os.path.normpath(os.path.join(AIS_HOME, 'log'))
 AIS_METADIR = os.path.normpath(os.path.join(AIS_HOME, 'meta_data'))
 AIS_RACEDAY_HISTORY = 6 # Nbr of history days in ATG database
 AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22', 54:'2013-01-30'}
-EMAIL_LOG_ERRORS = False
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
 AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
 
@@ -29,14 +28,11 @@ if AIS_TYPE == 'test':
     AIS_S3_BUCKET = 'ais-end-of-day-data-test'
     AIS_S3_USER = ''
     AIS_S3_PASSWORD = ''
-    EMAIL_LOG_HOST = 'smtprelay1.telia.com'
-    EMAIL_LOG_PORT = ''
-    EMAIL_LOG_FROM = 'ais@nonobet.com'
-    EMAIL_LOG_TO = ['joakim@birgerson.com']
-    EMAIL_LOG_SUBJECT = 'AIS ERROR'
-    EMAIL_LOG_USER = ''
-    EMAIL_LOG_PASS = ''
-    EMAIL_LOG_TLS = False
+    EMAIL_LOG_FROM = '"Nonobet AIS" <ais@nonobet.com>'
+    EMAIL_LOG_SENDLIST = ['joakim@birgerson.com']
+    EMAIL_LOG_SUBJECT = 'TEST AIS EOD download report'
+    EMAIL_LOG_USERNAME = ''
+    EMAIL_LOG_PASSWORD = ''
 
 elif AIS_TYPE == 'prod':
     AIS_WS_URL = AIS_WS_HOST + 'info/PartnerInfoService/version' + \
@@ -49,14 +45,11 @@ elif AIS_TYPE == 'prod':
     AIS_S3_BUCKET = 'ais-end-of-day-data-prod'
     AIS_S3_USER = ''
     AIS_S3_PASSWORD = ''
-    EMAIL_LOG_HOST = ''
-    EMAIL_LOG_PORT = ''
-    EMAIL_LOG_FROM = ''
-    EMAIL_LOG_TO = []
-    EMAIL_LOG_SUBJECT = 'AIS ERROR'
-    EMAIL_LOG_USER = ''
-    EMAIL_LOG_PASS = ''
-    EMAIL_LOG_TLS = False
+    EMAIL_LOG_FROM = '"Nonobet AIS" <ais@nonobet.com>'
+    EMAIL_LOG_SENDLIST = ['joakim@birgerson.com']
+    EMAIL_LOG_SUBJECT = 'AIS EOD download report'
+    EMAIL_LOG_USERNAME = ''
+    EMAIL_LOG_PASSWORD = ''
 
 else:
     exit(1)

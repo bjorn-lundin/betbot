@@ -13,6 +13,7 @@ WRITE_META_FILES = 'write_meta_files'
 SAVE_FILES_IN_CLOUD = 'save_files_in_cloud'
 PRINT_VERSIONS_FROM_CLOUD = 'print_versions_from_cloud'
 DELETE_BUCKET_IN_CLOUD = 'delete_bucket_in_cloud'
+EMAIL_LOG_STATS = 'email_log_stats'
 
 def parse():
     '''
@@ -25,11 +26,12 @@ def parse():
         WRITE_META_FILES,
         SAVE_FILES_IN_CLOUD,
         PRINT_VERSIONS_FROM_CLOUD,
-        DELETE_BUCKET_IN_CLOUD
+        DELETE_BUCKET_IN_CLOUD,
+        EMAIL_LOG_STATS
     ]
     usage_string = "usage: %(prog)s " + \
         "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
-        "%(com4)s|%(com5)s|%(com6)s]"
+        "%(com4)s|%(com5)s|%(com6)s|%(com7)s]"
     usage = usage_string % \
     {
         'prog':'%prog',
@@ -40,6 +42,7 @@ def parse():
         'com4':command_list[4],
         'com5':command_list[5],
         'com6':command_list[6],
+        'com7':command_list[7],
     }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]

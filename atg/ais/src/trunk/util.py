@@ -72,15 +72,16 @@ def read_file(file_name_dict=None):
     LOG.info('Reading file ' + file_name_dict['filename'])
     filepath = os.path.join(file_name_dict['path'], 
                             file_name_dict['filename'])
-    try:
-        filehandle = open(filepath, 'r')
-        result = filehandle.read()
-    except IOError:
-        LOG.exception()
-    except:
-        LOG.exception('Unexpected error!')
-    finally:
-        filehandle.close()
+    if os.path.exists(filepath):
+        try:
+            filehandle = open(filepath, 'r')
+            result = filehandle.read()
+        except IOError:
+            LOG.exception()
+        except:
+            LOG.exception('Unexpected error!')
+        finally:
+            filehandle.close()
     return result
 
 def generate_file_name(datadir = None, ais_service = None,
@@ -221,6 +222,19 @@ def date_to_string(date_time):
     datetime object, e.g. '20130105'
     '''
     return date_time.strftime('%Y%m%d')
+
+def date_to_string2(date_time):
+    '''
+    Return a string representation of a 
+    datetime object, e.g. '2013-01-05'
+    '''
+    return date_time.strftime('%Y-%m-%d')
+
+def get_current_date():
+    '''
+    Get current date object
+    '''
+    return datetime.datetime.now()
     
 def track_id_to_struct(client, track_id):
     '''
