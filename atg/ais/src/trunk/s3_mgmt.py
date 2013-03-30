@@ -4,7 +4,6 @@ Misc. utilities for AIS
 '''
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
-from optparse import OptionParser
 from boto.s3.connection import S3Connection, Location
 from boto.s3.key import Key
 from boto.exception import S3CreateError
@@ -55,12 +54,16 @@ def init_aws_s3_bucket(connection=None, bucketname=None):
         LOG.info('S3 bucket ' + bucketname + ' exists')
         bucket = connection.get_bucket(bucketname, validate=False)
         version_status = bucket.get_versioning_status()
-        if len(version_status) == 0 or version_status['Versioning'] != 'Enabled':
+        if len(version_status) == 0 or \
+                version_status['Versioning'] != 'Enabled':
             LOG.info('Enabling versioning on S3 bucket ' + bucketname)
             bucket.configure_versioning(True)
     return bucket
 
 def save_files_in_aws_s3_bucket(from_datadir=None, bucket=None, replace=False):
+    '''
+    Save files in directory into AWS S3 bucket.
+    '''
     local_files = util.list_files_with_path(dir_path=from_datadir)
     remote_files = []
     bucket_keys = bucket.list()
@@ -70,7 +73,11 @@ def save_files_in_aws_s3_bucket(from_datadir=None, bucket=None, replace=False):
         file_name = os.path.basename(file_path)
         if file_name not in remote_files:
             LOG.info('Adding ' + file_name + ' to ' + bucket.name)
-            save_file_in_aws_s3_bucket(file_path=file_path, bucket=bucket, replace=replace)
+            save_file_in_aws_s3_bucket(
+                file_path=file_path,
+                bucket=bucket,
+                replace=replace
+            )
 
 def save_file_in_aws_s3_bucket(file_path=None, bucket=None, replace=False):
     '''
@@ -89,7 +96,8 @@ def save_file_in_aws_s3_bucket(file_path=None, bucket=None, replace=False):
             md5=file_md5
         )
     except S3ResponseError:
-        LOG.exception('Failed saving file ' + file_name + ' to S3 bucket ' + bucket.name)
+        LOG.exception('Failed saving file ' + file_name + 
+                      ' to S3 bucket ' + bucket.name)
 
 def print_versions_from_aws_s3(bucket=None):
     '''
@@ -105,11 +113,19 @@ def print_versions_from_aws_s3(bucket=None):
         print('Version etag: ' + version.etag)
         print('Version md5: ' + str(version.md5))
 
-def delete_aws_s3_bucket(host=None, username=None, password=None, 
-                         bucketname=None, delete_versions=False):
+def delete_aws_s3_bucket(host=None, username=None, 
+                         password=None, bucketname=None):
     '''
     Deletes a bucket including versions if they exist
     '''
+    print()
+    verify = raw_input('Delete bucket: ' + 
+                       bucketname + '? (y/n): ')
+    verify = verify.strip().lower()
+    if verify not in ("y", "yes"):
+        LOG.info('Bucket deletion aborted, exiting application')
+        exit(0)
+
     connection = S3Connection(
         host=host,
         aws_access_key_id=username, 
@@ -121,17 +137,14 @@ def delete_aws_s3_bucket(host=None, username=None, password=None,
     except S3ResponseError:
         LOG.exception('Could not get bucket ' + bucketname)
         return
-    
-    if delete_versions:
-        for version in bucket.list_versions():
-            try:
-                bucket.delete_key(
-                    version.name,
-                    version_id=version.version_id
-                )
-            except S3ResponseError:
-                LOG.exception('Could not delete key')
-
+    for version in bucket.list_versions():
+        try:
+            bucket.delete_key(
+                version.name,
+                version_id=version.version_id
+            )
+        except S3ResponseError:
+            LOG.exception('Could not delete key')
     try:
         LOG.info('Deleting bucket ' + bucketname)
         bucket.delete()
@@ -148,33 +161,17 @@ def init_logging():
 
 def main():
     '''
-    Main loop of application
+    Test main loop of this module
     '''
+    import command_parser as cp
+    command = cp.parse()
     init_logging()
-    LOG.info('Starting s3_mgmt as stand alone application')
-    
-    save_files_in_cloud = 'save_files_in_cloud'
-    print_versions_from_cloud = 'print_versions_from_cloud'
-    delete_bucket_in_cloud = 'delete_bucket_in_cloud'
-    
-    usage_string = "usage: %(prog)s " + \
-        "[%(com0)s|%(com1)s|%(com2)s]"
-    usage = usage_string % \
-    {
-        'prog':'%prog',
-        'com0':save_files_in_cloud,
-        'com1':print_versions_from_cloud,
-        'com2':delete_bucket_in_cloud
-    }
-    parser = OptionParser(usage)
-    args = parser.parse_args()[1]
-    if len(args) < 1:
-        parser.error("Please state command to run!")
-    
+    LOG.info('Starting module as stand alone application')
+        
     cloud_storage_connection = None
     cloud_storage_bucket = None
     
-    if delete_bucket_in_cloud not in args:
+    if cp.DELETE_BUCKET_IN_CLOUD not in command:
         # delete_bucket handles it's own connection etc.
         cloud_storage_connection = get_aws_s3_connections(
             username=conf.AIS_S3_USER,
@@ -185,26 +182,25 @@ def main():
             bucketname=conf.AIS_S3_BUCKET
         )
     
-    if save_files_in_cloud in args:
-        LOG.info('Running ' + save_files_in_cloud)
+    if cp.SAVE_FILES_IN_CLOUD in command:
+        LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
         save_files_in_aws_s3_bucket(
             from_datadir=conf.AIS_DATADIR, bucket=cloud_storage_bucket
         )
         
-    if print_versions_from_cloud in args:
-        LOG.info('Running ' + print_versions_from_cloud)
+    if cp.PRINT_VERSIONS_FROM_CLOUD in command:
+        LOG.info('Running ' + cp.PRINT_VERSIONS_FROM_CLOUD)
         print_versions_from_aws_s3(bucket=cloud_storage_bucket)
         
-    if delete_bucket_in_cloud in args:
-        LOG.info('Running ' + delete_bucket_in_cloud)
+    if cp.DELETE_BUCKET_IN_CLOUD in command:
+        LOG.info('Running ' + cp.DELETE_BUCKET_IN_CLOUD)
         delete_aws_s3_bucket(
             host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD,
-            bucketname=conf.AIS_S3_BUCKET,
-            delete_versions=True
+            bucketname=conf.AIS_S3_BUCKET
         )
-        LOG.info('Ending ' + delete_bucket_in_cloud)
+        LOG.info('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
         
     if cloud_storage_connection:
         cloud_storage_connection.close()
