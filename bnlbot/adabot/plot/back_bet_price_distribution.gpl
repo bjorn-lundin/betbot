@@ -5,19 +5,19 @@ set output "back_bet_price_distribution.png"
 
 set key off
 set style fill solid
-set yrange [1:20]
-set ytics 0.5
+set yrange [1:120]
+set ytics 5
 set ylabel "Antal"
 
-set title "Distribution hundar vinnarodds"
+set title "Distribution vinnande odds hundar"
 set xlabel "Odds"
 set xrange [1:10]
 set xtics 0.5
 
 
-set yrange [1:150]
-set ytics 5
-set ylabel "Antal"
+set y2range [1:20]
+set y2tics 2
+set y2label "%"
 
 
 #set boxwidth 1
@@ -34,7 +34,7 @@ set style fill transparent solid 0.5
 #set label 2 "Fonsterbyte" at first "2011-07-01",10 rotate front
 #set label 3 "Lucas flytt" at first "2012-09-01",10 rotate front
 
-plot 'back_bet_price_distribution.dat' using 3:1 with boxes
+plot 'back_bet_price_distribution.dat' using 1:4 with boxes, 'back_bet_price_distribution.dat' using 1:5 axes x1y2 with lines linecolor 3 , 'back_bet_price_distribution.dat' using 1:6 axes x1y2 with lines linecolor 2
 
 #show label
 #show timefmt
