@@ -126,7 +126,8 @@ def call_ais_service(params=None, date=None, track=None,
 
         download_delay = params['download_delay']
         if download_delay > 0:
-            LOG.debug('Delaying download with ' + str(download_delay) + ' seconds')
+            LOG.debug('Delaying download with ' + 
+                      str(download_delay) + ' seconds')
             time.sleep(download_delay)
     except URLError:
         LOG.exception(params['service'])
