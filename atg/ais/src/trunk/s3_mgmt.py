@@ -9,6 +9,7 @@ from boto.s3.connection import S3Connection, Location
 from boto.s3.key import Key
 from boto.exception import S3CreateError
 from boto.exception import S3PermissionsError, S3ResponseError
+from boto import ses
 import logging
 import conf
 import util
@@ -152,6 +153,25 @@ def delete_aws_s3_bucket(host=None, username=None,
     except S3ResponseError:
         print('Could not delete bucket')
 
+def send_ses_email(username=None, password=None, from_address=None,
+                   subject=None, body=None, send_list=None):
+    '''
+    Send an email via AWS SES
+    '''
+    LOG.info('Connecting to SES')
+    connection = ses.connect_to_region(
+        'us-east-1',
+        aws_access_key_id=username, 
+        aws_secret_access_key=password
+    )
+    LOG.info('Sending email with subject ' + subject)
+    connection.send_email(
+        from_address,
+        subject,
+        body,
+        send_list
+    )
+
 def main():
     '''
     Test main loop of this module
@@ -193,10 +213,20 @@ def main():
             bucketname=conf.AIS_S3_BUCKET
         )
         print('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
+    
+    if cp.EMAIL_LOG_STATS in command:
+        print('Running ' + cp.EMAIL_LOG_STATS)
+        send_ses_email(
+            username=conf.EMAIL_LOG_USERNAME,
+            password=conf.EMAIL_LOG_PASSWORD,
+            from_address=conf.EMAIL_LOG_FROM,
+            subject=conf.EMAIL_LOG_SUBJECT,
+            body='Test åäö ÅÄÖ',
+            send_list=conf.EMAIL_LOG_SENDLIST
+        )
         
     if cloud_storage_connection:
         cloud_storage_connection.close()
         
 if __name__ == "__main__":
     main()
-        
