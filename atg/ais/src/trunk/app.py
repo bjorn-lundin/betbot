@@ -5,8 +5,8 @@ The main application to run when getting data from AIS
 '''
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
-from optparse import OptionParser
 import os
+import command_parser as cp
 import errno
 import conf
 import logging.handlers
@@ -80,39 +80,22 @@ def main():
     '''
     Main loop of application
     '''
+    command = cp.parse()
     init_logging()
     LOG.info('Starting application')
-    ws_client = ais.init_ws_client(conf.AIS_WS_URL, conf.AIS_USERNAME, 
-                                   conf.AIS_PASSWORD)
-    init_db = 'init_db'
-    init_local_racedays = 'init_local_racedays'
-    eod_download = 'eod_download'
-    meta_files = 'write_meta_files'
-    save_files_in_cloud = 'save_files_in_cloud'
-    
-    usage_string = "usage: %(prog)s " + \
-        "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
-        "%(com4)s]"
-    usage = usage_string % \
-    {
-        'prog':'%prog',
-        'com0':init_db,
-        'com1':init_local_racedays,
-        'com2':eod_download, 
-        'com3':meta_files,
-        'com4':save_files_in_cloud,
-    }
-    parser = OptionParser(usage)
-    args = parser.parse_args()[1]
-    if len(args) < 1:
-        parser.error("Please state command to run!")
-    
-    if init_db in args:
-        LOG.info('Running ' + init_db)
+
+    if cp.INIT_DB in command:
+        LOG.info('Running ' + cp.INIT_DB)
         db.init_db_client(db_init=True)
-    
-    if init_local_racedays in args:
-        LOG.info('Running ' + init_local_racedays)
+    ws_client = None
+    if cp.INIT_LOCAL_RACEDAYS in command:
+        LOG.info('Running ' + cp.INIT_LOCAL_RACEDAYS)
+        if not ws_client:
+            ws_client = ais.init_ws_client(
+                conf.AIS_WS_URL,
+                conf.AIS_USERNAME,
+                conf.AIS_PASSWORD
+            )
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -123,8 +106,14 @@ def main():
         }
         ais.load_calendar_history_into_db(params)
     
-    if eod_download in args:
-        LOG.info('Running ' + eod_download)
+    if cp.EOD_DOWNLOAD in command:
+        LOG.info('Running ' + cp.EOD_DOWNLOAD)
+        if not ws_client:
+            ws_client = ais.init_ws_client(
+                conf.AIS_WS_URL,
+                conf.AIS_USERNAME,
+                conf.AIS_PASSWORD
+            )
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -138,12 +127,18 @@ def main():
         }
         ais.eod_download_via_calendar(params)
     
-    if meta_files in args:
-        LOG.info('Running ' + meta_files)
+    if cp.WRITE_META_FILES in command:
+        LOG.info('Running ' + cp.WRITE_META_FILES)
+        if not ws_client:
+            ws_client = ais.init_ws_client(
+                conf.AIS_WS_URL,
+                conf.AIS_USERNAME,
+                conf.AIS_PASSWORD
+            )
         util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
     
-    if save_files_in_cloud in args:
-        LOG.info('Running ' + save_files_in_cloud)
+    if cp.SAVE_FILES_IN_CLOUD in command:
+        LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
         connection = s3_mgmt.get_aws_s3_connections(
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
