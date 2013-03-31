@@ -189,8 +189,6 @@ def main():
             'download_delay':conf.AIS_EOD_DOWNLOAD_DELAY
         }
         ais.eod_download_via_calendar(params)
-        LOG.info('Running ' + cp.EMAIL_LOG_STATS)
-        email_log_stats_and_errors()
     
     if cp.WRITE_META_FILES in command:
         LOG.info('Running ' + cp.WRITE_META_FILES)
