@@ -204,6 +204,7 @@ def main():
     if cp.SAVE_FILES_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
         connection = aws_services.get_aws_s3_connections(
+            host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
@@ -224,6 +225,7 @@ def main():
     if cp.SAVE_DB_DUMP_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_DB_DUMP_IN_CLOUD)
         connection = aws_services.get_aws_s3_connections(
+            host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
