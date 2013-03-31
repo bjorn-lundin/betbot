@@ -20,7 +20,7 @@ LOG = logging.getLogger('AIS')
 #######################################################
 # AWS storage (S3) cloud API                          #
 #######################################################
-def get_aws_s3_connections(username=None, password=None):
+def get_aws_s3_connections(host=None, username=None, password=None):
     '''
     Return a S3 connection.
     '''
@@ -28,7 +28,7 @@ def get_aws_s3_connections(username=None, password=None):
     connection = None
     try:
         connection = S3Connection(
-            host=conf.AIS_S3_HOST,
+            host=host,
             aws_access_key_id=username, 
             aws_secret_access_key=password
         )
@@ -132,11 +132,12 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
         LOG.info(log_msg)
         exit(0)
 
-    connection = S3Connection(
+    connection = get_aws_s3_connections(
         host=host,
-        aws_access_key_id=username, 
-        aws_secret_access_key=password
+        username=username, 
+        password=password
     )
+    
     try:
         bucket = connection.get_bucket(bucket_name, validate=True)
     except S3ResponseError:
@@ -164,16 +165,26 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
         print(log_msg)
         LOG.info(log_msg)
 
-def send_ses_email(username=None, password=None, from_address=None,
-                   subject=None, body=None, send_list=None):
+def get_aws_ses_connections(username=None, password=None):
     '''
-    Send an email via AWS SES
+    Return a SES connection.
     '''
     LOG.info('Connecting to SES')
     connection = ses.connect_to_region(
         'us-east-1',
         aws_access_key_id=username, 
         aws_secret_access_key=password
+    )
+    return connection
+
+def send_ses_email(username=None, password=None, from_address=None,
+                   subject=None, body=None, send_list=None):
+    '''
+    Send an email via AWS SES
+    '''
+    connection = get_aws_ses_connections(
+        username=username,
+        password=password
     )
     LOG.info('Sending email with subject ' + subject)
     connection.send_email(
@@ -191,29 +202,37 @@ def main():
     command = cp.parse()
     print('Starting module as stand alone application')
         
-    cloud_storage_connection = None
-    cloud_storage_bucket = None
-    
-    if cp.DELETE_BUCKET_IN_CLOUD not in command:
-        # delete_bucket handles it's own connection etc.
-        cloud_storage_connection = get_aws_s3_connections(
+    if cp.SAVE_FILES_IN_CLOUD in command:
+        print('Running ' + cp.SAVE_FILES_IN_CLOUD)
+        connection = get_aws_s3_connections(
+            host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
-        cloud_storage_bucket = init_aws_s3_bucket(
-            connection=cloud_storage_connection,
+        bucket = init_aws_s3_bucket(
+            connection=connection,
             bucketname=conf.AIS_S3_EOD_BUCKET
         )
-    
-    if cp.SAVE_FILES_IN_CLOUD in command:
-        print('Running ' + cp.SAVE_FILES_IN_CLOUD)
         save_files_in_aws_s3_bucket(
-            from_datadir=conf.AIS_DATADIR, bucket=cloud_storage_bucket
+            from_datadir=conf.AIS_DATADIR, bucket=bucket
         )
+        if connection:
+            connection.close()
         
     if cp.PRINT_VERSIONS_FROM_CLOUD in command:
         print('Running ' + cp.PRINT_VERSIONS_FROM_CLOUD)
-        print_versions_from_aws_s3(bucket=cloud_storage_bucket)
+        connection = get_aws_s3_connections(
+            host=conf.AIS_S3_HOST,
+            username=conf.AIS_S3_USER,
+            password=conf.AIS_S3_PASSWORD
+        )
+        bucket = init_aws_s3_bucket(
+            connection=connection,
+            bucketname=conf.AIS_S3_EOD_BUCKET
+        )
+        print_versions_from_aws_s3(bucket=bucket)
+        if connection:
+            connection.close()
         
     if cp.DELETE_BUCKET_IN_CLOUD in command:
         print('Running ' + cp.DELETE_BUCKET_IN_CLOUD)
@@ -234,9 +253,6 @@ def main():
             body='Test åäö ÅÄÖ',
             send_list=conf.EMAIL_LOG_SENDLIST
         )
-        
-    if cloud_storage_connection:
-        cloud_storage_connection.close()
         
 if __name__ == "__main__":
     main()
