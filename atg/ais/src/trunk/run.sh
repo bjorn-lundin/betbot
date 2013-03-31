@@ -4,8 +4,15 @@
 # https://gist.github.com/2199506
 
 #!/bin/sh
-#export VIRTUAL_ENV="/home/joabi/production/ais/py_env"
-export VIRTUAL_ENV="/home/sejoabi/pip_test_env"
+AIS_VIRT_ENV="/home/sejoabi/pip_test_env"
+AIS_HOME="/home/sejoabi/workspace/ais/trunk"
+AIS_APP="$AIS_HOME/app.py"
+
+export VIRTUAL_ENV=$AIS_VIRT_ENV
 export PATH="$VIRTUAL_ENV/bin:$PATH"
 unset PYTHON_HOME
-exec "${@:-$SHELL}"
+
+$AIS_APP eod_download
+$AIS_APP save_files_in_cloud
+$AIS_APP save_db_dump_in_cloud
+$AIS_APP email_log_stats
