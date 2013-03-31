@@ -38,7 +38,7 @@ def get_aws_s3_connections(username=None, password=None):
         LOG.exception('S3 Exception')
     return connection
 
-def init_aws_s3_bucket(connection=None, bucketname=None):
+def init_aws_s3_bucket(connection=None, bucketname=None, versioning=True):
     '''
     Returns a S3 bucket object. If it does'nt exists it'll
     be created.
@@ -50,16 +50,18 @@ def init_aws_s3_bucket(connection=None, bucketname=None):
             bucket = connection.create_bucket(bucketname, location=Location.EU)
         except S3CreateError:
             LOG.exception('Failed to create bucket ' + bucketname)
-        LOG.info('Enabling versioning on S3 bucket ' + bucketname)
-        bucket.configure_versioning(True)
+        if versioning:
+            LOG.info('Enabling versioning on S3 bucket ' + bucketname)
+            bucket.configure_versioning(versioning)
     else:
         LOG.info('S3 bucket ' + bucketname + ' exist')
         bucket = connection.get_bucket(bucketname, validate=False)
-        version_status = bucket.get_versioning_status()
-        if len(version_status) == 0 or \
-                version_status['Versioning'] != 'Enabled':
-            LOG.info('Enabling versioning on S3 bucket ' + bucketname)
-            bucket.configure_versioning(True)
+        if versioning:
+            version_status = bucket.get_versioning_status()
+            if len(version_status) == 0 or \
+                    version_status['Versioning'] != 'Enabled':
+                LOG.info('Enabling versioning on S3 bucket ' + bucketname)
+                bucket.configure_versioning(versioning)
     return bucket
 
 def save_files_in_aws_s3_bucket(from_datadir=None, bucket=None, replace=False):
@@ -74,7 +76,6 @@ def save_files_in_aws_s3_bucket(from_datadir=None, bucket=None, replace=False):
     for file_path in local_files:
         file_name = os.path.basename(file_path)
         if file_name not in remote_files:
-            LOG.info('Adding ' + file_name + ' to ' + bucket.name)
             save_file_in_aws_s3_bucket(
                 file_path=file_path,
                 bucket=bucket,
@@ -92,6 +93,7 @@ def save_file_in_aws_s3_bucket(file_path=None, bucket=None, replace=False):
     key.key = file_name
     file_md5 = key.compute_md5(open(file_path, 'rb'))
     try:
+        LOG.info('Uploading ' + file_name + ' to ' + bucket.name)
         key.set_contents_from_filename(
             filename=file_path,
             replace=replace,
@@ -191,7 +193,7 @@ def main():
         )
         cloud_storage_bucket = init_aws_s3_bucket(
             connection=cloud_storage_connection,
-            bucketname=conf.AIS_S3_BUCKET
+            bucketname=conf.AIS_S3_EOD_BUCKET
         )
     
     if cp.SAVE_FILES_IN_CLOUD in command:
@@ -210,7 +212,7 @@ def main():
             host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD,
-            bucketname=conf.AIS_S3_BUCKET
+            bucketname=conf.AIS_S3_EOD_BUCKET
         )
         print('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
     
