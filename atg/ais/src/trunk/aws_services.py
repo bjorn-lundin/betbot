@@ -117,17 +117,19 @@ def print_versions_from_aws_s3(bucket=None):
         print('Version etag: ' + version.etag)
         print('Version md5: ' + str(version.md5))
 
-def delete_aws_s3_bucket(host=None, username=None, 
-                         password=None, bucketname=None):
+def delete_aws_s3_bucket(host=None, username=None, password=None):
     '''
     Deletes a bucket including versions if they exist
     '''
     print()
+    bucket_name = raw_input('Name of bucket to delete: ')
     verify = raw_input('Delete bucket: ' + 
-                       bucketname + '? (y/n): ')
+                       bucket_name + '? (y/n): ')
     verify = verify.strip().lower()
     if verify not in ("y", "yes"):
-        print('Bucket deletion aborted, exiting application')
+        log_msg = 'Bucket deletion aborted, exiting application'
+        print(log_msg)
+        LOG.info(log_msg)
         exit(0)
 
     connection = S3Connection(
@@ -135,11 +137,12 @@ def delete_aws_s3_bucket(host=None, username=None,
         aws_access_key_id=username, 
         aws_secret_access_key=password
     )
-    print('Connecting to S3')
     try:
-        bucket = connection.get_bucket(bucketname, validate=True)
+        bucket = connection.get_bucket(bucket_name, validate=True)
     except S3ResponseError:
-        print('Could not get bucket ' + bucketname)
+        log_msg = 'Bucket ' + bucket_name + ' does not exist'
+        print(log_msg)
+        LOG.info(log_msg)
         return
     for version in bucket.list_versions():
         try:
@@ -148,12 +151,18 @@ def delete_aws_s3_bucket(host=None, username=None,
                 version_id=version.version_id
             )
         except S3ResponseError:
-            print('Could not delete key')
+            log_msg = 'Could not delete version'
+            print(log_msg)
+            LOG.info(log_msg)
     try:
-        print('Deleting bucket ' + bucketname)
+        log_msg = 'Deleting bucket ' + bucket_name
+        print(log_msg)
+        LOG.info(log_msg)
         bucket.delete()
     except S3ResponseError:
-        print('Could not delete bucket')
+        log_msg = 'Could not delete bucket ' + bucket_name
+        print(log_msg)
+        LOG.info(log_msg)
 
 def send_ses_email(username=None, password=None, from_address=None,
                    subject=None, body=None, send_list=None):
@@ -211,8 +220,7 @@ def main():
         delete_aws_s3_bucket(
             host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
-            password=conf.AIS_S3_PASSWORD,
-            bucketname=conf.AIS_S3_EOD_BUCKET
+            password=conf.AIS_S3_PASSWORD
         )
         print('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
     

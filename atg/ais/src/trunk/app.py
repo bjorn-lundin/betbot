@@ -239,6 +239,15 @@ def main():
         )
         if connection:
             connection.close()
+    
+    if cp.DELETE_BUCKET_IN_CLOUD in command:
+        LOG.info('Running ' + cp.DELETE_BUCKET_IN_CLOUD)
+        aws_services.delete_aws_s3_bucket(
+            host=conf.AIS_S3_HOST,
+            username=conf.AIS_S3_USER,
+            password=conf.AIS_S3_PASSWORD
+        )
+        LOG.info('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
         
     LOG.info('Ending application')
     logging.shutdown()    
