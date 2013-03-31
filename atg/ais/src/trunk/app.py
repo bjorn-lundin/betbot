@@ -15,6 +15,7 @@ import db
 import util
 import time
 import aws_services
+import subprocess as sp
 
 # Make sure this application runs under
 # tz CET / Europe/Stockholm
@@ -95,6 +96,51 @@ def email_log_stats_and_errors():
         send_list=conf.EMAIL_LOG_SENDLIST
     )
 
+def save_db_dump_in_cloud(db_name=None, dump_dir=None, bucket=None):
+    '''
+    Run commands to create db dump directory and
+    generating a db dump into it.
+    '''
+    try:
+        os.makedirs(dump_dir)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            LOG.exception()
+    chmod_bin = '/bin/chmod'
+    sudo_bin = '/usr/bin/sudo'
+    su_bin = '/bin/su'
+    pg_dump_bin = '/usr/bin/pg_dump'
+    db_superuser = 'postgres'
+    chmod_command = [chmod_bin, '777', dump_dir]
+    proc = sp.Popen(chmod_command, stdout=sp.PIPE, stderr=sp.PIPE)
+    error = proc.communicate()[1]
+    file_path = None
+    if not error:
+        file_path = os.path.join(dump_dir, db_name + '.dmp')
+        file_path = os.path.normpath(file_path)
+        dump_command = [
+            sudo_bin, su_bin, '-', '-c',
+            pg_dump_bin + ' ' + db_name + '>' + \
+            file_path, db_superuser
+        ]
+        proc = sp.Popen(dump_command, stdout=sp.PIPE, stderr=sp.PIPE)
+        error = proc.communicate()[1]
+        if error:
+            LOG.error(
+                'Need sudo rights without password.\n' +
+                'E.g. "ubuntu ALL=(ALL) NOPASSWD:ALL" in /etc/sudoers. ' +
+                'Use command visudo.'
+            )
+            LOG.error(error)
+    else:
+        LOG.error(error)
+    if not error:
+        aws_services.save_file_in_aws_s3_bucket(
+            file_path=file_path,
+            bucket=bucket,
+            replace=True
+        )
+
 def main():
     '''
     Main loop of application
@@ -106,15 +152,14 @@ def main():
     if cp.INIT_DB in command:
         LOG.info('Running ' + cp.INIT_DB)
         db.init_db_client(db_init=True)
-    ws_client = None
+    
     if cp.INIT_LOCAL_RACEDAYS in command:
         LOG.info('Running ' + cp.INIT_LOCAL_RACEDAYS)
-        if not ws_client:
-            ws_client = ais.init_ws_client(
-                conf.AIS_WS_URL,
-                conf.AIS_USERNAME,
-                conf.AIS_PASSWORD
-            )
+        ws_client = ais.init_ws_client(
+            conf.AIS_WS_URL,
+            conf.AIS_USERNAME,
+            conf.AIS_PASSWORD
+        )
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -127,12 +172,11 @@ def main():
     
     if cp.EOD_DOWNLOAD in command:
         LOG.info('Running ' + cp.EOD_DOWNLOAD)
-        if not ws_client:
-            ws_client = ais.init_ws_client(
-                conf.AIS_WS_URL,
-                conf.AIS_USERNAME,
-                conf.AIS_PASSWORD
-            )
+        ws_client = ais.init_ws_client(
+            conf.AIS_WS_URL,
+            conf.AIS_USERNAME,
+            conf.AIS_PASSWORD
+        )
         params = {
             'client':ws_client,
             'datadir':conf.AIS_DATADIR,
@@ -150,12 +194,11 @@ def main():
     
     if cp.WRITE_META_FILES in command:
         LOG.info('Running ' + cp.WRITE_META_FILES)
-        if not ws_client:
-            ws_client = ais.init_ws_client(
-                conf.AIS_WS_URL,
-                conf.AIS_USERNAME,
-                conf.AIS_PASSWORD
-            )
+        ws_client = ais.init_ws_client(
+            conf.AIS_WS_URL,
+            conf.AIS_USERNAME,
+            conf.AIS_PASSWORD
+        )
         util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
     
     if cp.SAVE_FILES_IN_CLOUD in command:
@@ -166,7 +209,7 @@ def main():
         )
         bucket = aws_services.init_aws_s3_bucket(
             connection=connection,
-            bucketname=conf.AIS_S3_BUCKET
+            bucketname=conf.AIS_S3_EOD_BUCKET
         )
         aws_services.save_files_in_aws_s3_bucket(
             from_datadir=conf.AIS_DATADIR, bucket=bucket
@@ -177,6 +220,25 @@ def main():
     if cp.EMAIL_LOG_STATS in command:
         LOG.info('Running ' + cp.EMAIL_LOG_STATS)
         email_log_stats_and_errors()
+
+    if cp.SAVE_DB_DUMP_IN_CLOUD in command:
+        LOG.info('Running ' + cp.SAVE_DB_DUMP_IN_CLOUD)
+        connection = aws_services.get_aws_s3_connections(
+            username=conf.AIS_S3_USER,
+            password=conf.AIS_S3_PASSWORD
+        )
+        bucket = aws_services.init_aws_s3_bucket(
+            connection=connection,
+            bucketname=conf.AIS_S3_DB_DUMP_BUCKET,
+            versioning=False
+        )
+        save_db_dump_in_cloud(
+            db_name=conf.AIS_DB_NAME,
+            dump_dir=conf.AIS_DBDUMPDIR,
+            bucket=bucket
+        )
+        if connection:
+            connection.close()
         
     LOG.info('Ending application')
     logging.shutdown()    
