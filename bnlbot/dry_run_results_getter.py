@@ -129,7 +129,7 @@ class Result_Feeder(object):
 
     def fetch(self, url):
         """get the feed"""
-        response = urllib2.urlopen(url, timeout = 30)
+        response = urllib2.urlopen(url, timeout = 60)
     #catch the timeout at main loop
         xmlstring = response.read()
         return etree.fromstring(xmlstring)

@@ -126,7 +126,19 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_54_04" :
             bet_won = selection_in_winners
 
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_59_01" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_35_07" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_23_02" :
+            bet_won = selection_in_winners
+
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_52_02" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_6_09" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
@@ -140,8 +152,6 @@ class Market(object):
         elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
             bet_won = selection_in_winners
 
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_6_09" :
-            bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET" :
             bet_won = not selection_in_winners
@@ -175,6 +185,15 @@ class Market(object):
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_38_01" :
+            bet_won = selection_in_winners
+
+        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_45_07" :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET" :
@@ -308,7 +327,7 @@ class Result_Feeder(object):
 
     def fetch(self, url):
         """get the feed"""
-        response = urllib2.urlopen(url, timeout = 30)
+        response = urllib2.urlopen(url, timeout = 60)
        #catch the timeout at main loop
         xmlstring = response.read()
         return etree.fromstring(xmlstring)
