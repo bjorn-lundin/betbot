@@ -148,10 +148,6 @@ begin
 
       if Sa_Graph_Type.all = "daily" then
          Global_Graph_Type := Races.Daily;
-      elsif Sa_Graph_Type.all = "weekly" then
-         Global_Graph_Type := Races.Weekly;
-      elsif Sa_Graph_Type.all = "biweekly" then
-         Global_Graph_Type := Races.Bi_Weekly;
       elsif Sa_Graph_Type.all = "quadweekly" then
          Global_Graph_Type := Races.Quad_Weekly;
       else
@@ -170,8 +166,6 @@ begin
 
    case Global_Graph_Type is
       when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
-      when Races.Weekly =>      Global_Start_Date := Global_Stop_Date - (6, 0, 0, 0, 0);
-      when Races.Bi_Weekly =>   Global_Start_Date := Global_Stop_Date - (13, 0, 0, 0, 0);
       when Races.Quad_Weekly => Global_Start_Date := Global_Stop_Date - (27, 0, 0, 0, 0);
    end case;
 

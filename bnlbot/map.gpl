@@ -11,7 +11,7 @@ set datafile separator whitespace
 #            -e "datafil='$filname'" \
 #            -e "datadir='$datadir'" plot_simulation.gpl
 
-set terminal png medium size 800,600 background '#ffffff'
+set terminal png medium size 1024,768 background '#ffffff'
 set output datadir."/".datafil.".png"
 
 
@@ -119,7 +119,17 @@ set palette rgbformulae 7,5,15
 
 
 if (bet_name eq "back") set ylabel "price"
+if (bet_name eq "back") set yrange [1:10]
+if (bet_name eq "back") set ytics 0.5
+
+if (bet_name eq "back") set y2label "price"
+if (bet_name eq "back") set y2range [1:10]
+if (bet_name eq "back") set y2tics 0.5
+
 if (bet_name eq "back") set xlabel "delta"
+if (bet_name eq "back") set xrange [0.0:1.1]
+if (bet_name eq "back") set xtics 0.1
+
 
 if (bet_name eq "lay") set ylabel "min price"
 if (bet_name eq "lay") set xlabel "max price"
@@ -130,6 +140,7 @@ if (bet_name eq "lay" && idx ne "not set") set title "profit f(min price, max pr
 if (bet_name eq "back" && idx eq "not set") set title "profit f(price, delta) for ".animal." ".graph_type." ".bet_name." ".variant." ".max_daily_loss." ".bet_type." ".start_date."-".stop_date
 if (bet_name eq "lay" && idx eq "not set") set title "profit f(min price, max price) for ".animal." ".graph_type." ".bet_name." ".variant." ".max_daily_loss." ".bet_type." ".start_date."-".stop_date
 
+#if (bet_name eq "back") set grid
 
 #plot  datadir."/".datafil using 4:5:7 with image
 plot  datadir."/".datafil using 2:1:3 with image

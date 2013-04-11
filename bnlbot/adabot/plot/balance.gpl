@@ -1,6 +1,6 @@
 set datafile commentschars '#'
 set datafile separator whitespace
-set terminal png medium size 800,600 background '#ffffff'
+set terminal png medium size 1024,768 background '#ffffff'
 set output "balance.png"
 
 set key off
