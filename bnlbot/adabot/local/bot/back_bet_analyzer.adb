@@ -11,12 +11,14 @@ with Simple_List_Class;
 
 procedure Back_Bet_Analyzer is
    T                   : Sql.Transaction_Type;
-   Select_Back_Winners : array (Races.Animal_Type'Range) of Sql.Statement_Type;
+   Select_Back_Winners : array (Races.Bet_Name_Type'Range) of Sql.Statement_Type;
    Animal              : Races.Animal_Type := Races.Hound;
-   Interval_Offset : Float_8 := 0.01;
-   Interval_Begin : Float_8 := 1.0;
-   Interval_Last : Float_8 := 10.0;
-   Interval_Current : Float_8 := 0.0;
+   Bet_Name            : Races.Bet_Name_Type := Races.Winner;
+
+   Interval_Offset     : Float_8 := 0.2;
+   Interval_Begin      : Float_8 := 1.0;
+   Interval_Last       : Float_8 := 10.0;
+   Interval_Current    : Float_8 := 0.0;
 
    type Result_Type is record
       Count : Integer_4 := 0;
@@ -34,7 +36,7 @@ begin
    Interval_Current := Interval_Begin;
    loop
       Result_Data := (Count => 0, Start => Interval_Current, Stop => Interval_Current + Interval_Offset);
-      Result_Pack.Insert_At_Tail(Result_List,Result_Data);
+      Result_Pack.Insert_At_Tail (Result_List, Result_Data);
       Interval_Current := Interval_Current + Interval_Offset;
       exit when Interval_Current > Interval_Last ;
    end loop;
@@ -47,49 +49,46 @@ begin
       Login    => "bnl",
       Password => "bnl");
    Sql.Start_Read_Write_Transaction (T);
+   Sql.Prepare
+     (Select_Back_Winners (Bet_Name),
+      "select DRY_RUNNERS.BACK_PRICE from " &
+      "DRY_MARKETS , DRY_RESULTS, DRY_RUNNERS where (" &
+      "  lower(MARKET_NAME) ~ '^[0-9][a-z]' or" &  -- start with digit-letter
+      "  lower(MARKET_NAME) ~ '^[a-z][0-9]' or" &  -- oResult_Dataletter-digit
+      "  lower(MARKET_NAME) like 'hp%' or " &
+      "  lower(MARKET_NAME) like 'hc%' or " &
+      "  lower(MARKET_NAME) like 'or%' or " &
+      "  lower(MARKET_NAME) like 'iv%'  " &
+      ")  " &
+      "and BSP_MARKET = 'Y' " &
+      "and lower(MARKET_NAME) <> 'plats'  " &
+      "and lower(MARKET_NAME) not like '% v %'  " &
+      "and lower(MARKET_NAME) not like '%forecast%'  " &
+      "and lower(MARKET_NAME) not like '%tbp%'  " &
+      "and lower(MARKET_NAME) not like '%challenge%'  " &
+      "and lower(MARKET_NAME) not like '%fc%'  " &
+      "and lower(MENU_PATH) not like '%daily win%'  " &
+      "and lower(MARKET_NAME) not like '%reverse%'  " &
+      "and lower(MARKET_NAME) not like '%plats%'  " &
+      "and lower(MARKET_NAME) not like '%place%'  " &
+      "and lower(MARKET_NAME) not like '%without%'  " &
+      "and EVENT_HIERARCHY like :ANIMAL " &
+      "and DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID " &
+      "and DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID " &
+      "and DRY_RESULTS.SELECTION_ID = DRY_RUNNERS.SELECTION_ID " &
+      "order by DRY_RUNNERS.BACK_PRICE ");
    case Animal is
       when Races.Hound  =>
-         Sql.Prepare
-           (Select_Back_Winners (Animal),
-            --               "select count(DRY_RUNNERS.*), DRY_RUNNERS.BACK_PRICE from " &
-            "select DRY_RUNNERS.BACK_PRICE from " &
-            "DRY_MARKETS , DRY_RESULTS, DRY_RUNNERS where (" &
-            "  lower(MARKET_NAME) ~ '^[0-9][a-z]' or" &  -- start with digit-letter
-            "  lower(MARKET_NAME) ~ '^[a-z][0-9]' or" &  -- oResult_Dataletter-digit
-            "  lower(MARKET_NAME) like 'hp%' or " &
-            "  lower(MARKET_NAME) like 'hc%' or " &
-            "  lower(MARKET_NAME) like 'or%' or " &
-            "  lower(MARKET_NAME) like 'iv%'  " &
-            ")  " &
-            "and BSP_MARKET = 'Y' " &
-            "and lower(MARKET_NAME) <> 'plats'  " &
-            "and lower(MARKET_NAME) not like '% v %'  " &
-            "and lower(MARKET_NAME) not like '%forecast%'  " &
-            "and lower(MARKET_NAME) not like '%tbp%'  " &
-            "and lower(MARKET_NAME) not like '%challenge%'  " &
-            "and lower(MARKET_NAME) not like '%fc%'  " &
-            "and lower(MENU_PATH) not like '%daily win%'  " &
-            "and lower(MARKET_NAME) not like '%reverse%'  " &
-            "and lower(MARKET_NAME) not like '%plats%'  " &
-            "and lower(MARKET_NAME) not like '%place%'  " &
-            "and lower(MARKET_NAME) not like '%without%'  " &
-            "and EVENT_HIERARCHY like '/4339/%' " &
---            "and EVENT_HIERARCHY like '/7/%' " &
-            "and DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID " &
-            "and DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID " &
-            "and DRY_RESULTS.SELECTION_ID = DRY_RUNNERS.SELECTION_ID " &
-            --                 "group by DRY_RUNNERS.BACK_PRICE " &
-            "order by DRY_RUNNERS.BACK_PRICE ");
+         Sql.Set (Select_Back_Winners (Races.Winner), "ANIMAL", "/4339/%");
       when Races.Horse  =>
-         raise Program_Error with "Horse not implemeted yet";
+         Sql.Set (Select_Back_Winners (Races.Winner), "ANIMAL", "/7/%");
    end case;
 
-   Sql.Open_Cursor(Select_Back_Winners (Races.Hound));
+   Sql.Open_Cursor (Select_Back_Winners (Races.Winner));
    Fetch_Loop : loop
-      Sql.Fetch (Select_Back_Winners (Races.Hound), Eos );
+      Sql.Fetch (Select_Back_Winners (Races.Winner), Eos );
       exit when Eos;
-      --      Sql.Get (Select_Back_Winners (Races.Hound), 1, Cnt );
-      Sql.Get (Select_Back_Winners (Races.Hound), 1, Price );
+      Sql.Get (Select_Back_Winners (Races.Winner), 1, Price );
       Total := Total + 1 ;
       Result_Pack.Get_First (Result_List, Result_Data, Eol);
       List_Loop : loop
@@ -102,14 +101,14 @@ begin
          Result_Pack.Get_Next (Result_List, Result_Data, Eol);
       end loop List_Loop;
    end loop Fetch_Loop;
-   Sql.Close_Cursor (Select_Back_Winners (Races.Hound));
+   Sql.Close_Cursor (Select_Back_Winners (Races.Winner));
    Sql.Commit (T);
    Sql.Close_Session;
    Result_Pack.Get_First (Result_List, Result_Data, Eol);
    loop
       exit when Eol;
-      Cur_Price := Result_Data.Start + 0.5*(Result_Data.Stop - Result_Data.Start);
-      Text_Io.Put(Cur_Price'Img);
+      Cur_Price := Result_Data.Start + 0.5 * (Result_Data.Stop - Result_Data.Start);
+      Text_Io.Put (Cur_Price'Img);
       Text_Io.Put (" ");
       Text_Io.Put (Result_Data.Start'Img);
       Text_Io.Put (" ");

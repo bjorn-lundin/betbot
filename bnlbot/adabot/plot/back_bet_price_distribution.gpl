@@ -5,8 +5,8 @@ set output "back_bet_price_distribution.png"
 
 set key off
 set style fill solid
-set yrange [1:120]
-set ytics 5
+set yrange [1:200]
+set ytics 10
 set ylabel "Antal"
 
 set title "Distribution vinnande odds hundar"

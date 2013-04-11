@@ -16,11 +16,15 @@ package Races is
 --     type Bet_Type_Type is (Lay, Back, Lay_Favorite);
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
-   type Graph_Type is (Daily, Weekly, Bi_Weekly, Quad_Weekly);
+   type Graph_Type is (Daily, Quad_Weekly);
 
-   type Variant_Type is (Normal, Max_1, Max_2, Max_3);
+   type Variant_Type is (Normal,
+                         Max_2,
+                         Max_3);
    for Variant_Type'Size use Integer_4'Size ;
-   for Variant_Type use (Normal => 0, Max_1 => 1, Max_2 => 2, Max_3 => 3);
+   for Variant_Type use (Normal => 0,
+                         Max_2  => 2,
+                         Max_3  => 3);
    function Variant is new Unchecked_Conversion(Variant_Type, Integer_4);
    function Variant is new Unchecked_Conversion(Integer_4, Variant_Type);
 
@@ -29,9 +33,15 @@ package Races is
    type Profit_Type is new Float_8;
    type Saldo_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
-   type Max_Daily_Loss_Type_Type is (Minus_800, Minus_500, Minus_100  );
+   type Max_Daily_Loss_Type_Type is (Minus_400,
+                                     Minus_300,
+                                     Minus_200 ,
+                                     Minus_100  );
    for Max_Daily_Loss_Type_Type'Size use Integer_4'Size ;
-   for Max_Daily_Loss_Type_Type use (Minus_800 => -800, Minus_500 => -500, Minus_100 => -100);
+   for Max_Daily_Loss_Type_Type use (Minus_400 => -400,
+                                     Minus_300 => -300,
+                                     Minus_200 => -200,
+                                     Minus_100 => -100);
    function Max_Daily_Loss is new Unchecked_Conversion(Max_Daily_Loss_Type_Type, Integer_4);
    function Max_Daily_Loss is new Unchecked_Conversion(Integer_4, Max_Daily_Loss_Type_Type);
 
