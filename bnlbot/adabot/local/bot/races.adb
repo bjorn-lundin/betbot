@@ -82,11 +82,11 @@ package body Races is
    begin
       Log ("Get_database_data start: ");
       Sql.Connect
-        (Host     => "sebjlun-deb",
+        (Host     => "localhost",
          Port     => 5432,
          Db_Name  => "betting",
          Login    => "bnl",
-         Password => "bnl");
+         Password => "BettingFotboll1$");
       Log ("connected to database");
       Sql.Start_Read_Write_Transaction (T);
 
