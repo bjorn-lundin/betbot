@@ -26,7 +26,7 @@ TMP2 := plot/back_bet_price_distribution.tmp
 UNAME := $(shell uname)
 
 ifeq ($(UNAME),Linux)
-  PSQL := /usr/bin/psql
+  PSQL := psql
   HOST := localhost
   SHOW_PNG := display
 endif
@@ -37,6 +37,12 @@ ifeq ($(UNAME),Darwin)
   SHOW_PNG := open
 endif
 
+#win-7
+ifeq ($(UNAME),MINGW32_NT-6.1)
+  PSQL := psql --username=bnl
+  HOST := 192.168.0.13
+  SHOW_PNG := 
+endif
 
 
 all: json_test adabot
@@ -57,8 +63,13 @@ balance_plot:
 	cat $(DAT) | grep -v "\-\-" > $(TMP)
 	cat $(TMP) > $(DAT)
 	rm $(TMP)
+ifneq ($(UNAME),MINGW32_NT-6.1)
 	cd plot && gnuplot balance.gpl
 	cd plot && $(SHOW_PNG) balance.png
+endif
+ifeq ($(UNAME),MINGW32_NT-6.1)
+	@echo Gnuplot not installed in windows
+endif
 
 
 .PHONY : back_bet_price_distribution
