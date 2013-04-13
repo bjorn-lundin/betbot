@@ -86,7 +86,7 @@ package body Races is
          Port     => 5432,
          Db_Name  => "betting",
          Login    => "bnl",
-         Password => "BettingFotboll1$");
+         Password => "bnl");
       Log ("connected to database");
       Sql.Start_Read_Write_Transaction (T);
 

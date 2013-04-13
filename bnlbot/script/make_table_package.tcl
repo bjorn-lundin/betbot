@@ -11,7 +11,8 @@
 # -----------------------------------
 
 #############################################################################
-set auto_path [linsert $auto_path 0 [file join ::$env(BETBOT_SCRIPT) tcl tcl_packages]]
+set auto_path [linsert $auto_path 0 [file join $env(BETBOT_SCRIPT) tcl_packages]]
+#puts $auto_path
 
 package require dom
 package require Repo_Utils
@@ -680,7 +681,8 @@ proc Print_Header_Spec {Name Type Node Columns Out_File} {
 proc Print_Withs_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
   puts $Out_File "with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;"
-  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Uniface_Request, Sql, Simple_List_Class;"
+#  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Uniface_Request, Sql, Simple_List_Class;"
+  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Sql, Simple_List_Class;"
   puts $Out_File ""
 }
 ##########################################################
@@ -691,7 +693,8 @@ proc Print_Package_Start_Spec {Name Type Node Columns Out_File} {
   set Upper_Name [Table_Caseing $Name]
 
   puts $Out_File "package Table\_$Mixed_Name is\n"
-  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar, Uniface_Request;\n"
+#  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar, Uniface_Request;\n"
+  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar;\n"
   puts $Out_File "  type Data_Type is record"
 
   set Columns [::dom::DOMImplementation selectNode $Node $::Column_Element_Name]
@@ -996,6 +999,7 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_Ud4_Functions_Spec {Name Type Node Columns Out_File} {
+  return
 #  puts $Out_File "[info level 0]"
   set Table_Name [string totitle $Name]
 
@@ -1026,6 +1030,7 @@ proc Print_Ud4_Functions_Spec {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_XML_Functions_Spec {Name Type Node Columns Out_File} {
+  return
 #  puts $Out_File "[info level 0]"
   set Table_Name [string totitle $Name]
   puts $Out_File ""
@@ -1063,14 +1068,15 @@ proc Print_Header_Body {Name Type Node Columns Out_File} {
 
 proc Print_Withs_Body {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
-  puts $Out_File "with Process_Io, General_Routines, Text_Io, Standard8, Cgi;"
+#  puts $Out_File "with Process_Io, General_Routines, Text_Io, Standard8, Cgi;"
+  puts $Out_File "with General_Routines, Text_Io;"
 #  if {[Is_S08_Table $Name]} {
     puts $Out_File "with Ada.Strings.Fixed;"
-    puts $Out_File "with Sax.Readers;              use Sax.Readers;"
-    puts $Out_File "with Input_Sources.File;       use Input_Sources.File;"
-    puts $Out_File "with Unicode.CES;"
-    puts $Out_File "with Unicode.Encodings;"
-    puts $Out_File "with Sax.Attributes;"
+#    puts $Out_File "with Sax.Readers;              use Sax.Readers;"
+#    puts $Out_File "with Input_Sources.File;       use Input_Sources.File;"
+#    puts $Out_File "with Unicode.CES;"
+#    puts $Out_File "with Unicode.Encodings;"
+#    puts $Out_File "with Sax.Attributes;"
     puts $Out_File ""
 #  }
 }
@@ -1608,7 +1614,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     #################################################################################
     puts $Out_File "  procedure Update(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+ #   puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
 
     puts $Out_File [Prepare_All_Columns Stm_Update "\"update $TABLE_NAME set \""  $Columns 1 0 0]
@@ -1627,7 +1633,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Insert(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+#   puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
@@ -1675,7 +1681,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Update_Withcheck(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+#    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
     puts $Out_File ""
     puts $Out_File [Prepare_All_Columns Stm_Update_With_Check "\"update $TABLE_NAME set \""  $Columns 1 1 0]
@@ -1752,6 +1758,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
+  return
 #  puts $Out_File "[info level 0]"
   set Table_Name [string totitle $Name]
   set TABLE_NAME [string toupper $Name]
@@ -1908,6 +1915,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
+  return
 #  puts $Out_File "[info level 0]"
 
   set Table_Name [string totitle $Name]
@@ -2228,8 +2236,8 @@ proc Create_Ada_Spec {Name Type Node Columns Out_File} {
   Print_Withs_Spec         $Name $Type $Node $Columns $Out_File
   Print_Package_Start_Spec $Name $Type $Node $Columns $Out_File
   Print_Def_Functions_Spec $Name $Type $Node $Columns $Out_File
-  Print_Ud4_Functions_Spec $Name $Type $Node $Columns $Out_File
-  Print_XML_Functions_Spec $Name $Type $Node $Columns $Out_File
+#  Print_Ud4_Functions_Spec $Name $Type $Node $Columns $Out_File
+#  Print_XML_Functions_Spec $Name $Type $Node $Columns $Out_File
   Print_Package_End_Spec   $Name $Type $Node $Columns $Out_File
 }
 ########################################################
@@ -2239,8 +2247,8 @@ proc Create_Ada_Body {Name Type Node Columns Out_File} {
   Print_Withs_Body         $Name $Type $Node $Columns $Out_File
   Print_Package_Start_Body $Name $Type $Node $Columns $Out_File
   Print_Def_Functions_Body $Name $Type $Node $Columns $Out_File
-  Print_Ud4_Functions_Body $Name $Type $Node $Columns $Out_File
-  Print_XML_Functions_Body $Name $Type $Node $Columns $Out_File
+#  Print_Ud4_Functions_Body $Name $Type $Node $Columns $Out_File
+#  Print_XML_Functions_Body $Name $Type $Node $Columns $Out_File
   Print_Package_End_Body   $Name $Type $Node $Columns $Out_File
 }
 

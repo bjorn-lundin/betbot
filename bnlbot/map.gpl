@@ -52,6 +52,9 @@ if (graph_type eq "biweekly"  ) set cbtics   9900,100,13600
 
 if (graph_type eq "quadweekly") set cbrange [9900:15000]
 if (graph_type eq "quadweekly") set cbtics   9900,150,15000
+
+if (graph_type eq "octaweekly") set cbrange [9900:15000]
+if (graph_type eq "octaweekly") set cbtics   9900,150,15000
 #####
 
 

@@ -16,7 +16,7 @@ package Races is
 --     type Bet_Type_Type is (Lay, Back, Lay_Favorite);
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
-   type Graph_Type is (Daily, Quad_Weekly);
+   type Graph_Type is (Daily, Quad_Weekly, Octa_Weekly);
 
    type Variant_Type is (Normal,
                          Max_2,

@@ -1,19 +1,19 @@
 ----[52, {
---'bsp_market': 'Y', 
---'market_type': 'O', 
---'event_hierarchy': '/4339/5385914/26919446/107364850', 
---'last_refresh': '1352229158491', 
---'market_id': '107364850', 
---'turning_in_play': 'N', 
---'menu_path': '\\Greyhounds\\BAGS kort\\Newc 6 nov', 
---'bet_delay': '0', 
---'exchange_id': '1', 
---'country_code': 'GBR', 
---'market_name': 'A7 480m', 
---'market_status': 'ACTIVE', 
---'event_date': datetime.datetime(2012, 11, 6, 19, 16), 
---'no_of_runners': 6, 
---'total_matched': 0.0, 
+--'bsp_market': 'Y',
+--'market_type': 'O',
+--'event_hierarchy': '/4339/5385914/26919446/107364850',
+--'last_refresh': '1352229158491',
+--'market_id': '107364850',
+--'turning_in_play': 'N',
+--'menu_path': '\\Greyhounds\\BAGS kort\\Newc 6 nov',
+--'bet_delay': '0',
+--'exchange_id': '1',
+--'country_code': 'GBR',
+--'market_name': 'A7 480m',
+--'market_status': 'ACTIVE',
+--'event_date': datetime.datetime(2012, 11, 6, 19, 16),
+--'no_of_runners': 6,
+--'total_matched': 0.0,
 --'no_of_winners': 1}],
 
 
@@ -31,8 +31,8 @@ create table dry_markets (
   market_name  varchar,
   market_status  varchar,
   event_date  timestamp,
-  no_of_runners  integer, 
-  total_matched  integer, 
+  no_of_runners  integer,
+  total_matched  integer,
   no_of_winners  integer,
   primary key(market_id)
 );
@@ -78,20 +78,20 @@ create table markets (
   market_name  varchar,
   market_status  varchar,
   event_date  timestamp,
-  no_of_runners  integer, 
-  total_matched  integer, 
+  no_of_runners  integer,
+  total_matched  integer,
   no_of_winners  integer,
-  home_team varchar, 
-  away_team varchar,  
-  ts timestamp,  
-  xml_soccer_id integer  
+  home_team varchar,
+  away_team varchar,
+  ts timestamp,
+  xml_soccer_id integer
    primary key(market_id)
   );
-  
---alter table MARKETS add column HOME_TEAM     varchar;  
+
+--alter table MARKETS add column HOME_TEAM     varchar;
 --alter table MARKETS add column AWAY_TEAM     varchar;
---alter table MARKETS add column TS            timestamp;  
---alter table MARKETS add column XML_SOCCER_ID integer;  
+--alter table MARKETS add column TS            timestamp;
+--alter table MARKETS add column XML_SOCCER_ID integer;
 
 
 --'marketId': market_id,
@@ -122,29 +122,29 @@ create table bets (
   full_market_name varchar,
   primary key (bet_id)
   );
-  
 
---alter table BETS add column bet_placed timestamp;  
---alter table BETS add column profit float;  
---alter table BETS add column bet_type varchar;  
---alter table BETS add column runner_name varchar;  
+
+--alter table BETS add column bet_placed timestamp;
+--alter table BETS add column profit float;
+--alter table BETS add column bet_type varchar;
+--alter table BETS add column runner_name varchar;
 --alter table BETS add column bet_won  boolean default null;
 
 
 create or replace view betinfo as
-select 
+select
   markets.market_id,
   markets.market_type,
   markets.menu_path,
   markets.market_name,
   markets.market_status,
-  markets.event_date,   
-  markets.bet_delay,  
+  markets.event_date,
+  markets.bet_delay,
   bets.bet_id,
-  bets.selection_id, 
-  bets.price, 
-  bets.code, 
-  bets.success, 
+  bets.selection_id,
+  bets.price,
+  bets.code,
+  bets.success,
   bets.size,
   bets.runner_name,
   bets.profit,
@@ -154,27 +154,27 @@ select
   bets.bet_won
 from markets, bets
 where markets.market_id = bets.market_id;
-  
-  
+
+
 
 
 create or replace view bet_with_commission as
 select * from
 (
 (
-select 
+select
   markets.market_id,
   markets.market_type,
   markets.menu_path,
   markets.market_name,
   markets.market_status,
-  markets.event_date,   
-  markets.bet_delay,  
+  markets.event_date,
+  markets.bet_delay,
   bets.bet_id,
-  bets.selection_id, 
-  bets.price, 
-  bets.code, 
-  bets.success, 
+  bets.selection_id,
+  bets.price,
+  bets.code,
+  bets.success,
   bets.size,
   bets.runner_name,
   0.95 * bets.profit as profit,
@@ -185,21 +185,21 @@ select
 from markets, bets
 where markets.market_id = bets.market_id
 and bets.profit >= 0.0
-) 
+)
 union (
-select 
+select
   markets.market_id,
   markets.market_type,
   markets.menu_path,
   markets.market_name,
   markets.market_status,
-  markets.event_date,   
-  markets.bet_delay,  
+  markets.event_date,
+  markets.bet_delay,
   bets.bet_id,
-  bets.selection_id, 
-  bets.price, 
-  bets.code, 
-  bets.success, 
+  bets.selection_id,
+  bets.price,
+  bets.code,
+  bets.success,
   bets.size,
   bets.runner_name,
   bets.profit,
@@ -210,14 +210,14 @@ select
 from markets, bets
 where markets.market_id = bets.market_id
 and bets.profit < 0.0
-) 
+)
 ) tmp
 
 
 
 
- 
-  
+
+
 create table teams (
   team_id integer,
   team_name varchar,
@@ -225,8 +225,8 @@ create table teams (
   Stadium varchar,
   Home_Page_URL varchar,
   WIKI_Link varchar,
-  primary key (team_id)  
-);  
+  primary key (team_id)
+);
 
 create sequence xml_soccer_id_serial;
 create table games (
@@ -295,17 +295,17 @@ and markets.market_id = 107390486
 ;
 
 create or replace view market_in_xml_feed as
-select 
+select
   markets.market_id,
   markets.market_name,
   home_aliases.team_id home_team_id,
-  away_aliases.team_id away_team_id, 
+  away_aliases.team_id away_team_id,
   home_aliases.team_alias home_team_alias,
   away_aliases.team_alias away_team_alias
-from  
-  markets, 
-  team_aliases home_aliases, 
-  team_aliases away_aliases, 
+from
+  markets,
+  team_aliases home_aliases,
+  team_aliases away_aliases,
   games
 where markets.home_team = home_aliases.team_alias
 and   markets.away_team = away_aliases.team_alias
@@ -340,12 +340,6 @@ create table score_statistics (
   primary key(id)
 );
 
-
-
-
-
-
-
 create table prospects (
   id    integer not null ,
   team_id    integer not null ,
@@ -356,37 +350,61 @@ create table prospects (
 );
 
 
-
-
-
-
-
 create or replace view time_first_goal as
-select 
+select
   time_in_game,
   count(time_in_game)
   from games_stats_uniq
   where (
-          ( home_goals = 0 and away_goals = 1 ) or 
+          ( home_goals = 0 and away_goals = 1 ) or
           ( home_goals = 1 and away_goals = 0 )
-        )  
+        )
   and time_in_game not in ( 'HT' , 'FT')
   group by time_in_game
   order by time_in_game::int
 ;
 
 
-
-
-
 create sequence bet_id_serial;
-
-
-
-
 create table balance (
   saldo     float not null ,
   eventdate timestamp without time zone,
   primary key(eventdate)
 );
+
+
+--- historic data, fdb = bfhistoric
+create sequence betfair_historic_data_pk_serial;
+create table history (
+  pk integer default nextval('betfair_historic_data_pk_serial'),
+  SPORTSID integer,
+  EVENTID integer,
+  SETTLEDDATE timestamp,
+  COUNTRY varchar,
+  FULLDESCRIPTION varchar,
+  COURSE varchar,
+  SCHEDULEDOFF timestamp,
+  EVENT varchar,
+  SELECTIONID integer,
+  SELECTION  varchar,
+  ODDS float,
+  NUMBERBETS integer,
+  VOLUMEMATCHED float,
+  LATESTTAKEN timestamp,
+  FIRSTTAKEN timestamp,
+  WINFLAG boolean,
+  INPLAY  varchar,
+  primary key (pk)
+);
+
+CREATE  INDEX betfair_historic_data_history_sportsid ON history (sportsid);
+CREATE  INDEX betfair_historic_data_history_eventid ON history (eventid );
+
+
+
+
+
+
+
+
 
