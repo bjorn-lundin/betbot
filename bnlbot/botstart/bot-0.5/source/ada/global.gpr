@@ -1,0 +1,93 @@
+project Global is
+
+--   Os_Architecture := external ("OS_ARCHITECTURE");
+   type Target_Type is ("lnx_x86", "win_x86", "mac_x64");
+--      ("aix_ppc", "lnx_x86", "win_x86");
+--   Target_Machine : Target_Type := Os_Architecture;
+   Target_Machine : Target_Type := "lnx_x86";
+
+--   type Data_Base_Type is ("ORACLE10", "ORACLE11", "SQLSERVER", "POSTGRESQL", "OCI");
+   type Data_Base_Type is ("POSTGRESQL");
+
+   Data_Base : Data_Base_Type := "POSTGRESQL";
+
+   Pg_Bin := external ("PG_BIN2", "/usr/lib");
+   Lib_Sattmate := external ("SATTMATE_A", "SATTMATE_A_not_set");
+   Application_Type := external ("APPLICATION_TYPE", "SATTMATE_A_not_set");
+
+-- AdaBotRoot
+   Abr := ".";
+
+-- -gnatwalK -  w - Activate warnings (w)
+--              a - activate all warnings  (a)
+--              l - for missing elaboration pragmas too
+--              K - but no warnings like '...is not modified, could be declared constant'
+-- -gnatvoUN    v - verbose
+--              o - Activate runtime overflow checks
+--              U - Tag all error messages with the unique string "error:"
+-- -gnat05      No warnings when Ada05 featues are used                 9.6-10368
+-- -gnatwW - Do not warn if we assume a string to start at index 1
+
+   Platform_Independent_Compiler_Switches := ("-g",
+                                              "-gnat05",
+                                              "-O0",
+                                              "-gnatwlaKW");
+
+   package Compiler is
+      case Target_Machine is
+         when "lnx_x86" =>
+            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+         when "win_x86" =>
+            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+         when "mac_x64" =>
+            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Linker is
+      case Data_Base is
+
+         when "POSTGRESQL" =>
+            case Target_Machine is
+               when "lnx_x86" =>
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+               when "win_x86" =>
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+               when "mac_x64" =>
+                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
+
+            end case;
+      end case;
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
+   end Builder;
+
+   for Object_Dir use "objects";
+
+--   Xml_Source := (Smsk & "/xml/xmlada/dom",
+--                  Smsk & "/xml/xmlada/sax",
+--                  Smsk & "/xml/xmlada/input_sources",
+--                  Smsk & "/xml/xmlada/schema",
+--                  Smsk & "/xml/xmlada/unicode",
+--                  Smsk & "/xml/xpath",
+--                  Smsk & "/xml/xpath/booch4xia");
+
+--   Aws_Source := (Smsk & "/utility/aws",
+--                  Smsk & "/utility/aws/choises",
+--                  Smsk & "/utility/aws/" & Target_Machine);
+
+   for Source_Dirs use ( "local", "global", "global/gnatcoll") ;
+
+   package Ide is
+      for Compiler_Command ("ada") use "gnatmake";
+      for Compiler_Command ("c") use "gcc";
+   end Ide;
+
+
+end Global;
