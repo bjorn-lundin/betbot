@@ -80,7 +80,7 @@ begin
       Sa_Graph_Type'Access,
       "-g:",
       Long_Switch => "--graph_type=",
-      Help        => "type of graph, 'daily', 'weekly' or 'biweekly'");
+      Help        => "type of graph, 'daily', 'quadweekly' or 'octaweekly'");
 
    Define_Switch
      (Config,
@@ -150,6 +150,8 @@ begin
          Global_Graph_Type := Races.Daily;
       elsif Sa_Graph_Type.all = "quadweekly" then
          Global_Graph_Type := Races.Quad_Weekly;
+      elsif Sa_Graph_Type.all = "octaweekly" then
+         Global_Graph_Type := Races.Octa_Weekly;
       else
          raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
       end if;
@@ -167,6 +169,7 @@ begin
    case Global_Graph_Type is
       when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
       when Races.Quad_Weekly => Global_Start_Date := Global_Stop_Date - (27, 0, 0, 0, 0);
+      when Races.Octa_Weekly => Global_Start_Date := Global_Stop_Date - (55, 0, 0, 0, 0);
    end case;
 
 
