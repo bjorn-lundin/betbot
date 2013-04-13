@@ -31,6 +31,8 @@ if AIS_TYPE == 'test':
     AIS_S3_DB_DUMP_BUCKET = 'ais-db-dump-test'
     AIS_S3_USER = ''
     AIS_S3_PASSWORD = ''
+    AIS_S3_SUPER_USER = ''
+    AIS_S3_SUPER_PASSWORD = ''
     EMAIL_LOG_FROM = '"Nonobet AIS" <ais@nonobet.com>'
     EMAIL_LOG_SENDLIST = ['joakim@birgerson.com']
     EMAIL_LOG_SUBJECT = 'TEST AIS EOD download report'
@@ -50,6 +52,8 @@ elif AIS_TYPE == 'prod':
     AIS_S3_DB_DUMP_BUCKET = 'ais-db-dump-prod'
     AIS_S3_USER = ''
     AIS_S3_PASSWORD = ''
+    AIS_S3_SUPER_USER = ''
+    AIS_S3_SUPER_PASSWORD = ''
     EMAIL_LOG_FROM = '"Nonobet AIS" <ais@nonobet.com>'
     EMAIL_LOG_SENDLIST = ['joakim@birgerson.com']
     EMAIL_LOG_SUBJECT = 'AIS EOD download report'
