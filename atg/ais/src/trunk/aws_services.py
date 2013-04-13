@@ -11,7 +11,6 @@ from boto.exception import S3CreateError
 from boto.exception import S3PermissionsError, S3ResponseError
 from boto import ses
 import logging
-import conf
 import util
 import os
 
@@ -198,61 +197,7 @@ def main():
     '''
     Test main loop of this module
     '''
-    import command_parser as cp
-    command = cp.parse()
-    print('Starting module as stand alone application')
-        
-    if cp.SAVE_FILES_IN_CLOUD in command:
-        print('Running ' + cp.SAVE_FILES_IN_CLOUD)
-        connection = get_aws_s3_connections(
-            host=conf.AIS_S3_HOST,
-            username=conf.AIS_S3_USER,
-            password=conf.AIS_S3_PASSWORD
-        )
-        bucket = init_aws_s3_bucket(
-            connection=connection,
-            bucketname=conf.AIS_S3_EOD_BUCKET
-        )
-        save_files_in_aws_s3_bucket(
-            from_datadir=conf.AIS_DATADIR, bucket=bucket
-        )
-        if connection:
-            connection.close()
-        
-    if cp.PRINT_VERSIONS_FROM_CLOUD in command:
-        print('Running ' + cp.PRINT_VERSIONS_FROM_CLOUD)
-        connection = get_aws_s3_connections(
-            host=conf.AIS_S3_HOST,
-            username=conf.AIS_S3_USER,
-            password=conf.AIS_S3_PASSWORD
-        )
-        bucket = init_aws_s3_bucket(
-            connection=connection,
-            bucketname=conf.AIS_S3_EOD_BUCKET
-        )
-        print_versions_from_aws_s3(bucket=bucket)
-        if connection:
-            connection.close()
-        
-    if cp.DELETE_BUCKET_IN_CLOUD in command:
-        print('Running ' + cp.DELETE_BUCKET_IN_CLOUD)
-        delete_aws_s3_bucket(
-            host=conf.AIS_S3_HOST,
-            username=conf.AIS_S3_USER,
-            password=conf.AIS_S3_PASSWORD
-        )
-        print('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
-    
-    if cp.EMAIL_LOG_STATS in command:
-        print('Running ' + cp.EMAIL_LOG_STATS)
-        send_ses_email(
-            username=conf.EMAIL_LOG_USERNAME,
-            password=conf.EMAIL_LOG_PASSWORD,
-            from_address=conf.EMAIL_LOG_FROM,
-            subject=conf.EMAIL_LOG_SUBJECT,
-            body='Test åäö ÅÄÖ',
-            send_list=conf.EMAIL_LOG_SENDLIST
-        )
-        
+    pass
+
 if __name__ == "__main__":
     main()
