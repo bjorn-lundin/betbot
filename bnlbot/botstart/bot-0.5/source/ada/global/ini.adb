@@ -10,7 +10,7 @@
 --------------------------------------------------------------------------------
 -- 6.7      21-AUG-1996  Henrik Dannberg
 --                       Original version (Settings)
--- 9.4-6643 03-Sep-2004  SNE 
+-- 9.4-6643 03-Sep-2004  SNE
 --                       New procedure LOAD with filename as input.
 --------------------------------------------------------------------------------
 -- 9.8-17902    30-Oct-2009  New name+use String+work on unix when dos-style inifile
@@ -23,7 +23,7 @@ with Unchecked_Deallocation;
 --with Sequential_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Directories;
-with General_Routines; 
+with General_Routines;
 with Ada.Command_Line;
 
 package body Ini is
@@ -63,7 +63,7 @@ package body Ini is
    Data: Data_Type;
 
   Current_Ini_File : Unbounded_String := Null_Unbounded_String; -- 9.8-17902
-  
+
   procedure Free is new Unchecked_Deallocation (String, String_Pointer_Type);
 
 
@@ -94,7 +94,7 @@ package body Ini is
       end if;
     end loop;
     return R(1..J-1);
-  end Collapse;    
+  end Collapse;
 
 
   function Find_Section (No: Positive) return Section_Pointer_Type is
@@ -111,7 +111,7 @@ package body Ini is
         if (No = Count) then
           return S;
         end if;
-        S := S.Next;       
+        S := S.Next;
       end loop;
     end if;
     return null;
@@ -128,7 +128,7 @@ package body Ini is
         if (Is_Match(Name,S.Name.all)) then
           return S;
         end if;
-        S := S.Next;       
+        S := S.Next;
       end loop;
     end if;
     return null;
@@ -184,7 +184,7 @@ package body Ini is
       S := new Section_Type'(new String'(Name), 0, null, null);
       if (Data.Section_List = null) then
         Data.Section_List := S;
-      else        
+      else
         P := Data.Section_List;
         while (P.Next /= null) loop
           P := P.Next;
@@ -210,7 +210,7 @@ package body Ini is
                                 null);
         if (S.Variable_List = null) then
           S.Variable_List := V;
-        else        
+        else
           P := S.Variable_List;
           while (P.Next /= null) loop
             P := P.Next;
@@ -249,7 +249,7 @@ package body Ini is
 
   -- V9.4-6643 Functionality moved to LOAD(FILE_NAME)
 --  procedure Load is    -- 9.8-17902 rewritten
---    Base_Name : String := Ada.Directories.Base_Name(Ada.Command_Line.Command_Name); 
+--    Base_Name : String := Ada.Directories.Base_Name(Ada.Command_Line.Command_Name);
 --    Target_Path : String := Ada.Directories.Containing_Directory(Ada.Command_Line.Command_Name);
 --    Ini_Name : String := Base_Name & ".ini";
 --    Target_Ini_Name : String := System_Services.Expand_File_Path(Target_Path & "/" & Ini_Name);
@@ -259,15 +259,15 @@ package body Ini is
 ----    Text_Io.Put_Line("Config_Ini_Name: '" & Config_Ini_Name & "'");
 --    if Ada.Directories.Exists(Target_Ini_Name) then -- first look where exe is
 --      Load(Target_Ini_Name);
---    elsif Ada.Directories.Exists(Config_Ini_Name) then -- then look in config dir 
+--    elsif Ada.Directories.Exists(Config_Ini_Name) then -- then look in config dir
 --      Load(Config_Ini_Name);
 --    else
---      raise No_Ini_File_Found with "Ini-file not found: '" & Target_Ini_Name & "'";    
---    end if;  
+--      raise No_Ini_File_Found with "Ini-file not found: '" & Target_Ini_Name & "'";
+--    end if;
 --  end Load;
 
   -- V9.4-6643 New procedure   -- 9.8-17902 rewritten
-  procedure Load (File_Name : in String) is 
+  procedure Load (File_Name : in String) is
     File           : Text_Io.File_Type;
     Line           : String(1..256);
     Last           : Integer;
@@ -275,41 +275,41 @@ package body Ini is
     Washed_File_Name : Unbounded_String := Null_Unbounded_String;
 --    procedure Convert_Ini_File_To_Unix_Format(Name     : in  String;
 --                                              New_Name : out Unbounded_String) is
---      type Byte is range 0..255; 
---      for Byte'Size use 8; 
---      package My_Byte_IO is new Sequential_IO(Byte);   
---      The_Byte : Byte; 
---      Input_File  : My_Byte_IO.File_Type;      
---      Output_File : My_Byte_IO.File_Type;      
+--      type Byte is range 0..255;
+--      for Byte'Size use 8;
+--      package My_Byte_IO is new Sequential_IO(Byte);
+--      The_Byte : Byte;
+--      Input_File  : My_Byte_IO.File_Type;
+--      Output_File : My_Byte_IO.File_Type;
 --      use System_Services;
 --    begin
 --      case Operating_System is
 --        when Unix =>
 --          My_Byte_Io.Open (File => Input_File,
---                           Mode => My_Byte_Io.In_File, 
---                           Name => Name); 
---          New_Name := To_Unbounded_String(General_Routines.Skip_All_Blanks(Name & "." & Integer'Image(Integer(Pid_Of_This_Process))));                           
+--                           Mode => My_Byte_Io.In_File,
+--                           Name => Name);
+--          New_Name := To_Unbounded_String(General_Routines.Skip_All_Blanks(Name & "." & Integer'Image(Integer(Pid_Of_This_Process))));
 --          My_Byte_Io.Create(File => Output_File,
---                            Mode => My_Byte_Io.Out_File, 
---                            Name => To_String(New_Name)); 
---          begin                 
+--                            Mode => My_Byte_Io.Out_File,
+--                            Name => To_String(New_Name));
+--          begin
 --            loop
 --              My_Byte_Io.Read(File => Input_File, Item => The_Byte);
 --              case The_Byte is
---                when 16#0D# => null; -- disregard Carriage Return       
---                when others => My_Byte_Io.Write(File => Output_File, Item => The_Byte); 
+--                when 16#0D# => null; -- disregard Carriage Return
+--                when others => My_Byte_Io.Write(File => Output_File, Item => The_Byte);
 --              end case;
 --            end loop;
 --          exception
 --            when My_Byte_Io.End_Error => null;
 --          end;
---          My_Byte_Io.Close(File => Input_File); 
---          My_Byte_Io.Close(File => Output_File);           
+--          My_Byte_Io.Close(File => Input_File);
+--          My_Byte_Io.Close(File => Output_File);
 --        when Win32 | Vax_Vms =>
---          New_Name := To_Unbounded_String(Name);                 
+--          New_Name := To_Unbounded_String(Name);
 --      end case;
 --    end Convert_Ini_File_To_Unix_Format;
-    
+
   begin
     Current_Ini_File := To_Unbounded_String(File_Name); --bnl 10.2
 --    Text_Io.Put_Line("Current_Ini_File: '" & To_String(Current_Ini_File) & "'");
@@ -326,7 +326,7 @@ package body Ini is
       end loop;
     exception
       when Text_Io.End_Error => null;
-    end;    
+    end;
     Text_Io.Close(File);  -- V8.2a
 --    if To_String(Washed_File_Name) /= File_Name then
 --      Ada.Directories.Delete_File(To_String(Washed_File_Name));
@@ -395,7 +395,7 @@ package body Ini is
   end Get_Variable_Name;
 
 
-  function Get_Value (Section : String; 
+  function Get_Value (Section : String;
                       Variable: String;
                       Default : String) return String is
     S: Section_Pointer_Type  := Find_Section (Section);
@@ -407,9 +407,9 @@ package body Ini is
       return V.Value.all;
     end if;
   end Get_Value;
-  
 
-  function Get_Value (Section : String; 
+
+  function Get_Value (Section : String;
                       Variable: String;
                       Default : Boolean) return Boolean is
     S: Section_Pointer_Type  := Find_Section (Section);
@@ -425,7 +425,7 @@ package body Ini is
   end Get_Value;
 
 
-  function Get_Value (Section : String; 
+  function Get_Value (Section : String;
                       Variable: String;
                       Default : Integer) return Integer is
     S: Section_Pointer_Type  := Find_Section (Section);
@@ -441,8 +441,8 @@ package body Ini is
   end Get_Value;
 
 
-  function Get_Enumeration_Value 
-             (Section : String; 
+  function Get_Enumeration_Value
+             (Section : String;
               Variable: String;
               Default : Enumeration_Type) return Enumeration_Type is
     S: Section_Pointer_Type  := Find_Section (Section);
@@ -493,7 +493,7 @@ package body Ini is
   end SET_VALUE;
 
 
-  procedure Set_Enumeration_Value (Section : String; 
+  procedure Set_Enumeration_Value (Section : String;
                                    Variable: String;
                                    Value   : Enumeration_Type) is
     S: Section_Pointer_Type := Find_Section (Section);

@@ -41,13 +41,12 @@ endif
 ifeq ($(UNAME),MINGW32_NT-6.1)
   PSQL := psql --username=bnl
   HOST := 192.168.0.13
-  SHOW_PNG := 
+  SHOW_PNG :=
 endif
 
+.PHONY : json_test adabot back_bet_price_distribution
 
 all: json_test adabot
-
-.PHONY : json_test simulator
 
 json_test :
 	gnatmake -P json_test
@@ -55,7 +54,6 @@ json_test :
 adabot :
 	gnatmake -P adabot
 
-.PHONY : balance_plot
 balance_plot:
 	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo from balance order by eventdate" betting > $(DAT)
 	cat $(DAT) | grep -v event > $(TMP)
@@ -67,12 +65,12 @@ ifneq ($(UNAME),MINGW32_NT-6.1)
 	cd plot && gnuplot balance.gpl
 	cd plot && $(SHOW_PNG) balance.png
 endif
+
 ifeq ($(UNAME),MINGW32_NT-6.1)
 	@echo Gnuplot not installed in windows
 endif
 
 
-.PHONY : back_bet_price_distribution
 back_bet_price_distribution:
 #	$(PSQL) -h $(HOST) --command="select count(DRY_RUNNERS.*), DRY_RUNNERS.BACK_PRICE from DRY_MARKETS , DRY_RESULTS, DRY_RUNNERS where ( lower(MARKET_NAME) ~ '^[0-9][a-z]' or lower(MARKET_NAME) ~ '^[a-z][0-9]' or lower(MARKET_NAME) like 'hp%' or lower(MARKET_NAME) like 'hc%' or   lower(MARKET_NAME) like 'or%' or    lower(MARKET_NAME) like 'iv%' ) and BSP_MARKET = 'Y' and lower(MARKET_NAME) not like '%% v %%' and lower(MARKET_NAME) not like '%%forecast%%' and lower(MARKET_NAME) not like '%%tbp%%' and lower(MARKET_NAME) not like '%%challenge%%' and lower(MARKET_NAME) not like '%%fc%%' and lower(MENU_PATH) not like '%%daily win%%' and lower(MARKET_NAME) not like '%%reverse%%' and lower(MARKET_NAME) not like '%%plats%%' and lower(MARKET_NAME) not like '%%place%%' and lower(MARKET_NAME) not like '%%without%%' and EVENT_HIERARCHY like '/4339/%' and DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID and DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID and DRY_RESULTS.SELECTION_ID = DRY_RUNNERS.SELECTION_ID group by DRY_RUNNERS.BACK_PRICE order by DRY_RUNNERS.BACK_PRICE " betting > $(DAT2)
 #	cat $(DAT2) | grep -v event > $(TMP2)
