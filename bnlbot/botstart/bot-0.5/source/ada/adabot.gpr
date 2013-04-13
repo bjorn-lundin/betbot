@@ -7,11 +7,11 @@ project Adabot is
 
    AL    := Global.Abr & "/local";
 
-   for Exec_Dir use Global.Abr & "/exe"  ;
+   for Exec_Dir use "../../target/bin"  ;
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("simulator.adb",
-                 "dry_runner_mover.adb", 
+                 "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
                  "ini_reader.adb");
 
