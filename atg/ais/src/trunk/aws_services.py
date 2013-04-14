@@ -136,13 +136,15 @@ def print_versions_from_aws_s3(bucket=None):
         print('Version etag: ' + version.etag)
         print('Version md5: ' + str(version.md5))
 
-def delete_aws_s3_bucket(host=None, username=None, password=None):
+def delete_aws_s3_bucket(host=None):
     '''
     Deletes a bucket including versions if they exist
     '''
-    bucket_name = raw_input('Name of bucket to delete: ')
+    bucketname = raw_input('Name of bucket to delete: ')
+    username = raw_input('Access Key Id: ')
+    password = raw_input('Secret Access Key: ')
     verify = raw_input('Delete bucket: ' + 
-                       bucket_name + '? (y/n): ')
+                       bucketname + '? (y/n): ')
     verify = verify.strip().lower()
     if verify not in ("y", "yes"):
         log_msg = 'Bucket deletion aborted, exiting application'
@@ -157,7 +159,7 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
     )
     
     try:
-        bucket = connection.get_bucket(bucket_name, validate=True)
+        bucket = connection.get_bucket(bucketname, validate=True)
     
     except (BotoClientError, S3ResponseError) as e:
         LOG.exception('Exiting application')
@@ -175,7 +177,7 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
             print(e)
             exit(1)
     try:
-        log_msg = 'Deleting bucket ' + bucket_name
+        log_msg = 'Deleting bucket ' + bucketname
         print(log_msg)
         LOG.info(log_msg)
         bucket.delete()
