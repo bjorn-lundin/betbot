@@ -8,6 +8,9 @@ import logging
 import datetime
 import os.path
 import hashlib
+import errno
+import subprocess as sp
+import aws_services
 
 LOG = logging.getLogger('AIS')
 
@@ -167,7 +170,15 @@ def file_list_md5(dir_path=None):
         for file_path in file_list
     ]
     return file_md5_list
-    
+
+def create_directories(dirs=None):
+    for cdir in dirs:
+        try:
+            os.makedirs(cdir)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+
 #######################################################
 # AIS struct and date/time conversions                #
 #######################################################
@@ -246,3 +257,100 @@ def track_id_to_struct(client, track_id):
     struct = client.factory.create('ns3:TrackKey')
     struct['trackId'] = track_id
     return struct
+
+#######################################################
+# Database handling                                   #
+#######################################################
+def save_db_dump_in_cloud(dbname=None, dumpdir=None, bucketname=None, 
+                          host=None, username=None, password=None):
+    '''
+    Run commands to create db dump directory and generating 
+    a db dump into it. Finally the dump is uploaded to the cloud.
+    '''
+    create_directories(dirs=[dumpdir])
+    chmod_bin = '/bin/chmod'
+    sudo_bin = '/usr/bin/sudo'
+    su_bin = '/bin/su'
+    pg_dump_bin = '/usr/bin/pg_dump'
+    db_superuser = 'postgres'
+    chmod_command = [chmod_bin, '777', dumpdir]
+    proc = sp.Popen(chmod_command, stdout=sp.PIPE, stderr=sp.PIPE)
+    error = proc.communicate()[1]
+    filepath = None
+    if not error:
+        filepath = os.path.join(dumpdir, dbname + '.dmp')
+        filepath = os.path.normpath(filepath)
+        dump_command = [
+            sudo_bin, su_bin, '-', '-c',
+            pg_dump_bin + ' ' + dbname + '>' + \
+            filepath, db_superuser
+        ]
+        proc = sp.Popen(dump_command, stdout=sp.PIPE, stderr=sp.PIPE)
+        error = proc.communicate()[1]
+        if error:
+            LOG.error(
+                'Need sudo rights without password.\n' +
+                'E.g. "ubuntu ALL=(ALL) NOPASSWD:ALL" in /etc/sudoers. ' +
+                'Use command visudo.'
+            )
+            LOG.error(error)
+    else:
+        LOG.error(error)
+    if not error:
+        aws_services.save_files_in_aws_s3_bucket(
+            sourcefiles=[filepath],
+            bucketname=bucketname,
+            versioning=False,
+            replace=True,
+            host=host,
+            username=username,
+            password=password
+        )
+
+#######################################################
+# Email (SMTP) handling                               #
+#######################################################
+def email_log_stats_and_errors(logdir=None, logfile=None, datadir=None,
+                               subject=None, username=None, password=None,
+                               from_address=None, send_list=None):
+    '''
+    Send an email after e.g. EOD download with stats 
+    and errors if any.
+    '''
+    curr_date = date_to_string2(get_current_date())
+    logfile_curr = {'path':logdir, 'filename':logfile}
+    log = read_file(file_name_dict=logfile_curr)
+
+    # If logging framework has rotated logs (created history) during last run,
+    # we have to look in '.1' as well
+    logfile_hist = {'path':logdir, 'filename':logfile + '.1'}
+    log_hist = read_file(file_name_dict=logfile_hist)
+
+    log_collection = []
+    if log_hist:
+        log_collection.append(log_hist)
+    log_collection.append(log)
+    write_count = 0
+    error_count = 0
+    for log_content in log_collection:
+        for row in log_content.split('\n'):
+            if curr_date in row:
+                if 'Writing' in row:
+                    write_count += 1
+                if 'ERROR' in row:
+                    error_count += 1
+    nbr_of_data_files = len(list_files(datadir))
+    subject = subject + ' ' + curr_date
+    body = 'Number of written files: %d' % (write_count)
+    body += '\n'
+    body += 'Number of errors: %d' % (error_count)
+    body += '\n'
+    body += 'Total number of data files: %d' % (nbr_of_data_files)
+    aws_services.send_ses_email(
+        username=username,
+        password=password,
+        from_address=from_address,
+        subject=subject,
+        body=body,
+        send_list=send_list
+    )

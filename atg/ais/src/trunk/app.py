@@ -7,7 +7,6 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 import os
 import command_parser as cp
-import errno
 import conf
 import logging.handlers
 import ais
@@ -15,7 +14,6 @@ import db
 import util
 import time
 import aws_services
-import subprocess as sp
 
 # Make sure this application runs under
 # tz CET / Europe/Stockholm
@@ -24,14 +22,9 @@ if time.tzname[0] != 'CET':
     time.tzset()
 
 LOG = logging.getLogger('AIS')
-
-CREATE_DIRS = [conf.AIS_LOGDIR, conf.AIS_DATADIR, conf.AIS_METADIR]
-for cdir in CREATE_DIRS:
-    try:
-        os.makedirs(cdir)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
+util.create_directories(
+    dirs=[conf.AIS_LOGDIR, conf.AIS_DATADIR, conf.AIS_METADIR]
+)
 
 def init_logging():
     '''
@@ -52,99 +45,6 @@ def init_logging():
     
     suds_log = logging.getLogger('suds')
     suds_log.setLevel(logging.CRITICAL)
-    
-def email_log_stats_and_errors():
-    '''
-    Send an email after e.g. EOD download with stats 
-    and errors if any.
-    '''
-    curr_date = util.date_to_string2(util.get_current_date())
-    logfile = {'path':conf.AIS_LOGDIR, 'filename':conf.AIS_LOGFILE}
-    log = util.read_file(file_name_dict=logfile)
-
-    # If logging framework has rotated logs (created history) during last run,
-    # we have to look in '.1' as well
-    logfile_hist = {'path':conf.AIS_LOGDIR, 'filename':conf.AIS_LOGFILE + '.1'}
-    log_hist = util.read_file(file_name_dict=logfile_hist)
-
-    log_collection = []
-    if log_hist:
-        log_collection.append(log_hist)
-    log_collection.append(log)
-    write_count = 0
-    error_count = 0
-    for log_content in log_collection:
-        for row in log_content.split('\n'):
-            if curr_date in row:
-                if 'Writing' in row:
-                    write_count += 1
-                if 'ERROR' in row:
-                    error_count += 1
-    nbr_of_data_files = len(util.list_files(conf.AIS_DATADIR))
-    subject = conf.EMAIL_LOG_SUBJECT + ' ' + curr_date
-    body = 'Number of written files: %d' % (write_count)
-    body += '\n'
-    body += 'Number of errors: %d' % (error_count)
-    body += '\n'
-    body += 'Total number of data files: %d' % (nbr_of_data_files)
-    aws_services.send_ses_email(
-        username=conf.EMAIL_LOG_USERNAME,
-        password=conf.EMAIL_LOG_PASSWORD,
-        from_address=conf.EMAIL_LOG_FROM,
-        subject=subject,
-        body=body,
-        send_list=conf.EMAIL_LOG_SENDLIST
-    )
-
-def save_db_dump_in_cloud(dbname=None, dumpdir=None, bucketname=None, 
-                          host=None, username=None, password=None):
-    '''
-    Run commands to create db dump directory and generating 
-    a db dump into it. Finally the dump is uploaded to the cloud.
-    '''
-    try:
-        os.makedirs(dumpdir)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            LOG.exception()
-    chmod_bin = '/bin/chmod'
-    sudo_bin = '/usr/bin/sudo'
-    su_bin = '/bin/su'
-    pg_dump_bin = '/usr/bin/pg_dump'
-    db_superuser = 'postgres'
-    chmod_command = [chmod_bin, '777', dumpdir]
-    proc = sp.Popen(chmod_command, stdout=sp.PIPE, stderr=sp.PIPE)
-    error = proc.communicate()[1]
-    filepath = None
-    if not error:
-        filepath = os.path.join(dumpdir, dbname + '.dmp')
-        filepath = os.path.normpath(filepath)
-        dump_command = [
-            sudo_bin, su_bin, '-', '-c',
-            pg_dump_bin + ' ' + dbname + '>' + \
-            filepath, db_superuser
-        ]
-        proc = sp.Popen(dump_command, stdout=sp.PIPE, stderr=sp.PIPE)
-        error = proc.communicate()[1]
-        if error:
-            LOG.error(
-                'Need sudo rights without password.\n' +
-                'E.g. "ubuntu ALL=(ALL) NOPASSWD:ALL" in /etc/sudoers. ' +
-                'Use command visudo.'
-            )
-            LOG.error(error)
-    else:
-        LOG.error(error)
-    if not error:
-        aws_services.save_files_in_aws_s3_bucket(
-            sourcefiles=[filepath],
-            bucketname=bucketname,
-            versioning=False,
-            replace=True,
-            host=host,
-            username=username,
-            password=password
-        )
 
 def main():
     '''
@@ -214,14 +114,23 @@ def main():
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
-            
+
     if cp.EMAIL_LOG_STATS in command:
         LOG.info('Running ' + cp.EMAIL_LOG_STATS)
-        email_log_stats_and_errors()
+        util.email_log_stats_and_errors(
+            logdir=conf.AIS_LOGDIR,
+            logfile=conf.AIS_LOGFILE,
+            datadir=conf.AIS_DATADIR,
+            subject=conf.EMAIL_LOG_SUBJECT,
+            username=conf.EMAIL_LOG_USERNAME,
+            password=conf.EMAIL_LOG_PASSWORD,
+            from_address=conf.EMAIL_LOG_FROM,
+            send_list=conf.EMAIL_LOG_SENDLIST
+        )
 
     if cp.SAVE_DB_DUMP_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_DB_DUMP_IN_CLOUD)
-        save_db_dump_in_cloud(
+        util.save_db_dump_in_cloud(
             dbname=conf.AIS_DB_NAME,
             dumpdir=conf.AIS_DBDUMPDIR,
             bucketname=conf.AIS_S3_DB_DUMP_BUCKET,
