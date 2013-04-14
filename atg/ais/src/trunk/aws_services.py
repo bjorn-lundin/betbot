@@ -45,8 +45,8 @@ def init_aws_s3_bucket(connection=None, bucketname=None, versioning=True):
     createbucket = False
     try:
         connection.get_bucket(bucketname)
-    except (BotoClientError, S3ResponseError) as e:
-        if hasattr(e, 'status') and e.status == 404: # Not Found
+    except (BotoClientError, S3ResponseError) as exception:
+        if hasattr(exception, 'status') and exception.status == 404: # Not Found
             createbucket = True
         else:
             LOG.exception('Exiting application')
@@ -62,7 +62,11 @@ def init_aws_s3_bucket(connection=None, bucketname=None, versioning=True):
             if versioning:
                 LOG.info('Enabling versioning on S3 bucket ' + bucketname)
                 bucket.configure_versioning(versioning)
-        except (S3ResponseError, S3CreateError, S3PermissionsError) as e:
+        except (
+            S3ResponseError,
+            S3CreateError,
+            S3PermissionsError
+        ) as exception:
             LOG.exception('Exiting application')
             exit(1)
     else:
@@ -75,7 +79,11 @@ def init_aws_s3_bucket(connection=None, bucketname=None, versioning=True):
                         version_status['Versioning'] != 'Enabled':
                     LOG.info('Enabling versioning on S3 bucket ' + bucketname)
                     bucket.configure_versioning(versioning)
-        except (S3ResponseError, S3CreateError, S3PermissionsError) as e:
+        except (
+            S3ResponseError,
+            S3CreateError,
+            S3PermissionsError
+        ) as exception:
             LOG.exception('Exiting application')
             exit(1)
     return bucket
@@ -161,9 +169,9 @@ def delete_aws_s3_bucket(host=None):
     try:
         bucket = connection.get_bucket(bucketname, validate=True)
     
-    except (BotoClientError, S3ResponseError) as e:
+    except (BotoClientError, S3ResponseError) as exception:
         LOG.exception('Exiting application')
-        print(e)
+        print(exception)
         exit(1)
     
     for version in bucket.list_versions():
@@ -172,18 +180,18 @@ def delete_aws_s3_bucket(host=None):
                 version.name,
                 version_id=version.version_id
             )
-        except (BotoClientError, S3ResponseError) as e:
+        except (BotoClientError, S3ResponseError) as exception:
             LOG.exception('Exiting application')
-            print(e)
+            print(exception)
             exit(1)
     try:
         log_msg = 'Deleting bucket ' + bucketname
         print(log_msg)
         LOG.info(log_msg)
         bucket.delete()
-    except (BotoClientError, S3ResponseError) as e:
+    except (BotoClientError, S3ResponseError) as exception:
         LOG.exception('Exiting application')
-        print(e)
+        print(exception)
         exit(1)
 
 def get_aws_ses_connections(username=None, password=None):
