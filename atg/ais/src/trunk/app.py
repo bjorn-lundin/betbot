@@ -96,13 +96,14 @@ def email_log_stats_and_errors():
         send_list=conf.EMAIL_LOG_SENDLIST
     )
 
-def save_db_dump_in_cloud(db_name=None, dump_dir=None, bucket=None):
+def save_db_dump_in_cloud(dbname=None, dumpdir=None, bucketname=None, 
+                          host=None, username=None, password=None):
     '''
-    Run commands to create db dump directory and
-    generating a db dump into it.
+    Run commands to create db dump directory and generating 
+    a db dump into it. Finally the dump is uploaded to the cloud.
     '''
     try:
-        os.makedirs(dump_dir)
+        os.makedirs(dumpdir)
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             LOG.exception()
@@ -111,17 +112,17 @@ def save_db_dump_in_cloud(db_name=None, dump_dir=None, bucket=None):
     su_bin = '/bin/su'
     pg_dump_bin = '/usr/bin/pg_dump'
     db_superuser = 'postgres'
-    chmod_command = [chmod_bin, '777', dump_dir]
+    chmod_command = [chmod_bin, '777', dumpdir]
     proc = sp.Popen(chmod_command, stdout=sp.PIPE, stderr=sp.PIPE)
     error = proc.communicate()[1]
-    file_path = None
+    filepath = None
     if not error:
-        file_path = os.path.join(dump_dir, db_name + '.dmp')
-        file_path = os.path.normpath(file_path)
+        filepath = os.path.join(dumpdir, dbname + '.dmp')
+        filepath = os.path.normpath(filepath)
         dump_command = [
             sudo_bin, su_bin, '-', '-c',
-            pg_dump_bin + ' ' + db_name + '>' + \
-            file_path, db_superuser
+            pg_dump_bin + ' ' + dbname + '>' + \
+            filepath, db_superuser
         ]
         proc = sp.Popen(dump_command, stdout=sp.PIPE, stderr=sp.PIPE)
         error = proc.communicate()[1]
@@ -135,10 +136,14 @@ def save_db_dump_in_cloud(db_name=None, dump_dir=None, bucket=None):
     else:
         LOG.error(error)
     if not error:
-        aws_services.save_file_in_aws_s3_bucket(
-            file_path=file_path,
-            bucket=bucket,
-            replace=True
+        aws_services.save_files_in_aws_s3_bucket(
+            sourcefiles=[filepath],
+            bucketname=bucketname,
+            versioning=False,
+            replace=True,
+            host=host,
+            username=username,
+            password=password
         )
 
 def main():
@@ -201,20 +206,14 @@ def main():
     
     if cp.SAVE_FILES_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
-        connection = aws_services.get_aws_s3_connections(
+        aws_services.save_files_in_aws_s3_bucket(
+            sourcefiles=util.list_files_with_path(
+                dir_path=conf.AIS_DATADIR),
+            bucketname=conf.AIS_S3_EOD_BUCKET,
             host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
-        bucket = aws_services.init_aws_s3_bucket(
-            connection=connection,
-            bucketname=conf.AIS_S3_EOD_BUCKET
-        )
-        aws_services.save_files_in_aws_s3_bucket(
-            from_datadir=conf.AIS_DATADIR, bucket=bucket
-        )
-        if connection:
-            connection.close()
             
     if cp.EMAIL_LOG_STATS in command:
         LOG.info('Running ' + cp.EMAIL_LOG_STATS)
@@ -222,23 +221,14 @@ def main():
 
     if cp.SAVE_DB_DUMP_IN_CLOUD in command:
         LOG.info('Running ' + cp.SAVE_DB_DUMP_IN_CLOUD)
-        connection = aws_services.get_aws_s3_connections(
+        save_db_dump_in_cloud(
+            dbname=conf.AIS_DB_NAME,
+            dumpdir=conf.AIS_DBDUMPDIR,
+            bucketname=conf.AIS_S3_DB_DUMP_BUCKET,
             host=conf.AIS_S3_HOST,
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
-        bucket = aws_services.init_aws_s3_bucket(
-            connection=connection,
-            bucketname=conf.AIS_S3_DB_DUMP_BUCKET,
-            versioning=False
-        )
-        save_db_dump_in_cloud(
-            db_name=conf.AIS_DB_NAME,
-            dump_dir=conf.AIS_DBDUMPDIR,
-            bucket=bucket
-        )
-        if connection:
-            connection.close()
     
     if cp.DELETE_BUCKET_IN_CLOUD in command:
         LOG.info('Running ' + cp.DELETE_BUCKET_IN_CLOUD)

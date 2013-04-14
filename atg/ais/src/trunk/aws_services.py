@@ -7,11 +7,10 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 from boto.s3.connection import S3Connection, Location
 from boto.s3.key import Key
-from boto.exception import S3CreateError
+from boto.exception import BotoClientError, S3CreateError
 from boto.exception import S3PermissionsError, S3ResponseError
 from boto import ses
 import logging
-import util
 import os
 
 LOG = logging.getLogger('AIS')
@@ -43,64 +42,85 @@ def init_aws_s3_bucket(connection=None, bucketname=None, versioning=True):
     be created.
     '''
     bucket = None
-    if not connection.lookup(bucketname):
+    createbucket = False
+    try:
+        connection.get_bucket(bucketname)
+    except (BotoClientError, S3ResponseError) as e:
+        if hasattr(e, 'status') and e.status == 404: # Not Found
+            createbucket = True
+        else:
+            LOG.exception('Exiting application')
+            exit(1)
+
+    if createbucket:        
         LOG.info('Creating S3 bucket ' + bucketname)
         try:
-            bucket = connection.create_bucket(bucketname, location=Location.EU)
-        except S3CreateError:
-            LOG.exception('Failed to create bucket ' + bucketname)
-        if versioning:
-            LOG.info('Enabling versioning on S3 bucket ' + bucketname)
-            bucket.configure_versioning(versioning)
-    else:
-        LOG.info('S3 bucket ' + bucketname + ' exist')
-        bucket = connection.get_bucket(bucketname, validate=False)
-        if versioning:
-            version_status = bucket.get_versioning_status()
-            if len(version_status) == 0 or \
-                    version_status['Versioning'] != 'Enabled':
+            bucket = connection.create_bucket(
+                bucketname, 
+                location=Location.EU
+            )
+            if versioning:
                 LOG.info('Enabling versioning on S3 bucket ' + bucketname)
                 bucket.configure_versioning(versioning)
+        except (S3ResponseError, S3CreateError, S3PermissionsError) as e:
+            LOG.exception('Exiting application')
+            exit(1)
+    else:
+        LOG.info('S3 bucket ' + bucketname + ' exist')
+        try:
+            bucket = connection.get_bucket(bucketname, validate=False)
+            if versioning:
+                version_status = bucket.get_versioning_status()
+                if len(version_status) == 0 or \
+                        version_status['Versioning'] != 'Enabled':
+                    LOG.info('Enabling versioning on S3 bucket ' + bucketname)
+                    bucket.configure_versioning(versioning)
+        except (S3ResponseError, S3CreateError, S3PermissionsError) as e:
+            LOG.exception('Exiting application')
+            exit(1)
     return bucket
 
-def save_files_in_aws_s3_bucket(from_datadir=None, bucket=None, replace=False):
+def save_files_in_aws_s3_bucket(sourcefiles=None, bucketname=None, 
+                                versioning=True, replace=False,
+                                host=None, username=None, password=None):
     '''
-    Save files in directory into AWS S3 bucket.
+    Save a list of files into AWS S3 bucket. NOTE! Using the md5 parameter
+    when saving will ensure data integrity during file transfer. BOTO 
+    documentation say something else though.
     '''
-    local_files = util.list_files_with_path(dir_path=from_datadir)
-    remote_files = []
-    bucket_keys = bucket.list()
-    for key in bucket_keys:
-        remote_files.append(key.name)
-    for file_path in local_files:
-        file_name = os.path.basename(file_path)
-        if file_name not in remote_files:
-            save_file_in_aws_s3_bucket(
-                file_path=file_path,
-                bucket=bucket,
-                replace=replace
-            )
-
-def save_file_in_aws_s3_bucket(file_path=None, bucket=None, replace=False):
-    '''
-    Save file referenced by file into AWS S3 bucket. NOTE! Using the md5
-    parameter when saving will ensure data integrity during file transfer. 
-    BOTO documentation say something else though.
-    '''
-    file_name = os.path.basename(file_path)
-    key = Key(bucket)
-    key.key = file_name
-    file_md5 = key.compute_md5(open(file_path, 'rb'))
-    try:
-        LOG.info('Uploading ' + file_name + ' to ' + bucket.name)
-        key.set_contents_from_filename(
-            filename=file_path,
-            replace=replace,
-            md5=file_md5
-        )
-    except S3ResponseError:
-        LOG.exception('Failed saving file ' + file_name + 
-                      ' to S3 bucket ' + bucket.name)
+    connection = get_aws_s3_connections(
+        host=host,
+        username=username,
+        password=password
+    )
+    bucket = init_aws_s3_bucket(
+        connection=connection,
+        bucketname=bucketname,
+        versioning=versioning
+    )
+    targetfiles = []
+    bucketkeys = bucket.list()
+    for key in bucketkeys:
+        targetfiles.append(key.name)
+    for filepath in sourcefiles:
+        filename = os.path.basename(filepath)
+        if filename not in targetfiles:
+            key = Key(bucket)
+            key.key = filename
+            file_md5 = key.compute_md5(open(filepath, 'rb'))
+            try:
+                LOG.info('Uploading ' + filename + ' to ' + bucket.name)
+                key.set_contents_from_filename(
+                    filename=filepath,
+                    replace=replace,
+                    md5=file_md5
+                )
+            except S3ResponseError:
+                LOG.exception('Failed saving file ' + filename + 
+                              ' to S3 bucket ' + bucket.name)
+            finally:
+                if connection:
+                    connection.close()
 
 def print_versions_from_aws_s3(bucket=None):
     '''
@@ -120,7 +140,6 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
     '''
     Deletes a bucket including versions if they exist
     '''
-    print()
     bucket_name = raw_input('Name of bucket to delete: ')
     verify = raw_input('Delete bucket: ' + 
                        bucket_name + '? (y/n): ')
@@ -139,30 +158,31 @@ def delete_aws_s3_bucket(host=None, username=None, password=None):
     
     try:
         bucket = connection.get_bucket(bucket_name, validate=True)
-    except S3ResponseError:
-        log_msg = 'Bucket ' + bucket_name + ' does not exist'
-        print(log_msg)
-        LOG.info(log_msg)
-        return
+    
+    except (BotoClientError, S3ResponseError) as e:
+        LOG.exception('Exiting application')
+        print(e)
+        exit(1)
+    
     for version in bucket.list_versions():
         try:
             bucket.delete_key(
                 version.name,
                 version_id=version.version_id
             )
-        except S3ResponseError:
-            log_msg = 'Could not delete version'
-            print(log_msg)
-            LOG.info(log_msg)
+        except (BotoClientError, S3ResponseError) as e:
+            LOG.exception('Exiting application')
+            print(e)
+            exit(1)
     try:
         log_msg = 'Deleting bucket ' + bucket_name
         print(log_msg)
         LOG.info(log_msg)
         bucket.delete()
-    except S3ResponseError:
-        log_msg = 'Could not delete bucket ' + bucket_name
-        print(log_msg)
-        LOG.info(log_msg)
+    except (BotoClientError, S3ResponseError) as e:
+        LOG.exception('Exiting application')
+        print(e)
+        exit(1)
 
 def get_aws_ses_connections(username=None, password=None):
     '''
