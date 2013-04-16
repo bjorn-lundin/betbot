@@ -37,22 +37,26 @@ procedure Bf_History_Cleaner is
 
 begin
    Define_Switch
-     (Config,
-      Sa_Date'access,
-      "-d:",
+     (Config      => Config,
+      Output      => Sa_Date'access,
+      Switch      => "-d:",
       Long_Switch => "--date=",
       Help        => "when the data move starts yyyy-mm-dd");
 
    Define_Switch
-     (Config,
-      I_Num_Days'access,
-      "-n:",
+     (Config      => Config,
+      Output      => I_Num_Days'access,
+      Initial     =>  0,
+      Switch      => "-n:",
       Long_Switch => "--num_days=",
       Help        => "days to move");
 
-
    Getopt (Config);  -- process the command line
 
+   if Sa_Date.all = "" or else I_Num_Days = 0 then
+     Display_Help (Config);
+     return ;
+   end if;
 
    Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "00:00:00:000");
    Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "23:59:59:999");
