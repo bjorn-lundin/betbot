@@ -127,8 +127,6 @@ class Betfair_Historic_Data_Importer(object):
 #  WINFLAG boolean,
 #  INPLAY  varchar,
 
-
-
         cur = self.conn.cursor()
         cur.execute("insert into HISTORY ( \
                          SPORTSID, EVENTID, SETTLEDDATE, COUNTRY, \
@@ -183,6 +181,7 @@ parser.add_option("-f", "--file", dest="file", action="store", \
 
 importer = Betfair_Historic_Data_Importer(options)
 db = Db()
+db.conn.set_client_encoding('LATIN1')
 importer.conn = db.conn
 importer.main()
 

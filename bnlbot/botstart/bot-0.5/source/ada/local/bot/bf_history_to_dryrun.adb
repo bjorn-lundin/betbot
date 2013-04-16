@@ -14,6 +14,8 @@ with Table_Dryrunners;
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Logging; use Logging;
 
+with text_io;
+
 procedure Bf_History_To_Dryrun is
    History2      : Table_History2.Data_Type;
    History2_List : Table_History2.History2_List_Pack.List_Type :=
@@ -25,8 +27,14 @@ procedure Bf_History_To_Dryrun is
    Dryrunners    : Table_Dryrunners.Data_Type;
 
 
-   T             : Sql.Transaction_Type;
-   Select_All    : Sql.Statement_Type;
+   Drymarkets_List    : Table_Drymarkets.Drymarkets_List_Pack.List_Type :=
+                        Table_Drymarkets.Drymarkets_List_Pack.Create;
+
+
+   T                  : Sql.Transaction_Type;
+   Select_All         : Sql.Statement_Type;
+   Select_Num_Runners : Sql.Statement_Type;
+   Select_Markets     : Sql.Statement_Type;
 
    start_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
    stop_date     : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
@@ -37,33 +45,35 @@ procedure Bf_History_To_Dryrun is
    I_Num_Days    : aliased Integer;
    Config        : Command_Line_Configuration;
 
-   num_runners,
-   num_winners   : integer_4 := 0;
+   num_runners   : integer_4 := 0;
    race_ok       : Boolean := False;
 
 
 begin
    Define_Switch
-     (Config,
-      Sa_Date'access,
-      "-d:",
+     (Config      => Config,
+      Output      => Sa_Date'access,
+      Switch      => "-d:",
       Long_Switch => "--date=",
       Help        => "when the data move starts yyyy-mm-dd");
 
    Define_Switch
-     (Config,
-      I_Num_Days'access,
-      "-n:",
+     (Config      => Config,
+      Output      => I_Num_Days'access,
+      Initial     =>  0,
+      Switch      => "-n:",
       Long_Switch => "--num_days=",
       Help        => "days to move");
 
-
    Getopt (Config);  -- process the command line
 
+   if Sa_Date.all = "" or else I_Num_Days = 0 then
+     Display_Help (Config);
+     return ;
+   end if;
 
    Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "00:00:00:000");
    Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "23:59:59:999");
-
 
    Log ("Connect db");
    Sql.Connect
@@ -94,6 +104,28 @@ begin
       Table_History2.Read_List (Stm => Select_All, List => History2_List, Max => 1_000_000_000);
       Log ("History2_List records  -  " & Table_History2.History2_List_Pack.Get_Count(History2_List)'img);
 
+
+
+--     Sportsid        => History2.Sportsid,
+--     Settleddate     => History2.Settleddate,
+--     Country         => History2.Country,
+--     Fulldescription => History2.Fulldescription,
+--     Course          => History2.Course,
+--     Scheduledoff    => History2.Scheduledoff,
+--     Event           => History2.Event,
+--     Selectionid     => History2.Selectionid,
+--     Selection       => History2.Selection,
+--     Odds            => History2.Odds,
+--     Numberbets      => History2.Numberbets,
+--     Volumematched   => History2.Volumematched,
+--     Latesttaken     => History2.Latesttaken,
+--     Firsttaken      => History2.Firsttaken,
+--     Winflag         => History2.Winflag,
+--     Inplay          => History2.Inplay
+
+
+
+
       while not Table_History2.History2_List_Pack.Is_Empty (List => History2_List) loop
         Table_History2.History2_List_Pack.Remove_From_Head (List => History2_List, Element => History2);
 --          Log ("History -  " & History.eventid'img & "-" & Old_History.eventid'img);
@@ -101,126 +133,111 @@ begin
 
         case History2.event(1) is
           when 'A'| 'B'| 'D'| 'E'| 'H'| 'P'| 'R'| 'S' => race_ok := True;
-          when others                                 => race_ok := False
-        end case
+          when others                                 => race_ok := False;
+        end case;
 
         case History2.event(2) is
           when '1' .. '9' => null; -- just pass
-          when others     => race_ok := False
-        end case
+          when others     => race_ok := False;
+        end case;
 
 
 
         if History2.event(1..8) = "Forecast" then
+          race_ok := False;
         elsif History2.event(1..12) = "TO BE PLACED" then
-        else
+          race_ok := False;
         end if;
 
+        if race_ok then
 
-        Drymarkets := (
-                        Marketid        => History2.Eventid,
-                        Bspmarket       => 'Y',
-                        Markettype      => 'O',
-                        Eventhierarchy  => (others => ' '),
-                        Lastrefresh     => History2.latesttaken,
-                        Turninginplay   => 'N',
-                        Menupath        => History2.fulldescription,
-                        Betdelay        => 0,
-                        Exchangeid      => 1,
-                        Countrycode     => 'GBR',
-                        Marketname      => History2.event,
-                        Marketstatus    => "ACTIVE         ",
-                        Eventdate       => History2.latesttaken,
-                        Noofrunners     =>
-                        Totalmatched    => History2.Volumematched.
-                        Noofwinners     =>
+            Drymarkets := (
+                            Marketid        => History2.Eventid,
+                            Bspmarket       => 'Y',
+                            Markettype      => 'O',
+                            Eventhierarchy  => (others => ' '),
+                            Lastrefresh     => History2.latesttaken,
+                            Turninginplay   => 'N',
+                            Menupath        => History2.Fulldescription,
+                            Betdelay        => 0,
+                            Exchangeid      => 1,
+                            Countrycode     => "GBR",
+                            Marketname      => History2.event,
+                            Marketstatus    => "ACTIVE         ",
+                            Eventdate       => History2.latesttaken,
+                            Noofrunners     => 0 , --update later!?
+                            Totalmatched    => Integer_4(History2.Volumematched),
+                            Noofwinners     => 1 -- only winners games so far
+            );
 
+            Table_Drymarkets.Read(Drymarkets,Eos);
+            if Eos then
+              Table_Drymarkets.Insert(Drymarkets);
+            end if;
 
-
-                        Sportsid        => History2.Sportsid,
-                        Settleddate     => History2.Settleddate,
-                        Country         => History2.Country,
-                        Fulldescription => History2.Fulldescription,
-                        Course          => History2.Course,
-                        Scheduledoff    => History2.Scheduledoff,
-                        Event           => History2.Event,
-                        Selectionid     => History2.Selectionid,
-                        Selection       => History2.Selection,
-                        Odds            => History2.Odds,
-                        Numberbets      => History2.Numberbets,
-                        Volumematched   => History2.Volumematched,
-                        Latesttaken     => History2.Latesttaken,
-                        Firsttaken      => History2.Firsttaken,
-                        Winflag         => History2.Winflag,
-                        Inplay          => History2.Inplay
-
-        );
-
-
-
-
-      Marketid :    Integer_4  := 0 ; -- Primary Key
-      Bspmarket :    Character  := ' ' ; --
-      Markettype :    Character  := ' ' ; --
-      Eventhierarchy :    String (1..150) := (others => ' ') ; -- non unique index 2
-      Lastrefresh :    Time_Type  := Time_Type_First ; --
-      Turninginplay :    Character  := ' ' ; --
-      Menupath :    String (1..200) := (others => ' ') ; --
-      Betdelay :    Integer_4  := 0 ; --
-      Exchangeid :    Integer_4  := 0 ; --
-      Countrycode :    String (1..3) := (others => ' ') ; --
-      Marketname :    String (1..50) := (others => ' ') ; -- non unique index 3
-      Marketstatus :    String (1..15) := (others => ' ') ; --
-      Eventdate :    Time_Type  := Time_Type_First ; -- non unique index 4
-      Noofrunners :    Integer_4  := 0 ; --
-      Totalmatched :    Integer_4  := 0 ; --
-      Noofwinners :    Integer_4  := 0 ; --
-
-
-
-
-
-
-
-        if History.selectionid = Old_History.selectionid then -- same runner
-            null; -- get next
-        else -- another runner, insert the old row
-            if Old_History.pk > 0 then
-              begin
-                History2 := (
-                            Pk              => Old_History.pk,
-                            Sportsid        => Old_History.Sportsid,
-                            Eventid         => Old_History.Eventid,
-                            Settleddate     => Old_History.Settleddate,
-                            Country         => Old_History.Country,
-                            Fulldescription => Old_History.Fulldescription,
-                            Course          => Old_History.Course,
-                            Scheduledoff    => Old_History.Scheduledoff,
-                            Event           => Old_History.Event,
-                            Selectionid     => Old_History.Selectionid,
-                            Selection       => Old_History.Selection,
-                            Odds            => Old_History.Odds,
-                            Numberbets      => Old_History.Numberbets,
-                            Volumematched   => Old_History.Volumematched,
-                            Latesttaken     => Old_History.Latesttaken,
-                            Firsttaken      => Old_History.Firsttaken,
-                            Winflag         => Old_History.Winflag,
-                            Inplay          => Old_History.Inplay
+            Dryrunners := (
+                             Marketid    => History2.Eventid,
+                             Selectionid => History2.Selectionid,
+                             Index       => 0,
+                             Backprice   => History2.Odds,
+                             Layprice    => History2.Odds,
+                             Runnername  => History2.Selection
+            );
+            begin
+              Table_Dryrunners.Insert(Dryrunners);
+            exception
+               when sql.Duplicate_index =>
+                  Text_io.Put_line(Dryrunners.marketid'img & Dryrunners.selectionid'img);
+                raise;
+            end;
+            if History2.Winflag = 1 then
+                Dryresults := (
+                                 Marketid    => History2.Eventid,
+                                 Selectionid => History2.Selectionid
                 );
+                Table_Dryresults.Insert(Dryresults);
+            end if;
 
-                Table_History2.Read (Data => History2, End_Of_Set => Eos);
-                if Eos then
---                  Log ("History2 - insert " & history2.pk'img);
-                  Table_History2.Insert (Data => History2);
-                end if;
-              exception
-                when Sql.Duplicate_Index =>
-                  Log ("History2 - Duplicate_Index on " & history2.pk'img);
-              end;
-          end if;
+
+
+        end if; --race_ok
+
+      end loop;
+--      Sql.Commit (T);
+--      Sql.Start_Read_Write_Transaction (T);
+
+      Sql.Prepare (Select_Markets,
+                   "select * from DRYMARKETS " &
+                   "where EVENTDATE >= :START " &
+                   "and EVENTDATE <= :STOP " &
+                   "and NOOFRUNNERS = 0");
+      Sql.Set_Timestamp(Select_Markets, "START", Start_date);
+      Sql.Set_Timestamp(Select_Markets, "STOP",  Stop_date);
+
+      Table_Drymarkets.Read_List(Select_Markets, Drymarkets_List);
+
+      Sql.Prepare (Select_Num_Runners,
+                   "select count('a') from DRYRUNNERS " &
+                   "where EVENTDATE >= :START " &
+                   "and EVENTDATE <= :STOP " &
+                   "and MARKETID = :MARKETID");
+
+      Sql.Set_Timestamp(Select_Num_Runners, "START", Start_date);
+      Sql.Set_Timestamp(Select_Num_Runners, "STOP",  Stop_date);
+
+      while not Table_Drymarkets.Drymarkets_List_Pack.Is_Empty(Drymarkets_List) loop
+        Table_Drymarkets.Drymarkets_List_Pack.Remove_From_Head(Drymarkets_List, Drymarkets);
+        Sql.Set(Select_Num_Runners, "MARKETID",  Drymarkets.Marketid);
+        Sql.Open_Cursor(Select_Num_Runners);
+        Sql.Fetch(Select_Num_Runners, Eos);
+        if not Eos then
+          Sql.Get(Select_Num_Runners, 1, Num_Runners);
+        else
+          Num_Runners := 0;
         end if;
-        Old_History := History;
-
+        Sql.Close_Cursor(Select_Num_Runners);
+        Drymarkets.Noofrunners := Num_Runners ;
+        Table_Drymarkets.Update(Drymarkets);
       end loop;
       Sql.Commit (T);
    end loop;
@@ -228,8 +245,8 @@ begin
    Sql.Close_Session;
 
 exception
+
    when E : others =>
       Sattmate_Exception.Tracebackinfo (E);
-      Log ("History -  " & History.eventid'img & "-" & Old_History.eventid'img);
 
 end Bf_History_To_Dryrun ;

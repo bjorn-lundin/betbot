@@ -835,10 +835,11 @@ package body Sql is
       Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
 
       Global_Connection.Exec ("savepoint A_select", Savepoint_Result);
-      Status := Result_Status (Savepoint_Result);
+      Status := Savepoint_Result.Result_Status;
+      Savepoint_Result.Clear; --bnl
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint a_select", Status);
-         Clear (Savepoint_Result);
+--bnl         Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
@@ -849,18 +850,19 @@ package body Sql is
       begin
          Global_Connection.Exec (Declare_String, Dml_Result);
          Log ("SQL.OPEN_CURSOR: " & Declare_String);
-         Status := Result_Status (Dml_Result);
+         Status := Dml_Result.Result_Status ;
          if Pgerror (Status) then
             Print_Errors ("Open_Cursor", Status);
             declare
                Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);
             begin
-               Clear (Dml_Result);
+               Dml_Result.Clear;
                Global_Connection.Exec ("rollback to savepoint a_select", Savepoint_Result);
-               Status := Result_Status (Savepoint_Result);
+               Status := Savepoint_Result.Result_Status;
+               Savepoint_Result.Clear; --bnl
                if Pgerror (Status) then
                   Print_Errors ("Open_Cursor rollback to savepoint a_select", Status);
-                  Clear (Savepoint_Result);
+                 --bnl Clear (Savepoint_Result);
                   raise Postgresql_Error;
                end if;
 
@@ -877,14 +879,15 @@ package body Sql is
       end;
 
       Global_Connection.Exec ("release savepoint a_select", Savepoint_Result);
-      Status := Result_Status (Savepoint_Result);
+      Status := Savepoint_Result.Result_Status;
+      Savepoint_Result.Clear ; --bnl
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint release a_select", Status);
-         Clear (Savepoint_Result);
+        --bnl Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
-      Clear (Dml_Result);
+      Dml_Result.Clear;
    end Open_Cursor;
    --------------------------------------------
    procedure Open_Cursor (Statement : in Statement_Type) is
@@ -991,7 +994,8 @@ package body Sql is
       Check_Is_Connected;
       Check_Transaction_In_Progress;
       Private_Statement.Is_Ok_To_Close := True;
-      Local_Close_Cursor (Private_Statement); -- bnl test
+      Local_Close_Cursor (Private_Statement); -- bnl test Comment if compability with sattmate needed ie
+      -- open/fetch/close/get instead of open/fetch/get/close
 
 
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);

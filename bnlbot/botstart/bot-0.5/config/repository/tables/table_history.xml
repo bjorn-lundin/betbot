@@ -6,7 +6,7 @@
         <Column Name="eventid" Size="9" Type="2" AllowNull="0" Description="market_id"/>
         <Column Name="settleddate" Size="23" Type="15" AllowNull="0" Description=""/>
         <Column Name="country" Size="3" Type="1" AllowNull="1" Description=""/>
-        <Column Name="fulldescription" Size="100" Type="1" AllowNull="0" Description=""/>
+        <Column Name="fulldescription" Size="200" Type="1" AllowNull="0" Description=""/>
         <Column Name="course" Size="50" Type="1" AllowNull="1" Description=""/>
         <Column Name="scheduledoff" Size="23" Type="15" AllowNull="0" Description=""/>
         <Column Name="event" Size="50" Type="1" AllowNull="0" Description="market_name"/>
