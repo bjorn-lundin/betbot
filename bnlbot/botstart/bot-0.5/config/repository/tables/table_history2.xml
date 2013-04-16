@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <MaAstro>
-    <Table Desc="Historic bfdata " Name="history" Tablespace="" >
+    <Table Desc="Historic bfdata " Name="history2" Tablespace="" >
         <Column Name="pk" Size="9" Type="2" AllowNull="0" Description="serial pk"/>
         <Column Name="sportsid" Size="9" Type="2" AllowNull="0" Description="hound/horse/football..."/>
         <Column Name="eventid" Size="9" Type="2" AllowNull="0" Description="market_id"/>
@@ -28,28 +28,3 @@
     </Table>
 </MaAstro>
 
-
-
---- historic data, fdb = bfhistoric
-create sequence betfair_historic_data_pk_serial;
-create table history (
-  pk integer default nextval('betfair_historic_data_pk_serial'),
-  SPORTSID integer,
-  EVENTID integer,
-  SETTLEDDATE timestamp,
-  COUNTRY varchar,
-  FULLDESCRIPTION varchar,
-  COURSE varchar,
-  SCHEDULEDOFF timestamp,
-  EVENT varchar,
-  SELECTIONID integer,
-  SELECTION  varchar,
-  ODDS float,
-  NUMBERBETS integer,
-  VOLUMEMATCHED float,
-  LATESTTAKEN timestamp,
-  FIRSTTAKEN timestamp,
-  WINFLAG boolean,
-  INPLAY  varchar,
-  primary key (pk)
-);

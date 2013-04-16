@@ -7,13 +7,16 @@ project Adabot is
 
    AL    := Global.Abr & "/local";
 
-   for Exec_Dir use "../../target/bin"  ;
+   for Exec_Dir use Global.Bot_Target & "/bin"  ;
+
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("simulator.adb",
                  "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
-                 "ini_reader.adb");
+                 "bf_history_cleaner.adb",
+                 "ini_reader.adb",
+                 "sql_ifc_leak_finder.adb");
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;

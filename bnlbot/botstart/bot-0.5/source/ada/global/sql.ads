@@ -290,6 +290,7 @@ private
       Type_Of_Statement       : Statement_Type_Type;
       Current_Row             : Natural := 0;
       Number_To_Fetch         : Natural := 100;
+--      Number_To_Fetch         : Natural := Natural'Last; -- get them all
       Number_Actually_Fetched : Natural := 0;
       Number_Parameters       : Natural := 0;
       --	State                   : String(1..5) := (others => ' ');

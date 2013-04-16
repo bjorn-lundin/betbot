@@ -10,7 +10,7 @@ procedure Ini_Reader is
 
    Sa_Ini_File : aliased Gnat.Strings.String_Access;
    Sa_Section  : aliased Gnat.Strings.String_Access;
-   Sa_Varible  : aliased Gnat.Strings.String_Access;
+   Sa_Variable : aliased Gnat.Strings.String_Access;
    Sa_Default  : aliased Gnat.Strings.String_Access;
 
    Config : Command_Line_Configuration;
@@ -33,10 +33,10 @@ begin
 
    Define_Switch
      (Config,
-      Sa_Varible'access,
+      Sa_Variable'access,
       "-v:",
       Long_Switch => "--variable=",
-      Help        => "varible");
+      Help        => "variable");
 
    Define_Switch
      (Config,
@@ -48,12 +48,11 @@ begin
    Getopt (Config);  -- process the command line
    --   Display_Help (Config);
 
+   Ini.Load(File_Name => Sa_Ini_File.all);
 
-   Ini.Load(File_Name => Sa_Ini_File.all);  
 
-
-   Text_Io.Put_Line( Ini.Get_Value (Section  => Sa_Section.all, 
-                                    Variable => Sa_Varible.all,
+   Text_Io.Put_Line( Ini.Get_Value (Section  => Sa_Section.all,
+                                    Variable => Sa_Variable.all,
                                     Default  => Sa_Default.all));
-      
+
 end Ini_Reader;

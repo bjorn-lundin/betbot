@@ -18,12 +18,16 @@
 #                                                                             #
 ###############################################################################
 
-DAT := plot/balance.dat
-TMP := plot/balance.tmp
-DAT2 := plot/back_bet_price_distribution.dat
-TMP2 := plot/back_bet_price_distribution.tmp
+DAT := $(BOT_SCRIPT)/plot/balance.dat
+TMP := $(BOT_SCRIPT)/plot/balance.tmp
+DAT2 := $(BOT_SCRIPT)/plot/back_bet_price_distribution.dat
+TMP2 := $(BOT_SCRIPT)/plot/back_bet_price_distribution.tmp
 
 UNAME := $(shell uname)
+
+TP := tclsh $(BOT_SCRIPT)/tcl/make_table_package.tcl
+ST := $(BOT_SOURCE)/ada/global/tables
+
 
 ifeq ($(UNAME),Linux)
   PSQL := psql
@@ -44,9 +48,12 @@ ifeq ($(UNAME),MINGW32_NT-6.1)
   SHOW_PNG :=
 endif
 
-.PHONY : json_test adabot back_bet_price_distribution
+.PHONY : json_test adabot back_bet_price_distribution tables
 
 all: json_test adabot
+
+tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
+         $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads $(ST)/table_dryrunners.ads
 
 json_test :
 	gnatmake -P json_test
@@ -62,8 +69,8 @@ balance_plot:
 	cat $(TMP) > $(DAT)
 	rm $(TMP)
 ifneq ($(UNAME),MINGW32_NT-6.1)
-	cd plot && gnuplot balance.gpl
-	cd plot && $(SHOW_PNG) balance.png
+	cd $(BOT_SCRIPT)/plot && gnuplot balance.gpl
+	cd $(BOT_SCRIPT)/plot && $(SHOW_PNG) balance.png
 endif
 
 ifeq ($(UNAME),MINGW32_NT-6.1)
@@ -78,16 +85,45 @@ back_bet_price_distribution:
 #	cat $(DAT2) | grep -v "\-\-" > $(TMP2)
 #	cat $(TMP2) > $(DAT2)
 #	rm $(TMP2)
-	exe/back_bet_analyzer > $(DAT2)
-	cd plot && gnuplot back_bet_price_distribution.gpl
-	cd plot && $(SHOW_PNG) back_bet_price_distribution.png
+	$(BOT_TARGET)/bin/back_bet_analyzer > $(DAT2)
+	cd $(BOT_SCRIPT)/plot && gnuplot back_bet_price_distribution.gpl
+	cd $(BOT_SCRIPT)/plot && $(SHOW_PNG) back_bet_price_distribution.png
 
+
+$(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
+	$(TP) -t history > $(ST)/table_history.ada
+	cd $(ST) && gnatchop -w -gnat05 table_history.ada
+	cd $(ST) && rm table_history.ada
+	$(TP) -p history > $(ST)/history.sql
+
+$(ST)/table_history2.ads : $(BOT_CONFIG)/repository/tables/table_history2.xml
+	$(TP) -t history2 > $(ST)/table_history2.ada
+	cd $(ST) && gnatchop -w -gnat05 table_history2.ada
+	cd $(ST) && rm table_history2.ada
+	$(TP) -p history2 > $(ST)/history2.sql
+
+$(ST)/table_drymarkets.ads : $(BOT_CONFIG)/repository/tables/table_drymarkets.xml
+	$(TP) -t drymarkets > $(ST)/table_drymarkets.ada
+	cd $(ST) && gnatchop -w -gnat05 table_drymarkets.ada
+	cd $(ST) && rm table_drymarkets.ada
+	$(TP) -p drymarkets > $(ST)/drymarkets.sql
+
+$(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xml
+	$(TP) -t dryresults > $(ST)/table_dryresults.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
+	cd $(ST) && rm table_dryresults.ada
+	$(TP) -p dryresults > $(ST)/dryresults.sql
+
+$(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xml
+	$(TP) -t dryrunners > $(ST)/table_dryrunners.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
+	cd $(ST) && rm table_dryrunners.ada
+	$(TP) -p dryrunners > $(ST)/dryrunners.sql
 
 
 clean:
 	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
-	rm plot/*.dat plot/*.png
-
+	rm $(BOT_SCRIPT)/plot/*.dat $(BOT_SCRIPT)/plot/*.png
 
