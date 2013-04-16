@@ -7,6 +7,9 @@ import ssl
 import socket
 import logging.handlers
 import httplib2
+import os
+from optparse import OptionParser
+
 
 class GreyHoundWinnerLayBetBot(BetBot):
     """put bet on games with low odds"""
@@ -133,10 +136,23 @@ class GreyHoundWinnerLayBetBot(BetBot):
 
 
 ######## main ###########
+
+parser = OptionParser()
+
+parser.add_option("-t", "--bet_type",  dest="bet_type",  action="store", \
+                  type="string", help="bet type")
+
+(options, args) = parser.parse_args()
+
 alog = logging.getLogger(__name__)
 alog.setLevel(logging.DEBUG)
+
+
+logdir = os.file.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
+logfile = os.file.join(logdir, 'log', options.bet_type.lower() + '.log')
+
 FH = logging.handlers.RotatingFileHandler(
-    'logs/' + __file__.split('.')[0] +'.log',
+    logfile,
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,
@@ -152,10 +168,9 @@ alog.info('Starting application')
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-
-
 bot = GreyHoundWinnerLayBetBot(alog)
-bot.initialize('HOUNDS_WINNER_LAY_BET')
+bot.initialize(options.bet_type.upper())
+
 
 while True:
     try:

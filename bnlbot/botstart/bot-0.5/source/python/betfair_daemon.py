@@ -24,6 +24,7 @@ class BetfairDaemon(object) :
         for section in self.section_list :
             run = self.config.getboolean(section,'run')
             name = self.config.get(section,'name')
+            bet_type = self.config.get(section,'bet_type')
             the_type = self.config.get(section,'type')
 #            print 'section', section
 #            print 'name', name
@@ -46,6 +47,8 @@ class BetfairDaemon(object) :
                     #testa pa platform har, mac = /opt/local/bin/python
                     args.append('/usr/bin/python')
                     args.append(name)
+                    if the_type == 'bot' :
+                        args.append('--bet_type=' + bet_type)
                     my_process = subprocess.Popen(args)
                     tmp_tuple = (my_process, name, the_type, section)
                     self.process_list.append(tmp_tuple)
@@ -60,7 +63,9 @@ class BetfairDaemon(object) :
                 break
 
         if tmp_tuple is not None :
-            logfile = 'logs/' + tmp_tuple[3] + '.log'
+            logdir = os.file.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
+            logfile = os.file.join(logdir, 'log', bet_type.lower() + '.log')
+#            logfile = 'logs/' + tmp_tuple[3] + '.log'
             t = os.path.getmtime(logfile)
             #if updated within 2 minutes. gmtime(0) is epoch of now()
             return int(time()) - t < 120

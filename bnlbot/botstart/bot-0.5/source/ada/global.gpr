@@ -14,6 +14,10 @@ project Global is
    Lib_Sattmate := external ("SATTMATE_A", "SATTMATE_A_not_set");
    Application_Type := external ("APPLICATION_TYPE", "SATTMATE_A_not_set");
 
+
+   Bot_Target := external ("BOT_TARGET", "BOT_TARGET_not_set");
+
+
 -- AdaBotRoot
    Abr := ".";
 
@@ -82,7 +86,10 @@ project Global is
 --                  Smsk & "/utility/aws/choises",
 --                  Smsk & "/utility/aws/" & Target_Machine);
 
-   for Source_Dirs use ( "local", "global", "global/gnatcoll") ;
+   for Source_Dirs use ( "local",
+                         "global",
+                         "global/tables",
+                         "global/gnatcoll") ;
 
    package Ide is
       for Compiler_Command ("ada") use "gnatmake";

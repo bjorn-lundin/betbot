@@ -17,16 +17,16 @@ namespace eval ART_Definitions {
   namespace export Mustang
   namespace export Repository_Root
   namespace export IDF_Root
- 
- 
+
+
   namespace export Unique_List
 
   namespace export Table_File_Name_Prefix
   namespace export Clreq_File_Name_Prefix
-  namespace export Term_File_Name_Prefix 
+  namespace export Term_File_Name_Prefix
   namespace export Code_File_Name_Prefix
   namespace export Label_File_Name_Prefix
-  
+
   namespace export Messages_Def_Xml_File
   namespace export Coded_Values_Def_Xml_File
   namespace export Table_Def_Xml_File
@@ -48,29 +48,29 @@ namespace eval ART_Definitions {
   namespace export Zeditbox
 
   namespace export Get_Term_From_Label
-  
-  
+
+
   ########################################
 
   set Db_Tables  1
   set Clreqs     2
-  set Terms      3 
-  set Codes      4 
-  set Mustang    5 
+  set Terms      3
+  set Codes      4
+  set Mustang    5
   set Repository_Root 6
-  set Labels     7 
+  set Labels     7
   set IDF_Root   8
   set Bin        9
   set Views      10
-  
-  
+
+
   set Table_File_Name_Prefix "table"
   set Clreq_File_Name_Prefix "clreq"
   set Term_File_Name_Prefix "trm"
   set Code_File_Name_Prefix "trm"
   set Label_File_Name_Prefix "lab"
   set View_File_Name_Prefix "view"
-  
+
   set Zcodint  "ZCODINT"
   set Zcodchar "ZCODCHAR"
   set Zonoffcheck "ZONOFFCHECK"
@@ -78,7 +78,7 @@ namespace eval ART_Definitions {
 
 
   proc Get_Config_File {} {
-    return [file join $::env(SATTMATE_CONFIG) local stingray sattmate.xml]
+    return [file join $::env(BOT_CONFIG) repository betbot.xml]
   }
 
   proc Data_Type_To_Numeric {Data_Type} {
@@ -97,17 +97,17 @@ namespace eval ART_Definitions {
     if {[catch {set Path_Ptr [open $Path {RDONLY}]}  Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }   	
-    set Local_Doc [::dom::DOMImplementation parse [read $Path_Ptr]] 
+    }
+    set Local_Doc [::dom::DOMImplementation parse [read $Path_Ptr]]
     catch {close $Path_Ptr}
-  
+
     set Pattern "/Process/paths"
     # For some reason, switch won't take $::Db_Tables or $::Clreqs as labels
     # $::Db_Tables -> 1
     # $::Clreqs    -> 2
-    # $::Terms     -> 3 
-    # $::Codes     -> 4 
-    # $::Mustang   -> 5 
+    # $::Terms     -> 3
+    # $::Codes     -> 4
+    # $::Mustang   -> 5
     # $::Repository_Root -> 6
     # $::Labels -> 7
     # $::IDF_Root -> 8
@@ -133,11 +133,11 @@ namespace eval ART_Definitions {
     }
       append Pattern "/definitions"
       append Pattern "/$The_Item"
-    
+
     set Loc [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
     set fc [::dom::node cget $Loc -firstChild]
-    set Xml_Doc_Path [::dom::node cget $fc -nodeValue] 
-  
+    set Xml_Doc_Path [::dom::node cget $fc -nodeValue]
+
     ::dom::DOMImplementation destroy $Local_Doc
 
 # is the path 'clean' or does it have os specific environment syntax,
@@ -160,9 +160,9 @@ namespace eval ART_Definitions {
         }
         set Tmp_Path ""
         foreach Element $New_List {
-          set Tmp_Path [file join $Tmp_Path $Element ]  
-        } 
-        set Xml_Doc_Path $Tmp_Path  
+          set Tmp_Path [file join $Tmp_Path $Element ]
+        }
+        set Xml_Doc_Path $Tmp_Path
     }	elseif {$Percent_Pos1 > -1} {
         # we got windows
         set Percent_Pos2 [string first % $Xml_Doc_Path] ; # find the next '%'
@@ -178,9 +178,9 @@ namespace eval ART_Definitions {
         }
         set Tmp_Path ""
         foreach Element $New_List {
-          set Tmp_Path [file join $Tmp_Path $Element ]  
-        } 
-        set Xml_Doc_Path $Tmp_Path  
+          set Tmp_Path [file join $Tmp_Path $Element ]
+        }
+        set Xml_Doc_Path $Tmp_Path
     }
     return $Xml_Doc_Path
   }
@@ -220,32 +220,32 @@ namespace eval ART_Definitions {
 
   proc Get_Term_From_Label {Label} {
     set The_End [string first "_LABEL" $Label]
-    Debug "$Label -> _LABEL -> $The_End"         
+    Debug "$Label -> _LABEL -> $The_End"
     if {! [expr $The_End > -1]} {
-      set The_End [string first "_TITEL" $Label]         
-      Debug "$Label -> _TITEL -> $The_End"         
+      set The_End [string first "_TITEL" $Label]
+      Debug "$Label -> _TITEL -> $The_End"
     }
 
     if {! [expr $The_End > -1]} {
-      set The_End [string first "_LABLE" $Label]         
-      Debug "$Label -> _LABLE -> $The_End"         
+      set The_End [string first "_LABLE" $Label]
+      Debug "$Label -> _LABLE -> $The_End"
     }
 
     if {! [expr $The_End > -1]} {
-      set The_End [string first "_TITLE" $Label]         
-      Debug "$Label -> _TITLE -> $The_End"         
+      set The_End [string first "_TITLE" $Label]
+      Debug "$Label -> _TITLE -> $The_End"
     }
 
     if {[expr $The_End > -1]} {
-      incr The_End -1 
-      set New_Label [string tolower [string range $Label 0 $The_End]]            
-      Debug "Making New_Label -> '$Label' -> 0 .. $The_End -> $New_Label"         
+      incr The_End -1
+      set New_Label [string tolower [string range $Label 0 $The_End]]
+      Debug "Making New_Label -> '$Label' -> 0 .. $The_End -> $New_Label"
     } else {
-      set New_Label $Label     
-      Debug "Using old Label -> '$New_Label'"         
+      set New_Label $Label
+      Debug "Using old Label -> '$New_Label'"
     }
     return $New_Label
   }
 
-  
+
 }
