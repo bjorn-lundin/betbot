@@ -272,17 +272,18 @@ def save_db_dump_in_cloud(dbname=None, dumpdir=None, bucketname=None,
     sudo_bin = '/usr/bin/sudo'
     su_bin = '/bin/su'
     pg_dump_bin = '/usr/bin/pg_dump'
+    pg_dump_format = '-Fc' # Custom (compressed) format
     db_superuser = 'postgres'
     chmod_command = [chmod_bin, '777', dumpdir]
     proc = sp.Popen(chmod_command, stdout=sp.PIPE, stderr=sp.PIPE)
     error = proc.communicate()[1]
     filepath = None
     if not error:
-        filepath = os.path.join(dumpdir, dbname + '.dmp')
+        filepath = os.path.join(dumpdir, dbname + '.backup')
         filepath = os.path.normpath(filepath)
         dump_command = [
             sudo_bin, su_bin, '-', '-c',
-            pg_dump_bin + ' ' + dbname + '>' + \
+            pg_dump_bin + ' ' + pg_dump_format + ' ' + dbname + '>' + \
             filepath, db_superuser
         ]
         proc = sp.Popen(dump_command, stdout=sp.PIPE, stderr=sp.PIPE)
