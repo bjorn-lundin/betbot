@@ -106,13 +106,9 @@ def save_files_in_aws_s3_bucket(sourcefiles=None, bucketname=None,
         bucketname=bucketname,
         versioning=versioning
     )
-    targetfiles = []
-    bucketkeys = bucket.list()
-    for key in bucketkeys:
-        targetfiles.append(key.name)
-    for filepath in sourcefiles:
-        filename = os.path.basename(filepath)
-        if filename not in targetfiles:
+    if replace:
+        for filepath in sourcefiles:
+            filename = os.path.basename(filepath)
             key = Key(bucket)
             key.key = filename
             file_md5 = key.compute_md5(open(filepath, 'rb'))
@@ -129,6 +125,30 @@ def save_files_in_aws_s3_bucket(sourcefiles=None, bucketname=None,
             finally:
                 if connection:
                     connection.close()
+    else:
+        targetfiles = []
+        bucketkeys = bucket.list()
+        for key in bucketkeys:
+            targetfiles.append(key.name)
+        for filepath in sourcefiles:
+            filename = os.path.basename(filepath)
+            if filename not in targetfiles:
+                key = Key(bucket)
+                key.key = filename
+                file_md5 = key.compute_md5(open(filepath, 'rb'))
+                try:
+                    LOG.info('Uploading ' + filename + ' to ' + bucket.name)
+                    key.set_contents_from_filename(
+                        filename=filepath,
+                        replace=replace,
+                        md5=file_md5
+                    )
+                except S3ResponseError:
+                    LOG.exception('Failed saving file ' + filename + 
+                                  ' to S3 bucket ' + bucket.name)
+                finally:
+                    if connection:
+                        connection.close()
 
 def print_versions_from_aws_s3(bucket=None):
     '''
