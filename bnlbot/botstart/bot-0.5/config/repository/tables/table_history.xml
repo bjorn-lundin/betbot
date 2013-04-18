@@ -25,5 +25,8 @@
         <Index Columns="event" type="index"/>
         <Index Columns="latesttaken" type="index"/>
         <Index Columns="eventid,selectionid,latesttaken" type="index"/>
+        <Index Columns="eventid,selectionid" type="index"/>
+        <Index Columns="fulldescription" type="index"/>
+
     </Table>
 </MaAstro>

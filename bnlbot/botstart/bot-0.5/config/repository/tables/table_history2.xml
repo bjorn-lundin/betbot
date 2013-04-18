@@ -21,10 +21,10 @@
         <Column Name="inplay" Size="2" Type="1" AllowNull="0" Description=""/>
         <Index Columns="pk" type="primary"/>
         <Index Columns="sportsid" type="index"/>
-        <Index Columns="eventhierarchy" type="index"/>
         <Index Columns="eventid" type="index"/>
         <Index Columns="event" type="index"/>
         <Index Columns="latesttaken" type="index"/>
+        <Index Columns="eventid,selectionid,latesttaken" type="index"/>
     </Table>
 </MaAstro>
 

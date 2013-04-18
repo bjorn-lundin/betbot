@@ -24,11 +24,11 @@ procedure Bf_History_Cleaner is
 
    T                       : Sql.Transaction_Type;
    Select_All   : Sql.Statement_Type;
-
+   select_latest : Sql.Statement_Type;
    start_date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
    stop_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
 
-   Eos          : Boolean := False;
+   Eos,Eos2          : Boolean := False;
 
    Sa_Date      : aliased Gnat.Strings.String_Access;
    I_Num_Days   : aliased Integer;
@@ -81,62 +81,67 @@ begin
       History2 := Table_History2.Empty_Data;
 
       Sql.Prepare (Select_All,
-                   "select * from HISTORY " &
-                   "where LATESTTAKEN >= :START " &
-                   "and LATESTTAKEN <= :STOP " &
-                   "and EVENT <> 'Forecast' " &
-                   "and FULLDESCRIPTION <> 'Ante Post' " &
-                   "order by EVENTID, SELECTIONID, LATESTTAKEN");
+          "select EVENTID, SELECTIONID from HISTORY " &
+          "where LATESTTAKEN >= :START " &
+          "and LATESTTAKEN <= :STOP " &
+          "and EVENT <> 'Forecast' " &
+          "and FULLDESCRIPTION <> 'Ante Post' " &
+          "group by  EVENTID, SELECTIONID " &
+          "order by EVENTID, SELECTIONID ");
 
       Sql.Set_Timestamp(Select_all, "START", Start_date);
       Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
 
-      Table_History.Read_List (Stm => Select_All, List => History_List, Max => 1_000_000_000);
-      Log ("History_List records  -  " & Table_History.History_List_Pack.Get_Count(History_List)'img);
 
-      while not Table_History.History_List_Pack.Is_Empty (List => History_List) loop
-        Table_History.History_List_Pack.Remove_From_Head (List => History_List, Element => History);
---          Log ("History -  " & History.eventid'img & "-" & Old_History.eventid'img);
-        if History.selectionid = Old_History.selectionid then -- same runner
-            null; -- get next
-        else -- another runner, insert the old row
-            if Old_History.pk > 0 then
-              begin
-                History2 := (
-                            Pk              => Old_History.pk,
-                            Sportsid        => Old_History.Sportsid,
-                            Eventid         => Old_History.Eventid,
-                            Settleddate     => Old_History.Settleddate,
-                            Country         => Old_History.Country,
-                            Fulldescription => Old_History.Fulldescription,
-                            Course          => Old_History.Course,
-                            Scheduledoff    => Old_History.Scheduledoff,
-                            Event           => Old_History.Event,
-                            Selectionid     => Old_History.Selectionid,
-                            Selection       => Old_History.Selection,
-                            Odds            => Old_History.Odds,
-                            Numberbets      => Old_History.Numberbets,
-                            Volumematched   => Old_History.Volumematched,
-                            Latesttaken     => Old_History.Latesttaken,
-                            Firsttaken      => Old_History.Firsttaken,
-                            Winflag         => Old_History.Winflag,
-                            Inplay          => Old_History.Inplay
-                );
-
-                Table_History2.Read (Data => History2, End_Of_Set => Eos);
-                if Eos then
---                  Log ("History2 - insert " & history2.pk'img);
-                  Table_History2.Insert (Data => History2);
-                end if;
-              exception
-                when Sql.Duplicate_Index =>
-                  Log ("History2 - Duplicate_Index on " & history2.pk'img);
-              end;
+      Sql.Open_Cursor(Select_all);
+      loop
+          Sql.Fetch(Select_all, Eos);
+          exit when Eos;
+          Sql.Get(Select_All,"EVENTID",History.EVENTID);
+          Sql.Get(Select_All,"SELECTIONID",History.SELECTIONID);
+          TAble_History.Read_One_Eventid_selectionid(Data  => History,
+                                                     Order => False,
+                                                     End_Of_Set => Eos2);
+          if Eos2 then
+                Log ("History - FAIL " & History.EVENTID'img & History.SELECTIONID'img);
+                return;
           end if;
-        end if;
-        Old_History := History;
+
+          begin
+            History2 := (
+                        Pk              => History.pk,
+                        Sportsid        => History.Sportsid,
+                        Eventid         => History.Eventid,
+                        Settleddate     => History.Settleddate,
+                        Country         => History.Country,
+                        Fulldescription => History.Fulldescription,
+                        Course          => History.Course,
+                        Scheduledoff    => History.Scheduledoff,
+                        Event           => History.Event,
+                        Selectionid     => History.Selectionid,
+                        Selection       => History.Selection,
+                        Odds            => History.Odds,
+                        Numberbets      => History.Numberbets,
+                        Volumematched   => History.Volumematched,
+                        Latesttaken     => History.Latesttaken,
+                        Firsttaken      => History.Firsttaken,
+                        Winflag         => History.Winflag,
+                        Inplay          => History.Inplay
+            );
+
+            Table_History2.Read (Data => History2, End_Of_Set => Eos);
+            if Eos then
+--                Log ("History2 - insert " & history2.pk'img);
+              Table_History2.Insert (Data => History2);
+            end if;
+          exception
+            when Sql.Duplicate_Index =>
+              Log ("History2 - Duplicate_Index on " & history2.pk'img);
+          end;
+
 
       end loop;
+      Sql.Close_Cursor(Select_all);
       Sql.Commit (T);
    end loop;
 
