@@ -90,6 +90,9 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionManager.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="DbConnectionDialog.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -117,6 +120,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="ConnectionManager.resx">
+      <DependentUpon>ConnectionManager.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DbConnectionDialog.resx">
       <DependentUpon>DbConnectionDialog.vb</DependentUpon>
     </EmbeddedResource>
