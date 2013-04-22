@@ -24,6 +24,7 @@ Partial Class DbConnectionForm
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(DbConnectionForm))
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.buttonManage = New System.Windows.Forms.Button()
         Me.Label8 = New System.Windows.Forms.Label()
         Me.txtVersionByProp = New System.Windows.Forms.TextBox()
         Me.btnDisconnect = New System.Windows.Forms.Button()
@@ -47,7 +48,7 @@ Partial Class DbConnectionForm
         Me.btnTest = New System.Windows.Forms.Button()
         Me.btnBrowse = New System.Windows.Forms.Button()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
-        Me.buttonManage = New System.Windows.Forms.Button()
+        Me.btnConMan = New System.Windows.Forms.Button()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
@@ -76,6 +77,15 @@ Partial Class DbConnectionForm
         Me.GroupBox1.Size = New System.Drawing.Size(473, 202)
         Me.GroupBox1.TabIndex = 4
         Me.GroupBox1.TabStop = False
+        '
+        'buttonManage
+        '
+        Me.buttonManage.Location = New System.Drawing.Point(437, 23)
+        Me.buttonManage.Name = "buttonManage"
+        Me.buttonManage.Size = New System.Drawing.Size(28, 23)
+        Me.buttonManage.TabIndex = 24
+        Me.buttonManage.Text = "..."
+        Me.buttonManage.UseVisualStyleBackColor = True
         '
         'Label8
         '
@@ -202,6 +212,7 @@ Partial Class DbConnectionForm
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.btnConMan)
         Me.GroupBox2.Controls.Add(Me.btnRaceDays)
         Me.GroupBox2.Controls.Add(Me.buttonBetSim)
         Me.GroupBox2.Controls.Add(Me.buttonStats)
@@ -283,14 +294,14 @@ Partial Class DbConnectionForm
         Me.GroupBox3.TabIndex = 6
         Me.GroupBox3.TabStop = False
         '
-        'buttonManage
+        'btnConMan
         '
-        Me.buttonManage.Location = New System.Drawing.Point(437, 23)
-        Me.buttonManage.Name = "buttonManage"
-        Me.buttonManage.Size = New System.Drawing.Size(28, 23)
-        Me.buttonManage.TabIndex = 24
-        Me.buttonManage.Text = "..."
-        Me.buttonManage.UseVisualStyleBackColor = True
+        Me.btnConMan.Location = New System.Drawing.Point(166, 75)
+        Me.btnConMan.Name = "btnConMan"
+        Me.btnConMan.Size = New System.Drawing.Size(99, 23)
+        Me.btnConMan.TabIndex = 21
+        Me.btnConMan.Text = "Con Man"
+        Me.btnConMan.UseVisualStyleBackColor = True
         '
         'DbConnectionForm
         '
@@ -337,4 +348,5 @@ Partial Class DbConnectionForm
     Friend WithEvents buttonBetSim As System.Windows.Forms.Button
     Friend WithEvents btnRaceDays As System.Windows.Forms.Button
     Friend WithEvents buttonManage As System.Windows.Forms.Button
+    Friend WithEvents btnConMan As System.Windows.Forms.Button
 End Class

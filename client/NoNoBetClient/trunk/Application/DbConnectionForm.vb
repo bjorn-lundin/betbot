@@ -198,4 +198,12 @@ Public Class DbConnectionForm
     'Reload combo from Registry
     LoadCombo()
   End Sub
+
+  Private _ConMan As ConnectionManager
+
+  Private Sub btnConMan_Click(sender As System.Object, e As System.EventArgs) Handles btnConMan.Click
+    _ConMan = New ConnectionManager
+
+    _ConMan.StartForm()
+  End Sub
 End Class
