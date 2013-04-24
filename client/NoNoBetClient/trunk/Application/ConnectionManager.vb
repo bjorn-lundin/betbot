@@ -1,4 +1,5 @@
 ﻿Imports BaseComponents
+Imports DbInterface
 
 Public Class ConnectionManager
   Inherits BaseForm
@@ -129,21 +130,68 @@ Public Class ConnectionManager
 
   Private Sub InitListView()
     Dim item As ListViewItem
+    Dim subItem As ListViewItem.ListViewSubItem
 
     lviewConnections.View = View.Details
     lviewConnections.GridLines = True
     lviewConnections.FullRowSelect = True
+    lviewConnections.MultiSelect = False
 
     lviewConnections.Columns.Add("Name", 10)
     lviewConnections.Columns.Add("Connection string", 20)
+    lviewConnections.Columns.Add("Status")
 
-    item = New ListViewItem("Dummy")
-    item.SubItems.Add("No connection string")
+    item = New ListViewItem("Dummy1")
+
+    subItem = New ListViewItem.ListViewSubItem
+    subItem.Text = "Connection 1"
+
+    item.SubItems.Add(subItem)
+
+    subItem = New ListViewItem.ListViewSubItem
+    subItem.Text = " ### "
+    'subItem.ForeColor = Color.Red
+    subItem.BackColor = Color.Red
+
+    item.SubItems.Add(subItem)
 
     lviewConnections.Items.Add(item)
+
+
+    item = New ListViewItem("Dummy2")
+
+    subItem = New ListViewItem.ListViewSubItem
+    subItem.Text = "Connection 2"
+
+    item.SubItems.Add(subItem)
+
+    subItem = New ListViewItem.ListViewSubItem
+    subItem.Text = " ### "
+    'subItem.ForeColor = Color.Green
+    subItem.BackColor = Color.Green
+
+    item.SubItems.Add(subItem)
+
+    lviewConnections.Items.Add(item)
+
     lviewConnections.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize)
   End Sub
 
+  Private Function GetSelectedItem() As DbConnection
+    If (lviewConnections.SelectedItems IsNot Nothing) Then
+      If (lviewConnections.SelectedItems.Item(0) IsNot Nothing) Then
+        Return CType(lviewConnections.SelectedItems.Item(0).Tag, DbConnection)
+      Else
+        Return Nothing
+      End If
+    Else
+      Return Nothing
+    End If
+  End Function
+
+  Private Sub AddConnection(db As DbConnection)
+
+  End Sub
   Private Sub ConnectionManager_Load(sender As Object, e As System.EventArgs) Handles Me.Load
     InitListView()
   End Sub
