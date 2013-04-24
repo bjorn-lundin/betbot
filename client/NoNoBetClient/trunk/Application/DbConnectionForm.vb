@@ -82,7 +82,7 @@ Public Class DbConnectionForm
     End If
 
     If GetSelectedDbConnection() IsNot Nothing Then
-      _DbConn = New DbConnection(GetSelectedDbConnection.BuildConnectionString)
+      _DbConn = New DbConnection(GetSelectedDbConnection)
       _DbConn.Open()
     End If
     'Dim conStr As String = "Server=localhost;Port=5432;User Id=nonobetmats;Password=nonobet0088;Database=nonobet-testdb;Preload Reader=True;"
@@ -113,19 +113,19 @@ Public Class DbConnectionForm
 
   Private Sub btnBrowse_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowse.Click
     Dim raceDaysFrm As RaceDaysForm = New RaceDaysForm
-    raceDaysFrm.StartForm(_DbConn)
+    raceDaysFrm.StartForm(True, _DbConn)
 
   End Sub
 
   Private Sub btnTest_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTest.Click
     Dim testFrm As TestForm = New TestForm
-    testFrm.StartForm(_DbConn)
+    testFrm.StartForm(True, _DbConn)
 
   End Sub
 
   Private Sub buttonStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStats.Click
     Dim statFrm As StatForm = New StatForm
-    statFrm.StartForm(_DbConn)
+    statFrm.StartForm(True, _DbConn)
   End Sub
 
   Private Sub buttonClose_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonClose.Click
@@ -176,12 +176,12 @@ Public Class DbConnectionForm
 
   Private Sub buttonBetSim_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonBetSim.Click
     Dim betSimForm As RaceBetSim = New RaceBetSim
-    betSimForm.StartForm(_DbConn)
+    betSimForm.StartForm(True, _DbConn)
   End Sub
 
   Private Sub btnRaceDays_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRaceDays.Click
     Dim rFrm As RaceSelectForm = New RaceSelectForm
-    rFrm.StartForm(_DbConn)
+    rFrm.StartForm(True, _DbConn)
   End Sub
 
   Private Sub buttonManage_Click(sender As System.Object, e As System.EventArgs) Handles buttonManage.Click
@@ -204,6 +204,6 @@ Public Class DbConnectionForm
   Private Sub btnConMan_Click(sender As System.Object, e As System.EventArgs) Handles btnConMan.Click
     _ConMan = New ConnectionManager
 
-    _ConMan.StartForm()
+    _ConMan.StartForm(True)
   End Sub
 End Class
