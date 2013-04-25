@@ -138,38 +138,29 @@ Public Class ConnectionManager
     lviewConnections.MultiSelect = False
 
     lviewConnections.Columns.Add("Name", 10)
-    lviewConnections.Columns.Add("Connection string", 20)
     lviewConnections.Columns.Add("Status")
 
-    item = New ListViewItem("Dummy1")
 
+
+    'Row 1
+    item = New ListViewItem("Dummy1")
     subItem = New ListViewItem.ListViewSubItem
-    subItem.Text = "Connection 1"
 
     item.SubItems.Add(subItem)
-
-    subItem = New ListViewItem.ListViewSubItem
     subItem.Text = " ### "
     'subItem.ForeColor = Color.Red
     subItem.BackColor = Color.Red
-
     item.SubItems.Add(subItem)
 
     lviewConnections.Items.Add(item)
 
-
+    'Row 2
     item = New ListViewItem("Dummy2")
-
     subItem = New ListViewItem.ListViewSubItem
-    subItem.Text = "Connection 2"
 
-    item.SubItems.Add(subItem)
-
-    subItem = New ListViewItem.ListViewSubItem
     subItem.Text = " ### "
     'subItem.ForeColor = Color.Green
     subItem.BackColor = Color.Green
-
     item.SubItems.Add(subItem)
 
     lviewConnections.Items.Add(item)

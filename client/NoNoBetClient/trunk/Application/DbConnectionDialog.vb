@@ -22,9 +22,11 @@ Public Class DbConnectionDialog
     Me.ConnectButton = New System.Windows.Forms.Button()
     Me.txtConnectionString = New System.Windows.Forms.TextBox()
     Me.grpConnectionParams = New System.Windows.Forms.GroupBox()
+    Me.btnClearParams = New System.Windows.Forms.Button()
+    Me.btnRemoveParams = New System.Windows.Forms.Button()
     Me.buttonClearRegistry = New System.Windows.Forms.Button()
     Me.chkSSL = New System.Windows.Forms.CheckBox()
-    Me.ButtonSaveParams = New System.Windows.Forms.Button()
+    Me.btnSaveParams = New System.Windows.Forms.Button()
     Me.grpConnectionTest = New System.Windows.Forms.GroupBox()
     Me.DisconnectButton = New System.Windows.Forms.Button()
     Me.labelCondition = New System.Windows.Forms.Label()
@@ -34,9 +36,13 @@ Public Class DbConnectionDialog
     Me.labelPID = New System.Windows.Forms.Label()
     Me.txtCondition = New System.Windows.Forms.TextBox()
     Me.labelConnectionString = New System.Windows.Forms.Label()
+    Me.grpSavedConnections = New System.Windows.Forms.GroupBox()
+    Me.cboConnection = New System.Windows.Forms.ComboBox()
+    Me.ButtonSaveParams = New System.Windows.Forms.Button()
     Me.panelBottom.SuspendLayout()
     Me.grpConnectionParams.SuspendLayout()
     Me.grpConnectionTest.SuspendLayout()
+    Me.grpSavedConnections.SuspendLayout()
     Me.SuspendLayout()
     '
     'panelBottom
@@ -44,15 +50,15 @@ Public Class DbConnectionDialog
     Me.panelBottom.Controls.Add(Me.ButtonCancel)
     Me.panelBottom.Controls.Add(Me.OkButton)
     Me.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom
-    Me.panelBottom.Location = New System.Drawing.Point(0, 418)
+    Me.panelBottom.Location = New System.Drawing.Point(0, 538)
     Me.panelBottom.Name = "panelBottom"
-    Me.panelBottom.Size = New System.Drawing.Size(590, 52)
+    Me.panelBottom.Size = New System.Drawing.Size(592, 52)
     Me.panelBottom.TabIndex = 0
     '
     'ButtonCancel
     '
     Me.ButtonCancel.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.ButtonCancel.Location = New System.Drawing.Point(402, 17)
+    Me.ButtonCancel.Location = New System.Drawing.Point(404, 17)
     Me.ButtonCancel.Name = "ButtonCancel"
     Me.ButtonCancel.Size = New System.Drawing.Size(75, 23)
     Me.ButtonCancel.TabIndex = 3
@@ -62,7 +68,7 @@ Public Class DbConnectionDialog
     'OkButton
     '
     Me.OkButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.OkButton.Location = New System.Drawing.Point(503, 17)
+    Me.OkButton.Location = New System.Drawing.Point(505, 17)
     Me.OkButton.Name = "OkButton"
     Me.OkButton.Size = New System.Drawing.Size(75, 23)
     Me.OkButton.TabIndex = 2
@@ -168,8 +174,12 @@ Public Class DbConnectionDialog
     '
     'grpConnectionParams
     '
+    Me.grpConnectionParams.Controls.Add(Me.btnClearParams)
+    Me.grpConnectionParams.Controls.Add(Me.btnRemoveParams)
+    Me.grpConnectionParams.Controls.Add(Me.buttonClearRegistry)
     Me.grpConnectionParams.Controls.Add(Me.chkSSL)
     Me.grpConnectionParams.Controls.Add(Me.txtPort)
+    Me.grpConnectionParams.Controls.Add(Me.btnSaveParams)
     Me.grpConnectionParams.Controls.Add(Me.labelServer)
     Me.grpConnectionParams.Controls.Add(Me.txtServer)
     Me.grpConnectionParams.Controls.Add(Me.labelPort)
@@ -180,16 +190,34 @@ Public Class DbConnectionDialog
     Me.grpConnectionParams.Controls.Add(Me.txtPassword)
     Me.grpConnectionParams.Controls.Add(Me.labelPassword)
     Me.grpConnectionParams.Dock = System.Windows.Forms.DockStyle.Top
-    Me.grpConnectionParams.Location = New System.Drawing.Point(0, 0)
+    Me.grpConnectionParams.Location = New System.Drawing.Point(0, 69)
     Me.grpConnectionParams.Name = "grpConnectionParams"
-    Me.grpConnectionParams.Size = New System.Drawing.Size(590, 201)
+    Me.grpConnectionParams.Size = New System.Drawing.Size(592, 252)
     Me.grpConnectionParams.TabIndex = 14
     Me.grpConnectionParams.TabStop = False
     Me.grpConnectionParams.Text = "Connection parameters"
     '
+    'btnClearParams
+    '
+    Me.btnClearParams.Location = New System.Drawing.Point(418, 26)
+    Me.btnClearParams.Name = "btnClearParams"
+    Me.btnClearParams.Size = New System.Drawing.Size(67, 23)
+    Me.btnClearParams.TabIndex = 28
+    Me.btnClearParams.Text = "Clear"
+    Me.btnClearParams.UseVisualStyleBackColor = True
+    '
+    'btnRemoveParams
+    '
+    Me.btnRemoveParams.Location = New System.Drawing.Point(168, 213)
+    Me.btnRemoveParams.Name = "btnRemoveParams"
+    Me.btnRemoveParams.Size = New System.Drawing.Size(125, 23)
+    Me.btnRemoveParams.TabIndex = 27
+    Me.btnRemoveParams.Text = "Remove Connection"
+    Me.btnRemoveParams.UseVisualStyleBackColor = True
+    '
     'buttonClearRegistry
     '
-    Me.buttonClearRegistry.Location = New System.Drawing.Point(433, 179)
+    Me.buttonClearRegistry.Location = New System.Drawing.Point(418, 213)
     Me.buttonClearRegistry.Name = "buttonClearRegistry"
     Me.buttonClearRegistry.Size = New System.Drawing.Size(145, 23)
     Me.buttonClearRegistry.TabIndex = 26
@@ -206,20 +234,18 @@ Public Class DbConnectionDialog
     Me.chkSSL.Text = "SSL"
     Me.chkSSL.UseVisualStyleBackColor = True
     '
-    'ButtonSaveParams
+    'btnSaveParams
     '
-    Me.ButtonSaveParams.Location = New System.Drawing.Point(286, 179)
-    Me.ButtonSaveParams.Name = "ButtonSaveParams"
-    Me.ButtonSaveParams.Size = New System.Drawing.Size(111, 23)
-    Me.ButtonSaveParams.TabIndex = 12
-    Me.ButtonSaveParams.Text = "Save Connection"
-    Me.ButtonSaveParams.UseVisualStyleBackColor = True
+    Me.btnSaveParams.Location = New System.Drawing.Point(12, 213)
+    Me.btnSaveParams.Name = "btnSaveParams"
+    Me.btnSaveParams.Size = New System.Drawing.Size(111, 23)
+    Me.btnSaveParams.TabIndex = 12
+    Me.btnSaveParams.Text = "Save Connection"
+    Me.btnSaveParams.UseVisualStyleBackColor = True
     '
     'grpConnectionTest
     '
-    Me.grpConnectionTest.Controls.Add(Me.buttonClearRegistry)
     Me.grpConnectionTest.Controls.Add(Me.DisconnectButton)
-    Me.grpConnectionTest.Controls.Add(Me.ButtonSaveParams)
     Me.grpConnectionTest.Controls.Add(Me.labelCondition)
     Me.grpConnectionTest.Controls.Add(Me.labelInfo)
     Me.grpConnectionTest.Controls.Add(Me.txtPID)
@@ -229,17 +255,17 @@ Public Class DbConnectionDialog
     Me.grpConnectionTest.Controls.Add(Me.labelConnectionString)
     Me.grpConnectionTest.Controls.Add(Me.ConnectButton)
     Me.grpConnectionTest.Controls.Add(Me.txtConnectionString)
-    Me.grpConnectionTest.Dock = System.Windows.Forms.DockStyle.Top
-    Me.grpConnectionTest.Location = New System.Drawing.Point(0, 201)
+    Me.grpConnectionTest.Dock = System.Windows.Forms.DockStyle.Fill
+    Me.grpConnectionTest.Location = New System.Drawing.Point(0, 321)
     Me.grpConnectionTest.Name = "grpConnectionTest"
-    Me.grpConnectionTest.Size = New System.Drawing.Size(590, 217)
+    Me.grpConnectionTest.Size = New System.Drawing.Size(592, 269)
     Me.grpConnectionTest.TabIndex = 15
     Me.grpConnectionTest.TabStop = False
     Me.grpConnectionTest.Text = "Connection test"
     '
     'DisconnectButton
     '
-    Me.DisconnectButton.Location = New System.Drawing.Point(137, 179)
+    Me.DisconnectButton.Location = New System.Drawing.Point(125, 179)
     Me.DisconnectButton.Name = "DisconnectButton"
     Me.DisconnectButton.Size = New System.Drawing.Size(97, 23)
     Me.DisconnectButton.TabIndex = 25
@@ -306,12 +332,42 @@ Public Class DbConnectionDialog
     Me.labelConnectionString.TabIndex = 14
     Me.labelConnectionString.Text = "Connection string used"
     '
+    'grpSavedConnections
+    '
+    Me.grpSavedConnections.Controls.Add(Me.cboConnection)
+    Me.grpSavedConnections.Dock = System.Windows.Forms.DockStyle.Top
+    Me.grpSavedConnections.Location = New System.Drawing.Point(0, 0)
+    Me.grpSavedConnections.Name = "grpSavedConnections"
+    Me.grpSavedConnections.Size = New System.Drawing.Size(592, 69)
+    Me.grpSavedConnections.TabIndex = 16
+    Me.grpSavedConnections.TabStop = False
+    Me.grpSavedConnections.Text = "Saved connections"
+    '
+    'cboConnection
+    '
+    Me.cboConnection.FormattingEnabled = True
+    Me.cboConnection.Location = New System.Drawing.Point(5, 29)
+    Me.cboConnection.Margin = New System.Windows.Forms.Padding(2)
+    Me.cboConnection.Name = "cboConnection"
+    Me.cboConnection.Size = New System.Drawing.Size(424, 21)
+    Me.cboConnection.TabIndex = 3
+    '
+    'ButtonSaveParams
+    '
+    Me.ButtonSaveParams.Location = New System.Drawing.Point(12, 213)
+    Me.ButtonSaveParams.Name = "ButtonSaveParams"
+    Me.ButtonSaveParams.Size = New System.Drawing.Size(111, 23)
+    Me.ButtonSaveParams.TabIndex = 12
+    Me.ButtonSaveParams.Text = "Save Connection"
+    Me.ButtonSaveParams.UseVisualStyleBackColor = True
+    '
     'DbConnectionDialog
     '
-    Me.ClientSize = New System.Drawing.Size(590, 470)
+    Me.ClientSize = New System.Drawing.Size(592, 590)
+    Me.Controls.Add(Me.panelBottom)
     Me.Controls.Add(Me.grpConnectionTest)
     Me.Controls.Add(Me.grpConnectionParams)
-    Me.Controls.Add(Me.panelBottom)
+    Me.Controls.Add(Me.grpSavedConnections)
     Me.FormTitle = "Manage Database Connections"
     Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
     Me.Name = "DbConnectionDialog"
@@ -321,6 +377,7 @@ Public Class DbConnectionDialog
     Me.grpConnectionParams.PerformLayout()
     Me.grpConnectionTest.ResumeLayout(False)
     Me.grpConnectionTest.PerformLayout()
+    Me.grpSavedConnections.ResumeLayout(False)
     Me.ResumeLayout(False)
 
   End Sub
@@ -339,11 +396,8 @@ Public Class DbConnectionDialog
   Friend WithEvents labelDatabase As System.Windows.Forms.Label
   Friend WithEvents ConnectButton As System.Windows.Forms.Button
   Friend WithEvents txtConnectionString As System.Windows.Forms.TextBox
-
-  Private _DbConnectionString As DbInterface.DbConnectionString
-  Private _DbConnection As DbInterface.DbConnection
   Friend WithEvents grpConnectionParams As System.Windows.Forms.GroupBox
-  Friend WithEvents ButtonSaveParams As System.Windows.Forms.Button
+  Friend WithEvents btnSaveParams As System.Windows.Forms.Button
   Friend WithEvents grpConnectionTest As System.Windows.Forms.GroupBox
   Friend WithEvents labelConnectionString As System.Windows.Forms.Label
   Friend WithEvents labelCondition As System.Windows.Forms.Label
@@ -355,6 +409,14 @@ Public Class DbConnectionDialog
   Friend WithEvents DisconnectButton As System.Windows.Forms.Button
   Friend WithEvents chkSSL As System.Windows.Forms.CheckBox
   Friend WithEvents buttonClearRegistry As System.Windows.Forms.Button
+  Friend WithEvents grpSavedConnections As System.Windows.Forms.GroupBox
+  Friend WithEvents cboConnection As System.Windows.Forms.ComboBox
+  Friend WithEvents btnClearParams As System.Windows.Forms.Button
+  Friend WithEvents btnRemoveParams As System.Windows.Forms.Button
+  Friend WithEvents ButtonSaveParams As System.Windows.Forms.Button
+
+  ''Private _DbConnectionString As DbInterface.DbConnectionString
+  Private _DbConnection As DbInterface.DbConnection
   Private _DialogResult As Boolean = False
 
   Public Sub New()
@@ -362,15 +424,14 @@ Public Class DbConnectionDialog
     InitializeComponent()
   End Sub
 
-  Public Function StartDialog(ByRef dbConStr As DbInterface.DbConnectionString) As Boolean
-    _DbConnectionString = dbConStr
+  Public Function StartDialog() As Boolean
     MyBase.StartForm(True)
     Return _DialogResult
   End Function
 
-  Public Function GetDbConnectionString() As DbInterface.DbConnectionString
-    Return _DbConnectionString
-  End Function
+  'Public Function GetDbConnectionString() As DbInterface.DbConnectionString
+  '  Return _DbConnectionString
+  'End Function
 
   Public Function GetDbConnection() As DbInterface.DbConnection
     Return _DbConnection
@@ -378,7 +439,7 @@ Public Class DbConnectionDialog
 
   Private Sub OkButton_Click(sender As System.Object, e As System.EventArgs) Handles OkButton.Click
     'Save input to ConnectionStringObject
-    SaveToConnectionStringObject()
+    'SaveToConnectionStringObject()
     _DialogResult = True
     MyBase.EndForm()
   End Sub
@@ -389,20 +450,23 @@ Public Class DbConnectionDialog
   End Sub
 
   Private Sub SaveButton_Click(sender As System.Object, e As System.EventArgs)
+    Dim dbConStr As DbConnectionString = New DbConnectionString
     'Save input to ConnectionStringObject
-    SaveToConnectionStringObject()
+    SaveToConnectionStringObject(dbConStr)
     'Save to Registry
-    _DbConnectionString.Save()
+    dbConStr.Save()
+    dbConStr = Nothing
+    LoadCombo()
   End Sub
 
-  Private Function ConnectDb() As Boolean
+  Private Function ConnectDb(dbConStr As DbConnectionString) As Boolean
     If Not (_DbConnection Is Nothing) Then
       _DbConnection.Close()
       _DbConnection.Dispose()
       _DbConnection = Nothing
     End If
 
-    _DbConnection = New DbInterface.DbConnection(_DbConnectionString)
+    _DbConnection = New DbInterface.DbConnection(dbConStr)
 
     Return _DbConnection.Open()
   End Function
@@ -413,62 +477,129 @@ Public Class DbConnectionDialog
     End If
   End Sub
 
-  Private Sub UpdateConnectionInfo()
-    txtConnectionString.Text = _DbConnectionString.BuildConnectionString
-
+  Private Sub UpdateConnectionInfo(dbConStr As DbConnectionString)
     If (_DbConnection Is Nothing) Then
       txtPID.Text = String.Empty
       txtCondition.Text = String.Empty
       txtInfo.Text = String.Empty
+      txtConnectionString.Text = String.Empty
+
     Else
+      txtConnectionString.Text = _DbConnection.ConnectionString.BuildConnectionString
       txtPID.Text = _DbConnection.PID.ToString
       txtCondition.Text = _DbConnection.State.ToString
       txtInfo.Text = _DbConnection.VersionLong
     End If
   End Sub
 
-  Private Sub ButtonSaveParams_Click(sender As System.Object, e As System.EventArgs) Handles ButtonSaveParams.Click
+  Private Sub ButtonSaveParams_Click(sender As System.Object, e As System.EventArgs) Handles btnSaveParams.Click, ButtonSaveParams.Click
+    Dim dbConStr As DbConnectionString = New DbConnectionString
     'Save input to ConnectionStringObject
-    SaveToConnectionStringObject()
+    SaveToConnectionStringObject(dbConStr)
     'Save to Registry
-    _DbConnectionString.Save()
+    dbConStr.Save()
+    LoadCombo()
   End Sub
 
   Private Sub ConnectButton_Click(sender As System.Object, e As System.EventArgs) Handles ConnectButton.Click
-    SaveToConnectionStringObject()
-    ConnectDb()
-    UpdateConnectionInfo()
-  End Sub
-
-  Private Sub InitDialog()
-    txtServer.Text = _DbConnectionString.Server
-    txtPort.Text = _DbConnectionString.Port
-    txtDatabase.Text = _DbConnectionString.Database
-    txtPassword.Text = _DbConnectionString.Password
-    txtUserId.Text = _DbConnectionString.UserId
-    chkSSL.Checked = _DbConnectionString.SSL
-    txtConnectionString.Text = String.Empty
-  End Sub
-
-  Private Sub SaveToConnectionStringObject()
-    _DbConnectionString.Server = txtServer.Text.Trim
-    _DbConnectionString.Port = txtPort.Text.Trim
-    _DbConnectionString.Database = txtDatabase.Text.Trim
-    _DbConnectionString.UserId = txtUserId.Text.Trim
-    _DbConnectionString.Password = txtPassword.Text
-    _DbConnectionString.SSL = chkSSL.Checked
-  End Sub
-
-  Private Sub DbConnectionDialog_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    InitDialog()
+    Dim dbConStr As DbConnectionString = New DbConnectionString
+    SaveToConnectionStringObject(dbConStr)
+    ConnectDb(dbConStr)
+    UpdateConnectionInfo(dbConStr)
   End Sub
 
   Private Sub DisconnectButton_Click(sender As System.Object, e As System.EventArgs) Handles DisconnectButton.Click
     DisconnectDb()
-    UpdateConnectionInfo()
+    UpdateConnectionInfo(Nothing)
   End Sub
 
   Private Sub buttonClearRegistry_Click(sender As System.Object, e As System.EventArgs) Handles buttonClearRegistry.Click
-    DbConnectionString.ClearRegistry()
+    DbConnectionString.DeleteAllFromRegistry()
   End Sub
+
+  Private Sub btnClearParams_Click(sender As System.Object, e As System.EventArgs) Handles btnClearParams.Click
+    cboConnection.SelectedItem = Nothing
+    InitDialog()
+  End Sub
+
+  Private Sub btnRemoveParams_Click(sender As System.Object, e As System.EventArgs) Handles btnRemoveParams.Click
+    Dim selectedConnection As DbConnectionString = GetSelectedConnection()
+
+    If (selectedConnection IsNot Nothing) Then
+      DbConnectionString.DeleteFromRegistryKey(selectedConnection.Name)
+    End If
+    LoadCombo()
+    InitDialog()
+  End Sub
+
+  Private Sub InitDialog()
+    Dim selectedConnection As DbConnectionString = GetSelectedConnection()
+
+    If (selectedConnection IsNot Nothing) Then
+      txtServer.Text = selectedConnection.Server
+      txtPort.Text = selectedConnection.Port
+      txtDatabase.Text = selectedConnection.Database
+      txtPassword.Text = selectedConnection.Password
+      txtUserId.Text = selectedConnection.UserId
+      chkSSL.Checked = selectedConnection.SSL
+      txtConnectionString.Text = String.Empty
+    Else
+      txtServer.Text = String.Empty
+      txtPort.Text = String.Empty
+      txtDatabase.Text = String.Empty
+      txtPassword.Text = String.Empty
+      txtUserId.Text = String.Empty
+      chkSSL.Checked = False
+      txtConnectionString.Text = String.Empty
+    End If
+  End Sub
+
+  Private Sub SaveToConnectionStringObject(dbConStr As DbConnectionString)
+    dbConStr.Server = txtServer.Text.Trim
+    dbConStr.Port = txtPort.Text.Trim
+    dbConStr.Database = txtDatabase.Text.Trim
+    dbConStr.UserId = txtUserId.Text.Trim
+    dbConStr.Password = txtPassword.Text
+    dbConStr.SSL = chkSSL.Checked
+  End Sub
+
+
+
+  Private Sub LoadCombo()
+    'Dim myRegistry As RegistryKey = Registry.CurrentUser
+    Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
+    Dim dbConStr As DbConnectionString = Nothing
+
+    cboConnection.Items.Clear()
+
+    If (regSubKey IsNot Nothing) Then
+      For Each conName As String In regSubKey.GetSubKeyNames
+        DbConnectionString.LoadFromRegistry(conName, dbConStr)
+        cboConnection.Items.Add(dbConStr)
+      Next
+    End If
+
+    If (cboConnection.Items.Count > 0) Then
+      cboConnection.SelectedIndex = 0
+    End If
+  End Sub
+
+  Private Function GetSelectedConnection() As DbConnectionString
+    If (cboConnection.SelectedItem IsNot Nothing) Then
+      Return CType(cboConnection.SelectedItem, DbConnectionString)
+    Else
+      Return Nothing
+    End If
+  End Function
+
+  Private Sub cboConnection_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cboConnection.SelectedIndexChanged
+    InitDialog()
+  End Sub
+
+
+  Private Sub DbConnectionDialog_Load(sender As Object, e As System.EventArgs) Handles Me.Load
+    LoadCombo()
+    InitDialog()
+  End Sub
+
 End Class
