@@ -64,6 +64,7 @@ class BetBot(object):
     LAST_LOSS = None
     LOSS_HOURS = None
     HAS_LOST_LAY_BET_TODAY = None
+    TREAT_LOSS = None
 
     USERNAME = None
     PASSWORD = None
@@ -416,6 +417,8 @@ class BetBot(object):
 ############################ check_last_loss
 
     def check_has_lost_today (self) :
+
+
         profit = 0.0
         cur = self.conn.cursor()
 
@@ -438,6 +441,12 @@ class BetBot(object):
         if self.HAS_LOST_LAY_BET_TODAY  :
             profit = self.profit_today()
             self.log.warning( 'profit today = ' + str(profit))
+
+            if not self.TREAT_LOSS  :
+                self.log.info( 'LAY-bet: ' + self.BET_CATEGORY + ' but treat loss: ' + str(self.TREAT_LOSS )  )
+                return
+
+
 
             if profit > 0.0 :
                 self.log.warning( 'bet_type: ' + self.BET_CATEGORY + ' positive profit now. ' + \
@@ -558,6 +567,14 @@ class BetBot(object):
 
         self.DRY_RUN                         = config.getboolean(bet_category, 'dry_run')
         self.log.info('dry_run ' + str(self.DRY_RUN))
+
+
+        try:
+            self.TREAT_LOSS           = config.getboolean(bet_category, 'treat_loss')
+        except ConfigParser.NoOptionError :
+            self.TREAT_LOSS = False
+        self.log.info('treat_loss ' + str(self.TREAT_LOSS))
+
 
         self.BET_CATEGORY = bet_category
         self.log.info('Bet_category ' + self.BET_CATEGORY)
