@@ -145,15 +145,15 @@ Public Class DbConnectionForm
   Private Sub LoadCombo()
     'Dim myRegistry As RegistryKey = Registry.CurrentUser
     Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
-    Dim dbStrObj As DbConnectionString = Nothing
+    Dim dbConStr As DbConnectionString = Nothing
 
     cboConnection.Items.Clear()
 
     If (regSubKey IsNot Nothing) Then
       For Each conName As String In regSubKey.GetSubKeyNames
-        dbStrObj = New DbConnectionString
-        dbStrObj.LoadFromRegistry(conName)
-        cboConnection.Items.Add(dbStrObj)
+        dbConStr = New DbConnectionString
+        DbConnectionString.LoadFromRegistry(conName, dbConStr)
+        cboConnection.Items.Add(dbConStr)
       Next
     End If
 
@@ -191,7 +191,7 @@ Public Class DbConnectionForm
     End If
 
     Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
-    dbConDialog.StartDialog(conStringObj)
+    dbConDialog.StartDialog()
     dbConDialog.Dispose()
     dbConDialog = Nothing
 
