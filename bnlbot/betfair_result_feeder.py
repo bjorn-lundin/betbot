@@ -96,7 +96,7 @@ class Market(object):
 
             return not eos
         else :
-            self.log.error('market_id is None')
+#            self.log.error('market_id is None')
             return False
 
 
@@ -116,99 +116,11 @@ class Market(object):
         bet_won = False
         back_bet = True
 
-        if   self.bet_type == "DRY_RUN_HORSES_WINNER_LAY_BET" :
+        if  self.bet_type.find('_LAY_BET') > -1 :
             bet_won = not selection_in_winners
             back_bet = False
 
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_54_04" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_59_01" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_35_07" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_23_02" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_52_02" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_BACK_BET_6_09" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HORSES_PLACE_LAY_BET_6_10" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HORSES_PLACE_BACK_BET" :
-            bet_won = selection_in_winners
-
-
-        elif self.bet_type == "DRY_RUN_HORSES_WINNER_FAVORITE_LAY_BET" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_16_1000" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_LAY_BET_LAST" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_38_01" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_BACK_BET_45_07" :
-            bet_won = selection_in_winners
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_WINNER_FAVORITE_LAY_BET" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_LAY_BET" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9" :
-            bet_won = not selection_in_winners
-            back_bet = False
-
-        elif self.bet_type == "DRY_RUN_HOUNDS_PLACE_BACK_BET" :
+        elif self.bet_type.find('_BACK_BET') > -1 :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
@@ -327,7 +239,7 @@ class Result_Feeder(object):
 
     def fetch(self, url):
         """get the feed"""
-        response = urllib2.urlopen(url, timeout = 60)
+        response = urllib2.urlopen(url, timeout = 120)
        #catch the timeout at main loop
         xmlstring = response.read()
         return etree.fromstring(xmlstring)
