@@ -143,23 +143,7 @@ Public Class DbConnectionForm
   End Function
 
   Private Sub LoadCombo()
-    'Dim myRegistry As RegistryKey = Registry.CurrentUser
-    Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
-    Dim dbConStr As DbConnectionString = Nothing
-
-    cboConnection.Items.Clear()
-
-    If (regSubKey IsNot Nothing) Then
-      For Each conName As String In regSubKey.GetSubKeyNames
-        dbConStr = New DbConnectionString
-        DbConnectionString.LoadFromRegistry(conName, dbConStr)
-        cboConnection.Items.Add(dbConStr)
-      Next
-    End If
-
-    If (cboConnection.Items.Count > 0) Then
-      cboConnection.SelectedIndex = 0
-    End If
+    DbConnectionString.LoadDbConnectionStringsCombo(cboConnection)
   End Sub
 
   Private Sub DbConnectionForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
