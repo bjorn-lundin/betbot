@@ -8,25 +8,28 @@ Imports DbInterface
 
 Public Class StartUp
 
-    Public Sub New()
+  Public Sub New()
 
-    End Sub
+  End Sub
 
-    Private Shared _DbConnection As DbConnection
+  Private Shared _DbConnection As DbConnection
 
-    Public Shared Function Main() As Integer
-        Dim workingDir As String = GetCurrentDirectory()
-        Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
-        workingDir = currDirectoryInfo.Parent.FullName
+  Public Shared Function Main() As Integer
+    Dim workingDir As String = GetCurrentDirectory()
+    Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
+    workingDir = currDirectoryInfo.Parent.FullName
 
-        'Dim conString As DbConnectionString = New DbConnectionString
-        'Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
-        'dbConDialog.StartDialog(conString)
+    'Dim conString As DbConnectionString = New DbConnectionString
+    'Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
+    'dbConDialog.StartDialog(conString)
+    Dim conMan As New ConnectionManager
 
-        Dim connectDialog As DbConnectionForm = New DbConnectionForm
+    conMan.StartForm(True)
 
-        connectDialog.ExeceuteDialog(workingDir)
+    'Dim connectDialog As DbConnectionForm = New DbConnectionForm
 
-        Return 0
-    End Function
+    'connectDialog.ExeceuteDialog(workingDir)
+
+    Return 0
+  End Function
 End Class

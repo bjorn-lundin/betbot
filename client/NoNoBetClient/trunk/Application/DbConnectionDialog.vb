@@ -563,25 +563,8 @@ Public Class DbConnectionDialog
     dbConStr.SSL = chkSSL.Checked
   End Sub
 
-
-
   Private Sub LoadCombo()
-    'Dim myRegistry As RegistryKey = Registry.CurrentUser
-    Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
-    Dim dbConStr As DbConnectionString = Nothing
-
-    cboConnection.Items.Clear()
-
-    If (regSubKey IsNot Nothing) Then
-      For Each conName As String In regSubKey.GetSubKeyNames
-        DbConnectionString.LoadFromRegistry(conName, dbConStr)
-        cboConnection.Items.Add(dbConStr)
-      Next
-    End If
-
-    If (cboConnection.Items.Count > 0) Then
-      cboConnection.SelectedIndex = 0
-    End If
+    DbConnectionString.LoadDbConnectionStringsCombo(cboConnection)
   End Sub
 
   Private Function GetSelectedConnection() As DbConnectionString

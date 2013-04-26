@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Data
 Imports Microsoft.Win32
+Imports System.Windows.Forms
 
 Public Class DbConnectionString
 
@@ -255,6 +256,49 @@ Public Class DbConnectionString
     connectionKey.SetValue(_DatabaseParamName, _Database)
     connectionKey.SetValue(_SSLParamName, _SSL)
     connectionKey.SetValue(_PreloadReaderParamName, _PreloadReader)
+  End Sub
+
+  ''' <summary>
+  ''' Get all saved Db connections from registry
+  ''' </summary>
+  ''' <returns>List of DbConnectionString</returns>
+  ''' <remarks></remarks>
+  Public Shared Function GetSavedDbConnectionStrings() As List(Of DbConnectionString)
+    Dim regSubKey As RegistryKey = DbConnectionString.GetRegistryKeyObject
+    Dim dbConStr As DbConnectionString = Nothing
+    Dim dbConStrArray As New List(Of DbConnectionString)
+
+    If (regSubKey IsNot Nothing) Then
+      For Each conName As String In regSubKey.GetSubKeyNames
+        dbConStr = New DbConnectionString
+        DbConnectionString.LoadFromRegistry(conName, dbConStr)
+        dbConStrArray.Add(dbConStr)
+      Next
+    End If
+
+    Return dbConStrArray
+  End Function
+
+  ''' <summary>
+  ''' Load all saved Db connections into specified combo box 
+  ''' </summary>
+  ''' <param name="cbo"></param>
+  ''' <remarks></remarks>
+  Public Shared Sub LoadDbConnectionStringsCombo(cbo As ComboBox)
+    Dim dbConStr As DbConnectionString = Nothing
+    Dim dbConStrArray As List(Of DbConnectionString) = GetSavedDbConnectionStrings()
+
+    cbo.Items.Clear()
+
+    For i As Integer = 0 To dbConStrArray.Count - 1
+      cbo.Items.Add(dbConStrArray.Item(i))
+    Next
+
+    If (cbo.Items.Count > 0) Then
+      cbo.SelectedIndex = 0
+    End If
+
+    dbConStrArray.Clear()
   End Sub
 
   Public Overrides Function ToString() As String
