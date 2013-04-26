@@ -124,7 +124,8 @@ def call_ais_service(params=None, date=None, track=None,
             else:
                 result = service_method()
 
-        download_delay = params['download_delay']
+        if 'download_delay' in params:
+            download_delay = params['download_delay']
         if download_delay > 0:
             LOG.debug('Delaying download with ' + 
                       str(download_delay) + ' seconds')
@@ -150,12 +151,13 @@ def call_ais_service(params=None, date=None, track=None,
                             file_name_dict=file_name_dict)
     return result
     
-def raceday_calendar(params=None, date=None):
+def raceday_calendar_service(params=None, date=None, ret_if_local=False):
     '''
     Calls AIS service fetchRaceDayCalendar
     '''
     params['service'] = 'fetchRaceDayCalendar'
-    result = call_ais_service(params=params, date=date, ret_if_local=True)
+    result = call_ais_service(params=params, date=date, 
+                              ret_if_local=ret_if_local)
     if result:
         for racedayinfo in result.raceDayInfos.RaceDayInfo:
             # Get raceday
@@ -196,8 +198,12 @@ def racing_card_service(params=None, date=None,
     fetched for upcoming races.
     '''
     params['service'] = 'fetchRacingCard'
-    call_ais_service(params=params, date=date, track=track, 
-                     ret_if_local=ret_if_local)
+    result = call_ais_service(
+        params=params, 
+        date=date,
+        track=track,
+        ret_if_local=ret_if_local
+    )
     
 def track_bet_info_service(params=None, date=None, 
                            track=None, ret_if_local=False):
@@ -264,15 +270,49 @@ def load_calendar_history_into_db(params=None):
     filelist = sorted(util.list_files(params['datadir']))
     calendar_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
     pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d).*?') # r = raw string
+    # Get all loaded filenames from db
+    all_loaded = db.LoadedEODFiles.read_all()
+    loaded_files = []
+    for loaded in all_loaded:
+        loaded_files.append(loaded.filename)
+    # Compare with filename
     for filename in calendar_filelist:
+        if filename not in loaded_files:
+            now = datetime.datetime.now()
+            lef = db.LoadedEODFiles(filename=filename, loadtime=now)
+            db.LoadedEODFiles.create(lef)
+        
+            result = re.match(pattern, filename)
+            raceday_date = datetime.date(
+                int(result.group(1)),
+                int(result.group(2)),
+                int(result.group(3))
+            )
+            LOG.info('Loading ' + filename + ' into db')
+            raceday_calendar_service(params=params, date=raceday_date, 
+                                     ret_if_local=True)
+        else:
+            LOG.info(filename + ' already loaded into db')
+        
+def load_racingcard_history_into_db(params=None):
+    '''
+    Iterate over all saved (local) racecard files and
+    save the data into the database.
+    '''
+    filelist = sorted(util.list_files(params['datadir']))
+    racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
+    pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d)_(\d)+.*?') # r = raw string
+    for filename in racingcard_filelist:
         result = re.match(pattern, filename)
-        raceday_date = datetime.date(
+        date = datetime.date(
             int(result.group(1)),
             int(result.group(2)),
             int(result.group(3))
         )
-        raceday_calendar(params=params, date=raceday_date)
-        
+        track = int(result.group(4))
+        racing_card_service(params=params, date=date, 
+                            track=track, ret_if_local=True)
+
 def eod_download_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic
@@ -299,7 +339,7 @@ def eod_download_via_calendar(params=None):
         'V86':'V86'
     }
 
-    raceday_calendar(params=params)
+    raceday_calendar_service(params=params, ret_if_local=True)
     event_array_service(params=params)
     racedays = db.Raceday.read_all()
 #    now = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -340,14 +380,12 @@ def eod_download_via_calendar(params=None):
                 params=params, 
                 date=date, 
                 track=track,
-                ret_if_local = False
             )
             
             track_bet_info_service(
                 params=params, 
                 date=date, 
                 track=track,
-                ret_if_local = False
             )
 
             for race in raceday.races:
@@ -358,7 +396,6 @@ def eod_download_via_calendar(params=None):
                         bettype=bettype, 
                         date=date, 
                         track=track, 
-                        ret_if_local=False
                     )
                     
                     result_service(
@@ -366,5 +403,4 @@ def eod_download_via_calendar(params=None):
                         bettype=bettype, 
                         date=date, 
                         track=track,
-                        ret_if_local=False
                     )

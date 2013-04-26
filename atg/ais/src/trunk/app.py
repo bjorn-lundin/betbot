@@ -55,11 +55,12 @@ def main():
     LOG.info('Starting application')
 
     if cp.INIT_DB in command:
-        LOG.info('Running ' + cp.INIT_DB)
+        LOG.info('Running ' + command)
         db.init_db_client(db_init=True)
+        LOG.info('Ending ' + command)
     
     if cp.INIT_LOCAL_RACEDAYS in command:
-        LOG.info('Running ' + cp.INIT_LOCAL_RACEDAYS)
+        LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
             conf.AIS_WS_URL,
             conf.AIS_USERNAME,
@@ -74,9 +75,10 @@ def main():
             'save_soap_file':True
         }
         ais.load_calendar_history_into_db(params)
+        LOG.info('Ending ' + command)
     
     if cp.EOD_DOWNLOAD in command:
-        LOG.info('Running ' + cp.EOD_DOWNLOAD)
+        LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
             conf.AIS_WS_URL,
             conf.AIS_USERNAME,
@@ -94,18 +96,20 @@ def main():
             'download_delay':conf.AIS_EOD_DOWNLOAD_DELAY
         }
         ais.eod_download_via_calendar(params)
+        LOG.info('Ending ' + command)
     
     if cp.WRITE_META_FILES in command:
-        LOG.info('Running ' + cp.WRITE_META_FILES)
+        LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
             conf.AIS_WS_URL,
             conf.AIS_USERNAME,
             conf.AIS_PASSWORD
         )
         util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
+        LOG.info('Ending ' + command)
     
     if cp.SAVE_FILES_IN_CLOUD in command:
-        LOG.info('Running ' + cp.SAVE_FILES_IN_CLOUD)
+        LOG.info('Running ' + command)
         aws_services.save_files_in_aws_s3_bucket(
             sourcefiles=util.list_files_with_path(
                 dir_path=conf.AIS_DATADIR),
@@ -114,9 +118,10 @@ def main():
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
+        LOG.info('Ending ' + command)
 
     if cp.EMAIL_LOG_STATS in command:
-        LOG.info('Running ' + cp.EMAIL_LOG_STATS)
+        LOG.info('Running ' + command)
         util.email_log_stats_and_errors(
             logdir=conf.AIS_LOGDIR,
             logfile=conf.AIS_LOGFILE,
@@ -127,9 +132,10 @@ def main():
             from_address=conf.EMAIL_LOG_FROM,
             send_list=conf.EMAIL_LOG_SENDLIST
         )
+        LOG.info('Ending ' + command)
 
     if cp.SAVE_DB_DUMP_IN_CLOUD in command:
-        LOG.info('Running ' + cp.SAVE_DB_DUMP_IN_CLOUD)
+        LOG.info('Running ' + command)
         util.save_db_dump_in_cloud(
             dbname=conf.AIS_DB_NAME,
             dumpdir=conf.AIS_DBDUMPDIR,
@@ -138,11 +144,30 @@ def main():
             username=conf.AIS_S3_USER,
             password=conf.AIS_S3_PASSWORD
         )
+        LOG.info('Ending ' + command)
     
     if cp.DELETE_BUCKET_IN_CLOUD in command:
-        LOG.info('Running ' + cp.DELETE_BUCKET_IN_CLOUD)
+        LOG.info('Running ' + command)
         aws_services.delete_aws_s3_bucket(host=conf.AIS_S3_HOST)
-        LOG.info('Ending ' + cp.DELETE_BUCKET_IN_CLOUD)
+        LOG.info('Ending ' + command)
+    
+    if cp.LOAD_EOD_RACINGCARD in command:
+        LOG.info('Running ' + command)
+        ws_client = ais.init_ws_client(
+            conf.AIS_WS_URL,
+            conf.AIS_USERNAME,
+            conf.AIS_PASSWORD
+        )
+        params = {
+            'client':ws_client,
+            'datadir':conf.AIS_DATADIR,
+            'metadir':conf.AIS_METADIR,
+            'ais_version':conf.AIS_VERSION,
+            'ais_type':conf.AIS_TYPE,
+            'save_soap_file':False
+        }
+        ais.load_racingcard_history_into_db(params)
+        LOG.info('Ending ' + command)
         
     LOG.info('Ending application')
     logging.shutdown()    

@@ -6,7 +6,7 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy import Date, Time, Boolean, ForeignKey, Table
+from sqlalchemy import Date, Time, Boolean, ForeignKey, Table, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
 import util
@@ -14,6 +14,36 @@ import conf
 
 BASE = declarative_base()
 
+class LoadedEODFiles(BASE):
+    '''
+    Database entity loaded_eod_files
+    Table holding names of EOD files already loaded into
+    the database.
+    '''
+    __tablename__ = 'loaded_eod_files'
+    id = Column(Integer, primary_key=True)
+    filename = Column(String)
+    loadtime = Column(DateTime)
+    def __init__(self, filename=None, loadtime=None):
+        self.filename = filename
+        self.loadtime = loadtime
+    
+    @staticmethod 
+    def create(new):
+        '''
+        Create a LoadedEODFiles entity in database
+        '''
+        entity = DB_SESSION.add(new)
+        DB_SESSION.commit()
+        return entity
+        
+    @staticmethod
+    def read_all():
+        '''
+        List all LoadedEODFiles entities in database
+        '''
+        return DB_SESSION.query(LoadedEODFiles).all()
+    
 class Raceday(BASE):
     '''
     Database entity Raceday
