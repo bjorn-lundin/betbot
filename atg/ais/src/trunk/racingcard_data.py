@@ -13,7 +13,10 @@ import ast
 
 LOG = logging.getLogger('AIS')
 
-def print_all_data(params=None):
+def load_into_db(datadir=None):
+    print_all_data(datadir=datadir)
+    
+def print_all_data(datadir=None):
     '''
     Iterate over all saved (local) racecard files and
     print the data.
@@ -21,7 +24,7 @@ def print_all_data(params=None):
     For parsing examples see http://www.saltycrane.com/blog/2011/07/example-parsing-xml-lxml-objectify/
     '''
 
-    filelist = sorted(util.list_files_with_path(params['datadir']))
+    filelist = sorted(util.list_files_with_path(datadir))
     racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
 
     regex0 = r'<\?.*?\?>\n'
@@ -513,3 +516,7 @@ def print_all_data(params=None):
                     print(horsestat.year.date.text)
                 except AttributeError:
                     LOG.debug('No attribute: horseStat.year')
+
+if __name__ == "__main__":
+    pass
+    

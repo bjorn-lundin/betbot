@@ -294,24 +294,13 @@ def load_calendar_history_into_db(params=None):
         else:
             LOG.info(filename + ' already loaded into db')
         
-def load_racingcard_history_into_db(params=None):
+def load_racingcard_history_into_db(datadir=None):
     '''
-    Iterate over all saved (local) racecard files and
-    save the data into the database.
+    Pass on the call to iterate over all saved (local) 
+    racecard files and save the data into database.
     '''
-    filelist = sorted(util.list_files(params['datadir']))
-    racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
-    pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d)_(\d)+.*?') # r = raw string
-    for filename in racingcard_filelist:
-        result = re.match(pattern, filename)
-        date = datetime.date(
-            int(result.group(1)),
-            int(result.group(2)),
-            int(result.group(3))
-        )
-        track = int(result.group(4))
-        racing_card_service(params=params, date=date, 
-                            track=track, ret_if_local=True)
+    import racingcard_data
+    racingcard_data.load_into_db(datadir=datadir)
 
 def eod_download_via_calendar(params=None):
     '''
