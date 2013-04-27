@@ -6,7 +6,6 @@ Data handling regarding racingcard data
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 import logging
-import re
 import util
 from lxml import objectify
 import ast
@@ -23,28 +22,13 @@ def print_all_data(datadir=None):
     
     For parsing examples see http://www.saltycrane.com/blog/2011/07/example-parsing-xml-lxml-objectify/
     '''
-
     filelist = sorted(util.list_files_with_path(datadir))
     racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
 
-    regex0 = r'<\?.*?\?>\n'
-    regex1 = r'(</{0,1}).+?:'
-    regex2 = r'\Wxsi:.*?=".*?"'
-
-    for _file in racingcard_filelist:
-        filehandle = open(_file, 'r')
-        xml = filehandle.read()
-        filehandle.close()
-        xml = re.sub(regex0, r'', xml, count=1)
-        xml = re.sub(regex1, r'\1', xml)
-        xml = re.sub(regex2, r'', xml)
+    for racingcard_file in racingcard_filelist:
+        xml = util.clean_xml_namespaces(racingcard_file)
         
-#        filehandle = open('out2.xml', 'w')
-#        filehandle.write(xml)
-#        filehandle.close()
-#        exit()
-        
-        LOG.debug(_file)
+        LOG.debug(racingcard_file)
         
         root = objectify.fromstring(xml)
         date_data = root.Body.fetchRacingCardResponse.result.date

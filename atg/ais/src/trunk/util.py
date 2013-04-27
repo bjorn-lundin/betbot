@@ -179,6 +179,28 @@ def create_directories(dirs=None):
             if exception.errno != errno.EEXIST:
                 raise
 
+# Compiling regexp on global level for performance
+import re
+CLEANXML_1 = re.compile(r'<\?.*?\?>\n')
+CLEANXML_2 = re.compile(r'(</{0,1}).+?:')
+CLEANXML_3 = re.compile(r'\Wxsi:.*?=".*?"')
+
+def clean_xml_namespaces(xmlfile=None, savename=None):
+    '''
+    Removes namespace data in xml file
+    '''
+    filehandle = open(xmlfile, 'r')
+    xml = filehandle.read()
+    filehandle.close()
+    xml = CLEANXML_1.sub(r'', xml, count=1)
+    xml = CLEANXML_2.sub(r'\1', xml)
+    xml = CLEANXML_3.sub(r'', xml)
+    if savename:
+        filehandle = open(savename, 'w')
+        filehandle.write(xml)
+        filehandle.close()
+    return xml
+        
 #######################################################
 # AIS struct and date/time conversions                #
 #######################################################
