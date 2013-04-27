@@ -15,7 +15,10 @@ project Adabot is
                  "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
                  "bf_history_cleaner.adb",
+                 "bf_update_no_of_runners.adb",
+                 "bf_update_animals.adb",
                  "bf_history_to_dryrun.adb",
+                 "bf_split_runnername.adb",
                  "ini_reader.adb",
                  "sql_ifc_leak_finder.adb");
 

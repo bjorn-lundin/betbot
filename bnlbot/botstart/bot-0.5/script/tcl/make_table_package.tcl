@@ -1066,7 +1066,7 @@ proc Print_Header_Body {Name Type Node Columns Out_File} {
 proc Print_Withs_Body {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
 #  puts $Out_File "with Process_Io, General_Routines, Text_Io, Standard8, Cgi;"
-  puts $Out_File "with General_Routines, Text_Io;"
+  puts $Out_File "with Process_io, General_Routines, Text_Io;"
 #  if {[Is_S08_Table $Name]} {
     puts $Out_File "with Ada.Strings.Fixed;"
 #    puts $Out_File "with Sax.Readers;              use Sax.Readers;"
@@ -1611,7 +1611,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     #################################################################################
     puts $Out_File "  procedure Update(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-#    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
 
     puts $Out_File [Prepare_All_Columns Stm_Update "\"update $TABLE_NAME set \""  $Columns 1 0 0]
@@ -1630,7 +1630,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Insert(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-  #  puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
@@ -1678,7 +1678,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Update_Withcheck(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-  #  puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
     puts $Out_File "  begin"
     puts $Out_File ""
     puts $Out_File [Prepare_All_Columns Stm_Update_With_Check "\"update $TABLE_NAME set \""  $Columns 1 1 0]

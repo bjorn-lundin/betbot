@@ -53,7 +53,9 @@ endif
 all: json_test adabot
 
 tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
-         $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads $(ST)/table_dryrunners.ads
+         $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads \
+         $(ST)/table_bets.ads $(ST)/table_markets.ads \
+         $(ST)/table_dryrunners.ads $(ST)/table_animals.ads
 
 json_test :
 	gnatmake -P json_test
@@ -120,10 +122,27 @@ $(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xm
 	cd $(ST) && rm table_dryrunners.ada
 	$(TP) -p dryrunners > $(ST)/dryrunners.sql
 
+$(ST)/table_animals.ads : $(BOT_CONFIG)/repository/tables/table_animals.xml
+	$(TP) -t animals > $(ST)/table_animals.ada
+	cd $(ST) && gnatchop -w -gnat05 table_animals.ada
+	cd $(ST) && rm table_animals.ada
+	$(TP) -p animals > $(ST)/animals.sql
+
+$(ST)/table_markets.ads : $(BOT_CONFIG)/repository/tables/table_markets.xml
+	$(TP) -t markets > $(ST)/table_markets.ada
+	cd $(ST) && gnatchop -w -gnat05 table_markets.ada
+	cd $(ST) && rm table_markets.ada
+	$(TP) -p markets > $(ST)/markets.sql
+
+$(ST)/table_bets.ads : $(BOT_CONFIG)/repository/tables/table_bets.xml
+	$(TP) -t bets > $(ST)/table_bets.ada
+	cd $(ST) && gnatchop -w -gnat05 table_bets.ada
+	cd $(ST) && rm table_bets.ada
+	$(TP) -p bets > $(ST)/bets.sql
 
 clean:
 	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
-	rm $(BOT_SCRIPT)/plot/*.dat $(BOT_SCRIPT)/plot/*.png
+	rm $(BOT_SCRIPT)/plot/*.dat $(BOT_SCRIPT)/plot/*.png $(ST)/table*
 

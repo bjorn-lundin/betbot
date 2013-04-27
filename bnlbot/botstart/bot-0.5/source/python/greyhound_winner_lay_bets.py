@@ -14,8 +14,8 @@ from optparse import OptionParser
 class GreyHoundWinnerLayBetBot(BetBot):
     """put bet on games with low odds"""
 
-    def __init__(self, log):
-        super(GreyHoundWinnerLayBetBot, self).__init__(log)
+    def __init__(self, log, homedir):
+        super(GreyHoundWinnerLayBetBot, self).__init__(log, homedir)
 ############################# end __init__
 
 
@@ -139,17 +139,16 @@ class GreyHoundWinnerLayBetBot(BetBot):
 
 parser = OptionParser()
 
-parser.add_option("-t", "--bet_type",  dest="bet_type",  action="store", \
-                  type="string", help="bet type")
+parser.add_option("-t", "--bet_name",  dest="bet_name",  action="store", \
+                  type="string", help="bet name")
 
 (options, args) = parser.parse_args()
 
-alog = logging.getLogger(__name__)
-alog.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
-
-logdir = os.file.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
-logfile = os.file.join(logdir, 'log', options.bet_type.lower() + '.log')
+homedir = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
+logfile = os.path.join(homedir, 'log',   options.bet_name.lower() + '.log')
 
 FH = logging.handlers.RotatingFileHandler(
     logfile,
@@ -162,64 +161,39 @@ FH = logging.handlers.RotatingFileHandler(
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
-alog.addHandler(FH)
-alog.info('Starting application')
+log.addHandler(FH)
+log.info('Starting application')
+
 
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-bot = GreyHoundWinnerLayBetBot(alog)
-bot.initialize(options.bet_type.upper())
+bot = GreyHoundWinnerLayBetBot(log, homedir)
+bot.initialize(options.bet_name.upper())
 
 
 while True:
     try:
         bot.start()
-    except urllib2.URLError :
-        alog.error( 'Lost network ? . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except ssl.SSLError :
-        alog.error( 'Lost network (ssl error) . Retry in ' + \
-                    str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except socket.error as ex:
-        alog.error( 'Lost network (socket error) . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except httplib2.ServerNotFoundError :
-        alog.error( 'Lost network (server not found error) . Retry in ' + \
-        str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
     except TooCloseToLossError as e :
-        alog.error( 'Too close in time to last loss.  Retry in ' + \
+        log.error( 'Too close in time to last loss.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.error(e.args)
+        log.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except RecoveredFromLossError as e :
-        alog.info( 'won enough - waiting for tomorrow ' + \
+        log.info( 'won enough - waiting for tomorrow ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.info(e.args)
+        log.info(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except SessionError as e:
-        alog.error( 'Lost session.  Retry in ' + \
+        log.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-
-#    except psycopg2.DatabaseError :
-#        alog.error( 'Lost db contact . Retry in ' + \
-#          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-#        sleep (bot.NETWORK_FAILURE_DELAY)
-#        bot.reconnect()
 
     except KeyboardInterrupt :
         break
 
-alog.info('Ending application')
+log.info('Ending application')
 logging.shutdown()
