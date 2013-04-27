@@ -153,20 +153,7 @@ def main():
     
     if cp.LOAD_EOD_RACINGCARD in command:
         LOG.info('Running ' + command)
-        ws_client = ais.init_ws_client(
-            conf.AIS_WS_URL,
-            conf.AIS_USERNAME,
-            conf.AIS_PASSWORD
-        )
-        params = {
-            'client':ws_client,
-            'datadir':conf.AIS_DATADIR,
-            'metadir':conf.AIS_METADIR,
-            'ais_version':conf.AIS_VERSION,
-            'ais_type':conf.AIS_TYPE,
-            'save_soap_file':False
-        }
-        ais.load_racingcard_history_into_db(params)
+        ais.load_racingcard_history_into_db(datadir=conf.AIS_DATADIR)
         LOG.info('Ending ' + command)
         
     LOG.info('Ending application')
