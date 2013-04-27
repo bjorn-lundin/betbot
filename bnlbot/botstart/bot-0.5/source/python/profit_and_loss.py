@@ -11,7 +11,7 @@ import sys
 from game import Game
 from market import Market
 from funding import Funding
-from db import Db
+#from db import Db
 import socket
 import logging.handlers
 from operator import itemgetter, attrgetter
@@ -32,8 +32,8 @@ class SimpleBot(object):
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db()
-        self.conn = db.conn
+ #       db = Db()
+#        self.conn = db.conn
         self.log = log
 
 ############################# end __init__
@@ -187,8 +187,12 @@ class SimpleBot(object):
 ######## main ###########
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+homedir = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
+logfile = os.path.join(homedir, 'log',  __file__.split('.')[0] + '.log')
+
 FH = logging.handlers.RotatingFileHandler(
-    'logs/' + __file__.split('.')[0] +'.log',
+    logfile,
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,
@@ -201,20 +205,36 @@ FH.setFormatter(FORMATTER)
 log.addHandler(FH)
 log.info('Starting application')
 
+
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-config = ConfigParser.ConfigParser()
-config.read('betfair_login.ini')
+login = ConfigParser.ConfigParser()
+login.read(os.path.join(homedir, 'login.ini'))
 
-username = config.get('Login', 'username')
-password =  config.get('Login', 'password')
+bfusername   = login.get('betfair', 'username')
+bfpassword   = login.get('betfair', 'password')
+bfproduct_id = login.get('betfair', 'product_id')
+bfvendor_id  = login.get('betfair', 'vendor_id')
+
+dbname     = login.get('database', 'name')
+dbhost     = login.get('database', 'host')
+dbusername = login.get('database', 'username')
+dbpassword = login.get('database', 'password')
+
+
 
 bot = SimpleBot(log)
+bot.conn = psycopg2.connect('dbname=' + dbname +  \
+                            ' user=' + dbusername + \
+                            ' host=' + dbhost + \
+                            ' password='+ dbpassword)
+bot.conn.set_client_encoding('latin1')
+
 
 while True:
     try:
-        bot.start(username, password, '82', '0') # product id 82 = free api
+        bot.start(bfusername, bfpassword, bfproduct_id, bfvendor_id)
     except urllib2.URLError :
         log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)

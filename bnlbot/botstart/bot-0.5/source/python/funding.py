@@ -22,13 +22,13 @@ class Funding(object):
     TRANSFER_SUM = 500.0
     MAX_EXPOSURE = 600.0
 
-    def __init__(self, api, log):
+    def __init__(self, api, log, recipient):
         self.api = api
         self.funds = self.api.get_account_funds()
         self.funds_ok = None
         self.log = log
         self.timestamp_last_mail_sent = self.modification_date()
-
+        self.RECIPIENT = recipient
         try:
             self.avail_balance = self.funds['availBalance']
             self.exposure     = abs(self.funds['exposure'])
@@ -82,6 +82,11 @@ class Funding(object):
                 return self.modification_date()
 
 ############################# end modification_date
+
+    def set_recipient(self, recipient):
+        self.RECIPIENT = recipient
+
+############################# end set_recepient
 
     def alert_via_mail(self) :
         if self.modification_date() + datetime.timedelta(hours = 1) < datetime.datetime.now() :
@@ -149,6 +154,6 @@ class Funding(object):
 
         session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
         session.quit()
-                
+
 ############################# end mail_saldo
 

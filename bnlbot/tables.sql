@@ -84,7 +84,7 @@ create table markets (
   home_team varchar,
   away_team varchar,
   ts timestamp,
-  xml_soccer_id integer
+  xml_soccer_id integer,
    primary key(market_id)
   );
 
@@ -105,23 +105,27 @@ create table markets (
 --'asianLineId': '0'
 --
 --'bet_id': '23313887165', 'price': '0.0', 'code': 'OK', 'success': 'true', 'size': '0.0
-create table bets (
-  bet_id bigint,
+
+CREATE TABLE bets
+(
+  bet_id bigint NOT NULL,
   market_id integer,
   selection_id integer,
-  price float,
-  code varchar,
+  price double precision,
+  code character varying,
   success boolean,
-  size float,
-  bet_type varchar,
-  runner_name  varchar,
-  runner_name  varchar,
-  bet_won  boolean ,
-  profit float,
-  bet_placed timestamp,
-  full_market_name varchar,
-  primary key (bet_id)
-  );
+  size double precision,
+  bet_type character varying,
+  runner_name character varying,
+  bet_won boolean DEFAULT false,
+  profit double precision,
+  full_market_name character varying,
+  bet_placed timestamp without time zone,
+  CONSTRAINT bets_pkey PRIMARY KEY (bet_id )
+)
+WITH (
+  OIDS=FALSE
+);
 
 
 --alter table BETS add column bet_placed timestamp;

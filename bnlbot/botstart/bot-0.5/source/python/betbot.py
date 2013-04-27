@@ -3,15 +3,15 @@
 from betfair.api import API
 from time import sleep, time
 import datetime
-#import psycopg2
+import psycopg2
 #import urllib2
 #import ssl
-#import os
+import os
 #import sys
 #from game import Game
 from market import Market
 from funding import Funding
-from db import Db
+#from db import Db
 #import socket
 #import logging.handlers
 #from operator import itemgetter, attrgetter
@@ -70,15 +70,26 @@ class BetBot(object):
     PRODUCT_ID = None
     VENDOR_ID = None
 
+    RECIPIENT = None
 
-    def __init__(self, log):
+
+    DBNAME     = None
+    DBHOST     = None
+    DBUSERNAME = None
+    DBPASSWORD = None
+
+    HOMEDIR = None
+
+
+    def __init__(self, log, homedir):
         rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db()
-        self.conn = db.conn
+#        db = Db()
+#        self.conn = db.conn
         self.log = log
+        self.HOMEDIR = homedir
 
 ############################# end __init__
     def reconnect(self):
@@ -238,19 +249,6 @@ class BetBot(object):
             return markets
 ############################# end get_markets test
 
-############################################### get_markets
-    def market_in_xmlfeed(self, market_id) :
-        Found = False
-        cur = self.conn.cursor()
-        cur.execute("select * from MARKET_IN_XML_FEED \
-                     where MARKET_ID = " + str(market_id))
-        row = cur.fetchone()
-        rc = cur.rowcount
-        cur.close()
-        if rc == 1 :
-            Found = True
-        return Found
-############################# market_in_xmlfeed
 
 
     def profit_today(self) :
@@ -355,7 +353,7 @@ class BetBot(object):
         # place bets (if any have been created)
         resp = None
         if bets:
-            funds = Funding(self.api, self.log)
+            funds = Funding(self.api, self.log, self.RECIPIENT)
             if funds :
                 self.do_throttle()
                 funds.check_and_fix_funds()
@@ -510,7 +508,7 @@ class BetBot(object):
     def initialize(self, bet_category):
 
         config = ConfigParser.ConfigParser()
-        config.read('betfair.ini')
+        config.read(os.path.join(self.HOMEDIR,'betfair.ini'))
 
         self.DELAY_BETWEEN_TURNS_BAD_FUNDING = float(config.get('Global', 'delay_between_turns_bad_funding'))
         self.DELAY_BETWEEN_TURNS_NO_MARKETS  = float(config.get('Global', 'delay_between_turns_no_markets'))
@@ -584,6 +582,9 @@ class BetBot(object):
         if self.ALLOWED_MARKET_NAMES[0] == 'None':
             self.ALLOWED_MARKET_NAMES = None
 
+        self.log.info('Countries' + str(self.COUNTRIES))
+
+
         self.NO_OF_WINNERS                   = int (config.get(bet_category, 'no_of_winners'))
         self.log.info('no_of_winners ' + str(self.NO_OF_WINNERS))
 
@@ -597,19 +598,41 @@ class BetBot(object):
 
 
         login = ConfigParser.ConfigParser()
-        login.read('betfair_login.ini')
+        login.read(os.path.join(self.HOMEDIR, 'login.ini'))
 
-        self.USERNAME                        = login.get('Login', 'username')
-        self.PASSWORD                        = login.get('Login', 'password')
-        self.PRODUCT_ID                      = login.get('Login', 'product_id')
-        self.VENDOR_ID                       = login.get('Login', 'vendor_id')
+        self.USERNAME   = login.get('betfair', 'username')
+        self.PASSWORD   = login.get('betfair', 'password')
+        self.PRODUCT_ID = login.get('betfair', 'product_id')
+        self.VENDOR_ID  = login.get('betfair', 'vendor_id')
 
-        self.log.info('Countries' + str(self.COUNTRIES))
+        self.DBNAME     = login.get('database', 'name')
+        self.DBHOST     = login.get('database', 'host')
+        self.DBUSERNAME = login.get('database', 'username')
+        self.DBPASSWORD = login.get('database', 'password')
 
+        self.RECIPIENT  = login.get('email', 'recipient')
 
+        self.log.info('username ' + self.USERNAME)
+        self.log.info('password ' + self.PASSWORD)
+        self.log.info('product_id ' + self.PRODUCT_ID)
+        self.log.info('vendor_id ' + self.VENDOR_ID)
+        self.log.info('dbname ' + self.DBNAME)
+        self.log.info('dbhost ' + self.DBHOST)
+        self.log.info('dbusername ' + self.DBUSERNAME)
+        self.log.info('dbpassword ' + self.DBPASSWORD)
+        self.log.info('recipient ' + self.RECIPIENT)
 
         if self.MIN_ODDS > self.MAX_ODDS :
             raise Exception('min odds bigger than max odds! impossible ..')
+
+
+
+        self.conn = psycopg2.connect('dbname=' + self.DBNAME +  \
+                            ' user=' + self.DBUSERNAME + \
+                            ' host=' + self.DBHOST + \
+                            ' password='+ self.DBPASSWORD)
+        self.conn.set_client_encoding('latin1')
+
 
 ############################# end initialize
 

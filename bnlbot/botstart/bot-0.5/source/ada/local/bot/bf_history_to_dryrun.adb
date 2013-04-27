@@ -45,9 +45,10 @@ procedure Bf_History_To_Dryrun is
    I_Num_Days    : aliased Integer;
    Config        : Command_Line_Configuration;
 
-   num_runners   : integer_4 := 0;
-   race_ok       : Boolean := False;
-
+   num_runners        : integer_4 := 0;
+   race_ok            : Boolean := False;
+   Runnernamestripped : String := Dryrunners.Runnernamestripped;
+   Startnum           : String := Dryrunners.Startnum;
 
 begin
    Define_Switch
@@ -175,13 +176,39 @@ begin
               Table_Drymarkets.Insert(Drymarkets);
             end if;
 
+
+            Runnernamestripped := (others => ' ');
+            Startnum := (others => ' ');
+
+
+            case History2.Selection(1) is
+                when '1'..'9' =>
+                   if History2.Selection(2) = '.' and then
+                      History2.Selection(3) = ' ' then
+                     Runnernamestripped := History2.Selection(4 .. History2.Selection'Last) & "   ";
+                     Startnum := History2.Selection(1..1) & ' ';
+                   elsif
+                      History2.Selection(3) = '.' and then
+                      History2.Selection(4) = ' ' then
+                     Runnernamestripped := History2.Selection(5 .. History2.Selection'Last) & "    ";
+                     Startnum := History2.Selection(1..2);
+                   else
+                     null;
+                   end if;
+
+                when others => null;
+            end case;
+
+
             Dryrunners := (
-                             Marketid    => History2.Eventid,
-                             Selectionid => History2.Selectionid,
-                             Index       => 0,
-                             Backprice   => History2.Odds,
-                             Layprice    => History2.Odds,
-                             Runnername  => History2.Selection
+                             Marketid           => History2.Eventid,
+                             Selectionid        => History2.Selectionid,
+                             Index              => 0,
+                             Backprice          => History2.Odds,
+                             Layprice           => History2.Odds,
+                             Runnername         => History2.Selection,
+                             Runnernamestripped => Runnernamestripped,
+                             Startnum           => Startnum
             );
             begin
               Table_Dryrunners.Insert(Dryrunners);
