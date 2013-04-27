@@ -203,6 +203,25 @@ class Market(object):
                    (self.bet_id,))
         cur2.close()
 
+        cur3 = self.conn.cursor()
+        cur3.execute("select MARKET_ID from BETS where BET_WON is null")
+        rows = cur3.fetch()
+        cur3.close()
+
+        for row in rows :
+            market_id = row[0]
+            self.log.info('ongoing bet, marketid ' + str(market_id))
+            cur4 = self.conn.cursor()
+            cur4.execute("select bet_id from MARKETS where MARKET_ID = %s and EVENT_DATE < (select current_date - interval '1 day')", (market_id,))
+            badrows = cur4.fetch()
+            cur4.close()
+
+            for badrow in badrows :
+                bad_bet_id = badrow[0]
+                self.log.info('deleting too old bet bet ' + str(bad_bet_id))
+                cur5 = self.conn.cursor()
+                cur5.execute("delete from BETS where BET_ID = %s)", (bad_bet_id,))
+                cur5.close()
 
         self.conn.commit()
 
