@@ -9,11 +9,8 @@ import xml.etree.ElementTree as etree
 import os
 import sys
 import socket
-#from db import Db
+from db import Db
 import logging.handlers
-import ConfigParser
-
-
 
 #  <market id="107893032" displayName="USA / Aque (US) 9th Jan - 17:30 TO BE PLACED">
 #    <name>TO BE PLACED</name>
@@ -95,7 +92,7 @@ class Market(object):
                 self.price = float(row[4])
                 eos = False
             cur.close()
-            self.conn.commit()
+#            self.conn.commit()
 
             return not eos
         else :
@@ -207,31 +204,12 @@ class Market(object):
         cur2.close()
 
 
-        cur3 = self.conn.cursor()
-        cur3.execute("select MARKET_ID from BETS where BET_WON is null")
-        rows = cur3.fetchall()
-        cur3.close()
-
-        for row in rows :
-            marketid = row[0]
-            self.log.info('ongoing bet, marketid ' + str(marketid))
-            cur4 = self.conn.cursor()
-            cur4.execute("select bet_id from MARKETS where MARKET_ID = %s and EVENT_DATE < (select current_date - interval '1 day')", (marketid,))
-            badrows = cur4.fetchall()
-            cur4.close()
-
-            for badrow in badrows :
-                bad_bet_id = badrow[0]
-                self.log.info('deleting too old bet bet ' + str(bad_bet_id))
-                cur5 = self.conn.cursor()
-                cur5.execute("delete from BETS where BET_ID = %s)", (bad_bet_id,))
-                cur5.close()
-
-        self.conn.commit()
+#        self.conn.commit()
 
         self.log.info('bet_won ' + str(bet_won) + \
                       ' profit ' + str(profit) + \
                       ' bet_id ' + str(self.bet_id) )
+
 
 
 #########################################################################
@@ -254,7 +232,8 @@ class Result_Feeder(object):
         rps = 1/4.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-
+        db = Db()
+        self.conn = db.conn
         self.log = log
 
 
@@ -283,6 +262,24 @@ class Result_Feeder(object):
         self.log.info('Wait for '  + str(s) + ' seconds')
         sleep(32)
 #        self.throttle['next_req'] = time() + self.throttle['rps']
+
+
+    def fix_bad_or_expired_bets(self):
+        self.log.info('check for bad/expired bets')
+        cur3 = self.conn.cursor()
+        cur3.execute("select MARKET_ID from BETINFO where BET_WON is null and EVENT_DATE < (select current_timestamp - interval '12 hours')")
+        rows = cur3.fetchall()
+        cur3.close()
+
+        for badrow in rows :
+            bad_market_id = badrow[0]
+            self.log.info('deleting too old bet bet with market id ' + str(bad_market_id))
+            cur5 = self.conn.cursor()
+            cur5.execute("delete from BETS where MARKET_ID = %s ", (bad_market_id,))
+            cur5.close()
+
+
+
 
     def start(self):
         """start the main loop"""
@@ -320,18 +317,17 @@ class Result_Feeder(object):
                     #market.print_me()
                     market.treat()
 
+
+        self.fix_bad_or_expired_bets()
+
         self.conn.commit()
 ###################################################################
 
 ######## main ###########
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
-homedir = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
-logfile = os.path.join(homedir, 'log',  __file__.split('.')[0] + '.log')
-
 FH = logging.handlers.RotatingFileHandler(
-    logfile,
+    'logs/' + __file__.split('.')[0] +'.log',
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,
@@ -347,28 +343,7 @@ log.info('Starting application')
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-login = ConfigParser.ConfigParser()
-login.read(os.path.join(homedir, 'login.ini'))
-
-bfusername   = login.get('betfair', 'username')
-bfpassword   = login.get('betfair', 'password')
-bfproduct_id = login.get('betfair', 'product_id')
-bfvendor_id  = login.get('betfair', 'vendor_id')
-
-dbname     = login.get('database', 'name')
-dbhost     = login.get('database', 'host')
-dbusername = login.get('database', 'username')
-dbpassword = login.get('database', 'password')
-
-
 bot = Result_Feeder(log)
-
-bot.conn = psycopg2.connect('dbname=' + dbname +  \
-                            ' user=' + dbusername + \
-                            ' host=' + dbhost + \
-                            ' password='+ dbpassword)
-bot.conn.set_client_encoding('latin1')
-
 
 while True:
     try:
