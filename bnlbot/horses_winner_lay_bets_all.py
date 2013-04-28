@@ -71,7 +71,7 @@ class HorsesWinnerLayBetBot(BetBot):
                 market = Market(self.conn, self.log, market_id = market_id)
                 # there must be at least 3 runners with lower odds
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 2 - market.no_of_winners
+                max_turns = number_of_runners - 4 - market.no_of_winners
 
                 favorite_odds = 100.0
                 #loop through list and keep last entry -> favorite
