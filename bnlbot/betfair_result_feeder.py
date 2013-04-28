@@ -205,7 +205,7 @@ class Market(object):
 
         cur3 = self.conn.cursor()
         cur3.execute("select MARKET_ID from BETS where BET_WON is null")
-        rows = cur3.fetch()
+        rows = cur3.fetchall()
         cur3.close()
 
         for row in rows :
@@ -213,7 +213,7 @@ class Market(object):
             self.log.info('ongoing bet, marketid ' + str(market_id))
             cur4 = self.conn.cursor()
             cur4.execute("select MARKET_ID from MARKETS where MARKET_ID = %s and EVENT_DATE < (select current_date - interval '1 day')", (market_id,))
-            badrows = cur4.fetch()
+            badrows = cur4.fetchall()
             cur4.close()
 
             for badrow in badrows :
@@ -243,7 +243,7 @@ class Result_Feeder(object):
     URL_SOCCER = URL + '1'
     get_horses = True
     get_hounds = True
-    get_soccer = True
+    get_soccer = False
     conn = None
 
     def __init__(self, log):
