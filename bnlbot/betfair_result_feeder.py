@@ -267,7 +267,7 @@ class Result_Feeder(object):
     def fix_bad_or_expired_bets(self):
         self.log.info('check for bad/expired bets')
         cur3 = self.conn.cursor()
-        cur3.execute("select MARKET_ID from BETINFO where BET_WON is null and EVENT_DATE < (select current_date - interval '12 hours')")
+        cur3.execute("select MARKET_ID from BETINFO where BET_WON is null and EVENT_DATE < (select current_timestamp - interval '12 hours')")
         rows = cur3.fetchall()
         cur3.close()
 
@@ -275,7 +275,7 @@ class Result_Feeder(object):
             bad_market_id = badrow[0]
             self.log.info('deleting too old bet bet with market id ' + str(bad_market_id))
             cur5 = self.conn.cursor()
-            cur5.execute("delete from BETS where MARKET_ID = %s)", (bad_market_id,))
+            cur5.execute("delete from BETS where MARKET_ID = %s ", (bad_market_id,))
             cur5.close()
 
 
