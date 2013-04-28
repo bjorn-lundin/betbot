@@ -92,7 +92,7 @@ class Market(object):
                 self.price = float(row[4])
                 eos = False
             cur.close()
-            self.conn.commit()
+#            self.conn.commit()
 
             return not eos
         else :
@@ -203,31 +203,13 @@ class Market(object):
                    (self.bet_id,))
         cur2.close()
 
-        cur3 = self.conn.cursor()
-        cur3.execute("select MARKET_ID from BETS where BET_WON is null")
-        rows = cur3.fetchall()
-        cur3.close()
 
-        for row in rows :
-            market_id = row[0]
-            self.log.info('ongoing bet, marketid ' + str(market_id))
-            cur4 = self.conn.cursor()
-            cur4.execute("select MARKET_ID from MARKETS where MARKET_ID = %s and EVENT_DATE < (select current_date - interval '1 day')", (market_id,))
-            badrows = cur4.fetchall()
-            cur4.close()
-
-            for badrow in badrows :
-                bad_market_id = badrow[0]
-                self.log.info('deleting too old bet with market_id=' + str(bad_market_id))
-                cur5 = self.conn.cursor()
-                cur5.execute("delete from BETS where MARKET_ID = %s)", (bad_market_id,))
-                cur5.close()
-
-        self.conn.commit()
+#        self.conn.commit()
 
         self.log.info('bet_won ' + str(bet_won) + \
                       ' profit ' + str(profit) + \
                       ' bet_id ' + str(self.bet_id) )
+
 
 
 #########################################################################
@@ -281,6 +263,24 @@ class Result_Feeder(object):
         sleep(32)
 #        self.throttle['next_req'] = time() + self.throttle['rps']
 
+
+    def fix_bad_or_expired_bets(self):
+        self.log.info('check for bad/expired bets')
+        cur3 = self.conn.cursor()
+        cur3.execute("select MARKET_ID from BETINFO where BET_WON is null and EVENT_DATE < (select current_date - interval '12 hours')")
+        rows = cur3.fetchall()
+        cur3.close()
+
+        for badrow in rows :
+            bad_market_id = badrow[0]
+            self.log.info('deleting too old bet bet with market id ' + str(bad_market_id))
+            cur5 = self.conn.cursor()
+            cur5.execute("delete from BETS where MARKET_ID = %s)", (bad_market_id,))
+            cur5.close()
+
+
+
+
     def start(self):
         """start the main loop"""
 
@@ -316,6 +316,9 @@ class Result_Feeder(object):
                 if market.bet_exists() :
                     #market.print_me()
                     market.treat()
+
+
+        self.fix_bad_or_expired_bets()
 
         self.conn.commit()
 ###################################################################
