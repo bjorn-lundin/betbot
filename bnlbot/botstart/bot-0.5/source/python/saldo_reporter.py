@@ -74,8 +74,8 @@ class SimpleBot(object):
                     self.do_throttle()
                     funds.mail_saldo()
                     cur = self.conn.cursor()
-                    cur.execute("insert into BALANCE (SALDO, EVENTDATE) values (%s, %s)", \
-                           (funds.avail_balance, datetime.datetime.now()))
+                    cur.execute("insert into BALANCE (SALDO, EVENTDATE, EXPOSURE ) values (%s, %s, %s)", \
+                           (funds.avail_balance, datetime.datetime.now(), funds.exposure))
                     cur.close()
                     self.conn.commit()
 
