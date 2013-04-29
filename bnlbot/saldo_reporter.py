@@ -1,8 +1,8 @@
-# -*- coding: iso-8859-1 -*- 
+# -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
-import datetime 
+import datetime
 import psycopg2
 import urllib2
 import ssl
@@ -24,25 +24,25 @@ class SimpleBot(object):
     NETWORK_FAILURE_DELAY          = 60.0
     DELAY_BETWEEN_TURNS_NO_MARKETS =  5.0
     conn = None
-    DRY_RUN = True     
+    DRY_RUN = True
 
-     
+
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
         self.log = log
-        
+
 ############################# end __init__
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
         if uname and pword and prod_id and vend_id:
             resp = self.api.login(uname, pword, prod_id, vend_id)
-            if resp == 'OK': 
+            if resp == 'OK':
                 self.no_session = False
             return resp
         else:
@@ -64,16 +64,16 @@ class SimpleBot(object):
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------------------')
             now = datetime.datetime.now()
-            # send saldo at 01:00 (utc = 00:00:00)            
+            # send saldo at 01:00 (utc = 00:00:00)
             if now.hour == 1 and now.minute == 1 and 0 < now.second and now.second < 5 :
                 login_status = self.login(uname, pword, prod_id, vend_id)
-                if login_status == 'OK': 
+                if login_status == 'OK':
                     funds = Funding(self.api, self.log)
                     self.do_throttle()
                     funds.mail_saldo()
                     cur = self.conn.cursor()
-                    cur.execute("insert into BALANCE (SALDO, EVENTDATE) values (%s, %s)", \
-                           (funds.avail_balance, datetime.datetime.now()))
+                    cur.execute("insert into BALANCE (SALDO, EVENTDATE, EXPOSURE ) values (%s, %s, %s)", \
+                           (funds.avail_balance, datetime.datetime.now(), funds.exposure))
                     cur.close()
                     self.conn.commit()
 
@@ -97,7 +97,7 @@ FH = logging.handlers.RotatingFileHandler(
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
-) 
+)
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
@@ -110,7 +110,7 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 config = ConfigParser.ConfigParser()
 config.read('betfair_login.ini')
 
-username = config.get('Login', 'username') 
+username = config.get('Login', 'username')
 password =  config.get('Login', 'password')
 
 bot = SimpleBot(log)
@@ -125,11 +125,11 @@ while True:
     except ssl.SSLError :
         log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-       
+
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-	
+
     except httplib2.ServerNotFoundError :
         log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -137,10 +137,9 @@ while True:
 #        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
 #        bot.reconnect()
-	
+
     except KeyboardInterrupt :
         break
 
 log.info('Ending application')
 logging.shutdown()
-    
