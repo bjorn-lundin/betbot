@@ -377,7 +377,7 @@ create table balance (
   primary key(eventdate)
 );
 
-alter table BALANCE add column exposure float not null default = 0.0;
+alter table BALANCE add column exposure float not null default 0.0;
 
 
 

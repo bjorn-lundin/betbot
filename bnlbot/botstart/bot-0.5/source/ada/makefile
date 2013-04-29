@@ -15,8 +15,9 @@ ST := $(BOT_SOURCE)/ada/global/tables
 
 
 ifeq ($(UNAME),Linux)
-  PSQL := psql
-  HOST := localhost
+  PSQL := psql --username=$(BOT_DATABASE_USERNAME)
+  HOST := $(BOT_DATABASE_HOSTNAME)
+  DBNAME := $(BOT_DATABASE_NAME)
   SHOW_PNG := display
 endif
 
@@ -30,6 +31,7 @@ endif
 ifeq ($(UNAME),MINGW32_NT-6.1)
   PSQL := psql --username=bnl
   HOST := 192.168.0.13
+  DBNAME := betting
   SHOW_PNG :=
 endif
 
@@ -50,7 +52,7 @@ adabot :
 
 balance_plot:
 balance_plot:
-	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" betting > $(DAT)
+	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
 #	cat $(DAT) | grep -v event > $(TMP)
 	cat $(DAT) > $(TMP)
 	cat $(TMP) | grep -v rows > $(DAT)
