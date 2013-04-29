@@ -91,19 +91,19 @@ package body Races is
       Sql.Start_Read_Write_Transaction (T);
 
       case Bet_Type is
-         when Place =>
-            Sql.Prepare (Select_Markets(Bet_Type), "select * from " &
-                           "DRY_MARKETS " &
-                           "where EVENT_DATE >= :START_DATE " &
-                           "and EVENT_DATE <= :STOP_DATE " &
-                           "and MARKET_NAME = :MARKET_NAME " &
-                           "and EVENT_HIERARCHY like :EVENT_HIERARCHY " &
-                           "and exists (select 'x' from DRY_RESULTS where " &
-                           "    DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) " &
-                           "and exists (select 'x' from DRY_RUNNERS where " &
-                           "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
-                           "order by EVENT_DATE");
-            Sql.Set (Select_Markets(Bet_Type), "MARKET_NAME", "Plats");
+--         when Place =>
+--            Sql.Prepare (Select_Markets(Bet_Type), "select * from " &
+--                           "DRY_MARKETS " &
+--                           "where EVENT_DATE >= :START_DATE " &
+--                           "and EVENT_DATE <= :STOP_DATE " &
+--                           "and MARKET_NAME = :MARKET_NAME " &
+--                           "and EVENT_HIERARCHY like :EVENT_HIERARCHY " &
+--                           "and exists (select 'x' from DRY_RESULTS where " &
+--                           "    DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID) " &
+--                           "and exists (select 'x' from DRY_RUNNERS where " &
+--                           "    DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID) " &
+--                           "order by EVENT_DATE");
+--            Sql.Set (Select_Markets(Bet_Type), "MARKET_NAME", "Plats");
 
         when Winner =>
             Sql.Prepare
@@ -218,6 +218,10 @@ package body Races is
       Runner   : Table_Dry_Runners.Data_Type;
       Eol      : Boolean := False;
       Found    : Boolean := False;
+      Num_In_List        : Integer := 0;
+      Current_Iteration  : Integer := 0;
+      Max_Iterations     : Integer := 0;
+      Favorite_Odds      : Price_Type := 1000.0;
    begin
       Race.Selection_Id := 0;
       Race.Price := 0.0;
@@ -239,15 +243,44 @@ package body Races is
       -- So get the last item in list
       -- Then we check that runners lay-price
 
+      Num_In_List := Table_Dry_Runners.Dry_Runners_List_Pack.Get_Count (Race.Runners_List);
+      Max_Iterations := Num_In_List - 4;
+
       Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       loop
          exit when Eol;
          Found := True;
+         if Price_Type(Runner.Lay_Price) < Favorite_Odds then
+           Favorite_Odds := Price_Type(Runner.Lay_Price);
+         end if;
          Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
       end loop;
+
+      if not Found then
+        Log ("make_lay_bet - No runner at all found, no bet");
+        Bet_Laid := False;
+        return;
+      end if;
+
       Log ("last runner: " & Table_Dry_Runners.To_String (Runner));
       Log ("min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
-      if Found then
+
+      if Favorite_Odds > 5.0 then
+         Log ("make_lay_bet - Favorite sucks, no bet");
+         Bet_Laid := False;
+         return;
+      end if;
+
+      Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
+      loop
+         Current_Iteration := Current_Iteration +1;
+         exit when Eol;
+         if Current_Iteration >= Max_Iterations then
+            -- no good runner found !
+            Log ("make_lay_bet - No good runner found, no bet");
+            Bet_Laid := False;
+            exit;
+         end if;
          if Min_Price <= Min_Price_Type (Runner.Lay_Price) and then
            Max_Price_Type (Runner.Lay_Price) <= Max_Price then
             -- runner found ! make bet
@@ -261,18 +294,15 @@ package body Races is
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
-         else
-            -- no good runner found !
-            Log ("make_lay_bet - No good runner found, no bet");
-            Bet_Laid := False;
-            return;
          end if;
-      else
-         -- no runner found !
-         Log ("make_lay_bet - No runner (at all) found, no bet");
-         Bet_Laid := False;
-         return;
-      end if;
+         Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
+      end loop;
+
+
+
+
+
+
    end Make_Lay_Bet;
    ------------------------------------------------------------------------------
    procedure Make_Lay_Favorite_Bet

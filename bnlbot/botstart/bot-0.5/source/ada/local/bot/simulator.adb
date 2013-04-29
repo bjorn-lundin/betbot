@@ -140,14 +140,16 @@ begin
 
       if Sa_Bet_Name.all = "winner" then
          Global_Bet_Name := Races.Winner;
-      elsif Sa_Bet_Name.all = "place" then
-         Global_Bet_Name := Races.Place;
+--      elsif Sa_Bet_Name.all = "place" then
+--         Global_Bet_Name := Races.Place;
       else
          raise Bad_Name_Type with "Not supported bet name: '" & Sa_Bet_Name.all & "'";
       end if;
 
-      if Sa_Graph_Type.all = "daily" then
-         Global_Graph_Type := Races.Daily;
+--      if Sa_Graph_Type.all = "daily" then
+--         Global_Graph_Type := Races.Daily;
+      if Sa_Graph_Type.all = "weekly" then
+         Global_Graph_Type := Races.Weekly;
       elsif Sa_Graph_Type.all = "quadweekly" then
          Global_Graph_Type := Races.Quad_Weekly;
       elsif Sa_Graph_Type.all = "octaweekly" then
@@ -167,7 +169,8 @@ begin
    Global_Stop_Date := Sattmate_Calendar.To_Time_Type (Sa_Stop_Date.all, "23:59:59:999");
 
    case Global_Graph_Type is
-      when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
+--      when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
+      when Races.Weekly      => Global_Start_Date := Global_Stop_Date - ( 6, 0, 0, 0, 0);
       when Races.Quad_Weekly => Global_Start_Date := Global_Stop_Date - (27, 0, 0, 0, 0);
       when Races.Octa_Weekly => Global_Start_Date := Global_Stop_Date - (55, 0, 0, 0, 0);
    end case;
@@ -195,9 +198,9 @@ begin
 
    Data_Dir := To_Unbounded_String ("sims");
 
-   for Bet_Type in Races.Bet_Type_Type'Range loop
-      for The_Variant in Races.Variant_Type'Range loop
-         for Max_Daily_Loss in Races.Max_Daily_Loss_Type_Type'Range loop
+   for Bet_Type in Races.Bet_Type_Type'range loop
+      for The_Variant in Races.Variant_Type'range loop
+         for Max_Daily_Loss in Races.Max_Daily_Loss_Type_Type'range loop
 
             Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type(Races.Variant(The_Variant));
             Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type(Races.Max_Daily_Loss(Max_Daily_Loss));
@@ -244,8 +247,8 @@ begin
             --         Race.Show_Runners;
             case Bet_Type is
             when Races.Lay =>
-               for Max_Price in Max_Price_Index_Type'Range loop
-                  for Min_Price in Min_Price_Index_Type'Range loop
+               for Max_Price in Max_Price_Index_Type'range loop
+                  for Min_Price in Min_Price_Index_Type'range loop
                      Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
                      Global_Profit := 0.0;
                      Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
