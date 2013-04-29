@@ -41,7 +41,7 @@ endif
 ifeq ($(UNAME),MINGW32_NT-6.1)
   PSQL := psql --username=bnl
   HOST := 192.168.0.13
-  SHOW_PNG := 
+  SHOW_PNG :=
 endif
 
 
@@ -57,8 +57,9 @@ adabot :
 
 .PHONY : balance_plot
 balance_plot:
-	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo from balance order by eventdate" betting > $(DAT)
-	cat $(DAT) | grep -v event > $(TMP)
+	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" betting > $(DAT)
+#	cat $(DAT) | grep -v event > $(TMP)
+	cat $(DAT) > $(TMP)
 	cat $(TMP) | grep -v rows > $(DAT)
 	cat $(DAT) | grep -v "\-\-" > $(TMP)
 	cat $(TMP) > $(DAT)

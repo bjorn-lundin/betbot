@@ -12,7 +12,7 @@ with Simple_List_Class;
 procedure Back_Bet_Analyzer is
    T                   : Sql.Transaction_Type;
    Select_Back_Winners : array (Races.Bet_Name_Type'Range) of Sql.Statement_Type;
-   Animal              : Races.Animal_Type := Races.Hound;
+   Animal              : Races.Animal_Type := Races.Horse;
    Bet_Name            : Races.Bet_Name_Type := Races.Winner;
 
    Interval_Offset     : Float_8 := 0.2;

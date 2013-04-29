@@ -372,9 +372,13 @@ select
 create sequence bet_id_serial;
 create table balance (
   saldo     float not null ,
+  exposure  float not null ,
   eventdate timestamp without time zone,
   primary key(eventdate)
 );
+
+alter table BALANCE add column exposure float not null default = 0.0;
+
 
 
 --- historic data, fdb = bfhistoric
