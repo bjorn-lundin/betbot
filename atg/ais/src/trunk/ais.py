@@ -291,8 +291,6 @@ def load_calendar_history_into_db(params=None):
             LOG.info('Loading ' + filename + ' into db')
             raceday_calendar_service(params=params, date=raceday_date, 
                                      ret_if_local=True)
-        else:
-            LOG.info(filename + ' already loaded into db')
         
 def load_racingcard_history_into_db(datadir=None):
     '''
