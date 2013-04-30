@@ -9,12 +9,58 @@ import logging
 import util
 from lxml import objectify
 import ast
+import db
+import datetime
 
 LOG = logging.getLogger('AIS')
 
 def load_into_db(datadir=None):
-    print_all_data(datadir=datadir)
-    
+    filelist = sorted(util.list_files_with_path(datadir))
+    racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
+    # Get all loaded filenames from db
+    loaded_files = []
+    for loaded in db.LoadedEODFiles.read_all():
+        loaded_files.append(loaded.filename)
+    # Compare with filename
+    for filepath in racingcard_filelist:
+        filename = util.get_filename_from_path(filepath)
+        if filename not in loaded_files:
+            now = datetime.datetime.now()
+            loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
+            db.LoadedEODFiles.create(loaded_file)
+            LOG.info('Parsing ' + util.get_filename_from_path(filename))
+            
+            xml = util.clean_xml_namespaces(filepath)
+            root = objectify.fromstring(xml)
+            
+            rc = db.Racingcard()
+            data = root.Body.fetchRacingCardResponse.result
+            rc.date = util.strings_to_date(
+                year=data.date.year.text,
+                month=data.date.month.text, 
+                date=data.date.date.text
+            )
+            rc.track_code = data.track.code.text
+            rc.bettype_code = data.betType.code.text
+
+            if not db.Racingcard.read(rc):
+                horses = []
+                data = root.Body.fetchRacingCardResponse.result.races
+                for race in data.getchildren():
+                    for start in race.starts.getchildren():
+                        horse = db.Horse()
+                        horse.atg_id = start.horse.key.id.text
+                        horse.name = start.horse.key.name.text
+                        horse.name_and_nationality = \
+                            start.horse.horseNameAndNationality.text
+                        horse.seregnr = start.horse.key.seRegNr.text
+                        horse.uelnnr = start.horse.key.uelnNr.text
+                        if not db.Horse.read(horse):
+                            db.Horse.create(horse)
+                        horses.append(horse)
+                rc.horses = horses
+                db.Racingcard.create(rc)
+            
 def print_all_data(datadir=None):
     '''
     Iterate over all saved (local) racecard files and
@@ -26,11 +72,10 @@ def print_all_data(datadir=None):
     racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
 
     for racingcard_file in racingcard_filelist:
+        LOG.debug('Parsing ' + util.get_filename_from_path(racingcard_file))
         xml = util.clean_xml_namespaces(racingcard_file)
-        
-        LOG.debug(racingcard_file)
-        
         root = objectify.fromstring(xml)
+
         date_data = root.Body.fetchRacingCardResponse.result.date
         print(date_data.year.text)
         print(date_data.month.text)
@@ -57,11 +102,9 @@ def print_all_data(datadir=None):
         
         for race in root.Body.fetchRacingCardResponse.result.races.getchildren():
             print(ast.literal_eval(race.cancelled.text.title()))
-            
             print(race.conditions.raceName.text)
             print(race.conditions.textLong.text)
             print(race.conditions.textShort.text)
-            
             print(race.coupledHorses.text)
             print(ast.literal_eval(race.coupledHorsesInPool.text.title()))
             print(race.distance.text)
@@ -71,31 +114,25 @@ def print_all_data(datadir=None):
                 print(race.entryDate.date.year.text)
                 print(race.entryDate.date.month.text)
                 print(race.entryDate.date.date.text)
-            except AttributeError:
-                LOG.debug('No attribute: race.entryDate')
+            except AttributeError as e:
+                LOG.debug(str(e) + ' in race.entryDate')
             
             print(race.gallopRaceInfo.text)
-            
             print(race.postTime.hour.text)
             print(race.postTime.minute.text)
             print(race.postTime.second.text)
             print(race.postTime.tenth.text)
-            
             print(race.postTimeUTC.hour.text)
             print(race.postTimeUTC.minute.text)
             print(race.postTimeUTC.second.text)
             print(race.postTimeUTC.tenth.text)
-            
             print(race.raceNr.text)
-
             print(race.raceType.code.text)
             print(race.raceType.domesticText.text)
             print(race.raceType.englishText.text)
-
             print(race.reservorder.text)
             print(ast.literal_eval(race.resultReleased.text.title()))
             print(ast.literal_eval(race.swedish.text.title()))
-
             print(race.trackState.code.text)
             print(race.trackState.domesticText.text)
             print(race.trackState.englishText.text)
@@ -105,13 +142,12 @@ def print_all_data(datadir=None):
                 print(race.trotRaceInfo.startMethod.code.text)
                 print(race.trotRaceInfo.startMethod.domesticText.text)
                 print(race.trotRaceInfo.startMethod.englishText.text)
-            except AttributeError:
-                LOG.debug('No attribute: race.trotRaceInfo')
+            except AttributeError as e:
+                LOG.debug(str(e) + ' in race.trotRaceInfo')
             
             for start in race.starts.getchildren():
                 # Driver
                 print(ast.literal_eval(start.driver.amateur.text.title()))
-                
                 print(start.driver.id.text)
                 print(start.driver.initials.text)
                 print(start.driver.name.text)
@@ -119,65 +155,50 @@ def print_all_data(datadir=None):
                 print(start.driver.sport.text)
                 print(start.driver.surName.text)
                 print(ast.literal_eval(start.driver.swedish.text.title()))
-
                 print(ast.literal_eval(start.driverChanged.text.title()))
                 print(start.driverColour.text)
                 print(start.gallopStartInfo.text)
-                
                 # Horse
                 print(start.horse.age.text)
                 print(start.horse.breed.code.text)
                 print(start.horse.breed.domesticText.text)
                 print(start.horse.breed.englishText.text)
-
                 print(start.horse.breeder.text)
-                
                 print(start.horse.colour.code.text)
                 print(start.horse.colour.domesticText.text)
                 print(start.horse.colour.englishText.text)
-
                 print(start.horse.dam.id.text)
                 print(start.horse.dam.name.text)
                 print(start.horse.dam.seRegNr.text)
                 print(start.horse.dam.uelnNr.text)
-
                 print(start.horse.damSire.id.text)
                 print(start.horse.damSire.name.text)
                 print(start.horse.damSire.seRegNr.text)
                 print(start.horse.damSire.uelnNr.text)
-                
                 print(start.horse.horseNameAndNationality.text)
-                
                 print(start.horse.key.id.text)
                 print(start.horse.key.name.text)
                 print(start.horse.key.seRegNr.text)
                 print(start.horse.key.uelnNr.text)
-                
                 print(ast.literal_eval(start.horse.linkable.text.title()))
-                
                 print(start.horse.nationalityBorn.text)
                 print(start.horse.nationalityOwner.text)
                 print(start.horse.nationalityRaised.text)
                 print(start.horse.owner.text)
                 print(start.horse.ownerId.text)
-
                 print(start.horse.sex.code.text)
                 print(start.horse.sex.domesticText.text)
                 print(start.horse.sex.englishText.text)
-                
                 print(start.horse.sire.id.text)
                 print(start.horse.sire.name.text)
                 print(start.horse.sire.seRegNr.text)
                 print(start.horse.sire.uelnNr.text)
-                
                 print(ast.literal_eval(start.horse.swedenReg.text.title()))
                 print(ast.literal_eval(start.horse.thoroughbred.text.title()))
-                
                 # Misc
                 print(ast.literal_eval(start.outsideTote.text.title()))
                 print(start.startNr.text)
                 print(start.startPoint.text)
-                
                 # Trainer
                 print(ast.literal_eval(start.trainer.amateur.text.title()))
                 print(start.trainer.id.text)
@@ -187,7 +208,7 @@ def print_all_data(datadir=None):
                 print(start.trainer.sport.text)
                 print(start.trainer.surName.text)
                 print(ast.literal_eval(start.trainer.swedish.text.title()))
-                
+
                 # trotStartInfo
                 try:
                     print(start.trotStartInfo.distance.text)
@@ -195,123 +216,125 @@ def print_all_data(datadir=None):
                     print(start.trotStartInfo.homeTrack.domesticText.text)
                     print(start.trotStartInfo.homeTrack.englishText.text)
                     print(start.trotStartInfo.postPosition.text)
-                
+                except AttributeError as e:
+                    LOG.debug(str(e) + ' in start.trotStartInfo')
+            
+                try:
                     for record in start.trotStartInfo.records.getchildren():
-                        try:
-                            print(record.date.year.text)
-                            print(record.date.month.text)
-                            print(record.date.date.text)
-                        except AttributeError:
-                            LOG.debug('No attribute: record.date')
-    
+                        print(record.date.year.text)
+                        print(record.date.month.text)
+                        print(record.date.date.text)
                         print(record.distance.text)
                         print(record.place.text)
                         print(record.raceNr.text)
-                        
                         print(record.recType.code.text)
                         print(record.recType.domesticText.text)
                         print(record.recType.englishText.text)
-                        
                         print(record.recType.code.text)
                         print(record.place.text)
-                    
                         print(record.time.hour.text)
                         print(record.time.minute.text)
                         print(record.time.second.text)
                         print(record.time.tenth.text)
-                        
                         print(record.track.code.text)
                         print(record.track.domesticText.text)
                         print(record.track.englishText.text)
-                        
                         print(ast.literal_eval(record.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: start.trotStartInfo')
+                except AttributeError as e:
+                    LOG.debug(str(e) + ' in start.trotStartInfo.records')
                 
-                # horseStat current
-                print(start.horseStat.current.amAutoRecord.text)
-                try:
+                # Types with same structure, pastPerformances excluded
+                stattypes = ['current', 'previous', 'total']
+                for stattype in stattypes:
+                    horsestat = None 
+                    horsestat_string = 'start.horseStat.' + stattype
                     try:
-                        print(start.horseStat.current.autoRecord.date.year.text)
-                        print(start.horseStat.current.autoRecord.date.month.text)
-                        print(start.horseStat.current.autoRecord.date.date.text)
-                    except AttributeError:
-                        LOG.debug('No attribute: start.horseStat.current.autoRecord.date')
-
-                    print(start.horseStat.current.autoRecord.distance.text)
-                    print(start.horseStat.current.autoRecord.place.text)
-                    print(start.horseStat.current.autoRecord.raceNr.text)
-                    print(start.horseStat.current.autoRecord.recType.code.text)
-                    print(start.horseStat.current.autoRecord.recType.domesticText.text)
-                    print(start.horseStat.current.autoRecord.recType.englishText.text)
-                    print(start.horseStat.current.autoRecord.time.hour.text)
-                    print(start.horseStat.current.autoRecord.time.minute.text)
-                    print(start.horseStat.current.autoRecord.time.second.text)
-                    print(start.horseStat.current.autoRecord.time.tenth.text)
-                    print(start.horseStat.current.autoRecord.track.code.text)
-                    print(start.horseStat.current.autoRecord.track.domesticText.text)
-                    print(start.horseStat.current.autoRecord.track.englishText.text)
-                    print(ast.literal_eval(start.horseStat.current.autoRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: start.horseStat.current.autoRecord')
-                
-                print(start.horseStat.current.bonusEarning.currency.text)
-                print(start.horseStat.current.bonusEarning.sum.text)
-                 
-                print(start.horseStat.current.earning.currency.text)
-                print(start.horseStat.current.earning.sum.text)
-                
-                print(start.horseStat.current.first.text)
-
-                print(start.horseStat.current.forcedEarning.currency.text)
-                print(start.horseStat.current.forcedEarning.sum.text)
-
-                print(start.horseStat.current.nrOfStarts.text)
-                print(start.horseStat.current.percent123.text)
-                print(start.horseStat.current.percentWin.text)
-                print(start.horseStat.current.second.text)
-                print(start.horseStat.current.third.text)
-                
-                try:
+                        horsestat = eval(horsestat_string)
+                    except NameError:
+                        LOG.exception(
+                            'Unexpected error, name "%s should be defined'
+                            % horsestat_string
+                        )
+                    print(horsestat.amAutoRecord.text)
                     try:
-                        print(start.horseStat.current.voltRecord.date.year.text)
-                        print(start.horseStat.current.voltRecord.date.month.text)
-                        print(start.horseStat.current.voltRecord.date.date.text)
-                    except AttributeError:
-                        LOG.debug('No attribute: start.horseStat.current.voltRecord.date')
+                        print(horsestat.autoRecord.date.year.text)
+                        print(horsestat.autoRecord.date.month.text)
+                        print(horsestat.autoRecord.date.date.text)
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in %s' % horsestat_string)
+    
+                    try:
+                        print(horsestat.autoRecord.distance.text)
+                        print(horsestat.autoRecord.place.text)
+                        print(horsestat.autoRecord.raceNr.text)
+                        print(horsestat.autoRecord.recType.code.text)
+                        print(horsestat.autoRecord.recType.domesticText.text)
+                        print(horsestat.autoRecord.recType.englishText.text)
+                        print(horsestat.autoRecord.time.hour.text)
+                        print(horsestat.autoRecord.time.minute.text)
+                        print(horsestat.autoRecord.time.second.text)
+                        print(horsestat.autoRecord.time.tenth.text)
+                        print(horsestat.autoRecord.track.code.text)
+                        print(horsestat.autoRecord.track.domesticText.text)
+                        print(horsestat.autoRecord.track.englishText.text)
+                        print(ast.literal_eval(horsestat.autoRecord.winner.text.title()))
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in %s' % horsestat_string)
+                    
+                    print(horsestat.bonusEarning.currency.text)
+                    print(horsestat.bonusEarning.sum.text)
+                    print(horsestat.earning.currency.text)
+                    print(horsestat.earning.sum.text)
+                    print(horsestat.first.text)
+                    print(horsestat.forcedEarning.currency.text)
+                    print(horsestat.forcedEarning.sum.text)
+                    print(horsestat.nrOfStarts.text)
+                    print(horsestat.percent123.text)
+                    print(horsestat.percentWin.text)
+                    print(horsestat.second.text)
+                    print(horsestat.third.text)
+                    
+                    try:
+                        print(horsestat.voltRecord.date.year.text)
+                        print(horsestat.voltRecord.date.month.text)
+                        print(horsestat.voltRecord.date.date.text)
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in %s' % horsestat_string)
+    
+                    try:
+                        print(horsestat.voltRecord.distance.text)
+                        print(horsestat.voltRecord.place.text)
+                        print(horsestat.voltRecord.raceNr.text)
+                        print(horsestat.voltRecord.recType.code.text)
+                        print(horsestat.voltRecord.recType.domesticText.text)
+                        print(horsestat.voltRecord.recType.englishText.text)
+                        print(horsestat.voltRecord.time.hour.text)
+                        print(horsestat.voltRecord.time.minute.text)
+                        print(horsestat.voltRecord.time.second.text)
+                        print(horsestat.voltRecord.time.tenth.text)
+                        print(horsestat.voltRecord.track.code.text)
+                        print(horsestat.voltRecord.track.domesticText.text)
+                        print(horsestat.voltRecord.track.englishText.text)
+                        print(ast.literal_eval(horsestat.voltRecord.winner.text.title()))
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in %s' % horsestat_string)
 
-                    print(start.horseStat.current.voltRecord.distance.text)
-                    print(start.horseStat.current.voltRecord.place.text)
-                    print(start.horseStat.current.voltRecord.raceNr.text)
-                    print(start.horseStat.current.voltRecord.recType.code.text)
-                    print(start.horseStat.current.voltRecord.recType.domesticText.text)
-                    print(start.horseStat.current.voltRecord.recType.englishText.text)
-                    print(start.horseStat.current.voltRecord.time.hour.text)
-                    print(start.horseStat.current.voltRecord.time.minute.text)
-                    print(start.horseStat.current.voltRecord.time.second.text)
-                    print(start.horseStat.current.voltRecord.time.tenth.text)
-                    print(start.horseStat.current.voltRecord.track.code.text)
-                    print(start.horseStat.current.voltRecord.track.domesticText.text)
-                    print(start.horseStat.current.voltRecord.track.englishText.text)
-                    print(ast.literal_eval(start.horseStat.current.voltRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: start.horseStat.current.voltRecord')
-
-                print(start.horseStat.current.year.year.text)
-                print(start.horseStat.current.year.month.text)
-                print(start.horseStat.current.year.date.text)
+                    try:
+                        print(horsestat.year.year.text)
+                        print(horsestat.year.month.text)
+                        print(horsestat.year.date.text)
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in %s' % horsestat_string)
 
                 # horseStat pastPerformances
                 for resultrow in start.horseStat.pastPerformances.getchildren():
                     print(resultrow.circumstances.distance.text)
                     print(ast.literal_eval(resultrow.circumstances.monte.text.title()))
                     print(resultrow.circumstances.postPosition.text)
-
                     print(resultrow.circumstances.shoeInfo.text)
                     print(resultrow.circumstances.trackState.code.text)
                     print(resultrow.circumstances.trackState.domesticText.text)
                     print(resultrow.circumstances.trackState.englishText.text)
-                    
                     print(ast.literal_eval(resultrow.driver.amateur.text.title()))
                     print(resultrow.driver.id.text)
                     print(resultrow.driver.initials.text)
@@ -324,8 +347,8 @@ def print_all_data(datadir=None):
                     try:
                         print(resultrow.earning.currency.text)
                         print(resultrow.earning.sum.text)
-                    except AttributeError:
-                        LOG.debug('No attribute: resultrow.earning')
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in resultrow.earning')
                         
                     print(resultrow.firstPrize.currency.text)
                     print(resultrow.firstPrize.sum.text)
@@ -338,17 +361,14 @@ def print_all_data(datadir=None):
                     print(resultrow.kmTime.time.minute.text)
                     print(resultrow.kmTime.time.second.text)
                     print(resultrow.kmTime.time.tenth.text)
-    
                     print(ast.literal_eval(resultrow.nationalRace.text.title()))
                     print(resultrow.odds.text)
-                    
                     print(ast.literal_eval(resultrow.placeInfo.disqualified.text.title()))
                     print(resultrow.placeInfo.formattedResult.text)
                     print(resultrow.placeInfo.place.text)
                     print(ast.literal_eval(resultrow.placeInfo.reported.text.title()))
                     print(ast.literal_eval(resultrow.placeInfo.scratched.text.title()))
                     print(resultrow.placeInfo.scratchedReason.text)
-                    
                     print(resultrow.raceKey.date.year.text)
                     print(resultrow.raceKey.date.month.text)
                     print(resultrow.raceKey.date.date.text)
@@ -360,12 +380,11 @@ def print_all_data(datadir=None):
                     
                     try:
                         print(resultrow.raceKey.trackKey.trackId.text)
-                    except AttributeError:
-                        LOG.debug('No attribute: resultrow.raceKey.trackKey')
+                    except AttributeError as e:
+                        LOG.debug(str(e) + ' in resultrow.raceKey.trackKey')
                     
                     print(resultrow.raceType.text)
                     print(resultrow.startNr.text)
-                    
                     print(ast.literal_eval(resultrow.totalTime.gallop.text.title()))
                     print(resultrow.totalTime.noTimeCode.text)
                     print(resultrow.totalTime.startMethod.text)
@@ -373,133 +392,6 @@ def print_all_data(datadir=None):
                     print(resultrow.totalTime.time.minute.text)
                     print(resultrow.totalTime.time.second.text)
                     print(resultrow.totalTime.time.tenth.text)
-
-                # horseStat previous
-                horsestat = start.horseStat.previous
-                print(horsestat.amAutoRecord.text)
-                try:
-                    print(horsestat.autoRecord.date.year.text)
-                    print(horsestat.autoRecord.date.month.text)
-                    print(horsestat.autoRecord.date.date.text)
-                    print(horsestat.autoRecord.distance.text)
-                    print(horsestat.autoRecord.place.text)
-                    print(horsestat.autoRecord.raceNr.text)
-                    print(horsestat.autoRecord.recType.code.text)
-                    print(horsestat.autoRecord.recType.domesticText.text)
-                    print(horsestat.autoRecord.recType.englishText.text)
-                    print(horsestat.autoRecord.time.hour.text)
-                    print(horsestat.autoRecord.time.minute.text)
-                    print(horsestat.autoRecord.time.second.text)
-                    print(horsestat.autoRecord.time.tenth.text)
-                    print(horsestat.autoRecord.track.code.text)
-                    print(horsestat.autoRecord.track.domesticText.text)
-                    print(horsestat.autoRecord.track.englishText.text)
-                    print(ast.literal_eval(horsestat.autoRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: horseStat.previous.autoRecord')
-
-                print(horsestat.bonusEarning.currency.text)
-                print(horsestat.bonusEarning.sum.text)
-                print(horsestat.earning.currency.text)
-                print(horsestat.earning.sum.text)
-                print(horsestat.first.text)
-                print(horsestat.forcedEarning.currency.text)
-                print(horsestat.forcedEarning.sum.text)
-                print(horsestat.nrOfStarts.text)
-                print(horsestat.percent123.text)
-                print(horsestat.percentWin.text)
-                print(horsestat.second.text)
-                print(horsestat.third.text)
-                
-                try:
-                    print(horsestat.voltRecord.date.year.text)
-                    print(horsestat.voltRecord.date.month.text)
-                    print(horsestat.voltRecord.date.date.text)
-                    print(horsestat.voltRecord.distance.text)
-                    print(horsestat.voltRecord.place.text)
-                    print(horsestat.voltRecord.raceNr.text)
-                    print(horsestat.voltRecord.recType.code.text)
-                    print(horsestat.voltRecord.recType.domesticText.text)
-                    print(horsestat.voltRecord.recType.englishText.text)
-                    print(horsestat.voltRecord.time.hour.text)
-                    print(horsestat.voltRecord.time.minute.text)
-                    print(horsestat.voltRecord.time.second.text)
-                    print(horsestat.voltRecord.time.tenth.text)
-                    print(horsestat.voltRecord.track.code.text)
-                    print(horsestat.voltRecord.track.domesticText.text)
-                    print(horsestat.voltRecord.track.englishText.text)
-                    print(ast.literal_eval(horsestat.voltRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: horseStat.previous.voltRecord')
-                    
-                print(horsestat.year.year.text)
-                print(horsestat.year.month.text)
-                print(horsestat.year.date.text)
-                
-                # horseStat total
-                horsestat = start.horseStat.total
-                print(horsestat.amAutoRecord.text)
-                try:
-                    print(horsestat.autoRecord.date.year.text)
-                    print(horsestat.autoRecord.date.month.text)
-                    print(horsestat.autoRecord.date.date.text)
-                    print(horsestat.autoRecord.distance.text)
-                    print(horsestat.autoRecord.place.text)
-                    print(horsestat.autoRecord.raceNr.text)
-                    print(horsestat.autoRecord.recType.code.text)
-                    print(horsestat.autoRecord.recType.domesticText.text)
-                    print(horsestat.autoRecord.recType.englishText.text)
-                    print(horsestat.autoRecord.time.hour.text)
-                    print(horsestat.autoRecord.time.minute.text)
-                    print(horsestat.autoRecord.time.second.text)
-                    print(horsestat.autoRecord.time.tenth.text)
-                    print(horsestat.autoRecord.track.code.text)
-                    print(horsestat.autoRecord.track.domesticText.text)
-                    print(horsestat.autoRecord.track.englishText.text)
-                    print(ast.literal_eval(horsestat.autoRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: horseStat.total.autoRecord')
-
-                print(horsestat.bonusEarning.currency.text)
-                print(horsestat.bonusEarning.sum.text)
-                print(horsestat.earning.currency.text)
-                print(horsestat.earning.sum.text)
-                print(horsestat.first.text)
-                print(horsestat.forcedEarning.currency.text)
-                print(horsestat.forcedEarning.sum.text)
-                print(horsestat.nrOfStarts.text)
-                print(horsestat.percent123.text)
-                print(horsestat.percentWin.text)
-                print(horsestat.second.text)
-                print(horsestat.third.text)
-                
-                try:
-                    print(horsestat.voltRecord.date.year.text)
-                    print(horsestat.voltRecord.date.month.text)
-                    print(horsestat.voltRecord.date.date.text)
-                    print(horsestat.voltRecord.distance.text)
-                    print(horsestat.voltRecord.place.text)
-                    print(horsestat.voltRecord.raceNr.text)
-                    print(horsestat.voltRecord.recType.code.text)
-                    print(horsestat.voltRecord.recType.domesticText.text)
-                    print(horsestat.voltRecord.recType.englishText.text)
-                    print(horsestat.voltRecord.time.hour.text)
-                    print(horsestat.voltRecord.time.minute.text)
-                    print(horsestat.voltRecord.time.second.text)
-                    print(horsestat.voltRecord.time.tenth.text)
-                    print(horsestat.voltRecord.track.code.text)
-                    print(horsestat.voltRecord.track.domesticText.text)
-                    print(horsestat.voltRecord.track.englishText.text)
-                    print(ast.literal_eval(horsestat.voltRecord.winner.text.title()))
-                except AttributeError:
-                    LOG.debug('No attribute: horseStat.total.voltRecord')
-                
-                try:
-                    print(horsestat.year.year.text)
-                    print(horsestat.year.month.text)
-                    print(horsestat.year.date.text)
-                except AttributeError:
-                    LOG.debug('No attribute: horseStat.year')
 
 if __name__ == "__main__":
     pass
