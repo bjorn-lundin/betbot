@@ -84,15 +84,21 @@ def call_ais_service(params=None, date=None, track=None,
     # read data from downloaded file instead of calling
     # web service
     if params['save_soap_file']:
-        file_name = file_name_dict['filename']
-        file_list = util.list_files(params['datadir'])
-        if file_list and file_name in file_list:
+        filename = file_name_dict['filename']
+        datapath = params['datadir']
+        filelist = util.list_files(datapath)
+        if filelist and filename in filelist:
             if ret_if_local:
-                LOG.info('Using excisting file ' + file_name)
-                xml_data = util.read_file(file_name_dict=file_name_dict)
+                LOG.info('Using excisting file ' + filename)
+                xml_data = util.read_file(
+                    util.create_file_path(
+                        path=datapath,
+                        filename=filename
+                    )
+                )
             else:
-                LOG.debug('Data already saved in {file_name}'
-                         .format(file_name=file_name))
+                LOG.debug('Data already saved in {filename}'
+                         .format(filename=filename))
                 return result
     try:
         service_method = getattr(params['client'].service, params['service'])
