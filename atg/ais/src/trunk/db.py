@@ -80,8 +80,11 @@ class Raceday(BASE):
             self.country_code = racedayinfo.country.code
             self.country_domestic_text = racedayinfo.country.domesticText
             self.country_english_text = racedayinfo.country.englishText
-            self.first_race_posttime_date = \
-                util.struct_to_date(racedayinfo.firstRacePostTime.date)
+            self.first_race_posttime_date = util.strings_to_date(
+                year=racedayinfo.firstRacePostTime.date.year, 
+                month=racedayinfo.firstRacePostTime.date.month, 
+                date=racedayinfo.firstRacePostTime.date.date
+             )
             self.first_race_posttime_time = \
                 util.struct_to_time(racedayinfo.firstRacePostTime.time)
             self.first_race_posttime_utc_time = \
@@ -95,8 +98,11 @@ class Raceday(BASE):
                 racedayinfo.meetingType.domesticText
             self.meetingtype_english_text = racedayinfo.meetingType.englishText
             self.racecard_available = racedayinfo.raceCardAvailable
-            self.raceday_date = \
-                util.struct_to_date(racedayinfo.raceDayDate)
+            self.raceday_date = util.strings_to_date(
+                year=racedayinfo.raceDayDate.year,
+                month=racedayinfo.raceDayDate.month,
+                date=racedayinfo.raceDayDate.date
+            )
             self.track_code = racedayinfo.track.code
             self.track_domestic_text = racedayinfo.track.domesticText
             self.track_english_text = racedayinfo.track.englishText
@@ -264,6 +270,126 @@ class Bettype(BASE):
             self.name_english_text,
         ) 
         part1 = "<Bettype( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+RACINGCARD_HORSE_ASSOCIATION = \
+    Table (
+        'racingcard_horse', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('racingcard_id', Integer, ForeignKey('racingcard.id')),
+        Column('horse_id', Integer, ForeignKey('horse.id'))
+    )
+    
+class Racingcard(BASE):
+    '''
+    Database entity Racingcard
+    '''
+    __tablename__ = 'racingcard'
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+    track_code = Column(String)
+    bettype_code = Column(String)
+    horses = relation('Horse', secondary=RACINGCARD_HORSE_ASSOCIATION)
+    
+    def __init__(self, data=None):
+        if data:
+            self.date = data.date
+            self.track_code = data.track_code
+            self.bettype_code = data.bettype_code
+            self.horses = data.horses
+            
+    def __repr__(self):
+        params = (
+            self.id, 
+            self.date, 
+            self.track_code, 
+            self.bettype_code,
+            self.horses
+        ) 
+        part1 = "<Racingcard( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+    
+    @staticmethod 
+    def create(new):
+        '''
+        Create an entity in database
+        '''
+        entity = DB_SESSION.add(new)
+        DB_SESSION.commit()
+        return entity
+        
+    @staticmethod
+    def read_all():
+        '''
+        List all entities in database
+        '''
+        return DB_SESSION.query(Racingcard).all()
+    
+    
+    @staticmethod
+    def read(entity):
+        '''
+        Read an entity from database
+        '''
+        result = DB_SESSION.query(Racingcard).filter_by(
+            date = entity.date,
+            track_code = entity.track_code
+        ).first()
+        return result
+
+class Horse(BASE):
+    '''
+    Database entity Horse
+    '''
+    __tablename__ = 'horse'
+    id = Column(Integer, primary_key=True)
+    atg_id = Column(Integer)
+    name = Column(String)
+    name_and_nationality = Column(String) 
+    seregnr = Column(String)
+    uelnnr = Column(String)
+
+    def __init__(self, data=None):
+        if data:
+            self.atg_id = data.atg_id
+            self.name = data.name
+            self.name_and_nationality = data.name_and_nationality
+            self.seregnr = data.seregnr
+            self.uelnnr = data.uelnnr
+        
+    @staticmethod
+    def create(new):
+        '''
+        Create an entity in database
+        '''
+        entity = DB_SESSION.add(new)
+        DB_SESSION.commit()
+        return entity
+    
+    @staticmethod
+    def read(entity):
+        '''
+        Read an entity in database
+        '''
+        result = DB_SESSION.query(Horse).filter_by(
+            name_and_nationality = entity.name_and_nationality
+        ).first()
+        return result
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.atg_id,
+            self.name,
+            self.name_and_nationality,
+            self.seregnr,
+            self.uelnnr,
+        ) 
+        part1 = "<Horse( "
         part2 = "'%s', " * len(params)
         part3 = ")>"
         return (part1 + part2 + part3) % params
