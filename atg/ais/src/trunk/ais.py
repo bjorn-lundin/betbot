@@ -198,7 +198,7 @@ def racing_card_service(params=None, date=None,
     fetched for upcoming races.
     '''
     params['service'] = 'fetchRacingCard'
-    result = call_ais_service(
+    call_ais_service(
         params=params, 
         date=date,
         track=track,
