@@ -36,6 +36,11 @@ Install psycopg2 system dependencies
 Install matplotlib system dependencies
     sudo apt-get install libfreetype6-dev libpng12-dev g++
 
+Install lxml system dependencies
+    sudo apt-get install libxml2-dev
+    sudo apt-get install libxslt1-dev
+    (python-dev from above)
+    
 Create a Python virtual environment
     virtualenv xyz
 
