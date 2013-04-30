@@ -11,6 +11,7 @@ import hashlib
 import errno
 import subprocess as sp
 import aws_services
+import codecs
 
 LOG = logging.getLogger('AIS')
 
@@ -67,17 +68,20 @@ def write_file(result=None, file_name_dict=None):
     finally:
         filehandle.close()
 
-def read_file(file_name_dict=None):
+def read_file(filepath=None, encoding=None):
     '''
-    Read a file
+    Read a file (with encoding if stated)
     '''
+    filename = os.path.basename(filepath)
     result = None
-    filepath = os.path.join(file_name_dict['path'], 
-                            file_name_dict['filename'])
     if os.path.exists(filepath):
-        LOG.info('Reading file ' + file_name_dict['filename'])
+        LOG.info('Reading file ' + filename)
+        filehandle = None
         try:
-            filehandle = open(filepath, 'r')
+            if encoding:
+                filehandle = codecs.open(filepath, encoding=encoding)
+            else:
+                filehandle = open(filepath, 'r')
             result = filehandle.read()
         except IOError:
             LOG.exception()
@@ -86,7 +90,7 @@ def read_file(file_name_dict=None):
         finally:
             filehandle.close()
     else:
-        LOG.info('Could not read file ' + file_name_dict['filename'] + 
+        LOG.info('Could not read file ' + filename + 
                  ' (file does not exist)')
     return result
 
@@ -181,20 +185,18 @@ def create_directories(dirs=None):
 
 # Compiling regexp on global level for performance
 import re
-CLEANXML_1 = re.compile(r'<\?.*?\?>\n')
-CLEANXML_2 = re.compile(r'(</{0,1}).+?:')
-CLEANXML_3 = re.compile(r'\Wxsi:.*?=".*?"')
+CLEANXML_1 = re.compile(ur'<\?.*?\?>\n')
+CLEANXML_2 = re.compile(ur'(</{0,1}).+?:')
+CLEANXML_3 = re.compile(ur'\Wxsi:.*?=".*?"')
 
 def clean_xml_namespaces(xmlfile=None, savename=None):
     '''
     Removes namespace data in xml file
     '''
-    filehandle = open(xmlfile, 'r')
-    xml = filehandle.read()
-    filehandle.close()
-    xml = CLEANXML_1.sub(r'', xml, count=1)
-    xml = CLEANXML_2.sub(r'\1', xml)
-    xml = CLEANXML_3.sub(r'', xml)
+    xml = read_file(xmlfile, encoding='utf-8')
+    xml = CLEANXML_1.sub(ur'', xml, count=1)
+    xml = CLEANXML_2.sub(ur'\1', xml)
+    xml = CLEANXML_3.sub(ur'', xml)
     if savename:
         filehandle = open(savename, 'w')
         filehandle.write(xml)
@@ -204,6 +206,11 @@ def clean_xml_namespaces(xmlfile=None, savename=None):
 def get_filename_from_path(path=None):
     return os.path.basename(path)
 
+def create_file_path(path=None, filename=None):
+    filepath = os.path.join(path, filename)
+    filepath = os.path.normpath(filepath)
+    return filepath
+    
 #######################################################
 # AIS struct and date/time conversions                #
 #######################################################
@@ -344,13 +351,11 @@ def email_log_stats_and_errors(logdir=None, logfile=None, datadir=None,
     and errors if any.
     '''
     curr_date = date_to_string2(get_current_date())
-    logfile_curr = {'path':logdir, 'filename':logfile}
-    log = read_file(file_name_dict=logfile_curr)
-
+    filepath = create_file_path(path=logdir, filename=logfile)
+    log = read_file(filepath)
     # If logging framework has rotated logs (created history) during last run,
     # we have to look in '.1' as well
-    logfile_hist = {'path':logdir, 'filename':logfile + '.1'}
-    log_hist = read_file(file_name_dict=logfile_hist)
+    log_hist = read_file(filepath + '.1')
 
     log_collection = []
     if log_hist:
