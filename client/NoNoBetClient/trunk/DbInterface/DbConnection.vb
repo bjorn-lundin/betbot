@@ -250,25 +250,61 @@ Public Class DbConnection
   End Sub
 
   Public Function NewCommand(ByVal sql As String) As NpgsqlCommand
-    Return New NpgsqlCommand(sql, _Connection)
+    Dim cmd As NpgsqlCommand = Nothing
+
+    Try
+      cmd = New NpgsqlCommand(sql, _Connection)
+    Catch ex As Exception
+      MsgBox("Sql command error, sql=" + sql + ", message=" + ex.Message)
+    End Try
+    Return cmd
   End Function
 
   Public Function ExecuteSqlCommand(ByVal sql As String) As NpgsqlDataReader
-    Dim cmd As NpgsqlCommand = New NpgsqlCommand(sql, Me._Connection)
-    Dim dr As NpgsqlDataReader = cmd.ExecuteReader()
+    Dim cmd As NpgsqlCommand = NewCommand(sql)
+    Dim dr As NpgsqlDataReader = Nothing
+
+    Try
+      dr = cmd.ExecuteReader()
+    Catch ex As Exception
+      MsgBox("ExecuteSqlCommand error, sql=" + sql + ", message=" + ex.Message)
+    End Try
+
     Return dr
   End Function
 
   Public Function ExecuteSql(ByVal sql As String) As DataTable
-    Dim dataAdapter As NpgsqlDataAdapter = New NpgsqlDataAdapter(sql, Me._Connection)
+    Dim dataAdapter As NpgsqlDataAdapter = Nothing
     Dim dt As DataTable = New DataTable()
-    dataAdapter.Fill(dt)
+
+    Try
+      dataAdapter = New NpgsqlDataAdapter(sql, Me._Connection)
+    Catch ex As Exception
+      MsgBox("ExecuteSql error, sql=" + sql + ", message=" + ex.Message)
+      Return Nothing
+    End Try
+
+    Try
+      dataAdapter.Fill(dt)
+    Catch ex As Exception
+      MsgBox("ExecuteSql error, sql=" + sql + ", message=" + ex.Message)
+      Return Nothing
+    End Try
+
     Return dt
   End Function
 
   Public Function ExecuteSqlScalar(ByVal sql As String) As Object
-    Dim cmd As NpgsqlCommand = New NpgsqlCommand(sql, Me._Connection)
-    Return cmd.ExecuteScalar()
+    Dim cmd As NpgsqlCommand = NewCommand(sql)
+    Dim columnObj As Object = Nothing
+
+    Try
+      columnObj = cmd.ExecuteScalar()
+    Catch ex As Exception
+      MsgBox("ExecuteSqlScalar error, sql=" + sql + ", message=" + ex.Message)
+    End Try
+
+    Return columnObj
   End Function
 
   Public Sub Dispose() Implements System.IDisposable.Dispose
