@@ -200,18 +200,21 @@ def clean_xml_namespaces(xmlfile=None, savename=None):
         filehandle.write(xml)
         filehandle.close()
     return xml
-        
+
+def get_filename_from_path(path=None):
+    return os.path.basename(path)
+
 #######################################################
 # AIS struct and date/time conversions                #
 #######################################################
-def struct_to_date(date_struct):
+def strings_to_date(year=None, month=None, date=None):
     '''
     Converts string parts to a date object
     '''
     date = datetime.datetime(
-        date_struct.year, 
-        date_struct.month, 
-        date_struct.date
+        int(year), 
+        int(month), 
+        int(date)
     )
     return date
 
