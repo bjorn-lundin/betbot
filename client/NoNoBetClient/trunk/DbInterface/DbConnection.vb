@@ -14,6 +14,9 @@ Public Class DbConnection
     DateAndTime
     TimeOnly
   End Enum
+
+  Public Const _SelectAllTables As String = "SELECT table_name FROM information_schema.tables WHERE information_schema.tables.table_schema = 'public'"
+
   ''' <summary>
   ''' Convert specified DateTime object to a String (to be used in a SQL statement)
   ''' </summary>
@@ -305,6 +308,21 @@ Public Class DbConnection
     End Try
 
     Return columnObj
+  End Function
+
+  Public Function GetAllTablesList() As List(Of String)
+    Dim tList As List(Of String) = New List(Of String)
+    Dim dReader As NpgsqlDataReader = ExecuteSqlCommand(_SelectAllTables)
+    Dim tableName As String
+
+    While dReader.Read
+      tableName = dReader.Item("table_name").ToString
+      tList.Add(tableName)
+    End While
+
+    dReader.Close()
+
+    Return tList
   End Function
 
   Public Sub Dispose() Implements System.IDisposable.Dispose
