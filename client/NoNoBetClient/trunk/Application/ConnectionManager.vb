@@ -255,9 +255,14 @@ Public Class ConnectionManager
     Dim item As ListViewItem = GetSelectedItem()
 
     If IsListItemConnectionOpen(item) Then
-      Dim mainFrm As MainForm = New MainForm
-      mainFrm.DbConnection = CType(item.Tag, DbConnection)
-      mainFrm.StartForm(False)
+      Dim tableBrowser As Tables = New Tables
+
+      tableBrowser.DbConnection = CType(item.Tag, DbConnection)
+      tableBrowser.StartForm(False)
+
+      'Dim mainFrm As MainForm = New MainForm
+      'mainFrm.DbConnection = CType(item.Tag, DbConnection)
+      'mainFrm.StartForm(False)
     End If
   End Sub
 
