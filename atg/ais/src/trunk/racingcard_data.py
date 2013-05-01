@@ -48,16 +48,19 @@ def load_into_db(datadir=None):
                 data = root.Body.fetchRacingCardResponse.result.races
                 for race in data.getchildren():
                     for start in race.starts.getchildren():
-                        horse = db.Horse()
-                        horse.atg_id = start.horse.key.id.text
-                        horse.name = start.horse.key.name.text
-                        horse.name_and_nationality = \
-                            start.horse.horseNameAndNationality.text
-                        horse.seregnr = start.horse.key.seRegNr.text
-                        horse.uelnnr = start.horse.key.uelnNr.text
-                        if not db.Horse.read(horse):
-                            db.Horse.create(horse)
-                        horses.append(horse)
+                        atg_id = int(start.horse.key.id.text)
+                        # Only include horses with an atg id
+                        if atg_id > 0:
+                            horse = db.Horse()
+                            horse.atg_id = atg_id
+                            horse.name = start.horse.key.name.text
+                            horse.name_and_nationality = \
+                                start.horse.horseNameAndNationality.text
+                            horse.seregnr = start.horse.key.seRegNr.text
+                            horse.uelnnr = start.horse.key.uelnNr.text
+                            if not db.Horse.read(horse):
+                                db.Horse.create(horse)
+                            horses.append(horse)
                 rc.horses = horses
                 db.Racingcard.create(rc)
             
