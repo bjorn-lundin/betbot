@@ -7,7 +7,6 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 import logging
 import util
-from lxml import objectify
 import ast
 import db
 import datetime
@@ -28,11 +27,9 @@ def load_into_db(datadir=None):
             now = datetime.datetime.now()
             loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
             db.LoadedEODFiles.create(loaded_file)
+
             LOG.info('Parsing ' + util.get_filename_from_path(filename))
-            
-            xml = util.clean_xml_namespaces(filepath)
-            root = objectify.fromstring(xml)
-            
+            root = util.get_xml_object(filepath)
             rc = db.Racingcard()
             data = root.Body.fetchRacingCardResponse.result
             rc.date = util.strings_to_date(
@@ -74,10 +71,9 @@ def print_all_data(datadir=None):
     filelist = sorted(util.list_files_with_path(datadir))
     racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
 
-    for racingcard_file in racingcard_filelist:
-        LOG.debug('Parsing ' + util.get_filename_from_path(racingcard_file))
-        xml = util.clean_xml_namespaces(racingcard_file)
-        root = objectify.fromstring(xml)
+    for filepath in racingcard_filelist:
+        LOG.debug('Parsing ' + util.get_filename_from_path(filepath))
+        root = util.get_xml_object(filepath)
 
         date_data = root.Body.fetchRacingCardResponse.result.date
         print(date_data.year.text)

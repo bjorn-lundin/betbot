@@ -12,6 +12,7 @@ import errno
 import subprocess as sp
 import aws_services
 import codecs
+from lxml import objectify
 
 LOG = logging.getLogger('AIS')
 
@@ -385,3 +386,11 @@ def email_log_stats_and_errors(logdir=None, logfile=None, datadir=None,
         body=body,
         send_list=send_list
     )
+
+#######################################################
+# Xml parser implementation                           #
+#######################################################
+def get_xml_object(filepath=None):
+    xml = clean_xml_namespaces(filepath)
+    xml_object = objectify.fromstring(xml)
+    return xml_object
