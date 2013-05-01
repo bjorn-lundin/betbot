@@ -51,22 +51,25 @@ def write_meta_files(client=None, path=None):
     finally:
         filehandle.close()
 
-def write_file(result=None, file_name_dict=None):
+def write_file(data=None, filepath=None, encoding=None):
     '''
-    Write a file
+    Write a file (with encoding if stated)
     '''
-    LOG.info('Writing file ' + file_name_dict['filename'])
-    filepath = os.path.join(file_name_dict['path'], 
-                            file_name_dict['filename'])
-    try:
-        filehandle = open(filepath, 'w')
-        filehandle.write(str(result))
-    except IOError:
-        LOG.exception()
-    except:
-        LOG.exception('Unexpected error!')
-    finally:
-        filehandle.close()
+    filename = os.path.basename(filepath)
+    LOG.info('Writing file ' + filename)
+    if not os.path.exists(filepath):
+        try:
+            filehandle = codecs.open(filepath, encoding=encoding, mode='w')
+            filehandle.write(str(data))
+        except IOError:
+            LOG.exception()
+        except:
+            LOG.exception('Unexpected error!')
+        finally:
+            filehandle.close()
+    else:
+        LOG.info('Could not write file ' + filename + 
+                 ' (file already exist)')
 
 def read_file(filepath=None, encoding=None):
     '''
@@ -78,10 +81,7 @@ def read_file(filepath=None, encoding=None):
         LOG.info('Reading file ' + filename)
         filehandle = None
         try:
-            if encoding:
-                filehandle = codecs.open(filepath, encoding=encoding)
-            else:
-                filehandle = open(filepath, 'r')
+            filehandle = codecs.open(filepath, encoding=encoding)
             result = filehandle.read()
         except IOError:
             LOG.exception()
@@ -94,9 +94,9 @@ def read_file(filepath=None, encoding=None):
                  ' (file does not exist)')
     return result
 
-def generate_file_name(datadir = None, ais_service = None,
-                       date = None, track=None,
-                       ais_version = None, ais_type = None):
+def generate_file_name(datadir=None, ais_service=None,
+                       date=None, track=None,
+                       ais_version=None, ais_type=None):
     '''
     Generate a dict containing path, filename and 
     filepath (path + filename)

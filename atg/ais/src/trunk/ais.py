@@ -153,8 +153,14 @@ def call_ais_service(params=None, date=None, track=None,
         LOG.error('Service call resulted in empty (None) result')
     else:
         if params['save_soap_file'] and xml_data is None:
-            util.write_file(result=params['client'].last_received(), 
-                            file_name_dict=file_name_dict)
+            filepath = util.create_file_path(
+                params['datadir'], 
+                file_name_dict['filename']
+            )
+            util.write_file(
+                data=params['client'].last_received(), 
+                filepath=filepath
+            )
     return result
     
 def raceday_calendar_service(params=None, date=None, ret_if_local=False):
