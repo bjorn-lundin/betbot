@@ -311,13 +311,12 @@ class BetBot(object):
         bets = []
 
         todays_profit = self.profit_today()
+        self.log.info('we won ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_PROFIT))
         if todays_profit >= self.MAX_DAILY_PROFIT :
             self.log.info('YES!! we have won enough for today, no more bets..')
-            self.log.info('we won ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_PROFIT))
             return
         if todays_profit <= self.MAX_DAILY_LOSS :
             self.log.info('NO!! we have lost enough for today, no more bets..')
-            self.log.info('we lost ' + str(todays_profit) + ' so far, limit is ' + str(self.MAX_DAILY_LOSS))
             return
 
         bet_id = self.bet_in_the_air()
@@ -628,6 +627,14 @@ class BetBot(object):
         if self.MIN_ODDS > self.MAX_ODDS :
             raise Exception('min odds bigger than max odds! impossible ..')
 
+
+        profit = self.profit_today()
+        self.log.info('profit ' + str(profit))
+        try :
+            self.check_has_lost_today()
+        except RecoveredFromLossError as e :
+            self.log.info('')
+        self.log.info('start')
 ############################# end initialize
 
 
