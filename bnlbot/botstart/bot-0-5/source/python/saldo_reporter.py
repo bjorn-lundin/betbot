@@ -67,7 +67,7 @@ class SimpleBot(object):
             self.log.info( '-----------------------------------------------------------')
             now = datetime.datetime.now()
             # send saldo at 01:00 (utc = 00:00:00)
-            if now.hour == 1 and now.minute == 1 and 0 < now.second and now.second < 5 :
+            if now.hour == 6 and now.minute == 0 and 0 < now.second and now.second < 5 :
                 login_status = self.login(uname, pword, prod_id, vend_id)
                 if login_status == 'OK':
                     funds = Funding(self.api, self.log, self.RECIPIENT)
@@ -78,7 +78,8 @@ class SimpleBot(object):
                            (funds.avail_balance, datetime.datetime.now(), funds.exposure))
                     cur.close()
                     self.conn.commit()
-
+                else :
+                    self.log.warn('login_status ' + login_status)
 
             self.log.info('sleeping ' + str(self.DELAY_BETWEEN_TURNS) + ' s between turns')
             sleep(self.DELAY_BETWEEN_TURNS)
