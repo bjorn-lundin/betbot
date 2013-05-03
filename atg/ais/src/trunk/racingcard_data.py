@@ -39,11 +39,11 @@ def load_into_db(datadir=None):
             )
             rc.track_code = data.track.code.text
             rc.bettype_code = data.betType.code.text
-
             if not db.Racingcard.read(rc):
-                horses = []
+                all_horses = []
                 data = root.Body.fetchRacingCardResponse.result.races
                 for race in data.getchildren():
+                    race_horses = []
                     for start in race.starts.getchildren():
                         atg_id = int(start.horse.key.id.text)
                         # Only include horses with an atg id
@@ -57,8 +57,15 @@ def load_into_db(datadir=None):
                             horse.uelnnr = start.horse.key.uelnNr.text
                             if not db.Horse.read(horse):
                                 db.Horse.create(horse)
-                            horses.append(horse)
-                rc.horses = horses
+                            all_horses.append(horse)
+                            race_horses.append(horse)
+                    db.Race.update_horses(
+                        date=rc.date, 
+                        track=rc.track_code, 
+                        race_number=race.raceNr.text, 
+                        horses=race_horses
+                    )
+                rc.horses = all_horses
                 db.Racingcard.create(rc)
             
 def print_all_data(datadir=None):
