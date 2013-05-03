@@ -130,6 +130,10 @@ class Funding(object):
     def mail_saldo(self) :
         self.log.info('Send mail with daily saldo report')
 
+        self.log.info('sender ' + self.SENDER)
+        self.log.info('password ' + self.PASSWORD)
+        self.log.info('recipient ' + self.RECIPIENT)
+
         subject = 'BetBot Saldo Report'
 
         body = 'Dagens saldo-rapport '
