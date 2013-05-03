@@ -171,6 +171,14 @@ RACE_BETTYPE_ASSOCIATION = Table('race_bettype', BASE.metadata,
         Column('bettype_id', Integer, ForeignKey('bettype.id'))
     )
 
+RACE_HORSE_ASSOCIATION = \
+    Table (
+        'race_horse', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('race_id', Integer, ForeignKey('race.id')),
+        Column('horse_id', Integer, ForeignKey('horse.id'))
+    )
+    
 class Race(BASE):
     '''
     Database entity Race
@@ -183,6 +191,7 @@ class Race(BASE):
     post_time_utc = Column(Time)
     race_nr = Column(Integer)
     bettypes = relation('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
+    horses = relation('Horse', secondary=RACE_HORSE_ASSOCIATION)
     race_type_code = Column(String(convert_unicode = True))
     race_type_domestic_text = Column(String(convert_unicode = True))
     race_type_english_text = Column(String(convert_unicode = True))
@@ -225,6 +234,21 @@ class Race(BASE):
         entity = DB_SESSION.add(new)
         DB_SESSION.commit()
         return entity
+
+    @staticmethod
+    def update_horses(date=None, track=None, race_number=None, horses=None):
+        '''
+        Update race with starting horses
+        according to racingcard data
+        '''
+        race = DB_SESSION.query(Race).filter(
+            Race.raceday_id == Raceday.id,
+            Raceday.raceday_date == date,
+            Raceday.track_code == track,
+            Race.race_nr == race_number
+            ).first()
+        race.horses = horses
+        DB_SESSION.commit()
 
 class Bettype(BASE):
     '''
