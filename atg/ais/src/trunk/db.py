@@ -14,6 +14,13 @@ import conf
 
 BASE = declarative_base()
 
+def create(entity=None):
+    '''
+    Create an entity in database
+    '''
+    DB_SESSION.add(entity)
+    DB_SESSION.commit()
+
 class LoadedEODFiles(BASE):
     '''
     Database entity loaded_eod_files
@@ -28,15 +35,6 @@ class LoadedEODFiles(BASE):
         self.filename = filename
         self.loadtime = loadtime
     
-    @staticmethod 
-    def create(new):
-        '''
-        Create a LoadedEODFiles entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-        
     @staticmethod
     def read_all():
         '''
@@ -137,22 +135,12 @@ class Raceday(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
     
-    @staticmethod 
-    def create(new):
-        '''
-        Create a raceday entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-        
     @staticmethod
     def read_all():
         '''
         List all raceday entities in database
         '''
         return DB_SESSION.query(Raceday).all()
-    
     
     @staticmethod
     def read(entity):
@@ -227,15 +215,6 @@ class Race(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def create(new):
-        '''
-        Create a race entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-
-    @staticmethod
     def update_horses(date=None, track=None, race_number=None, horses=None):
         '''
         Update race with starting horses
@@ -268,15 +247,6 @@ class Bettype(BASE):
             self.name_domestic_text = bettype.name.domesticText
             self.name_english_text = bettype.name.englishText
         
-    @staticmethod
-    def create(new):
-        '''
-        Create a bettype entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-    
     @staticmethod
     def read(entity):
         '''
@@ -337,22 +307,12 @@ class Racingcard(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
     
-    @staticmethod 
-    def create(new):
-        '''
-        Create an entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-        
     @staticmethod
     def read_all():
         '''
         List all entities in database
         '''
         return DB_SESSION.query(Racingcard).all()
-    
     
     @staticmethod
     def read(entity):
@@ -385,15 +345,6 @@ class Horse(BASE):
             self.seregnr = data.seregnr
             self.uelnnr = data.uelnnr
         
-    @staticmethod
-    def create(new):
-        '''
-        Create an entity in database
-        '''
-        entity = DB_SESSION.add(new)
-        DB_SESSION.commit()
-        return entity
-    
     @staticmethod
     def read(entity):
         '''

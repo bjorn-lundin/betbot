@@ -26,7 +26,7 @@ def load_into_db(datadir=None):
         if filename not in loaded_files:
             now = datetime.datetime.now()
             loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.LoadedEODFiles.create(loaded_file)
+            db.create(entity=loaded_file)
 
             LOG.info('Parsing ' + util.get_filename_from_path(filename))
             root = util.get_xml_object(filepath)
@@ -56,7 +56,7 @@ def load_into_db(datadir=None):
                             horse.seregnr = start.horse.key.seRegNr.text
                             horse.uelnnr = start.horse.key.uelnNr.text
                             if not db.Horse.read(horse):
-                                db.Horse.create(horse)
+                                db.create(entity=horse)
                             all_horses.append(horse)
                             race_horses.append(horse)
                     db.Race.update_horses(
@@ -66,7 +66,7 @@ def load_into_db(datadir=None):
                         horses=race_horses
                     )
                 rc.horses = all_horses
-                db.Racingcard.create(rc)
+                db.create(entity=rc)
             
 def print_all_data(datadir=None):
     '''
