@@ -100,7 +100,7 @@ def get_row(conn, bet_type, delta_days)  :
 def main():
   # Main program block
   conn = psycopg2.connect("dbname='betting' \
-                             user='bnl' \
+v                             user='bnl' \
                              host='192.168.0.13' \
                              password=None") 
                              
@@ -113,17 +113,15 @@ def main():
 
   ser.open()
                              
-  bets = ['HOUNDS_WINNER_LAY_BET',
-#          'HORSES_PLACE_LAY_BET_6_10',
-          'HOUNDS_WINNER_BACK_BET', 
-          'HOUNDS_WINNER_LAY_BET_13_14',
+  bets = ['HORSES_WINNER_LAY_BET',
           'DRY_RUN_HORSES_WINNER_LAY_BET',
-          'DRY_RUN_HOUNDS_WINNER_LAY_BET_15_18',
-          'DRY_RUN_HOUNDS_WINNER_LAY_BET_16_19',
-          'DRY_RUN_HOUNDS_WINNER_LAY_BET_17_18',
-          'DRY_RUN_HOUNDS_PLACE_LAY_BET',
-#          "DRY_RUN_HOUNDS_PLACE_LAY_BET_3_9",
-          'DRY_RUN_HOUNDS_WINNER_BACK_BET_38_02'   ]
+          'HOUNDS_WINNER_LAY_BET_13_14',
+          'DRY_RUN_HOUNDS_WINNER_LAY_BET_13_14',
+          'DRY_RUN_HOUNDS_WINNER_BACK_BET_45_07',
+          'DRY_RUN_HORSES_WINNER_LAY_BET_ALL',
+          'DRY_RUN_HORSES_WINNER_LAY_BET_ALL_GO',
+          'DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02',
+          'DRY_RUN_HOUNDS_WINNER_BACK_BET'   ]
              
 #  ser.write('-----------------------------------------------------------------------------\r\n')
 
