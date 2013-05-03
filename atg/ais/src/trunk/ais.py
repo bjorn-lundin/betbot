@@ -180,7 +180,7 @@ def raceday_calendar_service(params=None, date=None, ret_if_local=False):
                 for bettype in racedayinfo.betTypes.BetType:
                     btype = db.Bettype(bettype=bettype)
                     if not db.Bettype.read(btype):
-                        btype = db.Bettype.create(btype)
+                        db.create(entity=btype)
                 # Get all races this raceday
                 races = []
                 for race in racedayinfo.raceInfos.RaceInfo:
@@ -198,7 +198,7 @@ def raceday_calendar_service(params=None, date=None, ret_if_local=False):
                     races.append(race)
                 # Append races
                 raceday.races = races
-                db.Raceday.create(raceday)
+                db.create(entity=raceday)
 
 def racing_card_service(params=None, date=None, 
                         track=None, ret_if_local=False):
@@ -292,7 +292,7 @@ def load_calendar_history_into_db(params=None):
         if filename not in loaded_files:
             now = datetime.datetime.now()
             lef = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.LoadedEODFiles.create(lef)
+            db.create(entity=lef)
         
             result = re.match(pattern, filename)
             raceday_date = datetime.date(
