@@ -153,7 +153,9 @@ class Raceday(BASE):
         ).first()
         return result
 
-RACE_BETTYPE_ASSOCIATION = Table('race_bettype', BASE.metadata,
+RACE_BETTYPE_ASSOCIATION = \
+    Table(
+        'race_bettype', BASE.metadata,
         Column('id', Integer, primary_key=True),
         Column('race_id', Integer, ForeignKey('race.id')),
         Column('bettype_id', Integer, ForeignKey('bettype.id'))
