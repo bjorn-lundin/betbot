@@ -168,6 +168,14 @@ RACE_HORSE_ASSOCIATION = \
         Column('race_id', Integer, ForeignKey('race.id')),
         Column('horse_id', Integer, ForeignKey('horse.id'))
     )
+
+RACE_DRIVER_ASSOCIATION = \
+    Table (
+        'race_driver', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('race_id', Integer, ForeignKey('race.id')),
+        Column('driver_id', Integer, ForeignKey('driver.id'))
+    )
     
 class Race(BASE):
     '''
@@ -180,14 +188,15 @@ class Race(BASE):
     post_time = Column(Time)
     post_time_utc = Column(Time)
     race_nr = Column(Integer)
-    bettypes = relation('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
-    horses = relation('Horse', secondary=RACE_HORSE_ASSOCIATION)
     race_type_code = Column(String)
     race_type_domestic_text = Column(String)
     race_type_english_text = Column(String)
     track_surface_code = Column(String)
     track_surface_domestic_text = Column(String)
     track_surface_english_text = Column(String)
+    bettypes = relation('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
+    horses = relation('Horse', secondary=RACE_HORSE_ASSOCIATION)
+    drivers = relation('Driver', secondary=RACE_DRIVER_ASSOCIATION)
 
     def __init__(self, race=None):
         if race:
@@ -217,9 +226,10 @@ class Race(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def update_horses(date=None, track=None, race_number=None, horses=None):
+    def update_horses_and_drivers(date=None, track=None, race_number=None, 
+                                  horses=None, drivers=None):
         '''
-        Update race with starting horses
+        Update race with starting horses/drivers
         according to racingcard data
         '''
         race = DB_SESSION.query(Race).filter(
@@ -229,6 +239,7 @@ class Race(BASE):
             Race.race_nr == race_number
             ).first()
         race.horses = horses
+        race.drivers = drivers
         DB_SESSION.commit()
 
 class Bettype(BASE):
@@ -277,6 +288,14 @@ RACINGCARD_HORSE_ASSOCIATION = \
         Column('racingcard_id', Integer, ForeignKey('racingcard.id')),
         Column('horse_id', Integer, ForeignKey('horse.id'))
     )
+
+RACINGCARD_DRIVER_ASSOCIATION = \
+    Table (
+        'racingcard_driver', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('racingcard_id', Integer, ForeignKey('racingcard.id')),
+        Column('driver_id', Integer, ForeignKey('driver.id'))
+    )
     
 class Racingcard(BASE):
     '''
@@ -288,6 +307,7 @@ class Racingcard(BASE):
     track_code = Column(String)
     bettype_code = Column(String)
     horses = relation('Horse', secondary=RACINGCARD_HORSE_ASSOCIATION)
+    drivers = relation('Driver', secondary=RACINGCARD_DRIVER_ASSOCIATION)
     
     def __init__(self, data=None):
         if data:
@@ -367,6 +387,53 @@ class Horse(BASE):
             self.uelnnr,
         ) 
         part1 = "<Horse( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+class Driver(BASE):
+    '''
+    Database entity Driver
+    '''
+    __tablename__ = 'driver'
+    id = Column(Integer, primary_key=True)
+    atg_id = Column(Integer)
+    initials = Column(String)
+    name = Column(String)
+    shortname = Column(String)
+    sport = Column(String)
+    surname = Column(String)
+    driver_colour = Column(String)
+    swedish = Column(Boolean)
+    amateur = Column(Boolean)
+
+    def __init__(self):
+        pass
+            
+    @staticmethod
+    def read(entity):
+        '''
+        Read an entity in database
+        '''
+        result = DB_SESSION.query(Driver).filter_by(
+            atg_id = entity.atg_id
+        ).first()
+        return result
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.atg_id,
+            self.initials,
+            self.name,
+            self.shortname,
+            self.sport,
+            self.surname,
+            self.driver_colour,
+            self.swedish,
+            self.amateur
+        ) 
+        part1 = "<Driver( "
         part2 = "'%s', " * len(params)
         part3 = ")>"
         return (part1 + part2 + part3) % params

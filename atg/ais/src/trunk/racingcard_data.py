@@ -41,12 +41,14 @@ def load_into_db(datadir=None):
             rc.bettype_code = data.betType.code.text
             if not db.Racingcard.read(rc):
                 all_horses = []
+                all_drivers = []
                 data = root.Body.fetchRacingCardResponse.result.races
                 for race in data.getchildren():
                     race_horses = []
+                    race_drivers = []
                     for start in race.starts.getchildren():
                         atg_id = int(start.horse.key.id.text)
-                        # Only include horses with an atg id
+                        # Horses (only include horses with an atg id)
                         if atg_id > 0:
                             horse = db.Horse()
                             horse.atg_id = atg_id
@@ -59,13 +61,34 @@ def load_into_db(datadir=None):
                                 db.create(entity=horse)
                             all_horses.append(horse)
                             race_horses.append(horse)
-                    db.Race.update_horses(
+                        atg_id = int(start.driver.id.text)
+                        # Drivers (only include drivers with an atg id)
+                        if atg_id > 0:
+                            driver = db.Driver()
+                            driver.atg_id = atg_id
+                            driver.initials = start.driver.initials.text
+                            driver.name = start.driver.name.text
+                            driver.shortname = start.driver.shortName.text
+                            driver.sport = start.driver.sport.text
+                            driver.surname = start.driver.surName.text
+                            driver.swedish = \
+                                ast.literal_eval(start.driver.swedish.text.title())
+                            driver.amateur = \
+                                ast.literal_eval(start.driver.amateur.text.title())
+                            driver.driver_colour = start.driverColour.text
+                            if not db.Driver.read(driver):
+                                db.create(entity=driver)
+                            all_drivers.append(driver)
+                            race_drivers.append(driver)
+                    db.Race.update_horses_and_drivers(
                         date=rc.date, 
                         track=rc.track_code, 
                         race_number=race.raceNr.text, 
-                        horses=race_horses
+                        horses=race_horses,
+                        drivers=race_drivers
                     )
                 rc.horses = all_horses
+                rc.drivers = all_drivers
                 db.create(entity=rc)
             
 def print_all_data(datadir=None):
