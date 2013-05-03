@@ -188,8 +188,13 @@ class SimpleBot(object):
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+this_source= __file__.split('.')[0].split('/')[-1]
+
 homedir = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
-logfile = os.path.join(homedir, 'log',  __file__.split('.')[0] + '.log')
+logfile = os.path.join(homedir, 'log', this_source + '.log')
+#print 'logfile', logfile
+#print 'homedir', homedir
+#print ' __file__.split(\'.\')[0]',  __file__.split('.')[0].split('/')[-1]
 
 FH = logging.handlers.RotatingFileHandler(
     logfile,
