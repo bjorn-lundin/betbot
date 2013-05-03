@@ -11,7 +11,8 @@ project Adabot is
 
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
-   for Main use ("simulator.adb",
+   for Main use ("ini_reader.adb",
+                 "simulator.adb",
                  "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
                  "bf_history_cleaner.adb",
@@ -19,7 +20,6 @@ project Adabot is
                  "bf_update_animals.adb",
                  "bf_history_to_dryrun.adb",
                  "bf_split_runnername.adb",
-                 "ini_reader.adb",
                  "sql_ifc_leak_finder.adb");
 
    package Compiler renames Global.Compiler;

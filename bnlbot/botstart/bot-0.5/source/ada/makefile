@@ -41,8 +41,8 @@ all: json_test adabot
 
 tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads \
-         $(ST)/table_bets.ads $(ST)/table_markets.ads \
-         $(ST)/table_dryrunners.ads $(ST)/table_animals.ads
+         $(ST)/table_dryrunners.ads $(ST)/table_animals.ads \
+#         $(ST)/table_bets.ads $(ST)/table_markets.ads \
 
 json_test :
 	gnatmake -P json_test
