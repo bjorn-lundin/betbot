@@ -9,8 +9,9 @@ import xml.etree.ElementTree as etree
 import os
 import sys
 import socket
-from db import Db
+#from db import Db
 import logging.handlers
+import ConfigParser
 
 #  <market id="107893032" displayName="USA / Aque (US) 9th Jan - 17:30 TO BE PLACED">
 #    <name>TO BE PLACED</name>
@@ -232,8 +233,8 @@ class Result_Feeder(object):
         rps = 1/4.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db()
-        self.conn = db.conn
+#        db = Db()
+#        self.conn = db.conn
         self.log = log
 
 
@@ -324,10 +325,21 @@ class Result_Feeder(object):
 ###################################################################
 
 ######## main ###########
+
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+this_source= __file__.split('.')[0].split('/')[-1]
+
+homedir = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
+logfile = os.path.join(homedir, 'log', this_source + '.log')
+#print 'logfile', logfile
+#print 'homedir', homedir
+#print ' __file__.split(\'.\')[0]',  __file__.split('.')[0].split('/')[-1]
+
 FH = logging.handlers.RotatingFileHandler(
-    'logs/' + __file__.split('.')[0] +'.log',
+    logfile,
     mode = 'a',
     maxBytes = 5000000,
     backupCount = 10,
@@ -340,10 +352,27 @@ FH.setFormatter(FORMATTER)
 log.addHandler(FH)
 log.info('Starting application')
 
+
 #make print flush now!
 #sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
+login = ConfigParser.ConfigParser()
+login.read(os.path.join(homedir, 'login.ini'))
+
+dbname   = login.get('database', 'name')
+dbhost   = login.get('database', 'host')
+dbusername = login.get('database', 'username')
+dbpassword = login.get('database', 'password')
+
+
+recipient  = login.get('email', 'recipient')
+
 bot = Result_Feeder(log)
+bot.conn = psycopg2.connect('dbname=' + dbname +  \
+                            ' user=' + dbusername + \
+                            ' host=' + dbhost + \
+                            ' password='+ dbpassword)
+bot.conn.set_client_encoding('latin1')
 
 while True:
     try:
