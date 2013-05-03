@@ -192,12 +192,12 @@ class Race(BASE):
     race_nr = Column(Integer)
     bettypes = relation('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
     horses = relation('Horse', secondary=RACE_HORSE_ASSOCIATION)
-    race_type_code = Column(String(convert_unicode = True))
-    race_type_domestic_text = Column(String(convert_unicode = True))
-    race_type_english_text = Column(String(convert_unicode = True))
-    track_surface_code = Column(String(convert_unicode = True))
-    track_surface_domestic_text = Column(String(convert_unicode = True))
-    track_surface_english_text = Column(String(convert_unicode = True))
+    race_type_code = Column(String)
+    race_type_domestic_text = Column(String)
+    race_type_english_text = Column(String)
+    track_surface_code = Column(String)
+    track_surface_domestic_text = Column(String)
+    track_surface_english_text = Column(String)
 
     def __init__(self, race=None):
         if race:
@@ -258,9 +258,9 @@ class Bettype(BASE):
     '''
     __tablename__ = 'bettype'
     id = Column(Integer, primary_key=True)
-    name_code = Column(String(convert_unicode = True))
-    name_domestic_text = Column(String(convert_unicode = True))
-    name_english_text = Column(String(convert_unicode = True))
+    name_code = Column(String)
+    name_domestic_text = Column(String)
+    name_english_text = Column(String)
 
     def __init__(self, bettype=None):
         if bettype:
