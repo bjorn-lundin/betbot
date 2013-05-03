@@ -222,6 +222,8 @@ package body Races is
       Current_Iteration  : Integer := 0;
       Max_Iterations     : Integer := 0;
       Favorite_Odds      : Price_Type := 1000.0;
+      Backwards_Sorted_List : Table_Dry_Runners.Dry_Runners_List_Pack.List_Type :=
+                              Table_Dry_Runners.Dry_Runners_List_Pack.Create;
    begin
       Race.Selection_Id := 0;
       Race.Price := 0.0;
@@ -233,8 +235,9 @@ package body Races is
                              Max_Daily_Loss    => Max_Daily_Loss,
                              Max_Profit_Factor => Max_Profit_Factor,
                              Size              => Size) then
+         Table_Dry_Runners.Dry_Runners_List_Pack.Release(Backwards_Sorted_List);
          return;
-      end if;
+    end if;
 
       -- ok see if we can make a bet.
       -- we want the last runner in the list, since the list
@@ -245,6 +248,7 @@ package body Races is
 
       Num_In_List := Table_Dry_Runners.Dry_Runners_List_Pack.Get_Count (Race.Runners_List);
       Max_Iterations := Num_In_List - 4;
+      Log ("make_lay_bet - num runners" & Num_In_List'Img & " max_iter" & Max_Iterations'Img);
 
       Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       loop
@@ -253,12 +257,14 @@ package body Races is
          if Price_Type(Runner.Lay_Price) < Favorite_Odds then
            Favorite_Odds := Price_Type(Runner.Lay_Price);
          end if;
+         Table_Dry_Runners.Dry_Runners_List_Pack.Insert_At_Head(Backwards_Sorted_List, Runner);
          Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
       end loop;
 
       if not Found then
         Log ("make_lay_bet - No runner at all found, no bet");
         Bet_Laid := False;
+        Table_Dry_Runners.Dry_Runners_List_Pack.Release(Backwards_Sorted_List);
         return;
       end if;
 
@@ -268,10 +274,11 @@ package body Races is
       if Favorite_Odds > 5.0 then
          Log ("make_lay_bet - Favorite sucks, no bet");
          Bet_Laid := False;
+         Table_Dry_Runners.Dry_Runners_List_Pack.Release(Backwards_Sorted_List);
          return;
       end if;
 
-      Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
+      Table_Dry_Runners.Dry_Runners_List_Pack.Get_First (Backwards_Sorted_List, Runner, Eol);
       loop
          Current_Iteration := Current_Iteration +1;
          exit when Eol;
@@ -293,16 +300,12 @@ package body Races is
             --          #312.59 - (30*3.65) + 30 = 233.09
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
-            Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner));
+            Log ("make_lay_bet - Bet made on " & Table_Dry_Runners.To_String (Runner) & " price was" & Integer(Runner.Lay_Price)'Img);
+            exit;
          end if;
-         Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
+         Table_Dry_Runners.Dry_Runners_List_Pack.Get_Next (Backwards_Sorted_List, Runner, Eol);
       end loop;
-
-
-
-
-
-
+      Table_Dry_Runners.Dry_Runners_List_Pack.Release(Backwards_Sorted_List);
    end Make_Lay_Bet;
    ------------------------------------------------------------------------------
    procedure Make_Lay_Favorite_Bet
@@ -498,6 +501,7 @@ package body Races is
             end if;
             Profit := Profit + Race_Profit;
       end case;
+      Log ("check_result - saldo after check_result  " & Integer (Saldo)'Img & " bet_won " & Bet_Won'Img);
    end Check_Result;
 
    ------------------------------------------------------------------------------
