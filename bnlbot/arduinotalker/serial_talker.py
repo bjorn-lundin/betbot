@@ -100,9 +100,9 @@ def get_row(conn, bet_type, delta_days)  :
 def main():
   # Main program block
   conn = psycopg2.connect("dbname='betting' \
-v                             user='bnl' \
-                             host='192.168.0.13' \
-                             password=None") 
+                           user='bnl' \
+                           host='192.168.0.13' \
+                           password=None") 
                              
   ser = serial.Serial(
     port='/dev/ttyUSB0',
@@ -139,7 +139,7 @@ v                             user='bnl' \
   ser.write(lcd_row_0 + '\r\n')
 
 
-  ser.write('-----------------------------------------------------------------------------\r\n')
+  ser.write('------------------------------------------------------------------------------\r\n')
 
   for bet in bets :                               
     row1 = {}
@@ -155,11 +155,11 @@ v                             user='bnl' \
 #    print lcd_row_1
     ser.write(lcd_row_1 + '\r\n')
     
-  ser.write('-----------------------------------------------------------------------------\r\n')
+  ser.write('------------------------------------------------------------------------------\r\n')
   row0['typ'] = 'Typ av bet/result veckor tillbaka'    
   lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
   ser.write(lcd_row_0 + '\r\n')
-  ser.write('-----------------------------------------------------------------------------\r\n')
+  ser.write('------------------------------------------------------------------------------\r\n')
 
   for bet in bets :                               
     row2 = {}
