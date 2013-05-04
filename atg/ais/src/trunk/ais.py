@@ -273,11 +273,10 @@ def event_array_service(params=None, ret_if_local=False):
     params['service'] = 'fetchEventArray'
     call_ais_service(params=params, ret_if_local=ret_if_local)
 
-def load_calendar_history_into_db(params=None):
+def load_eod_raceday_into_db(params=None):
     '''
-    Iterate over all saved (local) raceday calendar files to
-    make sure all history is saved to database. This enables
-    setting up a new database from scratch.
+    Iterate over all saved (local) raceday calendar files and 
+    save the data into database.
     '''
     filelist = sorted(util.list_files(params['datadir']))
     calendar_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
@@ -304,13 +303,21 @@ def load_calendar_history_into_db(params=None):
             raceday_calendar_service(params=params, date=raceday_date, 
                                      ret_if_local=True)
         
-def load_racingcard_history_into_db(datadir=None):
+def load_eod_racingcard_into_db(datadir=None):
     '''
     Pass on the call to iterate over all saved (local) 
     racecard files and save the data into database.
     '''
     import racingcard_data
     racingcard_data.load_into_db(datadir=datadir)
+
+def load_eod_vppoolinfo_into_db(datadir=None):
+    '''
+    Pass on the call to iterate over all saved (local) 
+    vppoolinfo files and save the data into database.
+    '''
+    import vppoolinfo_data
+    vppoolinfo_data.print_all_data(datadir=datadir)
 
 def eod_download_via_calendar(params=None):
     '''
