@@ -347,10 +347,5 @@ package Pgada.Thin is
    pragma Import (C, Pq_Escape_Literal, "PQescapeLiteral");
 
 
-   -- void PQfreemem(void *ptr);
-   procedure Pq_Free_Mem(Ptr : Chars_Ptr);
-   pragma Import (C, Pq_Free_Mem, "PQfreemem");
-
-
 end Pgada.Thin;
 
