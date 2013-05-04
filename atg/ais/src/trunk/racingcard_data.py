@@ -23,10 +23,8 @@ def load_into_db(datadir=None):
     # Compare with filename
     for filepath in racingcard_filelist:
         filename = util.get_filename_from_path(filepath)
-#        if filename not in loaded_files:
-        if True:
+        if filename not in loaded_files:
             LOG.info('Parsing ' + filename)
-            print('Parsing ' + filename)
             root = util.get_xml_object(filepath=filepath)
             rc = db.Racingcard()
             data = root.Body.fetchRacingCardResponse.result
