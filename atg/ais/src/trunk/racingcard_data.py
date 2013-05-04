@@ -23,13 +23,11 @@ def load_into_db(datadir=None):
     # Compare with filename
     for filepath in racingcard_filelist:
         filename = util.get_filename_from_path(filepath)
-        if filename not in loaded_files:
-            now = datetime.datetime.now()
-            loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.create(entity=loaded_file)
-
-            LOG.info('Parsing ' + util.get_filename_from_path(filename))
-            root = util.get_xml_object(filepath)
+#        if filename not in loaded_files:
+        if True:
+            LOG.info('Parsing ' + filename)
+            print('Parsing ' + filename)
+            root = util.get_xml_object(filepath=filepath)
             rc = db.Racingcard()
             data = root.Body.fetchRacingCardResponse.result
             rc.date = util.strings_to_date(
@@ -90,7 +88,11 @@ def load_into_db(datadir=None):
                 rc.horses = all_horses
                 rc.drivers = all_drivers
                 db.create(entity=rc)
-            
+
+            now = datetime.datetime.now()
+            loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
+            db.create(entity=loaded_file)
+
 def print_all_data(datadir=None):
     '''
     Iterate over all saved (local) racecard files and

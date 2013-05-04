@@ -289,10 +289,6 @@ def load_eod_raceday_into_db(params=None):
     # Compare with filename
     for filename in calendar_filelist:
         if filename not in loaded_files:
-            now = datetime.datetime.now()
-            lef = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.create(entity=lef)
-        
             result = re.match(pattern, filename)
             raceday_date = datetime.date(
                 int(result.group(1)),
@@ -302,6 +298,9 @@ def load_eod_raceday_into_db(params=None):
             LOG.info('Loading ' + filename + ' into db')
             raceday_calendar_service(params=params, date=raceday_date, 
                                      ret_if_local=True)
+            now = datetime.datetime.now()
+            lef = db.LoadedEODFiles(filename=filename, loadtime=now)
+            db.create(entity=lef)
         
 def load_eod_racingcard_into_db(datadir=None):
     '''
