@@ -9,17 +9,24 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy import Date, Time, Boolean, ForeignKey, Table, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
+from sqlalchemy.exc import IntegrityError
 import util
 import conf
+import logging
 
+LOG = logging.getLogger('AIS')
 BASE = declarative_base()
 
 def create(entity=None):
     '''
     Create an entity in database
     '''
-    DB_SESSION.add(entity)
-    DB_SESSION.commit()
+    try:
+        DB_SESSION.add(entity)
+        DB_SESSION.commit()
+    except IntegrityError:
+        LOG.exception('Exception when creating new db entity')
+        DB_SESSION.rollback()
 
 class LoadedEODFiles(BASE):
     '''
@@ -29,7 +36,7 @@ class LoadedEODFiles(BASE):
     '''
     __tablename__ = 'loaded_eod_files'
     id = Column(Integer, primary_key=True)
-    filename = Column(String)
+    filename = Column(String, unique=True)
     loadtime = Column(DateTime)
     def __init__(self, filename=None, loadtime=None):
         self.filename = filename
@@ -232,15 +239,17 @@ class Race(BASE):
         Update race with starting horses/drivers
         according to racingcard data
         '''
-        race = DB_SESSION.query(Race).filter(
-            Race.raceday_id == Raceday.id,
-            Raceday.raceday_date == date,
-            Raceday.track_code == track,
-            Race.race_nr == race_number
+        race = \
+            DB_SESSION.query(Race).filter(
+                Race.raceday_id == Raceday.id,
+                Raceday.raceday_date == date,
+                Raceday.track_code == track,
+                Race.race_nr == race_number
             ).first()
-        race.horses = horses
-        race.drivers = drivers
-        DB_SESSION.commit()
+        if race is not None:
+            race.horses = horses
+            race.drivers = drivers
+            DB_SESSION.commit()
 
 class Bettype(BASE):
     '''
