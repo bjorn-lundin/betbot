@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <MaAstro>
-    <Table Wiz="3" Desc="collected runners " Name="DRY_RUNNERS" Tablespace="" LicId="0" LogMask="0" LogicId="0" SafeAdd="0" Loadable="1" StorageClass="0" CleanSetup="0" CleanProd="0">
-        <SnapshotSettings SnapshotBase="1" TruncateBase="1" SnapshotData="1" TruncateData="1" SnapshotEdu="1" TruncateEdu="1" SnapshotFull="1" TruncateFull="1"/>
-        <Column Name="market_id" Primary="1" Size="9" Type="2" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="market id"/>
-        <Column Name="selection_id" Primary="1" Size="9" Type="2" Foreign="1" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="selection_id"/>
-        <Column Name="index" Primary="0" Size="9" Type="2" Foreign="0" Indexed="1" Unique="0" AllowNull="1" NA="0" Owned="0" Right="0" Setup="3" Description="index"/>
-        <Column Name="back_price" Primary="0" Size="8" Type="6" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="back_price"/>
-        <Column Name="lay_price" Primary="0" Size="8" Type="6" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="lay_price"/>
-        <Column Name="runner_name" Primary="0" Size="0" Type="1" Foreign="0" Indexed="0" Unique="0" AllowNull="0" NA="0" Owned="0" Right="0" Setup="3" Description="runner_name"/>
+    <Table Wiz="3" Desc="collected runners " Name="DRY_RUNNERS" Tablespace="">
+        <Column Name="market_id"    Size="9" Type="2" AllowNull="0" Description="market id"/>
+        <Column Name="selection_id" Size="9" Type="2" AllowNull="0" Description="selection_id"/>
+        <Column Name="index"        Size="9" Type="2" AllowNull="1" Description="index"/>
+        <Column Name="back_price"   Size="8" Type="6" AllowNull="0" Description="back_price"/>
+        <Column Name="lay_price"    Size="8" Type="6" AllowNull="0" Description="lay_price"/>
+        <Column Name="runner_name"  Size="50" Type="1" AllowNull="0" Description="runner_name"/>
         <Index Columns="market_id,selection_id" type="primary"/>
     </Table>
 </MaAstro>

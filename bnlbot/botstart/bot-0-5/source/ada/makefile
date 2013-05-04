@@ -13,11 +13,12 @@ UNAME := $(shell uname)
 TP := tclsh $(BOT_SCRIPT)/tcl/make_table_package.tcl
 ST := $(BOT_SOURCE)/ada/global/tables
 
+DBNAME := $(BOT_DATABASE_NAME)
+
 
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
   HOST := $(BOT_DATABASE_HOSTNAME)
-  DBNAME := $(BOT_DATABASE_NAME)
   SHOW_PNG := display
 endif
 
@@ -31,7 +32,6 @@ endif
 ifeq ($(UNAME),MINGW32_NT-6.1)
   PSQL := psql --username=bnl
   HOST := 192.168.0.13
-  DBNAME := betting
   SHOW_PNG :=
 endif
 
@@ -39,10 +39,15 @@ endif
 
 all: json_test adabot
 
+bad_tables : $(ST)/table_dry_markets.ads $(ST)/table_dry_results.ads $(ST)/table_dry_runners.ads
+
 tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads \
          $(ST)/table_dryrunners.ads $(ST)/table_animals.ads \
+         $(ST)/table_drymarketsf.ads $(ST)/table_dryresultsf.ads \
+         $(ST)/table_dryrunnersf.ads \
 #         $(ST)/table_bets.ads $(ST)/table_markets.ads \
+
 
 json_test :
 	gnatmake -P json_test
@@ -110,6 +115,42 @@ $(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xm
 	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
 	cd $(ST) && rm table_dryrunners.ada
 	$(TP) -p dryrunners > $(ST)/dryrunners.sql
+
+$(ST)/table_drymarketsf.ads : $(BOT_CONFIG)/repository/tables/table_drymarketsf.xml
+	$(TP) -t drymarketsf > $(ST)/table_drymarketsf.ada
+	cd $(ST) && gnatchop -w -gnat05 table_drymarketsf.ada
+	cd $(ST) && rm table_drymarketsf.ada
+	$(TP) -p drymarketsf > $(ST)/drymarketsf.sql
+
+$(ST)/table_dryresultsf.ads : $(BOT_CONFIG)/repository/tables/table_dryresultsf.xml
+	$(TP) -t dryresultsf > $(ST)/table_dryresultsf.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryresultsf.ada
+	cd $(ST) && rm table_dryresultsf.ada
+	$(TP) -p dryresultsf > $(ST)/dryresultsf.sql
+
+$(ST)/table_dryrunnersf.ads : $(BOT_CONFIG)/repository/tables/table_dryrunnersf.xml
+	$(TP) -t dryrunnersf > $(ST)/table_dryrunnersf.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryrunnersf.ada
+	cd $(ST) && rm table_dryrunnersf.ada
+	$(TP) -p dryrunnersf > $(ST)/dryrunnersf.sql
+
+$(ST)/table_dry_markets.ads : $(BOT_CONFIG)/repository/tables/table_dry_markets.xml
+	$(TP) -t dry_markets > $(ST)/table_dry_markets.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dry_markets.ada
+	cd $(ST) && rm table_dry_markets.ada
+	$(TP) -p dry_markets > $(ST)/dry_markets.sql
+
+$(ST)/table_dry_results.ads : $(BOT_CONFIG)/repository/tables/table_dry_results.xml
+	$(TP) -t dry_results > $(ST)/table_dry_results.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dry_results.ada
+	cd $(ST) && rm table_dry_results.ada
+	$(TP) -p dry_results > $(ST)/dry_results.sql
+
+$(ST)/table_dry_runners.ads : $(BOT_CONFIG)/repository/tables/table_dry_runners.xml
+	$(TP) -t dry_runners > $(ST)/table_dry_runners.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dry_runners.ada
+#	cd $(ST) && rm table_dry_runners.ada
+	$(TP) -p dry_runners > $(ST)/dry_runners.sql
 
 $(ST)/table_animals.ads : $(BOT_CONFIG)/repository/tables/table_animals.xml
 	$(TP) -t animals > $(ST)/table_animals.ada

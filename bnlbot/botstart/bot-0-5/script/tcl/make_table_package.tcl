@@ -1036,17 +1036,17 @@ proc Print_XML_Functions_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "  function To_String(Data : in Table\_$Table_Name.Data_Type) return String;"
   puts $Out_File ""
 
-  puts $Out_File "  function To_Xml(Data      : in Table\_$Table_Name.Data_Type;"
-  puts $Out_File "                  Ret_Start : in Boolean;"
-  puts $Out_File "                  Ret_Data  : in Boolean;"
-  puts $Out_File "                  Ret_End   : in Boolean) return String;"
-  puts $Out_File ""
-
-#  if {[Is_S08_Table $Name]} {
-    puts $Out_File "  procedure From_Xml(Xml_Filename : in Unbounded_String;"
-    puts $Out_File "                     A_List       : in out $Table_Name\_List_Pack.List_Type);"
-    puts $Out_File ""
-#  }
+#  puts $Out_File "  function To_Xml(Data      : in Table\_$Table_Name.Data_Type;"
+#  puts $Out_File "                  Ret_Start : in Boolean;"
+#  puts $Out_File "                  Ret_Data  : in Boolean;"
+#  puts $Out_File "                  Ret_End   : in Boolean) return String;"
+#  puts $Out_File ""
+#
+##  if {[Is_S08_Table $Name]} {
+#    puts $Out_File "  procedure From_Xml(Xml_Filename : in Unbounded_String;"
+#    puts $Out_File "                     A_List       : in out $Table_Name\_List_Pack.List_Type);"
+#    puts $Out_File ""
+##  }
 }
 
 ########################################################
@@ -1983,240 +1983,240 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
   puts $Out_File "          \"\";"
   puts $Out_File "  end To_String;\n--------------------------------------------\n"
 
-#Format_String
+##Format_String
+##
+#  puts $Out_File "  function Format_String(S : in String) return String is"
+#  puts $Out_File "    use Standard8; use CGI;"
+#  puts $Out_File "  begin"
+#  puts $Out_File "     return General_Routines.Skip_Trailing_Blanks(To_String(Cgi.Cvtput_Xml(To_String8(S))));"
+#  puts $Out_File "  end Format_String;\n--------------------------------------------\n"
 #
-  puts $Out_File "  function Format_String(S : in String) return String is"
-  puts $Out_File "    use Standard8; use CGI;"
-  puts $Out_File "  begin"
-  puts $Out_File "     return General_Routines.Skip_Trailing_Blanks(To_String(Cgi.Cvtput_Xml(To_String8(S))));"
-  puts $Out_File "  end Format_String;\n--------------------------------------------\n"
-
-
-  puts $Out_File "  function To_Xml(Data      : in Table\_$Table_Name.Data_Type;"
-  puts $Out_File "                  Ret_Start : in Boolean;"
-  puts $Out_File "                  Ret_Data  : in Boolean;"
-  puts $Out_File "                  Ret_End   : in Boolean) return String is"
-#  puts $Out_File "    --Ls      : constant Character := Ascii.LF;"
-  puts $Out_File "    Ls      : constant String := \"\";"
-  puts $Out_File "    S_Start : constant String := \"\<$TABLE_NAME\_ROW>\"  & Ls;"
-  puts $Out_File "    S_End   : constant String := \"\</$TABLE_NAME\_ROW>\" & Ls;"
-
-  set Column_Counter 0
-  foreach col $Columns {
-    incr Column_Counter
-    array set Attributes [Repo_Utils::Get_Attributes $col]
-    set Col_Type [Repo_Utils::Type_To_String $Attributes(Type)]
-    set COL_NAME [string toupper $Attributes(Name)]
-    set Col_Name [string totitle $Attributes(Name)]
-    puts $Out_File "    S$Column_Counter : constant String :="
-
-    switch -exact -- $Col_Type {
-      STRING_FORMAT {
-        if {[string equal $Attributes(Size) 1]} {
-          puts $Out_File "          \"\<$COL_NAME\>\" & Data.$Col_Name & \"\</$COL_NAME\>\" & Ls;"
-        } else {
-          puts $Out_File "          \"\<$COL_NAME\>\" & Format_String(General_Routines.Skip_Trailing_Blanks(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
-        }
-      }
-      INTEGER_4_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_4'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      FLOAT_8_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.F8_To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      DATE_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      TIME_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Time(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      TIMESTAMP_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      CLOB_FORMAT {
-        puts $Out_File "          \"\<$COL_NAME\>\" & Ada.Strings.Unbounded.To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
-      }
-      default {
-        puts stderr "Print_XML_Functions_Body II Table -> $Name , Col_Name -> $COL_NAME Coltype -> $Col_Type is unknown..."
-        exit 1
-      }
-    }
-  }
-  puts $Out_File "    --------------------------------"
-  puts $Out_File "    function Get_String(S : in String; Ret : in Boolean) return String is"
-  puts $Out_File "      use Standard8;"
-  puts $Out_File "    begin"
-  puts $Out_File "      if Ret then return S; else return \"\"; end if;"
-  puts $Out_File "    end Get_String;"
-  puts $Out_File "    --------------------------------"
-
-  puts $Out_File "  begin"
-  puts $Out_File "    return Get_String(S_Start, Ret_Start) & "
-  puts $Out_File "           Get_String("
-
-  set S {}
-  for {set x 1} {$x<=$Column_Counter} {incr x} {
-   append S " S$x &"
-   if {![expr $x % 10]} {
-     # linebreak every 10 items
-     append S "\n           "
-   } elseif {$x < 10} {
-     append S " "
-   }
-  }
-  set S2 [string replace [string trim $S] end end ,]
-
-  puts $Out_File "            $S2"
-  puts $Out_File "            Ret_Data) &"
-  puts $Out_File "           Get_String(S_End, Ret_End) & Ascii.LF;"
-  puts $Out_File "  end To_Xml;\n  --------------------------------------------\n"
-
-
-#  if {[Is_S08_Table $Name]} {
-    puts $Out_File ""
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File "  type $Table_Name\_Reader is new Sax.Readers.Reader with record"
-    puts $Out_File "    Current_Tag    : Unbounded_String := Null_Unbounded_String;"
-    puts $Out_File "    Accumulated    : Unbounded_String := Null_Unbounded_String;"
-    puts $Out_File "    OK             : Boolean := True;"
-    puts $Out_File "    Found_Set      : Boolean := True;"
-    puts $Out_File "    $Table_Name\_List     : Table\_$Table_Name\.$Table_Name\_List_Pack.List_Type;"
-    puts $Out_File "    $Table_Name\_Data     : Table\_$Table_Name\.Data_Type := Empty_Data;"
-    puts $Out_File "  end record;"
-    puts $Out_File ""
-    puts $Out_File "  overriding procedure Start_Element(Handler       : in out $Table_Name\_Reader;"
-    puts $Out_File "                                     Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                                     Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                                     Qname         : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                                     Atts          : Sax.Attributes.Attributes\'Class);"
-    puts $Out_File ""
-    puts $Out_File "  overriding procedure End_Element(Handler         : in out $Table_Name\_Reader;"
-    puts $Out_File "                                   Namespace_URI   : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                                   Local_Name      : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                                   Qname           : Unicode.CES.Byte_Sequence := \"\") ;"
-    puts $Out_File ""
-    puts $Out_File "  overriding procedure Characters(Handler          : in out $Table_Name\_Reader;"
-    puts $Out_File "                                  Ch               : Unicode.CES.Byte_Sequence := \"\");"
-    puts $Out_File ""
-
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File "  procedure Start_Element(Handler       : in out $Table_Name\_Reader;"
-    puts $Out_File "                          Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                          Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                          Qname         : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                          Atts          : Sax.Attributes.Attributes\'Class) is"
-    puts $Out_File "    pragma Warnings(Off,Namespace_URI);"
-    puts $Out_File "    pragma Warnings(Off,Qname);"
-    puts $Out_File "    pragma Warnings(Off,Atts);"
-    puts $Out_File "    The_Tag : constant String := Local_Name;"
-    puts $Out_File "  begin"
-    puts $Out_File "    Handler.Current_Tag := To_Unbounded_String(The_Tag);"
-    puts $Out_File "    Handler.Accumulated := Null_Unbounded_String;"
-    puts $Out_File "    if The_Tag = Table\_$Table_Name\_Set_Name then"
-    puts $Out_File "      Handler.Found_Set := true;"
-    puts $Out_File "    end if;"
-    puts $Out_File "  exception"
-    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
-    puts $Out_File "    when Constraint_Error         => Handler.OK := False;"
-    puts $Out_File "  end Start_Element;"
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File ""
-
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File "  procedure End_Element(Handler       : in out $Table_Name\_Reader;"
-    puts $Out_File "                        Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                        Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
-    puts $Out_File "                        Qname         : Unicode.CES.Byte_Sequence := \"\") is"
-    puts $Out_File "    pragma Warnings(Off,Namespace_URI);"
-    puts $Out_File "    pragma Warnings(Off,Qname);"
-    puts $Out_File "    The_Tag : constant String := Local_Name;"
-    puts $Out_File "  begin"
-    puts $Out_File "    if The_Tag = Table\_$Table_Name\_Set_Name then"
-    puts $Out_File "      Handler.Found_Set := false;"
-    puts $Out_File "    elsif The_Tag = Table\_$Table_Name\_Row_Name then"
-    puts $Out_File "      if Handler.Found_Set then"
-    puts $Out_File "        Table\_$Table_Name\.$Table_Name\_List_Pack.Insert_At_Tail(Handler\.$Table_Name\_List, Handler\.$Table_Name\_Data);"
-    puts $Out_File "        Handler\.$Table_Name\_Data := Empty_Data;"
-    puts $Out_File "      end if;"
-    puts $Out_File "    end if;"
-    puts $Out_File "  exception"
-    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
-    puts $Out_File "  end End_Element;"
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File ""
-
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File "  procedure Characters(Handler          : in out $Table_Name\_Reader;"
-    puts $Out_File "                       Ch               : Unicode.CES.Byte_Sequence := \"\") is"
-    puts $Out_File "    function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is"
-    puts $Out_File "      use Unicode.Encodings;"
-    puts $Out_File "    begin"
-    puts $Out_File "      return  Convert(Str, Get_By_Name(\"utf-8\"),Get_By_Name(\"iso-8859-15\"));"
-    puts $Out_File "    end To_Iso_Latin_15;"
-    puts $Out_File "    The_Tag   : constant String := To_String(Handler.Current_Tag);"
-    puts $Out_File "    The_Value : constant string := To_Iso_Latin_15(Ch);"
-    puts $Out_File "    procedure Fix_String (Value    : string;"
-    puts $Out_File "                          Variable : in out string) is"
-    puts $Out_File "    begin"
-    puts $Out_File "      Append(Handler.Accumulated, The_Value);"
-    puts $Out_File "      Ada.Strings.Fixed.Move(To_String(Handler.Accumulated), Variable);"
-    puts $Out_File "    end Fix_String;"
-    puts $Out_File "  begin"
-    puts $Out_File "    if Handler.Found_Set then"
-    set Condition_Text "if   "
-    foreach col $Columns {
-      array set Attributes [Repo_Utils::Get_Attributes $col]
-      set COL_NAME [string toupper $Attributes(Name)]
-      set Col_Name [string totitle $Attributes(Name)]
-      set COL_TYPE [Repo_Utils::Type_To_String $Attributes(Type)]
-
-      switch -exact -- $COL_TYPE {
-        #STRING_FORMAT    { set Cvtstr "Ada.Strings.Fixed.Move(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)" }
-        #STRING_FORMAT    { set Cvtstr "Fix_String(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)" }
-        STRING_FORMAT {
-          if {[string equal $Attributes(Size) 1]} {
-            set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := The_Value(1)"
-          } else {
-            set Cvtstr "Fix_String(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)"
-          }
-        }
-        INTEGER_4_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_4\'value(The_Value)" }
-        FLOAT_8_FORMAT   { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Float_8\'value(The_Value)" }
-        DATE_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value,\"00:00:00.000\")" }
-        TIME_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(\"01-JAN-1901\", The_Value)" }
-        TIMESTAMP_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value(1..11), The_Value(13..24))" }
-        CLOB_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Handler\.$Table_Name\_Data\.$Col_Name & Ada.Strings.Unbounded.To_Unbounded_String(The_Value)" }
-        default          { set Cvtstr "null;-- No definitions for this field $Col_Name )" }
-      }
-      puts $Out_File "      $Condition_Text The_Tag = $COL_NAME\_Name then \n        $Cvtstr;"
-      set Condition_Text "elsif"
-    }
-    puts $Out_File "      end if;"
-    puts $Out_File "    end if;"
-    puts $Out_File "  exception"
-    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
-    puts $Out_File "  end Characters;"
-    puts $Out_File ""
-
-    puts $Out_File "  --------------------------------------------"
-    puts $Out_File "  procedure From_Xml(Xml_Filename : in Unbounded_String;"
-    puts $Out_File "                     A_List       : in out $Table_Name\_List_Pack.List_Type) is"
-    puts $Out_File "    My_Reader   : $Table_Name\_Reader;"
-    puts $Out_File "    Input       : File_Input;"
-    puts $Out_File "  begin"
-    puts $Out_File "    My_Reader\.$Table_Name\_List := A_List;"
-    puts $Out_File "    My_Reader.Current_Tag := Null_Unbounded_String;"
-    puts $Out_File "    Open(To_String(Xml_Filename), Input);"
-    puts $Out_File "    My_Reader.Set_Feature(Validation_Feature,False);"
-    puts $Out_File "    My_Reader.Parse(Input);"
-    puts $Out_File "    Input.Close;"
-    puts $Out_File "    if not My_Reader.OK then"
-    puts $Out_File "       Table\_$Table_Name\.$Table_Name\_List_Pack.Remove_All(My_Reader\.$Table_Name\_List);"
-    puts $Out_File "    end if;"
-    puts $Out_File "    A_List := My_Reader\.$Table_Name\_List;"
-    puts $Out_File "  end From_Xml;"
-    puts $Out_File ""
+#
+#  puts $Out_File "  function To_Xml(Data      : in Table\_$Table_Name.Data_Type;"
+#  puts $Out_File "                  Ret_Start : in Boolean;"
+#  puts $Out_File "                  Ret_Data  : in Boolean;"
+#  puts $Out_File "                  Ret_End   : in Boolean) return String is"
+##  puts $Out_File "    --Ls      : constant Character := Ascii.LF;"
+#  puts $Out_File "    Ls      : constant String := \"\";"
+#  puts $Out_File "    S_Start : constant String := \"\<$TABLE_NAME\_ROW>\"  & Ls;"
+#  puts $Out_File "    S_End   : constant String := \"\</$TABLE_NAME\_ROW>\" & Ls;"
+#
+#  set Column_Counter 0
+#  foreach col $Columns {
+#    incr Column_Counter
+#    array set Attributes [Repo_Utils::Get_Attributes $col]
+#    set Col_Type [Repo_Utils::Type_To_String $Attributes(Type)]
+#    set COL_NAME [string toupper $Attributes(Name)]
+#    set Col_Name [string totitle $Attributes(Name)]
+#    puts $Out_File "    S$Column_Counter : constant String :="
+#
+#    switch -exact -- $Col_Type {
+#      STRING_FORMAT {
+#        if {[string equal $Attributes(Size) 1]} {
+#          puts $Out_File "          \"\<$COL_NAME\>\" & Data.$Col_Name & \"\</$COL_NAME\>\" & Ls;"
+#        } else {
+#          puts $Out_File "          \"\<$COL_NAME\>\" & Format_String(General_Routines.Skip_Trailing_Blanks(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
+#        }
+#      }
+#      INTEGER_4_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_4'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      FLOAT_8_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.F8_To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      DATE_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      TIME_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Time(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      TIMESTAMP_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      CLOB_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Ada.Strings.Unbounded.To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#      }
+#      default {
+#        puts stderr "Print_XML_Functions_Body II Table -> $Name , Col_Name -> $COL_NAME Coltype -> $Col_Type is unknown..."
+#        exit 1
+#      }
+#    }
 #  }
+#  puts $Out_File "    --------------------------------"
+#  puts $Out_File "    function Get_String(S : in String; Ret : in Boolean) return String is"
+#  puts $Out_File "      use Standard8;"
+#  puts $Out_File "    begin"
+#  puts $Out_File "      if Ret then return S; else return \"\"; end if;"
+#  puts $Out_File "    end Get_String;"
+#  puts $Out_File "    --------------------------------"
+#
+#  puts $Out_File "  begin"
+#  puts $Out_File "    return Get_String(S_Start, Ret_Start) & "
+#  puts $Out_File "           Get_String("
+#
+#  set S {}
+#  for {set x 1} {$x<=$Column_Counter} {incr x} {
+#   append S " S$x &"
+#   if {![expr $x % 10]} {
+#     # linebreak every 10 items
+#     append S "\n           "
+#   } elseif {$x < 10} {
+#     append S " "
+#   }
+#  }
+#  set S2 [string replace [string trim $S] end end ,]
+#
+#  puts $Out_File "            $S2"
+#  puts $Out_File "            Ret_Data) &"
+#  puts $Out_File "           Get_String(S_End, Ret_End) & Ascii.LF;"
+#  puts $Out_File "  end To_Xml;\n  --------------------------------------------\n"
+#
+#
+##  if {[Is_S08_Table $Name]} {
+#    puts $Out_File ""
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File "  type $Table_Name\_Reader is new Sax.Readers.Reader with record"
+#    puts $Out_File "    Current_Tag    : Unbounded_String := Null_Unbounded_String;"
+#    puts $Out_File "    Accumulated    : Unbounded_String := Null_Unbounded_String;"
+#    puts $Out_File "    OK             : Boolean := True;"
+#    puts $Out_File "    Found_Set      : Boolean := True;"
+#    puts $Out_File "    $Table_Name\_List     : Table\_$Table_Name\.$Table_Name\_List_Pack.List_Type;"
+#    puts $Out_File "    $Table_Name\_Data     : Table\_$Table_Name\.Data_Type := Empty_Data;"
+#    puts $Out_File "  end record;"
+#    puts $Out_File ""
+#    puts $Out_File "  overriding procedure Start_Element(Handler       : in out $Table_Name\_Reader;"
+#    puts $Out_File "                                     Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                                     Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                                     Qname         : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                                     Atts          : Sax.Attributes.Attributes\'Class);"
+#    puts $Out_File ""
+#    puts $Out_File "  overriding procedure End_Element(Handler         : in out $Table_Name\_Reader;"
+#    puts $Out_File "                                   Namespace_URI   : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                                   Local_Name      : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                                   Qname           : Unicode.CES.Byte_Sequence := \"\") ;"
+#    puts $Out_File ""
+#    puts $Out_File "  overriding procedure Characters(Handler          : in out $Table_Name\_Reader;"
+#    puts $Out_File "                                  Ch               : Unicode.CES.Byte_Sequence := \"\");"
+#    puts $Out_File ""
+#
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File "  procedure Start_Element(Handler       : in out $Table_Name\_Reader;"
+#    puts $Out_File "                          Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                          Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                          Qname         : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                          Atts          : Sax.Attributes.Attributes\'Class) is"
+#    puts $Out_File "    pragma Warnings(Off,Namespace_URI);"
+#    puts $Out_File "    pragma Warnings(Off,Qname);"
+#    puts $Out_File "    pragma Warnings(Off,Atts);"
+#    puts $Out_File "    The_Tag : constant String := Local_Name;"
+#    puts $Out_File "  begin"
+#    puts $Out_File "    Handler.Current_Tag := To_Unbounded_String(The_Tag);"
+#    puts $Out_File "    Handler.Accumulated := Null_Unbounded_String;"
+#    puts $Out_File "    if The_Tag = Table\_$Table_Name\_Set_Name then"
+#    puts $Out_File "      Handler.Found_Set := true;"
+#    puts $Out_File "    end if;"
+#    puts $Out_File "  exception"
+#    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
+#    puts $Out_File "    when Constraint_Error         => Handler.OK := False;"
+#    puts $Out_File "  end Start_Element;"
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File ""
+#
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File "  procedure End_Element(Handler       : in out $Table_Name\_Reader;"
+#    puts $Out_File "                        Namespace_URI : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                        Local_Name    : Unicode.CES.Byte_Sequence := \"\";"
+#    puts $Out_File "                        Qname         : Unicode.CES.Byte_Sequence := \"\") is"
+#    puts $Out_File "    pragma Warnings(Off,Namespace_URI);"
+#    puts $Out_File "    pragma Warnings(Off,Qname);"
+#    puts $Out_File "    The_Tag : constant String := Local_Name;"
+#    puts $Out_File "  begin"
+#    puts $Out_File "    if The_Tag = Table\_$Table_Name\_Set_Name then"
+#    puts $Out_File "      Handler.Found_Set := false;"
+#    puts $Out_File "    elsif The_Tag = Table\_$Table_Name\_Row_Name then"
+#    puts $Out_File "      if Handler.Found_Set then"
+#    puts $Out_File "        Table\_$Table_Name\.$Table_Name\_List_Pack.Insert_At_Tail(Handler\.$Table_Name\_List, Handler\.$Table_Name\_Data);"
+#    puts $Out_File "        Handler\.$Table_Name\_Data := Empty_Data;"
+#    puts $Out_File "      end if;"
+#    puts $Out_File "    end if;"
+#    puts $Out_File "  exception"
+#    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
+#    puts $Out_File "  end End_Element;"
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File ""
+#
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File "  procedure Characters(Handler          : in out $Table_Name\_Reader;"
+#    puts $Out_File "                       Ch               : Unicode.CES.Byte_Sequence := \"\") is"
+#    puts $Out_File "    function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is"
+#    puts $Out_File "      use Unicode.Encodings;"
+#    puts $Out_File "    begin"
+#    puts $Out_File "      return  Convert(Str, Get_By_Name(\"utf-8\"),Get_By_Name(\"iso-8859-15\"));"
+#    puts $Out_File "    end To_Iso_Latin_15;"
+#    puts $Out_File "    The_Tag   : constant String := To_String(Handler.Current_Tag);"
+#    puts $Out_File "    The_Value : constant string := To_Iso_Latin_15(Ch);"
+#    puts $Out_File "    procedure Fix_String (Value    : string;"
+#    puts $Out_File "                          Variable : in out string) is"
+#    puts $Out_File "    begin"
+#    puts $Out_File "      Append(Handler.Accumulated, The_Value);"
+#    puts $Out_File "      Ada.Strings.Fixed.Move(To_String(Handler.Accumulated), Variable);"
+#    puts $Out_File "    end Fix_String;"
+#    puts $Out_File "  begin"
+#    puts $Out_File "    if Handler.Found_Set then"
+#    set Condition_Text "if   "
+#    foreach col $Columns {
+#      array set Attributes [Repo_Utils::Get_Attributes $col]
+#      set COL_NAME [string toupper $Attributes(Name)]
+#      set Col_Name [string totitle $Attributes(Name)]
+#      set COL_TYPE [Repo_Utils::Type_To_String $Attributes(Type)]
+#
+#      switch -exact -- $COL_TYPE {
+#        #STRING_FORMAT    { set Cvtstr "Ada.Strings.Fixed.Move(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)" }
+#        #STRING_FORMAT    { set Cvtstr "Fix_String(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)" }
+#        STRING_FORMAT {
+#          if {[string equal $Attributes(Size) 1]} {
+#            set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := The_Value(1)"
+#          } else {
+#            set Cvtstr "Fix_String(The_Value, Handler\.$Table_Name\_Data\.$Col_Name)"
+#          }
+#        }
+#        INTEGER_4_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_4\'value(The_Value)" }
+#        FLOAT_8_FORMAT   { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Float_8\'value(The_Value)" }
+#        DATE_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value,\"00:00:00.000\")" }
+#        TIME_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(\"01-JAN-1901\", The_Value)" }
+#        TIMESTAMP_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value(1..11), The_Value(13..24))" }
+#        CLOB_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Handler\.$Table_Name\_Data\.$Col_Name & Ada.Strings.Unbounded.To_Unbounded_String(The_Value)" }
+#        default          { set Cvtstr "null;-- No definitions for this field $Col_Name )" }
+#      }
+#      puts $Out_File "      $Condition_Text The_Tag = $COL_NAME\_Name then \n        $Cvtstr;"
+#      set Condition_Text "elsif"
+#    }
+#    puts $Out_File "      end if;"
+#    puts $Out_File "    end if;"
+#    puts $Out_File "  exception"
+#    puts $Out_File "    when Ada.Strings.Length_Error => Handler.OK := False;"
+#    puts $Out_File "  end Characters;"
+#    puts $Out_File ""
+#
+#    puts $Out_File "  --------------------------------------------"
+#    puts $Out_File "  procedure From_Xml(Xml_Filename : in Unbounded_String;"
+#    puts $Out_File "                     A_List       : in out $Table_Name\_List_Pack.List_Type) is"
+#    puts $Out_File "    My_Reader   : $Table_Name\_Reader;"
+#    puts $Out_File "    Input       : File_Input;"
+#    puts $Out_File "  begin"
+#    puts $Out_File "    My_Reader\.$Table_Name\_List := A_List;"
+#    puts $Out_File "    My_Reader.Current_Tag := Null_Unbounded_String;"
+#    puts $Out_File "    Open(To_String(Xml_Filename), Input);"
+#    puts $Out_File "    My_Reader.Set_Feature(Validation_Feature,False);"
+#    puts $Out_File "    My_Reader.Parse(Input);"
+#    puts $Out_File "    Input.Close;"
+#    puts $Out_File "    if not My_Reader.OK then"
+#    puts $Out_File "       Table\_$Table_Name\.$Table_Name\_List_Pack.Remove_All(My_Reader\.$Table_Name\_List);"
+#    puts $Out_File "    end if;"
+#    puts $Out_File "    A_List := My_Reader\.$Table_Name\_List;"
+#    puts $Out_File "  end From_Xml;"
+#    puts $Out_File ""
+##  }
 }
 
 ########################################################
@@ -2232,7 +2232,7 @@ proc Create_Ada_Spec {Name Type Node Columns Out_File} {
   Print_Package_Start_Spec $Name $Type $Node $Columns $Out_File
   Print_Def_Functions_Spec $Name $Type $Node $Columns $Out_File
 #  Print_Ud4_Functions_Spec $Name $Type $Node $Columns $Out_File
-#  Print_XML_Functions_Spec $Name $Type $Node $Columns $Out_File
+  Print_XML_Functions_Spec $Name $Type $Node $Columns $Out_File
   Print_Package_End_Spec   $Name $Type $Node $Columns $Out_File
 }
 ########################################################
@@ -2243,7 +2243,7 @@ proc Create_Ada_Body {Name Type Node Columns Out_File} {
   Print_Package_Start_Body $Name $Type $Node $Columns $Out_File
   Print_Def_Functions_Body $Name $Type $Node $Columns $Out_File
 #  Print_Ud4_Functions_Body $Name $Type $Node $Columns $Out_File
-#  Print_XML_Functions_Body $Name $Type $Node $Columns $Out_File
+  Print_XML_Functions_Body $Name $Type $Node $Columns $Out_File
   Print_Package_End_Body   $Name $Type $Node $Columns $Out_File
 }
 
