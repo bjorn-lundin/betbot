@@ -59,7 +59,7 @@ def main():
         db.init_db_client(db_init=True)
         LOG.info('Ending ' + command)
     
-    if cp.INIT_LOCAL_RACEDAYS in command:
+    if cp.LOAD_EOD_RACEDAY in command:
         LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
             conf.AIS_WS_URL,
@@ -74,7 +74,7 @@ def main():
             'ais_type':conf.AIS_TYPE,
             'save_soap_file':True
         }
-        ais.load_calendar_history_into_db(params)
+        ais.load_eod_raceday_into_db(params)
         LOG.info('Ending ' + command)
     
     if cp.EOD_DOWNLOAD in command:
@@ -153,9 +153,14 @@ def main():
     
     if cp.LOAD_EOD_RACINGCARD in command:
         LOG.info('Running ' + command)
-        ais.load_racingcard_history_into_db(datadir=conf.AIS_DATADIR)
+        ais.load_eod_racingcard_into_db(datadir=conf.AIS_DATADIR)
         LOG.info('Ending ' + command)
         
+    if cp.LOAD_EOD_VPPOOLINFO in command:
+        LOG.info('Running ' + command)
+        ais.load_eod_vppoolinfo_into_db(datadir=conf.AIS_DATADIR)
+        LOG.info('Ending ' + command)
+
     LOG.info('Ending application')
     logging.shutdown()    
     exit(0)
