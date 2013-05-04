@@ -803,11 +803,15 @@ package body Pgada.Database is
    ---------------------------------------------------------------------------
    function Escape (Conn   : in Connection_Type;
                     Source : in String) return String is
-      Local_Source :  String   := Source;
+
+      Local_Source :  String (1 .. Source'Length) := Source;
       Lsp          : Chars_Ptr := New_String (Local_Source);
       Ltp          : Chars_Ptr := Pq_Escape_Literal(Conn.Actual, Lsp, Size_T(Local_Source'Length));
 
    begin
+
+      pragma Compile_Time_Warning(True,"pqfreemem");
+--      Num := Pq_Escape_String_Conn (Conn.Actual, Ltp, Lsp, Local_Source'Length, Err'Access);
       declare
          Result : String := Value (Ltp);
       begin
@@ -817,9 +821,9 @@ package body Pgada.Database is
          --      Text_Io.Put_Line("n: " & size_t'Image(num));
          --      Text_Io.Put_Line("------------------");
          Free (Lsp);
---         Free (Ltp);
-         Pq_Free_Mem(Ltp);
+         Free (Ltp);
          return Result;
+--         return "'" & Result (1 .. Integer (Num)) & "'";
       end;
    end Escape;
 

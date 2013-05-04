@@ -215,14 +215,6 @@ package body Sql is
             --        Log("Cmd(Cmd'First .. Start-1) " & Cmd(Cmd'First .. Start-1) );
             --        Log("LMI.Value                 " & To_String(LMI.Value));
             --        Log("Cmd(Stop .. Cmd'Last)     " & Cmd(Stop .. Cmd'Last) );
-
-            -- ada.text_io.put_line("Cmd(Cmd'First .. Start-1) " & Cmd(Cmd'First .. Start-1) );
-            -- ada.text_io.put_line("LMI.Value                 " & To_String(LMI.Value));
-            -- ada.text_io.put_line("Cmd(Stop .. Cmd'Last)     " & Cmd(Stop .. Cmd'Last) );
-            -- ada.text_io.put_line("Trim(LMI.Value)           " & General_Routines.Trim(To_String(LMI.Value)));
-            -- ada.text_io.put_line("start/Stop/look_for'len   " & Start'img & Stop'img & Look_For'Length'img);
-            -- ada.text_io.put_line("look_for                  " & Look_For);
-
             case Lmi.Parameter_Type is
                when An_Integer | A_Float  =>
                   S := To_Unbounded_String (Cmd (Cmd'First .. Start - 1)) &
@@ -260,7 +252,6 @@ package body Sql is
          raise Sequence_Error;
       end if;
 
-     -- ada.text_io.put_line ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
       Log ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
       Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
       if not Eol then
@@ -273,7 +264,6 @@ package body Sql is
       end if;
       Private_Statement.Prepared_Statement := Tmp;
       Log ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
-     -- ada.text_io.put_line  ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
    end Fill_Data_In_Prepared_Statement;
 
 
@@ -835,11 +825,10 @@ package body Sql is
       Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
 
       Global_Connection.Exec ("savepoint A_select", Savepoint_Result);
-      Status := Savepoint_Result.Result_Status;
-      Savepoint_Result.Clear; --bnl
+      Status := Result_Status (Savepoint_Result);
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint a_select", Status);
---bnl         Clear (Savepoint_Result);
+         Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
@@ -850,19 +839,18 @@ package body Sql is
       begin
          Global_Connection.Exec (Declare_String, Dml_Result);
          Log ("SQL.OPEN_CURSOR: " & Declare_String);
-         Status := Dml_Result.Result_Status ;
+         Status := Result_Status (Dml_Result);
          if Pgerror (Status) then
             Print_Errors ("Open_Cursor", Status);
             declare
                Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);
             begin
-               Dml_Result.Clear;
+               Clear (Dml_Result);
                Global_Connection.Exec ("rollback to savepoint a_select", Savepoint_Result);
-               Status := Savepoint_Result.Result_Status;
-               Savepoint_Result.Clear; --bnl
+               Status := Result_Status (Savepoint_Result);
                if Pgerror (Status) then
                   Print_Errors ("Open_Cursor rollback to savepoint a_select", Status);
-                 --bnl Clear (Savepoint_Result);
+                  Clear (Savepoint_Result);
                   raise Postgresql_Error;
                end if;
 
@@ -879,15 +867,14 @@ package body Sql is
       end;
 
       Global_Connection.Exec ("release savepoint a_select", Savepoint_Result);
-      Status := Savepoint_Result.Result_Status;
-      Savepoint_Result.Clear ; --bnl
+      Status := Result_Status (Savepoint_Result);
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint release a_select", Status);
-        --bnl Clear (Savepoint_Result);
+         Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
-      Dml_Result.Clear;
+      Clear (Dml_Result);
    end Open_Cursor;
    --------------------------------------------
    procedure Open_Cursor (Statement : in Statement_Type) is
@@ -913,10 +900,9 @@ package body Sql is
          --  Private_Statement.Number_Actually_Fetched rows.
          -- we need to get another Private_Statement.Number_To_Fetch rows into
          -- our result set
-         Private_Statement.Result.Clear;
          declare
             Fetch_String : String :=
-                            "fetch forward" & Natural'Image (Private_Statement.Number_To_Fetch) & " in " & Private_Statement.Cursor_Name;
+                             "fetch forward" & Natural'Image (Private_Statement.Number_To_Fetch) & " in " & Private_Statement.Cursor_Name;
          begin
             Log ("Fetch: " & Fetch_String);
             Global_Connection.Exec (Fetch_String, Private_Statement.Result);
@@ -968,8 +954,7 @@ package body Sql is
             Log ("Close_This_Cursor -> " & Close_String);
          end;
          Dml_Status := Result_Status (Dml_Result);
-         --Clear (Dml_Result);
-         Dml_Result.Clear;
+         Clear (Dml_Result);
          if Pgerror (Dml_Status) then
             Print_Errors ("Close_This_Cursor", Dml_Status);
             raise Postgresql_Error;
@@ -978,8 +963,8 @@ package body Sql is
       -------------------------------------
    begin
       if Private_Statement.Is_Ok_To_Close then
-         Close_This_Cursor (Private_Statement.Cursor_Name);
          Private_Statement.Result.Clear; --clear old result
+         Close_This_Cursor (Private_Statement.Cursor_Name);
          Private_Statement.Is_Ok_To_Close := False;
          Private_Statement.Current_Row := 0;
          Private_Statement.Number_Actually_Fetched := 0;
@@ -994,10 +979,6 @@ package body Sql is
       Check_Is_Connected;
       Check_Transaction_In_Progress;
       Private_Statement.Is_Ok_To_Close := True;
-      Local_Close_Cursor (Private_Statement); -- bnl test Comment if compability with sattmate needed ie
-      -- open/fetch/close/get instead of open/fetch/get/close
-
-
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
    end Close_Cursor;
 
@@ -1122,8 +1103,7 @@ package body Sql is
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
             Status := Result_Status (Private_Statement.Result);
-         --   ada.text_io.put_line("Prepared_Statement   : " & To_String(Private_Statement.Prepared_Statement));
-         --   ada.text_io.put_line("Pg_Prepared_Statement: " & To_String(Private_Statement.Pg_Prepared_Statement));
+
             if Pgerror (Status) then
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
             end if;
@@ -1236,7 +1216,7 @@ package body Sql is
                   Value     : in String) is
       Local_Value : constant String := Escape (Global_Connection, Value);
    begin
-      Statement.Private_Statement.Update_Map (Parameter,  "'" & General_Routines.Trim(Local_Value(Local_Value'first+1 ..Local_Value'last-1)) & "'", A_String);
+      Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
    end Set;
 
    ------------------------------------------------------------
