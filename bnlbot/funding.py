@@ -133,6 +133,9 @@ class Funding(object):
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
         body = "" + body + ""
 
+        self.log.info(body)
+
+
         headers = ["From: " + self.SENDER,
                    "Subject: " + subject,
                    "To: " + self.RECIPIENT,
@@ -149,6 +152,6 @@ class Funding(object):
 
         session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
         session.quit()
-                
+
 ############################# end mail_saldo
 
