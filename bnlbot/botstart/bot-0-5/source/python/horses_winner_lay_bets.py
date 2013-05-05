@@ -7,7 +7,7 @@ import ssl
 import socket
 import logging.handlers
 import httplib2
-from market import Market
+#from market import Market
 from optparse import OptionParser
 import os
 
@@ -68,11 +68,10 @@ class HorsesWinnerLayBetBot(BetBot):
                 name = None
                 index = None
 
-                market = Market(self.conn, self.log, market_id = market_id)
+#                market = Market(self.conn, self.log, market_id = market_id)
                 # there must be at least 3 runners with lower odds
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 4 - market.no_of_winners
-
+                max_turns = number_of_runners - 5
 
                 favorite_odds = 100.0
                 #loop through list and keep last entry -> favorite
@@ -81,7 +80,7 @@ class HorsesWinnerLayBetBot(BetBot):
 
                 for dct in sorted_list :
                     i = i + 1
-                    if i >= max_turns  :
+                    if i > max_turns  :
                         self.log.info('number_of_runners = ' \
                             + str(number_of_runners) + \
                             'max turns = ' + str(max_turns) + ' i = ' + str(i))
