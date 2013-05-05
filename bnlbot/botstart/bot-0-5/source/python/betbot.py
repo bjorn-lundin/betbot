@@ -497,7 +497,7 @@ class BetBot(object):
                 sleep(self.DELAY_BETWEEN_TURNS)
             else:
                 self.log.info('market not list ' + str(markets))
-
+                sleep(self.DELAY_BETWEEN_TURNS)
         # main loop ended...
         tmp_str = 'login_status = ' + str(login_status) + '\n'
         tmp_str += 'MAIN LOOP ENDED...\n'
