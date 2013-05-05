@@ -1,9 +1,9 @@
 
 
 with Sattmate_Types; use Sattmate_Types;
-with Table_Dry_Markets;
-with Table_Dry_Runners;
-with Table_Dry_Results;
+with Table_Drymarkets;
+with Table_Dryrunners;
+with Table_Dryresults;
 with Simple_List_Class;
 pragma Elaborate_All (Simple_List_Class);
 with Sattmate_Calendar;
@@ -64,12 +64,12 @@ package Races is
 
 
    type Race_Type is tagged record
-      Market       : Table_Dry_Markets.Data_Type;
-      Runners_List : Table_Dry_Runners.Dry_Runners_List_Pack.List_Type :=
-                       Table_Dry_Runners.Dry_Runners_List_Pack.Create;
-      Winners_List : Table_Dry_Results.Dry_Results_List_Pack.List_Type :=
-                       Table_Dry_Results.Dry_Results_List_Pack.Create;
-      Selection_Id : Integer_4 := 0;
+      Market       : Table_Drymarkets.Data_Type;
+      Runners_List : Table_Dryrunners.Dryrunners_List_Pack.List_Type :=
+                       Table_Dryrunners.Dryrunners_List_Pack.Create;
+      Winners_List : Table_Dryresults.Dryresults_List_Pack.List_Type :=
+                       Table_Dryresults.Dryresults_List_Pack.Create;
+      Selectionid  : Integer_4 := 0;
       Price        : Price_Type := 0.0;
       Size         : Size_Type := 0.0;
    end record;

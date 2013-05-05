@@ -1229,6 +1229,14 @@ package body Sql is
    end Set;
 
    ------------------------------------------------------------
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in Integer_8) is
+   begin
+      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_8'Image (Value)), An_Integer);
+   end Set;
+
+   ------------------------------------------------------------
 
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
@@ -1344,6 +1352,42 @@ package body Sql is
    end Get;
 
    ------------------------------------------------------------
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
+                  Value     : out Integer_8) is
+   begin
+      declare
+         Local_String : constant String := Get_Value (
+                                                      Statement.Private_Statement.Result,
+                                                      Tuple_Index_Type (Statement.Private_Statement.Current_Row),
+                                                      Field_Index_Type (Parameter));
+      begin
+         --      Put_Line("local_String: '" & Local_String & "'");
+         if Local_String'Length = 0 then
+            Value := 0;
+         else
+            Value := Integer_8'Value (Local_String);
+         end if;
+      end;
+   exception
+      when Constraint_Error =>
+         Put_Line ("No such column: " & Positive'Image (Parameter));
+         raise No_Such_Column;
+   end Get;
+
+   ------------------------------------------------------------
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Integer_8) is
+      Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
+   begin
+      Get (Statement, Positive (Field_Number), Value);
+   end Get;
+
+   ------------------------------------------------------------
+
 
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;

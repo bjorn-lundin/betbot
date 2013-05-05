@@ -5,18 +5,18 @@
 # chg-26694 2013-02-18 use varchar2 instead of char in oracle
 # -----------------------------------
 
-package require ART_Definitions 
+package require ART_Definitions
 package require dom
 
 package provide Repo_Utils 1.0
 
 namespace eval Repo_Utils {
- 
+
   namespace export Write_Ma_Xml
   namespace export Set_Table_Attributes
   namespace export Set_Column_Attributes
   namespace export Set_Index
-  namespace export Set_Term_Attributes 
+  namespace export Set_Term_Attributes
   namespace export Set_Label_Attributes
   namespace export Set_Presentation_Attributes
   namespace export Set_Code_List_Attributes
@@ -54,7 +54,7 @@ namespace eval Repo_Utils {
   namespace export Debug
   namespace export Change_File_Encoding
   namespace export View_List
-  
+
 # constants
 
   namespace export Verbosity
@@ -66,9 +66,9 @@ namespace eval Repo_Utils {
 
   set Not_Loadable 0
   set Loadable 1
-  
+
   set Verbosity 0
-  global Global_Cv_List 
+  global Global_Cv_List
   set Global_Cv_List {}
 
   proc Get_Config_File {} {
@@ -79,12 +79,12 @@ namespace eval Repo_Utils {
   set Clreq_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Clreqs prefix]
   set Term_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Terms prefix]
   set Code_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Codes prefix]
-  set Label_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Labels prefix] 
+  set Label_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Labels prefix]
   set View_File_Name_Prefix [ART_Definitions::Find_Target_Path $ART_Definitions::Views prefix]
 
   proc Debug {what} {
     if {$Repo_Utils::Verbosity >= 2} {
-      puts stderr $what 
+      puts stderr $what
     }
   }
   #########################################################################
@@ -109,7 +109,7 @@ namespace eval Repo_Utils {
   }
 
   #########################################################################
-  
+
   proc Set_Table_Attributes {t Wiz Desc Name Loadable Tablespace {LicId 0} {LogMask 0} {LogicId 0} {SafeAdd 0} {StorageClass 0} {CleanSetup 0} {CleanProd 0} } {
   #Wiz="1" Desc="PlanCalc request    " Name="P06T91  " LicId="0" LogMask="0" LogicId="0" SafeAdd="0" Loadable="0
   # The default ones are not needed by M2, hence we don't care either
@@ -126,7 +126,7 @@ namespace eval Repo_Utils {
     ::dom::element setAttribute $t CleanSetup   $CleanSetup
     ::dom::element setAttribute $t CleanProd    $CleanProd
   }
-  
+
   #########################################################################
 
   proc Set_Snapshot_Settings {s {SnapshotBase 1} {TruncateBase 1} {SnapshotData 1} {TruncateData 1} {SnapshotEdu 1} {TruncateEdu 1} {SnapshotFull 1} {TruncateFull 1} } {
@@ -142,7 +142,7 @@ namespace eval Repo_Utils {
     ::dom::element setAttribute $s SnapshotBase $SnapshotBase
     ::dom::element setAttribute $s SnapshotBase $SnapshotBase
   }
-  
+
   #########################################################################
   proc Set_Column_Attributes {c Name Primary Size Type {Foreign 0} {Indexed 0} {Unique 0} {AllowNull 0} {Description ""} {NA 0} {Owned 0} {Right 0} {Setup 3} } {
   #  <Column NA="0" Name="p08id   " Size="4" Type="4" Owned="0" Right="0" Setup="0" Unique="0" Foreign="0" Indexed="0" Primary="1"/>
@@ -159,7 +159,7 @@ namespace eval Repo_Utils {
     ::dom::element setAttribute $c Owned     $Owned
     ::dom::element setAttribute $c Right     $Right
     ::dom::element setAttribute $c Setup     $Setup
-#BNL Added Description 2008-01-23 
+#BNL Added Description 2008-01-23
     ::dom::element setAttribute $c Description $Description
 
   }
@@ -171,13 +171,13 @@ namespace eval Repo_Utils {
   #  ::dom::element setAttribute $e xmlns $Default_Namespace
   }
   #########################################################################
-  
+
   proc Set_Index {Index Fields Type} {
     ::dom::element setAttribute $Index Columns $Fields
     ::dom::element setAttribute $Index type $Type
   }
   #########################################################################
-  
+
   proc Set_Term_Attributes {e Name Type Size} {
     ::dom::element setAttribute $e Name $Name
     ::dom::element setAttribute $e Type $Type
@@ -191,26 +191,26 @@ namespace eval Repo_Utils {
     ::dom::element setAttribute $e Level $Level ; #9.8-17468 added the Level
   }
   #########################################################################
-  
+
   proc Set_Presentation_Attributes {e Size Long_Description} {
     ::dom::element setAttribute $e Size     $Size
     ::dom::element setAttribute $e LongDesc $Long_Description
   }
   #########################################################################
-  
+
   proc Set_Code_List_Attributes {e Define Description} {
     ::dom::element setAttribute $e Define $Define
     ::dom::element setAttribute $e Description $Description
   }
   #########################################################################
-  
+
   proc Set_Code_Item_Attributes {e Code Text Define} {
     ::dom::element setAttribute $e Code   $Code
     ::dom::element setAttribute $e Text   $Text
     ::dom::element setAttribute $e Define $Define
   }
   #########################################################################
-  
+
   proc Set_Translation_Attributes {e Language Long_Description Short_Description} {
     ::dom::element setAttribute $e Language $Language
     ::dom::element setAttribute $e LongDesc $Long_Description
@@ -233,7 +233,7 @@ namespace eval Repo_Utils {
            Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }       
+    }
 #    puts $File_Ptr [::dom::DOMImplementation serialize $The_Doc -indent 2 -encoding iso8859-1]
 #    fconfigure $File_Ptr -encoding iso8859-1
     puts $File_Ptr [::dom::DOMImplementation serialize $The_Doc -indent 2]
@@ -244,8 +244,8 @@ namespace eval Repo_Utils {
     puts stderr "This is [info level 0]"
     puts stderr "Should call Find_Target_Path instead"
     if { [catch { set tmp [info level -1]} ] } {
-    
-    } else { 
+
+    } else {
       puts stderr "Called from: \n $tmp"
     }
     return [Find_Target_Path $The_Type]
@@ -268,7 +268,7 @@ namespace eval Repo_Utils {
     # 23 -> Clob
     # 24 -> Nclob
     # 26 -> Blob
-    set dt [string tolower $Data_Type] 
+    set dt [string tolower $Data_Type]
     if {[string equal $dt char]} {
       return 1
     } elseif {[string equal $dt int]} {
@@ -304,12 +304,13 @@ namespace eval Repo_Utils {
     }
   }
   ########################################
-  
-  
+
+
   proc Type_To_String {Type} {
     switch -exact -- $Type {
       1  {return "STRING_FORMAT"}
       2  {return "INTEGER_4_FORMAT"}
+      3  {return "INTEGER_8_FORMAT"}
       6  {return "FLOAT_8_FORMAT"}
       7  {return "INTEGER_4_FORMAT"}
       9  {return "INTEGER_4_FORMAT"}
@@ -320,7 +321,7 @@ namespace eval Repo_Utils {
       24 {return "NCLOB_FORMAT"}
       26 {return "BLOB_FORMAT"}
       default {
-          puts stderr "[info level 0] - Type -> $Type is unknown..." 
+          puts stderr "[info level 0] - Type -> $Type is unknown..."
           exit 1
         }
     }
@@ -337,9 +338,10 @@ namespace eval Repo_Utils {
         }
       }
       2  {return "Integer_4"}
+      3  {return "Integer_8"}
       6  {return "Float_8"}
-      7  {return "Boolean"}   
-      9  {return "Integer_4"} 
+      7  {return "Boolean"}
+      9  {return "Integer_4"}
       10 {return "Time_Type"}
       11 {return "Time_Type"}
       15 {return "Time_Type"}
@@ -347,7 +349,7 @@ namespace eval Repo_Utils {
       24 {return "Nclob"}
       26 {return "Blob"}
       default {
-          puts stderr "[info level 0] - Type -> $Type is unknown..." 
+          puts stderr "[info level 0] - Type -> $Type is unknown..."
           exit 1
       }
     }
@@ -358,18 +360,18 @@ namespace eval Repo_Utils {
 #chg-26694
 #   if {$Size < 256 }  {
 #   return "CHAR"
-# } else {  
+# } else {
 #   return "VARCHAR2"
 # }
 
     switch -exact -- $Database {
       oracle {
         switch -exact -- $Type {
-          1  {return "VARCHAR2" ;# chg-26694} 
+          1  {return "VARCHAR2" ;# chg-26694}
           2  {return "NUMBER(9)"}
           6  {return "NUMBER"}
-          7  {return "NUMBER(9)"} 
-          9  {return "NUMBER(9)"} 
+          7  {return "NUMBER(9)"}
+          9  {return "NUMBER(9)"}
           10 {return "DATE"}
           11 {return "DATE"}
           15 {return "TIMESTAMP(3)"}
@@ -377,18 +379,19 @@ namespace eval Repo_Utils {
           24 {return "NCLOB"}
           26 {return "BLOB"}
           default {
-              puts stderr "[info level 0] - Type -> $Type is unknown..." 
+              puts stderr "[info level 0] - Type -> $Type is unknown..."
               exit 1
           }
         }
-      }     
+      }
       postgresql {
         switch -exact -- $Type {
           1  {return "varchar" ;# "text"}
           2  {return "integer"}
+          3  {return "bigint"}
           6  {return "float"}
-          7  {return "integer"} 
-          9  {return "integer"} 
+          7  {return "integer"}
+          9  {return "integer"}
           10 {return "date"}
           11 {return "time without time zone"}
           15 {return "timestamp without time zone"}
@@ -396,34 +399,34 @@ namespace eval Repo_Utils {
           24 {return "varchar"}
           26 {return "bytea"}
           default {
-              puts stderr "[info level 0] - Type -> $Type is unknown..." 
+              puts stderr "[info level 0] - Type -> $Type is unknown..."
               exit 1
           }
         }
-      }     
+      }
       sqlserver {
         switch -exact -- $Type {
           1  {return "varchar"}
           2  {return "integer"}
           6  {return "float"}
-          7  {return "integer"} 
-          9  {return "integer"} 
+          7  {return "integer"}
+          9  {return "integer"}
           10 {return "datetime2(3)"}
           11 {return "datetime2(3)"}
-          15 {return "datetime2(3)" ; # timestamp is set by sql-server itself, and cannot be used} 
+          15 {return "datetime2(3)" ; # timestamp is set by sql-server itself, and cannot be used}
           23 {return "text"}
           24 {return "ntext"}
           26 {return "blob"}
           default {
-              puts stderr "[info level 0] - Type -> $Type is unknown..." 
+              puts stderr "[info level 0] - Type -> $Type is unknown..."
               exit 1
           }
         }
-      }    
-      default {    
-        puts stderr "[info level 0] - Type -> $Type is unknown..." 
+      }
+      default {
+        puts stderr "[info level 0] - Type -> $Type is unknown..."
         exit 1
-      }  
+      }
     }
   }
 ########################################################
@@ -437,9 +440,10 @@ namespace eval Repo_Utils {
         }
       }
       2  {return "0"}
+      3  {return "0"}
       6  {return "0.0"}
-      7  {return "0" ; # We never use boolean in db "False"} 
-      9  {return "0"}     
+      7  {return "0" ; # We never use boolean in db "False"}
+      9  {return "0"}
       10 {return "Time_Type_First"}
       11 {return "Time_Type_First"}
       15 {return "Time_Type_First"}
@@ -447,7 +451,7 @@ namespace eval Repo_Utils {
       24 {return "\(others => ' '\)"}
       26 {return "\(others => ' '\)"}
       default {
-          puts stderr "[info level 0] - Type -> $Type is unknown..." 
+          puts stderr "[info level 0] - Type -> $Type is unknown..."
           exit 1
         }
     }
@@ -494,7 +498,7 @@ proc Default_Values {Used_Type db} {
           4 -
           7 -
           9  {set R "default 1" }
-      }  
+      }
     }
     sqlserver {
       switch -exact -- $Used_Type {
@@ -505,7 +509,7 @@ proc Default_Values {Used_Type db} {
           4 -
           7 -
           9  {set R "default 1" }
-      }  
+      }
     }
     postgresql {
       switch -exact -- $Used_Type {
@@ -516,11 +520,11 @@ proc Default_Values {Used_Type db} {
           4 -
           7 -
           9  {set R "default 1" }
-      }  
+      }
     }
     default {puts stderr "Default_Values - unsupported db - '$db'" ; exit 1}
-  }  
-  return $R      
+  }
+  return $R
 }
 ##############################################################
 
@@ -529,12 +533,12 @@ proc Default_Values {Used_Type db} {
     set Clreqs_Tables {}
     set Tables_Tables {}
     ####################
-    
+
     set Return_List {}
     set DB_Dir [ART_Definitions::Find_Target_Path $ART_Definitions::Db_Tables]
     set CL_Dir [ART_Definitions::Find_Target_Path $ART_Definitions::Clreqs]
     set Table_Files [lsort [glob -nocomplain -directory $DB_Dir $ART_Definitions::Table_File_Name_Prefix\_*.xml]]
-    set Clreq_Files [lsort [glob -nocomplain -directory $CL_Dir $ART_Definitions::Clreq_File_Name_Prefix\_*.xml]] 
+    set Clreq_Files [lsort [glob -nocomplain -directory $CL_Dir $ART_Definitions::Clreq_File_Name_Prefix\_*.xml]]
     set Files {}
     set Dir $DB_Dir
     switch -exact $Type {
@@ -542,7 +546,7 @@ proc Default_Values {Used_Type db} {
       1 { set Files $Table_Files }
       2 { set Files $Clreq_Files ; set Dir $CL_Dir}
       default {
-          puts stderr "Type -> $Type is unknown..." 
+          puts stderr "Type -> $Type is unknown..."
           exit 1
       }
     }
@@ -558,26 +562,26 @@ proc Default_Values {Used_Type db} {
           puts stderr "[info level 0] - $Result"
           exit 1
         }
-  
+
         if {[catch { set Local_Doc [::dom::DOMImplementation parse [read $File_Ptr]]}  Result]} {
           puts stderr "Open - File - '$File'"
           puts stderr "[info level 0] - $Result"
           exit 1
         }
-  #      set Local_Doc [::dom::DOMImplementation parse [read $File_Ptr]] 
+  #      set Local_Doc [::dom::DOMImplementation parse [read $File_Ptr]]
         catch {close $File_Ptr}
         set Pattern "/MaAstro/Table"
         set Items [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
         foreach Item $Items {
-          array set Attributes [Repo_Utils::Get_Attributes $Item]     
+          array set Attributes [Repo_Utils::Get_Attributes $Item]
           lappend Return_List $Attributes(Name)
         }
         ::dom::DOMImplementation destroy $Local_Doc
       }
     }
-  
+
     return $Return_List
-  }  
+  }
 
 ########################################################3
 
@@ -587,16 +591,16 @@ proc Default_Values {Used_Type db} {
     if {[catch {set Table_Ptr [open [Get_Config_File] {RDONLY}]} Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }       
-    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]] 
+    }
+    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]]
     catch {close $Table_Ptr}
 
     #These db-tables will be processed
     set Pattern "/Process/tables/table"
     set Items [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
     foreach Item $Items {
-      array set Attributes [Repo_Utils::Get_Attributes $Item]     
-      set Item_Name [string tolower $Attributes(name)] 
+      array set Attributes [Repo_Utils::Get_Attributes $Item]
+      set Item_Name [string tolower $Attributes(name)]
       if {[string equal $Lower_Table_Name $Item_Name]} {
         set Tablespace $Attributes(tablespace)
         break
@@ -614,8 +618,8 @@ proc Default_Values {Used_Type db} {
     if {[catch {set Table_Ptr [open [file join $Path $f] {RDONLY}]}  Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }       
-    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]] 
+    }
+    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]]
     catch {close $Table_Ptr}
     set Pattern "/MaAstro/Table/Column"
     set Columns [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
@@ -624,7 +628,7 @@ proc Default_Values {Used_Type db} {
       set Is_Key $Attributes(Primary)
       if {! $Is_Key} {
         set Return_Value 0
-        break 
+        break
       }
     }
     ::dom::DOMImplementation destroy $Local_Doc
@@ -684,16 +688,16 @@ proc Print_Paths {} {
     proc Delete_One_Type {Path Prefix} {
       set PWD [pwd]
       cd $Path
-      set Delete_List [glob -nocomplain $Prefix\_*.xml] 
+      set Delete_List [glob -nocomplain $Prefix\_*.xml]
       foreach f $Delete_List {
         if {[catch {file delete $f} Result]} {
           puts stderr "[info level 0] - delete - $Result"
           exit 1
-        } 
-      }       
+        }
+      }
       cd $PWD
     }
-    ##################################  
+    ##################################
     set Delete($ART_Definitions::Db_Tables) 0
     set Delete($ART_Definitions::Clreqs)    0
     set Delete($ART_Definitions::Terms)     0
@@ -714,10 +718,10 @@ proc Print_Paths {} {
       4 { set Delete($ART_Definitions::Codes)     1}
       7 { set Delete($ART_Definitions::Labels)    1}
       default {
-          puts stderr "[info level 0] - Type -> $Type is unknown..." 
+          puts stderr "[info level 0] - Type -> $Type is unknown..."
           exit 1
       }
-    } 
+    }
 
     if {$Delete($ART_Definitions::Db_Tables)} {
          set Path [ART_Definitions::Find_Target_Path $ART_Definitions::Db_Tables]
@@ -744,15 +748,15 @@ proc Print_Paths {} {
   #########################################################
   # Common header for the autgenerated files
   proc Header {} {
-    set l    "-----------------------------------------------------\n" 
-    append l "-- This file is AUTOGENERATED by                     \n"  
-    append l "-- $::argv0 at                                       \n" 
-#    append l "-- [clock format [clock seconds] -format "%d-%b-%Y"] \n" 
-    append l "--9.6-10510                                          \n" 
-    append l "----CHANGES HERE WILL BE LOST NEXT GENERATE!!!!----- \n" 
-    append l "-----------DO NOT EDIT THIS FILE!!!!---------------- \n" 
-    append l "-----------------------------------------------------\n\n\n" 
-    return $l 
+    set l    "-----------------------------------------------------\n"
+    append l "-- This file is AUTOGENERATED by                     \n"
+    append l "-- $::argv0 at                                       \n"
+#    append l "-- [clock format [clock seconds] -format "%d-%b-%Y"] \n"
+    append l "--9.6-10510                                          \n"
+    append l "----CHANGES HERE WILL BE LOST NEXT GENERATE!!!!----- \n"
+    append l "-----------DO NOT EDIT THIS FILE!!!!---------------- \n"
+    append l "-----------------------------------------------------\n\n\n"
+    return $l
   }
 
 
@@ -776,7 +780,7 @@ proc Print_Paths {} {
       return 1
     } else {
       return 0
-    }      
+    }
   }
 
 ########################################################
@@ -796,12 +800,12 @@ proc Print_Paths {} {
       return 1
     } else {
       return 0
-    }      
+    }
   }
-  
-  
-  
-  
+
+
+
+
 ########################################################
   proc Table_Has_IXX_Timestamp {Table Path} {
     set Return_Value 0
@@ -809,8 +813,8 @@ proc Print_Paths {} {
     if {[catch {set Table_Ptr [open [file join $Path $f] {RDONLY}]}  Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }       
-    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]] 
+    }
+    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]]
     catch {close $Table_Ptr}
     set Pattern "/MaAstro/Table/Column"
     set Columns [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
@@ -820,7 +824,7 @@ proc Print_Paths {} {
     ::dom::DOMImplementation destroy $Local_Doc
     return $Return_Value
   }
-  
+
 ########################################################
   proc Table_Has_IXX_Fields {Table Path} {
     set Return_Value 0
@@ -828,8 +832,8 @@ proc Print_Paths {} {
     if {[catch {set Table_Ptr [open [file join $Path $f] {RDONLY}]}  Result]} {
       puts stderr "[info level 0] - $Result"
       exit 1
-    }       
-    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]] 
+    }
+    set Local_Doc [::dom::DOMImplementation parse [read $Table_Ptr]]
     catch {close $Table_Ptr}
     set Pattern "/MaAstro/Table/Column"
     set Columns [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
@@ -846,15 +850,15 @@ proc Print_Paths {} {
     if {[string equal $Lang "N"]} {
       return "nor"
     } elseif {[string equal $Lang "USA"]} {
-      return "eng" 
+      return "eng"
     } elseif {[string equal $Lang "NL"]} {
-      return "nld" 
+      return "nld"
     } elseif {[string equal $Lang "DK"]} {
-      return "den" 
+      return "den"
     } elseif {[string equal $Lang "S"]} {
-      return "swe" 
+      return "swe"
     } else {
-      return "eng" 
+      return "eng"
     }
   }
   ######################################################
@@ -868,8 +872,8 @@ proc Print_Paths {} {
         puts stderr "[info level 0] - $Result"
         exit 1
     }
-#    set Doc [::dom::DOMImplementation parse $All_Text] 
-    return $Doc  
+#    set Doc [::dom::DOMImplementation parse $All_Text]
+    return $Doc
   }
   ######################################################
 
@@ -884,7 +888,7 @@ proc Print_Paths {} {
           return [string tolower $Attributes(Name)]
         } else {
           return ""
-        }  
+        }
       }
     }
     ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
@@ -895,16 +899,16 @@ proc Print_Paths {} {
       set Term_File_List [lsort $Tmp_Term_File_List]
       foreach Term_File $Term_File_List {
         set Term_Doc [Repo_Utils::Create_Document_From_XML $Term_File ]
-        set Code_Name [Local_Coded_Value $Term_Doc] 
+        set Code_Name [Local_Coded_Value $Term_Doc]
         if {! [string equal "" $Code_Name] } {
           lappend ::Global_Cv_List $Code_Name
         }
       }
-#    }    
+#    }
     return $::Global_Cv_List
   }
 
-  ############################################################### 
+  ###############################################################
   proc Coded_Values_File_List {} {
     set File_List {}
     ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
@@ -917,7 +921,7 @@ proc Print_Paths {} {
           return 1
         } else {
           return 0
-        }  
+        }
       }
     }
     ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
@@ -927,28 +931,28 @@ proc Print_Paths {} {
       set Term_File_List [lsort $Tmp_Term_File_List]
       foreach Term_File $Term_File_List {
         set Term_Doc [Repo_Utils::Create_Document_From_XML $Term_File ]
-        set Is_Coded_Value [Local_Coded_Value $Term_Doc] 
+        set Is_Coded_Value [Local_Coded_Value $Term_Doc]
         if {$Is_Coded_Value } {
           lappend File_List $Term_File
         }
       }
     return $File_List
   }
-  ############################################################### 
+  ###############################################################
   proc Escape {What {With ""}} {
   # remove certain characters, and replace with $With or if not given '-'
     set Tmp {}
     regsub -all {'} $What $With Tmp    ; # replace all ' with -
-# use 'set define off;# instead    
+# use 'set define off;# instead
 #    regsub -all {&} $What {\\&} Tmp    ; # replace all & with \&, so sqlplus does not ask for values
     return $Tmp
   }
-  ############################################################### 
+  ###############################################################
 
   proc Change_File_Encoding {From_File_Name To_File_Name From_Encoding To_Encoding} {
-      #utf-8 iso8859-1     
+      #utf-8 iso8859-1
     set From_File_Ptr [open $From_File_Name {RDONLY}]
-   
+
     if {[string equal "" $To_File_Name]} {
       set Local_To_File_Name $From_File_Name.$To_Encoding
     } else {
@@ -966,7 +970,7 @@ proc Print_Paths {} {
           puts $To_File_Ptr "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
         } else {
           puts $To_File_Ptr $Line
-        }    
+        }
       } else {
         puts $To_File_Ptr $Line
       }
@@ -979,7 +983,7 @@ proc Print_Paths {} {
 
 ########################################################3
   proc View_List {} {
-    
+
     set Return_List {}
     set View_Dir [ART_Definitions::Find_Target_Path $ART_Definitions::Views]
     set View_Files [lsort [glob -nocomplain -directory $View_Dir $ART_Definitions::View_File_Name_Prefix\_*.xml]]
@@ -999,12 +1003,12 @@ proc Print_Paths {} {
         puts stderr "[info level 0] - $Result"
         exit 1
       }
-#      set Local_Doc [::dom::DOMImplementation parse [read $File_Ptr]] 
+#      set Local_Doc [::dom::DOMImplementation parse [read $File_Ptr]]
       catch {close $File_Ptr}
       set Pattern "/MaAstro/View"
       set Items [::dom::DOMImplementation selectNode $Local_Doc $Pattern]
       foreach Item $Items {
-        array set Attributes [Repo_Utils::Get_Attributes $Item]     
+        array set Attributes [Repo_Utils::Get_Attributes $Item]
         set View_Prefix ""
         set View_Name $Attributes(Name)
 #        switch -exact -- $Attributes(Type) {
@@ -1017,7 +1021,7 @@ proc Print_Paths {} {
     }
 
     return $Return_List
-  }  
+  }
 
 ###namespace end
 }

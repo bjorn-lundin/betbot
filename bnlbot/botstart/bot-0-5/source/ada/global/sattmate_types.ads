@@ -68,6 +68,10 @@ package Sattmate_Types is
    type Integer_4 is range -2_147_483_648 .. 2_147_483_647;
    for  Integer_4'Size use 32;
 
+
+   type Integer_8 is range -9_223_372_036_854_775_808 .. 9_223_372_036_854_775_807;
+   for  Integer_8'Size use 64;
+
    --  type FLOAT_4 is new SYSTEM.F_FLOAT;		-- VAX/Ada
    --  type FLOAT_8 is new SYSTEM.D_FLOAT;		-- VAX/Ada
 
