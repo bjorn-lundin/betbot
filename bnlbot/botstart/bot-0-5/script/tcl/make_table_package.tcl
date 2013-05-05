@@ -109,26 +109,26 @@ proc Print_Global_Index_Info {} {
     foreach col $Columns {
       array set Attributes [Repo_Utils::Get_Attributes $col]
       if {[Is_Primary $Attributes(Name)]} {
-	    if { $Attributes(AllowNull) } {
+            if { $Attributes(AllowNull) } {
           puts stderr " $Attributes(Name) is NULLABLE eventhough it is part of Primary Key"
-		  set Err 1
+                  set Err 1
         }
       }
     }
-	if {$Err} {
+        if {$Err} {
       puts stderr " \nNo fields defined as PK may be nullable. Change in xml-file."
       puts stderr " This is in table $Name. Exiting."
-	  exit 1
-	}
+          exit 1
+        }
   }
 ##########################################################
   proc All_Fields_Are_Primary_Keys {Columns {Turns 99999}} {
     set This_Turn 0
     foreach col $Columns {
       incr This_Turn
-	  if {$This_Turn > $Turns} {
+          if {$This_Turn > $Turns} {
         break
-	  }
+          }
       array set Attributes [Repo_Utils::Get_Attributes $col]
       if {! [Is_Primary $Attributes(Name)]} {
 #        puts stderr " $Attributes(Name) is NOT primary"
@@ -144,9 +144,9 @@ proc Print_Global_Index_Info {} {
     set This_Turn 0
     foreach col $Columns {
       incr This_Turn
-	  if {$This_Turn > $Turns} {
+          if {$This_Turn > $Turns} {
         break
-	  }
+          }
       array set Attributes [Repo_Utils::Get_Attributes $col]
       if {[Is_Primary $Attributes(Name)]} {
 #        set COL_NAME [string toupper $Attributes(Name)]
@@ -167,9 +167,9 @@ proc Print_Global_Index_Info {} {
 
     foreach col $Cols {
       incr This_Turn
-	  if {$This_Turn > $Turns} {
+          if {$This_Turn > $Turns} {
         break
-	  }
+          }
       array set Attributes [Repo_Utils::Get_Attributes $col]
       switch -exact -- $Key {
         Primary {
@@ -196,7 +196,7 @@ proc Print_Global_Index_Info {} {
     }
     if {$Generate_IXX} {
       set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Cols]
-	  set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
+          set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
       if {$Has_IXX} {
         append S "            \" and [Field_Caseing IXXLUPD]=[Field_Caseing :IXXLUPD]\" &\n"
         append S "            \" and [Field_Caseing IXXLUDA]=[Field_Caseing :IXXLUDA]\" &\n"
@@ -214,10 +214,10 @@ proc Print_Global_Index_Info {} {
 #  10.1-20890    append S "            \" order by [Primary_Key_List $Cols $Turns]\"\);"
       append S "            \" order by [Primary_Key_List $Cols]\"\);"
       return $S
-	} else {
+        } else {
       set S2 [string replace [string trimright $S] end end \)]
       return "$S2 ;"
-	}
+        }
   }
 
   ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
@@ -226,9 +226,9 @@ proc Print_Global_Index_Info {} {
     set This_Turn 0
     foreach col $Cols {
       incr This_Turn
-	  if {$This_Turn > $Turns} {
+          if {$This_Turn > $Turns} {
         break
-	  }
+          }
       array set Attributes [Repo_Utils::Get_Attributes $col]
       ######
       switch -exact -- $Key {
@@ -240,6 +240,7 @@ proc Print_Global_Index_Info {} {
             switch -exact -- $Col_Type {
               STRING_FORMAT    -
               INTEGER_4_FORMAT -
+              INTEGER_8_FORMAT -
               FLOAT_8_FORMAT {
                 append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
               }
@@ -270,6 +271,7 @@ proc Print_Global_Index_Info {} {
             switch -exact -- $Col_Type {
               STRING_FORMAT    -
               INTEGER_4_FORMAT -
+              INTEGER_8_FORMAT -
               FLOAT_8_FORMAT {
                 append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
               }
@@ -299,26 +301,24 @@ proc Print_Global_Index_Info {} {
       }
     }
 #    if {$Generate_IXX} {
-#    	append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
+#            append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
 #        append S "    Sql.Set_Date($Stm_Name, \"[Field_Caseing IXXLUDA]\", Data.Ixxluda);\n"
 #        append S "    Sql.Set_Time($Stm_Name, \"[Field_Caseing IXXLUTI]\", Data.Ixxluti);\n"
 #    }
 
     if {$Generate_IXX} {
       set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Cols]
-	  set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
+      set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
       if {$Has_IXX} {
-    	append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
+        append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
         append S "    Sql.Set_Date($Stm_Name, \"[Field_Caseing IXXLUDA]\", Data.Ixxluda);\n"
         append S "    Sql.Set_Time($Stm_Name, \"[Field_Caseing IXXLUTI]\", Data.Ixxluti);\n"
       }
       if {$Has_IXX_Ts} {
-    	append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
+        append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
         append S "    Sql.Set_Timestamp($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
       }
     }
-
-
 
     return $S
   }
@@ -338,14 +338,14 @@ proc Print_Global_Index_Info {} {
       append S "            \"$COL_NAME=:$COL_NAME,\" &\n"
     }
 
-	#remove the last ','
-	set S_OK {}
-	set Last_Comma_Pos [string last , $S]
-	if {$Last_Comma_Pos > -1} {
-	  set S_OK [string replace $S $Last_Comma_Pos $Last_Comma_Pos  " "]
-	}
+        #remove the last ','
+        set S_OK {}
+        set Last_Comma_Pos [string last , $S]
+        if {$Last_Comma_Pos > -1} {
+          set S_OK [string replace $S $Last_Comma_Pos $Last_Comma_Pos  " "]
+        }
 
-	set S $S_OK
+        set S $S_OK
 
     set Keyword where
     if {$Where_Keys} {
@@ -367,15 +367,15 @@ proc Print_Global_Index_Info {} {
 
     if {$Old_IXX} {
       set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Cols]
-	  set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
-	  if {$Has_IXX} {
-        foreach C "IXXLUPD IXXLUDA IXXLUTI" {
+      set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
+        if {$Has_IXX} {
+          foreach C "IXXLUPD IXXLUDA IXXLUTI" {
           append S "            \"and [Field_Caseing $C]=:[Field_Caseing OLD\_$C] \" &\n"
         }
       }
 
-	  if {$Has_IXX_Ts} {
-        foreach C "IXXLUPD IXXLUTS" {
+        if {$Has_IXX_Ts} {
+          foreach C "IXXLUPD IXXLUTS" {
           append S "            \"and [Field_Caseing $C]=:[Field_Caseing OLD\_$C] \" &\n"
         }
       }
@@ -412,6 +412,7 @@ proc Print_Global_Index_Info {} {
       switch -exact -- $Col_Type {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
+        INTEGER_8_FORMAT -
         CLOB_FORMAT      -
         FLOAT_8_FORMAT {
           append R "Sql.Set_Null($Stm_Name, \"$COL_NAME\");\n"
@@ -496,6 +497,7 @@ proc Print_Global_Index_Info {} {
       switch -exact -- $Col_Type {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
+        INTEGER_8_FORMAT -
         FLOAT_8_FORMAT {
           append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
         }
@@ -524,7 +526,7 @@ proc Print_Global_Index_Info {} {
 #   }
    if {$Generate_IXX} {
       set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Cols]
-	  set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
+          set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
       if {$Has_IXX} {
         append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
         append S "    Sql.Set_Date($Stm_Name, \"[Field_Caseing IXXLUDA]\", Data.Ixxluda);\n"
@@ -535,8 +537,6 @@ proc Print_Global_Index_Info {} {
         append S "    Sql.Set_Timestamp($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
       }
     }
-
-
     return $S
   }
 
@@ -547,6 +547,7 @@ proc Print_Global_Index_Info {} {
       switch -exact -- $Col_Type {
             STRING_FORMAT    -
             INTEGER_4_FORMAT -
+            INTEGER_8_FORMAT -
             FLOAT_8_FORMAT {
               append S "Sql.Set($Stm_Name, \"$COL_NAME\",Data.$Col_Name);\n"
             }
@@ -580,7 +581,7 @@ proc Print_Global_Index_Info {} {
 
     if {$Set_Old_IXX} {
       set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Cols]
-	  set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
+      set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Cols]
       if {$Has_IXX} {
         append S "    Sql.Set($Stm_Name, \"[Field_Caseing OLD_IXXLUPD]\",Data.Ixxlupd);\n"
         append S "    Sql.Set_Date($Stm_Name, \"[Field_Caseing OLD_IXXLUDA]\",Data.Ixxluda);\n"
@@ -657,11 +658,11 @@ proc Print_Global_Index_Info {} {
   # for a column, return its Ada type
     foreach col $Columns {
       array set Attributes [Repo_Utils::Get_Attributes $col]
-	  if {[string equal -nocase $Attributes(Name) $Column_Name]} {
-	    return [::Repo_Utils::Type_To_Ada_Type $Attributes(Type) $Attributes(Size) ]
+      if {[string equal -nocase $Attributes(Name) $Column_Name]} {
+            return [::Repo_Utils::Type_To_Ada_Type $Attributes(Type) $Attributes(Size) ]
       }
     }
-	return "Ada_Type - Found no matching type"
+        return "Ada_Type - Found no matching type"
   }
   ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
 
@@ -829,15 +830,15 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
     set Field_Name_List [split $Fields ","]
     set Number_Of_Commas_Replaced [regsub -all {,} $Fields _ field_names]   ; # replace all ',' with '_'
     if {! $Number_Of_Commas_Replaced} {
-	  # no replacements -> no commas -> only one keyfield -> return
-	  return ""
-	}
+          # no replacements -> no commas -> only one keyfield -> return
+          return ""
+        }
     set Orig_Fld {}
     set Last_Field_Name [lindex $Field_Name_List end] ; # we need this, so we can skip it.
     foreach fld $Field_Name_List {
-	  if {[string equal $fld $Last_Field_Name]} {
-	    break
-	  }
+          if {[string equal $fld $Last_Field_Name]} {
+            break
+          }
       set fld [string totitle $fld]
       set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
       append Orig_Fld \_$fld
@@ -852,21 +853,21 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
       append Ret_Val "  --------------------------------------------\n"
       append Ret_Val "\n"
       append Ret_Val "  function Is_Existing\_$local_IDF_Numbering\(\n"
-	  set Tmp_Fld_List2 [split $Orig_Fld "_"]
-	   ; # first is blank, skip it
-	  set Tmp_Fld_List  [lrange $Tmp_Fld_List2 1 end]
+          set Tmp_Fld_List2 [split $Orig_Fld "_"]
+           ; # first is blank, skip it
+          set Tmp_Fld_List  [lrange $Tmp_Fld_List2 1 end]
       #puts "-- debug Tmp_Fld_List - Orig_Fld -> $Tmp_Fld_List - $Orig_Fld"
       set cnt 0  ; # we need a counter to see if a ';' is needed at end
       set num_flds [llength $Tmp_Fld_List] ; # first is blank ...
-	  foreach Tmp_Fld $Tmp_Fld_List {
+          foreach Tmp_Fld $Tmp_Fld_List {
         incr cnt
         if { $cnt >= $num_flds  } {
           append Ret_Val "                 $Tmp_Fld     : in [Ada_Type $Columns $Tmp_Fld] \) "
-		} else {
+                } else {
           append Ret_Val "                 $Tmp_Fld     : in [Ada_Type $Columns $Tmp_Fld] ;\n"
-		}
+                }
       }
-	  append Ret_Val "     return Boolean;\n"
+          append Ret_Val "     return Boolean;\n"
     }
     return $Ret_Val
   }
@@ -974,7 +975,7 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
       primary {
         puts $Out_File "  -- Primary keys, when several fields"
         puts $Out_File [Primary_Procs $Index_Attributes(Columns) $Table_Name $Columns]
-	  }
+          }
       candidate {
         puts $Out_File "  -- Candidate key"
         puts $Out_File [Candidate_Procs $Index_Attributes(Columns) $Table_Name]
@@ -1015,12 +1016,12 @@ proc Print_Ud4_Functions_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "  --------------------------------------------"
   puts $Out_File ""
   puts $Out_File "  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;"
-  puts $Out_File "                              Operation	: in     Operation_Type := Get_One_Record);"
+  puts $Out_File "                              Operation        : in     Operation_Type := Get_One_Record);"
   puts $Out_File "  --------------------------------------------"
   puts $Out_File ""
   puts $Out_File "  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;"
   puts $Out_File "                              Data      : in     Table\_$Table_Name.Data_Type;"
-  puts $Out_File "                              Operation	: in     Operation_Type := Get_One_Record);"
+  puts $Out_File "                              Operation        : in     Operation_Type := Get_One_Record);"
   puts $Out_File "  --------------------------------------------"
   puts $Out_File "\n\n"
 
@@ -1104,18 +1105,18 @@ proc Print_Package_Start_Body {Name Type Node Columns Out_File} {
     switch -exact -- $Index_Attributes(type) {
       primary {
           set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
-	      set Tmp_Fld_List [split $Index_Attributes(Columns) ","]
+              set Tmp_Fld_List [split $Index_Attributes(Columns) ","]
           set Field_Name_List  [lrange $Tmp_Fld_List 0 end-1]  ; #first is {}, remove it
-		  set Orig_Fld {}
+                  set Orig_Fld {}
           foreach fld $Field_Name_List {
             set fld [string totitle $fld]
             append Orig_Fld \_$fld
             puts $Out_File "  -- Primary key, if several fields"
-		    puts $Out_File "  Stm_Select\_$local_IDF_Numbering$Orig_Fld\_O,"
+            puts $Out_File "  Stm_Select\_$local_IDF_Numbering$Orig_Fld\_O,"
             puts $Out_File "  Stm_Select\_$local_IDF_Numbering$Orig_Fld,"
             puts $Out_File "  Stm_Delete\_$local_IDF_Numbering$Orig_Fld : Sql.Statement_Type; \n"
           }
-	  }
+          }
       candidate {
         puts $Out_File "  -- Candidate key"
         puts $Out_File "  Stm_Delete\_$Field_Name\_Candidate ,"
@@ -1297,9 +1298,9 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     set Field_Name_List [split $Fields ","]
     set Number_Of_Commas_Replaced [regsub -all {,} $Fields _ field_names]   ; # replace all ',' with '_'
     if {! $Number_Of_Commas_Replaced} {
-	  # no replacements -> no commas -> only one keyfield -> return
-	  return ""
-	}
+          # no replacements -> no commas -> only one keyfield -> return
+          return ""
+        }
 #    set TABLE_NAME [string toupper $Table_Name]
     set TABLE_NAME [Table_Caseing $Table_Name]
 
@@ -1307,9 +1308,9 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     set Orig_Fld {}
     set Last_Field_Name [lindex $Field_Name_List end] ; # we need this, so we can skip it.
     foreach fld $Field_Name_List {
-	  if {[string equal $fld $Last_Field_Name]} {
-	    break
-	  }
+          if {[string equal $fld $Last_Field_Name]} {
+            break
+          }
       incr Number_Of_Primary_Fields_To_Process
       set fld [string totitle $fld]
       set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
@@ -1350,23 +1351,23 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
       ######################################################################
       append Ret_Val "\n"
       append Ret_Val "  function Is_Existing\_$local_IDF_Numbering\(\n"
-	  set Tmp_Fld_List2 [split $Orig_Fld "_"]
-	   ; # first is blank, skip it
-	  set Tmp_Fld_List  [lrange $Tmp_Fld_List2 1 end]
+          set Tmp_Fld_List2 [split $Orig_Fld "_"]
+           ; # first is blank, skip it
+          set Tmp_Fld_List  [lrange $Tmp_Fld_List2 1 end]
       #puts "-- debug Tmp_Fld_List - Orig_Fld -> $Tmp_Fld_List - $Orig_Fld"
       set cnt 0  ; # we need a counter to see if a ';' is needed at end
       set num_flds [llength $Tmp_Fld_List] ; # first is blank ...
-	  set Fill_Data {}
-	  foreach Tmp_Fld $Tmp_Fld_List {
+          set Fill_Data {}
+          foreach Tmp_Fld $Tmp_Fld_List {
         incr cnt
         if { $cnt >= $num_flds  } {
           append Ret_Val "                 $Tmp_Fld     : in [Ada_Type $Columns $Tmp_Fld] \)"
-		} else {
+                } else {
           append Ret_Val "                 $Tmp_Fld     : in [Ada_Type $Columns $Tmp_Fld] ;\n"
-		}
+                }
         append Fill_Data "    Data.$Tmp_Fld := $Tmp_Fld ; \n"
       }
-	  append Ret_Val "     return Boolean is\n"
+          append Ret_Val "     return Boolean is\n"
       append Ret_Val "    Data       : Table\_$Table_Name.Data_Type;\n"
       append Ret_Val "    End_Of_Set : Boolean := False;\n"
       append Ret_Val "    Is_Exist   : Boolean := False;\n"
@@ -1404,6 +1405,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
       switch -exact -- $Col_Type {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
+        INTEGER_8_FORMAT -
         FLOAT_8_FORMAT {
           puts $Out_File "      Sql.Get(Stm, \"$COL_NAME\", Data.$Col_Name);"
         }
@@ -1730,7 +1732,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
       primary {
         puts $Out_File "  -- Primary key, when several fields"
         puts $Out_File [Primary_Procs $Index_Attributes(Columns) $Table_Name $Columns]
-	  }
+          }
       candidate {
         puts $Out_File "  -- Candidate key"
         puts $Out_File [Candidate_Procs $Index_Attributes(Columns) $Table_Name $Columns]
@@ -1775,6 +1777,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
     switch -exact -- $Col_Type {
       STRING_FORMAT    -
       INTEGER_4_FORMAT -
+      INTEGER_8_FORMAT -
       FLOAT_8_FORMAT {
          puts $Out_File "    if Has_Value(Request, \"$COL_NAME\") then"
          puts $Out_File "      Get_Value(Request, \"$COL_NAME\", Data.$Col_Name);"
@@ -1827,6 +1830,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
     switch -exact -- $Col_Type {
       STRING_FORMAT    -
       INTEGER_4_FORMAT -
+      INTEGER_8_FORMAT -
       FLOAT_8_FORMAT {
         puts $Out_File "    Set_Value(Reply, \"$COL_NAME\", Data.$Col_Name);"
       }
@@ -1855,7 +1859,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
   ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--
   puts $Out_File ""
   puts $Out_File "  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;"
-  puts $Out_File "                              Operation	: in     Operation_Type := Get_One_Record) is"
+  puts $Out_File "                              Operation        : in     Operation_Type := Get_One_Record) is"
   puts $Out_File "    use Uniface_Request;"
   puts $Out_File "    Next_Column : Integer_2;"
   puts $Out_File "    Offset      : Natural := 0;"
@@ -1873,6 +1877,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
         puts $Out_File "    Add_Column(Request, \"$COL_NAME\", $COL_TYPE, Offset, $Attributes(Size));"
       }
       INTEGER_4_FORMAT -
+      INTEGER_8_FORMAT -
       FLOAT_8_FORMAT -
       DATE_FORMAT -
       TIME_FORMAT -
@@ -1898,7 +1903,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
   puts $Out_File ""
   puts $Out_File "  procedure Make_Ud4_Telegram(Request   : in out Uniface_Request.Request_Type;"
   puts $Out_File "                              Data      : in     Table\_$Table_Name.Data_Type;"
-  puts $Out_File "                              Operation	: in     Operation_Type := Get_One_Record) is"
+  puts $Out_File "                              Operation        : in     Operation_Type := Get_One_Record) is"
   puts $Out_File "  begin"
   puts $Out_File "    Make_Ud4_Telegram(Request, Operation);"
   puts $Out_File "    Set_Values(Request, Data);"
@@ -1959,6 +1964,9 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
       INTEGER_4_FORMAT {
         puts $Out_File "          \" $Col_Name = \" & Integer_4'Image(Data.$Col_Name) &"
       }
+      INTEGER_8_FORMAT {
+        puts $Out_File "          \" $Col_Name = \" & Integer_8'Image(Data.$Col_Name) &"
+      }
       FLOAT_8_FORMAT {
         puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_To_String(Data.$Col_Name) &"
       }
@@ -2017,6 +2025,9 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #        } else {
 #          puts $Out_File "          \"\<$COL_NAME\>\" & Format_String(General_Routines.Skip_Trailing_Blanks(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
 #        }
+#      }
+#      INTEGER_8_FORMAT {
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_8'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      INTEGER_4_FORMAT {
 #        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_4'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
@@ -2181,6 +2192,7 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #          }
 #        }
 #        INTEGER_4_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_4\'value(The_Value)" }
+#        INTEGER_8_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_8\'value(The_Value)" }
 #        FLOAT_8_FORMAT   { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Float_8\'value(The_Value)" }
 #        DATE_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value,\"00:00:00.000\")" }
 #        TIME_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(\"01-JAN-1901\", The_Value)" }
@@ -2633,7 +2645,7 @@ proc Create_Tables_Makefile {} {
   puts "ENGINE    := tclsh \$\(SCRIPT\)"
   puts ""
   puts ".PHONY : all"
-  set All "all : \\\n" ;# \$(THE_PATH)/$Prefix\_*.o	"
+  set All "all : \\\n" ;# \$(THE_PATH)/$Prefix\_*.o        "
   foreach TABLE $Table_List {
     set table [string tolower $TABLE]
     append All "     $Table_Prefix\_$table.adb \\\n"
@@ -2654,24 +2666,24 @@ proc Create_Tables_Makefile {} {
 #    puts "\t \$(ADA) c $Table_Prefix\_$table.adb"
     puts ""
     puts "$Table_Prefix\_$table.adb : \$(REPO_PATH)/$Table_Prefix\_$table.xml \$\(SCRIPT\)"
-	catch {}
+        catch {}
 
     if {[catch {set Database_Type [string tolower $::env(SATTMATE_DATABASE_TYPE)]} Result]} {
       set Database_Type oracle ; #default ora
     }
 #    puts "Database_Type - $Database_Type - $::env(SATTMATE_DATABASE_TYPE)"
-	set Option {}
-	set rp {}
-	if {[catch {set rp $::env(SATTMATE_MAKE_RECIPE_PREFIX)}] } {
-	  set rp \t
-	}
-	switch -exact $Database_Type {
-	  oci        {set Option "-o"}
-	  oracle     {set Option "-o"}
-	  sqlserver  {set Option "-s"}
-	  postgresql {set Option "-p"}
-	  default {puts stderr "Not a valid db: '$Database_Type' " ; exit 1}
-	}
+        set Option {}
+        set rp {}
+        if {[catch {set rp $::env(SATTMATE_MAKE_RECIPE_PREFIX)}] } {
+          set rp \t
+        }
+        switch -exact $Database_Type {
+          oci        {set Option "-o"}
+          oracle     {set Option "-o"}
+          sqlserver  {set Option "-s"}
+          postgresql {set Option "-p"}
+          default {puts stderr "Not a valid db: '$Database_Type' " ; exit 1}
+        }
     puts "$rp \$(ENGINE) $Option $table > $table.sql"
     puts "$rp \$(ENGINE) -t $table > $Table_Prefix\_$table.ada"
 #    puts "$rp \$(ADA) f $Table_Prefix\_$table.ada >  $Table_Prefix\_$table.pp"
@@ -2727,8 +2739,8 @@ proc Sanity_Check_Table {Table_Name Table_Type Table_Node Table_Columns } {
     foreach Field $Field_List {
       if {[string equal $Index_Attributes(type) primary]} {
         set Has_Primary_Key 1
-		lappend PK_List $Field
-#		puts "added  $Field to PK_List"
+                lappend PK_List $Field
+#                puts "added  $Field to PK_List"
       }
       set ::Tmp_Index_Array($Index_Attributes(type),$Field) 1
     }
@@ -2750,13 +2762,13 @@ proc Sanity_Check_Table {Table_Name Table_Type Table_Node Table_Columns } {
   # search each pk marked field for presence in idx/pk tag
   foreach col $Table_Columns {
     array set Attributes [Repo_Utils::Get_Attributes $col]
-#	puts $Attributes(Name)
+#        puts $Attributes(Name)
     if { $Attributes(Primary)} {
-	  set R [lsearch -exact $PK_List $Attributes(Name)]
-	  if {$R < 0} {
-	    puts stderr "Fix xmlfile, table '$Table_Name'! Field '$Attributes(Name)' is marked as PK, but not present in the PK index tag!"
-	  }
-	}
+          set R [lsearch -exact $PK_List $Attributes(Name)]
+          if {$R < 0} {
+            puts stderr "Fix xmlfile, table '$Table_Name'! Field '$Attributes(Name)' is marked as PK, but not present in the PK index tag!"
+          }
+        }
   }
 
   # search each field in idx/pk tag for pk marking on field level. S2 NEEDS it
@@ -2765,9 +2777,9 @@ proc Sanity_Check_Table {Table_Name Table_Type Table_Node Table_Columns } {
     foreach col $Table_Columns {
       array set Attributes [Repo_Utils::Get_Attributes $col]
       if {[string equal $f $Attributes(Name)]} {
-	    if {! $Attributes(Primary)} {
-	      puts stderr "Fix xmlfile, table '$Table_Name'! Field '$Attributes(Name)' is NOT marked as PK, but present in the PK index tag!"
-	    }
+            if {! $Attributes(Primary)} {
+              puts stderr "Fix xmlfile, table '$Table_Name'! Field '$Attributes(Name)' is NOT marked as PK, but present in the PK index tag!"
+            }
       }
     }
   }
@@ -2952,12 +2964,12 @@ while {[ set err [ getopt $argv "a:c:C:fFgGhmo:p:s:t:Tv" opt arg ]] } {
           set Prefix $Repo_Utils::Table_File_Name_Prefix
           set Action createAdaTables
       }
-	  T {
+          T {
          set Table_Type $ART_Definitions::Db_Tables
          set Prefix $Repo_Utils::Table_File_Name_Prefix
          set Table_List [Repo_Utils::Table_List $ART_Definitions::Db_Tables]
          set Action sanityCheckTable
-	  }
+          }
 
       v {incr Repo_Utils::Verbosity}
       default { puts "in default"; Usage}
@@ -3003,12 +3015,12 @@ foreach Table_Name $Table_List {
       dropDbPostgreSQL {
             Drop_SQL_Script_PostgreSQL $Out_File $Table_Node
       }
-	  sanityCheckTable {
-	        Sanity_Check_Table $Table_Name $Table_Type $Table_Node $Table_Columns
-	  }
+          sanityCheckTable {
+                Sanity_Check_Table $Table_Name $Table_Type $Table_Node $Table_Columns
+          }
     default {
         puts stderr "Action '$Action' not in known actions"
-    	Usage
+            Usage
     }
   }
 }

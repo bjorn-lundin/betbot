@@ -103,6 +103,14 @@ package Sql is
 
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;
+                  Value     : out Integer_8) ;
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Integer_8);
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
                   Value     : out String);
 
    procedure Get (Statement : in Statement_Type;
@@ -155,6 +163,10 @@ package Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Integer_4);
+
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in Integer_8);
 
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;

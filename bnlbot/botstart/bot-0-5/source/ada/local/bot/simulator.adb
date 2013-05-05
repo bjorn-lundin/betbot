@@ -11,6 +11,7 @@ with Ada.Characters.Latin_1;
 with Sattmate_Exception;
 with General_Routines;       use General_Routines;
 
+
 procedure Simulator is
 --  Not_Implemented,
    Bad_Animal,
@@ -256,13 +257,13 @@ begin
                         Races.Race_Package.Get_First (Race_List, Race, Eol);
                         loop
                            exit when Eol;
-                           Log ("---  main loop start " &  Race.Market.Market_Id'Img &
+                           Log ("---  main loop start " &  Race.Market.Marketid'Img &
                                 " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
                            -- reset the daily profit when new day is treated
-                           if Global_Race_Date.Day  /= Race.Market.Event_Date.Day or else
-                             Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
-                             Global_Race_Date.Year  /=  Race.Market.Event_Date.Year then
-                              Global_Race_Date := Race.Market.Event_Date;
+                           if Global_Race_Date.Day  /= Race.Market.Eventdate.Day or else
+                             Global_Race_Date.Month /= Race.Market.Eventdate.Month or else
+                             Global_Race_Date.Year  /=  Race.Market.Eventdate.Year then
+                              Global_Race_Date := Race.Market.Eventdate;
                               Global_Profit    := 0.0;
                               Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
                            end if;
@@ -306,7 +307,7 @@ begin
                      --         exception
                      --            when others => null;
                      --         end;
-                     Log ("---  main loop stop " & Race.Market.Market_Id'Img &
+                     Log ("---  main loop stop " & Race.Market.Marketid'Img &
                           " profit :" & Integer (Global_Profit)'Img & " -----------------");
                   end loop;
                end loop;
@@ -321,13 +322,13 @@ begin
                --                          Races.Race_Package.Get_First (Race_List, Race, Eol);
                --                          loop
                --                             exit when Eol;
-               --                             Log ("---  main loop start " &  Race.Market.Market_Id'Img &
+               --                             Log ("---  main loop start " &  Race.Market.Marketid'Img &
                --                                    " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
                --                             -- reset the daily profit when new day is treated
-               --                             if Global_Race_Date.Day  /= Race.Market.Event_Date.Day or else
-               --                               Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
-               --                               Global_Race_Date.Year  /=  Race.Market.Event_Date.Year then
-               --                                Global_Race_Date := Race.Market.Event_Date;
+               --                             if Global_Race_Date.Day  /= Race.Market.Eventdate.Day or else
+               --                               Global_Race_Date.Month /= Race.Market.Eventdate.Month or else
+               --                               Global_Race_Date.Year  /=  Race.Market.Eventdate.Year then
+               --                                Global_Race_Date := Race.Market.Eventdate;
                --                                Global_Profit    := 0.0;
                --                                Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
                --                             end if;
@@ -371,7 +372,7 @@ begin
                --                          --         exception
                --                          --            when others => null;
                --                          --         end;
-               --                          Log ("---  main loop stop " & Race.Market.Market_Id'Img &
+               --                          Log ("---  main loop stop " & Race.Market.Marketid'Img &
                --                                 " profit :" & Integer (Global_Profit)'Img & " -----------------");
                --                    end loop;
                --                 end loop;
@@ -387,13 +388,13 @@ begin
                      Races.Race_Package.Get_First (Race_List, Race, Eol);
                      loop
                         exit when Eol;
-                        Log ("---  main loop start " &  Race.Market.Market_Id'Img &
+                        Log ("---  main loop start " &  Race.Market.Marketid'Img &
                              " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
                         -- reset the daily profit when new day is treated
-                        if Global_Race_Date.Day   /= Race.Market.Event_Date.Day or else
-                          Global_Race_Date.Month /= Race.Market.Event_Date.Month or else
-                          Global_Race_Date.Year  /=  Race.Market.Event_Date.Year then
-                           Global_Race_Date := Race.Market.Event_Date;
+                        if Global_Race_Date.Day   /= Race.Market.Eventdate.Day or else
+                          Global_Race_Date.Month /= Race.Market.Eventdate.Month or else
+                          Global_Race_Date.Year  /=  Race.Market.Eventdate.Year then
+                           Global_Race_Date := Race.Market.Eventdate;
                            Global_Profit    := 0.0;
                            Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
                         end if;
@@ -440,7 +441,7 @@ begin
                      --         exception
                      --            when others => null;
                      --         end;
-                     Log ("---  main loop stop " & Race.Market.Market_Id'Img &
+                     Log ("---  main loop stop " & Race.Market.Marketid'Img &
                           " profit :" & Integer (Global_Profit)'Img & " -----------------");
 
                   end loop;

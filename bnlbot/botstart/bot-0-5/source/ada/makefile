@@ -18,7 +18,7 @@ DBNAME := $(BOT_DATABASE_NAME)
 
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
-  HOST := $(BOT_DATABASE_HOSTNAME)
+  HOST := 192.168.0.13
   SHOW_PNG := display
 endif
 
@@ -46,7 +46,8 @@ tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          $(ST)/table_dryrunners.ads $(ST)/table_animals.ads \
          $(ST)/table_drymarketsf.ads $(ST)/table_dryresultsf.ads \
          $(ST)/table_dryrunnersf.ads \
-#         $(ST)/table_bets.ads $(ST)/table_markets.ads \
+         $(ST)/table_bets.ads \
+         #$(ST)/table_markets.ads \
 
 
 json_test :
