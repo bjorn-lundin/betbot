@@ -80,7 +80,7 @@ class HorsesWinnerLayBetBot(BetBot):
 
                 for dct in sorted_list :
                     i = i + 1
-                    if i >= max_turns  :
+                    if i > max_turns  :
                         self.log.info('number_of_runners = ' \
                             + str(number_of_runners) + \
                             'max turns = ' + str(max_turns) + ' i = ' + str(i))
