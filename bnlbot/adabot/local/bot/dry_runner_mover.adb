@@ -36,6 +36,7 @@ procedure Dry_Runner_Mover is
    T                       : Sql.Transaction_Type;
    Select_Football_Markets : Sql.Statement_Type;
 begin
+   set_quiet(True);
    Log ("Connect db");
    Sql.Connect
      (Host     => "192.168.0.13",

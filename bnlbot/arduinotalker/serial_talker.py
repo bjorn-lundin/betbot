@@ -119,7 +119,7 @@ def main():
           'DRY_RUN_HOUNDS_WINNER_LAY_BET_13_14',
           'DRY_RUN_HOUNDS_WINNER_BACK_BET_45_07',
           'DRY_RUN_HORSES_WINNER_LAY_BET_ALL',
-          'DRY_RUN_HORSES_WINNER_LAY_BET_ALL_GO',
+          'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
           'DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02',
           'DRY_RUN_HOUNDS_WINNER_BACK_BET'   ]
              
@@ -157,7 +157,8 @@ def main():
     
   ser.write('------------------------------------------------------------------------------\r\n')
   row0['typ'] = 'Typ av bet/result veckor tillbaka'    
-  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  row0['6'] = 'Summa'
+  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
   ser.write(lcd_row_0 + '\r\n')
   ser.write('------------------------------------------------------------------------------\r\n')
 
@@ -169,8 +170,11 @@ def main():
     row2['3'] = get_row_weeks_back(conn, bet, -3)
     row2['4'] = get_row_weeks_back(conn, bet, -4)
     row2['5'] = get_row_weeks_back(conn, bet, -5)
-    row2['6'] = get_row_weeks_back(conn, bet, -6)
+#    row2['6'] = get_row_weeks_back(conn, bet, -6)
     row2['typ'] = bet
+
+    row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
+                int(row2['3']) +  int(row2['4']) + int(row2['5'])     
     lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
 #    print lcd_row_1
     ser.write(lcd_row_2 + '\r\n')

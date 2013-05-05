@@ -1,4 +1,3 @@
 #25 3 * * * /home/bnl/bnlbot/do_backup_db.bash
 * * * * * /usr/bin/python /home/pi/bnlbot/arduinotalker/serial_talker.py
-17 * * * * /home/pi/bnlbot/adabot/exe/dry_runner_mover > /dev/null 2>&1
-
+* * * * * /home/pi/bnlbot/adabot/exe/dry_runner_mover > /dev/null
