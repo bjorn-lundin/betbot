@@ -6,6 +6,7 @@ from time import sleep, time
 import datetime
 import smtplib
 import os
+from boto import ses
 
 
 class Funding(object):
@@ -95,26 +96,8 @@ class Funding(object):
             subject = 'BetBot Saldo Overflow'
             body = 'Dags att flytta betbot-pengar'
 
-            "Sends an e-mail to the specified recipient."
+            self.do_mail(subject, body)
 
-            body = "" + body + ""
-
-            headers = ["From: " + self.SENDER,
-                       "Subject: " + subject,
-                       "To: " + self.RECIPIENT,
-                       "MIME-Version: 1.0",
-                       "Content-Type: text/html"]
-            headers = "\r\n".join(headers)
-
-            session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
-
-            session.ehlo()
-            session.starttls()
-            session.ehlo
-            session.login(self.SENDER, self.PASSWORD)
-
-            session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
-            session.quit()
             try :
                 file = open(self.LAST_MAIL_FILE, 'w+')
                 try :
@@ -128,36 +111,58 @@ class Funding(object):
 ############################# end alert_via_mail
 
     def mail_saldo(self) :
-        self.log.info('Send mail with daily saldo report')
-
-        self.log.info('sender ' + self.SENDER)
-        self.log.info('password ' + self.PASSWORD)
-        self.log.info('recipient ' + self.RECIPIENT)
-
         subject = 'BetBot Saldo Report'
-
         body = 'Dagens saldo-rapport '
         body += '\r\n saldo:     ' + str( self.avail_balance )
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
-        body = "" + body + ""
-
-        headers = ["From: " + self.SENDER,
-                   "Subject: " + subject,
-                   "To: " + self.RECIPIENT,
-                   "MIME-Version: 1.0",
-                   "Content-Type: text/html"]
-        headers = "\r\n".join(headers)
-
-        session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
-
-        session.ehlo()
-        session.starttls()
-        session.ehlo
-        session.login(self.SENDER, self.PASSWORD)
-
-        session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
-        session.quit()
+        self.do_mail(subject, body)
+      
+    def do_mail(self, subject, body) : 
+        sendlist = ['b.f.lundin@gmail.com', 'joakim@birgerson.com']
+        from_address = '"Nonobet Betbot" <betbot@nonobet.com>'
+        connection = ses.connect_to_region(
+            'us-east-1',
+            aws_access_key_id='AKIAJZDDS2DVUNB76S6A',
+            aws_secret_access_key='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'
+        )
+        connection.send_email(
+            from_address,
+            subject,
+            body,
+            sendlist
+        )
+        
+#        self.log.info('Send mail with daily saldo report')
+#
+#        self.log.info('sender ' + self.SENDER)
+#        self.log.info('password ' + self.PASSWORD)
+#        self.log.info('recipient ' + self.RECIPIENT)
+#
+#        subject = 'BetBot Saldo Report'
+#
+#        body = 'Dagens saldo-rapport '
+#        body += '\r\n saldo:     ' + str( self.avail_balance )
+#        body += '\r\n exposure:  ' + str( self.exposure )
+#        body += '\r\n timestamp: ' + str( datetime.datetime.now() )
+#        body = "" + body + ""
+#
+#        headers = ["From: " + self.SENDER,
+#                   "Subject: " + subject,
+#                   "To: " + self.RECIPIENT,
+#                   "MIME-Version: 1.0",
+#                   "Content-Type: text/html"]
+#        headers = "\r\n".join(headers)
+#
+#        session = smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT)
+#
+#        session.ehlo()
+#        session.starttls()
+#        session.ehlo
+#        session.login(self.SENDER, self.PASSWORD)
+#
+#        session.sendmail(self.SENDER, self.RECIPIENT, headers + "\r\n\r\n" + body)
+#        session.quit()
 
 ############################# end mail_saldo
 
