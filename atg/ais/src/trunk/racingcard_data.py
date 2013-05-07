@@ -25,71 +25,94 @@ def load_into_db(datadir=None):
         filename = util.get_filename_from_path(filepath)
         if filename not in loaded_files:
             LOG.info('Parsing ' + filename)
+            load_eod_file = False
             root = util.get_xml_object(filepath=filepath)
-            rc = db.Racingcard()
             data = root.Body.fetchRacingCardResponse.result
-            rc.date = util.strings_to_date(
+            race_date = util.strings_to_date(
                 year=data.date.year.text,
                 month=data.date.month.text, 
                 date=data.date.date.text
             )
-            rc.track_code = data.track.code.text
-            rc.bettype_code = data.betType.code.text
-            if not db.Racingcard.read(rc):
-                all_horses = []
-                all_drivers = []
-                data = root.Body.fetchRacingCardResponse.result.races
-                for race in data.getchildren():
-                    race_horses = []
-                    race_drivers = []
-                    for start in race.starts.getchildren():
-                        atg_id = int(start.horse.key.id.text)
-                        # Horses (only include horses with an atg id)
-                        if atg_id > 0:
-                            horse = db.Horse()
-                            horse.atg_id = atg_id
-                            horse.name = start.horse.key.name.text
-                            horse.name_and_nationality = \
-                                start.horse.horseNameAndNationality.text
-                            horse.seregnr = start.horse.key.seRegNr.text
-                            horse.uelnnr = start.horse.key.uelnNr.text
-                            if not db.Horse.read(horse):
-                                db.create(entity=horse)
-                            all_horses.append(horse)
-                            race_horses.append(horse)
-                        atg_id = int(start.driver.id.text)
-                        # Drivers (only include drivers with an atg id)
-                        if atg_id > 0:
-                            driver = db.Driver()
-                            driver.atg_id = atg_id
-                            driver.initials = start.driver.initials.text
-                            driver.name = start.driver.name.text
-                            driver.shortname = start.driver.shortName.text
-                            driver.sport = start.driver.sport.text
-                            driver.surname = start.driver.surName.text
-                            driver.swedish = \
-                                ast.literal_eval(start.driver.swedish.text.title())
-                            driver.amateur = \
-                                ast.literal_eval(start.driver.amateur.text.title())
-                            driver.driver_colour = start.driverColour.text
-                            if not db.Driver.read(driver):
-                                db.create(entity=driver)
-                            all_drivers.append(driver)
-                            race_drivers.append(driver)
-                    db.Race.update_horses_and_drivers(
-                        date=rc.date, 
-                        track=rc.track_code, 
-                        race_number=race.raceNr.text, 
-                        horses=race_horses,
-                        drivers=race_drivers
+            race_track_code = data.track.code.text
+            data = root.Body.fetchRacingCardResponse.result.races
+            for race in data.getchildren():
+                if race is not None:
+                    race_entity = db.Race.read(
+                        date=race_date, 
+                        track=race_track_code, 
+                        race_number=race.raceNr.text
                     )
-                rc.horses = all_horses
-                rc.drivers = all_drivers
-                db.create(entity=rc)
+                    if race_entity is not None:
+                        load_eod_file = True
+                        for start in race.starts.getchildren():
+                            start_nr = start.startNr.text
+                            # Horses (only include horses with an atg id)
+                            atg_id = int(start.horse.key.id.text)
+                            if atg_id > 0:
+                                horse = db.Horse.read(atg_id=atg_id)
+                                if  not horse:
+                                    horse = db.Horse()
+                                    horse.atg_id = atg_id
+                                    horse.name = start.horse.key.name.text
+                                    horse.name_and_nationality = \
+                                        start.horse.horseNameAndNationality.text
+                                    horse.seregnr = start.horse.key.seRegNr.text
+                                    horse.uelnnr = start.horse.key.uelnNr.text
+                                    db.create(entity=horse)
+                                    # If horse did not excist, 
+                                    # no need to look for existing association
+                                    rha = db.RaceHorseAssociation()
+                                    rha.horse = horse
+                                    rha.start_nr = start_nr
+                                    race_entity.horses.append(rha)
+                                    db.DB_SESSION.commit()
+                                
+                                else:
+                                    if not db.RaceHorseAssociation.read(race_id=race_entity.id, horse_id=horse.id):
+                                        rha = db.RaceHorseAssociation()
+                                        rha.horse = horse
+                                        rha.start_nr = start_nr
+                                        race_entity.horses.append(rha)
+                                        db.DB_SESSION.commit()
 
-            now = datetime.datetime.now()
-            loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.create(entity=loaded_file)
+                            # Drivers (only include drivers with an atg id)
+                            atg_id = int(start.driver.id.text)
+                            if atg_id > 0:
+                                driver = db.Driver.read(atg_id=atg_id)
+                                if  not driver:
+                                    driver = db.Driver()
+                                    driver.atg_id = atg_id
+                                    driver.initials = start.driver.initials.text
+                                    driver.name = start.driver.name.text
+                                    driver.shortname = start.driver.shortName.text
+                                    driver.sport = start.driver.sport.text
+                                    driver.surname = start.driver.surName.text
+                                    driver.swedish = \
+                                        ast.literal_eval(start.driver.swedish.text.title())
+                                    driver.amateur = \
+                                        ast.literal_eval(start.driver.amateur.text.title())
+                                    driver.driver_colour = start.driverColour.text
+                                    db.create(entity=driver)
+                                    # If driver did not excist, 
+                                    # no need to look for existing association
+                                    rda = db.RaceDriverAssociation()
+                                    rda.driver = driver
+                                    rda.start_nr = start_nr
+                                    race_entity.drivers.append(rda)
+                                    db.DB_SESSION.commit()
+                                
+                                else:
+                                    if not db.RaceDriverAssociation.read(race_id=race_entity.id, driver_id=horse.id):
+                                        rda = db.RaceDriverAssociation()
+                                        rda.driver = driver
+                                        rda.start_nr = start_nr
+                                        race_entity.drivers.append(rda)
+                                        db.DB_SESSION.commit()
+
+            if load_eod_file:
+                now = datetime.datetime.now()
+                loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
+                db.create(entity=loaded_file)
 
 def print_all_data(datadir=None):
     '''

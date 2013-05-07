@@ -8,7 +8,7 @@ from __future__ import print_function, unicode_literals
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy import Date, Time, Boolean, ForeignKey, Table, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relation
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import IntegrityError
 import util
 import conf
@@ -16,6 +16,8 @@ import logging
 
 LOG = logging.getLogger('AIS')
 BASE = declarative_base()
+# pylint: disable=E1101
+# pylint: disable=W0232
 
 def create(entity=None):
     '''
@@ -78,7 +80,7 @@ class Raceday(BASE):
     track_english_text = Column(String)
     track_id = Column(Integer)
     trot = Column(Boolean)
-    races = relation('Race')
+    races = relationship('Race')
     
     def __init__(self, racedayinfo=None):
         if racedayinfo:
@@ -168,22 +170,46 @@ RACE_BETTYPE_ASSOCIATION = \
         Column('bettype_id', Integer, ForeignKey('bettype.id'))
     )
 
-RACE_HORSE_ASSOCIATION = \
-    Table (
-        'race_horse', BASE.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('race_id', Integer, ForeignKey('race.id')),
-        Column('horse_id', Integer, ForeignKey('horse.id'))
-    )
+class RaceHorseAssociation(BASE):
+    __tablename__ = 'race_horse_startnumber'
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey('race.id'))
+    horse_id = Column(Integer, ForeignKey('horse.id'))
+    start_nr = Column(Integer)
+    horse = relationship("Horse")
 
-RACE_DRIVER_ASSOCIATION = \
-    Table (
-        'race_driver', BASE.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('race_id', Integer, ForeignKey('race.id')),
-        Column('driver_id', Integer, ForeignKey('driver.id'))
-    )
+    @staticmethod
+    def read(race_id=None, horse_id=None):
+        '''
+        Read RaceHorseAssociation based on parameters
+        '''
+        result = \
+            DB_SESSION.query(RaceHorseAssociation).filter_by(
+                race_id = race_id,
+                horse_id = horse_id
+            ).first()
+        return result
     
+class RaceDriverAssociation(BASE):
+    __tablename__ = 'race_driver_startnumber'
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey('race.id'))
+    driver_id = Column(Integer, ForeignKey('driver.id'))
+    start_nr = Column(Integer)
+    driver = relationship("Driver")
+
+    @staticmethod
+    def read(race_id=None, driver_id=None):
+        '''
+        Read RaceDriverAssociation based on parameters
+        '''
+        result = \
+            DB_SESSION.query(RaceDriverAssociation).filter_by(
+                race_id = race_id,
+                driver_id = driver_id
+            ).first()
+        return result
+
 class Race(BASE):
     '''
     Database entity Race
@@ -201,9 +227,9 @@ class Race(BASE):
     track_surface_code = Column(String)
     track_surface_domestic_text = Column(String)
     track_surface_english_text = Column(String)
-    bettypes = relation('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
-    horses = relation('Horse', secondary=RACE_HORSE_ASSOCIATION)
-    drivers = relation('Driver', secondary=RACE_DRIVER_ASSOCIATION)
+    bettypes = relationship('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
+    horses = relationship('RaceHorseAssociation')
+    drivers = relationship('RaceDriverAssociation')
 
     def __init__(self, race=None):
         if race:
@@ -231,6 +257,20 @@ class Race(BASE):
         part2 = "'%s', " * len(params)
         part3 = ")>"
         return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(date=None, track=None, race_number=None):
+        '''
+        Read race based on parameters
+        '''
+        race = \
+            DB_SESSION.query(Race).filter(
+                Race.raceday_id == Raceday.id,
+                Raceday.raceday_date == date,
+                Raceday.track_code == track,
+                Race.race_nr == race_number
+            ).first()
+        return race
 
     @staticmethod
     def update_horses_and_drivers(date=None, track=None, race_number=None, 
@@ -290,99 +330,25 @@ class Bettype(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
 
-RACINGCARD_HORSE_ASSOCIATION = \
-    Table (
-        'racingcard_horse', BASE.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('racingcard_id', Integer, ForeignKey('racingcard.id')),
-        Column('horse_id', Integer, ForeignKey('horse.id'))
-    )
-
-RACINGCARD_DRIVER_ASSOCIATION = \
-    Table (
-        'racingcard_driver', BASE.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('racingcard_id', Integer, ForeignKey('racingcard.id')),
-        Column('driver_id', Integer, ForeignKey('driver.id'))
-    )
-    
-class Racingcard(BASE):
-    '''
-    Database entity Racingcard
-    '''
-    __tablename__ = 'racingcard'
-    id = Column(Integer, primary_key=True)
-    date = Column(Date)
-    track_code = Column(String)
-    bettype_code = Column(String)
-    horses = relation('Horse', secondary=RACINGCARD_HORSE_ASSOCIATION)
-    drivers = relation('Driver', secondary=RACINGCARD_DRIVER_ASSOCIATION)
-    
-    def __init__(self, data=None):
-        if data:
-            self.date = data.date
-            self.track_code = data.track_code
-            self.bettype_code = data.bettype_code
-            self.horses = data.horses
-            
-    def __repr__(self):
-        params = (
-            self.id, 
-            self.date, 
-            self.track_code, 
-            self.bettype_code,
-            self.horses
-        ) 
-        part1 = "<Racingcard( "
-        part2 = "'%s', " * len(params)
-        part3 = ")>"
-        return (part1 + part2 + part3) % params
-    
-    @staticmethod
-    def read_all():
-        '''
-        List all entities in database
-        '''
-        return DB_SESSION.query(Racingcard).all()
-    
-    @staticmethod
-    def read(entity):
-        '''
-        Read an entity from database
-        '''
-        result = DB_SESSION.query(Racingcard).filter_by(
-            date = entity.date,
-            track_code = entity.track_code
-        ).first()
-        return result
-
 class Horse(BASE):
     '''
     Database entity Horse
     '''
     __tablename__ = 'horse'
     id = Column(Integer, primary_key=True)
-    atg_id = Column(Integer)
+    atg_id = Column(Integer, unique=True)
     name = Column(String)
     name_and_nationality = Column(String) 
     seregnr = Column(String)
     uelnnr = Column(String)
 
-    def __init__(self, data=None):
-        if data:
-            self.atg_id = data.atg_id
-            self.name = data.name
-            self.name_and_nationality = data.name_and_nationality
-            self.seregnr = data.seregnr
-            self.uelnnr = data.uelnnr
-        
     @staticmethod
-    def read(entity):
+    def read(atg_id=None):
         '''
         Read an entity in database
         '''
         result = DB_SESSION.query(Horse).filter_by(
-            name_and_nationality = entity.name_and_nationality
+            atg_id = atg_id
         ).first()
         return result
     
@@ -406,7 +372,7 @@ class Driver(BASE):
     '''
     __tablename__ = 'driver'
     id = Column(Integer, primary_key=True)
-    atg_id = Column(Integer)
+    atg_id = Column(Integer, unique=True)
     initials = Column(String)
     name = Column(String)
     shortname = Column(String)
@@ -416,16 +382,13 @@ class Driver(BASE):
     swedish = Column(Boolean)
     amateur = Column(Boolean)
 
-    def __init__(self):
-        pass
-            
     @staticmethod
-    def read(entity):
+    def read(atg_id=None):
         '''
         Read an entity in database
         '''
         result = DB_SESSION.query(Driver).filter_by(
-            atg_id = entity.atg_id
+            atg_id = atg_id
         ).first()
         return result
     
