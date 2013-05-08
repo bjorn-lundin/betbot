@@ -18,7 +18,7 @@ DBNAME := $(BOT_DATABASE_NAME)
 
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
-  HOST := 192.168.0.13
+  HOST := localhost
   SHOW_PNG := display
 endif
 
