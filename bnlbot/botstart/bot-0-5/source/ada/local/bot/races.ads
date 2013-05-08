@@ -14,7 +14,7 @@ package Races is
 
 --   type Bet_Name_Type is (Place, Winner);
    type Bet_Name_Type is ( Winner);
---     type Bet_Type_Type is (Lay, Back, Lay_Favorite);
+--   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Weekly, Quad_Weekly, Octa_Weekly);
@@ -22,16 +22,14 @@ package Races is
    type Variant_Type is (Normal,
                          Max_2,
                          Max_3,
-                         Max_8,
-                         Max_10,
-                         Max_20);
+                         Max_5,
+                         Max_10);
    for Variant_Type'Size use Integer_4'Size ;
    for Variant_Type use (Normal =>  0,
                          Max_2  =>  2,
                          Max_3  =>  3,
-                         Max_8  =>  8,
-                         Max_10 => 10,
-                         Max_20 => 20 );
+                         Max_5  =>  8,
+                         Max_10 => 10 );
    function Variant is new Unchecked_Conversion(Variant_Type, Integer_4);
    function Variant is new Unchecked_Conversion(Integer_4, Variant_Type);
 

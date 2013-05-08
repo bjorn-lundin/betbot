@@ -336,20 +336,19 @@ package body Races is
          return;
       end if;
 
-
       -- ok see if we can make a bet.
-      -- we will ALWAYS bet on the favorite will loose
+      -- we will ALWAYS bet on the favorite will loose - if odds >= 5.0
       -- we want the first runner in the list, since the list
       -- is sorted on back-price, lowest first.
       -- we are looking for the runner with LOWEST back-price.
       -- So get the last item in list
-
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       Found := not Eol;
       Log ("make_lay_favorite_bet - first runner: " & Table_Dryrunners.To_String (Runner));
       Log ("make_lay_favorite_bet  -min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
       if Found then
+        if Runner.Layprice >= 5.0 then
             -- runner found ! make bet
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
@@ -361,6 +360,12 @@ package body Races is
             --           self.saldo = self.saldo - (self.size * lay_odds) + self.size
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_lay_favorite_bet - Bet made on " & Table_Dryrunners.To_String (Runner));
+        else
+            -- no valid runner found !
+            Log ("make_lay_favorite_bet - No runner with backprice <= 5.0 found, no bet");
+            Bet_Laid := False;
+            return;
+        end if;
       else
          -- no runner found !
          Log ("make_lay_favorite_bet - No runner (at all) found, no bet");
@@ -449,7 +454,7 @@ package body Races is
       end if;
 
       case Bet_Type is
---           when Lay | Lay_Favorite =>
+--         when Lay | Lay_Favorite =>
          when Lay =>
             Bet_Won := True;
             -- we win if selection not in winners

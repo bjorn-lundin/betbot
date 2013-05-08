@@ -15,7 +15,24 @@
 #2013-04-09 2013-04-10 2013-04-11 2013-04-12 2013-04-13 2013-04-14 2013-04-15 \
 #2013-04-16 2013-04-17 2013-04-18 2013-04-19 2013-04-20 2013-04-21 2013-04-22 \
 #2013-04-23 2013-04-24 2013-04-25 2013-04-26 2013-04-27 2013-04-28 2013-04-28 \
-#2013-04-29 2013-04-30 2013-05-01 2013-05-02"
+#2013-04-29 2013-04-30 2013-05-01 2013-05-02 2013-05-03 2013-05-04 2013-05-05"
+
+
+start_date=2013-01-30
+stop_date=$(date +%Y-%m-%d)
+date_list=""
+this_date=$start_date
+i=0
+while true ; do
+    this_date=$(date --date="$start_date +$i day" +"%Y-%m-%d")
+#    echo $this_date
+    if [ "$this_date" == "$stop_date" ] ;then
+      break
+    fi
+    date_list="$date_list $this_date"
+    i=$(expr $i + 1)
+done
+#echo $date_list
 
 
 yesterday=$(date +%Y-%m-%d -d "-1 day")
@@ -26,7 +43,7 @@ graph_type_list="weekly quadweekly octaweekly"
 animal_names="winner"
 animals="horse hound"
 
-date_list=$yesterday
+#date_list=$yesterday
 
 #back/lay, , normal,max_3,max_4,max_5 in simulator
 #loop here on date, daily/weekly/biweekly/quadweekly, winner/place, horses/hound
