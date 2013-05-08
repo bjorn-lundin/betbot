@@ -432,10 +432,11 @@ class BetBot(object):
             self.HAS_LOST_LAY_BET_TODAY = False
 
         self.log.info( 'LAY-bet: ' + self.BET_CATEGORY + ' has lost today: ' + str(self.HAS_LOST_LAY_BET_TODAY )  )
+        profit = self.profit_today()
+        self.log.info( 'profit today = ' + str(profit))
 
         if self.HAS_LOST_LAY_BET_TODAY  :
-            profit = self.profit_today()
-            self.log.warning( 'profit today = ' + str(profit))
+            self.log.warning( 'HAS LOST TODAY - profit today = ' + str(profit))
 
             if profit > 0.0 :
                 self.log.warning( 'bet_type: ' + self.BET_CATEGORY + ' positive profit now. ' + \
