@@ -434,7 +434,8 @@ class BetBot(object):
         self.log.info( 'LAY-bet: ' + self.BET_CATEGORY + ' has lost today: ' + str(self.HAS_LOST_LAY_BET_TODAY )  )
         profit = self.profit_today()
         self.log.info( 'profit today = ' + str(profit))
-
+        self.log.info( 'MAX_DAILY_PROFIT = ' + str(self.MAX_DAILY_PROFIT) + ' MAX_DAILY_LOSS = ' + str(self.MAX_DAILY_LOSS))
+        
         if self.HAS_LOST_LAY_BET_TODAY  :
             self.log.warning( 'HAS LOST TODAY - profit today = ' + str(profit))
 
