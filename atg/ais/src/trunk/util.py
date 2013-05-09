@@ -246,22 +246,21 @@ def struct_to_time(time_struct):
                          time_struct.tenth * 100000)
     return time
 
-def struct_to_datetime(datetime_struct):
+def params_to_datetime(year=None, month=None, day=None, hour=None, 
+                       minute=None, second=None, tenth=None):
     '''
-    Converts string parts to a datetime object
+    Converts parameters to a datetime object
     '''
-    date_str = str(datetime_struct.date.year) \
-        + '-' + str(datetime_struct.date.month) \
-        + '-' + str(datetime_struct.date.date)
-    date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-    
-    time = datetime.time(
-        datetime_struct.time.hour,
-        datetime_struct.time.minute,
-        datetime_struct.time.second
+    result = datetime.datetime(
+        year = year,
+        month = month,
+        day = day,
+        hour = hour,
+        minute = minute,
+        second = second,
+        microsecond = tenth * 10000 
     )
-    _datetime = datetime.datetime.combine(date, time)
-    return _datetime
+    return result
 
 def date_to_string(date_time):
     '''
