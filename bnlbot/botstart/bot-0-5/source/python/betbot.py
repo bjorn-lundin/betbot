@@ -90,7 +90,7 @@ class BetBot(object):
 #        self.conn = db.conn
         self.log = log
         self.HOMEDIR = homedir
-
+        print 'homedir: ', homedir 
 ############################# end __init__
     def reconnect(self):
         db = Db()
