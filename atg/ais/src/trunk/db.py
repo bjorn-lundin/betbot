@@ -288,7 +288,7 @@ class Race(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def read(date=None, track_code=None, race_number=None):
+    def read_trackcode(date=None, race_number=None, track_code=None):
         '''
         Read race based on parameters
         '''
@@ -299,6 +299,21 @@ class Race(BASE):
                 Raceday.raceday_date == date,
                 Raceday.track_id == Track.id,
                 Track.code == track_code
+            ).first()
+        return race
+
+    @staticmethod
+    def read_atgid(date=None, race_number=None, track_atg_id=None):
+        '''
+        Read race based on parameters
+        '''
+        race = \
+            DB_SESSION.query(Race).filter(
+                Race.raceday_id == Raceday.id,
+                Race.race_nr == race_number,
+                Raceday.raceday_date == date,
+                Raceday.track_id == Track.id,
+                Track.atg_id == track_atg_id
             ).first()
         return race
 
@@ -420,6 +435,56 @@ class Driver(BASE):
         part2 = "'%s', " * len(params)
         part3 = ")>"
         return (part1 + part2 + part3) % params
+
+class VPPoolInfo(BASE):
+    '''
+    Database entity VPPoolInfo
+    
+    Skipping turnover_sum (turnover.sum) and 
+    turnover_currency (turnover.currency) 
+    since they seem empty all the time
+    '''
+    __tablename__ = 'vppoolinfo'
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime)
+    pool_closed = Column(Boolean)
+    sale_open = Column(Boolean)
+    number_of_horses = Column(Integer)
+    turnover_win_sum = Column(Integer)
+    turnover_win_currency = Column(String)
+    turnover_place_sum = Column(Integer)
+    turnover_place_currency = Column(String)
+    race_id = Column(Integer, ForeignKey('race.id'))
+    race = relationship('Race')
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.timestamp,
+            self.pool_closed,
+            self.sale_open,
+            self.number_of_horses,
+            self.turnover_win_sum,
+            self.turnover_win_currency,
+            self.turnover_place_sum,
+            self.turnover_place_currency,
+            self.race_id,
+        ) 
+        part1 = "<VPPoolInfo( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(race_id=None, timestamp=None):
+        '''
+        Read an entity in database
+        '''
+        result = DB_SESSION.query(VPPoolInfo).filter_by(
+            race_id = race_id,
+            timestamp = timestamp
+        ).first()
+        return result
 
 ENGINE = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level

@@ -33,14 +33,14 @@ def load_into_db(datadir=None):
                 month=data.date.month.text, 
                 date=data.date.date.text
             )
-            race_track_code = data.track.code.text
+            track_code = data.track.code.text
             data = root.Body.fetchRacingCardResponse.result.races
             for race in data.getchildren():
                 if race is not None:
-                    race_entity = db.Race.read(
+                    race_entity = db.Race.read_trackcode(
                         date=race_date, 
-                        track_code=race_track_code, 
-                        race_number=race.raceNr.text
+                        race_number=race.raceNr.text,
+                        track_code=track_code
                     )
                     if race_entity is not None:
                         load_eod_file = True
