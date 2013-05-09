@@ -75,11 +75,9 @@ class Raceday(BASE):
     meetingtype_english_text = Column(String)
     racecard_available = Column(Boolean)
     raceday_date = Column(Date)
-    track_code = Column(String)
-    track_domestic_text = Column(String)
-    track_english_text = Column(String)
-    track_id = Column(Integer)
     trot = Column(Boolean)
+    track_id = Column(Integer, ForeignKey('track.id'))
+    track = relationship("Track")
     races = relationship('Race')
     
     def __init__(self, racedayinfo=None):
@@ -110,10 +108,6 @@ class Raceday(BASE):
                 month=racedayinfo.raceDayDate.month,
                 date=racedayinfo.raceDayDate.date
             )
-            self.track_code = racedayinfo.track.code
-            self.track_domestic_text = racedayinfo.track.domesticText
-            self.track_english_text = racedayinfo.track.englishText
-            self.track_id = racedayinfo.trackKey.trackId
             self.trot = racedayinfo.trot
 
     def __repr__(self):
@@ -160,6 +154,41 @@ class Raceday(BASE):
             track_id = entity.track_id,
             raceday_date = entity.raceday_date
         ).first()
+        return result
+
+class Track(BASE):
+    '''
+    Database entity Track
+    '''
+    __tablename__ = 'track'
+    id = Column(Integer, primary_key=True)
+    atg_id = Column(Integer)
+    code = Column(String)
+    domestic_text = Column(String)
+    english_text = Column(String)
+
+    def __repr__(self):
+        params = (
+            self.id,
+            self.atg_id,
+            self.code,
+            self.domestic_text,
+            self.english_text
+        ) 
+        part1 = "<Track( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(atg_id=None):
+        '''
+        Read Track based on parameters
+        '''
+        result = \
+            DB_SESSION.query(Track).filter_by(
+                atg_id = atg_id
+            ).first()
         return result
 
 RACE_BETTYPE_ASSOCIATION = \
@@ -259,37 +288,19 @@ class Race(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def read(date=None, track=None, race_number=None):
+    def read(date=None, track_code=None, race_number=None):
         '''
         Read race based on parameters
         '''
         race = \
             DB_SESSION.query(Race).filter(
                 Race.raceday_id == Raceday.id,
+                Race.race_nr == race_number,
                 Raceday.raceday_date == date,
-                Raceday.track_code == track,
-                Race.race_nr == race_number
+                Raceday.track_id == Track.id,
+                Track.code == track_code
             ).first()
         return race
-
-    @staticmethod
-    def update_horses_and_drivers(date=None, track=None, race_number=None, 
-                                  horses=None, drivers=None):
-        '''
-        Update race with starting horses/drivers
-        according to racingcard data
-        '''
-        race = \
-            DB_SESSION.query(Race).filter(
-                Race.raceday_id == Raceday.id,
-                Raceday.raceday_date == date,
-                Raceday.track_code == track,
-                Race.race_nr == race_number
-            ).first()
-        if race is not None:
-            race.horses = horses
-            race.drivers = drivers
-            DB_SESSION.commit()
 
 class Bettype(BASE):
     '''

@@ -198,8 +198,19 @@ def raceday_calendar_service(params=None, date=None, ret_if_local=False):
                     races.append(race)
                 # Append races
                 raceday.races = races
+                # Create track if not present, add to raceday
+                atg_id = racedayinfo.trackKey.trackId
+                track = db.Track.read(atg_id=atg_id)
+                if track is None:
+                    track = db.Track()
+                    track.atg_id = atg_id
+                    track.code = racedayinfo.track.code
+                    track.domestic_text = racedayinfo.track.domesticText
+                    track.english_text = racedayinfo.track.englishText
+                    db.create(entity=track)
+                raceday.track = track
                 db.create(entity=raceday)
-
+                
 def racing_card_service(params=None, date=None, 
                         track=None, ret_if_local=False):
     '''
@@ -316,7 +327,8 @@ def load_eod_vppoolinfo_into_db(datadir=None):
     vppoolinfo files and save the data into database.
     '''
     import vppoolinfo_data
-    vppoolinfo_data.print_all_data(datadir=datadir)
+#    vppoolinfo_data.print_all_data(datadir=datadir)
+    vppoolinfo_data.load_into_db(datadir=datadir)
 
 def eod_download_via_calendar(params=None):
     '''

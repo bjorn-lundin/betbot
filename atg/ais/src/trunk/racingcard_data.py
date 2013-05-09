@@ -39,7 +39,7 @@ def load_into_db(datadir=None):
                 if race is not None:
                     race_entity = db.Race.read(
                         date=race_date, 
-                        track=race_track_code, 
+                        track_code=race_track_code, 
                         race_number=race.raceNr.text
                     )
                     if race_entity is not None:
