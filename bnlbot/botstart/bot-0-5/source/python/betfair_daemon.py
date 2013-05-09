@@ -40,7 +40,7 @@ class BetfairDaemon(object) :
 #                print 'start', name
                 already_running = False
                 for proc in self.process_list :
-                    if proc[1] == name :
+                    if proc[3] == bet_name :
                         already_running = True
 
  #               print 'already_running', name, already_running
