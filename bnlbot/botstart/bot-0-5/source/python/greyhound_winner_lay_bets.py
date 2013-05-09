@@ -2,14 +2,14 @@
 """put bet on games with low odds"""
 from betbot import BetBot, SessionError, TooCloseToLossError, RecoveredFromLossError
 from time import sleep
-import urllib2
-import ssl
-import socket
+#import urllib2
+#import ssl
+#import socket
 import logging.handlers
-import httplib2
+#import httplib2
 import os
 from optparse import OptionParser
-
+import sys
 
 class GreyHoundWinnerLayBetBot(BetBot):
     """put bet on games with low odds"""
