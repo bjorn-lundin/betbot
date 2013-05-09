@@ -1,23 +1,21 @@
 # -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
+
 from betbot import BetBot, SessionError, TooCloseToLossError, RecoveredFromLossError
 from time import sleep
-import urllib2
-import ssl
-import socket
 import logging.handlers
-import httplib2
 import os
+import sys
 from optparse import OptionParser
 
 
-class GreyHoundWinnerLayBetBot(BetBot):
+class HorsesWinnerBackBetBot(BetBot):
     """put bet on games with low odds"""
 
-    def __init__(self, log, homedir):
-        super(GreyHoundWinnerLayBetBot, self).__init__(log, homedir)
-############################# end __init__
+    def __init__(self, log):
+        super(HorsesWinnerBackBetBot, self).__init__(log)
 
+############################# end __init__
 
     def check_strategy(self, market_id ):
         """check market for suitable bet"""
@@ -59,45 +57,39 @@ class GreyHoundWinnerLayBetBot(BetBot):
                     tmp_tuple = (tmp_bp, tmp_lp, sel_id, idx)
                     race_list.append(tmp_tuple)
 
-                sorted_list = sorted(race_list, reverse=True)
-                i = 0
+                sorted_list = sorted(race_list, reverse=False)
 
                 selection = None
                 lay_odds = None
                 back_odds = None
                 name = None
                 index = None
-
-                #it MUST be the one with highest odds
-                number_of_runners = len(sorted_list)
-                turns = 1
-                for list_item in sorted_list :
-                    i = i + 1
-                    lay_odds  = float(list_item[1])
-
+                for dct in sorted_list :
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
-                            str(list_item)                      )
-                    if (self.MIN_ODDS <= lay_odds and
-                        lay_odds <= self.MAX_ODDS and
-                        number_of_runners == 6 and  # GBR num of hounds
-                        i == turns
-                        ) :
-
-                        back_odds = float(list_item[0])
-                        index     = int(list_item[3])
-                        selection = int(list_item[2])
+                            str(dct[0]) + '/' + \
+                            str(dct[1]) + '/' + \
+                            str(dct[2]) + '/' + \
+                            str(dct[3])                         )
+                            #pick the first horse with reasonable odds
+                    if ( self.PRICE - self.DELTA <= float(dct[0]) and
+                         float(dct[0]) <= self.PRICE + self.DELTA ):
 
                         self.log.info( 'will bet on ' + \
-                            str(back_odds) + '/' + \
-                            str(lay_odds) + '/' + \
-                            str(selection) + '/' + \
-                            str(index)                         )
-                        break
+                            str(dct[0]) + '/' + \
+                            str(dct[1]) + '/' + \
+                            str(dct[2]) + '/' + \
+                            str(dct[3])                         )
+                        selection = dct[2]
+                        lay_odds  = dct[1]
+                        back_odds = dct[0]
+                        index     = dct[3]
+                    break
 
 
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
                     return
+
 
                 # get the name
                 if selection :
@@ -122,8 +114,11 @@ class GreyHoundWinnerLayBetBot(BetBot):
                 self.log.info( 'name      : ' + str(name))
                 self.log.info( 'index     : ' + str(index))
 
-                #place the bet
-                self.place_bet(market_id, selection, lay_odds, name)
+                if back_odds and selection:
+                    self.place_bet(market_id, selection, back_odds, name)
+                else:
+                    self.log.info('bad odds or time in game -> no bet on market ' +
+                        str(market_id))
 
             elif prices == 'API_ERROR: NO_SESSION':
                 self.no_session = True
@@ -167,32 +162,40 @@ log.info('Starting application')
 #make print flush now!
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-bot = GreyHoundWinnerLayBetBot(log, homedir)
+
+bot = HorsesWinnerBackBetBot(log, homedir)
 bot.initialize(options.bet_name.upper())
+
 
 
 while True:
     try:
         bot.start()
     except TooCloseToLossError as e :
-        log.error( 'Too close in time to last loss.  Retry in ' + \
+        alog.error( 'Too close in time to last loss.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        log.error(e.args)
+        alog.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except RecoveredFromLossError as e :
-        log.info( 'won enough - waiting for tomorrow ' + \
+        alog.info( 'won enough - waiting for tomorrow ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        log.info(e.args)
+        alog.info(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
-    except SessionError as e:
-        log.error( 'Lost session.  Retry in ' + \
+    except SessionError:
+        alog.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
+
+#    except psycopg2.DatabaseError :
+#        alog.error( 'Lost db contact . Retry in ' + \
+#          str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
+#        sleep (bot.NETWORK_FAILURE_DELAY)
+#        bot.reconnect()
 
     except KeyboardInterrupt :
         break
 
-log.info('Ending application')
+alog.info('Ending application')
 logging.shutdown()
