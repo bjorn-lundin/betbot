@@ -12,8 +12,8 @@ from optparse import OptionParser
 class HorsesWinnerBackBetBot(BetBot):
     """put bet on games with low odds"""
 
-    def __init__(self, log):
-        super(HorsesWinnerBackBetBot, self).__init__(log)
+    def __init__(self, log, homedir):
+        super(HorsesWinnerBackBetBot, self).__init__(log, homedir)
 
 ############################# end __init__
 
