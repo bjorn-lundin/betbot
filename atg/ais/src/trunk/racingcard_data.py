@@ -123,21 +123,24 @@ def print_all_data(datadir=None):
     '''
     filelist = sorted(util.list_files_with_path(datadir))
     racingcard_filelist = [f for f in filelist if 'fetchRacingCard' in f]
-
     for filepath in racingcard_filelist:
+        filename = util.get_filename_from_path(filepath)
         LOG.debug('Parsing ' + util.get_filename_from_path(filepath))
+        
+        # Convenience flag when developing
+        if False:
+            xml = util.clean_xml_namespaces(filepath)
+            util.write_file(data=xml, filepath=filename, encoding='utf-8')
+        
         root = util.get_xml_object(filepath)
-
         date_data = root.Body.fetchRacingCardResponse.result.date
         print(date_data.year.text)
         print(date_data.month.text)
         print(date_data.date.text)
-        
         bettype_data = root.Body.fetchRacingCardResponse.result.betType
         print(bettype_data.code.text)
         print(bettype_data.domesticText.text)
         print(bettype_data.englishText.text)
-        
         timestamp_data = root.Body.fetchRacingCardResponse.result.timestamp
         print(timestamp_data.date.year.text)
         print(timestamp_data.date.month.text)
