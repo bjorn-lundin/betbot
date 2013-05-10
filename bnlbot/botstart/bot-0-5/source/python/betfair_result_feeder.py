@@ -7,6 +7,7 @@ import os
 import sys
 import logging.handlers
 import ConfigParser
+import urllib2
 from optparse import OptionParser
 
 #  <market id="107893032" displayName="USA / Aque (US) 9th Jan - 17:30 TO BE PLACED">
