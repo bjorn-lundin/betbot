@@ -4,18 +4,9 @@ from betfair.api import API
 from time import sleep, time
 import datetime
 import psycopg2
-#import urllib2
-#import ssl
 import os
-#import sys
-#from game import Game
 from market import Market
 from funding import Funding
-#from db import Db
-#import socket
-#import logging.handlers
-#from operator import itemgetter, attrgetter
-#import httplib2
 import ConfigParser
 import re
 
@@ -86,11 +77,9 @@ class BetBot(object):
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-#        db = Db()
-#        self.conn = db.conn
         self.log = log
         self.HOMEDIR = homedir
-        print 'homedir: ', homedir 
+        print 'homedir: ', homedir
 ############################# end __init__
     def reconnect(self):
         db = Db()
@@ -145,12 +134,6 @@ class BetBot(object):
             self.log.info( 'Did not insert bet' )
         cur.close()
 ############################# end insert_bet
-
-
-#    def get_markets(self):
-#        self.log.debug( 'get_markets from BetBot!!!')
-#        raise OverrideError('BetBot.get_market MUST be overrridden!!!')
-############################# end get_markets
 
     def do_throttle(self):
         """return only when it is safe to send another data request"""
@@ -435,7 +418,7 @@ class BetBot(object):
         profit = self.profit_today()
         self.log.info( 'profit today = ' + str(profit))
         self.log.info( 'MAX_DAILY_PROFIT = ' + str(self.MAX_DAILY_PROFIT) + ' MAX_DAILY_LOSS = ' + str(self.MAX_DAILY_LOSS))
-        
+
         if self.HAS_LOST_LAY_BET_TODAY  :
             self.log.warning( 'HAS LOST TODAY - profit today = ' + str(profit))
 
