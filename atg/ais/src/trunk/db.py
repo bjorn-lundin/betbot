@@ -127,11 +127,8 @@ class Raceday(BASE):
             self.meetingtype_english_text, 
             self.racecard_available, 
             self.raceday_date, 
-            self.track_code, 
-            self.track_domestic_text, 
-            self.track_english_text, 
-            self.track_id, 
-            self.trot
+            self.trot,
+            self.track_id 
         ) 
         part1 = "<Raceday( "
         part2 = "'%s', " * len(params)
@@ -181,14 +178,21 @@ class Track(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def read(atg_id=None):
+    def read(pk_id=None, atg_id=None):
         '''
-        Read Track based on parameters
+        Read Track based on parameters pk_id OR atg_id
         '''
-        result = \
-            DB_SESSION.query(Track).filter_by(
-                atg_id = atg_id
-            ).first()
+        result = None
+        if pk_id is not None:
+            result = \
+                DB_SESSION.query(Track).filter_by(
+                    id = pk_id
+                ).first()
+        elif atg_id is not None:
+            result = \
+                DB_SESSION.query(Track).filter_by(
+                    atg_id = atg_id
+                ).first()
         return result
 
 RACE_BETTYPE_ASSOCIATION = \
