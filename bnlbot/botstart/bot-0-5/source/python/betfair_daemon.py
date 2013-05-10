@@ -6,6 +6,7 @@ import subprocess
 import ConfigParser
 from time import sleep, time
 import datetime
+from optparse import OptionParser
 
 class BetfairDaemon(object) :
 
@@ -135,6 +136,12 @@ sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
 rundir  = os.path.join(os.environ['BOT_START'], 'user', os.environ['BOT_USER'])
 runfile = os.path.join(rundir, 'stop_daemon.dat')
+
+parser = OptionParser()
+parser.add_option("-u", "--user",  dest="user",  action="store", \
+                  type="string", help="user")
+(options, args) = parser.parse_args()
+
 
 #kill file at startup, honor it when running
 if os.path.isfile(runfile):

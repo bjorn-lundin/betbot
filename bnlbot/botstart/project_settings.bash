@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 function do_stop {
   clear && echo "will stop system at $BOT_USER_HOME" && touch $BOT_USER_HOME/stop_daemon.dat && rm -f $BOT_USER_HOME/start_daemon.dat
   sleep 4
@@ -9,7 +11,7 @@ function do_start {
   echo "Will start system"
   OLD_PWD=$(pwd)
   cd $BOT_USER_HOME
-  nohup python $BOT_SOURCE/python/betfair_daemon.py &
+  nohup python $BOT_SOURCE/python/betfair_daemon.py --user=$BOT_USER &
   touch $BOT_USER_HOME/start_daemon.dat
   cd $OLD_PWD
 }
@@ -27,16 +29,13 @@ case $retval in
         CHOICE=$(cat $CHOICE_FILE)  ;# Get the choice from file
         case $CHOICE in
             quit   ) clear && return;;
-            *      )  clear;;
+            *      ) clear && . $BOT_START/bot.bash -u$CHOICE -ano_action
         esac 
     ;;
 esac
  
-#rm -f $CHOICE_FILE
-
-export BOT_START=/home/bnl/bnlbot/botstart
+rm -f $CHOICE_FILE
 #now set the enviroment from inifiles
-. $BOT_START/bot.bash -u$CHOICE -ano_action
 
 
 export BOT_USER_HOME=$BOT_START/user/$BOT_USER
