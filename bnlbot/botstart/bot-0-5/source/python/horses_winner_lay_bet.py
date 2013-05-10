@@ -2,15 +2,11 @@
 """put bet on games with low odds"""
 from betbot import BetBot, SessionError, TooCloseToLossError, RecoveredFromLossError
 from time import sleep
-import urllib2
-import ssl
-import socket
 import logging.handlers
-import httplib2
 #from market import Market
 from optparse import OptionParser
 import os
-
+import sys
 
 class HorsesWinnerLayBetBot(BetBot):
     """put bet on games with low odds"""
@@ -159,7 +155,8 @@ parser = OptionParser()
 
 parser.add_option("-t", "--bet_name",  dest="bet_name",  action="store", \
                   type="string", help="bet name")
-
+parser.add_option("-t", "--user",  dest="user",  action="store", \
+                  type="string", help="user")
 (options, args) = parser.parse_args()
 
 log = logging.getLogger(__name__)
@@ -183,7 +180,7 @@ log.addHandler(FH)
 log.info('Starting application')
 
 #make print flush now!
-#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 
 
