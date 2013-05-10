@@ -366,7 +366,8 @@ def eod_download_via_calendar(params=None):
     
     for raceday in racedays:
         date = raceday.raceday_date
-        track = raceday.track_id
+        track = db.Track.read(pk_id=raceday.track_id)
+        track_id = track.atg_id
         raceday_date = datetime.date(date.year, date.month, date.day)
         
         # Upcomming raceday
@@ -387,22 +388,22 @@ def eod_download_via_calendar(params=None):
             
             # Some racedays don't have the data they should. Check if
             # this raceday is stated in exclude list
-            if track in raceday_exclude and \
-                    str(raceday_date) == raceday_exclude[track]:
-                LOG.info('Raceday exclude date={date}, track={track}'
-                 .format(track=track, date=raceday_date))
+            if track_id in raceday_exclude and \
+                    str(raceday_date) == raceday_exclude[track_id]:
+                LOG.info('Raceday exclude date={date}, track={track_id}'
+                 .format(track_id=track_id, date=raceday_date))
                 continue
         
             racing_card_service(
                 params=params, 
                 date=date, 
-                track=track,
+                track=track_id,
             )
             
             track_bet_info_service(
                 params=params, 
                 date=date, 
-                track=track,
+                track=track_id,
             )
 
             for race in raceday.races:
@@ -412,12 +413,12 @@ def eod_download_via_calendar(params=None):
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track=track, 
+                        track=track_id, 
                     )
                     
                     result_service(
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track=track,
+                        track=track_id,
                     )
