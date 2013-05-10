@@ -39,7 +39,7 @@ rm -f $CHOICE_FILE
 
 
 export BOT_USER_HOME=$BOT_START/user/$BOT_USER
-
+cd $BOT_USER_HOME
 
 dialog --menu "Start/stop system for user $CHOICE" 15 65 8 \
        quit    "Quit"  \
