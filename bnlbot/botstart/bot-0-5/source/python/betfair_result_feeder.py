@@ -2,16 +2,12 @@
 from time import sleep, time
 import datetime
 import psycopg2
-import urllib2
-import httplib2
-import ssl
 import xml.etree.ElementTree as etree
 import os
 import sys
-import socket
-#from db import Db
 import logging.handlers
 import ConfigParser
+from optparse import OptionParser
 
 #  <market id="107893032" displayName="USA / Aque (US) 9th Jan - 17:30 TO BE PLACED">
 #    <name>TO BE PLACED</name>
@@ -233,8 +229,6 @@ class Result_Feeder(object):
         rps = 1/4.0 # Refreshes Per Second
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-#        db = Db()
-#        self.conn = db.conn
         self.log = log
 
 
@@ -326,6 +320,10 @@ class Result_Feeder(object):
 
 ######## main ###########
 
+parser = OptionParser()
+parser.add_option("-t", "--user",  dest="user",  action="store", \
+                  type="string", help="user")
+(options, args) = parser.parse_args()
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -354,7 +352,7 @@ log.info('Starting application')
 
 
 #make print flush now!
-#sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
 login = ConfigParser.ConfigParser()
 login.read(os.path.join(homedir, 'login.ini'))
@@ -379,27 +377,6 @@ while True:
         bot.start()
         log.info( 'sleep between turns ' + str(bot.DELAY_BETWEEN_TURNS) + 'seconds')
         sleep (bot.DELAY_BETWEEN_TURNS)
-
-    except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except httplib2.ServerNotFoundError :
-        log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-#    except psycopg2.DatabaseError :
-#        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-#        sleep (bot.NETWORK_FAILURE_DELAY)
-#        bot.reconnect()
-
     except KeyboardInterrupt :
         break
 

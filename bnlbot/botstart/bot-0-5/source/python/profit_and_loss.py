@@ -3,20 +3,16 @@
 from betfair.api import API
 from time import sleep, time
 import datetime
-import psycopg2
-import urllib2
-import ssl
 import os
 import sys
+import psycopg2
 from game import Game
 from market import Market
 from funding import Funding
-#from db import Db
-import socket
 import logging.handlers
 from operator import itemgetter, attrgetter
-import httplib2
 import ConfigParser
+from optparse import OptionParser
 
 class SimpleBot(object):
     """put bet on games with low odds"""
@@ -185,6 +181,12 @@ class SimpleBot(object):
 ############################# end start
 
 ######## main ###########
+
+parser = OptionParser()
+parser.add_option("-t", "--user",  dest="user",  action="store", \
+                  type="string", help="user")
+(options, args) = parser.parse_args()
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -240,26 +242,6 @@ bot.conn.set_client_encoding('latin1')
 while True:
     try:
         bot.start(bfusername, bfpassword, bfproduct_id, bfvendor_id)
-    except urllib2.URLError :
-        log.error( 'Lost network ? . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except ssl.SSLError :
-        log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except socket.error as ex:
-        log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-
-    except httplib2.ServerNotFoundError :
-        log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        sleep (bot.NETWORK_FAILURE_DELAY)
-#    except psycopg2.DatabaseError :
-#        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-#        sleep (bot.NETWORK_FAILURE_DELAY)
-#        bot.reconnect()
-
     except KeyboardInterrupt :
         break
 

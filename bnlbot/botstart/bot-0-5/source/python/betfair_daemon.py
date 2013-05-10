@@ -51,6 +51,7 @@ class BetfairDaemon(object) :
                     #testa pa platform har, mac = /opt/local/bin/python
                     args.append('/usr/bin/python')
                     args.append(os.path.join(startdir,name))
+                    args.append('--user=' + os.environ['BOT_USER'])
                     if the_type == 'bot' :
                         args.append('--bet_name=' + bet_name)
                     my_process = subprocess.Popen(args)
@@ -60,7 +61,7 @@ class BetfairDaemon(object) :
 
     ##############################################
 
-    def check_is_active(self, proc) :
+    def is_active(self, proc) :
         tmp_tuple = None
         bet_name = None
         section = None
@@ -102,7 +103,7 @@ class BetfairDaemon(object) :
 #            print proc_tuple
             proc = proc_tuple[0]
             if self.process_is_alive(proc) :
-                if not self.check_is_active(proc):
+                if not self.is_active(proc):
                     proc.terminate()
                     print str(datetime.datetime.now()), 'will remove', proc
                     list_of_procs_to_remove.append(proc)
