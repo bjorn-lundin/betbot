@@ -444,8 +444,8 @@ package body Races is
                            Profit            : in out Profit_Type;
                            Last_Loss         : in out Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
+                           Bet_Won           : in out Boolean ;
                            Bet_Type          : in Bet_Type_Type ) is
-      Bet_Won     : Boolean := False;
       Winner      : Table_Dryresults.Data_Type;
       Eol         : Boolean := False;
       Race_Profit : Profit_Type := 0.0;

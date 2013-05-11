@@ -131,6 +131,7 @@ package Races is
                            Profit            : in out Profit_Type;
                            Last_Loss         : in out Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
+                           Bet_Won           : in out Boolean ;
                            Bet_Type          : in Bet_Type_Type ) ;
 
 
