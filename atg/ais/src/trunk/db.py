@@ -490,6 +490,36 @@ class VPPoolInfo(BASE):
         ).first()
         return result
 
+class Vpodds(BASE):
+    __tablename__ = 'vpodds'
+    id = Column(Integer, primary_key=True)
+    invest_place_sum = Column(Integer)
+    invest_place_currency = Column(String)
+    invest_win_sum = Column(Integer)
+    invest_win_currency = Column(String)
+    place_max_odds = Column(Integer)
+    place_max_scratched = Column(Boolean)
+    place_min_odds = Column(Integer)
+    place_min_scratched = Column(Boolean)
+    scratched = Column(Boolean)
+    start_nr = Column(Integer)
+    win_odds = Column(Integer)
+    win_scratched = Column(Boolean)
+    race_id = Column(Integer, ForeignKey('race.id'))
+    race = relationship('Race')
+    
+    @staticmethod
+    def read(race_id=None, start_nr=None):
+        '''
+        Read Vpodds based on parameters
+        '''
+        result = \
+            DB_SESSION.query(Vpodds).filter_by(
+                race_id = race_id,
+                start_nr = start_nr
+            ).first()
+        return result
+
 ENGINE = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level
 # for global knowledge of connections, pool etc:
