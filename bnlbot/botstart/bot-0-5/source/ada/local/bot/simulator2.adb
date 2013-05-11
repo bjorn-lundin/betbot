@@ -12,7 +12,7 @@ with Sattmate_Exception;
 with General_Routines;       use General_Routines;
 
 
-procedure Simulator is
+procedure Simulator2 is
 --  Not_Implemented,
    Bad_Animal,
    --   Bad_Bet_Type,
@@ -37,7 +37,6 @@ procedure Simulator is
    Global_Animal     : Races.Animal_Type;
    Global_Bet_Name   : Races.Bet_Name_Type;
    Global_Graph_Type : Races.Graph_Type;
-   Global_Bet_Won                : Boolean := False;
 
    Global_Profit            : Races.Profit_Type            := 0.0;
    Global_Saldo,
@@ -47,6 +46,10 @@ procedure Simulator is
    Global_Bet_Laid          : Boolean                      := False;
    Global_Size              : Races.Size_Type              := 0.0;
 
+   Global_Num_Races,
+   Global_Num_Bets,
+   Global_Num_Won_Bets           : Integer_4 := 0;
+   Global_Bet_Won                : Boolean := False;
    use type Races.Saldo_Type;
    use type Races.Delta_Price_Type;
    use type Races.Back_Price_Type;
@@ -225,7 +228,7 @@ begin
    for Bet_Type in Races.Bet_Type_Type'range loop
       for The_Variant in Races.Variant_Type'range loop
          for Max_Daily_Loss in Races.Max_Daily_Loss_Type_Type'range loop
-
+                  
             Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type(Races.Variant(The_Variant));
             Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type(Races.Max_Daily_Loss(Max_Daily_Loss));
 
@@ -273,10 +276,15 @@ begin
                when Races.Lay =>
                   for Max_Price in Max_Price_Index_Type'range loop
                      for Min_Price in Min_Price_Index_Type'range loop
-                        Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
-                        Global_Profit := 0.0;
+                        Global_Num_Won_Bets := 0;
+                        Global_Num_Races    := 0;
+                        Global_Num_Bets     := 0;
+                        Global_Saldo        := Races.Saldo_Type'Value (Sa_Saldo.all);
+                        Global_Profit       := 0.0;
                         Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         if Integer (Min_Price) < Integer (Max_Price) then
+                           Global_Num_Races := Global_Num_Races + 1;
+                           
                            Races.Race_Package.Get_First (Race_List, Race, Eol);
                            loop
                               exit when Eol;
@@ -303,6 +311,7 @@ begin
                                  Max_Price         => Races.Max_Price_Type (Max_Price));
 
                               if Global_Bet_Laid then
+                                 Global_Num_Races := Global_Num_Races +1;
                                  Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------");
                                  Race.Check_Result
                                    (Profit    => Global_Profit,
@@ -310,6 +319,9 @@ begin
                                     Last_Loss => Global_Last_Loss,
                                     Bet_Won   => Global_Bet_Won,
                                     Bet_Type  => Bet_Type);
+                                 if Global_Bet_Won then   
+                                    Global_Bets_Won := Global_Bets_Won +1;
+                                 end if;  
                               end if;
                               Races.Race_Package.Get_Next (Race_List, Race, Eol);
                            end loop;
@@ -319,8 +331,10 @@ begin
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         Print (Integer (Min_Price)'Img & " " &
                                Integer (Max_Price)'Img & " " &
-                               Integer (Global_Saldo)'Img & " " &
-                               Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
+                               Global_Num_Races'Img & " " &
+                               Global_Num_Bets'Img & " " &
+                               Global_Num_Won_Bets'Img & " " &
+                               Integer (100 * Global_Num_Won_Bets/Global_Num_Bets)'Img);
                         -- Append To file
                         --         begin
                         -- create file if not exists
@@ -331,8 +345,10 @@ begin
                         Text_Io.Put_Line
                           (Target_Dat, Integer (Min_Price)'Img & " " &
                                        Integer (Max_Price)'Img & " " &
-                                       Integer (Global_Saldo)'Img & " " &
-                                       Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
+                                       Global_Num_Races'Img & " " &
+                                       Global_Num_Bets'Img & " " &
+                                       Global_Num_Won_Bets'Img & " " &
+                                       Integer (100 * Global_Num_Won_Bets/Global_Num_Bets)'Img);
                         Text_Io.Close (Target_Dat);
                         --         exception
                         --            when others => null;
@@ -419,6 +435,7 @@ begin
 
                         Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
                         Global_Profit := 0.0;
+                        Global_Num_Races := Global_Num_Races + 1;
 
                         Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         Races.Race_Package.Get_First (Race_List, Race, Eol);
@@ -447,6 +464,7 @@ begin
                               Delta_Price       => Races.Delta_Price_Type (Delta_Price) / 10.0);
 
                            if Global_Bet_Laid then
+                              Global_Num_Races := Global_Num_Races +1;
                               Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------");
                               Race.Check_Result
                                 (Profit    => Global_Profit,
@@ -454,16 +472,22 @@ begin
                                  Last_Loss => Global_Last_Loss,
                                  Bet_Won   => Global_Bet_Won,
                                  Bet_Type  => Bet_Type);
+                              if Global_Bet_Won then   
+                                 Global_Bets_Won := Global_Bets_Won +1;
+                              end if;  
                            end if;
                            Races.Race_Package.Get_Next (Race_List, Race, Eol);
                         end loop;
                         Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
-                        Print (Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
-                               Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                               Integer (Global_Saldo)'Img & " " &
-                               Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
-
+                        Print ( Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
+                                Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
+                                Global_Num_Races'Img & " " &
+                                Global_Num_Bets'Img & " " &
+                                Global_Num_Won_Bets'Img & " " &
+                                Integer (100 * Global_Num_Won_Bets/Global_Num_Bets)'Img);
+                               
+                               
                         -- Append To file
                         --         begin
                         -- create file if not exists
@@ -473,11 +497,13 @@ begin
                            File => Target_Dat);
                         Text_Io.Put_Line
                           (Target_Dat,
-                           Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
+                           Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " & 
                            Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                           Integer (Global_Saldo)'Img & " " &
-                           Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
-                        Text_Io.Close (Target_Dat);
+                           Global_Num_Races'Img & " " &
+                           Global_Num_Bets'Img & " " &
+                           Global_Num_Won_Bets'Img & " " &
+                           Integer (100 * Global_Num_Won_Bets/Global_Num_Bets)'Img); 
+                           Text_Io.Close (Target_Dat);
                         --         exception
                         --            when others => null;
                         --         end;
@@ -517,4 +543,4 @@ begin
 exception
    when E : others =>
       Sattmate_Exception.Tracebackinfo (E);
-end Simulator;
+end Simulator2;

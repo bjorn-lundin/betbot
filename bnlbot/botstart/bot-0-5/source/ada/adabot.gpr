@@ -13,6 +13,7 @@ project Adabot is
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("ini_reader.adb",
                  "simulator.adb",
+                 "simulator2.adb",
                  "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
                  "bf_history_cleaner.adb",
