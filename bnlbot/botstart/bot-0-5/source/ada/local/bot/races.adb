@@ -84,7 +84,7 @@ package body Races is
       Sql.Connect
         (Host     => "localhost",
          Port     => 5432,
-         Db_Name  => "betting",
+         Db_Name  => "bfhistory",
          Login    => "bnl",
          Password => "bnl");
       Log ("connected to database");
@@ -121,6 +121,8 @@ package body Races is
                  "  lower(MARKETNAME) like 'iv%'  " &
                  ")  " &
                  "and BSPMARKET = 'Y' " &
+                 "and lower(MENUPATH) not like 'nzl%'  " &
+                 "and lower(MENUPATH) not like 'aus%'  " &
                  "and lower(MARKETNAME) not like '% v %'  " &
                  "and lower(MARKETNAME) not like '%forecast%'  " &
                  "and lower(MARKETNAME) not like '%tbp%'  " &

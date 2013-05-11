@@ -156,7 +156,7 @@ begin
                             Marketid        => History2.Eventid,
                             Bspmarket       => 'Y',
                             Markettype      => 'O',
-                            Eventhierarchy  => (others => ' '),
+                            Eventhierarchy  => (1 => '/', 2 => '4', 3 => '3', 4 => '3', 5 => '9', 6 => '/', 7 => '3', others => ' '), --?
                             Lastrefresh     => History2.latesttaken,
                             Turninginplay   => 'N',
                             Menupath        => History2.Fulldescription,

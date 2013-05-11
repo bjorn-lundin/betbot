@@ -18,7 +18,7 @@
 #2013-04-29 2013-04-30 2013-05-01 2013-05-02 2013-05-03 2013-05-04 2013-05-05"
 
 
-start_date=2013-01-30
+start_date=2011-01-01
 stop_date=$(date +%Y-%m-%d)
 date_list=""
 this_date=$start_date
@@ -39,9 +39,9 @@ yesterday=$(date +%Y-%m-%d -d "-1 day")
 echo "yesterday = $yesterday"
 
 
-graph_type_list="weekly quadweekly octaweekly"
+graph_type_list="fifty_two_weeks"
 animal_names="winner"
-animals="horse hound"
+animals="hound"
 
 #date_list=$yesterday
 
