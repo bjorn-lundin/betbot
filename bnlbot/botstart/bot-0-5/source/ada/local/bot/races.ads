@@ -17,19 +17,32 @@ package Races is
 --   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
    type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
-   type Graph_Type is (Weekly, Quad_Weekly, Octa_Weekly);
+   type Graph_Type is (Weekly,
+                       Four_Weeks,
+                       Eight_Weeks,
+                       Twenty_Six_Weeks,
+                       Fifty_Two_Weeks,
+                       Seventy_Eight_Weeks,
+                       One_Hundred_And_Four_Weeks);
+   for Graph_Type'Size use Integer_4'Size ;
+   for Graph_Type use (Weekly                     =>   1,
+                       Four_Weeks                 =>   4,
+                       Eight_Weeks                =>   8,
+                       Twenty_Six_Weeks           =>  26,
+                       Fifty_Two_Weeks            =>  52,
+                       Seventy_Eight_Weeks        =>  78,
+                       One_Hundred_And_Four_Weeks => 104);
+
+   function Graph is new Unchecked_Conversion(Graph_Type, Integer_4);
+   function Graph is new Unchecked_Conversion(Integer_4, Graph_Type);
 
    type Variant_Type is (Normal,
-                         Max_2,
                          Max_3,
-                         Max_5,
-                         Max_10);
+                         Max_5);
    for Variant_Type'Size use Integer_4'Size ;
    for Variant_Type use (Normal =>  0,
-                         Max_2  =>  2,
                          Max_3  =>  3,
-                         Max_5  =>  8,
-                         Max_10 => 10 );
+                         Max_5  =>  5);
    function Variant is new Unchecked_Conversion(Variant_Type, Integer_4);
    function Variant is new Unchecked_Conversion(Integer_4, Variant_Type);
 

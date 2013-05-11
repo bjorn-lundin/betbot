@@ -39,7 +39,8 @@ procedure Simulator is
    Global_Graph_Type : Races.Graph_Type;
 
    Global_Profit            : Races.Profit_Type            := 0.0;
-   Global_Saldo             : Races.Saldo_Type             := 0.0;
+   Global_Saldo,
+   Global_Start_Saldo       : Races.Saldo_Type             := 0.0;
    Global_Max_Daily_Loss    : Races.Max_Daily_Loss_Type    := 0.0;
    Global_Max_Profit_Factor : Races.Max_Profit_Factor_Type := 0.0;
    Global_Bet_Laid          : Boolean                      := False;
@@ -81,7 +82,7 @@ begin
       Sa_Graph_Type'Access,
       "-g:",
       Long_Switch => "--graph_type=",
-      Help        => "type of graph, 'daily', 'quadweekly' or 'octaweekly'");
+      Help        => "type of graph, 'Weekly', 'Four_Weeks', 'Eight_Weeks', 'Twenty_Six_Weeks', 'Fifty_Two_Weeks', 'Seventy_Eight_Weeks'  or 'One_Hundred_And_Four_Weeks'");
 
    Define_Switch
      (Config,
@@ -151,16 +152,25 @@ begin
 --         Global_Graph_Type := Races.Daily;
       if Sa_Graph_Type.all = "weekly" then
          Global_Graph_Type := Races.Weekly;
-      elsif Sa_Graph_Type.all = "quadweekly" then
-         Global_Graph_Type := Races.Quad_Weekly;
-      elsif Sa_Graph_Type.all = "octaweekly" then
-         Global_Graph_Type := Races.Octa_Weekly;
+      elsif Sa_Graph_Type.all = "four_weeks" then
+         Global_Graph_Type := Races.Four_Weeks;
+      elsif Sa_Graph_Type.all = "eight_weeks" then
+         Global_Graph_Type := Races.Eight_Weeks;
+      elsif Sa_Graph_Type.all = "twenty_six_weeks" then
+         Global_Graph_Type := Races.Twenty_Six_Weeks;
+      elsif Sa_Graph_Type.all = "fifty_two_weeks" then
+         Global_Graph_Type := Races.Fifty_Two_Weeks;
+      elsif Sa_Graph_Type.all = "seventy_eight_weeks" then
+         Global_Graph_Type := Races.Seventy_Eight_Weeks;
+      elsif Sa_Graph_Type.all = "one_hundred_and_four_weeks" then
+         Global_Graph_Type := Races.One_Hundred_And_Four_Weeks;
       else
          raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
       end if;
 
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
+      Global_Start_Saldo       := Global_Saldo;
    exception
       when Constraint_Error =>
          Display_Help (Config);
@@ -171,19 +181,31 @@ begin
 
    case Global_Graph_Type is
 --      when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
-      when Races.Weekly      => Global_Start_Date := Global_Stop_Date - ( 6, 0, 0, 0, 0);
-      when Races.Quad_Weekly => Global_Start_Date := Global_Stop_Date - (27, 0, 0, 0, 0);
-      when Races.Octa_Weekly => Global_Start_Date := Global_Stop_Date - (55, 0, 0, 0, 0);
+      when Races.Weekly                     => Global_Start_Date := Global_Stop_Date - (  1 * 7 - 1, 0, 0, 0, 0);
+      when Races.Four_Weeks                 => Global_Start_Date := Global_Stop_Date - (  4 * 7 - 1, 0, 0, 0, 0);
+      when Races.Eight_Weeks                => Global_Start_Date := Global_Stop_Date - (  8 * 7 - 1, 0, 0, 0, 0);
+      when Races.Twenty_Six_Weeks           => Global_Start_Date := Global_Stop_Date - ( 26 * 7 - 1, 0, 0, 0, 0);
+      when Races.Fifty_Two_Weeks            => Global_Start_Date := Global_Stop_Date - ( 52 * 7 - 1, 0, 0, 0, 0);
+      when Races.Seventy_Eight_Weeks        => Global_Start_Date := Global_Stop_Date - ( 78 * 7 - 1, 0, 0, 0, 0);
+      when Races.One_Hundred_And_Four_Weeks => Global_Start_Date := Global_Stop_Date - (104 * 7 - 1, 0, 0, 0, 0);
    end case;
 
 
-   if Global_Start_Date < Sattmate_Calendar.Time_Type'(2013, 01, 30, 0, 0, 0, 0) then
+--   if Global_Start_Date < Sattmate_Calendar.Time_Type'(2013, 01, 30, 0, 0, 0, 0) then
+   if Global_Start_Date < Sattmate_Calendar.Time_Type'(2011, 01, 01, 0, 0, 0, 0) then
       Log ("start date outside range, " & Global_Graph_Type'Img & " " &
            Sattmate_Calendar.String_Date (Global_Start_Date) & " " &
            Sattmate_Calendar.String_Date (Global_Stop_Date )
           );
       return;
    end if;
+
+   Log ("graph/startdate/stopdate, " & Global_Graph_Type'Img & " " &
+           Sattmate_Calendar.String_Date (Global_Start_Date) & " " &
+           Sattmate_Calendar.String_Date (Global_Stop_Date )
+          );
+--   return;
+
 
    Global_Start_Date.Hour        := 0;
    Global_Start_Date.Minute      := 0;
@@ -293,7 +315,10 @@ begin
                         Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
 
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
-                        Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                        Print (Integer (Min_Price)'Img & " " &
+                               Integer (Max_Price)'Img & " " &
+                               Integer (Global_Saldo)'Img & " " &
+                               Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
                         -- Append To file
                         --         begin
                         -- create file if not exists
@@ -302,7 +327,10 @@ begin
                            Name => To_String (Fil),
                            File => Target_Dat);
                         Text_Io.Put_Line
-                          (Target_Dat, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+                          (Target_Dat, Integer (Min_Price)'Img & " " &
+                                       Integer (Max_Price)'Img & " " &
+                                       Integer (Global_Saldo)'Img & " " &
+                                       Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
                         Text_Io.Close (Target_Dat);
                         --         exception
                         --            when others => null;
@@ -358,7 +386,10 @@ begin
 --                       Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
 --
 --                       Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
---                       Print (Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+--                       Print (Integer (Min_Price)'Img & " " &
+--                              Integer (Max_Price)'Img & " " &
+--                              Integer (Global_Saldo)'Img & " " &
+--                              Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
 --                       -- Append To file
 --                       --         begin
 --                       -- create file if not exists
@@ -367,7 +398,10 @@ begin
 --                          Name => To_String (Fil),
 --                          File => Target_Dat);
 --                       Text_Io.Put_Line
---                         (Target_Dat, Integer (Min_Price)'Img & " " & Integer (Max_Price)'Img & " " & Integer (Global_Saldo)'Img);
+--                         (Target_Dat, Integer (Min_Price)'Img & " " &
+--                                      Integer (Max_Price)'Img & " " &
+--                                      Integer (Global_Saldo)'Img & " " &
+--                                      Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
 --                       Text_Io.Close (Target_Dat);
 --                       --         exception
 --                       --            when others => null;
@@ -424,7 +458,9 @@ begin
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         Print (Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
                                Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                               Integer (Global_Saldo)'Img);
+                               Integer (Global_Saldo)'Img & " " &
+                               Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
+
                         -- Append To file
                         --         begin
                         -- create file if not exists
@@ -436,7 +472,8 @@ begin
                           (Target_Dat,
                            Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
                            Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                           Integer (Global_Saldo)'Img);
+                           Integer (Global_Saldo)'Img & " " &
+                           Integer ((Global_Saldo-Global_Start_Saldo)/Races.Saldo_Type(Races.Graph(Global_Graph_Type)))'Img);
                         Text_Io.Close (Target_Dat);
                         --         exception
                         --            when others => null;
