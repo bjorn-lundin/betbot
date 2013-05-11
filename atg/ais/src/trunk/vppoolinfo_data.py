@@ -56,6 +56,27 @@ def load_into_db(datadir=None):
                     vppoolinfo_entity.turnover_place_currency = str(vppoolinfo.turnoverPlats.currency)
                     vppoolinfo_entity.race = race
                     db.create(entity=vppoolinfo_entity)
+                
+                for vpodds in vppoolinfo.vpOdds.getchildren():
+                    start_nr = int(vpodds.startNr)
+                    vpodds_entity = db.Vpodds.read(race_id=race.id, start_nr=start_nr)
+                    if vpodds_entity is None:
+                        vpodds_entity = db.Vpodds()
+                        vpodds_entity.invest_place_sum = int(vpodds.investmentPlats.sum)
+                        vpodds_entity.invest_place_currency = str(vpodds.investmentPlats.currency)
+                        vpodds_entity.invest_win_sum = int(vpodds.investmentVinnare.sum)
+                        vpodds_entity.invest_win_currency = str(vpodds.investmentVinnare.currency)
+                        vpodds_entity.place_max_odds = int(vpodds.platsOdds.maxOdds.odds)
+                        vpodds_entity.place_max_scratched = bool(vpodds.platsOdds.maxOdds.scratched)
+                        vpodds_entity.place_min_odds = int(vpodds.platsOdds.minOdds.odds)
+                        vpodds_entity.place_min_scratched = bool(vpodds.platsOdds.minOdds.scratched)
+                        vpodds_entity.scratched = bool(vpodds.scratched)
+                        vpodds_entity.start_nr = int(vpodds.startNr)
+                        vpodds_entity.win_odds = int(vpodds.vinnarOdds.odds)
+                        vpodds_entity.win_scratched = bool(vpodds.vinnarOdds.scratched)
+                        vpodds_entity.race = race
+                        db.create(entity=vpodds_entity)
+                
             now = datetime.datetime.now()
             loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
             db.create(entity=loaded_file)
@@ -71,8 +92,10 @@ def print_all_data(datadir=None):
         filename = util.get_filename_from_path(filepath)
         LOG.debug('Parsing ' + filename)
         
-#        xml = util.clean_xml_namespaces(filepath)
-#        util.write_file(data=xml, filepath=filename, encoding='utf-8')
+        # Convenience flag when developing
+        if False:
+            xml = util.clean_xml_namespaces(filepath)
+            util.write_file(data=xml, filepath=filename, encoding='utf-8')
         
         root = util.get_xml_object(filepath=filepath)
         for vppoolinfo in root.Body.fetchVPPoolInfoResponse.result.getchildren():
