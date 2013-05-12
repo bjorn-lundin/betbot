@@ -63,9 +63,12 @@ class SimpleBot(object):
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------------------')
             now = datetime.datetime.now()
-            # send saldo at 01:00 (utc = 00:00:00)
+            # send saldo at 08:00 (utc = 06:00:00)
             if now.hour == 6 and now.minute == 0 and 0 < now.second and now.second < 5 :
+                self.log.warn('Time to mail ')
                 login_status = self.login(uname, pword, prod_id, vend_id)
+                self.log.warn('Login status ' + login_status)
+
                 if login_status == 'OK':
                     funds = Funding(self.api, self.log, self.RECIPIENT)
                     self.do_throttle()
@@ -91,6 +94,8 @@ class SimpleBot(object):
 parser = OptionParser()
 parser.add_option("-u", "--user",  dest="user",  action="store", \
                   type="string", help="user")
+parser.add_option("-t", "--bet_name",  dest="bet_name",  action="store", \
+                  type="string", help="bet name")
 (options, args) = parser.parse_args()
 
 log = logging.getLogger(__name__)

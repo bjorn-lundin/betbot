@@ -31,12 +31,12 @@ class BetfairDaemon(object) :
             name = self.config.get(section,'name')
             bet_name = self.config.get(section,'bet_name')
             the_type = self.config.get(section,'type')
-#            print 'section', section
-#            print 'name', name
-#            print 'run', run
-#            print 'type', the_type
-#            print "----------------"
-#            print
+            print 'section', section
+            print 'name', name
+            print 'run', run
+            print 'type', the_type
+            print "----------------"
+            print
             if run :
 #                print 'start', name
                 already_running = False
@@ -57,8 +57,7 @@ class BetfairDaemon(object) :
                     args.append('/usr/bin/python')
                     args.append(os.path.join(startdir,name))
                     args.append('--user=' + os.environ['BOT_USER'])
-                    if the_type == 'bot' :
-                        args.append('--bet_name=' + bet_name)
+                    args.append('--bet_name=' + bet_name)
                     my_process = subprocess.Popen(args)
                     tmp_tuple = (my_process, name, the_type, section, bet_name)
                     self.process_list.append(tmp_tuple)
