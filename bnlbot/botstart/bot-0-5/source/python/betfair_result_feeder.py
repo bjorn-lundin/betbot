@@ -322,6 +322,8 @@ class Result_Feeder(object):
 ######## main ###########
 
 parser = OptionParser()
+parser.add_option("-t", "--bet_name",  dest="bet_name",  action="store", \
+                  type="string", help="bet name")
 parser.add_option("-u", "--user",  dest="user",  action="store", \
                   type="string", help="user")
 (options, args) = parser.parse_args()

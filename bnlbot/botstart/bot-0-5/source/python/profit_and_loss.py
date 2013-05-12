@@ -185,6 +185,8 @@ class SimpleBot(object):
 parser = OptionParser()
 parser.add_option("-u", "--user",  dest="user",  action="store", \
                   type="string", help="user")
+parser.add_option("-t", "--bet_name",  dest="bet_name",  action="store", \
+                  type="string", help="bet name")
 (options, args) = parser.parse_args()
 
 log = logging.getLogger(__name__)
