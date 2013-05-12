@@ -5,7 +5,7 @@ Database entities for AIS web service
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, Numeric
 from sqlalchemy import Date, Time, Boolean, ForeignKey, Table, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -519,6 +519,82 @@ class Vpodds(BASE):
                 start_nr = start_nr
             ).first()
         return result
+
+class VPResult(BASE):
+    '''
+    Database entity VPResult
+    
+    Skipping the following fields due to no data/same data:
+    * turnover_sum (no data)
+    * All turnover currency (always SEK)
+    * coupled_horses_winning (always False)
+    * win_stables (no data)
+    * scratchings (no data)
+    '''
+    __tablename__ = 'vpresult'
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime)
+    pool_closed = Column(Boolean)
+    sale_open = Column(Boolean)
+    turnover_win_sum = Column(Integer)
+    turnover_place_sum = Column(Integer)
+    race_id = Column(Integer, ForeignKey('race.id'))
+    race = relationship('Race')
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.timestamp,
+            self.pool_closed,
+            self.sale_open,
+            self.turnover_win_sum,
+            self.turnover_place_sum,
+            self.race_id,
+        ) 
+        part1 = "<VPResult( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(race_id=None, timestamp=None):
+        '''
+        Read an entity in database
+        '''
+        result = DB_SESSION.query(VPResult).filter_by(
+            race_id = race_id,
+            timestamp = timestamp
+        ).first()
+        return result
+
+class ToteResult(BASE):
+    '''
+    Database entity ToteResult
+    '''
+    __tablename__ = 'toteresult'
+    id = Column(Integer, primary_key=True)
+    final_odds_place = Column(Numeric)
+    final_odds_win = Column(Numeric)
+    start_nr = Column(Integer)
+    tote_place = Column(Integer)
+    win_km_time = Column(String)
+    vpresult_id = Column(Integer, ForeignKey('vpresult.id'))
+    vpresult = relationship('VPResult')
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.final_odds_place,
+            self.final_odds_win,
+            self.start_nr,
+            self.tote_place,
+            self.win_km_time,
+            self.vpresult_id,
+        ) 
+        part1 = "<ToteResult( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
 
 ENGINE = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level

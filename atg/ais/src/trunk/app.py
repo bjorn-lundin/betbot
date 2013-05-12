@@ -160,6 +160,11 @@ def main():
         LOG.info('Running ' + command)
         ais.load_eod_vppoolinfo_into_db(datadir=conf.AIS_DATADIR)
         LOG.info('Ending ' + command)
+        
+    if cp.LOAD_EOD_VPRESULT in command:
+        LOG.info('Running ' + command)
+        ais.load_eod_vpresult_into_db(datadir=conf.AIS_DATADIR)
+        LOG.info('Ending ' + command)
 
     LOG.info('Ending application')
     logging.shutdown()    

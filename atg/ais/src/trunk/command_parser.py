@@ -17,6 +17,7 @@ EMAIL_LOG_STATS = 'email_log_stats'
 SAVE_DB_DUMP_IN_CLOUD = 'save_db_dump_in_cloud'
 LOAD_EOD_RACINGCARD = 'load_eod_racingcard'
 LOAD_EOD_VPPOOLINFO = 'load_eod_vppoolinfo'
+LOAD_EOD_VPRESULT = 'load_eod_vpresult'
 
 def parse():
     '''
@@ -33,12 +34,13 @@ def parse():
         EMAIL_LOG_STATS,
         SAVE_DB_DUMP_IN_CLOUD,
         LOAD_EOD_RACINGCARD,
-        LOAD_EOD_VPPOOLINFO
+        LOAD_EOD_VPPOOLINFO,
+        LOAD_EOD_VPRESULT
     ]
     usage_string = "usage: %(prog)s " + \
         "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
         "%(com4)s|%(com5)s|%(com6)s|%(com7)s]|" + \
-        "%(com8)s|%(com9)s|%(com10)s]"
+        "%(com8)s|%(com9)s|%(com10)s|%(com11)s]"
     usage = usage_string % \
     {
         'prog':'%prog',
@@ -53,6 +55,7 @@ def parse():
         'com8':command_list[8],
         'com9':command_list[9],
         'com10':command_list[10],
+        'com11':command_list[11],
     }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]

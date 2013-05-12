@@ -356,8 +356,7 @@ def load_eod_vpresult_into_db(datadir=None):
     vpresult files and save the data into database.
     '''
     import vpresult_data
-    vpresult_data.print_all_data(datadir=datadir)
-#    vpresult_data.load_into_db(datadir=datadir)
+    vpresult_data.load_into_db(datadir=datadir)
 
 def eod_download_via_calendar(params=None):
     '''
