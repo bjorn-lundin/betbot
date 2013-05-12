@@ -18,6 +18,19 @@ AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22', 54:'2013-01-30', 35:'20
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
 AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
 
+# TODO: Refactor code and remove this 
+# (and possibly also AIS_RACEDAY_EXCLUDE)
+# 
+# I'm gussing the fix is to update Raceday up until current 
+# date to incorporate changes (e.g. bettypes) in schedule
+import datetime
+AIS_RACEDAY_BETTYPE_EXCLUDE = \
+{
+    'bettype':'V5', 
+    'date':datetime.date(2013,05,10), 
+    'track':59
+}
+
 if AIS_TYPE == 'test':
     AIS_WS_URL = AIS_WS_HOST + 'infostub/PartnerInfoEmulator/version' + \
                  AIS_VERSION + '?WSDL'
