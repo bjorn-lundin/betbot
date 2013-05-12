@@ -13,6 +13,7 @@ import socket
 import datetime
 import re
 import time
+import conf
 
 LOG = logging.getLogger('AIS')
 
@@ -260,6 +261,16 @@ def pool_info_service(params=None, bettype=None, date=None,
     Fetch pool information for the chosen bet type.
     '''
     params['service'] = 'fetch' + bettype + 'PoolInfo'
+    
+    # TODO: See conf for problem description
+    if \
+    (bettype == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['bettype']) and \
+    (date == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['date']) and \
+    (track == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['track']):
+        LOG.info('Excluding PoolInfo bettype: ' + bettype + ', date: ' 
+                 + str(date) + ', track: ' + str(track))
+        return
+    
     call_ais_service(params=params, date=date, track=track,
                      ret_if_local=ret_if_local)
     
@@ -271,6 +282,16 @@ def result_service(params=None, bettype=None, date=None,
     Fetch tote result information for the chosen bet type.
     '''
     params['service'] = 'fetch' + bettype + 'Result'
+    
+    # TODO: See conf for problem description
+    if \
+    (bettype == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['bettype']) and \
+    (date == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['date']) and \
+    (track == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['track']):
+        LOG.info('Excluding Result bettype: ' + bettype + ', date: ' 
+                 + str(date) + ', track: ' + str(track))
+        return
+    
     call_ais_service(params=params, date=date, track=track,
                      ret_if_local=ret_if_local)
 
@@ -327,8 +348,16 @@ def load_eod_vppoolinfo_into_db(datadir=None):
     vppoolinfo files and save the data into database.
     '''
     import vppoolinfo_data
-#    vppoolinfo_data.print_all_data(datadir=datadir)
     vppoolinfo_data.load_into_db(datadir=datadir)
+
+def load_eod_vpresult_into_db(datadir=None):
+    '''
+    Pass on the call to iterate over all saved (local) 
+    vpresult files and save the data into database.
+    '''
+    import vpresult_data
+    vpresult_data.print_all_data(datadir=datadir)
+#    vpresult_data.load_into_db(datadir=datadir)
 
 def eod_download_via_calendar(params=None):
     '''
