@@ -25,11 +25,18 @@ AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
 # date to incorporate changes (e.g. bettypes) in schedule
 import datetime
 AIS_RACEDAY_BETTYPE_EXCLUDE = \
-{
-    'bettype':'V5', 
-    'date':datetime.date(2013,05,10), 
-    'track':59
-}
+[
+    {
+        'bettype':'V5', 
+        'date':datetime.date(2013,05,10), 
+        'track':59
+    },
+    {
+        'bettype':'V3', 
+        'date':datetime.date(2013,05,13), 
+        'track':32
+    },
+]
 
 if AIS_TYPE == 'test':
     AIS_WS_URL = AIS_WS_HOST + 'infostub/PartnerInfoEmulator/version' + \
