@@ -23,6 +23,7 @@
         <Index Columns="sportsid" type="index"/>
         <Index Columns="eventid" type="index"/>
         <Index Columns="event" type="index"/>
+        <Index Columns="country" type="index"/>
         <Index Columns="latesttaken" type="index"/>
         <Index Columns="eventid,selectionid,latesttaken" type="index"/>
         <Index Columns="eventid,selectionid" type="index"/>
