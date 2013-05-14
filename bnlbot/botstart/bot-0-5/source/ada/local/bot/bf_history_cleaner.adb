@@ -85,7 +85,9 @@ begin
           "where LATESTTAKEN >= :START " &
           "and LATESTTAKEN <= :STOP " &
           "and EVENT <> 'Forecast' " &
+          "and SPORTSID = 7 " &
           "and FULLDESCRIPTION <> 'Ante Post' " &
+          "and COUNTRY <> 'ANTEPOST' " &
           "group by  EVENTID, SELECTIONID " &
           "order by EVENTID, SELECTIONID ");
 

@@ -50,6 +50,10 @@ procedure Bf_History_To_Dryrun is
    Runnernamestripped : String := Dryrunners.Runnernamestripped;
    Startnum           : String := Dryrunners.Startnum;
 
+
+   Eventhierarchy : string (Drymarkets.Eventhierarchy'range);
+
+
 begin
    Define_Switch
      (Config      => Config,
@@ -97,6 +101,9 @@ begin
                    "select * from HISTORY2 " &
                    "where LATESTTAKEN >= :START " &
                    "and LATESTTAKEN <= :STOP " &
+                   "and SPORTSID = 7 " &
+                   "and FULLDESCRIPTION <> 'Ante Post' " &
+                   "and COUNTRY <> 'ANTEPOST' " &
                    "order by EVENTID, SELECTIONID, LATESTTAKEN");
 
       Sql.Set_Timestamp(Select_all, "START", Start_date);
@@ -151,12 +158,20 @@ begin
         end if;
 
         if race_ok then
+            Eventhierarchy := (others => ' ');
+            if History2.Sportsid = 1 then
+               Eventhierarchy(1..4) := "/1/0";
+            elsif History2.Sportsid = 7 then
+               Eventhierarchy(1..4) := "/7/0";
+            elsif History2.Sportsid = 4339 then
+               Eventhierarchy(1..7) := "/4339/0";
+            end if;
 
             Drymarkets := (
                             Marketid        => History2.Eventid,
                             Bspmarket       => 'Y',
                             Markettype      => 'O',
-                            Eventhierarchy  => (1 => '/', 2 => '4', 3 => '3', 4 => '3', 5 => '9', 6 => '/', 7 => '3', others => ' '), --?
+                            Eventhierarchy  => Eventhierarchy, --?
                             Lastrefresh     => History2.latesttaken,
                             Turninginplay   => 'N',
                             Menupath        => History2.Fulldescription,
