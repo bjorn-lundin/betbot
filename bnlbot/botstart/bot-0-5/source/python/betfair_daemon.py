@@ -31,12 +31,12 @@ class BetfairDaemon(object) :
             name = self.config.get(section,'name')
             bet_name = self.config.get(section,'bet_name')
             the_type = self.config.get(section,'type')
-            print 'section', section
-            print 'name', name
-            print 'run', run
-            print 'type', the_type
-            print "----------------"
-            print
+#            print 'section', section
+#            print 'name', name
+#            print 'run', run
+#            print 'type', the_type
+#            print "----------------"
+#            print
             if run :
 #                print 'start', name
                 already_running = False
