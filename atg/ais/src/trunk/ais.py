@@ -263,14 +263,15 @@ def pool_info_service(params=None, bettype=None, date=None,
     params['service'] = 'fetch' + bettype + 'PoolInfo'
     
     # TODO: See conf for problem description
-    if \
-    (bettype == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['bettype']) and \
-    (date == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['date']) and \
-    (track == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['track']):
-        LOG.info('Excluding PoolInfo bettype: ' + bettype + ', date: ' 
-                 + str(date) + ', track: ' + str(track))
-        return
-    
+    for bettype_exclude in conf.AIS_RACEDAY_BETTYPE_EXCLUDE:
+        if \
+        (bettype == bettype_exclude['bettype']) and \
+        (date == bettype_exclude['date']) and \
+        (track == bettype_exclude['track']):
+            LOG.info('Excluding PoolInfo bettype: ' + bettype + ', date: ' 
+                     + str(date) + ', track: ' + str(track))
+            return
+
     call_ais_service(params=params, date=date, track=track,
                      ret_if_local=ret_if_local)
     
@@ -284,13 +285,14 @@ def result_service(params=None, bettype=None, date=None,
     params['service'] = 'fetch' + bettype + 'Result'
     
     # TODO: See conf for problem description
-    if \
-    (bettype == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['bettype']) and \
-    (date == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['date']) and \
-    (track == conf.AIS_RACEDAY_BETTYPE_EXCLUDE['track']):
-        LOG.info('Excluding Result bettype: ' + bettype + ', date: ' 
-                 + str(date) + ', track: ' + str(track))
-        return
+    for bettype_exclude in conf.AIS_RACEDAY_BETTYPE_EXCLUDE:
+        if \
+        (bettype == bettype_exclude['bettype']) and \
+        (date == bettype_exclude['date']) and \
+        (track == bettype_exclude['track']):
+            LOG.info('Excluding Result bettype: ' + bettype + ', date: ' 
+                     + str(date) + ', track: ' + str(track))
+            return
     
     call_ais_service(params=params, date=date, track=track,
                      ret_if_local=ret_if_local)
