@@ -64,26 +64,31 @@ class HorsesWinnerBackBetBot(BetBot):
                 back_odds = None
                 name = None
                 index = None
+
                 for dct in sorted_list :
                     self.log.info( 'SORTED back/lay/selection/idx ' + \
                             str(dct[0]) + '/' + \
                             str(dct[1]) + '/' + \
                             str(dct[2]) + '/' + \
                             str(dct[3])                         )
-                            #pick the first horse with reasonable odds
-                    if ( self.PRICE - self.DELTA <= float(dct[0]) and
-                         float(dct[0]) <= self.PRICE + self.DELTA ):
 
-                        self.log.info( 'will bet on ' + \
-                            str(dct[0]) + '/' + \
-                            str(dct[1]) + '/' + \
-                            str(dct[2]) + '/' + \
-                            str(dct[3])                         )
-                        selection = dct[2]
-                        lay_odds  = dct[1]
-                        back_odds = dct[0]
-                        index     = dct[3]
-                    break
+                favorite = sorted_list[0]
+                second_fav = sorted_list[1]
+                # have some space between fav and 2nd fav
+
+                if ( self.PRICE - self.DELTA <= float(favorite[0]) and
+                     float(favorite[0]) <= self.PRICE + self.DELTA and
+                     float(favorite[0]) + self.FAVORITE_BY < float(second_fav[0])):
+
+                    self.log.info( 'will bet on ' + \
+                            str(favorite[0]) + '/' + \
+                            str(favorite[1]) + '/' + \
+                            str(favorite[2]) + '/' + \
+                            str(favorite[3])                         )
+                    selection = favorite[2]
+                    lay_odds  = favorite[1]
+                    back_odds = favorite[0]
+                    index     = favorite[3]
 
 
                 if not selection :
