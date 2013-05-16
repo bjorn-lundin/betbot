@@ -1,5 +1,6 @@
 ﻿Imports BaseComponents
 Imports DbInterface
+Imports NoNoBetComponents
 
 Public Class ConnectionManager
   Inherits BaseForm
@@ -11,10 +12,12 @@ Public Class ConnectionManager
   Friend WithEvents btnExit As System.Windows.Forms.Button
   Friend WithEvents btnConnect As System.Windows.Forms.Button
   Friend WithEvents btnStart As System.Windows.Forms.Button
+  Friend WithEvents btnTables As System.Windows.Forms.Button
   Friend WithEvents pnlBottom As System.Windows.Forms.Panel
 
   Private Sub InitializeComponent()
     Me.pnlBottom = New System.Windows.Forms.Panel()
+    Me.btnStart = New System.Windows.Forms.Button()
     Me.btnClose = New System.Windows.Forms.Button()
     Me.btnConnect = New System.Windows.Forms.Button()
     Me.btnExit = New System.Windows.Forms.Button()
@@ -22,23 +25,34 @@ Public Class ConnectionManager
     Me.pnlTop = New System.Windows.Forms.Panel()
     Me.lviewConnections = New System.Windows.Forms.ListView()
     Me.lblListView = New System.Windows.Forms.Label()
-    Me.btnStart = New System.Windows.Forms.Button()
+    Me.btnTables = New System.Windows.Forms.Button()
     Me.pnlBottom.SuspendLayout()
     Me.pnlTop.SuspendLayout()
     Me.SuspendLayout()
     '
     'pnlBottom
     '
+    Me.pnlBottom.Controls.Add(Me.btnTables)
     Me.pnlBottom.Controls.Add(Me.btnStart)
     Me.pnlBottom.Controls.Add(Me.btnClose)
     Me.pnlBottom.Controls.Add(Me.btnConnect)
     Me.pnlBottom.Controls.Add(Me.btnExit)
     Me.pnlBottom.Controls.Add(Me.btnNewConnection)
     Me.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom
-    Me.pnlBottom.Location = New System.Drawing.Point(0, 240)
+    Me.pnlBottom.Location = New System.Drawing.Point(0, 242)
     Me.pnlBottom.Name = "pnlBottom"
-    Me.pnlBottom.Size = New System.Drawing.Size(416, 45)
+    Me.pnlBottom.Size = New System.Drawing.Size(466, 45)
     Me.pnlBottom.TabIndex = 0
+    '
+    'btnStart
+    '
+    Me.btnStart.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.btnStart.Location = New System.Drawing.Point(312, 13)
+    Me.btnStart.Name = "btnStart"
+    Me.btnStart.Size = New System.Drawing.Size(68, 23)
+    Me.btnStart.TabIndex = 4
+    Me.btnStart.Text = "Start"
+    Me.btnStart.UseVisualStyleBackColor = True
     '
     'btnClose
     '
@@ -63,7 +77,7 @@ Public Class ConnectionManager
     'btnExit
     '
     Me.btnExit.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.btnExit.Location = New System.Drawing.Point(336, 13)
+    Me.btnExit.Location = New System.Drawing.Point(386, 13)
     Me.btnExit.Name = "btnExit"
     Me.btnExit.Size = New System.Drawing.Size(68, 23)
     Me.btnExit.TabIndex = 2
@@ -73,7 +87,7 @@ Public Class ConnectionManager
     'btnNewConnection
     '
     Me.btnNewConnection.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-    Me.btnNewConnection.Location = New System.Drawing.Point(184, 13)
+    Me.btnNewConnection.Location = New System.Drawing.Point(174, 13)
     Me.btnNewConnection.Name = "btnNewConnection"
     Me.btnNewConnection.Size = New System.Drawing.Size(58, 23)
     Me.btnNewConnection.TabIndex = 0
@@ -87,7 +101,7 @@ Public Class ConnectionManager
     Me.pnlTop.Dock = System.Windows.Forms.DockStyle.Fill
     Me.pnlTop.Location = New System.Drawing.Point(0, 0)
     Me.pnlTop.Name = "pnlTop"
-    Me.pnlTop.Size = New System.Drawing.Size(416, 240)
+    Me.pnlTop.Size = New System.Drawing.Size(466, 242)
     Me.pnlTop.TabIndex = 1
     '
     'lviewConnections
@@ -95,7 +109,7 @@ Public Class ConnectionManager
     Me.lviewConnections.Dock = System.Windows.Forms.DockStyle.Fill
     Me.lviewConnections.Location = New System.Drawing.Point(0, 13)
     Me.lviewConnections.Name = "lviewConnections"
-    Me.lviewConnections.Size = New System.Drawing.Size(416, 227)
+    Me.lviewConnections.Size = New System.Drawing.Size(466, 229)
     Me.lviewConnections.TabIndex = 1
     Me.lviewConnections.UseCompatibleStateImageBehavior = False
     '
@@ -109,19 +123,19 @@ Public Class ConnectionManager
     Me.lblListView.TabIndex = 0
     Me.lblListView.Text = "Connections"
     '
-    'btnStart
+    'btnTables
     '
-    Me.btnStart.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.btnStart.Location = New System.Drawing.Point(248, 13)
-    Me.btnStart.Name = "btnStart"
-    Me.btnStart.Size = New System.Drawing.Size(68, 23)
-    Me.btnStart.TabIndex = 4
-    Me.btnStart.Text = "Start"
-    Me.btnStart.UseVisualStyleBackColor = True
+    Me.btnTables.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.btnTables.Location = New System.Drawing.Point(238, 13)
+    Me.btnTables.Name = "btnTables"
+    Me.btnTables.Size = New System.Drawing.Size(68, 23)
+    Me.btnTables.TabIndex = 5
+    Me.btnTables.Text = "Tables"
+    Me.btnTables.UseVisualStyleBackColor = True
     '
     'ConnectionManager
     '
-    Me.ClientSize = New System.Drawing.Size(416, 285)
+    Me.ClientSize = New System.Drawing.Size(466, 287)
     Me.Controls.Add(Me.pnlTop)
     Me.Controls.Add(Me.pnlBottom)
     Me.FormTitle = "NoNoBet Connection Manager"
@@ -171,8 +185,25 @@ Public Class ConnectionManager
   End Sub
 
   Private Sub btnStart_Click(sender As System.Object, e As System.EventArgs) Handles btnStart.Click
-    StartSelectedItem()
+    Dim item As ListViewItem = GetSelectedItem()
+
+    If IsListItemConnectionOpen(item) Then
+      Dim rSelector As RacedaySelector = New RacedaySelector(CType(item.Tag, DbConnection))
+      rSelector.StartForm(False)
+    End If
   End Sub
+
+  Private Sub btnTables_Click(sender As System.Object, e As System.EventArgs) Handles btnTables.Click
+    Dim item As ListViewItem = GetSelectedItem()
+
+    If IsListItemConnectionOpen(item) Then
+      Dim tableBrowser As Tables = New Tables
+
+      tableBrowser.DbConnection = CType(item.Tag, DbConnection)
+      tableBrowser.StartForm(False)
+    End If
+  End Sub
+
 #End Region
 
   Private Function CreateItem(dbConStr As DbConnectionString) As ListViewItem
