@@ -14,8 +14,8 @@ package Races is
 
 --   type Bet_Name_Type is (Place, Winner);
    type Bet_Name_Type is ( Winner);
---   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
-   type Bet_Type_Type is (Lay, Back);
+   type Bet_Type_Type is (Lay, Back, Lay_Favorite);
+--   type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
    type Graph_Type is (Weekly,
                        Four_Weeks,
@@ -145,6 +145,7 @@ package Races is
 
 
    procedure Get_Database_Data (Race_List   : in out Race_Package.List_Type;
+                                Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
                                 Animal      : Animal_Type;
                                 Start_Date  : Sattmate_Calendar.Time_Type;

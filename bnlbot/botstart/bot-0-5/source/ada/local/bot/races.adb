@@ -68,6 +68,7 @@ package body Races is
    end Show_Runners;
    ------------------------------------------------------------------------------
    procedure Get_Database_Data (Race_List   : in out Race_Package.List_Type;
+                                Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
                                 Animal      : Animal_Type;
                                 Start_Date  : Sattmate_Calendar.Time_Type;
@@ -84,7 +85,9 @@ package body Races is
       Sql.Connect
         (Host     => "localhost",
          Port     => 5432,
-         Db_Name  => "bfhistory",
+--         Db_Name  => "bfhistory",
+--         Db_Name  => "betting",
+         Db_Name => Db_Name,
          Login    => "bnl",
          Password => "bnl");
       Log ("connected to database");
@@ -121,8 +124,8 @@ package body Races is
                  "  lower(MARKETNAME) like 'iv%'  " &
                  ")  " &
                  "and BSPMARKET = 'Y' " &
-                 "and lower(MENUPATH) not like 'nzl%'  " &
-                 "and lower(MENUPATH) not like 'aus%'  " &
+--                 "and COUNTRYCODE in ('GBR','IRL') " &
+--                 "and TOTALMATCHED > 200000 " &
                  "and lower(MARKETNAME) not like '% v %'  " &
                  "and lower(MARKETNAME) not like '%forecast%'  " &
                  "and lower(MARKETNAME) not like '%tbp%'  " &
@@ -182,6 +185,7 @@ package body Races is
                             Size              : in Size_Type) return Boolean is
       Bet_Laid : Boolean := True;
    begin
+     return True;
       --      Log("Make_Lay_Bet - last_loss:" & Sattmate_Calendar.String_Date_And_Time(Last_Loss));
       -- are we allowed to bet at all? is this the day of the last loss ?
       -- then check if we lost more than allowed.
@@ -291,7 +295,7 @@ package body Races is
             exit;
          end if;
          if Min_Price <= Min_Price_Type (Runner.Layprice) and then
-           Max_Price_Type (Runner.Layprice) <= Max_Price then
+           Max_Price_Type (Runner.Layprice) < Max_Price then
             -- runner found ! make bet
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
@@ -343,14 +347,16 @@ package body Races is
       -- we want the first runner in the list, since the list
       -- is sorted on back-price, lowest first.
       -- we are looking for the runner with LOWEST back-price.
-      -- So get the last item in list
+      -- So get the first item in list
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       Found := not Eol;
       Log ("make_lay_favorite_bet - first runner: " & Table_Dryrunners.To_String (Runner));
       Log ("make_lay_favorite_bet  -min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
       if Found then
-        if Runner.Layprice >= 5.0 then
+        if Runner.Backprice >= 4.0 and then
+           Float_8(Min_Price) <= Runner.Layprice and then
+           Runner.Layprice < Float_8(Max_Price) then
             -- runner found ! make bet
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
@@ -387,7 +393,8 @@ package body Races is
                             Size              : in Size_Type;
                             Back_Price        : in Back_Price_Type;
                             Delta_Price       : in Delta_Price_Type )  is
-      Runner   : Table_Dryrunners.Data_Type;
+      Runner    : Table_Dryrunners.Data_Type;
+      Runner2   : Table_Dryrunners.Data_Type;
       Eol      : Boolean := False;
       Found    : Boolean := False;
    begin
@@ -416,8 +423,18 @@ package body Races is
       Log ("first runner: " & Table_Dryrunners.To_String (Runner));
       Log ("min price/deltaprice: " & Back_Price'Img & "/" & Delta_Price'Img);
       if Found then
+
+         Table_Dryrunners.Dryrunners_List_Pack.Get_Next (Race.Runners_List, Runner2, Eol);
+         Found := not Eol;
+         Log ("second runner: " & Table_Dryrunners.To_String (Runner2));
+         Log ("min price/deltaprice: " & Back_Price'Img & "/" & Delta_Price'Img);
+
+         -- Also, we want a 3.0 distance to second favorite
+
          if Back_Price - Back_Price_Type(Delta_Price) <= Back_Price_Type(Runner.Backprice) and then
-           Back_Price_Type(Runner.Backprice) <= Back_Price + Back_Price_Type(Delta_Price) then
+           Back_Price_Type(Runner.Backprice) <= Back_Price + Back_Price_Type(Delta_Price) and then
+           Runner.Backprice + 3.0 <= Runner2.Backprice then
+
             -- runner found ! make bet
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
@@ -456,8 +473,8 @@ package body Races is
       end if;
 
       case Bet_Type is
---         when Lay | Lay_Favorite =>
-         when Lay =>
+         when Lay | Lay_Favorite =>
+--         when Lay =>
             Bet_Won := True;
             -- we win if selection not in winners
             Table_Dryresults.Dryresults_List_Pack.Get_First (Race.Winners_List, Winner, Eol);
