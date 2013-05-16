@@ -171,25 +171,25 @@ while True:
     try:
         bot.start()
     except TooCloseToLossError as e :
-        alog.error( 'Too close in time to last loss.  Retry in ' + \
+        log.error( 'Too close in time to last loss.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.error(e.args)
+        log.error(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except RecoveredFromLossError as e :
-        alog.info( 'won enough - waiting for tomorrow ' + \
+        log.info( 'won enough - waiting for tomorrow ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.info(e.args)
+        log.info(e.args)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except SessionError:
-        alog.error( 'Lost session.  Retry in ' + \
+        log.error( 'Lost session.  Retry in ' + \
         str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
-        alog.error(SessionError)
+        log.error(SessionError)
         sleep (bot.NETWORK_FAILURE_DELAY)
 
     except KeyboardInterrupt :
         break
 
-alog.info('Ending application')
+log.info('Ending application')
 logging.shutdown()
