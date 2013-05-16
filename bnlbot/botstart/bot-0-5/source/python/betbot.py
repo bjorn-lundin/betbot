@@ -534,6 +534,12 @@ class BetBot(object):
             self.PRICE = 0.0
         self.log.info('price ' + str(self.PRICE))
 
+        try :
+            self.FAVORITE_BY                           = float(config.get(bet_category, 'favorite_by'))
+        except ConfigParser.NoOptionError :
+            self.FAVORITE_BY = 0.0
+        self.log.info('price ' + str(self.FAVORITE_BY))
+
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
         self.log.info('hours_to_match_start ' + str(self.HOURS_TO_MATCH_START))
 
