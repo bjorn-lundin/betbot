@@ -12,15 +12,18 @@ with Sattmate_Exception;
 with General_Routines;       use General_Routines;
 with Hitrates;
 
-procedure Simulator2 is
+procedure Simulator3 is
 --  Not_Implemented,
    Bad_Animal,
-   --   Bad_Bet_Type,
+   Bad_Bet_Type,
    Bad_Graph_Type, Bad_Name_Type : exception;
 
    Eol : Boolean := False;
+   Sa_Par_Bet_Type     : aliased Gnat.Strings.String_Access;
 
    Sa_Par_Db_Name       : aliased Gnat.Strings.String_Access;
+   Sa_Par_Price         : aliased Gnat.Strings.String_Access;
+   Sa_Par_Delta         : aliased Gnat.Strings.String_Access;
    Sa_Graph_Type        : aliased Gnat.Strings.String_Access;
    Sa_Stop_Date         : aliased Gnat.Strings.String_Access;
    Sa_Saldo             : aliased Gnat.Strings.String_Access;
@@ -38,6 +41,7 @@ procedure Simulator2 is
    Global_Animal     : Races.Animal_Type;
    Global_Bet_Name   : Races.Bet_Name_Type;
    Global_Graph_Type : Races.Graph_Type;
+   Global_Bet_Type   : Races.Bet_Type_Type;
 
    Global_Profit            : Races.Profit_Type            := 0.0;
    Global_Min_Saldo,
@@ -50,6 +54,9 @@ procedure Simulator2 is
    Global_Bet_Laid          : Boolean                      := False;
    Global_Size              : Races.Size_Type              := 0.0;
 
+   Global_Num_Races_Daily,
+   Global_Num_Bets_Daily,
+   Global_Num_Bets_Won_Daily,
    Global_Num_Races,
    Global_Num_Bets,
    Global_Num_Bets_Won           : Integer_4 := 0;
@@ -75,10 +82,13 @@ procedure Simulator2 is
    Global_Start_Date : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
    Global_Stop_Date  : Sattmate_Calendar.Time_Type :=  Sattmate_Calendar.Time_Type_First;
 
-   type Max_Price_Index_Type   is range 1 .. 25;  -- use integers only
-   type Min_Price_Index_Type   is range 1 .. 25;  -- use integers only
-   type Back_Price_Index_Type  is range 1 .. 10; -- will divide by 1
-   type Delta_Price_Index_Type is range 5 .. 5;  -- will divide by 10
+--   type Max_Price_Index_Type   is range 1 .. 25;  -- use integers only
+--   type Min_Price_Index_Type   is range 1 .. 25;  -- use integers only
+--   type Back_Price_Index_Type  is range 10 .. 10; -- will divide by 10
+--   type Delta_Price_Index_Type is range 1 .. 9;  -- will divide by 10
+
+   Global_Back_Price : Races.Back_Price_Type;
+   Global_Delta_Price : Races.Delta_Price_Type;
 
    Filename     : Unbounded_String := Null_Unbounded_String;
    Fil          : Unbounded_String := Null_Unbounded_String;
@@ -113,12 +123,27 @@ begin
       Long_Switch => "--bet_name=",
       Help        => "'winner' or 'place'");
 
+
+   Define_Switch
+     (Config,
+      Sa_Par_Bet_Type'Access,
+      "-c:",
+      Long_Switch => "--bet_type=",
+      Help        => "'lay or back or lay_favorite'");
+
    Define_Switch
      (Config,
       Sa_Par_Db_Name'Access,
       "-D:",
       Long_Switch => "--db_name=",
       Help        => "database name");
+
+   Define_Switch
+     (Config,
+      Sa_Par_Delta'Access,
+      "-d:",
+      Long_Switch => "--delta=",
+      Help        => "price delta");
 
    Define_Switch
      (Config,
@@ -133,6 +158,13 @@ begin
       "-g:",
       Long_Switch => "--graph_type=",
       Help        => "type of graph, 'Weekly', 'Four_Weeks', 'Eight_Weeks', 'Twenty_Six_Weeks', 'Fifty_Two_Weeks', 'Seventy_Eight_Weeks'  or 'One_Hundred_And_Four_Weeks'");
+
+   Define_Switch
+     (Config,
+      Sa_Par_Price'Access,
+      "-p:",
+      Long_Switch => "--price=",
+      Help        => "price");
 
    Define_Switch
      (Config,
@@ -156,6 +188,9 @@ begin
       Help        => "size of bet");
 
 
+
+
+
    Getopt (Config);  -- process the command line
    --   Display_Help (Config);
 
@@ -169,6 +204,19 @@ begin
       else
          raise Bad_Animal with "Not supported animal: '" & Sa_Animal.all & "'";
       end if;
+
+
+
+      if Sa_Par_Bet_Type.all = "lay" then
+         Global_Bet_Type := Races.Lay;
+      elsif Sa_Par_Bet_Type.all = "back" then
+         Global_Bet_Type := Races.Back;
+      elsif Sa_Par_Bet_Type.all = "lay_favorite" then
+         Global_Bet_Type := Races.Lay_Favorite;
+      else
+         raise Bad_Bet_Type with "Not supported Bettype: '" & Sa_Par_Bet_Type.all & "'";
+      end if;
+
 
       if Sa_Bet_Name.all = "winner" then
          Global_Bet_Name := Races.Winner;
@@ -201,6 +249,8 @@ begin
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
       Global_Start_Saldo       := Global_Saldo;
+      Global_Back_Price        := Races.Back_Price_Type'Value (Sa_Par_Price.all);
+      Global_Delta_Price       := Races.Delta_Price_Type'Value (Sa_Par_Delta.all);
    exception
       when Constraint_Error =>
          Display_Help (Config);
@@ -244,7 +294,7 @@ begin
 
    Races.Get_Database_Data
      (Race_List  => Race_List,
-      Db_Name   => Sa_Par_Db_Name.all,
+      Db_Name    => Sa_Par_Db_Name.all,
       Bet_Type   => Global_Bet_Name,
       Animal     => Global_Animal,
       Start_Date => Global_Start_Date,
@@ -252,7 +302,7 @@ begin
 
    Data_Dir := To_Unbounded_String ("sims");
 
-   for Bet_Type in Races.Bet_Type_Type'range loop
+--   for Bet_Type in Races.Bet_Type_Type'range loop
 --      for The_Variant in Races.Variant_Type'range loop
 --         for Max_Daily_Loss in Races.Max_Daily_Loss_Type_Type'range loop
 
@@ -265,11 +315,11 @@ begin
 
             -- what filename to write this to ?
             Filename := To_Unbounded_String
-              ("simulation_ada2-" &
+              ("simulation_ada3-" &
                Sa_Animal.all &  "-" &
                Lower_Case (Sa_Graph_Type.all) & "-" &
                Sa_Bet_Name.all & "-" &
-               Lower_Case (Bet_Type'Img) & "-" &
+               Lower_Case (Global_Bet_Type'Img) & "-" &
                Lower_Case (The_Variant'Img) & "-" &
                Lower_Case (Max_Daily_Loss'Img) & "-" &
                Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "-" &
@@ -299,7 +349,7 @@ begin
 
 
             --         Race.Show_Runners;
-            case Bet_Type is
+            case Global_Bet_Type is
                when Races.Lay =>
                   for Price in 2 .. 24 loop
 --                  for Max_Price in Max_Price_Index_Type'range loop
@@ -351,7 +401,7 @@ begin
                                     Saldo     => Global_Saldo,
                                     Last_Loss => Global_Last_Loss,
                                     Bet_Won   => Global_Bet_Won,
-                                    Bet_Type  => Bet_Type);
+                                    Bet_Type  => Global_Bet_Type);
                                  -- if bet is laid, race.price is updated with the actual price of the bet in make_back_bet
                                  Global_Sum_Price := Global_Sum_Price + Race.Price;
                                  if Global_Bet_Won then
@@ -475,7 +525,7 @@ begin
                                   Saldo     => Global_Saldo,
                                   Last_Loss => Global_Last_Loss,
                                   Bet_Won   => Global_Bet_Won,
-                                  Bet_Type  => Bet_Type);
+                                  Bet_Type  => Global_Bet_Type);
                                -- if bet is laid, race.price is updated with the actual price of the bet in make_back_bet
                               Global_Sum_Price := Global_Sum_Price + Race.Price;
                               if Global_Bet_Won then
@@ -550,8 +600,12 @@ begin
 
 
                when Races.Back =>
-                  for Back_Price in Back_Price_Index_Type'Range loop
-                     for Delta_Price in Delta_Price_Index_Type'Range loop
+--                  for Back_Price in Back_Price_Index_Type'Range loop
+--                     for Delta_Price in Delta_Price_Index_Type'Range loop
+                        Text_Io.Open
+                          (Mode => Text_Io.Append_File,
+                           Name => To_String (Fil),
+                           File => Target_Dat);
                         Global_Saldo        := Races.Saldo_Type'Value (Sa_Saldo.all);
                         Global_Profit       := 0.0;
                         Global_Avg_Price    := 0.0;
@@ -559,14 +613,46 @@ begin
                         Global_Num_Bets     := 0;
                         Global_Num_Bets_Won := 0;
                         Global_Num_Races    := 0;
+                        Global_Num_Bets_Daily     := 0;
+                        Global_Num_Bets_Won_Daily := 0;
+                        Global_Num_Races_Daily    := 0;
                         Global_Min_Saldo    :=  1_000_000_000.0;
                         Global_Max_Saldo    := -1_000_000_000.0;
 
                         Log ("start simulation, saldo =  " & Integer (Global_Saldo)'Img);
                         Races.Race_Package.Get_First (Race_List, Race, Eol);
+
+
+                        Print (Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                Global_Back_Price'Img & " " &
+                                Global_Delta_Price'Img & " " &
+                                Global_Avg_Price'Img & " " &
+                                Global_Num_Races'Img & " " &
+                                Global_Num_Bets'Img & " " &
+                                Global_Num_Bets_Won'Img & " " &
+                                Global_Num_Races_Daily'Img & " " &
+                                Global_Num_Bets_Daily'Img & " " &
+                                Global_Num_Bets_Won_Daily'Img & " " &
+                                integer'image(integer(Global_Saldo)));
+
+                        Text_Io.Put_Line
+                               (Target_Dat,
+                                Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                Global_Back_Price'Img & " " &
+                                Global_Delta_Price'Img & " " &
+                                Global_Avg_Price'Img & " " &
+                                Global_Num_Races'Img & " " &
+                                Global_Num_Bets'Img & " " &
+                                Global_Num_Bets_Won'Img & " " &
+                                Global_Num_Races_Daily'Img & " " &
+                                Global_Num_Bets_Daily'Img & " " &
+                                Global_Num_Bets_Won_Daily'Img & " " &
+                                integer'image(integer(Global_Saldo)));
+
                         loop
                            exit when Eol;
                            Global_Num_Races := Global_Num_Races + 1;
+                           Global_Num_Races_Daily := Global_Num_Races_Daily + 1;
                            Log ("---  main loop start " &  Race.Market.Marketid'Img &
                                 " saldo :" & Integer (Global_Saldo)'Img & " -----------------");
                            -- reset the daily profit when new day is treated
@@ -574,6 +660,10 @@ begin
                              Global_Race_Date.Month /= Race.Market.Eventdate.Month or else
                              Global_Race_Date.Year  /=  Race.Market.Eventdate.Year then
                               Global_Race_Date := Race.Market.Eventdate;
+                              Global_Num_Bets_Daily     := 0;
+                              Global_Num_Bets_Won_Daily := 0;
+                              Global_Num_Races_Daily    := 0;
+
                               Global_Profit    := 0.0;
                               Log ("main loop , race date = " & Sattmate_Calendar.String_Date (Global_Race_Date));
                            end if;
@@ -586,23 +676,80 @@ begin
                               Max_Daily_Loss    => Global_Max_Daily_Loss,
                               Max_Profit_Factor => Global_Max_Profit_Factor,
                               Size              => Global_Size,
-                              Back_Price        => Races.Back_Price_Type (Back_Price) / 1.0,
-                              Delta_Price       => Races.Delta_Price_Type (Delta_Price) / 10.0);
+                              Back_Price        => Global_Back_Price,
+                              Delta_Price       => Global_Delta_Price);
 
                            if Global_Bet_Laid then
-                              Global_Num_Bets := Global_Num_Bets +1;
+                             Global_Num_Bets_Daily := Global_Num_Bets_Daily +1;
+                             Global_Num_Bets := Global_Num_Bets +1;
+                             Print (Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                Global_Back_Price'Img & " " &
+                                Global_Delta_Price'Img & " " &
+                                Global_Avg_Price'Img & " " &
+                                Global_Num_Races'Img & " " &
+                                Global_Num_Bets'Img & " " &
+                                Global_Num_Bets_Won'Img & " " &
+                                Global_Num_Races_Daily'Img & " " &
+                                Global_Num_Bets_Daily'Img & " " &
+                                Global_Num_Bets_Won_Daily'Img & " " &
+                                integer'image(integer(Global_Saldo)));
+
+                             Text_Io.Put_Line
+                               (Target_Dat,
+                                Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                Global_Back_Price'Img & " " &
+                                Global_Delta_Price'Img & " " &
+                                Global_Avg_Price'Img & " " &
+                                Global_Num_Races'Img & " " &
+                                Global_Num_Bets'Img & " " &
+                                Global_Num_Bets_Won'Img & " " &
+                                Global_Num_Races_Daily'Img & " " &
+                                Global_Num_Bets_Daily'Img & " " &
+                                Global_Num_Bets_Won_Daily'Img & " " &
+                                integer'image(integer(Global_Saldo)));
+
                               Log ("---  main loop saldo after bet laid :" & Integer (Global_Saldo)'Img & " -----------------");
                               Race.Check_Result
                                 (Profit    => Global_Profit,
                                  Saldo     => Global_Saldo,
                                  Last_Loss => Global_Last_Loss,
                                  Bet_Won   => Global_Bet_Won,
-                                 Bet_Type  => Bet_Type);
+                                 Bet_Type  => Global_Bet_Type);
                               -- if bet is laid, race.price is updated with the actual price of the bet in make_back_bet
                               Global_Sum_Price := Global_Sum_Price + Race.Price;
+
+                              Global_Avg_Price := Races.Price_Type(Global_Sum_Price)/Races.Price_Type(Global_Num_Bets);
+
                               if Global_Bet_Won then
                                  Global_Num_Bets_Won := Global_Num_Bets_Won +1;
+                                 Global_Num_Bets_Won_Daily := Global_Num_Bets_Won_Daily +1;
+                                 Print (Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                         Global_Back_Price'Img & " " &
+                                         Global_Delta_Price'Img & " " &
+                                         Global_Avg_Price'Img & " " &
+                                         Global_Num_Races'Img & " " &
+                                         Global_Num_Bets'Img & " " &
+                                         Global_Num_Bets_Won'Img & " " &
+                                         Global_Num_Races_Daily'Img & " " &
+                                         Global_Num_Bets_Daily'Img & " " &
+                                         Global_Num_Bets_Won_Daily'Img & " " &
+                                         integer'image(integer(Global_Saldo)));
+
+                                 Text_Io.Put_Line
+                                        (Target_Dat,
+                                         Sattmate_Calendar.String_Date_And_Time (Global_Race_Date) & " " &
+                                         Global_Back_Price'Img & " " &
+                                         Global_Delta_Price'Img & " " &
+                                         Global_Avg_Price'Img & " " &
+                                         Global_Num_Races'Img & " " &
+                                         Global_Num_Bets'Img & " " &
+                                         Global_Num_Bets_Won'Img & " " &
+                                         Global_Num_Races_Daily'Img & " " &
+                                         Global_Num_Bets_Daily'Img & " " &
+                                         Global_Num_Bets_Won_Daily'Img & " " &
+                                         integer'image(integer(Global_Saldo)));
                               end if;
+
                            end if;
                            if Global_Saldo > Global_Max_Saldo then
                              Global_Max_Saldo := Global_Saldo ;
@@ -617,50 +764,6 @@ begin
                         Log ("main - Global_Profit : " & Integer (Global_Profit)'Img);
                         Log ("stop simulation, saldo =  " & Integer (Global_Saldo)'Img);
 
-                        if Global_Num_Bets > 0 then
-                          Global_Avg_Price := Global_Sum_Price / Races.Price_Type(Global_Num_Bets);
-                          Actual_Hitrate := 100.0 * Float_8(Global_Num_Bets_Won)/Float_8(Global_Num_Bets);
-                          Needed_Hitrate := 100.0 * Hitrates.Needed_Backbet_Hitrate(Global_Avg_Price,Hitrates.Betfair_Commission);
-                        else
-                          Global_Avg_Price := 0.0;
-                          Actual_Hitrate := 0.0 ;
-                          Needed_Hitrate := 0.0;
-                        end if;
-                        -- Append To file
-                        --         begin
-                        -- create file if not exists
-                        Text_Io.Open
-                          (Mode => Text_Io.Append_File,
-                           Name => To_String (Fil),
-                           File => Target_Dat);
-                        Print ( Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
-                                Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                                Global_Num_Races'Img & " " &
-                                Global_Num_Bets'Img & " " &
-                                Global_Num_Bets_Won'Img & " " &
-                                Global_Avg_Price'Img & " " &
-                                Actual_Hitrate'Img & " " &
-                                Needed_Hitrate'Img & " " &
-                                integer'image(integer(Actual_Hitrate - Needed_Hitrate)) & " " &
-                                Boolean'Image (Actual_Hitrate > Needed_Hitrate) & " " &
-                                integer'image(integer(Global_Min_Saldo)) & " " &
-                                integer'image(integer(Global_Saldo)) & " " &
-                                integer'image(integer(Global_Max_Saldo)));
-                        Text_Io.Put_Line
-                               (Target_Dat,
-                                Races.Back_Price_Type (Races.Back_Price_Type (Back_Price) / 10.0)'Img & " " &
-                                Races.Delta_Price_Type ( Races.Delta_Price_Type (Delta_Price) / 10.0)'Img & " " &
-                                Global_Num_Races'Img & " " &
-                                Global_Num_Bets'Img & " " &
-                                Global_Num_Bets_Won'Img & " " &
-                                Global_Avg_Price'Img & " " &
-                                Actual_Hitrate'Img & " " &
-                                Needed_Hitrate'Img & " " &
-                                integer'image(integer(Actual_Hitrate - Needed_Hitrate)) & " " &
-                                Boolean'Image (Actual_Hitrate > Needed_Hitrate) & " " &
-                                integer'image(integer(Global_Min_Saldo)) & " " &
-                                integer'image(integer(Global_Saldo)) & " " &
-                                integer'image(integer(Global_Max_Saldo)));
                         Text_Io.Close (Target_Dat);
                         --         exception
                         --            when others => null;
@@ -668,15 +771,15 @@ begin
                         Log ("---  main loop stop " & Race.Market.Marketid'Img &
                              " profit :" & Integer (Global_Profit)'Img & " -----------------");
 
-                     end loop;
-                  end loop;
+--                     end loop;
+--                  end loop;
             end case;
 
             Contents_Gpi :=
               To_Unbounded_String
                 ("graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
                  "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "bet_name='" & Lower_Case (Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
+                 "bet_name='" & Lower_Case (Global_Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
                  "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
                  "variant='" & Lower_Case (The_Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
                  "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
@@ -696,9 +799,9 @@ begin
 
 --         end loop;
 --      end loop;
-   end loop;
+--   end loop;
 
 exception
    when E : others =>
       Sattmate_Exception.Tracebackinfo (E);
-end Simulator2;
+end Simulator3;

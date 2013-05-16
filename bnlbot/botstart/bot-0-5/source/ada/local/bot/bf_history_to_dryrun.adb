@@ -177,7 +177,7 @@ begin
                             Menupath        => History2.Fulldescription,
                             Betdelay        => 0,
                             Exchangeid      => 1,
-                            Countrycode     => "GBR",
+                            Countrycode     => History2.country,
                             Marketname      => History2.event,
                             Marketstatus    => "ACTIVE         ",
                             Eventdate       => History2.latesttaken,

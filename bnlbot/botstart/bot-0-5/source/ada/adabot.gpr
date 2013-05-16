@@ -12,8 +12,9 @@ project Adabot is
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("ini_reader.adb",
-                 "simulator.adb",
+                 --"simulator.adb",
                  "simulator2.adb",
+                 "simulator3.adb",
                  "dry_runner_mover.adb",
                  "back_bet_analyzer.adb",
                  "bf_history_cleaner.adb",
