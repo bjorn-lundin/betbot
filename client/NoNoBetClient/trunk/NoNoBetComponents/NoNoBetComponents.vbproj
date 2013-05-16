@@ -96,6 +96,9 @@
     <Compile Include="RaceBetSim.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="RacedaySelector.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="RaceDaysForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -124,6 +127,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="RaceBetSim.resx">
       <DependentUpon>RaceBetSim.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RacedaySelector.resx">
+      <DependentUpon>RacedaySelector.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RaceDaysForm.resx">
       <DependentUpon>RaceDaysForm.vb</DependentUpon>
