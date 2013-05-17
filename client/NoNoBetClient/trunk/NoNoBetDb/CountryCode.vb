@@ -29,6 +29,7 @@
   End Sub
 
   Public Overrides Function ToString() As String
-    Return _Code + " - " + _TextSwe
+    'Return _Code + " - " + _TextSwe
+    Return _TextSwe
   End Function
 End Class

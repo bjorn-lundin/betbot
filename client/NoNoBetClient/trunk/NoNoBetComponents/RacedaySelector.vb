@@ -9,21 +9,27 @@ Public Class RacedaySelector
   Friend WithEvents cboCountry As System.Windows.Forms.ComboBox
   Friend WithEvents btnShow As System.Windows.Forms.Button
   Friend WithEvents grpTop As System.Windows.Forms.GroupBox
+  Friend WithEvents Label1 As System.Windows.Forms.Label
+  Friend WithEvents lblTo As System.Windows.Forms.Label
+  Friend WithEvents lblFrom As System.Windows.Forms.Label
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
 
   Private Sub InitializeComponent()
     Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+    Me.gridRacedays = New BaseComponents.BaseGrid()
     Me.grpTop = New System.Windows.Forms.GroupBox()
     Me.btnShow = New System.Windows.Forms.Button()
     Me.cboCountry = New System.Windows.Forms.ComboBox()
     Me.dtpTo = New System.Windows.Forms.DateTimePicker()
     Me.dtpFrom = New System.Windows.Forms.DateTimePicker()
-    Me.gridRacedays = New BaseComponents.BaseGrid()
+    Me.lblFrom = New System.Windows.Forms.Label()
+    Me.lblTo = New System.Windows.Forms.Label()
+    Me.Label1 = New System.Windows.Forms.Label()
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SplitContainer1.Panel1.SuspendLayout()
     Me.SplitContainer1.SuspendLayout()
-    Me.grpTop.SuspendLayout()
     CType(Me.gridRacedays, System.ComponentModel.ISupportInitialize).BeginInit()
+    Me.grpTop.SuspendLayout()
     Me.SuspendLayout()
     '
     'SplitContainer1
@@ -37,12 +43,25 @@ Public Class RacedaySelector
     '
     Me.SplitContainer1.Panel1.Controls.Add(Me.gridRacedays)
     Me.SplitContainer1.Panel1.Controls.Add(Me.grpTop)
-    Me.SplitContainer1.Size = New System.Drawing.Size(456, 343)
-    Me.SplitContainer1.SplitterDistance = 153
+    Me.SplitContainer1.Size = New System.Drawing.Size(464, 436)
+    Me.SplitContainer1.SplitterDistance = 194
     Me.SplitContainer1.TabIndex = 0
+    '
+    'gridRacedays
+    '
+    Me.gridRacedays.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+    Me.gridRacedays.Dock = System.Windows.Forms.DockStyle.Fill
+    Me.gridRacedays.Id = Nothing
+    Me.gridRacedays.Location = New System.Drawing.Point(0, 65)
+    Me.gridRacedays.Name = "gridRacedays"
+    Me.gridRacedays.Size = New System.Drawing.Size(464, 129)
+    Me.gridRacedays.TabIndex = 1
     '
     'grpTop
     '
+    Me.grpTop.Controls.Add(Me.Label1)
+    Me.grpTop.Controls.Add(Me.lblTo)
+    Me.grpTop.Controls.Add(Me.lblFrom)
     Me.grpTop.Controls.Add(Me.btnShow)
     Me.grpTop.Controls.Add(Me.cboCountry)
     Me.grpTop.Controls.Add(Me.dtpTo)
@@ -50,14 +69,14 @@ Public Class RacedaySelector
     Me.grpTop.Dock = System.Windows.Forms.DockStyle.Top
     Me.grpTop.Location = New System.Drawing.Point(0, 0)
     Me.grpTop.Name = "grpTop"
-    Me.grpTop.Size = New System.Drawing.Size(456, 43)
+    Me.grpTop.Size = New System.Drawing.Size(464, 65)
     Me.grpTop.TabIndex = 0
     Me.grpTop.TabStop = False
     Me.grpTop.Text = "Select Raceday"
     '
     'btnShow
     '
-    Me.btnShow.Location = New System.Drawing.Point(375, 15)
+    Me.btnShow.Location = New System.Drawing.Point(341, 36)
     Me.btnShow.Name = "btnShow"
     Me.btnShow.Size = New System.Drawing.Size(75, 23)
     Me.btnShow.TabIndex = 3
@@ -67,45 +86,63 @@ Public Class RacedaySelector
     'cboCountry
     '
     Me.cboCountry.FormattingEnabled = True
-    Me.cboCountry.Location = New System.Drawing.Point(284, 17)
+    Me.cboCountry.Location = New System.Drawing.Point(243, 38)
     Me.cboCountry.Name = "cboCountry"
-    Me.cboCountry.Size = New System.Drawing.Size(70, 21)
+    Me.cboCountry.Size = New System.Drawing.Size(81, 21)
     Me.cboCountry.TabIndex = 2
     '
     'dtpTo
     '
-    Me.dtpTo.Location = New System.Drawing.Point(149, 17)
+    Me.dtpTo.Location = New System.Drawing.Point(124, 39)
     Me.dtpTo.Name = "dtpTo"
     Me.dtpTo.Size = New System.Drawing.Size(104, 20)
     Me.dtpTo.TabIndex = 1
     '
     'dtpFrom
     '
-    Me.dtpFrom.Location = New System.Drawing.Point(13, 17)
+    Me.dtpFrom.Location = New System.Drawing.Point(9, 39)
     Me.dtpFrom.Name = "dtpFrom"
     Me.dtpFrom.Size = New System.Drawing.Size(104, 20)
     Me.dtpFrom.TabIndex = 0
     '
-    'gridRacedays
+    'lblFrom
     '
-    Me.gridRacedays.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-    Me.gridRacedays.Dock = System.Windows.Forms.DockStyle.Fill
-    Me.gridRacedays.Id = Nothing
-    Me.gridRacedays.Location = New System.Drawing.Point(0, 43)
-    Me.gridRacedays.Name = "gridRacedays"
-    Me.gridRacedays.Size = New System.Drawing.Size(456, 110)
-    Me.gridRacedays.TabIndex = 1
+    Me.lblFrom.AutoSize = True
+    Me.lblFrom.Location = New System.Drawing.Point(6, 19)
+    Me.lblFrom.Name = "lblFrom"
+    Me.lblFrom.Size = New System.Drawing.Size(28, 13)
+    Me.lblFrom.TabIndex = 4
+    Me.lblFrom.Text = "Från"
+    '
+    'lblTo
+    '
+    Me.lblTo.AutoSize = True
+    Me.lblTo.Location = New System.Drawing.Point(121, 19)
+    Me.lblTo.Name = "lblTo"
+    Me.lblTo.Size = New System.Drawing.Size(20, 13)
+    Me.lblTo.TabIndex = 5
+    Me.lblTo.Text = "Till"
+    '
+    'Label1
+    '
+    Me.Label1.AutoSize = True
+    Me.Label1.Location = New System.Drawing.Point(240, 16)
+    Me.Label1.Name = "Label1"
+    Me.Label1.Size = New System.Drawing.Size(31, 13)
+    Me.Label1.TabIndex = 6
+    Me.Label1.Text = "Land"
     '
     'RacedaySelector
     '
-    Me.ClientSize = New System.Drawing.Size(456, 343)
+    Me.ClientSize = New System.Drawing.Size(464, 436)
     Me.Controls.Add(Me.SplitContainer1)
     Me.Name = "RacedaySelector"
     Me.SplitContainer1.Panel1.ResumeLayout(False)
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
     Me.SplitContainer1.ResumeLayout(False)
-    Me.grpTop.ResumeLayout(False)
     CType(Me.gridRacedays, System.ComponentModel.ISupportInitialize).EndInit()
+    Me.grpTop.ResumeLayout(False)
+    Me.grpTop.PerformLayout()
     Me.ResumeLayout(False)
 
   End Sub
@@ -116,16 +153,29 @@ Public Class RacedaySelector
     InitializeComponent()
   End Sub
 
+  Private Function GetShortDateSQLString(dt As DateTime) As String
+    Return "'" + dt.ToShortDateString + "'"
+  End Function
+
   Private Sub btnShow_Click(sender As System.Object, e As System.EventArgs) Handles btnShow.Click
-    Dim sql As String = "SELECT raceday.raceday_date,raceday.first_race_posttime_time,track.domestic_text FROM raceday " +
-                        "JOIN track ON (track.id = raceday.track_id) " +
-                        "WHERE raceday.country_code = '" & CType(cboCountry.SelectedItem, CountryCode).Code + "'"
+    Dim sql As String = "SELECT raceday.raceday_date,raceday.first_race_posttime_time,track.domestic_text FROM raceday" +
+                        " JOIN track ON (track.id = raceday.track_id)" +
+                        " WHERE raceday.raceday_date >= " + GetShortDateSQLString(dtpFrom.Value) + " AND raceday.raceday_date < " + GetShortDateSQLString(dtpTo.Value.AddDays(1)) +
+                               " AND raceday.country_code = '" & CType(cboCountry.SelectedItem, CountryCode).Code + "'" +
+                        " ORDER BY raceday.raceday_date, raceday.first_race_posttime_time, track.domestic_text"
+    'gridRacedays.Clear()
     gridRacedays.ExecuteSql(MyBase.DbConnection, sql)
   End Sub
 
   Private Sub RacedaySelector_Load(sender As Object, e As System.EventArgs) Handles Me.Load
     Dim cCodes As CountryCodes = New CountryCodes
 
+    dtpFrom.Format = Windows.Forms.DateTimePickerFormat.Short
+    dtpFrom.Value = Today
+    dtpTo.Format = Windows.Forms.DateTimePickerFormat.Short
+    dtpTo.Value = Today
+
+    cboCountry.DropDownStyle = Windows.Forms.ComboBoxStyle.DropDownList
     cCodes.LoadFromDb(MyBase.DbConnection)
     cCodes.FillCombo(cboCountry)
 
