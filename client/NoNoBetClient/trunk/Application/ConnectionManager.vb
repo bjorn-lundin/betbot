@@ -17,6 +17,7 @@ Public Class ConnectionManager
 
   Private Sub InitializeComponent()
     Me.pnlBottom = New System.Windows.Forms.Panel()
+    Me.btnTables = New System.Windows.Forms.Button()
     Me.btnStart = New System.Windows.Forms.Button()
     Me.btnClose = New System.Windows.Forms.Button()
     Me.btnConnect = New System.Windows.Forms.Button()
@@ -25,7 +26,6 @@ Public Class ConnectionManager
     Me.pnlTop = New System.Windows.Forms.Panel()
     Me.lviewConnections = New System.Windows.Forms.ListView()
     Me.lblListView = New System.Windows.Forms.Label()
-    Me.btnTables = New System.Windows.Forms.Button()
     Me.pnlBottom.SuspendLayout()
     Me.pnlTop.SuspendLayout()
     Me.SuspendLayout()
@@ -43,6 +43,16 @@ Public Class ConnectionManager
     Me.pnlBottom.Name = "pnlBottom"
     Me.pnlBottom.Size = New System.Drawing.Size(466, 45)
     Me.pnlBottom.TabIndex = 0
+    '
+    'btnTables
+    '
+    Me.btnTables.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.btnTables.Location = New System.Drawing.Point(238, 13)
+    Me.btnTables.Name = "btnTables"
+    Me.btnTables.Size = New System.Drawing.Size(68, 23)
+    Me.btnTables.TabIndex = 5
+    Me.btnTables.Text = "Tables"
+    Me.btnTables.UseVisualStyleBackColor = True
     '
     'btnStart
     '
@@ -122,16 +132,6 @@ Public Class ConnectionManager
     Me.lblListView.Size = New System.Drawing.Size(66, 13)
     Me.lblListView.TabIndex = 0
     Me.lblListView.Text = "Connections"
-    '
-    'btnTables
-    '
-    Me.btnTables.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.btnTables.Location = New System.Drawing.Point(238, 13)
-    Me.btnTables.Name = "btnTables"
-    Me.btnTables.Size = New System.Drawing.Size(68, 23)
-    Me.btnTables.TabIndex = 5
-    Me.btnTables.Text = "Tables"
-    Me.btnTables.UseVisualStyleBackColor = True
     '
     'ConnectionManager
     '
