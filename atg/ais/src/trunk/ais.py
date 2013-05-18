@@ -360,6 +360,22 @@ def load_eod_vpresult_into_db(datadir=None):
     import vpresult_data
     vpresult_data.load_into_db(datadir=datadir)
 
+def load_eod_ddpoolinfo_into_db(datadir=None):
+    '''
+    Pass on the call to iterate over all saved (local) 
+    vppoolinfo files and save the data into database.
+    '''
+    import ddpoolinfo_data
+    ddpoolinfo_data.load_into_db(datadir=datadir)
+
+def load_eod_ddresult_into_db(datadir=None):
+    '''
+    Pass on the call to iterate over all saved (local) 
+    vpresult files and save the data into database.
+    '''
+    import ddresult_data
+    ddresult_data.load_into_db(datadir=datadir)
+
 def eod_download_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic

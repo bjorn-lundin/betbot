@@ -596,6 +596,81 @@ class ToteResult(BASE):
         part3 = ")>"
         return (part1 + part2 + part3) % params
 
+class DDPoolInfo(BASE):
+    '''
+    Database entity DDPoolInfo
+    
+    TODO: Replace track_id with race_id when raceday has been fixed (DD-1, DD-2 etc.)
+    '''
+    __tablename__ = 'ddpoolinfo'
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+    timestamp = Column(DateTime)
+    pool_closed = Column(Boolean)
+    sale_open = Column(Boolean)
+    turnover_sum = Column(Integer)
+    turnover_currency = Column(String)
+    bettype_code = Column(String)
+    bettype_domestic_text = Column(String)
+    bettype_english_text = Column(String)
+    nr_of_horses_leg_1 = Column(Integer)
+    nr_of_horses_leg_2 = Column(Integer)
+    track_id = Column(Integer, ForeignKey('track.id'))
+    track = relationship('Track')
+
+    def __repr__(self):
+        params = (
+            self.id,
+            self.date,
+            self.timestamp,
+            self.pool_closed,
+            self.sale_open,
+            self.turnover_sum,
+            self.turnover_currency,
+            self.bettype_code,
+            self.bettype_domesticText,
+            self.bettype_englishText,
+            self.nr_of_horses_leg_1,
+            self.nr_of_horses_leg_2,
+            self.track_id,
+        ) 
+        part1 = "<DDPoolInfo( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(track_id=None, timestamp=None):
+        '''
+        Read an entity in database
+        '''
+        result = DB_SESSION.query(DDPoolInfo).filter_by(
+            track_id = track_id,
+            timestamp = timestamp
+        ).first()
+        return result
+
+class DDOdds(BASE):
+    __tablename__ = 'ddodds'
+    id = Column(Integer, primary_key=True)
+    odds = Column(Integer)
+    scratched = Column(Boolean)
+    start_nr_leg_1 = Column(Integer)
+    start_nr_leg_2 = Column(Integer)
+    ddpoolinfo_id = Column(Integer, ForeignKey('ddpoolinfo.id'))
+    ddpoolinfo = relationship('DDPoolInfo')
+    
+    @staticmethod
+    def read(ddpoolinfo_id=None):
+        '''
+        Read DDOdds based on parameters
+        '''
+        result = \
+            DB_SESSION.query(DDOdds).filter_by(
+                ddpoolinfo_id = ddpoolinfo_id
+            ).first()
+        return result
+
 ENGINE = create_engine(conf.AIS_DB_URL, echo=False)
 # Important to have sessionmaker at top level
 # for global knowledge of connections, pool etc:
