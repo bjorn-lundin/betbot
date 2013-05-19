@@ -184,16 +184,16 @@ def main():
 #  ser.write('-----------------------------------------------------------------------------\r\n')
 
   row0 = {}
-  row0['0'] = 'M'
-  row0['1'] = 'T'
-  row0['2'] = 'O'
-  row0['3'] = 'T'
-  row0['4'] = 'F'
-  row0['5'] = 'L'
-  row0['6'] = 'S'
-  row0['typ'] = 'Typ av bet/veckodag'
+  row0['0'] = 0
+  row0['1'] = 1
+  row0['2'] = 2
+  row0['3'] = 3
+  row0['4'] = 4
+  row0['5'] = 5
+  row0['6'] = 6
+  row0['typ'] = 'Typ av bet/antal dagar sedan'
   
-  lcd_row_0 = '%(typ)36s%(0)6s%(1)6s%(2)6s%(3)6s%(4)6s%(5)6s%(6)6s' % row0
+  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
   ser.write(lcd_row_0 + '\r\n')
 #  print lcd_row_0
 
