@@ -17,11 +17,22 @@ def get_row_weeks_back(conn, bet_type, delta_weeks)  :
     result = 0
     today = datetime.datetime.now() 
     day = today + datetime.timedelta(days = int(delta_weeks * 7))
-    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+#    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
 
-    ds = day_stop - datetime.timedelta(days = 6) 
-    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
 
+    mon = day - datetime.timedelta(today.weekday())
+    sun = mon + datetime.timedelta(days = 6)
+
+#    print 'mon', mon
+#    print 'sun', sun
+
+#    ds = day_stop - datetime.timedelta(days = 6) 
+#    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
+
+    mon2 = datetime.datetime(mon.year, mon.month, mon.day, 0, 0, 0)
+    sun2 = datetime.datetime(sun.year, sun.month, sun.day, 23, 59, 59)
+#    print 'mon2', mon2
+#    print 'sun2', sun2
 #    print day_start, day_stop
     
     cur = conn.cursor()
@@ -31,7 +42,7 @@ def get_row_weeks_back(conn, bet_type, delta_weeks)  :
                  "and CODE = %s " \
                  "and BET_PLACED >= %s " \
                  "and BET_PLACED <= %s " ,
-                   (bet_type, 'S', day_start, day_stop))
+                   (bet_type, 'S', mon2, sun2))
   
 #    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
      
@@ -61,6 +72,26 @@ def get_row(conn, bet_type, delta_days)  :
     day = datetime.datetime.now() + datetime.timedelta(days = delta_days) 
     day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
     day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+
+
+#    print 'delta_days', delta_days
+
+#    today = datetime.datetime.now()
+#    day = today + datetime.timedelta(days = int(delta_days))
+#    mon = day - datetime.timedelta(today.weekday())
+#    sun = mon + datetime.timedelta(days = 6)
+
+#    print 'mon', mon
+#    print 'sun', sun
+        
+#    ds = day_stop - datetime.timedelta(days = 6) 
+#    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
+        
+#    mon2 = datetime.datetime(mon.year, mon.month, mon.day, 0, 0, 0)
+#    sun2 = datetime.datetime(sun.year, sun.month, sun.day, 23, 59, 59)
+#    print 'mon2', mon2
+#    print 'sun2', sun2
+#    print day_start, day_stop
 
 #    print day_start, day_stop
     
@@ -99,10 +130,47 @@ def get_row(conn, bet_type, delta_days)  :
     ################################## end get_row
 def main():
   # Main program block
-  conn = psycopg2.connect("dbname='betting' \
+
+  now = datetime.datetime.now()
+
+  if now.minute %  2 == 0 :
+    source = 1
+  else :
+    source = 2
+
+
+  if source == 1 :
+    conn = psycopg2.connect("dbname='betting' \
                            user='bnl' \
                            host='192.168.0.13' \
                            password=None") 
+
+    bets = ['HORSES_WINNER_LAY_BET',
+            'DRY_RUN_HORSES_WINNER_LAY_BET',
+            'HOUNDS_WINNER_LAY_BET_13_14',
+            'DRY_RUN_HOUNDS_WINNER_LAY_BET_13_14',
+            'DRY_RUN_HORSES_PLACE_LAY_BET_6_10',
+            'DRY_RUN_HORSES_WINNER_LAY_BET_ALL',
+            'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
+            'DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02',
+            'DRY_RUN_HOUNDS_WINNER_BACK_BET'   ]
+
+  elif source == 2 :
+    conn = psycopg2.connect("dbname='bnls' \
+                           user='bnl' \
+                           host='nonodev.com' \
+                           password='BettingFotboll1$' ")
+
+    bets = ['DRY_RUN_HORSES_WINNER_BACK_BET_30_09',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_29_10',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_28_10',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_27_10',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_27_03', 
+            'DRY_RUN_HORSES_WINNER_BACK_BET_25_10',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_24_10',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_23_10',
+            'DRY_RUN_HORSES_WINNER_LAY_BET_12_13' ]
+
                              
   ser = serial.Serial(
     port='/dev/ttyUSB0',
@@ -112,37 +180,29 @@ def main():
     bytesize=serial.EIGHTBITS)
 
   ser.open()
-                             
-  bets = ['HORSES_WINNER_LAY_BET',
-          'DRY_RUN_HORSES_WINNER_LAY_BET',
-          'HOUNDS_WINNER_LAY_BET_13_14',
-          'DRY_RUN_HOUNDS_WINNER_LAY_BET_13_14',
-          'DRY_RUN_HOUNDS_WINNER_BACK_BET_45_07',
-          'DRY_RUN_HORSES_WINNER_LAY_BET_ALL',
-          'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
-          'DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02',
-          'DRY_RUN_HOUNDS_WINNER_BACK_BET'   ]
              
 #  ser.write('-----------------------------------------------------------------------------\r\n')
 
   row0 = {}
-  row0['0'] = 0
-  row0['1'] = 1
-  row0['2'] = 2
-  row0['3'] = 3
-  row0['4'] = 4
-  row0['5'] = 5
-  row0['6'] = 6
-  row0['typ'] = 'Typ av bet/Antal dagar sedan'
+  row0['0'] = 'M'
+  row0['1'] = 'T'
+  row0['2'] = 'O'
+  row0['3'] = 'T'
+  row0['4'] = 'F'
+  row0['5'] = 'L'
+  row0['6'] = 'S'
+  row0['typ'] = 'Typ av bet/veckodag'
   
-  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  lcd_row_0 = '%(typ)36s%(0)6s%(1)6s%(2)6s%(3)6s%(4)6s%(5)6s%(6)6s' % row0
   ser.write(lcd_row_0 + '\r\n')
+#  print lcd_row_0
 
 
   ser.write('------------------------------------------------------------------------------\r\n')
 
   for bet in bets :                               
     row1 = {}
+    # offset days from monday 
     row1['0'] = get_row(conn, bet, 0)
     row1['1'] = get_row(conn, bet, -1)
     row1['2'] = get_row(conn, bet, -2)
@@ -157,6 +217,12 @@ def main():
     
   ser.write('------------------------------------------------------------------------------\r\n')
   row0['typ'] = 'Typ av bet/result veckor tillbaka'    
+  row0['0'] = 0
+  row0['1'] = 1
+  row0['2'] = 2
+  row0['3'] = 3
+  row0['4'] = 4
+  row0['5'] = 5
   row0['6'] = 'Summa'
   lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
   ser.write(lcd_row_0 + '\r\n')
