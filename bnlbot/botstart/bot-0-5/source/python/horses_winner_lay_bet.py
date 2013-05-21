@@ -64,10 +64,16 @@ class HorsesWinnerLayBetBot(BetBot):
                 name = None
                 index = None
 
+                is_place = (self.BET_CATEGORY.lower().find("place") > -1)
+             
+                
 #                market = Market(self.conn, self.log, market_id = market_id)
                 # there must be at least 3 runners with lower odds
                 number_of_runners = len(sorted_list)
-                max_turns = number_of_runners - 5
+                if is_place :
+                    max_turns = number_of_runners - 9
+                else :
+                    max_turns = number_of_runners - 5
 
                 favorite_odds = 100.0
                 #loop through list and keep last entry -> favorite
@@ -101,11 +107,14 @@ class HorsesWinnerLayBetBot(BetBot):
                         back_odds = dct[0]
                         index     = dct[3]
                         break
-
-                if favorite_odds >= 5.0 :
-                    self.log.info( 'Favorite sucks, odds= '+ str(favorite_odds) + ' must be >= 5.0 - exit check_strategy')
+                        
+                max_favorite_odds = 5.0        
+                if is_place :        
+                    max_favorite_odds = 2.0
+                if favorite_odds >= max_favorite_odds :
+                    self.log.info( 'Favorite sucks, odds= '+ str(favorite_odds) + ' must be >= ' + str(max_favorite_odds) + ' - exit check_strategy')
                     return
-
+                    
                 if not selection :
                     self.log.info( 'No good runner found, exit check_strategy')
                     return
