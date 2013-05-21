@@ -144,6 +144,7 @@ select
   markets.market_status,
   markets.event_date,
   markets.bet_delay,
+  markets.last_refresh,
   bets.bet_id,
   bets.selection_id,
   bets.price,
