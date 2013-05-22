@@ -1,5 +1,6 @@
 ﻿Imports System.Windows.Forms
 Imports DbInterface
+Imports BaseComponents
 
 Public Class CountryCodes
 
@@ -27,9 +28,9 @@ Public Class CountryCodes
     End If
   End Sub
 
-  Public Sub LoadFromDb(dbCon As DbConnection)
+  Public Sub LoadFromDb(resourceMan As ApplicationResourceManager)
     Dim sql As String = "SELECT DISTINCT country_code,country_english_text,country_domestic_text FROM raceday"
-    Dim dr As Npgsql.NpgsqlDataReader = dbCon.ExecuteSqlCommand(sql)
+    Dim dr As Npgsql.NpgsqlDataReader = resourceMan.DbConnection.ExecuteSqlCommand(sql)
 
     While dr.Read
       Dim cCode As CountryCode = New CountryCode(dr.Item("country_code"), dr.Item("country_domestic_text"), dr.Item("country_english_text"))

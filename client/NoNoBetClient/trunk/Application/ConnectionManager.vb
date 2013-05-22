@@ -1,6 +1,7 @@
 ﻿Imports BaseComponents
 Imports DbInterface
 Imports NoNoBetComponents
+Imports NoNoBetConfig
 
 Public Class ConnectionManager
   Inherits BaseForm
@@ -148,9 +149,12 @@ Public Class ConnectionManager
 
   End Sub
 
+  Private _Translator As Translator
+
   Public Sub New()
     MyBase.New()
     InitializeComponent()
+    _Translator = New Translator
   End Sub
 
 #Region "Button handling"
@@ -188,7 +192,10 @@ Public Class ConnectionManager
     Dim item As ListViewItem = GetSelectedItem()
 
     If IsListItemConnectionOpen(item) Then
-      Dim rSelector As RacedaySelector = New RacedaySelector(CType(item.Tag, DbConnection))
+      Dim resourceMan As ApplicationResourceManager = New ApplicationResourceManager
+      resourceMan.Translator = _Translator
+      resourceMan.DbConnection = CType(item.Tag, DbConnection)
+      Dim rSelector As RacedaySelector = New RacedaySelector(resourceMan)
       rSelector.StartForm(False)
     End If
   End Sub
@@ -198,8 +205,10 @@ Public Class ConnectionManager
 
     If IsListItemConnectionOpen(item) Then
       Dim tableBrowser As Tables = New Tables
-
-      tableBrowser.DbConnection = CType(item.Tag, DbConnection)
+      Dim resourceMan As ApplicationResourceManager = New ApplicationResourceManager
+      resourceMan.Translator = _Translator
+      resourceMan.DbConnection = CType(item.Tag, DbConnection)
+      tableBrowser.ResourceManager = resourceMan
       tableBrowser.StartForm(False)
     End If
   End Sub
@@ -287,8 +296,11 @@ Public Class ConnectionManager
 
     If IsListItemConnectionOpen(item) Then
       Dim tableBrowser As Tables = New Tables
+      Dim resourceMan As ApplicationResourceManager = New ApplicationResourceManager
+      resourceMan.Translator = _Translator
+      resourceMan.DbConnection = CType(item.Tag, DbConnection)
 
-      tableBrowser.DbConnection = CType(item.Tag, DbConnection)
+      tableBrowser.ResourceManager = resourceMan
       tableBrowser.StartForm(False)
 
       'Dim mainFrm As MainForm = New MainForm

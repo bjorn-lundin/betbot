@@ -20,9 +20,6 @@ Public Class StartUp
     Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
     workingDir = currDirectoryInfo.Parent.FullName
 
-    Dim tr As Translator = New Translator
-
-
     'Dim conString As DbConnectionString = New DbConnectionString
     'Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
     'dbConDialog.StartDialog(conString)

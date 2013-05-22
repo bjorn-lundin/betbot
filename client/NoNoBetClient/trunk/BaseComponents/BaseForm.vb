@@ -4,8 +4,7 @@ Public Class BaseForm
   Inherits Form
   Implements IBaseForm
 
-
-  Private _DbConnection As DbInterface.DbConnection
+  Private _ResourceManager As ApplicationResourceManager
 
   Public Sub New()
     MyBase.New()
@@ -20,12 +19,12 @@ Public Class BaseForm
     End Set
   End Property
 
-  Public Property DbConnection As DbInterface.DbConnection Implements IBaseComponent.DbConnection
+  Public Property ResourceManager As ApplicationResourceManager Implements IBaseComponent.ResourceManager
     Get
-      Return _DbConnection
+      Return _ResourceManager
     End Get
-    Set(ByVal value As DbInterface.DbConnection)
-      _DbConnection = value
+    Set(value As ApplicationResourceManager)
+      _ResourceManager = value
     End Set
   End Property
 
@@ -45,10 +44,10 @@ Public Class BaseForm
   ''' <summary>
   ''' Start the BaseForm
   ''' </summary>
-  ''' <param name="dbCon">Database connection object</param>
+  ''' <param name="resourceMan">Application Resource Manager object</param>
   ''' <remarks>Default StartPosition is CenterScreen</remarks>
-  Public Overridable Sub StartForm(asDialog As Boolean, ByVal dbCon As DbInterface.DbConnection) Implements IBaseForm.StartForm
-    _DbConnection = dbCon
+  Public Overridable Sub StartForm(asDialog As Boolean, ByVal resourceMan As ApplicationResourceManager) Implements IBaseForm.StartForm
+    _ResourceManager = resourceMan
     StartForm(asDialog)
   End Sub
 

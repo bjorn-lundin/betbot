@@ -1,5 +1,6 @@
 ﻿Imports DbInterface
 Imports NoNoBetDb
+Imports BaseComponents
 
 Public Class RacedaySelector
   Inherits BaseComponents.BaseForm
@@ -147,9 +148,9 @@ Public Class RacedaySelector
 
   End Sub
 
-  Public Sub New(dbCon As DbConnection)
+  Public Sub New(resourceMan As ApplicationResourceManager)
     MyBase.New()
-    MyBase.DbConnection = dbCon
+    MyBase.ResourceManager = resourceMan
     InitializeComponent()
   End Sub
 
@@ -164,7 +165,7 @@ Public Class RacedaySelector
                                " AND raceday.country_code = '" & CType(cboCountry.SelectedItem, CountryCode).Code + "'" +
                         " ORDER BY raceday.raceday_date, raceday.first_race_posttime_time, track.domestic_text"
     'gridRacedays.Clear()
-    gridRacedays.ExecuteSql(MyBase.DbConnection, sql)
+    gridRacedays.ExecuteSql(MyBase.ResourceManager, sql)
   End Sub
 
   Private Sub RacedaySelector_Load(sender As Object, e As System.EventArgs) Handles Me.Load
@@ -176,7 +177,7 @@ Public Class RacedaySelector
     dtpTo.Value = Today
 
     cboCountry.DropDownStyle = Windows.Forms.ComboBoxStyle.DropDownList
-    cCodes.LoadFromDb(MyBase.DbConnection)
+    cCodes.LoadFromDb(MyBase.ResourceManager)
     cCodes.FillCombo(cboCountry)
 
     gridRacedays.SetReadOnlyMode()

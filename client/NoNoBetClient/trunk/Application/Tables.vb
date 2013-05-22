@@ -94,7 +94,7 @@ Public Class Tables
       gridTable.Clear()
     Else
       Cursor = Cursors.WaitCursor
-      gridTable.ExecuteSql(MyBase.DbConnection, "SELECT * FROM " + tableName)
+      gridTable.ExecuteSql(MyBase.ResourceManager, "SELECT * FROM " + tableName)
       Cursor = Cursors.Default
     End If
   End Sub
@@ -107,7 +107,7 @@ Public Class Tables
   End Function
 
   Private Sub FillTablesCombo()
-    Dim tList As List(Of String) = MyBase.DbConnection.GetAllTablesList()
+    Dim tList As List(Of String) = MyBase.ResourceManager.DbConnection.GetAllTablesList()
     cboTables.Items.Clear()
 
     For i As Integer = 0 To (tList.Count - 1)
@@ -118,7 +118,7 @@ Public Class Tables
   End Sub
 
   Private Sub Tables_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    MyBase.FormTitle = "Tables: " + MyBase.DbConnection.ConnectionString.Name
+    MyBase.FormTitle = "Tables: " + MyBase.ResourceManager.DbConnection.ConnectionString.Name
     FillTablesCombo()
     gridTable.Clear()
     gridTable.SetReadOnlyMode()

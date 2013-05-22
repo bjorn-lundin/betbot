@@ -1,3 +1,3 @@
 ﻿Public Interface IBaseComponent
-    Property DbConnection As DbInterface.DbConnection
+  Property ResourceManager As ApplicationResourceManager
 End Interface
