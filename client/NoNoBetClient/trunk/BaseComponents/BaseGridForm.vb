@@ -2,6 +2,7 @@
   Inherits BaseForm
   Implements IBaseGridForm
 
+
   Friend WithEvents Grid As BaseComponents.BaseGrid
 
   Private Sub InitializeComponent()
@@ -32,20 +33,20 @@
   Private _GridSql As String
   Private _GridId As String
 
-
-  Public Overloads Sub StartForm(ByVal dbConnection As DbInterface.DbConnection, ByVal gridSql As String) Implements IBaseGridForm.StartForm
+  Public Overloads Sub StartForm(resourceMan As ApplicationResourceManager, gridSql As String) Implements IBaseGridForm.StartForm
     _GridSql = gridSql
-    MyBase.StartForm(True, dbConnection)
+    MyBase.StartForm(True, resourceMan)
   End Sub
 
-  Public Overloads Sub StartForm(ByVal dbConnection As DbInterface.DbConnection, ByVal gridSql As String, ByVal gridId As String) Implements IBaseGridForm.StartForm
+  Public Overloads Sub StartForm(resourceMan As ApplicationResourceManager, gridSql As String, gridId As String) Implements IBaseGridForm.StartForm
     _GridSql = gridSql
     _GridId = gridId
-    MyBase.StartForm(True, dbConnection)
+    MyBase.StartForm(True, resourceMan)
   End Sub
 
   Private Sub BaseGridForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
     Grid.Id = _GridId
-    Grid.ExecuteSql(DbConnection, _GridSql)
+    Grid.ExecuteSql(MyBase.ResourceManager, _GridSql)
   End Sub
+
 End Class

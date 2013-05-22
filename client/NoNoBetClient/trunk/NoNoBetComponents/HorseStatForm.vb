@@ -26,7 +26,7 @@
 
   Public Overloads Sub StartForm(ByVal dbCon As DbInterface.DbConnection, ByVal horseId As Integer)
     _HorseId = horseId
-    MyBase.StartForm(True, dbCon)
+    MyBase.StartForm(True, MyBase.ResourceManager)
   End Sub
 
   Private Sub InitializeComponent()
@@ -110,7 +110,7 @@
 
   Private Sub FillHorseData()
     Dim sql As String = "SELECT name FROM horse WHERE id = " & GetHorseId()
-    Dim dr As Npgsql.NpgsqlDataReader = DbConnection.ExecuteSqlCommand(sql)
+    Dim dr As Npgsql.NpgsqlDataReader = MyBase.ResourceManager.DbConnection.ExecuteSqlCommand(sql)
 
     If dr.Read Then
       HorseNameText.Text = CType(dr.Item("name"), String)
@@ -132,7 +132,7 @@
       sql = _BaseSql + "WHERE null = null"
     End If
 
-    Grid.ExecuteSql(DbConnection, sql)
+    Grid.ExecuteSql(MyBase.ResourceManager, sql)
   End Sub
 
   Private Sub HorseStatForm_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load

@@ -9,7 +9,7 @@ Public Class BaseGrid
   Private _Sql As String = Nothing
   Private _Id As String = Nothing
   Private _Menu As ContextMenuStrip = Nothing
-
+  Private _ResourceManager As ApplicationResourceManager
 
   Private Sub InitGrid()
     If (_MenuHandler Is Nothing) Then
@@ -125,11 +125,12 @@ Public Class BaseGrid
   ''' <summary>
   ''' Execute specified SQL and bind the result to grid
   ''' </summary>
-  ''' <param name="dbCon"></param>
+  ''' <param name="resourceMan">Application Resource Manager object</param>
   ''' <param name="sql"></param>
   ''' <remarks></remarks>
-  Public Sub ExecuteSql(ByVal dbCon As DbInterface.DbConnection, ByVal sql As String)
+  Public Sub ExecuteSql(resourceMan As ApplicationResourceManager, ByVal sql As String)
     Cursor = Cursors.WaitCursor
+    _ResourceManager = resourceMan
     _Sql = sql
     'Me.Clear()
     Me.AutoGenerateColumns = True
@@ -139,7 +140,7 @@ Public Class BaseGrid
 
     Dim bindSource As BindingSource = New BindingSource
 
-    bindSource.DataSource = dbCon.ExecuteSql(sql)
+    bindSource.DataSource = _ResourceManager.DbConnection.ExecuteSql(sql)
     Me.DataSource = bindSource
     Cursor = Cursors.Default
   End Sub
@@ -237,20 +238,13 @@ Public Class BaseGrid
   End Sub
 
   Private Sub BaseGrid_ColumnAdded(sender As Object, e As System.Windows.Forms.DataGridViewColumnEventArgs) Handles Me.ColumnAdded
-    Select Case e.Column.Name
-      Case "raceday_date"
-        e.Column.HeaderText = "Datum"
-      Case "first_race_posttime_time", "first_race_posttime_utc_time"
-        e.Column.HeaderText = "Första lopp"
-      Case "country_code"
-        e.Column.HeaderText = "Landskod"
-      Case "country_domestic_text"
-        e.Column.HeaderText = "Landsnamn"
-      Case "domestic_text"
-        e.Column.HeaderText = "Bana"
+    Dim termTranslation As String = Nothing
+    Dim termDescription As String = Nothing
 
-      Case Else
-    End Select
+    If _ResourceManager.Translator.TranslateTerm(e.Column.Name, "swe", "eng", termTranslation, termDescription) Then
+      e.Column.HeaderText = termTranslation
+    End If
+
   End Sub
 
   Private Sub BaseGrid_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles Me.KeyDown

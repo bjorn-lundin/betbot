@@ -1,4 +1,5 @@
 ﻿Imports BaseComponents
+Imports NoNoBetConfig
 Imports NoNoBetComponents
 Imports System
 Imports System.Data
@@ -16,6 +17,8 @@ Public Class DbConnectionForm
   Private _XmlWriter As XmlWriter
   Private _ApplicationPath As String
   Private _ResultOk As Boolean = False
+  Private _Translator As Translator
+
   'Private _DbConnectionString1 As String = "Server=127.0.0.1;Port=5432;User Id=pokerheroes;Password=pokerheroes;Database=pokerheroes;"
   'Private _DbConnectionString2 As String = "Server=Db.nonobet.com;Port=5432;User Id=kalle;Password=kalle;Database=kalle;"
   'Private _DbConnectionString3 As String = "Server=nonobet.com;Port=5432;User Id=nonobetmats;Password=nonoBET0088;Database=mats_test_01;SSL=True;"
@@ -31,6 +34,8 @@ Public Class DbConnectionForm
 
   Public Function ExeceuteDialog(ByVal applicationPath As String) As Boolean
     _ApplicationPath = applicationPath
+    _Translator = New Translator
+
     Me.StartPosition = FormStartPosition.CenterScreen
     Me.ShowDialog()
 
@@ -113,19 +118,28 @@ Public Class DbConnectionForm
 
   Private Sub btnBrowse_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBrowse.Click
     Dim raceDaysFrm As RaceDaysForm = New RaceDaysForm
-    raceDaysFrm.StartForm(True, _DbConn)
+    Dim resMan As ApplicationResourceManager = New ApplicationResourceManager
+    resMan.Translator = _Translator
+    resMan.DbConnection = _DbConn
+    raceDaysFrm.StartForm(True, resMan)
 
   End Sub
 
   Private Sub btnTest_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnTest.Click
     Dim testFrm As TestForm = New TestForm
-    testFrm.StartForm(True, _DbConn)
+    Dim resMan As ApplicationResourceManager = New ApplicationResourceManager
+    resMan.Translator = _Translator
+    resMan.DbConnection = _DbConn
+    testFrm.StartForm(True, resMan)
 
   End Sub
 
   Private Sub buttonStats_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonStats.Click
     Dim statFrm As StatForm = New StatForm
-    statFrm.StartForm(True, _DbConn)
+    Dim resMan As ApplicationResourceManager = New ApplicationResourceManager
+    resMan.Translator = _Translator
+    resMan.DbConnection = _DbConn
+    statFrm.StartForm(True, resMan)
   End Sub
 
   Private Sub buttonClose_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonClose.Click
@@ -160,12 +174,18 @@ Public Class DbConnectionForm
 
   Private Sub buttonBetSim_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles buttonBetSim.Click
     Dim betSimForm As RaceBetSim = New RaceBetSim
-    betSimForm.StartForm(True, _DbConn)
+    Dim resMan As ApplicationResourceManager = New ApplicationResourceManager
+    resMan.Translator = _Translator
+    resMan.DbConnection = _DbConn
+    betSimForm.StartForm(True, resMan)
   End Sub
 
   Private Sub btnRaceDays_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRaceDays.Click
     Dim rFrm As RaceSelectForm = New RaceSelectForm
-    rFrm.StartForm(True, _DbConn)
+    Dim resMan As ApplicationResourceManager = New ApplicationResourceManager
+    resMan.Translator = _Translator
+    resMan.DbConnection = _DbConn
+    rFrm.StartForm(True, resMan)
   End Sub
 
   Private Sub buttonManage_Click(sender As System.Object, e As System.EventArgs) Handles buttonManage.Click
