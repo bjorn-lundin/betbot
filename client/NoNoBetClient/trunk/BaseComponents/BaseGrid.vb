@@ -243,6 +243,7 @@ Public Class BaseGrid
 
     If _ResourceManager.Translator.TranslateTerm(e.Column.Name, "swe", "eng", termTranslation, termDescription) Then
       e.Column.HeaderText = termTranslation
+      e.Column.ToolTipText = e.Column.Name
     End If
 
   End Sub
