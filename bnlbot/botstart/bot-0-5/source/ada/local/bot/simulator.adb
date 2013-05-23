@@ -13,13 +13,15 @@ with General_Routines;       use General_Routines;
 
 
 procedure Simulator is
---  Not_Implemented,
+   Not_Implemented,
    Bad_Animal,
    --   Bad_Bet_Type,
    Bad_Graph_Type, Bad_Name_Type : exception;
 
    Eol : Boolean := False;
 
+   Sa_Par_Db_Name       : aliased Gnat.Strings.String_Access;
+   Sa_Par_Favorite_By   : aliased Gnat.Strings.String_Access;
    Sa_Graph_Type        : aliased Gnat.Strings.String_Access;
    Sa_Stop_Date         : aliased Gnat.Strings.String_Access;
    Sa_Saldo             : aliased Gnat.Strings.String_Access;
@@ -38,6 +40,7 @@ procedure Simulator is
    Global_Bet_Name   : Races.Bet_Name_Type;
    Global_Graph_Type : Races.Graph_Type;
    Global_Bet_Won                : Boolean := False;
+   Global_Favorite_By : Float_8 := 0.0;
 
    Global_Profit            : Races.Profit_Type            := 0.0;
    Global_Saldo,
@@ -80,10 +83,23 @@ begin
 
    Define_Switch
      (Config,
-      Sa_Graph_Type'Access,
-      "-g:",
-      Long_Switch => "--graph_type=",
-      Help        => "type of graph, 'Weekly', 'Four_Weeks', 'Eight_Weeks', 'Twenty_Six_Weeks', 'Fifty_Two_Weeks', 'Seventy_Eight_Weeks'  or 'One_Hundred_And_Four_Weeks'");
+      Sa_Animal'Access,
+      "-a:",
+      Long_Switch => "--animal=",
+      Help        => "type of animal, 'hound' or 'horse'");
+
+   Define_Switch
+     (Config,
+      Sa_Bet_Name'Access,
+      "-b:",
+      Long_Switch => "--bet_name=",
+      Help        => "'winner' or 'place'");
+   Define_Switch
+     (Config,
+      Sa_Par_Db_Name'Access,
+      "-D:",
+      Long_Switch => "--db_name=",
+      Help        => "database name");
 
    Define_Switch
      (Config,
@@ -91,6 +107,27 @@ begin
       "-f:",
       Long_Switch => "--stop_date=",
       Help        => "when the simulation stops dd-MON-yyyy, 25-FEB-2013");
+
+   Define_Switch
+     (Config,
+      Sa_Par_Favorite_By'Access,
+      "-F:",
+      Long_Switch => "--favorite_by=",
+      Help        => "min odds diff to 2nd fav");
+
+   Define_Switch
+     (Config,
+      Sa_Graph_Type'Access,
+      "-g:",
+      Long_Switch => "--graph_type=",
+      Help        => "type of graph, 'Weekly', 'Four_Weeks', 'Eight_Weeks', 'Twenty_Six_Weeks', 'Fifty_Two_Weeks', 'Seventy_Eight_Weeks'  or 'One_Hundred_And_Four_Weeks'");
+
+   Define_Switch
+     (Config,
+      Ba_Quiet'Access,
+      "-q",
+      Long_Switch => "--quiet",
+      Help        => "no log output");
 
    Define_Switch
      (Config,
@@ -106,26 +143,8 @@ begin
       Long_Switch => "--size=",
       Help        => "size of bet");
 
-   Define_Switch
-     (Config,
-      Sa_Animal'Access,
-      "-a:",
-      Long_Switch => "--animal=",
-      Help        => "type of animal, 'hound' or 'horse'");
 
-   Define_Switch
-     (Config,
-      Sa_Bet_Name'Access,
-      "-b:",
-      Long_Switch => "--bet_name=",
-      Help        => "'winner' or 'place'");
 
-   Define_Switch
-     (Config,
-      Ba_Quiet'Access,
-      "-q",
-      Long_Switch => "--quiet",
-      Help        => "no log output");
 
    Getopt (Config);  -- process the command line
    --   Display_Help (Config);
@@ -172,6 +191,7 @@ begin
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
       Global_Start_Saldo       := Global_Saldo;
+      Global_Favorite_By       := Float_8'Value(Sa_Par_Favorite_By.all);
    exception
       when Constraint_Error =>
          Display_Help (Config);
@@ -215,6 +235,7 @@ begin
 
    Races.Get_Database_Data
      (Race_List  => Race_List,
+      Db_Name    => Sa_Par_Db_Name.all,
       Bet_Type   => Global_Bet_Name,
       Animal     => Global_Animal,
       Start_Date => Global_Start_Date,
@@ -342,7 +363,7 @@ begin
                      end loop;
                   end loop;
 
---               when Races.Lay_Favorite =>
+               when Races.Lay_Favorite => raise Not_Implemented with "Lay_Favorite not implemented";
 --                 for Max_Price in Max_Price_Index_Type'Range loop
 --                    for Min_Price in Min_Price_Index_Type'Range loop
 --                       Global_Saldo  := Races.Saldo_Type'Value (Sa_Saldo.all);
@@ -443,6 +464,7 @@ begin
                               Max_Daily_Loss    => Global_Max_Daily_Loss,
                               Max_Profit_Factor => Global_Max_Profit_Factor,
                               Size              => Global_Size,
+                              Favorite_By       => Global_Favorite_By,
                               Back_Price        => Races.Back_Price_Type (Back_Price) / 10.0,
                               Delta_Price       => Races.Delta_Price_Type (Delta_Price) / 10.0);
 
