@@ -20,7 +20,7 @@ procedure Simulator3 is
 
    Eol : Boolean := False;
    Sa_Par_Bet_Type     : aliased Gnat.Strings.String_Access;
-
+   Sa_Par_Favorite_By   : aliased Gnat.Strings.String_Access;
    Sa_Par_Db_Name       : aliased Gnat.Strings.String_Access;
    Sa_Par_Price         : aliased Gnat.Strings.String_Access;
    Sa_Par_Delta         : aliased Gnat.Strings.String_Access;
@@ -66,7 +66,9 @@ procedure Simulator3 is
    Global_Avg_Price,
    Global_Sum_Price              : Races.Price_Type := 0.0;
 
-   Actual_Hitrate, Needed_Hitrate : Float_8 := 0.0;
+   Actual_Hitrate,
+   Needed_Hitrate ,
+   Global_Favorite_By         : Float_8 := 0.0;
 
 
    use type Races.Saldo_Type;
@@ -151,6 +153,13 @@ begin
       "-f:",
       Long_Switch => "--stop_date=",
       Help        => "when the simulation stops dd-MON-yyyy, 25-FEB-2013");
+
+   Define_Switch
+     (Config,
+      Sa_Par_Favorite_By'Access,
+      "-F:",
+      Long_Switch => "--favorite_by=",
+      Help        => "min odds diff to 2nd fav");
 
    Define_Switch
      (Config,
@@ -251,6 +260,7 @@ begin
       Global_Start_Saldo       := Global_Saldo;
       Global_Back_Price        := Races.Back_Price_Type'Value (Sa_Par_Price.all);
       Global_Delta_Price       := Races.Delta_Price_Type'Value (Sa_Par_Delta.all);
+      Global_Favorite_By       := Float_8'Value(Sa_Par_Favorite_By.all);
    exception
       when Constraint_Error =>
          Display_Help (Config);
@@ -669,6 +679,7 @@ begin
                               Last_Loss         => Global_Last_Loss,
                               Max_Daily_Loss    => Global_Max_Daily_Loss,
                               Max_Profit_Factor => Global_Max_Profit_Factor,
+                              Favorite_By       => Global_Favorite_By,
                               Size              => Global_Size,
                               Back_Price        => Global_Back_Price,
                               Delta_Price       => Global_Delta_Price);
