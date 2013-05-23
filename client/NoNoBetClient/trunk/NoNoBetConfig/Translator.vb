@@ -1,5 +1,10 @@
 ﻿Imports System.Xml
+Imports System.Windows.Forms
 
+''' <summary>
+''' Handling translation of terms
+''' </summary>
+''' <remarks>Loads translations from XML file and caches them in a hashtable</remarks>
 Public Class Translator
 
   Private _Terms As XmlDocument = Nothing
@@ -13,14 +18,26 @@ Public Class Translator
   Public Sub New()
     _TermsCache = New Hashtable
     _Terms = New XmlDocument
-    'Load the XML file
-    _Terms.Load(TermsConfigFileName)
+    'Load the XML file into a XML document
+    LoadConfigFile()
+    'Select the /terms/term node list in XML document
     _AllTermsNodeList = _Terms.SelectNodes("/terms/term")
     'Cache all translations
     LoadTermsCache("swe", "eng")
     _ReadFromCache = True
   End Sub
 
+  Private Sub LoadConfigFile()
+    Dim fullName As String = IO.Path.Combine(Application.StartupPath, TermsConfigFileName)
+    _Terms.Load(fullName)
+  End Sub
+
+  ''' <summary>
+  ''' Load all terms translations into a hashtable
+  ''' </summary>
+  ''' <param name="lang1"></param>
+  ''' <param name="lang2"></param>
+  ''' <remarks></remarks>
   Public Sub LoadTermsCache(lang1 As String, lang2 As String)
     Dim name As String = Nothing
     Dim langElem As XmlElement = Nothing
@@ -55,7 +72,16 @@ Public Class Translator
     Next
 
   End Sub
-
+  ''' <summary>
+  ''' Translate specified term
+  ''' </summary>
+  ''' <param name="termName">Name of term</param>
+  ''' <param name="lang1">Language 1</param>
+  ''' <param name="lang2">Language 2 (fall back if lang1 does not exist</param>
+  ''' <param name="termTranslation">Translation of term</param>
+  ''' <param name="termDescription">Description of term</param>
+  ''' <returns></returns>
+  ''' <remarks></remarks>
   Public Function TranslateTerm(termName As String, lang1 As String, lang2 As String, ByRef termTranslation As String, ByRef termDescription As String) As Boolean
     If _ReadFromCache Then
       Return TranslateTermFromCache(termName, lang1, lang2, termTranslation, termDescription)
