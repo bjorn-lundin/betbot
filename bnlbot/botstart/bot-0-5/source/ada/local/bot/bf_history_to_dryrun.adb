@@ -139,22 +139,22 @@ begin
 --          Log ("History -  " & History.eventid'img & "-" & Old_History.eventid'img);
 
 
-        case History2.event(1) is
-          when 'A'| 'B'| 'D'| 'E'| 'H'| 'P'| 'R'| 'S' => race_ok := True;
-          when others                                 => race_ok := False;
-        end case;
+--        case History2.event(1) is
+--          when 'A'| 'B'| 'D'| 'E'| 'H'| 'P'| 'R'| 'S' => race_ok := True;
+--          when others                                 => race_ok := False;
+--        end case;
 
-        case History2.event(2) is
-          when '1' .. '9' => null; -- just pass
-          when others     => race_ok := False;
-        end case;
+--        case History2.event(2) is
+--          when '1' .. '9' => null; -- just pass
+--          when others     => race_ok := False;
+--        end case;
 
-
+        race_ok := False;
 
         if History2.event(1..8) = "Forecast" then
           race_ok := False;
         elsif History2.event(1..12) = "TO BE PLACED" then
-          race_ok := False;
+          race_ok := True;
         end if;
 
         if race_ok then

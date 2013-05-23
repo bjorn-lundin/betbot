@@ -1214,7 +1214,7 @@ package body Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in String) is
-      Local_Value : constant String := Escape (Global_Connection, Value);
+      Local_Value : constant String := General_Routines.Trim(Escape (Global_Connection, Value));
    begin
       Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
    end Set;

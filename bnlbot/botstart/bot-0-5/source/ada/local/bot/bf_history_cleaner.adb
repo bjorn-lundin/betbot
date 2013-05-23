@@ -22,13 +22,18 @@ procedure Bf_History_Cleaner is
 
    History2     : Table_History2.Data_Type;
 
-   T                       : Sql.Transaction_Type;
-   Select_All   : Sql.Statement_Type;
-   select_latest : Sql.Statement_Type;
-   start_date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
-   stop_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   T            : Sql.Transaction_Type;
+   Select_All,
+   Select_latest,
+   Stm_Select_Volume,
+   Stm_Select_Eventid_Selectionid_O : Sql.Statement_Type;
 
-   Eos,Eos2          : Boolean := False;
+   Start_Date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   Stop_Date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+
+   Eos,
+   Eos2,
+   Eos3         : Boolean := False;
 
    Sa_Date      : aliased Gnat.Strings.String_Access;
    I_Num_Days   : aliased Integer;
@@ -60,7 +65,6 @@ begin
 
    Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "00:00:00:000");
    Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "23:59:59:999");
-
 
    Log ("Connect db");
    Sql.Connect
@@ -94,6 +98,13 @@ begin
       Sql.Set_Timestamp(Select_all, "START", Start_date);
       Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
 
+      Sql.Prepare(Stm_Select_Eventid_Selectionid_O, " select * from HISTORY " &
+            "where EVENTID=:EVENTID" &
+            " and SELECTIONID=:SELECTIONID" &
+            " order by LATESTTAKEN desc "  ) ;
+
+      Sql.Prepare(Stm_Select_Volume, " select sum(volumematched), sum(numberbets) from HISTORY " &
+            "where EVENTID=:EVENTID" );
 
       Sql.Open_Cursor(Select_all);
       loop
@@ -101,13 +112,31 @@ begin
           exit when Eos;
           Sql.Get(Select_All,"EVENTID",History.EVENTID);
           Sql.Get(Select_All,"SELECTIONID",History.SELECTIONID);
-          TAble_History.Read_One_Eventid_selectionid(Data  => History,
-                                                     Order => False,
-                                                     End_Of_Set => Eos2);
-          if Eos2 then
-                Log ("History - FAIL " & History.EVENTID'img & History.SELECTIONID'img);
-                return;
+
+
+          Sql.Set(Stm_Select_Eventid_Selectionid_O, "EVENTID", History.EVENTID);
+          Sql.Set(Stm_Select_Eventid_Selectionid_O, "SELECTIONID", History.SELECTIONID);
+          Sql.Open_Cursor(Stm_Select_Eventid_Selectionid_O);
+          Sql.Fetch(Stm_Select_Eventid_Selectionid_O, Eos2);
+          if not Eos2 then
+            History := Table_History.Get(Stm_Select_Eventid_Selectionid_O);
+          else
+            Log ("History - FAIL " & History.EVENTID'img & History.SELECTIONID'img);
+            return;
           end if;
+          Sql.Close_Cursor(Stm_Select_Eventid_Selectionid_O);
+
+          Sql.Set(Stm_Select_Volume, "EVENTID", History.EVENTID);
+          Sql.Open_Cursor(Stm_Select_Volume);
+          Sql.Fetch(Stm_Select_Volume, Eos3);
+          if not Eos2 then
+            Sql.Get(Stm_Select_Volume,1, History.Volumematched);
+            Sql.Get(Stm_Select_Volume,2, History.Numberbets);
+          else
+            Log ("History - FAIL TO GET VOLUMEMATCHED " & History.EVENTID'img);
+            return;
+          end if;
+          Sql.Close_Cursor(Stm_Select_Volume);
 
           begin
             History2 := (

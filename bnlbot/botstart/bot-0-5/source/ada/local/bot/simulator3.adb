@@ -327,14 +327,8 @@ begin
                --   Sa_Index.all  & "-" &
                ".dat");
 
-            Fil     := Data_Dir &
-            To_Unbounded_String (Global_Directory_Separator) &
-            Filename;
-            Fil_Gpi := Data_Dir &
-            To_Unbounded_String (Global_Directory_Separator) &
-            Filename &
-            To_Unbounded_String (".gpi");
-            Log ("Filename: '" & To_String (Filename) & "'");
+            Fil     :=  To_Unbounded_String ("horses_back.dat");
+            Log ("Filename: '" & To_String (Fil) & "'");
             --   begin
             -- create file if not exists
             Text_Io.Create
@@ -775,27 +769,27 @@ begin
 --                  end loop;
             end case;
 
-            Contents_Gpi :=
-              To_Unbounded_String
-                ("graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "bet_name='" & Lower_Case (Global_Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
-                 "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "variant='" & Lower_Case (The_Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
-                 "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
-                 "max_daily_loss='" & Lower_Case (Max_Daily_Loss'Img) & "'" & Ada.Characters.Latin_1.Lf &
-                 "start_date='" & Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "'" & Ada.Characters.Latin_1.Lf &
-                 "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
-                 "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
-                 "datadir='" & To_String (Data_Dir) & "'");
-
-
-            Text_Io.Create
-              (Mode => Text_Io.Out_File,
-               Name => To_String (Fil_Gpi),
-               File => Target_Gpi);
-            Text_Io.Put_Line (Target_Gpi, To_String (Contents_Gpi));
-            Text_Io.Close (Target_Gpi);
+--            Contents_Gpi :=
+--              To_Unbounded_String
+--                ("graph_type='" & Sa_Graph_Type.all & "'" & Ada.Characters.Latin_1.Lf &
+--                 "animal='" & Sa_Animal.all & "'" & Ada.Characters.Latin_1.Lf &
+--                 "bet_name='" & Lower_Case (Global_Bet_Type'Img) & "'" & Ada.Characters.Latin_1.Lf &
+--                 "bet_type='" & Sa_Bet_Name.all & "'" & Ada.Characters.Latin_1.Lf &
+--                 "variant='" & Lower_Case (The_Variant'Img) & "'" & Ada.Characters.Latin_1.Lf &
+--                 "index='" & "not_supported" & "'" & Ada.Characters.Latin_1.Lf &
+--                 "max_daily_loss='" & Lower_Case (Max_Daily_Loss'Img) & "'" & Ada.Characters.Latin_1.Lf &
+--                 "start_date='" & Sattmate_Calendar.String_Date_Iso (Global_Start_Date) & "'" & Ada.Characters.Latin_1.Lf &
+--                 "stop_date='" & Sa_Stop_Date.all & "'" & Ada.Characters.Latin_1.Lf &
+--                 "datafil='" & To_String (Filename) & "'" & Ada.Characters.Latin_1.Lf &
+--                 "datadir='" & To_String (Data_Dir) & "'");
+--
+--
+--            Text_Io.Create
+--              (Mode => Text_Io.Out_File,
+--               Name => To_String (Fil_Gpi),
+--               File => Target_Gpi);
+--            Text_Io.Put_Line (Target_Gpi, To_String (Contents_Gpi));
+--            Text_Io.Close (Target_Gpi);
 
 --         end loop;
 --      end loop;
