@@ -12,8 +12,8 @@ with Unchecked_Conversion;
 package Races is
    Not_Implemented : exception;
 
---   type Bet_Name_Type is (Place, Winner);
-   type Bet_Name_Type is ( Winner);
+   type Bet_Name_Type is (Place, Winner);
+--   type Bet_Name_Type is ( Winner);
    type Bet_Type_Type is (Lay, Back, Lay_Favorite);
 --   type Bet_Type_Type is (Lay, Back);
    type Animal_Type is (Horse, Hound);
@@ -124,6 +124,7 @@ package Races is
                             Max_Daily_Loss         : in Max_Daily_Loss_Type;
                             Max_Profit_Factor      : in Max_Profit_Factor_Type ;
                             Size                   : in Size_Type;
+                            Favorite_By            : in Float_8;
                             Back_Price             : in Back_Price_Type;
                             Delta_Price            : in Delta_Price_Type )  ;
 

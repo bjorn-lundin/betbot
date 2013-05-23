@@ -7,6 +7,8 @@
         <Column Name="backprice"   Size="8" Type="6" AllowNull="0" Description="back_price"/>
         <Column Name="layprice"    Size="8" Type="6" AllowNull="0" Description="lay_price"/>
         <Column Name="runnername"  Size="50" Type="1" AllowNull="0" Description="runner_name"/>
+        <Column Name="runnernamestripped" Size="50" Type="1" AllowNull="1"  Description="runner_name without startnum"/>
+        <Column Name="startnum"           Size="2"  Type="1" AllowNull="1"  Description="startnum from runnername"/>
         <Index Columns="marketid,selectionid" type="primary"/>
     </Table>
 </MaAstro>
