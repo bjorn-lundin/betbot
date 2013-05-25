@@ -79,7 +79,6 @@ def read_file(filepath=None, encoding=None):
     filename = os.path.basename(filepath)
     result = None
     if os.path.exists(filepath):
-        LOG.info('Reading file ' + filename)
         filehandle = None
         try:
             filehandle = codecs.open(filepath, encoding=encoding)
@@ -219,7 +218,8 @@ def strings_to_date(year=None, month=None, date=None):
     '''
     Converts string parts to a date object
     '''
-    date = datetime.datetime(
+#    date = datetime.datetime(
+    date = datetime.date(
         int(year), 
         int(month), 
         int(date)
@@ -238,12 +238,26 @@ def date_to_struct(client, date):
 
 def struct_to_time(time_struct):
     '''
+    Converts struct to a time object
+    '''
+    time = datetime.time(
+        time_struct.hour, 
+        time_struct.minute, 
+        time_struct.second, 
+        time_struct.tenth * 100000
+    )
+    return time
+
+def strings_to_time(hour=None, minute=None, second=None, tenth=None):
+    '''
     Converts string parts to a time object
     '''
-    time = datetime.time(time_struct.hour, 
-                         time_struct.minute, 
-                         time_struct.second, 
-                         time_struct.tenth * 100000)
+    time = datetime.time(
+        hour, 
+        minute, 
+        second, 
+        tenth * 100000
+    )
     return time
 
 def params_to_datetime(year=None, month=None, day=None, hour=None, 
