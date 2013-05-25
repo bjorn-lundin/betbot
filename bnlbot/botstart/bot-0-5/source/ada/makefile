@@ -39,7 +39,8 @@ endif
 
 all: json_test adabot
 
-bad_tables : $(ST)/table_dry_markets.ads $(ST)/table_dry_results.ads $(ST)/table_dry_runners.ads
+bad_tables : $(ST)/table_dry_markets.ads $(ST)/table_dry_results.ads 
+bad_tables2 : $(ST)/table_dry_runners.ads
 
 tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads \
