@@ -29,14 +29,14 @@ import logging.handlers
 class Market(object):
 
     def __init__(self, root, conn, log):
-        self.bet_id = None
-        self.market_id = None
-        self.display_name = None
-        self.market_type = None
-        self.selection_id_list = None
-        self.bet_id = None
-        self.selection_id = None
-        self.bet_type = None
+        self.betid = None
+        self.marketid = None
+        self.displayname = None
+        self.markettype = None
+        self.selectionid_list = None
+        self.betid = None
+        self.selectionid = None
+        self.bettype = None
         self.size = None
         self.price = None
         self.conn = conn
@@ -44,29 +44,29 @@ class Market(object):
 
 #        print 'root.tag: ', root.tag , 'text',  root.text
         if root.tag == 'market' :
-            self.market_id = root.get('id')
+            self.marketid = root.get('id')
 #	    print 'self.market_id', self.market_id
 
             for elem in root :
                 if   elem.tag == 'name' :
-                    self.display_name = elem.get('displayName')
+                    self.displayname = elem.get('displayName')
                 elif elem.tag == 'marketType' :
-                    self.market_type = elem.text
+                    self.markettype = elem.text
                 elif elem.tag == 'winners' :
-                    self.selection_id_list = []
+                    self.selectionid_list = []
                 for w in elem :
                     if w.tag == 'winner' :
-                        self.selection_id_list.append(w.get('selectionId'))
+                        self.selectionid_list.append(w.get('selectionId'))
 
 
 
     def result_exists(self):
         eos = False
-        if self.selection_id_list :
-            for sid in self.selection_id_list :
+        if self.selectionid_list :
+            for sid in self.selectionid_list :
                 cur = self.conn.cursor()
-                cur.execute("select * from DRY_RESULTS where MARKET_ID = %s and SELECTION_ID = %s",
-                      (self.market_id, sid))
+                cur.execute("select * from DRYRESULTS where MARKETID = %s and SELECTIONID = %s",
+                      (self.marketid, sid))
                 eos = True
                 row = cur.fetchone()
                 cur.close()
@@ -81,8 +81,8 @@ class Market(object):
 
     def result_insert(self):
 #	print 'resultinsert',self.market_id, self.selection_id_list
-        if self.selection_id_list :
-            for sid in self.selection_id_list :
+        if self.selectionid_list :
+            for sid in self.selectionid_list :
 
                 cur7 = self.conn.cursor()
                 cur7.execute("SAVEPOINT RES_GET_B")
@@ -90,11 +90,11 @@ class Market(object):
                 try  :
 
                     cur = self.conn.cursor()
-                    cur.execute("insert into DRY_RESULTS (MARKET_ID, SELECTION_ID) values (%s,%s)",
-                       (self.market_id, sid))
+                    cur.execute("insert into DRYRESULTS (MARKETID, SELECTIONID) values (%s,%s)",
+                       (self.marketid, sid))
                     cur.close()
                 except psycopg2.IntegrityError:
-                    self.log.info('duplicate index self.market_id, sid ' +  str(self.market_id) + ' ' + str(sid))
+                    self.log.info('duplicate index self.marketid, sid ' +  str(self.marketid) + ' ' + str(sid))
                     cur.close()
                     cur6 = self.conn.cursor()
                     cur6.execute("ROLLBACK TO SAVEPOINT RES_GET_B" )
@@ -148,7 +148,7 @@ class Result_Feeder(object):
         """return only when it is safe to send another data request"""
 #        wait = self.throttle['next_req'] - time()
 #        if wait > 0:
-        self.log.info('Wait for '  + str(s) + ' seconds')
+        self.log.info('Wait for '  + str(32) + ' seconds')
         sleep(32)
 #        self.throttle['next_req'] = time() + self.throttle['rps']
 
@@ -161,7 +161,7 @@ class Result_Feeder(object):
             self.log.info('Fetched horses')
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if market.market_id and not market.result_exists() :
+                if market.marketid and not market.result_exists() :
                     market.result_insert()
 
         if self.get_hounds :
@@ -170,7 +170,7 @@ class Result_Feeder(object):
             self.log.info('Fetched hounds')
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if market.market_id and not market.result_exists() :
+                if market.marketid and not market.result_exists() :
                     market.result_insert()
 
         if self.get_soccer :
@@ -179,7 +179,7 @@ class Result_Feeder(object):
             self.log.info('Fetched soccer')
             for m in markets :
                 market = Market(m, self.conn, self.log)
-                if market.market_id and not market.result_exists() :
+                if market.marketid and not market.result_exists() :
                     market.result_insert()
 
         self.conn.commit()

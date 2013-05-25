@@ -1,8 +1,8 @@
-# -*- coding: iso-8859-1 -*- 
+# -*- coding: iso-8859-1 -*-
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
-import datetime 
+import datetime
 import psycopg2
 import urllib2
 import ssl
@@ -31,26 +31,26 @@ class SimpleBot(object):
     NETWORK_FAILURE_DELAY = 60.0
     conn = None
 
-     
+
     def __init__(self, log):
         rps = 1/2.0 # Refreshes Per Second
         self.api = API('uk') # exchange ('uk' or 'aus')
         self.no_session = True
         self.throttle = {'rps': 1.0 / rps, 'next_req': time()}
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
         self.log = log
-        
+
 ############################# end __init__
     def reconnect(self):
-        db = Db() 
-        self.conn = db.conn 
+        db = Db()
+        self.conn = db.conn
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
         if uname and pword and prod_id and vend_id:
             resp = self.api.login(uname, pword, prod_id, vend_id)
-            if resp == 'OK': 
+            if resp == 'OK':
                 self.no_session = False
             return resp
         else:
@@ -63,7 +63,7 @@ class SimpleBot(object):
         """returns a list of markets or an error string"""
         # NOTE: get_all_markets is NOT subject to data charges!
 #        print datetime.datetime.now(), 'api.get_all_markets start'
-#  'Horse Racing': '7', 
+#  'Horse Racing': '7',
 #self.HOURS_TO_MATCH_START
 #               countries = None)
         markets = self.api.get_all_markets(
@@ -77,21 +77,21 @@ class SimpleBot(object):
         if type(markets) is list:
             # sort markets by start time + filter
             for market in markets[:]:
-             # loop through a COPY of markets 
+             # loop through a COPY of markets
              #as we're modifying it on the fly...
                 markets.remove(market)
                 market_ok = True
-                
+
                 if (  market_ok
                     and market['market_status'] == 'ACTIVE' # market is active
                     and market['market_type'] == 'O' # Odds market only
                     and market['bet_delay'] == 0 # not started
-                    and market['no_of_runners'] >= 2 # 
+                    and market['no_of_runners'] >= 2 #
                    ):
                     # calc seconds til start of game
                     delta = market['event_date'] - self.api.API_TIMESTAMP
                     # 1 day = 86400 sec
-                    sec_til_start = delta.days * 86400 + delta.seconds 
+                    sec_til_start = delta.days * 86400 + delta.seconds
                     temp = [sec_til_start, market]
                     markets.append(temp)
                     self.log.info( 'market :' + str(market))
@@ -110,60 +110,60 @@ class SimpleBot(object):
         self.throttle['next_req'] = time() + self.throttle['rps']
 ############################# end do_throttle
 
-    def check_strategy(self, market_id ):
+    def check_strategy(self, marketid ):
         """check market for suitable bet"""
-        if market_id:        
+        if marketid:
             self.do_throttle()
-            bf_market = self.api.get_market(market_id)
-        
+            bfmarket = self.api.get_market(marketid)
+
             # get market prices
             self.do_throttle()
-            prices = self.api.get_market_prices(market_id)
+            prices = self.api.get_market_prices(marketid)
             self.log.info( 'prices :' + str(prices))
             if type(prices) is dict and prices['status'] == 'ACTIVE':
                 bets = []
-                lay_price = None 
+                layprice = None
                 selection = None
-                
+
                 race_list = []
                 for runner in prices['runners'] :
                     try :
                         bp = runner['back_prices'][0]['price']
                     except:
-                        bp = 1001                        
+                        bp = 1001
                     try :
                         lp = runner['lay_prices'][0]['price']
                     except:
-                        lp = 1001                        
+                        lp = 1001
                     try :
-                        sel_id = runner['selection_id']
+                        selid = runner['selection_id']
                     except:
-                        sel_id = -1                        
+                        selid = -1
                     try :
                         idx = runner['order_index']
                     except:
-                        idx = -1                        
-                        
+                        idx = -1
+
                     self.log.info( 'UNSORTED back/lay/selection/idx ' + \
                             str(bp) + '/' + \
                             str(lp) + '/' + \
-                            str(sel_id) + '/' + \
+                            str(selid) + '/' + \
                             str(idx)  )
                     d = {}
-                    d['market_id'] = market_id
-                    d['bp'] = bp 
-                    d['lp'] = lp 
-                    d['sel_id'] = sel_id
-                    d['idx'] = idx 	
+                    d['market_id'] = marketid
+                    d['bp'] = bp
+                    d['lp'] = lp
+                    d['sel_id'] = selid
+                    d['idx'] = idx
                     # get the name, and thus the track#
                     name = "100. not found"
-                    if bf_market and type(bf_market) is dict :
-                        for runner in bf_market['runners'] :
-                            if int(runner['selection_id']) == int(sel_id) :
+                    if bfmarket and type(bfmarket) is dict :
+                        for runner in bfmarket['runners'] :
+                            if int(runner['selection_id']) == int(selid) :
                                 name = runner['name']
                                 break
-                    d['name'] = name 	
-                    
+                    d['name'] = name
+
                     dr = DryRunner(self.conn, self.log, d)
                     dr.insert()
 
@@ -175,7 +175,7 @@ class SimpleBot(object):
         """start the main loop"""
         # login/monitor status
         login_status = self.login(uname, pword, prod_id, vend_id)
-        while login_status == 'OK': 
+        while login_status == 'OK':
             # get list of markets starting soon
             self.log.info( '-----------------------------------------------------------')
             markets = self.get_markets()
@@ -197,7 +197,7 @@ class SimpleBot(object):
                                        str(len(markets)) + ' ' + \
                                        my_market.menu_path.decode("iso-8859-1") + ' --++--++ ')
                         my_market.insert()
-                        self.check_strategy(my_market.market_id)
+                        self.check_strategy(my_market.marketid)
 
                         self.conn.commit()
                 # check if session is still OK
@@ -226,7 +226,7 @@ FH = logging.handlers.RotatingFileHandler(
     backupCount = 10,
     encoding = 'iso-8859-1',
     delay = False
-) 
+)
 FH.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 FH.setFormatter(FORMATTER)
@@ -240,7 +240,7 @@ log.info('Starting application')
 config = ConfigParser.ConfigParser()
 config.read('betfair_login.ini')
 
-username = config.get('Login', 'username') 
+username = config.get('Login', 'username')
 password =  config.get('Login', 'password')
 
 bot = SimpleBot(log)
@@ -255,11 +255,11 @@ while True:
     except ssl.SSLError :
         log.error( 'Lost network (ssl error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-       
+
     except socket.error as ex:
         log.error( 'Lost network (socket error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
-	
+
     except httplib2.ServerNotFoundError :
         log.error( 'Lost network (server not found error) . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
         sleep (bot.NETWORK_FAILURE_DELAY)
@@ -267,10 +267,9 @@ while True:
 #        log.error( 'Lost db contact . Retry in ' + str(bot.NETWORK_FAILURE_DELAY) + 'seconds')
 #        sleep (bot.NETWORK_FAILURE_DELAY)
 #        bot.reconnect()
-	
+
     except KeyboardInterrupt :
         break
 
 log.info('Ending application')
 logging.shutdown()
-    
