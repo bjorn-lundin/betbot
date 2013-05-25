@@ -10,7 +10,6 @@ from sqlalchemy import Date, Time, Boolean, ForeignKey, Table, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import IntegrityError
-import util
 import conf
 import logging
 
@@ -582,8 +581,6 @@ class ToteResult(BASE):
 class DDPoolInfo(BASE):
     '''
     Database entity DDPoolInfo
-    
-    TODO: Replace track_id with race_id when raceday has been fixed (DD-1, DD-2 etc.)
     '''
     __tablename__ = 'ddpoolinfo'
     id = Column(Integer, primary_key=True)
@@ -634,6 +631,9 @@ class DDPoolInfo(BASE):
         return result
 
 class DDOdds(BASE):
+    '''
+    Database entity DDOdds
+    '''
     __tablename__ = 'ddodds'
     id = Column(Integer, primary_key=True)
     odds = Column(Integer)
@@ -643,6 +643,20 @@ class DDOdds(BASE):
     ddpoolinfo_id = Column(Integer, ForeignKey('ddpoolinfo.id'))
     ddpoolinfo = relationship('DDPoolInfo')
     
+    def __repr__(self):
+        params = (
+            self.id,
+            self.odds,
+            self.scratched,
+            self.start_nr_leg_1,
+            self.start_nr_leg_2,
+            self.ddpoolinfo_id
+        ) 
+        part1 = "<DDOdds( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
     @staticmethod
     def read(ddpoolinfo_id=None):
         '''
@@ -651,6 +665,65 @@ class DDOdds(BASE):
         result = \
             DB_SESSION.query(DDOdds).filter_by(
                 ddpoolinfo_id = ddpoolinfo_id
+            ).first()
+        return result
+
+class DDResult(BASE):
+    '''
+    Database entity DDResult
+    
+    Skipping fields:
+    * scratched_leg_1 (not used)
+    * scratched_leg_2 (not used)
+    * possible_oddses (not used)
+    * winners_leg_1 (same data as in start_nr_leg_1)
+    * winners_leg_2 (same data as in start_nr_leg_2)
+    '''
+    __tablename__ = 'ddresult'
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+    timestamp = Column(DateTime)
+    pool_closed = Column(Boolean)
+    sale_open = Column(Boolean)
+    turnover_sum = Column(Integer)
+    turnover_currency = Column(String)
+    final_odds = Column(Numeric)
+    start_nr_leg_1 = Column(Integer)
+    start_nr_leg_2 = Column(Integer)
+    track_id = Column(Integer, ForeignKey('track.id'))
+    track = relationship('Track')
+    bettype_id = Column(Integer, ForeignKey('bettype.id'))
+    bettype = relationship('Bettype')
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.date,
+            self.timestamp,
+            self.pool_closed,
+            self.sale_open,
+            self.turnover_sum,
+            self.turnover_currency,
+            self.finalOdds,
+            self.startNrLeg1,
+            self.startNrLeg2,
+            self.track_id,
+            self.bettype_id
+        ) 
+        part1 = "<DDResult( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(date=None, track_id=None):
+        '''
+        Read DDResult based on parameters
+        '''
+        result = \
+            DB_SESSION.query(DDResult).filter_by(
+                date = date,
+                track_id = track_id
             ).first()
         return result
 

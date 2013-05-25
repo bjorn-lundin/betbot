@@ -57,7 +57,6 @@ def load_into_db(datadir=None):
                 ddpoolinfo_entity.nr_of_horses_leg_2 = int(ddpoolinfo.nrOfHorsesLegTwo)
                 ddpoolinfo_entity.track_id = track.id
                 db.create(ddpoolinfo_entity)
-                
                 for ddodds in ddpoolinfo.doubleOdds.getchildren():
                     ddodds_entity = db.DDOdds()
                     ddodds_entity.odds = int(ddodds.odds.odds)
@@ -66,7 +65,6 @@ def load_into_db(datadir=None):
                     ddodds_entity.start_nr_leg_2 = int(ddodds.startNrLeg2)
                     ddodds_entity.ddpoolinfo_id = ddpoolinfo_entity.id
                     db.create(ddodds_entity)
-
             now = datetime.datetime.now()
             loaded_file = db.LoadedEODFiles(filename=filename, loadtime=now)
             db.create(entity=loaded_file)
@@ -113,7 +111,6 @@ def print_all_data(datadir=None):
         print(ddpoolinfo.betType.englishText)
         print(ddpoolinfo.nrOfHorsesLegOne)
         print(ddpoolinfo.nrOfHorsesLegTwo)
-        
         for ddodds in ddpoolinfo.doubleOdds.getchildren():
             print(ddodds.odds.odds)
             print(ddodds.odds.scratched)
