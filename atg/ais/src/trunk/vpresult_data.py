@@ -33,8 +33,12 @@ def load_into_db(datadir=None):
                     vpresult.date.date
                 )
                 track_atg_id = int(vpresult.trackKey.trackId)
-                race_number = int(vpresult.raceNr)
-                race = db.Race.read_atgid(date, race_number, track_atg_id)
+                race_nr = int(vpresult.raceNr)
+                race = db.Race.read(
+                    raceday_date=date, 
+                    race_nr=race_nr, 
+                    track_atg_id=track_atg_id
+                )
                 timestamp = util.params_to_datetime(
                     year = vpresult.timestamp.date.year, 
                     month = vpresult.timestamp.date.month, 
