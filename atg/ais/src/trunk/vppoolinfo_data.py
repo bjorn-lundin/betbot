@@ -32,8 +32,24 @@ def load_into_db(datadir=None):
                     vppoolinfo.date.date
                 )
                 track_atg_id = int(vppoolinfo.trackKey.trackId)
-                race_number = int(vppoolinfo.raceNr)
-                race = db.Race.read_atgid(date, race_number, track_atg_id)
+                race_nr = int(vppoolinfo.raceNr)
+                race = db.Race.read(
+                    raceday_date=date, 
+                    race_nr=race_nr, 
+                    track_atg_id=track_atg_id
+                )
+                if race is None:
+                    message = (
+                        'Race {0} (date: {1}, track: {2})' + \
+                        ' is missing in {3}'
+                        ).format(
+                            race_nr, 
+                            date, 
+                            track_atg_id, 
+                            filename
+                        )
+                    LOG.info(message)
+                    continue
                 timestamp = util.params_to_datetime(
                     year = vppoolinfo.timestamp.date.year, 
                     month = vppoolinfo.timestamp.date.month, 
