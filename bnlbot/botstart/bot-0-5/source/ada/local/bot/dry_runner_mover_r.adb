@@ -69,7 +69,7 @@ procedure Dry_Runner_Mover_R is
 begin
    Log ("Connect db");
    Sql.Connect
-     (Host     => "localhost",
+     (Host     => "192.168.0.13",
       Port     => 5432,
       Db_Name  => "betting",
       Login    => "bnl",
