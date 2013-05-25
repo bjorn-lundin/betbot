@@ -172,46 +172,9 @@ def raceday_calendar_service(params=None, date=None, ret_if_local=False):
     result = call_ais_service(params=params, date=date, 
                               ret_if_local=ret_if_local)
     if result:
-        for racedayinfo in result.raceDayInfos.RaceDayInfo:
-            # Get raceday
-            raceday = db.Raceday(racedayinfo)
-            if not db.Raceday.read(raceday):
-                # Get and save all bettypes in all races
-                # this raceday
-                for bettype in racedayinfo.betTypes.BetType:
-                    btype = db.Bettype(bettype=bettype)
-                    if not db.Bettype.read(btype):
-                        db.create(entity=btype)
-                # Get all races this raceday
-                races = []
-                for race in racedayinfo.raceInfos.RaceInfo:
-                    race_bettypes = []
-                    # For every race join each bettype
-                    for btc in race.betTypeCodes.string:
-                        btype = db.Bettype()
-                        btype.name_code = btc
-                        btype = db.Bettype.read(btype)
-                        race_bettypes.append(btype)
-                    # Create race, add bettypes and append
-                    # to collection
-                    race = db.Race(race)
-                    race.bettypes = race_bettypes
-                    races.append(race)
-                # Append races
-                raceday.races = races
-                # Create track if not present, add to raceday
-                atg_id = racedayinfo.trackKey.trackId
-                track = db.Track.read(atg_id=atg_id)
-                if track is None:
-                    track = db.Track()
-                    track.atg_id = atg_id
-                    track.code = racedayinfo.track.code
-                    track.domestic_text = racedayinfo.track.domesticText
-                    track.english_text = racedayinfo.track.englishText
-                    db.create(entity=track)
-                raceday.track = track
-                db.create(entity=raceday)
-                
+        import raceday_data
+        raceday_data.load_into_db(params['datadir'])
+        
 def racing_card_service(params=None, date=None, 
                         track=None, ret_if_local=False):
     '''
@@ -307,35 +270,14 @@ def event_array_service(params=None, ret_if_local=False):
     params['service'] = 'fetchEventArray'
     call_ais_service(params=params, ret_if_local=ret_if_local)
 
-def load_eod_raceday_into_db(params=None):
+def load_eod_raceday_into_db(datadir=None):
     '''
-    Iterate over all saved (local) raceday calendar files and 
-    save the data into database.
+    Pass on the call to iterate over all saved (local) 
+    racecard files and save the data into database.
     '''
-    filelist = sorted(util.list_files(params['datadir']))
-    calendar_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
-    pattern = re.compile(r'.*?(\d\d\d\d)(\d\d)(\d\d).*?') # r = raw string
-    # Get all loaded filenames from db
-    all_loaded = db.LoadedEODFiles.read_all()
-    loaded_files = []
-    for loaded in all_loaded:
-        loaded_files.append(loaded.filename)
-    # Compare with filename
-    for filename in calendar_filelist:
-        if filename not in loaded_files:
-            result = re.match(pattern, filename)
-            raceday_date = datetime.date(
-                int(result.group(1)),
-                int(result.group(2)),
-                int(result.group(3))
-            )
-            LOG.info('Loading ' + filename + ' into db')
-            raceday_calendar_service(params=params, date=raceday_date, 
-                                     ret_if_local=True)
-            now = datetime.datetime.now()
-            lef = db.LoadedEODFiles(filename=filename, loadtime=now)
-            db.create(entity=lef)
-        
+    import raceday_data
+    raceday_data.load_into_db(datadir=datadir)
+
 def load_eod_racingcard_into_db(datadir=None):
     '''
     Pass on the call to iterate over all saved (local) 
@@ -454,17 +396,19 @@ def eod_download_via_calendar(params=None):
 
             for race in raceday.races:
                 for bettype in race.bettypes:
-                    bettype = bettype_loopup[bettype.name_code]
-                    pool_info_service(
-                        params=params, 
-                        bettype=bettype, 
-                        date=date, 
-                        track=track_id, 
-                    )
-                    
-                    result_service(
-                        params=params, 
-                        bettype=bettype, 
-                        date=date, 
-                        track=track_id,
-                    )
+                    # See to that bet type is e.g. V75 and not V75-1
+                    if bettype.name_code in bettype_loopup:
+                        bettype = bettype_loopup[bettype.name_code]
+                        pool_info_service(
+                            params=params, 
+                            bettype=bettype, 
+                            date=date, 
+                            track=track_id, 
+                        )
+                        
+                        result_service(
+                            params=params, 
+                            bettype=bettype, 
+                            date=date, 
+                            track=track_id,
+                        )
