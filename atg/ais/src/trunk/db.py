@@ -50,19 +50,50 @@ class LoadedEODFiles(BASE):
         List all LoadedEODFiles entities in database
         '''
         return DB_SESSION.query(LoadedEODFiles).all()
+
+class RacedayCalendar(BASE):
+    '''
+    Database entity RacedayCalendar
+    '''
+    __tablename__ = 'raceday_calendar'
+    id = Column(Integer, primary_key=True)
+    from_date = Column(Date)
+    to_date = Column(Date)
+
+    def __repr__(self):
+        params = (
+            self.id, 
+            self.from_date, 
+            self.to_date
+        ) 
+        part1 = "<RacedayCalendar( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
     
+    @staticmethod
+    def read(from_date=None, to_date=None):
+        '''
+        Read a raceday entity in database
+        '''
+        result = DB_SESSION.query(RacedayCalendar).filter_by(
+            from_date = from_date,
+            to_date = to_date
+        ).first()
+        return result
+
 class Raceday(BASE):
     '''
     Database entity Raceday
-    Skipping the field 'itspEventCode'. For some reason it 
-    crashes SQLAlchemy when when data is loaded from local 
-    soap file instead of from web servie call directly.
+    Skipping the fields:
+    * itspEventCode
+    * country_domestic_text (country_code suffice)
+    * country_english_text (country_code suffice)
+
     '''
     __tablename__ = 'raceday'
     id = Column(Integer, primary_key=True)
     country_code = Column(String)
-    country_domestic_text = Column(String)
-    country_english_text = Column(String)
     first_race_posttime_date = Column(Date)
     first_race_posttime_time = Column(Time)
     first_race_posttime_utc_time = Column(Time)
@@ -79,42 +110,10 @@ class Raceday(BASE):
     track_id = Column(Integer, ForeignKey('track.id'))
     track = relationship("Track")
     races = relationship('Race')
-    
-    def __init__(self, racedayinfo=None):
-        if racedayinfo:
-            self.country_code = racedayinfo.country.code
-            self.country_domestic_text = racedayinfo.country.domesticText
-            self.country_english_text = racedayinfo.country.englishText
-            self.first_race_posttime_date = util.strings_to_date(
-                year=racedayinfo.firstRacePostTime.date.year, 
-                month=racedayinfo.firstRacePostTime.date.month, 
-                date=racedayinfo.firstRacePostTime.date.date
-             )
-            self.first_race_posttime_time = \
-                util.struct_to_time(racedayinfo.firstRacePostTime.time)
-            self.first_race_posttime_utc_time = \
-                util.struct_to_time(racedayinfo.firstRacePostTimeUTC.time)
-            self.includes_final_race = racedayinfo.includesFinalRace
-            self.international = racedayinfo.international
-            self.international_betting = racedayinfo.internationalBetting
-            self.meeting_number = racedayinfo.meetingNumber
-            self.meetingtype_code = racedayinfo.meetingType.code
-            self.meetingtype_domestic_text = \
-                racedayinfo.meetingType.domesticText
-            self.meetingtype_english_text = racedayinfo.meetingType.englishText
-            self.racecard_available = racedayinfo.raceCardAvailable
-            self.raceday_date = util.strings_to_date(
-                year=racedayinfo.raceDayDate.year,
-                month=racedayinfo.raceDayDate.month,
-                date=racedayinfo.raceDayDate.date
-            )
-            self.trot = racedayinfo.trot
 
     def __repr__(self):
         params = (
             self.country_code, 
-            self.country_domestic_text, 
-            self.country_english_text, 
             self.first_race_posttime_date, 
             self.first_race_posttime_time, 
             self.first_race_posttime_utc_time, 
@@ -143,13 +142,13 @@ class Raceday(BASE):
         return DB_SESSION.query(Raceday).all()
     
     @staticmethod
-    def read(entity):
+    def read(track_id=None, raceday_date=None):
         '''
         Read a raceday entity in database
         '''
         result = DB_SESSION.query(Raceday).filter_by(
-            track_id = entity.track_id,
-            raceday_date = entity.raceday_date
+            track_id = track_id,
+            raceday_date = raceday_date
         ).first()
         return result
 
@@ -260,22 +259,11 @@ class Race(BASE):
     track_surface_code = Column(String)
     track_surface_domestic_text = Column(String)
     track_surface_english_text = Column(String)
+    raceday_id = Column(Integer, ForeignKey('raceday.id'))
+    raceday = relationship('Raceday')
     bettypes = relationship('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
     horses = relationship('RaceHorseAssociation')
     drivers = relationship('RaceDriverAssociation')
-
-    def __init__(self, race=None):
-        if race:
-            self.has_result = race.hasResult
-            self.post_time = util.struct_to_time(race.postTime)
-            self.post_time_utc = util.struct_to_time(race.postTimeUTC)
-            self.race_nr = race.raceNr
-            self.race_type_code = race.raceType.code
-            self.race_type_domestic_text = race.raceType.domesticText
-            self.race_type_english_text = race.raceType.englishText
-            self.track_surface_code = race.trackSurface.code
-            self.track_surface_domestic_text = race.trackSurface.domesticText
-            self.track_surface_english_text = race.trackSurface.englishText
 
     def __repr__(self):
         params = (
@@ -292,34 +280,31 @@ class Race(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def read_trackcode(date=None, race_number=None, track_code=None):
+    def read(raceday_date=None, race_nr=None, 
+             track_atg_id=None, track_code=None):
         '''
-        Read race based on parameters
+        Read race based on parameters track_atg_id OR track_code
         '''
-        race = \
-            DB_SESSION.query(Race).filter(
-                Race.raceday_id == Raceday.id,
-                Race.race_nr == race_number,
-                Raceday.raceday_date == date,
-                Raceday.track_id == Track.id,
-                Track.code == track_code
-            ).first()
-        return race
-
-    @staticmethod
-    def read_atgid(date=None, race_number=None, track_atg_id=None):
-        '''
-        Read race based on parameters
-        '''
-        race = \
-            DB_SESSION.query(Race).filter(
-                Race.raceday_id == Raceday.id,
-                Race.race_nr == race_number,
-                Raceday.raceday_date == date,
-                Raceday.track_id == Track.id,
-                Track.atg_id == track_atg_id
-            ).first()
-        return race
+        result = None
+        if track_atg_id is not None:
+            result = \
+                DB_SESSION.query(Race).filter(
+                    Race.raceday_id == Raceday.id,
+                    Race.race_nr == race_nr,
+                    Raceday.raceday_date == raceday_date,
+                    Raceday.track_id == Track.id,
+                    Track.atg_id == track_atg_id
+                ).first()
+        elif track_code is not None:
+            result = \
+                DB_SESSION.query(Race).filter(
+                    Race.raceday_id == Raceday.id,
+                    Race.race_nr == race_nr,
+                    Raceday.raceday_date == raceday_date,
+                    Raceday.track_id == Track.id,
+                    Track.code == track_code
+                ).first()
+        return result
 
 class Bettype(BASE):
     '''
@@ -332,33 +317,31 @@ class Bettype(BASE):
     name_code = Column(String)
     name_domestic_text = Column(String)
     name_english_text = Column(String)
+    has_result = Column(Boolean)
+    national = Column(Boolean)
 
-    def __init__(self, bettype=None):
-        if bettype:
-            self.name_code = bettype.name.code
-            self.name_domestic_text = bettype.name.domesticText
-            self.name_english_text = bettype.name.englishText
-        
-    @staticmethod
-    def read(entity):
-        '''
-        Read a bettype entity in database
-        '''
-        result = DB_SESSION.query(Bettype).filter_by(
-            name_code = entity.name_code
-        ).first()
-        return result
-    
     def __repr__(self):
         params = (
             self.name_code,
             self.name_domestic_text,
             self.name_english_text,
+            self.has_result,
+            self.national
         ) 
         part1 = "<Bettype( "
         part2 = "'%s', " * len(params)
         part3 = ")>"
         return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(name_code=None):
+        '''
+        Read a bettype entity in database
+        '''
+        result = DB_SESSION.query(Bettype).filter_by(
+            name_code = name_code
+        ).first()
+        return result
 
 class Horse(BASE):
     '''
