@@ -37,9 +37,9 @@ def load_into_db(datadir=None):
             data = root.Body.fetchRacingCardResponse.result.races
             for race in data.getchildren():
                 if race is not None:
-                    race_entity = db.Race.read_trackcode(
-                        date=race_date, 
-                        race_number=race.raceNr.text,
+                    race_entity = db.Race.read(
+                        raceday_date=race_date, 
+                        race_nr=race.raceNr.text,
                         track_code=track_code
                     )
                     if race_entity is not None:
