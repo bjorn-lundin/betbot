@@ -13,25 +13,35 @@ set datafile separator whitespace
 set terminal png medium size 1024,768 background '#ffffff'
 set output "back_horse.png"
 
+set grid
+set key left
 
 set title "Backbets horses " . graph_type  . " " . stop_date
-set ylabel "hitratio"
-set yrange [0:70]
+set ylabel "hitratio %"
+#set yrange [0:70]
 set ytics 5
 
-set y2label "hitratio"
-set y2range [0:70]
+set y2label "hitratio %"
+#set y2range [0:70]
 set y2tics 5
 
 set xlabel "price"
-set xrange [1:8]
-set xtics 0.5
+set xrange [1:25]
+set xtics 1
 
 
-plot datafile using 1:2  title 'actual hitratio (%)' with lines,   \
-     datafile using 1:3 title 'hitratio with 5% comission (%)' with lines, \
-     datafile using 1:(100*$5/$4) title 'race distribution (%)' with lines, \
-     datafile using 1:(100*$6/$4) title 'won/total races (%)' with lines, \
-     100/x title 'hitratio with no commision (%)' with lines
 
+
+plot 100/x title 'hitratio back with no commision (%)' with lines, \
+     100/((1-0.05)*x) title 'hitratio back with commission (%)' with lines, \
+     100*(x-1)/x title 'hitratio lay with no commission (%)' with lines, \
+     100*(x-1)/((1-0.05)*x) title 'hitratio lay with 5% commission (%)' with lines,\
+     lay_horse  using 1:(100*$5/$4) title 'actual hitratio lay horse(%)' with lines, \
+     lay_horse  using 1:(100*$5/$3) title 'won/total races lay horse(%)' with lines, \
+     lay_hound  using 1:(100*$5/$4) title 'actual hitratio lay hound(%)' with lines, \
+     lay_hound  using 1:(100*$5/$3) title 'won/total races lay hound(%)' with lines, \
+     back_horse using 1:(100*$5/$4) title 'actual hitratio back horse(%)' with lines, \
+     back_horse using 1:(100*$5/$3) title 'won/total races back horse(%)' with lines, \
+     back_hound using 1:(100*$5/$4) title 'actual hitratio back hound(%)' with lines, \
+     back_hound using 1:(100*$5/$3) title 'won/total races back hound(%)' with lines, \
 

@@ -6,9 +6,11 @@ with Sql;
 with Logging ; use Logging;
 
 pragma Elaborate_All(Sql);
+with Hitrates;
 
 package body Races is
 
+   use type Hitrates.Commission_Type;
 
    Select_Markets : array (Bet_Name_Type'range) of Sql.Statement_Type;
    Select_Runners : Sql.Statement_Type;
@@ -203,7 +205,7 @@ package body Races is
       end if;
       -- won too much already today ?
       if Max_Profit_Factor > 0.0 then
-         if Profit >= Profit_Type ((Size_Type (Max_Profit_Factor) * Size ) * 0.95 ) then
+         if Profit >= Profit_Type ((Size_Type (Max_Profit_Factor) * Size ) * Size_Type(1.0 - Hitrates.Betfair_Commission) ) then
             Log ("Ok_To_Make_Bet - won enough for today, no more bets today");
             Bet_Laid := False;
          end if;
@@ -215,6 +217,8 @@ package body Races is
 
 
    procedure Make_Lay_Bet (Race              : in out Race_Type;
+                           Animal            : in Animal_Type;
+                           Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
                            Last_Loss         : in  Sattmate_Calendar.Time_Type;
@@ -231,6 +235,8 @@ package body Races is
       Current_Iteration  : Integer := 0;
       Max_Iterations     : Integer := 0;
       Favorite_Odds      : Price_Type := 1000.0;
+      Max_Favorite_Odds  : Price_Type := 1000.0;
+
       Backwards_Sorted_List : Table_Dryrunners.Dryrunners_List_Pack.List_Type :=
                               Table_Dryrunners.Dryrunners_List_Pack.Create;
    begin
@@ -257,7 +263,22 @@ package body Races is
       -- Then we check that runners lay-price
 
       Num_In_List := Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List);
-      Max_Iterations := Num_In_List - 12;
+
+
+      case Bet_Name is
+        when Races.Winner =>
+          case Animal is
+            when Races.Hound => Max_Iterations := 1;
+            when Races.Horse => Max_Iterations := Num_In_List - 5;
+          end case;
+        when Races.Place =>
+          case Animal is
+            when Races.Hound => Max_Iterations := 1;
+            when Races.Horse => Max_Iterations := Num_In_List - 3;
+          end case;
+      end case;
+
+
       Log ("make_lay_bet - num runners" & Num_In_List'Img & " max_iter" & Max_Iterations'Img);
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
@@ -281,7 +302,20 @@ package body Races is
 --      Log ("last runner: " & Table_Dryrunners.To_String (Runner));
 --      Log ("min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
 
-      if Favorite_Odds > 2.0 then
+
+      case Bet_Name is
+        when Races.Winner =>
+          case Animal is
+            when Races.Hound => Max_Favorite_Odds := 3.0;
+            when Races.Horse => Max_Favorite_Odds := 4.0;
+          end case;
+        when Races.Place =>
+          case Animal is
+            when Races.Hound => Max_Favorite_Odds := 1.5;
+            when Races.Horse => Max_Favorite_Odds := 2.0;
+          end case;
+      end case;
+      if Favorite_Odds > Max_Favorite_Odds then
          Log ("make_lay_bet - Favorite sucks, no bet");
          Bet_Laid := False;
          Table_Dryrunners.Dryrunners_List_Pack.Release(Backwards_Sorted_List);
@@ -304,7 +338,11 @@ package body Races is
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Layprice);
-            Saldo := Saldo - Saldo_Type ((Size * Size_Type (Runner.Layprice)))  + Saldo_Type (Size);
+            --30 *(3,65-1)
+            Saldo := Saldo - Saldo_Type (Size * Size_Type (Runner.Layprice - 1.0)) ;
+--            if Saldo < 0.0 then
+--              raise No_More_Fundings;
+--            end if;
             Bet_Laid := True;
             --          #312,59 -> 233.09. bet 30@3.65
             --          #312.59 - (30*3.65) + 30 = 233.09
@@ -321,6 +359,8 @@ package body Races is
    ------------------------------------------------------------------------------
    procedure Make_Lay_Favorite_Bet
                           (Race              : in out Race_Type;
+                           Animal            : in Animal_Type;
+                           Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
                            Last_Loss         : in Sattmate_Calendar.Time_Type;
@@ -368,7 +408,11 @@ package body Races is
             Race.Selectionid := Runner.Selectionid;
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Layprice);
-            Saldo := Saldo - Saldo_Type ((Size * Size_Type (Runner.Layprice)))  + Saldo_Type (Size);
+            --30 *(3,65-1)
+            Saldo := Saldo - Saldo_Type (Size * Size_Type (Runner.Layprice - 1.0)) ;
+--            if Saldo < 0.0 then
+--              raise No_More_Fundings;
+--            end if;
             Bet_Laid := True;
             --          #312,59 -> 233.09. bet 30@3.65
             --          #312.59 - (30*3.65) + 30 = 233.09
@@ -391,6 +435,8 @@ package body Races is
 
    ------------------------------------------------------------------------------
    procedure Make_Back_Bet (Race              : in out Race_Type;
+                            Animal            : in Animal_Type;
+                            Bet_Name          : in Bet_Name_Type;
                             Bet_Laid          : in out Boolean ;
                             Profit            : in  Profit_Type ;
                             Last_Loss         : in  Sattmate_Calendar.Time_Type;
@@ -449,6 +495,9 @@ package body Races is
             Race.Size := Size;
             Race.Price := Price_Type (Runner.Backprice);
             Saldo := Saldo - Saldo_Type (Size);
+--            if Saldo < 0.0 then
+--              raise No_More_Fundings;
+--            end if;
             Bet_Laid := True;
             --           self.num_taken_bets = self.num_taken_bets + 1
             Log ("make_back_bet - Bet made on " & Table_Dryrunners.To_String (Runner));
@@ -499,16 +548,22 @@ package body Races is
             if Bet_Won then
                --  #312.59 -> 341.09 ( 5% commission?)
                --    # 30 * 3.65 = 109,5
+               -- 312.59 - 233.09 = 79.50
+               --  30 *(3,65 -1) = 79,50
+               -- 341.09 = 233.09
+               -- saldo = saldo + 79,50 + 28,50
+               -- saldo = saldo + 30 *(3,65-1)  + 0.95 * 30
                --    #233.09 + 109.5 - (30 * 0.05) = 341.09
                --    profit = (self.size * local_price) - (self.size * 0.05)
-               Race_Profit := Profit_Type  (Race.Size * 0.95);
+               Race_Profit := Profit_Type  (Race.Size * Size_Type(1.0 - Hitrates.Betfair_Commission));
 
-               Saldo := Saldo + Saldo_Type ((Race.Size * Size_Type (Race.Price)) - (Race.Size * 0.05));
+               Saldo := Saldo + Saldo_Type ((Race.Size * Size_Type (Race.Price - 1.0)) + (Race.Size * Size_Type(1.0 - Hitrates.Betfair_Commission)));
             else
-               Race_Profit :=  Profit_Type ( - ( (Race.Size * Size_Type (Race.Price)) + Race.Size));
+               Race_Profit :=  0.0;
                Last_Loss := Race.Market.Eventdate;
             end if;
-            Profit := Profit + Race_Profit;
+--            Profit := Profit + Race_Profit;
+            Profit := Race_Profit;
 
          when Back =>
             Bet_Won := False;
@@ -525,14 +580,15 @@ package body Races is
 
             if Bet_Won then
                -- profit = 0.95 * self.size * local_price
-               Race_Profit := Profit_Type  (Race.Size * 0.95 * Size_Type(Race.Price));
+               Race_Profit := Profit_Type  (Race.Size * Size_Type(1.0 - Hitrates.Betfair_Commission) * Size_Type(Race.Price));
                Saldo := Saldo + Saldo_Type(Race_Profit);
                --               Log ("check_result - saldo after check_result  " & Integer (Saldo)'Img);
             else
                Race_Profit := 0.0;
                Last_Loss := Race.Market.Eventdate;
             end if;
-            Profit := Profit + Race_Profit;
+--            Profit := Profit + Race_Profit;
+            Profit := Race_Profit;
       end case;
       Log ("check_result - saldo after check_result  " & Integer (Saldo)'Img & " bet_won " & Bet_Won'Img);
    end Check_Result;

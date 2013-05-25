@@ -104,6 +104,11 @@ begin
                    "and SPORTSID = 7 " &
                    "and FULLDESCRIPTION <> 'Ante Post' " &
                    "and COUNTRY <> 'ANTEPOST' " &
+                   "and EVENT not like 'TO BE PLA%' " &
+                   "and EVENT not like 'Rev%' " &
+                   "and EVENT not like 'With%' " &
+                   "and EVENT not like 'Fore%' " &
+                   "and EVENT not like '% v %' " &
                    "order by EVENTID, SELECTIONID, LATESTTAKEN");
 
       Sql.Set_Timestamp(Select_all, "START", Start_date);
@@ -149,13 +154,15 @@ begin
 --          when others     => race_ok := False;
 --        end case;
 
-        race_ok := False;
+        race_ok := True;
+--        race_ok := False;
 
-        if History2.event(1..8) = "Forecast" then
-          race_ok := False;
-        elsif History2.event(1..12) = "TO BE PLACED" then
-          race_ok := True;
-        end if;
+-- in sql instead
+--        if History2.event(1..8) = "Forecast" then
+--          race_ok := False;
+--        elsif History2.event(1..12) = "TO BE PLACED" then
+--          race_ok := True;
+--        end if;
 
         if race_ok then
             Eventhierarchy := (others => ' ');

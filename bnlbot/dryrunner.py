@@ -1,25 +1,25 @@
 # coding=iso-8859-15
 """The Market object"""
-import datetime 
+import datetime
 import psycopg2
 
 class DryRunner(object):
     """The DryRunner object"""
 
-    
+
     def __init__(self, conn, log, runner_dict = None):
         self.conn = conn
         self.log = log
 
-        self.market_id     = runner_dict['market_id']       
-        self.selection_id  = runner_dict['sel_id']
-        self.back_price    = runner_dict['bp']        
-        self.lay_price     = runner_dict['lp']        
-        self.index         = runner_dict['idx']        
-        self.name          = runner_dict['name']        
+        self.marketid     = runner_dict['market_id']
+        self.selectionid  = runner_dict['sel_id']
+        self.backprice    = runner_dict['bp']
+        self.layprice     = runner_dict['lp']
+        self.index         = runner_dict['idx']
+        self.name          = runner_dict['name']
 
 
-    ###############################################################################        
+    ###############################################################################
 
 
 
@@ -30,16 +30,16 @@ class DryRunner(object):
         try  :
             cur = self.conn.cursor()
             cur.execute("insert into DRY_RUNNERS ( \
-                       MARKET_ID, SELECTION_ID, \
-                       INDEX, BACK_PRICE, \
-                       LAY_PRICE, RUNNER_NAME) \
+                       MARKETID, SELECTIONID, \
+                       INDEX, BACKPRICE, \
+                       LAYPRICE, RUNNERNAME) \
                        values \
                       (%s,%s,%s,%s,%s,%s)",
-                      (self.market_id,  self.selection_id,      \
-                       self.index, self.back_price,  \
-                       self.lay_price,  self.name))
+                      (self.marketid,  self.selectionid,      \
+                       self.index, self.backprice,  \
+                       self.layprice,  self.name))
             cur.close()
-            
+
         except psycopg2.IntegrityError:
             cur.close()
             cur6 = self.conn.cursor()
@@ -47,8 +47,8 @@ class DryRunner(object):
             cur6.close()
 
 
-                    
-    ##############################################################           
 
-            
+    ##############################################################
+
+
 ###############################  end Runner
