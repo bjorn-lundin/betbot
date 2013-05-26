@@ -1216,7 +1216,14 @@ package body Sql is
                   Value     : in String) is
       Local_Value : constant String := General_Routines.Trim(Escape (Global_Connection, Value));
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
+      if Local_Value(Local_Value'first) = ''' and then
+         Local_Value(Local_Value'last) = ''' then
+        Statement.Private_Statement.Update_Map (Parameter,
+           "'" &  General_Routines.Trim(Local_Value(Local_Value'first+1 .. Local_Value'last-1)) & "'",
+            A_String);
+      else
+        Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
+      end if;
    end Set;
 
    ------------------------------------------------------------
