@@ -323,7 +323,7 @@ def eod_download_via_calendar(params=None):
     an/or end of day data late at night every day.
     '''
     # Bettype name_code to service name mapping
-    bettype_loopup = {
+    bettype_servicename = {
         'DD':'DD', # Dagens Dubbel
         'K':'Komb',
         'LD':'LD', # Lunch Dubbel
@@ -395,19 +395,17 @@ def eod_download_via_calendar(params=None):
 
             for race in raceday.races:
                 for bettype in race.bettypes:
-                    # See to that bet type is e.g. V75 and not V75-1
-                    if bettype.name_code in bettype_loopup:
-                        bettype = bettype_loopup[bettype.name_code]
-                        pool_info_service(
-                            params=params, 
-                            bettype=bettype, 
-                            date=date, 
-                            track=track_id, 
-                        )
-                        
-                        result_service(
-                            params=params, 
-                            bettype=bettype, 
-                            date=date, 
-                            track=track_id,
-                        )
+                    bettype = bettype_servicename[bettype.name_code]
+                    pool_info_service(
+                        params=params, 
+                        bettype=bettype, 
+                        date=date, 
+                        track=track_id, 
+                    )
+                    
+                    result_service(
+                        params=params, 
+                        bettype=bettype, 
+                        date=date, 
+                        track=track_id,
+                    )

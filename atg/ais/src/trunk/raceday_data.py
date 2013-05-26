@@ -134,7 +134,10 @@ def load_into_db(datadir=None):
                             race.track_surface_english_text = str(raceinfo.trackSurface.englishText)
                             race.raceday_id = raceday.id
                             for bettype in races_and_bettypes[race_nr]:
-                                race.bettypes.append(bettype)
+                                if isinstance(bettype, db.BettypeChild):
+                                    race.bettype_childs.append(bettype)
+                                else:
+                                    race.bettypes.append(bettype)
                             db.create(race)
                     
             now = datetime.datetime.now()
@@ -146,7 +149,7 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
     Create struct containing race numbers and 
     all bet type objects belonging to each race 
     '''
-    bettype_nr_of_races_index = {
+    bettype_nbr_of_legs_index = {
         'DD':2,
         'V3':3,
         'V65':6,
@@ -174,12 +177,9 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
             bettype_entity = db.Bettype()
             bettype_entity.name_code = bettype_name_code
             bettype_entity.name_domestic_text = str(bettype.name.domesticText)
-            bettype_entity.name_english_text = str(bettype.name.englishText)
-            bettype_entity.has_result = bool(bettype.hasResult)
-            bettype_entity.national = bool(bettype.national)
             db.create(bettype_entity)
         try:
-            nbr_of_races = bettype_nr_of_races_index[bettype.name.code]
+            nbr_of_legs = bettype_nbr_of_legs_index[bettype.name.code]
         except KeyError:
             LOG.exception('Bet type not registered: ' + bettype_name_code)
             continue
@@ -198,20 +198,19 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
                 races_and_bettypes[race_nbr] = set()
             races_and_bettypes[race_nbr].add(bettype_entity)
         # All combo bets need bettype sub-parts like V75-1 and DD-2
-        if nbr_of_races > 0:
-            bettype_name = None
-            
-            for r in range(nbr_of_races):
-                bettype_name = bettype.name.code + '-' + str(r+1)
-                bettype_entity = db.Bettype.read(bettype_name)
-                if bettype_entity is None:
-                    bettype_entity = db.Bettype()
-                    bettype_entity.name_code = bettype_name
-                    db.create(bettype_entity)
-                race_nbr = race_numbers[r]
+        if nbr_of_legs > 0:
+            for leg_nbr in range(nbr_of_legs):
+                bettype_child_name = bettype.name.code + '-' + str(leg_nbr+1)
+                bettype_child_entity = db.BettypeChild.read(name_code=bettype_child_name)
+                if bettype_child_entity is None:
+                    bettype_child_entity = db.BettypeChild()
+                    bettype_child_entity.name_code = bettype_child_name
+                    bettype_child_entity.bettype_id = bettype_entity.id
+                    db.create(bettype_child_entity)
+                race_nbr = race_numbers[leg_nbr]
                 if race_nbr not in races_and_bettypes:
                     races_and_bettypes[race_nbr] = set()
-                races_and_bettypes[race_nbr].add(bettype_entity)
+                races_and_bettypes[race_nbr].add(bettype_child_entity)
     return races_and_bettypes    
 
 def print_all_data(datadir=None):

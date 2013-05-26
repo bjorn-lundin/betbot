@@ -201,6 +201,14 @@ RACE_BETTYPE_ASSOCIATION = \
         Column('bettype_id', Integer, ForeignKey('bettype.id'))
     )
 
+RACE_BETTYPE_CHILD_ASSOCIATION = \
+    Table(
+        'race_bettype_child', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('race_id', Integer, ForeignKey('race.id')),
+        Column('bettype_child_id', Integer, ForeignKey('bettype_child.id'))
+    )
+
 class RaceHorseAssociation(BASE):
     __tablename__ = 'race_horse_startnumber'
     id = Column(Integer, primary_key=True)
@@ -260,9 +268,10 @@ class Race(BASE):
     track_surface_english_text = Column(String)
     raceday_id = Column(Integer, ForeignKey('raceday.id'))
     raceday = relationship('Raceday')
-    bettypes = relationship('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
     horses = relationship('RaceHorseAssociation')
     drivers = relationship('RaceDriverAssociation')
+    bettypes = relationship('Bettype', secondary=RACE_BETTYPE_ASSOCIATION)
+    bettype_childs = relationship('BettypeChild', secondary=RACE_BETTYPE_CHILD_ASSOCIATION)
 
     def __repr__(self):
         params = (
@@ -308,24 +317,22 @@ class Race(BASE):
 class Bettype(BASE):
     '''
     Database entity Bettype
-    Skipping the following fields: 'hasResult', 
-    'national', 'races'
+    Skipping the following fields:
+    * name_english_text
+    * hasResult
+    * national
+    * races
     '''
     __tablename__ = 'bettype'
     id = Column(Integer, primary_key=True)
     name_code = Column(String)
     name_domestic_text = Column(String)
-    name_english_text = Column(String)
-    has_result = Column(Boolean)
-    national = Column(Boolean)
 
     def __repr__(self):
         params = (
+            self.id,
             self.name_code,
-            self.name_domestic_text,
-            self.name_english_text,
-            self.has_result,
-            self.national
+            self.name_domestic_text
         ) 
         part1 = "<Bettype( "
         part2 = "'%s', " * len(params)
@@ -338,6 +345,39 @@ class Bettype(BASE):
         Read a bettype entity in database
         '''
         result = DB_SESSION.query(Bettype).filter_by(
+            name_code = name_code
+        ).first()
+        return result
+
+class BettypeChild(BASE):
+    '''
+    Database entity BettypeChild
+    Hold bet type child types,
+    e.g. V75-2, DD-1
+    '''
+    __tablename__ = 'bettype_child'
+    id = Column(Integer, primary_key=True)
+    name_code = Column(String)
+    bettype_id = Column(Integer, ForeignKey('bettype.id'))
+    bettype = relationship('Bettype')
+    
+    def __repr__(self):
+        params = (
+            self.id,
+            self.name_code,
+            self.bettype_id
+        ) 
+        part1 = "<BettypeChild( "
+        part2 = "'%s', " * len(params)
+        part3 = ")>"
+        return (part1 + part2 + part3) % params
+
+    @staticmethod
+    def read(name_code=None):
+        '''
+        Read a bettype entity in database
+        '''
+        result = DB_SESSION.query(BettypeChild).filter_by(
             name_code = name_code
         ).first()
         return result
