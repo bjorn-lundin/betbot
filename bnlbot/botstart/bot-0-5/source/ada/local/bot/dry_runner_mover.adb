@@ -45,7 +45,7 @@ begin
 
    Sql.Prepare (Select_Football_Markets,
                 "select * from DRYMARKETS where EVENTHIERARCHY like '/1/%'");
-   Table_DryMarkets.Read_List (Stm => Select_Football_Markets, List => DryMarkets_List, Max => 2_000);
+   Table_DryMarkets.Read_List (Stm => Select_Football_Markets, List => DryMarkets_List, Max => 100);
    Cnt := Table_DryMarkets.DryMarkets_List_Pack.Get_Count (List => DryMarkets_List);
    Log ("DryMarkets_List count: " & cnt'Img );
 
