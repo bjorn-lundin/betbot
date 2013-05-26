@@ -22,7 +22,7 @@ do
   echo "Running $command"
   echo "Start at `date`"
   $AIS_APP $command
-  echo "Done at `date`"
+  echo "End at `date`"
   echo
 done
 
