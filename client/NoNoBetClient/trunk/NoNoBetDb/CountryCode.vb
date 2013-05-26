@@ -30,6 +30,6 @@
 
   Public Overrides Function ToString() As String
     'Return _Code + " - " + _TextSwe
-    Return _TextSwe
+    Return _Code
   End Function
 End Class

@@ -28,6 +28,28 @@ Public Class BaseGrid
     InitGrid()
   End Sub
 
+  Public Class RowChangeEventArgs
+    Inherits System.EventArgs
+
+    Private _Row As DataGridViewRow
+
+    Public Property Row As DataGridViewRow
+      Get
+        Return _Row
+      End Get
+      Set(value As DataGridViewRow)
+        _Row = value
+      End Set
+    End Property
+
+    Public Sub New()
+      MyBase.New()
+    End Sub
+
+  End Class
+
+  Public Event RowChange(sender As Object, e As RowChangeEventArgs)
+
   ''' <summary>
   ''' Grid id (name). Couples Grid to a menu
   ''' </summary>
@@ -231,7 +253,7 @@ Public Class BaseGrid
     'Only columns of type DateTime
     If (col.ValueType Is GetType(System.DateTime)) Then
       'If column name end with "_time", only time part of the DateTime value should be shown
-      If col.Name.EndsWith("_time") Then
+      If (col.Name.EndsWith("_time") Or col.Name.EndsWith("_time_utc")) Then
         e.Value = String.Format("{0:t}", e.Value)
       End If
     End If
@@ -267,6 +289,14 @@ Public Class BaseGrid
         BaseGridMenuHandler.MenuShow(_Menu, Me.CurrentRow, p)
       End If
 
+    End If
+  End Sub
+
+  Private Sub BaseGrid_RowEnter(sender As Object, e As System.Windows.Forms.DataGridViewCellEventArgs) Handles Me.RowEnter
+    If (e.RowIndex >= 0 And e.RowIndex < Me.Rows.Count) Then
+      Dim rowChgEArgs As RowChangeEventArgs = New RowChangeEventArgs
+      rowChgEArgs.Row = Me.Rows.Item(e.RowIndex)
+      RaiseEvent RowChange(Me, rowChgEArgs)
     End If
   End Sub
 End Class
