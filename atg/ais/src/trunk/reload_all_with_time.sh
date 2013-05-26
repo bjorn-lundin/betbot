@@ -19,8 +19,11 @@ load_eod_ddresult
 
 for command in $commands
 do
-  echo "Running $command at `date`"
+  echo "Running $command"
+  echo "Start at `date`"
   $AIS_APP $command
+  echo "Done at `date`"
+  echo
 done
 
 exit
