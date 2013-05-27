@@ -201,10 +201,11 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
         if nbr_of_legs > 0:
             for leg_nbr in range(nbr_of_legs):
                 bettype_child_name = bettype.name.code + '-' + str(leg_nbr+1)
-                bettype_child_entity = db.BettypeChild.read(name_code=bettype_child_name)
+                bettype_child_entity = \
+                    db.BettypeChild.read(name_code_child=bettype_child_name)
                 if bettype_child_entity is None:
                     bettype_child_entity = db.BettypeChild()
-                    bettype_child_entity.name_code = bettype_child_name
+                    bettype_child_entity.name_code_child = bettype_child_name
                     bettype_child_entity.bettype_id = bettype_entity.id
                     db.create(bettype_child_entity)
                 race_nbr = race_numbers[leg_nbr]
