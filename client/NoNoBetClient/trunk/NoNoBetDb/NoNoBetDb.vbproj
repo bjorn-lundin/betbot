@@ -76,11 +76,15 @@
   <ItemGroup>
     <Compile Include="BetType.vb" />
     <Compile Include="BetTypeRaceDay.vb" />
+    <Compile Include="CodeObject.vb" />
+    <Compile Include="CodeObjects.vb" />
     <Compile Include="CountryCode.vb" />
     <Compile Include="CountryCodes.vb" />
     <Compile Include="Driver.vb" />
     <Compile Include="Equipage.vb" />
     <Compile Include="Horse.vb" />
+    <Compile Include="MainBetType.vb" />
+    <Compile Include="MainBetTypes.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
