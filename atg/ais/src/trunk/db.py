@@ -357,7 +357,7 @@ class BettypeChild(BASE):
     '''
     __tablename__ = 'bettype_child'
     id = Column(Integer, primary_key=True)
-    name_code = Column(String)
+    name_code_child = Column(String)
     bettype_id = Column(Integer, ForeignKey('bettype.id'))
     bettype = relationship('Bettype')
     
@@ -373,12 +373,12 @@ class BettypeChild(BASE):
         return (part1 + part2 + part3) % params
 
     @staticmethod
-    def read(name_code=None):
+    def read(name_code_child=None):
         '''
         Read a bettype entity in database
         '''
         result = DB_SESSION.query(BettypeChild).filter_by(
-            name_code = name_code
+            name_code_child = name_code_child
         ).first()
         return result
 
