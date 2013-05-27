@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Desc="Historic bfdata " Name="history2" Tablespace="" >
+        <Column Name="pk" Size="9" Type="2" AllowNull="0" Description="serial pk"/>
+        <Column Name="sportsid" Size="9" Type="2" AllowNull="0" Description="hound/horse/football..."/>
+        <Column Name="eventid" Size="9" Type="2" AllowNull="0" Description="market_id"/>
+        <Column Name="settleddate" Size="23" Type="15" AllowNull="0" Description=""/>
+        <Column Name="country" Size="3" Type="1" AllowNull="1" Description=""/>
+        <Column Name="fulldescription" Size="200" Type="1" AllowNull="0" Description=""/>
+        <Column Name="course" Size="50" Type="1" AllowNull="1" Description=""/>
+        <Column Name="scheduledoff" Size="23" Type="15" AllowNull="0" Description=""/>
+        <Column Name="event" Size="50" Type="1" AllowNull="0" Description="market_name"/>
+        <Column Name="selectionid" Size="9" Type="2" AllowNull="0" Description=""/>
+        <Column Name="selection" Size="50" Type="1" AllowNull="0" Description="runner_name"/>
+        <Column Name="odds" Size="8" Type="6" AllowNull="0" Description=""/>
+        <Column Name="numberbets" Size="9" Type="2" AllowNull="0" Description=""/>
+        <Column Name="volumematched" Size="8" Type="6" AllowNull="0" Description=""/>
+        <Column Name="latesttaken" Size="23" Type="15" AllowNull="0" Description=""/>
+        <Column Name="firsttaken" Size="0" Type="15" AllowNull="0" Description=""/>
+        <Column Name="winflag" Size="8" Type="7" AllowNull="0" Description=""/>
+        <Column Name="inplay" Size="2" Type="1" AllowNull="0" Description=""/>
+        <Index Columns="pk" type="primary"/>
+        <Index Columns="sportsid" type="index"/>
+        <Index Columns="eventid" type="index"/>
+        <Index Columns="country" type="index"/>
+        <Index Columns="event" type="index"/>
+        <Index Columns="latesttaken" type="index"/>
+        <Index Columns="eventid,selectionid,latesttaken" type="index"/>
+    </Table>
+</MaAstro>
+
