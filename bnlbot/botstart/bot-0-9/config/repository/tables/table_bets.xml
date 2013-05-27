@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Wiz="3" Desc="Bets" Name="BETS" Tablespace="">
+        <Column Name="bet_id"           Size="18"  Type="3"  AllowNull="0" Description="bet id"/>
+        <Column Name="market_id"        Size="9"   Type="2"  AllowNull="0" Description="market id"/>
+        <Column Name="selection_id"     Size="9"   Type="2"  AllowNull="0" Description="selection id"/>
+        <Column Name="price"            Size="8"   Type="6"  AllowNull="0" Description="odds"/>
+        <Column Name="code"             Size="2"   Type="1"  AllowNull="0" Description="code"/>
+        <Column Name="success"          Size="4"   Type="7"  AllowNull="0" Description="success"/>
+        <Column Name="size"             Size="8"   Type="6"  AllowNull="0" Description="bet size"/>
+        <Column Name="bet_type"         Size="50"  Type="1"  AllowNull="0" Description="type of bet"/>
+        <Column Name="runner_name"      Size="50"  Type="1"  AllowNull="0" Description="name of runner"/>
+        <Column Name="bet_won"          Size="4"   Type="7"  AllowNull="1" Description="success"/>
+        <Column Name="profit"           Size="8"   Type="6"  AllowNull="1" Description="vinst"/>
+        <Column Name="full_market_name" Size="200" Type="1"  AllowNull="0" Description="name of market"/>
+        <Column Name="bet_placed"       Size="23"  Type="15" AllowNull="1" Description="when bet was placed"/>
+        <Index Columns="bet_id" type="primary"/>
+    </Table>
+</MaAstro>
+
+

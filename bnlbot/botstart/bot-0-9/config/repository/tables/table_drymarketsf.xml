@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Desc="collected markets" Name="DRYMARKETSF" Tablespace="">
+        <Column Name="marketid"       Size="9" Type="2" AllowNull="0" Description="market id"/>
+        <Column Name="bspmarket"      Size="1" Type="1" AllowNull="0" Description="bsp_market"/>
+        <Column Name="markettype"     Size="1" Type="1" AllowNull="1" Description="market_type"/>
+        <Column Name="eventhierarchy" Size="150" Type="1" AllowNull="0" Description="event_hierarchy"/>
+        <Column Name="lastrefresh"    Size="23" Type="15" AllowNull="0" Description="last_refresh"/>
+        <Column Name="turninginplay"  Size="1" Type="1" AllowNull="0" Description="turning_in_play"/>
+        <Column Name="menupath"       Size="200" Type="1" AllowNull="1" Description="menu_path"/>
+        <Column Name="betdelay"       Size="9" Type="2" AllowNull="0" Description="bet_delay"/>
+        <Column Name="exchangeid"     Size="9" Type="2" AllowNull="0" Description="exchange_id"/>
+        <Column Name="countrycode"    Size="3" Type="1" AllowNull="0" Description="country_code"/>
+        <Column Name="marketname"     Size="50" Type="1" AllowNull="1" Description="market_name"/>
+        <Column Name="marketstatus"   Size="15" Type="1" AllowNull="1" Description="market_status"/>
+        <Column Name="eventdate"      Size="23" Type="15" AllowNull="1" Description="event_date"/>
+        <Column Name="noofrunners"    Size="9" Type="2" AllowNull="1" Description="no_of_runners"/>
+        <Column Name="totalmatched"   Size="9" Type="2" AllowNull="1" Description="total_matched"/>
+        <Column Name="noofwinners"    Size="9" Type="2" AllowNull="1" Description="no_of_winners"/>
+        <Index Columns="marketid" type="primary"/>
+        <Index Columns="eventdate" type="index"/>
+        <Index Columns="eventhierarchy" type="index"/>
+        <Index Columns="marketname" type="index"/>
+    </Table>
+</MaAstro>
+
