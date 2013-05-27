@@ -3,29 +3,18 @@ Imports DbInterface
 Imports BaseComponents
 
 Public Class CountryCodes
-
-  Private _ContryCodes As Collection
+  Inherits CodeObjects
 
   Public Sub New()
-    _ContryCodes = New Collection
+    MyBase.New()
   End Sub
 
-  Public Function Count() As Integer
-    Return _ContryCodes.Count
+  Public Shadows Function Item(index As Integer) As CountryCode
+    Return CType(MyBase.Item(index), CountryCode)
   End Function
 
-  Public Function Item(index As Integer) As CountryCode
-    If (index >= 0 And index < _ContryCodes.Count) Then
-      Return CType(_ContryCodes.Item(index), CountryCode)
-    Else
-      Return Nothing
-    End If
-  End Function
-
-  Public Sub Add(cCode As CountryCode)
-    If (Not _ContryCodes.Contains(cCode.Code)) Then
-      _ContryCodes.Add(cCode, cCode.Code)
-    End If
+  Public Shadows Sub Add(cCode As CountryCode)
+    MyBase.Add(CType(cCode, CodeObject))
   End Sub
 
   Public Sub LoadFromDb(resourceMan As ApplicationResourceManager)
@@ -33,21 +22,23 @@ Public Class CountryCodes
     Dim dr As Npgsql.NpgsqlDataReader = resourceMan.DbConnection.ExecuteSqlCommand(sql)
 
     While dr.Read
-      Dim cCode As CountryCode = New CountryCode(dr.Item("country_code"), "", "")
+      Dim cCode As CountryCode = New CountryCode(dr.Item("country_code"), "")
 
       Me.Add(cCode)
-
     End While
 
     dr.Close()
-
   End Sub
 
+
   Public Sub FillCombo(cbo As ComboBox)
+    Dim cCode As CountryCode = Nothing
     Dim cCodeSwe As CountryCode = Nothing
+
     cbo.Items.Clear()
 
-    For Each cCode As CountryCode In _ContryCodes
+    For index As Integer = 1 To MyBase.Count
+      cCode = Me.Item(index)
       cbo.Items.Add(cCode)
 
       If (cCode.Code = "SE") Then
