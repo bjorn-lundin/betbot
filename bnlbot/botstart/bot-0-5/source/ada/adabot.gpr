@@ -19,6 +19,7 @@ project Adabot is
 --                 "simulator5.adb",
                  "simulator6.adb",
                  "dry_runner_mover.adb",
+                 "dry_string_fixer.adb",
 --                 "dry_runner_mover_r.adb",
                  "back_bet_analyzer.adb",
                  "bf_history_cleaner.adb",
