@@ -8,7 +8,7 @@ with Ada.Strings.Fixed;  use Ada.Strings.Fixed;
 with Ada.Characters.Handling;
 with Ada.Directories;
 with Posix1;
-with System_Services;
+--with System_Services;
 with Text_io; use Text_io;
 --with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Calendar;
@@ -23,7 +23,7 @@ with Ada.Interrupts; use Ada.Interrupts;
 with Ada.Interrupts.Names;
 pragma Warnings(On);
 
-pragma Elaborate_All(System_Services);
+--pragma Elaborate_All(System_Services);
 with Process_Io_Messages;
 
 package body Process_Io.Pipe is
@@ -47,10 +47,6 @@ package body Process_Io.Pipe is
 --    end Sigpipe_Handler;
 --  end SignalHandler;
 
-function  GNAT.OS_Lib.Normalize_Pathname 
-     (Name      : String; 
-      Directory : String := "") 
-      return      String;
   Global_Pipe_Directory : String := GNAT.OS_Lib.Normalize_Pathname (Name => "$BOT_TARGET/pipes/", Directory => "");
   --System_Services.Expand_File_Path("$BOT_TARGET/pipes/");
 
@@ -58,7 +54,7 @@ function  GNAT.OS_Lib.Normalize_Pathname
   type Size_T is new Long_Integer;
   subtype Ssize_T is Size_T;
 
-  
+
   --------------------------------------------------------
   function O_RDONLY return Interfaces.C.Int is
   begin
@@ -119,7 +115,6 @@ function  GNAT.OS_Lib.Normalize_Pathname
     use Ada.Directories;
     aPipe : Pipe_Type;
   begin
-    System_Services.Fix_Path(Global_Pipe_Directory);
     if not Exists(Global_Pipe_Directory) then
       Create_Path(Global_Pipe_Directory);
     end if;

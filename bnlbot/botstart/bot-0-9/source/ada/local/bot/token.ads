@@ -1,9 +1,10 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
- 
+
 package Token is
-  Not_Valid_Token : exception;
-  
+  Not_Valid_Token,
+  Login_Failed  : exception;
+
   type Token_Type is private;
   procedure Login(A_Token : in out Token_Type) ;
   function  Id (A_Token : Token_Type) return String;

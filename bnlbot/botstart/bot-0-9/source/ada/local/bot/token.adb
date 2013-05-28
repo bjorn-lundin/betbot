@@ -4,15 +4,17 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Streams; use Ada.Streams;
 with Ini;
 with Ada.Environment_Variables;
-package Token is
- 
-  package EV renames Ada.Environment_Variables; 
- 
+pragma Elaborate_All(Ini);
+
+package body Token is
+
+  package EV renames Ada.Environment_Variables;
+
   procedure Login(A_Token : in out Token_Type) is
     Host : constant String := "nonodev.com";
     Host_Entry : Gnat.Sockets.Host_Entry_Type
                := GNAT.Sockets.Get_Host_By_Name(Host);
-  
+
     Address : GNAT.Sockets.Sock_Addr_Type;
     Socket  : GNAT.Sockets.Socket_Type;
     Channel : GNAT.Sockets.Stream_Access;
@@ -26,11 +28,11 @@ package Token is
      GNAT.Sockets.Create_Socket (Socket);
      GNAT.Sockets.Connect_Socket (Socket, Address);
      --get from inifile
-     String'Write (Channel, 
-         "username=" & Ini.Get("betfair","username") &        
-         ",password=" & Ini.Get("betfair","password") &        
-         ",productid=" & Ini.Get("betfair","product_id") &        
-         ",vendorid=" & Ini.Get("betfair","vendor_id") &        
+     String'Write (Channel,
+         "username=" & Ini.Get_Value("betfair","username","Not_Found") &
+         ",password=" & Ini.Get_Value("betfair","password","Not_Found") &
+         ",productid=" & Ini.Get_Value("betfair","product_id","Not_Found") &
+         ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found")
      );
      --get the reply
      GNAT.Sockets.Receive_Socket(Socket, Data, Size);
@@ -54,25 +56,24 @@ package Token is
         To_String(A_Token.The_Token) /= "POKER_T_AND_C_ACCEPTANCE_REQUIRED" and then
         To_String(A_Token.The_Token) /= "T_AND_C_ACCEPTANCE_REQUIRED" and then
         To_String(A_Token.The_Token) /= "USER_NOT_ACCOUNT_OWNER" then
-     
+
        A_Token.Token_Is_Set := True;
-     else 
+     else
        raise Login_Failed with To_String(A_Token.The_Token);
      end if;
   end Login;
-  
+
   --------------------------------------------------------
   function  Id (A_Token : Token_Type) return String is
   begin
-    if A_Token.Token_Is_Set then  
+    if A_Token.Token_Is_Set then
       return To_String(A_Token.The_Token);
-    else  
+    else
       raise Not_Valid_Token;
-    end if;  
+    end if;
   end Id;
   --------------------------------------------------------
 
 begin
-  GNAT.Sockets.Initialize; 
   Ini.Load(Ev.Value("BOT_START") & "/user/" & EV.Value("BOT_USER") & "login.ini");
 end Token;
