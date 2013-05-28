@@ -1,4 +1,43 @@
-#make plots
+###############################################################################
+#                                                                             #
+#                                Make File                                    #
+#                                                                             #
+###############################################################################
+
+DAT  := balance.dat
+TMP  := balance.tmp
+DAT2 := back_bet_price_distribution.dat
+TMP2 := back_bet_price_distribution.tmp
+EXCEL_DAT  := excel.dat
+
+UNAME := $(shell uname)
+
+DBNAME := $(BOT_DATABASE_NAME)
+
+ifeq ($(UNAME),Linux)
+  PSQL := psql --username=$(BOT_DATABASE_USERNAME)
+  HOST := localhost
+  HOST := 192.168.0.13
+#  PSQL := psql --username=bnl
+#  HOST := nonodev.com
+#  DBNAME := bnls
+  SHOW_PNG := display
+endif
+
+ifeq ($(UNAME),Darwin)
+  PSQL := /opt/local/bin/psql92
+  HOST := 192.168.0.13
+  SHOW_PNG := open
+endif
+
+#win-7
+ifeq ($(UNAME),MINGW32_NT-6.1)
+  PSQL := psql --username=bnl
+  HOST := 192.168.0.13
+  SHOW_PNG :=
+endif
+
+
 
 GRAPH_TYPE := one_hundred_and_four_weeks
 STOP_DATE := 2013-05-31
@@ -123,6 +162,41 @@ $(TARGET_DAT_HOUND_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
 .PHONY : show
 show:
 	display $(TARGET_PNG)
+
+
+balance_plot:
+	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
+#	cat $(DAT) | grep -v event > $(TMP)
+	cat $(DAT) > $(TMP)
+	cat $(TMP) | grep -v rows > $(DAT)
+	cat $(DAT) | grep -v "\-\-" > $(TMP)
+	cat $(TMP) > $(DAT)
+	rm $(TMP)
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	gnuplot balance.gpl
+	$(SHOW_PNG) balance.png
+endif
+
+ifeq ($(UNAME),MINGW32_NT-6.1)
+	@echo Gnuplot not installed in windows
+endif
+
+back_bet_price_distribution:
+	$(BOT_TARGET)/bin/back_bet_analyzer > $(DAT2)
+	gnuplot back_bet_price_distribution.gpl
+	$(SHOW_PNG) back_bet_price_distribution.png
+
+
+excel:
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_42 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > $(EXCEL_DAT)
+	cat $(EXCEL_DAT) | grep -v "\-\-" > $(TMP)
+	cat $(TMP) | grep -v rows > $(EXCEL_DAT)
+	gnuplot -e "target_png='excel.png'" \
+                -e "inputfile='$(EXCEL_DAT)'" excel.gpl
+	$(SHOW_PNG) excel.png
+endif
+
 
 
 .PHONY : clean
