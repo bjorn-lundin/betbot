@@ -8,7 +8,7 @@ DAT  := balance.dat
 TMP  := balance.tmp
 DAT2 := back_bet_price_distribution.dat
 TMP2 := back_bet_price_distribution.tmp
-EXCEL_DAT  := excel.dat
+
 
 UNAME := $(shell uname)
 
@@ -60,6 +60,9 @@ TARGET_LAY_PNG := hitratio_lay.png
 #                            --delta=1.0 --db_name=bfhistory > $(TARGET_DAT_HORSE_BACK)
 #	gnuplot -e "graph_type='$(GRAPH_TYPE)'"
 
+
+
+all: $(TARGET_PNG) $(TARGET_LAY_PNG) $(TARGET_BACK_PNG)
 
 
 $(TARGET_PNG) : hitratio.gpl \
@@ -159,12 +162,10 @@ $(TARGET_DAT_HOUND_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --bet_type=lay \
                                      --quiet > $(TARGET_DAT_HOUND_LAY_WINNER)
 
-.PHONY : show
-show:
-	display $(TARGET_PNG)
 
 
-balance_plot:
+.PHONY : balance
+balance:
 	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
 #	cat $(DAT) | grep -v event > $(TMP)
 	cat $(DAT) > $(TMP)
@@ -186,17 +187,28 @@ back_bet_price_distribution:
 	gnuplot back_bet_price_distribution.gpl
 	$(SHOW_PNG) back_bet_price_distribution.png
 
-
-excel:
+.PHONY : excel_42 excel_21
+excel_42:
 ifneq ($(UNAME),MINGW32_NT-6.1)
-	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_42 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > $(EXCEL_DAT)
-	cat $(EXCEL_DAT) | grep -v "\-\-" > $(TMP)
-	cat $(TMP) | grep -v rows > $(EXCEL_DAT)
-	gnuplot -e "target_png='excel.png'" \
-                -e "inputfile='$(EXCEL_DAT)'" excel.gpl
-	$(SHOW_PNG) excel.png
+	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_42 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_42.dat
+	cat excel_42.dat | grep -v "\-\-" > $(TMP)
+	cat $(TMP) | grep -v rows > excel_42.dat
+	gnuplot -e "target_png='excel_42.png'" \
+                -e "days='42'" \
+                -e "inputfile='excel_42.dat'" excel.gpl
+	$(SHOW_PNG) excel_42.png
 endif
 
+excel_21:
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_21 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_21.dat
+	cat excel_21.dat | grep -v "\-\-" > $(TMP)
+	cat $(TMP) | grep -v rows > excel_21.dat
+	gnuplot -e "target_png='excel_21.png'" \
+                -e "days='21'" \
+                -e "inputfile='excel_21.dat'" excel.gpl
+	$(SHOW_PNG) excel_21.png
+endif
 
 
 .PHONY : clean

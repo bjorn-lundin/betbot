@@ -10,7 +10,7 @@ set output target_png
 set grid
 set key center right
 
-set title "hitratio profitable bets"
+set title "hitratio profitable bets - " . days . " days"
 set ylabel "hitratio %"
 set yrange [0:100]
 set ytics 5
