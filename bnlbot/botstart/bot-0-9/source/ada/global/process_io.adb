@@ -2,31 +2,31 @@
 --	COPYRIGHT	Consafe Logistics AB, Lund
 --	FILE NAME	process_io.adb
 --	RESPONSIBLE	Björn Lundin
---	DESCRIPTION	This files contains the package body 
---			of the package PROCESS_IO. 
+--	DESCRIPTION	This files contains the package body
+--			of the package PROCESS_IO.
 --------------------------------------------------------------------------------
 --  Total rewrite, using pipes - same body for all os:es, different child body
 --------------------------------------------------------------------------------
-with Ada.Characters.Handling; 
+with Ada.Characters.Handling;
 with Ada.Strings;       use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Text_Io; 
+with Text_Io;
 pragma Warnings(Off,Text_Io);
 with Posix1;
-with System;
+--with System;
 with Unchecked_Conversion;
 with Process_Io.Pipe;
 pragma Elaborate_All(Posix1);
 with Ada.Environment_Variables;
 with Binary_Semaphores;
-  
+
 package body Process_Io is
   Sem : Binary_Semaphores.Semaphore_Type;
 
   My_Process        : Process_Type    := ((others => ' '), (others => ' '));
   My_Own_Read_Pipe  : Process_io.Pipe.Pipe_Type; -- This is my mailbox
-  --My_Own_Write_Pipe : Process_io.Pipe.Pipe_Type; -- This is also my mailbox, but 
+  --My_Own_Write_Pipe : Process_io.Pipe.Pipe_Type; -- This is also my mailbox, but
   -- never used. It is opened so we do not get EOF when other processes closes my pipe
 
   Time_Out_Identity        : constant Identity_Type := -1;
@@ -49,31 +49,31 @@ package body Process_Io is
 
   Receiving_Mailbox_Full : exception ;
   Wait_For_Mailbox_Time  : constant Duration := 0.05;
- 
+
 --  procedure Here(Num : Positive) is
 --  begin
 --    Process_io.Pipe.Log("Here:" & Num'Img);
---  end Here; 
+--  end Here;
   ---------------------------------------------------------------------
 
---  overriding procedure Finalize (Msg : in out Local_Message_Type);        
+--  overriding procedure Finalize (Msg : in out Local_Message_Type);
   ---------------------------------------------------------------------
   overriding procedure Initialize (Msg : in out Local_Message_Type) is
     use system;
   begin
---   type Bit_Order is (High_Order_First, Low_Order_First); 
+--   type Bit_Order is (High_Order_First, Low_Order_First);
     case Default_Bit_Order is
       when High_Order_First => Msg.Header.Endianess := 0;
       when Low_Order_First  => Msg.Header.Endianess := 1;
     end case;
-    Msg.Header.Message_Length := Message_Length; -- constant in private part of spec 
+    Msg.Header.Message_Length := Message_Length; -- constant in private part of spec
 --    text_io.put_line("Initialize - Message_Length:" & Msg.Header.Message_Length'img);
   end Initialize;
   ---------------------------------------------------------------------
   procedure Write_To_Pipe(Msg : in out Local_Message_Type) is
     Receivers_Pipe : Process_io.Pipe.Pipe_Type ;
 --    Receivers_Pipe_Ro : Process_io.Pipe.Pipe_Type ; -- make sure we do not hang on write b/c no reader
-	
+
     Dummy : Message_Type;
   begin
   	Sem.Seize;
@@ -94,7 +94,7 @@ package body Process_Io is
 		     Process_io.Pipe.Pio_Status_Message |
 		     Process_io.Pipe.Pio_Queue_Message  => null;
         when others                             =>  My_Own_Read_Pipe.Increase_Sent;	-- for pio stats
-	  end case;	
+	  end case;
 	else
       My_Own_Read_Pipe.Increase_Failed_Sent;	-- for pio stats
     end if;
@@ -111,7 +111,7 @@ package body Process_Io is
   begin
     Msg.Header.Identity := Identity;
 --    Process_io.Pipe.Log("Set_Identity -" & Identity'Img);
-  end  Set_Identity;  
+  end  Set_Identity;
   ---------------------------------------------------------------------
   procedure Set_Receiver(Msg : in out Local_Message_Type; Receiver : Process_Type) is
   begin
@@ -119,21 +119,21 @@ package body Process_Io is
 --    Process_io.Pipe.Log("Set_Receiver - " & Receiver.Name);
   end Set_Receiver;
   ---------------------------------------------------------------------
-  function Get_Receiver(Msg : Local_Message_Type) return  Process_Type is 
+  function Get_Receiver(Msg : Local_Message_Type) return  Process_Type is
   begin
 --    Process_io.Pipe.Log("get_Receiver - " & Msg.Header.Receiver.Name);
     return Msg.Header.Receiver;
-  end Get_Receiver;  
+  end Get_Receiver;
   ---------------------------------------------------------------------
   procedure Set_Sender(Msg : in out Local_Message_Type; Sender : Process_Type) is
   begin
     Msg.Header.Sender := Sender;
-  end Set_Sender; 
+  end Set_Sender;
   ---------------------------------------------------------------------
   procedure Set_Message(Msg : in out Local_Message_Type; Message : Message_Type) is
   begin
     null;
-  end Set_Message;  
+  end Set_Message;
   ---------------------------------------------------------------------
   function Get_Identity(Msg : Local_Message_Type) return  Identity_Type is
   begin
@@ -145,7 +145,7 @@ package body Process_Io is
   begin
  --   Process_io.Pipe.Log("get_Receiver -" & Msg.Payload.Length'Img);
     return Msg.Payload.Length;
-  end Get_Payload_length ; 
+  end Get_Payload_length ;
   ---------------------------------------------------------------------
   procedure Print_Header(Msg : Local_Message_Type; What : in String) is
     use Text_Io;
@@ -163,7 +163,7 @@ package body Process_Io is
   begin
 --    if Posix1.Getenv("BOT_NAME")'Length > 0 then
 --      Move(Posix1.Getenv("BOT_NAME"),Process.Name,Drop => Right);
---    else 
+--    else
 --      Move(Trim(Posix1.Pid_T'Image(Posix1.Getpid),Both),Process.Name,Drop => Right);
 --    end if;
 --
@@ -173,7 +173,7 @@ package body Process_Io is
 --    end if;
     if Exists("BOT_NAME") then
       Move(Ada.Characters.Handling.To_Lower(Value("BOT_NAME")),Process.Name,Drop => Right);
-    else 
+    else
       Move(Trim(Posix1.Pid_T'Image(Posix1.Getpid),Both),Process.Name,Drop => Right);
     end if;
 
@@ -181,8 +181,8 @@ package body Process_Io is
       Move(Ada.Characters.Handling.To_Lower(Value("BOT_NODE")),Process.Node,Drop => Right);
     end if;
     return Process;
-    
-    
+
+
   end Get_Process;
   ---------------------------------------------------
 --  procedure Check_For_Processes_To_Remove is
@@ -199,23 +199,23 @@ package body Process_Io is
   end;
   ----------------------------------------------------------
   function Integer_2_Type return Component_Descriptor is
-  begin 
-    return new Component'(An_Integer_2,2); 
+  begin
+    return new Component'(An_Integer_2,2);
   end;
   ----------------------------------------------------------
   function Integer_4_Type return Component_Descriptor is
-  begin 
-    return new Component'(An_Integer_4,4); 
+  begin
+    return new Component'(An_Integer_4,4);
   end;
   ----------------------------------------------------------
   function String_Type (Length : Positive) return Component_Descriptor is
-  begin 
-    return new Component'(A_String,Length); 
+  begin
+    return new Component'(A_String,Length);
   end;
   ----------------------------------------------------------
   function Enumeration_Type return Component_Descriptor is
-  begin 
-    return new Component'(Enumeration,1); 
+  begin
+    return new Component'(Enumeration,1);
   end;
   ----------------------------------------------------------
   function This_Process return Process_Type is
@@ -226,7 +226,7 @@ package body Process_Io is
   procedure Check_Message_Record (Data_Descriptor : Data_Descriptor_Type;
                                   Data_Length     : Natural;
                                   Identity        : Identity_Type) is
-    
+
    begin
     null;
   end Check_Message_Record;
@@ -238,13 +238,13 @@ package body Process_Io is
   --------------------------------------------------------
   task body Timer_Task is
     Time_Out_Time : Duration;
-    Timeout_Message : Local_Message_Type; 
+    Timeout_Message : Local_Message_Type;
   begin
     accept Start_Timer (Time : in Duration) do
       Time_Out_Time := Time;
       Timeout_Message.Header.Identity := Time_Out_Identity;
-      Timeout_Message.Set_Receiver(This_Process);  
-      Timeout_Message.Set_Sender(This_Process);  
+      Timeout_Message.Set_Receiver(This_Process);
+      Timeout_Message.Set_Sender(This_Process);
     end Start_Timer;
     select
       accept Stop_Timer do
@@ -252,8 +252,8 @@ package body Process_Io is
       end;
     or
       delay Time_Out_Time;
-      loop 
-        begin 
+      loop
+        begin
           Process_io.Pipe.Log("Timer_Task - start write timeout to " & Timeout_Message.Get_Receiver.Name);
           Process_io.Pipe.Log("Timer_Task - identity " & Timeout_Message.Header.Identity'Img);
           Timeout_Message.Write_To_Pipe ;
@@ -262,7 +262,7 @@ package body Process_Io is
         exception
           when Receiving_Mailbox_Full => delay Wait_For_Mailbox_Time;
         end;
-      end loop;     
+      end loop;
       accept Stop_Timer do
         null;
       end;
@@ -274,7 +274,7 @@ package body Process_Io is
   begin
     Process_io.Pipe.Log("Receive - start",0 );
     Process_io.Pipe.Increase_Indent(2);
-    loop  
+    loop
       Sem.Seize;
       if not My_Own_Read_Pipe.Is_Initialized then
 	    My_Own_Read_Pipe.Do_Initialize;
@@ -290,23 +290,23 @@ package body Process_Io is
               Timer.Stop_Timer;
             exception
               when Tasking_Error => null;
-            end ;  
+            end ;
             loop
               exit when Timer'Terminated;
               delay 0.0_001;
-            end loop; 
+            end loop;
           end;
       else
             My_Own_Read_Pipe.Read(Message);
       end if;
-    
+
       case Identity(Message) is
-          when Time_Out_Identity => 
+          when Time_Out_Identity =>
               My_Own_Read_Pipe.Increase_Timeout;
               raise Timeout;
-          when Process_Io.Pipe.Pio_Enquire_Status_Message => 
+          when Process_Io.Pipe.Pio_Enquire_Status_Message =>
             My_Own_Read_Pipe.Send_Statistics(Message);
-          when others            => 
+          when others            =>
               My_Own_Read_Pipe.Increase_Received;
 			  exit;
       end case;
@@ -336,26 +336,26 @@ package body Process_Io is
                    Identity     : in  Identity_Type;
                    Connection   : in  Connection_Type := Permanent) is
     pragma Unreferenced(Connection);
-    Msg : Local_message_type;  
+    Msg : Local_message_type;
   begin
-    Msg.Set_Receiver(Receiver);  
-    Msg.Set_Identity(Identity);  
-    Msg.Set_Sender(This_Process);  
-    loop 
+    Msg.Set_Receiver(Receiver);
+    Msg.Set_Identity(Identity);
+    Msg.Set_Sender(This_Process);
+    loop
       begin
         Msg.Write_To_Pipe;
         exit;
       exception
         when Receiving_Mailbox_Full => delay Wait_For_Mailbox_Time;
       end;
-    end loop;            
+    end loop;
   end Signal;
   ----------------------------------------------------------
   procedure Send   (Receiver   : in  Process_Type;
                     Message    : in  Message_Type;
                     Connection : in  Connection_Type := Permanent) is
     pragma Unreferenced(Connection);
-    Msg : Local_Message_Type := Message.Msg;  
+    Msg : Local_Message_Type := Message.Msg;
   begin
 	Process_io.Pipe.Increase_Indent(2);
     Sem.Seize;
@@ -363,16 +363,16 @@ package body Process_Io is
        My_Own_Read_Pipe.Do_Initialize;
     end if;
     Sem.Release;
-    Msg.Set_Receiver(Receiver);  
-    Msg.Set_Sender(This_Process);  
-    loop 
+    Msg.Set_Receiver(Receiver);
+    Msg.Set_Sender(This_Process);
+    loop
       begin
         Msg.Write_To_Pipe;
         exit;
       exception
         when Receiving_Mailbox_Full => delay Wait_For_Mailbox_Time;
       end;
-    end loop;            
+    end loop;
 	Process_io.Pipe.Increase_Indent(-2);
   end Send;
   ----------------------------------------------------------
@@ -382,14 +382,14 @@ package body Process_Io is
     function Data_To_Byte_Array is new
              Unchecked_Conversion(Data_Type, Byte_Array_Message);
 
-    function Convert (D : Data_Type) return Byte_Array_Message is    
+    function Convert (D : Data_Type) return Byte_Array_Message is
       BAM : Byte_Array_Message;
        --gnat-018 A silly work-around, just to save the
        -- result in a variable!
-    begin        
+    begin
       BAM := Data_To_Byte_Array(D);
       return BAM;
-    end Convert;                                                      
+    end Convert;
     ----------------------------------------------------------
     procedure Send (Receiver        : in  Process_Type;
                     Data            : in  Data_Type;
@@ -404,21 +404,21 @@ package body Process_Io is
       end if;
       Sem.Release;
       Process_io.Pipe.Log("Generice Send - start identity:" & Identity'Img);
-      Msg.Set_Receiver(Receiver) ;                    
+      Msg.Set_Receiver(Receiver) ;
       Msg.Set_Sender(This_Process);
-      Msg.Set_Identity(Identity);  
+      Msg.Set_Identity(Identity);
       Msg.Payload.Data(1..Data_Length) := Convert(Data);
       Msg.Payload.Length := Data_Length;
       Process_io.Pipe.Log("Generice Send - start Data_Length:" & Data_Length'Img);
       loop
         begin
-          Msg.Write_To_Pipe;   
+          Msg.Write_To_Pipe;
           exit;
         exception
           when Receiving_Mailbox_Full => delay Wait_For_Mailbox_Time;
           Process_io.Pipe.Log("Generice Send - Wait_For_Mailbox");
         end;
-      end loop;     
+      end loop;
       Process_io.Pipe.Log("Generice Send - stop");
 	Process_io.Pipe.Increase_Indent(-2);
     end Send;
@@ -430,9 +430,9 @@ package body Process_Io is
       Process_io.Pipe.Increase_Indent(2);
       Message.Msg.Print_Header("Data");
       if Message.Msg.Get_Payload_Length /= Data_Length  then
-        raise Illegal_Data_Length with " Message record length = " & 
+        raise Illegal_Data_Length with " Message record length = " &
                             Natural'Image (Data_Length) &
-                          " Received message length = " & 
+                          " Received message length = " &
                             Natural'Image (Message.Msg.Get_Payload_Length);
       elsif Message.Msg.Get_Identity /= Identity then
         raise Illegal_Identity with " Expected identity =" & Identity_Type'image(Identity) &
@@ -453,7 +453,7 @@ package body Process_Io is
     begin
       Process_io.Pipe.Increase_Indent(2);
       Message.Msg.Set_Identity(Identity);
-      Message.Msg.Payload.Data := (others => 0); 
+      Message.Msg.Payload.Data := (others => 0);
       Message.Msg.Payload.Data (1..Integer(Data_Length)) := Data_To_Byte_Array (Data);
       Message.Msg.Payload.Length := Data_Length;
       Message.Msg.Print_Header("Pack");
@@ -477,16 +477,16 @@ package body Process_Io is
   begin
     My_Process.Name := Process.Name;
     My_Process.Node := Process.Node;
-  end Set_This_Process;	
+  end Set_This_Process;
   ----------------------------------------------------------
   function ERROR_MESSAGE return STRING is
   begin
     return "pio.Errror_Message is NOT implemented :-(";
   end Error_Message;
-  pragma obsolescent(Error_Message,"Print error when occurs instead, not later");  
+  pragma obsolescent(Error_Message,"Print error when occurs instead, not later");
   ----------------------------------------------------------
 
-  
+
 begin
   My_Process := Get_Process;
 end Process_Io;

@@ -22,9 +22,9 @@ with Unchecked_Deallocation;
 
 --with Sequential_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Directories;
+--with Ada.Directories;
 with General_Routines;
-with Ada.Command_Line;
+--with Ada.Command_Line;
 
 package body Ini is
 
@@ -272,7 +272,7 @@ package body Ini is
     Line           : String(1..256);
     Last           : Integer;
     Current_Section: Section_Pointer_Type := null;
-    Washed_File_Name : Unbounded_String := Null_Unbounded_String;
+--    Washed_File_Name : Unbounded_String := Null_Unbounded_String;
 --    procedure Convert_Ini_File_To_Unix_Format(Name     : in  String;
 --                                              New_Name : out Unbounded_String) is
 --      type Byte is range 0..255;

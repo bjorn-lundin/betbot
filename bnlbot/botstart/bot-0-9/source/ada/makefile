@@ -35,6 +35,11 @@ ifeq ($(UNAME),MINGW32_NT-6.1)
   SHOW_PNG :=
 endif
 
+
+OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
+OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
+EXE_DIR_BOT     := $(BOT_TARGET)/bin
+
 .PHONY : json_test adabot back_bet_price_distribution tables
 
 all: json_test adabot
@@ -48,13 +53,21 @@ tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          #$(ST)/table_markets.ads \
 
 
-json_test :
+$(EXE_DIR_BOT) :
+	mkdir -p $(EXE_DIR_BOT)
+
+$(OBJECT_DIR_BOT) :
+	mkdir -p $(OBJECT_DIR_BOT)
+
+$(OBJECT_DIR_JSON) :
+	mkdir -p $(OBJECT_DIR_JSON)
+
+json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT)
 	gnatmake -P json_test
 
-adabot :
+adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
 	gnatmake -P adabot
 
-balance_plot:
 balance_plot:
 	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
 #	cat $(DAT) | grep -v event > $(TMP)
