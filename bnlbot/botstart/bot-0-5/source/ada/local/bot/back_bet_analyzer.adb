@@ -1,5 +1,5 @@
 --with Unchecked_Conversion;
---with Sattmate_Exception;
+with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
 with Logging; use Logging;
@@ -51,32 +51,32 @@ begin
    Sql.Start_Read_Write_Transaction (T);
    Sql.Prepare
      (Select_Back_Winners (Bet_Name),
-      "select DRY_RUNNERS.BACK_PRICE from " &
-      "DRY_MARKETS , DRY_RESULTS, DRY_RUNNERS where (" &
-      "  lower(MARKET_NAME) ~ '^[0-9][a-z]' or" &  -- start with digit-letter
-      "  lower(MARKET_NAME) ~ '^[a-z][0-9]' or" &  -- oResult_Dataletter-digit
-      "  lower(MARKET_NAME) like 'hp%' or " &
-      "  lower(MARKET_NAME) like 'hc%' or " &
-      "  lower(MARKET_NAME) like 'or%' or " &
-      "  lower(MARKET_NAME) like 'iv%'  " &
+      "select DRYRUNNERS.BACKPRICE from " &
+      "DRYMARKETS , DRYRESULTS, DRYRUNNERS where (" &
+      "  lower(MARKETNAME) ~ '^[0-9][a-z]' or" &  -- start with digit-letter
+      "  lower(MARKETNAME) ~ '^[a-z][0-9]' or" &  -- oResult_Dataletter-digit
+      "  lower(MARKETNAME) like 'hp%' or " &
+      "  lower(MARKETNAME) like 'hc%' or " &
+      "  lower(MARKETNAME) like 'or%' or " &
+      "  lower(MARKETNAME) like 'iv%'  " &
       ")  " &
-      "and BSP_MARKET = 'Y' " &
-      "and lower(MARKET_NAME) <> 'plats'  " &
-      "and lower(MARKET_NAME) not like '% v %'  " &
-      "and lower(MARKET_NAME) not like '%forecast%'  " &
-      "and lower(MARKET_NAME) not like '%tbp%'  " &
-      "and lower(MARKET_NAME) not like '%challenge%'  " &
-      "and lower(MARKET_NAME) not like '%fc%'  " &
-      "and lower(MENU_PATH) not like '%daily win%'  " &
-      "and lower(MARKET_NAME) not like '%reverse%'  " &
-      "and lower(MARKET_NAME) not like '%plats%'  " &
-      "and lower(MARKET_NAME) not like '%place%'  " &
-      "and lower(MARKET_NAME) not like '%without%'  " &
-      "and EVENT_HIERARCHY like :ANIMAL " &
-      "and DRY_MARKETS.MARKET_ID = DRY_RESULTS.MARKET_ID " &
-      "and DRY_MARKETS.MARKET_ID = DRY_RUNNERS.MARKET_ID " &
-      "and DRY_RESULTS.SELECTION_ID = DRY_RUNNERS.SELECTION_ID " &
-      "order by DRY_RUNNERS.BACK_PRICE ");
+      "and BSPMARKET = 'Y' " &
+      "and lower(MARKETNAME) <> 'plats'  " &
+      "and lower(MARKETNAME) not like '% v %'  " &
+      "and lower(MARKETNAME) not like '%forecast%'  " &
+      "and lower(MARKETNAME) not like '%tbp%'  " &
+      "and lower(MARKETNAME) not like '%challenge%'  " &
+      "and lower(MARKETNAME) not like '%fc%'  " &
+      "and lower(MENUPATH) not like '%daily win%'  " &
+      "and lower(MARKETNAME) not like '%reverse%'  " &
+      "and lower(MARKETNAME) not like '%plats%'  " &
+      "and lower(MARKETNAME) not like '%place%'  " &
+      "and lower(MARKETNAME) not like '%without%'  " &
+      "and EVENTHIERARCHY like :ANIMAL " &
+      "and DRYMARKETS.MARKETID = DRYRESULTS.MARKETID " &
+      "and DRYMARKETS.MARKETID = DRYRUNNERS.MARKETID " &
+      "and DRYRESULTS.SELECTIONID = DRYRUNNERS.SELECTIONID " &
+      "order by DRYRUNNERS.BACKPRICE ");
    case Animal is
       when Races.Hound  =>
          Sql.Set (Select_Back_Winners (Races.Winner), "ANIMAL", "/4339/%");
@@ -124,5 +124,8 @@ begin
    end loop;
    Log ("Total:" & Total'Img );
 
+exception
+   when E : others =>
+      Sattmate_Exception.Tracebackinfo (E);
 end Back_Bet_Analyzer;
 

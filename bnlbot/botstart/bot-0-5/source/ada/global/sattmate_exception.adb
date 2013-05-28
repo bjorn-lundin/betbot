@@ -121,7 +121,7 @@ package body Sattmate_Exception is
                     " --functions --basenames --exe=" &
                     Ada.Command_Line.Command_Name & " " &
                     Pure_Hexdump(Last_Exception_Info));               --9.8-19244
-    --Put_Line("Command => " & To_String(Command));                   --9.8-19244
+    Put_Line("Command => " & To_String(Command));                   --9.8-19244
 --    System_Services.Execute_Command(To_String(Command), Result_Text); --9.8-19244
 --    Put_Line("Hex      Subprogram name and file");
 --    Put_Line("-----    ------------------------");

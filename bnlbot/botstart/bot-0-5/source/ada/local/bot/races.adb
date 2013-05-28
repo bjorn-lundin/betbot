@@ -129,7 +129,7 @@ package body Races is
                  "  lower(MARKETNAME) like 'iv%'  " &
                  ")  " &
                  "and BSPMARKET = 'Y' " &
-                 "and COUNTRYCODE in ('GBR','IRL') " &
+                 "and COUNTRYCODE in ('GBR') " &
 --                 "and TOTALMATCHED > 100000 " &
                  "and lower(MARKETNAME) not like '% v %'  " &
                  "and lower(MARKETNAME) not like '%forecast%'  " &
@@ -231,11 +231,13 @@ package body Races is
       Runner   : Table_Dryrunners.Data_Type;
       Eol      : Boolean := False;
       Found    : Boolean := False;
-      Num_In_List        : Integer := 0;
-      Current_Iteration  : Integer := 0;
-      Max_Iterations     : Integer := 0;
+      Num_In_List        : Integer_4 := 0;
+      Current_Iteration  : Integer_4 := 0;
+      Max_Iterations     : Integer_4 := 0;
       Favorite_Odds      : Price_Type := 1000.0;
       Max_Favorite_Odds  : Price_Type := 1000.0;
+      Min_Num_Runners    : Integer_4 := 0;
+
 
       Backwards_Sorted_List : Table_Dryrunners.Dryrunners_List_Pack.List_Type :=
                               Table_Dryrunners.Dryrunners_List_Pack.Create;
@@ -262,24 +264,38 @@ package body Races is
       -- So get the last item in list
       -- Then we check that runners lay-price
 
-      Num_In_List := Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List);
+      Num_In_List := Integer_4(Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List));
 
 
       case Bet_Name is
         when Races.Winner =>
           case Animal is
-            when Races.Hound => Max_Iterations := 1;
-            when Races.Horse => Max_Iterations := Num_In_List - 5;
+            when Races.Hound =>
+              Max_Iterations := 1;
+              Min_Num_Runners := 6;
+            when Races.Horse =>
+              Max_Iterations := Num_In_List - 5;
+              Min_Num_Runners := 8;
           end case;
         when Races.Place =>
           case Animal is
-            when Races.Hound => Max_Iterations := 1;
-            when Races.Horse => Max_Iterations := Num_In_List - 3;
+            when Races.Hound =>
+              Max_Iterations := 1;
+              Min_Num_Runners := 6;
+            when Races.Horse =>
+              Max_Iterations := Num_In_List - 3;
+              Min_Num_Runners := 8;
           end case;
       end case;
 
-
       Log ("make_lay_bet - num runners" & Num_In_List'Img & " max_iter" & Max_Iterations'Img);
+
+      if Num_In_List < Min_Num_Runners then
+         Log ("make_lay_bet - Too few runners, no bet");
+         Bet_Laid := False;
+         Table_Dryrunners.Dryrunners_List_Pack.Release(Backwards_Sorted_List);
+         return;
+      end if;
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       loop
@@ -373,6 +389,9 @@ package body Races is
       Runner   : Table_Dryrunners.Data_Type;
       Eol      : Boolean := False;
       Found    : Boolean := False;
+      Num_In_List : Integer_4 := 0;
+      Min_Num_Runners    : Integer_4 := 0;
+      Max_Iterations     : Integer_4 := 0;
    begin
       Race.Selectionid := 0;
       Race.Price := 0.0;
@@ -394,6 +413,36 @@ package body Races is
       -- is sorted on back-price, lowest first.
       -- we are looking for the runner with LOWEST back-price.
       -- So get the first item in list
+      Num_In_List := Integer_4(Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List));
+
+      case Bet_Name is
+        when Races.Winner =>
+          case Animal is
+            when Races.Hound =>
+              Max_Iterations := 1;
+              Min_Num_Runners := 6;
+            when Races.Horse =>
+              Max_Iterations := Num_In_List - 5;
+              Min_Num_Runners := 8;
+          end case;
+        when Races.Place =>
+          case Animal is
+            when Races.Hound =>
+              Max_Iterations := 1;
+              Min_Num_Runners := 6;
+            when Races.Horse =>
+              Max_Iterations := Num_In_List - 3;
+              Min_Num_Runners := 8;
+          end case;
+      end case;
+
+
+      if Num_In_List < Min_Num_Runners then
+         Log ("make_lay_bet - Too few runners, no bet");
+         Bet_Laid := False;
+         return;
+      end if;
+
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       Found := not Eol;

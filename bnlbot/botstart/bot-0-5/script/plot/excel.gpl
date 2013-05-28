@@ -1,0 +1,39 @@
+set datafile commentschars '#'
+set datafile separator '|'
+
+set terminal pngcairo size 1024,768 background '#ffffff'
+#set terminal png medium size 1024,768 background '#ffffff'
+set output target_png
+
+
+
+set grid
+set key center right
+
+set title "hitratio profitable bets"
+set ylabel "hitratio %"
+set yrange [0:100]
+set ytics 5
+
+set y2label "hitratio %"
+#set y2range [0:70]
+set y2tics 5
+
+set xlabel "price"
+set xrange [1:25]
+set xtics 1
+
+set boxwidth 0.10
+#set style fill solid 1.0
+
+plot 100/x title 'hitratio back with no commision (%)'                           with lines linecolor rgb 'black', \
+     100/((1-0.05)*x) title 'hitratio back with commission (%)'                  with lines linecolor rgb 'black', \
+     100*(x-1)/x title 'hitratio lay with no commission (%)'                     with lines linecolor rgb 'black', \
+     100*(x-(1-0.05))/x title 'hitratio lay with 5% commission (%)'              with lines linecolor rgb 'black', \
+     inputfile using 5:6                               with boxes title columnheader(6), \
+     inputfile using 5:6:(sprintf("%.0f",$1+$2)) with labels font "Helvetica,8" center offset 0,0.5 notitle, \
+     inputfile using 5:6:7 with labels font "Helvetica,6"  offset -1,-9 rotate left notitle
+
+#     inputfile using 5:6 title 'actual hitratio (%)'                             with boxes linecolor rgb 'red'
+
+

@@ -28,8 +28,8 @@ set y2tics 5
 
 set xlabel "price"
 #set xrange [1:25]
-set xtics 1
-set x2tics 1
+set xtics 2
+set x2tics 2
 
 
 plot 100*(x-1)/x title 'hitratio lay with no commission (%)'                     with lines linecolor rgb 'black', \
