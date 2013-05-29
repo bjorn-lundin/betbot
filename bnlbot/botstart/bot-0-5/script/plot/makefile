@@ -17,7 +17,7 @@ DBNAME := $(BOT_DATABASE_NAME)
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
   HOST := localhost
-  HOST := 192.168.0.13
+#  HOST := 192.168.0.13
 #  PSQL := psql --username=bnl
 #  HOST := nonodev.com
 #  DBNAME := bnls
@@ -190,7 +190,8 @@ back_bet_price_distribution:
 .PHONY : excel_42 excel_21
 excel_42:
 ifneq ($(UNAME),MINGW32_NT-6.1)
-	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_42 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_42.dat
+	$(PSQL) -h $(HOST) --command="select sum(cntwon) as cwon,sum(cntlost) as clost, round(sum(avgprofitwon + avgprofitlost)::numeric,2) as aerrorprofit, round(sum(sumprofit)::numeric,2) as sprofit, round(avg(avgpricelost+avgpricewon)::numeric,2) as aprice, round(100*sum(cntwon)/(sum(cntwon)+sum(cntlost)),2) as hitratio, bt from hitratio_42 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_42.dat
+#	$(PSQL) -h $(HOST) --command="select sum(cntwon) as cwon,sum(cntlost) as clost, round(sum(avgprofitwon + avgprofitlost)::numeric,2) as aerrorprofit, round(sum(sumprofit)::numeric,2) as sprofit, round(avg(avgpricelost+avgpricewon)::numeric,2) as aprice, round(100*sum(cntwon)/(sum(cntwon)+sum(cntlost)),2) as hitratio, bt from hitratio_42 group by bt order by aprice" $(DBNAME) > excel_42.dat
 	cat excel_42.dat | grep -v "\-\-" > $(TMP)
 	cat $(TMP) | grep -v rows > excel_42.dat
 	gnuplot -e "target_png='excel_42.png'" \
@@ -201,7 +202,7 @@ endif
 
 excel_21:
 ifneq ($(UNAME),MINGW32_NT-6.1)
-	$(PSQL) -h $(HOST) --command="select sum (cntwon) as \"cwon\",sum (cntlost) as \"clost\", round(avg(avgprofit)::numeric,2) as \"aprofit\",  round(sum(sumprofit)::numeric,2) as \"sprofit\",  round(avg(avgprice)::numeric,2) as \"aprice\", round(100*sum(cntwon)/(sum (cntwon)+sum (cntlost)),2) as \"hitratio\",  bt from hitratio_21 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_21.dat
+	$(PSQL) -h $(HOST) --command="select sum(cntwon) as cwon,sum(cntlost) as clost, round(sum(avgprofitwon + avgprofitlost)::numeric,2) as aerrorprofit, round(sum(sumprofit)::numeric,2) as sprofit, round(avg(avgpricelost+avgpricewon)::numeric,2) as aprice, round(100*sum(cntwon)/(sum(cntwon)+sum(cntlost)),2) as hitratio, bt from hitratio_21 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_21.dat
 	cat excel_21.dat | grep -v "\-\-" > $(TMP)
 	cat $(TMP) | grep -v rows > excel_21.dat
 	gnuplot -e "target_png='excel_21.png'" \
