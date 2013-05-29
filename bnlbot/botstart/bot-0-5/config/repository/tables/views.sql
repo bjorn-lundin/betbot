@@ -82,14 +82,19 @@ and bets.profit < 0.0
 ) tmp
 
 
+drop view hitratio_21;
+
+
 create or replace view  hitratio_21 as
 (
 select
   count('a') as cntwon,
   0 as cntlost,
-  avg(profit) as avgprofit,
+  avg(profit) as avgprofitwon,
+  0.0 as avgprofitlost,
   sum(profit) as sumprofit,
-  avg(price) as avgprice,
+  avg(price) as avgpricewon,
+  0.0 as avgpricelost,
   bet_type as bt
 from
   bet_with_commission
@@ -106,11 +111,13 @@ union
 select
   0 as cntwon,
   count('a') as cntlost,
-  avg(profit) as avgprofit,
+  0.0 as avgprofitwon,
+  avg(profit) as avgprofitlost,
   sum(profit) as sumprofit,
-  avg(price) as avgprice,
+  0.0 as avgpricewon,
+  avg(price) as avgpricelost,
   bet_type as bt
-  from
+from
   bet_with_commission
 where
 event_date::date > (select CURRENT_DATE - interval '21 days')
@@ -122,14 +129,18 @@ group by
 )
 ;
 
+
+drop view hitratio_42;
 create or replace view  hitratio_42 as
 (
 select
   count('a') as cntwon,
   0 as cntlost,
-  avg(profit) as avgprofit,
+  avg(profit) as avgprofitwon,
+  0.0 as avgprofitlost,
   sum(profit) as sumprofit,
-  avg(price) as avgprice,
+  avg(price) as avgpricewon,
+  0.0 as avgpricelost,
   bet_type as bt
 from
   bet_with_commission
@@ -146,11 +157,13 @@ union
 select
   0 as cntwon,
   count('a') as cntlost,
-  avg(profit) as avgprofit,
+  0.0 as avgprofitwon,
+  avg(profit) as avgprofitlost,
   sum(profit) as sumprofit,
-  avg(price) as avgprice,
+  0.0 as avgpricewon,
+  avg(price) as avgpricelost,
   bet_type as bt
-  from
+from
   bet_with_commission
 where
 event_date::date > (select CURRENT_DATE - interval '42 days')
