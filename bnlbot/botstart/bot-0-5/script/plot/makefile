@@ -19,8 +19,8 @@ ifeq ($(UNAME),Linux)
   HOST := localhost
 #  HOST := 192.168.0.13
 #  PSQL := psql --username=bnl
-#  HOST := nonodev.com
-#  DBNAME := bnls
+  HOST := nonodev.com
+  DBNAME := jmb
   SHOW_PNG := display
 endif
 
@@ -202,7 +202,7 @@ endif
 
 excel_21:
 ifneq ($(UNAME),MINGW32_NT-6.1)
-	$(PSQL) -h $(HOST) --command="select sum(cntwon) as cwon,sum(cntlost) as clost, round(sum(avgprofitwon + avgprofitlost)::numeric,2) as aerrorprofit, round(sum(sumprofit)::numeric,2) as sprofit, round(avg(avgpricelost+avgpricewon)::numeric,2) as aprice, round(100*sum(cntwon)/(sum(cntwon)+sum(cntlost)),2) as hitratio, bt from hitratio_21 group by bt having sum(sumprofit) > 0 order by aprice" $(DBNAME) > excel_21.dat
+	$(PSQL) -h $(HOST) --command="select sum(cntwon) as cwon,sum(cntlost) as clost, round(sum(avgprofitwon + avgprofitlost)::numeric,2) as aerrorprofit, round(sum(sumprofit)::numeric,2) as sprofit, round(avg(avgpricelost+avgpricewon)::numeric,2) as aprice, round(100*sum(cntwon)/(sum(cntwon)+sum(cntlost)),2) as hitratio, bt from hitratio_21 group by bt having sum(sumprofit) > -10000 order by aprice" $(DBNAME) > excel_21.dat
 	cat excel_21.dat | grep -v "\-\-" > $(TMP)
 	cat $(TMP) | grep -v rows > excel_21.dat
 	gnuplot -e "target_png='excel_21.png'" \
