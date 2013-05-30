@@ -17,10 +17,10 @@ DBNAME := $(BOT_DATABASE_NAME)
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
   HOST := localhost
-#  HOST := 192.168.0.13
+  HOST := 192.168.0.13
 #  PSQL := psql --username=bnl
-  HOST := nonodev.com
-  DBNAME := jmb
+#  HOST := nonodev.com
+#  DBNAME := bnls
   SHOW_PNG := display
 endif
 
@@ -37,14 +37,15 @@ ifeq ($(UNAME),MINGW32_NT-6.1)
   SHOW_PNG :=
 endif
 
-
-
 GRAPH_TYPE := one_hundred_and_four_weeks
-STOP_DATE := 2013-05-31
+START_DATE := 2013-01-01
+STOP_DATE  := 2013-12-31
 SIZE := 30
 SALDO := 10000
-DB_NAME := betting
 BET_TYPE := winner
+
+
+
 TARGET_DAT_HORSE_BACK_WINNER := horse_back_winner.dat
 TARGET_DAT_HOUND_BACK_WINNER := hound_back_winner.dat
 TARGET_DAT_HORSE_LAY_WINNER := horse_lay_winner.dat
@@ -52,6 +53,13 @@ TARGET_DAT_HOUND_LAY_WINNER := hound_lay_winner.dat
 TARGET_PNG := hitratio.png
 TARGET_BACK_PNG := hitratio_back.png
 TARGET_LAY_PNG := hitratio_lay.png
+
+## equity start ##
+DRY_RUN_HORSES_WINNER_BACK_BET_30_09=dry_run_horses_winner_back_bet_30_09
+DRY_RUN_HORSES_WINNER_LAY_BET_ALL=dry_run_horses_winner_lay_bet_all
+DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01=dry_run_hounds_winner_back_bet_36_01
+DRY_RUN_HOUNDS_PLACE_LAY_BET=dry_run_hounds_place_lay_bet
+DRY_RUN_HORSES_WINNER_BACK_BET_54_04=dry_run_horses_winner_back_bet_54_04
 
 #horses_back:
 #	$(BOT_TARGET)/bin/simulator6 --bet_name=winner --saldo=10000 \
@@ -63,7 +71,12 @@ TARGET_LAY_PNG := hitratio_lay.png
 
 
 all: $(TARGET_PNG) $(TARGET_LAY_PNG) $(TARGET_BACK_PNG)
-
+.PHONY : saldo
+saldo : $(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).png \
+        $(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).png \
+        $(DRY_RUN_HOUNDS_PLACE_LAY_BET).png \
+        $(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).png \
+        $(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).png
 
 $(TARGET_PNG) : hitratio.gpl \
               $(TARGET_DAT_HORSE_BACK_WINNER) \
@@ -163,6 +176,119 @@ $(TARGET_DAT_HOUND_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --quiet > $(TARGET_DAT_HOUND_LAY_WINNER)
 
 
+######## equity start ##########
+
+$(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).png : $(BOT_TARGET)/bin/equity $(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).dat equity.gpl
+	gnuplot -e "start_date='$(STOP_DATE)'" \
+                -e "stop_date='$(STOP_DATE)'" \
+                -e "db_name='$(DB_NAME)'" \
+                -e "bet_type='DRY_RUN_HORSES_WINNER_BACK_BET_30_09'" \
+                -e "target_png='$(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).png'" \
+                -e "input_file='$(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) $(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).png
+endif
+
+
+$(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).dat : $(BOT_TARGET)/bin/equity
+	$(BOT_TARGET)/bin/equity --host=$(HOST) \
+                                 --database=$(DBNAME) \
+                                 --bet_type=DRY_RUN_HORSES_WINNER_BACK_BET_30_09 \
+                                 --saldo=$(SALDO) \
+                                 --start_date=2013-01-01 \
+                                 --stop_date=2013-12-31 > $(DRY_RUN_HORSES_WINNER_BACK_BET_30_09).dat
+
+#
+$(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).png : $(BOT_TARGET)/bin/equity $(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).dat equity.gpl
+	gnuplot -e "start_date='$(STOP_DATE)'" \
+                -e "stop_date='$(STOP_DATE)'" \
+                -e "db_name='$(DB_NAME)'" \
+                -e "bet_type='DRY_RUN_HORSES_WINNER_LAY_BET_ALL'" \
+                -e "target_png='$(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).png'" \
+                -e "input_file='$(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) $(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).png
+endif
+
+
+$(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).dat : $(BOT_TARGET)/bin/equity
+	$(BOT_TARGET)/bin/equity --host=$(HOST) \
+                                 --database=$(DBNAME) \
+                                 --bet_type=DRY_RUN_HORSES_WINNER_LAY_BET_ALL \
+                                 --saldo=$(SALDO) \
+                                 --start_date=2013-01-01 \
+                                 --stop_date=2013-12-31 > $(DRY_RUN_HORSES_WINNER_LAY_BET_ALL).dat
+
+
+#
+$(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).png : $(BOT_TARGET)/bin/equity $(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).dat equity.gpl
+	gnuplot -e "start_date='$(STOP_DATE)'" \
+                -e "stop_date='$(STOP_DATE)'" \
+                -e "db_name='$(DB_NAME)'" \
+                -e "bet_type='DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01'" \
+                -e "target_png='$(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).png'" \
+                -e "input_file='$(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) $(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).png
+endif
+
+
+$(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).dat : $(BOT_TARGET)/bin/equity
+	$(BOT_TARGET)/bin/equity --host=$(HOST) \
+                                 --database=$(DBNAME) \
+                                 --bet_type=DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01 \
+                                 --saldo=$(SALDO) \
+                                 --start_date=2013-01-01 \
+                                 --stop_date=2013-12-31 > $(DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01).dat
+
+#
+$(DRY_RUN_HOUNDS_PLACE_LAY_BET).png : $(BOT_TARGET)/bin/equity $(DRY_RUN_HOUNDS_PLACE_LAY_BET).dat equity.gpl
+	gnuplot -e "start_date='$(STOP_DATE)'" \
+                -e "stop_date='$(STOP_DATE)'" \
+                -e "db_name='$(DB_NAME)'" \
+                -e "bet_type='DRY_RUN_HOUNDS_PLACE_LAY_BET'" \
+                -e "target_png='$(DRY_RUN_HOUNDS_PLACE_LAY_BET).png'" \
+                -e "input_file='$(DRY_RUN_HOUNDS_PLACE_LAY_BET).dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) $(DRY_RUN_HOUNDS_PLACE_LAY_BET).png
+endif
+
+
+$(DRY_RUN_HOUNDS_PLACE_LAY_BET).dat : $(BOT_TARGET)/bin/equity
+	$(BOT_TARGET)/bin/equity --host=$(HOST) \
+                                 --database=$(DBNAME) \
+                                 --bet_type=DRY_RUN_HOUNDS_PLACE_LAY_BET \
+                                 --saldo=$(SALDO) \
+                                 --start_date=2013-01-01 \
+                                 --stop_date=2013-12-31 > $(DRY_RUN_HOUNDS_PLACE_LAY_BET).dat
+
+#
+$(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).png : $(BOT_TARGET)/bin/equity $(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).dat equity.gpl
+	gnuplot -e "start_date='$(STOP_DATE)'" \
+                -e "stop_date='$(STOP_DATE)'" \
+                -e "db_name='$(DB_NAME)'" \
+                -e "bet_type='DRY_RUN_HORSES_WINNER_BACK_BET_54_04'" \
+                -e "target_png='$(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).png'" \
+                -e "input_file='$(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) $(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).png
+endif
+
+
+$(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).dat : $(BOT_TARGET)/bin/equity
+	$(BOT_TARGET)/bin/equity --host=$(HOST) \
+                                 --database=$(DBNAME) \
+                                 --bet_type=DRY_RUN_HORSES_WINNER_BACK_BET_54_04 \
+                                 --saldo=$(SALDO) \
+                                 --start_date=2013-01-01 \
+                                 --stop_date=2013-12-31 > $(DRY_RUN_HORSES_WINNER_BACK_BET_54_04).dat
+
+
+
+
+
+
+######## equity stop ##########
 
 .PHONY : balance
 balance:
