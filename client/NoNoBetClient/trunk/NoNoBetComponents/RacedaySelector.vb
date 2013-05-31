@@ -209,8 +209,14 @@ Public Class RacedaySelector
 
   Private Sub gridRacedays_RowChange(sender As Object, e As BaseComponents.BaseGrid.RowChangeEventArgs) Handles gridRacedays.RowChange
     If _IsLoaded Then
-      Dim raceday_id As Integer = CType(BaseGrid.GetRowColumnValue(e.Row, "id"), Integer)
-      Dim sql As String = "SELECT * FROM race WHERE raceday_id = " & raceday_id
+      Dim sql As String
+
+      If (e.Row IsNot Nothing) Then
+        Dim raceday_id As Integer = CType(BaseGrid.GetRowColumnValue(e.Row, "id"), Integer)
+        sql = "SELECT * FROM RacedayMainBettypes WHERE raceday_id = " & raceday_id
+      Else
+        sql = "SELECT * FROM RacedayMainBettypes WHERE null = null"
+      End If
       gridBottom.ExecuteSql(Me.ResourceManager, sql)
     End If
   End Sub
@@ -229,6 +235,8 @@ Public Class RacedaySelector
 
     gridRacedays.SetReadOnlyMode()
     gridRacedays.AutoResizeRows()
+    gridBottom.SetReadOnlyMode()
+    gridBottom.AutoResizeRows()
 
     _IsLoaded = True
   End Sub
