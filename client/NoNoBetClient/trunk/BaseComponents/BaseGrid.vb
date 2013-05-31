@@ -15,6 +15,8 @@ Public Class BaseGrid
     If (_MenuHandler Is Nothing) Then
       _MenuHandler = New BaseGridMenuHandler
     End If
+
+    AddHandler Me.Rows.CollectionChanged, AddressOf RowCollectionChanged
   End Sub
 
   Public Sub New()
@@ -299,4 +301,15 @@ Public Class BaseGrid
       RaiseEvent RowChange(Me, rowChgEArgs)
     End If
   End Sub
+
+  Private Sub RowCollectionChanged(sender As Object, e As System.ComponentModel.CollectionChangeEventArgs)
+    If (Me.Rows.Count = 0) Then
+      ' The grid has become empty. Raise a RowChange event with a null row object to indicate this
+      Dim rowChgEArgs As RowChangeEventArgs = New RowChangeEventArgs
+      rowChgEArgs.Row = Nothing
+      RaiseEvent RowChange(Me, rowChgEArgs)
+    End If
+  End Sub
+
+
 End Class
