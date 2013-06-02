@@ -180,6 +180,10 @@
       <Project>{2CF167E9-65EC-4D8C-97F0-E6C84ED31652}</Project>
       <Name>NoNoBetConfig</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NoNoBetResources\NoNoBetResources.vbproj">
+      <Project>{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}</Project>
+      <Name>NoNoBetResources</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

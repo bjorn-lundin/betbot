@@ -2,6 +2,8 @@
 Imports DbInterface
 Imports NoNoBetComponents
 Imports NoNoBetConfig
+Imports NoNoBetResources
+
 
 Public Class ConnectionManager
   Inherits BaseForm

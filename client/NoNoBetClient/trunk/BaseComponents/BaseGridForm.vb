@@ -1,4 +1,6 @@
-﻿Public Class BaseGridForm
+﻿Imports NoNoBetResources
+
+Public Class BaseGridForm
   Inherits BaseForm
   Implements IBaseGridForm
 

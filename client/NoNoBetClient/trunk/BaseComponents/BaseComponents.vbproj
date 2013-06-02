@@ -77,7 +77,6 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationResourceManager.vb" />
     <Compile Include="BaseDialog.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -87,7 +86,6 @@
     <Compile Include="BaseGridForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BaseGridMenuHandler.vb" />
     <Compile Include="IBaseComponent.vb" />
     <Compile Include="IBaseDialog.vb" />
     <Compile Include="IBaseForm.vb" />
@@ -142,9 +140,17 @@
       <Project>{CD23EB3D-FF2E-477D-B7A8-14C606B3A33B}</Project>
       <Name>DbInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MenuItemHandler\MenuItemHandler.vbproj">
+      <Project>{E54CB42C-D268-4FA5-A00B-8156D1A2EF4C}</Project>
+      <Name>MenuItemHandler</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NoNoBetConfig\NoNoBetConfig.vbproj">
       <Project>{2CF167E9-65EC-4D8C-97F0-E6C84ED31652}</Project>
       <Name>NoNoBetConfig</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NoNoBetResources\NoNoBetResources.vbproj">
+      <Project>{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}</Project>
+      <Name>NoNoBetResources</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

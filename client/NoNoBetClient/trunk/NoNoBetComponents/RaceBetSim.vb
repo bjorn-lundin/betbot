@@ -1,6 +1,7 @@
 ﻿Imports System.Windows.Forms
 Imports BaseComponents
 Imports DbInterface
+Imports NoNoBetResources
 
 Public Class RaceBetSim
   Inherits BaseForm
@@ -633,10 +634,10 @@ Public Class RaceBetSim
         Dim currCell As DataGridViewCell = Nothing
 
         currCell = currRow.Cells("raceid")
-        Dim raceId As Integer = BaseGrid.GetCellIntValue(currCell)
+        Dim raceId As Integer = ApplicationResourceManager.GetCellIntValue(currCell)
 
         currCell = currRow.Cells("finish_place")
-        Dim finishPlace As Integer = BaseGrid.GetCellIntValue(currCell)
+        Dim finishPlace As Integer = ApplicationResourceManager.GetCellIntValue(currCell)
 
         Dim odds As Decimal = 0
         Dim aWinner As Boolean = False
@@ -644,13 +645,13 @@ Public Class RaceBetSim
           Case betType.Winner
             If (finishPlace = 1) Then
               currCell = currRow.Cells("winner_odds")
-              odds = BaseGrid.GetCellDecimalValue(currCell)
+              odds = ApplicationResourceManager.GetCellDecimalValue(currCell)
               aWinner = True
             End If
           Case betType.Place
             If (finishPlace >= 1) And (finishPlace <= 3) Then
               currCell = currRow.Cells("place_odds")
-              odds = BaseGrid.GetCellDecimalValue(currCell)
+              odds = ApplicationResourceManager.GetCellDecimalValue(currCell)
               aWinner = True
             End If
         End Select

@@ -1,6 +1,7 @@
 ﻿Imports BaseComponents
 Imports NoNoBetConfig
 Imports NoNoBetComponents
+Imports NoNoBetResources
 Imports System
 Imports System.Data
 Imports System.Windows.Forms

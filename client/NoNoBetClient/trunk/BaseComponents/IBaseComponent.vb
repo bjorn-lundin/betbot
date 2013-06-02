@@ -1,3 +1,5 @@
-﻿Public Interface IBaseComponent
+﻿Imports NoNoBetResources
+
+Public Interface IBaseComponent
   Property ResourceManager As ApplicationResourceManager
 End Interface

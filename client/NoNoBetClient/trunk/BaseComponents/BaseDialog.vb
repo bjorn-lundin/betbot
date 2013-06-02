@@ -1,4 +1,5 @@
 ﻿Imports System.Windows.Forms
+Imports NoNoBetResources
 
 Public Class BaseDialog
   Inherits Form
