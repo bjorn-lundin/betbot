@@ -35,7 +35,7 @@ endif
 
 
 #  HOST := localhost
-#  HOST := 192.168.0.13
+#HOST := 192.168.0.13
 HOST := nonodev.com
 ifeq ($(HOST),localhost)
   HOST := localhost
@@ -47,7 +47,7 @@ endif
 ifeq ($(HOST),192.168.0.13)
   DBNAME := betting
   DBPORT := 5432
-  DBPWD :=
+  DBPWD := bnl
 endif
 
 ifeq ($(HOST),nonodev.com)
@@ -109,13 +109,28 @@ saldo_nono : dry_run_horses_winner_back_bet_30_09.png \
              dry_run_horses_winner_back_bet_27_03.png \
              dry_run_horses_winner_back_bet_26_10.png \
              dry_run_horses_winner_back_bet_25_10.png \
-             dry_run_horses_winner_back_bet_29_10.png \
              dry_run_horses_winner_back_bet_24_10.png \
              dry_run_horses_winner_back_bet_23_10.png \
              dry_run_hounds_winner_lay_bet_11_17.png \
              dry_run_hounds_winner_lay_bet_12_13.png \
              dry_run_hounds_winner_lay_bet_1_7.png \
              dry_run_hounds_winner_lay_bet_2_5.png
+
+
+.PHONY : saldo_nono_sim
+saldo_nono_sim : sim_dry_run_horses_winner_back_bet_30_09.dat \
+             sim_dry_run_horses_winner_back_bet_29_10.dat \
+             sim_dry_run_horses_winner_back_bet_28_10.dat \
+             sim_dry_run_horses_winner_back_bet_27_10.dat \
+             sim_dry_run_horses_winner_back_bet_27_03.dat \
+             sim_dry_run_horses_winner_back_bet_26_10.dat \
+             sim_dry_run_horses_winner_back_bet_25_10.dat \
+             sim_dry_run_horses_winner_back_bet_24_10.dat \
+             sim_dry_run_horses_winner_back_bet_23_10.dat \
+             sim_dry_run_hounds_winner_lay_bet_11_17.dat \
+             sim_dry_run_hounds_winner_lay_bet_12_13.dat \
+             sim_dry_run_hounds_winner_lay_bet_1_7.dat \
+             sim_dry_run_hounds_winner_lay_bet_2_5.dat
 
 
 $(TARGET_PNG) : hitratio.gpl \
@@ -255,11 +270,13 @@ $(TARGET_DAT_HOUND_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
                                  --saldo=$(SALDO) \
                                  --start_date=2013-01-01 \
                                  --stop_date=2013-12-31 > $*.dat
+
 	gnuplot -e "start_date='$(STOP_DATE)'" \
                 -e "stop_date='$(STOP_DATE)'" \
                 -e "db_name='$(DBNAME)'" \
                 -e "bet_type='$*'" \
                 -e "target_png='$@'" \
+                -e "sim_input_file='sim_$*.dat'" \
                 -e "input_file='$*.dat'" equity.gpl
 ifneq ($(UNAME),MINGW32_NT-6.1)
 	$(SHOW_PNG) $*.png
@@ -270,6 +287,216 @@ endif
 
 
 ######## equity stop ##########
+sim_dry_run_horses_winner_back_bet_23_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.3 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_23_10.dat
+
+sim_dry_run_horses_winner_back_bet_24_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.4 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_24_10.dat
+
+sim_dry_run_horses_winner_back_bet_25_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.5 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_25_10.dat
+
+sim_dry_run_horses_winner_back_bet_26_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.6 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_26_10.dat
+
+sim_dry_run_horses_winner_back_bet_27_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.7 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_27_10.dat
+
+sim_dry_run_horses_winner_back_bet_28_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.8 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_28_10.dat
+
+sim_dry_run_horses_winner_back_bet_29_10.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.9 \
+                                   --delta=1 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_29_10.dat
+
+sim_dry_run_horses_winner_back_bet_30_09.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=3 \
+                                   --delta=0.9 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_30_09.dat
+
+sim_dry_run_horses_winner_back_bet_27_03.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=horse \
+                                   --bet_type=back \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2.7 \
+                                   --delta=0.3 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_horses_winner_back_bet_27_03.dat
+
+sim_dry_run_hounds_winner_lay_bet_11_17.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=hound \
+                                   --bet_type=lay \
+                                   --bet_name=winner \
+                                   --max_profit_factor=5 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=11 \
+                                   --delta=17 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_hounds_winner_lay_bet_11_17.dat
+
+sim_dry_run_hounds_winner_lay_bet_12_13.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=hound \
+                                   --bet_type=lay \
+                                   --bet_name=winner \
+                                   --max_profit_factor=300 \
+                                   --max_daily_loss=-250 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=12 \
+                                   --delta=13 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_hounds_winner_lay_bet_12_13.dat
+
+sim_dry_run_hounds_winner_lay_bet_1_7.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=hound \
+                                   --bet_type=lay \
+                                   --bet_name=winner \
+                                   --max_profit_factor=0 \
+                                   --max_daily_loss=-750 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=1 \
+                                   --delta=7 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_hounds_winner_lay_bet_1_7.dat
+
+sim_dry_run_hounds_winner_lay_bet_2_5.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=betting \
+                                   --animal=hound \
+                                   --bet_type=lay \
+                                   --bet_name=winner \
+                                   --max_profit_factor=0 \
+                                   --max_daily_loss=-750 \
+                                   --start_date=2013-05-11 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=2 \
+                                   --delta=5 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > sim_dry_run_hounds_winner_lay_bet_2_5.dat
+
+
+########
 
 .PHONY : balance
 balance:
@@ -321,4 +548,4 @@ endif
 
 .PHONY : clean
 clean :
-	rm *.png *.dat
+	rm *.png

@@ -4,7 +4,7 @@ with Gnat.Strings;
 with Sql;
 with Sattmate_Calendar;
 with Logging;               use Logging;
-with Text_IO;
+--with Text_IO;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 procedure Equity is
 
@@ -139,7 +139,8 @@ begin
      Sql.Get_Timestamp(Select_Results, "BET_PLACED", Bet_Placed);
      Sql.Get(Select_Results, "PROFIT", Profit);
      Saldo := Saldo + Profit;
-     Text_io.Put_Line(Sattmate_Calendar.String_Date_ISO(Bet_Placed) & " " & Sattmate_Calendar.String_Time(Bet_Placed) & " | " & Float_8'Image(Saldo) & " | " & Float_8'Image(Profit));
+     Print(Sattmate_Calendar.String_Date_ISO(Bet_Placed) & " " & Sattmate_Calendar.String_Time(Bet_Placed) & " | " &
+           Integer'Image(Integer(Saldo)) & " | " & Integer'Image(Integer(Profit)));
    end loop;
    Sql.Close_Cursor(Select_Results);
    Sql.Commit (T);

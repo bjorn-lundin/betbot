@@ -1,0 +1,30 @@
+set datafile commentschars '#'
+set datafile separator '|'
+
+set terminal pngcairo size 1024,768 background '#ffffff'
+#set terminal png medium size 1024,768 background '#ffffff'
+set output target_png
+
+set grid
+set key top left
+
+set title "saldo for " . bet_type . " " . start_date . "-" .stop_date
+set ylabel "kr"
+set y2label "kr"
+
+set xdata time
+set timefmt  "%Y-%m-%d %H:%M:%S"
+set format x "%Y-%m-%d"
+
+set xtics rotate by 90 offset 0, -5
+set xlabel "Datum" offset 0,-3
+
+set style data histogram
+set style histogram rowstacked
+#set style fill solid border -1
+set boxwidth 0.75
+
+set bmargin 8
+
+plot     input_file u 1:2 w boxes lc rgb "green" title 'dry_run', \
+     sim_input_file u 1:2 w lines lc rgb "blue" title 'sim'
