@@ -1,6 +1,7 @@
 ﻿Imports DbInterface
 Imports NoNoBetDb
 Imports BaseComponents
+Imports NoNoBetResources
 
 Public Class RacedaySelector
   Inherits BaseComponents.BaseForm
@@ -212,7 +213,7 @@ Public Class RacedaySelector
       Dim sql As String
 
       If (e.Row IsNot Nothing) Then
-        Dim raceday_id As Integer = CType(BaseGrid.GetRowColumnValue(e.Row, "id"), Integer)
+        Dim raceday_id As Integer = CType(ApplicationResourceManager.GetRowColumnValue(e.Row, "id"), Integer)
         sql = "SELECT * FROM RacedayMainBettypes WHERE raceday_id = " & raceday_id
       Else
         sql = "SELECT * FROM RacedayMainBettypes WHERE null = null"
@@ -233,8 +234,10 @@ Public Class RacedaySelector
     cCodes.LoadFromDb(MyBase.ResourceManager)
     cCodes.FillCombo(cboCountry)
 
+    gridRacedays.Id = "RaceDays"
     gridRacedays.SetReadOnlyMode()
     gridRacedays.AutoResizeRows()
+    gridBottom.Id = "RacedayBettypes"
     gridBottom.SetReadOnlyMode()
     gridBottom.AutoResizeRows()
 

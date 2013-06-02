@@ -1,6 +1,7 @@
 ﻿Imports System.Windows.Forms
 Imports BaseComponents
 Imports DbInterface
+Imports NoNoBetResources
 Imports NoNoBetComponents.RaceBetSim
 
 Public Class StatForm

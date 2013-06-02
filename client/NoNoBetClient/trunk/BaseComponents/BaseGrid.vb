@@ -1,10 +1,13 @@
 ﻿Imports System.Windows.Forms
 Imports System.Windows.Forms.DataGridView
+Imports NoNoBetResources
+Imports MenuItemHandler
+Imports NoNoBetResources.ApplicationResourceManager
 
 Public Class BaseGrid
   Inherits DataGridView
 
-  Private Shared _MenuHandler As BaseGridMenuHandler = Nothing
+  Private Shared _MenuHandler As IMenuItemHandler = Nothing
 
   Private _Sql As String = Nothing
   Private _Id As String = Nothing
@@ -67,31 +70,6 @@ Public Class BaseGrid
     End Set
   End Property
 
-
-  Public Shared Function GetCellIntValue(ByVal cell As DataGridViewCell) As Integer
-    If IsDBNull(cell.Value) Then
-      Return 0
-    Else
-      Return CType(cell.Value, Integer)
-    End If
-  End Function
-
-  Public Shared Function GetCellDecimalValue(ByVal cell As DataGridViewCell) As Decimal
-    If IsDBNull(cell.Value) Then
-      Return CType(0, Decimal)
-    Else
-      Return CType(cell.Value, Decimal)
-    End If
-  End Function
-
-  Public Shared Function GetCellDoubleValue(ByVal cell As DataGridViewCell) As Double
-    If IsDBNull(cell.Value) Then
-      Return CType(0, Double)
-    Else
-      Return CType(cell.Value, Double)
-    End If
-  End Function
-
   Public Function GetColumnValueType(ByVal colName As String) As System.Type
     If (Me.Columns IsNot Nothing) Then
       Dim col As DataGridViewColumn = Me.Columns.Item(colName)
@@ -112,25 +90,6 @@ Public Class BaseGrid
     Return Nothing
   End Function
 
-  Public Shared Function GetRowColumnValue(ByVal row As DataGridViewRow, ByVal colName As String) As Object
-    If (row IsNot Nothing) Then
-      Dim rowCell As DataGridViewCell = row.Cells(colName)
-      If (rowCell IsNot Nothing) Then
-        Return rowCell.Value
-      End If
-    End If
-    Return Nothing
-  End Function
-
-  Public Shared Function GetRowColumnValue(ByVal row As DataGridViewRow, ByVal colIndex As Integer) As Object
-    If (row IsNot Nothing) Then
-      Dim rowCell As DataGridViewCell = row.Cells(colIndex)
-      If (rowCell IsNot Nothing) Then
-        Return rowCell.Value
-      End If
-    End If
-    Return Nothing
-  End Function
 
   Public Function GetCurrentRowCellValue(ByVal colName As String) As Object
     Return GetRowColumnValue(Me.CurrentRow, colName)
@@ -282,13 +241,13 @@ Public Class BaseGrid
   Private Sub BaseGrid_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseClick
     If (e.Button = MouseButtons.Right) Then
       If (_Menu Is Nothing) Then
-        _Menu = BaseGridMenuHandler.MenuCreate(_Id)
+        _Menu = _MenuHandler.MenuCreate(_Id)
       End If
 
       If (_Menu IsNot Nothing) Then
         'Dim p As System.Drawing.Point = Me.PointToClient(e.Location)
         Dim p As System.Drawing.Point = Me.PointToScreen(e.Location)
-        BaseGridMenuHandler.MenuShow(_Menu, Me.CurrentRow, p)
+        _MenuHandler.MenuShow(_Menu, Me.CurrentRow, p)
       End If
 
     End If

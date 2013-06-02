@@ -1,4 +1,6 @@
-﻿Public Interface IBaseForm
+﻿Imports NoNoBetResources
+
+Public Interface IBaseForm
   Inherits IBaseComponent
 
   Property FormTitle As String

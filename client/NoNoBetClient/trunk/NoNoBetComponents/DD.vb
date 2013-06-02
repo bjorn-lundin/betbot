@@ -1,6 +1,7 @@
 ﻿Imports DbInterface
 Imports NoNoBetDb
 Imports BaseComponents
+Imports NoNoBetResources
 
 Public Class DD
   Inherits BaseForm
@@ -145,7 +146,7 @@ Public Class DD
 
   Private _Raceday_id As Integer
 
-  Public Shadows Sub StartForm(raceday_id As Integer, asDialog As Boolean, resourceMan As BaseComponents.ApplicationResourceManager)
+  Public Shadows Sub StartForm(raceday_id As Integer, asDialog As Boolean, resourceMan As ApplicationResourceManager)
     _Raceday_id = raceday_id
     MyBase.StartForm(asDialog, resourceMan)
   End Sub
@@ -155,14 +156,6 @@ Public Class DD
     InitializeComponent()
   End Sub
 
-  Private Sub DD_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    gridDD1.SetReadOnlyMode()
-    gridDD1.AutoResizeRows()
-    gridDD2.SetReadOnlyMode()
-    gridDD2.AutoResizeRows()
-    gridDDResult.SetReadOnlyMode()
-    gridDDResult.AutoResizeRows()
-  End Sub
 
   Private Sub tabPageDD1_GotFocus(sender As Object, e As System.EventArgs) Handles tabPageDD1.GotFocus
 
@@ -174,5 +167,14 @@ Public Class DD
 
   Private Sub tabPageResult_GotFocus(sender As Object, e As System.EventArgs) Handles tabPageResult.GotFocus
 
+  End Sub
+
+  Private Sub DD_Load(sender As Object, e As System.EventArgs) Handles Me.Load
+    gridDD1.SetReadOnlyMode()
+    gridDD1.AutoResizeRows()
+    gridDD2.SetReadOnlyMode()
+    gridDD2.AutoResizeRows()
+    gridDDResult.SetReadOnlyMode()
+    gridDDResult.AutoResizeRows()
   End Sub
 End Class
