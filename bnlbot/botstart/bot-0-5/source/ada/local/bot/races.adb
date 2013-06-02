@@ -129,7 +129,7 @@ package body Races is
                  "  lower(MARKETNAME) like 'iv%'  " &
                  ")  " &
                  "and BSPMARKET = 'Y' " &
-                 "and COUNTRYCODE in ('GBR') " &
+                 "and COUNTRYCODE in ('GBR','IRL') " &
 --                 "and TOTALMATCHED > 100000 " &
                  "and lower(MARKETNAME) not like '% v %'  " &
                  "and lower(MARKETNAME) not like '%forecast%'  " &
@@ -537,6 +537,7 @@ package body Races is
          if          Back_Price - Back_Price_Type(Delta_Price) <= Back_Price_Type(Runner.Backprice)
             and then Back_Price_Type(Runner.Backprice) <= Back_Price + Back_Price_Type(Delta_Price)
             and then Runner.Backprice + Favorite_By <= Runner2.Backprice
+            and then Race.Market.Noofrunners >= 8
            then
 
             -- runner found ! make bet

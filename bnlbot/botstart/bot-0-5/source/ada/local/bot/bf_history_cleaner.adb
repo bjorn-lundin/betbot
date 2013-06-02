@@ -7,64 +7,64 @@ with Table_History;
 with Table_History2;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
-
-
---with Table_Drymarkets;
---with Table_Dryresults;
---with Table_Dryrunners;
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Logging; use Logging;
 
 procedure Bf_History_Cleaner is
    History,Old_History : Table_History.Data_Type;
-   History_List : Table_History.History_List_Pack.List_Type :=
-                  Table_History.History_List_Pack.Create;
+--   History_List : Table_History.History_List_Pack.List_Type :=
+--                  Table_History.History_List_Pack.Create;
 
    History2     : Table_History2.Data_Type;
 
    T            : Sql.Transaction_Type;
    Select_All,
-   Select_latest,
+--   Select_latest,
    Stm_Select_Volume,
    Stm_Select_Eventid_Selectionid_O : Sql.Statement_Type;
 
-   Start_Date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
-   Stop_Date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   Start_Date       : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   Stop_Date        : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   Global_Stop_Date : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
 
    Eos,
    Eos2,
    Eos3         : Boolean := False;
 
-   Sa_Date      : aliased Gnat.Strings.String_Access;
-   I_Num_Days   : aliased Integer;
-   Config       : Command_Line_Configuration;
+   Sa_Par_Start_Date : aliased Gnat.Strings.String_Access;
+   Sa_Par_Stop_Date  : aliased Gnat.Strings.String_Access;
+   Config            : Command_Line_Configuration;
 
 
 begin
    Define_Switch
      (Config      => Config,
-      Output      => Sa_Date'access,
-      Switch      => "-d:",
-      Long_Switch => "--date=",
-      Help        => "when the data move starts yyyy-mm-dd");
+      Output      => Sa_Par_Start_Date'access,
+      Switch      => "-s:",
+      Long_Switch => "--start_date=",
+      Help        => "when the data move starts yyyy-mm-dd, inclusive");
 
    Define_Switch
      (Config      => Config,
-      Output      => I_Num_Days'access,
-      Initial     =>  0,
-      Switch      => "-n:",
-      Long_Switch => "--num_days=",
-      Help        => "days to move");
+      Output      => Sa_Par_Stop_Date'access,
+      Switch      => "-t:",
+      Long_Switch => "--stop_date=",
+      Help        => "when the data move stops yyyy-mm-dd, inclusive");
 
    Getopt (Config);  -- process the command line
 
-   if Sa_Date.all = "" or else I_Num_Days = 0 then
+   if Sa_Par_Start_Date.all = "" or else Sa_Par_Stop_Date.all = "" then
      Display_Help (Config);
      return ;
    end if;
 
-   Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "00:00:00:000");
-   Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Date.all, "23:59:59:999");
+   Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Par_Start_Date.all, "00:00:00:000");
+   Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Start_Date.all, "23:59:59:999");
+   Start_Date := Start_Date - Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --remove a day first
+   Stop_Date  := Stop_Date  - Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --remove a day first
+
+   Global_Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
+
 
    Log ("Connect db");
    Sql.Connect
@@ -74,12 +74,17 @@ begin
       Login    => "bnl",
       Password => "bnl");
 
-   for i in 0 .. I_Num_Days loop
-      Sql.Start_Read_Write_Transaction (T);
+    Main : loop
+      Start_Date := Start_Date + Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --add a day
+      Stop_Date  := Stop_Date  + Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --add a day
+      exit Main when     Start_Date.Year  = Global_Stop_Date.Year
+                and then Start_Date.Month = Global_Stop_Date.Month
+                and then Start_Date.Day   = Global_Stop_Date.Day;
 
-      start_date := start_date + sattmate_calendar.interval_type'(1,0,0,0,0); --add a day
-      stop_date  := stop_date  + sattmate_calendar.interval_type'(1,0,0,0,0); --add a day
-      Log ("History2 - treat date " & String_Date(start_date));
+     Log ("History2 - treat date " & String_Date(start_date));
+
+
+      Sql.Start_Read_Write_Transaction (T);
 
       History := Table_History.Empty_Data;
       History2 := Table_History2.Empty_Data;
@@ -92,19 +97,29 @@ begin
           "and SPORTSID = 7 " &
           "and FULLDESCRIPTION <> 'Ante Post' " &
           "and COUNTRY <> 'ANTEPOST' " &
-          "group by  EVENTID, SELECTIONID " &
+          "and lower(FULLDESCRIPTION) not like '% v %'  " &
+          "and lower(FULLDESCRIPTION) not like '%forecast%'  " &
+          "and lower(FULLDESCRIPTION) not like '%tbp%'  " &
+          "and lower(FULLDESCRIPTION) not like '%challenge%'  " &
+          "and lower(FULLDESCRIPTION) not like '%fc%'  " &
+          "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
+          "and lower(FULLDESCRIPTION) not like '%reverse%'  " &
+          "and lower(FULLDESCRIPTION) not like '%without%'  " &
+          "and inplay = 'PE' " &   -- pre event !!
+          "group by EVENTID, SELECTIONID " &
           "order by EVENTID, SELECTIONID ");
 
       Sql.Set_Timestamp(Select_all, "START", Start_date);
       Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
 
       Sql.Prepare(Stm_Select_Eventid_Selectionid_O, " select * from HISTORY " &
-            "where EVENTID=:EVENTID" &
+            "where EVENTID = :EVENTID " &
+            "and inplay = 'PE' " &   -- pre event !!
             " and SELECTIONID=:SELECTIONID" &
             " order by LATESTTAKEN desc "  ) ;
 
       Sql.Prepare(Stm_Select_Volume, " select sum(volumematched), sum(numberbets) from HISTORY " &
-            "where EVENTID=:EVENTID" );
+            "where EVENTID=:EVENTID and inplay = 'PE' " );   -- pre event !!
 
       Sql.Open_Cursor(Select_all);
       loop
@@ -133,7 +148,7 @@ begin
             Sql.Get(Stm_Select_Volume,1, History.Volumematched);
             Sql.Get(Stm_Select_Volume,2, History.Numberbets);
           else
-            Log ("History - FAIL TO GET VOLUMEMATCHED " & History.EVENTID'img);
+            Log ("History - FAILED TO GET VOLUMEMATCHED " & History.EVENTID'img);
             return;
           end if;
           Sql.Close_Cursor(Stm_Select_Volume);
@@ -174,7 +189,7 @@ begin
       end loop;
       Sql.Close_Cursor(Select_all);
       Sql.Commit (T);
-   end loop;
+   end loop Main;
 
    Sql.Close_Session;
 
