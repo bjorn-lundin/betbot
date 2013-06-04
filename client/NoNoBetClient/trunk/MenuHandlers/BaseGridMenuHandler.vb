@@ -7,7 +7,8 @@ Public Class BaseGridMenuHandler
 
   Public _Item As ToolStripMenuItem = New ToolStripMenuItem
 
-  Public Function MenuCreate(ByVal menuName As String) As ContextMenuStrip Implements IMenuItemHandler.MenuCreate
+
+  Public Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuItemHandler.MenuCreate
     Dim m As ContextMenuStrip = New ContextMenuStrip
     m.Name = menuName
     m.Text = menuName
@@ -39,20 +40,13 @@ Public Class BaseGridMenuHandler
     MenuItemClick(item)
   End Sub
 
-  Public Function MenuShow(ByVal menu As ContextMenuStrip, ByVal gridRow As DataGridViewRow, ByVal pos As System.Drawing.Point) As Boolean Implements IMenuItemHandler.MenuShow
-    menu.Tag = gridRow
-    menu.Show(pos)
-    Return True
-  End Function
-
-
-  Public Function MenuItemClick(ByVal item As ToolStripMenuItem) As Boolean Implements IMenuItemHandler.MenuItemClick
+  Public Function MenuItemClick(item As System.Windows.Forms.ToolStripMenuItem) As Boolean Implements NoNoBetResources.IMenuItemHandler.MenuItemClick
     Dim menu As ContextMenuStrip = CType(item.Tag, ContextMenuStrip)
     Dim gridRow As DataGridViewRow = CType(menu.Tag, DataGridViewRow)
 
     Select Case item.Name
       Case "itemShowRacedayBettype"
-        ShowRacedayBettypeForm(gridRow)
+        'ShowRacedayBettypeForm(gridRow)
         Return True
       Case "itemDo"
         MessageBox.Show("Doing something...")
@@ -63,22 +57,12 @@ Public Class BaseGridMenuHandler
       Case Else
         Return False
     End Select
+
   End Function
 
-  Public Shared Sub ShowRacedayBettypeForm(row As DataGridViewRow)
-    If (row IsNot Nothing) Then
-      Dim colVal As Object = GetRowColumnValue(row, "name_code")
-
-      If (colVal IsNot Nothing) Then
-        Dim bettype As String = CType(colVal, String)
-
-        Select Case bettype
-          Case "V", "P"
-            'Dim vp As VP
-          Case Else
-
-        End Select
-      End If
-    End If
-  End Sub
+  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, gridRow As System.Windows.Forms.DataGridViewRow, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuItemHandler.MenuShow
+    menu.Tag = gridRow
+    menu.Show(pos)
+    Return True
+  End Function
 End Class

@@ -2,7 +2,6 @@
 Imports System.Windows.Forms.DataGridView
 Imports System.Reflection
 Imports NoNoBetResources
-Imports MenuItemHandler
 Imports NoNoBetResources.ApplicationResourceManager
 
 Public Class BaseGrid

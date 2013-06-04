@@ -15,7 +15,7 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NoNoBetConfig", "NoNoBetCon
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NoNoBetResources", "NoNoBetResources\NoNoBetResources.vbproj", "{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "X", "X\X.vbproj", "{1637ADF6-47AC-427F-8BE8-265A5E67491C}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MenuHandlers", "MenuHandlers\MenuHandlers.vbproj", "{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,10 +51,10 @@ Global
 		{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1637ADF6-47AC-427F-8BE8-265A5E67491C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1637ADF6-47AC-427F-8BE8-265A5E67491C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1637ADF6-47AC-427F-8BE8-265A5E67491C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1637ADF6-47AC-427F-8BE8-265A5E67491C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
