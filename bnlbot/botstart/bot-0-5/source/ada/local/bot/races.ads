@@ -97,6 +97,7 @@ package Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
+                           Min_From_Leader   : in Integer_4;
                            Last_Loss         : in Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
@@ -111,6 +112,7 @@ package Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
+                           Min_From_Leader   : in Integer_4;
                            Last_Loss         : in Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
@@ -120,19 +122,19 @@ package Races is
                            Max_Price         : in Max_Price_Type ) ;
 
 
-   procedure Make_Back_Bet(Race                   : in out Race_Type;
+   procedure Make_Back_Bet(Race              : in out Race_Type;
                            Animal            : in Animal_Type;
                            Bet_Name          : in Bet_Name_Type;
-                           Bet_Laid               : in out Boolean ;
-                           Profit                 : in  Profit_Type ;
-                           Last_Loss              : in  Sattmate_Calendar.Time_Type;
-                           Saldo                  : in out Saldo_Type ;
-                           Max_Daily_Loss         : in Max_Daily_Loss_Type;
-                           Max_Profit_Factor      : in Max_Profit_Factor_Type ;
-                           Size                   : in Size_Type;
-                           Favorite_By            : in Float_8;
-                           Back_Price             : in Back_Price_Type;
-                           Delta_Price            : in Delta_Price_Type )  ;
+                           Bet_Laid          : in out Boolean ;
+                           Profit            : in  Profit_Type ;
+                           Last_Loss         : in  Sattmate_Calendar.Time_Type;
+                           Saldo             : in out Saldo_Type ;
+                           Max_Daily_Loss    : in Max_Daily_Loss_Type;
+                           Max_Profit_Factor : in Max_Profit_Factor_Type ;
+                           Size              : in Size_Type;
+                           Favorite_By       : in Float_8;
+                           Back_Price        : in Back_Price_Type;
+                           Delta_Price       : in Delta_Price_Type )  ;
 
    procedure Check_Result (Race              : in out Race_Type;
                            Profit            : in out Profit_Type;
@@ -154,9 +156,9 @@ package Races is
    procedure Get_Database_Data (Race_List   : in out Race_Package.List_Type;
                                 Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
-                                Animal      : Animal_Type;
-                                Start_Date  : Sattmate_Calendar.Time_Type;
-                                Stop_Date   : Sattmate_Calendar.Time_Type
+                                Animal      : in Animal_Type;
+                                Start_Date  : in Sattmate_Calendar.Time_Type;
+                                Stop_Date   : in Sattmate_Calendar.Time_Type
                                ) ;
 
 

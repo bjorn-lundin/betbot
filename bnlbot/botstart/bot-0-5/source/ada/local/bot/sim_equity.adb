@@ -158,14 +158,6 @@ begin
       Help        => "Stop when won more than this times size per day");
 
 
-
---   Define_Switch
---    (Config,
---      Sa_Graph_Type'Access,
---      "-g:",
---      Long_Switch => "--graph_type=",
---      Help        => "type of graph, 'Weekly', 'Four_Weeks', 'Eight_Weeks', 'Twenty_Six_Weeks', 'Fifty_Two_Weeks', 'Seventy_Eight_Weeks'  or 'One_Hundred_And_Four_Weeks'");
-
    Define_Switch
      (Config,
       Sa_Par_Price'Access,
@@ -222,31 +214,11 @@ begin
 
       if Sa_Bet_Name.all = "winner" then
          Global_Bet_Name := Races.Winner;
---      elsif Sa_Bet_Name.all = "place" then
---         Global_Bet_Name := Races.Place;
+      elsif Sa_Bet_Name.all = "place" then
+         Global_Bet_Name := Races.Place;
       else
          raise Bad_Name_Type with "Not supported bet name: '" & Sa_Bet_Name.all & "'";
       end if;
-
---      if Sa_Graph_Type.all = "daily" then
---         Global_Graph_Type := Races.Daily;
---      if Sa_Graph_Type.all = "weekly" then
---         Global_Graph_Type := Races.Weekly;
---      elsif Sa_Graph_Type.all = "four_weeks" then
---         Global_Graph_Type := Races.Four_Weeks;
---      elsif Sa_Graph_Type.all = "eight_weeks" then
---         Global_Graph_Type := Races.Eight_Weeks;
---      elsif Sa_Graph_Type.all = "twenty_six_weeks" then
---         Global_Graph_Type := Races.Twenty_Six_Weeks;
---      elsif Sa_Graph_Type.all = "fifty_two_weeks" then
---         Global_Graph_Type := Races.Fifty_Two_Weeks;
---      elsif Sa_Graph_Type.all = "seventy_eight_weeks" then
---         Global_Graph_Type := Races.Seventy_Eight_Weeks;
---      elsif Sa_Graph_Type.all = "one_hundred_and_four_weeks" then
---         Global_Graph_Type := Races.One_Hundred_And_Four_Weeks;
---      else
---         raise Bad_Graph_Type with "Not supported graph type: '" & Sa_Graph_Type.all & "'";
---      end if;
 
       Global_Size              := Races.Size_Type'Value (Sa_Size.all);
       Global_Saldo             := Races.Saldo_Type'Value (Sa_Saldo.all);
@@ -265,34 +237,6 @@ begin
 
    Global_Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Par_Start_Date.all, "00:00:00:000");
    Global_Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
-
---   case Global_Graph_Type is
-----      when Races.Daily =>       Global_Start_Date := Global_Stop_Date;
---      when Races.Weekly                     => Global_Start_Date := Global_Stop_Date - (  1 * 7 - 1, 0, 0, 0, 0);
---      when Races.Four_Weeks                 => Global_Start_Date := Global_Stop_Date - (  4 * 7 - 1, 0, 0, 0, 0);
---      when Races.Eight_Weeks                => Global_Start_Date := Global_Stop_Date - (  8 * 7 - 1, 0, 0, 0, 0);
---      when Races.Twenty_Six_Weeks           => Global_Start_Date := Global_Stop_Date - ( 26 * 7 - 1, 0, 0, 0, 0);
---      when Races.Fifty_Two_Weeks            => Global_Start_Date := Global_Stop_Date - ( 52 * 7 - 1, 0, 0, 0, 0);
---      when Races.Seventy_Eight_Weeks        => Global_Start_Date := Global_Stop_Date - ( 78 * 7 - 1, 0, 0, 0, 0);
---      when Races.One_Hundred_And_Four_Weeks => Global_Start_Date := Global_Stop_Date - (104 * 7 - 1, 0, 0, 0, 0);
---   end case;
-
-
-----   if Global_Start_Date < Sattmate_Calendar.Time_Type'(2013, 01, 30, 0, 0, 0, 0) then
---   if Global_Start_Date < Sattmate_Calendar.Time_Type'(2011, 01, 01, 0, 0, 0, 0) then
---      Log ("start date outside range, " & Global_Graph_Type'Img & " " &
---           Sattmate_Calendar.String_Date (Global_Start_Date) & " " &
---           Sattmate_Calendar.String_Date (Global_Stop_Date )
---          );
---      return;
---   end if;
---
---   Log ("graph/startdate/stopdate, " & Global_Graph_Type'Img & " " &
---           Sattmate_Calendar.String_Date (Global_Start_Date) & " " &
---           Sattmate_Calendar.String_Date (Global_Stop_Date )
---          );
-----   return;
-
 
    Global_Start_Date.Hour        := 0;
    Global_Start_Date.Minute      := 0;
@@ -337,6 +281,7 @@ begin
                             Bet_Name          => Global_Bet_Name,
                             Bet_Laid          => Global_Bet_Laid,
                             Profit            => Global_Daily_Profit,
+                            Min_From_Leader   => Integer_4(Global_Favorite_By),
                             Saldo             => Global_Saldo,
                             Last_Loss         => Global_Last_Loss,
                             Max_Daily_Loss    => Global_Max_Daily_Loss,
@@ -356,6 +301,9 @@ begin
                             -- if bet is laid, race.price is updated with the actual price of the bet in make_back_bet
                             Global_Daily_Profit := Global_Daily_Profit + Race_Profit;
                             Global_Profit := Global_Profit + Race_Profit;
+                            Print (Sattmate_Calendar.String_Date_ISO (Race.Market.Eventdate) & " " & Sattmate_Calendar.String_Time (Race.Market.Eventdate) & " | " &
+                                   integer'image(integer(Global_Saldo)) & " | " &
+                                   integer'image(integer(Race_Profit)));
 
                          end if;
 
@@ -393,6 +341,7 @@ begin
                               Bet_Name          => Global_Bet_Name,
                               Bet_Laid          => Global_Bet_Laid,
                               Profit            => Global_Daily_Profit,
+                              Min_From_Leader   => Integer_4(Global_Favorite_By),
                               Saldo             => Global_Saldo,
                               Last_Loss         => Global_Last_Loss,
                               Max_Daily_Loss    => Global_Max_Daily_Loss,
@@ -412,6 +361,9 @@ begin
 
                                -- if bet is laid, race.price is updated with the actual price of the bet in make_back_bet
                               Global_Profit := Global_Profit + Race_Profit;
+                              Print (Sattmate_Calendar.String_Date_ISO (Race.Market.Eventdate) & " " & Sattmate_Calendar.String_Time (Race.Market.Eventdate) & " | " &
+                                     integer'image(integer(Global_Saldo)) & " | " &
+                                     integer'image(integer(Race_Profit)));
                            end if;
 
                            Races.Race_Package.Get_Next (Race_List, Race, Eol);

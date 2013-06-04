@@ -389,6 +389,7 @@ begin
                               Race.Make_Lay_Bet
                                 (Bet_Laid          => Global_Bet_Laid,
                                  Profit            => Global_Profit,
+                                 Min_From_Leader   => 0,
                                  Saldo             => Global_Saldo,
                                  Last_Loss         => Global_Last_Loss,
                                  Max_Daily_Loss    => Global_Max_Daily_Loss,
@@ -513,6 +514,7 @@ begin
                            Race.Make_Lay_Favorite_Bet
                              (Bet_Laid          => Global_Bet_Laid,
                               Profit            => Global_Profit,
+                              Min_From_Leader   => 0,
                               Saldo             => Global_Saldo,
                               Last_Loss         => Global_Last_Loss,
                               Max_Daily_Loss    => Global_Max_Daily_Loss,

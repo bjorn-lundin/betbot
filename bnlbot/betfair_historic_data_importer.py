@@ -70,8 +70,8 @@ class Betfair_Historic_Data_Importer(object):
            temp[t] = v
 
         if not self.horse :
-            temp['COUNTRY'] = None
-            temp['COURSE'] = None
+            temp['COUNTRY'] = 'NON'
+            temp['COURSE'] = 'NON'
             temp['ACTUAL_OFF'] = temp['DT ACTUAL_OFF']
 #        print 1,temp['EVENT_ID']
 

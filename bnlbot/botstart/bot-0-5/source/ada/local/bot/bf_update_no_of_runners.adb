@@ -16,50 +16,14 @@ with Logging; use Logging;
 
 procedure Bf_update_no_of_runners is
 
---   Dryrunners    : Table_Dryrunners.Data_Type;
    Drymarkets    : Table_Drymarkets.Data_Type;
-
-
-
    T                  : Sql.Transaction_Type;
    Select_All         : Sql.Statement_Type;
    Select_Num_Runners : Sql.Statement_Type;
---   Select_Markets     : Sql.Statement_Type;
-
-
+   Select_Num_Runners2 : Sql.Statement_Type;
    Eos,Eos2       : Boolean := False;
-
---   Sa_Date       : aliased Gnat.Strings.String_Access;
---   I_Num_Days    : aliased Integer;
---   Config        : Command_Line_Configuration;
-
---   num_runners        : integer_4 := 0;
---   race_ok            : Boolean := False;
---   Runnernamestripped : String := Dryrunners.Runnernamestripped;
---   Startnum           : String := Dryrunners.Startnum;
    cnt                : Integer_4 := 0;
 begin
---   Define_Switch
---     (Config      => Config,
---      Output      => Sa_Date'access,
---      Switch      => "-d:",
---      Long_Switch => "--date=",
---      Help        => "when the data move starts yyyy-mm-dd");
---
---   Define_Switch
---     (Config      => Config,
---      Output      => I_Num_Days'access,
---      Initial     =>  0,
---      Switch      => "-n:",
---      Long_Switch => "--num_days=",
---      Help        => "days to move");
---
---   Getopt (Config);  -- process the command line
---
---   if Sa_Date.all = "" or else I_Num_Days = 0 then
---     Display_Help (Config);
---     return ;
---   end if;
 
 
    Log ("Connect db");
@@ -70,7 +34,6 @@ begin
       Login    => "bnl",
       Password => "bnl");
 
---   for i in 0 .. I_Num_Days loop
       Sql.Start_Read_Write_Transaction (T);
 
 
@@ -82,18 +45,27 @@ begin
                    "select count('a') from DRYRUNNERS where marketid = :MARKETID" );
 
 
+      Sql.Prepare (Select_Num_Runners2,
+                   "select count('a') from DRYMARKETS where noofrunners is null" );
+
+
+      Sql.Open_Cursor(Select_Num_Runners2);
+      Sql.Fetch(Select_Num_Runners2,Eos);
+      if not eos then
+        Sql.Get(Select_Num_Runners2,1,Cnt);
+      end if;
+      Sql.Close_Cursor(Select_Num_Runners2);
+
+
       Sql.Open_Cursor(Select_All);
-
-
       loop
          Sql.Fetch(Select_All,Eos);
          exit when Eos;
-         Cnt := Cnt +1;
+         Cnt := Cnt - 1;
 
          if Cnt mod 1000 = 0 then
           Log("Cnt =" & Cnt'Img);
          end if;
-
 
          Drymarkets:= Table_Drymarkets.Get(Select_All);
 

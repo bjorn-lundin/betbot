@@ -101,10 +101,10 @@ begin
                    "select * from HISTORY2 " &
                    "where LATESTTAKEN >= :START " &
                    "and LATESTTAKEN <= :STOP " &
-                   "and SPORTSID = 7 " &
+                   "and SPORTSID in (7, 4339) " &
                    "and FULLDESCRIPTION <> 'Ante Post' " &
                    "and COUNTRY <> 'ANTEPOST' " &
-                   "and EVENT not like 'TO BE PLA%' " &
+--                   "and EVENT not like 'TO BE PLA%' " &
                    "and EVENT not like 'Rev%' " &
                    "and EVENT not like 'With%' " &
                    "and EVENT not like 'Fore%' " &

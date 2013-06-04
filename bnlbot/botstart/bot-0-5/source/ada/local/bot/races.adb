@@ -72,9 +72,9 @@ package body Races is
    procedure Get_Database_Data (Race_List   : in out Race_Package.List_Type;
                                 Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
-                                Animal      : Animal_Type;
-                                Start_Date  : Sattmate_Calendar.Time_Type;
-                                Stop_Date   : Sattmate_Calendar.Time_Type
+                                Animal      : in Animal_Type;
+                                Start_Date  : in Sattmate_Calendar.Time_Type;
+                                Stop_Date   : in Sattmate_Calendar.Time_Type
                                ) is
       T               : Sql.Transaction_Type;
       Race_Ptr        : Race_Pointer_Type;
@@ -102,16 +102,15 @@ package body Races is
                           "where EVENTDATE >= :STARTDATE " &
                           "and EVENTDATE <= :STOPDATE " &
                           "and MARKETNAME = :MARKETNAME " &
---                          "and MARKETID in (108777496,108777461) " &
---                          "and COUNTRYCODE in ('GBR') " &
+                          "and COUNTRYCODE in ('GBR','IRL') " &
                           "and EVENTHIERARCHY like :EVENTHIERARCHY " &
                           "and exists (select 'x' from DRYRESULTS where " &
                           "    DRYMARKETS.MARKETID = DRYRESULTS.MARKETID) " &
                           "and exists (select 'x' from DRYRUNNERS where " &
                           "    DRYMARKETS.MARKETID = DRYRUNNERS.MARKETID) " &
                           "order by EVENTDATE");
-           Sql.Set (Select_Markets(Bet_Type), "MARKETNAME", "Plats");
---           Sql.Set (Select_Markets(Bet_Type), "MARKETNAME", "TO BE PLACED");
+--           Sql.Set (Select_Markets(Bet_Type), "MARKETNAME", "Plats");
+           Sql.Set (Select_Markets(Bet_Type), "MARKETNAME", "TO BE PLACED");
 
         when Winner =>
             Sql.Prepare
@@ -130,6 +129,7 @@ package body Races is
                  ")  " &
                  "and BSPMARKET = 'Y' " &
                  "and COUNTRYCODE in ('GBR','IRL') " &
+                 "and MARKETNAME <> 'TO BE PLACED' " &
 --                 "and TOTALMATCHED > 100000 " &
                  "and lower(MARKETNAME) not like '% v %'  " &
                  "and lower(MARKETNAME) not like '%forecast%'  " &
@@ -141,6 +141,10 @@ package body Races is
                  "and lower(MARKETNAME) not like '%plats%'  " &
                  "and lower(MARKETNAME) not like '%place%'  " &
                  "and lower(MARKETNAME) not like '%without%'  " &
+                 "and MARKETNAME not like '% & %'  " &
+                 "and lower(MARKETNAME) not like '%track record%' " &
+                 "and lower(MARKETNAME) not like '%age of winner%' " &
+                 "and lower(MARKETNAME) not like '%winning%' " &
                  "and EVENTHIERARCHY like :EVENTHIERARCHY " &
                  "and exists (select 'x' from DRYRUNNERS where " &
                  "    DRYMARKETS.MARKETID = DRYRUNNERS.MARKETID) " &
@@ -221,6 +225,7 @@ package body Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
+                           Min_From_Leader   : in Integer_4;
                            Last_Loss         : in  Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
@@ -274,7 +279,7 @@ package body Races is
               Max_Iterations := 1;
               Min_Num_Runners := 6;
             when Races.Horse =>
-              Max_Iterations := Num_In_List - 5;
+              Max_Iterations := Num_In_List - Min_From_Leader;
               Min_Num_Runners := 8;
           end case;
         when Races.Place =>
@@ -283,7 +288,7 @@ package body Races is
               Max_Iterations := 1;
               Min_Num_Runners := 6;
             when Races.Horse =>
-              Max_Iterations := Num_In_List - 3;
+              Max_Iterations := Num_In_List - Min_From_Leader;
               Min_Num_Runners := 8;
           end case;
       end case;
@@ -301,8 +306,8 @@ package body Races is
       loop
          exit when Eol;
          Found := True;
-         if Price_Type(Runner.Layprice) < Favorite_Odds then
-           Favorite_Odds := Price_Type(Runner.Layprice);
+         if Price_Type(Runner.Backprice) < Favorite_Odds then
+           Favorite_Odds := Price_Type(Runner.Backprice);
          end if;
          Table_Dryrunners.Dryrunners_List_Pack.Insert_At_Head(Backwards_Sorted_List, Runner);
          Table_Dryrunners.Dryrunners_List_Pack.Get_Next (Race.Runners_List, Runner, Eol);
@@ -379,6 +384,7 @@ package body Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
+                           Min_From_Leader   : in Integer_4;
                            Last_Loss         : in Sattmate_Calendar.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
@@ -389,9 +395,7 @@ package body Races is
       Runner   : Table_Dryrunners.Data_Type;
       Eol      : Boolean := False;
       Found    : Boolean := False;
-      Num_In_List : Integer_4 := 0;
-      Min_Num_Runners    : Integer_4 := 0;
-      Max_Iterations     : Integer_4 := 0;
+   --   Num_In_List : Integer_4 := 0;
    begin
       Race.Selectionid := 0;
       Race.Price := 0.0;
@@ -413,36 +417,8 @@ package body Races is
       -- is sorted on back-price, lowest first.
       -- we are looking for the runner with LOWEST back-price.
       -- So get the first item in list
-      Num_In_List := Integer_4(Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List));
 
-      case Bet_Name is
-        when Races.Winner =>
-          case Animal is
-            when Races.Hound =>
-              Max_Iterations := 1;
-              Min_Num_Runners := 6;
-            when Races.Horse =>
-              Max_Iterations := Num_In_List - 5;
-              Min_Num_Runners := 8;
-          end case;
-        when Races.Place =>
-          case Animal is
-            when Races.Hound =>
-              Max_Iterations := 1;
-              Min_Num_Runners := 6;
-            when Races.Horse =>
-              Max_Iterations := Num_In_List - 3;
-              Min_Num_Runners := 8;
-          end case;
-      end case;
-
-
-      if Num_In_List < Min_Num_Runners then
-         Log ("make_lay_bet - Too few runners, no bet");
-         Bet_Laid := False;
-         return;
-      end if;
-
+--      Num_In_List := Integer_4(Table_Dryrunners.Dryrunners_List_Pack.Get_Count (Race.Runners_List));
 
       Table_Dryrunners.Dryrunners_List_Pack.Get_First (Race.Runners_List, Runner, Eol);
       Found := not Eol;
@@ -450,7 +426,7 @@ package body Races is
       Log ("make_lay_favorite_bet  -min price/maxprice: " & Integer (Min_Price)'Img & "/" & Integer (Max_Price)'Img);
       if Found then
         if
-           -- Runner.Backprice >= 4.0 and then
+           Runner.Backprice >= 1.1 and then -- no machine prices
            Float_8(Min_Price) <= Runner.Layprice and then
            Runner.Layprice < Float_8(Max_Price) then
             -- runner found ! make bet
@@ -530,14 +506,14 @@ package body Races is
          Table_Dryrunners.Dryrunners_List_Pack.Get_Next (Race.Runners_List, Runner2, Eol);
          Found := not Eol;
          Log ("second runner: " & Table_Dryrunners.To_String (Runner2));
-         Log ("min price/deltaprice: " & Back_Price'Img & "/" & Delta_Price'Img);
+--         Log ("min price/deltaprice: " & Back_Price'Img & "/" & Delta_Price'Img);
 
          -- Also, we want a 3.0 distance to second favorite
 
          if          Back_Price - Back_Price_Type(Delta_Price) <= Back_Price_Type(Runner.Backprice)
             and then Back_Price_Type(Runner.Backprice) <= Back_Price + Back_Price_Type(Delta_Price)
             and then Runner.Backprice + Favorite_By <= Runner2.Backprice
-            and then Race.Market.Noofrunners >= 8
+  --          and then Race.Market.Noofrunners >= 8
            then
 
             -- runner found ! make bet
