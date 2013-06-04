@@ -21,7 +21,7 @@ procedure Bf_split_runnername is
 
    T                  : Sql.Transaction_Type;
    Select_All         : Sql.Statement_Type;
---   Select_Num_Runners : Sql.Statement_Type;
+   Select_Num_Runners : Sql.Statement_Type;
 --   Select_Markets     : Sql.Statement_Type;
 
 
@@ -79,6 +79,16 @@ begin
       Sql.Prepare (Select_All,
                    "select * from DRYRUNNERS " );
 
+      Sql.Prepare (Select_Num_Runners,
+                   "select count('a') from DRYRUNNERS " );
+
+
+      Sql.Open_Cursor(Select_Num_Runners);
+      Sql.Fetch(Select_Num_Runners,Eos);
+      if not eos then
+        Sql.Get(Select_Num_Runners,1,Cnt);
+      end if;
+      Sql.Close_Cursor(Select_Num_Runners);
 
 
       Sql.Open_Cursor(Select_All);
@@ -87,7 +97,7 @@ begin
       loop
          Sql.Fetch(Select_All,Eos);
          exit when Eos;
-         Cnt := Cnt +1;
+         Cnt := Cnt -1;
 
          if Cnt mod 1000 = 0 then
           Log("Cnt = " & Cnt'Img);

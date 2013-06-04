@@ -19,6 +19,7 @@ project Adabot is
 --                 "simulator5.adb",
                  "equity.adb",
                  "sim_equity.adb",
+                 "sim_equity_total.adb",
                  "simulator6.adb",
                  "dry_runner_mover.adb",
                  "dry_string_fixer.adb",

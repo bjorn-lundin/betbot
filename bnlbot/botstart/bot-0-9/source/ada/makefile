@@ -40,9 +40,10 @@ OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
 
-.PHONY : json_test adabot back_bet_price_distribution tables
+.PHONY : json_test adabot back_bet_price_distribution tables adatools
 
-all: json_test adabot
+all:  adabot adatools
+
 
 tables : $(ST)/table_history.ads $(ST)/table_history2.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryresults.ads \
@@ -67,6 +68,9 @@ json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT)
 
 adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
 	gnatmake -P adabot
+
+adatools : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
+	gnatmake -P adatools
 
 balance_plot:
 	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
@@ -168,5 +172,6 @@ clean:
 	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
+	gnatclean -P adatools
 	rm $(ST)/table*.ad[abs]
 

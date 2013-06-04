@@ -77,9 +77,6 @@ begin
     Main : loop
       Start_Date := Start_Date + Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --add a day
       Stop_Date  := Stop_Date  + Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --add a day
-      exit Main when     Start_Date.Year  = Global_Stop_Date.Year
-                and then Start_Date.Month = Global_Stop_Date.Month
-                and then Start_Date.Day   = Global_Stop_Date.Day;
 
      Log ("History2 - treat date " & String_Date(start_date));
 
@@ -94,12 +91,12 @@ begin
           "where LATESTTAKEN >= :START " &
           "and LATESTTAKEN <= :STOP " &
           "and EVENT <> 'Forecast' " &
-          "and SPORTSID = 7 " &
+          "and SPORTSID in (7, 4339) " &
           "and FULLDESCRIPTION <> 'Ante Post' " &
           "and COUNTRY <> 'ANTEPOST' " &
           "and lower(FULLDESCRIPTION) not like '% v %'  " &
           "and lower(FULLDESCRIPTION) not like '%forecast%'  " &
-          "and lower(FULLDESCRIPTION) not like '%tbp%'  " &
+--          "and lower(FULLDESCRIPTION) not like '%tbp%'  " &
           "and lower(FULLDESCRIPTION) not like '%challenge%'  " &
           "and lower(FULLDESCRIPTION) not like '%fc%'  " &
           "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
@@ -112,11 +109,11 @@ begin
       Sql.Set_Timestamp(Select_all, "START", Start_date);
       Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
 
-      Sql.Prepare(Stm_Select_Eventid_Selectionid_O, " select * from HISTORY " &
+      Sql.Prepare(Stm_Select_Eventid_Selectionid_O, "select * from HISTORY " &
             "where EVENTID = :EVENTID " &
             "and inplay = 'PE' " &   -- pre event !!
-            " and SELECTIONID=:SELECTIONID" &
-            " order by LATESTTAKEN desc "  ) ;
+            "and SELECTIONID=:SELECTIONID " &
+            "order by LATESTTAKEN desc"  ) ;
 
       Sql.Prepare(Stm_Select_Volume, " select sum(volumematched), sum(numberbets) from HISTORY " &
             "where EVENTID=:EVENTID and inplay = 'PE' " );   -- pre event !!
@@ -189,6 +186,10 @@ begin
       end loop;
       Sql.Close_Cursor(Select_all);
       Sql.Commit (T);
+      exit Main when     Start_Date.Year  = Global_Stop_Date.Year
+                and then Start_Date.Month = Global_Stop_Date.Month
+                and then Start_Date.Day   = Global_Stop_Date.Day;
+
    end loop Main;
 
    Sql.Close_Session;
