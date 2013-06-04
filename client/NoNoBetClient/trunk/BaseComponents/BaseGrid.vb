@@ -3,6 +3,7 @@ Imports System.Windows.Forms.DataGridView
 Imports System.Reflection
 Imports NoNoBetResources
 Imports NoNoBetResources.ApplicationResourceManager
+Imports MenuHandlers
 
 Public Class BaseGrid
   Inherits DataGridView
@@ -16,8 +17,8 @@ Public Class BaseGrid
 
   Private Sub InitGrid()
     If (_MenuHandler Is Nothing) Then
-      '_MenuHandler = New BaseGridMenuHandler
-      LoadMenuItemHandler()
+      _MenuHandler = New BaseGridMenuHandler
+      'LoadMenuItemHandler()
     End If
 
     AddHandler Me.Rows.CollectionChanged, AddressOf RowCollectionChanged
