@@ -1,5 +1,6 @@
 ﻿Imports System.Windows.Forms
 Imports System.Windows.Forms.DataGridView
+Imports System.Reflection
 Imports NoNoBetResources
 Imports MenuItemHandler
 Imports NoNoBetResources.ApplicationResourceManager
@@ -16,10 +17,18 @@ Public Class BaseGrid
 
   Private Sub InitGrid()
     If (_MenuHandler Is Nothing) Then
-      _MenuHandler = New BaseGridMenuHandler
+      '_MenuHandler = New BaseGridMenuHandler
+      LoadMenuItemHandler()
     End If
 
     AddHandler Me.Rows.CollectionChanged, AddressOf RowCollectionChanged
+  End Sub
+
+  Public Sub LoadMenuItemHandler()
+    Dim fileName As String = IO.Path.Combine(Application.StartupPath, "MenuItemHandler.dll")
+    Dim a As Assembly = Assembly.LoadFile(fileName)
+    Dim o As Object = a.CreateInstance("BaseGridMenuHandler")
+    _MenuHandler = CType(o, IMenuItemHandler)
   End Sub
 
   Public Sub New()
