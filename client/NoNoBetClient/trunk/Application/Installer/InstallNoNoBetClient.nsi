@@ -21,6 +21,9 @@ File ..\bin\Release\BaseComponents.dll
 File ..\bin\Release\DbInterface.dll
 File ..\bin\Release\NoNoBetComponents.dll 
 File ..\bin\Release\NoNoBetDb.dll
+File ..\bin\Release\NoNoBetConfig.dll
+File ..\bin\Release\NoNoBetResources.dll
+File ..\bin\Release\MenuHandlers.dll
 File ..\bin\Release\Npgsql.dll
 File ..\bin\Release\policy.2.0.Npgsql.dll
 File ..\bin\Release\Mono.Security.dll
@@ -37,6 +40,9 @@ Delete $INSTDIR\BaseComponents.dll
 Delete $INSTDIR\DbInterface.dll
 Delete $INSTDIR\NoNoBetComponents.dll 
 Delete $INSTDIR\NoNoBetDb.dll
+Delete $INSTDIR\NoNoBetConfig.dll
+Delete $INSTDIR\NoNoBetResources.dll
+Delete $INSTDIR\MenuHandlers.dll
 Delete $INSTDIR\Npgsql.dll
 Delete $INSTDIR\policy.2.0.Npgsql.dll
 Delete $INSTDIR\Mono.Security.dll
