@@ -1,11 +1,23 @@
 ﻿Imports System.Windows.Forms
 Imports NoNoBetResources
 Imports NoNoBetResources.ApplicationResourceManager
+Imports NoNoBetComponents
 
 Public Class BaseGridMenuHandler
   Implements IMenuItemHandler
 
-  Public _Item As ToolStripMenuItem = New ToolStripMenuItem
+  'Public _Item As ToolStripMenuItem = New ToolStripMenuItem
+
+  Private _ResourceManager As ApplicationResourceManager
+
+  Public Property ResourceManager() As ApplicationResourceManager Implements IMenuItemHandler.ResourceManager
+    Get
+      Return _ResourceManager
+    End Get
+    Set(value As ApplicationResourceManager)
+      _ResourceManager = value
+    End Set
+  End Property
 
 
   Public Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuItemHandler.MenuCreate
@@ -46,7 +58,7 @@ Public Class BaseGridMenuHandler
 
     Select Case item.Name
       Case "itemShowRacedayBettype"
-        'ShowRacedayBettypeForm(gridRow)
+        ShowRacedayBettypeForm(gridRow)
         Return True
       Case "itemDo"
         MessageBox.Show("Doing something...")
@@ -65,4 +77,21 @@ Public Class BaseGridMenuHandler
     menu.Show(pos)
     Return True
   End Function
+
+  Private Sub ShowRacedayBettypeForm(row As DataGridViewRow)
+    If (row IsNot Nothing) Then
+      Dim betType As String = ApplicationResourceManager.GetRowColumnStringValue(row, "name_code")
+      Dim raceDayId As Integer = ApplicationResourceManager.GetRowColumnIntValue(row, "raceday_id")
+      Dim raceDateObj As Object = ApplicationResourceManager.GetRowColumnValue(row, "raceday_date")
+      Dim raceDate As Date = CType(raceDateObj, Date)
+
+      Select Case betType
+        Case "V", "P"
+          Dim vpForm As VP = New VP
+          vpForm.StartForm(False, Me.ResourceManager, raceDate, raceDayId)
+        Case Else
+      End Select
+    End If
+  End Sub
+
 End Class

@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Application\bin\Debug\</OutputPath>
     <DocumentationFile>MenuHandlers.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
@@ -31,7 +31,7 @@
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\Application\bin\Release\</OutputPath>
     <DocumentationFile>MenuHandlers.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
@@ -107,6 +107,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NoNoBetComponents\NoNoBetComponents.vbproj">
+      <Project>{AE8E2077-E224-4C01-874D-1F029270FECA}</Project>
+      <Name>NoNoBetComponents</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NoNoBetResources\NoNoBetResources.vbproj">
       <Project>{4ACA7912-08AA-4CFA-8FA1-C1C60D70FE5B}</Project>
       <Name>NoNoBetResources</Name>
