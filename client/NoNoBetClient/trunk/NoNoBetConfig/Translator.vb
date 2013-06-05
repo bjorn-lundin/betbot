@@ -8,7 +8,7 @@ Imports System.Windows.Forms
 Public Class Translator
 
   Private _Terms As XmlDocument = Nothing
-  Private _AllTermsNodeList As XmlNodeList
+  Private _AllTermsNodeList As XmlNodeList = Nothing
   Private _TermsCache As Hashtable
   Private _ReadFromCache As Boolean = False
 
@@ -20,16 +20,22 @@ Public Class Translator
     _Terms = New XmlDocument
     'Load the XML file into a XML document
     LoadConfigFile()
-    'Select the /terms/term node list in XML document
-    _AllTermsNodeList = _Terms.SelectNodes("/terms/term")
-    'Cache all translations
-    LoadTermsCache("swe", "eng")
     _ReadFromCache = True
   End Sub
 
   Private Sub LoadConfigFile()
     Dim fullName As String = IO.Path.Combine(Application.StartupPath, TermsConfigFileName)
-    _Terms.Load(fullName)
+
+    If IO.File.Exists(fullName) Then
+      _Terms.Load(fullName)
+      'Select the /terms/term node list in XML document
+      _AllTermsNodeList = _Terms.SelectNodes("/terms/term")
+      'Cache all translations
+      If (_AllTermsNodeList IsNot Nothing) Then
+        LoadTermsCache("swe", "eng")
+      End If
+    End If
+
   End Sub
 
   ''' <summary>

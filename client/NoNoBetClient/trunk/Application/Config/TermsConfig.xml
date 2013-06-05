@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<terms>
+  <term name="race_nr" type="">
+    <swe>Lopp nr</swe>
+    <eng>Race no</eng>
+  </term>
+  <term name="raceday_date" type="">
+    <swe>Datum</swe>
+    <eng>Date</eng>
+  </term>
+  <term name="first_race_posttime_time" type="">
+    <swe>Första lopp</swe>
+    <eng>First race</eng>
+  </term>
+  <term name="first_race_posttime_utc_time" type="">
+    <swe>Första lopp</swe>
+    <eng>First race</eng>
+  </term>
+  <term name="post_time" type="">
+    <swe>Starttid</swe>
+    <eng>Starttime</eng>
+  </term>
+  <term name="country_code" type="">
+    <swe>Landskod</swe>
+    <eng>Country code</eng>
+  </term>
+  <term name="country_domestic_text" type="">
+    <swe>Landsnamn</swe>
+    <eng>Country name</eng>
+  </term>
+  <term name="domestic_text" type="">
+    <swe>Bana</swe>
+    <eng>Track</eng>
+  </term>
+  <term name="name_code" type="">
+    <swe>Speltyp</swe>
+    <eng>Bettype</eng>
+  </term>
+</terms>
