@@ -140,10 +140,6 @@
       <Project>{CD23EB3D-FF2E-477D-B7A8-14C606B3A33B}</Project>
       <Name>DbInterface</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MenuHandlers\MenuHandlers.vbproj">
-      <Project>{8F7F3281-C45E-4126-9D7E-12D6E5EA42F3}</Project>
-      <Name>MenuHandlers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NoNoBetConfig\NoNoBetConfig.vbproj">
       <Project>{2CF167E9-65EC-4D8C-97F0-E6C84ED31652}</Project>
       <Name>NoNoBetConfig</Name>

@@ -15,6 +15,7 @@ Public Class VP
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
 
   Private _Raceday_Id As Integer
+  Private _RaceDate As Date
   Private _IsLoaded As Boolean = False
 
   Private Sub InitializeComponent()
@@ -142,13 +143,16 @@ Public Class VP
     InitializeComponent()
   End Sub
 
-  Public Shadows Sub StartForm(asDialog As Boolean, resourceMan As ApplicationResourceManager, raceday_id As Integer)
+  Public Shadows Sub StartForm(asDialog As Boolean, resourceMan As ApplicationResourceManager, raceday_date As Date, raceday_id As Integer)
     _Raceday_Id = raceday_id
+    _RaceDate = raceday_date
     MyBase.StartForm(asDialog, resourceMan)
   End Sub
 
 
   Private Sub VP_Load(sender As Object, e As System.EventArgs) Handles Me.Load
+    MyBase.FormTitle = "VP-lopp " + _RaceDate.ToShortDateString
+
     gridTop.SetReadOnlyMode()
     gridTop.AutoResizeRows()
     gridStart.SetReadOnlyMode()
