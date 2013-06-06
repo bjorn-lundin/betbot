@@ -149,9 +149,21 @@ Public Class VP
     MyBase.StartForm(asDialog, resourceMan)
   End Sub
 
+  Private Sub gridTop_RowChange(sender As Object, e As BaseComponents.BaseGrid.RowChangeEventArgs) Handles gridTop.RowChange
+    If _IsLoaded Then
+      If (e.Row IsNot Nothing) Then
+        Dim raceId As Integer = ApplicationResourceManager.GetRowColumnIntValue(e.Row, "id")
+        gridStart.ExecuteSql(Me.ResourceManager, "SELECT * FROM RaceLines WHERE id = " & raceId)
+        gridResult.ExecuteSql(Me.ResourceManager, "SELECT * FROM VPRaceResult WHERE race_id = " & raceId)
+      Else
+        gridStart.ExecuteSql(Me.ResourceManager, "SELECT * FROM RaceLines WHERE null = null")
+        gridResult.ExecuteSql(Me.ResourceManager, "SELECT * FROM VPRaceResult WHERE null = null")
+      End If
+    End If
+  End Sub
 
   Private Sub VP_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    MyBase.FormTitle = "VP-lopp " + _RaceDate.ToShortDateString
+    MyBase.FormTitle = "VP-lopp " + _RaceDate.ToShortDateString + " " + Track.GetTrackNameForRaceDay(MyBase.ResourceManager, _Raceday_Id)
 
     gridTop.SetReadOnlyMode()
     gridTop.AutoResizeRows()
@@ -162,4 +174,5 @@ Public Class VP
     _IsLoaded = True
     gridTop.ExecuteSql(Me.ResourceManager, "SELECT * FROM VPRaces WHERE raceday_id = " & _Raceday_Id)
   End Sub
+
 End Class

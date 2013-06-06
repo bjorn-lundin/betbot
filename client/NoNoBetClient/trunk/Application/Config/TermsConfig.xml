@@ -1,5 +1,25 @@
 <?xml version="1.0"?>
 <terms>
+  <term name="name_and_nationality" type="">
+    <swe>Häst</swe>
+    <eng>Horse</eng>
+  </term>
+  <term name="start_nr" type="">
+    <swe>Startpos</swe>
+    <eng>Startpos</eng>
+  </term>
+  <term name="win_odds" type="">
+    <swe>V-odds</swe>
+    <eng>W-odds</eng>
+  </term>
+  <term name="place_min_odds" type="">
+    <swe>P-odds min</swe>
+    <eng>P-odds min</eng>
+  </term>
+  <term name="place_max_odds" type="">
+    <swe>P-odds max</swe>
+    <eng>P-odds max</eng>
+  </term>
   <term name="race_nr" type="">
     <swe>Lopp nr</swe>
     <eng>Race no</eng>
