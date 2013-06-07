@@ -27,6 +27,7 @@ File ..\bin\Release\MenuHandlers.dll
 File ..\bin\Release\Npgsql.dll
 File ..\bin\Release\policy.2.0.Npgsql.dll
 File ..\bin\Release\Mono.Security.dll
+File ..\Config\TermsConfig.xml
 File ..\images\pic1.ico
 
 WriteUninstaller $INSTDIR\UninstallNoNoBetClient.exe
@@ -46,6 +47,7 @@ Delete $INSTDIR\MenuHandlers.dll
 Delete $INSTDIR\Npgsql.dll
 Delete $INSTDIR\policy.2.0.Npgsql.dll
 Delete $INSTDIR\Mono.Security.dll
+Delete $INSTDIR\TermsConfig.xml
 Delete $INSTDIR\pic1.ico
 
 Delete $INSTDIR\UninstallNoNoBetClient.exe
