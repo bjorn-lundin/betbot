@@ -1,5 +1,37 @@
 <?xml version="1.0"?>
 <terms>
+  <term name="invest_place_sum" type="">
+    <swe>Insats P</swe>
+    <eng>Inv P</eng>
+  </term>
+  <term name="invest_win_sum" type="">
+    <swe>Insats V</swe>
+    <eng>Inv V</eng>
+  </term>
+  <term name="final_odds_win" type="">
+    <swe>V-odds</swe>
+    <eng>V-odds</eng>
+  </term>
+  <term name="final_odds_place" type="">
+    <swe>P-odds</swe>
+    <eng>P-odds</eng>
+  </term>
+  <term name="tote_place" type="">
+    <swe>Plac</swe>
+    <eng>Place</eng>
+  </term>
+  <term name="turnover_place_sum" type="">
+    <swe>Oms Plats</swe>
+    <eng>Tournover Place</eng>
+  </term>
+  <term name="turnover_win_sum" type="">
+    <swe>Oms Vinnare</swe>
+    <eng>Tournover Win</eng>
+  </term>
+  <term name="number_of_horses" type="">
+    <swe>Antal hästar</swe>
+    <eng>Nmbr horses</eng>
+  </term>
   <term name="name_and_nationality" type="">
     <swe>Häst</swe>
     <eng>Horse</eng>

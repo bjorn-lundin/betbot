@@ -214,7 +214,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Config\TermsConfig.xml" />
+    <Content Include="Config\TermsConfig.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="images\pic1.ico" />
     <Content Include="Installer\Readme.txt" />
   </ItemGroup>
