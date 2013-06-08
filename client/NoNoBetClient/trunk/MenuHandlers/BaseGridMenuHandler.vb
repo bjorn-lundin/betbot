@@ -61,7 +61,10 @@ Public Class BaseGridMenuHandler
         ShowRacedayBettypeForm(gridRow)
         Return True
       Case "itemDo"
-        MessageBox.Show("Doing something...")
+        'MessageBox.Show("Doing something...")
+        Dim chartFrm As ChartTest = New ChartTest
+        chartFrm.StartForm(Me.ResourceManager)
+
         Return True
       Case "itemUndo"
         MessageBox.Show("Undoing something...")
