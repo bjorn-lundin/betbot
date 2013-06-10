@@ -62,8 +62,8 @@ Public Class ChartTest
 
     Chart1.Series.Clear()
 
-    s1 = Chart1.Series.Add("Start")
-    s2 = Chart1.Series.Add("Result")
+    s1 = Chart1.Series.Add("Förväntad placering")
+    s2 = Chart1.Series.Add("Slutplacering")
     s1.XValueType = ChartValueType.Date
     s2.XValueType = ChartValueType.Date
 
@@ -81,8 +81,12 @@ Public Class ChartTest
     s1.MarkerSize = 10
     s2.MarkerSize = 10
 
+
     s1.Color = Color.Green
     s2.Color = Color.Red
+
+    Chart1.ChartAreas(0).AxisX.Title = "Datum"
+    Chart1.ChartAreas(0).AxisY.Title = "Placering"
 
     p = New DataPoint(currDate.ToOADate, 1)
     s1.Points.Add(p)
