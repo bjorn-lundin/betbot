@@ -102,7 +102,7 @@ package body Races is
                           "where EVENTDATE >= :STARTDATE " &
                           "and EVENTDATE <= :STOPDATE " &
                           "and MARKETNAME = :MARKETNAME " &
-                          "and COUNTRYCODE in ('GBR','IRL') " &
+                          "and COUNTRYCODE in ('GBR','IRE') " &
                           "and EVENTHIERARCHY like :EVENTHIERARCHY " &
                           "and exists (select 'x' from DRYRESULTS where " &
                           "    DRYMARKETS.MARKETID = DRYRESULTS.MARKETID) " &
@@ -128,7 +128,7 @@ package body Races is
                  "  lower(MARKETNAME) like 'iv%'  " &
                  ")  " &
                  "and BSPMARKET = 'Y' " &
-                 "and COUNTRYCODE in ('GBR','IRL') " &
+                 "and COUNTRYCODE in ('GBR','IRE') " &
                  "and MARKETNAME <> 'TO BE PLACED' " &
 --                 "and TOTALMATCHED > 100000 " &
                  "and lower(MARKETNAME) not like '% v %'  " &
