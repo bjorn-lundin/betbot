@@ -102,7 +102,7 @@ begin
           "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
           "and lower(FULLDESCRIPTION) not like '%reverse%'  " &
           "and lower(FULLDESCRIPTION) not like '%without%'  " &
-          "and inplay = 'PE' " &   -- pre event !!
+--          "and inplay = 'PE' " &   -- pre event !!
           "group by EVENTID, SELECTIONID " &
           "order by EVENTID, SELECTIONID ");
 
@@ -111,12 +111,15 @@ begin
 
       Sql.Prepare(Stm_Select_Eventid_Selectionid_O, "select * from HISTORY " &
             "where EVENTID = :EVENTID " &
-            "and inplay = 'PE' " &   -- pre event !!
+--            "and inplay = 'PE' " &   -- pre event !!
             "and SELECTIONID=:SELECTIONID " &
             "order by LATESTTAKEN desc"  ) ;
 
       Sql.Prepare(Stm_Select_Volume, " select sum(volumematched), sum(numberbets) from HISTORY " &
-            "where EVENTID=:EVENTID and inplay = 'PE' " );   -- pre event !!
+            "where EVENTID=:EVENTID "
+            --&
+            --" and inplay = 'PE' "
+            );   -- pre event !!
 
       Sql.Open_Cursor(Select_all);
       loop

@@ -4,6 +4,8 @@ import os
 import psycopg2
 from optparse import OptionParser
 from datetime import datetime
+import re
+
 
 class Db(object):
     """db obj"""
@@ -57,17 +59,102 @@ class Betfair_Historic_Data_Importer(object):
                 'NUMBER_BETS' ,'VOLUME_MATCHED', 'LATEST_TAKEN','FIRST_TAKEN','WIN_FLAG','IN_PLAY' ]
 
     def treat_line(self, line) :
+        row_is_ok = True
         #replace " with nothing
         if self.horse :
             keys = self.horse_keys
         else :
             keys = self.other_keys
 
-        vals = line.split('\",\"')
+        # some files hav values in "" some does not
+        if line.lower().find('"') > -1 :
+            vals = line.split('\",\"')
+        else :
+            vals = line.split(',')
+
         temp = dict(zip(keys, vals))
         for t in temp :
            v = temp[t].replace('"','')
            temp[t] = v
+
+#        print 'line', line
+#        print 'keys/val'
+#        for t in temp :
+#           print t, temp[t]
+#        print 'done'
+
+
+        #check that we actually want this row
+
+        # must be PreEvent
+        # fixed in file we treat via grep -v \"IP\" | grep -v \"AUS\"
+#        row_is_ok = row_is_ok and temp['IN_PLAY'] != 'IP'
+#        if not row_is_ok : return
+#
+#        row_is_ok = row_is_ok and temp['IN_PLAY'] != 'IP'
+#        if not row_is_ok : return
+
+
+        # event must start with num-char or char-num or 'hp' or 'hc' or 'or' or 'iv'
+        # not case sensitive
+        na = re.compile('^[0-9][a-z]', re.IGNORECASE)
+        num_alfa = na.match(temp['EVENT'])
+        if num_alfa :
+            row_is_ok = True
+        else :
+            an = re.compile('^[a-z][0-9]', re.IGNORECASE)
+            alfa_num = an.match(temp['EVENT'])
+            if alfa_num :
+                row_is_ok = True
+            else :
+                h = re.compile('^h[pc]', re.IGNORECASE)
+                h_start = h.match(temp['EVENT'])
+                if h_start :
+                    row_is_ok = True
+                else :
+                    a_or = re.compile('^or', re.IGNORECASE)
+                    or_start = a_or.match(temp['EVENT'])
+                    if or_start :
+                        row_is_ok = True
+                    else :
+                        iv = re.compile('^iv', re.IGNORECASE)
+                        iv_start = iv.match(temp['EVENT'])
+                        if iv_start :
+                            row_is_ok = True
+                        else :
+                            row_is_ok = False
+
+        if not row_is_ok : return
+
+        #we dont want 'a v b'
+        row_is_ok = temp['EVENT'].lower().find(' v ') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('forecast') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('challenge') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('fc') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('reverse') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('without') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('track record') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('age of winner') == -1
+        if not row_is_ok : return
+
+        row_is_ok = temp['EVENT'].lower().find('winning') == -1
+        if not row_is_ok : return
+
+
 
         if not self.horse :
             temp['COUNTRY'] = 'NON'

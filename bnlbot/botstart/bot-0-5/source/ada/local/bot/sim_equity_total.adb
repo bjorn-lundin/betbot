@@ -313,7 +313,7 @@ begin
       Stop_Date  => Global_Stop_Date);
 
 
-       favorite_by_loop : for f in 0 .. 5 loop
+       favorite_by_loop : for f in 0 .. 7 loop
          Text_Io.Put_Line (Text_Io.Standard_Error, Sattmate_Calendar.String_Date_And_Time(Milliseconds => True) & " " & f'img & "/5");
          Max_Daily_Loss_loop : for l in 1 .. 10 loop
            Max_Profit_Factor_loop : for p in 0 .. 10 loop
