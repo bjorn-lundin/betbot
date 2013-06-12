@@ -82,6 +82,9 @@
     <Compile Include="DD.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="HorseResultsChart.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="HorseStatForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -131,6 +134,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DD.resx">
       <DependentUpon>DD.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HorseResultsChart.resx">
+      <DependentUpon>HorseResultsChart.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HorseStatForm.resx">
       <DependentUpon>HorseStatForm.vb</DependentUpon>

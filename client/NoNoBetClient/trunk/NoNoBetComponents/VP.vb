@@ -169,6 +169,7 @@ Public Class VP
     gridTop.AutoResizeRows()
     gridStart.SetReadOnlyMode()
     gridStart.AutoResizeRows()
+    gridStart.Id = "RaceLines"
     gridResult.SetReadOnlyMode()
     gridResult.AutoResizeRows()
     _IsLoaded = True

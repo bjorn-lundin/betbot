@@ -25,6 +25,39 @@ Public Class ApplicationResourceManager
     End Set
   End Property
 
+
+  Public Shared Function ConvertToInteger(value As Object) As Integer
+    If (value Is Nothing) Then
+      Return 0
+    Else
+      Return Convert.ToInt32(value)
+    End If
+  End Function
+
+  Public Shared Function ConvertToString(value As Object) As String
+    If (value Is Nothing) Then
+      Return String.Empty
+    Else
+      Return Convert.ToString(value)
+    End If
+  End Function
+
+  Public Shared Function ConvertToDecimal(value As Object) As Decimal
+    If (value Is Nothing) Then
+      Return Decimal.Zero
+    Else
+      Return Convert.ToDecimal(value)
+    End If
+  End Function
+
+  Public Shared Function ConvertToDouble(value As Object) As Double
+    If (value Is Nothing) Then
+      Return ConvertToDouble(0)
+    Else
+      Return Convert.ToDouble(value)
+    End If
+  End Function
+
   ''' <summary>
   ''' Get cell value as String
   ''' </summary>
@@ -35,7 +68,7 @@ Public Class ApplicationResourceManager
     If IsDBNull(cell.Value) Then
       Return String.Empty
     Else
-      Return cell.Value.ToString
+      Return ConvertToString(cell.Value)
     End If
   End Function
 
@@ -49,7 +82,7 @@ Public Class ApplicationResourceManager
     If IsDBNull(cell.Value) Then
       Return 0
     Else
-      Return Convert.ToInt32(cell.Value)
+      Return ConvertToInteger(cell.Value)
     End If
   End Function
 
@@ -63,7 +96,7 @@ Public Class ApplicationResourceManager
     If IsDBNull(cell.Value) Then
       Return Decimal.Zero
     Else
-      Return Convert.ToDecimal(cell.Value)
+      Return ConvertToDecimal(cell.Value)
     End If
   End Function
 
@@ -77,7 +110,7 @@ Public Class ApplicationResourceManager
     If IsDBNull(cell.Value) Then
       Return Convert.ToDouble(0)
     Else
-      Return Convert.ToDouble(cell.Value)
+      Return ConvertToDouble(cell.Value)
     End If
   End Function
 
