@@ -28,6 +28,8 @@ Public Class BaseGridMenuHandler
     Select Case menuName
       Case "RacedayBettypes"
         AddItem(m, "Visa", "itemShowRacedayBettype")
+      Case "RaceLines"
+        AddItem(m, "Visa resultat", "itemShowHorseResults")
       Case Else
         AddItem(m, "Do...", "itemDo")
         AddItem(m, "Undo...", "itemUndo")
@@ -60,6 +62,10 @@ Public Class BaseGridMenuHandler
       Case "itemShowRacedayBettype"
         ShowRacedayBettypeForm(gridRow)
         Return True
+      Case "itemShowHorseResults"
+        Dim horseId As Integer = ApplicationResourceManager.GetRowColumnIntValue(gridRow, "horse_id")
+        Dim horseResult As HorseResultsChart = New HorseResultsChart
+        horseResult.StartForm(True, horseId, _ResourceManager)
       Case "itemDo"
         'MessageBox.Show("Doing something...")
         Dim chartFrm As ChartTest = New ChartTest
