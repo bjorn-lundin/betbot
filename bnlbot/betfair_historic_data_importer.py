@@ -75,7 +75,7 @@ class Betfair_Historic_Data_Importer(object):
         temp = dict(zip(keys, vals))
         for t in temp :
            v = temp[t].replace('"','')
-           temp[t] = v
+           temp[t] = v.trim()
 
 #        print 'line', line
 #        print 'keys/val'
@@ -193,6 +193,8 @@ class Betfair_Historic_Data_Importer(object):
             temp['SCHEDULED_OFF'] = datetime.strptime(temp['SCHEDULED_OFF'], '%d-%m-%Y %H:%M')
 #        print 6,temp['EVENT_ID']
 
+        if temp['COUNTRY'] == 'GB' or temp['COUNTRY'] == 'UK' :
+            temp['COUNTRY'] = 'GBR'
 
 #        print temp
 
