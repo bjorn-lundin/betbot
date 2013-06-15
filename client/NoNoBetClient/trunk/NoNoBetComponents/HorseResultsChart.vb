@@ -1,5 +1,6 @@
 ﻿Imports BaseComponents
 Imports NoNoBetResources.ApplicationResourceManager
+Imports NoNoBetDb
 Imports System.Windows.Forms.DataVisualization.Charting
 Imports System.Drawing
 Imports Npgsql
@@ -142,7 +143,7 @@ Public Class HorseResultsChart
   End Sub
 
   Private Sub HorseResultsChart_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    MyBase.FormTitle = "Hästresultat"
+    MyBase.FormTitle = "Resultat för " + Horse.GetHorseName(MyBase.ResourceManager, _HorseId)
 
     InitChart()
     FillChart()
