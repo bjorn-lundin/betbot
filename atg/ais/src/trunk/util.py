@@ -115,6 +115,35 @@ def generate_file_name(datadir=None, ais_service=None,
     result['filename'] += '.xml'
     return result
 
+def generate_file_name_2(ais_service=None, date=None, track_id=None,
+                         ais_version=None, ais_type=None):
+    '''
+    Generate a string representing filename
+    '''
+    if date and track_id:
+        pass
+    elif date and not track_id:
+        # The parameters show this is a filename
+        # for fetchWinnersList or fetchRaceDayCalendar
+        # from local history file
+        track_id='all'
+    else:
+        # The parameters show this is a filename
+        # for fetchRaceDayCalendar fetched today
+        date=datetime.datetime.now()
+        track_id='all'
+    result = ais_service
+    result += '_'
+    result += date_to_string(date)
+    result += '_'
+    result += str(track_id)
+    result += '_'
+    result += ais_version
+    result += '_'
+    result += ais_type
+    result += '.xml'
+    return result
+
 def list_files(dir_path=None):
     '''
     List filenames in a directory
@@ -303,6 +332,31 @@ def track_id_to_struct(client, track_id):
     struct = client.factory.create('ns3:TrackKey')
     struct['trackId'] = track_id
     return struct
+
+def get_request_data(ais_service=None, date=None, track_id=None):
+    '''
+    Return a request data string based on parameters
+    '''
+    request_data = '<Envelope>\n'
+    request_data += ' '*2 + '<Header/>\n'
+    request_data += ' '*2 + '<Body>\n'
+    request_data += ' '*4 + '<' + ais_service + '>\n'
+    if date:
+        request_date  = ' '*6 + '<aDate>\n'
+        request_date += ' '*8 + '<year>' + str(date.year) + '</year>\n'
+        request_date += ' '*8 + '<month>' + str(date.month) + '</month>\n'
+        request_date += ' '*8 + '<date>' + str(date.day) + '</date>\n'
+        request_date += ' '*6 + '</aDate>\n'
+        request_data += request_date
+    if track_id:
+        request_track  = ' '*6 + '<aTrack>\n'
+        request_track += ' '*8 + '<trackId>' + str(track_id) + '</trackId>\n'
+        request_track += ' '*6 + '</aTrack>\n'
+        request_data += request_track
+    request_data += ' '*4 + '</' + ais_service + '>\n'
+    request_data += ' '*2 + '</Body>\n'
+    request_data += '</Envelope>\n'
+    return request_data
 
 #######################################################
 # Database handling                                   #

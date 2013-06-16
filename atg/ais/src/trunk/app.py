@@ -67,7 +67,7 @@ def main():
     if cp.EOD_DOWNLOAD in command:
         LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
-            conf.AIS_WS_URL,
+            conf.AIS_WSDL_URL,
             conf.AIS_USERNAME,
             conf.AIS_PASSWORD
         )
@@ -88,7 +88,7 @@ def main():
     if cp.WRITE_META_FILES in command:
         LOG.info('Running ' + command)
         ws_client = ais.init_ws_client(
-            conf.AIS_WS_URL,
+            conf.AIS_WSDL_URL,
             conf.AIS_USERNAME,
             conf.AIS_PASSWORD
         )

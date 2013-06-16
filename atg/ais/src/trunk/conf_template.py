@@ -5,10 +5,10 @@ AIS configuration file
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 import os
+import datetime
 
 AIS_TYPE = 'test'
 AIS_HOME = '/home/sejoabi/workspace/ais/trunk'
-AIS_WS_HOST = 'https://media.atg.se/'
 AIS_VERSION = '8'
 AIS_LOGDIR = os.path.normpath(os.path.join(AIS_HOME, 'log'))
 AIS_METADIR = os.path.normpath(os.path.join(AIS_HOME, 'meta_data'))
@@ -17,13 +17,13 @@ AIS_RACEDAY_HISTORY = 6 # Nbr of history days in ATG database
 AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22', 54:'2013-01-30', 35:'2013-04-07'}
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
 AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
+AIS_EOD_DOWNLOAD_TIMEOUT = 60 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
 
 # TODO: Refactor code and remove this 
 # (and possibly also AIS_RACEDAY_EXCLUDE)
 # 
 # I'm gussing the fix is to update Raceday up until current 
 # date to incorporate changes (e.g. bettypes) in schedule
-import datetime
 AIS_RACEDAY_BETTYPE_EXCLUDE = \
 [
     {
@@ -39,8 +39,11 @@ AIS_RACEDAY_BETTYPE_EXCLUDE = \
 ]
 
 if AIS_TYPE == 'test':
-    AIS_WS_URL = AIS_WS_HOST + 'infostub/PartnerInfoEmulator/version' + \
-                 AIS_VERSION + '?WSDL'
+    AIS_WS_URL = \
+        'https://media.atg.se' + \
+        '/infostub/PartnerInfoEmulator/version' + \
+        AIS_VERSION
+    AIS_WSDL_URL = AIS_WS_URL + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
     AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'test_data'))
@@ -58,8 +61,11 @@ if AIS_TYPE == 'test':
     EMAIL_LOG_PASSWORD = ''
 
 elif AIS_TYPE == 'prod':
-    AIS_WS_URL = AIS_WS_HOST + 'info/PartnerInfoService/version' + \
-                 AIS_VERSION + '?WSDL'
+    AIS_WS_URL = \
+        'https://media.atg.se' + \
+        '/info/PartnerInfoService/version' + \
+        AIS_VERSION
+    AIS_WSDL_URL = AIS_WS_URL + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
     AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'prod_data'))
