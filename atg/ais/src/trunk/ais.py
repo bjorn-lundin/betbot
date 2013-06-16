@@ -13,6 +13,7 @@ import socket
 import datetime
 import time
 import conf
+import ais_httpclient
 
 LOG = logging.getLogger('AIS')
 
@@ -162,6 +163,57 @@ def call_ais_service(params=None, date=None, track=None,
                 filepath=filepath
             )
     return result
+
+def call_ais_service_2(params=None, date=None, track_id=None):
+    '''
+    Call an AIS web service
+    '''
+    ais_service = params['service']
+    ais_version=params['ais_version']
+    ais_type=params['ais_type']
+    LOG.info('Calling ' + ais_service 
+             + ' with date={0}, track={1}'
+             .format(date, track_id))
+    result = None
+    filename = util.generate_file_name_2(
+        ais_service=ais_service,
+        date=date,
+        track_id=track_id,
+        ais_version=ais_version,
+        ais_type=ais_type
+    )
+    # If the result has already been downloaded do nothing
+    datapath = params['datadir']
+    filelist = util.list_files(datapath)
+    if filelist and filename in filelist:
+        LOG.debug('Data already saved in {0}'
+                 .format(filename))
+    else:
+        request_data = util.get_request_data(
+            ais_service=ais_service, 
+            date=date, 
+            track_id=track_id
+        )
+        result = ais_httpclient.get_data(request_data=request_data)
+        if result is None:
+            LOG.error('Service call resulted in empty (None) result')
+        else:
+            filepath = util.create_file_path(
+                params['datadir'], 
+                filename
+            )
+            util.write_file(
+                data=result, 
+                filepath=filepath
+            )
+        if 'download_delay' in params:
+            download_delay = params['download_delay']
+            if download_delay > 0:
+                LOG.debug(
+                    'Delaying download with ' + 
+                    str(download_delay) + ' seconds'
+                )
+                time.sleep(download_delay)
     
 def raceday_calendar_service(params=None, date=None, ret_if_local=False):
     '''
@@ -203,6 +255,16 @@ def track_bet_info_service(params=None, date=None,
     params['service'] = 'fetchTrackBetInfo'
     call_ais_service(params=params, date=date, 
                      track=track, ret_if_local=ret_if_local)
+
+def raceday_result_service(params=None, date=None, track_id=None):
+    '''
+    Calls AIS service fetchRaceDayResult
+    
+    Returns a comprehensive result for all races 
+    and horses at the race day
+    '''
+    params['service'] = 'fetchRaceDayResult'
+    call_ais_service_2(params=params, date=date, track_id=track_id)
 
 def winner_list_service(params=None, date=None, ret_if_local=False):
     '''
@@ -391,6 +453,12 @@ def eod_download_via_calendar(params=None):
                 params=params, 
                 date=date, 
                 track=track_id,
+            )
+            
+            raceday_result_service(
+                params=params, 
+                date=date, 
+                track_id=track_id,
             )
 
             for race in raceday.races:
