@@ -114,11 +114,11 @@ class Market(object):
         bet_won = False
         back_bet = True
 
-        if  self.bet_type.find('_LAY_BET') > -1 :
+        if  self.bet_type.find('_LAY_') > -1 :
             bet_won = not selection_in_winners
             back_bet = False
 
-        elif self.bet_type.find('_BACK_BET') > -1 :
+        elif self.bet_type.find('_BACK_') > -1 :
             bet_won = selection_in_winners
 
         elif self.bet_type == "DRY_RUN_MORE_THAN_0.5_GOALS" :
