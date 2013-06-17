@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- codingODOD: iso-8859-1 -*-
 """put bet on games with low odds"""
 from betfair.api import API
 from time import sleep, time
@@ -54,7 +54,7 @@ class BetBot(object):
 
     LAST_LOSS = None
     LOSS_HOURS = None
-    HAS_LOST_LAY_BET_TODAY = None
+    HAS_LOST_BET_TODAY = None
 
     USERNAME = None
     PASSWORD = None
@@ -70,7 +70,7 @@ class BetBot(object):
     DBPASSWORD = None
 
     HOMEDIR = None
-
+    FAVORITE_BY = None
 
     def __init__(self, log, homedir):
         rps = 1/2.0 # Refreshes Per Second
@@ -82,8 +82,8 @@ class BetBot(object):
         print 'homedir: ', homedir
 ############################# end __init__
     def reconnect(self):
-        db = Db()
-        self.conn = db.conn
+        raise OverrideError('Betbot.reconnect is not to be used')
+        
 
     def login(self, uname = '', pword = '', prod_id = '', vend_id = ''):
         """login to betfair"""
@@ -185,20 +185,20 @@ class BetBot(object):
                            #market_name ~ '^[0-9][A-Z] ' or
                            #market_name ~ '^[A-Z][0-9] ' or
                            #market_name ~ '^[a-z][0-9] '
-                           q1 = re.compile("[a-z][0-9]", re.IGNORECASE)
-                           q2 = re.compile("[0-9][a-z]", re.IGNORECASE)
+                            q1 = re.compile("[a-z][0-9]", re.IGNORECASE)
+                            q2 = re.compile("[0-9][a-z]", re.IGNORECASE)
                            # match is from beginning of string
-                           two_first = market['market_name'].decode("iso-8859-1").lower()[0:1]
-                           m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
-                           m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
-                           market_ok = market_ok and (
+                            two_first = market['market_name'].decode("iso-8859-1").lower()[0:1]
+                            m1 = q1.match(market['market_name'].decode("iso-8859-1").lower())
+                            m2 = q2.match(market['market_name'].decode("iso-8859-1").lower())
+                            market_ok = market_ok and (
                                (m1 != None or m2 != None) or
                                (two_first == 'HP') or
                                (two_first == 'HC') or
                                (two_first == 'OR') or
                                (two_first == 'IV')
                              )
-                           market_ok = market_ok and market['bsp_market'] == 'Y'
+                            market_ok = market_ok and market['bsp_market'] == 'Y'
                         else :
                             market_ok = market_ok and market['market_name'].decode("iso-8859-1").lower().find(allowed) > -1
 #                           self.log.info('allowed ' + market['market_name'].decode("iso-8859-1").lower() + ' ' + allowed + ' ' + str(market_ok))
@@ -263,7 +263,7 @@ class BetBot(object):
         if cur.rowcount >= 1 :
             row = cur.fetchone()
             if row :
-              result = float(row[0])
+                result = float(row[0])
 
         cur.close()
         self.conn.commit()
@@ -280,7 +280,7 @@ class BetBot(object):
         if cur.rowcount > 0 :
             row = cur.fetchone()
             if row :
-              bet_id = int(row[0])
+                bet_id = int(row[0])
         cur.close()
         self.conn.commit()
         return bet_id
@@ -405,21 +405,21 @@ class BetBot(object):
                     "and CODE = 'S' " + \
                     "and bet_type like %s " + \
                     "and bet_type = %s " + \
-                    "and profit < 0.0 " , ("%LAY%", self.BET_CATEGORY))
+                    "and profit < 0.0 " , ("%HO%", self.BET_CATEGORY))
         row = cur.fetchone()
         cur.close()
         self.conn.commit()
         if row :
-            self.HAS_LOST_LAY_BET_TODAY = True
+            self.HAS_LOST_BET_TODAY = True
         else :
-            self.HAS_LOST_LAY_BET_TODAY = False
+            self.HAS_LOST_BET_TODAY = False
 
-        self.log.info( 'LAY-bet: ' + self.BET_CATEGORY + ' has lost today: ' + str(self.HAS_LOST_LAY_BET_TODAY )  )
+        self.log.info( self.BET_CATEGORY + ' has lost today: ' + str(self.HAS_LOST_BET_TODAY )  )
         profit = self.profit_today()
         self.log.info( 'profit today = ' + str(profit))
         self.log.info( 'MAX_DAILY_PROFIT = ' + str(self.MAX_DAILY_PROFIT) + ' MAX_DAILY_LOSS = ' + str(self.MAX_DAILY_LOSS))
 
-        if self.HAS_LOST_LAY_BET_TODAY  :
+        if self.HAS_LOST_BET_TODAY  :
             self.log.warning( 'HAS LOST TODAY - profit today = ' + str(profit))
 
             if profit > 0.0 :
@@ -538,7 +538,7 @@ class BetBot(object):
             self.FAVORITE_BY                           = float(config.get(bet_category, 'favorite_by'))
         except ConfigParser.NoOptionError :
             self.FAVORITE_BY = 0.0
-        self.log.info('price ' + str(self.FAVORITE_BY))
+        self.log.info('favorite_by ' + str(self.FAVORITE_BY))
 
         self.HOURS_TO_MATCH_START            = float(config.get(bet_category, 'hours_to_match_start'))
         self.log.info('hours_to_match_start ' + str(self.HOURS_TO_MATCH_START))

@@ -19,7 +19,7 @@ class Funding(object):
     PASSWORD = 'Alice2010'
 
     MAX_SALDO = 20000.0
-    MIN_SALDO = 150.0
+    MIN_SALDO = 1.0
     TRANSFER_SUM = 500.0
     MAX_EXPOSURE = 600.0
 
