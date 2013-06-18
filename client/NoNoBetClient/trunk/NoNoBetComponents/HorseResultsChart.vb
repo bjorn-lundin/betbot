@@ -69,6 +69,19 @@ Public Class HorseResultsChart
     MyBase.StartForm(asDialog, resourceMan)
   End Sub
 
+  Private Function GetFinalPos(raceId As Integer, startNmbr As Integer) As Integer
+    Dim finalPosObj As Object
+    Dim sql As String
+
+    sql = "SELECT tote_place FROM vpraceresult WHERE race_Id = " & raceId &
+          " AND start_nr = " & startNmbr
+
+    finalPosObj = MyBase.ResourceManager.DbConnection.ExecuteSqlScalar(sql)
+
+
+    Return ConvertToInteger(finalPosObj)
+  End Function
+
   Private Sub FillChart()
     Dim sql1 As String
     Dim sql2 As String
@@ -96,49 +109,63 @@ Public Class HorseResultsChart
         If (horseId = _HorseId) Then
           raceDate = CType(dbReader2.Item("raceday_date"), Date)
           _ExpectedSeries.Points.Add(New DataPoint(raceDate.ToOADate, rank))
+          '_ExpectedSeries.Points.Add(New DataPoint(rank, raceDate.ToOADate))
           Exit While
         End If
       End While
 
       dbReader2.Close()
       dbReader2 = Nothing
+
+      _ResultSeries.Points.Add(New DataPoint(raceDate.ToOADate, GetFinalPos(raceId, startNo)))
+      '_ResultSeries.Points.Add(New DataPoint(GetFinalPos(raceId, startNo), raceDate.ToOADate))
     End While
   End Sub
 
   Private Sub InitChart()
     'Create Series
     horseChart.Series.Clear()
+
     _ExpectedSeries = horseChart.Series.Add("Förväntad placering")
     _ResultSeries = horseChart.Series.Add("Slutplacering")
+
+    'Line chart type
+    '_ExpectedSeries.ChartType = SeriesChartType.Line
+    '_ResultSeries.ChartType = SeriesChartType.Line
+    _ExpectedSeries.ChartType = SeriesChartType.Column
+    _ResultSeries.ChartType = SeriesChartType.Column
+
+
+    'Line color
+    _ExpectedSeries.Color = Color.Green
+    _ResultSeries.Color = Color.Red
 
     'Expected value types for the X-Axis, Date
     _ExpectedSeries.XValueType = ChartValueType.Date
     _ResultSeries.XValueType = ChartValueType.Date
+    'Expected value types for the Y-Axis, Date
+    '_ExpectedSeries.YValueType = ChartValueType.Date
+    '_ResultSeries.YValueType = ChartValueType.Date
 
-    'Line chart type
-    _ExpectedSeries.ChartType = SeriesChartType.Line
-    _ResultSeries.ChartType = SeriesChartType.Line
 
+    'horseChart.ChartAreas(0).AxisX
     _ExpectedSeries.BorderDashStyle = ChartDashStyle.Solid
     _ResultSeries.BorderDashStyle = ChartDashStyle.Solid
     _ExpectedSeries.BorderWidth = 3
     _ResultSeries.BorderWidth = 3
 
     'Point Marker attributes
-    _ExpectedSeries.MarkerStyle = MarkerStyle.Circle
-    _ResultSeries.MarkerStyle = MarkerStyle.Circle
-    _ExpectedSeries.MarkerColor = Color.Black
-    _ResultSeries.MarkerColor = Color.Black
-    _ExpectedSeries.MarkerSize = 10
-    _ResultSeries.MarkerSize = 10
+    '_ExpectedSeries.MarkerStyle = MarkerStyle.Circle
+    '_ResultSeries.MarkerStyle = MarkerStyle.Circle
+    '_ExpectedSeries.MarkerColor = Color.Black
+    '_ResultSeries.MarkerColor = Color.Black
+    '_ExpectedSeries.MarkerSize = 10
+    '_ResultSeries.MarkerSize = 10
 
-    'Line color
-    _ExpectedSeries.Color = Color.Green
-    _ResultSeries.Color = Color.Red
 
     'Axis titles
-    horseChart.ChartAreas(0).AxisX.Title = "Datum"
-    horseChart.ChartAreas(0).AxisY.Title = "Placering"
+    horseChart.ChartAreas(0).AxisY.Title = "Datum"
+    horseChart.ChartAreas(0).AxisX.Title = "Placering"
 
   End Sub
 
