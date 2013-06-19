@@ -52,7 +52,7 @@ procedure Bf_History_To_Dryrun is
 
 
    Eventhierarchy : string (Drymarkets.Eventhierarchy'range);
-
+   num_winners : Integer_4 := 0;
 
 begin
    Define_Switch
@@ -101,7 +101,8 @@ begin
                    "select * from HISTORY2 " &
                    "where LATESTTAKEN >= :START " &
                    "and LATESTTAKEN <= :STOP " &
-                   "and SPORTSID in (7, 4339) " &
+                   "and SPORTSID = 7 " &
+--                   "and SPORTSID in (7, 4339) " &
                    "and FULLDESCRIPTION <> 'Ante Post' " &
                    "and COUNTRY <> 'ANTEPOST' " &
 --                   "and EVENT not like 'TO BE PLA%' " &
@@ -160,9 +161,11 @@ begin
 -- in sql instead
 --        if History2.event(1..8) = "Forecast" then
 --          race_ok := False;
---        elsif History2.event(1..12) = "TO BE PLACED" then
---          race_ok := True;
---        end if;
+        if History2.event(1..12) = "TO BE PLACED" then
+          num_winners := 3;
+        else
+          num_winners := 1;
+        end if;
 
         if race_ok then
             Eventhierarchy := (others => ' ');
@@ -190,7 +193,7 @@ begin
                             Eventdate       => History2.latesttaken,
                             Noofrunners     => 0 , --update later!?
                             Totalmatched    => Integer_4(History2.Volumematched),
-                            Noofwinners     => 1 -- only winners games so far
+                            Noofwinners     => num_winners
             );
 
             Table_Drymarkets.Read(Drymarkets,Eos);
