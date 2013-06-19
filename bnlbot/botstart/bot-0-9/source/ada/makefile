@@ -16,9 +16,9 @@ OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
 
-.PHONY : json_test adabot back_bet_price_distribution tables adatools
+.PHONY : json_test adabot tables
 
-all:  tables adabot adatools
+all: tables adabot
 
 
 tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
@@ -40,9 +40,6 @@ json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT)
 
 adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
 	gnatmake -P adabot
-
-adatools : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
-	gnatmake -P adatools
 
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
@@ -103,6 +100,5 @@ clean:
 	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
-	gnatclean -P adatools
 	rm $(ST)/table*.ad[abs]
 

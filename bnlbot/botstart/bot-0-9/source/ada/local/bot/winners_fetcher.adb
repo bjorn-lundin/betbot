@@ -1,9 +1,8 @@
 --with Unchecked_Conversion;
 --with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
-with Sql;
-with Logging; use Logging;
-with Races;
+--with Sql;
+--with Logging; use Logging;
 with Text_Io;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
@@ -11,9 +10,6 @@ with Aws;
 with Aws.Client;
 with Aws.Response;
 with Sax;
-with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-
-with Ada.Text_Io;
 
 with Unicode.CES.Basic_8bit;
 
@@ -104,16 +100,18 @@ procedure Winners_Fetcher is
 
 
   overriding procedure Start_Document (Handler : in out Reader) is
+    pragma Unreferenced(Handler);
   begin
     Change_Indent(2);
-    Ada.Text_Io.Put_Line(Indent & "--------------------------" );
-    Ada.Text_Io.Put_Line(Indent & "Start_Document" );
+    Text_Io.Put_Line(Indent & "--------------------------" );
+    Text_Io.Put_Line(Indent & "Start_Document" );
   end Start_Document;
 
   overriding procedure End_Document (Handler : in out Reader) is
+    pragma Unreferenced(Handler);
   begin
-    Ada.Text_Io.Put_Line(Indent & "--------------------------" );
-    Ada.Text_Io.Put_Line(Indent & "End_Document"  );
+    Text_Io.Put_Line(Indent & "--------------------------" );
+    Text_Io.Put_Line(Indent & "End_Document"  );
     Change_Indent(-2);
   end End_Document;
 
@@ -190,7 +188,7 @@ procedure Winners_Fetcher is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
 
   begin
-    Ada.Text_Io.Put_Line(Indent & "Ignorable_Whitespace event " & The_Tag & " The_Value  |" & Ch & "|");
+    Text_Io.Put_Line(Indent & "Ignorable_Whitespace event " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
 
@@ -222,23 +220,35 @@ procedure Winners_Fetcher is
   URL : String := "http://rss.betfair.com/RSS.aspx?format=xml&sportID=";
   URL_HORSES : String := URL & "7";
   URL_HOUNDS : String := URL & "4339";
-  URL_SOCCER : String := URL & "1";
+--  URL_SOCCER : String := URL & "1";
   get_horses : Boolean := True;
   get_hounds : Boolean := True;
-  get_soccer : Boolean := False;
+--  get_soccer : Boolean := False;
   R : Aws.Response.Data;
 begin
+    if Get_Horses then
+      R := Aws.Client.Get(URL => URL_HORSES);
+      Text_Io.Put_Line("----------- Start Horses -----------------" );
+      My_Reader.Current_Tag := Null_Unbounded_String;
+      Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
+      My_Reader.Set_Feature(Validation_Feature,False);
+      My_Reader.Parse(Input);
+      Close(Input);
+      Text_Io.Put_Line("----------- Stop Horses -----------------" );
+      Text_Io.Put_Line("");
+    end if;
 
-       R :=  Aws.Client.Get(URL => URL_HORSES);
-
-    Ada.Text_Io.Put_Line("----------- Start 1 -----------------" );
-    My_Reader.Current_Tag := Null_Unbounded_String;
-    Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
-    My_Reader.Set_Feature(Validation_Feature,False);
-    My_Reader.Parse(Input);
-    Close(Input);
-    Ada.Text_Io.Put_Line("----------- Stop 1 -----------------" );
-    Ada.Text_Io.Put_Line("");
+    if Get_Hounds then    
+      R := Aws.Client.Get(URL => URL_HOUNDS);
+      Text_Io.Put_Line("----------- Start Hounds -----------------" );
+      My_Reader.Current_Tag := Null_Unbounded_String;
+      Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
+      My_Reader.Set_Feature(Validation_Feature,False);
+      My_Reader.Parse(Input);
+      Close(Input);
+      Text_Io.Put_Line("----------- Stop Hounds -----------------" );
+      Text_Io.Put_Line("");
+    end if;
 
 exception
   when E: others =>
