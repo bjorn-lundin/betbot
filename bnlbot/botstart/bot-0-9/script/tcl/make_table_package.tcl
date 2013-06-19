@@ -639,7 +639,8 @@ proc Print_Global_Index_Info {} {
           Ixxlupd {
             append S "    if not Keep_Timestamp then\n"
             append S "      null; --for tables without Ixxlupd\n"
-            append S "      Data.Ixxlupd := Process.Name(1..12);\n"
+            append S "      Data.Ixxlupd := Process.Name;\n"
+#            append S "      Data.Ixxlupd := Process.Name(1..12);\n"
             append S "    end if;\n"
             append S "    [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]"
           }
