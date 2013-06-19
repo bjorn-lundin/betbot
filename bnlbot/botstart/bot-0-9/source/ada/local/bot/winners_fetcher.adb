@@ -1,9 +1,9 @@
 --with Unchecked_Conversion;
 --with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
---with Sql;
---with Logging; use Logging;
-with Text_Io;
+with Sql;
+with Logging; use Logging;
+--with Text_Io;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
 with Aws;
@@ -13,7 +13,8 @@ with Sax;
 
 with Unicode.CES.Basic_8bit;
 
-with Ada.Strings;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Sax.Readers;        use Sax.Readers;
@@ -22,8 +23,11 @@ with Unicode.CES;
 with Sax.Attributes;
 
 with Sattmate_Exception;
-
 with General_Routines;
+
+
+with Table_Awinners;
+with Table_Anonrunners;
 
 procedure Winners_Fetcher is
 
@@ -42,18 +46,6 @@ procedure Winners_Fetcher is
   package Non_Runners is new Simple_List_Class(Non_Runner_Type);
 
   --------------------------
-  Global_Indent : Integer := 0;
-
-  procedure Change_Indent(How_Much : Integer) is
-  begin
-    Global_Indent := Global_Indent + How_Much;
-  end Change_Indent;
-
-  function Indent return String is
-    S : String (1 .. Global_Indent) := (others => ' ');
-  begin
-    return S;
-  end Indent;
 
   type Market_Type is record
      Market_Id         : Integer_4           := 0;
@@ -71,6 +63,9 @@ procedure Winners_Fetcher is
     Current_Tag      : Unbounded_String := Null_Unbounded_String;
     Market           : Market_Type;
   end record;
+
+  procedure Print(Handler : in out Reader) ;
+  procedure Insert_Into_Db(Handler : in out Reader) ;
 
   overriding procedure Start_Document (Handler : in out Reader);
 
@@ -94,7 +89,6 @@ procedure Winners_Fetcher is
   overriding procedure Ignorable_Whitespace(Handler : in out Reader;
                                             Ch      : Unicode.CES.Byte_Sequence);
 
-  procedure Print(Handler : in out Reader) ;
 
 
 
@@ -103,15 +97,15 @@ procedure Winners_Fetcher is
     pragma Unreferenced(Handler);
   begin
     Change_Indent(2);
-    Text_Io.Put_Line(Indent & "--------------------------" );
-    Text_Io.Put_Line(Indent & "Start_Document" );
+    Log(Indent & "--------------------------" );
+    Log(Indent & "Start_Document" );
   end Start_Document;
 
   overriding procedure End_Document (Handler : in out Reader) is
     pragma Unreferenced(Handler);
   begin
-    Text_Io.Put_Line(Indent & "--------------------------" );
-    Text_Io.Put_Line(Indent & "End_Document"  );
+    Log(Indent & "--------------------------" );
+    Log(Indent & "End_Document"  );
     Change_Indent(-2);
   end End_Document;
 
@@ -130,6 +124,8 @@ procedure Winners_Fetcher is
     Handler.Current_Tag := To_Unbounded_String(The_Tag);
 
     if The_Tag = "market" then
+      Selections.Remove_All(Handler.Market.Selection_List);
+      Non_Runners.Remove_All(Handler.Market.Non_Runner_List);
       Handler.Market := Empty_Market ;-- reset
       Handler.Market.Market_Id := Integer_4'Value(Atts.Get_Value("id"));
       Handler.Market.Display_Name := To_Unbounded_String(Atts.Get_Value("displayName"));
@@ -160,7 +156,8 @@ procedure Winners_Fetcher is
     elsif The_Tag = "nonRunner" then
       Non_Runners.Insert_At_Tail(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner);
     elsif The_Tag = "market" then
-    Print(Handler);
+--    Print(Handler);
+    Insert_Into_Db(Handler);
     end if;
 
   end End_Element;
@@ -188,31 +185,84 @@ procedure Winners_Fetcher is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
 
   begin
-    Text_Io.Put_Line(Indent & "Ignorable_Whitespace event " & The_Tag & " The_Value  |" & Ch & "|");
+    Log(Indent & "Ignorable_Whitespace event " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
 
   procedure Print(Handler : in out Reader) is
-    use Text_Io;
+  --  use Logging;
+    Eol : Boolean := False;
   begin
-    Put_Line("-------------------------------");
-    Put_Line("Market_Id    " & Handler.Market.Market_Id'Img);
-    Put_Line("Display_Name " & To_String(Handler.Market.Display_Name));
-    Put_Line("Market_Type " & To_String(Handler.Market.Market_Type));
-    while not Selections.Is_Empty(Handler.Market.Selection_List) loop
-      Selections.Remove_From_Head(Handler.Market.Selection_List,Handler.Market.Selection);
-      Put_Line("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+    Log("-------------------------------");
+    Log("Market_Id    " & Handler.Market.Market_Id'Img);
+    Log("Display_Name " & To_String(Handler.Market.Display_Name));
+    Log("Market_Type " & To_String(Handler.Market.Market_Type));
+    
+    Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
+    loop
+      exit when Eol;
+      Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+      Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     end loop;
-
-    while not Non_Runners.Is_Empty(Handler.Market.Non_Runner_List) loop
-      Non_Runners.Remove_From_Head(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner);
-      Put_Line("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
-    end loop;
-    New_Line;
+    
+    Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+    loop
+      exit when Eol;
+      Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
+      Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+    end loop; 
+    
+    Print("");
   end Print;
+  
+  
+  procedure Insert_Into_Db(Handler : in out Reader) is
+    T          : Sql.Transaction_Type;
+    Winner     : Table_Awinners.Data_Type;
+    Non_Runner : Table_Anonrunners.Data_Type;
+    type Eos_Type is (Awinners, Anonrunners);
+    Eos : array (Eos_Type'range) of Boolean := (others => False);
+    Eol : Boolean := False;
+  begin
+    Log("----------- Insert_Into_Db start --------------------");
+    Sql.Start_Read_Write_Transaction (T);
+    Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
+    loop
+      exit when Eol;
+      Winner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
+      Winner.Selectionid := Handler.Market.Selection.Id;
+      Table_Awinners.Read(Winner, Eos(Awinners));
+      if not Eos(Awinners) then
+        Table_Awinners.Insert(Winner);
+        Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+      end if;            
+      Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
+    end loop;
+    
+    Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+    loop
+      exit when Eol;
+      Non_Runner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
+      Move(To_String(Handler.Market.Non_Runner.Name),Non_Runner.Name);
+      Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
+      if not Eos(Anonrunners) then
+        Table_Anonrunners.Insert(Non_Runner);
+        Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
+      end if;      
+      Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+    end loop; 
+    
+    Sql.Commit (T);    
+    Log("----------- Insert_Into_Db stop --------------------");
+  exception
+    when Sql.Duplicate_Index =>
+      Sql.Rollback(T);
+      Log("Duplicate index on");
+      Print(Handler);
+  end Insert_Into_Db;
+
+  
 ----------------------------------------------
-
-
 
   My_Reader   : Reader;
   Input       : String_Input;
@@ -225,31 +275,43 @@ procedure Winners_Fetcher is
   get_hounds : Boolean := True;
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
+  
 begin
+
+    Sql.Connect
+        (Host     => "192.168.0.13",
+         Port     => 5432,
+         Db_Name  => "betting",
+         Login    => "bnl",
+         Password => "bnl");
+
+
     if Get_Horses then
       R := Aws.Client.Get(URL => URL_HORSES);
-      Text_Io.Put_Line("----------- Start Horses -----------------" );
+      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
       My_Reader.Parse(Input);
       Close(Input);
-      Text_Io.Put_Line("----------- Stop Horses -----------------" );
-      Text_Io.Put_Line("");
+      Log("----------- Stop Horses -----------------" );
+      Log("");
     end if;
 
     if Get_Hounds then    
       R := Aws.Client.Get(URL => URL_HOUNDS);
-      Text_Io.Put_Line("----------- Start Hounds -----------------" );
+      Log("----------- Start Hounds -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
       My_Reader.Parse(Input);
       Close(Input);
-      Text_Io.Put_Line("----------- Stop Hounds -----------------" );
-      Text_Io.Put_Line("");
+      Log("----------- Stop Hounds -----------------" );
+      Log("");
     end if;
 
+    Sql.Close_Session;
+    
 exception
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);

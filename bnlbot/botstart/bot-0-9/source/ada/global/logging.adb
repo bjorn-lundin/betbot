@@ -6,11 +6,30 @@ with Sattmate_Calendar;
 package body Logging is
 
    Quiet : Boolean := False;
+ 
+   Global_Indent : Integer := 0;
 
+   ---------------------------------------------
+   procedure Change_Indent(How_Much : Integer) is
+   begin
+    Global_Indent := Global_Indent + How_Much;
+   end Change_Indent;
+   ---------------------------------------------
+
+   function Indent return String is
+    S : String (1 .. Global_Indent) := (others => ' ');
+   begin
+    return S;
+   end Indent;
+   
+   ---------------------------------------------
+   
+   
    procedure Set_Quiet (Q: Boolean) is
    begin
      Quiet := Q;
    end Set_Quiet;
+   ---------------------------------------------
 
    procedure Log (What : in String) is
    begin
