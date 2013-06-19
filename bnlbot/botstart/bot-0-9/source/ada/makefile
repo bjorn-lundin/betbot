@@ -24,8 +24,8 @@ all: tables adabot
 tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_aevents.ads  $(ST)/table_amarkets.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
-         $(ST)/table_awinners.ads $(ST)/table_abets.ads 
-
+         $(ST)/table_awinners.ads $(ST)/table_abets.ads \
+         $(ST)/table_anonrunners.ads
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
 
@@ -83,7 +83,6 @@ $(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
 	cd $(ST) && rm table_awinners.ada
 	$(TP) -p awinners > $(ST)/awinners.sql
 
-
 #$(ST)/table_animals.ads : $(BOT_CONFIG)/repository/tables/table_animals.xml
 #	$(TP) -t animals > $(ST)/table_animals.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_animals.ada
@@ -95,6 +94,12 @@ $(ST)/table_abets.ads : $(BOT_CONFIG)/repository/tables/table_abets.xml
 	cd $(ST) && gnatchop -w -gnat05 table_abets.ada
 	cd $(ST) && rm table_abets.ada
 	$(TP) -p abets > $(ST)/abets.sql
+    
+$(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
+	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
+	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
+	cd $(ST) && rm table_anonrunners.ada
+	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
 clean:
 	gnatclean -P json_test
