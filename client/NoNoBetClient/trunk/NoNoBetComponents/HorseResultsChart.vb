@@ -12,7 +12,6 @@ Public Class HorseResultsChart
   Private Sub InitializeComponent()
     Dim ChartArea1 As System.Windows.Forms.DataVisualization.Charting.ChartArea = New System.Windows.Forms.DataVisualization.Charting.ChartArea()
     Dim Legend1 As System.Windows.Forms.DataVisualization.Charting.Legend = New System.Windows.Forms.DataVisualization.Charting.Legend()
-    Dim Series1 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
     Me.Panel1 = New System.Windows.Forms.Panel()
     Me.horseChart = New System.Windows.Forms.DataVisualization.Charting.Chart()
     CType(Me.horseChart, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -35,10 +34,6 @@ Public Class HorseResultsChart
     Me.horseChart.Legends.Add(Legend1)
     Me.horseChart.Location = New System.Drawing.Point(0, 35)
     Me.horseChart.Name = "horseChart"
-    Series1.ChartArea = "ChartArea1"
-    Series1.Legend = "Legend1"
-    Series1.Name = "Series1"
-    Me.horseChart.Series.Add(Series1)
     Me.horseChart.Size = New System.Drawing.Size(284, 226)
     Me.horseChart.TabIndex = 1
     Me.horseChart.Text = "Chart1"
@@ -135,6 +130,10 @@ Public Class HorseResultsChart
     _ExpectedSeries.ChartType = SeriesChartType.Column
     _ResultSeries.ChartType = SeriesChartType.Column
 
+    _ExpectedSeries("PointWidth") = "0.6"
+    _ResultSeries("PointWidth") = "0.6"
+    _ExpectedSeries("BarLabelStyle") = "Center"
+    _ResultSeries("BarLabelStyle") = "Center"
 
     'Line color
     _ExpectedSeries.Color = Color.Green
@@ -147,12 +146,16 @@ Public Class HorseResultsChart
     '_ExpectedSeries.YValueType = ChartValueType.Date
     '_ResultSeries.YValueType = ChartValueType.Date
 
+    '_ExpectedSeries.IsValueShownAsLabel = True
+    '_ResultSeries.IsValueShownAsLabel = True
+
 
     'horseChart.ChartAreas(0).AxisX
     _ExpectedSeries.BorderDashStyle = ChartDashStyle.Solid
     _ResultSeries.BorderDashStyle = ChartDashStyle.Solid
     _ExpectedSeries.BorderWidth = 3
     _ResultSeries.BorderWidth = 3
+
 
     'Point Marker attributes
     '_ExpectedSeries.MarkerStyle = MarkerStyle.Circle
@@ -163,9 +166,14 @@ Public Class HorseResultsChart
     '_ResultSeries.MarkerSize = 10
 
 
+    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffset = 1
+    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffsetType = DateTimeIntervalType.Auto
+    'horseChart.ChartAreas(0).AxisX.LabelStyle.Interval = 2
+    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Auto
+
     'Axis titles
-    horseChart.ChartAreas(0).AxisY.Title = "Datum"
-    horseChart.ChartAreas(0).AxisX.Title = "Placering"
+    horseChart.ChartAreas(0).AxisY.Title = "Placering"
+    horseChart.ChartAreas(0).AxisX.Title = "Datum"
 
   End Sub
 
