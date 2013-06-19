@@ -91,7 +91,8 @@ begin
           "where LATESTTAKEN >= :START " &
           "and LATESTTAKEN <= :STOP " &
           "and EVENT <> 'Forecast' " &
-          "and SPORTSID in (7, 4339) " &
+--          "and SPORTSID in (7, 4339) " &
+          "and SPORTSID = 7 " &
           "and FULLDESCRIPTION <> 'Ante Post' " &
           "and COUNTRY <> 'ANTEPOST' " &
           "and lower(FULLDESCRIPTION) not like '% v %'  " &

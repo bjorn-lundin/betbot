@@ -313,10 +313,10 @@ begin
       Stop_Date  => Global_Stop_Date);
 
 
-       favorite_by_loop : for f in 0 .. 7 loop
+       favorite_by_loop : for f in 0 .. 3 loop
          Text_Io.Put_Line (Text_Io.Standard_Error, Sattmate_Calendar.String_Date_And_Time(Milliseconds => True) & " " & f'img & "/5");
-         Max_Daily_Loss_loop : for l in 1 .. 10 loop
-           Max_Profit_Factor_loop : for p in 0 .. 10 loop
+         Max_Daily_Loss_loop : for l in 0 .. 6 loop
+           Max_Profit_Factor_loop : for p in 0 .. 5 loop
              Global_Favorite_By := Float_8(f) ; -- /10.0;
              Global_Max_Daily_Loss := Races.Max_Daily_Loss_Type(-l) * 100.0;
              Global_Max_Profit_Factor := Races.Max_Profit_Factor_Type(p) ; -- / 10.0;

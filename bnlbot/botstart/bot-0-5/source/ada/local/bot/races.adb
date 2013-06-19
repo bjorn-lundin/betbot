@@ -102,7 +102,7 @@ package body Races is
                           "where EVENTDATE >= :STARTDATE " &
                           "and EVENTDATE <= :STOPDATE " &
                           "and MARKETNAME = :MARKETNAME " &
-                          "and COUNTRYCODE in ('GBR','IRE') " &
+--                          "and COUNTRYCODE in ('GBR','IRE') " &
                           "and EVENTHIERARCHY like :EVENTHIERARCHY " &
                           "and exists (select 'x' from DRYRESULTS where " &
                           "    DRYMARKETS.MARKETID = DRYRESULTS.MARKETID) " &

@@ -32,9 +32,9 @@ ifeq ($(UNAME),MINGW32_NT-6.1)
 endif
 
 
-#  HOST := localhost
+HOST := localhost
 #HOST := 192.168.0.13
-HOST := nonodev.com
+#HOST := nonodev.com
 ifeq ($(HOST),localhost)
   HOST := localhost
   DBNAME := betting
@@ -130,23 +130,23 @@ sim_equity_all : sim_equity_loop_back_horse \
                  sim_equity_loop_lay_favorite_horse \
                  sim_equity_loop_lay_favorite_hound
 
-sim_equity_loop_back_horse : back_bet_horse_winner_loop.dat \
-                             back_bet_horse_place_loop.dat
+sim_equity_loop_back_horse : loop_back_bet_horse_winner_$(DBNAME).dat \
+                             loop_back_bet_horse_place_$(DBNAME).dat
 
-sim_equity_loop_back_hound : back_bet_hound_winner_loop.dat \
-                             back_bet_hound_place_loop.dat
+sim_equity_loop_back_hound : loop_back_bet_hound_winner_$(DBNAME).dat \
+                             loop_back_bet_hound_place_$(DBNAME).dat
 
-sim_equity_loop_lay_horse : lay_bet_horse_winner_loop.dat \
-                            lay_bet_horse_place_loop.dat
+sim_equity_loop_lay_horse : loop_lay_bet_horse_winner_$(DBNAME).dat \
+                            loop_lay_bet_horse_place_$(DBNAME).dat
 
-sim_equity_loop_lay_hound : lay_bet_hound_winner_loop.dat \
-                            lay_bet_hound_place_loop.dat
+sim_equity_loop_lay_hound : loop_lay_bet_hound_winner_$(DBNAME).dat \
+                            loop_lay_bet_hound_place_$(DBNAME).dat
 
-sim_equity_loop_lay_favorite_horse : lay_favorite_bet_horse_winner_loop.dat \
-                                     lay_favorite_bet_horse_place_loop.dat
+sim_equity_loop_lay_favorite_horse : loop_lay_favorite_bet_horse_winner_$(DBNAME).dat \
+                                     loop_lay_favorite_bet_horse_place_$(DBNAME).dat
 
-sim_equity_loop_lay_favorite_hound : lay_favorite_bet_hound_winner_loop.dat \
-                                     lay_favorite_bet_hound_place_loop.dat
+sim_equity_loop_lay_favorite_hound : loop_lay_favorite_bet_hound_winner_$(DBNAME).dat \
+                                     loop_lay_favorite_bet_hound_place_$(DBNAME).dat
 
 
 
@@ -199,7 +199,7 @@ $(TARGET_DAT_HORSE_BACK_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --delta=1 \
                                      --favorite_by=0 \
                                      --stop_date=$(STOP_DATE) \
-                                     --db_name=$(DB_NAME) \
+                                     --db_name=$(DBNAME) \
                                      --bet_type=back \
                                      --quiet > $(TARGET_DAT_HORSE_BACK_WINNER)
 
@@ -214,7 +214,7 @@ $(TARGET_DAT_HORSE_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --delta=1 \
                                      --favorite_by=0 \
                                      --stop_date=$(STOP_DATE) \
-                                     --db_name=$(DB_NAME) \
+                                     --db_name=$(DBNAME) \
                                      --bet_type=lay \
                                      --quiet > $(TARGET_DAT_HORSE_LAY_WINNER)
 
@@ -229,7 +229,7 @@ $(TARGET_DAT_HOUND_BACK_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --delta=1 \
                                      --favorite_by=0 \
                                      --stop_date=$(STOP_DATE) \
-                                     --db_name=$(DB_NAME) \
+                                     --db_name=$(DBNAME) \
                                      --bet_type=back \
                                      --quiet > $(TARGET_DAT_HOUND_BACK_WINNER)
 
@@ -244,7 +244,7 @@ $(TARGET_DAT_HOUND_LAY_WINNER) : $(BOT_TARGET)/bin/simulator6
                                      --delta=1 \
                                      --favorite_by=0 \
                                      --stop_date=$(STOP_DATE) \
-                                     --db_name=$(DB_NAME) \
+                                     --db_name=$(DBNAME) \
                                      --bet_type=lay \
                                      --quiet > $(TARGET_DAT_HOUND_LAY_WINNER)
 
@@ -307,7 +307,7 @@ best_plot :
                 -e "bet_type='lay horse place/17/22/5/200/0 - winner/15/21/0/200/5'" \
                 -e "target_png='best_plot.png'" \
                 -e "sim_input_file='equity_lay_bet_horse_place_17_22_0_200_5.dat'" \
-                -e "input_file='equity_lay_bet_horse_winner_15_21_5_200_0.dat'" equity.gpl
+                -e "input_file='equity_lay_bet_hound_place_6_16_1_200_4.dat'" equity.gpl
 ifneq ($(UNAME),MINGW32_NT-6.1)
 	$(SHOW_PNG) best_plot.png
 endif
@@ -316,6 +316,31 @@ endif
 
 
 ######## equity stop ##########
+equity_lay_bet_horse_place_12_25_0_200_0.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=bfhistory \
+                                   --animal=horse \
+                                   --bet_type=lay \
+                                   --bet_name=place \
+                                   --max_profit_factor=0 \
+                                   --max_daily_loss=-200 \
+                                   --start_date=2006-01-01 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=12 \
+                                   --delta=25 \
+                                   --saldo=10000 \
+                                   --favorite_by=0 \
+                                   --quiet > equity_lay_bet_horse_place_12_25_0_200_0.dat
+	gnuplot -e "start_date='2006-01-01'" \
+                -e "stop_date='2013-12-31'" \
+                -e "db_name='bfhistory'" \
+                -e "bet_type='lay horse place/17/22/5/200/0 - place/12/25/0/200/0'" \
+                -e "target_png='best_plot.png'" \
+                -e "sim_input_file='equity_lay_bet_horse_place_17_22_0_200_5.dat'" \
+                -e "input_file='equity_lay_bet_horse_place_12_25_0_200_0.dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) best_plot.png
+endif
 
 equity_lay_bet_horse_winner_15_21_5_200_0.dat : $(BOT_TARGET)/bin/sim_equity
 	$(BOT_TARGET)/bin/sim_equity --db_name=bfhistory \
@@ -339,6 +364,32 @@ equity_lay_bet_horse_winner_15_21_5_200_0.dat : $(BOT_TARGET)/bin/sim_equity
                 -e "target_png='best_plot.png'" \
                 -e "sim_input_file='equity_lay_bet_horse_place_17_22_0_200_5.dat'" \
                 -e "input_file='equity_lay_bet_horse_winner_15_21_5_200_0.dat'" equity.gpl
+ifneq ($(UNAME),MINGW32_NT-6.1)
+	$(SHOW_PNG) best_plot.png
+endif
+
+equity_lay_bet_hound_place_6_16_1_200_4.dat : $(BOT_TARGET)/bin/sim_equity
+	$(BOT_TARGET)/bin/sim_equity --db_name=bfhistory \
+                                   --animal=hound \
+                                   --bet_type=lay \
+                                   --bet_name=place \
+                                   --max_profit_factor=4 \
+                                   --max_daily_loss=-200 \
+                                   --start_date=2006-01-01 \
+                                   --stop_date=2013-12-31 \
+                                   --size=30 \
+                                   --price=6 \
+                                   --delta=16 \
+                                   --saldo=10000 \
+                                   --favorite_by=1 \
+                                   --quiet > equity_lay_bet_hound_place_6_16_1_200_4.dat
+	gnuplot -e "start_date='2006-01-01'" \
+                -e "stop_date='2013-12-31'" \
+                -e "db_name='bfhistory'" \
+                -e "bet_type='lay horse winner/15/21/5/200/4 - hound place/6/16/1/200/4'" \
+                -e "target_png='best_plot.png'" \
+                -e "sim_input_file='equity_lay_bet_horse_winner_15_21_5_200_0.dat'" \
+                -e "input_file='equity_lay_bet_hound_place_6_16_1_200_4.dat'" equity.gpl
 ifneq ($(UNAME),MINGW32_NT-6.1)
 	$(SHOW_PNG) best_plot.png
 endif
@@ -582,9 +633,9 @@ sim_dry_run_hounds_winner_lay_bet_2_5.dat : $(BOT_TARGET)/bin/sim_equity
 
 ########
 #sim equity with history data
-back_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+loop_back_bet_horse_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=back \
                                  --bet_name=winner  \
@@ -592,11 +643,11 @@ back_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30 \
                                  --saldo=10000 \
-                                 --quiet > back_bet_horse_winner_loop.dat
+                                 --quiet > loop_back_bet_horse_winner_$(DBNAME).dat
 
- back_bet_horse_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+loop_back_bet_horse_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=back \
                                  --bet_name=place    \
@@ -604,10 +655,10 @@ back_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet >  back_bet_horse_place_loop.dat
-back_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_back_bet_horse_place_$(DBNAME).dat
+loop_back_bet_hound_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=back \
                                  --bet_name=winner \
@@ -615,10 +666,10 @@ back_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > back_bet_hound_winner_loop.dat
- back_bet_hound_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_back_bet_hound_winner_$(DBNAME).dat
+loop_back_bet_hound_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=back \
                                  --bet_name=place   \
@@ -626,10 +677,10 @@ back_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > back_bet_hound_place_loop.dat
-lay_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_back_bet_hound_place_$(DBNAME).dat
+loop_lay_bet_horse_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=lay \
                                  --bet_name=winner \
@@ -637,10 +688,10 @@ lay_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_bet_horse_winner_loop.dat
-lay_bet_horse_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_bet_horse_winner_$(DBNAME).dat
+loop_lay_bet_horse_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=lay \
                                  --bet_name=place    \
@@ -648,10 +699,10 @@ lay_bet_horse_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_bet_horse_place_loop.dat
-lay_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_bet_horse_place_$(DBNAME).dat
+loop_lay_bet_hound_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=lay \
                                  --bet_name=winner \
@@ -659,10 +710,10 @@ lay_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_bet_hound_winner_loop.dat
-lay_bet_hound_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_bet_hound_winner_$(DBNAME).dat
+loop_lay_bet_hound_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=lay \
                                  --bet_name=place   \
@@ -670,10 +721,10 @@ lay_bet_hound_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_bet_hound_place_loop.dat
-lay_favorite_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_bet_hound_place_$(DBNAME).dat
+loop_lay_favorite_bet_horse_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=lay_favorite \
                                  --bet_name=winner  \
@@ -681,10 +732,10 @@ lay_favorite_bet_horse_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_favorite_bet_horse_winner_loop.dat
-lay_favorite_bet_horse_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_favorite_bet_horse_winner_$(DBNAME).dat
+loop_lay_favorite_bet_horse_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=horse \
                                  --bet_type=lay_favorite \
                                  --bet_name=place    \
@@ -692,10 +743,10 @@ lay_favorite_bet_horse_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_favorite_bet_horse_place_loop.dat
-lay_favorite_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_favorite_bet_horse_place_$(DBNAME).dat
+loop_lay_favorite_bet_hound_winner_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=lay_favorite \
                                  --bet_name=winner \
@@ -703,10 +754,10 @@ lay_favorite_bet_hound_winner_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_favorite_bet_hound_winner_loop.dat
-lay_favorite_bet_hound_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
+                                 --quiet > loop_lay_favorite_bet_hound_winner_$(DBNAME).dat
+loop_lay_favorite_bet_hound_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_total
 	$(BOT_TARGET)/bin/sim_equity_total \
-                                 --db_name=bfhistory \
+                                 --db_name=$(DBNAME) \
                                  --animal=hound \
                                  --bet_type=lay_favorite \
                                  --bet_name=place   \
@@ -714,7 +765,7 @@ lay_favorite_bet_hound_place_loop.dat : $(BOT_TARGET)/bin/sim_equity_total
                                  --stop_date=2013-12-31 \
                                  --size=30  \
                                  --saldo=10000 \
-                                 --quiet > lay_favorite_bet_hound_place_loop.dat
+                                 --quiet > loop_lay_favorite_bet_hound_place_$(DBNAME).dat
 
 
 
