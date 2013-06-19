@@ -232,7 +232,7 @@ procedure Winners_Fetcher is
       Winner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
       Winner.Selectionid := Handler.Market.Selection.Id;
       Table_Awinners.Read(Winner, Eos(Awinners));
-      if not Eos(Awinners) then
+      if Eos(Awinners) then
         Table_Awinners.Insert(Winner);
         Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
       end if;            
@@ -245,7 +245,7 @@ procedure Winners_Fetcher is
       Non_Runner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
       Move(To_String(Handler.Market.Non_Runner.Name),Non_Runner.Name);
       Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
-      if not Eos(Anonrunners) then
+      if Eos(Anonrunners) then
         Table_Anonrunners.Insert(Non_Runner);
         Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
       end if;      
