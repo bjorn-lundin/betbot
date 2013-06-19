@@ -132,8 +132,8 @@ Public Class HorseResultsChart
 
     _ExpectedSeries("PointWidth") = "0.6"
     _ResultSeries("PointWidth") = "0.6"
-    _ExpectedSeries("BarLabelStyle") = "Center"
-    _ResultSeries("BarLabelStyle") = "Center"
+    '_ExpectedSeries("BarLabelStyle") = "Left"
+    '_ResultSeries("BarLabelStyle") = "Right"
 
     'Line color
     _ExpectedSeries.Color = Color.Green
