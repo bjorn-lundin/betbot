@@ -1,29 +1,30 @@
 --with Unchecked_Conversion;
---with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
-with Sql;
+with Sattmate_Exception;
+--with Sattmate_Types; use Sattmate_Types;
+--with Sql;
+with General_Routines;
+--with Simple_List_Class;
+--pragma Elaborate_All(Simple_List_Class);
+
 with Logging; use Logging;
 with Text_Io; 
-with Simple_List_Class;
-pragma Elaborate_All(Simple_List_Class);
 with Aws;
 with Aws.Client;
 with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
-
+with Ada.Calendar.Time_Zones;
+with Sattmate_Calendar;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 
-with Unicode.CES;
-with Unicode.CES.Basic_8bit;
+--with Unicode.CES;
+--with Unicode.CES.Basic_8bit;
 
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+--with Ada.Strings; use Ada.Strings;
+--with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with Sattmate_Exception;
-with General_Routines;
 
 with Token ;
 
@@ -40,22 +41,17 @@ procedure Markets_Fetcher is
   Query  : JSON_Value := Create_Object;
   Reply  : JSON_Value := Create_Object;
   
-  
   Params : JSON_Value := Create_Object;
   Filter : JSON_Value := Create_Object;
-  Empty_Filter : JSON_Value := Create_Object;
-
-
+  
   Market_Start_Time : JSON_Value := Create_Object;
   Market_Projection,
   Market_Countries,
   Market_Type_Codes,
   Exchange_Ids,
   Event_Type_Ids :JSON_Array := Empty_Array;
-
   
-  
-  
+  Offset : Ada.Calendar.Time_Zones.Time_Offset := Ada.Calendar.Time_Zones.UTC_Time_Offset;
   
 ----------------------------------------------
 
@@ -134,59 +130,19 @@ begin
       My_Token.Set(Sa_Par_Token.all);
     end if;
 
-    
---     Aws.Headers.Set.Add (Headers : in out List; Name, Value : String);
-    Log("set headers");
-    
+    --http://forum.bdp.betfair.com/showthread.php?t=1832&page=2
+    --conn.setRequestProperty("content-type", "application/json");
+    --conn.setRequestProperty("X-Authentication", token);
+    --conn.setRequestProperty("X-Application", appKey);
+    --conn.setRequestProperty("Accept", "application/json");    
     Aws.Headers.Set.Add (My_Headers, "X-Authentication", My_Token.Get);
     Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
     Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
     Log("Headers set");
 
-
---http://forum.bdp.betfair.com/showthread.php?t=1832&page=2
---conn.setRequestProperty("content-type", "application/json");
---conn.setRequestProperty("X-Authentication", token);
---conn.setRequestProperty("X-Application", appKey);
---conn.setRequestProperty("Accept", "application/json");    
-
     -- json stuff
 
---    Filter.Set_Field (Field_Name => "filter",
---                       Field      => Empty_Filter);
---    
---    Query.Set_Field (Field_Name => "params",
---                     Field      => Filter);
---
---    Query.Set_Field (Field_Name => "id",
---                     Field      => 1);
---    Query.Set_Field (Field_Name => "method",
---                     Field      => "SportsAPING/v1.0/listEventTypes");
---    Query.Set_Field (Field_Name => "jsonrpc",
---                     Field      => "2.0");
---               
---               
---    
-----    loop
---    Log("call betfair with ");
---    Log(Query.Write);
---    --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
---    --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
---    Answer := Aws.Client.Post (Url          =>  Token.URL,
---                               Data         =>  Query.Write,
---                               Content_Type => "application/json",
---                               Headers      => My_Headers);
---    Log("betfair called");
---    
---    
---    Log(Aws.Response.Message_Body(Answer));
---    Log("Wait 1 minute");
-----    delay 60.0;
-----    end loop; 
-
-
---  Market_Start_Time : JSON_Value := Create_Object;
-
+    -- Create JSON arrays
     Append(Exchange_Ids , Create("1"));
     
     Append(Event_Type_Ids , Create("7"));    --horse
@@ -204,9 +160,9 @@ begin
     Append(Market_Projection , Create("MARKET_START_TIME"));
     
     Market_Start_Time.Set_Field(Field_Name => "from",
-                                Field      => "2013-06-22T14:00:00Z");
-    
-                       
+                                Field      => "2013-06-22T16:20:00Z");
+    Market_Start_Time.Set_Field(Field_Name => "to",
+                                Field      => "2013-06-22T17:20:00Z");
 
     Filter.Set_Field (Field_Name => "exchangeIds",
                       Field      => Exchange_Ids);
@@ -226,7 +182,6 @@ begin
     Filter.Set_Field (Field_Name => "marketStartTime",
                       Field      => Market_Start_Time);
                        
-                       
     Params.Set_Field (Field_Name => "filter",
                       Field      => Filter);
                        
@@ -234,7 +189,8 @@ begin
                       Field      => Market_Projection);
 
     Params.Set_Field (Field_Name => "locale",
-                      Field      => "sv");
+                      Field      => "en");
+--                      Field      => "sv");
                       
     Params.Set_Field (Field_Name => "sort",
                       Field      => "FIRST_TO_START");
@@ -283,7 +239,8 @@ begin
                     CB    => Handler'access);
    Log ("--> Reply Stop <--");
     
-    Log("Wait 1 minute");
+   Log("Wait 1 minute");
+   Log("Offset" & Offset'Img);
 --    delay 60.0;
 --    end loop; 
                
