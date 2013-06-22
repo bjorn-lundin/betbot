@@ -9,10 +9,10 @@ import datetime
 
 AIS_TYPE = 'test'
 AIS_HOME = '/home/sejoabi/workspace/ais/trunk'
+AIS_DATA = '/home/sejoabi/workspace/ais/trunk'
 AIS_VERSION = '8'
-AIS_LOGDIR = os.path.normpath(os.path.join(AIS_HOME, 'log'))
-AIS_METADIR = os.path.normpath(os.path.join(AIS_HOME, 'meta_data'))
-AIS_DBDUMPDIR = os.path.normpath(os.path.join(AIS_HOME, 'db_dump'))
+AIS_LOGDIR = os.path.normpath(os.path.join(AIS_DATA, 'log'))
+AIS_DBDUMPDIR = os.path.normpath(os.path.join(AIS_DATA, 'db_dump'))
 AIS_RACEDAY_HISTORY = 6 # Nbr of history days in ATG database
 AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22', 54:'2013-01-30', 35:'2013-04-07'}
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
@@ -46,7 +46,7 @@ if AIS_TYPE == 'test':
     AIS_WSDL_URL = AIS_WS_URL + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'test_data'))
+    AIS_DATADIR = os.path.normpath(os.path.join(AIS_DATA, 'test_data'))
     AIS_DB_NAME = 'ais_db_test'
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/' + + AIS_DB_NAME
     AIS_LOGFILE = 'ais_test.log'
@@ -68,7 +68,7 @@ elif AIS_TYPE == 'prod':
     AIS_WSDL_URL = AIS_WS_URL + '?WSDL'
     AIS_USERNAME = ''
     AIS_PASSWORD = ''
-    AIS_DATADIR = os.path.normpath(os.path.join(AIS_HOME, 'prod_data'))
+    AIS_DATADIR = os.path.normpath(os.path.join(AIS_DATA, 'prod_data'))
     AIS_DB_NAME = 'ais_db_prod'
     AIS_DB_URL = 'postgresql://<user>:<pass>@localhost:5432/' + AIS_DB_NAME
     AIS_LOGFILE = 'ais.log'
