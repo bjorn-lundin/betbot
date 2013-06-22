@@ -2,7 +2,7 @@
 with Sattmate_Exception;
 --with Sattmate_Types; use Sattmate_Types;
 --with Sql;
-with General_Routines;
+--with General_Routines;
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
 
@@ -14,7 +14,7 @@ with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
 with Ada.Calendar.Time_Zones;
-with Sattmate_Calendar;
+with Sattmate_Calendar; use Sattmate_Calendar;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 
@@ -34,6 +34,8 @@ with Gnat.Strings;
 
 procedure Markets_Fetcher is
 
+  No_Such_UTC_Offset : exception;
+
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Config : Command_Line_Configuration;
   --  Initialize an empty JSON_Value object. We will add values to this
@@ -51,7 +53,7 @@ procedure Markets_Fetcher is
   Exchange_Ids,
   Event_Type_Ids :JSON_Array := Empty_Array;
   
-  Offset : Ada.Calendar.Time_Zones.Time_Offset := Ada.Calendar.Time_Zones.UTC_Time_Offset;
+  UTC_Offset_Minutes : Ada.Calendar.Time_Zones.Time_Offset;
   
 ----------------------------------------------
 
@@ -59,6 +61,13 @@ procedure Markets_Fetcher is
   
   My_Token : Token.Token_Type;
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    
+  UTC_Time_Start, UTC_Time_Stop  : Sattmate_Calendar.Time_Type ;
+  
+  One_Minute : Sattmate_Calendar.Interval_Type := (0,0,1,0,0);
+  One_Hour   : Sattmate_Calendar.Interval_Type := (0,1,0,0,0);
+  Two_Hours  : Sattmate_Calendar.Interval_Type := (0,2,0,0,0);
+  
 ---------------------------------------------------------------
 
    procedure Handler
@@ -113,6 +122,8 @@ procedure Markets_Fetcher is
   
   
 begin
+
+
    Define_Switch
      (Config,
       Sa_Par_Token'access,
@@ -158,91 +169,102 @@ begin
     Append(Market_Projection , Create("EVENT"));
     Append(Market_Projection , Create("EVENT_TYPE"));
     Append(Market_Projection , Create("MARKET_START_TIME"));
-    
-    Market_Start_Time.Set_Field(Field_Name => "from",
-                                Field      => "2013-06-22T16:20:00Z");
-    Market_Start_Time.Set_Field(Field_Name => "to",
-                                Field      => "2013-06-22T17:20:00Z");
+    loop
+      UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
 
-    Filter.Set_Field (Field_Name => "exchangeIds",
-                      Field      => Exchange_Ids);
-                       
-    Filter.Set_Field (Field_Name => "eventTypeIds",
-                      Field      => Event_Type_Ids);
-                      
-    Filter.Set_Field (Field_Name => "marketCountries",
-                      Field      => Market_Countries);
-                      
-    Filter.Set_Field (Field_Name => "marketTypeCodes",
-                      Field      => Market_Type_Codes);
-
-    Filter.Set_Field (Field_Name => "inPlayOnly",
-                      Field      => False);
-                      
-    Filter.Set_Field (Field_Name => "marketStartTime",
-                      Field      => Market_Start_Time);
-                       
-    Params.Set_Field (Field_Name => "filter",
-                      Field      => Filter);
-                       
-    Params.Set_Field (Field_Name => "marketProjection",
-                      Field      => Market_Projection);
-
-    Params.Set_Field (Field_Name => "locale",
-                      Field      => "en");
---                      Field      => "sv");
-                      
-    Params.Set_Field (Field_Name => "sort",
-                      Field      => "FIRST_TO_START");
-
-    Params.Set_Field (Field_Name => "maxResults",
-                      Field      => "3");
-                      
-    Query.Set_Field (Field_Name => "params",
-                     Field      => Params);
-
-    Query.Set_Field (Field_Name => "id",
-                     Field      => 15);
-    Query.Set_Field (Field_Name => "method",
-                     Field      => "SportsAPING/v1.0/listMarketCatalogue");
-    Query.Set_Field (Field_Name => "jsonrpc",
-                     Field      => "2.0");
+      case UTC_Offset_Minutes is
+        when 60     => UTC_Time_Start := Sattmate_Calendar.Clock - One_Hour;
+        when 120    => UTC_Time_Start := Sattmate_Calendar.Clock - Two_Hours;
+        when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
+      end case;   
+      UTC_Time_Stop := UTC_Time_Start + One_Minute; 
+      
+      Market_Start_Time.Set_Field(Field_Name => "from",
+                                  Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
+      Market_Start_Time.Set_Field(Field_Name => "to",
+                                  Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));
+   
+      Filter.Set_Field (Field_Name => "exchangeIds",
+                        Field      => Exchange_Ids);
+                         
+      Filter.Set_Field (Field_Name => "eventTypeIds",
+                        Field      => Event_Type_Ids);
+                        
+      Filter.Set_Field (Field_Name => "marketCountries",
+                        Field      => Market_Countries);
+                        
+      Filter.Set_Field (Field_Name => "marketTypeCodes",
+                        Field      => Market_Type_Codes);
+   
+      Filter.Set_Field (Field_Name => "inPlayOnly",
+                        Field      => False);
+                        
+      Filter.Set_Field (Field_Name => "marketStartTime",
+                        Field      => Market_Start_Time);
+                         
+      Params.Set_Field (Field_Name => "filter",
+                        Field      => Filter);
+                         
+      Params.Set_Field (Field_Name => "marketProjection",
+                        Field      => Market_Projection);
+   
+      Params.Set_Field (Field_Name => "locale",
+                        Field      => "en");
+--                        Field      => "sv");
+                        
+      Params.Set_Field (Field_Name => "sort",
+                        Field      => "FIRST_TO_START");
+   
+      Params.Set_Field (Field_Name => "maxResults",
+                        Field      => "3");
+                        
+      Query.Set_Field (Field_Name => "params",
+                       Field      => Params);
+   
+      Query.Set_Field (Field_Name => "id",
+                       Field      => 15);
+      Query.Set_Field (Field_Name => "method",
+                       Field      => "SportsAPING/v1.0/listMarketCatalogue");
+      Query.Set_Field (Field_Name => "jsonrpc",
+                       Field      => "2.0");
                
 
 
---    loop
-    Log("call betfair with ");
-    Log(Query.Write);
-    --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
-    --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
-    Answer := Aws.Client.Post (Url          =>  Token.URL,
-                               Data         =>  Query.Write,
-                               Content_Type => "application/json",
-                               Headers      => My_Headers);
-    Log("betfair called");
-    
-    
---    Log(Aws.Response.Message_Body(Answer));
-    
-    
-   --  Load the reply into a json object
-   Reply := Read (Strm     => Aws.Response.Message_Body(Answer),
-                  Filename => "");
-   Log ("Reply.Write start");
-   Log (Reply.Write);
-   Log ("Reply.Write stop");
-
-   --  Iterate the Reply object. The Handler procedure is responsible for
-   --  outputting the contents.
-   Log ("--> Reply Start <--");
-   Map_JSON_Object (Val   => Reply,
-                    CB    => Handler'access);
-   Log ("--> Reply Stop <--");
-    
-   Log("Wait 1 minute");
-   Log("Offset" & Offset'Img);
---    delay 60.0;
---    end loop; 
+      Log("call betfair with ");
+      Log(Query.Write);
+      --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
+      --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
+      Answer := Aws.Client.Post (Url          =>  Token.URL,
+                                 Data         =>  Query.Write,
+                                 Content_Type => "application/json",
+                                 Headers      => My_Headers);
+      Log("betfair called");
+      
+      
+  --    Log(Aws.Response.Message_Body(Answer));
+      
+      
+     --  Load the reply into a json object
+     Reply := Read (Strm     => Aws.Response.Message_Body(Answer),
+                    Filename => "");
+     Log ("Reply.Write start");
+     Log (Reply.Write);
+     Log ("Reply.Write stop");
+  
+     --  Iterate the Reply object. The Handler procedure is responsible for
+     --  outputting the contents.
+     Log ("--> Reply Start <--");
+     Map_JSON_Object (Val   => Reply,
+                      CB    => Handler'access);
+     Log ("--> Reply Stop <--");
+      
+     Log("Wait 45 secs");
+     Log("Offset" & UTC_Offset_Minutes'Img);
+     Log("UTC_Time_Start: " & Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
+     Log("UTC_Time_Stop : " & Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));
+     
+     delay 45.0;
+   end loop; 
                
                
                
