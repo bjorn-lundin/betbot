@@ -9,7 +9,6 @@ from optparse import OptionParser
 INIT_DB = 'init_db'
 LOAD_EOD_RACEDAY = 'load_eod_raceday'
 EOD_DOWNLOAD = 'eod_download'
-WRITE_META_FILES = 'write_meta_files'
 SAVE_FILES_IN_CLOUD = 'save_files_in_cloud'
 PRINT_VERSIONS_FROM_CLOUD = 'print_versions_from_cloud'
 DELETE_BUCKET_IN_CLOUD = 'delete_bucket_in_cloud'
@@ -29,7 +28,6 @@ def parse():
         INIT_DB,
         LOAD_EOD_RACEDAY,
         EOD_DOWNLOAD,
-        WRITE_META_FILES,
         SAVE_FILES_IN_CLOUD,
         PRINT_VERSIONS_FROM_CLOUD,
         DELETE_BUCKET_IN_CLOUD,
@@ -39,13 +37,13 @@ def parse():
         LOAD_EOD_VPPOOLINFO,
         LOAD_EOD_VPRESULT,
         LOAD_EOD_DDPOOLINFO,
-        LOAD_EOD_DDRESULT
+        LOAD_EOD_DDRESULT,
     ]
     usage_string = "usage: %(prog)s " + \
         "[%(com0)s|%(com1)s|%(com2)s|%(com3)s|" + \
         "%(com4)s|%(com5)s|%(com6)s|%(com7)s]|" + \
         "%(com8)s|%(com9)s|%(com10)s|%(com11)s]" + \
-        "%(com12)s|%(com13)s]"
+        "%(com12)s]"
     usage = usage_string % \
     {
         'prog':'%prog',
@@ -62,7 +60,6 @@ def parse():
         'com10':command_list[10],
         'com11':command_list[11],
         'com12':command_list[12],
-        'com13':command_list[13],
     }
     parser = OptionParser(usage)
     args = parser.parse_args()[1]

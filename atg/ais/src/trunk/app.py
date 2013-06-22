@@ -23,7 +23,7 @@ if time.tzname[0] != 'CET':
 
 LOG = logging.getLogger('AIS')
 util.create_directories(
-    dirs=[conf.AIS_LOGDIR, conf.AIS_DATADIR, conf.AIS_METADIR]
+    dirs=[conf.AIS_LOGDIR, conf.AIS_DATADIR]
 )
 
 def init_logging():
@@ -42,9 +42,6 @@ def init_logging():
     formatter = logging.Formatter(format_string)
     filehandler.setFormatter(formatter)
     LOG.addHandler(filehandler)
-    
-    suds_log = logging.getLogger('suds')
-    suds_log.setLevel(logging.CRITICAL)
 
 def main():
     '''
@@ -66,33 +63,15 @@ def main():
     
     if cp.EOD_DOWNLOAD in command:
         LOG.info('Running ' + command)
-        ws_client = ais.init_ws_client(
-            conf.AIS_WSDL_URL,
-            conf.AIS_USERNAME,
-            conf.AIS_PASSWORD
-        )
         params = {
-            'client':ws_client,
             'datadir':conf.AIS_DATADIR,
-            'metadir':conf.AIS_METADIR,
             'ais_version':conf.AIS_VERSION,
             'ais_type':conf.AIS_TYPE,
-            'save_soap_file':True,
             'raceday_history':conf.AIS_RACEDAY_HISTORY,
             'raceday_exclude':conf.AIS_RACEDAY_EXCLUDE,
             'download_delay':conf.AIS_EOD_DOWNLOAD_DELAY
         }
         ais.eod_download_via_calendar(params)
-        LOG.info('Ending ' + command)
-    
-    if cp.WRITE_META_FILES in command:
-        LOG.info('Running ' + command)
-        ws_client = ais.init_ws_client(
-            conf.AIS_WSDL_URL,
-            conf.AIS_USERNAME,
-            conf.AIS_PASSWORD
-        )
-        util.write_meta_files(client=ws_client, path=conf.AIS_METADIR)
         LOG.info('Ending ' + command)
     
     if cp.SAVE_FILES_IN_CLOUD in command:

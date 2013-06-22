@@ -4,12 +4,9 @@ Contain methods that map to actual AIS WS calls
 '''
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
-from suds.client import MethodNotFound, WebFault
-from urllib2 import URLError
 import logging
 import db
 import util
-import socket
 import datetime
 import time
 import conf
@@ -17,154 +14,7 @@ import ais_httpclient
 
 LOG = logging.getLogger('AIS')
 
-def init_ws_client(url, username, password):
-    '''
-    Initiates SUDS WS client
-    Use static WSDL file instead of relying on cache?
-    See ->
-    http://stackoverflow.com/questions/7739613/python-soap-client-use-suds-or-something-else
-    '''
-    LOG.info('Initiating WS client')
-    from suds.client import Client
-    ws_client = Client(
-        url,
-        username=username,
-        password=password,
-        timeout=180  #timeout in seconds
-    )
-    cache = ws_client.options.cache
-    cache.setduration(days=10) #months, weeks, days, hours, seconds
-    return ws_client
-
-def call_ais_service(params=None, date=None, track=None, 
-                     ret_if_local=False, download_delay=0):
-    '''
-    Call an AIS web service
-    '''
-    LOG.info('Calling ' + params['service'] 
-             + ' with date={date}, track={track}'
-             .format(date=date, track=track))
-    result = None
-    file_name_dict = None
-    xml_data = None
-    
-    if date and track:
-        file_name_dict = util.generate_file_name(
-            datadir=params['datadir'],
-            ais_service=params['service'],
-            date=date,
-            track=track,
-            ais_version=params['ais_version'],
-            ais_type=params['ais_type']
-        )
-    elif date and not track:
-        # The parameters show this is a filename
-        # for fetchWinnersList or fetchRaceDayCalendar
-        # from local history file
-        file_name_dict = util.generate_file_name(
-            datadir=params['datadir'],
-            ais_service=params['service'],
-            date=date,
-            track='all',
-            ais_version=params['ais_version'],
-            ais_type=params['ais_type']
-        )
-    else:
-        # The parameters show this is a filename
-        # for fetchRaceDayCalendar fetched today
-        file_name_dict = util.generate_file_name(
-            datadir=params['datadir'],
-            ais_service=params['service'],
-            date=datetime.datetime.now(),
-            track='all',
-            ais_version=params['ais_version'],
-            ais_type=params['ais_type'],
-        )
-
-    # If the result has already been downloaded,
-    # read data from downloaded file instead of calling
-    # web service
-    if params['save_soap_file']:
-        filename = file_name_dict['filename']
-        datapath = params['datadir']
-        filelist = util.list_files(datapath)
-        if filelist and filename in filelist:
-            if ret_if_local:
-                LOG.info('Using excisting file ' + filename)
-                xml_data = util.read_file(
-                    util.create_file_path(
-                        path=datapath,
-                        filename=filename
-                    )
-                )
-            else:
-                LOG.debug('Data already saved in {filename}'
-                         .format(filename=filename))
-                return result
-    try:
-        service_method = getattr(params['client'].service, params['service'])
-        if date and track:
-            if xml_data:
-                result = service_method(
-                    util.date_to_struct(params['client'], date),
-                    util.track_id_to_struct(params['client'], track),
-                    __inject={'reply':xml_data}
-                )
-            else:
-                result = service_method(
-                    util.date_to_struct(params['client'], date),
-                    util.track_id_to_struct(params['client'], track)
-                )
-        elif date and not track:
-            if xml_data:
-                result = service_method(
-                    util.date_to_struct(params['client'], date),
-                    __inject={'reply':xml_data}
-                )
-            else:
-                result = service_method(
-                    util.date_to_struct(params['client'], date)
-                )
-        else:
-            if xml_data:
-                result = service_method(__inject={'reply':xml_data})
-            else:
-                result = service_method()
-
-        if 'download_delay' in params:
-            download_delay = params['download_delay']
-        if download_delay > 0:
-            LOG.debug('Delaying download with ' + 
-                      str(download_delay) + ' seconds')
-            time.sleep(download_delay)
-    except URLError:
-        LOG.exception(params['service'])
-    except MethodNotFound:
-        LOG.exception(params['service'])
-    except WebFault:
-        LOG.exception(params['service'])
-    except socket.timeout:
-        LOG.exception(params['service'])
-    except socket.error:
-        LOG.exception(params['service'])
-    except:
-        LOG.exception('Unexpected error! ' + params['service'])
-    
-    if result is None:
-        LOG.error('Service call resulted in empty (None) result')
-    else:
-        if params['save_soap_file'] and xml_data is None:
-            filepath = util.create_file_path(
-                params['datadir'], 
-                file_name_dict['filename']
-            )
-            util.write_file(
-                data=params['client'].last_received(), 
-                filepath=filepath
-            )
-    return result
-
-def call_ais_service_2(params=None, date=None, track_id=None):
+def call_ais_service(params=None, date=None, track_id=None):
     '''
     Call an AIS web service
     '''
@@ -215,19 +65,14 @@ def call_ais_service_2(params=None, date=None, track_id=None):
                 )
                 time.sleep(download_delay)
     
-def raceday_calendar_service(params=None, date=None, ret_if_local=False):
+def raceday_calendar_service(params=None, date=None):
     '''
     Calls AIS service fetchRaceDayCalendar
     '''
     params['service'] = 'fetchRaceDayCalendar'
-    result = call_ais_service(params=params, date=date, 
-                              ret_if_local=ret_if_local)
-    if result:
-        import raceday_data
-        raceday_data.load_into_db(params['datadir'])
+    call_ais_service(params=params, date=date)
         
-def racing_card_service(params=None, date=None, 
-                        track=None, ret_if_local=False):
+def racing_card_service(params=None, date=None, track_id=None):
     '''
     Calls AIS service fetchRacingCard
     
@@ -236,15 +81,9 @@ def racing_card_service(params=None, date=None,
     fetched for upcoming races.
     '''
     params['service'] = 'fetchRacingCard'
-    call_ais_service(
-        params=params, 
-        date=date,
-        track=track,
-        ret_if_local=ret_if_local
-    )
+    call_ais_service(params=params, date=date, track_id=track_id)
     
-def track_bet_info_service(params=None, date=None, 
-                           track=None, ret_if_local=False):
+def track_bet_info_service(params=None, date=None, track_id=None):
     '''
     Calls AIS service fetchTrackBetInfo
     
@@ -253,8 +92,7 @@ def track_bet_info_service(params=None, date=None,
     and/or the fetchTrackBetInfo method.
     '''
     params['service'] = 'fetchTrackBetInfo'
-    call_ais_service(params=params, date=date, 
-                     track=track, ret_if_local=ret_if_local)
+    call_ais_service(params=params, date=date, track_id=track_id)
 
 def raceday_result_service(params=None, date=None, track_id=None):
     '''
@@ -264,9 +102,9 @@ def raceday_result_service(params=None, date=None, track_id=None):
     and horses at the race day
     '''
     params['service'] = 'fetchRaceDayResult'
-    call_ais_service_2(params=params, date=date, track_id=track_id)
+    call_ais_service(params=params, date=date, track_id=track_id)
 
-def winner_list_service(params=None, date=None, ret_if_local=False):
+def winner_list_service(params=None, date=None):
     '''
     Calls AIS service fetchWinnersList
     
@@ -275,10 +113,9 @@ def winner_list_service(params=None, date=None, ret_if_local=False):
     the bettypes V86, V75, V65, V64, V5 and V4.
     '''
     params['service'] = 'fetchWinnersList'
-    call_ais_service(params=params, date=date, ret_if_local=ret_if_local)
+    call_ais_service(params=params, date=date)
 
-def pool_info_service(params=None, bettype=None, date=None, 
-                      track=None, ret_if_local=False):
+def pool_info_service(params=None, bettype=None, date=None, track_id=None):
     '''
     Calls AIS service fetchXXPoolInfo
     
@@ -291,16 +128,13 @@ def pool_info_service(params=None, bettype=None, date=None,
         if \
         (bettype == bettype_exclude['bettype']) and \
         (date == bettype_exclude['date']) and \
-        (track == bettype_exclude['track']):
+        (track_id == bettype_exclude['track']):
             LOG.info('Excluding PoolInfo bettype: ' + bettype + ', date: ' 
-                     + str(date) + ', track: ' + str(track))
+                     + str(date) + ', track: ' + str(track_id))
             return
-
-    call_ais_service(params=params, date=date, track=track,
-                     ret_if_local=ret_if_local)
+    call_ais_service(params=params, date=date, track_id=track_id)
     
-def result_service(params=None, bettype=None, date=None, 
-                   track=None, ret_if_local=False):
+def result_service(params=None, bettype=None, date=None, track_id=None):
     '''
     Calls AIS service fetchXXResult
     
@@ -313,15 +147,13 @@ def result_service(params=None, bettype=None, date=None,
         if \
         (bettype == bettype_exclude['bettype']) and \
         (date == bettype_exclude['date']) and \
-        (track == bettype_exclude['track']):
+        (track_id == bettype_exclude['track']):
             LOG.info('Excluding Result bettype: ' + bettype + ', date: ' 
-                     + str(date) + ', track: ' + str(track))
+                     + str(date) + ', track: ' + str(track_id))
             return
-    
-    call_ais_service(params=params, date=date, track=track,
-                     ret_if_local=ret_if_local)
+    call_ais_service(params=params, date=date, track_id=track_id)
 
-def event_array_service(params=None, ret_if_local=False):
+def event_array_service(params=None):
     '''
     Calls AIS service fetchEventArray
     
@@ -329,7 +161,7 @@ def event_array_service(params=None, ret_if_local=False):
     the Event handling mechanism.
     '''
     params['service'] = 'fetchEventArray'
-    call_ais_service(params=params, ret_if_local=ret_if_local)
+    call_ais_service(params=params)
 
 def load_eod_raceday_into_db(datadir=None):
     '''
@@ -379,6 +211,15 @@ def load_eod_ddresult_into_db(datadir=None):
     import ddresult_data
     ddresult_data.load_into_db(datadir=datadir)
 
+def load_eod_racedayresult_into_db(datadir=None):
+    '''
+    Pass on the call to iterate over all saved (local) 
+    racedayresult files and save the data into database.
+    '''
+    import racedayresult_data
+#    racedayresult_data.load_into_db(datadir=datadir)
+    racedayresult_data.print_all_data(datadir=datadir)
+    
 def eod_download_via_calendar(params=None):
     '''
     The purpose of this method is to fetch historic
@@ -405,7 +246,9 @@ def eod_download_via_calendar(params=None):
         'V86':'V86'
     }
 
-    raceday_calendar_service(params=params, ret_if_local=True)
+    raceday_calendar_service(params=params)
+    # Download further down rely on racedays in database
+    load_eod_raceday_into_db(params['datadir'])
     event_array_service(params=params)
     racedays = db.Raceday.read_all()
 #    now = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -446,13 +289,13 @@ def eod_download_via_calendar(params=None):
             racing_card_service(
                 params=params, 
                 date=date, 
-                track=track_id,
+                track_id=track_id,
             )
             
             track_bet_info_service(
                 params=params, 
                 date=date, 
-                track=track_id,
+                track_id=track_id,
             )
             
             raceday_result_service(
@@ -468,12 +311,12 @@ def eod_download_via_calendar(params=None):
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track=track_id, 
+                        track_id=track_id, 
                     )
                     
                     result_service(
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track=track_id,
+                        track_id=track_id,
                     )
