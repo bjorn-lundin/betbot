@@ -51,7 +51,7 @@
 
 with Sattmate_Types; use Sattmate_Types;
 
---with Sattmate_Calendar;
+with Sattmate_Calendar;
 
 package General_Routines is
 
@@ -162,5 +162,31 @@ package General_Routines is
 
 
 
+   -- Routines for converting a date/time/duration to and from Sattmate_Calendar.Time_Type
+  function XML_Time(Time : String) return Sattmate_Calendar.Clock_Type ;
+  function XML_Time(Time : Sattmate_Calendar.Clock_Type) return String ;
+--  function XML_Duration(Dur : String) return Sattmate_Calendar.Time_Type ;
+  function XML_Duration(Dur : Sattmate_Calendar.Time_Type) return String ;
+    ----------------------------------------------------------
+  Invalid_Date_Or_Time_Part : exception;
+   -- Is raised by the XML_Duration returning a Time_Type, if the string is not on the form
+   -- from <http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#duration>
+   -- The lexical representation for duration is the [ISO 8601] extended format
+   -- PnYnMnDTnHnMnS, 
+   -- where nY represents the number of years, 
+   -- nM the number of months, 
+   -- nD the number of days, 
+   -- 'T' is the date/time separator,
+   -- nH the number of hours, 
+   -- nM the number of minutes and 
+   -- nS the number of seconds. 
+   -- The number of seconds can include decimal digits to arbitrary precision'
+   -- It is also raised if values larger that Integer_2'last is used, ie 
+   -- PT35000S will raise it but PT3000S will return '01-Jan-1901 08:20:00'
+   -- This routine is best with time, but works, to some extent, with dates too.
+   -- For duration use, Time_Type_First is used as zero-date, so
+   -- '01-Jan-1901 00:00:00' should be interpreted as 0 duration but 
+   -- '02-Jan-1901 04:20:00' should be interpreted as 1 day 4 hours and 20 minutes
+   -- (given by the string PT20H30000S, which is better written as P1DT4H20M)
 
 end General_Routines;
