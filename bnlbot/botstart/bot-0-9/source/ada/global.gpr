@@ -33,6 +33,7 @@ project Global is
 
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
+                                              "-gnatovU",
                                               "-O0",
                                               "-gnatwlaKW");
 
@@ -68,7 +69,7 @@ project Global is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
+      for Default_Switches ("ada") use ("-k","-g", "-s", "-j1"); -- use 1 cpu
    end Builder;
 
 --   for Object_Dir use "objects";

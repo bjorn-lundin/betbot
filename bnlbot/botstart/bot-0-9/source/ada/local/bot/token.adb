@@ -1,5 +1,5 @@
 with GNAT.Sockets;
-with Ada.Text_IO;
+with Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Streams; use Ada.Streams;
 with Ini;
@@ -11,7 +11,8 @@ package body Token is
   package EV renames Ada.Environment_Variables;
 
   procedure Login(A_Token : in out Token_Type) is
-    Host : constant String := "nonodev.com";
+--    Host : constant String := "nonodev.com";
+    Host : constant String := "localhost";
     Host_Entry : Gnat.Sockets.Host_Entry_Type
                := GNAT.Sockets.Get_Host_By_Name(Host);
 
@@ -27,13 +28,28 @@ package body Token is
      Address.Port := 27_123;
      GNAT.Sockets.Create_Socket (Socket);
      GNAT.Sockets.Connect_Socket (Socket, Address);
+     
+     Channel := Gnat.Sockets.Stream (Socket);
      --get from inifile
-     String'Write (Channel,
+    Text_Io.Put_Line("before read");
+    declare
+       s : String := 
          "username=" & Ini.Get_Value("betfair","username","Not_Found") &
          ",password=" & Ini.Get_Value("betfair","password","Not_Found") &
          ",productid=" & Ini.Get_Value("betfair","product_id","Not_Found") &
-         ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found")
-     );
+         ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found");
+    begin        
+      Text_Io.Put_Line(S);
+      String'Write (Channel,s);
+    end ;
+    Text_Io.Put_Line("after read");
+    
+--    String'Write (Channel,
+--         "username=" & Ini.Get_Value("betfair","username","Not_Found") &
+--         ",password=" & Ini.Get_Value("betfair","password","Not_Found") &
+--         ",productid=" & Ini.Get_Value("betfair","product_id","Not_Found") &
+--         ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found")
+--     );
      --get the reply
      GNAT.Sockets.Receive_Socket(Socket, Data, Size);
      A_Token.The_Token := Null_Unbounded_String;
@@ -75,5 +91,5 @@ package body Token is
   --------------------------------------------------------
 
 begin
-  Ini.Load(Ev.Value("BOT_START") & "/user/" & EV.Value("BOT_USER") & "login.ini");
+  Ini.Load(Ev.Value("BOT_START") & "/user/" & EV.Value("BOT_USER") & "/login.ini");
 end Token;
