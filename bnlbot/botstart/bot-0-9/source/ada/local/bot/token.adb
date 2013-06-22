@@ -80,16 +80,21 @@ package body Token is
   end Login;
 
   --------------------------------------------------------
-  function  Id (A_Token : Token_Type) return String is
+  function  Get(A_Token : Token_Type) return String is
   begin
     if A_Token.Token_Is_Set then
       return To_String(A_Token.The_Token);
     else
       raise Not_Valid_Token;
     end if;
-  end Id;
+  end Get;
   --------------------------------------------------------
-
+  procedure Set (A_Token : in out Token_Type; The_Token : String ) is
+  begin
+    A_Token.The_Token    := To_Unbounded_String(The_Token);
+    A_Token.Token_Is_Set := True;
+  end Set;
+  -------------------------------------------------------------
 begin
   Ini.Load(Ev.Value("BOT_START") & "/user/" & EV.Value("BOT_USER") & "/login.ini");
 end Token;

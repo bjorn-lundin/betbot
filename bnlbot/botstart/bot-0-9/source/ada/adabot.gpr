@@ -1,5 +1,5 @@
 with "global";
-with "aws.gpr";
+with "aws";
 project Adabot is
 
    Sub_System := "bot";
@@ -13,6 +13,7 @@ project Adabot is
    for Main use ("ini_reader.adb",
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
+                 "markets_fetcher_loop.adb",
                  "test_pio.adb",
                  "sql_ifc_leak_finder.adb");
 
@@ -23,18 +24,6 @@ project Adabot is
    package Linker is
       for Default_Switches ("ada") use Global.Linker'Default_Switches ("ada") & ("-laws");
    end Linker;
-
---   package Naming is
---     --  Configuration for GNU/Linux using GNU TLS for strong crypto
---     for Body ("AWS.Net.SSL")                    use "aws-net-ssl__gnutls.adb";
---     for Body ("AWS.Net.SSL.Certificate")        use "aws-net-ssl-certificate__gnutls.adb";
---     for Body ("AWS.Net.Std")                    use "aws-net-std__gnat.adb";
---     for Body ("AWS.OS_Lib")                     use "aws-os_lib__gnat.adb";
---     for Body ("AWS.Translator.Conversion")      use "aws-translator-conversion__f.adb";
---     for Spec ("SSL.Thin")                       use "ssl-thin__gnutls.ads";
---     for Spec ("Templates_Parser.Configuration") use "templates_parser-configuration__aws.ads";
---   end Naming;
-
 
 
 end Adabot;
