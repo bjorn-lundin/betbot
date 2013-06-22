@@ -126,13 +126,18 @@ def print_all_data(datadir=None):
     for filepath in racingcard_filelist:
         filename = util.get_filename_from_path(filepath)
         LOG.debug('Parsing ' + util.get_filename_from_path(filepath))
+        xml_string = util.get_cleaned_xml_string(filepath=filepath)
         
         # Convenience flag when developing
         if False:
-            xml = util.clean_xml_namespaces(filepath)
-            util.write_file(data=xml, filepath=filename, encoding='utf-8')
-        
-        root = util.get_xml_object(filepath)
+            util.write_file(
+                data=xml_string, 
+                filepath=filename, 
+                encoding='utf-8'
+            )
+            exit(0)
+         
+        root = util.xml_string_to_object(xml_string=xml_string)
         date_data = root.Body.fetchRacingCardResponse.result.date
         print(date_data.year.text)
         print(date_data.month.text)

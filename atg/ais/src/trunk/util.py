@@ -12,7 +12,8 @@ import errno
 import subprocess as sp
 import aws_services
 import codecs
-from lxml import objectify
+from lxml import objectify, etree
+import re
 
 LOG = logging.getLogger('AIS')
 
@@ -211,26 +212,6 @@ def create_directories(dirs=None):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-
-# Compiling regexp on global level for performance
-import re
-CLEANXML_1 = re.compile(ur'<\?.*?\?>\n')
-CLEANXML_2 = re.compile(ur'(</{0,1}).+?:')
-CLEANXML_3 = re.compile(ur'\Wxsi:.*?=".*?"')
-
-def clean_xml_namespaces(xmlfile=None, savename=None):
-    '''
-    Removes namespace data in xml file
-    '''
-    xml = read_file(xmlfile, encoding='utf-8')
-    xml = CLEANXML_1.sub(ur'', xml, count=1)
-    xml = CLEANXML_2.sub(ur'\1', xml)
-    xml = CLEANXML_3.sub(ur'', xml)
-    if savename:
-        filehandle = open(savename, 'w')
-        filehandle.write(xml)
-        filehandle.close()
-    return xml
 
 def get_filename_from_path(path=None):
     return os.path.basename(path)
@@ -458,6 +439,55 @@ def email_log_stats_and_errors(logdir=None, logfile=None, datadir=None,
 # Xml parser implementation                           #
 #######################################################
 def get_xml_object(filepath=None):
-    xml = clean_xml_namespaces(filepath)
-    xml_object = objectify.fromstring(xml)
-    return xml_object
+    xml_string = get_cleaned_xml_string(filepath=filepath)
+    root = objectify.fromstring(xml_string)
+    return root
+
+# Compiling regexp on global level for performance
+CLEANXML = re.compile(ur'\W(type|nil)=".*?"')
+
+def get_cleaned_xml_string(filepath=None):
+    '''
+    Reads a xml file and removes namespaces, types and nil before 
+    returning the data as a string.
+    
+    Resulting xml when downloading (calling the AIS web services) with
+    raw HTTP client (not suds) only needs the xslt transformation to 
+    clean it up. On the other hand, resulting xml when using suds require:
+    1) etree.XMLParser(recover=True)
+    2) CLEANXML regular expression to finish the job on type: and nil:
+    '''
+    xslt = '''
+        <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output method="xml" indent="no"/>
+        <xsl:template match="/|comment()|processing-instruction()">
+            <xsl:copy>
+              <xsl:apply-templates/>
+            </xsl:copy>
+        </xsl:template>
+        <xsl:template match="*">
+            <xsl:element name="{local-name()}">
+              <xsl:apply-templates select="@*[not(name()='xsi:type')][not(name()='xsi:nil')]|node()"/>
+            </xsl:element>
+        </xsl:template>
+        <xsl:template match="@*">
+            <xsl:attribute name="{local-name()}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+        </xsl:template>
+        </xsl:stylesheet>
+        '''
+    parser = etree.XMLParser(recover=True)
+    root = etree.parse(filepath, parser=parser)
+    xslt_doc=etree.fromstring(xslt)
+    transform=etree.XSLT(xslt_doc)
+    root=transform(root)
+    cleaned_xml = CLEANXML.sub(ur'', etree.tostring(root, pretty_print=True))
+    return cleaned_xml
+
+def xml_string_to_object(xml_string=None):
+    '''
+    Convert xml string to lxml object
+    '''
+    root = objectify.fromstring(xml_string)
+    return root
