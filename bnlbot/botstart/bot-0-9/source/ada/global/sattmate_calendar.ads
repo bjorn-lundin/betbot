@@ -305,6 +305,7 @@ package Sattmate_Calendar is
       return String;
 
    function String_Date_ISO (Date : in Time_Type) return String ;
+   function String_Date_Time_ISO (Date : in Time_Type; TZ : String := "Z") return String ;
 
 
    function String_Time
