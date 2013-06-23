@@ -14,6 +14,7 @@ import aws_services
 import codecs
 from lxml import objectify, etree
 import re
+import HTMLParser
 
 LOG = logging.getLogger('AIS')
 
@@ -443,8 +444,9 @@ def get_xml_object(filepath=None):
     root = objectify.fromstring(xml_string)
     return root
 
-# Compiling regexp on global level for performance
+# Stuff on global level for performance
 CLEANXML = re.compile(ur'\W(type|nil)=".*?"')
+HTML_PARSER = HTMLParser.HTMLParser()
 
 def get_cleaned_xml_string(filepath=None):
     '''
@@ -483,6 +485,7 @@ def get_cleaned_xml_string(filepath=None):
     transform=etree.XSLT(xslt_doc)
     root=transform(root)
     cleaned_xml = CLEANXML.sub(ur'', etree.tostring(root, pretty_print=True))
+    cleaned_xml = HTML_PARSER.unescape(cleaned_xml)
     return cleaned_xml
 
 def xml_string_to_object(xml_string=None):
