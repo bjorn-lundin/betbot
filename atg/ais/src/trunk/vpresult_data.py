@@ -90,7 +90,7 @@ def print_all_data(datadir=None):
         # Convenience flag when developing
         if False:
             util.write_file(
-                data=xml_string, 
+                data=util.get_html_unescape(html_string=xml_string), 
                 filepath=filename, 
                 encoding='utf-8'
             )

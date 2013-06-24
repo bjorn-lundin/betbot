@@ -485,7 +485,6 @@ def get_cleaned_xml_string(filepath=None):
     transform=etree.XSLT(xslt_doc)
     root=transform(root)
     cleaned_xml = CLEANXML.sub(ur'', etree.tostring(root, pretty_print=True))
-    cleaned_xml = HTML_PARSER.unescape(cleaned_xml)
     return cleaned_xml
 
 def xml_string_to_object(xml_string=None):
@@ -494,3 +493,6 @@ def xml_string_to_object(xml_string=None):
     '''
     root = objectify.fromstring(xml_string)
     return root
+
+def get_html_unescape(html_string=None):
+    return HTML_PARSER.unescape(html_string)
