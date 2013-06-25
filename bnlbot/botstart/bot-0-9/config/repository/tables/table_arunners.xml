@@ -3,10 +3,11 @@
     <Table Desc="collected runners " Name="ARUNNERS" Tablespace="" >
         <Column Name="marketid"           Size="11" Type="1"  AllowNull="0" Description="market id"/>
         <Column Name="selectionid"        Size="9"  Type="2"  AllowNull="0" Description="selection_id"/>
-        <Column Name="index"              Size="9"  Type="2"  AllowNull="1" Description="index"/>
+        <Column Name="sortprio"           Size="9"  Type="2"  AllowNull="0" Description="sortprio"/>
+        <Column Name="handicap"           Size="8"  Type="6"  AllowNull="0" Description="handicap"/>
         <Column Name="runnername"         Size="50" Type="1"  AllowNull="0" Description="runner_name"/>
         <Column Name="runnernamestripped" Size="50" Type="1"  AllowNull="1" Description="runner_name without startnum"/>
-        <Column Name="sortprio"           Size="2"  Type="1"  AllowNull="1" Description="startnum from runnername"/>
+        <Column Name="runnernamenum"      Size="2"  Type="1"  AllowNull="1" Description="startnum in runner name"/>
         <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="marketid,selectionid" type="primary"/>

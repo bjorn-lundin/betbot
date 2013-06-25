@@ -1531,11 +1531,11 @@ package body Sattmate_Calendar is
    end To_String;
 
    
-   function String_Date_Time_ISO (Date : in Time_Type; TZ : String := "Z") return String is
-     D : String := String_Date_ISO (Date);
-     T : String := String_Time(Date, Milliseconds => True);
+   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z") return String is
+     Da : String := String_Date_ISO (Date);
+     Ti : String := String_Time(Date, Milliseconds => True);
    begin
-     return D & 'T' & T & TZ;
+     return Da & T & Ti & TZ;
    end String_Date_Time_ISO;
    
 end Sattmate_Calendar;

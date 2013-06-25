@@ -3,6 +3,9 @@
 
 package Posix1 is
 
+
+
+
   type BYTE is range 0..255;
   for BYTE'SIZE use 8;
 
@@ -16,9 +19,14 @@ package Posix1 is
   for INT'SIZE use 32;
 
 --------------------------------------------------------------------
+  type MODE_T is range 0..2_147_483_647;
+  for MODE_T'SIZE use 32;
+  
+  type SIZE_T is range -2_147_483_648..2_147_483_647;
+  for SIZE_T'SIZE use 32;
 
 
-  type Pid_T is range 0..2_147_483_647;
+  type Pid_T is range -1 .. 2_147_483_647;
   for Pid_T'SIZE use 32;
 
   O_RDONLY : Int := 8#0#;
@@ -45,10 +53,25 @@ package Posix1 is
 
 
   function Getpid return Pid_T;
+  function Setsid return Pid_T;
+  function Fork return Pid_T;
+  Fork_Failed : exception;
+  
+  function Umask(Mask : Mode_T) return Mode_T;
+  procedure Do_Exit(Status : int);
+  procedure Daemonize ;
 
+  procedure Perror (Msg : String ) ;
+  
+  
 private
 
-  pragma Import (C, GETPID, "getpid");
+  pragma Import (C, Getpid ,"getpid");
+  pragma Import (C, Setsid, "setsid");
+  pragma Import (C, Fork, "fork");
+  pragma Import (C, Umask, "umask");
+  pragma Import (C, Do_Exit, "_exit");
+
 
 end Posix1;
 

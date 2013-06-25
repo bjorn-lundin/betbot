@@ -22,7 +22,7 @@ for f in $file_list ; do
   file_list_2=$(ls *horse*.csv)
   for f2 in $file_list_2 ; do
     # no australian races, and no IN_PLAY
-    cat $f2 | grep -v AUS | grep -v IP  > $f2.horses
+    cat $f2 | grep -v AUS | grep -v IP | grep "TO BE PLACED" > $f2.horses
     python ../../betfair_historic_data_importer.py --file=$f2.horses
     rm $f2 $f2.horses
   done

@@ -394,7 +394,7 @@ namespace eval Repo_Utils {
           9  {return "integer"}
           10 {return "date"}
           11 {return "time without time zone"}
-          15 {return "timestamp without time zone"}
+          15 {return "timestamp(3) without time zone"}
           23 {return "varchar"}
           24 {return "varchar"}
           26 {return "bytea"}

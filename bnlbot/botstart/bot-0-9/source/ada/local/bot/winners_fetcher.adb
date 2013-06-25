@@ -29,6 +29,9 @@ with General_Routines;
 with Table_Awinners;
 with Table_Anonrunners;
 
+with Posix1;
+
+
 procedure Winners_Fetcher is
 
   type Selection_Type is record
@@ -224,7 +227,7 @@ procedure Winners_Fetcher is
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     Eol : Boolean := False;
   begin
-    Log("----------- Insert_Into_Db start --------------------");
+--    Log("----------- Insert_Into_Db start --------------------");
     Sql.Start_Read_Write_Transaction (T);
     Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     loop
@@ -253,7 +256,7 @@ procedure Winners_Fetcher is
     end loop; 
     
     Sql.Commit (T);    
-    Log("----------- Insert_Into_Db stop --------------------");
+--    Log("----------- Insert_Into_Db stop --------------------");
   exception
     when Sql.Duplicate_Index =>
       Sql.Rollback(T);
@@ -277,6 +280,7 @@ procedure Winners_Fetcher is
   R : Aws.Response.Data;
   
 begin
+    Posix1.Daemonize;
 
     Sql.Connect
         (Host     => "192.168.0.13",
@@ -284,7 +288,6 @@ begin
          Db_Name  => "betting",
          Login    => "bnl",
          Password => "bnl");
-
 
     if Get_Horses then
       R := Aws.Client.Get(URL => URL_HORSES);
@@ -311,9 +314,12 @@ begin
     end if;
 
     Sql.Close_Session;
+    Log("db closed");
+    Posix1.Do_Exit(0); -- terminate
     
 exception
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
+    Posix1.Do_Exit(0); -- terminate 
 end Winners_Fetcher;
 

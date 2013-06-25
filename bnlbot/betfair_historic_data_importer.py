@@ -75,7 +75,7 @@ class Betfair_Historic_Data_Importer(object):
         temp = dict(zip(keys, vals))
         for t in temp :
            v = temp[t].replace('"','')
-           temp[t] = v.trim()
+           temp[t] = v.strip()
 
 #        print 'line', line
 #        print 'keys/val'
@@ -100,6 +100,8 @@ class Betfair_Historic_Data_Importer(object):
         na = re.compile('^[0-9][a-z]', re.IGNORECASE)
         num_alfa = na.match(temp['EVENT'])
         if num_alfa :
+            row_is_ok = True
+        elif temp['EVENT'] == 'TO BE PLACED' :
             row_is_ok = True
         else :
             an = re.compile('^[a-z][0-9]', re.IGNORECASE)
