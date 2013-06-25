@@ -1,5 +1,4 @@
 with "global";
-with "aws";
 project Adabot is
 
    Sub_System := "bot";

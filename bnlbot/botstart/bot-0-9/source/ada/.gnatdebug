@@ -1,0 +1,13 @@
+MAIN=yes >/tmp/gnat_trace.log
+POSIX1=no >/tmp/gnat_trace.log
+
+--  decorators 
+DEBUG.COLORS=yes
+DEBUG.ABSOLUTE_TIME=yes
+DEBUG.COUNT=no
+DEBUG.ELAPSED_TIME=yes
+
+--  Applies to FIRST.EXCEPTIONS, LAST.EXCEPTIONS,...
+--  and forces them to be displayed on stdout
+*.EXCEPTIONS=yes > stdout
+

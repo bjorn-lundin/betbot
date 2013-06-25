@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Desc="non runners of market" Name="ANONRUNNERS" Tablespace="" >
+        <Column Name="marketid"           Size="11" Type="1"  AllowNull="0" Description="market id"/>
+        <Column Name="name"               Size="50" Type="1"  AllowNull="0" Description="selection_id"/>
+        <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="marketid,name" type="primary"/>
+    </Table>
+</MaAstro>
+
