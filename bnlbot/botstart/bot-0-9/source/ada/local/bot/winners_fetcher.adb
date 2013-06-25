@@ -2,7 +2,7 @@
 --with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
-with Logging; use Logging;
+--  with Logging; use Logging;
 --with Text_Io;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
@@ -31,9 +31,12 @@ with Table_Anonrunners;
 
 with Posix1;
 
+with GNATCOLL.Traces;
+
 
 procedure Winners_Fetcher is
 
+  Me : constant GNATCOLL.Traces.Trace_Handle :=  GNATCOLL.Traces.Create ("Main");  
   type Selection_Type is record
     Id   : Integer_4 := 0;
     Name : Unbounded_String := Null_Unbounded_String;
@@ -67,7 +70,6 @@ procedure Winners_Fetcher is
     Market           : Market_Type;
   end record;
 
-  procedure Print(Handler : in out Reader) ;
   procedure Insert_Into_Db(Handler : in out Reader) ;
 
   overriding procedure Start_Document (Handler : in out Reader);
@@ -99,17 +101,15 @@ procedure Winners_Fetcher is
   overriding procedure Start_Document (Handler : in out Reader) is
     pragma Unreferenced(Handler);
   begin
-    Change_Indent(2);
-    Log(Indent & "--------------------------" );
-    Log(Indent & "Start_Document" );
+    null;
+    --GNATCOLL.Traces.Increase_Indent(Me, "Start_Document");
   end Start_Document;
 
   overriding procedure End_Document (Handler : in out Reader) is
     pragma Unreferenced(Handler);
   begin
-    Log(Indent & "--------------------------" );
-    Log(Indent & "End_Document"  );
-    Change_Indent(-2);
+    null;
+    --GNATCOLL.Traces.Decrease_Indent(Me, "End_Document");  
   end End_Document;
 
 
@@ -124,6 +124,7 @@ procedure Winners_Fetcher is
     pragma Warnings(Off,Atts);
     The_Tag : constant String := Local_Name;
   begin
+    --GNATCOLL.Traces.Increase_Indent(Me, "Start_Element");
     Handler.Current_Tag := To_Unbounded_String(The_Tag);
 
     if The_Tag = "market" then
@@ -159,10 +160,10 @@ procedure Winners_Fetcher is
     elsif The_Tag = "nonRunner" then
       Non_Runners.Insert_At_Tail(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner);
     elsif The_Tag = "market" then
---    Print(Handler);
     Insert_Into_Db(Handler);
     end if;
 
+    --GNATCOLL.Traces.Decrease_Indent(Me,"End_Element");  
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
@@ -171,6 +172,7 @@ procedure Winners_Fetcher is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
     use General_Routines;
   begin
+    --GNATCOLL.Traces.Trace (Me, "Characters");
     if The_Tag = "marketType" then
       Handler.Market.Market_Type := Handler.Market.Market_Type & To_Unbounded_String(Trim(Ch));
     elsif The_Tag = "winner" then
@@ -188,35 +190,36 @@ procedure Winners_Fetcher is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
 
   begin
-    Log(Indent & "Ignorable_Whitespace event " & The_Tag & " The_Value  |" & Ch & "|");
+    null;
+   -- GNATCOLL.Traces.Trace (Me, "Ignorable_Whitespace " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
 
-  procedure Print(Handler : in out Reader) is
-  --  use Logging;
-    Eol : Boolean := False;
-  begin
-    Log("-------------------------------");
-    Log("Market_Id    " & Handler.Market.Market_Id'Img);
-    Log("Display_Name " & To_String(Handler.Market.Display_Name));
-    Log("Market_Type " & To_String(Handler.Market.Market_Type));
-    
-    Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
-    loop
-      exit when Eol;
-      Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
-      Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
-    end loop;
-    
-    Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
-    loop
-      exit when Eol;
-      Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
-      Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
-    end loop; 
-    
-    Print("");
-  end Print;
+--  procedure Print(Handler : in out Reader) is
+--  --  use Logging;
+--    Eol : Boolean := False;
+--  begin
+--    Log("-------------------------------");
+--    Log("Market_Id    " & Handler.Market.Market_Id'Img);
+--    Log("Display_Name " & To_String(Handler.Market.Display_Name));
+--    Log("Market_Type " & To_String(Handler.Market.Market_Type));
+--    
+--    Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
+--    loop
+--      exit when Eol;
+--      Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+--      Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
+--    end loop;
+--    
+--    Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+--    loop
+--      exit when Eol;
+--      Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
+--      Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
+--    end loop; 
+--    
+--    Print("");
+--  end Print;
   
   
   procedure Insert_Into_Db(Handler : in out Reader) is
@@ -237,7 +240,7 @@ procedure Winners_Fetcher is
       Table_Awinners.Read(Winner, Eos(Awinners));
       if Eos(Awinners) then
         Table_Awinners.Insert(Winner);
-        Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+        GNATCOLL.Traces.Trace (Me, "Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
       end if;            
       Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     end loop;
@@ -250,7 +253,7 @@ procedure Winners_Fetcher is
       Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
       if Eos(Anonrunners) then
         Table_Anonrunners.Insert(Non_Runner);
-        Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
+        GNATCOLL.Traces.Trace (Me,"Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
       end if;      
       Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
     end loop; 
@@ -260,8 +263,7 @@ procedure Winners_Fetcher is
   exception
     when Sql.Duplicate_Index =>
       Sql.Rollback(T);
-      Log("Duplicate index on");
-      Print(Handler);
+      GNATCOLL.Traces.Trace (Me, "Duplicate index");
   end Insert_Into_Db;
 
   
@@ -279,42 +281,57 @@ procedure Winners_Fetcher is
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
   
+  
 begin
+    GNATCOLL.Traces.Parse_Config_File; 
+    GNATCOLL.Traces.Trace (Me, "Start - will become daemon");
     Posix1.Daemonize;
+    GNATCOLL.Traces.Trace (Me, "I'm a daemon now");
 
+    GNATCOLL.Traces.Trace (Me, "connect db");
     Sql.Connect
         (Host     => "192.168.0.13",
          Port     => 5432,
          Db_Name  => "betting",
          Login    => "bnl",
          Password => "bnl");
+    GNATCOLL.Traces.Trace (Me, "connected to db");
+    GNATCOLL.Traces.Trace (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
 
+    
     if Get_Horses then
+      GNATCOLL.Traces.Trace (Me, "Get horses");
       R := Aws.Client.Get(URL => URL_HORSES);
-      Log("----------- Start Horses -----------------" );
+      GNATCOLL.Traces.Trace (Me, "we have the horses");
+--      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
+      GNATCOLL.Traces.Trace (Me, "parse horses");
       My_Reader.Parse(Input);
+      GNATCOLL.Traces.Trace (Me, "horses parsed");
       Close(Input);
-      Log("----------- Stop Horses -----------------" );
-      Log("");
+--      Log("----------- Stop Horses -----------------" );
+--      Log("");
     end if;
 
     if Get_Hounds then    
+      GNATCOLL.Traces.Trace (Me, "Get hounds");
       R := Aws.Client.Get(URL => URL_HOUNDS);
-      Log("----------- Start Hounds -----------------" );
+      GNATCOLL.Traces.Trace (Me, "we have the hounds");
+--      Log("----------- Start Hounds -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
+      GNATCOLL.Traces.Trace (Me, "parse hounds");
       My_Reader.Parse(Input);
+      GNATCOLL.Traces.Trace (Me, "hounds parsed");
       Close(Input);
-      Log("----------- Stop Hounds -----------------" );
-      Log("");
+--      Log("----------- Stop Hounds -----------------" );
     end if;
 
     Sql.Close_Session;
-    Log("db closed");
+    GNATCOLL.Traces.Trace (Me, "db closed");
     Posix1.Do_Exit(0); -- terminate
     
 exception
