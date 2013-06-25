@@ -1,0 +1,38 @@
+set datafile commentschars '#'
+set datafile separator whitespace
+#    gnuplot \
+#            -e "graph_type='weekly'" \
+#            -e "animal='$animal'" \
+#            -e "bet_name='$bet_name'" \
+#            -e "bet_type='$bet_type'" \
+#            -e "index='" + str(simrun.index) + "\'\" \
+#            -e "start_date='$the_date'" \
+#            -e "stop_date='$the_date'" \
+#            -e "datafil='$filname'" \
+#            -e "datadir='$datadir'" plot_simulation.gpl
+
+set terminal png medium size 1024,768 background '#ffffff'
+set output "back_horse.png"
+
+
+set title "Backbets horses 30 jan - 5 may 2013"
+set ylabel "hitratio"
+set yrange [0:90]
+set ytics 5
+
+set y2label "hitratio"
+set y2range [0:90]
+set y2tics 5
+
+set xlabel "price"
+set xrange [1:5]
+set xtics 0.25
+set grid	
+
+plot "back_horse_sorted_uniq.dat" using 1:2  title 'actual hitratio (%)' with lines,   \
+     "back_horse_sorted_uniq.dat" using 1:3 title 'hitratio with 5% comission (%)' with lines, \
+     "back_horse_sorted_uniq.dat" using 1:(100*$5/$4) title 'race distribution (%)' with lines, \
+     "back_horse_sorted_uniq.dat" using 1:(100*$6/$4) title 'won/total races (%)' with lines, \
+     100/x title 'hitratio with no commision (%)' with lines
+
+

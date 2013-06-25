@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INI_READER=$BOT_START/bot-0-5/target/bin/ini_reader
+INI_READER=$BOT_START/bot-0-9/target/bin/ini_reader
 
 
 while getopts "a:u:" opt; do

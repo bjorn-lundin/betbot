@@ -345,7 +345,7 @@ package body Sql is
    function Convert_To_Timestamp (Mytimestamp : String) return Sattmate_Calendar.Time_Type is
       Local_Timestamp : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
    begin -- '2002-01-06 11:22:32.123' or
-      -- '2002-01-06 11:22:32.1' or
+      -- '2002-01-06 11:22:32.12' or
       -- '2002-01-06 11:22:32.1' or
       -- '2002-01-06 11:22:32'
       Local_Timestamp.Year        := Sattmate_Calendar.Year_Type'Value (Mytimestamp (1 .. 4));
@@ -356,9 +356,9 @@ package body Sql is
       Local_Timestamp.Second      := Sattmate_Calendar.Second_Type'Value (Mytimestamp (18 .. 19));
       Local_Timestamp.Millisecond := 0;
       if Mytimestamp'Length = 21 then -- ms like '.1'
-         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 21));
+         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 21) & "00");
       elsif Mytimestamp'Length = 22 then -- ms like '.14'
-         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 22));
+         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 22) & "0");
       elsif Mytimestamp'Length = 23 then -- ms like '.143'
          Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 23));
       end if;
@@ -1289,7 +1289,9 @@ package body Sql is
    procedure Set_Timestamp (Statement : in out Statement_Type;
                             Parameter : in String;
                             Value     : in Sattmate_Calendar.Time_Type) is
-      Local_Time_1 : constant String := Sattmate_Calendar.String_Date_And_Time (Value, Milliseconds => True);
+--      Local_Time_1 : constant String := Sattmate_Calendar.String_Date_And_Time (Value, Milliseconds => True);
+      Local_Time_1 : constant String := Sattmate_Calendar.String_Date_Time_ISO (Date => Value, T => " ", TZ => "");
+      
       --    Local_Time_2 : String(1..6) := (others => ' ');
    begin -- '2002-01-06 11:22:32.123'
       --    Local_Time_2(1..2) := Local_Time_1(1..2);  -- remove ':' from time
@@ -1297,8 +1299,12 @@ package body Sql is
       --    Local_Time_2(5..6) := Local_Time_1(7..8);
 
       --    Statement.Private_Statement.Update_Map(Parameter, Local_Time_2, A_Time);
+      
+--      Ada.Text_Io.Put_Line("Set_Timestamp: '" & Local_Time_1 & "'");
       Statement.Private_Statement.Update_Map (Parameter, Local_Time_1, A_Timestamp);
-
+      
+      
+      
    end Set_Timestamp;
    ------------------------------------------------------------
 
