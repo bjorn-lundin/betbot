@@ -1,3 +1,6 @@
+with "gnatcoll";
+with "aws";
+
 project Global is
 
 --   Os_Architecture := external ("OS_ARCHITECTURE");
@@ -89,8 +92,8 @@ project Global is
 
    for Source_Dirs use ( "local",
                          "global",
-                         "global/tables",
-                         Xml_Source") ;
+                         "global/tables") &
+                         Xml_Source;
 
    package Ide is
       for Compiler_Command ("ada") use "gnatmake";
