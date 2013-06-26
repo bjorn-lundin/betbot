@@ -1,6 +1,3 @@
-with "gnatcoll";
-with "aws";
-
 project Global is
 
 --   Os_Architecture := external ("OS_ARCHITECTURE");
@@ -19,6 +16,7 @@ project Global is
 
 
    Bot_Target := external ("BOT_TARGET", "BOT_TARGET_not_set");
+   Bot_Source := external ("BOT_SOURCE", "BOT_SOURCE_not_set");
 
 
 -- AdaBotRoot
@@ -36,7 +34,6 @@ project Global is
 
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
-                                              "-gnatovU",
                                               "-O0",
                                               "-gnatwlaKW");
 
@@ -72,17 +69,17 @@ project Global is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-k","-g", "-s", "-j1"); -- use 1 cpu
+      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
    end Builder;
 
 --   for Object_Dir use "objects";
    for Object_Dir use "../../target/objects";
 
---   Xml_Source := (Smsk & "/xml/xmlada/dom",
---                  Smsk & "/xml/xmlada/sax",
---                  Smsk & "/xml/xmlada/input_sources",
---                  Smsk & "/xml/xmlada/schema",
---                  Smsk & "/xml/xmlada/unicode",
+   Xml_Source := (Bot_Source & "/ada/global/xmlada/dom",
+                  Bot_Source & "/ada/global/xmlada/sax",
+                  Bot_Source & "/ada/global/xmlada/input_sources",
+                  Bot_Source & "/ada/global/xmlada/schema",
+                  Bot_Source & "/ada/global/xmlada/unicode");
 --                  Smsk & "/xml/xpath",
 --                  Smsk & "/xml/xpath/booch4xia");
 
@@ -92,8 +89,8 @@ project Global is
 
    for Source_Dirs use ( "local",
                          "global",
-                         "global/tables");
-     --                    ,"global/gnatcoll") ;
+                         "global/tables",
+                         Xml_Source") ;
 
    package Ide is
       for Compiler_Command ("ada") use "gnatmake";
