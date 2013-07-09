@@ -3,11 +3,11 @@ with "aws";
 
 project Global is
 
---   Os_Architecture := external ("OS_ARCHITECTURE");
-   type Target_Type is ("lnx_x86", "win_x86", "mac_x64");
+   Os_Architecture := external ("OS_ARCHITECTURE");
+   type Target_Type is ("lnx_x86", "lnx_arm");
 
---   Target_Machine : Target_Type := Os_Architecture;
-   Target_Machine : Target_Type := "lnx_x86";
+   Target_Machine : Target_Type := Os_Architecture;
+--   Target_Machine : Target_Type := "lnx_x86";
 
    type Data_Base_Type is ("POSTGRESQL");
 
@@ -38,15 +38,16 @@ project Global is
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
                                               "-O0",
+                                              "-fstack-check",
+                                              "-gnata",
+                                              "-gnatvoU",
                                               "-gnatwlaKW");
 
    package Compiler is
       case Target_Machine is
          when "lnx_x86" =>
             for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
-         when "win_x86" =>
-            for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
-         when "mac_x64" =>
+         when "lnx_arm" =>
             for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
       end case;
    end Compiler;
@@ -57,16 +58,12 @@ project Global is
 
    package Linker is
       case Data_Base is
-
          when "POSTGRESQL" =>
             case Target_Machine is
                when "lnx_x86" =>
                  for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
-               when "win_x86" =>
+               when "lnx_arm" =>
                  for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
-               when "mac_x64" =>
-                 for Default_Switches ("ada") use ("-L" & Pg_Bin,  "-lpq");
-
             end case;
       end case;
    end Linker;
@@ -77,23 +74,34 @@ project Global is
 
 --   for Object_Dir use "objects";
    for Object_Dir use "../../target/objects";
-
    Xml_Source := (Bot_Source & "/ada/global/xmlada/dom",
                   Bot_Source & "/ada/global/xmlada/sax",
                   Bot_Source & "/ada/global/xmlada/input_sources",
                   Bot_Source & "/ada/global/xmlada/schema",
                   Bot_Source & "/ada/global/xmlada/unicode");
+
 --                  Smsk & "/xml/xpath",
 --                  Smsk & "/xml/xpath/booch4xia");
+
+
+
+      Common_Source_Dirs := ( "local",
+                              "global",
+                              "global/tables");
+
+      case Target_Machine is
+         when "lnx_x86" =>
+            for Source_Dirs use Common_Source_Dirs;
+         when "lnx_arm" =>
+            for Source_Dirs use Common_Source_Dirs & Xml_Source;
+      end case;
+
+
 
 --   Aws_Source := (Smsk & "/utility/aws",
 --                  Smsk & "/utility/aws/choises",
 --                  Smsk & "/utility/aws/" & Target_Machine);
 
-   for Source_Dirs use ( "local",
-                         "global",
-                         "global/tables") &
-                         Xml_Source;
 
    package Ide is
       for Compiler_Command ("ada") use "gnatmake";

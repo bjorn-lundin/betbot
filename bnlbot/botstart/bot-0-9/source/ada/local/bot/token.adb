@@ -5,8 +5,10 @@ with Ada.Streams; use Ada.Streams;
 with Ini;
 with Ada.Environment_Variables;
 pragma Elaborate_All(Ini);
+with GNATCOLL.Traces; use GNATCOLL.Traces;
 
 package body Token is
+  Me : constant GNATCOLL.Traces.Trace_Handle :=  GNATCOLL.Traces.Create ("Token");  
 
   package EV renames Ada.Environment_Variables;
 
@@ -31,31 +33,25 @@ package body Token is
      
      Channel := Gnat.Sockets.Stream (Socket);
      --get from inifile
-    Text_Io.Put_Line("before read");
     declare
-       s : String := 
+       S : String := 
          "username=" & Ini.Get_Value("betfair","username","Not_Found") &
          ",password=" & Ini.Get_Value("betfair","password","Not_Found") &
          ",productid=" & Ini.Get_Value("betfair","product_id","Not_Found") &
          ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found");
     begin        
-      Text_Io.Put_Line(S);
-      String'Write (Channel,s);
+      Trace(Me, "Request: '" & S & "'"); 
+      String'Write (Channel, S);
     end ;
-    Text_Io.Put_Line("after read");
     
---    String'Write (Channel,
---         "username=" & Ini.Get_Value("betfair","username","Not_Found") &
---         ",password=" & Ini.Get_Value("betfair","password","Not_Found") &
---         ",productid=" & Ini.Get_Value("betfair","product_id","Not_Found") &
---         ",vendorid=" & Ini.Get_Value("betfair","vendor_id","Not_Found")
---     );
      --get the reply
      GNAT.Sockets.Receive_Socket(Socket, Data, Size);
      A_Token.The_Token := Null_Unbounded_String;
      for i in 1 .. Size loop
         A_Token.The_Token := A_Token.The_Token & Character'Val(Data(i));
      end loop;
+      Trace(Me, "Reply: '" & To_String(A_Token.The_Token) & "'"); 
+     
      if To_String(A_Token.The_Token) /= "ACCOUNT_CLOSED" and then
         To_String(A_Token.The_Token) /= "ACCOUNT_SUSPENDED" and then
         To_String(A_Token.The_Token) /= "API_ERROR" and then
@@ -94,6 +90,12 @@ package body Token is
     A_Token.The_Token    := To_Unbounded_String(The_Token);
     A_Token.Token_Is_Set := True;
   end Set;
+  -------------------------------------------------------------
+  procedure Unset (A_Token : in out Token_Type) is
+  begin
+    A_Token.The_Token    := Null_Unbounded_String;
+    A_Token.Token_Is_Set := False;
+  end Unset;
   -------------------------------------------------------------
 begin
   Ini.Load(Ev.Value("BOT_START") & "/user/" & EV.Value("BOT_USER") & "/login.ini");

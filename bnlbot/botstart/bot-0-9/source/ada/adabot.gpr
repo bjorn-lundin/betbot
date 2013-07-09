@@ -10,19 +10,19 @@ project Adabot is
    for Source_Dirs use (AL & "/" & Sub_System);
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("ini_reader.adb",
+                 "bot.adb", 
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
+                 "tester.adb",
                  "markets_fetcher_loop.adb",
+                 "check_bot_running.adb",
                  "test_pio.adb",
                  "sql_ifc_leak_finder.adb");
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;
---   package Linker   renames Global.Linker;
+   package Linker   renames Global.Linker;
    package Ide      renames Global.Ide;
-   package Linker is
-      for Default_Switches ("ada") use Global.Linker'Default_Switches ("ada") & ("-laws");
-   end Linker;
 
 
 end Adabot;

@@ -1,47 +1,47 @@
 -------------------------------------------------------------------------------
 ---
 --
---	COPYRIGTH	SattControl AB, Malm|
+--    COPYRIGTH    SattControl AB, Malm|
 --
---	FILENAME	SATTMATE_CALENDAR_SPEC.ADA
+--    FILENAME    SATTMATE_CALENDAR_SPEC.ADA
 --
---	RESPONSIBLE	XCP
+--    RESPONSIBLE    XCP
 --
---	DESCRIPTION	This file contains the specification of the
---			package SATTMATE_CALENDAR. The package contains
---			time conversions and time operations.
---
--------------------------------------------------------------------------------
----
---
---	VERSION		5.0
---	AUTHOR		Peter Sacher
---	VERIFIED BY	Henrik Dannberg
---	DESCRIPTION	Orginal version.
+--    DESCRIPTION    This file contains the specification of the
+--            package SATTMATE_CALENDAR. The package contains
+--            time conversions and time operations.
 --
 -------------------------------------------------------------------------------
 ---
 --
---	VERSION		6.0		17-mar-1994
---	AUTHOR		Henrik Dannberg
---	VERIFIED BY	?
---	DESCRIPTION	NECTAR_TIME_TYPE and NECTAR_DATE_TYPE removed
+--    VERSION        5.0
+--    AUTHOR        Peter Sacher
+--    VERIFIED BY    Henrik Dannberg
+--    DESCRIPTION    Orginal version.
 --
 -------------------------------------------------------------------------------
 ---
 --
---	VERSION		8.2		22-Apr-1999
---	AUTHOR		SNE/BTO
---	VERIFIED BY	?
---	DESCRIPTION	New procedures TO_TIME, TO_INTERVAL, TO_SECONDS.
+--    VERSION        6.0        17-mar-1994
+--    AUTHOR        Henrik Dannberg
+--    VERIFIED BY    ?
+--    DESCRIPTION    NECTAR_TIME_TYPE and NECTAR_DATE_TYPE removed
 --
 -------------------------------------------------------------------------------
 ---
 --
---	VERSION		8.2b		06-Dec-1999
---	AUTHOR		Irene Olsson
---	VERIFIED BY	?
---	DESCRIPTION	Function IS_LEGAL is made available
+--    VERSION        8.2        22-Apr-1999
+--    AUTHOR        SNE/BTO
+--    VERIFIED BY    ?
+--    DESCRIPTION    New procedures TO_TIME, TO_INTERVAL, TO_SECONDS.
+--
+-------------------------------------------------------------------------------
+---
+--
+--    VERSION        8.2b        06-Dec-1999
+--    AUTHOR        Irene Olsson
+--    VERIFIED BY    ?
+--    DESCRIPTION    Function IS_LEGAL is made available
 --
 -------------------------------------------------------------------------------
 ---
@@ -147,12 +147,12 @@ package Sattmate_Calendar is
    In_Parameter_Incorrect : exception;
    --                        raised when the input date is impossible
    --                        (e.g. 1990.02.30) or, in conversions to NECTAR
-   --			  date, the year is less than 1970.
+   --              date, the year is less than 1970.
    Time_Error             : exception;
    --                        raised when the result comes to a date before
    --                        TIME_TYPE_FIRST or after TIME_TYPE_LAST, or the
    --left
-   --			  parameter is less than the right one in subtractions.
+   --              parameter is less than the right one in subtractions.
 
    -- v8.2b Start
    --

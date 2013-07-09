@@ -15,10 +15,14 @@ DBNAME := $(BOT_DATABASE_NAME)
 OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
+PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
+LOCK_DIR_BOT     := $(BOT_TARGET)/locks
+LOG_DIR_BOT     := $(BOT_TARGET)/log
+
 
 .PHONY : json_test adabot tables
 
-all: tables adabot
+all: tables adabot /etc/logrotate.d/bnlbot
 
 
 tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
@@ -29,20 +33,29 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
 
+$(PIPE_DIR_BOT) :
+	mkdir -p $(PIPE_DIR_BOT)
+
+$(LOCK_DIR_BOT) :
+	mkdir -p $(LOCK_DIR_BOT)
+    
+$(LOG_DIR_BOT) :
+	mkdir -p $(LOG_DIR_BOT)
+
 $(OBJECT_DIR_BOT) :
 	mkdir -p $(OBJECT_DIR_BOT)
 
 $(OBJECT_DIR_JSON) :
 	mkdir -p $(OBJECT_DIR_JSON)
 
-json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT) $(EXE_DIR_BOT)/test.json 
-	gnatmake -P json_test
+#json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT) $(EXE_DIR_BOT)/test.json 
+#	gnatmake -P json_test
 
-adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT)
+adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(PIPE_DIR_BOT) $(LOCK_DIR_BOT) $(LOG_DIR_BOT)
 	gnatmake -P adabot
 
-$(EXE_DIR_BOT)/test.json :
-	cp  $(BOT_SOURCE)/ada/local/json/test.json $(EXE_DIR_BOT)/
+#$(EXE_DIR_BOT)/test.json :
+#	cp  $(BOT_SOURCE)/ada/local/json/test.json $(EXE_DIR_BOT)/
     
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
@@ -104,8 +117,25 @@ $(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.
 	cd $(ST) && rm table_anonrunners.ada
 	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
+
+/etc/logrotate.d/bnlbot: 
+	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
+       size 2M \
+       rotate 10 \
+       copytruncate \
+       delaycompress \
+       compress \
+       notifempty \
+       missingok \
+       su bnl bnl \
+    }"
+
+
+
+
+    
 clean:
-	gnatclean -P json_test
+#	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
 	rm $(ST)/table*.ad[abs]

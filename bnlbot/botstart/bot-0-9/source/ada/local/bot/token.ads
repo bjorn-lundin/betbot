@@ -15,9 +15,12 @@ package Token is
   Login_Failed  : exception;
 
   type Token_Type is tagged private;
+  
+  
   procedure Login(A_Token : in out Token_Type) ;
   function  Get (A_Token  :        Token_Type) return String;
   procedure Set (A_Token  : in out Token_Type; The_Token : String);
+  procedure Unset (A_Token : in out Token_Type) ;
   
 private
   type Token_Type is tagged record

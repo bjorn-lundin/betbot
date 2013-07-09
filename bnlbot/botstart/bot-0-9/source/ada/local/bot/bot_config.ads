@@ -1,0 +1,93 @@
+
+with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
+with Sattmate_Types; use Sattmate_Types;
+with Bot_Types ; use Bot_Types;
+--with Simple_List_Class;
+--pragma Elaborate_All(Simple_List_Class);
+
+
+package Bot_Config is
+
+--  type Country_Type is record
+--    Country : String (1..2) := (others => ' ');
+--  end record;  
+
+--  package Country_Pack is new Simple_List_Class(Country_Type);
+
+  
+  type Global_Section_Type is record
+    Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;
+    Delay_Between_Turns_No_Markets  : Float_8 := 7.0;
+    Delay_Between_Turns             : Float_8 := 5.0;
+    Network_Failure_Delay           : Float_8 := 60.0;
+  end record;  
+
+  type Bet_Section_Type is record
+    Max_Daily_Loss   : Max_Daily_Loss_Type    := 0.0;
+    Max_Daily_Profit : Max_Daily_Profit_Type  := 0.0;
+    Back_Price       : Back_Price_Type        := 0.0;
+    Delta_Price      : Delta_Price_Type       := 0.0;
+    Max_Lay_Price    : Max_Lay_Price_Type     := 0.0;
+    Min_Lay_Price    : Min_Lay_Price_Type     := 0.0;
+    Bet_Size         : Bet_Size_Type          := 0.0;
+    Dry_Run          : Boolean                := True;
+    Allow_In_Play    : Boolean                := False;
+    Animal           : Animal_Type            := Horse;     
+    Bet_Type         : Bet_Type_Type          := Back;
+    Max_Num_Runners  : Max_Num_Runners_Type   := 25;
+    Min_Num_Runners  : Min_Num_Runners_Type   := 8;
+    Countries        : Unbounded_String       := Null_Unbounded_String ;
+  end record;  
+  
+  type System_Section_Type is record
+    -- BOT_START is set in .bashrc
+    Bot_Root   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_START/bot-0-9
+    Bot_Config : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/config
+    Bot_Target : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/target
+    Bot_Source : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/source
+    Bot_Script : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
+    Bot_Home   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
+    Daemonize  : Boolean          := True;
+  end record;  
+    
+    
+  type Login_Betfair_Section_Type is record
+    Username   : Unbounded_String := Null_Unbounded_String ; 
+    Password   : Unbounded_String := Null_Unbounded_String ; 
+    Product_Id : Unbounded_String := Null_Unbounded_String ; 
+    Vendor_Id  : Unbounded_String := Null_Unbounded_String ; 
+  end record;  
+    
+  type Login_Database_Section_Type is record
+    Name     : Unbounded_String := Null_Unbounded_String ; 
+    Username : Unbounded_String := Null_Unbounded_String ; 
+    Password : Unbounded_String := Null_Unbounded_String ; 
+    Host     : Unbounded_String := Null_Unbounded_String ; 
+  end record;  
+    
+  type Config_Type is tagged record
+     Bot_Name          : Bot_Name_Type          := Null_Unbounded_String;
+     Bot_Log_File_Name : Bot_Log_File_Name_Type := Null_Unbounded_String;
+     System_Section    : System_Section_Type;
+     Global_Section    : Global_Section_Type; 
+     Bet_Section       : Bet_Section_Type; 
+     Betfair_Section   : Login_Betfair_Section_Type;  
+     Database_Section  : Login_Database_Section_Type;  
+  end record;
+  
+  procedure Read(Cfg : in out Config_Type);
+  procedure Clear(Cfg : in out Config_Type);
+  function To_String(Cfg : Config_Type) return String;
+  
+  
+  
+  Config : Config_Type;
+  
+  procedure Re_Read_Config ;
+
+  
+  
+
+  
+end Bot_Config;
+

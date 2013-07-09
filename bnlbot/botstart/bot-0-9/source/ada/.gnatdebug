@@ -1,5 +1,9 @@
-MAIN=yes >/tmp/gnat_trace.log
-POSIX1=no >/tmp/gnat_trace.log
++
+>&2
+-- MAIN=yes >/tmp/gnat_trace_main_$$.log
+-- POSIX1=no >/tmp/gnat_trace_posix_$$.log
+-- TOKEN=yes >/tmp/gnat_trace_token_$$.log
+-- LOCK=yes >/tmp/gnat_trace_lock_$$.log
 
 --  decorators 
 DEBUG.COLORS=yes
