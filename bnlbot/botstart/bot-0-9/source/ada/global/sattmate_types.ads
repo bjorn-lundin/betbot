@@ -65,6 +65,9 @@ package Sattmate_Types is
    type Integer_2 is range -32_768 .. 32_767;
    for  Integer_2'Size use 16;
 
+   type Word is range 0 .. 2**16-1;
+   for Word'size use 16;
+   
    type Integer_4 is range -2_147_483_648 .. 2_147_483_647;
    for  Integer_4'Size use 32;
 

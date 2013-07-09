@@ -1,9 +1,5 @@
---with Unchecked_Conversion;
---with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
---  with Logging; use Logging;
---with Text_Io;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
 with Aws;
@@ -25,16 +21,29 @@ with Sax.Attributes;
 with Sattmate_Exception;
 with General_Routines;
 
+with Lock ;
 
 with Table_Awinners;
 with Table_Anonrunners;
 
 with Posix1;
 
-with GNATCOLL.Traces;
+
+with Ada.Environment_Variables;
+with Ada.Directories;
+
+
+
+with GNATCOLL.Traces; use GNATCOLL.Traces;
+
+
 
 
 procedure Winners_Fetcher is
+
+  package EV renames Ada.Environment_Variables;
+  package AD renames Ada.Directories;
+
 
   Me : constant GNATCOLL.Traces.Trace_Handle :=  GNATCOLL.Traces.Create ("Main");  
   type Selection_Type is record
@@ -112,6 +121,7 @@ procedure Winners_Fetcher is
     --GNATCOLL.Traces.Decrease_Indent(Me, "End_Document");  
   end End_Document;
 
+  My_Lock  : Lock.Lock_Type;
 
 
   procedure Start_Element(Handler       : in out Reader;
@@ -162,7 +172,6 @@ procedure Winners_Fetcher is
     elsif The_Tag = "market" then
     Insert_Into_Db(Handler);
     end if;
-
     --GNATCOLL.Traces.Decrease_Indent(Me,"End_Element");  
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
@@ -180,7 +189,6 @@ procedure Winners_Fetcher is
     elsif The_Tag = "nonRunner" then
       Handler.Market.Non_Runner.Name := Handler.Market.Non_Runner.Name & To_Unbounded_String(Trim(Ch));
     end if;
-
   end Characters;
 
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
@@ -188,39 +196,13 @@ procedure Winners_Fetcher is
   procedure Ignorable_Whitespace(Handler : in out Reader;
                                  Ch      : Unicode.CES.Byte_Sequence ) is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
-
+    pragma Unreferenced(Ch);
+    pragma Unreferenced(The_Tag);
   begin
     null;
    -- GNATCOLL.Traces.Trace (Me, "Ignorable_Whitespace " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
-
---  procedure Print(Handler : in out Reader) is
---  --  use Logging;
---    Eol : Boolean := False;
---  begin
---    Log("-------------------------------");
---    Log("Market_Id    " & Handler.Market.Market_Id'Img);
---    Log("Display_Name " & To_String(Handler.Market.Display_Name));
---    Log("Market_Type " & To_String(Handler.Market.Market_Type));
---    
---    Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
---    loop
---      exit when Eol;
---      Log("Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
---      Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
---    end loop;
---    
---    Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
---    loop
---      exit when Eol;
---      Log("Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
---      Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
---    end loop; 
---    
---    Print("");
---  end Print;
-  
   
   procedure Insert_Into_Db(Handler : in out Reader) is
     T          : Sql.Transaction_Type;
@@ -266,7 +248,6 @@ procedure Winners_Fetcher is
       GNATCOLL.Traces.Trace (Me, "Duplicate index");
   end Insert_Into_Db;
 
-  
 ----------------------------------------------
 
   My_Reader   : Reader;
@@ -280,13 +261,17 @@ procedure Winners_Fetcher is
   get_hounds : Boolean := True;
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
-  
-  
 begin
-    GNATCOLL.Traces.Parse_Config_File; 
-    GNATCOLL.Traces.Trace (Me, "Start - will become daemon");
+    if AD.Exists(EV.Value("BOT_CONFIG") & "/log/winners_fetcher.cfg") then
+      GNATCOLL.Traces.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/winners_fetcher.cfg"); 
+    elsif AD.Exists(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg") then
+      GNATCOLL.Traces.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg"); 
+    else
+      raise Program_Error with "No log config file found"; 
+    end if;  
+    
     Posix1.Daemonize;
-    GNATCOLL.Traces.Trace (Me, "I'm a daemon now");
+    My_Lock.Take("winners_fetcher");
 
     GNATCOLL.Traces.Trace (Me, "connect db");
     Sql.Connect
@@ -298,10 +283,11 @@ begin
     GNATCOLL.Traces.Trace (Me, "connected to db");
     GNATCOLL.Traces.Trace (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
 
-    
     if Get_Horses then
       GNATCOLL.Traces.Trace (Me, "Get horses");
-      R := Aws.Client.Get(URL => URL_HORSES);
+      R := Aws.Client.Get(URL      => URL_HORSES,
+                          Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
+
       GNATCOLL.Traces.Trace (Me, "we have the horses");
 --      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
@@ -317,7 +303,9 @@ begin
 
     if Get_Hounds then    
       GNATCOLL.Traces.Trace (Me, "Get hounds");
-      R := Aws.Client.Get(URL => URL_HOUNDS);
+      R := Aws.Client.Get(URL      => URL_HOUNDS,
+                          Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
+
       GNATCOLL.Traces.Trace (Me, "we have the hounds");
 --      Log("----------- Start Hounds -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
@@ -335,6 +323,8 @@ begin
     Posix1.Do_Exit(0); -- terminate
     
 exception
+  when Lock.Lock_Error => 
+    Posix1.Do_Exit(0); -- terminate
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
     Posix1.Do_Exit(0); -- terminate 

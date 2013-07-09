@@ -13,7 +13,8 @@ with Text_io; use Text_io;
 --with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Calendar;
 
-with GNAT.OS_Lib;
+with Ada.Environment_Variables;
+    
 pragma Warnings(Off);
 -- This is probably platform specific.... AIX seems to be ok without...
 -- We REALLY want these, or the pipe stuff does not work...
@@ -27,6 +28,7 @@ pragma Warnings(On);
 with Process_Io_Messages;
 
 package body Process_Io.Pipe is
+  package EV renames Ada.Environment_Variables;
 --  Tmp : Integer := 0;
   Global_Logging : Boolean := False;
   Global_Indent : Integer := 0;
@@ -47,8 +49,7 @@ package body Process_Io.Pipe is
 --    end Sigpipe_Handler;
 --  end SignalHandler;
 
-  Global_Pipe_Directory : String := GNAT.OS_Lib.Normalize_Pathname (Name => "$BOT_TARGET/pipes/", Directory => "");
-  --System_Services.Expand_File_Path("$BOT_TARGET/pipes/");
+  Global_Pipe_Directory : String := EV.Value("BOT_TARGET") & "/pipes/";
 
   type Mode_T is new Integer;
   type Size_T is new Long_Integer;

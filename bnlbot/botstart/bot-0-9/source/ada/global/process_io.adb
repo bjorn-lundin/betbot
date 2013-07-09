@@ -22,6 +22,9 @@ with Ada.Environment_Variables;
 with Binary_Semaphores;
 
 package body Process_Io is
+
+  Global_Process_Name_Is_Set : Boolean := False;
+
   Sem : Binary_Semaphores.Semaphore_Type;
 
   My_Process        : Process_Type    := ((others => ' '), (others => ' '));
@@ -161,16 +164,6 @@ package body Process_Io is
     Process : Process_Type;
     use Ada.Environment_Variables;
   begin
---    if Posix1.Getenv("BOT_NAME")'Length > 0 then
---      Move(Posix1.Getenv("BOT_NAME"),Process.Name,Drop => Right);
---    else
---      Move(Trim(Posix1.Pid_T'Image(Posix1.Getpid),Both),Process.Name,Drop => Right);
---    end if;
---
---    if Posix1.Getenv("BOT_NODE")'Length > 0 then
---      Move(Ada.Characters.Handling.To_Upper(
---                    Posix1.Getenv("BOT_NODE")),Process.Node,Drop => Right);
---    end if;
     if Exists("BOT_NAME") then
       Move(Ada.Characters.Handling.To_Lower(Value("BOT_NAME")),Process.Name,Drop => Right);
     else
@@ -181,8 +174,6 @@ package body Process_Io is
       Move(Ada.Characters.Handling.To_Lower(Value("BOT_NODE")),Process.Node,Drop => Right);
     end if;
     return Process;
-
-
   end Get_Process;
   ---------------------------------------------------
 --  procedure Check_For_Processes_To_Remove is
@@ -220,6 +211,10 @@ package body Process_Io is
   ----------------------------------------------------------
   function This_Process return Process_Type is
   begin
+    if not Global_Process_Name_Is_Set then
+      My_Process := Get_Process;
+      Global_Process_Name_Is_Set := True;
+    end if;
     return My_Process;
   end This_Process;
   ----------------------------------------------------------
@@ -487,6 +482,6 @@ package body Process_Io is
   ----------------------------------------------------------
 
 
-begin
-  My_Process := Get_Process;
+--begin
+--  My_Process := Get_Process;
 end Process_Io;

@@ -1,29 +1,29 @@
 --------------------------------------------------------------------------------
 --
---	COPYRIGHT	SattControl AB, Malm|
+--    COPYRIGHT    SattControl AB, Malm|
 --
---	FILE NAME	SATTMATE_CALENDAR_BODY.ADA
+--    FILE NAME    SATTMATE_CALENDAR_BODY.ADA
 --
---	RESPONSIBLE	XCP
+--    RESPONSIBLE    XCP
 --
---	DESCRIPTION	This file contains the body of the package
---			SATTMATE_CALENDAR. The package contains time
---			conversions and time operations.
---
---------------------------------------------------------------------------------
---
---	VERSION		5.0
---	AUTHOR		Katarina Pettersson
---	VERIFIED BY	Peter Sacher
---	DESCRIPTION	Original version
+--    DESCRIPTION    This file contains the body of the package
+--            SATTMATE_CALENDAR. The package contains time
+--            conversions and time operations.
 --
 --------------------------------------------------------------------------------
 --
---	VERSION		5.2
---	AUTHOR		Henrik Dannberg		17-jun-1992
---	VERIFIED BY	?
---	DESCRIPTION	Fix added in order to avoid a bug in Alsys Ada
---			version 5.3 on AIX.
+--    VERSION        5.0
+--    AUTHOR        Katarina Pettersson
+--    VERIFIED BY    Peter Sacher
+--    DESCRIPTION    Original version
+--
+--------------------------------------------------------------------------------
+--
+--    VERSION        5.2
+--    AUTHOR        Henrik Dannberg        17-jun-1992
+--    VERIFIED BY    ?
+--    DESCRIPTION    Fix added in order to avoid a bug in Alsys Ada
+--            version 5.3 on AIX.
 --
 --------------------------------------------------------------------------------
 --
@@ -48,9 +48,9 @@
 --
 --------------------------------------------------------------------------------
 -- Vers.  Author
--- 8.2		SNE/BTO       22-Apr-1999
+-- 8.2        SNE/BTO       22-Apr-1999
 --        New procedures TO_TIME, TO_INTERVAL, TO_SECONDS.
--- 8.2b		SNE           18-May-1999
+-- 8.2b        SNE           18-May-1999
 --        Bug in function "-" (LEFT, RIGHT: in TIME_TYPE) return INTERVAL_TYPE.
 --        When counting days in whole month for RIGHT date, year for LEFT date was
 --        used. This caused nbr of days to be incorrect.
@@ -220,7 +220,7 @@ package body Sattmate_Calendar is
                                                    Calendar.Seconds (Date)) * 1000.0);
       Seconds            : Integer_4 := Seconds_Times_1000 / 1000;
    begin
-      if Seconds_Times_1000 = 86_400_000 then	    --v8.1
+      if Seconds_Times_1000 = 86_400_000 then        --v8.1
          Seconds_Times_1000 := Seconds_Times_1000 - 1; --v8.1
          Seconds := Seconds_Times_1000 / 1000;         --v8.1
       end if;                                         --v8.1
