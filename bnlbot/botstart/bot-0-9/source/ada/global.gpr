@@ -1,4 +1,4 @@
-with "gnatcoll";
+
 with "aws";
 
 project Global is
@@ -87,6 +87,7 @@ project Global is
 
       Common_Source_Dirs := ( "local",
                               "global",
+                              "global/gnatcoll",
                               "global/tables");
 
       case Target_Machine is
