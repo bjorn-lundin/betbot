@@ -4,7 +4,7 @@
 with Interfaces.C.Strings;
 with Sattmate_Types; use Sattmate_Types;
 
-package Posix1 is
+package Posix is
 
 
 
@@ -138,6 +138,6 @@ private
   pragma Import (C, Errno, "__get_errno");   
 --ssize_t write(int fd, const void *buf, size_t count); 
   pragma Import(C, Write, "write");
-end Posix1;
+end Posix;
 
 

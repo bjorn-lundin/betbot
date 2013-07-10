@@ -13,11 +13,11 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Text_Io;
 pragma Warnings(Off,Text_Io);
-with Posix1;
+with Posix;
 --with System;
 with Unchecked_Conversion;
 with Process_Io.Pipe;
-pragma Elaborate_All(Posix1);
+pragma Elaborate_All(Posix);
 with Ada.Environment_Variables;
 with Binary_Semaphores;
 
@@ -167,7 +167,7 @@ package body Process_Io is
     if Exists("BOT_NAME") then
       Move(Ada.Characters.Handling.To_Lower(Value("BOT_NAME")),Process.Name,Drop => Right);
     else
-      Move(Trim(Posix1.Pid_T'Image(Posix1.Getpid),Both),Process.Name,Drop => Right);
+      Move(Trim(Posix.Pid_T'Image(Posix.Getpid),Both),Process.Name,Drop => Right);
     end if;
 
     if Exists("BOT_NODE") then

@@ -19,7 +19,7 @@ with Token ;
 with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Posix1;
+with Posix;
 with Table_Aevents;
 with Table_Amarkets;
 with Table_Arunners;
@@ -660,7 +660,7 @@ begin
    Getopt (Config);  -- process the command line
    
    if Ba_Daemon then
-     Posix1.Daemonize;
+     Posix.Daemonize;
    end if;
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
@@ -1064,15 +1064,15 @@ begin
   Trace(Me, "shutting down, close db");
   Sql.Close_Session;
   Trace(Me, "do_exit");
-  Posix1.Do_Exit(0); -- terminate
+  Posix.Do_Exit(0); -- terminate
   Trace(Me, "after do_exit");
  
 exception
   when Lock.Lock_Error => 
-      Posix1.Do_Exit(0); -- terminate
+      Posix.Do_Exit(0); -- terminate
 
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
-    Posix1.Do_Exit(0); -- terminate
+    Posix.Do_Exit(0); -- terminate
 end Markets_Fetcher;
 

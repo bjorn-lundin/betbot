@@ -24,7 +24,7 @@ package body Lock is
     declare
       C_Name : Chars_Ptr := New_String (To_String(A_Lock.Name));
     begin
-      A_Lock.Fd := Posix1.Open(C_name, O_RDWR + O_CREAT , 8#644#); --O_NONBLOCK is not needed
+      A_Lock.Fd := Posix.Open(C_name, O_RDWR + O_CREAT , 8#644#); --O_NONBLOCK is not needed
       Free(C_Name);
     end;    
       
@@ -42,14 +42,14 @@ package body Lock is
     declare
       use Interfaces.C;
       use Sattmate_Calendar;
-      Str : String := Trim(Posix1.Getpid'img & "|" & 
+      Str : String := Trim(Posix.Getpid'img & "|" & 
                       Sattmate_Calendar.String_Date_Time_ISO(Sattmate_Calendar.Clock, " ","") & "|" &  -- now
                       Sattmate_Calendar.String_Date_Time_ISO(Sattmate_Calendar.Clock + (0,0,10,0,0), " ","") & "|" & --expire lock
                       Ascii.LF);
       C_Pid_Str : Chars_Ptr := New_String (Str);
-      Size      : Posix1.Size_t;
+      Size      : Posix.Size_t;
     begin
-      Size := Posix1.Write(A_Lock.Fd, C_Pid_Str, Str'Length);
+      Size := Posix.Write(A_Lock.Fd, C_Pid_Str, Str'Length);
       Free(C_Pid_Str);
       if integer(size) = -1 then
         Trace(Me, "write pid Errno =" & Errno'Img);
