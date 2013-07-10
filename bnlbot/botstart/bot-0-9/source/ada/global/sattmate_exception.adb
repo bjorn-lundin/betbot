@@ -50,7 +50,7 @@ with Ada.Strings.Unbounded;        use Ada.Strings.Unbounded;   --9.8-19244
 --with Ada.Strings.Fixed;            use Ada.Strings.Fixed;       --9.8-19244
 --with Ada.Characters.Handling;      use Ada.Characters.Handling; --9.8-19244
 
-with Text_Io;  use Text_Io;
+with Logging;  use Logging;
 --9.8-19244 with Gnat.Traceback.Symbolic;
 with Sattmate_Calendar;
 --with System_Services;   --9.8-19244
@@ -106,17 +106,12 @@ package body Sattmate_Exception is
 --    end Add_Exe_Text;
 
   begin
-    New_Line;
-    Put_Line("..... SattMate TRACEBACKINFO at: " & Now & " .....");
-    New_Line;
-    Put_Line("Program terminated by an exception propagated out of the main subprogram.");
-    Put("Exception raised : ");  Put_Line(Last_Exception_Name);
-    New_Line;
-    Put_Line("Message : " & Last_Exception_Messsage);
-    Put_Line(Last_Exception_Info);
-    New_Line;
-    Put_Line("...................................................");
-    New_Line;
+    Log("..... SattMate TRACEBACKINFO at: " & Now & " .....");
+    Log("Program terminated by an exception propagated out of the main subprogram.");
+    Log("Exception raised : ");  
+    Log(Last_Exception_Name);
+    Log("Message : " & Last_Exception_Messsage);
+    Log(Last_Exception_Info);
     Append(Command, "addr2line" &
                     " --functions --basenames --exe=" &
                     Ada.Command_Line.Command_Name & " " &
@@ -128,8 +123,8 @@ package body Sattmate_Exception is
 --    Put_Line(To_String(Result_Text));                                 --9.8-19244
     --9.8-19244Put_Line(Gnat.Traceback.Symbolic.Symbolic_Traceback(E));
 --    Put_Line("End of propagation.");
-    New_Line;
-    Put_Line("Command => " & To_String(Command));                   --9.8-19244
+ 
+    Log( To_String(Command));                   --9.8-19244
 
   end Tracebackinfo;
   ------------------------------------------------------------------------------

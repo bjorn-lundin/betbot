@@ -14,10 +14,10 @@ project Adabot is
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
                  "tester.adb",
-                 "markets_fetcher_loop.adb",
-                 "check_bot_running.adb",
-                 "test_pio.adb",
-                 "sql_ifc_leak_finder.adb");
+                 "check_bot_running.adb"
+--                 "test_pio.adb",
+--                 "sql_ifc_leak_finder.adb"
+   );
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;

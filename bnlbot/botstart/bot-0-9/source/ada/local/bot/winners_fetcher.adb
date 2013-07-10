@@ -30,11 +30,11 @@ with Posix;
 
 
 with Ada.Environment_Variables;
-with Ada.Directories;
+--with Ada.Directories;
 
 
 
-with GNATCOLL.Traces; use GNATCOLL.Traces;
+with Logging; use Logging;
 
 
 
@@ -42,10 +42,10 @@ with GNATCOLL.Traces; use GNATCOLL.Traces;
 procedure Winners_Fetcher is
 
   package EV renames Ada.Environment_Variables;
-  package AD renames Ada.Directories;
+--  package AD renames Ada.Directories;
 
 
-  Me : constant GNATCOLL.Traces.Trace_Handle :=  GNATCOLL.Traces.Create ("Main");  
+  Me : constant String := "Main.";  
   type Selection_Type is record
     Id   : Integer_4 := 0;
     Name : Unbounded_String := Null_Unbounded_String;
@@ -111,14 +111,14 @@ procedure Winners_Fetcher is
     pragma Unreferenced(Handler);
   begin
     null;
-    --GNATCOLL.Traces.Increase_Indent(Me, "Start_Document");
+    --Log(Me, "Start_Document");
   end Start_Document;
 
   overriding procedure End_Document (Handler : in out Reader) is
     pragma Unreferenced(Handler);
   begin
     null;
-    --GNATCOLL.Traces.Decrease_Indent(Me, "End_Document");  
+    --Log(Me, "End_Document");  
   end End_Document;
 
   My_Lock  : Lock.Lock_Type;
@@ -134,7 +134,7 @@ procedure Winners_Fetcher is
     pragma Warnings(Off,Atts);
     The_Tag : constant String := Local_Name;
   begin
-    --GNATCOLL.Traces.Increase_Indent(Me, "Start_Element");
+    --Log(Me, "Start_Element");
     Handler.Current_Tag := To_Unbounded_String(The_Tag);
 
     if The_Tag = "market" then
@@ -172,7 +172,7 @@ procedure Winners_Fetcher is
     elsif The_Tag = "market" then
     Insert_Into_Db(Handler);
     end if;
-    --GNATCOLL.Traces.Decrease_Indent(Me,"End_Element");  
+    --Log(Me,"End_Element");  
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
@@ -181,7 +181,7 @@ procedure Winners_Fetcher is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
     use General_Routines;
   begin
-    --GNATCOLL.Traces.Trace (Me, "Characters");
+    --Log (Me, "Characters");
     if The_Tag = "marketType" then
       Handler.Market.Market_Type := Handler.Market.Market_Type & To_Unbounded_String(Trim(Ch));
     elsif The_Tag = "winner" then
@@ -200,7 +200,7 @@ procedure Winners_Fetcher is
     pragma Unreferenced(The_Tag);
   begin
     null;
-   -- GNATCOLL.Traces.Trace (Me, "Ignorable_Whitespace " & The_Tag & " The_Value  |" & Ch & "|");
+   -- Log (Me, "Ignorable_Whitespace " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
   
@@ -222,7 +222,7 @@ procedure Winners_Fetcher is
       Table_Awinners.Read(Winner, Eos(Awinners));
       if Eos(Awinners) then
         Table_Awinners.Insert(Winner);
-        GNATCOLL.Traces.Trace (Me, "Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
+        Log (Me, "Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
       end if;            
       Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     end loop;
@@ -235,7 +235,7 @@ procedure Winners_Fetcher is
       Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
       if Eos(Anonrunners) then
         Table_Anonrunners.Insert(Non_Runner);
-        GNATCOLL.Traces.Trace (Me,"Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
+        Log (Me,"Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
       end if;      
       Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
     end loop; 
@@ -245,7 +245,7 @@ procedure Winners_Fetcher is
   exception
     when Sql.Duplicate_Index =>
       Sql.Rollback(T);
-      GNATCOLL.Traces.Trace (Me, "Duplicate index");
+      Log (Me, "Duplicate index");
   end Insert_Into_Db;
 
 ----------------------------------------------
@@ -262,71 +262,68 @@ procedure Winners_Fetcher is
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
 begin
-    if AD.Exists(EV.Value("BOT_CONFIG") & "/log/winners_fetcher.cfg") then
-      GNATCOLL.Traces.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/winners_fetcher.cfg"); 
-    elsif AD.Exists(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg") then
-      GNATCOLL.Traces.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg"); 
-    else
-      raise Program_Error with "No log config file found"; 
-    end if;  
+    
+    Logging.Open(EV.Value("BOT_HOME") & "/log/winners_fetcher.log");
     
     Posix.Daemonize;
     My_Lock.Take("winners_fetcher");
 
-    GNATCOLL.Traces.Trace (Me, "connect db");
+    Log (Me, "connect db");
     Sql.Connect
         (Host     => "192.168.0.13",
          Port     => 5432,
          Db_Name  => "betting",
          Login    => "bnl",
          Password => "bnl");
-    GNATCOLL.Traces.Trace (Me, "connected to db");
-    GNATCOLL.Traces.Trace (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
+    Log (Me, "connected to db");
+    Log (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
 
     if Get_Horses then
-      GNATCOLL.Traces.Trace (Me, "Get horses");
+      Log (Me, "Get horses");
       R := Aws.Client.Get(URL      => URL_HORSES,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
 
-      GNATCOLL.Traces.Trace (Me, "we have the horses");
+      Log (Me, "we have the horses");
 --      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
-      GNATCOLL.Traces.Trace (Me, "parse horses");
+      Log (Me, "parse horses");
       My_Reader.Parse(Input);
-      GNATCOLL.Traces.Trace (Me, "horses parsed");
+      Log (Me, "horses parsed");
       Close(Input);
 --      Log("----------- Stop Horses -----------------" );
 --      Log("");
     end if;
 
     if Get_Hounds then    
-      GNATCOLL.Traces.Trace (Me, "Get hounds");
+      Log (Me, "Get hounds");
       R := Aws.Client.Get(URL      => URL_HOUNDS,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
 
-      GNATCOLL.Traces.Trace (Me, "we have the hounds");
+      Log (Me, "we have the hounds");
 --      Log("----------- Start Hounds -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
       Open(Aws.Response.Message_Body(R), Unicode.CES.Basic_8bit.Basic_8bit_Encoding,Input);
       My_Reader.Set_Feature(Validation_Feature,False);
-      GNATCOLL.Traces.Trace (Me, "parse hounds");
+      Log (Me, "parse hounds");
       My_Reader.Parse(Input);
-      GNATCOLL.Traces.Trace (Me, "hounds parsed");
+      Log (Me, "hounds parsed");
       Close(Input);
 --      Log("----------- Stop Hounds -----------------" );
     end if;
 
     Sql.Close_Session;
-    GNATCOLL.Traces.Trace (Me, "db closed");
+    Log (Me, "db closed");
+    Logging.Close;
     Posix.Do_Exit(0); -- terminate
-    
-exception
+
+    exception
   when Lock.Lock_Error => 
     Posix.Do_Exit(0); -- terminate
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
+    Logging.Close;
     Posix.Do_Exit(0); -- terminate 
 end Winners_Fetcher;
 
