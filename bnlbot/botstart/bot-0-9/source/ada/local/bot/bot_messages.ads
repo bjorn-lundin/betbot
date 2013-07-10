@@ -1,12 +1,40 @@
 
-with Process_io;
+--with Sattmate_Types;  use Sattmate_Types;
+with Process_Io;
+pragma Elaborate_All(Process_Io);--9.3-0028
+
 
 package Bot_Messages is
 
-  Quit             : constant Process_io.Identity_Type := 1091;
-  Console          : constant Process_io.Identity_Type := 1092;
-  Read_Config      : constant Process_io.Identity_Type := 1093;
-  Bet_Notification : constant Process_io.Identity_Type := 2001;
+  subtype Bot_Messages is Process_Io.Identity_Type range 2000..2099;
 
+  Bet_Notification_Message : constant Process_io.Identity_Type := 2000;
 
+  ----------------------------------------------------------------
+  type Bet_Notification_Record is record
+      Market_Id : String(1..11);
+  end record;
+  for Bet_Notification_Record'alignment use 4;
+  for Bet_Notification_Record use record
+      Market_Id at 0 range 0..8*11-1;
+  end record;
+  for Bet_Notification_Record'Size use 8*11;
+
+  ----------------------------------------------------------------
+  
+  package Bet_Notification_Package is new Process_Io.Generic_Io
+          (Identity        => Bet_Notification_Message,
+           Data_Type       => Bet_Notification_Record,
+           Data_Descriptor => (1 => Process_Io.String_Type(11)));
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  Bet_Notification_Record
+            renames Bet_Notification_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : Bet_Notification_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames Bet_Notification_Package.Send;
+  
+  
 end Bot_Messages;
