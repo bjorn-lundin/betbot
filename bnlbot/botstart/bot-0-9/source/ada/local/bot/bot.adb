@@ -11,6 +11,7 @@ with Bot_Messages;
 with Posix;
 with Logging; use Logging;
 with Process_Io;
+with Core_Messages;
 
 procedure Bot is
   Timeout  : Duration := 120.0; 
@@ -55,10 +56,10 @@ begin
       Log(Me & " msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
       
       case Process_Io.Identity(Msg) is
-        when Bot_Messages.Quit             => exit Main_Loop;
-        when Bot_Messages.Console          => null ; --Enter_Console;
-        when Bot_Messages.Read_Config      => Bot_Config.Re_Read_Config ; 
-        when Bot_Messages.Bet_Notification => null; --Treat_Bet(Msg.Data,My_Token);
+        when Core_Messages.Exit_Message               => exit Main_Loop;
+        when Core_Messages.Enter_Console_Mode_Message => null ; --Enter_Console;
+        when Core_Messages.Read_Config_Message        => Bot_Config.Re_Read_Config ; 
+        when Bot_Messages.Bet_Notification_Message    => null; --Treat_Bet(Msg.Data,My_Token);
         when others => Log(Me & " Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
