@@ -2,7 +2,7 @@
 --with Ada.Directories;
 with Logging;
  
-package body Posix1 is
+package body Posix is
 
   Me : constant string := "Posix1.";  
 
@@ -44,6 +44,6 @@ package body Posix1 is
 --    Dummy2 := Umask(0);
   end Daemonize;
 
-end Posix1;
+end Posix;
 
 

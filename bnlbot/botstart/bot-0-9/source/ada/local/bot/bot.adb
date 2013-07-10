@@ -8,7 +8,7 @@ with Lock; --?
 with Text_io;
 with Sql;
 with Bot_Messages;
-with Posix1;
+with Posix;
 with Logging; use Logging;
 with Process_Io;
 
@@ -21,7 +21,7 @@ begin
   Bot_Config.Config.Read; -- even from cmdline
   
   if Bot_Config.Config.System_Section.Daemonize then
-    Posix1.Daemonize;
+    Posix.Daemonize;
   end if;
   
   Logging.Open(To_String(Bot_Config.Config.Bot_Log_file_Name));

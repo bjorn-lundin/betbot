@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Posix1; use Posix1;
+with Posix; use Posix;
 
 with Ada.Finalization;
 package Lock is
@@ -9,7 +9,7 @@ package Lock is
 private
   type Lock_Type is new Ada.Finalization.Controlled with record
     Name : Unbounded_String := Null_Unbounded_String;
-    Fd    : Posix1.Int := Posix1.Int'First;
+    Fd    : Posix.Int := Posix.Int'First;
   end record;
   
   overriding procedure Finalize(A_Lock : in out Lock_Type);

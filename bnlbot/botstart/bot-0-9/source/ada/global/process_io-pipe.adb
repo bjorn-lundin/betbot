@@ -7,7 +7,7 @@ with Ada.Strings;        use Ada.Strings;
 with Ada.Strings.Fixed;  use Ada.Strings.Fixed;
 with Ada.Characters.Handling;
 with Ada.Directories;
-with Posix1;
+with Posix;
 --with System_Services;
 with Text_io; use Text_io;
 --with Sattmate_Types; use Sattmate_Types;
@@ -59,19 +59,19 @@ package body Process_Io.Pipe is
   --------------------------------------------------------
   function O_RDONLY return Interfaces.C.Int is
   begin
-    return Interfaces.C.Int(Posix1.O_RDONLY);
+    return Interfaces.C.Int(Posix.O_RDONLY);
   end O_RDONLY;
 
   --------------------------------------------------------
   function O_WRONLY return Interfaces.C.Int is
   begin
-    return Interfaces.C.Int(Posix1.O_WRONLY);
+    return Interfaces.C.Int(Posix.O_WRONLY);
   end O_WRONLY;
 
   --------------------------------------------------------
   function O_RDWR return Interfaces.C.Int is
   begin
-    return Interfaces.C.Int(Posix1.O_RDWR);
+    return Interfaces.C.Int(Posix.O_RDWR);
   end O_RDWR;
 
   --------------------------------------------------------

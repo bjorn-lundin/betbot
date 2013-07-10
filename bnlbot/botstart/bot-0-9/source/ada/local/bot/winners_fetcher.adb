@@ -26,7 +26,7 @@ with Lock ;
 with Table_Awinners;
 with Table_Anonrunners;
 
-with Posix1;
+with Posix;
 
 
 with Ada.Environment_Variables;
@@ -270,7 +270,7 @@ begin
       raise Program_Error with "No log config file found"; 
     end if;  
     
-    Posix1.Daemonize;
+    Posix.Daemonize;
     My_Lock.Take("winners_fetcher");
 
     GNATCOLL.Traces.Trace (Me, "connect db");
@@ -320,13 +320,13 @@ begin
 
     Sql.Close_Session;
     GNATCOLL.Traces.Trace (Me, "db closed");
-    Posix1.Do_Exit(0); -- terminate
+    Posix.Do_Exit(0); -- terminate
     
 exception
   when Lock.Lock_Error => 
-    Posix1.Do_Exit(0); -- terminate
+    Posix.Do_Exit(0); -- terminate
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
-    Posix1.Do_Exit(0); -- terminate 
+    Posix.Do_Exit(0); -- terminate 
 end Winners_Fetcher;
 
