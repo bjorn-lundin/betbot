@@ -11,7 +11,7 @@ with Posix;
 --with System_Services;
 with Text_io; use Text_io;
 --with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar;
+--with Sattmate_Calendar;
 
 with Ada.Environment_Variables;
     

@@ -6,7 +6,7 @@
 --------------------------------------------------------------------------------
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Interfaces.C;
-with Ada.Finalization; use Ada.Finalization;
+--with Ada.Finalization; use Ada.Finalization;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
 

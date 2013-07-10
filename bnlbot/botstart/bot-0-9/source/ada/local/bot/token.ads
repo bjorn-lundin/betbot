@@ -17,10 +17,16 @@ package Token is
   type Token_Type is tagged private;
   
   
-  procedure Login(A_Token : in out Token_Type) ;
+  procedure Login(A_Token : in out Token_Type ;
+                  Username   : in     String;
+                  Password   : in     String;
+                  Product_Id : in     String;
+                  Vendor_Id  : in     String) ;
+                  
   function  Get (A_Token  :        Token_Type) return String;
   procedure Set (A_Token  : in out Token_Type; The_Token : String);
   procedure Unset (A_Token : in out Token_Type) ;
+  function Keep_Alive (A_Token : in Token_Type) return Boolean;
   
 private
   type Token_Type is tagged record

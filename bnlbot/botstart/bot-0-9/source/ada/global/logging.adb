@@ -31,7 +31,11 @@ package body Logging is
      Quiet := Q;
    end Set_Quiet;
    ---------------------------------------------
-
+   procedure Log (Who, What : in String) is
+   begin
+     Log(Who & " : " & What);
+   end Log;
+   -------------------------------------------
    procedure Log (What : in String) is
      use Sattmate_Calendar;
    begin
