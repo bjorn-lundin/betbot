@@ -26,6 +26,11 @@ if [ -z $BOT_CONFIG ] ; then
   export BOT_CONFIG=$BOT_START/bot-0-9/config
 fi
 
+if [ -z $BOT_HOME ] ; then
+  export BOT_HOME=$BOT_START/user/$BOT_USER
+fi
+
+
 
 #try to lock the file $BOT_TARGET/locks/market_fetcher
 $BOT_TARGET/bin/check_bot_running --botname=markets_fetcher

@@ -25,6 +25,7 @@ BETFAIR_INI_FILE=$BOT_START/user/$BOT_USER/betfair.ini
 LOGIN_INI_FILE=$BOT_START/user/$BOT_USER/login.ini
 #echo $LOGIN_INI_FILE
 
+export BOT_HOME=$BOT_START/user/$BOT_USER
 export BOT_USER
 
 # set environment. some (most) of the envvars contain other envvars, resolve them via eval
