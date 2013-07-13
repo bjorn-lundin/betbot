@@ -20,7 +20,7 @@ package body Lock is
     use Interfaces.C.Strings;
   begin
     A_Lock.Name := To_Unbounded_String(Ev.Value("BOT_TARGET") & "/locks/" & Name);
-    Log(Me & "Take", "Take lock: '"  & To_String(A_Lock.Name) & "'");
+--    Log(Me & "Take", "Take lock: '"  & To_String(A_Lock.Name) & "'");
     declare
       C_Name : Chars_Ptr := New_String (To_String(A_Lock.Name));
     begin
@@ -34,7 +34,7 @@ package body Lock is
      L.L_Len := 0;
      Fcntl( result, A_Lock.Fd, F_SETLK, L );
      if result = -1 then
-        Log(Me & "Take", "Take lock failed, Errno =" & Errno'Img);
+--        Log(Me & "Take", "Take lock failed, Errno =" & Errno'Img);
         raise Lock_Error with "Errno =" & Errno'Img ;
      end if;
   -- file is now locked
@@ -58,7 +58,7 @@ package body Lock is
         Log(Me & "Take", "size/str'length =" & size'Img & "/" & Str'Length'Img);
       end if;
     end;    
-    Log(Me & "Take", "Lock taken");
+--    Log(Me & "Take", "Lock taken");
   exception    
     when others => raise Lock_Error;    
   end Take;
@@ -68,7 +68,7 @@ package body Lock is
      L      : Lockstruct;
      Result : int;
    begin
-      Log(Me & "Finalize", "Remove loc");    
+--      Log(Me & "Finalize", "Remove loc");    
       -- unlock file
       L.L_Start := 0;
       L.L_Len := 0;
@@ -78,7 +78,7 @@ package body Lock is
       if result = -1 then
         Log(Me & "Finalize", "fcntl failed in unlock/Finalize, Errno =" & Errno'Img);
       end if;      
-      Log(Me & "Finalize", "Lock removed");
+--      Log(Me & "Finalize", "Lock removed");
    end Finalize;
   ------------------------------------------------------------------
   

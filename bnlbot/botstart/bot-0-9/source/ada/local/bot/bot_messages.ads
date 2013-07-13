@@ -8,33 +8,33 @@ package Bot_Messages is
 
   subtype Bot_Messages is Process_Io.Identity_Type range 2000..2099;
 
-  Bet_Notification_Message : constant Process_io.Identity_Type := 2000;
+  Market_Notification_Message : constant Process_io.Identity_Type := 2000;
 
   ----------------------------------------------------------------
-  type Bet_Notification_Record is record
+  type Market_Notification_Record is record
       Market_Id : String(1..11);
   end record;
-  for Bet_Notification_Record'alignment use 4;
-  for Bet_Notification_Record use record
+  for Market_Notification_Record'alignment use 4;
+  for Market_Notification_Record use record
       Market_Id at 0 range 0..8*11-1;
   end record;
-  for Bet_Notification_Record'Size use 8*11;
+  for Market_Notification_Record'Size use 8*11;
 
   ----------------------------------------------------------------
   
-  package Bet_Notification_Package is new Process_Io.Generic_Io
-          (Identity        => Bet_Notification_Message,
-           Data_Type       => Bet_Notification_Record,
+  package Market_Notification_Package is new Process_Io.Generic_Io
+          (Identity        => Market_Notification_Message,
+           Data_Type       => Market_Notification_Record,
            Data_Descriptor => (1 => Process_Io.String_Type(11)));
   --
   function  Data   (Message: Process_Io.Message_Type)
-            return  Bet_Notification_Record
-            renames Bet_Notification_Package.Data;
+            return  Market_Notification_Record
+            renames Market_Notification_Package.Data;
   --
   procedure Send   (Receiver  : Process_Io.Process_Type;
-                    Data      : Bet_Notification_Record;
+                    Data      : Market_Notification_Record;
                     Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
-            renames Bet_Notification_Package.Send;
+            renames Market_Notification_Package.Send;
   
   
 end Bot_Messages;

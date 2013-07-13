@@ -2,8 +2,8 @@
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Sattmate_Types; use Sattmate_Types;
 with Bot_Types ; use Bot_Types;
---with Simple_List_Class;
---pragma Elaborate_All(Simple_List_Class);
+with Simple_List_Class;
+pragma Elaborate_All(Simple_List_Class);
 
 
 package Bot_Config is
@@ -23,6 +23,7 @@ package Bot_Config is
   end record;  
 
   type Bet_Section_Type is record
+    Bet_Name         : Unbounded_String       := Null_Unbounded_String;
     Max_Daily_Loss   : Max_Daily_Loss_Type    := 0.0;
     Max_Daily_Profit : Max_Daily_Profit_Type  := 0.0;
     Back_Price       : Back_Price_Type        := 0.0;
@@ -30,6 +31,7 @@ package Bot_Config is
     Max_Lay_Price    : Max_Lay_Price_Type     := 0.0;
     Min_Lay_Price    : Min_Lay_Price_Type     := 0.0;
     Bet_Size         : Bet_Size_Type          := 0.0;
+    Enabled          : Boolean                := False;
     Dry_Run          : Boolean                := True;
     Allow_In_Play    : Boolean                := False;
     Animal           : Animal_Type            := Horse;     
@@ -38,6 +40,7 @@ package Bot_Config is
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
   end record;  
+  package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   
   type System_Section_Type is record
     -- BOT_START is set in .bashrc
@@ -66,11 +69,12 @@ package Bot_Config is
   end record;  
     
   type Config_Type is tagged record
-     Bot_Name          : Bot_Name_Type          := Null_Unbounded_String;
-     Bot_Log_File_Name : Bot_Log_File_Name_Type := Null_Unbounded_String;
+     Bot_User          : Unbounded_String      := Null_Unbounded_String;
+     Bot_Log_File_Name : Unbounded_String      := Null_Unbounded_String;
      System_Section    : System_Section_Type;
      Global_Section    : Global_Section_Type; 
-     Bet_Section       : Bet_Section_Type; 
+--     Bet_Section       : Bet_Section_Type; 
+     Bet_Section_List  : Bet_Pack.List_Type    := Bet_Pack.Create; 
      Betfair_Section   : Login_Betfair_Section_Type;  
      Database_Section  : Login_Database_Section_Type;  
   end record;

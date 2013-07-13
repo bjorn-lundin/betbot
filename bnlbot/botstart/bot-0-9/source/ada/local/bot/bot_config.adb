@@ -1,5 +1,5 @@
 
-with Text_IO;
+--with Text_IO;
 with Ini;
 with Ada.Environment_Variables;
 with General_Routines; use General_Routines;
@@ -17,7 +17,7 @@ package body Bot_Config is
 
   Unimplemented    : exception ;
 
-  Sa_Par_Bot_Name : aliased Gnat.Strings.String_Access;
+  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
   
@@ -40,10 +40,10 @@ package body Bot_Config is
     if not Command_Line_Is_Parsed then
       Define_Switch
        (Cmd_Line,
-        Sa_Par_Bot_Name'access,
-        "-n:",
-        Long_Switch => "--name=",
-        Help        => "name of bot");
+        Sa_Par_Bot_User'access,
+        "-u:",
+        Long_Switch => "--user=",
+        Help        => "user of bot");
   
       Define_Switch
         (Cmd_Line,
@@ -54,11 +54,11 @@ package body Bot_Config is
       Getopt (Cmd_Line);  -- process the command line 
       Command_Line_Is_Parsed := True;
     end if; 
-    Cfg.Bot_Name := To_Unbounded_String(Sa_Par_Bot_Name.all);
+    Cfg.Bot_User := To_Unbounded_String(Sa_Par_Bot_User.all);
       
     if Ev.Exists("BOT_HOME") then
     
-      Cfg.Bot_Log_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/log/") & Cfg.Bot_Name & To_Unbounded_String(".log");
+      Cfg.Bot_Log_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/log/") & Cfg.Bot_User & To_Unbounded_String(".log");
     
       Ini.Load(Ev.Value("BOT_HOME") & "/" & "betfair.ini") ;
       -- Gloal
@@ -84,33 +84,43 @@ package body Bot_Config is
       Cfg.System_Section.Daemonize  := Ba_Daemon;
 
       
-      -- who are we? parse commandline
-      Cfg.Bet_Section.Max_Daily_Loss :=
-         Max_Daily_Loss_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"max_daily_loss",""));
-      Cfg.Bet_Section.Max_Daily_Profit :=
-         Max_Daily_Profit_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"max_daily_profit",""));
-      Cfg.Bet_Section.Back_Price :=
-         Back_Price_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"back_price","0.0"));
-      Cfg.Bet_Section.Delta_Price :=
-         Delta_Price_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"delta_price","0.0"));
-      Cfg.Bet_Section.Max_Lay_Price :=
-         Max_Lay_Price_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"max_lay_price","0.0"));
-      Cfg.Bet_Section.Min_Lay_Price :=
-         Min_Lay_Price_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"min_lay_price","0.0"));
-      Cfg.Bet_Section.Bet_Size :=
-         Bet_Size_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"bet_size",""));
-      Cfg.Bet_Section.Dry_Run := Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"dry_run", True);
-      Cfg.Bet_Section.Allow_In_Play := Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"allow_in_play", False);
-      Cfg.Bet_Section.Max_Num_Runners :=
-         Max_Num_Runners_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"max_num_runners",""));
-      Cfg.Bet_Section.Min_Num_Runners :=
-         Min_Num_Runners_Type'Value(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"min_num_runners",""));
-
-      Cfg.Bet_Section.Animal := Get_Animal(Upper_Case(To_String(Cfg.Bot_Name)),"animal",Horse);
-      Cfg.Bet_Section.Bet_Type := Get_Bet_Type(Upper_Case(To_String(Cfg.Bot_Name)),"bet_type",Back);
-      Cfg.Bet_Section.Countries :=
-         To_Unbounded_String(Ini.Get_Value(Upper_Case(To_String(Cfg.Bot_Name)),"countries",""));
-
+      declare
+        Num_Sections : Natural := Ini.Get_Section_Count;
+        Bet_Section : Bet_Section_Type;
+      begin
+        for i in 1 .. Num_Sections loop
+          Log("Read","Section: " & Ini.Get_Section_Name(i));
+          if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then  
+            Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
+            Bet_Section.Max_Daily_Loss :=
+               Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
+            Bet_Section.Max_Daily_Profit :=
+               Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));
+            Bet_Section.Back_Price :=
+               Back_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"back_price","0.0"));
+            Bet_Section.Delta_Price :=
+               Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","0.0"));
+            Bet_Section.Max_Lay_Price :=
+               Max_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_lay_price","0.0"));
+            Bet_Section.Min_Lay_Price :=
+               Min_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_lay_price","0.0"));
+            Bet_Section.Bet_Size :=
+               Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size",""));
+            Bet_Section.Dry_Run := Ini.Get_Value(Ini.Get_Section_Name(i),"dry_run", True);
+            Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
+            Bet_Section.Max_Num_Runners :=
+               Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
+            Bet_Section.Min_Num_Runners :=
+               Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
+            
+            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
+            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
+            Bet_Section.Countries :=
+               To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
+            Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);   
+          end if;             
+        end loop;   
+      end;
       -- ok, parse login stuff   
          
       Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
@@ -133,10 +143,13 @@ package body Bot_Config is
   -----------------------------------------------------
   
   function To_String(Cfg : Config_Type) return String is
+    Eol : Boolean := True;
+    Bet_Section : Bet_Section_Type;
+    Return_String : Unbounded_String := Null_Unbounded_String;
   begin 
-    return
+    Return_String := To_Unbounded_String(
        "<Main>" &
-         "<Bot_Name>" & To_String(Cfg.Bot_Name) & "</Bot_Name>" &
+         "<Bot_User>" & To_String(Cfg.Bot_User) & "</Bot_User>" &
          "<Bot_Log_File_Name>" & To_String(Cfg.Bot_Log_File_Name) & "</Bot_Log_File_Name>" &
          "<System>" & 
            "<Bot_Root>"   & To_String(Cfg.System_Section.Bot_Root) & "</Bot_Root>" &
@@ -153,23 +166,34 @@ package body Bot_Config is
            "<Delay_Between_Turns>" & Cfg.Global_Section.Delay_Between_Turns'Img & "</Delay_Between_Turns>" & 
            "<Network_Failure_Delay>" & Cfg.Global_Section.Network_Failure_Delay'Img & "</Network_Failure_Delay>" &          
          "</Global>" & 
-         "<Bet>" &
-           "<Max_Daily_Loss>" & Cfg.Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
-           "<Max_Daily_Profit>" & Cfg.Bet_Section.Max_Daily_Profit'Img & "</Max_Daily_Profit>" & 
-           "<Back_Price>" & Cfg.Bet_Section.Back_Price'Img & "</Back_Price>" & 
-           "<Delta_Price>" & Cfg.Bet_Section.Delta_Price'Img & "</Delta_Price>" & 
-           "<Max_Lay_Price>" & Cfg.Bet_Section.Max_Lay_Price'Img & "</Max_Lay_Price>" & 
-           "<Min_Lay_Price>" & Cfg.Bet_Section.Min_Lay_Price'Img & "</Min_Lay_Price>" & 
-           "<Max_Daily_Loss>" & Cfg.Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
-           "<Bet_Size>" & Cfg.Bet_Section.Bet_Size'Img & "</Bet_Size>" & 
-           "<Dry_Run>" & Cfg.Bet_Section.Dry_Run'Img & "</Dry_Run>" & 
-           "<Allow_In_Play>" & Cfg.Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" & 
-           "<Animal>" & Cfg.Bet_Section.Animal'Img & "</Animal>" & 
-           "<Bet_Type>" & Cfg.Bet_Section.Bet_Type'Img & "</Bet_Type>" & 
-           "<Max_Num_Runners>" & Cfg.Bet_Section.Max_Num_Runners'Img & "</Max_Num_Runners>" & 
-           "<Min_Num_Runners>" & Cfg.Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" & 
-           "<Countries>" & To_String(Cfg.Bet_Section.Countries) & "</Countries>" & 
-         "</Bet>"  & 
+         "<Bets>" );
+           
+           Bet_Pack.Get_First(Cfg.Bet_Section_List, Bet_Section,Eol);
+           loop
+             exit when Eol;
+             Append(Return_String,
+             "<Bets>" &
+               "<Bet_Name>" & To_String(Bet_Section.Bet_Name) & "</Bet_Name>" &
+               "<Max_Daily_Loss>" & Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
+               "<Max_Daily_Profit>" & Bet_Section.Max_Daily_Profit'Img & "</Max_Daily_Profit>" & 
+               "<Back_Price>" & Bet_Section.Back_Price'Img & "</Back_Price>" & 
+               "<Delta_Price>" & Bet_Section.Delta_Price'Img & "</Delta_Price>" & 
+               "<Max_Lay_Price>" & Bet_Section.Max_Lay_Price'Img & "</Max_Lay_Price>" & 
+               "<Min_Lay_Price>" & Bet_Section.Min_Lay_Price'Img & "</Min_Lay_Price>" & 
+               "<Max_Daily_Loss>" & Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
+               "<Bet_Size>" & Bet_Section.Bet_Size'Img & "</Bet_Size>" & 
+               "<Dry_Run>" & Bet_Section.Dry_Run'Img & "</Dry_Run>" & 
+               "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" & 
+               "<Animal>" & Bet_Section.Animal'Img & "</Animal>" & 
+               "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" & 
+               "<Max_Num_Runners>" & Bet_Section.Max_Num_Runners'Img & "</Max_Num_Runners>" & 
+               "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" & 
+               "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" & 
+             "</Bets>"  );
+             Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
+           end loop;
+         Append(Return_String,
+         "</Bets>"  & 
          "<Betfair>" & 
            "<Username>" & To_String(Cfg.Betfair_Section.Username) & "</Username>" & 
            "<Password>" & To_String(Cfg.Betfair_Section.Password) & "</Password>" & 
@@ -182,12 +206,14 @@ package body Bot_Config is
            "<Password>" & To_String(Cfg.Database_Section.Password) & "</Password>" & 
            "<Host>" & To_String(Cfg.Database_Section.Host) & "</Host>" & 
          "</Database>" & 
-       "</Main>";
+       "</Main>");
+       return To_String(Return_String);
   end To_String;
   
   procedure Clear(Cfg : in out Config_Type)is
   begin
     Log(Me & "Clear start");
+    Bet_Pack.Remove_All(Cfg.Bet_Section_List);
     Cfg := Empty_Config;
     Log(Me & "Clear stop");
   end Clear;
@@ -196,4 +222,3 @@ package body Bot_Config is
   
   
 end Bot_Config;
-

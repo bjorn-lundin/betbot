@@ -1,0 +1,599 @@
+{
+	"id": 15,
+	"jsonrpc": "2.0",
+	"result": [{
+		"numberOfWinners": 2,
+		"betDelay": 0,
+		"marketId": "1.109863158",
+		"totalAvailable": 6.02089E+04,
+		"bspReconciled": false,
+		"numberOfRunners": 6,
+		"numberOfActiveRunners": 6,
+		"totalMatched": 0.00000E+00,
+		"runners": [{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 7311189,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 4167038,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6322899,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6653241,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 7380240,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6763634,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		}],
+		"inplay": false,
+		"status": "OPEN",
+		"runnersVoidable": false,
+		"version": 540333046,
+		"isMarketDataDelayed": false,
+		"crossMatching": true,
+		"complete": true
+	},
+	{
+		"numberOfWinners": 1,
+		"betDelay": 0,
+		"marketId": "1.109863299",
+		"totalAvailable": 1.37118E+05,
+		"bspReconciled": false,
+		"numberOfRunners": 6,
+		"numberOfActiveRunners": 6,
+		"totalMatched": 6.02140E+02,
+		"runners": [{
+			"handicap": 0.00000E+00,
+			"lastPriceTraded": 7.80000E+00,
+			"totalMatched": 4.14200E+01,
+			"selectionId": 6939544,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.54900E+01,
+					"price": 7.40000E+00
+				},
+				{
+					"size": 3.14200E+01,
+					"price": 6.80000E+00
+				},
+				{
+					"size": 3.03300E+01,
+					"price": 6.00000E+00
+				}],
+				"availableToLay": [{
+					"size": 4.70400E+01,
+					"price": 1.60000E+01
+				},
+				{
+					"size": 3.53000E+01,
+					"price": 1.80000E+01
+				},
+				{
+					"size": 7.14000E+01,
+					"price": 1.95000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"lastPriceTraded": 8.40000E+00,
+			"totalMatched": 8.28700E+01,
+			"selectionId": 7012943,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.04500E+01,
+					"price": 5.80000E+00
+				},
+				{
+					"size": 4.87200E+01,
+					"price": 4.80000E+00
+				},
+				{
+					"size": 3.02300E+01,
+					"price": 3.85000E+00
+				}],
+				"availableToLay": [{
+					"size": 3.81400E+01,
+					"price": 9.80000E+00
+				},
+				{
+					"size": 3.53000E+01,
+					"price": 1.10000E+01
+				},
+				{
+					"size": 7.14000E+01,
+					"price": 1.80000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6805223,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 4.70900E+01,
+					"price": 4.30000E+00
+				},
+				{
+					"size": 4.87200E+01,
+					"price": 4.10000E+00
+				},
+				{
+					"size": 4.41300E+01,
+					"price": 4.00000E+00
+				}],
+				"availableToLay": [{
+					"size": 6.17800E+01,
+					"price": 7.00000E+00
+				},
+				{
+					"size": 4.52500E+01,
+					"price": 7.40000E+00
+				},
+				{
+					"size": 5.31400E+01,
+					"price": 9.00000E+00
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"lastPriceTraded": 5.90000E+00,
+			"totalMatched": 9.51200E+01,
+			"selectionId": 6273842,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.14200E+01,
+					"price": 5.60000E+00
+				},
+				{
+					"size": 3.10700E+01,
+					"price": 5.20000E+00
+				},
+				{
+					"size": 3.02300E+01,
+					"price": 4.30000E+00
+				}],
+				"availableToLay": [{
+					"size": 3.47700E+01,
+					"price": 7.60000E+00
+				},
+				{
+					"size": 4.41300E+01,
+					"price": 7.80000E+00
+				},
+				{
+					"size": 4.22500E+01,
+					"price": 8.20000E+00
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"lastPriceTraded": 6.20000E+00,
+			"totalMatched": 8.68300E+01,
+			"selectionId": 7367891,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 4.86200E+01,
+					"price": 4.10000E+00
+				},
+				{
+					"size": 6.17800E+01,
+					"price": 3.95000E+00
+				},
+				{
+					"size": 5.77700E+01,
+					"price": 3.85000E+00
+				}],
+				"availableToLay": [{
+					"size": 7.94400E+01,
+					"price": 5.60000E+00
+				},
+				{
+					"size": 5.80000E+01,
+					"price": 5.70000E+00
+				},
+				{
+					"size": 8.17100E+01,
+					"price": 6.00000E+00
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"lastPriceTraded": 5.20000E+00,
+			"totalMatched": 2.95880E+02,
+			"selectionId": 6873059,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.10700E+01,
+					"price": 4.50000E+00
+				},
+				{
+					"size": 4.41300E+01,
+					"price": 3.90000E+00
+				},
+				{
+					"size": 3.07300E+01,
+					"price": 3.80000E+00
+				}],
+				"availableToLay": [{
+					"size": 3.83600E+01,
+					"price": 5.80000E+00
+				},
+				{
+					"size": 3.53000E+01,
+					"price": 7.40000E+00
+				},
+				{
+					"size": 9.11500E+01,
+					"price": 7.60000E+00
+				}]
+			}
+		}],
+		"inplay": false,
+		"status": "OPEN",
+		"lastMatchTime": "2013-06-24T12:07:40.537Z",
+		"runnersVoidable": false,
+		"version": 540333569,
+		"isMarketDataDelayed": false,
+		"crossMatching": true,
+		"complete": true
+	},
+	{
+		"numberOfWinners": 2,
+		"betDelay": 0,
+		"marketId": "1.109863300",
+		"totalAvailable": 6.74760E+04,
+		"bspReconciled": false,
+		"numberOfRunners": 6,
+		"numberOfActiveRunners": 6,
+		"totalMatched": 0.00000E+00,
+		"runners": [{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6939544,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.14720E+02,
+					"price": 2.58000E+00
+				},
+				{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				}],
+				"availableToLay": [{
+					"size": 4.24780E+02,
+					"price": 7.60000E+00
+				},
+				{
+					"size": 2.80500E+02,
+					"price": 7.80000E+00
+				},
+				{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 7012943,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 5.15670E+02,
+					"price": 2.24000E+00
+				},
+				{
+					"size": 4.86000E+02,
+					"price": 2.04000E+00
+				},
+				{
+					"size": 3.10700E+01,
+					"price": 1.07000E+00
+				}],
+				"availableToLay": [{
+					"size": 4.19810E+02,
+					"price": 7.40000E+00
+				},
+				{
+					"size": 3.99610E+02,
+					"price": 8.00000E+00
+				},
+				{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6805223,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 5.00090E+02,
+					"price": 1.92000E+00
+				},
+				{
+					"size": 4.86150E+02,
+					"price": 1.84000E+00
+				},
+				{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				}],
+				"availableToLay": [{
+					"size": 2.68790E+02,
+					"price": 3.95000E+00
+				},
+				{
+					"size": 3.38190E+02,
+					"price": 4.20000E+00
+				},
+				{
+					"size": 2.07160E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6273842,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 3.53770E+02,
+					"price": 2.60000E+00
+				},
+				{
+					"size": 3.54450E+02,
+					"price": 2.58000E+00
+				},
+				{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				}],
+				"availableToLay": [{
+					"size": 3.86770E+02,
+					"price": 4.10000E+00
+				},
+				{
+					"size": 2.67550E+02,
+					"price": 4.20000E+00
+				},
+				{
+					"size": 2.24810E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 7367891,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 1.48872E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				},
+				{
+					"size": 8.28656E+03,
+					"price": 1.03000E+00
+				}],
+				"availableToLay": [{
+					"size": 4.69010E+02,
+					"price": 3.15000E+00
+				},
+				{
+					"size": 2.24810E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		},
+		{
+			"handicap": 0.00000E+00,
+			"totalMatched": 0.00000E+00,
+			"selectionId": 6873059,
+			"status": "ACTIVE",
+			"ex": {
+				"tradedVolume": [],
+				"availableToBack": [{
+					"size": 5.18880E+02,
+					"price": 2.20000E+00
+				},
+				{
+					"size": 1.47106E+03,
+					"price": 1.06000E+00
+				},
+				{
+					"size": 4.14300E+01,
+					"price": 1.04000E+00
+				}],
+				"availableToLay": [{
+					"size": 3.80560E+02,
+					"price": 2.98000E+00
+				},
+				{
+					"size": 2.24810E+02,
+					"price": 4.00000E+01
+				}]
+			}
+		}],
+		"inplay": false,
+		"status": "OPEN",
+		"runnersVoidable": false,
+		"version": 540333571,
+		"isMarketDataDelayed": false,
+		"crossMatching": true,
+		"complete": true
+	}]
+}

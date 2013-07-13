@@ -1,0 +1,16 @@
+{
+	"id": 15,
+	"jsonrpc": "2.0",
+	"error": {
+		"code": -32099,
+		"data": {
+			"exceptionname": "APINGException",
+			"APINGException": {
+				"requestUUID": "prdang001-06060844-000842110f",
+				"errorCode": "INVALID_SESSION_INFORMATION",
+				"errorDetails": "The session token passed is invalid"
+			}
+		},
+		"message": "ANGX-0003"
+	}
+}
