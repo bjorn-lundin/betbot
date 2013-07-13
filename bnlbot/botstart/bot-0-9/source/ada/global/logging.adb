@@ -68,7 +68,9 @@ package body Logging is
    
    procedure Close is 
    begin
-     Text_Io.Close(File);   
+     if Text_Io.Is_Open(File) then
+       Text_Io.Close(File);   
+     end if;
    end Close;
    
    

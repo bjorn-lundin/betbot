@@ -12,24 +12,27 @@ with Posix;
 with Logging; use Logging;
 with Process_Io;
 with Core_Messages;
+with Ada.Environment_Variables;
+with Bet_Handler;
 
 procedure Bot is
+  package EV renames Ada.Environment_Variables;
   Timeout  : Duration := 120.0; 
   My_Token : Token.Token_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
   
 begin
---  misc_init ; -- read from cmd-line?
+  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
   Bot_Config.Config.Read; -- even from cmdline
   
   if Bot_Config.Config.System_Section.Daemonize then
     Posix.Daemonize;
   end if;
   
-  Logging.Open(To_String(Bot_Config.Config.Bot_Log_file_Name));
   Log(Bot_Config.Config.To_String);
   Log(Me & " Login betfair");
+--  return;
   My_Token.Login(
     Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
     Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
@@ -59,7 +62,7 @@ begin
         when Core_Messages.Exit_Message               => exit Main_Loop;
         when Core_Messages.Enter_Console_Mode_Message => null ; --Enter_Console;
         when Core_Messages.Read_Config_Message        => Bot_Config.Re_Read_Config ; 
-        when Bot_Messages.Bet_Notification_Message    => null; --Treat_Bet(Msg.Data,My_Token);
+        when Bot_Messages.Market_Notification_Message    => null; --Bet_Handler.Treat_Market(Msg.Data,My_Token);
         when others => Log(Me & " Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
