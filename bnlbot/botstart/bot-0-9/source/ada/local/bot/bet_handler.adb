@@ -1,14 +1,19 @@
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Logging; use Logging;
+
 with Bot_Types; use  Bot_Types;
 with Bot_Config; use Bot_Config;
 
 with Table_Abets;
 with Sql;
+with General_Routines;
 
 package body Bet_Handler is
 
   Select_Runners,
   Select_Prices : Sql.Statement_Type;
 
+  Me : constant String := "Bet_Handler.";  
   
   function Create (Market_Notification : in Bot_Messages.Market_Notification_Record) return Bet_Info_Record is
     Bet_Info : Bet_Info_Record ;
@@ -67,28 +72,30 @@ package body Bet_Handler is
     -- some sanity checks
     case Bet_Info.Event.Eventtypeid is 
       when 7 =>    -- horses
-        if Bot_Config.Animal /= Horse then
-           Bad_Data with "7 is not :" &  Bot_Config.Animal'Img;
+        if Bot_Cfg.Animal /= Horse then
+           raise Bad_Data with "7 is not :" &  Bot_Cfg.Animal'Img;
         end if;
       when 4339 => -- hounds
-        if Bot_Config.Animal /= Hound then
-           Bad_Data with "4339 is not :" &  Bot_Config.Animal'Img;
+        if Bot_Cfg.Animal /= Hound then
+           raise Bad_Data with "4339 is not :" &  Bot_Cfg.Animal'Img;
         end if;
       when others => raise Bad_Data with "not supported eventtype:" & Bet_Info.Event.Eventtypeid'Img; 
     end case;
 
     declare -- see if we can make a bet now
-      Bet : Bet_Type := Create(Bet_Info, Bot_Config);
+      Bet : Bet_Type := Create(Bet_Info, Bot_Cfg);
     begin
-      Log(Me & "Try_Make_New_Bet", Bet.To_String);
-      if Bet.Conditions_Fullfilled then
-        Bet.Make_Dry_Bet;
-        if Bet.Enabled then
-          if Bet.History_Ok then
-            Bet.Make_Real_Bet;
-          end if;
-        end if;
-      end if;
+        null;
+        pragma Compile_Time_Warning(True, "Do implement");
+--      Log(Me & "Try_Make_New_Bet", Bet.To_String);
+--      if Bet.Conditions_Fullfilled then
+--        Bet.Make_Dry_Bet;
+--        if Bet.Enabled then
+--          if Bet.History_Ok then
+--            Bet.Make_Real_Bet;
+--          end if;
+--        end if;
+--      end if;
     end;
 
     
@@ -112,14 +119,15 @@ package body Bet_Handler is
   
 --------------------  BET_TYPE start----------------------------------------  
 
-  function Create (Bet_Info : Bet_Info_Record; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type is
+  function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type is
     Tmp : Bet_Type ;
+    use General_Routines;
   begin
-    Tmp.Bet_Info := Bet_Info;
+    Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
-    if General_Routines.Positions( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "lay") > 0 then 
+    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "lay") > 0 then 
       Tmp.This_Bet_Type := Lay;
-    elsif General_Routines.Positions( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "back") > 0 then 
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "back") > 0 then 
       Tmp.This_Bet_Type := Back;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";    
@@ -134,11 +142,11 @@ package body Bet_Handler is
   -----------------------------------------------------------------------
 
   
-  function Conditions_Fulfilled(Bet : Bet_Type) return Boolean;
-  function History_Ok(Bet : Bet_Type) return Boolean;
-  function To_String(Bet : Bet_Type) return String;
-  procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
-  procedure Make_Real_Bet(Bet : in out Bet_Type) ;
+--  function Conditions_Fulfilled(Bet : Bet_Type) return Boolean;
+--  function History_Ok(Bet : Bet_Type) return Boolean;
+--  function To_String(Bet : Bet_Type) return String;
+--  procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
+--  procedure Make_Real_Bet(Bet : in out Bet_Type) ;
 --------------------  BET_TYPE stop----------------------------------------  
 
   
