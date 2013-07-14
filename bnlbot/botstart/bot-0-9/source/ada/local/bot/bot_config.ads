@@ -30,6 +30,7 @@ package Bot_Config is
     Delta_Price      : Delta_Price_Type       := 0.0;
     Max_Lay_Price    : Max_Lay_Price_Type     := 0.0;
     Min_Lay_Price    : Min_Lay_Price_Type     := 0.0;
+    Favorite_By      : Favorite_By_Type       := 0.0;
     Bet_Size         : Bet_Size_Type          := 0.0;
     Enabled          : Boolean                := False;
     Dry_Run          : Boolean                := True;

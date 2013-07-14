@@ -1,6 +1,6 @@
 
 with Sattmate_Types; use Sattmate_Types;
-with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded ; 
+--with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded ; 
 
 
 package Bot_Types is
@@ -19,4 +19,19 @@ package Bot_Types is
    type Bet_Price_Type is new Float_8;
    type Min_Num_Runners_Type is new Byte;
    type Max_Num_Runners_Type is new Byte;   
+   type Favorite_By_Type is new Float_8;
+
+   
+   function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
+   function "+" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
+   function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type;
+   function "+" (Left : Float_8 ; Right : Favorite_By_Type) return Back_Price_Type ;
+   function "+" (Left : Float_8 ; Right : Favorite_By_Type) return Float_8;
+   function "<=" (Left : Back_Price_Type ; Right : Float_8) return Boolean;
+   function "<=" (Left : Float_8 ; Right : Back_Price_Type) return Boolean ;
+   function "<" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean;
+   function "<=" (Left : Float_8 ; Right : Max_Lay_Price_Type) return Boolean ;
+
+   
+   
 end Bot_Types;
