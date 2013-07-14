@@ -1,7 +1,7 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Logging; use Logging;
-
-with Bot_Types; use  Bot_Types;
+--with Sattmate_Types; use Sattmate_Types;
+--with Bot_Types; use  Bot_Types;
 with Bot_Config; use Bot_Config;
 
 with Table_Abets;
@@ -10,18 +10,19 @@ with General_Routines;
 
 package body Bet_Handler is
 
-  Select_Runners,
   Select_Prices : Sql.Statement_Type;
 
   Me : constant String := "Bet_Handler.";  
   
   function Create (Market_Notification : in Bot_Messages.Market_Notification_Record) return Bet_Info_Record is
     Bet_Info : Bet_Info_Record ;
-    type Eos_Type is (A_Event, A_Market, A_Runner, A_Price);
+    type Eos_Type is (A_Event, A_Market);
     Eos : array(Eos_Type'range) of Boolean := (others => True);
     Runner : Table_Arunners.Data_Type;
-    Price  : Table_Aprices.Data_Type;    
+    Price : Table_Aprices.Data_Type;
+    Max_Idx : Integer := 0;
     T : Sql.Transaction_Type;
+    Eol : Boolean := True;
   begin
     Sql.Start_Read_Write_Transaction(T);
  
@@ -57,6 +58,27 @@ package body Bet_Handler is
     end if;    
       
     Sql.Commit(T);
+    
+    Table_Aprices.Aprices_List_Pack.Get_First(Bet_Info.Price_List, Price, Eol);
+    loop
+      exit when Eol;
+      Max_Idx := Max_Idx +1; 
+      Bet_Info.Price_Array(Max_Idx) := Price;
+      Table_Aprices.Aprices_List_Pack.Get_Next(Bet_Info.Price_List, Price, Eol);
+    end loop;
+    Bet_Info.Last_Price := Max_Idx;
+    
+    Max_Idx := 0;    
+    Table_Arunners.Arunners_List_Pack.Get_First(Bet_Info.Runner_List, Runner, Eol);
+    loop
+      exit when Eol;
+      Max_Idx := Max_Idx +1; 
+      Bet_Info.Price_Array(Max_Idx) := Price;
+      Table_Arunners.Arunners_List_Pack.Get_Next(Bet_Info.Runner_List, Runner, Eol);
+    end loop;
+    Bet_Info.Last_Runner := Max_Idx;
+    
+    
     return Bet_Info;
   end Create;
   -------------------------------------------------------------------------------
@@ -84,18 +106,21 @@ package body Bet_Handler is
 
     declare -- see if we can make a bet now
       Bet : Bet_Type := Create(Bet_Info, Bot_Cfg);
+      Fulfilled : Boolean := True;
     begin
         null;
         pragma Compile_Time_Warning(True, "Do implement");
 --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
---      if Bet.Conditions_Fullfilled then
+        Bet.Conditions_Fulfilled(Fulfilled);
+      if Fulfilled then
 --        Bet.Make_Dry_Bet;
---        if Bet.Enabled then
+        if Bet.Enabled then
 --          if Bet.History_Ok then
 --            Bet.Make_Real_Bet;
 --          end if;
---        end if;
---      end if;
+          null;
+        end if;
+      end if;
     end;
 
     
@@ -125,9 +150,9 @@ package body Bet_Handler is
   begin
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
-    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "lay") > 0 then 
+    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > 0 then 
       Tmp.This_Bet_Type := Lay;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "back") > 0 then 
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > 0 then 
       Tmp.This_Bet_Type := Back;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";    
@@ -142,7 +167,91 @@ package body Bet_Handler is
   -----------------------------------------------------------------------
 
   
---  function Conditions_Fulfilled(Bet : Bet_Type) return Boolean;
+  procedure Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
+    Price_Fav, Price_2nd_Fav : Table_Aprices.Data_Type;
+    Max_Turns : Integer := 0;
+    Num_Runners : Integer := Bet.Bet_Info.Last_Price;
+    Max_Favorite_Odds : Float_8 := 0.0;
+  begin
+    Result := True;
+    -- check market status --?
+    if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
+      Log(Me & "Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
+      Result := False;
+      return;
+    end if;
+  
+    case Bet.This_Bet_Type is
+      when Back => -- only check the favorite here
+        if Bet.Bet_Info.Last_Price < 2 then
+          Log(Me & "Conditions_Fulfilled", "Bet.Bet_Info.Last_Price < 2, " & Bet.Bet_Info.Last_Price'Img);
+          Result := False;
+          return;
+        end if;           
+
+        Price_Fav     := Bet.Bet_Info.Price_Array(1);
+        Price_2nd_Fav := Bet.Bet_Info.Price_Array(2);
+       
+        -- check price within backprice +- deltaprice
+        if  Bet.Bot_Cfg.Back_Price - Bet.Bot_Cfg.Delta_Price <= Price_Fav.Backprice and then
+            Price_Fav.Backprice <= Bet.Bot_Cfg.Back_Price + Bet.Bot_Cfg.Delta_Price and then
+            Price_Fav.Backprice + Bet.Bot_Cfg.Favorite_By < Price_2nd_Fav.Backprice then
+          null; --Ok, within bot-bounds
+        else
+          Result := False;
+          return;
+        end if;
+        Bet.Bet_Info.Selection_Id := Price_Fav.Selectionid;
+
+      when Lay =>
+        -- check min_lay_price < price <= max_lay_price
+        -- we can not loop for dogs. Check how many turns for horses
+        if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
+          case Bet.Bet_Info.Event.Eventtypeid is 
+            when 7    => 
+              Max_Turns := Num_Runners - 7;  -- always 7 horses before mine ...
+              Max_Favorite_Odds := 5.0;
+            when 4339 => 
+              Max_Turns := 1;                --always last hound
+              Max_Favorite_Odds := 1.9;
+            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
+          end case;
+        elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
+          case Bet.Bet_Info.Event.Eventtypeid is 
+            when 7    => 
+              Max_Turns := 1;  -- always 0 horses before mine ...
+              Max_Favorite_Odds := 2.0;
+            when 4339 => 
+              Max_Turns := 1;                --always last hound
+              Max_Favorite_Odds := 1.5;
+            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
+          end case;
+        end if;
+        -- check favorite odds (i.e. there is a clear favorite)
+        if Bet.Bet_Info.Price_Array(1).Backprice > Max_Favorite_Odds then
+          Log(Me & "Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Price_Array(1).Backprice'Img & 
+                   " needs to be < " & Max_Favorite_Odds'Img);
+          Result := False;
+          return;
+        end if;
+        declare
+          Was_OK : Boolean := False;
+        begin           
+          for i in reverse 1 + 7 .. Max_Turns + 7 loop           
+            if  Bet.Bot_Cfg.Min_Lay_Price < Bet.Bet_Info.Price_Array(i).Layprice and then
+                Bet.Bet_Info.Price_Array(i).Layprice <= Bet.Bot_Cfg.Max_Lay_Price then
+              Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Price_Array(i).Selectionid; -- save the selection
+              Was_Ok := True;
+              exit; -- exit on first match - from back of list
+            end if;
+          end loop;
+          if not Was_Ok then
+            Bet.Bet_Info.Selection_Id := 0; --reset
+          end if;
+        end;  
+    end case;
+  end Conditions_Fulfilled;
+  
 --  function History_Ok(Bet : Bet_Type) return Boolean;
 --  function To_String(Bet : Bet_Type) return String;
 --  procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
