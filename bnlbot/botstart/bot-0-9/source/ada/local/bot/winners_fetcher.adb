@@ -264,6 +264,7 @@ procedure Winners_Fetcher is
 begin
     
     Logging.Open(EV.Value("BOT_HOME") & "/log/winners_fetcher.log");
+    Logging.New_Log_File_On_Exit(False);
     
     Posix.Daemonize;
     My_Lock.Take("winners_fetcher");

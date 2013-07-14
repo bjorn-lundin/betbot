@@ -14,6 +14,7 @@ package body Logging is
    
    Global_File : Text_Io.File_Type;
    Global_Name : Unbounded_String :=  Null_Unbounded_String;
+   Global_New_Log_File_On_Exit : Boolean := True;
 
    Dummy_Finalizer : Dummy_Type;
    pragma Warnings(Off, Dummy_Finalizer);
@@ -31,6 +32,11 @@ package body Logging is
     return S;
    end Indent;
    
+   ---------------------------------------------
+   procedure New_Log_File_On_Exit(N : Boolean) is
+   begin
+     Global_New_Log_File_On_Exit := False;
+   end New_Log_File_On_Exit;
    ---------------------------------------------
   --9.8-17200 new proc
   procedure Rename_Log_File (Name : in String; Copy : Boolean := False) is
@@ -166,7 +172,7 @@ package body Logging is
    procedure Finalize(D : in out Dummy_Type) is 
      pragma Warnings(Off,D);
    begin
-     if Text_Io.Is_Open(Global_File) then
+     if Global_New_Log_File_On_Exit and then Text_Io.Is_Open(Global_File) then
        Rename_Log_File(To_String(Global_Name), True); 
      end if;                                        
    end Finalize;
