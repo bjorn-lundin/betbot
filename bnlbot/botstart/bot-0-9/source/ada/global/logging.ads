@@ -7,6 +7,8 @@ package Logging is
    procedure Log (Who, What : in String) ;
    procedure Print (What : in String) ;
 
+   procedure New_Log_File_On_Exit(N : Boolean);
+   
    procedure Change_Indent(How_Much : Integer) ;
    function Indent return String ;
    
