@@ -1,4 +1,4 @@
-
+with Ada.Finalization;
 
 package Logging is
    procedure Set_Quiet (Q: Boolean) ;
@@ -12,5 +12,9 @@ package Logging is
    
    procedure Open(Name : String);
    procedure Close;
-      
+
+private
+   type Dummy_Type is new Ada.Finalization.Controlled with null record;
+   overriding procedure Finalize(D : in out Dummy_Type);
+   
 end Logging;
