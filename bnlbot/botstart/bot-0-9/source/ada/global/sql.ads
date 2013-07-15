@@ -41,7 +41,7 @@ package Sql is
    type Transaction_Isolation_Level_Type is (Read_Commited, Serializable);
    type Transaction_Isolation_Level_Scope_Type is (Transaction, Session);
 
-   type Transaction_Type is limited private;
+--   type Transaction_Type is  limited private;
 
    type Statement_Type is new Limited_Controlled with private ;
 
@@ -69,12 +69,12 @@ package Sql is
    procedure Set_Transaction_Isolation_Level (Level : in Transaction_Isolation_Level_Type;
                                               Scope : in Transaction_Isolation_Level_Scope_Type);
 
+   type Transaction_Type is new Limited_Controlled with private;
+   
    procedure Start_Read_Write_Transaction (T : in out Transaction_Type);
-
+   procedure Start (T : in out Transaction_Type) renames Start_Read_Write_Transaction;
    procedure Start_Read_Only_Transaction (T : in out Transaction_Type);
-
    procedure Commit (T : in Transaction_Type) ;
-
    procedure Rollback (T : in Transaction_Type) ;
 
    function  Transaction_Status return Transaction_Status_Type;
@@ -331,10 +331,14 @@ private
    procedure Do_Initialize (Statement : in out Statement_Type);
    procedure Finalize (Statement : in out Statement_Type);
 
-   type Transaction_Type is record
+   type Transaction_Type is new Limited_Controlled with record
       Status  : Transaction_Status_Type   := None;
       Counter : Transaction_Identity_Type := 0;
    end record;
+--   type Transaction_Type is tagged limited record
+--      Status  : Transaction_Status_Type   := None;
+--      Counter : Transaction_Identity_Type := 0;
+--   end record;
 end Sql;
 
 

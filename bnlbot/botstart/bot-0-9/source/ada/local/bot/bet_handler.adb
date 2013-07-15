@@ -7,12 +7,24 @@ with Bot_Config; use Bot_Config;
 with Table_Abets;
 with Sql;
 with General_Routines;
+with Sattmate_Calendar;
 
 package body Bet_Handler is
 
+  Select_History,
   Select_Prices : Sql.Statement_Type;
 
   Me : constant String := "Bet_Handler.";  
+  
+  
+  type Bet_History_Record is record
+    Weight : Float_8 := 0.0;
+    Date   : Sattmate_Calendar.Time_Type;
+    Profit : Float_8 := 0.0;
+  end record;
+  
+  type Bet_History_Array is array ( 1 .. 21 ) of Bet_History_Record;
+  
   
   function Create (Market_Notification : in Bot_Messages.Market_Notification_Record) return Bet_Info_Record is
     Bet_Info : Bet_Info_Record ;
@@ -108,17 +120,16 @@ package body Bet_Handler is
       Bet : Bet_Type := Create(Bet_Info, Bot_Cfg);
       Fulfilled : Boolean := True;
     begin
-        null;
         pragma Compile_Time_Warning(True, "Do implement");
 --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
         Bet.Conditions_Fulfilled(Fulfilled);
       if Fulfilled then
 --        Bet.Make_Dry_Bet;
         if Bet.Enabled then
---          if Bet.History_Ok then
+          if Bet.History_Ok then
 --            Bet.Make_Real_Bet;
---          end if;
-          null;
+              null; 
+          end if;
         end if;
       end if;
     end;
@@ -251,8 +262,70 @@ package body Bet_Handler is
         end;  
     end case;
   end Conditions_Fulfilled;
-  
---  function History_Ok(Bet : Bet_Type) return Boolean;
+  ------------------------------------------------------------------------------------------------------
+  function History_Ok(Bet : Bet_Type) return Boolean is
+    History : Bet_History_Array; -- array of 21 days
+    use Sattmate_Calendar;
+    T : Sql.Transaction_Type;
+    Eos : Boolean := False;
+    Start_Date, End_Date, Now : Time_Type := Clock; 
+    Sum : Float_8 := 0.0;
+  begin
+    T.Start;
+      Sql.Prepare(Select_History,
+         "select " & 
+           "sum(profit), " & 
+           "betplaced " &
+         "from   " &
+           "abets " &
+         "where " &
+           "betplaced >= :STARTOFDAY " & 
+           "and betplaced <= :ENDOFDAY  " &
+           "and status = 'SETTLED' " &
+           "and betname = :BETNAME " &
+         "group by " &
+           "betplaced ");
+           
+      Sql.Set(Select_History, "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
+      
+      for i in History'range loop
+      
+        Start_Date := Now - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 0;
+        Start_Date.Minute      := 0;
+        Start_Date.Second      := 0;
+        Start_Date.MilliSecond := 0;
+        
+        End_Date := Now   - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 23;
+        Start_Date.Minute      := 59;
+        Start_Date.Second      := 59;
+        Start_Date.MilliSecond := 999;
+        
+        History(i).Date   := Start_Date;
+        History(i).Weight := 1.0 / Float_8(i);
+        
+        Sql.Set_Timestamp(Select_History, "STARTOFDAY",Start_Date);
+        Sql.Set_Timestamp(Select_History, "ENDOFDAY",End_Date);
+        Sql.Open_Cursor(Select_History);     
+        Sql.Fetch(Select_History, Eos);     
+        Sql.Close_Cursor(Select_History);     
+        if not Eos then
+          Sql.Get(Select_History, 1, History(i).Profit);
+        end if;
+      end loop;     
+    T.Commit;
+    
+    
+    for i in History'range loop
+      Sum := Sum + (History(i).Weight * History(i).Profit);
+    end loop;     
+    
+    Log(Me & "History_Ok", "Sum: " & Sum'Img & " Ok= " & Boolean'Image(Sum >= 0.0));
+    return Sum >= 0.0;
+    
+  end History_Ok;
+  ------------------------------------------------------------------------------------------------------
 --  function To_String(Bet : Bet_Type) return String;
 --  procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
 --  procedure Make_Real_Bet(Bet : in out Bet_Type) ;
