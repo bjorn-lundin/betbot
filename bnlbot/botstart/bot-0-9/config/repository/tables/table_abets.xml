@@ -20,12 +20,13 @@
         <Column Name="pricematched"     Size="8"   Type="6"  AllowNull="0" Description="matched price"/>
         <Column Name="sizematched"      Size="8"   Type="6"  AllowNull="0" Description="size price"/>        
         <Column Name="runnername"       Size="50"  Type="1"  AllowNull="0" Description="name of runner"/>
-        <Column Name="fullmarketname"   Size="200" Type="1"  AllowNull="0" Description="name of market"/>
-        <Column Name="ixxlupd"          Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
-        <Column Name="ixxluts"          Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Column Name="fullmarketname"   Size="50"  Type="1"  AllowNull="0" Description="name of market"/>
+        <Column Name="ixxlupd"          Size="15"  Type="1"  AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"          Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="betid" type="primary"/>
         <Index Columns="marketid" type="index"/>
         <Index Columns="betwon" type="index"/>
+        <Index Columns="betplaced" type="index"/>
     </Table>
 </MaAstro>
 

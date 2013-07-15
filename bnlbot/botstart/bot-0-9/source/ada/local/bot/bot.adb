@@ -62,7 +62,7 @@ begin
         when Core_Messages.Exit_Message               => exit Main_Loop;
         when Core_Messages.Enter_Console_Mode_Message => null ; --Enter_Console;
         when Core_Messages.Read_Config_Message        => Bot_Config.Re_Read_Config ; 
-        when Bot_Messages.Market_Notification_Message    => null; --Bet_Handler.Treat_Market(Msg.Data,My_Token);
+        when Bot_Messages.Market_Notification_Message    => Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
         when others => Log(Me & " Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception

@@ -1,6 +1,6 @@
 
 with Sql;
-with Log_Handler;
+with Logging;
 
 package body Bot_System_Number is
 
@@ -71,7 +71,7 @@ package body Bot_System_Number is
       Sql.Close_Cursor(Get_Number(System_Number_Type));
       if End_Of_Set then
         Sql.Rollback(Transaction);
-        Log_handler.Put(1, Object & '.' & Service, "End_Of_Set when getting new number");
+        Logging.Log( Object & '.' & Service, "End_Of_Set when getting new number");
         raise No_More_System_Numbers;
       else
         Sql.Get(Get_Number(System_Number_Type), "NEXTVAL", Number);
@@ -81,7 +81,7 @@ package body Bot_System_Number is
     end loop;
 
     if not Is_Number_Found then
-      Log_Handler.Put(1, Object & '.' & Service, "All system numbers taken for type " &
+      Logging.Log( Object & '.' & Service, "All system numbers taken for type " &
                                               System_Number_Type_Type'Image(System_Number_Type));
       raise No_More_System_Numbers;
     end if;
