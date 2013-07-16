@@ -74,8 +74,8 @@ package Sql is
    procedure Start_Read_Write_Transaction (T : in out Transaction_Type);
    procedure Start (T : in out Transaction_Type) renames Start_Read_Write_Transaction;
    procedure Start_Read_Only_Transaction (T : in out Transaction_Type);
-   procedure Commit (T : in Transaction_Type) ;
-   procedure Rollback (T : in Transaction_Type) ;
+   procedure Commit (T : in out Transaction_Type) ;
+   procedure Rollback (T : in out Transaction_Type) ;
 
    function  Transaction_Status return Transaction_Status_Type;
    -----------------------------------------------------------
@@ -335,6 +335,8 @@ private
       Status  : Transaction_Status_Type   := None;
       Counter : Transaction_Identity_Type := 0;
    end record;
+   procedure Finalize (T : in out Transaction_Type);
+   
 --   type Transaction_Type is tagged limited record
 --      Status  : Transaction_Status_Type   := None;
 --      Counter : Transaction_Identity_Type := 0;

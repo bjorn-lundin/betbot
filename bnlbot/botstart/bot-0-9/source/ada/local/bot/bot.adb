@@ -1,11 +1,11 @@
-with Sattmate_Types; use Sattmate_Types;
+--with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Exception;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Token;
 with General_Routines; use General_Routines;
 with Bot_Config;
-with Lock; --?
-with Text_io;
+with Lock; 
+--with Text_io;
 with Sql;
 with Bot_Messages;
 with Posix;
@@ -19,16 +19,20 @@ procedure Bot is
   package EV renames Ada.Environment_Variables;
   Timeout  : Duration := 120.0; 
   My_Token : Token.Token_Type;
+  My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
   
 begin
-  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
   Bot_Config.Config.Read; -- even from cmdline
   
   if Bot_Config.Config.System_Section.Daemonize then
     Posix.Daemonize;
   end if;
+  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
+   --must take lock AFTER becoming a daemon ... 
+   --The parent pid dies, and would release the lock...
+   My_Lock.Take("bot");
   
   Log(Bot_Config.Config.To_String);
   Log(Me & " Login betfair");

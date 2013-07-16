@@ -3,6 +3,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 --with Sattmate_Types; use Sattmate_Types;
+with Gnatcoll.Json; use Gnatcoll.Json;
 --with Bot_Types; use  Bot_Types;
 with Bot_Config; use Bot_Config;
 with Bot_System_Number;
@@ -11,12 +12,27 @@ with Sql;
 with General_Routines;
 with Sattmate_Calendar;
 
+with Aws;
+with Aws.Client;
+with Aws.Response;
+with Aws.Headers;
+with Aws.Headers.Set;
+
+with Sattmate_Exception;
+
+pragma Elaborate_All(Aws.Headers);
+
 package body Bet_Handler is
+
+
+  Suicide,
+  No_Such_Field : exception;
 
   Select_History,
   Select_Prices : Sql.Statement_Type;
 
   Me : constant String := "Bet_Handler.";  
+  My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
   
  
 
@@ -166,15 +182,13 @@ package body Bet_Handler is
       Bet : Bet_Type := Create(Bet_Info, Bot_Cfg);
       Fulfilled : Boolean := True;
     begin
-        pragma Compile_Time_Warning(True, "Do implement");
 --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
-        Bet.Conditions_Fulfilled(Fulfilled);
+      Bet.Check_Conditions_Fulfilled(Fulfilled);
       if Fulfilled then
         Bet.Make_Dry_Bet;
         if Bet.Enabled then
           if Bet.History_Ok then
---            Bet.Make_Real_Bet;
-              null; 
+            Bet.Make_Real_Bet(A_Token);
           end if;
         end if;
       end if;
@@ -223,7 +237,7 @@ package body Bet_Handler is
   -----------------------------------------------------------------------
 
   
-  procedure Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
+  procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Price_Fav, Price_2nd_Fav : Table_Aprices.Data_Type;
     Max_Turns : Integer := 0;
     Num_Runners : Integer := Bet.Bet_Info.Last_Price;
@@ -232,7 +246,7 @@ package body Bet_Handler is
     Result := True;
     -- check market status --?
     if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
-      Log(Me & "Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
+      Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
       Result := False;
       return;
     end if;
@@ -240,7 +254,7 @@ package body Bet_Handler is
     case Bet.This_Bet_Type is
       when Back => -- only check the favorite here
         if Bet.Bet_Info.Last_Price < 2 then
-          Log(Me & "Conditions_Fulfilled", "Bet.Bet_Info.Last_Price < 2, " & Bet.Bet_Info.Last_Price'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "Bet.Bet_Info.Last_Price < 2, " & Bet.Bet_Info.Last_Price'Img);
           Result := False;
           return;
         end if;           
@@ -286,7 +300,7 @@ package body Bet_Handler is
         end if;
         -- check favorite odds (i.e. there is a clear favorite)
         if Bet.Bet_Info.Price_Array(1).Backprice > Max_Favorite_Odds then
-          Log(Me & "Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Price_Array(1).Backprice'Img & 
+          Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Price_Array(1).Backprice'Img & 
                    " needs to be < " & Max_Favorite_Odds'Img);
           Result := False;
           return;
@@ -309,7 +323,7 @@ package body Bet_Handler is
           end if;
         end;  
     end case;
-  end Conditions_Fulfilled;
+  end Check_Conditions_Fulfilled;
   ------------------------------------------------------------------------------------------------------
   function History_Ok(Bet : Bet_Type) return Boolean is
     History : Bet_History_Array; -- array of 21 days
@@ -467,11 +481,236 @@ package body Bet_Handler is
         Log(Me & "Make_Dry_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));      
     end ;
   end Make_Dry_Bet;
+  ---------------------------------------------------------------
+  procedure Make_Real_Bet(Bet     : in out Bet_Type;
+                          A_Token : in out Token.Token_Type) is
+    Abet : Table_Abets.Data_Type;
+    Price : Float_8 := 0.0;
+    Pip : Pip_Type ;
+    Side     : String (1..4) :=  (others => ' ') ; 
+    Bet_Name : String (1..50) :=  (others => ' ') ;
+    Success  : String (1..50) :=  (others => ' ') ;    
+    Matched  : String (1..50) :=  (others => ' ') ;    
+    Now      : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Runner_Name  : String (1..50) :=  (others => ' ') ;    
+    T : Sql.Transaction_Type;
+    
+    Answer_Place_Orders : Aws.Response.Data;
+    Reply_Place_Orders,
+    Query_Place_Orders : JSON_Value := Create_Object; 
+    
+    Params         : JSON_Value := Create_Object;
+    Instruction    : JSON_Value := Create_Object;
+    Limit_Order    : JSON_Value := Create_Object;
+    Instructions   : JSON_Array := Empty_Array;
+    
+  begin
+  
+--  type Data_Type is record
+--      Betid :          Integer_8  := 0 ; -- Primary Key
+--      Marketid :       String (1..11) := (others => ' ') ; -- non unique index 2
+--      Selectionid :    Integer_4  := 0 ; --
+--      Reference :      String (1..30) := (others => ' ') ; --
+--      Size :           Float_8  := 0.0 ; --
+--      Price :          Float_8  := 0.0 ; --
+--      Side :           String (1..4) := (others => ' ') ; --
+--      Betname :        String (1..50) := (others => ' ') ; --
+--      Betwon :         Integer_4  := 0 ; -- non unique index 3
+--      Profit :         Float_8  := 0.0 ; --
+--      Status :         String (1..50) := (others => ' ') ; --
+--      Exestatus :      String (1..50) := (others => ' ') ; --
+--      Exeerrcode :     String (1..50) := (others => ' ') ; --
+--      Inststatus :     String (1..50) := (others => ' ') ; --
+--      Insterrcode :    String (1..50) := (others => ' ') ; --
+--      Betplaced :      Time_Type  := Time_Type_First ; --
+--      Pricematched :   Float_8  := 0.0 ; --
+--      Sizematched :    Float_8  := 0.0 ; --
+--      Runnername :     String (1..50) := (others => ' ') ; --
+--      Fullmarketname : String (1..200) := (others => ' ') ; --
+--      Ixxlupd :        String (1..15) := (others => ' ') ; --
+--      Ixxluts :        Time_Type  := Time_Type_First ; --
+--  end record;
 
 
+    case Bet.Bot_Cfg.Bet_Type is
+      when Back => 
+        Price := Bet.Bet_Info.Price_Array(Bet.Bet_Info.Used_Index).Backprice;
+        Pip.Init(Price);
+        Price := Pip.Previous_Price;
+      when Lay => 
+        Price := Bet.Bet_Info.Price_Array(Bet.Bet_Info.Used_Index).Layprice;
+        Pip.Init(Price);
+        Price := Pip.Next_Price;
+    end case;
+    
+    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+    Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
+    Move( "SUCCESS", Success);
+    Move( "MATCHED", Matched);
+    Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runnernamestripped, Runner_Name);
+    
+    
 
+    -- prepare the AWS
+    Aws.Headers.Set.Reset(My_Headers);
+    Aws.Headers.Set.Add (My_Headers, "X-Authentication", A_Token.Get);
+    Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
+    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
---  procedure Make_Real_Bet(Bet : in out Bet_Type) ;
+    Limit_Order.Set_Field (Field_Name => "persistenceType", Field      => "LAPSE");
+    Limit_Order.Set_Field (Field_Name => "price",           Field      => Float(Price));
+    Limit_Order.Set_Field (Field_Name => "size",            Field      => Float(Bet.Bot_Cfg.Bet_Size));
+    
+    Instruction.Set_Field (Field_Name => "limitOrder",      Field      => Limit_Order);                            
+    Instruction.Set_Field (Field_Name => "orderType",       Field      => "LIMIT");
+    Instruction.Set_Field (Field_Name => "side",            Field      => Bet.Bot_Cfg.Bet_Type'Img);
+    Instruction.Set_Field (Field_Name => "handicap",        Field      => 0);
+    Instruction.Set_Field (Field_Name => "selectionId",     Field      => Integer(Bet.Bet_Info.Selection_Id));
+    
+    Append (Instructions , Instruction);    
+             
+    Params.Set_Field (Field_Name => "customerRef",          Field      => "some ref to fill in later"); -- what to put here?
+    Params.Set_Field (Field_Name => "instructions",         Field      => Instructions);
+    Params.Set_Field (Field_Name => "marketId",             Field      => Bet.Bet_Info.Market.Marketid);
+    
+    Query_Place_Orders.Set_Field (Field_Name => "params",   Field      => Params);
+    Query_Place_Orders.Set_Field (Field_Name => "id",       Field      => 15);          -- what to put here?
+    Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
+    Query_Place_Orders.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
+    
+
+    
+--{
+--    "jsonrpc": "2.0",
+--    "method": "SportsAPING/v1.0/placeOrders",
+--    "params": {
+--        "marketId": "' + marketId + '",
+--        "instructions": [
+--            {
+--                "selectionId": "' + str(selectionId) + '",
+--                "handicap": "0",
+--                "side": "BACK",
+--                "orderType": "LIMIT",
+--                "limitOrder": {
+--                    "size": "0.01",
+--                    "price": "1.50",
+--                    "persistenceType": "LAPSE"
+--                }
+--            }
+--        ],
+--        "customerRef": "test12121212121"
+--    },
+--    "id": 1
+--}
+    
+
+    Log(Me & "Make_Real_Bet", "posting: " & Query_Place_Orders.Write  );
+
+    Answer_Place_Orders := Aws.Client.Post (Url          =>  Token.URL,
+                                            Data         =>  Query_Place_Orders.Write,
+                                            Content_Type => "application/json",
+                                            Headers      =>  My_Headers,
+                                            Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+    Log(Me & "Make_Real_Bet", "Got reply ");
+    begin
+      Reply_Place_Orders := Read (Strm     => Aws.Response.Message_Body(Answer_Place_Orders),
+                                Filename => "");
+    exception
+      when E: others =>
+         Sattmate_Exception.Tracebackinfo(E);
+         Log(Me & "Make_Real_Bet", "Bad reply" & Aws.Response.Message_Body(Answer_Place_Orders));
+         Log(Me & "Make_Real_Bet", "Give up placeOrder");
+         return;
+    end ;       
+
+    -- parse out the reply.
+    -- check for API exception/Error first
+    declare
+       Error, 
+       Code, 
+       APINGException, 
+       Data                      : JSON_Value := Create_Object;
+    begin 
+      if Reply_Place_Orders.Has_Field("error") then
+        --    "error": {
+        --        "code": -32099,
+        --        "data": {
+        --            "exceptionname": "APINGException",
+        --            "APINGException": {
+        --                "requestUUID": "prdang001-06060844-000842110f",
+        --                "errorCode": "INVALID_SESSION_INFORMATION",
+        --                "errorDetails": "The session token passed is invalid"
+        --                }
+        --            },
+        --            "message": "ANGX-0003"
+        --        }
+        Error := Reply_Place_Orders.Get("error");
+        if Error.Has_Field("code") then
+          Code := Error.Get("code");
+          Log(Me & "Make_Real_Bet", "error.code " & Integer(Integer'(Error.Get("code")))'Img);
+
+          if Code.Has_Field("data") then
+            Data := Code.Get("data");
+            if Data.Has_Field("APINGException") then
+              APINGException := Data.Get("APINGException");
+              if APINGException.Has_Field("errorCode") then
+                Log(Me & "Make_Real_Bet", "APINGException.errorCode " & APINGException.Get("errorCode"));
+                if String'(APINGException.Get("errorCode")) ="INVALID_SESSION_INFORMATION" then
+                  raise Suicide ; -- exit main loop, let cron restart program
+                end if;
+              else  
+                raise No_Such_Field with "APINGException - errorCode";
+              end if;          
+            else  
+              raise No_Such_Field with "Data - APINGException";
+            end if;          
+          else  
+            raise  No_Such_Field with "Code - data";
+          end if;          
+        else
+          raise No_Such_Field with "Error - code";
+        end if;          
+      end if;   
+    end; 
+    
+    
+    
+    Abet := (
+      Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),          
+      Marketid       => Bet.Bet_Info.Market.Marketid,       
+      Selectionid    => Bet.Bet_Info.Selection_Id,   
+      Reference      => (others => '-'),     
+      Size           => Float_8(Bet.Bot_Cfg.Bet_Size),
+      Price          => Price,         
+      Side           => Side,
+      Betname        => Bet_Name,       
+      Betwon         => 0,
+      Profit         => 0.0,        
+      Status         => Matched, -- ??        
+      Exestatus      => Success,     
+      Exeerrcode     => Success,    
+      Inststatus     => Success,    
+      Insterrcode    => Success,   
+      Betplaced      => Now,     
+      Pricematched   => Price,  --?
+      Sizematched    => Float_8(Bet.Bot_Cfg.Bet_Size),   --?
+      Runnername     => Runner_Name,    
+      Fullmarketname => Bet.Bet_Info.Market.Marketname,
+      Ixxlupd        => (others => ' '), --set by insert       
+      Ixxluts        => Now              --set by insert
+    );
+    
+    begin
+      T.Start;
+        Table_Abets.Insert(Abet);
+      T.Commit;
+    exception
+      when Sql.Duplicate_Index =>
+        T.Rollback;
+        Log(Me & "Make_Real_Bet" & "Make_Real_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));      
+    end ;
+  end Make_Real_Bet;
+  
 --------------------  BET_TYPE stop----------------------------------------  
 
 --  type Pip_Type is tagged record

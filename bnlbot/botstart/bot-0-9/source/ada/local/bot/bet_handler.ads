@@ -50,13 +50,14 @@ private
   end record;
   
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type;
-  procedure Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) ;
+  procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) ;
 
   function History_Ok(Bet : Bet_Type) return Boolean;
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
   procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
---  procedure Make_Real_Bet(Bet : in out Bet_Type) ;
+  procedure Make_Real_Bet(Bet     : in out Bet_Type;
+                          A_Token : in out Token.Token_Type) ;
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record
      Wanted_Price  : Float_8 := 0.0;
