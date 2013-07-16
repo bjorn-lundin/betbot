@@ -67,6 +67,16 @@ package body Sql is
       return General_Routines.Skip_All_Blanks (" $" & Natural'Image (Idx));
    end Make_Dollar_Variable ;
    ------------------------------------------
+   
+   procedure Finalize (T : in out Transaction_Type) is
+   begin -- we do not want to leave scoop with a running transaction !!
+     if T.Counter > 0 then
+       raise Transaction_Error with "Uncommited Transaction went out of scoop!";
+     end if;  
+   end Finalize;
+
+   ------------------------------------------
+   
    procedure Free is new Unchecked_Deallocation (Private_Statement_Type, Private_Statement_Type_Ptr);
 
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
@@ -452,7 +462,7 @@ package body Sql is
             exception
                when Transaction_Error => null; --rollback what we did not start...
             end;
-            Global_Transaction.Counter := Transaction_Identity_Type'First;
+            Global_Transaction.Counter := 0;
          end if;
          Global_Statement_Index_Counter := 0;
          Global_Connection.Finish;
@@ -485,7 +495,7 @@ package body Sql is
    --------------------------------------------------------------
    function Transaction_In_Progress return Boolean is
    begin
-      return Global_Transaction.Counter > Transaction_Identity_Type'First;
+      return Global_Transaction.Counter > 0;
    end Transaction_In_Progress;
 
    --------------------------------------------------------------
@@ -565,7 +575,7 @@ package body Sql is
 
    ------------------------------------------------------------
 
-   procedure Commit (T : in Transaction_Type) is
+   procedure Commit (T : in out Transaction_Type) is
       Dml_Status  : Exec_Status_Type;
       Dml_Result  : Result_Type;
    begin
@@ -580,6 +590,7 @@ package body Sql is
          when Read_Only | Read_Write =>
             -- check for ownership
             if T.Counter /= Global_Transaction.Counter then
+               T.Counter := 0;
                -- not the owner, do nothing
                Log ("not the owner tries to commit");
                return;
@@ -603,7 +614,8 @@ package body Sql is
          raise Postgresql_Error;
       end if;
 
-      Global_Transaction.Counter := Transaction_Identity_Type'First;
+      T.Counter := 0;
+      Global_Transaction.Counter := 0;
       Global_Transaction.Status := None;
       Log ("the owner commits");
       Decrease_Global_Indent;
@@ -611,7 +623,7 @@ package body Sql is
 
    ------------------------------------------------------------
 
-   procedure Rollback (T : in Transaction_Type) is
+   procedure Rollback (T : in out Transaction_Type) is
       Dml_Status  : Exec_Status_Type;
       Dml_Result  : Result_Type;
    begin
@@ -627,6 +639,7 @@ package body Sql is
             -- check for ownership
             if T.Counter /= Global_Transaction.Counter then
                -- not the owner
+               T.Counter := 0;
                Put_Line ("not the owner tries to rollback");
                raise Transaction_Error;
                --          return;
@@ -649,7 +662,8 @@ package body Sql is
          raise Postgresql_Error;
       end if;
 
-      Global_Transaction.Counter := Transaction_Identity_Type'First;
+      T.Counter := 0;
+      Global_Transaction.Counter := 0;
       Global_Transaction.Status := None;
       Decrease_Global_Indent;
    end Rollback;
@@ -1710,7 +1724,7 @@ package body Sql is
 
    function Get_Nbr_Columns (Statement : Statement_Type) return Integer is
    begin
-      return 0;
+      return Nbr_Fields(Statement.Private_Statement.Result);     
    end Get_Nbr_Columns;
 
 
