@@ -1,4 +1,4 @@
-with Ada.Text_Io;           use Ada.Text_Io;
+with Ada.Text_Io;           
 with General_Routines;
 pragma Elaborate_All (General_Routines);
 with Ada.Characters.Handling;
@@ -46,6 +46,7 @@ package body Sql is
    end Increase_Global_Indent;
 
    procedure Log (What : in String; Level : in Integer := 1) is
+      use Ada.Text_Io;
       function Indent return String is
          S : String (1 .. Global_Indent_Level) := (others => ' ');
       begin
@@ -300,6 +301,7 @@ package body Sql is
 
    procedure Print_Errors (Myunit   : in String;
                            Mystatus : in Exec_Status_Type) is
+      use Ada.Text_Io;
    begin
       if ((Mystatus /= Command_Ok) and
             (Mystatus /= Tuples_Ok)) then
@@ -332,8 +334,7 @@ package body Sql is
       return Local_Time;
    exception
       when Constraint_Error =>
-         Put_Line ("Failed to convert : '" & Mytime & "' to a time");
-         raise Conversion_Error;
+         raise Conversion_Error with "Failed to convert : '" & Mytime & "' to a time";
    end Convert_To_Time;
 
    --------------------------------------------------------------------------------
@@ -347,8 +348,7 @@ package body Sql is
       return Local_Date;
    exception
       when Constraint_Error =>
-         Put_Line ("Failed to convert : '" & Mydate & "' to a date");
-         raise Conversion_Error;
+         raise Conversion_Error with "Failed to convert : '" & Mydate & "' to a date";
    end Convert_To_Date;
 
    ------------------------------------------------------------
@@ -375,8 +375,7 @@ package body Sql is
       return Local_Timestamp;
    exception
       when Constraint_Error =>
-         Put_Line ("Failed to convert : '" & Mytimestamp & "' to a timestamp");
-         raise Conversion_Error;
+         raise Conversion_Error with "Failed to convert : '" & Mytimestamp & "' to a timestamp";
    end Convert_To_Timestamp;
 
    ------------------------------------------------------------
@@ -422,8 +421,8 @@ package body Sql is
 
          when Connection_Bad =>
             Global_Connection.Set_Connected (False);
-            Put_Line ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
-            Put_Line (Error_Message (Global_Connection));
+            Ada.Text_IO.Put_Line ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
+            Ada.Text_IO.Put_Line (Error_Message (Global_Connection));
             raise Not_Connected with "Sql.Connect: Not_Connected" ;
       end case;
    end Connect;
@@ -532,16 +531,14 @@ package body Sql is
             Global_Transaction.Counter := T.Counter;
          when Read_Only =>
             if Ts = Read_Write then
-               Put_Line ("Start_Transaction: Transaction_Error");
-               raise Transaction_Error;
+               raise Transaction_Error with "current transaction is Read_Only, new is Read_Write!";
             end if;
             T.Counter := Get_New_Transaction;
             return;  -- do nothing
 
          when Read_Write =>
             if Ts = Read_Only then
-               Put_Line ("Start_Transaction: Transaction_Error");
-               raise Transaction_Error;
+               raise Transaction_Error with "current transaction is Read_Write, new is Read_Only!";
             end if;
             T.Counter := Get_New_Transaction;
             return;  -- do nothing
@@ -584,8 +581,7 @@ package body Sql is
       -- check if transaction already in progress
       case Global_Transaction.Status is
          when None =>
-            Put_Line ("Commit: No_Transaction");
-            raise No_Transaction;
+            raise No_Transaction with "Commit: No_Transaction";
 
          when Read_Only | Read_Write =>
             -- check for ownership
@@ -632,17 +628,14 @@ package body Sql is
 
       case Global_Transaction.Status is
          when None =>
-            Put_Line ("Rollback: No_Transaction");
-            raise No_Transaction;
+            raise No_Transaction with "Rollback: No_Transaction";
 
          when Read_Only | Read_Write =>
             -- check for ownership
             if T.Counter /= Global_Transaction.Counter then
                -- not the owner
                T.Counter := 0;
-               Put_Line ("not the owner tries to rollback");
-               raise Transaction_Error;
-               --          return;
+               raise Transaction_Error with "not the owner tries to rollback";
             end if;
       end case;
 
@@ -774,7 +767,7 @@ package body Sql is
       procedure Print_Diagnostics (Label, Content : String) is
       begin
          if Content'Length > 0 then
-            Put_Line (Label & ": '" & Content & "'");
+            Ada.Text_IO.Put_Line (Label & ": '" & Content & "'");
          end if;
       end Print_Diagnostics;
       -----------------------------------------------------
@@ -1005,6 +998,7 @@ package body Sql is
 
    procedure Execute (Private_Statement           : in out Private_Statement_Type;
                       No_Of_Affected_Rows         : out Natural) is
+      use Ada.Text_IO;
       Status : Exec_Status_Type;
       type Savepoint_Handling_Type is (Insert, Remove, Rollback_To);
 
@@ -1021,31 +1015,18 @@ package body Sql is
             Clear (P_Stm.Result);
          end if;
          case How is
-            when Insert =>
-               Global_Connection.Exec ("savepoint " &
-                                         Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
-            when Remove =>
-               Global_Connection.Exec ("release savepoint " &
-                                         Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
-            when Rollback_To =>
-               Global_Connection.Exec ("rollback to savepoint " &
-                                         Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Result);
+            when Insert      => Global_Connection.Exec ("savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
+            when Remove      => Global_Connection.Exec ("release savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
+            when Rollback_To => Global_Connection.Exec ("rollback to savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
          end case;
          Dml_Status := Result_Status (Dml_Result);
          Clear (Dml_Result);
 
          if Pgerror (Dml_Status) then
             case How is
-               when Insert =>
-                  Print_Errors ("savepoint " &
-                                  Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
-               when Remove =>
-                  Print_Errors ("release savepoint " &
-                                  Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
-
-               when Rollback_To =>
-                  Print_Errors ("rollback to savepoint " &
-                                  Statement_Type_Type'Image (P_Stm.Type_Of_Statement), Dml_Status);
+               when Insert      => Print_Errors ("savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Status);
+               when Remove      => Print_Errors ("release savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Status);
+               when Rollback_To => Print_Errors ("rollback to savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Status);
             end case;
             raise Postgresql_Error;
          end if;
@@ -1364,8 +1345,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
 
    ------------------------------------------------------------
@@ -1399,8 +1379,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
 
    ------------------------------------------------------------
@@ -1419,21 +1398,22 @@ package body Sql is
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;
                   Value     : out String) is
-      Local_String : constant String :=
+     begin                             
+       declare             
+         Local_String : constant String :=
                        Get_Value (Statement.Private_Statement.Result,
                                   Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                   Field_Index_Type (Parameter));
-   begin
-      if Local_String'Length = 0 then
-         Value := (others => ' ');
-      else
-         Value (1 .. Local_String'Length) := Local_String;
-      end if;
-   exception
-      when Constraint_Error =>
-         ada.text_io.put_line	("local_string: '" & local_string & "'");
-         Put_Line ("No such column: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+       begin
+          if Local_String'Length = 0 then
+             Value := (others => ' ');
+          else
+             Value (1 .. Local_String'Length) := Local_String;
+          end if;
+       exception
+          when Constraint_Error =>
+             raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+       end;      
    end Get;
 
    -----------------------------------------------------------
@@ -1469,8 +1449,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
 
    ----------------------------------------------------------
@@ -1503,8 +1482,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
 
    ------------------------------------------------------------
@@ -1537,8 +1515,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column number: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Date;
 
    ------------------------------------------------------------
@@ -1570,8 +1547,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column number: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Time;
 
    --------------------------------------------------------------
@@ -1604,8 +1580,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         Put_Line ("No such column number: " & Positive'Image (Parameter));
-         raise No_Such_Column;
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Timestamp;
 
    --------------------------------------------------------------

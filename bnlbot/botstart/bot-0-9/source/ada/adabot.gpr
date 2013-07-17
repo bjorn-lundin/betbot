@@ -13,6 +13,7 @@ project Adabot is
                  "bot.adb", 
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
+                 "bot_send.adb",
 --                 "tester.adb",
                  "check_bot_running.adb"
 --                 "test_pio.adb",

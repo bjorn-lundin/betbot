@@ -18,12 +18,11 @@ with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
 
-with Sattmate_Exception;
+--with Sattmate_Exception;
 
 pragma Elaborate_All(Aws.Headers);
 
 package body Bet_Handler is
-
 
   Suicide,
   No_Such_Field : exception;
@@ -33,10 +32,7 @@ package body Bet_Handler is
 
   Me : constant String := "Bet_Handler.";  
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
-  
- 
-
-  
+    
   type Bet_History_Record is record
     Weight : Float_8 := 0.0;
     Date   : Sattmate_Calendar.Time_Type;
@@ -81,10 +77,7 @@ package body Bet_Handler is
              700.00, 710.00, 720.00, 730.00, 740.00, 750.00, 760.00, 770.00, 780.00, 790.00, 
              800.00, 810.00, 820.00, 830.00, 840.00, 850.00, 860.00, 870.00, 880.00, 890.00,
              900.00, 910.00, 920.00, 930.00, 940.00, 950.00, 960.00, 970.00, 980.00, 990.00, 
-            1000.00);
-
-  
-  
+            1000.00); 
   
   function Create (Market_Notification : in Bot_Messages.Market_Notification_Record) return Bet_Info_Record is
     Bet_Info : Bet_Info_Record ;
@@ -149,7 +142,6 @@ package body Bet_Handler is
       Table_Arunners.Arunners_List_Pack.Get_Next(Bet_Info.Runner_List, Runner, Eol);
     end loop;
     Bet_Info.Last_Runner := Max_Idx;
-    
     
     return Bet_Info;
   end Create;
@@ -393,11 +385,11 @@ package body Bet_Handler is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
-    Side     : String (1..4) :=  (others => ' ') ; 
-    Bet_Name : String (1..50) :=  (others => ' ') ;
-    Success  : String (1..50) :=  (others => ' ') ;    
-    Matched  : String (1..50) :=  (others => ' ') ;    
-    Now      : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Side         : String (1..4) :=  (others => ' ') ; 
+    Bet_Name     : String (1..50) :=  (others => ' ') ;
+    Success      : String (1..50) :=  (others => ' ') ;    
+    Order_Status : String (1..50) :=  (others => ' ') ;    
+    Now          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     Runner_Name  : String (1..50) :=  (others => ' ') ;    
     T : Sql.Transaction_Type;
 
@@ -443,7 +435,7 @@ package body Bet_Handler is
     Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
     Move( "DR_" & To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( "SUCCESS", Success);
-    Move( "MATCHED", Matched);
+    Move( "EXECUTION_COMPLETE", Order_Status);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runnernamestripped, Runner_Name);
     
     Abet := (
@@ -457,7 +449,7 @@ package body Bet_Handler is
       Betname        => Bet_Name,       
       Betwon         => 0,
       Profit         => 0.0,        
-      Status         => Matched, -- ??        
+      Status         => Order_Status,         
       Exestatus      => Success,     
       Exeerrcode     => Success,    
       Inststatus     => Success,    
@@ -487,13 +479,22 @@ package body Bet_Handler is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
-    Side     : String (1..4) :=  (others => ' ') ; 
-    Bet_Name : String (1..50) :=  (others => ' ') ;
-    Success  : String (1..50) :=  (others => ' ') ;    
-    Matched  : String (1..50) :=  (others => ' ') ;    
-    Now      : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
-    Runner_Name  : String (1..50) :=  (others => ' ') ;    
-    T : Sql.Transaction_Type;
+    Side                           : String (1..4)  :=  (others => ' ') ; 
+    Bet_Name                       : String (1..50) :=  (others => ' ') ;
+    Execution_Report_Status        : String (1..50) :=  (others => ' ') ;    
+    Execution_Report_Error_Code    : String (1..50) :=  (others => ' ') ;    
+    Instruction_Report_Status      : String (1..50) :=  (others => ' ') ;    
+    Instruction_Report_Error_Code  : String (1..50) :=  (others => ' ') ;    
+    Tmp_Bet_Id                     : String (1..20) :=  (others => ' ') ;    
+    Customer_Reference             : String (1..30) :=  (others => ' ') ;
+    Runner_Name                    : String (1..50) :=  (others => ' ') ;    
+    Order_Status                   : String (1..50) :=  (others => ' ') ;    
+    Size_Matched,
+    Average_Price_Matched          : Float := 0.0;
+    
+    Bet_Id : Integer_8 := 0;
+    Now    : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    T      : Sql.Transaction_Type;
     
     Answer_Place_Orders : Aws.Response.Data;
     Reply_Place_Orders,
@@ -531,7 +532,6 @@ package body Bet_Handler is
 --      Ixxluts :        Time_Type  := Time_Type_First ; --
 --  end record;
 
-
     case Bet.Bot_Cfg.Bet_Type is
       when Back => 
         Price := Bet.Bet_Info.Price_Array(Bet.Bet_Info.Used_Index).Backprice;
@@ -545,12 +545,8 @@ package body Bet_Handler is
     
     Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
-    Move( "SUCCESS", Success);
-    Move( "MATCHED", Matched);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runnernamestripped, Runner_Name);
     
-    
-
     -- prepare the AWS
     Aws.Headers.Set.Reset(My_Headers);
     Aws.Headers.Set.Add (My_Headers, "X-Authentication", A_Token.Get);
@@ -578,8 +574,6 @@ package body Bet_Handler is
     Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
     Query_Place_Orders.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
     
-
-    
 --{
 --    "jsonrpc": "2.0",
 --    "method": "SportsAPING/v1.0/placeOrders",
@@ -602,10 +596,8 @@ package body Bet_Handler is
 --    },
 --    "id": 1
 --}
-    
 
     Log(Me & "Make_Real_Bet", "posting: " & Query_Place_Orders.Write  );
-
     Answer_Place_Orders := Aws.Client.Post (Url          =>  Token.URL,
                                             Data         =>  Query_Place_Orders.Write,
                                             Content_Type => "application/json",
@@ -613,13 +605,18 @@ package body Bet_Handler is
                                             Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Make_Real_Bet", "Got reply ");
     begin
-      Reply_Place_Orders := Read (Strm     => Aws.Response.Message_Body(Answer_Place_Orders),
-                                Filename => "");
+      if String'(Aws.Response.Message_Body(Answer_Place_Orders)) /= "Post Timeout" then
+        Reply_Place_Orders := Read (Strm     => Aws.Response.Message_Body(Answer_Place_Orders),
+                                    Filename => "");
+      else
+        Log(Me & "Make_Real_Bet", "Post Timeout -> Give up placeOrder");
+        return;
+      end if;      
     exception
-      when E: others =>
-         Sattmate_Exception.Tracebackinfo(E);
+      when others =>
+         Log(Me & "Make_Real_Bet", "***********************  Bad reply start *********************************");
          Log(Me & "Make_Real_Bet", "Bad reply" & Aws.Response.Message_Body(Answer_Place_Orders));
-         Log(Me & "Make_Real_Bet", "Give up placeOrder");
+         Log(Me & "Make_Real_Bet", "***********************  Bad reply stop  ********  -> Give up placeOrders" );
          return;
     end ;       
 
@@ -655,9 +652,10 @@ package body Bet_Handler is
               APINGException := Data.Get("APINGException");
               if APINGException.Has_Field("errorCode") then
                 Log(Me & "Make_Real_Bet", "APINGException.errorCode " & APINGException.Get("errorCode"));
-                if String'(APINGException.Get("errorCode")) ="INVALID_SESSION_INFORMATION" then
-                  raise Suicide ; -- exit main loop, let cron restart program
-                end if;
+--                if String'(APINGException.Get("errorCode")) ="INVALID_SESSION_INFORMATION" then
+--                  raise Suicide with "INVALID_SESSION_INFORMATION"; -- exit main loop, let cron restart program
+                  raise Suicide with String'(APINGException.Get("errorCode")); -- exit main loop, let cron restart program
+--                end if;
               else  
                 raise No_Such_Field with "APINGException - errorCode";
               end if;          
@@ -672,11 +670,67 @@ package body Bet_Handler is
         end if;          
       end if;   
     end; 
-    
-    
+        
+    -- ok we have a parsable answer with no formal errors. 
+    -- lets look at it
+    declare    
+      Instruction    : JSON_Value := Create_Object;
+      Instructions   : JSON_Array := Empty_Array;
+    begin
+      -- sanity check, but what to do if fail?
+      if Reply_Place_Orders.Has_Field("customerRef") then
+        Move( Params.Get("customerRef"), Customer_Reference);
+      
+        if General_Routines.Trim(Customer_Reference) /= String'(Reply_Place_Orders.Get("customerRef")) then
+          Log(Me & "Make_Real_Bet", "expected customerRef '" & Params.Get("customerRef") & 
+              "' received customerRef '" & Reply_Place_Orders.Get("customerRef"));
+        end if;
+      end if;
+
+      if Reply_Place_Orders.Has_Field("marketid") then
+        if General_Routines.Trim(Bet.Bet_Info.Market.Marketid) /= String'(Reply_Place_Orders.Get("marketid")) then
+          Log(Me & "Make_Real_Bet", "expected marketid '" & General_Routines.Trim(Bet.Bet_Info.Market.Marketid) & 
+              "' received marketid '" & Reply_Place_Orders.Get("marketid"));
+        end if;
+      end if;
+      
+      if Reply_Place_Orders.Has_Field("status") then
+        Move( Reply_Place_Orders.Get("status"), Execution_Report_Status);
+      end if;
+      if Reply_Place_Orders.Has_Field("errorCode") then
+        Move( Reply_Place_Orders.Get("errorCode"), Execution_Report_Error_Code);
+      end if;
+      if Reply_Place_Orders.Has_Field("instructionReports") then
+        Instructions := Reply_Place_Orders.Get("instructionReports");
+        Instruction  := Get(Instructions, 1); -- always element 1, since we only have 1
+        
+        if Instruction.Has_Field("instructionReportStatus") then
+          Move(Instruction.Get("instructionReportStatus"), Instruction_Report_Status);
+        end if;
+        if Instruction.Has_Field("instructionReportErrorCode") then
+          Move(Instruction.Get("instructionReportErrorCode"), Instruction_Report_Error_Code);
+        end if;
+      end if;
+
+      if Reply_Place_Orders.Has_Field("betId") then
+        Move( Reply_Place_Orders.Get("betId"), Tmp_Bet_Id );
+        if Tmp_Bet_Id(2) = '.' then
+          Bet_Id := Integer_8'Value(Tmp_Bet_Id(3 .. Tmp_Bet_Id'Last));
+        else           
+          Bet_Id := Integer_8'Value(Tmp_Bet_Id);
+        end if;       
+      end if;
+      
+      if Reply_Place_Orders.Has_Field("sizeMatched") then
+        Size_Matched := Reply_Place_Orders.Get("sizeMatched");
+      end if;
+      if Reply_Place_Orders.Has_Field("averagePriceMatched") then
+        Average_Price_Matched := Reply_Place_Orders.Get("averagePriceMatched");
+      end if; 
+    end ;   
     
     Abet := (
-      Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),          
+      Betid          => Bet_Id,          
       Marketid       => Bet.Bet_Info.Market.Marketid,       
       Selectionid    => Bet.Bet_Info.Selection_Id,   
       Reference      => (others => '-'),     
@@ -686,14 +740,14 @@ package body Bet_Handler is
       Betname        => Bet_Name,       
       Betwon         => 0,
       Profit         => 0.0,        
-      Status         => Matched, -- ??        
-      Exestatus      => Success,     
-      Exeerrcode     => Success,    
-      Inststatus     => Success,    
-      Insterrcode    => Success,   
+      Status         => Order_Status, -- ??        
+      Exestatus      => Execution_Report_Status,     
+      Exeerrcode     => Execution_Report_Error_Code,    
+      Inststatus     => Instruction_Report_Status,    
+      Insterrcode    => Instruction_Report_Error_Code,   
       Betplaced      => Now,     
-      Pricematched   => Price,  --?
-      Sizematched    => Float_8(Bet.Bot_Cfg.Bet_Size),   --?
+      Pricematched   => Float_8(Average_Price_Matched),
+      Sizematched    => Float_8(Size_Matched),
       Runnername     => Runner_Name,    
       Fullmarketname => Bet.Bet_Info.Market.Marketname,
       Ixxlupd        => (others => ' '), --set by insert       

@@ -12,7 +12,7 @@ package Bot_Messages is
 
   ----------------------------------------------------------------
   type Market_Notification_Record is record
-      Market_Id : String(1..11);
+      Market_Id : String(1..11) := (others => ' ');
   end record;
   for Market_Notification_Record'alignment use 4;
   for Market_Notification_Record use record
