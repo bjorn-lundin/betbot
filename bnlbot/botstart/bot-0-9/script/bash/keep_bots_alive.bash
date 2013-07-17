@@ -26,6 +26,10 @@ if [ -z $BOT_CONFIG ] ; then
   export BOT_CONFIG=$BOT_START/bot-0-9/config
 fi
 
+if [ -z $BOT_SOURCE ] ; then
+  export BOT_SOURCE=$BOT_START/bot-0-9/source
+fi
+
 if [ -z $BOT_HOME ] ; then
   export BOT_HOME=$BOT_START/user/$BOT_USER
 fi
@@ -34,13 +38,13 @@ fi
 
 #start the login daemon if not running 
 
-pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-1
-pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
-pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-0
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
+#1
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
+#pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
+#0
 
 ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
 RESULT_LOGIN_DAEMON=$?
@@ -56,12 +60,12 @@ RESULT_MARKETS_FETCHER=$?
 
 #if the lock can be aquired, the process is NOT running - start it
 
-##bot  ÄR INTE igång
+##bot  is not running 
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #0
 
-##bot  ÄR igång
+##bot  is running
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #1
