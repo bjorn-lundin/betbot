@@ -32,10 +32,10 @@ begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
-   My_Lock.Take("bot");
+  My_Lock.Take("bot");
   
   Log(Bot_Config.Config.To_String);
-  Log(Me & " Login betfair");
+  Log(Me & "Main", " Login betfair");
 --  return;
   My_Token.Login(
     Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
@@ -43,35 +43,35 @@ begin
     Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
     Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
   );
-  Log(Me & " Login betfair done");
+  Log(Me & "Main", " Login betfair done");
    
-  Log(Me & " Connect Db");
+  Log(Me & "Main", " Connect Db");
   Sql.Connect
         (Host     => To_String(Bot_Config.Config.Database_Section.Host),
          Port     => 5432,
          Db_Name  => To_String(Bot_Config.Config.Database_Section.Name),
          Login    => To_String(Bot_Config.Config.Database_Section.Username),
          Password => To_String(Bot_Config.Config.Database_Section.Password));
-  Log(Me & " db Connected");
+  Log(Me & "Main", " db Connected");
          
-  Log(Me & " Start main loop");
+  Log(Me & "Main", " Start main loop");
   Main_Loop : loop
     begin
-      Log(Me & " Start receive");
+      Log(Me & "Main", " Start receive");
       Process_Io.Receive(Msg, Timeout);
       
-      Log(Me & " msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      Log(Me & "Main", " msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
       
       case Process_Io.Identity(Msg) is
-        when Core_Messages.Exit_Message               => exit Main_Loop;
-        when Core_Messages.Enter_Console_Mode_Message => null ; --Enter_Console;
-        when Core_Messages.Read_Config_Message        => Bot_Config.Re_Read_Config ; 
+        when Core_Messages.Exit_Message                  => exit Main_Loop;
+        -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
+        when Core_Messages.Read_Config_Message           => Bot_Config.Re_Read_Config ; 
         when Bot_Messages.Market_Notification_Message    => Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
-        when others => Log(Me & " Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
+        when others => Log(Me & "Main", " Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
       when Process_Io.Timeout =>
-        Log(Me & " Timeout start");
+        Log(Me & "Main", " Timeout start");
         if not My_Token.Keep_Alive then
           My_Token.Login(
             Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
@@ -80,16 +80,24 @@ begin
             Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
           );
         end if;
-        Log(Me & " Timeout stop");
+        Log(Me & "Main", " Timeout stop");
     end;    
   end loop Main_Loop;
-  Log(Me & " Close db");
+  Log(Me & "Main", " Close db");
   Sql.Close_Session;
-  Log(Me & " Db Closed");
+  Log(Me & "Main", " Db Closed");
   Logging.Close;
   
+  Posix.Do_Exit(0); -- terminate
 
 exception
+  when Lock.Lock_Error => 
+    Logging.Close;
+    Posix.Do_Exit(0); -- terminate
   when E: others => Sattmate_Exception.Tracebackinfo(E);
-
+    Log(Me & "Main", " Close db");
+    Sql.Close_Session;
+    Log(Me & "Main", " Closed log and die");
+    Logging.Close;
+    Posix.Do_Exit(0); -- terminate
 end Bot;

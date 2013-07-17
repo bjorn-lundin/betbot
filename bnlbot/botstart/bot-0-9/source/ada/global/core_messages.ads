@@ -24,7 +24,7 @@ package Core_Messages is
 
   -----------------------------------------
   type Exit_Record is record
-      Dummy : Integer_4;
+      Dummy : Integer_4 := 0;
   end record;
   for Exit_Record'alignment use 4;
   for Exit_Record use record
@@ -42,7 +42,7 @@ package Core_Messages is
   for Enter_Console_Mode_Record'Size use 8*80;				-- V6.5b
   -----------------------------------------
   type Read_Config_Record is record
-      Dummy : Integer_4;
+      Dummy : Integer_4 := 0;
   end record;
   for Read_Config_Record'alignment use 4;
   for Read_Config_Record use record
