@@ -1,13 +1,13 @@
 --with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Exception;
-with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-with Token;
+--with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
+--with Token;
 with General_Routines; use General_Routines;
-with Bot_Config;
+--with Bot_Config;
 with Lock; 
 --with Text_io;
 with Sql;
-with Bot_Messages;
+--with Bot_Messages;
 with Posix;
 with Logging; use Logging;
 with Process_Io;
@@ -15,7 +15,8 @@ with Core_Messages;
 with Ada.Environment_Variables;
 with Bet_Handler;
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
+--with Gnat.Strings;
+with Ini;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
@@ -56,12 +57,13 @@ begin
   Log(Me, "Connect Db");
   Sql.Connect
         (Host     => Ini.Get_Value("database","host",""),
-         Port     => Ini.Get_Value("database","port",""),
+         Port     => Ini.Get_Value("database","port", 5432),
          Db_Name  => Ini.Get_Value("database","name",""),
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
   Log(Me, "db Connected");        
          
+  Bet_Handler.Check_Bets;
   Log(Me, "Start main loop");
   Main_Loop : loop
     begin

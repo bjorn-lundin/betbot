@@ -55,7 +55,7 @@ package Sql is
    procedure Close_Session;
 
    procedure Connect (Host       : in String  := "";
-                      Port       : in Natural := 0;
+                      Port       : in Natural := 5432;
                       Options    : in String  := "";
                       Tty        : in String  := "";
                       Db_Name    : in String  := "";

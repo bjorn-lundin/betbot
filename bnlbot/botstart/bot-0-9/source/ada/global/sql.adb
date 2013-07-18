@@ -390,7 +390,7 @@ package body Sql is
    --------------------------------------------------------------
 
    procedure Connect (Host       : in String  := "";
-                      Port       : in Natural := 0;
+                      Port       : in Natural := 5432;
                       Options    : in String  := "";
                       Tty        : in String  := "";
                       Db_Name    : in String  := "";
@@ -1262,12 +1262,8 @@ package body Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Boolean) is
-      I : Integer_4 := 0;                 
    begin
-      if Value then
-        I := 1;
-      end if;  
-      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_4'Image (I)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Lower_Case (Value'Img), A_String);
    end Set;
    -------------------------------------------------------------
 

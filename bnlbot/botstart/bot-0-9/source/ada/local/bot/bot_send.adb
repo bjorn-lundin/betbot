@@ -28,15 +28,15 @@ begin
     Define_Switch
         (Cmd_Line,
          Sa_Par_Msg'access,
-         "-m",
-         Long_Switch => "--message",
+         "-m:",
+         Long_Switch => "--message=",
          Help        => "what message to send");
          
     Define_Switch
         (Cmd_Line,
          Sa_Par_Data'access,
-         "-d",
-         Long_Switch => "--date",
+         "-d:",
+         Long_Switch => "--data:",
          Help        => "what data to send, first field");
 
     Getopt (Cmd_Line);  -- process the command line 
