@@ -9,6 +9,9 @@ with Gnatcoll.Json; use Gnatcoll.Json;
 with Bot_Config; use Bot_Config;
 with Bot_System_Number;
 with Table_Abets;
+with Table_Awinners;
+--with Table_Arunners;
+with Table_Anonrunners;
 with Sql;
 with General_Routines;
 with Sattmate_Calendar;
@@ -29,7 +32,6 @@ package body Bet_Handler is
   No_Such_Field : exception;
 
   Update_Betwon_To_Null,
-  Select_Selection_In_Winners,
   Select_Dry_Run_Bets,
   Select_Real_Bets,
   Select_Exists,
@@ -261,13 +263,13 @@ package body Bet_Handler is
     case Bet.Bet_Info.Event.Eventtypeid is 
       when 7 =>    -- horses
         if Bet.Bot_Cfg.Animal /= Horse then
-          Log(Me & "Try_Make_New_Bet", "wrong animal for this bot should be horse, is " & Bet.Bot_Cfg.Animal'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be horse, is " & Bet.Bot_Cfg.Animal'Img);
           Result := False;
           return ; -- wrong animal for this bot
         end if;
       when 4339 => -- hounds
         if Bet.Bot_Cfg.Animal /= Hound then
-          Log(Me & "Try_Make_New_Bet", "wrong animal for this bot should be hound, is " & Bet.Bot_Cfg.Animal'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be hound, is " & Bet.Bot_Cfg.Animal'Img);
           Result := False;
           return ; -- wrong animal for this bot
         end if;
@@ -275,12 +277,21 @@ package body Bet_Handler is
     end case;
     
     -- check that the race's WIN/PLACE is what the bot expect
-    if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= Bet.Bot_Cfg.Bet_Type'Img then
-      Log(Me & "Try_Make_New_Bet", "wrong bettype for this bot should be: '" &  Bet.Bot_Cfg.Bet_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype) & "'");
-      Result := False;
-      return ; -- wrong animal for this bot
-    end if;
-                                           
+    case  Bet.Bot_Cfg.Market_Type is
+      when Winner =>
+        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "WIN" then
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Result := False;
+          return ; -- wrong markettype for this bot
+        end if;
+      when Place =>
+        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "PLACE" then
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Result := False;
+          return ; -- wrong markettype for this bot
+        end if;
+    end case;
+    
                                            
     for i in 1 .. num_runners loop  
       Log(Me & "Check_Conditions_Fulfilled", Bet.Bet_Info.Runner_Array(i).Runnername(1..20) & " " & 
@@ -306,7 +317,6 @@ package body Bet_Handler is
         Price_Fav     := Bet.Bet_Info.Price_Array(1);
         Price_2nd_Fav := Bet.Bet_Info.Price_Array(2);
 
-        
         -- check price within backprice +- deltaprice
         if  Bet.Bot_Cfg.Back_Price - Bet.Bot_Cfg.Delta_Price <= Price_Fav.Backprice and then
             Price_Fav.Backprice <= Bet.Bot_Cfg.Back_Price + Bet.Bot_Cfg.Delta_Price and then
@@ -830,7 +840,7 @@ package body Bet_Handler is
       Price          => Price,         
       Side           => Side,
       Betname        => Bet_Name,       
-      Betwon         => 0,
+      Betwon         => False,
       Profit         => 0.0,        
       Status         => Order_Status, -- ??        
       Exestatus      => Execution_Report_Status,     
@@ -932,13 +942,13 @@ package body Bet_Handler is
     T        : Sql.Transaction_Type; 
     Illegal_Data : Boolean := False;
     Side       : Bet_Type_Type; 
-    Winner     : Table_Awinners.DAta_Type
-    Runner     : Table_Arunners.Data_Type
+    Winner     : Table_Awinners.Data_Type;
+    Runner     : Table_Arunners.Data_Type;
     Non_Runner : Table_Anonrunners.Data_Type;
-    type Eos_Type is (AWinner, Arunner, Anonrunner)
-    Eos : array (Eos_Type'range) := (others => False);
+    type Eos_Type is (AWinner, Arunner, Anonrunner);
+    Eos : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners,Bet_Won : Boolean := False;
-    Profit  : Profit_Type := 0.0;
+    Profit  : Float_8 := 0.0;
   begin
   
     T.Start;
@@ -949,7 +959,7 @@ package body Bet_Handler is
       
     while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
       Illegal_Data := False;
-      Table_Abets.Abets_List_Pack.Remove_From_List(Bet_List, Bet);
+      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
       if Trim(Bet.Side) = "BACK" then
         Side := Back;
@@ -957,7 +967,7 @@ package body Bet_Handler is
         Side := Lay;
       else
         Illegal_Data := True;
-        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side);
+        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
       end if;
       if not Illegal_Data then
         -- do we have a non-runner?      
@@ -967,14 +977,16 @@ package body Bet_Handler is
         
         if not Eos(Arunner) then
           Non_Runner.Marketid := Runner.Marketid;
-          Non_Runner.Runnername  := Runner.runnernamestripped;
+          Non_Runner.Name  := Runner.runnernamestripped;
           Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
         end if;
 
         if not Eos(Anonrunner) then
           -- non -runner - void the bet
-        else 
-          -- ok, lets continue        
+          Bet.Betwon := True;
+          Bet.Profit := 0.0;
+          Table_Abets.Update_Withcheck(Bet);
+        else -- ok, lets continue        
           Winner.Marketid := Bet.Marketid;
           Winner.Selectionid := Bet.Selectionid;
           Table_Awinners.Read(Winner, Eos(Awinner));
@@ -992,35 +1004,28 @@ package body Bet_Handler is
             end case;
           else -- lost :-(
             case Side is
-              when Back => Profit := -Bet.Size;
-              when Lay  => Profit := -Bet.Size * Bet.Price;
+              when Back => Profit := - Bet.Size;
+              when Lay  => Profit := - Bet.Size * Bet.Price;
             end case;
           end if;        
-
           
           Bet.Betwon := Bet_Won;
-          Bet.Profit := Profit;
-          
+          Bet.Profit := Profit;          
           Table_Abets.Update_Withcheck(Bet);
-
-
         end if;
-      else -- Illegal data
-        null;
-      end if;
-
-      
-      
-      
-    end loop;
-      
-      
+      end if; -- Illegal data
+    end loop;            
       
     -- check the real bets
     Sql.Prepare(Select_Real_Bets,
       "select * from ABETS where betwon is null and betname not like 'DR_%' order by BETID");
+    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
+    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
+      -- Call Betfair here ! Profit & Loss
+    end loop;            
       
-    T.Commit;;
+    T.Commit;
     Table_Abets.Abets_List_Pack.Release(Bet_List);  
   end Check_Bets;  
 

@@ -33,8 +33,8 @@ package body Bot_Config is
     -----------------------------------------------------
 
   procedure Read(Cfg : in out Config_Type) is
-    function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
-    function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
+   -- function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
+   -- function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
   begin
     Log(Me & "Read start");
     if not Command_Line_Is_Parsed then
@@ -127,6 +127,19 @@ package body Bot_Config is
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "horses_") > 0 then 
               Bet_Section.Animal := Horse;
+            end if;
+            
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > 0 then 
+              Bet_Section.Market_Type := Place;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_place_") > 0 then 
+              Bet_Section.Market_Type := Place;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_winner_") > 0 then 
+              Bet_Section.Market_Type := Winner;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_win_") > 0 then 
+              Bet_Section.Market_Type := Winner;
             end if;
             
             

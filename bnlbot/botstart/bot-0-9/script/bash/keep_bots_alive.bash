@@ -72,6 +72,7 @@ RESULT_MARKETS_FETCHER=$?
 
 if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
 #  echo "start"
+  export BOT_NAME=markets_fetcher
   $BOT_TARGET/bin/markets_fetcher --daemon
 fi
 
@@ -97,5 +98,6 @@ if [ $epoch_now -gt $epoch_lock_expires ] ; then
   sleep 1
 fi
 
+export BOT_NAME=winners_fetcher
 $BOT_TARGET/bin/winners_fetcher --daemon
 ############ winners_fetcher stop #########

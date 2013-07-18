@@ -54,4 +54,11 @@ package body Bot_Types is
    ---------------------------------------------
    
    
+   function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8 is
+   begin
+     return Float_8(Left) * Float_8(Right);
+   end "*";
+   
+   ---------------------------------------------
+   
 end Bot_Types;

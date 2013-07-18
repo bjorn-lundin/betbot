@@ -241,6 +241,7 @@ proc Print_Global_Index_Info {} {
               STRING_FORMAT    -
               INTEGER_4_FORMAT -
               INTEGER_8_FORMAT -
+              BOOLEAN_FORMAT -
               FLOAT_8_FORMAT {
                 append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
               }
@@ -272,6 +273,7 @@ proc Print_Global_Index_Info {} {
               STRING_FORMAT    -
               INTEGER_4_FORMAT -
               INTEGER_8_FORMAT -
+              BOOLEAN_FORMAT -
               FLOAT_8_FORMAT {
                 append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
               }
@@ -413,6 +415,7 @@ proc Print_Global_Index_Info {} {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
         INTEGER_8_FORMAT -
+        BOOLEAN_FORMAT -
         CLOB_FORMAT      -
         FLOAT_8_FORMAT {
           append R "Sql.Set_Null($Stm_Name, \"$COL_NAME\");\n"
@@ -498,6 +501,7 @@ proc Print_Global_Index_Info {} {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
         INTEGER_8_FORMAT -
+        BOOLEAN_FORMAT -
         FLOAT_8_FORMAT {
           append S "    Sql.Set($Stm_Name, \"$COL_NAME\", Data.$Col_Name);\n"
         }
@@ -548,6 +552,7 @@ proc Print_Global_Index_Info {} {
             STRING_FORMAT    -
             INTEGER_4_FORMAT -
             INTEGER_8_FORMAT -
+            BOOLEAN_FORMAT -
             FLOAT_8_FORMAT {
               append S "Sql.Set($Stm_Name, \"$COL_NAME\",Data.$Col_Name);\n"
             }
@@ -702,12 +707,12 @@ proc Print_Package_Start_Spec {Name Type Node Columns Out_File} {
   set Index_Counter 0
   foreach col $Columns {
     array set Attributes [Repo_Utils::Get_Attributes $col]
-    #treat Boolean as integer_4
-    if {[string equal $Attributes(Type) 7]} {
-      set Used_Type 2
-    } else {
+#    #treat Boolean as integer_4
+#    if {[string equal $Attributes(Type) 7]} {
+#      set Used_Type 2
+#    } else {
       set Used_Type $Attributes(Type)
-    }
+#    }
 
     set Data_Type [Repo_Utils::Type_To_Ada_Type $Used_Type $Attributes(Size)]
     set Range {}
@@ -1407,6 +1412,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
         STRING_FORMAT    -
         INTEGER_4_FORMAT -
         INTEGER_8_FORMAT -
+        BOOLEAN_FORMAT -
         FLOAT_8_FORMAT {
           puts $Out_File "      Sql.Get(Stm, \"$COL_NAME\", Data.$Col_Name);"
         }
@@ -1779,6 +1785,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
       STRING_FORMAT    -
       INTEGER_4_FORMAT -
       INTEGER_8_FORMAT -
+      BOOLEAN_FORMAT -
       FLOAT_8_FORMAT {
          puts $Out_File "    if Has_Value(Request, \"$COL_NAME\") then"
          puts $Out_File "      Get_Value(Request, \"$COL_NAME\", Data.$Col_Name);"
@@ -1832,6 +1839,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
       STRING_FORMAT    -
       INTEGER_4_FORMAT -
       INTEGER_8_FORMAT -
+      BOOLEAN_FORMAT -
       FLOAT_8_FORMAT {
         puts $Out_File "    Set_Value(Reply, \"$COL_NAME\", Data.$Col_Name);"
       }
@@ -1879,6 +1887,7 @@ proc Print_Ud4_Functions_Body {Name Type Node Columns Out_File} {
       }
       INTEGER_4_FORMAT -
       INTEGER_8_FORMAT -
+      BOOLEAN_FORMAT -
       FLOAT_8_FORMAT -
       DATE_FORMAT -
       TIME_FORMAT -
@@ -1967,6 +1976,9 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
       }
       INTEGER_8_FORMAT {
         puts $Out_File "          \" $Col_Name = \" & Integer_8'Image(Data.$Col_Name) &"
+      }
+      BOOLEAN_FORMAT   {
+        puts $Out_File "          \" $Col_Name = \" & Boolean'Image(Data.$Col_Name) &"
       }
       FLOAT_8_FORMAT {
         puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_To_String(Data.$Col_Name) &"
