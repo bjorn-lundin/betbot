@@ -30,6 +30,9 @@ with Logging; use Logging;
 with Ada.Environment_Variables;
 --with Ada.Directories;
 
+with Process_IO;
+with Bot_Messages;
+
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
@@ -631,6 +634,8 @@ procedure Markets_Fetcher is
 ------------------------------ main start -------------------------------------
   Parsed_Ok1, Parsed_Ok2, Is_Time_To_Check_Markets : Boolean ;
   Post_Timeouts : integer_4 := 0;
+  Market_Found : Boolean;
+  Market_Ids                  : JSON_Array := Empty_Array;
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
  
@@ -689,9 +694,10 @@ begin
 
    
     Sql.Connect
-        (Host     => "192.168.0.13",
+--        (Host     => "192.168.0.13",
+        (Host     => "localhost",
          Port     => 5432,
-         Db_Name  => "betting",
+         Db_Name  => "bnl",
          Login    => "bnl",
          Password => "bnl");
    
@@ -719,6 +725,7 @@ begin
    Append(Market_Projection , Create("MARKET_START_TIME"));
    
    Main_Loop : loop
+     Market_Found := False;
      Is_Time_To_Check_Markets := Sattmate_Calendar.Clock.Second >= 50 ;
    
      if Is_Time_To_Check_Markets then
@@ -899,6 +906,7 @@ begin
              Market := Get(Result_List_Market_Catalogue, i);
              
              if Market.Has_Field("marketId") then
+               Market_Found := True;
      --          Log(Me, "we have result #:" & i'img & " Market:" & Market.Write );
                Insert_Market(Market);
                Event := Market.Get("event");
@@ -942,11 +950,12 @@ begin
      --    "id": 1
      --}  
            Params,In_Play              : JSON_Value := Create_Object;
-           Market_Ids                  : JSON_Array := Empty_Array;
+--           Market_Ids                  : JSON_Array := Empty_Array;
            Price_Data                  : JSON_Array := Empty_Array;
            Price_Projection            : JSON_Value := Create_Object;
            Has_Id                      : Boolean  := False; 
          begin    
+           Market_Ids := Empty_Array;
      
          
            for i in 1 .. Length (Result_List_Market_Catalogue) loop
@@ -1054,6 +1063,24 @@ begin
                  
       end if; -- parsed_ok 1   
       Sql.Commit(T);
+      if Market_Found then 
+        declare
+          Market   : JSON_Value := Create_Object;
+          MNR      : Bot_Messages.Market_Notification_Record;
+          Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+        begin
+          Move("bot", Receiver.Name);
+          for i in 1 .. Length (Market_Ids) loop
+            Market := Get(Market_Ids, i);
+            MNR.Market_Id := (others => ' ');
+            Move(String'(Market.Get),MNR.Market_Id);
+            Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
+            Bot_Messages.Send(Receiver, MNR);
+          end loop;
+        end;  
+      
+      end if;
+      
       Log(Me, "Wait 10 secs");
       delay 10.0;
     else  

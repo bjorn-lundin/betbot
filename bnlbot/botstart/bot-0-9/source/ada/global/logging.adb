@@ -129,14 +129,13 @@ package body Logging is
       if Quiet then
         return;
       end if;
-      if Ada.Directories.Size(To_String(Global_Name)) > 10_000_000 then
-        Close;
-        Rename_Log_File(To_String(Global_Name));
-        Open(To_String(Global_Name));
-      end if;
-      
-      
       if Text_Io.Is_Open(Global_File) then
+        if Ada.Directories.Exists(To_String(Global_Name)) and then
+           Ada.Directories.Size(To_String(Global_Name)) > 10_000_000 then
+          Close;
+          Rename_Log_File(To_String(Global_Name));
+          Open(To_String(Global_Name));
+        end if;
         Text_Io.Put_Line (Global_File, String_Date_Time_ISO (Clock, " " , "") & " " & What);
         Text_Io.Flush (Global_File);
       else

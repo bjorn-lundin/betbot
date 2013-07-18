@@ -271,9 +271,9 @@ begin
 
     Log (Me, "connect db");
     Sql.Connect
-        (Host     => "192.168.0.13",
+        (Host     => "localhost",
          Port     => 5432,
-         Db_Name  => "betting",
+         Db_Name  => "bnl",
          Login    => "bnl",
          Password => "bnl");
     Log (Me, "connected to db");

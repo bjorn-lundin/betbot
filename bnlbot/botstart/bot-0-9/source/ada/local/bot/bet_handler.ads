@@ -7,7 +7,6 @@ with Table_Amarkets;
 with Table_Aprices;
 with Table_Arunners;
 with Bot_Config;
-with Bot_Types ; use Bot_Types;
 
 package Bet_Handler is
   Bad_Data,
@@ -46,7 +45,7 @@ private
   type Bet_Type is new Ada.Finalization.Controlled with record
      Bet_Info      : Bet_Info_Record;
      Bot_Cfg       : Bot_Config.Bet_Section_Type;
-     This_Bet_Type : Bet_Type_Type; 
+--     This_Bet_Type : Bet_Type_Type; 
   end record;
   
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type;
@@ -55,6 +54,7 @@ private
   function History_Ok(Bet : Bet_Type) return Boolean;
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
+  function Exists(Bet : Bet_Type) return Boolean;
   procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
   procedure Make_Real_Bet(Bet     : in out Bet_Type;
                           A_Token : in out Token.Token_Type) ;

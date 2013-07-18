@@ -2,6 +2,7 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
+with Bot_Types ; use Bot_Types;
 --with Sattmate_Types; use Sattmate_Types;
 with Gnatcoll.Json; use Gnatcoll.Json;
 --with Bot_Types; use  Bot_Types;
@@ -27,6 +28,7 @@ package body Bet_Handler is
   Suicide,
   No_Such_Field : exception;
 
+  Select_Exists,
   Select_History,
   Select_Prices : Sql.Statement_Type;
 
@@ -124,6 +126,7 @@ package body Bet_Handler is
       
     T.Commit;
     
+    Max_Idx := 0;    
     Table_Aprices.Aprices_List_Pack.Get_First(Bet_Info.Price_List, Price, Eol);
     loop
       exit when Eol;
@@ -138,7 +141,7 @@ package body Bet_Handler is
     loop
       exit when Eol;
       Max_Idx := Max_Idx +1; 
-      Bet_Info.Price_Array(Max_Idx) := Price;
+      Bet_Info.Runner_Array(Max_Idx) := Runner;
       Table_Arunners.Arunners_List_Pack.Get_Next(Bet_Info.Runner_List, Runner, Eol);
     end loop;
     Bet_Info.Last_Runner := Max_Idx;
@@ -148,43 +151,37 @@ package body Bet_Handler is
   -------------------------------------------------------------------------------
   overriding procedure Finalize (Bet_Info : in out Bet_Info_Record) is
   begin
-      Table_Arunners.Arunners_List_Pack.Release(Bet_Info.Runner_List);
-      Table_Aprices.Aprices_List_Pack.Release(Bet_Info.Price_List);
+      null;
+--      Log(Me & "Finalize", "Bet_Info Start releasing lists");
+      --Table_Arunners.Arunners_List_Pack.Release(Bet_Info.Runner_List);
+      --Table_Aprices.Aprices_List_Pack.Release(Bet_Info.Price_List);
+--      Log(Me & "Finalize", "Bet_Info Stop releasing lists");
   end Finalize;
   -------------------------------------------------------------------------------
     
   procedure Try_Make_New_Bet (Bet_Info : in out Bet_Info_Record;
                               Bot_Cfg  : in out Bot_Config.Bet_Section_Type;
                               A_Token  : in out Token.Token_Type) is
+    -- see if we can make a bet now
+      Bet       : Bet_Type := Create(Bet_Info, Bot_Cfg);
+      Fulfilled : Boolean  := True;
   begin
-    -- some sanity checks
-    case Bet_Info.Event.Eventtypeid is 
-      when 7 =>    -- horses
-        if Bot_Cfg.Animal /= Horse then
-           raise Bad_Data with "7 is not :" &  Bot_Cfg.Animal'Img;
-        end if;
-      when 4339 => -- hounds
-        if Bot_Cfg.Animal /= Hound then
-           raise Bad_Data with "4339 is not :" &  Bot_Cfg.Animal'Img;
-        end if;
-      when others => raise Bad_Data with "not supported eventtype:" & Bet_Info.Event.Eventtypeid'Img; 
-    end case;
-
-    declare -- see if we can make a bet now
-      Bet : Bet_Type := Create(Bet_Info, Bot_Cfg);
-      Fulfilled : Boolean := True;
-    begin
+    Log(Me & "Try_Make_New_Bet", "Bet_name " & To_String(Bot_Cfg.Bet_Name) );
+    if not Bet.Exists then
 --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
       Bet.Check_Conditions_Fulfilled(Fulfilled);
       if Fulfilled then
         Bet.Make_Dry_Bet;
         if Bet.Enabled then
           if Bet.History_Ok then
-            Bet.Make_Real_Bet(A_Token);
+--            Bet.Make_Real_Bet(A_Token);
+             Log(Me & "Try_Make_New_Bet", "would be a real bet here");
           end if;
         end if;
       end if;
-    end;
+    else
+      Log(Me & "Try_Make_New_Bet", "Bet alredy placed on this market");
+    end if;
   end Try_Make_New_Bet;
     
   -------------------------------------------------------------------------------
@@ -194,13 +191,23 @@ package body Bet_Handler is
     Bet_Info : Bet_Info_Record := Create(Market_Notification);
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
+    Num_Runners : Integer := Bet_Info.Last_Price;
   begin
+    Log(Me & "Treat_Market", "start market:" & Market_Notification.Market_Id);
+    for i in 1 .. Num_Runners loop  
+      Log(Me & "Treat_Market", Bet_Info.Runner_Array(i).Runnername(1..20) & " " & 
+                              " bck " & Bet_Info.Price_Array(i).Backprice'Img &
+                              " lay " & Bet_Info.Price_Array(i).Layprice'Img);
+    end loop;
+    
+    
     Bet_Pack.Get_First(Bot_Config.Config.Bet_Section_List, Bet_Section,Eol);
     loop
       exit when Eol;
       Bet_Info.Try_Make_New_Bet(Bet_Section, A_Token);
       Bet_Pack.Get_Next(Bot_Config.Config.Bet_Section_List, Bet_Section, Eol);
     end loop;
+    Log(Me & "Treat_Market", "end market:" & Market_Notification.Market_Id);
   end Treat_Market;
   -------------------------------------------------------------------------------
   
@@ -213,9 +220,9 @@ package body Bet_Handler is
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
     if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > 0 then 
-      Tmp.This_Bet_Type := Lay;
+      null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > 0 then 
-      Tmp.This_Bet_Type := Back;
+      null;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";    
     end if;
@@ -234,8 +241,47 @@ package body Bet_Handler is
     Max_Turns : Integer := 0;
     Num_Runners : Integer := Bet.Bet_Info.Last_Price;
     Max_Favorite_Odds : Float_8 := 0.0;
+    use General_Routines;
   begin
     Result := True;
+    
+    Log(Me & "Check_Conditions_Fulfilled", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
+                                           "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &    
+                                           "Animal: " &  Bet.Bot_Cfg.Animal'Img );
+                                           
+                                           
+                                           
+    -- some sanity checks
+    case Bet.Bet_Info.Event.Eventtypeid is 
+      when 7 =>    -- horses
+        if Bet.Bot_Cfg.Animal /= Horse then
+          Log(Me & "Try_Make_New_Bet", "wrong animal for this bot should be horse, is " & Bet.Bot_Cfg.Animal'Img);
+          Result := False;
+          return ; -- wrong animal for this bot
+        end if;
+      when 4339 => -- hounds
+        if Bet.Bot_Cfg.Animal /= Hound then
+          Log(Me & "Try_Make_New_Bet", "wrong animal for this bot should be hound, is " & Bet.Bot_Cfg.Animal'Img);
+          Result := False;
+          return ; -- wrong animal for this bot
+        end if;
+      when others => raise Bad_Data with "not supported eventtype:" & Bet.Bet_Info.Event.Eventtypeid'Img; 
+    end case;
+    
+    -- check that the race's WIN/PLACE is what the bot expect
+    if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= Bet.Bot_Cfg.Bet_Type'Img then
+      Log(Me & "Try_Make_New_Bet", "wrong bettype for this bot should be: '" &  Bet.Bot_Cfg.Bet_Type'Img & "' is '" & Bet.Bot_Cfg.Animal'Img & "'");
+      Result := False;
+      return ; -- wrong animal for this bot
+    end if;
+                                           
+                                           
+    for i in 1 .. num_runners loop  
+      Log(Me & "Check_Conditions_Fulfilled", Bet.Bet_Info.Runner_Array(i).Runnername(1..20) & " " & 
+                                             " bck " & Bet.Bet_Info.Price_Array(i).Backprice'Img &
+                                             " lay " & Bet.Bet_Info.Price_Array(i).Layprice'Img);
+    end loop;
+    
     -- check market status --?
     if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
       Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
@@ -243,9 +289,9 @@ package body Bet_Handler is
       return;
     end if;
   
-    case Bet.This_Bet_Type is
+    case Bet.Bot_Cfg.Bet_Type is    
       when Back => -- only check the favorite here
-        if Bet.Bet_Info.Last_Price < 2 then
+        if Num_Runners < 2 then
           Log(Me & "Check_Conditions_Fulfilled", "Bet.Bet_Info.Last_Price < 2, " & Bet.Bet_Info.Last_Price'Img);
           Result := False;
           return;
@@ -253,7 +299,8 @@ package body Bet_Handler is
 
         Price_Fav     := Bet.Bet_Info.Price_Array(1);
         Price_2nd_Fav := Bet.Bet_Info.Price_Array(2);
-       
+
+        
         -- check price within backprice +- deltaprice
         if  Bet.Bot_Cfg.Back_Price - Bet.Bot_Cfg.Delta_Price <= Price_Fav.Backprice and then
             Price_Fav.Backprice <= Bet.Bot_Cfg.Back_Price + Bet.Bot_Cfg.Delta_Price and then
@@ -297,6 +344,7 @@ package body Bet_Handler is
           Result := False;
           return;
         end if;
+        
         declare
           Was_OK : Boolean := False;
         begin           
@@ -310,8 +358,10 @@ package body Bet_Handler is
             end if;
           end loop;
           if not Was_Ok then
+            Log(Me & "Check_Conditions_Fulfilled", "Reset done, was not ok, Max_Turns=" & Max_Turns'Img);
             Bet.Bet_Info.Selection_Id := 0; --reset
             Bet.Bet_Info.Used_Index   := 0;  
+            Result := False;
           end if;
         end;  
     end case;
@@ -368,8 +418,7 @@ package body Bet_Handler is
           Sql.Get(Select_History, 1, History(i).Profit);
         end if;
       end loop;     
-    T.Commit;
-    
+    T.Commit;   
     
     for i in History'range loop
       Sum := Sum + (History(i).Weight * History(i).Profit);
@@ -381,6 +430,37 @@ package body Bet_Handler is
   end History_Ok;
   ------------------------------------------------------------------------------------------------------
 --  function To_String(Bet : Bet_Type) return String;
+  function Exists(Bet : Bet_Type) return Boolean is
+    T    : Sql.Transaction_Type;
+    Eos  : Boolean := False;
+    Abet : Table_Abets.Data_Type;
+  begin
+    T.Start;
+      Sql.Prepare(Select_Exists,
+         "select * " & 
+         "from " &
+           "abets " &
+         "where marketid = :MARKETID " & 
+           "and betname = :BETNAME ");
+           
+      Sql.Set(Select_Exists, "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
+      Sql.Set(Select_Exists, "MARKETID", Bet.Bet_Info.Market.Marketid);
+      
+      Sql.Open_Cursor(Select_Exists);     
+      Sql.Fetch(Select_Exists, Eos);     
+      Sql.Close_Cursor(Select_Exists);     
+      if not Eos then
+        Abet := Table_Abets.Get(Select_Exists);
+        Log(Me & "Exists", "Bet does exists " & Table_Abets.To_String(Abet));
+      else  
+        Log(Me & "Exists", "Bet does not exist");
+      end if;
+    T.Commit;
+    return not Eos;
+  
+  end Exists;
+  ---------------------------------------------------------------
+
   procedure Make_Dry_Bet(Bet : in out Bet_Type) is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
@@ -420,6 +500,7 @@ package body Bet_Handler is
 --      Ixxluts :        Time_Type  := Time_Type_First ; --
 --  end record;
 
+    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
 
     case Bet.Bot_Cfg.Bet_Type is
       when Back => 
@@ -761,7 +842,7 @@ package body Bet_Handler is
     exception
       when Sql.Duplicate_Index =>
         T.Rollback;
-        Log(Me & "Make_Real_Bet" & "Make_Real_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));      
+        Log(Me & "Make_Real_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));      
     end ;
   end Make_Real_Bet;
   
@@ -803,6 +884,11 @@ package body Bet_Handler is
       Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
     end if;  
     Pip := Local;
+    Log(Me & "Pip.Init", "Price: " & Price'Img & " became " & Local.Pip_Price'Img & 
+                         " Upper_Index " & Local.Upper_Index'Img & 
+                         " Upper_Price " & Global_Odds_Table(Local.Upper_Index)'Img  &
+                         " Lower_Index " & Local.Lower_Index'Img & 
+                         " Lower_Price " & Global_Odds_Table(Local.Lower_Index)'Img  );      
   end Init;
   -------------------------------- 
   function Next_Price(Pip : Pip_Type) return Float_8 is
