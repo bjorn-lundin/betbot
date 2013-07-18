@@ -632,11 +632,19 @@ proc Print_Global_Index_Info {} {
             append S "    [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]"
           }
           default {
-            append S "    if Data.$Col_Name = [Repo_Utils::Null_Data_For_Type_At_Comparison $Attributes(Type) $Attributes(Size) Data.$Col_Name] then\n"
-            append S "      [Set_Null $Col_Type $Stm_Name $COL_NAME]"
-            append S "    else\n"
-            append S "      [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]"
-            append S "    end if;\n"
+            set Col_Type [Repo_Utils::Type_To_String $Attributes(Type)]
+            switch -exact -- $Col_Type {
+              BOOLEAN_FORMAT    {
+                append S "    [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]" ; #Booleans cannot be SET to null! (on what value then?)
+              }
+              default {
+                append S "    if Data.$Col_Name = [Repo_Utils::Null_Data_For_Type_At_Comparison $Attributes(Type) $Attributes(Size) Data.$Col_Name] then\n"
+                append S "      [Set_Null $Col_Type $Stm_Name $COL_NAME]"
+                append S "    else\n"
+                append S "      [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]"
+                append S "    end if;\n"
+              }  
+            }  
           }
         }
       } else {
