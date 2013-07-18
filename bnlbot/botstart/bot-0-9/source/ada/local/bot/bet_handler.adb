@@ -28,6 +28,10 @@ package body Bet_Handler is
   Suicide,
   No_Such_Field : exception;
 
+  Update_Betwon_To_Null,
+  Select_Selection_In_Winners,
+  Select_Dry_Run_Bets,
+  Select_Real_Bets,
   Select_Exists,
   Select_History,
   Select_Prices : Sql.Statement_Type;
@@ -228,6 +232,8 @@ package body Bet_Handler is
     end if;
     return Tmp;
   end Create;
+  
+  
   -----------------------------------------------------------------------
   function Enabled(Bet : Bet_Type) return Boolean is 
   begin
@@ -270,7 +276,7 @@ package body Bet_Handler is
     
     -- check that the race's WIN/PLACE is what the bot expect
     if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= Bet.Bot_Cfg.Bet_Type'Img then
-      Log(Me & "Try_Make_New_Bet", "wrong bettype for this bot should be: '" &  Bet.Bot_Cfg.Bet_Type'Img & "' is '" & Bet.Bot_Cfg.Animal'Img & "'");
+      Log(Me & "Try_Make_New_Bet", "wrong bettype for this bot should be: '" &  Bet.Bot_Cfg.Bet_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype) & "'");
       Result := False;
       return ; -- wrong animal for this bot
     end if;
@@ -365,6 +371,9 @@ package body Bet_Handler is
           end if;
         end;  
     end case;
+    -- neutral place, will be executed in make*bet
+    Sql.Prepare(Update_Betwon_To_Null,"update ABETS set betwon = null where betid = :BETID");
+
   end Check_Conditions_Fulfilled;
   ------------------------------------------------------------------------------------------------------
   function History_Ok(Bet : Bet_Type) return Boolean is
@@ -528,7 +537,7 @@ package body Bet_Handler is
       Price          => Price,         
       Side           => Side,
       Betname        => Bet_Name,       
-      Betwon         => 0,
+      Betwon         => False,
       Profit         => 0.0,        
       Status         => Order_Status,         
       Exestatus      => Success,     
@@ -547,6 +556,8 @@ package body Bet_Handler is
     begin
       T.Start;
         Table_Abets.Insert(Abet);
+        Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
+        Sql.Execute(Update_Betwon_To_Null);
       T.Commit;
     exception
       when Sql.Duplicate_Index =>
@@ -838,6 +849,8 @@ package body Bet_Handler is
     begin
       T.Start;
         Table_Abets.Insert(Abet);
+        Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
+        Sql.Execute(Update_Betwon_To_Null);
       T.Commit;
     exception
       when Sql.Duplicate_Index =>
@@ -910,5 +923,106 @@ package body Bet_Handler is
   end Previous_Price;
   ---------------------------------
  
+  
+  -------------------------------------------------
+  procedure Check_Bets is
+    use General_Routines;
+    Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
+    Bet      : Table_Abets.Data_Type;
+    T        : Sql.Transaction_Type; 
+    Illegal_Data : Boolean := False;
+    Side       : Bet_Type_Type; 
+    Winner     : Table_Awinners.DAta_Type
+    Runner     : Table_Arunners.Data_Type
+    Non_Runner : Table_Anonrunners.Data_Type;
+    type Eos_Type is (AWinner, Arunner, Anonrunner)
+    Eos : array (Eos_Type'range) := (others => False);
+    Selection_In_Winners,Bet_Won : Boolean := False;
+    Profit  : Profit_Type := 0.0;
+  begin
+  
+    T.Start;
+    -- check the dry run bets
+    Sql.Prepare(Select_Dry_Run_Bets,
+      "select * from ABETS where betwon is null and betname like 'DR_%' order by BETID");
+    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
+      
+    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+      Illegal_Data := False;
+      Table_Abets.Abets_List_Pack.Remove_From_List(Bet_List, Bet);
+      Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
+      if Trim(Bet.Side) = "BACK" then
+        Side := Back;
+      elsif Trim(Bet.Side) = "LAY" then
+        Side := Lay;
+      else
+        Illegal_Data := True;
+        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side);
+      end if;
+      if not Illegal_Data then
+        -- do we have a non-runner?      
+        Runner.Marketid := Bet.Marketid;
+        Runner.Selectionid := Bet.Selectionid;
+        Table_Arunners.Read(Runner, Eos(Arunner));
+        
+        if not Eos(Arunner) then
+          Non_Runner.Marketid := Runner.Marketid;
+          Non_Runner.Runnername  := Runner.runnernamestripped;
+          Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
+        end if;
+
+        if not Eos(Anonrunner) then
+          -- non -runner - void the bet
+        else 
+          -- ok, lets continue        
+          Winner.Marketid := Bet.Marketid;
+          Winner.Selectionid := Bet.Selectionid;
+          Table_Awinners.Read(Winner, Eos(Awinner));
+          Selection_In_Winners := not Eos(Awinner);
+        
+          case Side is
+            when Back => Bet_Won := Selection_In_Winners;
+            when Lay  => Bet_Won := not Selection_In_Winners;
+          end case;
+      
+          if Bet_Won then
+            case Side is
+              when Back => Profit := 1.0 * Bet.Size * (Bet.Price - 1.0);
+              when Lay  => Profit := 1.0 * Bet.Size;
+            end case;
+          else -- lost :-(
+            case Side is
+              when Back => Profit := -Bet.Size;
+              when Lay  => Profit := -Bet.Size * Bet.Price;
+            end case;
+          end if;        
+
+          
+          Bet.Betwon := Bet_Won;
+          Bet.Profit := Profit;
+          
+          Table_Abets.Update_Withcheck(Bet);
+
+
+        end if;
+      else -- Illegal data
+        null;
+      end if;
+
+      
+      
+      
+    end loop;
+      
+      
+      
+    -- check the real bets
+    Sql.Prepare(Select_Real_Bets,
+      "select * from ABETS where betwon is null and betname not like 'DR_%' order by BETID");
+      
+    T.Commit;;
+    Table_Abets.Abets_List_Pack.Release(Bet_List);  
+  end Check_Bets;  
+
   
 end Bet_Handler;

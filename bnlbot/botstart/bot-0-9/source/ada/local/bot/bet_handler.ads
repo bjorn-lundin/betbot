@@ -16,7 +16,7 @@ package Bet_Handler is
   procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record;
                          A_Token             : in out Token.Token_Type) ;
 
-
+  procedure Check_Bets;
   
 private
 

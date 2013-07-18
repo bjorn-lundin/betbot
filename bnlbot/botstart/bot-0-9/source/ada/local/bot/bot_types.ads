@@ -20,6 +20,7 @@ package Bot_Types is
    type Min_Num_Runners_Type is new Byte;
    type Max_Num_Runners_Type is new Byte;   
    type Favorite_By_Type is new Float_8;
+   type Profit_Type is new Float_8;
 
    
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
