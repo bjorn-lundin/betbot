@@ -1249,7 +1249,6 @@ package body Sql is
    end Set;
 
    ---------------------------------------------------------
-
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Character) is
@@ -1257,6 +1256,18 @@ package body Sql is
    begin
       Local_Value (1) := Value;
       Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_Character);
+   end Set;
+   -------------------------------------------------------------
+
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in Boolean) is
+      I : Integer_4 := 0;                 
+   begin
+      if Value then
+        I := 1;
+      end if;  
+      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_4'Image (I)), An_Integer);
    end Set;
    -------------------------------------------------------------
 
@@ -1491,6 +1502,44 @@ package body Sql is
    procedure Get (Statement : in Statement_Type;
                   Parameter : in String;
                   Value     : out Float_8) is
+      Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
+   begin
+      Get (Statement, Positive (Field_Number), Value);
+   end Get;
+
+   ------------------------------------------------------------
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
+                  Value     : out Boolean) is
+   begin
+      declare
+         Local_String : constant String :=
+                          Get_Value (Statement.Private_Statement.Result,
+                                     Tuple_Index_Type (Statement.Private_Statement.Current_Row),
+                                     Field_Index_Type (Parameter));
+      begin
+         if Local_String'Length = 0 then
+            Value := False;
+         else
+            if Local_String = "f" then
+              Value := False;
+            elsif Local_String = "t" then
+              Value := True;
+            else
+              raise Conversion_Error with "Not handled boolean value: '" & Local_String & "'" ;
+            end if;            
+         end if;
+      end;
+   exception
+      when Constraint_Error =>
+         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+   end Get;
+
+   ------------------------------------------------------------
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Boolean) is
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
       Get (Statement, Positive (Field_Number), Value);

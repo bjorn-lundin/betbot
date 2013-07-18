@@ -312,7 +312,7 @@ namespace eval Repo_Utils {
       2  {return "INTEGER_4_FORMAT"}
       3  {return "INTEGER_8_FORMAT"}
       6  {return "FLOAT_8_FORMAT"}
-      7  {return "INTEGER_4_FORMAT"}
+      7  {return "BOOLEAN_FORMAT" }
       9  {return "INTEGER_4_FORMAT"}
       10 {return "DATE_FORMAT"}
       11 {return "TIME_FORMAT"}
@@ -390,7 +390,7 @@ namespace eval Repo_Utils {
           2  {return "integer"}
           3  {return "bigint"}
           6  {return "float"}
-          7  {return "integer"}
+          7  {return "boolean"}
           9  {return "integer"}
           10 {return "date"}
           11 {return "time without time zone"}
@@ -442,7 +442,7 @@ namespace eval Repo_Utils {
       2  {return "0"}
       3  {return "0"}
       6  {return "0.0"}
-      7  {return "0" ; # We never use boolean in db "False"}
+      7  {return "False" ; # We never use boolean in db "False"}
       9  {return "0"}
       10 {return "Time_Type_First"}
       11 {return "Time_Type_First"}
@@ -479,8 +479,11 @@ namespace eval Repo_Utils {
 ########################################################3
   proc Null_Data_For_Type_In_Db {Type Size} {
     # 7 -> 2 ; Boolean -> Integer_4
+#    switch -exact $Type {
+#      7       {return [Null_Data_For_Type 2 $Size]}
+#      default {return [Null_Data_For_Type $Type $Size]}
+#    }
     switch -exact $Type {
-      7       {return [Null_Data_For_Type 2 $Size]}
       default {return [Null_Data_For_Type $Type $Size]}
     }
   }
@@ -496,7 +499,7 @@ proc Default_Values {Used_Type db} {
           2 -
           3 -
           4 -
-          7 -
+          7  {set R "default 1" }
           9  {set R "default 1" }
       }
     }
@@ -518,7 +521,7 @@ proc Default_Values {Used_Type db} {
           2 -
           3 -
           4 -
-          7 -
+          7  {set R "default False" }
           9  {set R "default 1" }
       }
     }

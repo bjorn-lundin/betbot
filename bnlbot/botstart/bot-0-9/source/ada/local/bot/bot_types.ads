@@ -32,6 +32,8 @@ package Bot_Types is
    function "<=" (Left : Float_8 ; Right : Back_Price_Type) return Boolean ;
    function "<" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean;
    function "<=" (Left : Float_8 ; Right : Max_Lay_Price_Type) return Boolean ;
+   
+   function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8;
 
    
    

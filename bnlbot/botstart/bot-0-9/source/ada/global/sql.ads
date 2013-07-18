@@ -133,6 +133,13 @@ package Sql is
                   Parameter : in String;
                   Value     : out Character);
 
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
+                  Value     : out Boolean);
+
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Boolean);
 
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in String;
@@ -179,6 +186,10 @@ package Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Float_8);
+                  
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in Boolean);
 
    procedure Set_Date (Statement : in out Statement_Type;
                        Parameter : in String;

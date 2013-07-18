@@ -37,6 +37,7 @@ package Bot_Config is
     Allow_In_Play    : Boolean                := False;
     Animal           : Animal_Type            := Horse;     
     Bet_Type         : Bet_Type_Type          := Back;
+    Market_Type      : Bet_Market_Type        := Winner; 
     Max_Num_Runners  : Max_Num_Runners_Type   := 25;
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
