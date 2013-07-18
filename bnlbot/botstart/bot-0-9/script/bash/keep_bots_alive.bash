@@ -71,11 +71,17 @@ RESULT_MARKETS_FETCHER=$?
 #1
 
 if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
-#  echo "start"
   export BOT_NAME=markets_fetcher
   $BOT_TARGET/bin/markets_fetcher --daemon
 fi
 
+########### bot_checker ############
+$BOT_TARGET/bin/check_bot_running --botname=bot_checker
+RESULT_BOT_CHECKER=$?
+if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
+  export BOT_NAME=bet_checker
+  $BOT_TARGET/bin/bet_checker --daemon
+fi
 
 ######## winners_fetcher ###########
 
