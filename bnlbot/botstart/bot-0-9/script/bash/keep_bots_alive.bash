@@ -3,7 +3,7 @@
 #exit 0
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
-#install with 
+#install with
 #echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash" | crontab
 
 TZ='Europe/Stockholm'
@@ -13,21 +13,30 @@ if [ -z $BOT_START ] ; then
   export BOT_START=$HOME/bnlbot/botstart
 fi
 
+if [ -z $BOT_ROOT ] ; then
+  export BOT_ROOT=$BOT_START/bot-0-9
+fi
+
+
 #Kommer inte funka i multiuser!
 if [ -z $BOT_USER ] ; then
   export BOT_USER=bnl
 fi
 
 if [ -z $BOT_TARGET ] ; then
-  export BOT_TARGET=$BOT_START/bot-0-9/target
+  export BOT_TARGET=$BOT_ROOT/target
 fi
 
 if [ -z $BOT_CONFIG ] ; then
-  export BOT_CONFIG=$BOT_START/bot-0-9/config
+  export BOT_CONFIG=$BOT_ROOT/config
+fi
+
+if [ -z $BOT_SCRIPT ] ; then
+  export BOT_SCRIPT=$BOT_ROOT/script
 fi
 
 if [ -z $BOT_SOURCE ] ; then
-  export BOT_SOURCE=$BOT_START/bot-0-9/source
+  export BOT_SOURCE=$BOT_ROOT/source
 fi
 
 if [ -z $BOT_HOME ] ; then
@@ -35,10 +44,12 @@ if [ -z $BOT_HOME ] ; then
 fi
 
 
+#env | sort
 
-#start the login daemon if not running 
 
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
+#start the login daemon if not running
+
+#pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #1
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
@@ -49,7 +60,7 @@ fi
 ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
 RESULT_LOGIN_DAEMON=$?
 if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
-  /usr/bin/python $BOT_SOURCE/python/login_daemon.py & 
+  /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
 fi
 
 
@@ -60,7 +71,7 @@ RESULT_MARKETS_FETCHER=$?
 
 #if the lock can be aquired, the process is NOT running - start it
 
-##bot  is not running 
+##bot  is not running
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #0
@@ -83,6 +94,14 @@ if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
   $BOT_TARGET/bin/bet_checker --daemon
 fi
 
+########### bot ############
+$BOT_TARGET/bin/check_bot_running --botname=bot
+RESULT_BOT=$?
+if [ $RESULT_BOT -eq 0 ] ; then
+  export BOT_NAME=bot
+  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
+fi
+
 ######## winners_fetcher ###########
 
 #who holds the lock, and since when, and when expires
@@ -98,9 +117,9 @@ epoch_lock_expires=$(date --date="$lock_expires" +%s)
 
 # kill if lock is more than 10 minutes old (time is in lockfile)
 if [ $epoch_now -gt $epoch_lock_expires ] ; then
-  kill -term $locked_by_pid 
+  kill -term $locked_by_pid
   sleep 1
-  kill -kill $locked_by_pid 
+  kill -kill $locked_by_pid
   sleep 1
 fi
 
