@@ -113,8 +113,23 @@ package body Bot_Config is
             Bet_Section.Min_Num_Runners :=
                Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
             
-            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
-            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
+--            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
+--            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
+            
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay_") > 0 then 
+              Bet_Section.Bet_Type := Lay;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > 0 then 
+              Bet_Section.Bet_Type := Back;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > 0 then 
+              Bet_Section.Animal := Hound;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "horses_") > 0 then 
+              Bet_Section.Animal := Horse;
+            end if;
+            
+            
             Bet_Section.Countries :=
                To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
             Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);   

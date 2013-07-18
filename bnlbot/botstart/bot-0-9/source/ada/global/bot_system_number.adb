@@ -21,7 +21,7 @@ package body Bot_System_Number is
   begin
     case System_Number_Type is
       when Betid       => Sql.Prepare(Select_Table_Statements(System_Number_Type),
-                                       "select BETID from BETS " &
+                                       "select BETID from ABETS " &
                                        "where BETID = :NUM");
     end case;
     Sql.Set(Select_Table_Statements(System_Number_Type), "NUM", Number);
@@ -46,7 +46,7 @@ package body Bot_System_Number is
     Transaction     : Sql.Transaction_Type;
 
   begin
-    Sql.Start_Read_Write_Transaction(Transaction);
+    Transaction.Start;
 
     case Sql.Database is
       when Sql.Oracle =>
@@ -64,13 +64,12 @@ package body Bot_System_Number is
       when others => raise Constraint_Error with "Unsupported database";
     end case;
 
-
     while not Is_Number_Found and No_Of_Tries < Max_Tries loop
       Sql.Open_Cursor(Get_Number(System_Number_Type));
       Sql.Fetch(Get_Number(System_Number_Type), End_Of_Set);
       Sql.Close_Cursor(Get_Number(System_Number_Type));
       if End_Of_Set then
-        Sql.Rollback(Transaction);
+        Transaction.Rollback;
         Logging.Log( Object & '.' & Service, "End_Of_Set when getting new number");
         raise No_More_System_Numbers;
       else
@@ -86,7 +85,7 @@ package body Bot_System_Number is
       raise No_More_System_Numbers;
     end if;
 
-    Sql.Commit(Transaction);
+    Transaction.Commit;
     return Number;
   end New_Number;
 
