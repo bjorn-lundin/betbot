@@ -1,3 +1,8 @@
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Environment_Variables;
+with Ada.Calendar;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
 with Simple_List_Class;
@@ -6,38 +11,19 @@ with Aws;
 with Aws.Client;
 with Aws.Response;
 with Sax;
-
 with Unicode.CES.Basic_8bit;
-
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-
 with Sax.Readers;        use Sax.Readers;
 with Input_Sources.Strings; use Input_Sources.Strings;
 with Unicode.CES;
 with Sax.Attributes;
-
 with Sattmate_Exception;
 with General_Routines;
-
 with Lock ;
-
 with Table_Awinners;
 with Table_Anonrunners;
-
 with Posix;
-
-
-with Ada.Environment_Variables;
 --with Ada.Directories;
-
-
-
 with Logging; use Logging;
-
-
-
 
 procedure Winners_Fetcher is
 
@@ -252,8 +238,9 @@ procedure Winners_Fetcher is
 
   My_Reader   : Reader;
   Input       : String_Input;
-
-  URL : String := "http://rss.betfair.com/RSS.aspx?format=xml&sportID=";
+  Sec         : Ada.Calendar.Day_Duration := Ada.Calendar.Seconds(Ada.Calendar.Clock);
+  Ts          : String := "&ts=" & General_Routines.Trim(Integer(Sec)'Img);
+  URL : String := "http://rss.betfair.com/RSS.aspx?format=xml" & Ts & "&sportID=";
   URL_HORSES : String := URL & "7";
   URL_HOUNDS : String := URL & "4339";
 --  URL_SOCCER : String := URL & "1";
