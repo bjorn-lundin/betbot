@@ -3,12 +3,12 @@ set datafile separator '|'
 set terminal png medium size 1024,768 background '#ffffff'
 set output "balance.png"
 
-set yrange [0:3000]
+set yrange [0:4000]
 set ytics 100
 set title "Saldo vid midnatt Betfair"
 set ylabel "Saldo skr"
 
-set y2range [0:3000]
+set y2range [0:4000]
 set y2tics 100
 set y2label "Saldo skr"
 
