@@ -24,6 +24,8 @@ with Table_Anonrunners;
 with Posix;
 --with Ada.Directories;
 with Logging; use Logging;
+with Bot_Messages;
+with Process_Io;
 
 procedure Winners_Fetcher is
 
@@ -65,8 +67,6 @@ procedure Winners_Fetcher is
     Market           : Market_Type;
   end record;
 
-  procedure Insert_Into_Db(Handler : in out Reader) ;
-
   overriding procedure Start_Document (Handler : in out Reader);
 
   overriding procedure End_Document (Handler : in out Reader);
@@ -91,6 +91,7 @@ procedure Winners_Fetcher is
 
 
 
+  Has_Inserted_Winner : Boolean := False;
 
 
   overriding procedure Start_Document (Handler : in out Reader) is
@@ -137,6 +138,8 @@ procedure Winners_Fetcher is
     end if;
 
   end Start_Element;
+
+  procedure Insert_Into_Db(Handler : in out Reader) ; -- forward only. Not dispatching...
 
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
   procedure End_Element(Handler       : in out Reader;
@@ -207,6 +210,7 @@ procedure Winners_Fetcher is
       Winner.Selectionid := Handler.Market.Selection.Id;
       Table_Awinners.Read(Winner, Eos(Awinners));
       if Eos(Awinners) then
+        Has_Inserted_Winner := True;
         Table_Awinners.Insert(Winner);
         Log (Me, "Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
       end if;            
@@ -220,6 +224,7 @@ procedure Winners_Fetcher is
       Move(To_String(Handler.Market.Non_Runner.Name),Non_Runner.Name);
       Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
       if Eos(Anonrunners) then
+        Has_Inserted_Winner := True;
         Table_Anonrunners.Insert(Non_Runner);
         Log (Me,"Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
       end if;      
@@ -303,6 +308,18 @@ begin
 
     Sql.Close_Session;
     Log (Me, "db closed");
+    
+    if Has_Inserted_Winner then
+      declare
+          NWARNR      : Bot_Messages.New_Winners_Arrived_Notification_Record;
+          Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+      begin
+          Move("bet_checker", Receiver.Name);
+          Log(Me, "Notifying 'bet_checker' of that new winners are arrived");
+          Bot_Messages.Send(Receiver, NWARNR);
+      end;
+    end if;
+    
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 

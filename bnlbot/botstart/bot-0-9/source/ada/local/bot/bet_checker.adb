@@ -7,7 +7,7 @@ with General_Routines; use General_Routines;
 with Lock; 
 --with Text_io;
 with Sql;
---with Bot_Messages;
+with Bot_Messages;
 with Posix;
 with Logging; use Logging;
 with Process_Io;
@@ -20,7 +20,7 @@ with Ini;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 30.0; 
+  Timeout  : Duration := 300.0; 
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
@@ -73,7 +73,8 @@ begin
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
       
       case Process_Io.Identity(Msg) is
-        when Core_Messages.Exit_Message                  => exit Main_Loop;
+        when Core_Messages.Exit_Message                           => exit Main_Loop;
+        when Bot_Messages.New_Winners_Arrived_Notification_Message =>  Bet_Handler.Check_Bets;
         when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
