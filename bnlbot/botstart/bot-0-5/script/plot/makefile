@@ -32,9 +32,9 @@ ifeq ($(UNAME),MINGW32_NT-6.1)
 endif
 
 
-HOST := localhost
+#HOST := localhost
 #HOST := 192.168.0.13
-#HOST := nonodev.com
+HOST := nonodev.com
 ifeq ($(HOST),localhost)
   HOST := localhost
   DBNAME := betting
@@ -773,7 +773,7 @@ loop_lay_favorite_bet_hound_place_$(DBNAME).dat : $(BOT_TARGET)/bin/sim_equity_t
 
 .PHONY : balance
 balance:
-	$(PSQL) -h $(HOST) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance order by eventdate" $(DBNAME) > $(DAT)
+	$(shell export PGPASSWORD=$(DBPWD) && $(PSQL) -h $(HOST) -p $(DBPORT) --command="select cast(eventdate as date), saldo as \"saldo\", exposure as \"i spel\" from balance where eventdate > '2013-06-28' order by eventdate" $(DBNAME) > $(DAT))
 #	cat $(DAT) | grep -v event > $(TMP)
 	cat $(DAT) > $(TMP)
 	cat $(TMP) | grep -v rows > $(DAT)
