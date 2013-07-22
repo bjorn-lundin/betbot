@@ -156,7 +156,7 @@ package body Bet_Handler is
 --        Log(Me & "Create - loop Runner_List", Table_Arunners.To_String(Runner));        
         if Bet_Info.Price_Array(i).Selectionid = Runner.Selectionid then
           Bet_Info.Runner_Array(i) := Runner;
-          Log(Me & "Create - loop Runner_List", "Got it");
+--          Log(Me & "Create - loop Runner_List", "Got it");
           exit;
         end if;        
         Table_Arunners.Arunners_List_Pack.Get_Next(Bet_Info.Runner_List, Runner, Eol);
@@ -271,7 +271,7 @@ package body Bet_Handler is
           else
             -- we have won today, but haven't reach our ceiling yet
             Continue_Betting := True;
-            Log (Me & "Try_Make_New_Bet", "YES !! We have won today, but not enough, KEEP bettting.");
+            Log (Me & "Try_Make_New_Bet", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
           end if;
         
         end if;        
@@ -573,10 +573,10 @@ package body Bet_Handler is
         Start_Date.MilliSecond := 0;
         
         End_Date := Now   - (Integer_4(i),0,0,0,0);
-        Start_Date.Hour        := 23;
-        Start_Date.Minute      := 59;
-        Start_Date.Second      := 59;
-        Start_Date.MilliSecond := 999;
+        End_Date.Hour        := 23;
+        End_Date.Minute      := 59;
+        End_Date.Second      := 59;
+        End_Date.MilliSecond := 999;
         
         History(i).Date   := Start_Date;
         History(i).Weight := 1.0 / Float_8(i);
@@ -593,6 +593,7 @@ package body Bet_Handler is
     T.Commit;   
     
     for i in History'range loop
+      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img);
       Sum := Sum + (History(i).Weight * History(i).Profit);
     end loop;     
     
@@ -615,10 +616,10 @@ package body Bet_Handler is
       Start_Date.Second      := 0;
       Start_Date.MilliSecond := 0;
       
-      Start_Date.Hour        := 23;
-      Start_Date.Minute      := 59;
-      Start_Date.Second      := 59;
-      Start_Date.MilliSecond := 999;
+      End_Date.Hour        := 23;
+      End_Date.Minute      := 59;
+      End_Date.Second      := 59;
+      End_Date.MilliSecond := 999;
     
       Select_Profit_Today.Prepare(
         "select " & 
@@ -667,10 +668,10 @@ package body Bet_Handler is
       Start_Date.Second      := 0;
       Start_Date.MilliSecond := 0;
       
-      Start_Date.Hour        := 23;
-      Start_Date.Minute      := 59;
-      Start_Date.Second      := 59;
-      Start_Date.MilliSecond := 999;
+      End_Date.Hour        := 23;
+      End_Date.Minute      := 59;
+      End_Date.Second      := 59;
+      End_Date.MilliSecond := 999;
     
       Select_Lost_Today.Prepare(
         "select " & 
@@ -939,7 +940,7 @@ package body Bet_Handler is
     Instruction.Set_Field (Field_Name => "handicap",        Field      => 0);
     Instruction.Set_Field (Field_Name => "selectionId",     Field      => Integer(Bet.Bet_Info.Selection_Id));
     
-    Append (Instructions , Instruction);    
+    Append (Instructions , Instruction);
              
     Params.Set_Field (Field_Name => "customerRef",          Field      => "some ref to fill in later"); -- what to put here?
     Params.Set_Field (Field_Name => "instructions",         Field      => Instructions);
