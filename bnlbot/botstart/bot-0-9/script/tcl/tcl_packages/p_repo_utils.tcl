@@ -521,8 +521,8 @@ proc Default_Values {Used_Type db} {
           2 -
           3 -
           4 -
-          7  {set R "default False" }
           9  {set R "default 1" }
+          7  {set R "default False" }
       }
     }
     default {puts stderr "Default_Values - unsupported db - '$db'" ; exit 1}
