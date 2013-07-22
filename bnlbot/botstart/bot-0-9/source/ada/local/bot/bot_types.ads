@@ -36,5 +36,8 @@ package Bot_Types is
    function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8;
 
    
+   function ">=" (Left : Profit_Type ; Right : Max_Daily_Profit_Type) return Boolean ;
+   function ">=" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;
+   
    
 end Bot_Types;

@@ -11,7 +11,8 @@ project Adabot is
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("ini_reader.adb",
                  "bot.adb", 
-                 "signal_tester.adb",
+--                 "signal_tester.adb",
+                 "db_tester.adb",
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
                  "bet_checker.adb",

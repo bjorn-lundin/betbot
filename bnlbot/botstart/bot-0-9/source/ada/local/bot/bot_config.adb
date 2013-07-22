@@ -82,7 +82,6 @@ package body Bot_Config is
       Cfg.System_Section.Bot_Script := To_Unbounded_String(EV.Value("BOT_SCRIPT"));
       Cfg.System_Section.Bot_Home   := To_Unbounded_String(EV.Value("BOT_HOME"));
       Cfg.System_Section.Daemonize  := Ba_Daemon;
-
       
       declare
         Num_Sections : Natural := Ini.Get_Section_Count;
@@ -92,6 +91,9 @@ package body Bot_Config is
           Log("Read","Section: " & Ini.Get_Section_Name(i));
           if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then  
             Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
+            
+            Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
+            
             Bet_Section.Max_Daily_Loss :=
                Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
             Bet_Section.Max_Daily_Profit :=

@@ -93,6 +93,7 @@ $(ST)/table_aprices.ads : $(BOT_CONFIG)/repository/tables/table_aprices.xml
 	cd $(ST) && rm table_aprices.ada
 	$(TP) -p aprices > $(ST)/aprices.sql
 
+    
 $(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
 	$(TP) -t awinners > $(ST)/table_awinners.ada
 	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada

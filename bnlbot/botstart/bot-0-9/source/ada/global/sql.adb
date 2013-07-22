@@ -6,9 +6,6 @@ with Ada.Exceptions ;
 with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
 
-
---with PGAda_Unicode;
-
 package body Sql is
 
 
@@ -1086,8 +1083,8 @@ package body Sql is
       Log ("PG_Prepared_Statement '" & To_String (Private_Statement.Pg_Prepared_Statement));
       Log ("Prepared_Statement    '" & To_String (Private_Statement.Prepared_Statement));
 
-      Log ("Execute will run '" & To_String (Private_Statement.Prepared_Statement) & "'");
-      Log ("Escaped string is'" & Escape (Global_Connection, To_String (Private_Statement.Prepared_Statement) & "'"));
+      Log ("Execute will run      '" & To_String (Private_Statement.Prepared_Statement) & "'");
+      Log ("Escaped string is     '" & Escape (Global_Connection, To_String (Private_Statement.Prepared_Statement) & "'"));
 
       case Private_Statement.Type_Of_Statement is
          when A_Select  => raise Sequence_Error;

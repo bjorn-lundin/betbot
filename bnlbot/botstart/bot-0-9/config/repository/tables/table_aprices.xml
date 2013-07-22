@@ -10,7 +10,7 @@
         <Column Name="layprice"           Size="8"  Type="6"  AllowNull="0"  Description="lay_price"/>
         <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
-        <Index Columns="marketid,selectionid,pricets" type="primary"/>
+        <Index Columns="marketid,selectionid" type="primary"/>
+        <Index Columns="backprice" type="index"/>
     </Table>
 </MaAstro>
-

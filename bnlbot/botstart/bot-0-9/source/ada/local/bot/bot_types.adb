@@ -52,13 +52,22 @@ package body Bot_Types is
      return Left <= Float_8(Right);
    end "<=";
    ---------------------------------------------
-   
-   
    function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8 is
    begin
      return Float_8(Left) * Float_8(Right);
    end "*";
-   
    ---------------------------------------------
+
+   function ">=" (Left : Profit_Type ; Right : Max_Daily_Profit_Type) return Boolean is
+   begin
+     return Float_8(Left) >= Float_8(Right);
+   end ">=";
+   ---------------------------------------------
+   function ">=" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean is
+   begin
+     return Float_8(Left) >= Float_8(Right);
+   end ">=";
+   ---------------------------------------------
+
    
 end Bot_Types;

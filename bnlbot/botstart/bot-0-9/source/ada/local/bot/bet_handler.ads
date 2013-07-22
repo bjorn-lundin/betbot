@@ -1,5 +1,7 @@
 with Ada.Finalization; 
 with Sattmate_Types; use Sattmate_Types;
+with Bot_Types ; use Bot_Types;
+
 with Bot_Messages;
 with Token;
 with Table_Aevents;
@@ -54,10 +56,14 @@ private
   function History_Ok(Bet : Bet_Type) return Boolean;
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
-  function Exists(Bet : Bet_Type) return Boolean;
+  function Exists(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean;
   procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
   procedure Make_Real_Bet(Bet     : in out Bet_Type;
                           A_Token : in out Token.Token_Type) ;
+                          
+  function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Profit_Type;
+  function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean;
+  
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record
      Wanted_Price  : Float_8 := 0.0;

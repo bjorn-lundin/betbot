@@ -1,4 +1,4 @@
-with Text_Io;
+--with Text_Io;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
@@ -32,6 +32,7 @@ with Ada.Environment_Variables;
 
 with Process_IO;
 with Bot_Messages;
+with Core_Messages;
 
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -39,6 +40,8 @@ procedure Markets_Fetcher is
   
   
   Me : constant String := "Main.";  
+
+  Msg      : Process_Io.Message_Type;
 
   No_Such_UTC_Offset,
   No_Such_Field  : exception;
@@ -201,8 +204,7 @@ procedure Markets_Fetcher is
     Market_Description : JSON_Value := Create_Object;
 
   begin
-  
-  
+    
     Log(Me, "Insert_Market start"); 
     if Market.Has_Field("marketId") then
       Move(Market.Get("marketId"), DB_Market.Marketid);
@@ -648,23 +650,22 @@ begin
      Long_Switch => "--token=",
      Help        => "use this token, if token is already retrieved");
 
-   Define_Switch
+  Define_Switch
      (Config,
       Ba_Daemon'access,
       "-d",
       Long_Switch => "--daemon",
       Help        => "become daemon at startup");
-   Getopt (Config);  -- process the command line
+  Getopt (Config);  -- process the command line
    
-   if Ba_Daemon then
+  if Ba_Daemon then
      Posix.Daemonize;
-   end if;
+  end if;
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
-   My_Lock.Take("markets_fetcher");
-
+  My_Lock.Take("markets_fetcher");
    
-   if Sa_Par_Token.all = "" then
+  if Sa_Par_Token.all = "" then
      Log(Me, "Login");
 
     -- Ask a pythonscript to login for us, returning a token
@@ -673,420 +674,410 @@ begin
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
-          );
-     
+          );    
      
      Log(Me, "Logged in with token '" &  My_Token.Get & "'");
-   else
+  else
      Log(Me, "set token '" & Sa_Par_Token.all & "'");
      My_Token.Set(Sa_Par_Token.all);
-   end if;
+  end if;
 
    --http://forum.bdp.betfair.com/showthread.php?t=1832&page=2
    --conn.setRequestProperty("content-type", "application/json");
    --conn.setRequestProperty("X-Authentication", token);
    --conn.setRequestProperty("X-Application", appKey);
    --conn.setRequestProperty("Accept", "application/json");    
-   Aws.Headers.Set.Add (My_Headers, "X-Authentication", My_Token.Get);
-   Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
-   Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
+  Aws.Headers.Set.Add (My_Headers, "X-Authentication", My_Token.Get);
+  Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
+  Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 --   Log(Me, "Headers set");
 
-   
-    Sql.Connect
+  Sql.Connect
 --        (Host     => "192.168.0.13",
-        (Host     => "localhost",
-         Port     => 5432,
-         Db_Name  => "bnl",
-         Login    => "bnl",
-         Password => "bnl");
+        (Host     => Ini.Get_Value("database","host",""),
+         Port     => Ini.Get_Value("database","port",5432),
+         Db_Name  => Ini.Get_Value("database","name",""),
+         Login    => Ini.Get_Value("database","username",""),
+         Password => Ini.Get_Value("database","password",""));
    
    -- json stuff
 
    -- Create JSON arrays
-   Append(Exchange_Ids , Create("1"));
+  Append(Exchange_Ids , Create("1"));
    
-   Append(Event_Type_Ids , Create("7"));    --horse
-   Append(Event_Type_Ids , Create("4339")); -- hound
+  Append(Event_Type_Ids , Create("7"));    --horse
+  Append(Event_Type_Ids , Create("4339")); -- hound
 --   none for all countries   
 --   Append(Market_Countries , Create("GB"));
 --   Append(Market_Countries , Create("US"));
 --   Append(Market_Countries , Create("IE"));
    
-   Append(Market_Betting_Types , Create("ODDS"));
-   
-   Append(Market_Type_Codes , Create("WIN"));
-   Append(Market_Type_Codes , Create("PLACE"));
-   
-   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
-   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
-   Append(Market_Projection , Create("EVENT"));
-   Append(Market_Projection , Create("EVENT_TYPE"));
-   Append(Market_Projection , Create("MARKET_START_TIME"));
-   
-   Main_Loop : loop
-     Market_Found := False;
-     Is_Time_To_Check_Markets := Sattmate_Calendar.Clock.Second >= 50 ;
-   
-     if Is_Time_To_Check_Markets then
-       Turns := Turns + 1;
-       Log(Me, "Turns:" & Turns'Img);
-  --     if Turns mod 3 = 0 then
-  --       GNATCOLL.Logs.Finalize;
-  --       if AD.Exists(EV.Value("BOT_CONFIG") & "/log/market_fetcher.cfg") then
-  --         GNATCOLL.Logs.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/market_fetcher.cfg"); 
-  --       elsif AD.Exists(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg") then
-  --         GNATCOLL.Logs.Parse_Config_File(EV.Value("BOT_CONFIG") & "/log/bot_default.cfg"); 
-  --       else
-  --         raise Program_Error with "No log config file found"; 
-  --       end if;  
-  --       
-  --     end if;
-     
-     
-       Sql.Start_Read_Write_Transaction(T);
-     
-       UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
+  Append(Market_Betting_Types , Create("ODDS"));
   
-       case UTC_Offset_Minutes is
-         when 60     => UTC_Time_Start := Sattmate_Calendar.Clock - One_Hour;
-         when 120    => UTC_Time_Start := Sattmate_Calendar.Clock - Two_Hours;
-         when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
-       end case;   
-  --     UTC_Time_Stop := UTC_Time_Start + One_Minute; 
-       UTC_Time_Stop := UTC_Time_Start + Eleven_Seconds; 
-       
-       
-       Market_Start_Time.Set_Field(Field_Name => "from",
-                                   Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
-       Market_Start_Time.Set_Field(Field_Name => "to",
-                                   Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));
-    
-       Filter.Set_Field (Field_Name => "exchangeIds",
-                         Field      => Exchange_Ids);
-                          
-       Filter.Set_Field (Field_Name => "eventTypeIds",
-                         Field      => Event_Type_Ids);
-                         
-       Filter.Set_Field (Field_Name => "marketCountries",
-                         Field      => Market_Countries);
-                         
-       Filter.Set_Field (Field_Name => "marketTypeCodes",
-                         Field      => Market_Type_Codes);
-    
-       Filter.Set_Field (Field_Name => "marketBettingTypes",
-                         Field      => Market_Betting_Types);  
-    
-       Filter.Set_Field (Field_Name => "inPlayOnly",
-                         Field      => False);
-                         
-       Filter.Set_Field (Field_Name => "marketStartTime",
-                         Field      => Market_Start_Time);
-                          
-       Params.Set_Field (Field_Name => "filter",
-                         Field      => Filter);
-                          
-       Params.Set_Field (Field_Name => "marketProjection",
-                         Field      => Market_Projection);
-    
-       Params.Set_Field (Field_Name => "locale",
-                         Field      => "en");
-                         
-       Params.Set_Field (Field_Name => "sort",
-                         Field      => "FIRST_TO_START");
-    
-       Params.Set_Field (Field_Name => "maxResults",
-                         Field      => "30");
-                         
-       Query_List_Market_Catalogue.Set_Field (Field_Name => "params",
-                        Field      => Params);
-    
-       Query_List_Market_Catalogue.Set_Field (Field_Name => "id",
-                        Field      => 15);
-       Query_List_Market_Catalogue.Set_Field (Field_Name => "method",
-                        Field      => "SportsAPING/v1.0/listMarketCatalogue");
-       Query_List_Market_Catalogue.Set_Field (Field_Name => "jsonrpc",
-                        Field      => "2.0");
+  Append(Market_Type_Codes , Create("WIN"));
+  Append(Market_Type_Codes , Create("PLACE"));
   
-       Log(Me, "posting " & Query_List_Market_Catalogue.Write);
-  --     Log(Me, "posting. ");
-       --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
-       --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
-       Answer_List_Market_Catalogue := Aws.Client.Post (Url          =>  Token.URL,
-                                                        Data         =>  Query_List_Market_Catalogue.Write,
-                                                        Content_Type => "application/json",
-                                                        Headers      =>  My_Headers,
-                                                        Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-       
-       
-      --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
-       
-      --  Load the reply into a json object
-      Log(Me, "Got reply");
-      Parsed_Ok1 := True;
+  Append(Market_Projection , Create("MARKET_DESCRIPTION"));
+  Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
+  Append(Market_Projection , Create("EVENT"));
+  Append(Market_Projection , Create("EVENT_TYPE"));
+  Append(Market_Projection , Create("MARKET_START_TIME"));
+  
+  Main_Loop : loop
+  
+    loop   
       begin
+        Process_Io.Receive(Msg, 5.0);
+        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & General_Routines.Trim(Process_Io.Sender(Msg).Name));
+        case Process_Io.Identity(Msg) is
+          when Core_Messages.Exit_Message                  => exit Main_Loop;
+          when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
+        end case;  
+      exception
+          when Process_io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
+      end;
+      Is_Time_To_Check_Markets := Sattmate_Calendar.Clock.Second >= 50 ;
+      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);  --??
+      exit when Is_Time_To_Check_Markets;
+    end loop;           
+     
+   
+    Market_Found := False;
+   
+    Turns := Turns + 1;
+    Log(Me, "Turns:" & Turns'Img);
+   
+    T.Start;
+   
+    UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
+   
+    case UTC_Offset_Minutes is
+      when 60     => UTC_Time_Start := Sattmate_Calendar.Clock - One_Hour;
+      when 120    => UTC_Time_Start := Sattmate_Calendar.Clock - Two_Hours;
+      when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
+    end case;   
+--     UTC_Time_Stop := UTC_Time_Start + One_Minute; 
+    UTC_Time_Stop := UTC_Time_Start + Eleven_Seconds; 
+    
+    
+    Market_Start_Time.Set_Field(Field_Name => "from",
+                                Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
+    Market_Start_Time.Set_Field(Field_Name => "to",
+                                Field      => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));
+   
+    Filter.Set_Field (Field_Name => "exchangeIds",
+                      Field      => Exchange_Ids);
+                       
+    Filter.Set_Field (Field_Name => "eventTypeIds",
+                      Field      => Event_Type_Ids);
+                      
+    Filter.Set_Field (Field_Name => "marketCountries",
+                      Field      => Market_Countries);
+                      
+    Filter.Set_Field (Field_Name => "marketTypeCodes",
+                      Field      => Market_Type_Codes);
+   
+    Filter.Set_Field (Field_Name => "marketBettingTypes",
+                      Field      => Market_Betting_Types);  
+   
+    Filter.Set_Field (Field_Name => "inPlayOnly",
+                      Field      => False);
+                      
+    Filter.Set_Field (Field_Name => "marketStartTime",
+                      Field      => Market_Start_Time);
+                       
+    Params.Set_Field (Field_Name => "filter",
+                      Field      => Filter);
+                       
+    Params.Set_Field (Field_Name => "marketProjection",
+                      Field      => Market_Projection);
+   
+    Params.Set_Field (Field_Name => "locale",
+                      Field      => "en");
+                       
+    Params.Set_Field (Field_Name => "sort",
+                      Field      => "FIRST_TO_START");
+ 
+    Params.Set_Field (Field_Name => "maxResults",
+                      Field      => "30");
+                      
+    Query_List_Market_Catalogue.Set_Field (Field_Name => "params",
+                     Field      => Params);
+ 
+    Query_List_Market_Catalogue.Set_Field (Field_Name => "id",
+                     Field      => 15);
+    Query_List_Market_Catalogue.Set_Field (Field_Name => "method",
+                     Field      => "SportsAPING/v1.0/listMarketCatalogue");
+    Query_List_Market_Catalogue.Set_Field (Field_Name => "jsonrpc",
+                     Field      => "2.0");
+
+    Log(Me, "posting " & Query_List_Market_Catalogue.Write);
+--     Log(Me, "posting. ");
+     --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
+     --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
+    Answer_List_Market_Catalogue := Aws.Client.Post (Url          =>  Token.URL,
+                                                     Data         =>  Query_List_Market_Catalogue.Write,
+                                                     Content_Type => "application/json",
+                                                     Headers      =>  My_Headers,
+                                                     Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+     
+     
+    --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+     
+    --  Load the reply into a json object
+    Log(Me, "Got reply");
+    Parsed_Ok1 := True;
+    begin
       Reply_List_Market_Catalogue := Read (Strm     => Aws.Response.Message_Body(Answer_List_Market_Catalogue),
-                                           Filename => "");
+                                         Filename => "");
       Log(Me, Reply_List_Market_Catalogue.Write);
       Post_Timeouts := 0;
-      exception
+    exception
       when E: others =>
-         Parsed_Ok1 := false;
-         Log(Me, "Bad reply 1: " & Aws.Response.Message_Body(Answer_List_Market_Catalogue));
-         Sattmate_Exception.Tracebackinfo(E);
-         if Aws.Response.Message_Body(Answer_List_Market_Catalogue) = "Post Timeout" then 
-           Post_Timeouts := Post_Timeouts +1;
-         end if;     
-         if Post_Timeouts > 5 then
-           exit Main_Loop;
-         end if;  
-      end ;       
-                                           
-      if Parsed_Ok1 then               
-         
-         
-         declare
-           Error, 
-           Code, 
-           APINGException, 
-           Data                      : JSON_Value := Create_Object;
-        begin 
-          if Reply_List_Market_Catalogue.Has_Field("error") then
-            --    "error": {
-            --        "code": -32099,
-            --        "data": {
-            --            "exceptionname": "APINGException",
-            --            "APINGException": {
-            --                "requestUUID": "prdang001-06060844-000842110f",
-            --                "errorCode": "INVALID_SESSION_INFORMATION",
-            --                "errorDetails": "The session token passed is invalid"
-            --                }
-            --            },
-            --            "message": "ANGX-0003"
-            --        }
-            Error := Reply_List_Market_Catalogue.Get("error");
-            if Error.Has_Field("code") then
-              Code := Error.Get("code");
-              Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
-  
-              if Code.Has_Field("data") then
-                Data := Code.Get("data");
-                if Data.Has_Field("APINGException") then
-                  APINGException := Data.Get("APINGException");
-                  if APINGException.Has_Field("errorCode") then
-                    Log(Me, "APINGException.errorCode " & APINGException.Get("errorCode"));
-                    if APINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
-                      exit; -- exit main loop, let cron restart program
-                    else
-                      exit; -- exit main loop, let cron restart program
-                    end if;
-                  else  
-                    raise No_Such_Field with "APINGException - errorCode";
-                  end if;          
+        Parsed_Ok1 := false;
+        Log(Me, "Bad reply 1: " & Aws.Response.Message_Body(Answer_List_Market_Catalogue));
+        Sattmate_Exception.Tracebackinfo(E);
+        if Aws.Response.Message_Body(Answer_List_Market_Catalogue) = "Post Timeout" then 
+          Post_Timeouts := Post_Timeouts +1;
+        end if;     
+        if Post_Timeouts > 5 then
+          exit Main_Loop;
+        end if;  
+    end ;       
+                                         
+    if Parsed_Ok1 then               
+       
+       
+      declare
+         Error, 
+         Code, 
+         APINGException, 
+         Data                      : JSON_Value := Create_Object;
+      begin 
+        if Reply_List_Market_Catalogue.Has_Field("error") then
+          --    "error": {
+          --        "code": -32099,
+          --        "data": {
+          --            "exceptionname": "APINGException",
+          --            "APINGException": {
+          --                "requestUUID": "prdang001-06060844-000842110f",
+          --                "errorCode": "INVALID_SESSION_INFORMATION",
+          --                "errorDetails": "The session token passed is invalid"
+          --                }
+          --            },
+          --            "message": "ANGX-0003"
+          --        }
+          Error := Reply_List_Market_Catalogue.Get("error");
+          if Error.Has_Field("code") then
+            Code := Error.Get("code");
+            Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
+
+            if Code.Has_Field("data") then
+              Data := Code.Get("data");
+              if Data.Has_Field("APINGException") then
+                APINGException := Data.Get("APINGException");
+                if APINGException.Has_Field("errorCode") then
+                  Log(Me, "APINGException.errorCode " & APINGException.Get("errorCode"));
+                  if APINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
+                    exit; -- exit main loop, let cron restart program
+                  else
+                    exit; -- exit main loop, let cron restart program
+                  end if;
                 else  
-                  raise No_Such_Field with "Data - APINGException";
+                  raise No_Such_Field with "APINGException - errorCode";
                 end if;          
               else  
-                raise  No_Such_Field with "Code - data";
+                raise No_Such_Field with "Data - APINGException";
               end if;          
-            else
-              raise No_Such_Field with "Error - code";
+            else  
+              raise  No_Such_Field with "Code - data";
             end if;          
-          end if;   
-        end; 
-         
-         
-         
-         
-         if Reply_List_Market_Catalogue.Has_Field("result") then
-     --      Log(Me, "we have result ");
-           Result_List_Market_Catalogue := Reply_List_Market_Catalogue.Get("result");
-           for i in 1 .. Length (Result_List_Market_Catalogue) loop
-             Log(Me, "we have result #:" & i'img);
-             Market := Get(Result_List_Market_Catalogue, i);
-             
-             if Market.Has_Field("marketId") then
-               Market_Found := True;
-     --          Log(Me, "we have result #:" & i'img & " Market:" & Market.Write );
-               Insert_Market(Market);
-               Event := Market.Get("event");
-               if Event.Has_Field("id") then
-                 null;
-     --            Log(Me, "we have event #:" & i'img & " event:" & Event.Write );
-               else
-                 Log(Me, "we no event:" & i'img & " event:" & Event.Write );
-               end if;                            
-             end if;
-             
-             if Market.Has_Field("eventType") then
-               Event_Type :=  Market.Get("eventType");
-     --          Log(Me, "we have eventType #:" & i'img & " eventType:" & Event_Type.Write );
-               Insert_Event(Event, Event_Type);
+          else
+            raise No_Such_Field with "Error - code";
+          end if;          
+        end if;   
+      end; 
+
+
+
+
+
+      
+      if Reply_List_Market_Catalogue.Has_Field("result") then
+   --      Log(Me, "we have result ");
+         Result_List_Market_Catalogue := Reply_List_Market_Catalogue.Get("result");
+         for i in 1 .. Length (Result_List_Market_Catalogue) loop
+           Log(Me, "we have result #:" & i'img);
+           Market := Get(Result_List_Market_Catalogue, i);
+           
+           if Market.Has_Field("marketId") then
+             Market_Found := True;
+   --          Log(Me, "we have result #:" & i'img & " Market:" & Market.Write );
+             Insert_Market(Market);
+             Event := Market.Get("event");
+             if Event.Has_Field("id") then
+               null;
+   --            Log(Me, "we have event #:" & i'img & " event:" & Event.Write );
              else
-                Log(Me, "we no eventType:" & i'img & " eventType:" & Event_Type.Write );
-             end if; 
-             
-             if Market.Has_Field("runners") then
-                Insert_Runners(Market);
-             end if;
-           end loop;
-         end if;  
-          -- now get the prices
-     
-         declare
-     --{
-     --    "jsonrpc": "2.0",
-     --    "method": "SportsAPING/v1.0/listMarketBook",
-     --    "params": {
-     --        "locale": "sv",
-     --        "currencyCode": "SEK",
-     --        "marketIds": ["1.109808652",
-     --        "1.109808651",
-     --        "1.109808665"],
-     --        "priceProjection": {
-     --            "priceData": ["EX_BEST_OFFERS"]
-     --        }
-     --    },
-     --    "id": 1
-     --}  
-           Params,In_Play              : JSON_Value := Create_Object;
---           Market_Ids                  : JSON_Array := Empty_Array;
-           Price_Data                  : JSON_Array := Empty_Array;
-           Price_Projection            : JSON_Value := Create_Object;
-           Has_Id                      : Boolean  := False; 
-         begin    
-           Market_Ids := Empty_Array;
-     
-         
-           for i in 1 .. Length (Result_List_Market_Catalogue) loop
-             Market := Get(Result_List_Market_Catalogue, i);
-             if Market.Has_Field("marketId") then
-               Has_Id := True;
-               Log(Me, "appending Marketid: '" & Market.Get("marketId") & "'" );
-               Append(Market_Ids, Create(string'(Market.Get("marketId"))));
-             end if;          
-           end loop;
+               Log(Me, "we no event:" & i'img & " event:" & Event.Write );
+             end if;                            
+           end if;
            
-           if Has_Id then
+           if Market.Has_Field("eventType") then
+             Event_Type :=  Market.Get("eventType");
+   --          Log(Me, "we have eventType #:" & i'img & " eventType:" & Event_Type.Write );
+             Insert_Event(Event, Event_Type);
+           else
+              Log(Me, "we no eventType:" & i'img & " eventType:" & Event_Type.Write );
+           end if; 
            
-             Append (Price_Data , Create("EX_BEST_OFFERS"));    
-             
-             Price_Projection.Set_Field (Field_Name => "priceData",
-                              Field      => Price_Data);
-             
-             Params.Set_Field (Field_Name => "priceProjection",
-                              Field      => Price_Projection);
-                              
-             Params.Set_Field (Field_Name => "currencyCode",
-                              Field      => "SEK");    
-             
-             
-             Params.Set_Field (Field_Name => "locale",
-                              Field      => "sv");
-                              
-             Params.Set_Field (Field_Name => "currencyCode",
-                              Field      => "SEK");    
-                              
-             Params.Set_Field (Field_Name => "marketIds",
-                              Field      => Market_Ids);
-                              
-             
-             Query_List_Market_Book.Set_Field (Field_Name => "params",
-                              Field      => Params);
-             
-             Query_List_Market_Book.Set_Field (Field_Name => "id",
-                              Field      => 15);
-             Query_List_Market_Book.Set_Field (Field_Name => "method",
-                              Field      => "SportsAPING/v1.0/listMarketBook");
-             Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc",
-                              Field      => "2.0");
-         
-       
-             Log(Me, "posting: " & Query_List_Market_Book.Write  );
-         
-             Answer_List_Market_Book := Aws.Client.Post (Url          =>  Token.URL,
-                                                         Data         =>  Query_List_Market_Book.Write,
-                                                         Content_Type => "application/json",
-                                                         Headers      => My_Headers,
-                                                         Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-             Log(Me, "Got reply ");
-       
-       --      Log(Me, "betfair called List_Market_Book");
-       --      Log(Me, Aws.Response.Message_Body(Answer_List_Market_Book));
-              
-             --  Load the Reply_List_Market_Catalogue into a json object
-             begin
-             Reply_List_Market_Book := Read (Strm     => Aws.Response.Message_Body(Answer_List_Market_Book),
-                                             Filename => "");
-             Parsed_Ok2 := True; 
-             exception
-             when E: others =>
-                Parsed_Ok2 := False; 
-                Sattmate_Exception.Tracebackinfo(E);
-                Log(Me, "Bad reply 2");
-                Text_Io.Put_Line( Aws.Response.Message_Body(Answer_List_Market_Book));
-             end ;       
-                            
-       --      Log(Me, "Reply_List_Market_Book.Write start");
-       --      Log(Me, Reply_List_Market_Book.Write);
-       --      Log(Me, "Reply_List_Market_Book.Write stop");
-         
-             if Parsed_Ok2 then
-           
-               --  Iterate the Reply_List_Market_Book object. 
-               if Reply_List_Market_Book.Has_Field("result") then
-                 Log(Me, "we have result ");
-                 Result_List_Market_Book := Reply_List_Market_Book.Get("result");
-                 for i in 1 .. Length (Result_List_Market_Book) loop
-                   Log(Me, "we have result #:" & i'img);
-                   Market := Get(Result_List_Market_Book, i);
-           
-                   if Market.Has_Field("inPlay") then
-                     In_Play :=  Market.Get("inPlay");
-                     Log(Me, "we have inPlay #:" & i'img & " inPlay:" & In_Play.Write );
-                   else
-                      Log(Me, "we no inPlay:" & i'img );
-                   end if; 
-                   
-                   if Market.Has_Field("marketId") then
-         --            Log(Me, "we have result #:" & i'img & " Market:" & Market.Write );
-                     Update_Market(Market);
-                     if Market.Has_Field("runners") then
-                        Insert_Runners_Prices(Market);
-                     end if;
-                   end if;
-                 end loop;
-               end if;    
-             end if; --has id  
-           end if; -- parsed_ok 2   
-         end;  
-                 
-      end if; -- parsed_ok 1   
-      Sql.Commit(T);
-      if Market_Found then 
-        declare
-          Market   : JSON_Value := Create_Object;
-          MNR      : Bot_Messages.Market_Notification_Record;
-          Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
-        begin
-          Move("bot", Receiver.Name);
-          for i in 1 .. Length (Market_Ids) loop
-            Market := Get(Market_Ids, i);
-            MNR.Market_Id := (others => ' ');
-            Move(String'(Market.Get),MNR.Market_Id);
-            Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-            Bot_Messages.Send(Receiver, MNR);
-          end loop;
-        end;  
+           if Market.Has_Field("runners") then
+              Insert_Runners(Market);
+           end if;
+         end loop;
+      end if;  
+        -- now get the prices
+   
+      declare
+   --{
+   --    "jsonrpc": "2.0",
+   --    "method": "SportsAPING/v1.0/listMarketBook",
+   --    "params": {
+   --        "locale": "sv",
+   --        "currencyCode": "SEK",
+   --        "marketIds": ["1.109808652",
+   --        "1.109808651",
+   --        "1.109808665"],
+   --        "priceProjection": {
+   --            "priceData": ["EX_BEST_OFFERS"]
+   --        }
+   --    },
+   --    "id": 1
+   --}  
+         Params,In_Play              : JSON_Value := Create_Object;
+         Price_Data                  : JSON_Array := Empty_Array;
+         Price_Projection            : JSON_Value := Create_Object;
+         Has_Id                      : Boolean  := False; 
+      begin    
+        Market_Ids := Empty_Array;
+        for i in 1 .. Length (Result_List_Market_Catalogue) loop
+          Market := Get(Result_List_Market_Catalogue, i);
+          if Market.Has_Field("marketId") then
+            Has_Id := True;
+            Log(Me, "appending Marketid: '" & Market.Get("marketId") & "'" );
+            Append(Market_Ids, Create(string'(Market.Get("marketId"))));
+          end if;          
+        end loop;
+        
+        if Has_Id then
+        
+          Append (Price_Data , Create("EX_BEST_OFFERS"));    
+          
+          Price_Projection.Set_Field (Field_Name => "priceData",
+                           Field      => Price_Data);
+          
+          Params.Set_Field (Field_Name => "priceProjection",
+                           Field      => Price_Projection);
+                           
+          Params.Set_Field (Field_Name => "currencyCode",
+                           Field      => "SEK");    
+          
+          
+          Params.Set_Field (Field_Name => "locale",
+                           Field      => "sv");
+                           
+          Params.Set_Field (Field_Name => "currencyCode",
+                           Field      => "SEK");    
+                           
+          Params.Set_Field (Field_Name => "marketIds",
+                           Field      => Market_Ids);
+                           
+          
+          Query_List_Market_Book.Set_Field (Field_Name => "params",
+                           Field      => Params);
+          
+          Query_List_Market_Book.Set_Field (Field_Name => "id",
+                           Field      => 15);
+          Query_List_Market_Book.Set_Field (Field_Name => "method",
+                           Field      => "SportsAPING/v1.0/listMarketBook");
+          Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc",
+                           Field      => "2.0");
       
-      end if;
-      
-      Log(Me, "Wait 10 secs");
-      delay 10.0;
-    else  
-      Log(Me, "Wait 5 secs to be close to minute shift");
-      delay 5.0;
-    end if; --Is_Time_To_Check_Markets  
+    
+          Log(Me, "posting: " & Query_List_Market_Book.Write  );
+       
+          Answer_List_Market_Book := Aws.Client.Post (Url          =>  Token.URL,
+                                                      Data         =>  Query_List_Market_Book.Write,
+                                                      Content_Type => "application/json",
+                                                      Headers      => My_Headers,
+                                                      Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+          Log(Me, "Got reply ");
+     
+     --      Log(Me, "betfair called List_Market_Book");
+     --      Log(Me, Aws.Response.Message_Body(Answer_List_Market_Book));
+            
+           --  Load the Reply_List_Market_Catalogue into a json object
+          begin
+            Reply_List_Market_Book := Read (Strm     => Aws.Response.Message_Body(Answer_List_Market_Book),
+                                           Filename => "");
+            Parsed_Ok2 := True; 
+          exception
+            when E: others =>
+              Parsed_Ok2 := False; 
+              Sattmate_Exception.Tracebackinfo(E);
+              Log(Me, "Bad reply 2: " & Aws.Response.Message_Body(Answer_List_Market_Book));
+          end ;       
+       
+          if Parsed_Ok2 then
+             --  Iterate the Reply_List_Market_Book object. 
+            if Reply_List_Market_Book.Has_Field("result") then
+              Log(Me, "we have result ");
+              Result_List_Market_Book := Reply_List_Market_Book.Get("result");
+              for i in 1 .. Length (Result_List_Market_Book) loop
+                Log(Me, "we have result #:" & i'img);
+                Market := Get(Result_List_Market_Book, i);
+                
+                if Market.Has_Field("inPlay") then
+                  In_Play :=  Market.Get("inPlay");
+                  Log(Me, "we have inPlay #:" & i'img & " inPlay:" & In_Play.Write );
+                else
+                   Log(Me, "we no inPlay:" & i'img );
+                end if; 
+                
+                if Market.Has_Field("marketId") then
+       --           Log(Me, "we have result #:" & i'img & " Market:" & Market.Write );
+                  Update_Market(Market);
+                  if Market.Has_Field("runners") then
+                     Insert_Runners_Prices(Market);
+                  end if;
+                end if;
+              end loop;
+            end if;    
+          end if; -- parsed_ok 2   
+        end if; --has id  
+        
+        
+      end;  
+               
+    end if; -- parsed_ok 1   
+    T.Commit;
+    Log(Me, "Market_Found: " & Market_Found'Img);
+    if Market_Found then 
+      declare
+        Market   : JSON_Value := Create_Object;
+        MNR      : Bot_Messages.Market_Notification_Record;
+        Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+      begin
+        Move("bot", Receiver.Name);
+        for i in 1 .. Length (Market_Ids) loop
+          Market := Get(Market_Ids, i);
+          MNR.Market_Id := (others => ' ');
+          Move(String'(Market.Get),MNR.Market_Id);
+          Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
+          Bot_Messages.Send(Receiver, MNR);
+        end loop;
+      end;  
+    end if;    
   end loop Main_Loop; 
                
   Log(Me, "shutting down, close db");
