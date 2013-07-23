@@ -28,7 +28,7 @@ with Bot_Messages;
 with Process_Io;
 
 procedure Winners_Fetcher is
-
+  Bad_Data : exception;
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
 
@@ -261,21 +261,26 @@ begin
     Posix.Daemonize;
     My_Lock.Take("winners_fetcher");
 
-    Log (Me, "connect db");
+--    Log (Me, "connect db");
     Sql.Connect
         (Host     => "localhost",
          Port     => 5432,
          Db_Name  => "bnl",
          Login    => "bnl",
          Password => "bnl");
-    Log (Me, "connected to db");
-    Log (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
+--    Log (Me, "connected to db");
+--    Log (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
 
     if Get_Horses then
       Log (Me, "Get horses");
       R := Aws.Client.Get(URL      => URL_HORSES,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
-
+                          
+      if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
+        raise Bad_Data with "Get Timout at " & URL_HORSES;
+      end if;        
+                          
+                          
       Log (Me, "we have the horses");
 --      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
@@ -293,6 +298,9 @@ begin
       Log (Me, "Get hounds");
       R := Aws.Client.Get(URL      => URL_HOUNDS,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
+      if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
+        raise Bad_Data with "Get Timout at " & URL_HOUNDS;
+      end if;        
 
       Log (Me, "we have the hounds");
 --      Log("----------- Start Hounds -----------------" );
@@ -307,7 +315,7 @@ begin
     end if;
 
     Sql.Close_Session;
-    Log (Me, "db closed");
+--    Log (Me, "db closed");
     
     if Has_Inserted_Winner then
       declare
@@ -329,6 +337,10 @@ begin
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
     Logging.Close;
+    if Sql.Is_Session_Open then
+      Sql.Close_Session;
+      Log (Me, "db closed");
+    end if;
     Posix.Do_Exit(0); -- terminate 
 end Winners_Fetcher;
 

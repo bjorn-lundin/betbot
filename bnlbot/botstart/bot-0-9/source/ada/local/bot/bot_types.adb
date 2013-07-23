@@ -68,6 +68,21 @@ package body Bot_Types is
      return Float_8(Left) >= Float_8(Right);
    end ">=";
    ---------------------------------------------
+   function "<" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean is
+   begin
+     return Float_8(Left) < Float_8(Right);
+   end "<";
 
+   ---------------------------------------------
+   function "<" (Left : Integer ; Right : Min_Num_Runners_Type) return Boolean is
+   begin
+     return Left < Integer(Right);
+   end "<";
+   ---------------------------------------------
+   function ">" (Left : Integer ; Right : Max_Num_Runners_Type) return Boolean is
+   begin
+     return Left > Integer(Right);
+   end ">";
+   ---------------------------------------------
    
 end Bot_Types;

@@ -91,62 +91,47 @@ package body Bot_Config is
           Log("Read","Section: " & Ini.Get_Section_Name(i));
           if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then  
             Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
-            
             Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
-            
-            Bet_Section.Max_Daily_Loss :=
-               Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
-            Bet_Section.Max_Daily_Profit :=
-               Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));
-            Bet_Section.Back_Price :=
-               Back_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"back_price","0.0"));
-            Bet_Section.Delta_Price :=
-               Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","0.0"));
-            Bet_Section.Max_Lay_Price :=
-               Max_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_lay_price","0.0"));
-            Bet_Section.Min_Lay_Price :=
-               Min_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_lay_price","0.0"));
-            Bet_Section.Bet_Size :=
-               Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size",""));
+            Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
+            Bet_Section.Max_Daily_Profit := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));
+            Bet_Section.Back_Price := Back_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"back_price","0.0"));
+            Bet_Section.Delta_Price := Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","0.0"));
+            Bet_Section.Max_Lay_Price := Max_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_lay_price","0.0"));
+            Bet_Section.Min_Lay_Price := Min_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_lay_price","0.0"));
+            Bet_Section.Bet_Size := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size",""));
             Bet_Section.Dry_Run := Ini.Get_Value(Ini.Get_Section_Name(i),"dry_run", True);
             Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
-            Bet_Section.Max_Num_Runners :=
-               Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
-            Bet_Section.Min_Num_Runners :=
-               Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
+            Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
+            Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
             
 --            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
 --            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
             
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay_") > Natural(0) then 
               Bet_Section.Bet_Type := Lay;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > Natural(0) then 
               Bet_Section.Bet_Type := Back;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then 
               Bet_Section.Animal := Hound;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "horses_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "horses_") > Natural(0) then 
               Bet_Section.Animal := Horse;
-            end if;
-            
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > 0 then 
+            end if;           
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > Natural(0) then 
               Bet_Section.Market_Type := Place;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_place_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_place_") > Natural(0) then 
               Bet_Section.Market_Type := Place;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_winner_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_winner_") > Natural(0) then 
               Bet_Section.Market_Type := Winner;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_win_") > 0 then 
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_win_") > Natural(0) then 
               Bet_Section.Market_Type := Winner;
-            end if;
-            
-            
-            Bet_Section.Countries :=
-               To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
+            end if;            
+            Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
             Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);   
           end if;             
         end loop;   

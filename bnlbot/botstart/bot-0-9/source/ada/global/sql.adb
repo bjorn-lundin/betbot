@@ -547,7 +547,7 @@ package body Sql is
       Dml_Status := Result_Status (Dml_Result);
       Clear (Dml_Result);
       if Pgerror (Dml_Status) then
-         Print_Errors ("Start_Read_Only_Transaction", Dml_Status);
+         Print_Errors ("Start_Transaction", Dml_Status);
          raise Postgresql_Error;
       end if;
 

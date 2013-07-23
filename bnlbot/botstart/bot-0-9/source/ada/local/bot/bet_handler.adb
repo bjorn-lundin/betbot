@@ -43,9 +43,10 @@ package body Bet_Handler is
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     
   type Bet_History_Record is record
-    Weight : Float_8 := 0.0;
-    Date   : Sattmate_Calendar.Time_Type;
-    Profit : Float_8 := 0.0;
+    Weight     : Float_8 := 0.0;
+    Start_Date : Sattmate_Calendar.Time_Type;
+    End_Date   : Sattmate_Calendar.Time_Type;
+    Profit     : Float_8 := 0.0;
   end record;
   
   type Bet_History_Array is array ( 1 .. 21 ) of Bet_History_Record;
@@ -243,7 +244,7 @@ package body Bet_Handler is
       if Fulfilled then
         Todays_Profit := Bet.Profit_Today(Dry_Run => False); 
         
-        if abs(Todays_Profit) < 0.001 then --use dry run instead
+        if abs(Todays_Profit) < Profit_Type(0.001) then --use dry run instead
           Todays_Profit := Bet.Profit_Today(Dry_Run => True); 
         end if;      
         
@@ -253,15 +254,20 @@ package body Bet_Handler is
         end if;         
         
         -- if we have a loss today, settle with positive result
-        if Lost_Today then
-          if Todays_Profit < 0.0 and then Todays_Profit >= Bot_Cfg.Max_Daily_Loss then
-            -- we have lost today, but are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
+        if Lost_Today then        
+          if Todays_Profit < Bot_Cfg.Max_Daily_Loss then
+            -- we have lost enough for today, give up!
+            Continue_Betting := False;
+            Log (Me & "Try_Make_New_Bet", "GIVE UP! We have too much already will NOT continue.");
+        
+          elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bot_Cfg.Max_Daily_Loss then
+            -- we have lost today, and are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
             Continue_Betting := True;
             Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
           else
             -- we have lost today, but are back on the winning side. Stop bettting, and be happy
             Continue_Betting := False;
-            Log (Me & "Try_Make_New_Bet", "OH NO ! We have lost today, and have lost enough. Will NOT continue until tomorrow");
+            Log (Me & "Try_Make_New_Bet", "We have lost today, but are ok now. Settle with that, Will NOT continue until tomorrow");
           end if;
         else -- we have NOT lost today
           if Todays_Profit >= Bot_Cfg.Max_Daily_Profit then
@@ -340,9 +346,9 @@ package body Bet_Handler is
   begin
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
-    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > 0 then 
+    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > Natural(0) then 
       null;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > 0 then 
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > Natural(0) then 
       null;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";    
@@ -403,6 +409,14 @@ package body Bet_Handler is
         end if;
     end case;
     
+    if Num_Runners < Bet.Bot_Cfg.Min_Num_Runners or else
+       Num_Runners > Bet.Bot_Cfg.Max_Num_Runners then
+      Log(Me & "Check_Conditions_Fulfilled", "bad num runners" & Num_Runners'Img & 
+         " min=" &  Bet.Bot_Cfg.Min_Num_Runners'Img &
+         " max=" &  Bet.Bot_Cfg.Max_Num_Runners'Img);
+      Result := False;
+      return;             
+    end if;   
     
     -- Allowed country ? 
     --Countries is a ',' separated list of 2 char abbrevations. 
@@ -454,11 +468,6 @@ package body Bet_Handler is
   
     case Bet.Bot_Cfg.Bet_Type is    
       when Back => -- only check the favorite here
-        if Num_Runners < 2 then
-          Log(Me & "Check_Conditions_Fulfilled", "Num_Runners < 2, " & Num_Runners'Img);
-          Result := False;
-          return;
-        end if;           
 
         Price_Fav     := Bet.Bet_Info.Price_Array(1);
         Price_2nd_Fav := Bet.Bet_Info.Price_Array(2);
@@ -478,7 +487,7 @@ package body Bet_Handler is
           Bet.Bet_Info.Used_Index   := 1; --index in the array of our selection 
         end if;
 
-      when Lay =>
+      when Lay =>      
         -- check min_lay_price < price <= max_lay_price
         -- we can not loop for dogs. Check how many turns for horses
         if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
@@ -548,24 +557,19 @@ package body Bet_Handler is
     T.Start;
       Select_History.Prepare(
          "select " & 
-           "sum(PROFIT), " & 
-           "BETPLACED " &
+           "sum(PROFIT) " & 
          "from   " &
            "ABETS " &
          "where " &
            "BETPLACED >= :STARTOFDAY " & 
            "and BETPLACED <= :ENDOFDAY  " &
            "and BETWON is not null " &
-           "and BETNAME = :BETNAME " &
-         "group by " &
-           "BETPLACED ");
-           
+           "and BETNAME = :BETNAME ");
            
       -- always set dry-run history           
       Select_History.Set( "BETNAME", "DR_" &  To_String(Bet.Bot_Cfg.Bet_Name));
       
       for i in History'range loop
-      
         Start_Date := Now - (Integer_4(i),0,0,0,0);
         Start_Date.Hour        := 0;
         Start_Date.Minute      := 0;
@@ -578,7 +582,8 @@ package body Bet_Handler is
         End_Date.Second      := 59;
         End_Date.MilliSecond := 999;
         
-        History(i).Date   := Start_Date;
+        History(i).Start_Date := Start_Date;
+        History(i).End_Date   := End_Date;
         History(i).Weight := 1.0 / Float_8(i);
         
         Select_History.Set_Timestamp( "STARTOFDAY",Start_Date);
@@ -593,7 +598,11 @@ package body Bet_Handler is
     T.Commit;   
     
     for i in History'range loop
-      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img);
+      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img & " weight: " & History(i).Weight'Img & 
+                            " result: "  &   Float_8'Image(History(i).Weight * History(i).Profit) &
+                            " start: " & String_Date_Time_ISO(History(i).Start_Date, " ", "") & 
+                            " end: " & String_Date_Time_ISO(History(i).End_Date, " ", "") 
+                            );
       Sum := Sum + (History(i).Weight * History(i).Profit);
     end loop;     
     
@@ -696,7 +705,6 @@ package body Bet_Handler is
       Select_Lost_Today.Close_Cursor;     
     T.Commit;
     if not Eos then
-      Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " HAS lost today");
       if Dry_Run then
         Log(Me & "Has_Lost_Today",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost today");
       else 
@@ -726,8 +734,7 @@ package body Bet_Handler is
          "from " &
            "ABETS " &
          "where MARKETID = :MARKETID " & 
-           "and BETNAME = :BETNAME  ");
-           
+           "and BETNAME = :BETNAME ");
       
       if Dry_Run then
         Select_Exists.Set("BETNAME",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
@@ -1281,7 +1288,7 @@ package body Bet_Handler is
           else -- lost :-(
             case Side is
               when Back => Profit := - Bet.Size;
-              when Lay  => Profit := - Bet.Size * Bet.Price;
+              when Lay  => Profit := - Bet.Size * (Bet.Price - 1.0);
             end case;
           end if;        
           
@@ -1305,6 +1312,6 @@ package body Bet_Handler is
     T.Commit;
     Table_Abets.Abets_List_Pack.Release(Bet_List);  
   end Check_Bets;  
-
+  ------------------------------------------------------------------------------
   
 end Bet_Handler;
