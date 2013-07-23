@@ -38,6 +38,9 @@ package Bot_Types is
    
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Profit_Type) return Boolean ;
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;
-   
-   
+   function "<" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;
+
+   function "<" (Left : Integer ; Right : Min_Num_Runners_Type) return Boolean ;
+   function ">" (Left : Integer ; Right : Max_Num_Runners_Type) return Boolean ;
+      
 end Bot_Types;
