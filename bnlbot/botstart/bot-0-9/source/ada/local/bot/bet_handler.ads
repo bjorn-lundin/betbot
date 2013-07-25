@@ -19,21 +19,28 @@ package Bet_Handler is
                          A_Token             : in out Token.Token_Type) ;
 
   procedure Check_Bets;
+  procedure Test_Bet; 
   
 private
 
-  type Runner_Array_Type is array(1 .. 50) of Table_Arunners.Data_Type;
-  type Price_Array_Type is array(1 .. 50) of Table_Aprices.Data_Type;
+--  type Runner_Array_Type is array(1 .. 50) of Table_Arunners.Data_Type;
+--  type Price_Array_Type is array(1 .. 50) of Table_Aprices.Data_Type;
 
+  type Runners_Record_Type is record
+    Runner : Table_Arunners.Data_Type;
+    Price  : Table_Aprices.Data_Type;
+  end record;
+  type Runners_Array_Type is array(1 .. 50) of Runners_Record_Type;
+  
   type Bet_Info_Record is new Ada.Finalization.Controlled with record
     Event        : Table_Aevents.Data_Type;    
     Market       : Table_Amarkets.Data_Type;    
-    Runner_List  : Table_Arunners.Arunners_List_Pack.List_Type;
-    Price_List   : Table_Aprices.Aprices_List_Pack.List_Type;
-    Runner_Array : Runner_Array_Type;
+--    Runner_List  : Table_Arunners.Arunners_List_Pack.List_Type;
+--    Price_List   : Table_Aprices.Aprices_List_Pack.List_Type;
+    Runner_Array : Runners_Array_Type;
     Last_Runner  : Integer := 0;
-    Price_Array  : Price_Array_Type;
-    Last_Price   : Integer := 0;    
+--    Price_Array  : Price_Array_Type;
+--    Last_Price   : Integer := 0;    
     Used_Index   : Integer := 0;    
     Selection_Id : Integer_4 := 0;
   end record;
@@ -63,6 +70,7 @@ private
                           
   function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Profit_Type;
   function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean;
+  function In_The_Air(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean;
   
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record
