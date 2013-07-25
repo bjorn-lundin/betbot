@@ -300,6 +300,7 @@ package body Bet_Handler is
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
     Num_Runners : Integer ;
+    use General_Routines;
   begin
   
   
@@ -311,8 +312,8 @@ package body Bet_Handler is
     for i in 1 .. Num_Runners loop  
       Log(Me & "Treat_Market", Bet_Info.Runner_Array(i).Runner.Runnername(1..20) & 
                   " sel.id " & Bet_Info.Runner_Array(i).Runner.Selectionid'Img & " " &       
-                     " bck " & Bet_Info.Runner_Array(i).Price.Backprice'Img &
-                     " lay " & Bet_Info.Runner_Array(i).Price.Layprice'Img);
+                     " bck " & F8_Image(Bet_Info.Runner_Array(i).Price.Backprice) &
+                     " lay " & F8_Image(Bet_Info.Runner_Array(i).Price.Layprice));
     end loop;
     
     if Num_Runners = 0 then
@@ -360,7 +361,7 @@ package body Bet_Handler is
   
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Price_Fav, Price_2nd_Fav : Table_Aprices.Data_Type;
-    Min_Num_Animals_Before_Me, Index : Integer := 0;
+    Min_Num_Animals_Before_Me  : Integer := 0;
     --Tmp_Num_Runners, 
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
     Max_Favorite_Odds : Float_8 := 0.0;
@@ -459,8 +460,8 @@ package body Bet_Handler is
   
     case Bet.Bot_Cfg.Bet_Type is    
       when Back => -- only check the favorite here 
-        Price_Fav     := Bet.Bet_Info.Runner_Array(Index).Price;
-        Price_2nd_Fav := Bet.Bet_Info.Runner_Array(Index + 1).Price;
+        Price_Fav     := Bet.Bet_Info.Runner_Array(1).Price;
+        Price_2nd_Fav := Bet.Bet_Info.Runner_Array(2).Price;
 
         -- check price within backprice +- deltaprice
         if  Bet.Bot_Cfg.Back_Price - Bet.Bot_Cfg.Delta_Price <= Price_Fav.Backprice and then
@@ -584,8 +585,8 @@ package body Bet_Handler is
     T.Commit;   
     
     for i in History'range loop
-      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img & " weight: " & History(i).Weight'Img & 
-                            " result: "  &   Float_8'Image(History(i).Weight * History(i).Profit) &
+      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img & " weight: " & General_Routines.F8_Image(History(i).Weight) & 
+                            " result: "  &   General_Routines.F8_Image(History(i).Weight * History(i).Profit) &
                             " start: " & String_Date_Time_ISO(History(i).Start_Date, " ", "") & 
                             " end: " & String_Date_Time_ISO(History(i).End_Date, " ", "") 
                             );
@@ -724,13 +725,13 @@ package body Bet_Handler is
       
       if Dry_Run then
         Select_Exists.Set("BETNAME",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
-        Log(Me & "Exists", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+--        Log(Me & "Exists", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
       else 
-        Log(Me & "Exists", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+--        Log(Me & "Exists", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
         Select_Exists.Set("BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       end if;
   
-      Log(Me & "Exists", "marketid '" & Bet.Bet_Info.Market.Marketid & "'");
+--      Log(Me & "Exists", "marketid '" & Bet.Bet_Info.Market.Marketid & "'");
       Select_Exists.Set("MARKETID", Bet.Bet_Info.Market.Marketid);
       
       Select_Exists.Open_Cursor;     
@@ -740,7 +741,8 @@ package body Bet_Handler is
         Abet := Table_Abets.Get(Select_Exists);
         Log(Me & "Exists", "Bet does exist " & Table_Abets.To_String(Abet));
       else  
-        Log(Me & "Exists", "Bet does not exist");
+        null;
+--        Log(Me & "Exists", "Bet does not exist");
       end if;
     T.Commit;
     return not Eos;
@@ -761,9 +763,9 @@ package body Bet_Handler is
       
       if Dry_Run then
         Select_In_The_Air.Set("BETNAME",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
-        Log(Me & "In_The_Air", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+--        Log(Me & "In_The_Air", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
       else 
-        Log(Me & "In_The_Air", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+--        Log(Me & "In_The_Air", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
         Select_In_The_Air.Set("BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       end if;
   
@@ -775,7 +777,8 @@ package body Bet_Handler is
         Abet := Table_Abets.Get(Select_In_The_Air);
         Log(Me & "In_The_Air", "Bet does exist " & Table_Abets.To_String(Abet));
       else  
-        Log(Me & "In_The_Air", "Bet does not exist");
+--        Log(Me & "In_The_Air", "Bet does not exist");
+         null;
       end if;
     T.Commit;
     return not Eos;

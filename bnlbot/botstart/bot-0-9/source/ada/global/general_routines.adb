@@ -195,6 +195,12 @@ package body General_Routines is
       return S'First - 1;
    end Position;
 
+    function F8_Image(F : Float_8) return String is
+      S : String(1..15) := (others => ' ');
+    begin
+      F8.Put(To => S, Item => F, Aft =>2, Exp => 0);
+      return General_Routines.Trim(S);
+    end F8_Image;
 
    function F8_To_String (F : in Float_8) return String is
       package Float8_Io is new Text_Io.Float_Io (Float_8);

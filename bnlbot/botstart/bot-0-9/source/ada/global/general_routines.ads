@@ -94,7 +94,8 @@ package General_Routines is
    -- If no match the returned value will be S'FIRST-1.
 
 
-   function F8_To_String (F : in Float_8) return String;
+   function F8_To_String (F : in Float_8) return String; --3 decimals
+   function F8_Image(F : Float_8) return String ; -- 2 decimals
 
    -- Returns a FLOAT_8 value formatted to a string
 
