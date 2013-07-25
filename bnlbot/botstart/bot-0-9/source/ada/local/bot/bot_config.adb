@@ -234,6 +234,4 @@ package body Bot_Config is
   end Clear;
   ---------------------------------------------
   
-  
-  
 end Bot_Config;
