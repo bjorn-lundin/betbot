@@ -57,6 +57,7 @@
 --with SYSTEM;
 with Ada.Strings.Unbounded;
 with Ada.Numerics.Generic_Elementary_Functions ;
+with Ada.Text_IO;
 package Sattmate_Types is
 
    type Byte is range 0 .. 255;
@@ -82,7 +83,8 @@ package Sattmate_Types is
    type Float_8 is new Long_Float;       	-- Alsys Ada on AIX and NT
    
    package Float_8_Functions is new Ada.Numerics.Generic_Elementary_Functions(Float_8);
-
+   package Float_8_IO is new  Ada.Text_IO.Float_IO (Float_8);
+   package F8 renames Float_8_IO; 
    --    type FLOAT_4 is new SHORT_FLOAT;		-- Verdix Ada on AIX
    --    type FLOAT_8 is new FLOAT;		-- Verdix Ada on AIX
 

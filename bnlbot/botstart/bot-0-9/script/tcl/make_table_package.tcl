@@ -1989,7 +1989,8 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
         puts $Out_File "          \" $Col_Name = \" & Boolean'Image(Data.$Col_Name) &"
       }
       FLOAT_8_FORMAT {
-        puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_To_String(Data.$Col_Name) &"
+#        puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_To_String(Data.$Col_Name) &"
+        puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_Image(Data.$Col_Name) &"
       }
       DATE_FORMAT {
         puts $Out_File "          \" $Col_Name = \" & Sattmate_Calendar.String_Date(Data.$Col_Name) &"
