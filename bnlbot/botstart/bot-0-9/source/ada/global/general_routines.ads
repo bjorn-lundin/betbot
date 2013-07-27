@@ -95,7 +95,7 @@ package General_Routines is
 
 
    function F8_To_String (F : in Float_8) return String; --3 decimals
-   function F8_Image(F : Float_8) return String ; -- 2 decimals
+   function F8_Image(F : Float_8; Aft : Natural := 2 ; Exp : Natural := 0) return String ;
 
    -- Returns a FLOAT_8 value formatted to a string
 
