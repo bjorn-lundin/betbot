@@ -185,7 +185,7 @@ class Market(object):
             if back_bet :
                 profit = -self.size
             else:
-                profit = -self.size * self.price
+                profit = -self.size * (self.price -1)
 
         #update db
         cur = self.conn.cursor()

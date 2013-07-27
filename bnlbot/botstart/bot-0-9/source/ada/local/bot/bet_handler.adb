@@ -213,11 +213,11 @@ package body Bet_Handler is
   begin
     Log(Me & "Try_Make_New_Bet", "Bet_name " & To_String(Bot_Cfg.Bet_Name) );
     
-    Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
-                                 "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &    
-                                 "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &    
-                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &    
-                                 "evt-name: " &  Bet.Bet_Info.Event.Eventname);    
+--    Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
+--                                 "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &    
+--                                 "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &    
+--                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &    
+--                                 "evt-name: " &  Bet.Bet_Info.Event.Eventname);    
     
     
     Exists := Bet.Exists(Dry_Run => False);
@@ -303,19 +303,22 @@ package body Bet_Handler is
     use General_Routines;
   begin
   
-  
     Bet_Info := Create(Market_Notification);
     Num_Runners := Bet_Info.Last_Runner;
   
-  
-    Log(Me & "Treat_Market", "start market:" & Market_Notification.Market_Id);
+    Log(Me & "Treat_Market", "Market: " & Bet_Info.Market.Marketid & " " &
+                             "Country: " &  Bet_Info.Event.Countrycode & " " &    
+                             "Bet_Type: " &  Bet_Info.Market.Markettype & " " &    
+                             "Animal: " &  Bet_Info.Event.Eventtypeid'Img  & " " &    
+                             "evt-name: " &  Bet_Info.Event.Eventname);    
+                             
     for i in 1 .. Num_Runners loop  
       Log(Me & "Treat_Market", Bet_Info.Runner_Array(i).Runner.Runnername(1..20) & 
                   " sel.id " & Bet_Info.Runner_Array(i).Runner.Selectionid'Img & " " &       
                      " bck " & F8_Image(Bet_Info.Runner_Array(i).Price.Backprice) &
                      " lay " & F8_Image(Bet_Info.Runner_Array(i).Price.Layprice));
     end loop;
-    
+                             
     if Num_Runners = 0 then
       Log(Me & "Treat_Market", "0 runners - or mismatch runners/prices, skip market:" & Market_Notification.Market_Id);
       return;
@@ -545,7 +548,7 @@ package body Bet_Handler is
       Select_History.Prepare(
          "select " & 
            "sum(PROFIT) " & 
-         "from   " &
+         "from " &
            "ABETS " &
          "where " &
            "BETPLACED >= :STARTOFDAY " & 
@@ -620,7 +623,7 @@ package body Bet_Handler is
       Select_Profit_Today.Prepare(
         "select " & 
           "sum(PROFIT) " & 
-        "from   " &
+        "from " &
           "ABETS " &
         "where " &
           "BETPLACED >= :STARTOFDAY " & 
@@ -672,7 +675,7 @@ package body Bet_Handler is
       Select_Lost_Today.Prepare(
         "select " & 
           "'A' " & 
-        "from   " &
+        "from " &
           "ABETS " &
         "where " &
           "BETPLACED >= :STARTOFDAY " & 
@@ -796,7 +799,6 @@ package body Bet_Handler is
     Now          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     Runner_Name  : String (1..50) :=  (others => ' ') ;    
     T : Sql.Transaction_Type;
-
   begin
   
 --  type Data_Type is record
@@ -912,7 +914,6 @@ package body Bet_Handler is
     Instruction    : JSON_Value := Create_Object;
     Limit_Order    : JSON_Value := Create_Object;
     Instructions   : JSON_Array := Empty_Array;
-    
   begin
   
 --  type Data_Type is record

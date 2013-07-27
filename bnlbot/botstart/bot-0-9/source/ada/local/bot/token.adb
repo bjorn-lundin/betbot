@@ -119,7 +119,7 @@ package body Token is
     JSON_Keep_Alive_Reply : JSON_Value := Create_Object; 
     pragma Warnings(Off,JSON_Keep_Alive_Reply);
   begin
-       Log(Me & "Keep_Alive", "start"); 
+--       Log(Me & "Keep_Alive", "start"); 
        Aws.Headers.Set.Reset (Global_Headers);
        Aws.Headers.Set.Add (Global_Headers, "X-Authentication", A_Token.Get);
        Aws.Headers.Set.Add (Global_Headers, "X-Application", Token.App_Key);
@@ -132,12 +132,12 @@ package body Token is
        JSON_Keep_Alive_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Keep_Alive_Reply),
                                       Filename => "");
 
-       Log(Me & "Keep_Alive", "stop -ok "); 
+       Log(Me & "Keep_Alive", "stop - OK "); 
        return True;
     exception   
       when others =>
         Log(Me & "Keep_Alive", Aws.Response.Message_Body(AWS_Keep_Alive_Reply)); 
-        Log(Me & "Keep_Alive", "stop -FAIL "); 
+        Log(Me & "Keep_Alive", "stop - FAIL "); 
         return False;
   end Keep_Alive;
   

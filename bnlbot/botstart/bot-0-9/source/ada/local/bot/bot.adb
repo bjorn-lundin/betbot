@@ -24,13 +24,13 @@ procedure Bot is
   Me       : constant String := "Main";  
   
 begin
+  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
   Bot_Config.Config.Read; -- even from cmdline
   
   if Bot_Config.Config.System_Section.Daemonize then
     Posix.Daemonize;
   end if;
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
   My_Lock.Take("bot");
@@ -72,7 +72,7 @@ begin
       end case;
     exception
       when Process_Io.Timeout =>
-        Log(Me, "Timeout start");
+        Log(Me, "Timeout");
         if not My_Token.Keep_Alive then
           My_Token.Login(
             Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
@@ -81,7 +81,6 @@ begin
             Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
           );
         end if;
-        Log(Me, "Timeout stop");
     end;    
   end loop Main_Loop;
   Log(Me, "Close Db");
