@@ -26,6 +26,7 @@ with Posix;
 with Logging; use Logging;
 with Bot_Messages;
 with Process_Io;
+with Ini;
 
 procedure Winners_Fetcher is
   Bad_Data : exception;
@@ -33,7 +34,7 @@ procedure Winners_Fetcher is
 --  package AD renames Ada.Directories;
 
 
-  Me : constant String := "Main.";  
+  Me : constant String := "Main.";
   type Selection_Type is record
     Id   : Integer_4 := 0;
     Name : Unbounded_String := Null_Unbounded_String;
@@ -105,7 +106,7 @@ procedure Winners_Fetcher is
     pragma Unreferenced(Handler);
   begin
     null;
-    --Log(Me, "End_Document");  
+    --Log(Me, "End_Document");
   end End_Document;
 
   My_Lock  : Lock.Lock_Type;
@@ -161,7 +162,7 @@ procedure Winners_Fetcher is
     elsif The_Tag = "market" then
     Insert_Into_Db(Handler);
     end if;
-    --Log(Me,"End_Element");  
+    --Log(Me,"End_Element");
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
@@ -192,7 +193,7 @@ procedure Winners_Fetcher is
    -- Log (Me, "Ignorable_Whitespace " & The_Tag & " The_Value  |" & Ch & "|");
   end Ignorable_Whitespace;
 ----------------------------------------------
-  
+
   procedure Insert_Into_Db(Handler : in out Reader) is
     T          : Sql.Transaction_Type;
     Winner     : Table_Awinners.Data_Type;
@@ -206,32 +207,32 @@ procedure Winners_Fetcher is
     Selections.Get_First(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     loop
       exit when Eol;
-      Winner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
+      Winner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);
       Winner.Selectionid := Handler.Market.Selection.Id;
       Table_Awinners.Read(Winner, Eos(Awinners));
       if Eos(Awinners) then
         Has_Inserted_Winner := True;
         Table_Awinners.Insert(Winner);
         Log (Me, "Selection" & Handler.Market.Selection.Id'Img & " " & To_String(Handler.Market.Selection.Name));
-      end if;            
+      end if;
       Selections.Get_Next(Handler.Market.Selection_List,Handler.Market.Selection,Eol);
     end loop;
-    
+
     Non_Runners.Get_First(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
     loop
       exit when Eol;
-      Non_Runner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);      
+      Non_Runner.Marketid := "1." & General_Routines.Trim(Handler.Market.Market_Id'Img);
       Move(To_String(Handler.Market.Non_Runner.Name),Non_Runner.Name);
       Table_Anonrunners.Read(Non_Runner, Eos(Anonrunners));
       if Eos(Anonrunners) then
         Has_Inserted_Winner := True;
         Table_Anonrunners.Insert(Non_Runner);
         Log (Me,"Non_Runner " & To_String(Handler.Market.Non_Runner.Name));
-      end if;      
+      end if;
       Non_Runners.Get_Next(Handler.Market.Non_Runner_List,Handler.Market.Non_Runner,Eol);
-    end loop; 
-    
-    Sql.Commit (T);    
+    end loop;
+
+    Sql.Commit (T);
 --    Log("----------- Insert_Into_Db stop --------------------");
   exception
     when Sql.Duplicate_Index =>
@@ -254,20 +255,21 @@ procedure Winners_Fetcher is
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
 begin
-    
+    Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
+
     Logging.Open(EV.Value("BOT_HOME") & "/log/winners_fetcher.log");
     Logging.New_Log_File_On_Exit(False);
-    
+
     Posix.Daemonize;
     My_Lock.Take("winners_fetcher");
 
 --    Log (Me, "connect db");
-    Sql.Connect
-        (Host     => "localhost",
-         Port     => 5432,
-         Db_Name  => "bnl",
-         Login    => "bnl",
-         Password => "bnl");
+  Sql.Connect
+        (Host     => Ini.Get_Value("database","host",""),
+         Port     => Ini.Get_Value("database","port",5432),
+         Db_Name  => Ini.Get_Value("database","name",""),
+         Login    => Ini.Get_Value("database","username",""),
+         Password => Ini.Get_Value("database","password",""));
 --    Log (Me, "connected to db");
 --    Log (Me, "Get horses: " & Get_Horses'Img & " Get Hounds: " & Get_Hounds'Img );
 
@@ -275,12 +277,12 @@ begin
       Log (Me, "Get horses");
       R := Aws.Client.Get(URL      => URL_HORSES,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
-                          
+
       if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
         raise Bad_Data with "Get Timout at " & URL_HORSES;
-      end if;        
-                          
-                          
+      end if;
+
+
       Log (Me, "we have the horses");
 --      Log("----------- Start Horses -----------------" );
       My_Reader.Current_Tag := Null_Unbounded_String;
@@ -294,13 +296,13 @@ begin
 --      Log("");
     end if;
 
-    if Get_Hounds then    
+    if Get_Hounds then
       Log (Me, "Get hounds");
       R := Aws.Client.Get(URL      => URL_HOUNDS,
                           Timeouts =>  Aws.Client.Timeouts (Each => 10.0));
       if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
         raise Bad_Data with "Get Timout at " & URL_HOUNDS;
-      end if;        
+      end if;
 
       Log (Me, "we have the hounds");
 --      Log("----------- Start Hounds -----------------" );
@@ -316,7 +318,7 @@ begin
 
     Sql.Close_Session;
 --    Log (Me, "db closed");
-    
+
     if Has_Inserted_Winner then
       declare
           NWARNR      : Bot_Messages.New_Winners_Arrived_Notification_Record;
@@ -327,12 +329,12 @@ begin
           Bot_Messages.Send(Receiver, NWARNR);
       end;
     end if;
-    
+
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 
     exception
-  when Lock.Lock_Error => 
+  when Lock.Lock_Error =>
     Posix.Do_Exit(0); -- terminate
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
@@ -341,6 +343,6 @@ begin
       Sql.Close_Session;
       Log (Me, "db closed");
     end if;
-    Posix.Do_Exit(0); -- terminate 
+    Posix.Do_Exit(0); -- terminate
 end Winners_Fetcher;
 
