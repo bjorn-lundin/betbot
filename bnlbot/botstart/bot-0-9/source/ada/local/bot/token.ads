@@ -7,8 +7,8 @@ package Token is
   App_Key_Delayed  : constant String   := "fhGwsk2Qay4zEw2Q";
   Application_ID   : constant Positive := 1662;
   Application_Name : constant String := "bnl-bot";
-  
-  URL : constant String := "https://api-ng.betstores.com/betting/betfair/services/beta-api.betfair.com/betting/json-rpc";
+  URL : constant String := "https://beta-api.betfair.com/json-rpc";
+--  URL : constant String := "https://api-ng.betstores.com/betting/betfair/services/beta-api.betfair.com/betting/json-rpc";
  
   
   Not_Valid_Token,
