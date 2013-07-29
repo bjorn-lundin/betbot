@@ -14,6 +14,7 @@ package Bot_Config is
 
 --  package Country_Pack is new Simple_List_Class(Country_Type);
 
+  Bad_Config : exception;
   
   type Global_Section_Type is record
     Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;
@@ -33,6 +34,7 @@ package Bot_Config is
     Favorite_By      : Favorite_By_Type       := 0.0;
     Bet_Size         : Bet_Size_Type          := 0.0;
     Enabled          : Boolean                := False;
+    Lay_Exit_Early   : Boolean                := False;
     Dry_Run          : Boolean                := True;
     Allow_In_Play    : Boolean                := False;
     Animal           : Animal_Type            := Horse;     

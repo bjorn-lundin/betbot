@@ -44,8 +44,13 @@ package body Bot_Types is
    ---------------------------------------------
    function "<" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean is
    begin
-     return Left <= Min_Lay_Price_Type(Right);
+     return Left < Min_Lay_Price_Type(Right);
    end "<";
+   ---------------------------------------------
+   function "<=" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean is
+   begin
+     return Left <= Min_Lay_Price_Type(Right);
+   end "<=";
    ---------------------------------------------
    function "<=" (Left : Float_8 ; Right : Max_Lay_Price_Type) return Boolean is
    begin

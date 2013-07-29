@@ -514,13 +514,16 @@ package body Bet_Handler is
           Was_OK : Boolean := False;
         begin           
           for i in Min_Num_Animals_Before_Me  .. Num_Runners loop           
-            if  Bet.Bot_Cfg.Min_Lay_Price < Bet.Bet_Info.Runner_Array(i).Price.Layprice and then
+            if  Bet.Bot_Cfg.Min_Lay_Price <= Bet.Bet_Info.Runner_Array(i).Price.Layprice and then
                 Bet.Bet_Info.Runner_Array(i).Price.Layprice <= Bet.Bot_Cfg.Max_Lay_Price then
   
               Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid; -- save the selection
               Bet.Bet_Info.Used_Index   := i; --index in the array of our selection 
               Was_Ok := True;
-              -- do not exit here. we want the horse with highest odds that meets the criteria 
+              -- Configure if we wnat highe-end or low-end if more than on fits the criterias 
+              if Bet.Bot_Cfg.Lay_Exit_Early then
+                exit;
+              end if;
             end if;
           end loop;
           if not Was_Ok then
