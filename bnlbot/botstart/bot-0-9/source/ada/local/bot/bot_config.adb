@@ -100,6 +100,7 @@ package body Bot_Config is
             Bet_Section.Min_Lay_Price := Min_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_lay_price","0.0"));
             Bet_Section.Bet_Size := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size",""));
             Bet_Section.Dry_Run := Ini.Get_Value(Ini.Get_Section_Name(i),"dry_run", True);
+            Bet_Section.Lay_Exit_Early := Ini.Get_Value(Ini.Get_Section_Name(i),"lay_exit_early", False);             
             Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
             Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
@@ -134,6 +135,9 @@ package body Bot_Config is
             Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
             Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);   
           end if;             
+          if Float_8(Bet_Section.Max_Lay_Price) < Float_8(Bet_Section.Min_Lay_Price) then
+            raise Bad_Config with "Max < Min: " & To_String(Bet_Section.Bet_Name);
+          end if;
         end loop;   
       end;
       -- ok, parse login stuff   
@@ -149,6 +153,8 @@ package body Bot_Config is
       Cfg.Database_Section.Username   := To_Unbounded_String(Ini.Get_Value("database","username",""));
       Cfg.Database_Section.Password   := To_Unbounded_String(Ini.Get_Value("database","password",""));
       Cfg.Database_Section.Host       := To_Unbounded_String(Ini.Get_Value("database","host",""));
+      
+      
     else --exists
       raise Unimplemented with "BOT_HOME not set";  
     end if;    
