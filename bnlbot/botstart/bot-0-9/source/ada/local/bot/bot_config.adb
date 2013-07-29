@@ -169,7 +169,7 @@ package body Bot_Config is
     Return_String : Unbounded_String := Null_Unbounded_String;
   begin 
     Return_String := To_Unbounded_String(
-       "<Main>" &
+       "<Config>" &
          "<Bot_User>" & To_String(Cfg.Bot_User) & "</Bot_User>" &
          "<Bot_Log_File_Name>" & To_String(Cfg.Bot_Log_File_Name) & "</Bot_Log_File_Name>" &
          "<System>" & 
@@ -207,6 +207,7 @@ package body Bot_Config is
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" & 
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" & 
                "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" & 
+               "<Market_Type>" & Bet_Section.Market_Type'Img & "</Market_Type>" & 
                "<Max_Num_Runners>" & Bet_Section.Max_Num_Runners'Img & "</Max_Num_Runners>" & 
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" & 
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" & 
@@ -227,7 +228,7 @@ package body Bot_Config is
            "<Password>" & To_String(Cfg.Database_Section.Password) & "</Password>" & 
            "<Host>" & To_String(Cfg.Database_Section.Host) & "</Host>" & 
          "</Database>" & 
-       "</Main>");
+       "</Config>");
        return To_String(Return_String);
   end To_String;
   
