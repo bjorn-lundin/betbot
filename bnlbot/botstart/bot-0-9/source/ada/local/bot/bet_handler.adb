@@ -829,7 +829,7 @@ package body Bet_Handler is
 --      Ixxluts :        Time_Type  := Time_Type_First ; --
 --  end record;
 
-    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
+--    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
 
     case Bet.Bot_Cfg.Bet_Type is
       when Back => 
@@ -879,7 +879,7 @@ package body Bet_Handler is
         Update_Betwon_To_Null.Set("BETID", Abet.Betid);
         Update_Betwon_To_Null.Execute;
       T.Commit;
-      Log(Me & "Make_Dry_Bet", "inserted bet: " & Table_Abets.To_String(Abet));      
+      Log(Me & "Make_Dry_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));      
    exception
       when Sql.Duplicate_Index =>
         T.Rollback;

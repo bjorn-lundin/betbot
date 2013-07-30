@@ -23,9 +23,6 @@ package Bet_Handler is
   
 private
 
---  type Runner_Array_Type is array(1 .. 50) of Table_Arunners.Data_Type;
---  type Price_Array_Type is array(1 .. 50) of Table_Aprices.Data_Type;
-
   type Runners_Record_Type is record
     Runner : Table_Arunners.Data_Type;
     Price  : Table_Aprices.Data_Type;
@@ -35,12 +32,8 @@ private
   type Bet_Info_Record is new Ada.Finalization.Controlled with record
     Event        : Table_Aevents.Data_Type;    
     Market       : Table_Amarkets.Data_Type;    
---    Runner_List  : Table_Arunners.Arunners_List_Pack.List_Type;
---    Price_List   : Table_Aprices.Aprices_List_Pack.List_Type;
     Runner_Array : Runners_Array_Type;
     Last_Runner  : Integer := 0;
---    Price_Array  : Price_Array_Type;
---    Last_Price   : Integer := 0;    
     Used_Index   : Integer := 0;    
     Selection_Id : Integer_4 := 0;
   end record;
@@ -54,7 +47,6 @@ private
   type Bet_Type is new Ada.Finalization.Controlled with record
      Bet_Info      : Bet_Info_Record;
      Bot_Cfg       : Bot_Config.Bet_Section_Type;
---     This_Bet_Type : Bet_Type_Type; 
   end record;
   
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type;
