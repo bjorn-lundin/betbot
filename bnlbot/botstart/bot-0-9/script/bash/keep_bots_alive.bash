@@ -6,43 +6,22 @@
 #install with
 #echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash" | crontab
 
+#if we should NOT start it, check here. 
+#if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
+
+[ -r /var/lock/bot ] && exit 0
+
 TZ='Europe/Stockholm'
 export TZ
 
-if [ -z $BOT_START ] ; then
-  export BOT_START=$HOME/bnlbot/botstart
-fi
 
-if [ -z $BOT_ROOT ] ; then
-  export BOT_ROOT=$BOT_START/bot-0-9
-fi
-
+export BOT_START=$HOME/bnlbot/botstart
 
 #Kommer inte funka i multiuser!
-if [ -z $BOT_USER ] ; then
-  export BOT_USER=bnl
-fi
+export BOT_USER=bnl
 
-if [ -z $BOT_TARGET ] ; then
-  export BOT_TARGET=$BOT_ROOT/target
-fi
-
-if [ -z $BOT_CONFIG ] ; then
-  export BOT_CONFIG=$BOT_ROOT/config
-fi
-
-if [ -z $BOT_SCRIPT ] ; then
-  export BOT_SCRIPT=$BOT_ROOT/script
-fi
-
-if [ -z $BOT_SOURCE ] ; then
-  export BOT_SOURCE=$BOT_ROOT/source
-fi
-
-if [ -z $BOT_HOME ] ; then
-  export BOT_HOME=$BOT_START/user/$BOT_USER
-fi
-
+export BOT_START=$HOME/bnlbot/botstart
+. $BOT_START/bot.bash -u$BOT_USER -ano_action
 
 #env | sort
 

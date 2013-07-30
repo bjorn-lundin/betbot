@@ -9,27 +9,26 @@ UNAME := $(shell uname)
 TP := tclsh $(BOT_SCRIPT)/tcl/make_table_package.tcl
 ST := $(BOT_SOURCE)/ada/global/tables
 
-DBNAME := $(BOT_DATABASE_NAME)
-
-
 OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
-PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
-LOCK_DIR_BOT     := $(BOT_TARGET)/locks
+PIPE_DIR_BOT    := $(BOT_TARGET)/pipes
+LOCK_DIR_BOT    := $(BOT_TARGET)/locks
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 
 
 .PHONY : json_test adabot tables
 
-all: tables adabot /etc/logrotate.d/bnlbot
+all: tables adabot 
+#/etc/logrotate.d/bnlbot
 
 
 tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_aevents.ads  $(ST)/table_amarkets.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
          $(ST)/table_awinners.ads $(ST)/table_abets.ads \
-         $(ST)/table_anonrunners.ads
+         $(ST)/table_anonrunners.ads $(ST)/table_abalances.ads \
+         
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
 
@@ -118,18 +117,26 @@ $(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.
 	cd $(ST) && rm table_anonrunners.ada
 	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
+$(ST)/table_abalances.ads : $(BOT_CONFIG)/repository/tables/table_abalances.xml
+	$(TP) -t abalances > $(ST)/table_abalances.ada
+	cd $(ST) && gnatchop -w -gnat05 table_abalances.ada
+	cd $(ST) && rm table_abalances.ada
+	$(TP) -p abalances > $(ST)/abalances.sql
 
-/etc/logrotate.d/bnlbot: 
-	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
-       size 2M \
-       rotate 10 \
-       copytruncate \
-       delaycompress \
-       compress \
-       notifempty \
-       missingok \
-       su bnl bnl \
-    }"
+
+
+
+#/etc/logrotate.d/bnlbot: 
+#	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
+#       size 2M \
+#       rotate 10 \
+#       copytruncate \
+#       delaycompress \
+#       compress \
+#       notifempty \
+#       missingok \
+#       su bnl bnl \
+#    }"
 
 
 
