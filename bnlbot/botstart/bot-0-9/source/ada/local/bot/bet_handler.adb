@@ -1169,6 +1169,7 @@ package body Bet_Handler is
     begin
       T.Start;
         Table_Abets.Insert(Abet);
+        Log(Me & "Make_Real_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));      
         Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
         Sql.Execute(Update_Betwon_To_Null);
       T.Commit;
