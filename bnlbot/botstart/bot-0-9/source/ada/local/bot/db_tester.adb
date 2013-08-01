@@ -1,6 +1,6 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Sattmate_Types; use Sattmate_Types;
 with Bot_Config;
 --with Lock; 
@@ -8,9 +8,9 @@ with Text_io;
 with Sql;
 with Logging; use Logging;
 with Table_Abets;
-with Table_Aprices;
+--with Table_Aprices;
 
-with Bet_Handler;
+--with Bet_Handler;
 
 procedure Db_Tester is
   Me : constant String := "Db_Tester.";  
@@ -18,9 +18,9 @@ procedure Db_Tester is
   T               : Sql.Transaction_Type;
   Select_Exists   : Sql.Statement_Type;
   Eos             : Boolean := False;
-  Aprices         : Table_Aprices.Data_Type;
+--  Aprices         : Table_Aprices.Data_Type;
   Abet            : Table_Abets.Data_Type;
-  Sel_All : Sql.Statement_Type;
+--  Sel_All : Sql.Statement_Type;
 begin
 
   Bot_Config.Config.Read; -- even from cmdline

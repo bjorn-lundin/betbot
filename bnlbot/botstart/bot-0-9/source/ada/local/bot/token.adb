@@ -124,7 +124,7 @@ package body Token is
        Aws.Headers.Set.Add (Global_Headers, "X-Authentication", A_Token.Get);
        Aws.Headers.Set.Add (Global_Headers, "X-Application", Token.App_Key);
        Aws.Headers.Set.Add (Global_Headers, "Accept", "application/json");
-       AWS_Keep_Alive_Reply := Aws.Client.Post (Url          =>  Token.URL,
+       AWS_Keep_Alive_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                                 Data         =>  Json_String,
                                                 Content_Type => "application/json",
                                                 Headers      =>  Global_Headers,

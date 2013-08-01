@@ -684,6 +684,9 @@ procedure Markets_Fetcher is
   Post_Timeouts : integer_4 := 0;
   Market_Found : Boolean;
   Market_Ids                  : JSON_Array := Empty_Array;
+  Minute_Last_Check : Sattmate_Calendar.Minute_Type := 0;
+  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+  
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
  
@@ -771,6 +774,7 @@ begin
     Market_Found := False;
     Turns := Turns + 1;
     Log(Me, "Turns:" & Turns'Img);
+    
     loop   
       begin
         Process_Io.Receive(Msg, 5.0);
@@ -782,17 +786,19 @@ begin
       exception
           when Process_io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
       end;
-      Is_Time_To_Check_Markets := Sattmate_Calendar.Clock.Second >= 50 ;
+      Now := Sattmate_Calendar.Clock;
+      Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
       Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);  --??
       exit when Is_Time_To_Check_Markets;
     end loop;           
-   
+    Minute_Last_Check := Now.Minute;
+    
     T.Start;
     
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
-      when 60     => UTC_Time_Start := Sattmate_Calendar.Clock - One_Hour;
-      when 120    => UTC_Time_Start := Sattmate_Calendar.Clock - Two_Hours;
+      when 60     => UTC_Time_Start := Now - One_Hour;
+      when 120    => UTC_Time_Start := Now - Two_Hours;
       when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
     end case;   
 
@@ -824,7 +830,7 @@ begin
 --     Log(Me, "posting. ");
      --{"jsonrpc": "2.0", "method": "SportsAPING/v1.0/listEventTypes", "params": {"filter":{}}, "id": 1}
      --"{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}"  
-    Answer_List_Market_Catalogue := Aws.Client.Post (Url          =>  Token.URL,
+    Answer_List_Market_Catalogue := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                                      Data         =>  Query_List_Market_Catalogue.Write,
                                                      Content_Type => "application/json",
                                                      Headers      =>  My_Headers,
@@ -944,7 +950,7 @@ begin
     
           Log(Me, "posting: " & Query_List_Market_Book.Write);
        
-          Answer_List_Market_Book := Aws.Client.Post (Url          =>  Token.URL,
+          Answer_List_Market_Book := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                                       Data         =>  Query_List_Market_Book.Write,
                                                       Content_Type => "application/json",
                                                       Headers      => My_Headers,
