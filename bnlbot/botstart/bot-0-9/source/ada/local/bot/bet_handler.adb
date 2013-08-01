@@ -1010,7 +1010,7 @@ package body Bet_Handler is
 --}
 
     Log(Me & "Make_Real_Bet", "posting: " & Query_Place_Orders.Write  );
-    Answer_Place_Orders := Aws.Client.Post (Url          =>  Token.URL,
+    Answer_Place_Orders := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                             Data         =>  Query_Place_Orders.Write,
                                             Content_Type => "application/json",
                                             Headers      =>  My_Headers,
