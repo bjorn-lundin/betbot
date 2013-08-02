@@ -19,6 +19,7 @@ package Bot_Types is
    type Bet_Price_Type is new Float_8;
    type Min_Num_Runners_Type is new Byte;
    type Max_Num_Runners_Type is new Byte;   
+   type Num_Winners_Type is new Byte;
    type Favorite_By_Type is new Float_8;
    type Profit_Type is new Float_8;
 
@@ -43,5 +44,8 @@ package Bot_Types is
 
    function "<" (Left : Integer ; Right : Min_Num_Runners_Type) return Boolean ;
    function ">" (Left : Integer ; Right : Max_Num_Runners_Type) return Boolean ;
-      
+
+   function "=" (Left : Integer_4 ; Right : Num_Winners_Type) return Boolean ;
+
+   
 end Bot_Types;

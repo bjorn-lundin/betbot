@@ -368,7 +368,7 @@ package body Bet_Handler is
     --Tmp_Num_Runners, 
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
     Max_Favorite_Odds : Float_8 := 0.0;
-    use General_Routines;
+    use General_Routines; 
   begin
     Result := True;
                                            
@@ -413,6 +413,14 @@ package body Bet_Handler is
       Result := False;
       return;             
     end if;   
+    
+    if Bet.Bet_Info.Market.Numwinners /= Bet.Bot_Cfg.Num_Winners then
+    --  Log(Me & "Check_Conditions_Fulfilled", "bad num winner" & Bet.Bot_Info.Market.Numwinners'Img & 
+    --     " /=" & Bet.Bot_Cfg.Num_Winners'Img);
+      Result := False;
+      return;             
+    end if;   
+    
     
     -- Allowed country ? 
     --Countries is a ',' separated list of 2 char abbrevations. 
@@ -577,10 +585,11 @@ package body Bet_Handler is
         
         History(i).Start_Date := Start_Date;
         History(i).End_Date   := End_Date;
-        History(i).Weight := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+--        History(i).Weight := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History(i).Weight := 1.0 / Float_8(i);
         
-        Select_History.Set_Timestamp( "STARTOFDAY",Start_Date);
-        Select_History.Set_Timestamp( "ENDOFDAY",End_Date);
+        Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
+        Select_History.Set_Timestamp("ENDOFDAY",End_Date);
         Select_History.Open_Cursor;     
         Select_History.Fetch(Eos);     
         Select_History.Close_Cursor;     
@@ -591,15 +600,17 @@ package body Bet_Handler is
     T.Commit;   
     
     for i in History'range loop
-      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img & " weight: " & General_Routines.F8_Image(History(i).Weight) & 
-                            " result: "  &   General_Routines.F8_Image(History(i).Weight * History(i).Profit) &
-                            " start: " & String_Date_Time_ISO(History(i).Start_Date, " ", "") & 
-                            " end: " & String_Date_Time_ISO(History(i).End_Date, " ", "") 
+      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img &
+                             " weight: " & General_Routines.F8_Image(History(i).Weight) & 
+                             " result: " & General_Routines.F8_Image(History(i).Weight * History(i).Profit) &
+                             " start: " & String_Date_Time_ISO(History(i).Start_Date, " ", "") & 
+                             " end: " & String_Date_Time_ISO(History(i).End_Date, " ", "") 
                             );
       Sum := Sum + (History(i).Weight * History(i).Profit);
     end loop;     
     
-    Log(Me & "History_Ok", "Sum: " & Sum'Img & " Ok= " & Boolean'Image(Sum >= 0.0) & " - DR_" &  To_String(Bet.Bot_Cfg.Bet_Name));
+    Log(Me & "History_Ok", "Sum: " & General_Routines.F8_Image(Sum) & 
+             " Ok= " & Boolean'Image(Sum >= 0.0) & " - DR_" &  To_String(Bet.Bot_Cfg.Bet_Name));
     return Sum >= 0.0;
     
   end History_Ok;
@@ -1264,7 +1275,8 @@ package body Bet_Handler is
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
-      "select * from ABETS where betwon is null and betname like 'DR_%' " &
+--      "select * from ABETS where betwon is null and betname like 'DR_%' " &
+      "select * from ABETS where betwon is null " & -- all bets, until profit and loss are fixed in API-NG
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
       
@@ -1327,15 +1339,15 @@ package body Bet_Handler is
       end if; -- Illegal data
     end loop;            
       
-    -- check the real bets
-    Select_Real_Bets.Prepare(
-      "select * from ABETS where betwon is null and betname not like 'DR_%' " & 
-      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" );
-    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
-    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
-      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
-      -- Call Betfair here ! Profit & Loss
-    end loop;            
+--    -- check the real bets
+--    Select_Real_Bets.Prepare(
+--      "select * from ABETS where betwon is null and betname not like 'DR_%' " & 
+--      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" );
+--    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
+--    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+--      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
+--      -- Call Betfair here ! Profit & Loss
+--    end loop;            
       
     T.Commit;
     Table_Abets.Abets_List_Pack.Release(Bet_List);  
@@ -1347,6 +1359,18 @@ package body Bet_Handler is
   begin
 --    T.Start;
       B.Bot_Cfg.Bet_Name := To_Unbounded_String("HOUNDS_WINNER_BACK_BET_45_07");
+      if B.History_Ok then
+        Log(Me & "Test", "OK");    
+      else  
+        Log(Me & "Test", "Not OK");    
+      end if;
+      B.Bot_Cfg.Bet_Name := To_Unbounded_String("HOUNDS_WINNER_BACK_BET_36_01");
+      if B.History_Ok then
+        Log(Me & "Test", "OK");    
+      else  
+        Log(Me & "Test", "Not OK");    
+      end if;
+      B.Bot_Cfg.Bet_Name := To_Unbounded_String("HORSES_WINNER_LAY_BET_GB_IE_US_FR_ZA_SG_30_60");
       if B.History_Ok then
         Log(Me & "Test", "OK");    
       else  

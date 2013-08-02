@@ -90,4 +90,10 @@ package body Bot_Types is
    end ">";
    ---------------------------------------------
    
+   function "=" (Left : Integer_4 ; Right : Num_Winners_Type) return Boolean is
+   begin
+     return Left = Integer_4(Right);
+   end "=";
+   
+   
 end Bot_Types;

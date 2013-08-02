@@ -42,6 +42,7 @@ package Bot_Config is
     Market_Type      : Bet_Market_Type        := Winner; 
     Max_Num_Runners  : Max_Num_Runners_Type   := 25;
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
+    Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
