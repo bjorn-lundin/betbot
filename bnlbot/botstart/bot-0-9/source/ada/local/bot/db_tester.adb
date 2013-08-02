@@ -10,7 +10,7 @@ with Logging; use Logging;
 with Table_Abets;
 --with Table_Aprices;
 
---with Bet_Handler;
+with Bet_Handler;
 
 procedure Db_Tester is
   Me : constant String := "Db_Tester.";  
@@ -58,26 +58,26 @@ begin
       else  
         Log(Me & "Exists", "Bet does not exist");
       end if;
---      Bet_Handler.Test_Bet;
-      F8.Put(Item => Abet.Size); Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 2);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 2);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 2);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 2);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 4);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 4);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 4);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 4);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => Abet.Size, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => 3.4456, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => 300.54333, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => -Abet.Size, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => -3.4456, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
-      F8.Put(Item => -300.54333, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+      Bet_Handler.Test_Bet;
+--      F8.Put(Item => Abet.Size); Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 2);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 2);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 2);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 2);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 4);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 4);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 4);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 4);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>6, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>2, Aft =>4, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>6, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>4, Aft =>4, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => Abet.Size, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => 3.4456, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => 300.54333, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => -Abet.Size, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => -3.4456, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
+--      F8.Put(Item => -300.54333, Fore =>0, Aft =>2, Exp => 0);Text_io.New_Line;
   T.Commit;
   
   Log(Me, "Close Db");

@@ -182,10 +182,10 @@ package body Bot_Config is
            "<Daemonize>" & Cfg.System_Section.Daemonize'Img & "</Daemonize>" &
          "</System>" &
          "<Global>" &
-           "<Delay_Between_Turns_Bad_Funding>" & Cfg.Global_Section.Delay_Between_Turns_Bad_Funding'Img & "</Delay_Between_Turns_Bad_Funding>" &
-           "<Delay_Between_Turns_No_Markets>" & Cfg.Global_Section.Delay_Between_Turns_No_Markets'Img & "</Delay_Between_Turns_No_Markets>" & 
-           "<Delay_Between_Turns>" & Cfg.Global_Section.Delay_Between_Turns'Img & "</Delay_Between_Turns>" & 
-           "<Network_Failure_Delay>" & Cfg.Global_Section.Network_Failure_Delay'Img & "</Network_Failure_Delay>" &          
+           "<Delay_Between_Turns_Bad_Funding>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns_Bad_Funding) & "</Delay_Between_Turns_Bad_Funding>" &
+           "<Delay_Between_Turns_No_Markets>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns_No_Markets) & "</Delay_Between_Turns_No_Markets>" & 
+           "<Delay_Between_Turns>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns) & "</Delay_Between_Turns>" & 
+           "<Network_Failure_Delay>" & F8_Image(Cfg.Global_Section.Network_Failure_Delay) & "</Network_Failure_Delay>" &          
          "</Global>" & 
          "<Bets>" );
            
@@ -195,21 +195,23 @@ package body Bot_Config is
              Append(Return_String,
              "<Bets>" &
                "<Bet_Name>" & To_String(Bet_Section.Bet_Name) & "</Bet_Name>" &
-               "<Max_Daily_Loss>" & Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
-               "<Max_Daily_Profit>" & Bet_Section.Max_Daily_Profit'Img & "</Max_Daily_Profit>" & 
-               "<Back_Price>" & Bet_Section.Back_Price'Img & "</Back_Price>" & 
-               "<Delta_Price>" & Bet_Section.Delta_Price'Img & "</Delta_Price>" & 
-               "<Max_Lay_Price>" & Bet_Section.Max_Lay_Price'Img & "</Max_Lay_Price>" & 
-               "<Min_Lay_Price>" & Bet_Section.Min_Lay_Price'Img & "</Min_Lay_Price>" & 
-               "<Max_Daily_Loss>" & Bet_Section.Max_Daily_Loss'Img & "</Max_Daily_Loss>" & 
-               "<Bet_Size>" & Bet_Section.Bet_Size'Img & "</Bet_Size>" & 
+               "<Max_Daily_Loss>" & F8_Image(Float_8(Bet_Section.Max_Daily_Loss)) & "</Max_Daily_Loss>" & 
+               "<Max_Daily_Profit>" & F8_Image(Float_8(Bet_Section.Max_Daily_Profit)) & "</Max_Daily_Profit>" & 
+               "<Back_Price>" & F8_Image(Float_8(Bet_Section.Back_Price)) & "</Back_Price>" & 
+               "<Delta_Price>" & F8_Image(Float_8(Bet_Section.Delta_Price)) & "</Delta_Price>" & 
+               "<Max_Lay_Price>" & F8_Image(Float_8(Bet_Section.Max_Lay_Price)) & "</Max_Lay_Price>" & 
+               "<Min_Lay_Price>" & F8_Image(Float_8(Bet_Section.Min_Lay_Price)) & "</Min_Lay_Price>" & 
+               "<Favorite_By>" & F8_Image(Float_8(Bet_Section.Favorite_By)) & "</Favorite_By>" & 
+               "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" & 
                "<Dry_Run>" & Bet_Section.Dry_Run'Img & "</Dry_Run>" & 
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" & 
+               "<Lay_Exit_Early>" & Bet_Section.Lay_Exit_Early'Img & "</Lay_Exit_Early>" & 
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" & 
                "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" & 
                "<Market_Type>" & Bet_Section.Market_Type'Img & "</Market_Type>" & 
                "<Max_Num_Runners>" & Bet_Section.Max_Num_Runners'Img & "</Max_Num_Runners>" & 
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" & 
+               "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" & 
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" & 
              "</Bets>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
