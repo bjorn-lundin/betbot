@@ -20,7 +20,7 @@ export BOT_START=$HOME/bnlbot/botstart
 export BOT_USER=bnl
 
 export BOT_START=$HOME/bnlbot/botstart
-. $BOT_START/bot.bash -u$BOT_USER -ano_action
+. $BOT_START/bot.bash -u$BOT_USER -a no
 
 #env | sort
 
@@ -49,15 +49,15 @@ fi
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #0
 
-ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-RESULT_MAIL_PROXY=$?
-if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-fi
+#ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+#RESULT_MAIL_PROXY=$?
+#if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+#  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+#fi
 
 
 #try to lock the file $BOT_TARGET/locks/market_fetcher
-$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher
+$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
 RESULT_MARKETS_FETCHER=$?
 
 #if the lock can be aquired, the process is NOT running - start it
@@ -78,7 +78,7 @@ if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
 fi
 
 ########### bot_checker ############
-$BOT_TARGET/bin/check_bot_running --botname=bot_checker
+$BOT_TARGET/bin/check_bot_running --botname=bot_checker > /dev/null 2>&1
 RESULT_BOT_CHECKER=$?
 if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
   export BOT_NAME=bet_checker
@@ -86,7 +86,7 @@ if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
 fi
 
 ########### bot ############
-$BOT_TARGET/bin/check_bot_running --botname=bot
+$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
 RESULT_BOT=$?
 if [ $RESULT_BOT -eq 0 ] ; then
   export BOT_NAME=bot
@@ -108,9 +108,9 @@ epoch_lock_expires=$(date --date="$lock_expires" +%s)
 
 # kill if lock is more than 10 minutes old (time is in lockfile)
 if [ $epoch_now -gt $epoch_lock_expires ] ; then
-  kill -term $locked_by_pid
+  kill -term $locked_by_pid >/dev/null 2>&1
   sleep 1
-  kill -kill $locked_by_pid
+  kill -kill $locked_by_pid >/dev/null 2>&1
   sleep 1
 fi
 
