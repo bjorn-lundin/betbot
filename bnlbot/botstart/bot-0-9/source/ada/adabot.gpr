@@ -13,7 +13,6 @@ project Adabot is
                  "bot.adb", 
 --                 "signal_tester.adb",
                  "db_tester.adb",
-                 "send_aws_mail",
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
                  "saldo_fetcher.adb",
