@@ -9,11 +9,9 @@
 #if we should NOT start it, check here. 
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-[ -r /var/lock/bot ] && exit 0
 
 TZ='Europe/Stockholm'
 export TZ
-
 
 export BOT_START=$HOME/bnlbot/botstart
 
@@ -23,7 +21,8 @@ export BOT_USER=bnl
 export BOT_START=$HOME/bnlbot/botstart
 . $BOT_START/bot.bash -u$BOT_USER -ano_action
 
-#env | sort
+env | sort
+[ -r /var/lock/bot ] && exit 0
 
 
 #start the login daemon if not running
