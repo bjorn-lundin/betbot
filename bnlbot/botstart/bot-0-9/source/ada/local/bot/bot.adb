@@ -92,6 +92,7 @@ begin
 
 exception
   when Lock.Lock_Error => 
+    Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
   when E: others => Sattmate_Exception.Tracebackinfo(E);
