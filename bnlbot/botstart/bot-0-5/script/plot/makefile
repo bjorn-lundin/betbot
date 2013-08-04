@@ -13,7 +13,6 @@ TMP2 := back_bet_price_distribution.tmp
 UNAME := $(shell uname)
 
 
-DBNAME := $(BOT_DATABASE_NAME)
 
 ifeq ($(UNAME),Linux)
   PSQL := psql --username=$(BOT_DATABASE_USERNAME)
