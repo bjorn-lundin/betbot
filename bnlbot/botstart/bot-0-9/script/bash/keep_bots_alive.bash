@@ -27,7 +27,6 @@ export BOT_START=$HOME/bnlbot/botstart
 
 
 #start the login daemon if not running
-
 #pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #1
@@ -42,6 +41,20 @@ if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
   /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
 fi
 
+#start the mailer proxy daemon if not running
+#pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
+#1
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
+#pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
+#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
+#0
+
+ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+RESULT_MAIL_PROXY=$?
+if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+fi
 
 
 #try to lock the file $BOT_TARGET/locks/market_fetcher
