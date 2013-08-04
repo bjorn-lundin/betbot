@@ -8,7 +8,7 @@
         <Column Name="size"             Size="8"   Type="6"  AllowNull="0" Description="wanted size"/>
         <Column Name="price"            Size="8"   Type="6"  AllowNull="0" Description="wanted price"/>
         <Column Name="side"             Size="4"   Type="1"  AllowNull="0" Description="BACK/LAY"/>
-        <Column Name="betname"          Size="50"  Type="1"  AllowNull="0" Description="name of bet"/>
+        <Column Name="betname"          Size="100" Type="1"  AllowNull="0" Description="name of bet"/>
         <Column Name="betwon"           Size="9"   Type="7"  AllowNull="1" Description="success"/>
         <Column Name="profit"           Size="8"   Type="6"  AllowNull="1" Description="vinst"/>
         <Column Name="status"           Size="50"  Type="1"  AllowNull="0" Description="status"/>

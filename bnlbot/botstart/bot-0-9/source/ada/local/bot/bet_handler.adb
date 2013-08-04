@@ -807,7 +807,7 @@ package body Bet_Handler is
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
     Side         : String (1..4) :=  (others => ' ') ; 
-    Bet_Name     : String (1..50) :=  (others => ' ') ;
+    Bet_Name     : String (1..100) :=  (others => ' ') ;
     Success      : String (1..50) :=  (others => ' ') ;    
     Order_Status : String (1..50) :=  (others => ' ') ;    
     Now          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
@@ -904,7 +904,7 @@ package body Bet_Handler is
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
     Side                           : String (1..4)  :=  (others => ' ') ; 
-    Bet_Name                       : String (1..50) :=  (others => ' ') ;
+    Bet_Name                       : String (1..100) :=  (others => ' ') ;
     Execution_Report_Status        : String (1..50) :=  (others => ' ') ;    
     Execution_Report_Error_Code    : String (1..50) :=  (others => ' ') ;    
     Instruction_Report_Status      : String (1..50) :=  (others => ' ') ;    
