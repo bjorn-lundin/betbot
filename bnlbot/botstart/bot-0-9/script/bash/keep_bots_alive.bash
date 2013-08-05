@@ -49,11 +49,11 @@ fi
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #0
 
-#ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-#RESULT_MAIL_PROXY=$?
-#if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-#  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-#fi
+ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+RESULT_MAIL_PROXY=$?
+if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+fi
 
 
 #try to lock the file $BOT_TARGET/locks/market_fetcher
@@ -91,6 +91,15 @@ RESULT_BOT=$?
 if [ $RESULT_BOT -eq 0 ] ; then
   export BOT_NAME=bot
   $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
+fi
+
+
+########### saldo_fetcher ############
+$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
+RESULT_SALDO_FETCHER=$?
+if [ $RESULT_SALDO_FETCHER -eq 0 ] ; then
+  export BOT_NAME=saldo_fetcher
+  $BOT_TARGET/bin/saldo_fetcher --daemon
 fi
 
 ######## winners_fetcher ###########
