@@ -8,31 +8,29 @@ with Aws.Client;
 with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
-with Aws.SMTP;
-with Aws.SMTP.Authentication;
-with AWS.SMTP.Authentication.Plain;
-with Aws.SMTP.Client;
-with Ada.Calendar.Time_Zones;
+with Ada.Streams;
+--with Ada.Strings; use Ada.Strings;
+--with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+
+with Gnat.Sockets;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Token ;
 with Lock ;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
 with Posix;
 with Table_Abalances;
 with Ini;
 with Logging; use Logging;
 
 with Ada.Environment_Variables;
---with Ada.Directories;
 
 with Process_IO;
-with Bot_Messages;
+--with Bot_Messages;
 with Core_Messages;
 
 procedure Saldo_Fetcher is
@@ -43,7 +41,7 @@ procedure Saldo_Fetcher is
 
   Msg      : Process_Io.Message_Type;
 
-  No_Such_UTC_Offset,
+--  No_Such_UTC_Offset,
   No_Such_Field  : exception;
 
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
@@ -57,49 +55,47 @@ procedure Saldo_Fetcher is
   My_Lock  : Lock.Lock_Type;
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     
-  UTC_Time_Start, UTC_Time_Stop  : Sattmate_Calendar.Time_Type ;
-  
-  One_Hour        : Sattmate_Calendar.Interval_Type := (0,1,0,0,0);
-  Two_Hours       : Sattmate_Calendar.Interval_Type := (0,2,0,0,0);
   T : Sql.Transaction_Type;
  
-  Turns : Integer := 0;
 ---------------------------------------------------------------  
 
-  procedure Mail_Saldo(S : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
-    use AWS;
-    Smtp_Port   : constant Positive := 587;
-    Sender      : constant String  := "bnlbetbot@gmail.com";
-    
-    
---    Receivers   : Recipients (1..2) := (("bnl","b.f.lundin@gmail.com"),("jmb", "joakim@birgerson.com"));
-    Receivers   : SMTP.Recipients (1..1) := (others => SMTP.E_Mail("bnl","b.f.lundin@gmail.com"));
-    Password    : constant String  := "Alice2010";
-    Status      : SMTP.Status;
-    Auth : aliased  SMTP.Authentication.Plain.Credential :=
-                   SMTP.Authentication.Plain.Initialize (Sender, Password);    
-    SMTP_Server : SMTP.Receiver ;    
---    SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize ("smtp.gmail.com",Smtp_Port);    
-    Result : SMTP.Status;    
+  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
+    pragma unreferenced(T);
+    -- use the pythonscript mail_proxy to send away the mail
+    Host : constant String := "localhost";
+    Host_Entry : Gnat.Sockets.Host_Entry_Type
+               := GNAT.Sockets.Get_Host_By_Name(Host);
+
+    Address : Gnat.Sockets.Sock_Addr_Type;
+    Socket  : Gnat.Sockets.Socket_Type;
+    Channel : Gnat.Sockets.Stream_Access;
+    Data    : Ada.Streams.Stream_Element_Array (1..1_000);
+    Size    : Ada.Streams.Stream_Element_Offset;
+    Str     : String(1 .. 1_000) := (others => ' ');
   begin
-    SMTP_Server := SMTP.Client.Initialize ("smtp.gmail.com", 
-                                           Port =>Smtp_Port,
-                                           Credential => Auth'unchecked_access );    
-  
-    SMTP.Client.Send
-            (SMTP_Server,
-             From    => SMTP.E_Mail ("bnl-bot", Sender),
-             To      => Receivers,
-             Subject => "BetBot Saldo Report",
-             Message => "Dagens saldo-rapport" & Ascii.Cr & Ascii.Lf & 
-                        "saldo    : " & F8_Image(S.Balance) & Ascii.Cr & Ascii.Lf &
-                        "exposure : " & F8_Image(S.Exposure) &  Ascii.Cr & Ascii.Lf &
-                        "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO(T, " ", ""),
-             Status  => Status);  
-             
-    if not SMTP.Is_Ok (Status) then
-      Log ("Mail_Saldo", SMTP.Status_Message (Status));
-    end if;             
+     -- Open a connection to the host
+     Address.Addr := Gnat.Sockets.Addresses(Host_Entry, 1);
+     Address.Port := 27_124;
+     Gnat.Sockets.Create_Socket (Socket);
+     Gnat.Sockets.Connect_Socket (Socket, Address);
+     
+     Channel := Gnat.Sockets.Stream (Socket);
+
+    declare
+       S : String := 
+         "available=" & F8_Image(Saldo.Balance) &
+         ",exposed="  & F8_Image(Saldo.Exposure);
+    begin        
+      Log(Me & "Mail_Saldo", "Request: '" & S & "'"); 
+      String'Write (Channel, S);
+    end ;
+     --get the reply
+    GNAT.Sockets.Receive_Socket(Socket, Data, Size);
+    for i in 1 .. Size loop
+     Str(integer(i)):= Character'Val(Data(i));
+    end loop;     
+    Log(Me, "reply: '" & Str(1 .. Integer(Size)) & "'"); 
+    Log(Me, "Insert_Saldo stop"); 
   end Mail_Saldo;
 
 -----------------------------------------------------------------
@@ -169,7 +165,6 @@ procedure Saldo_Fetcher is
 ------------------------------ main start -------------------------------------
   Parsed_Ok, Is_Time_To_Check_Balance : Boolean ;
   Post_Timeouts : Integer_4 := 0;
-  Market_Ids                  : JSON_Array := Empty_Array;
   Day_Last_Check : Sattmate_Calendar.Day_Type := 1;
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
   Query_Get_Account_Funds           : JSON_Value := Create_Object;
@@ -177,8 +172,6 @@ procedure Saldo_Fetcher is
   Answer_Get_Account_Funds          : Aws.Response.Data;
   Params                            : JSON_Value := Create_Object;
   Result                            : JSON_Value := Create_Object;
-  Available_To_Bet_Balance          : JSON_Value := Create_Object;
-  Exposure                          : JSON_Value := Create_Object;
   
   
   Saldo : Table_Abalances.Data_Type;
@@ -269,9 +262,12 @@ begin
           when Process_io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
       end;
       Now := Sattmate_Calendar.Clock;
-      Is_Time_To_Check_Balance := Now.Second >= 50 and then Day_Last_Check /= Now.Day;
-      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Balance'Img);  --??
-      Is_Time_To_Check_Balance := True;
+      Is_Time_To_Check_Balance := Now.Hour = 5 and then 
+                                  Now.Minute = 0 and then
+                                  Now.Second >= 50 and then 
+                                  Day_Last_Check /= Now.Day;
+--      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Balance'Img);  --??
+--      Is_Time_To_Check_Balance := True;
       exit when Is_Time_To_Check_Balance;
     end loop;           
     Day_Last_Check := Now.Day;
@@ -334,6 +330,8 @@ begin
          if Result.Has_Field("exposure") then
            Saldo.Exposure := Float_8(Float'(Result.Get("exposure")));
          else  
+         
+         
            raise No_Such_Field with "Object 'Result' - Field 'exposure'";        
          end if; 
         Saldo.Baldate := Now;  
