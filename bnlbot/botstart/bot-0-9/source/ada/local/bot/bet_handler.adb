@@ -251,7 +251,7 @@ package body Bet_Handler is
             if Todays_Profit < Bot_Cfg.Max_Daily_Loss then
               -- we have lost enough for today, give up!
               Continue_Betting := False;
-              Log (Me & "Try_Make_New_Bet", "GIVE UP! We have too much already will NOT continue.");
+              Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much already will NOT continue.");
           
             elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bot_Cfg.Max_Daily_Loss then
               -- we have lost today, and are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
