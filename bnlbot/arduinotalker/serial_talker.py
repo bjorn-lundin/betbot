@@ -1,6 +1,4 @@
 #
-
-
 #import
 
 import time
@@ -11,14 +9,11 @@ import psycopg2
 import datetime
 import serial
 
-
- 
-def get_row_weeks_back(conn, bet_type, delta_weeks)  :
+def get_row_weeks_back(conn, betname, delta_weeks)  :
     result = 0
     today = datetime.datetime.now() 
     day = today + datetime.timedelta(days = int(delta_weeks * 7))
 #    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-
 
     mon = day - datetime.timedelta(today.weekday())
     sun = mon + datetime.timedelta(days = 6)
@@ -26,23 +21,19 @@ def get_row_weeks_back(conn, bet_type, delta_weeks)  :
 #    print 'mon', mon
 #    print 'sun', sun
 
-#    ds = day_stop - datetime.timedelta(days = 6) 
-#    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
-
     mon2 = datetime.datetime(mon.year, mon.month, mon.day, 0, 0, 0)
     sun2 = datetime.datetime(sun.year, sun.month, sun.day, 23, 59, 59)
 #    print 'mon2', mon2
 #    print 'sun2', sun2
-#    print day_start, day_stop
     
     cur = conn.cursor()
-    cur.execute("select sum(PROFIT) " \
-                 "from BET_WITH_COMMISSION " \
-                 "where BET_TYPE = %s " \
-                 "and CODE = %s " \
-                 "and BET_PLACED >= %s " \
-                 "and BET_PLACED <= %s " ,
-                   (bet_type, 'S', mon2, sun2))
+    cur.execute("select sum(B.PROFIT) " \
+                 "from ABETS B  " \
+                 "where B.BETNAME = %s " \
+                 "and B.BETWON is not NULL " \
+                 "and B.BETPLACED >= %s " \
+                 "and B.BETPLACED <= %s " ,
+                   (betname, mon2, sun2))
   
 #    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
      
@@ -57,103 +48,65 @@ def get_row_weeks_back(conn, bet_type, delta_weeks)  :
     if result == None :
        result = 0   
 
-#    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop, result
-
-  
     return result 
     ################################## end get_row_days
-
-
-
   
-def get_row(conn, bet_type, delta_days)  :
+def get_row(conn, betname, delta_days)  :
     result = 0
 
     day = datetime.datetime.now() + datetime.timedelta(days = delta_days) 
     day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
     day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-
-
-#    print 'delta_days', delta_days
-
-#    today = datetime.datetime.now()
-#    day = today + datetime.timedelta(days = int(delta_days))
-#    mon = day - datetime.timedelta(today.weekday())
-#    sun = mon + datetime.timedelta(days = 6)
-
-#    print 'mon', mon
-#    print 'sun', sun
-        
-#    ds = day_stop - datetime.timedelta(days = 6) 
-#    day_start = datetime.datetime(ds.year, ds.month, ds.day, 0, 0, 0)
-        
-#    mon2 = datetime.datetime(mon.year, mon.month, mon.day, 0, 0, 0)
-#    sun2 = datetime.datetime(sun.year, sun.month, sun.day, 23, 59, 59)
-#    print 'mon2', mon2
-#    print 'sun2', sun2
-#    print day_start, day_stop
-
-#    print day_start, day_stop
-    
+#    print betname, day_start, day_stop
     cur = conn.cursor()
     cur.execute("select " \
-                     "sum(PROFIT), " \
-                     "BET_PLACED::date " \
-                 "from " \
-                     "BET_WITH_COMMISSION " \
-                 "where " \
-                     "BET_TYPE = %s " \
-                 "and " \
-                     "CODE = %s " \
-                 "and " \
-                     "BET_PLACED >= %s " \
-                 "and " \
-                     "BET_PLACED <= %s " \
-                 "group by " \
-                     "BET_PLACED::date " \
-                 "order by " \
-                     "BET_PLACED::date desc ", 
-                   (bet_type,'S',day_start,day_stop))
-  
- #   print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
-     
+                 "sum(B.PROFIT) " \
+                 "from ABETS B " \
+                 "where B.BETNAME = %s " \
+                 "and B.BETWON is not NULL " \
+                 "and B.BETPLACED >= %s " \
+                 "and B.BETPLACED <= %s ",
+                   (betname,day_start,day_stop))  
+#    print betname, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
-          result = row[0]  
+          result = row[0]
         else :
           result = 0
+
+    if result == None :
+       result = 0
+
     cur.close()
     conn.commit()
-   
     return result 
     ################################## end get_row
 def main():
   # Main program block
 
   now = datetime.datetime.now()
-
-  if now.minute %  2 == 0 :
+  if now.minute % 2 == 0 :
     source = 1
   else :
     source = 2
-
+    return
 
   if source == 1 :
-    conn = psycopg2.connect("dbname='betting' \
+    conn = psycopg2.connect("dbname='bnl' \
                            user='bnl' \
                            host='192.168.0.13' \
                            password=None") 
 
-    bets = ['HORSES_WINNER_LAY_BET',
-            'DRY_RUN_HORSES_WINNER_LAY_BET',
-            'HOUNDS_WINNER_LAY_BET_13_14',
-            'DRY_RUN_HOUNDS_WINNER_LAY_BET_13_14',
-            'DRY_RUN_HORSES_PLACE_LAY_BET_6_10',
-            'DRY_RUN_HORSES_WINNER_LAY_BET_ALL',
-            'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
-            'DRY_RUN_HOUNDS_WINNER_BACK_BET_3_02',
-            'DRY_RUN_HOUNDS_WINNER_BACK_BET'   ]
+    bets = ['DR_HORSES_WIN_LAY_LATE_GB_30_60',
+            'DR_HORSES_WIN_LAY_LATE_IE_35_50',
+            'DR_HORSES_WIN_LAY_GO_EARLY_GB_30_60',
+            'DR_HORSES_WIN_LAY_EARLY_GB_10_90',
+            'DR_HORSES_WIN_BACK_GB_60_05',
+            'DR_HORSES_WIN_LAY_LATE_GB_35_50',
+            'DR_HORSES_WIN_LAY_EARLY_FR_30_60',
+            'DR_HORSES_WIN_LAY_EARLY_GB_30_60',
+            'DR_HOUNDS_WIN_BACK_GB_45_07'   ]
 
   elif source == 2 :
     conn = psycopg2.connect("dbname='bnls' \
@@ -161,15 +114,25 @@ def main():
                            host='nonodev.com' \
                            password='BettingFotboll1$' ")
 
-    bets = ['DRY_RUN_HORSES_WINNER_BACK_BET_30_09',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_29_10',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_28_10',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_27_10',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_27_03', 
-            'DRY_RUN_HORSES_WINNER_BACK_BET_25_10',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_24_10',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_23_10',
-            'DRY_RUN_HORSES_WINNER_LAY_BET_12_13' ]
+    bets = [#'DRY_RUN_HORSES_WINNER_BACK_BET_30_09',
+            'HORSES_WINNER_BACK_BET_65_03',
+            'DRY_RUN_HORSES_WINNER_BACK_BET_60_05',
+            'DRY_RUN_HOUNDS_WINNER_BACK_BET_35_01',
+            'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
+            'HOUNDS_WINNER_BACK_BET_36_01',
+            'HOUNDS_WINNER_BACK_BET_45_07',  
+            'HORSES_WINNER_LAY_BET_35_40',
+            'DRY_RUN_HORSES_PLC_LAY_17_22_0_200_5',    
+            'DRY_RUN_HORSES_WIN_LAY_15_21_5_200_0']
+
+#            'HORSES_WINNER_BACK_BET_30_09',
+#            'HORSES_WINNER_BACK_BET_29_10',
+#            'DRY_RUN_HORSES_WINNER_BACK_BET_28_10',
+#            'DRY_RUN_HORSES_WINNER_BACK_BET_27_10',
+#            'DRY_RUN_HORSES_WINNER_BACK_BET_25_10',
+#            'DRY_RUN_HORSES_WINNER_BACK_BET_24_10',
+#            'DRY_RUN_HORSES_WINNER_BACK_BET_23_10',
+#            'DRY_RUN_HOUNDS_WINNER_BACK_BET_35_01'
 
                              
   ser = serial.Serial(
@@ -203,7 +166,7 @@ def main():
   for bet in bets :                               
     row1 = {}
     # offset days from monday 
-    row1['0'] = get_row(conn, bet, 0)
+    row1['0'] = get_row(conn, bet,  0)
     row1['1'] = get_row(conn, bet, -1)
     row1['2'] = get_row(conn, bet, -2)
     row1['3'] = get_row(conn, bet, -3)
@@ -212,7 +175,7 @@ def main():
     row1['6'] = get_row(conn, bet, -6)
     row1['typ'] = bet
     lcd_row_1 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
-#    print lcd_row_1
+ #   print lcd_row_1
     ser.write(lcd_row_1 + '\r\n')
     
   ser.write('------------------------------------------------------------------------------\r\n')
@@ -230,7 +193,7 @@ def main():
 
   for bet in bets :                               
     row2 = {}
-    row2['0'] = get_row_weeks_back(conn, bet, 0)
+    row2['0'] = get_row_weeks_back(conn, bet,  0)
     row2['1'] = get_row_weeks_back(conn, bet, -1)
     row2['2'] = get_row_weeks_back(conn, bet, -2)
     row2['3'] = get_row_weeks_back(conn, bet, -3)
@@ -242,7 +205,7 @@ def main():
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])     
     lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
-#    print lcd_row_1
+#    print lcd_row_2
     ser.write(lcd_row_2 + '\r\n')
     
 #  ser.write('-----------------------------------------------------------------------------\r\n')
