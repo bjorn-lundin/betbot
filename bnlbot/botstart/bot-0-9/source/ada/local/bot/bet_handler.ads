@@ -59,6 +59,7 @@ private
   procedure Make_Dry_Bet(Bet : in out Bet_Type) ;
   procedure Make_Real_Bet(Bet     : in out Bet_Type;
                           A_Token : in out Token.Token_Type) ;
+ procedure Make_Simulation_Bet(Bet : in out Bet_Type) ;
                           
   function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Profit_Type;
   function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean;

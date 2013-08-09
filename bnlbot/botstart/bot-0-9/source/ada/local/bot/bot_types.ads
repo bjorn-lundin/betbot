@@ -22,6 +22,9 @@ package Bot_Types is
    type Num_Winners_Type is new Byte;
    type Favorite_By_Type is new Float_8;
    type Profit_Type is new Float_8;
+   
+   type Mode_Type is (Real, Simulation);
+   
 
    
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
