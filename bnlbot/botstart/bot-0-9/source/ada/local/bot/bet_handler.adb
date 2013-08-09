@@ -21,7 +21,7 @@ with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
 
---with Sattmate_Exception;
+with Sattmate_Exception;
 
 pragma Elaborate_All(Aws.Headers);
 
@@ -110,10 +110,12 @@ package body Bet_Handler is
       Bet_Info.Event.Eventid := Bet_Info.Market.Eventid;
       Table_Aevents.Read(Bet_Info.Event, Eos(A_Event));      
     else
+      T.Rollback;
       raise No_Data with "Market missing: '" & Market_Notification.Market_Id & "'";    
     end if;
     
     if Eos(A_Event) then
+      T.Rollback;
       raise No_Data with "Event missing: '" & Market_Notification.Market_Id & "'";    
     end if;
       
@@ -134,6 +136,7 @@ package body Bet_Handler is
     Bet_Info.Last_Runner := Max_Idx;
     
     if Bet_Info.Last_Runner = 0 then
+      T.Rollback;
       raise No_Data with "Prices missing: '" & Market_Notification.Market_Id & "'";    
     end if;    
     
@@ -147,6 +150,8 @@ package body Bet_Handler is
       if not Eos(A_Runner) then
         Bet_Info.Runner_Array(i).Runner := Table_Arunners.Get(Select_Runners);
       else
+        Select_Runners.Close_Cursor; 
+        T.Rollback;
         raise Bad_Data with "No runner in market '" & Bet_Info.Runner_Array(i).Price.Marketid &
                             "' selectionid " & Bet_Info.Runner_Array(i).Price.Selectionid'Img;
       end if;
@@ -154,35 +159,7 @@ package body Bet_Handler is
     end loop;
     
     T.Commit;
-    
-    
---    Log(Me & "Create - Last", "------------debug start -----------------");        
---    Table_Aprices.Aprices_List_Pack.Get_First(Bet_Info.Price_List, Price, Eol);
---    loop
---      exit when Eol;
---      Log(Me & "Create - debug Price_List", Table_Aprices.To_String(Price));
---      Table_Aprices.Aprices_List_Pack.Get_Next(Bet_Info.Price_List, Price, Eol);
---    end loop;
---    Log(Me & "Create - Last", "--++--++--++--++--++--++");        
---    Table_Arunners.Arunners_List_Pack.Get_First(Bet_Info.Runner_List, Runner, Eol);
---    loop
---      exit when Eol;
---      Log(Me & "Create - debug Runner_List", Table_Arunners.To_String(Runner));        
---      Table_Arunners.Arunners_List_Pack.Get_Next(Bet_Info.Runner_List, Runner, Eol);
---    end loop;
---    Log(Me & "Create - Last", "--++--++--++--++--++--++");        
---
---    for i in 1 .. Bet_Info.Last_Runner loop
---      Log(Me & "Create - debug Price_Array" ,  i'Img & Table_Aprices.To_String(Bet_Info.Price_Array(i)));
---    end loop;    
---    Log(Me & "Create - Last", "--++--++--++--++--++--++");        
---
---    for i in 1 .. Bet_Info.Last_Runner loop
---      Log(Me & "Create - debug Runner_Array" ,  i'Img & Table_Arunners.To_String(Bet_Info.Runner_Array(i)));
---    end loop;    
---    
---    Log(Me & "Create - Last", "------------debug stop -----------------");        
-    
+   
     
     Table_Aprices.Aprices_List_Pack.Release(Price_List);    
     Table_Arunners.Arunners_List_Pack.Release(Runner_List);
@@ -278,8 +255,13 @@ package body Bet_Handler is
             Bet.Make_Dry_Bet;
             if Bet.Enabled then
               if Bet.History_Ok then
-      --          Bet.Make_Real_Bet(A_Token);
-                 Log(Me & "Try_Make_New_Bet", "would be a real bet here");
+                case Bot_Cfg.Mode is
+                  when Real =>       
+                    Log(Me & "Try_Make_New_Bet", "would be a real bet here");
+            --        Bet.Make_Real_Bet(A_Token);
+                  when Simulation =>
+                    Bet.Make_Simulation_Bet;
+                end case;  
               end if; -- history
             end if; -- enabled
           end if;-- continue betting
@@ -302,8 +284,15 @@ package body Bet_Handler is
     Num_Runners : Integer ;
     use General_Routines;
   begin
-  
-    Bet_Info := Create(Market_Notification);
+    begin
+      Bet_Info := Create(Market_Notification);
+    exception
+      when E: Bad_Data => 
+        Sattmate_Exception.Tracebackinfo(E);
+      when F: No_Data => 
+        Sattmate_Exception.Tracebackinfo(F);
+    end ;    
+    
     Num_Runners := Bet_Info.Last_Runner;
   
     Log(Me & "Treat_Market", "Market: " & Bet_Info.Market.Marketid & " " &
@@ -556,19 +545,24 @@ package body Bet_Handler is
     Sum : Float_8 := 0.0;
   begin
     T.Start;
+    
+      Now := Bet.Bet_Info.Market.Startts;
+    
       Select_History.Prepare(
          "select " & 
            "sum(PROFIT) " & 
          "from " &
            "ABETS " &
          "where " &
-           "BETPLACED >= :STARTOFDAY " & 
-           "and BETPLACED <= :ENDOFDAY  " &
+           "STARTTS >= :STARTOFDAY " & 
+           "and STARTTS <= :ENDOFDAY  " &
+--           "BETPLACED >= :STARTOFDAY " & 
+--           "and BETPLACED <= :ENDOFDAY  " &
            "and BETWON is not null " &
            "and BETNAME = :BETNAME ");
            
       -- always set dry-run history           
-      Select_History.Set( "BETNAME", "DR_" &  To_String(Bet.Bot_Cfg.Bet_Name));
+      Select_History.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       
       for i in History'range loop
         Start_Date := Now - (Integer_4(i),0,0,0,0);
@@ -610,7 +604,7 @@ package body Bet_Handler is
     end loop;     
     
     Log(Me & "History_Ok", "Sum: " & General_Routines.F8_Image(Sum) & 
-             " Ok= " & Boolean'Image(Sum >= 0.0) & " - DR_" &  To_String(Bet.Bot_Cfg.Bet_Name));
+             " Ok= " & Boolean'Image(Sum >= 0.0) & " - " &  To_String(Bet.Bot_Cfg.DR_Name));
     return Sum >= 0.0;
     
   end History_Ok;
@@ -624,6 +618,9 @@ package body Bet_Handler is
     Start_Date, End_Date : Time_Type := Clock; 
   begin
     T.Start;
+      Start_Date := Bet.Bet_Info.Market.Startts;
+      End_Date   := Bet.Bet_Info.Market.Startts;
+    
       Start_Date.Hour        := 0;
       Start_Date.Minute      := 0;
       Start_Date.Second      := 0;
@@ -640,13 +637,15 @@ package body Bet_Handler is
         "from " &
           "ABETS " &
         "where " &
-          "BETPLACED >= :STARTOFDAY " & 
-          "and BETPLACED <= :ENDOFDAY  " &
+--          "BETPLACED >= :STARTOFDAY " & 
+--          "and BETPLACED <= :ENDOFDAY  " &
+          "STARTTS >= :STARTOFDAY " & 
+          "and STARTTS <= :ENDOFDAY  " &
           "and BETWON is not null " &
           "and BETNAME = :BETNAME " );
           
       if Dry_Run then
-        Select_Profit_Today.Set( "BETNAME", "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
+        Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       else 
         Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       end if;
@@ -661,7 +660,7 @@ package body Bet_Handler is
       end if;      
     T.Commit;
     if Dry_Run then
-      Log(Me & "Profit_Today",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & " :" & Integer(Profit)'Img);
+      Log(Me & "Profit_Today",  To_String(Bet.Bot_Cfg.DR_Name) & " :" & Integer(Profit)'Img);
     else 
       Log(Me & "Profit_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & Integer(Profit)'Img);
     end if;
@@ -676,6 +675,11 @@ package body Bet_Handler is
     Start_Date, End_Date : Time_Type := Clock; 
   begin
     T.Start;
+    
+      Start_Date := Bet.Bet_Info.Market.Startts;
+      End_Date := Bet.Bet_Info.Market.Startts;
+
+    
       Start_Date.Hour        := 0;
       Start_Date.Minute      := 0;
       Start_Date.Second      := 0;
@@ -692,13 +696,15 @@ package body Bet_Handler is
         "from " &
           "ABETS " &
         "where " &
-          "BETPLACED >= :STARTOFDAY " & 
-          "and BETPLACED <= :ENDOFDAY  " &
+--          "BETPLACED >= :STARTOFDAY " & 
+--          "and BETPLACED <= :ENDOFDAY  " &
+          "STARTTS >= :STARTOFDAY " & 
+          "and STARTTS <= :ENDOFDAY " &
           "and PROFIT < 0.0 " &
           "and BETWON is not null " &
           "and BETNAME = :BETNAME " );
       if Dry_Run then
-        Select_Lost_Today.Set( "BETNAME", "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
+        Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       else 
         Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       end if;
@@ -710,16 +716,16 @@ package body Bet_Handler is
     T.Commit;
     if not Eos then
       if Dry_Run then
-        Log(Me & "Has_Lost_Today",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost today");
+        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.DR_Name) & " :" & " HAS lost today: " & Sattmate_Calendar.String_Date(Start_Date));
       else 
-        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost today");
+        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost today: " & Sattmate_Calendar.String_Date(Start_Date));
       end if;
       return True;
     else
       if Dry_Run then
-        Log(Me & "Has_Lost_Today",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS NOT lost today");
+        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.DR_Name) & " :" & " HAS NOT lost today: " & Sattmate_Calendar.String_Date(Start_Date));
       else 
-        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS NOT lost today");
+        Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS NOT lost today: " & Sattmate_Calendar.String_Date(Start_Date));
       end if;
       return False;
     end if;
@@ -741,8 +747,8 @@ package body Bet_Handler is
            "and BETNAME = :BETNAME ");
       
       if Dry_Run then
-        Select_Exists.Set("BETNAME",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
---        Log(Me & "Exists", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+        Select_Exists.Set("BETNAME",  To_String(Bet.Bot_Cfg.DR_Name));
+--        Log(Me & "Exists", "name '" &  To_String(Bet.Bot_Cfg.DR_Name) & "'");
       else 
 --        Log(Me & "Exists", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
         Select_Exists.Set("BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
@@ -779,8 +785,8 @@ package body Bet_Handler is
            "and BETNAME = :BETNAME ");
       
       if Dry_Run then
-        Select_In_The_Air.Set("BETNAME",  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name));
---        Log(Me & "In_The_Air", "name '" &  "DR_" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
+        Select_In_The_Air.Set("BETNAME",  To_String(Bet.Bot_Cfg.DR_Name));
+--        Log(Me & "In_The_Air", "name '" &  To_String(Bet.Bot_Cfg.DR_Name) & "'");
       else 
 --        Log(Me & "In_The_Air", "name '" & To_String(Bet.Bot_Cfg.Bet_Name) & "'");
         Select_In_The_Air.Set("BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
@@ -854,7 +860,7 @@ package body Bet_Handler is
     end case;
     
     Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
-    Move( "DR_" & To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
+    Move( To_String(Bet.Bot_Cfg.DR_Name), Bet_Name);
     Move( "SUCCESS", Success);
     Move( "EXECUTION_COMPLETE", Order_Status);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
@@ -875,6 +881,7 @@ package body Bet_Handler is
       Exeerrcode     => Success,    
       Inststatus     => Success,    
       Insterrcode    => Success,   
+      Startts        => Bet.Bet_Info.Market.Startts,
       Betplaced      => Now,     
       Pricematched   => Price,  --?
       Sizematched    => Float_8(Bet.Bot_Cfg.Bet_Size),   --?
@@ -898,6 +905,107 @@ package body Bet_Handler is
     end ;
   end Make_Dry_Bet;
   ---------------------------------------------------------------
+ procedure Make_Simulation_Bet(Bet : in out Bet_Type) is
+    Abet : Table_Abets.Data_Type;
+    Price : Float_8 := 0.0;
+    Pip : Pip_Type ;
+    Side         : String (1..4) :=  (others => ' ') ; 
+    Bet_Name     : String (1..100) :=  (others => ' ') ;
+    Success      : String (1..50) :=  (others => ' ') ;    
+    Order_Status : String (1..50) :=  (others => ' ') ;    
+    Now          : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Runner_Name  : String (1..50) :=  (others => ' ') ;    
+    T : Sql.Transaction_Type;
+  begin
+  
+--  type Data_Type is record
+--      Betid :          Integer_8  := 0 ; -- Primary Key
+--      Marketid :       String (1..11) := (others => ' ') ; -- non unique index 2
+--      Selectionid :    Integer_4  := 0 ; --
+--      Reference :      String (1..30) := (others => ' ') ; --
+--      Size :           Float_8  := 0.0 ; --
+--      Price :          Float_8  := 0.0 ; --
+--      Side :           String (1..4) := (others => ' ') ; --
+--      Betname :        String (1..50) := (others => ' ') ; --
+--      Betwon :         Integer_4  := 0 ; -- non unique index 3
+--      Profit :         Float_8  := 0.0 ; --
+--      Status :         String (1..50) := (others => ' ') ; --
+--      Exestatus :      String (1..50) := (others => ' ') ; --
+--      Exeerrcode :     String (1..50) := (others => ' ') ; --
+--      Inststatus :     String (1..50) := (others => ' ') ; --
+--      Insterrcode :    String (1..50) := (others => ' ') ; --
+--      Betplaced :      Time_Type  := Time_Type_First ; --
+--      Pricematched :   Float_8  := 0.0 ; --
+--      Sizematched :    Float_8  := 0.0 ; --
+--      Runnername :     String (1..50) := (others => ' ') ; --
+--      Fullmarketname : String (1..200) := (others => ' ') ; --
+--      Ixxlupd :        String (1..15) := (others => ' ') ; --
+--      Ixxluts :        Time_Type  := Time_Type_First ; --
+--  end record;
+
+--    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
+
+    case Bet.Bot_Cfg.Bet_Type is
+      when Back => 
+        Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
+        Pip.Init(Price);
+        Price := Pip.Previous_Price;
+      when Lay => 
+        Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
+        Pip.Init(Price);
+        Price := Pip.Next_Price;
+    end case;
+    
+    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+    Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
+    Move( "SUCCESS", Success);
+    Move( "EXECUTION_COMPLETE", Order_Status);
+    Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
+    
+    Abet := (
+      Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),          
+      Marketid       => Bet.Bet_Info.Market.Marketid,       
+      Selectionid    => Bet.Bet_Info.Selection_Id,   
+      Reference      => (others => '-'),     
+      Size           => Float_8(Bet.Bot_Cfg.Bet_Size),
+      Price          => Price,         
+      Side           => Side,
+      Betname        => Bet_Name,       
+      Betwon         => False,
+      Profit         => 0.0,        
+      Status         => Order_Status,         
+      Exestatus      => Success,     
+      Exeerrcode     => Success,    
+      Inststatus     => Success,    
+      Insterrcode    => Success,   
+      Startts        => Bet.Bet_Info.Market.Startts,
+      Betplaced      => Now,     
+      Pricematched   => Price,  --?
+      Sizematched    => Float_8(Bet.Bot_Cfg.Bet_Size),   --?
+      Runnername     => Runner_Name,    
+      Fullmarketname => Bet.Bet_Info.Market.Marketname,
+      Ixxlupd        => (others => ' '), --set by insert       
+      Ixxluts        => Now              --set by insert
+    );
+    
+    begin
+      T.Start;
+        Table_Abets.Insert(Abet);
+        Update_Betwon_To_Null.Set("BETID", Abet.Betid);
+        Update_Betwon_To_Null.Execute;
+      T.Commit;
+      Log(Me & "Make_Dry_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));      
+   exception
+      when Sql.Duplicate_Index =>
+        T.Rollback;
+        Log(Me & "Make_Dry_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));      
+    end ;
+  end Make_Simulation_Bet;
+  
+  
+  ---------------------------------------------------------------  
+  
+  
   procedure Make_Real_Bet(Bet     : in out Bet_Type;
                           A_Token : in out Token.Token_Type) is
     Abet : Table_Abets.Data_Type;
@@ -1168,6 +1276,7 @@ package body Bet_Handler is
       Exeerrcode     => Execution_Report_Error_Code,    
       Inststatus     => Instruction_Report_Status,    
       Insterrcode    => Instruction_Report_Error_Code,   
+      Startts        => Bet.Bet_Info.Market.Startts,
       Betplaced      => Now,     
       Pricematched   => Float_8(Average_Price_Matched),
       Sizematched    => Float_8(Size_Matched),
@@ -1275,7 +1384,6 @@ package body Bet_Handler is
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
---      "select * from ABETS where betwon is null and betname like 'DR_%' " &
       "select * from ABETS where betwon is null " & -- all bets, until profit and loss are fixed in API-NG
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  

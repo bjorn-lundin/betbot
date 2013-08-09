@@ -25,6 +25,7 @@ package Bot_Config is
 
   type Bet_Section_Type is record
     Bet_Name         : Unbounded_String       := Null_Unbounded_String;
+    DR_Name          : Unbounded_String       := Null_Unbounded_String;
     Max_Daily_Loss   : Max_Daily_Loss_Type    := 0.0;
     Max_Daily_Profit : Max_Daily_Profit_Type  := 0.0;
     Back_Price       : Back_Price_Type        := 0.0;
@@ -44,6 +45,7 @@ package Bot_Config is
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
+    Mode             : Mode_Type              := Real;    -- inherited from system section
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   
@@ -56,6 +58,7 @@ package Bot_Config is
     Bot_Script : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Bot_Home   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Daemonize  : Boolean          := True;
+    Mode       : Mode_Type        := Real;
   end record;  
     
     

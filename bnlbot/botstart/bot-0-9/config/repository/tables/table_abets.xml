@@ -16,6 +16,7 @@
         <Column Name="exeerrcode"       Size="50"  Type="1"  AllowNull="0" Description="execution errcode"/>
         <Column Name="inststatus"       Size="50"  Type="1"  AllowNull="0" Description="intruction status"/>
         <Column Name="insterrcode"      Size="50"  Type="1"  AllowNull="0" Description="intruction errcode"/>
+        <Column Name="startts"          Size="23"  Type="15" AllowNull="1" Description="start ts according to market"/>
         <Column Name="betplaced"        Size="23"  Type="15" AllowNull="1" Description="when bet was placed"/>
         <Column Name="pricematched"     Size="8"   Type="6"  AllowNull="0" Description="matched price"/>
         <Column Name="sizematched"      Size="8"   Type="6"  AllowNull="0" Description="size price"/>        

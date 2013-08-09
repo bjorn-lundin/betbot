@@ -18,6 +18,7 @@ package body Bot_Config is
   Unimplemented    : exception ;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
+  Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
   
@@ -45,6 +46,13 @@ package body Bot_Config is
         Long_Switch => "--user=",
         Help        => "user of bot");
   
+      Define_Switch
+       (Cmd_Line,
+        Sa_Par_Mode'access,
+        "-m:",
+        Long_Switch => "--mode=",
+        Help        => "mode of bot - (real, simulation)");
+        
       Define_Switch
         (Cmd_Line,
          Ba_Daemon'access,
@@ -83,6 +91,10 @@ package body Bot_Config is
       Cfg.System_Section.Bot_Home   := To_Unbounded_String(EV.Value("BOT_HOME"));
       Cfg.System_Section.Daemonize  := Ba_Daemon;
       
+      if Sa_Par_Mode.all = "simulation" then
+        Cfg.System_Section.Mode  := Simulation;  -- real by default
+      end if;    
+      
       declare
         Num_Sections : Natural := Ini.Get_Section_Count;
         Bet_Section : Bet_Section_Type;
@@ -90,7 +102,15 @@ package body Bot_Config is
         for i in 1 .. Num_Sections loop
           Log("Read","Section: " & Ini.Get_Section_Name(i));
           if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then  
-            Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
+
+            --from system:
+            Bet_Section.Mode := Cfg.System_Section.Mode ;
+            case Bet_Section.Mode is
+              when Real       => Bet_Section.Bet_Name := To_Unbounded_String("RT_" & Ini.Get_Section_Name(i));
+              when Simulation => Bet_Section.Bet_Name := To_Unbounded_String("SB_" & Ini.Get_Section_Name(i));
+            end case;              
+            Bet_Section.DR_Name := To_Unbounded_String("DR_" & Ini.Get_Section_Name(i));
+            
             Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
             Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
             Bet_Section.Max_Daily_Profit := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));
@@ -104,6 +124,10 @@ package body Bot_Config is
             Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
             Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
+            
+            
+            --from system:
+             Bet_Section.Mode := Cfg.System_Section.Mode ;
             
 --            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
 --            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
@@ -180,6 +204,7 @@ package body Bot_Config is
            "<Bot_Script>" & To_String(Cfg.System_Section.Bot_Script) & "</Bot_Script>" & 
            "<Bot_Home>" & To_String(Cfg.System_Section.Bot_Home) & "</Bot_Home>" &   
            "<Daemonize>" & Cfg.System_Section.Daemonize'Img & "</Daemonize>" &
+           "<Mode>" & Cfg.System_Section.Mode'Img & "</Mode>" &
          "</System>" &
          "<Global>" &
            "<Delay_Between_Turns_Bad_Funding>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns_Bad_Funding) & "</Delay_Between_Turns_Bad_Funding>" &
