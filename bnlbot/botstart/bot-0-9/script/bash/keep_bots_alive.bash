@@ -6,7 +6,7 @@
 #install with
 #echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash" | crontab
 
-#if we should NOT start it, check here. 
+#if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
 [ -r /var/lock/bot ] && exit 0
@@ -57,8 +57,21 @@ fi
 
 
 #try to lock the file $BOT_TARGET/locks/market_fetcher
-$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
+#$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
+#RESULT_MARKETS_FETCHER=$?
+#if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
+#  export BOT_NAME=markets_fetcher
+#  $BOT_TARGET/bin/markets_fetcher --daemon
+#fi
+
+
+ps -ef | grep markets_fetcher | grep -v grep >/dev/null
 RESULT_MARKETS_FETCHER=$?
+if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
+  export BOT_NAME=markets_fetcher
+  $BOT_TARGET/bin/markets_fetcher --daemon
+fi
+
 
 #if the lock can be aquired, the process is NOT running - start it
 
@@ -72,35 +85,60 @@ RESULT_MARKETS_FETCHER=$?
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #1
 
-if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
-  export BOT_NAME=markets_fetcher
-  $BOT_TARGET/bin/markets_fetcher --daemon
-fi
+
+
 
 ########### bot_checker ############
-$BOT_TARGET/bin/check_bot_running --botname=bot_checker > /dev/null 2>&1
-RESULT_BOT_CHECKER=$?
-if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
+#$BOT_TARGET/bin/check_bot_running --botname=bot_checker > /dev/null 2>&1
+#RESULT_BOT_CHECKER=$?
+#if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
+#  export BOT_NAME=bet_checker
+#  $BOT_TARGET/bin/bet_checker --daemon
+#fi
+
+ps -ef | grep bet_checker | grep -v grep >/dev/null
+RESULT_BET_CHECKER=$?
+if [ $RESULT_BET_CHECKER -eq 1 ] ; then
   export BOT_NAME=bet_checker
   $BOT_TARGET/bin/bet_checker --daemon
 fi
 
+
+
 ########### bot ############
-$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
+#$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
+#RESULT_BOT=$?
+#if [ $RESULT_BOT -eq 0 ] ; then
+#  export BOT_NAME=bot
+#  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
+#fi
+
+
+ps -ef | grep bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
 RESULT_BOT=$?
-if [ $RESULT_BOT -eq 0 ] ; then
+if [ $RESULT_BOT -eq 1 ] ; then
   export BOT_NAME=bot
   $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
 fi
 
 
 ########### saldo_fetcher ############
-$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
+#$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
+#RESULT_SALDO_FETCHER=$?
+#if [ $RESULT_SALDO_FETCHER -eq 0 ] ; then
+#  export BOT_NAME=saldo_fetcher
+#  $BOT_TARGET/bin/saldo_fetcher --daemon
+#fi
+
+ps -ef | grep saldo_fetcher | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
-if [ $RESULT_SALDO_FETCHER -eq 0 ] ; then
+if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
   export BOT_NAME=saldo_fetcher
   $BOT_TARGET/bin/saldo_fetcher --daemon
 fi
+
+
+
 
 ######## winners_fetcher ###########
 
