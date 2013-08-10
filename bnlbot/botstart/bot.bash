@@ -9,14 +9,14 @@ while getopts "a:u:" opt; do
     u)  BOT_USER=$OPTARG ;;
     *)
       echo "$0 -a action [stop|start] -u user" >&2
-      return 1
+      exit 1
       ;;
   esac
 done
 
 
-[ -z $action ] && echo "missing action" >&2 && return 1
-[ -z $BOT_USER ] && echo "missing user" >&2 && return 1
+[ -z $action ] && echo "missing action" >&2 && exit 1
+[ -z $BOT_USER ] && echo "missing user" >&2 && exit 1
 
 export BOT_USER
 
