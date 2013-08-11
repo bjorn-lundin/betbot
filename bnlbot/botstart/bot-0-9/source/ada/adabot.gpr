@@ -7,7 +7,9 @@ project Adabot is
 
    for Exec_Dir use Global.Bot_Target & "/bin"  ;
 
-   for Source_Dirs use (AL & "/" & Sub_System);
+   for Source_Dirs use (AL & "/" & Sub_System,
+                        AL & "/" & "utils");
+                        
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    for Main use ("ini_reader.adb",
                  "bot.adb", 
@@ -18,7 +20,8 @@ project Adabot is
                  "saldo_fetcher.adb",
                  "bet_checker.adb",
                  "bot_send.adb",
---                 "tester.adb",
+                 "migrate_g2_g3.adb",
+                 "tester.adb",
                  "check_bot_running.adb"
 --                 "test_pio.adb",
 --                 "sql_ifc_leak_finder.adb"

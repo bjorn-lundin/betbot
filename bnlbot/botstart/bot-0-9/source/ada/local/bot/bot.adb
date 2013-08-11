@@ -72,10 +72,8 @@ begin
           Bot_Config.Re_Read_Config ; 
         when Bot_Messages.Market_Notification_Message    => 
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
-          if  Bot_Config.Config.System_Section.Mode = Bot_Types.Simulation then
-            Bet_Handler.Check_Bets; -- so we have nothing in the air for next bet;
-          end if;
-          
+        when Bot_Messages.New_Winners_Arrived_Notification_Message => 
+          Bet_Handler.Check_Bets;
         when others => 
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -90,6 +88,7 @@ begin
             Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
           );
         end if;
+        Bet_Handler.Check_Bets; 
     end;    
   end loop Main_Loop;
   Log(Me, "Close Db");
