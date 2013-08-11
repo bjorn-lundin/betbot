@@ -87,7 +87,7 @@ fi
 
 
 
-
+# Bot now handles checking bets
 ########### bot_checker ############
 #$BOT_TARGET/bin/check_bot_running --botname=bot_checker > /dev/null 2>&1
 #RESULT_BOT_CHECKER=$?
@@ -96,12 +96,12 @@ fi
 #  $BOT_TARGET/bin/bet_checker --daemon
 #fi
 
-ps -ef | grep bet_checker | grep -v grep >/dev/null
-RESULT_BET_CHECKER=$?
-if [ $RESULT_BET_CHECKER -eq 1 ] ; then
-  export BOT_NAME=bet_checker
-  $BOT_TARGET/bin/bet_checker --daemon
-fi
+#ps -ef | grep bet_checker | grep -v grep >/dev/null
+#RESULT_BET_CHECKER=$?
+#if [ $RESULT_BET_CHECKER -eq 1 ] ; then
+#  export BOT_NAME=bet_checker
+#  $BOT_TARGET/bin/bet_checker --daemon
+#fi
 
 
 

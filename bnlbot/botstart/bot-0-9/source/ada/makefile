@@ -28,6 +28,8 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
          $(ST)/table_awinners.ads $(ST)/table_abets.ads \
          $(ST)/table_anonrunners.ads $(ST)/table_abalances.ads \
+         $(ST)/table_drymarkets.ads $(ST)/table_dryrunners.ads \
+         $(ST)/table_dryresults.ads  \
          
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
@@ -123,8 +125,23 @@ $(ST)/table_abalances.ads : $(BOT_CONFIG)/repository/tables/table_abalances.xml
 	cd $(ST) && rm table_abalances.ada
 	$(TP) -p abalances > $(ST)/abalances.sql
 
+$(ST)/table_drymarkets.ads : $(BOT_CONFIG)/repository/tables/table_drymarkets.xml
+	$(TP) -t drymarkets > $(ST)/table_drymarkets.ada
+	cd $(ST) && gnatchop -w -gnat05 table_drymarkets.ada
+	cd $(ST) && rm table_drymarkets.ada
+	$(TP) -p drymarkets > $(ST)/drymarkets.sql
 
+$(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xml
+	$(TP) -t dryrunners > $(ST)/table_dryrunners.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
+	cd $(ST) && rm table_dryrunners.ada
+	$(TP) -p dryrunners > $(ST)/dryrunners.sql
 
+$(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xml
+	$(TP) -t dryresults > $(ST)/table_dryresults.ada
+	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
+	cd $(ST) && rm table_dryresults.ada
+	$(TP) -p dryresults > $(ST)/dryresults.sql
 
 #/etc/logrotate.d/bnlbot: 
 #	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \

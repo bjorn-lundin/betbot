@@ -78,7 +78,7 @@ begin
          Password => Ini.Get_Value("database","password",""));
     
   T.Start;
-    Markets.Prepare("select * from AMARKETS where MARKETID > '0' order by MARKETID");
+    Markets.Prepare("select * from AMARKETS order by MARKETID");
   Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);     
 --  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);     
   T.Commit;
