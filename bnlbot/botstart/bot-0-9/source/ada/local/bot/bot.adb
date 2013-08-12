@@ -25,7 +25,7 @@ procedure Bot is
   Me       : constant String := "Main";  
   use type Bot_Types.Mode_Type;
 begin
-  Logging.Open(EV.Value("BOT_HOME") & "/log/bot.log");
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Bot_Config.Config.Read; -- even from cmdline
   
   if Bot_Config.Config.System_Section.Daemonize then
@@ -34,7 +34,7 @@ begin
 
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
-  My_Lock.Take("bot");
+  My_Lock.Take(EV.Value("BOT_NAME"));
   
   Log(Bot_Config.Config.To_String);
   Log(Me, "Login betfair");

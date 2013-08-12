@@ -95,17 +95,21 @@ procedure Migrate_G2_G3 is
            "and MARKETNAME not like 'With%' " &
            "and MARKETNAME not like 'How Far%' " &
            "and MARKETNAME not like '%TBP%' " &
-           "and menupath not like '%pecials%' " &
-           "and marketname <> 'TO BE PLACED' " &
-           "and marketname <> 'Kombinationer' " &
-           "and noofrunners > 7 " &
+           "and MENUPATH not like '%pecials%' " &
+           "and MARKETNAME <> 'TO BE PLACED' " &
+           "and MARKETNAME <> 'Plats' " &
+           "and MARKETNAME <> 'Kombinationer' " &
+           "and NOOFRUNNERS > 7 " &
            "and MARKETTYPE = 'O' " &
            "and EXCHANGEID=1 " &
            "and MARKETSTATUS = 'ACTIVE' " );
    else
+    T.Rollback;
     raise Bad_Input with "Market_Type not in 'Vinnare','Plats' : '" & Market_Type & "'";
    end if;   
+
   elsif Animal = 4339 then  
+  Log(Me, "7");
    if Market_Type = "Plats" then
      Stm.Prepare("select * from DRYMARKETS " &
            "where EVENTHIERARCHY like '/4339/%' " &
@@ -125,10 +129,12 @@ procedure Migrate_G2_G3 is
                  "and EXCHANGEID=1  " &
                  "and MARKETSTATUS = 'ACTIVE'");
    else
+    T.Rollback;
     raise Bad_Input with "Market_Type not in 'Vinnare','Plats' : '" & Market_Type & "'";
    end if;   
   
   else
+    T.Rollback;
    raise Bad_Input with "Animal not in 7,4339 : " & Animal'Img;
   end if;
   Table_Drymarkets.Read_List(Stm, List);
@@ -143,10 +149,12 @@ procedure Migrate_G2_G3 is
                    Market_Type : String) is
   Me : constant String := "Insert_G2_Markets_Into_G3"; 
   T : Sql.Transaction_Type;
-  Aevent : Table_Aevents.Data_Type;
-  Amarket : Table_Amarkets.Data_Type;
+  Aevent,Aevent2 : Table_Aevents.Data_Type;
+  Amarket,Amarket2 : Table_Amarkets.Data_Type;
   Dry_Market : Table_Drymarkets.Data_Type;
   Left, Tot : Integer := 0;
+  type Eos_Type is (Event,Market);
+  Eos : array (Eos_Type'range) of Boolean := (others => False);
  begin
   Log(Me, "Start");
   Tot := Table_Drymarkets.Drymarkets_List_Pack.Get_Count(List);
@@ -167,8 +175,8 @@ procedure Migrate_G2_G3 is
     Move("None", Aevent.Timezone);
     Aevent.Opents   := Dry_Market.Eventdate;
     Aevent.Eventtypeid := Integer_4(Animal);
-    Table_Aevents.Insert(Aevent);
     -----------------------------------------
+
     Amarket := Table_Amarkets.Empty_Data;
     Move("0." & Trim(Dry_Market.Marketid'Img), Amarket.Marketid);
     Move("0." & Trim(Dry_Market.Marketid'Img), Amarket.Eventid);
@@ -188,7 +196,18 @@ procedure Migrate_G2_G3 is
     Amarket.Numactiverunners := Dry_Market.Noofrunners;
     Amarket.Totalmatched := Float_8(Dry_Market.Totalmatched);
     Amarket.Totalavailable := 0.0;
-    Table_Amarkets.Insert(Amarket); 
+
+    Aevent2 := Aevent;
+    Table_Aevents.Read(Aevent, Eos(Event));
+    if Eos(Event) then 
+      Table_Aevents.Insert(Aevent);
+    end if;
+    
+    Amarket2 := Amarket;
+    Table_Amarkets.Read(Amarket, Eos(Market)); 
+    if Eos(Market) then 
+      Table_Amarkets.Insert(Amarket); 
+    end if;  
     -----------------------------------------    
    end loop;
   T.Commit;

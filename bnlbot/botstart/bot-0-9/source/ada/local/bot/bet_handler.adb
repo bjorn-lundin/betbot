@@ -1346,7 +1346,8 @@ package body Bet_Handler is
       Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
     end if;  
     Pip := Local;
-    Log(Me & "Pip.Init", "Price: " & Price'Img & " became " & Local.Pip_Price'Img & 
+    Log(Me & "Pip.Init", "Price: " & General_Routines.F8_Image(Price) & " became " & 
+                                     General_Routines. F8_Image(Local.Pip_Price) & 
                          " Upper_Index " & Local.Upper_Index'Img & 
                          " Upper_Price " & Global_Odds_Table(Local.Upper_Index)'Img  &
                          " Lower_Index " & Local.Lower_Index'Img & 
@@ -1387,6 +1388,7 @@ package body Bet_Handler is
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners,Bet_Won : Boolean := False;
     Profit  : Float_8 := 0.0;
+    Did_Exit : Boolean := False;
   begin
   
     T.Start;
@@ -1395,7 +1397,7 @@ package body Bet_Handler is
       "select * from ABETS where betwon is null " & -- all bets, until profit and loss are fixed in API-NG
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);  
-      
+  
     while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
       Illegal_Data := False;
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
@@ -1424,7 +1426,14 @@ package body Bet_Handler is
           -- non -runner - void the bet
           Bet.Betwon := True;
           Bet.Profit := 0.0;
-          Table_Abets.Update_Withcheck(Bet);
+          begin
+            Table_Abets.Update_Withcheck(Bet);
+          exception  
+            when Sql.No_Such_Row => 
+              Did_Exit := True;
+              T.Rollback; -- let the other one do the update
+              exit;
+          end ;            
         else -- ok, lets continue        
           Winner.Marketid := Bet.Marketid;
           Winner.Selectionid := Bet.Selectionid;
@@ -1450,7 +1459,14 @@ package body Bet_Handler is
           
           Bet.Betwon := Bet_Won;
           Bet.Profit := Profit;          
-          Table_Abets.Update_Withcheck(Bet);
+          begin
+            Table_Abets.Update_Withcheck(Bet);
+          exception  
+            when Sql.No_Such_Row =>
+               Did_Exit := True;
+               T.Rollback; -- let the other one do the update
+               exit;
+          end ;            
         end if;
       end if; -- Illegal data
     end loop;            
@@ -1465,7 +1481,9 @@ package body Bet_Handler is
 --      -- Call Betfair here ! Profit & Loss
 --    end loop;            
       
-    T.Commit;
+    if not Did_Exit then  
+      T.Commit;
+    end if;  
     Table_Abets.Abets_List_Pack.Release(Bet_List);  
   end Check_Bets;  
   ------------------------------------------------------------------------------
