@@ -72,6 +72,7 @@ begin
           Bot_Config.Re_Read_Config ; 
         when Bot_Messages.Market_Notification_Message    => 
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
+          Bet_Handler.Check_Bets;
         when Bot_Messages.New_Winners_Arrived_Notification_Message => 
           Bet_Handler.Check_Bets;
         when others => 

@@ -22,15 +22,15 @@ with Bot_Messages;
 procedure Markets_Sender is
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
-  
-  Me : constant String := "Main.";  
+
+  Me : constant String := "Main.";
   Ba_Daemon    : aliased Boolean := False;
   Ba_Log       : aliased Boolean := False;
   Config : Command_Line_Configuration;
   My_Lock  : Lock.Lock_Type;
   T : Sql.Transaction_Type;
   Markets : Sql.Statement_Type;
-  
+
 ------------------------------ main start -------------------------------------
   Amarkets_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
   Amarkets :  Table_Amarkets.Data_Type;
@@ -39,17 +39,17 @@ procedure Markets_Sender is
   MNR      : Bot_Messages.Market_Notification_Record;
   Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
   Tot,Cur : Natural := 0;
-  
+
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
-  
+
   Define_Switch
      (Config,
       Ba_Log'access,
       "-l",
       Long_Switch => "--log",
       Help        => "open logfile ");
-      
+
   Define_Switch
      (Config,
       Ba_Daemon'access,
@@ -65,8 +65,8 @@ begin
   if Ba_Daemon then
      Posix.Daemonize;
   end if;
-  
-   --must take lock AFTER becoming a daemon ... 
+
+   --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
   My_Lock.Take("markets_sender");
 
@@ -76,11 +76,11 @@ begin
          Db_Name  => Ini.Get_Value("database","name",""),
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
-    
+
   T.Start;
-    Markets.Prepare("select * from AMARKETS order by MARKETID");
-  Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);     
---  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);     
+    Markets.Prepare("select * from AMARKETS where MARKETID > '0.109681869' order by MARKETID");
+  Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);
+--  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);
   T.Commit;
   Tot := Table_Amarkets.Amarkets_List_Pack.Get_Count(Amarkets_List);
   Log(Me, "found # markets:" & Tot'Img );
@@ -93,21 +93,21 @@ begin
      if not Eos then -- wants to have a winner
        MNR.Market_Id := (others => ' ');
        Move(Amarkets.Marketid, MNR.Market_Id);
-       Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id   & " Startts = " & 
-                Sattmate_Calendar.String_Date_And_Time(Amarkets.Startts, Milliseconds => true) 
+       Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id   & " Startts = " &
+                Sattmate_Calendar.String_Date_And_Time(Amarkets.Startts, Milliseconds => true)
                 & "'" & Cur'Img & "/" & Tot'Img);
        Bot_Messages.Send(Receiver, MNR);
-     end if;  
-  end loop;    
-  
+     end if;
+  end loop;
+
   Log(Me, "shutting down, close db");
   Sql.Close_Session;
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
   Log(Me, "after do_exit");
- 
+
 exception
-  when Lock.Lock_Error => 
+  when Lock.Lock_Error =>
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>

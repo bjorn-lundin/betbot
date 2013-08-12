@@ -89,8 +89,16 @@ procedure Migrate_G2_G3 is
    elsif Market_Type = "Vinnare" then
      Stm.Prepare("select * from DRYMARKETS " &
            "where EVENTHIERARCHY like '/7/%' " &
-           "and MARKETNAME like 'R%' " &
-           "and MARKETNAME not like 'Reverse%' " &
+           "and MARKETNAME not like 'Rever%' " &
+           "and MARKETNAME not like '% v %' " &
+           "and MARKETNAME not like 'Fore%' " &
+           "and MARKETNAME not like 'With%' " &
+           "and MARKETNAME not like 'How Far%' " &
+           "and MARKETNAME not like '%TBP%' " &
+           "and menupath not like '%pecials%' " &
+           "and marketname <> 'TO BE PLACED' " &
+           "and marketname <> 'Kombinationer' " &
+           "and noofrunners > 7 " &
            "and MARKETTYPE = 'O' " &
            "and EXCHANGEID=1 " &
            "and MARKETSTATUS = 'ACTIVE' " );
