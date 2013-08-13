@@ -37,15 +37,19 @@ begin
   My_Lock.Take(EV.Value("BOT_NAME"));
   
   Log(Bot_Config.Config.To_String);
-  Log(Me, "Login betfair");
---  return;
-  My_Token.Login(
-    Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
-    Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
-    Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
-    Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
-  );
-  Log(Me, "Login betfair done");
+  
+  case Bot_Config.Config.System_Section.Mode is
+    when Bot_Types.Real       =>
+       Log(Me, "Login betfair");
+       My_Token.Login(
+         Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
+         Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
+         Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
+         Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
+       );
+       Log(Me, "Login betfair done");
+    when Bot_Types.Simulation => null;
+  end case;
    
   Log(Me, "Connect Db");
   Sql.Connect
@@ -61,9 +65,7 @@ begin
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
-      
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
-      
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  => 
           exit Main_Loop;
@@ -81,14 +83,18 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
-        if not My_Token.Keep_Alive then
-          My_Token.Login(
-            Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
-            Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
-            Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
-            Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
-          );
-        end if;
+        case Bot_Config.Config.System_Section.Mode is
+          when Bot_Types.Real       =>
+            if not My_Token.Keep_Alive then
+              My_Token.Login(
+                Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
+                Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
+                Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
+                Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
+              );
+            end if;
+          when Bot_Types.Simulation => null;
+        end case;
         Bet_Handler.Check_Bets; 
     end;    
   end loop Main_Loop;
@@ -96,9 +102,7 @@ begin
   Sql.Close_Session;
   Log(Me, "Db Closed");
   Logging.Close;
-  
   Posix.Do_Exit(0); -- terminate
-
 exception
   when Lock.Lock_Error => 
     Log(Me, "lock error, exit");

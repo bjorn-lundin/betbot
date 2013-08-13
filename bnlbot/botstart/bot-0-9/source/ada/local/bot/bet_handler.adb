@@ -538,6 +538,64 @@ package body Bet_Handler is
             Result := False;
           end if;
         end;  
+        
+      when Layfav1 | Layfav2 | Layfav3 | Layfav4 =>     
+        -- check min_lay_price < price <= max_lay_price
+        -- we can not loop for dogs. Check how many turns for horses
+        if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
+          case Bet.Bet_Info.Event.Eventtypeid is 
+            when 7    => null;  -- only WIN horses 
+              Max_Favorite_Odds := 5.0;
+            when 4339 => 
+              Result := False;
+              return;
+            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
+          end case;
+        elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
+          case Bet.Bet_Info.Event.Eventtypeid is 
+            when 7    => 
+              Result := False;
+              return;
+            when 4339 => 
+              Result := False;
+              return;
+            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
+          end case;
+        end if;
+        -- check favorite odds (i.e. there is a clear favorite)
+        if Bet.Bet_Info.Runner_Array(1).Price.Backprice > Max_Favorite_Odds then
+     --     Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img & 
+     --              " needs to be < " & Max_Favorite_Odds'Img);
+          Result := False;
+          return;
+        end if;
+        
+        declare
+          Index : Integer := 0;
+          Max_Lay_Price : Max_Lay_Price_Type := 10.0;
+        begin  
+          if Bet.Bot_Cfg.Bet_Type = Layfav1 then
+            Index := 1;
+          elsif Bet.Bot_Cfg.Bet_Type = Layfav2 then
+            Index := 2;
+          elsif Bet.Bot_Cfg.Bet_Type = Layfav3 then
+            Index := 3;
+          elsif Bet.Bot_Cfg.Bet_Type = Layfav4 then
+            Index := 4;
+          else  
+            raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
+          end if;
+          
+          if Integer( Bet.Bet_Info.Market.Numrunners) >= Index then
+            if  Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price then
+               Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(Index).Price.Selectionid; -- save the selection
+               Bet.Bet_Info.Used_Index   := Index; --index in the array of our selection 
+            end if;      
+          else
+            Result := False;
+            return;
+          end if; 
+        end;            
     end case;
     -- neutral place, will be executed in make*bet
     Update_Betwon_To_Null.Prepare("update ABETS set betwon = null where betid = :BETID");
@@ -805,7 +863,7 @@ package body Bet_Handler is
       Select_In_The_Air.Fetch( Eos);     
       if not Eos then
         Abet := Table_Abets.Get(Select_In_The_Air);
-        Log(Me & "In_The_Air", "Bet does exist " & Table_Abets.To_String(Abet));
+        Log(Me & "In_The_Air", "Unsettled bet exists " & Table_Abets.To_String(Abet));
       else  
 --        Log(Me & "In_The_Air", "Bet does not exist");
          null;
@@ -861,7 +919,7 @@ package body Bet_Handler is
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
         Pip.Init(Price);
         Price := Pip.Previous_Price;
-      when Lay => 
+      when Lay | Layfav1 | Layfav2 | Layfav3 | Layfav4  => 
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
         Pip.Init(Price);
         Price := Pip.Next_Price;
@@ -958,7 +1016,7 @@ package body Bet_Handler is
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
         Pip.Init(Price);
         Price := Pip.Previous_Price;
-      when Lay => 
+      when Lay | Layfav1 | Layfav2 | Layfav3 | Layfav4  =>
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
         Pip.Init(Price);
         Price := Pip.Next_Price;
@@ -1076,7 +1134,7 @@ package body Bet_Handler is
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
         Pip.Init(Price);
         Price := Pip.Previous_Price;
-      when Lay => 
+      when Lay | Layfav1 | Layfav2 | Layfav3 | Layfav4  =>
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
         Pip.Init(Price);
         Price := Pip.Next_Price;
@@ -1347,11 +1405,11 @@ package body Bet_Handler is
     end if;  
     Pip := Local;
     Log(Me & "Pip.Init", "Price: " & General_Routines.F8_Image(Price) & " became " & 
-                                     General_Routines. F8_Image(Local.Pip_Price) & 
+                                     General_Routines.F8_Image(Local.Pip_Price) & 
                          " Upper_Index " & Local.Upper_Index'Img & 
-                         " Upper_Price " & Global_Odds_Table(Local.Upper_Index)'Img  &
+                         " Upper_Price " & General_Routines.F8_Image(Global_Odds_Table(Local.Upper_Index))  &
                          " Lower_Index " & Local.Lower_Index'Img & 
-                         " Lower_Price " & Global_Odds_Table(Local.Lower_Index)'Img  );      
+                         " Lower_Price " & General_Routines.F8_Image(Global_Odds_Table(Local.Lower_Index))  );      
   end Init;
   -------------------------------- 
   function Next_Price(Pip : Pip_Type) return Float_8 is
@@ -1406,6 +1464,14 @@ package body Bet_Handler is
         Side := Back;
       elsif Trim(Bet.Side) = "LAY" then
         Side := Lay;
+      elsif Trim(Bet.Side) = "LAYFAV1" then
+        Side := Lay;
+      elsif Trim(Bet.Side) = "LAYFAV2" then
+        Side := Lay;
+      elsif Trim(Bet.Side) = "LAYFAV3" then
+        Side := Lay;
+      elsif Trim(Bet.Side) = "LAYFAV4" then
+        Side := Lay;
       else
         Illegal_Data := True;
         Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
@@ -1441,19 +1507,31 @@ package body Bet_Handler is
           Selection_In_Winners := not Eos(Awinner);
         
           case Side is
-            when Back => Bet_Won := Selection_In_Winners;
-            when Lay  => Bet_Won := not Selection_In_Winners;
+            when Back     => Bet_Won := Selection_In_Winners;
+            when Lay     | 
+                 Layfav1 | 
+                 Layfav2 | 
+                 Layfav3 | 
+                 Layfav4  => Bet_Won := not Selection_In_Winners;
           end case;
       
           if Bet_Won then
             case Side is     -- Betfair takes 5% provision on winnings
-              when Back => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
-              when Lay  => Profit := 0.95 * Bet.Size;
+              when Back   => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
+              when Lay   | 
+                 Layfav1 | 
+                 Layfav2 | 
+                 Layfav3 | 
+                 Layfav4  => Profit := 0.95 * Bet.Size;
             end case;
           else -- lost :-(
             case Side is
-              when Back => Profit := - Bet.Size;
-              when Lay  => Profit := - Bet.Size * (Bet.Price - 1.0);
+              when Back   => Profit := - Bet.Size;
+              when Lay   | 
+                 Layfav1 | 
+                 Layfav2 | 
+                 Layfav3 | 
+                 Layfav4  => Profit := - Bet.Size * (Bet.Price - 1.0);
             end case;
           end if;        
           

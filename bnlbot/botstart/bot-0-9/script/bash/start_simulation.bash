@@ -4,6 +4,20 @@
 #start simulator
 
 
+
+while getopts "m:" opt; do
+#  echo "$opt - $OPTARG"
+
+  case $opt in
+    m)  MARKETID=$OPTARG ;;
+    *)
+      echo "$0 -m marketid" >&2
+      echo "   marketid > than given are treated" >&2
+      exit 1
+      ;;
+  esac
+done
+
 SIMULATORS="horse_win_gb \
             horse_win_us \
             horse_win_ie \
@@ -13,8 +27,7 @@ SIMULATORS="horse_win_gb \
             horse_win_xx \
             horse_plc_xx \
             hound_win_xx \
-            hound_plc_xx"
-            
+            hound_plc_xx"           
             
 for SIM in $SIMULATORS ; do
 
@@ -27,7 +40,6 @@ done
 export BOT_NAME=markets_sender
 echo "starting $BOT_NAME"
 
-$BOT_TARGET/bin/markets_sender
-
+$BOT_TARGET/bin/markets_sender --marketid=$MARKETID
 
 
