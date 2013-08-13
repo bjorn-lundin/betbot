@@ -1,0 +1,32 @@
+set datafile commentschars '#'
+set datafile separator '|'
+
+set terminal pngcairo size 1024,768 background '#ffffff'
+#set terminal png medium size 1024,768 background '#ffffff'
+set output target_png
+
+set grid
+set key top left
+
+set title "equity for " . bet_type . " " . start_date . "-" .stop_date . " " . db_name
+set ylabel "kr"
+set y2label "kr"
+#set ytics 100
+#set y2tics 100
+
+set xdata time
+set timefmt  "%Y-%m-%d %H:%M:%S"
+set format x "%Y-%m-%d"
+
+set xtics rotate by 90 offset 0, -5
+set xlabel "Datum" offset 0,-3
+
+set style data histogram
+set style histogram rowstacked
+#set style fill solid border -1
+set boxwidth 0.75
+
+set bmargin 8
+
+plot     dr_file u 1:2 w lines lc rgb "green" title 'Dry run', \
+         sb_file u 1:2 w lines lc rgb "blue" title 'Sim bet'

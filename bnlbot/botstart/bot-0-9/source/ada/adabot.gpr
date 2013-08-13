@@ -21,7 +21,7 @@ project Adabot is
                  "bet_checker.adb",
                  "bot_send.adb",
                  "migrate_g2_g3.adb",
-                 "tester.adb",
+                 "equity.adb",
                  "check_bot_running.adb"
 --                 "test_pio.adb",
 --                 "sql_ifc_leak_finder.adb"

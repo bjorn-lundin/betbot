@@ -37,6 +37,7 @@ export BOT_START=$HOME/bnlbot/botstart
 ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
 RESULT_LOGIN_DAEMON=$?
 if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
+  echo "Started login_daemon"
   /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
 fi
 
@@ -52,6 +53,7 @@ fi
 ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
 RESULT_MAIL_PROXY=$?
 if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+  echo "Started mail_proxy"
   /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
 fi
 
@@ -68,6 +70,7 @@ fi
 ps -ef | grep markets_fetcher | grep -v grep >/dev/null
 RESULT_MARKETS_FETCHER=$?
 if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
+  echo "Started markets_fetcher"
   export BOT_NAME=markets_fetcher
   $BOT_TARGET/bin/markets_fetcher --daemon
 fi
@@ -117,6 +120,7 @@ fi
 ps -ef | grep bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
 RESULT_BOT=$?
 if [ $RESULT_BOT -eq 1 ] ; then
+  echo "Started bot"
   export BOT_NAME=bot
   $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
 fi
@@ -133,6 +137,7 @@ fi
 ps -ef | grep saldo_fetcher | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
 if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
+  echo "Started saldo_fetcher"
   export BOT_NAME=saldo_fetcher
   $BOT_TARGET/bin/saldo_fetcher --daemon
 fi

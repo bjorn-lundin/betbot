@@ -47,7 +47,6 @@ procedure Markets_Sender is
 
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
-
   Define_Switch
      (Config,
       Ba_Log'access,
@@ -58,8 +57,8 @@ begin
   Define_Switch
      (Config,
       Sa_Par_Marketid'access,
-      "-m",
-      Long_Switch => "--marketid",
+      "-m:",
+      Long_Switch => "--marketid=",
       Help        => "read markets with MARKETID > marketid ");
       
   Define_Switch
