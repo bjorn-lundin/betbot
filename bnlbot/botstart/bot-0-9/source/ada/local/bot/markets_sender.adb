@@ -27,13 +27,15 @@ procedure Markets_Sender is
 
   Me : constant String := "Main.";
   Ba_Daemon    : aliased Boolean := False;
+  Ba_Horse    : aliased Boolean := False;
+  Ba_Hound    : aliased Boolean := False;
   Ba_Log       : aliased Boolean := False;
   Sa_Par_Marketid : aliased Gnat.Strings.String_Access;
   Config : Command_Line_Configuration;
   My_Lock  : Lock.Lock_Type;
   T : Sql.Transaction_Type;
   Markets : Sql.Statement_Type;
-
+  Do_Send : Boolean := True;
 ------------------------------ main start -------------------------------------
   Amarkets_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
   Amarket :  Table_Amarkets.Data_Type;
@@ -50,23 +52,33 @@ begin
   Define_Switch
      (Config,
       Ba_Log'access,
-      "-l",
       Long_Switch => "--log",
       Help        => "open logfile ");
 
   Define_Switch
      (Config,
       Sa_Par_Marketid'access,
-      "-m:",
       Long_Switch => "--marketid=",
       Help        => "read markets with MARKETID > marketid ");
       
   Define_Switch
      (Config,
       Ba_Daemon'access,
-      "-d",
       Long_Switch => "--daemon",
       Help        => "become daemon at startup");
+      
+  Define_Switch
+     (Config,
+      Ba_Horse'access,
+      Long_Switch => "--horses",
+      Help        => "send horse markets");
+
+  Define_Switch
+     (Config,
+      Ba_Hound'access,
+      Long_Switch => "--hounds",
+      Help        => "send hound markets");
+      
   Getopt (Config);  -- process the command line
 
   if Ba_Log then
@@ -108,15 +120,32 @@ begin
      Table_Awinners.Read_One_Marketid(Awinner,False,Eos(Winner));
      if not Eos(Winner) then -- need to have a winner
        MNR.Market_Id := (others => ' ');
+       Receiver.Name := (others => ' ');
        Move(Amarket.Marketid, MNR.Market_Id);
        
        Aevent.Eventid := Amarket.Eventid;
        Table_Aevents.Read(Aevent,Eos(Event));
-       
+       Do_Send := False;
        if not Eos(Event) then
-        if Aevent.Eventtypeid = 7 then       -- horse
+        if Aevent.Eventtypeid = 7 and Ba_Horse then       -- horse
+          Do_Send := True;
           if Trim(Amarket.Markettype) = "PLACE" then
-            Move("horse_plc_xx", Receiver.Name);
+            if    Aevent.Countrycode = "US" then
+              Move("horse_plc_us", Receiver.Name);
+            elsif Aevent.Countrycode = "GB" then
+              Move("horse_plc_gb", Receiver.Name);
+            elsif Aevent.Countrycode = "IE" then
+              Move("horse_plc_ie", Receiver.Name);
+            elsif Aevent.Countrycode = "ZA" then
+              Move("horse_plc_za", Receiver.Name);
+            elsif Aevent.Countrycode = "SG" then
+              Move("horse_plc_sg", Receiver.Name);
+            elsif Aevent.Countrycode = "FR" then
+              Move("horse_plc_fr", Receiver.Name);
+            else
+               Move("horse_plc_xx", Receiver.Name);
+            end if;            
+
           elsif Trim(Amarket.Markettype) = "WIN" then     
             if    Aevent.Countrycode = "US" then
               Move("horse_win_us", Receiver.Name);
@@ -132,21 +161,23 @@ begin
               Move("horse_win_fr", Receiver.Name);
             else
               Move("horse_win_xx", Receiver.Name);            
-            end if;            
+            end if;                 
           end if;
         
-        elsif Aevent.Eventtypeid = 4339 then -- hound
+        elsif Aevent.Eventtypeid = 4339 and Ba_Hound then -- hound
+          Do_Send := True;
           if Trim(Amarket.Markettype) = "PLACE" then
               Move("hound_plc_xx", Receiver.Name);
           elsif Trim(Amarket.Markettype) = "WIN" then     
               Move("hound_win_xx", Receiver.Name);
           end if;        
         end if;
-       
-         Log(Me, "Notifying " & Trim(Receiver.Name) & " with marketid: '" & MNR.Market_Id   & " Startts = " &
+        if Do_Send then       
+          Log(Me, "Notifying " & Trim(Receiver.Name) & " with marketid: '" & MNR.Market_Id   & "' Startts = " &
                   Sattmate_Calendar.String_Date_And_Time(Amarket.Startts, Milliseconds => true)
-                  & "'" & Cur'Img & "/" & Tot'Img);
-         Bot_Messages.Send(Receiver, MNR);
+                  & Cur'Img & "/" & Tot'Img);
+          Bot_Messages.Send(Receiver, MNR);
+        end if;  
        end if;        
      end if;
   end loop;

@@ -119,7 +119,7 @@ package body Process_Io.Pipe is
     if not Exists(Global_Pipe_Directory) then
       Create_Path(Global_Pipe_Directory);
     end if;
-    aPipe.Name := To_Unbounded_String(Trim(To_lower(Receiver.Name),Both));
+    aPipe.Name := To_Unbounded_String(Trim(To_Lower(Receiver.Name),Both));
     aPipe.Device := To_Unbounded_String(Global_Pipe_Directory) & aPipe.Name ;
     aPipe.Device_Length := To_String(aPipe.Device)'Length;
     aPipe.C_Device := To_Unbounded_String(To_String(aPipe.Device) & Ascii.Nul);
@@ -178,7 +178,7 @@ package body Process_Io.Pipe is
   begin
     aPipe.Id := cOpen(My_Path'access,Flags, 8#660#);
     if aPipe.Id < 0 then
-      Perror("open:");
+      Perror("'" & My_Path & "'");
     end if;
   end Open;
   ------------------------------------------------------

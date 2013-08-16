@@ -29,7 +29,7 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_awinners.ads $(ST)/table_abets.ads \
          $(ST)/table_anonrunners.ads $(ST)/table_abalances.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryrunners.ads \
-         $(ST)/table_dryresults.ads  \
+         $(ST)/table_dryresults.ads  $(ST)/table_abethistory.ads \
          
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
@@ -142,6 +142,12 @@ $(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xm
 	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
 	cd $(ST) && rm table_dryresults.ada
 	$(TP) -p dryresults > $(ST)/dryresults.sql
+
+$(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.xml
+	$(TP) -t abethistory > $(ST)/table_abethistory.ada
+	cd $(ST) && gnatchop -w -gnat05 table_abethistory.ada
+	cd $(ST) && rm table_abethistory.ada
+	$(TP) -p abethistory > $(ST)/abethistory.sql
 
 #/etc/logrotate.d/bnlbot: 
 #	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
