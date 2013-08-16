@@ -68,7 +68,8 @@ package body Sql is
    
    procedure Finalize (T : in out Transaction_Type) is
    begin -- we do not want to leave scoop with a running transaction !!
---     null;
+     null;
+--     return;
      if T.Counter > 0 then
        raise Transaction_Error with "Uncommited Transaction went out of scoop!";
      end if;  

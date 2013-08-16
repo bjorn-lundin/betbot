@@ -9,6 +9,7 @@ with Bot_Config; use Bot_Config;
 with Bot_System_Number;
 with Table_Abets;
 with Table_Awinners;
+with Table_Abethistory;
 --with Table_Arunners;
 with Table_Anonrunners;
 with Sql;
@@ -45,13 +46,16 @@ package body Bet_Handler is
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     
   type Bet_History_Record is record
-    Weight     : Float_8 := 0.0;
+    Weight_1   : Float_8 := 0.0;
+    Weight_2   : Float_8 := 0.0;
+    Weight_3   : Float_8 := 0.0;
     Start_Date : Sattmate_Calendar.Time_Type;
     End_Date   : Sattmate_Calendar.Time_Type;
     Profit     : Float_8 := 0.0;
   end record;
   
-  type Bet_History_Array is array ( 1 .. 21 ) of Bet_History_Record;
+  type Bet_History_Array is array (Integer range <>) of Bet_History_Record;
+  
   
   Global_Odds_Table : array(1 .. 350) of Float_8 := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
@@ -191,10 +195,11 @@ package body Bet_Handler is
     -- see if we can make a bet now
       Bet       : Bet_Type := Create(Bet_Info, Bot_Cfg);
       Fulfilled : Boolean  := True;
-      Todays_Profit : Profit_Type := 0.0;
-      Continue_Betting : Boolean := False; 
-      Lost_Today : Boolean := True;
-      In_The_Air, Exists : Boolean := True;
+--      Todays_Profit : Profit_Type := 0.0;
+--      Continue_Betting : Boolean := False; 
+--      Lost_Today, OK : Boolean := True;
+--      In_The_Air, Exists : Boolean := True;
+      
   begin
     Log(Me & "Try_Make_New_Bet", "Bet_name " & To_String(Bot_Cfg.Bet_Name) );
     
@@ -204,82 +209,31 @@ package body Bet_Handler is
 --                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &    
 --                                 "evt-name: " &  Bet.Bet_Info.Event.Eventname);    
     
-    
-    Exists := Bet.Exists(Dry_Run => False);
-    if not Exists then -- check for dry runs as well
-      Exists := Bet.Exists(Dry_Run => True);
-    end if;
-    
-    In_The_Air := Bet.In_The_Air(Dry_Run => False);
-    if not In_The_Air then -- check for dry runs as well
-      In_The_Air := Bet.In_The_Air(Dry_Run => True);
-    end if;
 
-    if not In_The_Air then
-      if not Exists then
-  --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
-        Bet.Check_Conditions_Fulfilled(Fulfilled);
-        if Fulfilled then
-          Todays_Profit := Bet.Profit_Today(Dry_Run => False); 
-          
-          if abs(Todays_Profit) < Profit_Type(0.001) then --use dry run instead
-            Todays_Profit := Bet.Profit_Today(Dry_Run => True); 
-          end if;      
-          
-          Lost_Today :=  Bet.Has_Lost_Today(Dry_Run => False);
-          if not Lost_Today then -- check the dryruns too
-            Lost_Today :=  Bet.Has_Lost_Today(Dry_Run => True);
-          end if;         
-          
-          -- if we have a loss today, settle with positive result
-          if Lost_Today then        
-            if Todays_Profit < Bot_Cfg.Max_Daily_Loss then
-              -- we have lost enough for today, give up!
-              Continue_Betting := False;
-              Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much already will NOT continue.");
-          
-            elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bot_Cfg.Max_Daily_Loss then
-              -- we have lost today, and are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
-              Continue_Betting := True;
-              Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
-            else
-              -- we have lost today, but are back on the winning side. Stop bettting, and be happy
-              Continue_Betting := False;
-              Log (Me & "Try_Make_New_Bet", "We have lost today, but are ok now. Settle with that, Will NOT continue until tomorrow");
-            end if;
-          else -- we have NOT lost today
-            if Todays_Profit >= Bot_Cfg.Max_Daily_Profit then
-              -- we have Won enough for today, STOP bettting!
-              Continue_Betting := False;
-              Log (Me & "Try_Make_New_Bet", "YES !! We have won enough for today, STOP bettting.");
-            else
-              -- we have won today, but haven't reach our ceiling yet
-              Continue_Betting := True;
-              Log (Me & "Try_Make_New_Bet", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
-            end if;
-          end if;        
-           
-          if Continue_Betting then
-            Bet.Make_Dry_Bet;
-            if Bet.Enabled then
-              if Bet.History_Ok then
-                case Bot_Cfg.Mode is
-                  when Real =>       
-                    Log(Me & "Try_Make_New_Bet", "would be a real bet here");
-            --        Bet.Make_Real_Bet(A_Token);
-                  when Simulation =>
-                    Bet.Make_Simulation_Bet;
-                end case;  
-              end if; -- history
-            end if; -- enabled
-          end if;-- continue betting
-        end if;-- fulfilled
-      else
-        Log(Me & "Try_Make_New_Bet", "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid );
-      end if;
-    else
-      Log(Me & "Try_Make_New_Bet", "Bet in the air, wait for it to be settled: " & Bet.Bet_Info.Market.Marketid );
+
+    Bet.Check_Conditions_Fulfilled(Fulfilled);
+    if not Fulfilled then
+      return;
     end if;
+    
+    Bet.Calculate_History;
+    
+    Bet.Do_Try(Powerdays => 107);
+    Bet.Do_Try(Powerdays => 207);
+    Bet.Do_Try(Powerdays => 307);
+    Bet.Do_Try(Powerdays => 114);
+    Bet.Do_Try(Powerdays => 214);
+    Bet.Do_Try(Powerdays => 314);
+    Bet.Do_Try(Powerdays => 121);
+    Bet.Do_Try(Powerdays => 221);
+    Bet.Do_Try(Powerdays => 321);
+    Bet.Do_Try(Powerdays => 128);
+    Bet.Do_Try(Powerdays => 228);
+    Bet.Do_Try(Powerdays => 328);
+    Bet.Do_Try(Powerdays => 135);
+    Bet.Do_Try(Powerdays => 235);
+    Bet.Do_Try(Powerdays => 335);
+
   end Try_Make_New_Bet;
     
   -------------------------------------------------------------------------------
@@ -344,6 +298,8 @@ package body Bet_Handler is
     Tmp.Bot_Cfg := Bot_Cfg;
     if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > Natural(0) then 
       null;
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_layfav") > Natural(0) then 
+      null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > Natural(0) then 
       null;
     else
@@ -358,7 +314,118 @@ package body Bet_Handler is
     return Bet.Bot_Cfg.Enabled;
   end Enabled;
   -----------------------------------------------------------------------
+  procedure Do_Try(Bet : in out Bet_Type; Powerdays : in Integer_4) is
+    -- see if we can make a bet now
+--      Fulfilled : Boolean  := True;
+      Todays_Profit : Profit_Type := 0.0;
+      Continue_Betting : Boolean := False; 
+      Lost_Today : Boolean := True;
+      In_The_Air, Exists : Boolean := True;
+      History_OK : Boolean := False;
+      Sum : Float_8 := 0.0;
+  begin
   
+    case Powerdays is
+      when 107    => Sum := Bet.Bet_History.Sum_07_Linear; History_OK := Sum >= 0.0;
+      when 207    => Sum := Bet.Bet_History.Sum_07_Square; History_OK := Sum >= 0.0;
+      when 307    => Sum := Bet.Bet_History.Sum_07_Cube  ; History_OK := Sum >= 0.0; 
+      when 114    => Sum := Bet.Bet_History.Sum_14_Linear; History_OK := Sum >= 0.0;
+      when 214    => Sum := Bet.Bet_History.Sum_14_Square; History_OK := Sum >= 0.0;   
+      when 314    => Sum := Bet.Bet_History.Sum_14_Cube  ; History_OK := Sum >= 0.0;
+      when 121    => Sum := Bet.Bet_History.Sum_21_Linear; History_OK := Sum >= 0.0;
+      when 221    => Sum := Bet.Bet_History.Sum_21_Square; History_OK := Sum >= 0.0;
+      when 321    => Sum := Bet.Bet_History.Sum_21_Cube  ; History_OK := Sum >= 0.0;
+      when 128    => Sum := Bet.Bet_History.Sum_28_Linear; History_OK := Sum >= 0.0;
+      when 228    => Sum := Bet.Bet_History.Sum_28_Square; History_OK := Sum >= 0.0;
+      when 328    => Sum := Bet.Bet_History.Sum_28_Cube  ; History_OK := Sum >= 0.0;
+      when 135    => Sum := Bet.Bet_History.Sum_35_Linear; History_OK := Sum >= 0.0;
+      when 235    => Sum := Bet.Bet_History.Sum_35_Square; History_OK := Sum >= 0.0;
+      when 335    => Sum := Bet.Bet_History.Sum_35_Cube  ; History_OK := Sum >= 0.0;
+      when others => raise Bad_Data with "bad Powerdays:" & Powerdays'Img;    
+    end case;
+
+    Log(Me & "Do_Try", "History_OK :" & History_OK'Img & " Powerdays:" & Powerdays'Img);
+    
+    if not History_OK then
+      return;
+    end if;    
+  
+    Exists := Bet.Exists(Dry_Run => False, Powerdays => Powerdays);
+    if not Exists then -- check for dry runs as well
+      Exists := Bet.Exists(Dry_Run => True, Powerdays => Powerdays);
+    end if;
+    
+    In_The_Air := Bet.In_The_Air(Dry_Run => False, Powerdays => Powerdays);
+    if not In_The_Air then -- check for dry runs as well
+      In_The_Air := Bet.In_The_Air(Dry_Run => True, Powerdays => Powerdays);
+    end if;
+
+    if not In_The_Air then
+      if not Exists then
+  --      Log(Me & "Try_Make_New_Bet", Bet.To_String);
+--        Bet.Check_Conditions_Fulfilled(Fulfilled);
+--        if Fulfilled then
+          Todays_Profit := Bet.Profit_Today(Dry_Run => False, Powerdays => Powerdays); 
+          
+          if abs(Todays_Profit) < Profit_Type(0.001) then --use dry run instead
+            Todays_Profit := Bet.Profit_Today(Dry_Run => True, Powerdays => Powerdays); 
+          end if;      
+          
+          Lost_Today :=  Bet.Has_Lost_Today(Dry_Run => False, Powerdays => Powerdays);
+          if not Lost_Today then -- check the dryruns too
+            Lost_Today :=  Bet.Has_Lost_Today(Dry_Run => True, Powerdays => Powerdays);
+          end if;         
+          
+          -- if we have a loss today, settle with positive result
+          if Lost_Today then        
+            if Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
+              -- we have lost enough for today, give up!
+              Continue_Betting := False;
+              Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much already will NOT continue.");
+          
+            elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Loss then
+              -- we have lost today, and are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
+              Continue_Betting := True;
+              Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
+            else
+              -- we have lost today, but are back on the winning side. Stop bettting, and be happy
+              Continue_Betting := False;
+              Log (Me & "Try_Make_New_Bet", "We have lost today, but are ok now. Settle with that, Will NOT continue until tomorrow");
+            end if;
+          else -- we have NOT lost today
+            if Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Profit then
+              -- we have Won enough for today, STOP bettting!
+              Continue_Betting := False;
+              Log (Me & "Try_Make_New_Bet", "YES !! We have won enough for today, STOP bettting.");
+            else
+              -- we have won today, but haven't reach our ceiling yet
+              Continue_Betting := True;
+              Log (Me & "Try_Make_New_Bet", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
+            end if;
+          end if;        
+           
+          if Continue_Betting then
+            Bet.Make_Dry_Bet(Powerdays => Powerdays);
+            if Bet.Enabled then
+                case Bet.Bot_Cfg.Mode is
+                  when Real =>       
+                    Log(Me & "Try_Make_New_Bet", "would be a real bet here");
+            --        Bet.Make_Real_Bet(A_Token; Powerdays => Powerdays);
+                  when Simulation =>
+                    Bet.Make_Simulation_Bet(Powerdays => Powerdays);
+                end case;  
+            end if; -- enabled
+          end if;-- continue betting
+        --end if;-- fulfilled
+      else
+        Log(Me & "Try_Make_New_Bet", "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid & " Powerdays "& Powerdays'Img);
+      end if;
+    else
+      Log(Me & "Try_Make_New_Bet", "Bet in the air, wait for it to be settled: " & Bet.Bet_Info.Market.Marketid & " Powerdays "& Powerdays'Img);
+    end if;
+  end Do_Try;
+  
+  -----------------------------------------------------------------------
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Price_Fav, Price_2nd_Fav : Table_Aprices.Data_Type;
     Min_Num_Animals_Before_Me  : Integer := 0;
@@ -404,16 +471,16 @@ package body Bet_Handler is
     
     if Num_Runners < Bet.Bot_Cfg.Min_Num_Runners or else
        Num_Runners > Bet.Bot_Cfg.Max_Num_Runners then
-    --  Log(Me & "Check_Conditions_Fulfilled", "bad num runners" & Num_Runners'Img & 
-    --     " min=" &  Bet.Bot_Cfg.Min_Num_Runners'Img &
-    --    " max=" &  Bet.Bot_Cfg.Max_Num_Runners'Img);
+--      Log(Me & "Check_Conditions_Fulfilled", "bad num runners" & Num_Runners'Img & 
+--         " min=" &  Bet.Bot_Cfg.Min_Num_Runners'Img &
+--        " max=" &  Bet.Bot_Cfg.Max_Num_Runners'Img);
       Result := False;
       return;             
     end if;   
     
     if Bet.Bet_Info.Market.Numwinners /= Bet.Bot_Cfg.Num_Winners then
-    --  Log(Me & "Check_Conditions_Fulfilled", "bad num winner" & Bet.Bot_Info.Market.Numwinners'Img & 
-    --     " /=" & Bet.Bot_Cfg.Num_Winners'Img);
+--      Log(Me & "Check_Conditions_Fulfilled", "bad num winner" & Bet.Bet_Info.Market.Numwinners'Img & 
+--         " /=" & Bet.Bot_Cfg.Num_Winners'Img);
       Result := False;
       return;             
     end if;   
@@ -453,7 +520,7 @@ package body Bet_Handler is
       end if;
       
       if not Found then
-    --      Log(Me & "Check_Conditions_Fulfilled", "wrong country for this bot should be in : '" & Countries & "' is '" & Bet.Bet_Info.Event.Countrycode & "'");
+--          Log(Me & "Check_Conditions_Fulfilled", "wrong country for this bot should be in : '" & Countries & "' is '" & Bet.Bet_Info.Event.Countrycode & "'");
           Result := False;
           return ; -- wrong country for this bot
       end if;
@@ -461,7 +528,7 @@ package body Bet_Handler is
         
     -- check market status --?
     if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
-      Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
+--      Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
       Result := False;
       return;
     end if;
@@ -489,7 +556,7 @@ package body Bet_Handler is
         if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
           case Bet.Bet_Info.Event.Eventtypeid is 
             when 7    => 
-              Min_Num_Animals_Before_Me := 7;  -- always 6 horses before mine ...
+              Min_Num_Animals_Before_Me := 8;  -- always 7 horses before mine ...
               Max_Favorite_Odds := 5.0;
             when 4339 => 
               Min_Num_Animals_Before_Me := 6;                --always last hound
@@ -554,18 +621,19 @@ package body Bet_Handler is
         elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
           case Bet.Bet_Info.Event.Eventtypeid is 
             when 7    => 
-              Result := False;
-              return;
+              Max_Favorite_Odds := 3.0;
             when 4339 => 
               Result := False;
               return;
             when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
           end case;
+        else   
+          raise Bad_Data with "Bad markettype: '" &  General_Routines.Trim(Bet.Bet_Info.Market.Markettype) & "'";
         end if;
         -- check favorite odds (i.e. there is a clear favorite)
         if Bet.Bet_Info.Runner_Array(1).Price.Backprice > Max_Favorite_Odds then
-     --     Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img & 
-     --              " needs to be < " & Max_Favorite_Odds'Img);
+--          Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img & 
+--                   " needs to be < " & Max_Favorite_Odds'Img);
           Result := False;
           return;
         end if;
@@ -586,34 +654,46 @@ package body Bet_Handler is
             raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
           end if;
           
-          if Integer( Bet.Bet_Info.Market.Numrunners) >= Index then
-            if  Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price then
+          if Num_Runners >= Index then
+            if  Bet.Bet_Info.Runner_Array(Index).Price.Layprice >= 1.01  and then 
+                Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price then
                Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(Index).Price.Selectionid; -- save the selection
                Bet.Bet_Info.Used_Index   := Index; --index in the array of our selection 
+            else
+--            Log(Me & "Check_Conditions_Fulfilled", "Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price is FALSE " & 
+--             " Index = " & index'img & " Bet.Bet_Info.Runner_Array(Index).Price.Layprice= " & Bet.Bet_Info.Runner_Array(Index).Price.Layprice'Img &
+--             " Max_Lay_Price=" & Max_Lay_Price'Img);           
+              Result := False;
+              return;          
             end if;      
           else
+--            Log(Me & "Check_Conditions_Fulfilled", "Num_Runners >= Index is FALSE" & 
+--             " Num_Runners = " & Num_Runners'img & " Index= " & Index'Img);
             Result := False;
             return;
           end if; 
         end;            
     end case;
     -- neutral place, will be executed in make*bet
-    Update_Betwon_To_Null.Prepare("update ABETS set betwon = null where betid = :BETID");
+    Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
 
   end Check_Conditions_Fulfilled;
   ------------------------------------------------------------------------------------------------------
-  function History_Ok(Bet : Bet_Type) return Boolean is
-    History : Bet_History_Array; -- array of 21 days
+  procedure Calculate_History(Bet : in out Bet_Type) is
+    History_07 : Bet_History_Array(1 .. 7); 
+    History_14 : Bet_History_Array(1 .. 14); 
+    History_21 : Bet_History_Array(1 .. 21); 
+    History_28 : Bet_History_Array(1 .. 28); 
+    History_35 : Bet_History_Array(1 .. 35); 
     use Sattmate_Calendar;
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     Start_Date, End_Date, Now : Time_Type := Clock; 
-    Sum : Float_8 := 0.0;
+--    Sum : Float_8 := 0.0;
+    Result : Bet_History_Result_Type;
   begin
-    T.Start;
-    
-      Now := Bet.Bet_Info.Market.Startts;
-    
+    T.Start;   
+      Now := Bet.Bet_Info.Market.Startts;    
       Select_History.Prepare(
          "select " & 
            "sum(PROFIT) " & 
@@ -622,61 +702,294 @@ package body Bet_Handler is
          "where " &
            "STARTTS >= :STARTOFDAY " & 
            "and STARTTS <= :ENDOFDAY  " &
---           "BETPLACED >= :STARTOFDAY " & 
---           "and BETPLACED <= :ENDOFDAY  " &
            "and BETWON is not null " &
            "and BETNAME = :BETNAME ");
            
       -- always set dry-run history           
       Select_History.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       
-      for i in History'range loop
+      for i in History_07'range loop
         Start_Date := Now - (Integer_4(i),0,0,0,0);
         Start_Date.Hour        := 0;
         Start_Date.Minute      := 0;
         Start_Date.Second      := 0;
         Start_Date.MilliSecond := 0;
         
-        End_Date := Now   - (Integer_4(i),0,0,0,0);
+        End_Date := Now - (Integer_4(i),0,0,0,0);
         End_Date.Hour        := 23;
         End_Date.Minute      := 59;
         End_Date.Second      := 59;
         End_Date.MilliSecond := 999;
         
-        History(i).Start_Date := Start_Date;
-        History(i).End_Date   := End_Date;
---        History(i).Weight := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
-        History(i).Weight := 1.0 / Float_8(i);
+        History_07(i).Start_Date := Start_Date;
+        History_07(i).End_Date   := End_Date;
+        History_07(i).Weight_1 := 1.0 / Float_8(i);
+        History_07(i).Weight_2 := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History_07(i).Weight_3 := History_07(i).Weight_1 * History_07(i).Weight_2;
         
         Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
         Select_History.Set_Timestamp("ENDOFDAY",End_Date);
         Select_History.Open_Cursor;     
         Select_History.Fetch(Eos);
         if not Eos then
-          Select_History.Get(1, History(i).Profit);
+          Select_History.Get(1, History_07(i).Profit);
         end if;
         Select_History.Close_Cursor;     
+        
+        History_14(i).Start_Date := History_07(i).Start_Date;
+        History_14(i).End_Date   := History_07(i).End_Date ;
+        History_14(i).Weight_1   := History_07(i).Weight_1 ;
+        History_14(i).Weight_2   := History_07(i).Weight_2;
+        History_14(i).Weight_3   := History_07(i).Weight_3; 
+        
+        History_21(i).Start_Date := History_07(i).Start_Date;
+        History_21(i).End_Date   := History_07(i).End_Date ;
+        History_21(i).Weight_1   := History_07(i).Weight_1 ;
+        History_21(i).Weight_2   := History_07(i).Weight_2;
+        History_21(i).Weight_3   := History_07(i).Weight_3; 
+        
+        History_28(i).Start_Date := History_07(i).Start_Date;
+        History_28(i).End_Date   := History_07(i).End_Date ;
+        History_28(i).Weight_1   := History_07(i).Weight_1 ;
+        History_28(i).Weight_2   := History_07(i).Weight_2;
+        History_28(i).Weight_3   := History_07(i).Weight_3; 
+        
+        History_35(i).Start_Date := History_07(i).Start_Date;
+        History_35(i).End_Date   := History_07(i).End_Date ;
+        History_35(i).Weight_1   := History_07(i).Weight_1 ;
+        History_35(i).Weight_2   := History_07(i).Weight_2;
+        History_35(i).Weight_3   := History_07(i).Weight_3;         
+      end loop;
+      for i in History_07'range loop
+        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_07(i).Profit)'img &
+                                  " weight: " & General_Routines.F8_Image(History_07(i).Weight_1) & 
+                                  " result: " & General_Routines.F8_Image(History_07(i).Weight_1 * 
+                                                                          History_07(i).Profit) &
+                                        " start: " & String_Date_Time_ISO(History_07(i).Start_Date, " ", "") & 
+                                          " end: " & String_Date_Time_ISO(History_07(i).End_Date, " ", "") 
+                                 );
+        Result.Sum_07_Linear := Result.Sum_07_Linear + (History_07(i).Weight_1 * History_07(i).Profit); 
+        Result.Sum_07_Square := Result.Sum_07_Square + (History_07(i).Weight_2 * History_07(i).Profit); 
+        Result.Sum_07_Cube   := Result.Sum_07_Cube   + (History_07(i).Weight_3 * History_07(i).Profit); 
       end loop;     
+      
+      
+      
+      for i in 8 .. 14  loop
+        Start_Date := Now - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 0;
+        Start_Date.Minute      := 0;
+        Start_Date.Second      := 0;
+        Start_Date.MilliSecond := 0;
+        
+        End_Date := Now - (Integer_4(i),0,0,0,0);
+        End_Date.Hour        := 23;
+        End_Date.Minute      := 59;
+        End_Date.Second      := 59;
+        End_Date.MilliSecond := 999;
+        
+        History_14(i).Start_Date := Start_Date;
+        History_14(i).End_Date   := End_Date;
+        History_14(i).Weight_1 := 1.0 / Float_8(i);
+        History_14(i).Weight_2 := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History_14(i).Weight_3 := History_14(i).Weight_1 * History_14(i).Weight_2;
+        
+        Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
+        Select_History.Set_Timestamp("ENDOFDAY",End_Date);
+        Select_History.Open_Cursor;     
+        Select_History.Fetch(Eos);
+        if not Eos then
+          Select_History.Get(1, History_14(i).Profit);
+        end if;
+        Select_History.Close_Cursor;     
+        
+        History_21(i).Start_Date := History_14(i).Start_Date;
+        History_21(i).End_Date   := History_14(i).End_Date ;
+        History_21(i).Weight_1   := History_14(i).Weight_1 ;
+        History_21(i).Weight_2   := History_14(i).Weight_2;
+        History_21(i).Weight_3   := History_14(i).Weight_3; 
+                                            
+        History_28(i).Start_Date := History_14(i).Start_Date;
+        History_28(i).End_Date   := History_14(i).End_Date ;
+        History_28(i).Weight_1   := History_14(i).Weight_1 ;
+        History_28(i).Weight_2   := History_14(i).Weight_2;
+        History_28(i).Weight_3   := History_14(i).Weight_3; 
+                                        
+        History_35(i).Start_Date := History_14(i).Start_Date;
+        History_35(i).End_Date   := History_14(i).End_Date ;
+        History_35(i).Weight_1   := History_14(i).Weight_1 ;
+        History_35(i).Weight_2   := History_14(i).Weight_2;
+        History_35(i).Weight_3   := History_14(i).Weight_3; 
+      end loop;
+      for i in History_14'range loop
+        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_14(i).Profit)'img &
+                                  " weight: " & General_Routines.F8_Image(History_14(i).Weight_1) & 
+                                  " result: " & General_Routines.F8_Image(History_14(i).Weight_1 * 
+                                                                          History_14(i).Profit) &
+                                        " start: " & String_Date_Time_ISO(History_14(i).Start_Date, " ", "") & 
+                                          " end: " & String_Date_Time_ISO(History_14(i).End_Date, " ", "") 
+                                 );
+        Result.Sum_14_Linear := Result.Sum_14_Linear + (History_14(i).Weight_1 * History_14(i).Profit); 
+        Result.Sum_14_Square := Result.Sum_14_Square + (History_14(i).Weight_2 * History_14(i).Profit); 
+        Result.Sum_14_Cube   := Result.Sum_14_Cube   + (History_14(i).Weight_3 * History_14(i).Profit); 
+      end loop;     
+
+      for i in 15 .. 21  loop
+        Start_Date := Now - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 0;
+        Start_Date.Minute      := 0;
+        Start_Date.Second      := 0;
+        Start_Date.MilliSecond := 0;
+        
+        End_Date := Now - (Integer_4(i),0,0,0,0);
+        End_Date.Hour        := 23;
+        End_Date.Minute      := 59;
+        End_Date.Second      := 59;
+        End_Date.MilliSecond := 999;
+        
+        History_21(i).Start_Date := Start_Date;
+        History_21(i).End_Date   := End_Date;
+        History_21(i).Weight_1 := 1.0 / Float_8(i);
+        History_21(i).Weight_2 := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History_21(i).Weight_3 := History_21(i).Weight_1 * History_21(i).Weight_2;
+        
+        Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
+        Select_History.Set_Timestamp("ENDOFDAY",End_Date);
+        Select_History.Open_Cursor;     
+        Select_History.Fetch(Eos);
+        if not Eos then
+          Select_History.Get(1, History_21(i).Profit);
+        end if;
+        Select_History.Close_Cursor;     
+        
+        History_28(i).Start_Date := History_21(i).Start_Date;
+        History_28(i).End_Date   := History_21(i).End_Date ;
+        History_28(i).Weight_1   := History_21(i).Weight_1 ;
+        History_28(i).Weight_2   := History_21(i).Weight_2;
+        History_28(i).Weight_3   := History_21(i).Weight_3; 
+                                        
+        History_35(i).Start_Date := History_21(i).Start_Date;
+        History_35(i).End_Date   := History_21(i).End_Date ;
+        History_35(i).Weight_1   := History_21(i).Weight_1 ;
+        History_35(i).Weight_2   := History_21(i).Weight_2;
+        History_35(i).Weight_3   := History_21(i).Weight_3; 
+      end loop;
+      for i in History_21'range loop
+        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_21(i).Profit)'img &
+                                  " weight: " & General_Routines.F8_Image(History_21(i).Weight_1) & 
+                                  " result: " & General_Routines.F8_Image(History_21(i).Weight_1 * 
+                                                                          History_21(i).Profit) &
+                                        " start: " & String_Date_Time_ISO(History_21(i).Start_Date, " ", "") & 
+                                          " end: " & String_Date_Time_ISO(History_21(i).End_Date, " ", "") 
+                                 );
+        Result.Sum_21_Linear := Result.Sum_21_Linear + (History_21(i).Weight_1 * History_21(i).Profit); 
+        Result.Sum_21_Square := Result.Sum_21_Square + (History_21(i).Weight_2 * History_21(i).Profit); 
+        Result.Sum_21_Cube   := Result.Sum_21_Cube   + (History_21(i).Weight_3 * History_21(i).Profit); 
+      end loop;     
+
+      for i in 22 .. 28  loop
+        Start_Date := Now - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 0;
+        Start_Date.Minute      := 0;
+        Start_Date.Second      := 0;
+        Start_Date.MilliSecond := 0;
+        
+        End_Date := Now - (Integer_4(i),0,0,0,0);
+        End_Date.Hour        := 23;
+        End_Date.Minute      := 59;
+        End_Date.Second      := 59;
+        End_Date.MilliSecond := 999;
+        
+        History_28(i).Start_Date := Start_Date;
+        History_28(i).End_Date   := End_Date;
+        History_28(i).Weight_1 := 1.0 / Float_8(i);
+        History_28(i).Weight_2 := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History_28(i).Weight_3 := History_28(i).Weight_1 * History_28(i).Weight_2;
+        
+        Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
+        Select_History.Set_Timestamp("ENDOFDAY",End_Date);
+        Select_History.Open_Cursor;     
+        Select_History.Fetch(Eos);
+        if not Eos then
+          Select_History.Get(1, History_28(i).Profit);
+        end if;
+        Select_History.Close_Cursor;     
+        
+                                        
+        History_35(i).Start_Date := History_28(i).Start_Date;
+        History_35(i).End_Date   := History_28(i).End_Date ;
+        History_35(i).Weight_1   := History_28(i).Weight_1 ;
+        History_35(i).Weight_2   := History_28(i).Weight_2;
+        History_35(i).Weight_3   := History_28(i).Weight_3; 
+      end loop;
+      for i in History_28'range loop
+        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_28(i).Profit)'img &
+                                  " weight: " & General_Routines.F8_Image(History_28(i).Weight_1) & 
+                                  " result: " & General_Routines.F8_Image(History_28(i).Weight_1 * 
+                                                                          History_28(i).Profit) &
+                                        " start: " & String_Date_Time_ISO(History_28(i).Start_Date, " ", "") & 
+                                          " end: " & String_Date_Time_ISO(History_28(i).End_Date, " ", "") 
+                                 );
+        Result.Sum_28_Linear := Result.Sum_28_Linear + (History_28(i).Weight_1 * History_28(i).Profit); 
+        Result.Sum_28_Square := Result.Sum_28_Square + (History_28(i).Weight_2 * History_28(i).Profit); 
+        Result.Sum_28_Cube   := Result.Sum_28_Cube   + (History_28(i).Weight_3 * History_28(i).Profit); 
+      end loop;     
+
+      for i in 29 .. 35  loop
+        Start_Date := Now - (Integer_4(i),0,0,0,0);
+        Start_Date.Hour        := 0;
+        Start_Date.Minute      := 0;
+        Start_Date.Second      := 0;
+        Start_Date.MilliSecond := 0;
+        
+        End_Date := Now - (Integer_4(i),0,0,0,0);
+        End_Date.Hour        := 23;
+        End_Date.Minute      := 59;
+        End_Date.Second      := 59;
+        End_Date.MilliSecond := 999;
+        
+        History_35(i).Start_Date := Start_Date;
+        History_35(i).End_Date   := End_Date;
+        History_35(i).Weight_1 := 1.0 / Float_8(i);
+        History_35(i).Weight_2 := 1.0 / Float_8_Functions.Sqrt(Float_8(i));
+        History_35(i).Weight_3 := History_35(i).Weight_1 * History_35(i).Weight_2;
+        
+        Select_History.Set_Timestamp("STARTOFDAY",Start_Date);
+        Select_History.Set_Timestamp("ENDOFDAY",End_Date);
+        Select_History.Open_Cursor;     
+        Select_History.Fetch(Eos);
+        if not Eos then
+          Select_History.Get(1, History_35(i).Profit);
+        end if;
+        Select_History.Close_Cursor;     
+        
+      end loop;
+      for i in History_35'range loop
+        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_35(i).Profit)'img &
+                                  " weight: " & General_Routines.F8_Image(History_35(i).Weight_1) & 
+                                  " result: " & General_Routines.F8_Image(History_35(i).Weight_1 * 
+                                                                          History_35(i).Profit) &
+                                        " start: " & String_Date_Time_ISO(History_35(i).Start_Date, " ", "") & 
+                                          " end: " & String_Date_Time_ISO(History_35(i).End_Date, " ", "") 
+                                 );
+        Result.Sum_35_Linear := Result.Sum_35_Linear + (History_35(i).Weight_1 * History_35(i).Profit); 
+        Result.Sum_35_Square := Result.Sum_35_Square + (History_35(i).Weight_2 * History_35(i).Profit); 
+        Result.Sum_35_Cube   := Result.Sum_35_Cube   + (History_35(i).Weight_3 * History_35(i).Profit); 
+      end loop;     
+      
     T.Commit;   
     
-    for i in History'range loop
-      Log(Me & "History_Ok", "History: " & i'img & " " & integer(History(i).Profit)'img &
-                             " weight: " & General_Routines.F8_Image(History(i).Weight) & 
-                             " result: " & General_Routines.F8_Image(History(i).Weight * History(i).Profit) &
-                             " start: " & String_Date_Time_ISO(History(i).Start_Date, " ", "") & 
-                             " end: " & String_Date_Time_ISO(History(i).End_Date, " ", "") 
-                            );
-      Sum := Sum + (History(i).Weight * History(i).Profit);
-    end loop;     
+--    Log(Me & "Calculate_History", "Sum: " & General_Routines.F8_Image(Sum) & 
+--             " Ok= " & Boolean'Image(Sum >= 0.0) & " - " &  To_String(Bet.Bot_Cfg.DR_Name));
+         
+    Bet.Bet_History := Result;
+    Log(Me & "Calculate_History", "done " &  To_String(Bet.Bot_Cfg.DR_Name));
+--    return Result.Sum_21_Linear >= 0.0;
     
-    Log(Me & "History_Ok", "Sum: " & General_Routines.F8_Image(Sum) & 
-             " Ok= " & Boolean'Image(Sum >= 0.0) & " - " &  To_String(Bet.Bot_Cfg.DR_Name));
-    return Sum >= 0.0;
-    
-  end History_Ok;
+  end Calculate_History;
   
   ------------------------------------------------------------------------------------------------------
-  function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Profit_Type is
+  function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Profit_Type is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     Profit : Float_8 := 0.0;
@@ -703,13 +1016,13 @@ package body Bet_Handler is
         "from " &
           "ABETS " &
         "where " &
---          "BETPLACED >= :STARTOFDAY " & 
---          "and BETPLACED <= :ENDOFDAY  " &
           "STARTTS >= :STARTOFDAY " & 
+          "and POWERDAYS = :POWERDAYS " & 
           "and STARTTS <= :ENDOFDAY  " &
           "and BETWON is not null " &
           "and BETNAME = :BETNAME " );
           
+      Select_Profit_Today.Set("POWERDAYS",  Powerdays);
       if Dry_Run then
         Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       else 
@@ -734,7 +1047,7 @@ package body Bet_Handler is
     return Profit_Type(Profit);
   end Profit_Today;
   ------------------------------------------------------------------------------------------------------
-  function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean is
+  function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     use Sattmate_Calendar;
@@ -744,7 +1057,6 @@ package body Bet_Handler is
     
       Start_Date := Bet.Bet_Info.Market.Startts;
       End_Date := Bet.Bet_Info.Market.Startts;
-
     
       Start_Date.Hour        := 0;
       Start_Date.Minute      := 0;
@@ -757,18 +1069,16 @@ package body Bet_Handler is
       End_Date.MilliSecond := 999;
     
       Select_Lost_Today.Prepare(
-        "select " & 
-          "'A' " & 
-        "from " &
-          "ABETS " &
-        "where " &
---          "BETPLACED >= :STARTOFDAY " & 
---          "and BETPLACED <= :ENDOFDAY  " &
-          "STARTTS >= :STARTOFDAY " & 
-          "and STARTTS <= :ENDOFDAY " &
-          "and PROFIT < 0.0 " &
-          "and BETWON is not null " &
-          "and BETNAME = :BETNAME " );
+        "select 'A' " & 
+        "from ABETS " &
+        "where STARTTS >= :STARTOFDAY " & 
+        "and POWERDAYS = :POWERDAYS " & 
+        "and STARTTS <= :ENDOFDAY " &
+        "and PROFIT < 0.0 " &
+        "and BETWON is not null " &
+        "and BETNAME = :BETNAME " );
+        
+      Select_Lost_Today.Set("POWERDAYS",  Powerdays);
       if Dry_Run then
         Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.DR_Name));
       else 
@@ -799,7 +1109,7 @@ package body Bet_Handler is
   
   ------------------------------------------------------------------------------------------------------
 --  function To_String(Bet : Bet_Type) return String;
-  function Exists(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean is
+  function Exists(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean is
     T    : Sql.Transaction_Type;
     Eos  : Boolean := False;
     Abet : Table_Abets.Data_Type;
@@ -810,7 +1120,10 @@ package body Bet_Handler is
          "from " &
            "ABETS " &
          "where MARKETID = :MARKETID " & 
-           "and BETNAME = :BETNAME ");
+         "and POWERDAYS = :POWERDAYS " & 
+         "and BETNAME = :BETNAME ");
+      
+      Select_Exists.Set("POWERDAYS",  Powerdays);
       
       if Dry_Run then
         Select_Exists.Set("BETNAME",  To_String(Bet.Bot_Cfg.DR_Name));
@@ -837,7 +1150,7 @@ package body Bet_Handler is
     return not Eos;
   end Exists;
   ---------------------------------------------------------------
-  function In_The_Air(Bet : Bet_Type; Dry_Run : Boolean := False) return Boolean is
+  function In_The_Air(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean is
     T    : Sql.Transaction_Type;
     Eos  : Boolean := False;
     Abet : Table_Abets.Data_Type;
@@ -848,8 +1161,10 @@ package body Bet_Handler is
          "from " &
            "ABETS " &
          "where BETWON is null " & 
-           "and BETNAME = :BETNAME ");
+         "and POWERDAYS = :POWERDAYS " & 
+         "and BETNAME = :BETNAME ");
       
+      Select_In_The_Air.Set("POWERDAYS",  Powerdays);
       if Dry_Run then
         Select_In_The_Air.Set("BETNAME",  To_String(Bet.Bot_Cfg.DR_Name));
 --        Log(Me & "In_The_Air", "name '" &  To_String(Bet.Bot_Cfg.DR_Name) & "'");
@@ -874,7 +1189,7 @@ package body Bet_Handler is
   end In_The_Air;
   ---------------------------------------------------------------
 
-  procedure Make_Dry_Bet(Bet : in out Bet_Type) is
+  procedure Make_Dry_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
@@ -890,6 +1205,7 @@ package body Bet_Handler is
 --  type Data_Type is record
 --      Betid :          Integer_8  := 0 ; -- Primary Key
 --      Marketid :       String (1..11) := (others => ' ') ; -- non unique index 2
+--      Powerdays :    Integer_4  := 0 ; --
 --      Selectionid :    Integer_4  := 0 ; --
 --      Reference :      String (1..30) := (others => ' ') ; --
 --      Size :           Float_8  := 0.0 ; --
@@ -903,6 +1219,7 @@ package body Bet_Handler is
 --      Exeerrcode :     String (1..50) := (others => ' ') ; --
 --      Inststatus :     String (1..50) := (others => ' ') ; --
 --      Insterrcode :    String (1..50) := (others => ' ') ; --
+--      Startts :        Time_Type  := Time_Type_First ; --
 --      Betplaced :      Time_Type  := Time_Type_First ; --
 --      Pricematched :   Float_8  := 0.0 ; --
 --      Sizematched :    Float_8  := 0.0 ; --
@@ -912,7 +1229,7 @@ package body Bet_Handler is
 --      Ixxluts :        Time_Type  := Time_Type_First ; --
 --  end record;
 
---    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
+    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
 
     case Bet.Bot_Cfg.Bet_Type is
       when Back => 
@@ -925,7 +1242,14 @@ package body Bet_Handler is
         Price := Pip.Next_Price;
     end case;
     
-    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+    case Bet.Bot_Cfg.Bet_Type is
+      when Back |Lay => Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+      when Layfav1   => Move("LAY1", Side);
+      when Layfav2   => Move("LAY2", Side);
+      when Layfav3   => Move("LAY3", Side);
+      when Layfav4   => Move("LAY4", Side);    
+    end case;
+    
     Move( To_String(Bet.Bot_Cfg.DR_Name), Bet_Name);
     Move( "SUCCESS", Success);
     Move( "EXECUTION_COMPLETE", Order_Status);
@@ -933,7 +1257,8 @@ package body Bet_Handler is
     
     Abet := (
       Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),          
-      Marketid       => Bet.Bet_Info.Market.Marketid,       
+      Marketid       => Bet.Bet_Info.Market.Marketid,     
+      Powerdays      => Powerdays,
       Selectionid    => Bet.Bet_Info.Selection_Id,   
       Reference      => (others => '-'),     
       Size           => Float_8(Bet.Bot_Cfg.Bet_Size),
@@ -957,8 +1282,49 @@ package body Bet_Handler is
       Ixxluts        => Now              --set by insert
     );
     
+    declare
+      Bethistory : Table_Abethistory.Data_Type;    
     begin
       T.Start;
+      
+        Bethistory.Betid := Abet.Betid;
+        Bethistory.Startts := Abet.Startts;
+        Bethistory.Powerdays := 121;
+        Bethistory.Historysum := Bet.Bet_History.Sum_21_Linear;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 221;
+        Bethistory.Historysum := Bet.Bet_History.Sum_21_Square;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 321;
+        Bethistory.Historysum := Bet.Bet_History.Sum_21_Cube;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 128;
+        Bethistory.Historysum := Bet.Bet_History.Sum_28_Linear;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 228;
+        Bethistory.Historysum := Bet.Bet_History.Sum_28_Square;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 328;
+        Bethistory.Historysum := Bet.Bet_History.Sum_28_Cube;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 135;
+        Bethistory.Historysum := Bet.Bet_History.Sum_35_Linear;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 235;
+        Bethistory.Historysum := Bet.Bet_History.Sum_35_Square;
+        Table_Abethistory.Insert(Bethistory);
+      
+        Bethistory.Powerdays := 335;
+        Bethistory.Historysum := Bet.Bet_History.Sum_35_Cube;
+        Table_Abethistory.Insert(Bethistory);
+      
         Table_Abets.Insert(Abet);
         Update_Betwon_To_Null.Set("BETID", Abet.Betid);
         Update_Betwon_To_Null.Execute;
@@ -971,7 +1337,7 @@ package body Bet_Handler is
     end ;
   end Make_Dry_Bet;
   ---------------------------------------------------------------
- procedure Make_Simulation_Bet(Bet : in out Bet_Type) is
+ procedure Make_Simulation_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
@@ -984,31 +1350,7 @@ package body Bet_Handler is
     T : Sql.Transaction_Type;
   begin
   
---  type Data_Type is record
---      Betid :          Integer_8  := 0 ; -- Primary Key
---      Marketid :       String (1..11) := (others => ' ') ; -- non unique index 2
---      Selectionid :    Integer_4  := 0 ; --
---      Reference :      String (1..30) := (others => ' ') ; --
---      Size :           Float_8  := 0.0 ; --
---      Price :          Float_8  := 0.0 ; --
---      Side :           String (1..4) := (others => ' ') ; --
---      Betname :        String (1..50) := (others => ' ') ; --
---      Betwon :         Integer_4  := 0 ; -- non unique index 3
---      Profit :         Float_8  := 0.0 ; --
---      Status :         String (1..50) := (others => ' ') ; --
---      Exestatus :      String (1..50) := (others => ' ') ; --
---      Exeerrcode :     String (1..50) := (others => ' ') ; --
---      Inststatus :     String (1..50) := (others => ' ') ; --
---      Insterrcode :    String (1..50) := (others => ' ') ; --
---      Betplaced :      Time_Type  := Time_Type_First ; --
---      Pricematched :   Float_8  := 0.0 ; --
---      Sizematched :    Float_8  := 0.0 ; --
---      Runnername :     String (1..50) := (others => ' ') ; --
---      Fullmarketname : String (1..200) := (others => ' ') ; --
---      Ixxlupd :        String (1..15) := (others => ' ') ; --
---      Ixxluts :        Time_Type  := Time_Type_First ; --
---  end record;
-
+  
 --    Log(Me & "Make_Dry_Bet", "Bet.Bet_Info.Used_Index:" & Bet.Bet_Info.Used_Index'Img);
 
     case Bet.Bot_Cfg.Bet_Type is
@@ -1022,7 +1364,13 @@ package body Bet_Handler is
         Price := Pip.Next_Price;
     end case;
     
-    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+    case Bet.Bot_Cfg.Bet_Type is
+      when Back |Lay => Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+      when Layfav1   => Move("LAY1", Side);
+      when Layfav2   => Move("LAY2", Side);
+      when Layfav3   => Move("LAY3", Side);
+      when Layfav4   => Move("LAY4", Side);    
+    end case;
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( "SUCCESS", Success);
     Move( "EXECUTION_COMPLETE", Order_Status);
@@ -1031,6 +1379,7 @@ package body Bet_Handler is
     Abet := (
       Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),          
       Marketid       => Bet.Bet_Info.Market.Marketid,       
+      Powerdays      => Powerdays,
       Selectionid    => Bet.Bet_Info.Selection_Id,   
       Reference      => (others => '-'),     
       Size           => Float_8(Bet.Bot_Cfg.Bet_Size),
@@ -1053,9 +1402,8 @@ package body Bet_Handler is
       Ixxlupd        => (others => ' '), --set by insert       
       Ixxluts        => Now              --set by insert
     );
-    
     begin
-      T.Start;
+      T.Start;        
         Table_Abets.Insert(Abet);
         Update_Betwon_To_Null.Set("BETID", Abet.Betid);
         Update_Betwon_To_Null.Execute;
@@ -1072,8 +1420,9 @@ package body Bet_Handler is
   ---------------------------------------------------------------  
   
   
-  procedure Make_Real_Bet(Bet     : in out Bet_Type;
-                          A_Token : in out Token.Token_Type) is
+  procedure Make_Real_Bet(Bet       : in out Bet_Type;
+                          A_Token   : in out Token.Token_Type;
+                          Powerdays : in     Integer_4) is
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
@@ -1140,7 +1489,13 @@ package body Bet_Handler is
         Price := Pip.Next_Price;
     end case;
     
-    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+    case Bet.Bot_Cfg.Bet_Type is
+      when Back |Lay => Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
+      when Layfav1   => Move("LAY1", Side);
+      when Layfav2   => Move("LAY2", Side);
+      when Layfav3   => Move("LAY3", Side);
+      when Layfav4   => Move("LAY4", Side);    
+    end case;
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
     
@@ -1329,6 +1684,7 @@ package body Bet_Handler is
     Abet := (
       Betid          => Bet_Id,          
       Marketid       => Bet.Bet_Info.Market.Marketid,       
+      Powerdays      => Powerdays,
       Selectionid    => Bet.Bet_Info.Selection_Id,   
       Reference      => (others => '-'),     
       Size           => Float_8(Bet.Bot_Cfg.Bet_Size),
@@ -1378,6 +1734,12 @@ package body Bet_Handler is
   procedure Init(Pip : in out Pip_Type; Price : Float_8) is
     Local : Pip_Type;
   begin
+    if Price < Global_Odds_Table(Global_Odds_Table'First) then
+      Local.Pip_Price := 1.01;
+    elsif Price > Global_Odds_Table(Global_Odds_Table'Last) then
+      Local.Pip_Price := 1000.0;
+    end if;
+  
     Local.Wanted_Price := Price;   
     for i in Global_Odds_Table'range loop
       if Global_Odds_Table(i) >= Price then 
@@ -1394,15 +1756,9 @@ package body Bet_Handler is
       end if;
     end loop;
     
-    if Price < Global_Odds_Table(Global_Odds_Table'First) then
-      Local.Pip_Price := 1.01;
-    elsif Price > Global_Odds_Table(Global_Odds_Table'Last) then
-      Local.Pip_Price := 1000.0;
-    else
-      -- always use the upper index (round up)
-      Local.This_Index := Local.Upper_Index;
-      Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
-    end if;  
+    -- always use the upper index (round up)
+    Local.This_Index := Local.Upper_Index;
+    Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
     Pip := Local;
     Log(Me & "Pip.Init", "Price: " & General_Routines.F8_Image(Price) & " became " & 
                                      General_Routines.F8_Image(Local.Pip_Price) & 
@@ -1464,13 +1820,13 @@ package body Bet_Handler is
         Side := Back;
       elsif Trim(Bet.Side) = "LAY" then
         Side := Lay;
-      elsif Trim(Bet.Side) = "LAYFAV1" then
+      elsif Trim(Bet.Side) = "LAY1" then
         Side := Lay;
-      elsif Trim(Bet.Side) = "LAYFAV2" then
+      elsif Trim(Bet.Side) = "LAY2" then
         Side := Lay;
-      elsif Trim(Bet.Side) = "LAYFAV3" then
+      elsif Trim(Bet.Side) = "LAY3" then
         Side := Lay;
-      elsif Trim(Bet.Side) = "LAYFAV4" then
+      elsif Trim(Bet.Side) = "LAY4" then
         Side := Lay;
       else
         Illegal_Data := True;
@@ -1568,22 +1924,26 @@ package body Bet_Handler is
   procedure Test_Bet is  
     B : Bet_Type;
 --    T : Sql.Transaction_Type;
+    OK : Boolean := False;
   begin
 --    T.Start;
       B.Bot_Cfg.Bet_Name := To_Unbounded_String("HOUNDS_WINNER_BACK_BET_45_07");
-      if B.History_Ok then
+      B.Calculate_History;
+      if Ok then
         Log(Me & "Test", "OK");    
       else  
         Log(Me & "Test", "Not OK");    
       end if;
       B.Bot_Cfg.Bet_Name := To_Unbounded_String("HOUNDS_WINNER_BACK_BET_36_01");
-      if B.History_Ok then
+      B.Calculate_History;
+      if Ok then
         Log(Me & "Test", "OK");    
       else  
         Log(Me & "Test", "Not OK");    
       end if;
       B.Bot_Cfg.Bet_Name := To_Unbounded_String("HORSES_WINNER_LAY_BET_GB_IE_US_FR_ZA_SG_30_60");
-      if B.History_Ok then
+      B.Calculate_History;
+      if Ok then
         Log(Me & "Test", "OK");    
       else  
         Log(Me & "Test", "Not OK");    

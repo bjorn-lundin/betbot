@@ -19,6 +19,7 @@ package body Bot_Config is
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
+  Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
   
@@ -42,21 +43,24 @@ package body Bot_Config is
       Define_Switch
        (Cmd_Line,
         Sa_Par_Bot_User'access,
-        "-u:",
         Long_Switch => "--user=",
         Help        => "user of bot");
   
       Define_Switch
        (Cmd_Line,
         Sa_Par_Mode'access,
-        "-m:",
         Long_Switch => "--mode=",
         Help        => "mode of bot - (real, simulation)");
+
+      Define_Switch
+       (Cmd_Line,
+        Sa_Par_Mode'access,
+        Long_Switch => "--dispatch=",
+        Help        => "bets received");
         
       Define_Switch
         (Cmd_Line,
          Ba_Daemon'access,
-         "-d",
          Long_Switch => "--daemon",
          Help        => "become daemon at startup");
       Getopt (Cmd_Line);  -- process the command line 
@@ -124,6 +128,7 @@ package body Bot_Config is
             Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
             Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
+            Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners",""));
             
             
             --from system:
