@@ -1,5 +1,6 @@
 
 with Sattmate_Types; use Sattmate_Types;
+with Unchecked_Conversion;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded ; 
 
 
@@ -7,7 +8,7 @@ package Bot_Types is
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place, Winner);
-   type Bet_Type_Type is (Lay, Back, Layfav1, Layfav2, Layfav3, Layfav4); --, Lay_Favorite);
+   type Bet_Type_Type is (Lay, Back, Lay1, Lay2, Lay3, Lay4, Fav2, Fav3, Fav4); 
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
@@ -24,7 +25,11 @@ package Bot_Types is
    type Profit_Type is new Float_8;
    
    type Mode_Type is (Real, Simulation);
-   
+   type Bet_Mode_Type is (Dry, Real, Sim, Ref);
+   for Bet_Mode_Type'Size use Integer_4'Size;
+   for Bet_Mode_Type use (Dry => 1 , Real => 2, Sim => 3, Ref => 4);
+   function Bet_Mode is new Unchecked_Conversion(Bet_Mode_Type, Integer_4);
+   function Bet_Mode is new Unchecked_Conversion(Integer_4, Bet_Mode_Type);
 
    
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;

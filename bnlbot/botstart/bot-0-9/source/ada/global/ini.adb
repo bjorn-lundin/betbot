@@ -228,7 +228,7 @@ package body Ini is
 
   procedure Parse (Current_Section: in out Section_Pointer_Type;
                    S              :        String) is
-  begin
+  begin  
     for I in S'Range loop
       if (S(I) = '=') then
         if (I = S'Last) then
@@ -272,6 +272,7 @@ package body Ini is
     Line           : String(1..256);
     Last           : Integer;
     Current_Section: Section_Pointer_Type := null;
+    Comment        : Boolean := True;
 --    Washed_File_Name : Unbounded_String := Null_Unbounded_String;
 --    procedure Convert_Ini_File_To_Unix_Format(Name     : in  String;
 --                                              New_Name : out Unbounded_String) is
@@ -322,7 +323,18 @@ package body Ini is
       loop
         Text_Io.Get_Line (File, Line, Last);
 --        Text_Io.Put_Line("'" & Line(1..Last) & "' " & Last'Img );
-        Parse (Current_Section, Collapse(Line(1..Last)));
+        Comment := False;
+        if Last >= 1 then    
+          if Line(1) = '#' then 
+            Comment := True;
+          end if;  
+          if Line(1) = ';' then 
+            return;
+          end if;  
+        end if;
+        if not Comment then        
+          Parse (Current_Section, Collapse(Line(1..Last)));
+        end if;
       end loop;
     exception
       when Text_Io.End_Error => null;

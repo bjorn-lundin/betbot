@@ -1,10 +1,5 @@
 #!/bin/bash
-
-
 #start simulator
-
-
-
 while getopts "m:" opt; do
 #  echo "$opt - $OPTARG"
 
@@ -25,21 +20,27 @@ SIMULATORS="horse_win_gb \
             horse_win_sg \
             horse_win_za \
             horse_win_xx \
+            horse_plc_gb \
+            horse_plc_us \
+            horse_plc_ie \
+            horse_plc_fr \
+            horse_plc_sg \
+            horse_plc_za \
             horse_plc_xx \
             hound_win_xx \
             hound_plc_xx"           
             
 for SIM in $SIMULATORS ; do
-
-  export BOT_NAME=$SIM
-  echo "starting $BOT_NAME"
-  $BOT_TARGET/bin/bot --user=$BOT_USER --mode=simulation --daemon
-  sleep 1 
+  echo "starting $SIM"
+  export BOT_NAME=$SIM && $BOT_TARGET/bin/bot --dispatch=$SIM --user=$BOT_USER --mode=simulation --daemon
+#  sleep 1 
 done
 
 export BOT_NAME=markets_sender
 echo "starting $BOT_NAME"
 
-$BOT_TARGET/bin/markets_sender --marketid=$MARKETID
+#$BOT_TARGET/bin/markets_sender --marketid=$MARKETID --horses --hounds
+$BOT_TARGET/bin/markets_sender --horses --hounds
+
 
 

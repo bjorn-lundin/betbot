@@ -109,11 +109,12 @@ package body Bot_Config is
 
             --from system:
             Bet_Section.Mode := Cfg.System_Section.Mode ;
-            case Bet_Section.Mode is
-              when Real       => Bet_Section.Bet_Name := To_Unbounded_String("RT_" & Ini.Get_Section_Name(i));
-              when Simulation => Bet_Section.Bet_Name := To_Unbounded_String("SB_" & Ini.Get_Section_Name(i));
-            end case;              
-            Bet_Section.DR_Name := To_Unbounded_String("DR_" & Ini.Get_Section_Name(i));
+            Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
+--            case Bet_Section.Mode is
+--              when Real       => Bet_Section.Bet_Name := To_Unbounded_String("RT_" & Ini.Get_Section_Name(i));
+--              when Simulation => Bet_Section.Bet_Name := To_Unbounded_String("SB_" & Ini.Get_Section_Name(i));
+--            end case;              
+--            Bet_Section.DR_Name := To_Unbounded_String("DR_" & Ini.Get_Section_Name(i));
             
             Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
             Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
@@ -130,7 +131,6 @@ package body Bot_Config is
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
             Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners",""));
             
-            
             --from system:
              Bet_Section.Mode := Cfg.System_Section.Mode ;
             
@@ -143,20 +143,27 @@ package body Bot_Config is
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > Natural(0) then 
               Bet_Section.Bet_Type := Back;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_layfav1_") > Natural(0) then 
-              Bet_Section.Bet_Type := Layfav1;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay1_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay1;                             
+            end if;                                                        
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay2_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay2;                             
+            end if;                                                        
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay3_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay3;                             
+            end if;                                                        
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay4_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay4;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_layfav2_") > Natural(0) then 
-              Bet_Section.Bet_Type := Layfav2;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav2_") > Natural(0) then 
+              Bet_Section.Bet_Type := Fav2;                             
+            end if;                                                     
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav3_") > Natural(0) then 
+              Bet_Section.Bet_Type := Fav3;                             
+            end if;                                                     
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav4_") > Natural(0) then 
+              Bet_Section.Bet_Type := Fav4;
             end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_layfav3_") > Natural(0) then 
-              Bet_Section.Bet_Type := Layfav3;
-            end if;
-            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_layfav4_") > Natural(0) then 
-              Bet_Section.Bet_Type := Layfav4;
-            end if;
-            
-            
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then 
               Bet_Section.Animal := Hound;
             end if;

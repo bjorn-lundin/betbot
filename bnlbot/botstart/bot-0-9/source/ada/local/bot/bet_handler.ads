@@ -72,22 +72,30 @@ private
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) ;
 
   procedure Calculate_History(Bet : in out Bet_Type);
-  procedure Do_Try(Bet : in out Bet_Type; Powerdays : in Integer_4);
-  
+  procedure Do_Try(Bet       : in out Bet_Type;
+                 A_Token   : in out Token.Token_Type;
+                 Powerdays : in     Integer_4) ;
+
 --  function History_Ok(Bet : Bet_Type) return Bet_History_Result_Type is
   
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
-  function Exists(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean;
-  procedure Make_Dry_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
-  procedure Make_Real_Bet(Bet       : in out Bet_Type;
-                          A_Token   : in out Token.Token_Type;
-                          Powerdays : in     Integer_4) ;
-  procedure Make_Simulation_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
+--  procedure Make_Dry_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
+  
+  
+  procedure Make_Bet(Bet       : in out Bet_Type;
+                     Betmode   : in     Bet_Mode_Type; 
+                     A_Token   : in out Token.Token_Type;
+                     Powerdays : in     Integer_4) ;
+--  procedure Make_Real_Bet(Bet       : in out Bet_Type;
+--                          A_Token   : in out Token.Token_Type;
+--                          Powerdays : in     Integer_4) ;
+--  procedure Make_Simulation_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
                           
-  function Profit_Today(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Profit_Type;
-  function Has_Lost_Today(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean;
-  function In_The_Air(Bet : Bet_Type; Dry_Run : Boolean := False; Powerdays : Integer_4) return Boolean;
+  function Exists        (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
+  function Profit_Today  (Bet : Bet_Type; Powerdays : Integer_4) return Profit_Type;
+  function Has_Lost_Today(Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
+  function In_The_Air    (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
   
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record

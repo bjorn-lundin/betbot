@@ -11,6 +11,12 @@ SIMULATORS="horse_win_gb \
             horse_win_sg \
             horse_win_za \
             horse_win_xx \
+            horse_plc_gb \
+            horse_plc_us \
+            horse_plc_ie \
+            horse_plc_fr \
+            horse_plc_sg \
+            horse_plc_za \
             horse_plc_xx \
             hound_win_xx \
             hound_plc_xx"           
