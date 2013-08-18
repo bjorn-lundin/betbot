@@ -3,6 +3,8 @@
     <Table Wiz="3" Desc="Bets" Name="ABETS" Tablespace="">
         <Column Name="betid"            Size="18"  Type="3"  AllowNull="0" Description="bet id"/>
         <Column Name="marketid"         Size="11"  Type="1"  AllowNull="0" Description="market id"/>
+        <Column Name="betmode"          Size="9"   Type="2"  AllowNull="0" Description="dry,real,sim"/>
+        <Column Name="powerdays"        Size="9"   Type="2"  AllowNull="0" Description="power of denominator"/>
         <Column Name="selectionid"      Size="9"   Type="2"  AllowNull="0" Description="selection id"/>
         <Column Name="reference"        Size="30"  Type="1"  AllowNull="0" Description="reference"/>
         <Column Name="size"             Size="8"   Type="6"  AllowNull="0" Description="wanted size"/>
@@ -27,6 +29,9 @@
         <Index Columns="betid" type="primary"/>
         <Index Columns="marketid" type="index"/>
         <Index Columns="betwon" type="index"/>
+        <Index Columns="powerdays" type="index"/>
         <Index Columns="betplaced" type="index"/>
+        <Index Columns="startts" type="index"/>
+        <Index Columns="betname" type="index"/>
     </Table>
 </MaAstro>

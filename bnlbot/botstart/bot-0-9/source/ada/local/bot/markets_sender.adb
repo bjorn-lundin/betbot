@@ -103,10 +103,10 @@ begin
   T.Start;
   
   if Sa_Par_Marketid.all /= "" then
-    Markets.Prepare("select * from AMARKETS where MARKETID > :MARKETID order by MARKETID");
+    Markets.Prepare("select * from AMARKETS where MARKETID > :MARKETID order by STARTTS");
     Markets.Set("MARKETID", Sa_Par_Marketid.all);
   else
-    Markets.Prepare("select * from AMARKETS  order by MARKETID");
+    Markets.Prepare("select * from AMARKETS order by STARTTS");
   end if;
   Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);
 --  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);
