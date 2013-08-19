@@ -1400,7 +1400,7 @@ package body Bet_Handler is
               Code := Error.Get("code");
               Log(Me & "Make_Bet", "error.code " & Integer(Integer'(Error.Get("code")))'Img);
     
-              if Code.Has_Field("data") then
+              if Error.Has_Field("data") then
                 Data := Code.Get("data");
                 if Data.Has_Field("APINGException") then
                   APINGException := Data.Get("APINGException");
