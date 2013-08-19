@@ -26,11 +26,11 @@ procedure Equity is
    T                    : Sql.Transaction_Type;
    Dates,
    Select_Results       : Sql.Statement_Type;
-   type Eos_Type is (Date, Data, Bet, History);
+   type Eos_Type is (Date, Data, History);
    Eos : array (Eos_Type'range) of Boolean := (others => False);
    First_Time: Boolean := True;
-   Start_Date, Stop_Date: Sattmate_Calendar.Time_Type;
-   Saldo , Profit : Float_8 := 0.0;
+   First_Start_Date, Start_Date, Stop_Date: Sattmate_Calendar.Time_Type;
+   Profit : Float_8 := 0.0;
    type Saldo_Type is (Ref, Sim, Dry, His);
    Saldo : array (Saldo_Type'range) of Float_8 := (others => 0.0);
 
@@ -131,7 +131,7 @@ begin
          Login    => Sa_Par_Db_User.all,
          Password => Sa_Par_Db_Pwd.all);
    Log ("connected to database");
-   Saldo := Float_8'Value(Sa_Saldo.all);
+   Saldo(Sim) := Float_8'Value(Sa_Saldo.all);
    T.Start;
 
    Dates.Prepare("select distinct(STARTTS) " & 
@@ -154,7 +154,7 @@ begin
    -- the same thing with 15 min intervals
    Start_Date := (2013,01,30,0,0,0,0);
    Stop_Date  := (2013,08,12,0,0,0,0);
-   
+    
    loop   
      Start_Date := Start_Date + (0,0,15,0,0); --15 mins
      exit when Start_Date > Stop_Date;
@@ -171,14 +171,23 @@ begin
    Select_Results.Set("POWERDAYS", Integer_4(Ia_Powerdays));
    Select_Results.Set("BETNAME", Sa_Par_Bet_Name.all);
    
-   Saldo(Sim) := Saldo; 
-   Saldo(Dry) := Saldo;
-   Saldo(Ref) := Saldo;
+   Saldo(Dry) := Saldo(Sim);
+   Saldo(Ref) := Saldo(Sim);
    Saldo(His) := 0.0;
    
    -- now loop over all ts, both with db hit and 15 min interval
    while not Timestamps.Is_Empty(Timestamp_List) loop
      Timestamps.Remove_From_Head(Timestamp_List,Start_Date);
+     
+     if First_Time then 
+        First_Start_Date := Start_Date - (1,0,0,0,0);
+        Print(Sattmate_Calendar.String_Date_ISO(First_Start_Date) & " " & Sattmate_Calendar.String_Time(First_Start_Date) & " | " &
+              Integer'Image(Integer(Saldo(Ref))) & " | " &
+              Integer'Image(Integer(Saldo(Dry))) & " | " &
+              Integer'Image(Integer(Saldo(Sim))) & " | " &
+              Integer'Image(Integer(Saldo(His))));
+        First_Time := False;   
+     end if;
      
      Select_Results.Set_Timestamp("TS", Start_Date);
      
@@ -228,15 +237,6 @@ begin
      Select_Results.Close_Cursor;
      Saldo(Dry) := Saldo(Dry) + Profit;
    
-     if First_Time then 
-        Start_Date := Start_Date - (1,0,0,0,0);
-        Print(Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & Sattmate_Calendar.String_Time(Start_Date) & " | " &
-              Integer'Image(Integer(Saldo)) & " | " &
-              Integer'Image(Integer(Saldo)) & " | " &
-              Integer'Image(Integer(Saldo)) & " | " &
-              Integer'Image(Integer(A_History)));
-        First_Time := False;   
-     end if;
      
 --     Debug(Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & Sattmate_Calendar.String_Time(Start_Date) & " | " &
 --              Integer'Image(Integer(Dr_Saldo)) & " | " & Integer'Image(Integer(Sb_Saldo)));
@@ -245,7 +245,7 @@ begin
               Integer'Image(Integer(Saldo(Ref))) & " | " &
               Integer'Image(Integer(Saldo(Dry))) & " | " &
               Integer'Image(Integer(Saldo(Sim))) & " | " &
-              Integer'Image(Integer(A_History)));
+              Integer'Image(Integer(Saldo(His))));
    end loop;
       
    T.Commit;
