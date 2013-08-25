@@ -49,14 +49,8 @@ $(OBJECT_DIR_BOT) :
 $(OBJECT_DIR_JSON) :
 	mkdir -p $(OBJECT_DIR_JSON)
 
-#json_test : $(OBJECT_DIR_JSON) $(EXE_DIR_BOT) $(EXE_DIR_BOT)/test.json 
-#	gnatmake -P json_test
-
 adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(PIPE_DIR_BOT) $(LOCK_DIR_BOT) $(LOG_DIR_BOT)
 	gnatmake -P adabot
-
-#$(EXE_DIR_BOT)/test.json :
-#	cp  $(BOT_SOURCE)/ada/local/json/test.json $(EXE_DIR_BOT)/
     
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
@@ -160,13 +154,8 @@ $(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.
 #       missingok \
 #       su bnl bnl \
 #    }"
-
-
-
-
     
 clean:
-#	gnatclean -P json_test
 	gnatclean -P adabot
 	gnatclean -P global
 	rm $(ST)/table*.ad[abs]
