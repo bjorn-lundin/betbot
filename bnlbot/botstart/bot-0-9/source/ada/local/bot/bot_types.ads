@@ -8,7 +8,10 @@ package Bot_Types is
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place, Winner);
-   type Bet_Type_Type is (Lay, Back, Lay1, Lay2, Lay3, Lay4, Fav2, Fav3, Fav4); 
+   type Bet_Type_Type is (Lay, 
+                          Back, 
+                          Lay1, Lay2, Lay3, Lay4, Lay5, Lay6, 
+                                Fav2, Fav3, Fav4, Fav5, Fav6); 
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
