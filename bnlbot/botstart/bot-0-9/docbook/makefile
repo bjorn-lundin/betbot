@@ -5,9 +5,28 @@
 ###############################################################################
 
 POWERDAYSLIST := 114 214 314 121 221 321 128 228 328 135 235 335
-SOURCES := report.xml preface.xml plots.xml
-DOCBOOK_VERSION := 5.1
+SOURCES := report.xml preface.xml plots.xml \
+           horses_plc_fav4_za.xml \
+           horses_plc_fav5_za.xml \
+           horses_plc_fav6_za.xml \
+           horses_plc_lay4_ie.xml \
+           horses_plc_lay5_ie.xml \
+           horses_plc_lay6_ie.xml \
+           horses_win_lay1_ie.xml \
+           horses_win_lay3_gb.xml \
+           horses_win_lay3_ie.xml \
+           horses_win_lay3_za.xml \
+           horses_win_lay4_gb.xml \
+           horses_win_lay4_ie.xml \
+           horses_win_lay4_sg.xml \
+           horses_win_lay5_gb.xml \
+           horses_win_lay5_ie.xml \
+           horses_win_lay5_sg.xml \
+           horses_win_lay6_gb.xml \
+           horses_win_lay6_ie.xml \
+           horses_win_lay6_sg.xml \
 
+DOCBOOK_VERSION := 5.0
 
 all : \
       horses_plc_fav4_za.png \
