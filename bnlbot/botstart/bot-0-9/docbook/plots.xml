@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='iso8859-1'?>
+<chapter xml:id='plots' xmlns='http://docbook.org/ns/docbook' version='5.0' >
+    <title>The Plots</title>
+    <para>
+      The plots are presented in powerdays order,
+      where powerday is simply a power and a range of days. 
+      The plots has 4 curves, the oranges is the untouched. This is what would happen if we betted 
+      as the betrules are, all the time, no care taken for daily profit or loss.
+      The green one honors the daliy profit and losses.
+      The red is the history lines, which is where the powerdays come into play.
+      Given a number of days in the past, we summarize the profit for that day
+      and divide it with how many days ago it was. So 107 means power of 1, for 7 days.
+      S7/7 + S6/6 ... S1/1 where 1 was yesterday. The power factor comes into play in the denominator.
+      328 means S28/cubicroot(28) + S27/cubicroot(27) ... S1/cubicroot(1).       
+      221 means S21/squareroot(21) + S20/squareroot(20) ... S1/squareroot(1). 
+      
+      If this sum >= 0.0 then we bet honoring both history and daily profit and loss, and this is the blue curve.
+    </para>
+   
+   
+    
+    
+</chapter>

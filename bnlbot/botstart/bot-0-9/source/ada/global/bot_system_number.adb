@@ -67,13 +67,14 @@ package body Bot_System_Number is
     while not Is_Number_Found and No_Of_Tries < Max_Tries loop
       Sql.Open_Cursor(Get_Number(System_Number_Type));
       Sql.Fetch(Get_Number(System_Number_Type), End_Of_Set);
-      Sql.Close_Cursor(Get_Number(System_Number_Type));
       if End_Of_Set then
+        Sql.Close_Cursor(Get_Number(System_Number_Type));
         Transaction.Rollback;
         Logging.Log( Object & '.' & Service, "End_Of_Set when getting new number");
         raise No_More_System_Numbers;
       else
         Sql.Get(Get_Number(System_Number_Type), "NEXTVAL", Number);
+        Sql.Close_Cursor(Get_Number(System_Number_Type));
         No_Of_Tries := No_Of_Tries + 1;
         Is_Number_Found := not Is_Number_Taken(System_Number_Type, Number);
       end if;

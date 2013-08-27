@@ -18,13 +18,14 @@ project Adabot is
                  "winners_fetcher.adb",
                  "markets_fetcher.adb",
                  "saldo_fetcher.adb",
-                 "bet_checker.adb",
+--                 "bet_checker.adb",
                  "bot_send.adb",
                  "migrate_g2_g3.adb",
+                 "migrate_g3_g3.adb",
                  "equity.adb",
-                 "check_bot_running.adb"
+                 "check_bot_running.adb",
 --                 "test_pio.adb",
---                 "sql_ifc_leak_finder.adb"
+                 "sql_ifc_leak_finder.adb"
    );
 
    package Compiler renames Global.Compiler;

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='iso8859-1' ?>
+<book xmlns='http://docbook.org/ns/docbook'
+      xmlns:xi='http://www.w3.org/2001/XInclude' version='5.0'>
+  <title>bnl bot reports</title>
+  <info>
+    <author>
+      <firstname>Björn</firstname>
+      <surname>Lundin</surname>
+    </author>
+    <date>August 27, 2013</date>
+  </info>
+  
+  <xi:include href='preface.xml'/>
+  <xi:include href='plots.xml'/>
+  <xi:include href='horses_plc_fav4_za.xml'/>
+  <xi:include href='horses_plc_fav5_za.xml'/>
+  <xi:include href='horses_plc_fav6_za.xml'/>
+  <xi:include href='horses_plc_lay4_ie.xml'/>
+  <xi:include href='horses_plc_lay5_ie.xml'/>
+  <xi:include href='horses_plc_lay6_ie.xml'/>
+  <xi:include href='horses_win_lay1_ie.xml'/>
+  <xi:include href='horses_win_lay3_gb.xml'/>
+  <xi:include href='horses_win_lay4_gb.xml'/>
+  <xi:include href='horses_win_lay5_gb.xml'/>
+  <xi:include href='horses_win_lay3_ie.xml'/>
+  <xi:include href='horses_win_lay4_ie.xml'/>
+  <xi:include href='horses_win_lay5_ie.xml'/>
+  <xi:include href='horses_win_lay3_sg.xml'/>
+  <xi:include href='horses_win_lay4_sg.xml'/>
+  <xi:include href='horses_win_lay5_sg.xml'/>
+</book>
+
+

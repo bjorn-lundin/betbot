@@ -346,6 +346,13 @@ package Pgada.Thin is
                                    Len    : Size_T) return  Chars_Ptr;
    pragma Import (C, Pq_Escape_Literal, "PQescapeLiteral");
 
+--   -- void PQfreemem(void *ptr);
+--   procedure Pq_Freemem (Conn : in Chars_Ptr);
+--   pragma Import (C, PQ_freemem, "PQfreemem ");
+   
+   
+
+   
 
 end Pgada.Thin;
 

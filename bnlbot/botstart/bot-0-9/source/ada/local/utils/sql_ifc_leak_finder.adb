@@ -22,7 +22,7 @@ procedure Sql_Ifc_Leak_Finder is
 
 
 --   Sa_Date      : aliased Gnat.Strings.String_Access;
-   I_Num_Days   : aliased Integer := 100_000;
+   I_Num_Days   : aliased Integer := 2;
 --   Config       : Command_Line_Configuration;
    cnt : integer := 0;
 
@@ -79,8 +79,12 @@ begin
    end loop;
    Sql.Commit (T);
 
+   Log ("wait 25 before close");
+   delay 25.0;
 
    Sql.Close_Session;
+   Log ("wait 25 before die");
+   delay 25.0;
 
 exception
    when E : others =>

@@ -310,9 +310,10 @@ private
       Result                  : Result_Type;
       Dml_Result              : Result_Type;
       Is_Ok_To_Close          : Boolean := False; -- is set in close_cursor, commit/rollback uses it
+      Is_Open                 : Boolean := False; --set/unset in open/close check in fetch
       Type_Of_Statement       : Statement_Type_Type;
       Current_Row             : Natural := 0;
-      Number_To_Fetch         : Natural := 100;
+      Number_To_Fetch         : Natural := 10000;
       Number_Actually_Fetched : Natural := 0;
       Number_Parameters       : Natural := 0;
       --	State                   : String(1..5) := (others => ' ');

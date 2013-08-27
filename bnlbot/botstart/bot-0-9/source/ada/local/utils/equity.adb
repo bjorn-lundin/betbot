@@ -39,6 +39,7 @@ procedure Equity is
 
    package Timestamps is new Simple_List_Class(Sattmate_Calendar.Time_Type);
    Timestamp_List : Timestamps.List_Type := Timestamps.Create;
+   Timestamp_List2 : Timestamps.List_Type := Timestamps.Create;
       
    function Sort_Condition( Left, Right : Sattmate_Calendar.Time_Type) return Boolean is
     -- Sort new records in list with ascending string
@@ -56,6 +57,7 @@ procedure Equity is
    end Debug;
    pragma Warnings(Off, Debug);
    -------------------------------
+   Already_In_List : Boolean := False;
    
 begin
    Define_Switch
@@ -123,21 +125,22 @@ begin
      Port := Natural'Value(Sa_Par_Port.all);
    end if;
 
-   Log ("Get_database_data start: " & Sa_Par_Host.all & "/" & Sa_Par_Db.all & "/" & Port'Img);
+   Log ("Treat: " & Sa_Par_Bet_Name.all & "/" & Ia_Powerdays'Img);
+--   Log ("Get_database_data start: " & Sa_Par_Host.all & "/" & Sa_Par_Db.all & "/" & Port'Img);
    Sql.Connect
         (Host     => Sa_Par_Host.all,
          Port     => Port,
          Db_Name  => Sa_Par_Db.all,
          Login    => Sa_Par_Db_User.all,
          Password => Sa_Par_Db_Pwd.all);
-   Log ("connected to database");
+--   Log ("connected to database");
    Saldo(Sim) := Float_8'Value(Sa_Saldo.all);
    T.Start;
 
    Dates.Prepare("select distinct(STARTTS) " & 
                  "from ABETS  " &
                  "where BETNAME = :BETNAME " &
-                 "and BETMODE = 4) " & -- ref bets
+                 "and BETMODE = 4 " & -- ref bets
                  "order by STARTTS");
 
    Dates.Set("BETNAME",Sa_Par_Bet_Name.all);
@@ -148,18 +151,41 @@ begin
      exit when Eos(Date);
      Dates.Get_Timestamp(1,Start_Date);
      Insert_Date(Timestamp_List,Start_Date);
+     Insert_Date(Timestamp_List2,Start_Date);
    end loop;
    Dates.Close_Cursor;
    
    -- the same thing with 15 min intervals
    Start_Date := (2013,01,30,0,0,0,0);
-   Stop_Date  := (2013,08,12,0,0,0,0);
+   Stop_Date  := (2013,08,31,0,0,0,0);
     
-   loop   
+   outer : loop   
      Start_Date := Start_Date + (0,0,15,0,0); --15 mins
-     exit when Start_Date > Stop_Date;
-     Insert_Date(Timestamp_List,Start_Date);  -- insert them sorted
-   end loop;   
+--     Log ("Treating ts : " & Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & 
+--                             Sattmate_Calendar.String_Time(Start_Date) );     
+     Already_In_List := False;
+     exit outer when Start_Date > Stop_Date;
+     -- may not already exist in the list ...
+     -- so loop and check the list
+     declare
+       Eol : Boolean := False;
+       Ts : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;    
+     begin
+        --funkar ej -> ny lista !!!
+     
+        Timestamps.Get_First(Timestamp_List2, Ts, Eol);
+        inner : loop
+          exit inner when Eol or else Already_In_List;
+          if Ts = Start_Date then
+            Already_In_List := True;
+          end if;  
+          Timestamps.Get_Next(Timestamp_List2, Ts, Eol);
+        end loop inner ;
+     end ;
+     if not Already_In_List then  
+       Insert_Date(Timestamp_List,Start_Date);  -- insert them sorted
+     end if;     
+   end loop outer ;   
    
    Select_Results.Prepare( "select * " &
                             "from ABETS " &
@@ -168,7 +194,6 @@ begin
                             "and POWERDAYS = :POWERDAYS " &
                             "and STARTTS = :TS");
 
-   Select_Results.Set("POWERDAYS", Integer_4(Ia_Powerdays));
    Select_Results.Set("BETNAME", Sa_Par_Bet_Name.all);
    
    Saldo(Dry) := Saldo(Sim);
@@ -192,7 +217,8 @@ begin
      Select_Results.Set_Timestamp("TS", Start_Date);
      
      --ref first
-     Select_Results.Set("BETMODE",  Bot_Types.Bet_Mode(Bot_Types.Ref));
+     Select_Results.Set("BETMODE", Bot_Types.Bet_Mode(Bot_Types.Ref));
+     Select_Results.Set("POWERDAYS", Integer_4(0));
      Select_Results.Open_Cursor;
      Select_Results.Fetch(Eos(Data));
      if not Eos(Data) then
@@ -204,7 +230,8 @@ begin
      Saldo(Ref) := Saldo(Ref) + Profit;
      
      --then sb
-     Select_Results.Set("BETMODE",  Bot_Types.Bet_Mode(Bot_Types.Sim));
+     Select_Results.Set("POWERDAYS", Integer_4(Ia_Powerdays));
+     Select_Results.Set("BETMODE", Bot_Types.Bet_Mode(Bot_Types.Sim));
      Select_Results.Open_Cursor;
      Select_Results.Fetch(Eos(Data));
      if not Eos(Data) then
@@ -213,11 +240,11 @@ begin
        Profit := 0.0;
      end if;
      Select_Results.Close_Cursor;
-     Saldo(Sim) := Saldo(Sim) + Profit;
-       
+     Saldo(Sim) := Saldo(Sim) + Profit; 
      
      -- now dr
      Select_Results.Set("BETMODE",  Bot_Types.Bet_Mode(Bot_Types.Dry));
+     Select_Results.Set("POWERDAYS", Integer_4(Ia_Powerdays));
      Select_Results.Open_Cursor;
      Select_Results.Fetch(Eos(Data));
      if not Eos(Data) then
@@ -236,11 +263,7 @@ begin
      end if;
      Select_Results.Close_Cursor;
      Saldo(Dry) := Saldo(Dry) + Profit;
-   
-     
---     Debug(Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & Sattmate_Calendar.String_Time(Start_Date) & " | " &
---              Integer'Image(Integer(Dr_Saldo)) & " | " & Integer'Image(Integer(Sb_Saldo)));
---     
+
      Print(Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & Sattmate_Calendar.String_Time(Start_Date) & " | " &
               Integer'Image(Integer(Saldo(Ref))) & " | " &
               Integer'Image(Integer(Saldo(Dry))) & " | " &
@@ -250,6 +273,6 @@ begin
       
    T.Commit;
    Sql.Close_Session;
-   Log ("done");
+--   Log ("done");
 
 end Equity;

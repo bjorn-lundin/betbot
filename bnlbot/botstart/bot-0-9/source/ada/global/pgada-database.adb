@@ -37,8 +37,8 @@
 
 with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;       use Interfaces.C, Interfaces.C.Strings;
-with Text_Io;
-with Ada.Exceptions;
+--with Text_Io;
+--with Ada.Exceptions;
 with Ada.Characters.Handling;
 
 
@@ -279,7 +279,7 @@ package body Pgada.Database is
       Field_Number := Pq_F_Number (Result.Actual, C_Name);
       Free (C_Name);
       if Field_Number = -1 then
-         Ada.Exceptions.Raise_Exception (No_Such_Column'Identity, "Cannot find column: '" & Fname & "'" );
+         raise No_Such_Column with "Cannot find column: '" & Fname & "'" ;
       end if;
       return Field_Index_Type (Field_Number + 1);
    end Field_Index;
@@ -526,7 +526,7 @@ package body Pgada.Database is
       Result := Pq_Set_Client_Encoding (Connection.Actual, C_Encoding);
       Free (C_Encoding);
       if Result = -1 then
-         Ada.Exceptions.Raise_Exception (Pg_Error'Identity, "Could not set encoding: '" & Encoding & "'");
+         raise Pg_Error with "Could not set encoding: '" & Encoding & "'";
       end if;
    end Set_Client_Encoding;
 
@@ -609,9 +609,9 @@ package body Pgada.Database is
       C_Name : Chars_Ptr := New_String (Parameter);
    begin
       if not Conn.Get_Connected then
-         Text_Io.Put_Line ("Not connected to database!");
+--         Text_Io.Put_Line ("Not connected to database!");
          Free (C_Name);
-         raise Pg_Error;
+         raise Pg_Error with "Not connected to database!";
       else
          declare
             Ret : constant String := Value (Pq_Parameter_Status (Conn.Actual, C_Name));
@@ -803,15 +803,10 @@ package body Pgada.Database is
    ---------------------------------------------------------------------------
    function Escape (Conn   : in Connection_Type;
                     Source : in String) return String is
-
       Local_Source :  String (1 .. Source'Length) := Source;
       Lsp          : Chars_Ptr := New_String (Local_Source);
       Ltp          : Chars_Ptr := Pq_Escape_Literal(Conn.Actual, Lsp, Size_T(Local_Source'Length));
-
    begin
-
-      pragma Compile_Time_Warning(True,"pqfreemem");
---      Num := Pq_Escape_String_Conn (Conn.Actual, Ltp, Lsp, Local_Source'Length, Err'Access);
       declare
          Result : String := Value (Ltp);
       begin
@@ -822,8 +817,8 @@ package body Pgada.Database is
          --      Text_Io.Put_Line("------------------");
          Free (Lsp);
          Free (Ltp);
+--         Pq_Freemem(Ltp);
          return Result;
---         return "'" & Result (1 .. Integer (Num)) & "'";
       end;
    end Escape;
 

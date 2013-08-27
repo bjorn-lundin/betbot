@@ -2,7 +2,7 @@ with Ada.Text_Io;
 with General_Routines;
 pragma Elaborate_All (General_Routines);
 with Ada.Characters.Handling;
-with Ada.Exceptions ;
+-- with Ada.Exceptions ;
 with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
 
@@ -19,14 +19,14 @@ package body Sql is
    Global_Transaction_Identity    : Transaction_Identity_Type;
 
 
-   type Open_Statement_Type is record
-      Statement_Pointer : Private_Statement_Type_Ptr;
-   end record;
+--leakfinding   type Open_Statement_Type is record
+--leakfinding      Statement_Pointer : Private_Statement_Type_Ptr;
+--leakfinding   end record;
 
-   package Open_Cursors is new Simple_List_Class (Open_Statement_Type);
+--leakfinding   package Open_Cursors is new Simple_List_Class (Open_Statement_Type);
 
-   Global_Open_Statement_List : Open_Cursors.List_Type := Open_Cursors.Create;
-   Global_Open_Statement      : Open_Statement_Type;
+--leakfinding   Global_Open_Statement_List : Open_Cursors.List_Type := Open_Cursors.Create;
+--leakfinding   Global_Open_Statement      : Open_Statement_Type;
 
    type Error_Type is (Error_Duplicate_Index, Error_No_Such_Object, Error_No_Such_Column);
    type Error_Array_Type is array (Error_Type'Range) of Boolean;
@@ -69,7 +69,7 @@ package body Sql is
    procedure Finalize (T : in out Transaction_Type) is
    begin -- we do not want to leave scoop with a running transaction !!
      null;
---     return;
+     return;
      if T.Counter > 0 then
        raise Transaction_Error with "Uncommited Transaction went out of scoop!";
      end if;  
@@ -151,7 +151,7 @@ package body Sql is
       end loop;
 
       if not Found then
-         Ada.Exceptions.Raise_Exception (No_Such_Parameter'Identity, Bind_Varible);
+        raise No_Such_Parameter with Bind_Varible;
       end if;
    end Update_Map;
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
@@ -164,9 +164,6 @@ package body Sql is
    end Check_Is_Prepared;
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 
-   procedure Local_Close_Cursor (Private_Statement : in out Private_Statement_Type) ;
-
-   --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
    procedure Exchange_Binder_Variables (Private_Statement : in out Private_Statement_Type) is
       Index                          : Natural                       := 0;
       Orig_Stm                       : String                        := To_String (Private_Statement.Original_Statement);
@@ -591,13 +588,6 @@ package body Sql is
                return;
             end if;
       end case;
-      -- Finsh off those cursors that are not closed, by bad code
-      while not Open_Cursors.Is_Empty (Global_Open_Statement_List) loop
-         Open_Cursors.Remove_From_Head (Global_Open_Statement_List,
-                                        Global_Open_Statement);
-         Local_Close_Cursor (Global_Open_Statement.Statement_Pointer.all);
-         --       Global_Open_Statement.Statement_Pointer.Empty_The_Map;
-      end loop;
 
       Log ("commit");
       Global_Connection.Exec ("commit", Dml_Result);
@@ -637,14 +627,6 @@ package body Sql is
                raise Transaction_Error with "not the owner tries to rollback";
             end if;
       end case;
-
-      while not Open_Cursors.Is_Empty (Global_Open_Statement_List) loop
-         Open_Cursors.Remove_From_Head (Global_Open_Statement_List,
-                                        Global_Open_Statement);
-         Local_Close_Cursor (Global_Open_Statement.Statement_Pointer.all);
-         --       Global_Open_Statement.Statement_Pointer.Empty_The_Map;
-      end loop;
-
       Log ("rollback");
       Global_Connection.Exec ("rollback", Dml_Result);
       Dml_Status := Result_Status (Dml_Result);
@@ -821,19 +803,18 @@ package body Sql is
       -- declare/open the cursor and execute the Statement
       Check_Is_Connected;
       Check_Transaction_In_Progress;
-
-      if Private_Statement.Is_Ok_To_Close then
-         Local_Close_Cursor (Private_Statement);
+      if Private_Statement.Is_Open then
+        raise Sql_Error with "Open_Cursor: Cursor already open"; 
       end if;
-
+      Private_Statement.Is_Open := True;
       Private_Statement.Fill_Data_In_Prepared_Statement;
 
       Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
 
-      Global_Connection.Exec ("savepoint A_select", Savepoint_Result);
+      Global_Connection.Exec ("savepoint A_SELECT", Savepoint_Result);
       Status := Result_Status (Savepoint_Result);
       if Pgerror (Status) then
-         Print_Errors ("Open_Cursor savepoint a_select", Status);
+         Print_Errors ("Open_Cursor savepoint A_SELECT", Status);
          Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
@@ -852,10 +833,10 @@ package body Sql is
                Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);
             begin
                Clear (Dml_Result);
-               Global_Connection.Exec ("rollback to savepoint a_select", Savepoint_Result);
+               Global_Connection.Exec ("rollback to savepoint A_SELECT", Savepoint_Result);
                Status := Result_Status (Savepoint_Result);
                if Pgerror (Status) then
-                  Print_Errors ("Open_Cursor rollback to savepoint a_select", Status);
+                  Print_Errors ("Open_Cursor rollback to savepoint A_SELECT", Status);
                   Clear (Savepoint_Result);
                   raise Postgresql_Error;
                end if;
@@ -871,23 +852,21 @@ package body Sql is
             raise Postgresql_Error;
          end if;
       end;
+      Clear (Dml_Result);
 
-      Global_Connection.Exec ("release savepoint a_select", Savepoint_Result);
+      Global_Connection.Exec ("release savepoint A_SELECT", Savepoint_Result);
       Status := Result_Status (Savepoint_Result);
       if Pgerror (Status) then
-         Print_Errors ("Open_Cursor savepoint release a_select", Status);
+         Print_Errors ("Open_Cursor savepoint release A_SELECT", Status);
          Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
-      Clear (Dml_Result);
    end Open_Cursor;
    --------------------------------------------
    procedure Open_Cursor (Statement : in Statement_Type) is
    begin
       Open_Cursor (Statement.Private_Statement.all);
-      Open_Cursors.Insert_At_Tail (Global_Open_Statement_List,
-                                   Open_Statement_Type'(Statement_Pointer => Statement.Private_Statement));
    end Open_Cursor;
 
    ------------------------------------------------------------
@@ -900,15 +879,18 @@ package body Sql is
       Check_Is_Connected;
       Check_Transaction_In_Progress;
       Private_Statement.Check_Is_Prepared;
+      if not Private_Statement.Is_Open then
+        raise Sql_Error with "Fetch: Cursor is not open"; 
+      end if;
 
       if Private_Statement.Current_Row = Private_Statement.Number_Actually_Fetched then
+         Private_Statement.Result.Clear; --leakfinder --clear old result if any
          -- Ok first time, or we have already fetched
          --  Private_Statement.Number_Actually_Fetched rows.
          -- we need to get another Private_Statement.Number_To_Fetch rows into
          -- our result set
          declare
-            Fetch_String : String :=
-                             "fetch forward" & Natural'Image (Private_Statement.Number_To_Fetch) & " in " & Private_Statement.Cursor_Name;
+            Fetch_String : String := "fetch forward" & Private_Statement.Number_To_Fetch'Img & " in " & Private_Statement.Cursor_Name;
          begin
             Log ("Fetch: " & Fetch_String);
             Global_Connection.Exec (Fetch_String, Private_Statement.Result);
@@ -920,7 +902,7 @@ package body Sql is
             Print_Errors ("Fetch", Dml_Status);
             raise Postgresql_Error;
          end if;
-         --      Private_Statement.Result.Set_Encoding(Global_Connection.Get_Encoding);
+
          begin
             Ntpl := Rows_Affected (Private_Statement.Result);
          exception
@@ -945,46 +927,35 @@ package body Sql is
       Fetch (Statement.Private_Statement.all, End_Of_Set);
    end Fetch;
 
-   ----------------------------------------------------------
-
-   procedure Local_Close_Cursor (Private_Statement : in out Private_Statement_Type) is
-   -------------------------------------
-      procedure Close_This_Cursor (Cursor_Name : in Name_Type) is
-         Dml_Status  : Exec_Status_Type;
-         Dml_Result  : Result_Type;
-      begin
-         declare
-            Close_String : String := "close " & Cursor_Name;
-         begin
-            Global_Connection.Exec (Close_String,  Dml_Result);
-            Log ("Close_This_Cursor -> " & Close_String);
-         end;
-         Dml_Status := Result_Status (Dml_Result);
-         Clear (Dml_Result);
-         if Pgerror (Dml_Status) then
-            Print_Errors ("Close_This_Cursor", Dml_Status);
-            raise Postgresql_Error;
-         end if;
-      end Close_This_Cursor;
-      -------------------------------------
-   begin
-      if Private_Statement.Is_Ok_To_Close then
-         Private_Statement.Result.Clear; --clear old result
-         Close_This_Cursor (Private_Statement.Cursor_Name);
-         Private_Statement.Is_Ok_To_Close := False;
-         Private_Statement.Current_Row := 0;
-         Private_Statement.Number_Actually_Fetched := 0;
-      end if;
-   end Local_Close_Cursor;
-
-   ------------------------------------------------------------
+    ------------------------------------------------------------
 
    procedure Close_Cursor (Private_Statement : in out Private_Statement_Type) is
+     Dml_Status  : Exec_Status_Type;
+     Dml_Result  : Result_Type;
    begin
       -- remove cursor and association?
       Check_Is_Connected;
       Check_Transaction_In_Progress;
-      Private_Statement.Is_Ok_To_Close := True;
+      if not Private_Statement.Is_Open then
+        raise Sql_Error with "Close_Cursor : Cursor is not open"; 
+      end if;
+      Private_Statement.Is_Open := False;      
+      Private_Statement.Result.Clear; --clear old result
+      declare
+         Close_String : String := "close " & Private_Statement.Cursor_Name;
+      begin
+         Global_Connection.Exec (Close_String, Dml_Result);
+         Log ("Close_This_Cursor -> " & Close_String);
+      end;
+      Dml_Status := Result_Status (Dml_Result);
+      Dml_Result.Clear;
+      if Pgerror (Dml_Status) then
+         Print_Errors ("Close_This_Cursor", Dml_Status);
+         raise Postgresql_Error;
+      end if;
+      Private_Statement.Is_Ok_To_Close := False;
+      Private_Statement.Current_Row := 0;
+      Private_Statement.Number_Actually_Fetched := 0;
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
    end Close_Cursor;
 
@@ -1005,22 +976,19 @@ package body Sql is
 
       -------------------------------------------------------------------------
       procedure Handle_Savepoint (How             : in Savepoint_Handling_Type;
-                                  P_Stm           : in out Private_Statement_Type;
-                                  Clear_Statement : in Boolean := False) is
+                                  P_Stm           : in out Private_Statement_Type) is
          Dml_Status  : Exec_Status_Type;
          Dml_Result  : Result_Type;
       begin
-         if Clear_Statement then
-            Clear (P_Stm.Result);
-         end if;
          case How is
             when Insert      => Global_Connection.Exec ("savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
             when Remove      => Global_Connection.Exec ("release savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
             when Rollback_To => Global_Connection.Exec ("rollback to savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
          end case;
+         
          Dml_Status := Result_Status (Dml_Result);
-         Clear (Dml_Result);
-
+         Dml_Result.Clear;
+         
          if Pgerror (Dml_Status) then
             case How is
                when Insert      => Print_Errors ("savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Status);
@@ -1099,7 +1067,8 @@ package body Sql is
             Status := Result_Status (Private_Statement.Result);
 
             if Pgerror (Status) then
-               Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+-- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+               Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
@@ -1117,7 +1086,8 @@ package body Sql is
             Status := Result_Status (Private_Statement.Result);
 
             if Pgerror (Status) then
-               Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+-- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+               Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
 
             No_Of_Affected_Rows := Rows_Affected (Private_Statement.Result);
@@ -1137,7 +1107,8 @@ package body Sql is
             Status := Result_Status (Private_Statement.Result);
 
             if Pgerror (Status) then
-               Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+-- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+               Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
 
             No_Of_Affected_Rows := Rows_Affected (Private_Statement.Result);
@@ -1154,7 +1125,8 @@ package body Sql is
                                     Private_Statement.Result);
             Status := Result_Status (Private_Statement.Result);
             if Pgerror (Status) then
-               Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+-- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
+               Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
@@ -1337,8 +1309,7 @@ package body Sql is
                   Value     : out Integer_4) is
    begin
       declare
-         Local_String : constant String := Get_Value (
-                                                      Statement.Private_Statement.Result,
+         Local_String : constant String := Get_Value (Statement.Private_Statement.Result,
                                                       Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                                       Field_Index_Type (Parameter));
       begin
@@ -1371,8 +1342,7 @@ package body Sql is
                   Value     : out Integer_8) is
    begin
       declare
-         Local_String : constant String := Get_Value (
-                                                      Statement.Private_Statement.Result,
+         Local_String : constant String := Get_Value (Statement.Private_Statement.Result,
                                                       Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                                       Field_Index_Type (Parameter));
       begin

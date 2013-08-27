@@ -103,7 +103,7 @@ begin
   T.Start;
   
   if Sa_Par_Marketid.all /= "" then
-    Markets.Prepare("select * from AMARKETS where MARKETID > :MARKETID order by STARTTS");
+    Markets.Prepare("select * from AMARKETS where MARKETID >= :MARKETID order by STARTTS");
     Markets.Set("MARKETID", Sa_Par_Marketid.all);
   else
     Markets.Prepare("select * from AMARKETS order by STARTTS");
@@ -147,6 +147,7 @@ begin
             end if;            
 
           elsif Trim(Amarket.Markettype) = "WIN" then     
+--            Do_Send := False;
             if    Aevent.Countrycode = "US" then
               Move("horse_win_us", Receiver.Name);
             elsif Aevent.Countrycode = "GB" then
