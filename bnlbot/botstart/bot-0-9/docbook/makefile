@@ -25,6 +25,18 @@ SOURCES := report.xml preface.xml plots.xml database_description.xml \
            horses_win_lay6_gb.xml \
            horses_win_lay6_ie.xml \
            horses_win_lay6_sg.xml \
+           horses_win_lay5_ie_go.xml \
+           horses_win_lay5_gb_go.xml \
+           horses_win_lay9_ie.xml \
+           horses_win_lay9_ie_go.xml \
+           horses_win_lay9_za.xml \
+           horses_win_lay9_za_go.xml \
+           horses_win_lay8_fr.xml \
+           horses_win_lay8_fr_go.xml \
+           horses_win_lay4_gb_go.xml \
+           
+           
+           
            
 PNGS :=    horses_plc_fav4_za.png \
            horses_plc_fav5_za.png \
