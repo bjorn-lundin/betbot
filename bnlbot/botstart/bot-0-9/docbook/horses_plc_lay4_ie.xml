@@ -92,14 +92,6 @@
     </mediaobject>    
     <mediaobject>
         <imageobject>
-          <imagedata fileref='../script/plot/314/horses_plc_lay4_ie.png'
-                     align='center'
-                     width='100%'
-                     scalfit='1'/>
-        </imageobject>
-    </mediaobject>    
-    <mediaobject>
-        <imageobject>
           <imagedata fileref='../script/plot/335/horses_plc_lay4_ie.png'
                      align='center'
                      width='100%'
