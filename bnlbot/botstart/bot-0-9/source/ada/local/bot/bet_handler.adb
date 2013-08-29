@@ -293,6 +293,7 @@ package body Bet_Handler is
   begin
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
+    --changes here needs changes in bot_config as well !!!
     if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > Natural(0) then 
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay1_") > Natural(0) then 
@@ -306,6 +307,12 @@ package body Bet_Handler is
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay5_") > Natural(0) then 
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay6_") > Natural(0) then 
+      null;
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay7_") > Natural(0) then 
+      null;
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay8_") > Natural(0) then 
+      null;
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay9_") > Natural(0) then 
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > Natural(0) then 
       null;
@@ -363,7 +370,8 @@ package body Bet_Handler is
       when 335    => Sum := Bet.Bet_History.Sum_35_Cube  ; History_OK := Sum >= 0.0;
       when others => raise Bad_Data with "bad Powerdays:" & Powerdays'Img;    
     end case;    
-  
+    Log(Me & "Do_Try", "Powerdays " & Powerdays'Img & " History_OK: " & History_OK'Img);
+
     Exists := Bet.Exists(Powerdays => Powerdays);
     In_The_Air := Bet.In_The_Air(Powerdays => Powerdays);
 
@@ -442,6 +450,7 @@ package body Bet_Handler is
     use General_Routines; 
   begin
     Result := True;
+    Log(Me & "Check_Conditions_Fulfilled", "Bet.Bot_Cfg.Bet_Type: '" &  Bet.Bot_Cfg.Bet_Type'Img );
                                            
     -- some sanity checks
     case Bet.Bet_Info.Event.Eventtypeid is 
@@ -475,6 +484,8 @@ package body Bet_Handler is
           return ; -- wrong markettype for this bot
         end if;
     end case;
+    
+    
     
     if Num_Runners < Bet.Bot_Cfg.Min_Num_Runners or else
        Num_Runners > Bet.Bot_Cfg.Max_Num_Runners then
@@ -552,6 +563,7 @@ package body Bet_Handler is
           Bet.Bet_Info.Selection_Id := Price_Fav.Selectionid;
           Bet.Bet_Info.Used_Index   := 1; --index in the array of our selection 
         else
+          Log(Me & "Check_Conditions_Fulfilled", "bad odds");    
           Result := False;
           return;
         end if;
@@ -605,7 +617,6 @@ package body Bet_Handler is
               when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
             end case;
           elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
-          Log(Me & "Check_Conditions_Fulfilled", "PLACE: " & Bet.Bot_Cfg.Bet_Type'Img);
             case Bet.Bet_Info.Event.Eventtypeid is 
               when 7    => 
                 if Bet.Bot_Cfg.Bet_Type = Fav2 then
@@ -700,8 +711,8 @@ package body Bet_Handler is
         end if;
         -- check favorite odds (i.e. there is a clear favorite)
         if Bet.Bet_Info.Runner_Array(1).Price.Backprice > Max_Favorite_Odds then
-     --     Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img & 
-     --              " needs to be < " & Max_Favorite_Odds'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img & 
+                   " needs to be < " & Max_Favorite_Odds'Img);
           Result := False;
           return;
         end if;
@@ -723,14 +734,15 @@ package body Bet_Handler is
             end if;
           end loop;
           if not Was_Ok then
-     --       Log(Me & "Check_Conditions_Fulfilled", "Reset done, was not ok, Max_Turns=" & Max_Turns'Img);
+            Log(Me & "Check_Conditions_Fulfilled", "Reset done, was not ok");
             Bet.Bet_Info.Selection_Id := 0; --reset
             Bet.Bet_Info.Used_Index   := 0;  
             Result := False;
+            return;
           end if;
         end;  
         
-      when Lay1 | Lay2 | Lay3 | Lay4 | Lay5 | Lay6 =>     
+      when Lay1 .. Lay9 =>     
         -- check min_lay_price < price <= max_lay_price
         -- we can not loop for dogs. Check how many turns for horses
         if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
@@ -745,9 +757,15 @@ package body Bet_Handler is
               elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
                 Max_Lay_Price := 10.0;
               elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 12.0;
+                Max_Lay_Price := 15.0;
               elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 12.0;
+                Max_Lay_Price := 17.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay7 then
+                Max_Lay_Price := 20.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay8 then
+                Max_Lay_Price := 25.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay9 then
+                Max_Lay_Price := 30.0;
               end if;
                              
             when 4339 => --no lay on hounds
@@ -756,7 +774,6 @@ package body Bet_Handler is
             when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
           end case;
         elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
-          Log(Me & "Check_Conditions_Fulfilled", "PLACE: " & Bet.Bot_Cfg.Bet_Type'Img);
         
           case Bet.Bet_Info.Event.Eventtypeid is 
             when 7    => 
@@ -769,9 +786,15 @@ package body Bet_Handler is
               elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
                 Max_Lay_Price := 5.0;
               elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 6.0;
+                Max_Lay_Price := 8.0;
               elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 6.0;
+                Max_Lay_Price := 10.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay7 then
+                Max_Lay_Price := 12.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay8 then
+                Max_Lay_Price := 15.0;
+              elsif Bet.Bot_Cfg.Bet_Type = Lay9 then
+                Max_Lay_Price := 20.0;
               end if;
             when 4339 => --no lay on hounds
               Result := False;
@@ -804,6 +827,12 @@ package body Bet_Handler is
             Index := 5;
           elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
             Index := 6;
+          elsif Bet.Bot_Cfg.Bet_Type = Lay7 then
+            Index := 7;
+          elsif Bet.Bot_Cfg.Bet_Type = Lay8 then
+            Index := 8;
+          elsif Bet.Bot_Cfg.Bet_Type = Lay9 then
+            Index := 9;
           else  
             raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
           end if;
@@ -814,9 +843,9 @@ package body Bet_Handler is
                Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(Index).Price.Selectionid; -- save the selection
                Bet.Bet_Info.Used_Index   := Index; --index in the array of our selection 
             else
-            Log(Me & "Check_Conditions_Fulfilled", "Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price is FALSE " & 
-             " Index = " & index'img & " Bet.Bet_Info.Runner_Array(Index).Price.Layprice= " & Bet.Bet_Info.Runner_Array(Index).Price.Layprice'Img &
-             " Max_Lay_Price=" & Max_Lay_Price'Img);           
+              Log(Me & "Check_Conditions_Fulfilled", "Bet.Bet_Info.Runner_Array(Index).Price.Layprice <= Max_Lay_Price is FALSE " & 
+                " Index = " & index'img & " Bet.Bet_Info.Runner_Array(Index).Price.Layprice= " & Bet.Bet_Info.Runner_Array(Index).Price.Layprice'Img &
+                " Max_Lay_Price=" & Max_Lay_Price'Img);           
               Result := False;
               return;          
             end if;      
@@ -926,19 +955,19 @@ package body Bet_Handler is
         History_35(i).Profit     := History_07(i).Profit; 
       end loop;
       for i in History_07'range loop
-        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_07(i).Profit)'img &
-                                  " weight: " & General_Routines.F8_Image(History_07(i).Weight_1) & 
-                                  " result: " & General_Routines.F8_Image(History_07(i).Weight_1 * 
-                                                                          History_07(i).Profit) &
-                                 " weight2: " & General_Routines.F8_Image(History_07(i).Weight_2) & 
-                                 " result2: " & General_Routines.F8_Image(History_07(i).Weight_2 * 
-                                                                          History_07(i).Profit) &
-                                 " weight3: " & General_Routines.F8_Image(History_07(i).Weight_3) & 
-                                 " result3: " & General_Routines.F8_Image(History_07(i).Weight_3 * 
-                                                                          History_07(i).Profit) &
-                                        " start: " & String_Date_Time_ISO(History_07(i).Start_Date, " ", "") & 
-                                          " end: " & String_Date_Time_ISO(History_07(i).End_Date, " ", "") 
-                                 );
+--        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_07(i).Profit)'img &
+--                                  " weight: " & General_Routines.F8_Image(History_07(i).Weight_1) & 
+--                                  " result: " & General_Routines.F8_Image(History_07(i).Weight_1 * 
+--                                                                          History_07(i).Profit) &
+--                                 " weight2: " & General_Routines.F8_Image(History_07(i).Weight_2) & 
+--                                 " result2: " & General_Routines.F8_Image(History_07(i).Weight_2 * 
+--                                                                          History_07(i).Profit) &
+--                                 " weight3: " & General_Routines.F8_Image(History_07(i).Weight_3) & 
+--                                 " result3: " & General_Routines.F8_Image(History_07(i).Weight_3 * 
+--                                                                          History_07(i).Profit) &
+--                                        " start: " & String_Date_Time_ISO(History_07(i).Start_Date, " ", "") & 
+--                                          " end: " & String_Date_Time_ISO(History_07(i).End_Date, " ", "") 
+--                                 );
         Result.Sum_07_Linear := Result.Sum_07_Linear + (History_07(i).Weight_1 * History_07(i).Profit); 
         Result.Sum_07_Square := Result.Sum_07_Square + (History_07(i).Weight_2 * History_07(i).Profit); 
         Result.Sum_07_Cube   := Result.Sum_07_Cube   + (History_07(i).Weight_3 * History_07(i).Profit); 
@@ -996,19 +1025,19 @@ package body Bet_Handler is
         History_35(i).Profit     := History_14(i).Profit; 
       end loop;
       for i in History_14'range loop
-        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_14(i).Profit)'img &
-                                  " weight: " & General_Routines.F8_Image(History_14(i).Weight_1) & 
-                                  " result: " & General_Routines.F8_Image(History_14(i).Weight_1 * 
-                                                                          History_14(i).Profit) &
-                                 " weight2: " & General_Routines.F8_Image(History_14(i).Weight_2) & 
-                                 " result2: " & General_Routines.F8_Image(History_14(i).Weight_2 * 
-                                                                          History_14(i).Profit) &
-                                 " weight3: " & General_Routines.F8_Image(History_14(i).Weight_3) & 
-                                 " result3: " & General_Routines.F8_Image(History_14(i).Weight_3 * 
-                                                                          History_14(i).Profit) &
-                                        " start: " & String_Date_Time_ISO(History_14(i).Start_Date, " ", "") & 
-                                          " end: " & String_Date_Time_ISO(History_14(i).End_Date, " ", "") 
-                                 );
+--        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_14(i).Profit)'img &
+--                                  " weight: " & General_Routines.F8_Image(History_14(i).Weight_1) & 
+--                                  " result: " & General_Routines.F8_Image(History_14(i).Weight_1 * 
+--                                                                          History_14(i).Profit) &
+--                                 " weight2: " & General_Routines.F8_Image(History_14(i).Weight_2) & 
+--                                 " result2: " & General_Routines.F8_Image(History_14(i).Weight_2 * 
+--                                                                          History_14(i).Profit) &
+--                                 " weight3: " & General_Routines.F8_Image(History_14(i).Weight_3) & 
+--                                 " result3: " & General_Routines.F8_Image(History_14(i).Weight_3 * 
+--                                                                          History_14(i).Profit) &
+--                                        " start: " & String_Date_Time_ISO(History_14(i).Start_Date, " ", "") & 
+--                                          " end: " & String_Date_Time_ISO(History_14(i).End_Date, " ", "") 
+--                                 );
         Result.Sum_14_Linear := Result.Sum_14_Linear + (History_14(i).Weight_1 * History_14(i).Profit); 
         Result.Sum_14_Square := Result.Sum_14_Square + (History_14(i).Weight_2 * History_14(i).Profit); 
         Result.Sum_14_Cube   := Result.Sum_14_Cube   + (History_14(i).Weight_3 * History_14(i).Profit); 
@@ -1057,19 +1086,19 @@ package body Bet_Handler is
         History_35(i).Profit     := History_21(i).Profit; 
       end loop;
       for i in History_21'range loop
-        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_21(i).Profit)'img &
-                                  " weight: " & General_Routines.F8_Image(History_21(i).Weight_1) & 
-                                  " result: " & General_Routines.F8_Image(History_21(i).Weight_1 * 
-                                                                          History_21(i).Profit) &
-                                 " weight2: " & General_Routines.F8_Image(History_21(i).Weight_2) & 
-                                 " result2: " & General_Routines.F8_Image(History_21(i).Weight_2 * 
-                                                                          History_21(i).Profit) &
-                                 " weight3: " & General_Routines.F8_Image(History_21(i).Weight_3) & 
-                                 " result3: " & General_Routines.F8_Image(History_21(i).Weight_3 * 
-                                                                          History_21(i).Profit) &
-                                        " start: " & String_Date_Time_ISO(History_21(i).Start_Date, " ", "") & 
-                                          " end: " & String_Date_Time_ISO(History_21(i).End_Date, " ", "") 
-                                 );
+--        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_21(i).Profit)'img &
+--                                  " weight: " & General_Routines.F8_Image(History_21(i).Weight_1) & 
+--                                  " result: " & General_Routines.F8_Image(History_21(i).Weight_1 * 
+--                                                                          History_21(i).Profit) &
+--                                 " weight2: " & General_Routines.F8_Image(History_21(i).Weight_2) & 
+--                                 " result2: " & General_Routines.F8_Image(History_21(i).Weight_2 * 
+--                                                                          History_21(i).Profit) &
+--                                 " weight3: " & General_Routines.F8_Image(History_21(i).Weight_3) & 
+--                                 " result3: " & General_Routines.F8_Image(History_21(i).Weight_3 * 
+--                                                                          History_21(i).Profit) &
+--                                        " start: " & String_Date_Time_ISO(History_21(i).Start_Date, " ", "") & 
+--                                          " end: " & String_Date_Time_ISO(History_21(i).End_Date, " ", "") 
+--                                 );
         Result.Sum_21_Linear := Result.Sum_21_Linear + (History_21(i).Weight_1 * History_21(i).Profit); 
         Result.Sum_21_Square := Result.Sum_21_Square + (History_21(i).Weight_2 * History_21(i).Profit); 
         Result.Sum_21_Cube   := Result.Sum_21_Cube   + (History_21(i).Weight_3 * History_21(i).Profit); 
@@ -1111,19 +1140,19 @@ package body Bet_Handler is
         History_35(i).Profit     := History_28(i).Profit; 
       end loop;
       for i in History_28'range loop
-        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_28(i).Profit)'img &
-                                  " weight: " & General_Routines.F8_Image(History_28(i).Weight_1) & 
-                                  " result: " & General_Routines.F8_Image(History_28(i).Weight_1 * 
-                                                                          History_28(i).Profit) &
-                                 " weight2: " & General_Routines.F8_Image(History_28(i).Weight_2) & 
-                                 " result2: " & General_Routines.F8_Image(History_28(i).Weight_2 * 
-                                                                          History_28(i).Profit) &
-                                 " weight3: " & General_Routines.F8_Image(History_28(i).Weight_3) & 
-                                 " result3: " & General_Routines.F8_Image(History_28(i).Weight_3 * 
-                                                                          History_28(i).Profit) &
-                                        " start: " & String_Date_Time_ISO(History_28(i).Start_Date, " ", "") & 
-                                          " end: " & String_Date_Time_ISO(History_28(i).End_Date, " ", "") 
-                                 );
+--        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_28(i).Profit)'img &
+--                                  " weight: " & General_Routines.F8_Image(History_28(i).Weight_1) & 
+--                                  " result: " & General_Routines.F8_Image(History_28(i).Weight_1 * 
+--                                                                          History_28(i).Profit) &
+--                                 " weight2: " & General_Routines.F8_Image(History_28(i).Weight_2) & 
+--                                 " result2: " & General_Routines.F8_Image(History_28(i).Weight_2 * 
+--                                                                          History_28(i).Profit) &
+--                                 " weight3: " & General_Routines.F8_Image(History_28(i).Weight_3) & 
+--                                 " result3: " & General_Routines.F8_Image(History_28(i).Weight_3 * 
+--                                                                          History_28(i).Profit) &
+--                                        " start: " & String_Date_Time_ISO(History_28(i).Start_Date, " ", "") & 
+--                                          " end: " & String_Date_Time_ISO(History_28(i).End_Date, " ", "") 
+--                                 );
         Result.Sum_28_Linear := Result.Sum_28_Linear + (History_28(i).Weight_1 * History_28(i).Profit); 
         Result.Sum_28_Square := Result.Sum_28_Square + (History_28(i).Weight_2 * History_28(i).Profit); 
         Result.Sum_28_Cube   := Result.Sum_28_Cube   + (History_28(i).Weight_3 * History_28(i).Profit); 
@@ -1159,19 +1188,19 @@ package body Bet_Handler is
         
       end loop;
       for i in History_35'range loop
-        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_35(i).Profit)'img &
-                                 " weight1: " & General_Routines.F8_Image(History_35(i).Weight_1) & 
-                                 " result1: " & General_Routines.F8_Image(History_35(i).Weight_1 * 
-                                                                          History_35(i).Profit) &
-                                 " weight2: " & General_Routines.F8_Image(History_35(i).Weight_2) & 
-                                 " result2: " & General_Routines.F8_Image(History_35(i).Weight_2 * 
-                                                                          History_35(i).Profit) &
-                                 " weight3: " & General_Routines.F8_Image(History_35(i).Weight_3) & 
-                                 " result3: " & General_Routines.F8_Image(History_35(i).Weight_3 * 
-                                                                          History_35(i).Profit) &
-                                        " start: " & String_Date_Time_ISO(History_35(i).Start_Date, " ", "") & 
-                                          " end: " & String_Date_Time_ISO(History_35(i).End_Date, " ", "") 
-                                 );
+--        Log(Me & "Calculate_History", "History: " & i'img & " " & integer(History_35(i).Profit)'img &
+--                                 " weight1: " & General_Routines.F8_Image(History_35(i).Weight_1) & 
+--                                 " result1: " & General_Routines.F8_Image(History_35(i).Weight_1 * 
+--                                                                          History_35(i).Profit) &
+--                                 " weight2: " & General_Routines.F8_Image(History_35(i).Weight_2) & 
+--                                 " result2: " & General_Routines.F8_Image(History_35(i).Weight_2 * 
+--                                                                          History_35(i).Profit) &
+--                                 " weight3: " & General_Routines.F8_Image(History_35(i).Weight_3) & 
+--                                 " result3: " & General_Routines.F8_Image(History_35(i).Weight_3 * 
+--                                                                          History_35(i).Profit) &
+--                                        " start: " & String_Date_Time_ISO(History_35(i).Start_Date, " ", "") & 
+--                                          " end: " & String_Date_Time_ISO(History_35(i).End_Date, " ", "") 
+--                                 );
         Result.Sum_35_Linear := Result.Sum_35_Linear + (History_35(i).Weight_1 * History_35(i).Profit); 
         Result.Sum_35_Square := Result.Sum_35_Square + (History_35(i).Weight_2 * History_35(i).Profit); 
         Result.Sum_35_Cube   := Result.Sum_35_Cube   + (History_35(i).Weight_3 * History_35(i).Profit); 
@@ -1194,13 +1223,9 @@ package body Bet_Handler is
       Result.Sum_35_Cube   := Result.Sum_35_Cube   / 35.0; 
       
     T.Commit;   
-    
---    Log(Me & "Calculate_History", "Sum: " & General_Routines.F8_Image(Sum) & 
---             " Ok= " & Boolean'Image(Sum >= 0.0) & " - " &  To_String(Bet.Bot_Cfg.Bet_Name));
          
     Bet.Bet_History := Result;
     Log(Me & "Calculate_History", "done " &  To_String(Bet.Bot_Cfg.Bet_Name));
---    return Result.Sum_21_Linear >= 0.0;
     
   end Calculate_History;
   
@@ -1442,11 +1467,11 @@ package body Bet_Handler is
 --  end record;
 
     case Bet.Bot_Cfg.Bet_Type is
-      when Back | Fav2 | Fav3 | Fav4 | Fav5 | Fav6  => 
+      when Back | Fav2 .. Fav6  => 
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
         Pip.Init(Price);
         Price := Pip.Previous_Price;
-      when Lay | Lay1 | Lay2 | Lay3 | Lay4 | Lay5 | Lay6 =>
+      when Lay | Lay1 .. Lay9 =>
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
         Pip.Init(Price);
         Price := Pip.Next_Price;
@@ -1951,19 +1976,19 @@ package body Bet_Handler is
           Selection_In_Winners := not Eos(Awinner);
         
           case Side is
-            when Back |        Fav2 | Fav3 | Fav4 | Fav5 | Fav6 => Bet_Won := Selection_In_Winners;
-            when Lay  | Lay1 | Lay2 | Lay3 | Lay4 | Lay5 | Lay6 => Bet_Won := not Selection_In_Winners;
+            when Back | Fav2 .. Fav6 => Bet_Won := Selection_In_Winners;
+            when Lay  | Lay1 .. Lay9 => Bet_Won := not Selection_In_Winners;
           end case;
       
           if Bet_Won then
             case Side is     -- Betfair takes 5% provision on winnings
-              when Back |        Fav2 | Fav3 | Fav4 | Fav5 | Fav6 => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
-              when Lay  | Lay1 | Lay2 | Lay3 | Lay4 | Lay5 | Lay6 => Profit := 0.95 * Bet.Size;
+              when Back | Fav2 .. Fav6 => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
+              when Lay  | Lay1 .. Lay9 => Profit := 0.95 * Bet.Size;
             end case;
           else -- lost :-(
             case Side is
-              when Back |        Fav2 | Fav3 | Fav4 | Fav5 | Fav6 => Profit := - Bet.Size;
-              when Lay  | Lay1 | Lay2 | Lay3 | Lay4 | Lay5 | Lay6 => Profit := - Bet.Size * (Bet.Price - 1.0);
+              when Back | Fav2 .. Fav6 => Profit := - Bet.Size;
+              when Lay  | Lay1 .. Lay9 => Profit := - Bet.Size * (Bet.Price - 1.0);
             end case;
           end if;        
           

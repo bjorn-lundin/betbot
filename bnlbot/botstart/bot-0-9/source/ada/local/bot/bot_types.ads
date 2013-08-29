@@ -10,7 +10,7 @@ package Bot_Types is
    type Bet_Market_Type is (Place, Winner);
    type Bet_Type_Type is (Lay, 
                           Back, 
-                          Lay1, Lay2, Lay3, Lay4, Lay5, Lay6, 
+                          Lay1, Lay2, Lay3, Lay4, Lay5, Lay6, Lay7, Lay8, Lay9,
                                 Fav2, Fav3, Fav4, Fav5, Fav6); 
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
