@@ -155,6 +155,21 @@ package body Bot_Config is
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay4_") > Natural(0) then 
               Bet_Section.Bet_Type := Lay4;
             end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay5_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay5;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay6_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay6;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay7_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay7;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay8_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay8;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay9_") > Natural(0) then 
+              Bet_Section.Bet_Type := Lay9;
+            end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav2_") > Natural(0) then 
               Bet_Section.Bet_Type := Fav2;                             
             end if;                                                     
