@@ -4,6 +4,11 @@
     <para>
       The purpose of this report is to see the outcome of simulations in a simple way.
       The simulations is of data collected/retrieved from Betfair and treats mainly 
-      Horse racing, winner markets.
+      Horse racing, winner and place markets.
     </para>
+    <para>
+     This is the best-of version, the bets are the ones with the highest profit/avg(price) quote.
+     This measurement is beleived to be a key indicator of the strength of the strategy.
+     A high ratio means high profit and/or low risk.
+    </para>    
 </chapter>

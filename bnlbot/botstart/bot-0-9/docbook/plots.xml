@@ -4,7 +4,7 @@
     <para>
       The plots are presented in powerdays order,
       where powerday is simply a power and a range of days. 
-      The plots has 4 curves, the oranges is the untouched. This is what would happen if we betted 
+      The plots has 4 curves, the oranges is the untouched/pristine. This is what would happen if we betted 
       as the betrules are, all the time, no care taken for daily profit or loss.
       The green one honors the daliy profit and losses.
       The red is the history lines, which is where the powerdays come into play.
@@ -15,5 +15,9 @@
       221 means S21/squareroot(21) + S20/squareroot(20) ... S1/squareroot(1). 
       
       If this sum >= 0.0 then we bet honoring both history and daily profit and loss, and this is the blue curve.
+    </para> 
+    <para>
+    It is interesting to note fluctuations in profit over weekdays. Some bets are great Thursdays, and horrible Fridays.
+    This will likely be a parameter for each bet - what days is the bot valid.
     </para> 
 </chapter>
