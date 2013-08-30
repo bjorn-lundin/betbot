@@ -12,31 +12,10 @@
   
   <xi:include href='preface.xml'/>
   <xi:include href='plots.xml'/>
-  <xi:include href='horses_plc_fav4_za.chapter'/>
-  <xi:include href='horses_plc_fav5_za.chapter'/>
-  <xi:include href='horses_plc_fav6_za.chapter'/>
   <xi:include href='horses_plc_lay4_ie.chapter'/>
-  <xi:include href='horses_plc_lay5_ie.chapter'/>
-  <xi:include href='horses_plc_lay6_ie.chapter'/>
-  <xi:include href='horses_win_lay1_ie.chapter'/>
-  <xi:include href='horses_win_lay3_gb.chapter'/>
-  <xi:include href='horses_win_lay4_gb.chapter'/>
-  <xi:include href='horses_win_lay5_gb.chapter'/>
-  <xi:include href='horses_win_lay3_ie.chapter'/> 
-  <xi:include href='horses_win_lay4_ie.chapter'/>
   <xi:include href='horses_win_lay5_ie.chapter'/>
-  <xi:include href='horses_win_lay3_sg.chapter'/>
-  <xi:include href='horses_win_lay4_sg.chapter'/>
-  <xi:include href='horses_win_lay5_sg.chapter'/>   
-  <xi:include href='horses_win_lay5_ie_go.chapter'/>
-  <xi:include href='horses_win_lay5_gb_go.chapter'/>
-  <xi:include href='horses_win_lay9_ie.chapter'/>
-  <xi:include href='horses_win_lay9_ie_go.chapter'/>
-  <xi:include href='horses_win_lay9_za.chapter'/>
-  <xi:include href='horses_win_lay9_za_go.chapter'/>
-  <xi:include href='horses_win_lay8_fr.chapter'/>
-  <xi:include href='horses_win_lay8_fr_go.chapter'/>
-  <xi:include href='horses_win_lay4_gb_go.chapter'/>
+  <xi:include href='horses_plc_lay4_gb.chapter'/>
+  <xi:include href='horses_win_lay4_gb.chapter'/>
   <xi:include href='database_description.xml'/>     
 </book>
 

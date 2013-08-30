@@ -101,7 +101,7 @@ proc ExtractDefinition { db {host "localhost"} {port "5432"} } {
     #For each table put keys
         getKeys $conn $Table
     #For each table put relations (implemented as dummy)
-        getRelations $conn $Table
+#        getRelations $conn $Table
     #For each table put fields
         getFields $conn $Table
         puts "  </Table>"
