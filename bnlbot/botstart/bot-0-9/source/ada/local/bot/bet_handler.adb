@@ -542,6 +542,19 @@ package body Bet_Handler is
           return ; -- wrong country for this bot
       end if;
     end;
+    
+    -- Allowed day ? 
+    declare
+      use Sattmate_Calendar;
+      Race_Day : Week_Day_Type := Week_Day_Of(Bet.Bet_Info.Market.Startts);
+    begin
+      if not Bet.Bot_Cfg.Allowed_Days(Race_Day) then
+        Log(Me & "Check_Conditions_Fulfilled", "No betting allowed on a " & Race_Day'Img );
+        Result := False;
+        return;
+      end if;
+    end;    
+    
         
     -- check market status --?
     if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then

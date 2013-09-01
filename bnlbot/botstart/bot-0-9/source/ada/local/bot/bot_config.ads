@@ -4,7 +4,7 @@ with Sattmate_Types; use Sattmate_Types;
 with Bot_Types ; use Bot_Types;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
-
+with Sattmate_Calendar;
 
 package Bot_Config is
 
@@ -15,6 +15,8 @@ package Bot_Config is
 --  package Country_Pack is new Simple_List_Class(Country_Type);
 
   Bad_Config : exception;
+  
+  type Allowed_Days_Array is array(Sattmate_Calendar.Week_Day_Type'range) of Boolean;
   
   type Global_Section_Type is record
     Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;
@@ -46,6 +48,7 @@ package Bot_Config is
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
     Mode             : Mode_Type              := Real;    -- inherited from system section
+    Allowed_Days     : Allowed_Days_Array     := (others => False);
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   

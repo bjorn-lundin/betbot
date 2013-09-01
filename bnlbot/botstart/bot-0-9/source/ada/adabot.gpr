@@ -23,6 +23,7 @@ project Adabot is
                  "migrate_g2_g3.adb",
                  "migrate_g3_g3.adb",
                  "equity.adb",
+                 "profit_per_weekday.adb",
                  "check_bot_running.adb",
 --                 "test_pio.adb",
                  "sql_ifc_leak_finder.adb"

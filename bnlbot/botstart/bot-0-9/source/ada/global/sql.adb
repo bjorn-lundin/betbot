@@ -245,7 +245,7 @@ package body Sql is
                                             Cmd (Cmd'First .. Start - 1) &
                                               "null" &
                                               Cmd (Stop .. Cmd'Last));
-               when Not_Set   => raise Sequence_Error;
+               when Not_Set   => raise Sequence_Error with Look_For & " is NOT set";
             end case;
          else
             Log ("Fill_Data_In_Prepared_Statement.Replace_Dollar_Place_Holder Did not find '" & Look_For & "' in '" & Cmd & "'");

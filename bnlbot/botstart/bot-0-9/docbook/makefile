@@ -11,6 +11,9 @@ SOURCES := report.xml preface.xml plots.xml database_description.xml \
            horses_plc_lay4_gb.chapter \
            horses_win_lay4_gb.chapter \
            horses_win_lay4_ie.chapter \
+           horses_win_fav2_gb.chapter \
+           horses_win_fav5_ie.chapter \
+           horses_win_fav4_ie.chapter \
     
 
 all : report.html report.pdf
