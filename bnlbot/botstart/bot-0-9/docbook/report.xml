@@ -11,12 +11,17 @@
   </info>
   
   <xi:include href='preface.xml'/>
+  <xi:include href='inifile.xml'/>
   <xi:include href='plots.xml'/>
   <xi:include href='horses_plc_lay4_ie.chapter'/>
   <xi:include href='horses_win_lay5_ie.chapter'/>
   <xi:include href='horses_plc_lay4_gb.chapter'/>
   <xi:include href='horses_win_lay4_gb.chapter'/>
+  <xi:include href='horses_win_fav2_gb.chapter'/>
+  <xi:include href='horses_win_fav5_ie.chapter'/>
+  <xi:include href='horses_win_fav4_ie.chapter'/>
   <xi:include href='database_description.xml'/>     
+
 </book>
 
 

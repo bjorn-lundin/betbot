@@ -47,27 +47,38 @@ BET_NAMES := horses_plc_lay4_ie \
              horses_plc_lay4_gb \
              horses_win_lay4_gb \
              horses_win_lay4_ie \
+             horses_win_fav2_gb \
+             horses_win_fav5_ie \
+             horses_win_fav4_ie \
 
 BET_NAMES_WITH_POWER := $(foreach i,$(POWERDAYSLIST), $(foreach j,$(BET_NAMES), $(j)-$(i)))
 
 PNGS := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).png)
 DATS := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).dat)
 
+
+PNG2S := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).xyz)
+DAT2S := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).dat2)
+
+
 all  : $(PNGS)
 
-dats : $(DATS)
-
-pngs : $(PNGS)
+dat : $(DATS)
+png : $(PNGS)
+dat2 : $(DAT2S)
+png2 : $(PNG2S)
+xyz : $(PNG2S)
 
 test:
 	@echo $(BET_NAMES_WITH_POWER)
-	@echo $(PNGS)
-	@echo $(DATS)
+	@echo $(PNG2S)
+	@echo $(DAT2S)
 
     
 ## equity start ##
 #save the intermediate files too
 .PRECIOUS : %.dat
+.PRECIOUS : %.dat2
 
 # implict rules
 # create a dat and then a png file from that dat
@@ -93,6 +104,26 @@ test:
 	@echo "done gnuplot $* - $@ - $<"        
     
 
+%.dat2 : $(BOT_TARGET)/bin/profit_per_weekday 
+	$(BOT_TARGET)/bin/profit_per_weekday --host=$(DBHOST) \
+                                 --database=$(DBNAME) \
+                                 --port=$(DBPORT) \
+                                 --pwd=$(DBPWD) \
+                                 --user=$(DBUSER) \
+                                 --powerdays=$(shell echo $* | cut -d'-' -f2) \
+                                 --betname=$(shell echo $(shell echo $* | cut -d'-' -f1) | tr '[:lower:]' '[:upper:]') > $*.dat2         
+
+
+
+%.xyz : %.dat2 profit_per_weekday.gpl
+	gnuplot -e "db_name='$(DBNAME)'" \
+            -e "bet_type='$*'" \
+            -e "target_png='$@'" \
+            -e "powerdays='$(shell echo $* | cut -d'-' -f2)'" \
+            -e "data_file='$*.dat2'" profit_per_weekday.gpl
+	@echo "done gnuplot $* - $@ - $<"        
+    
+    
 .PHONY : clean
 clean :
 	rm -rf  *.png

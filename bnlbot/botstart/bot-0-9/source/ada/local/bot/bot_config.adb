@@ -14,12 +14,12 @@ package body Bot_Config is
 
   Me : constant String := "Config.";  
   package EV renames Ada.Environment_Variables;
-
+  Bad_Data,
   Unimplemented    : exception ;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
-  Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
+--  Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
   
@@ -198,6 +198,74 @@ package body Bot_Config is
               Bet_Section.Market_Type := Winner;
             end if;            
             Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
+            
+            
+            declare
+              Days : String := Ini.Get_Value(Ini.Get_Section_Name(i),"allowed_days","al");
+              Day  : String(1..2) := (others => ' ');
+              Index : Integer := 1;
+              use Sattmate_Calendar;
+            begin
+              for i in Days'range loop
+                case Days(i) is
+                  when ',' =>
+                    if    Lower_Case(Day) = "al" then
+                      for i in Week_Day_Type'range loop
+                        Bet_Section.Allowed_Days(i) := True;
+                      end loop;
+                    elsif    Lower_Case(Day) = "mo" then
+                      Bet_Section.Allowed_Days(Monday) := True;
+                    elsif Lower_Case(Day) = "tu" then
+                      Bet_Section.Allowed_Days(Tuesday) := True;
+                    elsif Lower_Case(Day) = "we" then
+                      Bet_Section.Allowed_Days(Wednesday) := True;
+                    elsif Lower_Case(Day) = "th" then
+                      Bet_Section.Allowed_Days(Thursday) := True;
+                    elsif Lower_Case(Day) = "fr" then
+                      Bet_Section.Allowed_Days(Friday) := True;
+                    elsif Lower_Case(Day) = "sa" then
+                      Bet_Section.Allowed_Days(Saturday) := True;
+                    elsif Lower_Case(Day) = "su" then
+                      Bet_Section.Allowed_Days(Sunday) := True;
+                    else
+                      raise Bad_Data with "day = " & Day;
+                    end if;
+                  when others =>
+                    case Index is
+                      when 1 =>
+                        Day(1) := Days(i);
+                        Index := 2;
+                      when 2 => 
+                        Day(2) := Days(i);
+                        Index := 1;
+                      when others => raise Bad_Data with "Index = " & Index'Img;
+                    end case;
+                end case;
+              end loop;
+              -- check also for the last entry (mo,fr)
+              if    Lower_Case(Day) = "al" then
+                for i in Week_Day_Type'range loop
+                  Bet_Section.Allowed_Days(i) := True;
+                end loop;
+              elsif    Lower_Case(Day) = "mo" then
+                Bet_Section.Allowed_Days(Monday) := True;
+              elsif Lower_Case(Day) = "tu" then
+                Bet_Section.Allowed_Days(Tuesday) := True;
+              elsif Lower_Case(Day) = "we" then
+                Bet_Section.Allowed_Days(Wednesday) := True;
+              elsif Lower_Case(Day) = "th" then
+                Bet_Section.Allowed_Days(Thursday) := True;
+              elsif Lower_Case(Day) = "fr" then
+                Bet_Section.Allowed_Days(Friday) := True;
+              elsif Lower_Case(Day) = "sa" then
+                Bet_Section.Allowed_Days(Saturday) := True;
+              elsif Lower_Case(Day) = "su" then
+                Bet_Section.Allowed_Days(Sunday) := True;
+              else
+                raise Bad_Data with "day = " & Day;
+              end if;              
+            end;
+            
             Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);   
           end if;             
           if Float_8(Bet_Section.Max_Lay_Price) < Float_8(Bet_Section.Min_Lay_Price) then

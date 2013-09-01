@@ -18,6 +18,6 @@
     </para> 
     <para>
     It is interesting to note fluctuations in profit over weekdays. Some bets are great Thursdays, and horrible Fridays.
-    This will likely be a parameter for each bet - what days is the bot valid.
+    Parameter for allowing certain weekdays introduced 2013-08-31.
     </para> 
 </chapter>
