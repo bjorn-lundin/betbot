@@ -19,7 +19,8 @@ package body Lock is
     result : int;
     use Interfaces.C.Strings;
   begin
-    A_Lock.Name := To_Unbounded_String(Ev.Value("BOT_TARGET") & "/locks/" & Name);
+  
+    A_Lock.Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/locks/" & Name);
     Log(Me & "Take", "Take lock: '"  & To_String(A_Lock.Name) & "'");
     declare
       C_Name : Chars_Ptr := New_String (To_String(A_Lock.Name));

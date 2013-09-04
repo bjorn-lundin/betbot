@@ -127,9 +127,9 @@ fi
 ######## winners_fetcher ###########
 
 #who holds the lock, and since when, and when expires
-locked_by_pid=$(cat $BOT_TARGET/locks/winners_fetcher | cut -d'|' -f1)
-lock_placed=$(cat $BOT_TARGET/locks/winners_fetcher | cut -d'|' -f2)
-lock_expires=$(cat $BOT_TARGET/locks/winners_fetcher | cut -d'|' -f3)
+locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
+lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
+lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
 
 now=$(date "+ %F %T")
 
