@@ -110,12 +110,6 @@ package body Bot_Config is
             --from system:
             Bet_Section.Mode := Cfg.System_Section.Mode ;
             Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
---            case Bet_Section.Mode is
---              when Real       => Bet_Section.Bet_Name := To_Unbounded_String("RT_" & Ini.Get_Section_Name(i));
---              when Simulation => Bet_Section.Bet_Name := To_Unbounded_String("SB_" & Ini.Get_Section_Name(i));
---            end case;
---            Bet_Section.DR_Name := To_Unbounded_String("DR_" & Ini.Get_Section_Name(i));
-
             Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
             Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
             Bet_Section.Max_Daily_Profit := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));

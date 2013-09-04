@@ -352,22 +352,22 @@ package body Bet_Handler is
   begin
   
     case Powerdays is
-      when   0    => Sum := 0.0;                           History_OK := Sum >= 0.0;
-      when 107    => Sum := Bet.Bet_History.Sum_07_Linear; History_OK := Sum >= 0.0;
-      when 207    => Sum := Bet.Bet_History.Sum_07_Square; History_OK := Sum >= 0.0;
-      when 307    => Sum := Bet.Bet_History.Sum_07_Cube  ; History_OK := Sum >= 0.0; 
-      when 114    => Sum := Bet.Bet_History.Sum_14_Linear; History_OK := Sum >= 0.0;
-      when 214    => Sum := Bet.Bet_History.Sum_14_Square; History_OK := Sum >= 0.0;   
-      when 314    => Sum := Bet.Bet_History.Sum_14_Cube  ; History_OK := Sum >= 0.0;
-      when 121    => Sum := Bet.Bet_History.Sum_21_Linear; History_OK := Sum >= 0.0;
-      when 221    => Sum := Bet.Bet_History.Sum_21_Square; History_OK := Sum >= 0.0;
-      when 321    => Sum := Bet.Bet_History.Sum_21_Cube  ; History_OK := Sum >= 0.0;
-      when 128    => Sum := Bet.Bet_History.Sum_28_Linear; History_OK := Sum >= 0.0;
-      when 228    => Sum := Bet.Bet_History.Sum_28_Square; History_OK := Sum >= 0.0;
-      when 328    => Sum := Bet.Bet_History.Sum_28_Cube  ; History_OK := Sum >= 0.0;
-      when 135    => Sum := Bet.Bet_History.Sum_35_Linear; History_OK := Sum >= 0.0;
-      when 235    => Sum := Bet.Bet_History.Sum_35_Square; History_OK := Sum >= 0.0;
-      when 335    => Sum := Bet.Bet_History.Sum_35_Cube  ; History_OK := Sum >= 0.0;
+      when   0    => Sum := 0.0;                           History_OK := Sum > 0.0;
+      when 107    => Sum := Bet.Bet_History.Sum_07_Linear; History_OK := Sum > 0.0;
+      when 207    => Sum := Bet.Bet_History.Sum_07_Square; History_OK := Sum > 0.0;
+      when 307    => Sum := Bet.Bet_History.Sum_07_Cube  ; History_OK := Sum > 0.0; 
+      when 114    => Sum := Bet.Bet_History.Sum_14_Linear; History_OK := Sum > 0.0;
+      when 214    => Sum := Bet.Bet_History.Sum_14_Square; History_OK := Sum > 0.0;   
+      when 314    => Sum := Bet.Bet_History.Sum_14_Cube  ; History_OK := Sum > 0.0;
+      when 121    => Sum := Bet.Bet_History.Sum_21_Linear; History_OK := Sum > 0.0;
+      when 221    => Sum := Bet.Bet_History.Sum_21_Square; History_OK := Sum > 0.0;
+      when 321    => Sum := Bet.Bet_History.Sum_21_Cube  ; History_OK := Sum > 0.0;
+      when 128    => Sum := Bet.Bet_History.Sum_28_Linear; History_OK := Sum > 0.0;
+      when 228    => Sum := Bet.Bet_History.Sum_28_Square; History_OK := Sum > 0.0;
+      when 328    => Sum := Bet.Bet_History.Sum_28_Cube  ; History_OK := Sum > 0.0;
+      when 135    => Sum := Bet.Bet_History.Sum_35_Linear; History_OK := Sum > 0.0;
+      when 235    => Sum := Bet.Bet_History.Sum_35_Square; History_OK := Sum > 0.0;
+      when 335    => Sum := Bet.Bet_History.Sum_35_Cube  ; History_OK := Sum > 0.0;
       when others => raise Bad_Data with "bad Powerdays:" & Powerdays'Img;    
     end case;    
     Log(Me & "Do_Try", "Powerdays " & Powerdays'Img & " History_OK: " & History_OK'Img);
@@ -419,8 +419,8 @@ package body Bet_Handler is
                 if History_OK then
                   case Bet.Bot_Cfg.Mode is
                     when Real =>       
-                      Log(Me & "Try_Make_New_Bet", "would be a real bet here");
-              --        Bet.Make_Bet(A_Token => A_Token, , Powerdays => Powerdays,  Betmode => Real);
+              --        Log(Me & "Try_Make_New_Bet", "would be a real bet here");
+                      Bet.Make_Bet(A_Token => A_Token, , Powerdays => Powerdays,  Betmode => Real);
                     when Simulation =>
                       Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Sim);
                   end case;  
