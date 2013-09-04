@@ -14,15 +14,8 @@
 TZ='Europe/Stockholm'
 export TZ
 
-export BOT_START=$HOME/bnlbot/botstart
-
-#Kommer inte funka i multiuser!
-export BOT_USER=bnl
-
-export BOT_START=$HOME/bnlbot/botstart
-. $BOT_START/bot.bash -u$BOT_USER -a no
-
-#env | sort
+#defaults. sets $BOT_SOURCE and $BOT_START
+. $BOT_START/bot.bash -ubnl -a no
 
 
 #start the login daemon if not running
@@ -58,6 +51,18 @@ if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
 fi
 
 
+
+
+#Kommer inte funka i multiuser!
+
+
+function Check_Bots_For_User () {
+
+export BOT_USER=$1
+
+. $BOT_START/bot.bash -u$BOT_USER -a no
+
+
 #try to lock the file $BOT_TARGET/locks/market_fetcher
 #$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
 #RESULT_MARKETS_FETCHER=$?
@@ -65,16 +70,13 @@ fi
 #  export BOT_NAME=markets_fetcher
 #  $BOT_TARGET/bin/markets_fetcher --daemon
 #fi
-
-
-ps -ef | grep markets_fetcher | grep -v grep >/dev/null
+ps -ef | grep markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
 RESULT_MARKETS_FETCHER=$?
 if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
   echo "Started markets_fetcher"
   export BOT_NAME=markets_fetcher
-  $BOT_TARGET/bin/markets_fetcher --daemon
+  $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
 fi
-
 
 #if the lock can be aquired, the process is NOT running - start it
 
@@ -87,26 +89,6 @@ fi
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #1
-
-
-
-# Bot now handles checking bets
-########### bot_checker ############
-#$BOT_TARGET/bin/check_bot_running --botname=bot_checker > /dev/null 2>&1
-#RESULT_BOT_CHECKER=$?
-#if [ $RESULT_BOT_CHECKER -eq 0 ] ; then
-#  export BOT_NAME=bet_checker
-#  $BOT_TARGET/bin/bet_checker --daemon
-#fi
-
-#ps -ef | grep bet_checker | grep -v grep >/dev/null
-#RESULT_BET_CHECKER=$?
-#if [ $RESULT_BET_CHECKER -eq 1 ] ; then
-#  export BOT_NAME=bet_checker
-#  $BOT_TARGET/bin/bet_checker --daemon
-#fi
-
-
 
 ########### bot ############
 #$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
@@ -125,7 +107,6 @@ if [ $RESULT_BOT -eq 1 ] ; then
   $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
 fi
 
-
 ########### saldo_fetcher ############
 #$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
 #RESULT_SALDO_FETCHER=$?
@@ -134,15 +115,13 @@ fi
 #  $BOT_TARGET/bin/saldo_fetcher --daemon
 #fi
 
-ps -ef | grep saldo_fetcher | grep -v grep >/dev/null
+ps -ef | grep saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
 if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
   echo "Started saldo_fetcher"
   export BOT_NAME=saldo_fetcher
-  $BOT_TARGET/bin/saldo_fetcher --daemon
+  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
 fi
-
-
 
 
 ######## winners_fetcher ###########
@@ -169,3 +148,18 @@ fi
 export BOT_NAME=winners_fetcher
 $BOT_TARGET/bin/winners_fetcher --daemon
 ############ winners_fetcher stop #########
+
+}
+
+
+
+USER_LIST=$(ls $BOT_START/user)
+
+for USER in $USER_LIST ; do
+
+  Check_Bots_For_User $USER
+  
+done
+
+
+
