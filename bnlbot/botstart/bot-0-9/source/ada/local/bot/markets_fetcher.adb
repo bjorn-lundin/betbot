@@ -46,6 +46,7 @@ procedure Markets_Fetcher is
   No_Such_Field  : exception;
 
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
+  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon    : aliased Boolean := False;
   Config : Command_Line_Configuration;
   --  Initialize an empty JSON_Value object. We will add values to this
@@ -691,6 +692,13 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
  
   Logging.Open(EV.Value("BOT_HOME") & "/log/markets_fetcher.log");
+
+  Define_Switch
+   (Cmd_Line,
+    Sa_Par_Bot_User'access,
+    Long_Switch => "--user=",
+    Help        => "user of bot");
+
   
   Define_Switch
     (Config,

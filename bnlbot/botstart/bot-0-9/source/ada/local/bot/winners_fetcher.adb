@@ -28,10 +28,15 @@ with Bot_Messages;
 with Process_Io;
 with Ini;
 
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
 procedure Winners_Fetcher is
   Bad_Data : exception;
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
+  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
+  Config : Command_Line_Configuration;
 
 
   Me : constant String := "Main.";
@@ -255,14 +260,26 @@ procedure Winners_Fetcher is
 --  get_soccer : Boolean := False;
   R : Aws.Response.Data;
 begin
+
+
     Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
     Logging.Open(EV.Value("BOT_HOME") & "/log/winners_fetcher.log");
     Logging.New_Log_File_On_Exit(False);
 
+    Define_Switch
+     (Cmd_Line,
+      Sa_Par_Bot_User'access,
+      Long_Switch => "--user=",
+      Help        => "user of bot");
+    Getopt (Config);  -- process the command line
+
+    
     Posix.Daemonize;
     My_Lock.Take("winners_fetcher");
 
+    
+    
 --    Log (Me, "connect db");
   Sql.Connect
         (Host     => Ini.Get_Value("database","host",""),
