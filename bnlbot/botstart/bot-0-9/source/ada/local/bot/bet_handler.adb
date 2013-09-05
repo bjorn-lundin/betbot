@@ -420,7 +420,7 @@ package body Bet_Handler is
                   case Bet.Bot_Cfg.Mode is
                     when Real =>       
               --        Log(Me & "Try_Make_New_Bet", "would be a real bet here");
-                      Bet.Make_Bet(A_Token => A_Token, , Powerdays => Powerdays,  Betmode => Real);
+                      Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Real);
                     when Simulation =>
                       Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Sim);
                   end case;  
