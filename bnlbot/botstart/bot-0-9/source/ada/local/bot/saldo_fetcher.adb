@@ -47,7 +47,7 @@ procedure Saldo_Fetcher is
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon    : aliased Boolean := False;
-  Config : Command_Line_Configuration;
+  Cmd_Line : Command_Line_Configuration;
   
  
 ----------------------------------------------
@@ -188,19 +188,19 @@ begin
     Help        => "user of bot");
     
   Define_Switch
-    (Config,
+    (Cmd_Line,
      Sa_Par_Token'access,
      "-t:",
      Long_Switch => "--token=",
      Help        => "use this token, if token is already retrieved");
 
   Define_Switch
-     (Config,
+     (Cmd_Line,
       Ba_Daemon'access,
       "-d",
       Long_Switch => "--daemon",
       Help        => "become daemon at startup");
-  Getopt (Config);  -- process the command line
+  Getopt (Cmd_Line);  -- process the command line
    
   if Ba_Daemon then
      Posix.Daemonize;

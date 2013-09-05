@@ -36,7 +36,7 @@ procedure Winners_Fetcher is
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
-  Config : Command_Line_Configuration;
+  Cmd_Line : Command_Line_Configuration;
 
 
   Me : constant String := "Main.";
@@ -272,7 +272,7 @@ begin
       Sa_Par_Bot_User'access,
       Long_Switch => "--user=",
       Help        => "user of bot");
-    Getopt (Config);  -- process the command line
+    Getopt (Cmd_Line);  -- process the command line
 
     
     Posix.Daemonize;
