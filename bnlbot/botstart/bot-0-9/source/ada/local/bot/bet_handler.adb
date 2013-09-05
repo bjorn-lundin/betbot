@@ -27,8 +27,6 @@ pragma Elaborate_All(Aws.Headers);
 
 package body Bet_Handler is
 
-
-
   Suicide,
   No_Such_Field : exception;
 
@@ -488,8 +486,6 @@ package body Bet_Handler is
         end if;
     end case;
     
-    
-    
     if Num_Runners < Bet.Bot_Cfg.Min_Num_Runners or else
        Num_Runners > Bet.Bot_Cfg.Max_Num_Runners then
       Log(Me & "Check_Conditions_Fulfilled", "bad num runners" & Num_Runners'Img & 
@@ -557,7 +553,6 @@ package body Bet_Handler is
         return;
       end if;
     end;    
-    
         
     -- check market status --?
     if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
@@ -987,9 +982,7 @@ package body Bet_Handler is
         Result.Sum_07_Linear := Result.Sum_07_Linear + (History_07(i).Weight_1 * History_07(i).Profit); 
         Result.Sum_07_Square := Result.Sum_07_Square + (History_07(i).Weight_2 * History_07(i).Profit); 
         Result.Sum_07_Cube   := Result.Sum_07_Cube   + (History_07(i).Weight_3 * History_07(i).Profit); 
-      end loop;     
-      
-      
+      end loop;           
       
       for i in 8 .. 14  loop
         Start_Date := Now - (Integer_4(i),0,0,0,0);

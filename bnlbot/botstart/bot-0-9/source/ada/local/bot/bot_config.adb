@@ -37,6 +37,8 @@ package body Bot_Config is
   procedure Read(Cfg : in out Config_Type) is
    -- function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
    -- function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
+   type Cfg_Type is (Bet, Market, Animal);
+   Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
     Log(Me & "Read start");
     if not Command_Line_Is_Parsed then
@@ -134,66 +136,101 @@ package body Bot_Config is
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay_") > Natural(0) then
               Bet_Section.Bet_Type := Lay;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > Natural(0) then
               Bet_Section.Bet_Type := Back;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay1_") > Natural(0) then
               Bet_Section.Bet_Type := Lay1;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay2_") > Natural(0) then
               Bet_Section.Bet_Type := Lay2;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay3_") > Natural(0) then
               Bet_Section.Bet_Type := Lay3;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay4_") > Natural(0) then
               Bet_Section.Bet_Type := Lay4;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay5_") > Natural(0) then
               Bet_Section.Bet_Type := Lay5;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay6_") > Natural(0) then
               Bet_Section.Bet_Type := Lay6;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay7_") > Natural(0) then
               Bet_Section.Bet_Type := Lay7;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay8_") > Natural(0) then
               Bet_Section.Bet_Type := Lay8;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay9_") > Natural(0) then
               Bet_Section.Bet_Type := Lay9;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav2_") > Natural(0) then
               Bet_Section.Bet_Type := Fav2;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav3_") > Natural(0) then
               Bet_Section.Bet_Type := Fav3;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav4_") > Natural(0) then
               Bet_Section.Bet_Type := Fav4;
+              Was_Set(Bet) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav5_") > Natural(0) then
+              Bet_Section.Bet_Type := Fav5;
+              Was_Set(Bet) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_fav6_") > Natural(0) then
+              Bet_Section.Bet_Type := Fav6;
+              Was_Set(Bet) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
+              Was_Set(Animal) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "horses_") > Natural(0) then
               Bet_Section.Animal := Horse;
+              Was_Set(Animal) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > Natural(0) then
               Bet_Section.Market_Type := Place;
+              Was_Set(Market) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_place_") > Natural(0) then
               Bet_Section.Market_Type := Place;
+              Was_Set(Market) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_winner_") > Natural(0) then
               Bet_Section.Market_Type := Winner;
+              Was_Set(Market) := True;
             end if;
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_win_") > Natural(0) then
               Bet_Section.Market_Type := Winner;
+              Was_Set(Market) := True;
             end if;
+            
+            for i in Was_Set'range loop
+              if not Was_Set(i) then
+                raise Bad_Data with I'Img & " was not set";
+              end if;
+              Was_Set(i) := False; --reset
+            end loop;
+            
             Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
-
 
             declare
               Days : String := Ini.Get_Value(Ini.Get_Section_Name(i),"allowed_days","al");
