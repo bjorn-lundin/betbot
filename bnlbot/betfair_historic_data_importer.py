@@ -60,13 +60,12 @@ class Betfair_Historic_Data_Importer(object):
 
     def treat_line(self, line) :
         row_is_ok = True
-        #replace " with nothing
         if self.horse :
             keys = self.horse_keys
         else :
             keys = self.other_keys
 
-        # some files hav values in "" some does not
+        # some files have values in "" some does not
         if line.lower().find('"') > -1 :
             vals = line.split('\",\"')
         else :
@@ -74,6 +73,7 @@ class Betfair_Historic_Data_Importer(object):
 
         temp = dict(zip(keys, vals))
         for t in temp :
+           #replace " with nothing
            v = temp[t].replace('"','')
            temp[t] = v.strip()
 
@@ -82,7 +82,6 @@ class Betfair_Historic_Data_Importer(object):
 #        for t in temp :
 #           print t, temp[t]
 #        print 'done'
-
 
         #check that we actually want this row
 
@@ -93,7 +92,6 @@ class Betfair_Historic_Data_Importer(object):
 #
 #        row_is_ok = row_is_ok and temp['IN_PLAY'] != 'IP'
 #        if not row_is_ok : return
-
 
         # event must start with num-char or char-num or 'hp' or 'hc' or 'or' or 'iv'
         # not case sensitive
