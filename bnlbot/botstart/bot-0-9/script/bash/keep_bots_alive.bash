@@ -126,23 +126,26 @@ fi
 
 ######## winners_fetcher ###########
 
-#who holds the lock, and since when, and when expires
-locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
-lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
-lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
+if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
 
-now=$(date "+ %F %T")
-
-#convert to epoch, compare integers is easy
-epoch_now=$(date --date="$now" +%s)
-epoch_lock_expires=$(date --date="$lock_expires" +%s)
-
-# kill if lock is more than 10 minutes old (time is in lockfile)
-if [ $epoch_now -gt $epoch_lock_expires ] ; then
-  kill -term $locked_by_pid >/dev/null 2>&1
-  sleep 1
-  kill -kill $locked_by_pid >/dev/null 2>&1
-  sleep 1
+  #who holds the lock, and since when, and when expires
+  locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
+  lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
+  lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
+  
+  now=$(date "+ %F %T")
+  
+  #convert to epoch, compare integers is easy
+  epoch_now=$(date --date="$now" +%s)
+  epoch_lock_expires=$(date --date="$lock_expires" +%s)
+  
+  # kill if lock is more than 10 minutes old (time is in lockfile)
+  if [ $epoch_now -gt $epoch_lock_expires ] ; then
+    kill -term $locked_by_pid >/dev/null 2>&1
+    sleep 1
+    kill -kill $locked_by_pid >/dev/null 2>&1
+    sleep 1
+  fi
 fi
 
 export BOT_NAME=winners_fetcher

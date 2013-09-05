@@ -3,7 +3,7 @@
     <Table Wiz="3" Desc="Animal stats" Name="ANIMALS" Tablespace="">
         <Column Name="name" Primary="1" Size="50" Type="1" AllowNull="0" Description="animal name"/>
         <Column Name="kind" Primary="0" Size="5" Type="1" AllowNull="0" Description="animal"/>
-        <Column Name="racetype" Primary="0" Size="6" Type="1" AllowNull="0" Description="plcaeY/winner"/>
+        <Column Name="racetype" Primary="0" Size="6" Type="1" AllowNull="0" Description="place/winner"/>
         <Column Name="numvictories" Primary="0" Size="9" Type="2" AllowNull="0" Description="number of victories"/>
         <Column Name="numraces" Primary="0" Size="9" Type="2" AllowNull="0" Description="num races participated in"/>
         <Column Name="lastvictory" Primary="0" Size="23" Type="15" AllowNull="0" Description="last time won"/>
