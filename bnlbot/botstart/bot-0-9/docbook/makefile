@@ -42,8 +42,15 @@ report.fo : $(SOURCES)
     --stringparam paper.type A4 \
     --stringparam page.orientation landscape \
     --param fop1.extensions 1 \
-    /usr/share/xml/docbook/stylesheet/docbook-xsl-ns/fo/docbook.xsl \
+    bnlbot-pdf.xsl \
      report.xml
+#	xsltproc -xinclude \
+#    --output report.fo \
+#    --stringparam paper.type A4 \
+#    --stringparam page.orientation landscape \
+#    --param fop1.extensions 1 \
+#    /usr/share/xml/docbook/stylesheet/docbook-xsl-ns/fo/docbook.xsl \
+#     report.xml
 
 report.pdf : report.fo 
 	fop report.fo -pdf report.pdf
