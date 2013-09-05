@@ -12,8 +12,6 @@ ST := $(BOT_SOURCE)/ada/global/tables
 OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
-PIPE_DIR_BOT    := $(BOT_TARGET)/pipes
-LOCK_DIR_BOT    := $(BOT_TARGET)/locks
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 
 
@@ -33,12 +31,6 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
-
-$(PIPE_DIR_BOT) :
-	mkdir -p $(PIPE_DIR_BOT)
-
-$(LOCK_DIR_BOT) :
-	mkdir -p $(LOCK_DIR_BOT)
     
 $(LOG_DIR_BOT) :
 	mkdir -p $(LOG_DIR_BOT)
@@ -49,7 +41,7 @@ $(OBJECT_DIR_BOT) :
 $(OBJECT_DIR_JSON) :
 	mkdir -p $(OBJECT_DIR_JSON)
 
-adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(PIPE_DIR_BOT) $(LOCK_DIR_BOT) $(LOG_DIR_BOT)
+adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
 	gnatmake -P adabot
     
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
