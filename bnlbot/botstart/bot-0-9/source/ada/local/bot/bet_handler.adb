@@ -212,7 +212,7 @@ package body Bet_Handler is
     end if;
     
     Bet.Calculate_History;
-    case Bet.Bot_Cfg.Mode is
+    case Bot_Config.Config.System_Section.Bot_Mode is
       when Simulation =>
         Bet.Do_Try(A_Token => A_Token, Powerdays => 0); -- reference bet
         Bet.Do_Try(A_Token => A_Token, Powerdays => 107);
@@ -418,12 +418,11 @@ package body Bet_Handler is
               if Bet.Enabled then
                 Log(Me & "Do_Try", "History_OK :" & History_OK'Img & " Powerdays:" & Powerdays'Img);
                 if History_OK then
-                  case Bet.Bot_Cfg.Mode is
-                    when Real =>       
-              --        Log(Me & "Try_Make_New_Bet", "would be a real bet here");
-                      Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Real);
-                    when Simulation =>
-                      Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Sim);
+                  case Bet.Bot_Cfg.Bet_Mode is
+                    when Real => Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Real);
+                    when Sim  => Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Sim);
+                    when Dry  => null;  -- betted above
+                    when Ref  => null;  -- will bet below
                   end case;  
                 end if;  -- history ok  
               end if; -- enabled

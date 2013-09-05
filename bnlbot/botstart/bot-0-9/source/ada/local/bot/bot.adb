@@ -38,7 +38,7 @@ begin
   
   Log(Bot_Config.Config.To_String);
   
-  case Bot_Config.Config.System_Section.Mode is
+  case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
        Log(Me, "Login betfair");
        My_Token.Login(
@@ -83,7 +83,7 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
-        case Bot_Config.Config.System_Section.Mode is
+        case Bot_Config.Config.System_Section.Bot_Mode is
           when Bot_Types.Real       =>
             if not My_Token.Keep_Alive then
               My_Token.Login(

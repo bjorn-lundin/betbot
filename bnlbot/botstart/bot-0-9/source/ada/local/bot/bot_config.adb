@@ -19,7 +19,7 @@ package body Bot_Config is
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
---  Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
+  Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
 
@@ -35,7 +35,7 @@ package body Bot_Config is
     -----------------------------------------------------
 
   procedure Read(Cfg : in out Config_Type) is
-   -- function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
+    function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
    -- function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
    type Cfg_Type is (Bet, Market, Animal);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
@@ -56,7 +56,7 @@ package body Bot_Config is
 
       Define_Switch
        (Cmd_Line,
-        Sa_Par_Mode'access,
+        Sa_Par_Dispatch'access,
         Long_Switch => "--dispatch=",
         Help        => "bets received");
 
@@ -97,8 +97,8 @@ package body Bot_Config is
       Cfg.System_Section.Bot_Home   := To_Unbounded_String(EV.Value("BOT_HOME"));
       Cfg.System_Section.Daemonize  := Ba_Daemon;
 
-      if Sa_Par_Mode.all = "simulation" then
-        Cfg.System_Section.Mode  := Simulation;  -- real by default
+      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(1..3) = "sim" then
+        Cfg.System_Section.Bot_Mode  := Simulation;  -- real by default
       end if;
 
       declare
@@ -109,8 +109,6 @@ package body Bot_Config is
           Log("Read","Section: " & Ini.Get_Section_Name(i));
           if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then
 
-            --from system:
-            Bet_Section.Mode := Cfg.System_Section.Mode ;
             Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
             Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
             Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
@@ -120,7 +118,7 @@ package body Bot_Config is
             Bet_Section.Max_Lay_Price := Max_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_lay_price","0.0"));
             Bet_Section.Min_Lay_Price := Min_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_lay_price","0.0"));
             Bet_Section.Bet_Size := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size",""));
-            Bet_Section.Dry_Run := Ini.Get_Value(Ini.Get_Section_Name(i),"dry_run", True);
+--            Bet_Section.Dry_Run := Ini.Get_Value(Ini.Get_Section_Name(i),"dry_run", True);
             Bet_Section.Lay_Exit_Early := Ini.Get_Value(Ini.Get_Section_Name(i),"lay_exit_early", False);
             Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
             Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
@@ -128,8 +126,7 @@ package body Bot_Config is
             Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners",""));
             Bet_Section.Powerdays := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"powerdays",0));
 
-            --from system:
-             Bet_Section.Mode := Cfg.System_Section.Mode ;
+            Bet_Section.Bet_Mode := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
 
 --            Bet_Section.Animal := Get_Animal(Ini.Get_Section_Name(i),"animal",Horse);
 --            Bet_Section.Bet_Type := Get_Bet_Type(Ini.Get_Section_Name(i),"bet_type",Back);
@@ -231,7 +228,7 @@ package body Bot_Config is
             end loop;
             
             Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
-
+            
             declare
               Days : String := Ini.Get_Value(Ini.Get_Section_Name(i),"allowed_days","al");
               Day  : String(1..2) := (others => ' ');
@@ -350,7 +347,7 @@ package body Bot_Config is
            "<Bot_Script>" & To_String(Cfg.System_Section.Bot_Script) & "</Bot_Script>" &
            "<Bot_Home>" & To_String(Cfg.System_Section.Bot_Home) & "</Bot_Home>" &
            "<Daemonize>" & Cfg.System_Section.Daemonize'Img & "</Daemonize>" &
-           "<Mode>" & Cfg.System_Section.Mode'Img & "</Mode>" &
+           "<Bot_Mode>" & Cfg.System_Section.Bot_Mode'Img & "</Bot_Mode>" &
          "</System>" &
          "<Global>" &
            "<Delay_Between_Turns_Bad_Funding>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns_Bad_Funding) & "</Delay_Between_Turns_Bad_Funding>" &
@@ -374,7 +371,7 @@ package body Bot_Config is
                "<Min_Lay_Price>" & F8_Image(Float_8(Bet_Section.Min_Lay_Price)) & "</Min_Lay_Price>" &
                "<Favorite_By>" & F8_Image(Float_8(Bet_Section.Favorite_By)) & "</Favorite_By>" &
                "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" &
-               "<Dry_Run>" & Bet_Section.Dry_Run'Img & "</Dry_Run>" &
+               "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" &
                "<Lay_Exit_Early>" & Bet_Section.Lay_Exit_Early'Img & "</Lay_Exit_Early>" &
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" &
