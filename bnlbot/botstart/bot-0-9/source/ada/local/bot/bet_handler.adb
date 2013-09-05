@@ -214,24 +214,27 @@ package body Bet_Handler is
     end if;
     
     Bet.Calculate_History;
-    
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 0); -- reference bet
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 107);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 207);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 307);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 114);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 214);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 314);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 121);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 221);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 321);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 128);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 228);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 328);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 135);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 235);
-    Bet.Do_Try(A_Token => A_Token, Powerdays => 335);
-
+    case Bet.Bot_Cfg.Mode is
+      when Simulation =>
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 0); -- reference bet
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 107);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 207);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 307);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 114);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 214);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 314);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 121);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 221);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 321);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 128);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 228);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 328);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 135);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 235);
+        Bet.Do_Try(A_Token => A_Token, Powerdays => 335);
+      when Real =>  
+        Bet.Do_Try(A_Token => A_Token, Powerdays => Bet.Bot_Cfg.Powerdays);
+    end case;   
   end Try_Make_New_Bet;
     
   -------------------------------------------------------------------------------

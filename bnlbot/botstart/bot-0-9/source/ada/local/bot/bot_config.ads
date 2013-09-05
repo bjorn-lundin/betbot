@@ -49,6 +49,7 @@ package Bot_Config is
     Countries        : Unbounded_String       := Null_Unbounded_String ;
     Mode             : Mode_Type              := Real;    -- inherited from system section
     Allowed_Days     : Allowed_Days_Array     := (others => False);
+    Powerdays        : Integer_4              := 0;
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   
