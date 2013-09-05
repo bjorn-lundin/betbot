@@ -23,6 +23,7 @@ foreach Bet_Name $Bet_Name_List {
 
   foreach Powerday $Powerday_List {
     puts "<section xml:id=\'$Bet_Name\_$Powerday\'>"
+    puts "<title>$Powerday</title>"
     puts "<mediaobject>"
     puts "  <imageobject>"
     puts "    <imagedata fileref=\'../script/plot/$Bet_Name\-$Powerday.png\'"
@@ -34,19 +35,24 @@ foreach Bet_Name $Bet_Name_List {
 
     set query " select \
         count('a'), \
-        round(avg(b.profit)::numeric, 2) as avgprofit, \
-        round(sum(b.profit)::numeric, 2) as sumprofit, \
-        round(avg(b.price)::numeric, 2) as avgprice, \
-        round((sum(b.profit)/avg(b.price))::numeric, 2) as sumprofit_price, \
+        round(avg(b.profit)::numeric, 1) as avgprofit, \
+        round(sum(b.profit)::numeric, 0) as sumprofit, \
+        round(avg(b.price)::numeric, 1) as avgprice, \
+        round((sum(b.profit)/avg(b.price))::numeric, 0) as sumprofit_price, \
         min(b.startts)::date as mindate, \
         max(b.startts)::date as maxdate, \
         max(b.startts)::date - min(b.startts)::date  + 1 as days, \
-        round(count('a')/(max(b.startts)::date - min(b.startts)::date  + 1)::numeric,2) as betsperday, \
-        round((sum(profit)/(max(b.startts)::date - min(b.startts)::date  + 1))::numeric, 2) as profitperday, \
+        round(count('a')/(max(b.startts)::date - min(b.startts)::date  + 1)::numeric,1) as betsperday, \
+        round((sum(profit)/(max(b.startts)::date - min(b.startts)::date  + 1))::numeric, 0) as profitperday, \
         b.betmode, \
         e.countrycode, \
         b.powerdays, \
-        b.betname \
+        b.betname, \
+        case \
+          when b.betname like '%LAY%' then round((sum(b.profit)/(avg(b.size)* (avg(b.price) -1)))::numeric, 0) \
+          else round((sum(b.profit)/avg(b.size))::numeric, 0) \
+        end as riskratio ,  \
+        avg(b.size) as avg_size \
       from \
         abets b, amarkets m, aevents e \
       where \
@@ -73,19 +79,18 @@ foreach Bet_Name $Bet_Name_List {
         lappend Tuples [pg_result $res -getTuple $i]
     }
     if { $ntups == 0 } {
-       set Tuples [ list "0 0 0 0 - - 0 0 0 0"]
+       set Tuples [ list "0 0 0 0 0 - - 0 0 0 0"]
     }
 
     pg_result $res -clear
 
     puts "<table><title>Interesting facts about $Bet_Name with powerday : $Powerday</title>"
-    puts "<tgroup cols=\"11\">"
-    puts "<thead><row><entry>Mode</entry><entry>Count</entry><entry>Avg Profit</entry><entry>Sum Profit</entry><entry>Avg Price</entry>"
-    puts "<entry>sum(Profit)/avg(Price)</entry><entry>Min Date</entry><entry>Max date</entry><entry>Num Days</entry>"
+    puts "<tgroup cols=\"12\">"
+    puts "<thead><row><entry>Mode</entry><entry>Profit/ Risk</entry><entry>Count</entry><entry>avg(Profit)</entry><entry>sum(Profit)</entry><entry>avg(Price)</entry>"
+    puts "<entry>sum(Profit)/ avg(Price)</entry><entry>min(Date)</entry><entry>max(Date)</entry><entry>num(Days)</entry>"
     puts "<entry>Bets/Day</entry><entry>Profit/Day</entry></row></thead><tbody>"
 
     foreach Tuple $Tuples {
-
       set Mode [lindex $Tuple 10]
       set Smode {}
       switch $Mode {
@@ -94,8 +99,7 @@ foreach Bet_Name $Bet_Name_List {
          4 {set Smode "ref"}
         default {set Smode "unknown $Mode"}
       }
-
-      puts "<row><entry>$Smode</entry><entry>[lindex $Tuple 0]</entry> <entry>[lindex $Tuple 1]</entry>"
+      puts "<row><entry>$Smode</entry><entry>[lindex $Tuple 14]</entry><entry>[lindex $Tuple 0]</entry> <entry>[lindex $Tuple 1]</entry>"
       puts "<entry>[lindex $Tuple 2]</entry><entry>[lindex $Tuple 3]</entry> <entry>[lindex $Tuple 4]</entry>"
       puts "<entry>[lindex $Tuple 5]</entry><entry>[lindex $Tuple 6]</entry> <entry>[lindex $Tuple 7]</entry>"
       puts "<entry>[lindex $Tuple 8]</entry><entry>[lindex $Tuple 9]</entry></row>"
@@ -104,7 +108,7 @@ foreach Bet_Name $Bet_Name_List {
 
     # how is the income spread across weekdays?
     set query " select \
-        round(sum(b.profit)::numeric, 2) as sumprofit, \
+        round(sum(b.profit)::numeric, 0) as sumprofit, \
         b.powerdays, \
         b.betmode, \
         b.betname, \
@@ -167,7 +171,6 @@ foreach Bet_Name $Bet_Name_List {
     }
 
 
-
     foreach Tuple $Tuples {
       set Betmode [lindex $Tuple 2]
       set Weekday [lindex $Tuple 4]
@@ -209,6 +212,7 @@ foreach Bet_Name $Bet_Name_List {
     puts "</tbody></tgroup></table>"
 
     puts "</section>"
+    puts "<?hard-pagebreak?>"
   }
   puts "</chapter>"
   pg_disconnect $::conn

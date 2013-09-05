@@ -27,4 +27,5 @@ export BOT_TARGET=$BOT_ROOT/target
 export BOT_CONFIG=$BOT_ROOT/config
 export BOT_SCRIPT=$BOT_ROOT/script
 export BOT_SOURCE=$BOT_ROOT/source
+export BOT_DOC=$BOT_ROOT/docbook
 

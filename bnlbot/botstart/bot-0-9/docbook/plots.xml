@@ -3,21 +3,77 @@
     <title>The Plots</title>
     <para>
       The plots are presented in powerdays order,
-      where powerday is simply a power and a range of days. 
-      The plots has 4 curves, the oranges is the untouched/pristine. This is what would happen if we betted 
+      where powerday is simply a power and a range of days.
+      The plots has 4 curves, the oranges is the untouched/pristine. This is what would happen if we betted
       as the betrules are, all the time, no care taken for daily profit or loss.
       The green one honors the daliy profit and losses.
       The red is the history lines, which is where the powerdays come into play.
       Given a number of days in the past, we summarize the profit for that day
       and divide it with how many days ago it was. So 107 means power of 1, for 7 days.
       S7/7 + S6/6 ... S1/1 where 1 was yesterday. The power factor comes into play in the denominator.
-      328 means S28/cubicroot(28) + S27/cubicroot(27) ... S1/cubicroot(1).       
-      221 means S21/squareroot(21) + S20/squareroot(20) ... S1/squareroot(1). 
-      
+      328 means S28/cubicroot(28) + S27/cubicroot(27) ... S1/cubicroot(1).
+      221 means S21/squareroot(21) + S20/squareroot(20) ... S1/squareroot(1).
+
       If this sum >= 0.0 then we bet honoring both history and daily profit and loss, and this is the blue curve.
-    </para> 
+    </para>
     <para>
     It is interesting to note fluctuations in profit over weekdays. Some bets are great Thursdays, and horrible Fridays.
-    Parameter for allowing certain weekdays introduced 2013-08-31.
-    </para> 
+    Parameter for allowing certain weekdays introduced 2013-08-31. The plots here have been rerun with
+    weekday with losses disabled. There are no bets on those days, hence the 0:s in the tables.
+    </para>
+
+    <para>
+    Each plot is presented with two tables. The first one is misc info about the bets. An interesting key figure
+    is profit/risk.
+
+    <procedure><title>Profit/Risk calculation I</title>
+      <step>
+        <para>
+          For the bettype, summarize the profit
+        </para>
+      </step>
+      <step>
+        <para>
+          Divide the profit with the average price
+        </para>
+      </step>
+    </procedure>
+
+    This has the advantage of being simple. But it is only ok for lay bets.
+    The average price for back bets does not mirror the risk taken.
+    We need another way
+
+    <procedure><title>Profit/Risk calculation II</title>
+      <step>
+        <para>
+          For the bettype, summarize the profit
+        </para>
+      </step>
+      <step>
+
+        <substeps>
+           <step>
+             <para>
+               if the type is lay, divide the profit with average price -1
+             </para>
+          </step>
+           <step>
+             <para>
+               if the type is back, divide the profit with 1
+             </para>
+          </step>
+        </substeps>
+      </step>
+    </procedure>
+      We then mirror the actual risk we put at stake for each bet.
+    </para>
+
+    <para>
+      This id called Profit/Risk
+
+      The plots are ordered by best Profit/Risk ratio, where a high value is good, that is the bettype with the highest profit/risk ratio first.
+      This only orders the bet types. Within a bettype, the order is according to powerdays.
+    </para>
+
+
 </chapter>

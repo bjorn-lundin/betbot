@@ -1,26 +1,48 @@
 <?xml version='1.0' encoding='iso8859-1' ?>
 <book xmlns='http://docbook.org/ns/docbook'
       xmlns:xi='http://www.w3.org/2001/XInclude' version='5.0'>
-  <title>bnl bot reports</title>
+  <title>bnl-bot reports</title>
   <info>
     <author>
       <firstname>Björn</firstname>
       <surname>Lundin</surname>
     </author>
     <date>August 27, 2013</date>
+    <copyright>
+       <year>2013</year>
+       <holder>Björntjänst</holder>
+    </copyright>
+
+    <revhistory>
+
+      <revision>
+        <revnumber>0.1</revnumber>
+        <date>2013-08-27</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Initial version</revremark>
+      </revision>
+
+      <revision>
+        <revnumber>0.11</revnumber>
+        <date>2013-09-02</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>More metatags, introduced Profit/Risk as most important KPI</revremark>
+      </revision>
+
+    </revhistory>
   </info>
-  
+
   <xi:include href='preface.xml'/>
   <xi:include href='inifile.xml'/>
   <xi:include href='plots.xml'/>
-  <xi:include href='horses_plc_lay4_ie.chapter'/>
-  <xi:include href='horses_win_lay5_ie.chapter'/>
-  <xi:include href='horses_plc_lay4_gb.chapter'/>
-  <xi:include href='horses_win_lay4_gb.chapter'/>
   <xi:include href='horses_win_fav2_gb.chapter'/>
   <xi:include href='horses_win_fav5_ie.chapter'/>
   <xi:include href='horses_win_fav4_ie.chapter'/>
-  <xi:include href='database_description.xml'/>     
+  <xi:include href='horses_plc_lay4_ie.chapter'/>
+  <xi:include href='horses_plc_lay4_gb.chapter'/>
+  <xi:include href='horses_win_lay5_ie.chapter'/>
+  <xi:include href='horses_win_lay4_gb.chapter'/>
+  <xi:include href='database_description.xml'/>
 
 </book>
 

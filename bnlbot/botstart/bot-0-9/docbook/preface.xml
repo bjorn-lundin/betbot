@@ -3,12 +3,14 @@
     <title>Report over simulation of different bets on betfair</title>
     <para>
       The purpose of this report is to see the outcome of simulations in a simple way.
-      The simulations is of data collected/retrieved from Betfair and treats mainly 
+      The simulations is of data collected/retrieved from Betfair and treats mainly
       Horse racing, winner and place markets.
+      The bets where placed by <trademark>bnl-bot</trademark>.
+
     </para>
     <para>
      This is the best-of version, the bets are the ones with the highest profit/avg(price) quote.
      This measurement is beleived to be a key indicator of the strength of the strategy.
      A high ratio means high profit and/or low risk.
-    </para>    
+    </para>
 </chapter>
