@@ -97,7 +97,8 @@ package body Bot_Config is
       Cfg.System_Section.Bot_Home   := To_Unbounded_String(EV.Value("BOT_HOME"));
       Cfg.System_Section.Daemonize  := Ba_Daemon;
 
-      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(1..3) = "sim" then
+--      Log("Read","Cfg.System_Section.Bot_Mode: '" &  Sa_Par_Mode.all & "'" &  Sa_Par_Mode.all'first'img &  Sa_Par_Mode.all'last'img);
+      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(Sa_Par_Mode.all'first .. Sa_Par_Mode.all'first + 3 -1) = "sim" then
         Cfg.System_Section.Bot_Mode  := Simulation;  -- real by default
       end if;
 
@@ -219,16 +220,16 @@ package body Bot_Config is
               Bet_Section.Market_Type := Winner;
               Was_Set(Market) := True;
             end if;
-            
+
             for i in Was_Set'range loop
               if not Was_Set(i) then
                 raise Bad_Data with I'Img & " was not set";
               end if;
               Was_Set(i) := False; --reset
             end loop;
-            
+
             Bet_Section.Countries := To_Unbounded_String(Ini.Get_Value(Ini.Get_Section_Name(i),"countries",""));
-            
+
             declare
               Days : String := Ini.Get_Value(Ini.Get_Section_Name(i),"allowed_days","al");
               Day  : String(1..2) := (others => ' ');
