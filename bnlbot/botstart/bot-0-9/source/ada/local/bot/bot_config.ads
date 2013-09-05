@@ -38,7 +38,6 @@ package Bot_Config is
     Bet_Size         : Bet_Size_Type          := 0.0;
     Enabled          : Boolean                := False;
     Lay_Exit_Early   : Boolean                := False;
-    Dry_Run          : Boolean                := True;
     Allow_In_Play    : Boolean                := False;
     Animal           : Animal_Type            := Horse;     
     Bet_Type         : Bet_Type_Type          := Back;
@@ -47,7 +46,7 @@ package Bot_Config is
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
-    Mode             : Mode_Type              := Real;    -- inherited from system section
+    Bet_Mode         : Bet_Mode_Type          := Dry;    
     Allowed_Days     : Allowed_Days_Array     := (others => False);
     Powerdays        : Integer_4              := 0;
   end record;  
@@ -62,7 +61,7 @@ package Bot_Config is
     Bot_Script : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Bot_Home   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Daemonize  : Boolean          := True;
-    Mode       : Mode_Type        := Real;
+    Bot_Mode   : Mode_Type        := Real;
   end record;  
     
     
