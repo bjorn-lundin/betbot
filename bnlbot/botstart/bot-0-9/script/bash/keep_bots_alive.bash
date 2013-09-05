@@ -13,7 +13,7 @@
 
 TZ='Europe/Stockholm'
 export TZ
-
+export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash -ubnl -a no
 
@@ -70,7 +70,7 @@ export BOT_USER=$1
 #  export BOT_NAME=markets_fetcher
 #  $BOT_TARGET/bin/markets_fetcher --daemon
 #fi
-ps -ef | grep markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
+ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
 RESULT_MARKETS_FETCHER=$?
 if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
   echo "Started markets_fetcher"
@@ -99,12 +99,12 @@ fi
 #fi
 
 
-ps -ef | grep bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
+ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
 RESULT_BOT=$?
 if [ $RESULT_BOT -eq 1 ] ; then
   echo "Started bot"
   export BOT_NAME=bot
-  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
+  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
 fi
 
 ########### saldo_fetcher ############
@@ -115,7 +115,7 @@ fi
 #  $BOT_TARGET/bin/saldo_fetcher --daemon
 #fi
 
-ps -ef | grep saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
+ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
 if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
   echo "Started saldo_fetcher"
@@ -149,19 +149,20 @@ if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
 fi
 
 export BOT_NAME=winners_fetcher
-$BOT_TARGET/bin/winners_fetcher --daemon
+$BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
 ############ winners_fetcher stop #########
 
 }
 
 
 
-USER_LIST=$(ls $BOT_START/user)
+#USER_LIST=$(ls $BOT_START/user)
 
+USER_LIST="bnl"
 for USER in $USER_LIST ; do
-
+#  echo "start $USER"
   Check_Bots_For_User $USER
-  
+#  echo "stop $USER"
 done
 
 

@@ -124,6 +124,7 @@ package body Bot_Config is
             Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners",""));
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
             Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners",""));
+            Bet_Section.Powerdays := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"powerdays",0));
 
             --from system:
              Bet_Section.Mode := Cfg.System_Section.Mode ;
