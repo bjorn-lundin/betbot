@@ -1505,7 +1505,7 @@ package body Bet_Handler is
         
         Instruction.Set_Field (Field_Name => "limitOrder",      Field      => Limit_Order);                            
         Instruction.Set_Field (Field_Name => "orderType",       Field      => "LIMIT");
-        Instruction.Set_Field (Field_Name => "side",            Field      => Bet.Bot_Cfg.Bet_Type'Img);
+        Instruction.Set_Field (Field_Name => "side",            Field      => General_Routines.Trim(Side));
         Instruction.Set_Field (Field_Name => "handicap",        Field      => 0);
         Instruction.Set_Field (Field_Name => "selectionId",     Field      => Integer(Bet.Bet_Info.Selection_Id));
         
@@ -1587,6 +1587,7 @@ package body Bet_Handler is
             --            },
             --            "message": "ANGX-0003"
             --        }
+            Log(Me & "Make_Bet - Error",Aws.Response.Message_Body(Answer_Place_Orders));
             Error := Reply_Place_Orders.Get("error");
             if Error.Has_Field("code") then
 --              Code := Error.Get("code");
