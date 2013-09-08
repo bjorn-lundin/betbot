@@ -4,7 +4,7 @@ with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Token;
 with General_Routines; use General_Routines;
 with Bot_Config;
-with Lock; 
+with Lock;
 --with Text_io;
 with Bot_Types;
 with Sql;
@@ -15,42 +15,44 @@ with Process_Io;
 with Core_Messages;
 with Ada.Environment_Variables;
 with Bet_Handler;
+with Bot_Svn_Info;
 
 procedure Bot is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 120.0; 
+  Timeout  : Duration := 120.0;
   My_Token : Token.Token_Type;
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
-  Me       : constant String := "Main";  
+  Me       : constant String := "Main";
   use type Bot_Types.Mode_Type;
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Bot_Config.Config.Read; -- even from cmdline
-  
+
   if Bot_Config.Config.System_Section.Daemonize then
     Posix.Daemonize;
   end if;
 
-   --must take lock AFTER becoming a daemon ... 
+   --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
-  
+
   Log(Bot_Config.Config.To_String);
-  
+  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
+
   case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
        Log(Me, "Login betfair");
        My_Token.Login(
          Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
          Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
-         Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
+         Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
          Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
        );
        Log(Me, "Login betfair done");
     when Bot_Types.Simulation => null;
   end case;
-   
+
   Log(Me, "Connect Db");
   Sql.Connect
         (Host     => To_String(Bot_Config.Config.Database_Section.Host),
@@ -59,7 +61,7 @@ begin
          Login    => To_String(Bot_Config.Config.Database_Section.Username),
          Password => To_String(Bot_Config.Config.Database_Section.Password));
   Log(Me, "db Connected");
-         
+
   Log(Me, "Start main loop");
   Main_Loop : loop
     begin
@@ -67,17 +69,17 @@ begin
       Process_Io.Receive(Msg, Timeout);
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
       case Process_Io.Identity(Msg) is
-        when Core_Messages.Exit_Message                  => 
+        when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
         -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
         when Core_Messages.Read_Config_Message           =>
-          Bot_Config.Re_Read_Config ; 
-        when Bot_Messages.Market_Notification_Message    => 
+          Bot_Config.Re_Read_Config ;
+        when Bot_Messages.Market_Notification_Message    =>
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
           Bet_Handler.Check_Bets;
-        when Bot_Messages.New_Winners_Arrived_Notification_Message => 
+        when Bot_Messages.New_Winners_Arrived_Notification_Message =>
           Bet_Handler.Check_Bets;
-        when others => 
+        when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
@@ -89,14 +91,14 @@ begin
               My_Token.Login(
                 Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
                 Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
-                Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),  
+                Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
                 Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
               );
             end if;
           when Bot_Types.Simulation => null;
         end case;
-        Bet_Handler.Check_Bets; 
-    end;    
+        Bet_Handler.Check_Bets;
+    end;
   end loop Main_Loop;
   Log(Me, "Close Db");
   Sql.Close_Session;
@@ -104,7 +106,7 @@ begin
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
 exception
-  when Lock.Lock_Error => 
+  when Lock.Lock_Error =>
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate

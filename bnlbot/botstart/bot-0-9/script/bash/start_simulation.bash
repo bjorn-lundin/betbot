@@ -28,19 +28,19 @@ SIMULATORS="horse_win_gb \
             horse_plc_za \
             horse_plc_xx \
             hound_win_xx \
-            hound_plc_xx"           
-            
+            hound_plc_xx"
+
 for SIM in $SIMULATORS ; do
   echo "starting $SIM"
   export BOT_NAME=$SIM && $BOT_TARGET/bin/bot --dispatch=$SIM --user=$BOT_USER --mode=simulation --daemon
-#  sleep 1 
+#  sleep 1
 done
 
 export BOT_NAME=markets_sender
 echo "starting $BOT_NAME"
 
 #$BOT_TARGET/bin/markets_sender --marketid=$MARKETID --horses --hounds
-$BOT_TARGET/bin/markets_sender --horses --marketid=$MARKETID
+$BOT_TARGET/bin/markets_sender --hounds --marketid=$MARKETID
 
 
 
