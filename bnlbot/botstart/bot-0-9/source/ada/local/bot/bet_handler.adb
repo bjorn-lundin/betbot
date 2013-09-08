@@ -1479,13 +1479,14 @@ package body Bet_Handler is
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
         Pip.Init(Price);
         Price := Pip.Previous_Price;
+        Move("BACK", Side);
       when Lay | Lay1 .. Lay9 =>
         Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
         Pip.Init(Price);
         Price := Pip.Next_Price;
+        Move("LAY", Side);
     end case;
     
-    Move( Bet.Bot_Cfg.Bet_Type'Img, Side);
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
     
