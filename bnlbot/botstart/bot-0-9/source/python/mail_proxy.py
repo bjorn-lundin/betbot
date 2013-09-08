@@ -9,9 +9,12 @@ from boto import ses
 
 class Mailer_ses(object):
     """ The Funding Object """
+    avail_balance = None
+    exposure = None
+    
     def __init__ (self,avail,expo):
-      avail_balance = avail
-      exposure = expo  
+        self.avail_balance = avail
+        self.exposure = expo
 
     def mail_saldo(self) :
         subject = 'BetBot Saldo Report'
