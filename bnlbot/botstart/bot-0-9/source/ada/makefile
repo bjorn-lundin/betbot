@@ -13,11 +13,12 @@ OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
 OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
 LOG_DIR_BOT     := $(BOT_TARGET)/log
+TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 
 
 .PHONY : json_test adabot tables
 
-all: tables adabot 
+all: tables adabot
 #/etc/logrotate.d/bnlbot
 
 
@@ -28,10 +29,10 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_anonrunners.ads $(ST)/table_abalances.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryrunners.ads \
          $(ST)/table_dryresults.ads  $(ST)/table_abethistory.ads \
-         
+
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
-    
+
 $(LOG_DIR_BOT) :
 	mkdir -p $(LOG_DIR_BOT)
 
@@ -41,9 +42,12 @@ $(OBJECT_DIR_BOT) :
 $(OBJECT_DIR_JSON) :
 	mkdir -p $(OBJECT_DIR_JSON)
 
-adabot : $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
+$(TARGET_ADA_INFO_SPEC):
+	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
+
+adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
 	gnatmake -P adabot
-    
+
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
 	cd $(ST) && gnatchop -w -gnat05 table_history.ada
@@ -80,7 +84,7 @@ $(ST)/table_aprices.ads : $(BOT_CONFIG)/repository/tables/table_aprices.xml
 	cd $(ST) && rm table_aprices.ada
 	$(TP) -p aprices > $(ST)/aprices.sql
 
-    
+
 $(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
 	$(TP) -t awinners > $(ST)/table_awinners.ada
 	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada
@@ -98,7 +102,7 @@ $(ST)/table_abets.ads : $(BOT_CONFIG)/repository/tables/table_abets.xml
 	cd $(ST) && gnatchop -w -gnat05 table_abets.ada
 	cd $(ST) && rm table_abets.ada
 	$(TP) -p abets > $(ST)/abets.sql
-    
+
 $(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
 	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
 	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
@@ -135,7 +139,7 @@ $(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.
 	cd $(ST) && rm table_abethistory.ada
 	$(TP) -p abethistory > $(ST)/abethistory.sql
 
-#/etc/logrotate.d/bnlbot: 
+#/etc/logrotate.d/bnlbot:
 #	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
 #       size 2M \
 #       rotate 10 \
@@ -146,7 +150,7 @@ $(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.
 #       missingok \
 #       su bnl bnl \
 #    }"
-    
+
 clean:
 	gnatclean -P adabot
 	gnatclean -P global

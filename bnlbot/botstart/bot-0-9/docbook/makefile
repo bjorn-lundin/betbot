@@ -14,6 +14,13 @@ SOURCES := report.xml preface.xml plots.xml database_description.xml \
            horses_win_fav2_gb.chapter \
            horses_win_fav5_ie.chapter \
            horses_win_fav4_ie.chapter \
+           hounds_plc_lay6_gb.chapter \
+           hounds_win_fav3_gb.chapter \
+           hounds_win_fav5_gb.chapter \
+           hounds_win_fav4_gb.chapter \
+           hounds_plc_fav3_gb.chapter \
+           hounds_plc_fav5_gb.chapter \
+           hounds_plc_lay3_gb.chapter \
     
 
 all : report.html report.pdf

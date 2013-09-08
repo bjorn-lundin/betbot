@@ -29,6 +29,13 @@
         <revremark>More metatags, introduced Profit/Risk as most important KPI</revremark>
       </revision>
 
+      <revision>
+        <revnumber>0.12</revnumber>
+        <date>2013-09-06</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Added Grey hounds</revremark>
+      </revision>
+      
     </revhistory>
   </info>
 
@@ -42,6 +49,15 @@
   <xi:include href='horses_plc_lay4_gb.chapter'/>
   <xi:include href='horses_win_lay5_ie.chapter'/>
   <xi:include href='horses_win_lay4_gb.chapter'/>
+  
+  <xi:include href='hounds_plc_lay6_gb.chapter'/>
+  <xi:include href='hounds_win_fav3_gb.chapter'/>
+  <xi:include href='hounds_win_fav5_gb.chapter'/>
+  <xi:include href='hounds_win_fav4_gb.chapter'/>
+  <xi:include href='hounds_plc_fav3_gb.chapter'/>
+  <xi:include href='hounds_plc_fav5_gb.chapter'/>
+  <xi:include href='hounds_plc_lay3_gb.chapter'/>
+  
   <xi:include href='database_description.xml'/>
 
 </book>

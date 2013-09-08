@@ -42,14 +42,23 @@ SALDO := 0
 POWERDAYSLIST := 107 207 307 114 214 314 121 221 321 128 228 328 135 235 335
 
 
-BET_NAMES := horses_plc_lay4_ie \
-             horses_win_lay5_ie \
-             horses_plc_lay4_gb \
-             horses_win_lay4_gb \
-             horses_win_lay4_ie \
-             horses_win_fav2_gb \
-             horses_win_fav5_ie \
-             horses_win_fav4_ie \
+#BET_NAMES := horses_plc_lay4_ie \
+#             horses_win_lay5_ie \
+#             horses_plc_lay4_gb \
+#             horses_win_lay4_gb \
+#             horses_win_lay4_ie \
+#             horses_win_fav2_gb \
+#             horses_win_fav5_ie \
+#             horses_win_fav4_ie \
+             
+BET_NAMES := \
+     hounds_plc_lay6_gb \
+     hounds_win_fav3_gb \
+     hounds_win_fav5_gb \
+     hounds_win_fav4_gb \
+     hounds_plc_fav3_gb \
+     hounds_plc_fav5_gb \
+     hounds_plc_lay3_gb \
 
 BET_NAMES_WITH_POWER := $(foreach i,$(POWERDAYSLIST), $(foreach j,$(BET_NAMES), $(j)-$(i)))
 
