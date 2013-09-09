@@ -71,7 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationResourceManager.vb" />
-    <Compile Include="IMenuItemHandler.vb" />
+    <Compile Include="IMenuHandler.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

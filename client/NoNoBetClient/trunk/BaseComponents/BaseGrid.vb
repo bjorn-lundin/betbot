@@ -7,7 +7,7 @@ Imports NoNoBetResources.ApplicationResourceManager
 Public Class BaseGrid
   Inherits DataGridView
 
-  Private Shared _MenuHandler As IMenuItemHandler = Nothing
+  Private Shared _MenuHandler As IMenuHandler = Nothing
 
   Private _Sql As String = Nothing
   Private _Id As String = Nothing
@@ -15,20 +15,23 @@ Public Class BaseGrid
   Private _ResourceManager As ApplicationResourceManager
 
   Private Sub InitGrid()
-    If (_MenuHandler Is Nothing) Then
-      '_MenuHandler = New BaseGridMenuHandler
-      LoadMenuItemHandler()
+    If (Not Me.DesignMode) Then
+      If (_MenuHandler Is Nothing) Then
+        '_MenuHandler = New BaseGridMenuHandler
+        LoadMenuHandler()
+      End If
+      AddHandler Me.Rows.CollectionChanged, AddressOf RowCollectionChanged
     End If
-
-    AddHandler Me.Rows.CollectionChanged, AddressOf RowCollectionChanged
   End Sub
 
-  Public Sub LoadMenuItemHandler()
-    Dim fileName As String = IO.Path.Combine(Application.StartupPath, "MenuHandlers.dll")
-    Dim a As Assembly = Assembly.LoadFile(fileName)
-    Dim t As Type = a.GetType("MenuHandlers.BaseGridMenuHandler")
-    Dim o As Object = Activator.CreateInstance(t)
-    _MenuHandler = CType(o, IMenuItemHandler)
+  Public Sub LoadMenuHandler()
+    If (Not Me.DesignMode) Then
+      Dim fileName As String = IO.Path.Combine(Application.StartupPath, "MenuHandlers.dll")
+      Dim a As Assembly = Assembly.LoadFile(fileName)
+      Dim t As Type = a.GetType("MenuHandlers.BaseGridMenuHandler")
+      Dim o As Object = Activator.CreateInstance(t)
+      _MenuHandler = CType(o, IMenuHandler)
+    End If
   End Sub
 
   Public Sub New()

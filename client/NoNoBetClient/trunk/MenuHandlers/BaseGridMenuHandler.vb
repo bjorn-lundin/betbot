@@ -4,13 +4,13 @@ Imports NoNoBetResources.ApplicationResourceManager
 Imports NoNoBetComponents
 
 Public Class BaseGridMenuHandler
-  Implements IMenuItemHandler
+  Implements IMenuHandler
 
   'Public _Item As ToolStripMenuItem = New ToolStripMenuItem
 
   Private _ResourceManager As ApplicationResourceManager
 
-  Public Property ResourceManager() As ApplicationResourceManager Implements IMenuItemHandler.ResourceManager
+  Public Property ResourceManager() As ApplicationResourceManager Implements IMenuHandler.ResourceManager
     Get
       Return _ResourceManager
     End Get
@@ -20,7 +20,7 @@ Public Class BaseGridMenuHandler
   End Property
 
 
-  Public Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuItemHandler.MenuCreate
+  Public Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuHandler.MenuCreate
     Dim m As ContextMenuStrip = New ContextMenuStrip
     m.Name = menuName
     m.Text = menuName
@@ -54,7 +54,7 @@ Public Class BaseGridMenuHandler
     MenuItemClick(item)
   End Sub
 
-  Public Function MenuItemClick(item As System.Windows.Forms.ToolStripMenuItem) As Boolean Implements NoNoBetResources.IMenuItemHandler.MenuItemClick
+  Public Function MenuItemClick(item As System.Windows.Forms.ToolStripMenuItem) As Boolean Implements NoNoBetResources.IMenuHandler.MenuItemClick
     Dim menu As ContextMenuStrip = CType(item.Tag, ContextMenuStrip)
     Dim gridRow As DataGridViewRow = CType(menu.Tag, DataGridViewRow)
 
@@ -66,6 +66,7 @@ Public Class BaseGridMenuHandler
         Dim horseId As Integer = ApplicationResourceManager.GetRowColumnIntValue(gridRow, "horse_id")
         Dim horseResult As HorseResultsChart = New HorseResultsChart
         horseResult.StartForm(True, horseId, _ResourceManager)
+        Return True
       Case "itemDo"
         'MessageBox.Show("Doing something...")
         Dim chartFrm As ChartTest = New ChartTest
@@ -81,7 +82,7 @@ Public Class BaseGridMenuHandler
 
   End Function
 
-  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, gridRow As System.Windows.Forms.DataGridViewRow, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuItemHandler.MenuShow
+  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, gridRow As System.Windows.Forms.DataGridViewRow, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuHandler.MenuShow
     menu.Tag = gridRow
     menu.Show(pos)
     Return True

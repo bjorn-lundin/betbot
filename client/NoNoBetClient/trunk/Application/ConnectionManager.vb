@@ -159,6 +159,25 @@ Public Class ConnectionManager
     _Translator = New Translator
   End Sub
 
+  Public Class StartApplicationEventArgs
+    Inherits System.EventArgs
+
+    Private _ResourceMan As NoNoBetResources.ApplicationResourceManager
+
+    Public Property ResourceManager As NoNoBetResources.ApplicationResourceManager
+      Get
+        Return _ResourceMan
+      End Get
+      Set(value As NoNoBetResources.ApplicationResourceManager)
+        _ResourceMan = value
+      End Set
+    End Property
+
+    Public Sub New()
+      MyBase.New()
+    End Sub
+  End Class
+
 #Region "Button handling"
 
   ''' <summary>
@@ -195,10 +214,16 @@ Public Class ConnectionManager
 
     If IsListItemConnectionOpen(item) Then
       Dim resourceMan As ApplicationResourceManager = New ApplicationResourceManager
+      Dim startAppEventArgs As StartApplicationEventArgs = New StartApplicationEventArgs
+
       resourceMan.Translator = _Translator
       resourceMan.DbConnection = CType(item.Tag, DbConnection)
-      Dim rSelector As RacedaySelector = New RacedaySelector(resourceMan)
-      rSelector.StartForm(False)
+
+      startAppEventArgs.ResourceManager = resourceMan
+      RaiseEvent StartApplication(Me, startAppEventArgs)
+
+      'Dim rSelector As RacedaySelector = New RacedaySelector(resourceMan)
+      'rSelector.StartForm(False)
     End If
   End Sub
 
@@ -216,6 +241,8 @@ Public Class ConnectionManager
   End Sub
 
 #End Region
+
+  Public Event StartApplication(sender As Object, e As StartApplicationEventArgs)
 
   Private Function CreateItem(dbConStr As DbConnectionString) As ListViewItem
     Dim item As ListViewItem
