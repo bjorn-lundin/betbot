@@ -165,11 +165,15 @@ Public Class HorseResultsChart
     '_ExpectedSeries.MarkerSize = 10
     '_ResultSeries.MarkerSize = 10
 
+    'horseChart.ChartAreas(0).AxisX.LabelStyle.Format = "MM-dd"
 
-    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffset = 1
-    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffsetType = DateTimeIntervalType.Auto
+    'horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffset = 1
+    'orseChart.ChartAreas(0).AxisX.LabelStyle.IntervalOffsetType = DateTimeIntervalType.Auto
     'horseChart.ChartAreas(0).AxisX.LabelStyle.Interval = 2
-    horseChart.ChartAreas(0).AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Auto
+    'orseChart.ChartAreas(0).AxisX.LabelStyle.IntervalType = DateTimeIntervalType.Auto
+
+    horseChart.ChartAreas(0).AxisX.LabelStyle.Interval = 0
+    horseChart.ChartAreas(0).AxisY.Interval = 1
 
     'Axis titles
     horseChart.ChartAreas(0).AxisY.Title = "Placering"

@@ -37,9 +37,11 @@ Public Class MainForm
   End Sub
 
   Private Sub MainForm_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    Dim sql As String = "SELECT * FROM information_schema.tables WHERE information_schema.tables.table_schema = 'public'"
-    MyBase.FormTitle = "Main Form: " + MyBase.ResourceManager.DbConnection.ConnectionString.Name
-    TableGrid.SetReadOnlyMode()
-    TableGrid.ExecuteSql(MyBase.ResourceManager, sql)
+    If (Not Me.DesignMode) Then
+      Dim sql As String = "SELECT * FROM information_schema.tables WHERE information_schema.tables.table_schema = 'public'"
+      MyBase.FormTitle = "Main Form: " + MyBase.ResourceManager.DbConnection.ConnectionString.Name
+      TableGrid.SetReadOnlyMode()
+      TableGrid.ExecuteSql(MyBase.ResourceManager, sql)
+    End If
   End Sub
 End Class
