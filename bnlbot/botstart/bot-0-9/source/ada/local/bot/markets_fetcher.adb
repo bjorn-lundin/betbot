@@ -629,7 +629,6 @@ procedure Markets_Fetcher is
   ---------------------------------------------------------------------
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error, 
-     Code, 
      APINGException, 
      Data                      : JSON_Value := Create_Object;
   begin 
@@ -648,20 +647,21 @@ procedure Markets_Fetcher is
       --        }
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
-        Code := Error.Get("code");
         Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
   
-        if Code.Has_Field("data") then
-          Data := Code.Get("data");
+        if Error.Has_Field("data") then
+          Data := Error.Get("data");
           if Data.Has_Field("APINGException") then
             APINGException := Data.Get("APINGException");
             if APINGException.Has_Field("errorCode") then
               Log(Me, "APINGException.errorCode " & APINGException.Get("errorCode"));
-              if APINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
-                return True; -- exit main loop, let cron restart program
-              else
-                return True; -- exit main loop, let cron restart program
+              if APINGException.Has_Field("errorDetails") then
+                Log(Me, "APINGException.errorDetails " & APINGException.Get("errorDetails"));
               end if;
+              if Data.Has_Field("exceptionname") then
+                Log(Me, "exceptionname " & Data.Get("exceptionname"));
+              end if;
+              return True; -- exit main loop, let cron restart program
             else  
               raise No_Such_Field with "APINGException - errorCode";
             end if;          
@@ -669,7 +669,7 @@ procedure Markets_Fetcher is
             raise No_Such_Field with "Data - APINGException";
           end if;          
         else  
-          raise  No_Such_Field with "Code - data";
+          raise  No_Such_Field with "Error - data";
         end if;          
       else
         raise No_Such_Field with "Error - code";

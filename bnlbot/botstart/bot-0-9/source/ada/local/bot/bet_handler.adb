@@ -416,7 +416,7 @@ package body Bet_Handler is
             if Continue_Betting then
               Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Dry);
               if Bet.Enabled then
-                Log(Me & "Do_Try", "History_OK :" & History_OK'Img & " Powerdays:" & Powerdays'Img);
+                Log(Me & "Do_Try", "History_OK :" & History_OK'Img & " sum: " & General_Routines.F8_Image(Sum) &  " Powerdays:" & Powerdays'Img);
                 if History_OK then
                   case Bet.Bot_Cfg.Bet_Mode is
                     when Real => Bet.Make_Bet(A_Token => A_Token, Powerdays => Powerdays, Betmode => Real);
@@ -450,7 +450,7 @@ package body Bet_Handler is
     use General_Routines;
   begin
     Result := True;
-    Log(Me & "Check_Conditions_Fulfilled", "Bet.Bot_Cfg.Bet_Type: '" &  Bet.Bot_Cfg.Bet_Type'Img );
+    Log(Me & "Check_Conditions_Fulfilled", "Bet.Bot_Cfg.Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img );
 
     -- some sanity checks
     case Bet.Bet_Info.Event.Eventtypeid is
@@ -1516,6 +1516,8 @@ package body Bet_Handler is
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
 
+    Log(Me & "Make_Bet", "Side :" & Side & " Betmode: " & Betmode'Img);
+
     case Betmode is
       when Real =>
 
@@ -1630,6 +1632,9 @@ package body Bet_Handler is
                     else
                       Log(Me & "Make_Bet", "APINGException.errorDetails no details found :-(");
                     end if;
+                    if Data.Has_Field("exceptionname") then
+                     Log(Me, "exceptionname " & Data.Get("exceptionname"));
+                    end if;
                     raise Suicide with String'(APINGException.Get("errorCode")); -- exit main loop, let cron restart program
                   else
                     raise No_Such_Field with "APINGException - errorCode";
@@ -1638,7 +1643,7 @@ package body Bet_Handler is
                   raise No_Such_Field with "Data - APINGException";
                 end if;
               else
-                raise  No_Such_Field with "Code - data";
+                raise  No_Such_Field with "Error - data";
               end if;
             else
               raise No_Such_Field with "Error - code";
