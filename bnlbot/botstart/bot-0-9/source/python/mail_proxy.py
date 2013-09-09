@@ -4,7 +4,12 @@
 import socket
 import datetime
 import smtplib
-from boto import ses
+try:
+  from boto import ses
+except ImportError, e:
+    pass
+    
+import httplib
 
 
 class Mailer_ses(object):
@@ -23,6 +28,15 @@ class Mailer_ses(object):
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
         body += '\r\n sent from : ' + socket.gethostname()
+        # for amazon, get the instance id        
+        conn = httplib.HTTPConnection("169.254.169.254")
+        conn.request("GET", "/latest/meta-data/instance-id")
+        r1 = conn.getresponse()
+        data2 = "bad responce"
+        if r1.status == 200 :
+            data2 = r1.read()
+            
+        body += '\r\n instance : ' + data2
         self.do_mail(subject, body)
 
     def do_mail(self, subject, body) : 
@@ -99,12 +113,18 @@ def main():
         if not data: continue
         #got 'avail=available,expo=exposure'
         input=data.split(',')
-        avail  =input[0].split('=')[1]
-        expo  =input[1].split('=')[1]
+        avail = input[0].split('=')[1]
+        expo  = input[1].split('=')[1]
+        
+        host = socket.gethostname()
+        
 #        print 'input', input
-
-        m = Mailer_ses(avail,expo)
-#        m = Mailer_gmail(avail,expo)
+        # amazon hosts starts with 'ip' 
+        if host[:2] == 'ip' :
+            m = Mailer_ses(avail,expo)
+        else :  
+            m = Mailer_gmail(avail,expo)
+            
         m.mail_saldo()        
         conn.send("saldo is mailed")
         conn.close()

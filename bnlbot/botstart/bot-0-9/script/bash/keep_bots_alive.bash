@@ -52,10 +52,6 @@ fi
 
 
 
-
-#Kommer inte funka i multiuser!
-
-
 function Check_Bots_For_User () {
 
 export BOT_USER=$1
