@@ -12,6 +12,7 @@ where
   and STATUS = 'EXECUTION_COMPLETE'
   and betwon is not null
   and betname like '%HO%'
+  and betmode =2
 group by
   extract(week from betplaced),
   betname

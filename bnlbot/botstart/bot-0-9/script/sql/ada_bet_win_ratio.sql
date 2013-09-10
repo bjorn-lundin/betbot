@@ -11,6 +11,7 @@ where
   and b.betplaced::date >= (select CURRENT_DATE - interval '42 days')
   and b.betname like '%HO%'
   and betwon is not null
+  and betmode =2
 group by
   b.betname,
   b.betwon
