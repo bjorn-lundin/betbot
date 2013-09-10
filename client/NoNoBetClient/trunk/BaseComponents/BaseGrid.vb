@@ -260,7 +260,8 @@ Public Class BaseGrid
       If (_Menu IsNot Nothing) Then
         'Dim p As System.Drawing.Point = Me.PointToClient(e.Location)
         Dim p As System.Drawing.Point = Me.PointToScreen(e.Location)
-        _MenuHandler.MenuShow(_Menu, Me.CurrentRow, p)
+        _Menu.Tag = Me.CurrentRow
+        _MenuHandler.MenuShow(_Menu, p)
       End If
 
     End If
