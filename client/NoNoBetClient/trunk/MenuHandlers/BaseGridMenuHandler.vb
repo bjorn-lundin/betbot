@@ -82,8 +82,9 @@ Public Class BaseGridMenuHandler
 
   End Function
 
-  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, gridRow As System.Windows.Forms.DataGridViewRow, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuHandler.MenuShow
-    menu.Tag = gridRow
+  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuHandler.MenuShow
+    'Enable/Disable items
+    'menu.Items.Item("").Enabled = False
     menu.Show(pos)
     Return True
   End Function
