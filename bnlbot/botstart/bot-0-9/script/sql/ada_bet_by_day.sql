@@ -11,6 +11,7 @@ where
   betplaced::date > (select CURRENT_DATE - interval '42 days')
   and STATUS = 'EXECUTION_COMPLETE'
   and betwon is not null
+  and betmode =2
  and betname like '%HO%'
 group by
   betplaced::date,
