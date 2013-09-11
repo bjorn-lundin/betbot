@@ -255,16 +255,38 @@ Public Class BaseGrid
     If (e.Button = MouseButtons.Right) Then
       If (_Menu Is Nothing) Then
         _Menu = _MenuHandler.MenuCreate(_Id)
+        If (_Menu IsNot Nothing) Then
+          InitMenu(_Menu)
+        End If
       End If
 
       If (_Menu IsNot Nothing) Then
         'Dim p As System.Drawing.Point = Me.PointToClient(e.Location)
         Dim p As System.Drawing.Point = Me.PointToScreen(e.Location)
         _Menu.Tag = Me.CurrentRow
-        _MenuHandler.MenuShow(_Menu, p)
+        _MenuHandler.MenuBeforeShow(_Menu)
+        _Menu.Show(p)
       End If
 
     End If
+  End Sub
+
+  Private Sub InitMenu(menu As ContextMenuStrip)
+    For Each item As ToolStripMenuItem In menu.Items
+      AddHandler item.Click, AddressOf HandleMenuItemClick
+    Next
+  End Sub
+
+  ''' <summary>
+  ''' Handle menu item click
+  ''' </summary>
+  ''' <param name="sender"></param>
+  ''' <param name="e"></param>
+  ''' <remarks></remarks>
+  Private Sub HandleMenuItemClick(ByVal sender As Object, ByVal e As System.EventArgs)
+    Dim item As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
+    'Call MenuHandler to handle item click
+    _MenuHandler.MenuItemClick(item)
   End Sub
 
   Private Sub BaseGrid_RowEnter(sender As Object, e As System.Windows.Forms.DataGridViewCellEventArgs) Handles Me.RowEnter

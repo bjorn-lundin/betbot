@@ -4,59 +4,37 @@ Imports NoNoBetResources.ApplicationResourceManager
 Imports NoNoBetComponents
 
 Public Class BaseGridMenuHandler
+  Inherits BaseMenuHandler
   Implements IMenuHandler
 
-  'Public _Item As ToolStripMenuItem = New ToolStripMenuItem
-
-  Private _ResourceManager As ApplicationResourceManager
-
-  Public Property ResourceManager() As ApplicationResourceManager Implements IMenuHandler.ResourceManager
+  Public Shadows Property ResourceManager() As ApplicationResourceManager Implements IMenuHandler.ResourceManager
     Get
-      Return _ResourceManager
+      Return MyBase.ResourceManager
     End Get
     Set(value As ApplicationResourceManager)
-      _ResourceManager = value
+      MyBase.ResourceManager = value
     End Set
   End Property
 
-
-  Public Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuHandler.MenuCreate
-    Dim m As ContextMenuStrip = New ContextMenuStrip
-    m.Name = menuName
-    m.Text = menuName
+  Public Overridable Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuHandler.MenuCreate
+    Dim m As ContextMenuStrip = MyBase.CreateMenu(menuName)
 
     Select Case menuName
       Case "RacedayBettypes"
-        AddItem(m, "Visa", "itemShowRacedayBettype")
+        MyBase.AddItem(m, "Visa", "itemShowRacedayBettype")
       Case "RaceLines"
-        AddItem(m, "Visa resultat", "itemShowHorseResults")
+        MyBase.AddItem(m, "Visa resultat", "itemShowHorseResults")
       Case Else
-        AddItem(m, "Do...", "itemDo")
-        AddItem(m, "Undo...", "itemUndo")
+        MyBase.AddItem(m, "Do...", "itemDo")
+        MyBase.AddItem(m, "Undo...", "itemUndo")
     End Select
 
     Return m
   End Function
 
-  Private Sub AddItem(ByVal menu As ContextMenuStrip, ByVal itemText As String, ByVal itemName As String)
-    Dim item As ToolStripMenuItem = New ToolStripMenuItem
-    item.Text = itemText
-    item.Name = itemName
-    item.Enabled = True
-    item.Tag = menu
-    menu.Items.Add(item)
-
-    AddHandler item.Click, AddressOf ItemClick
-  End Sub
-
-  Private Sub ItemClick(ByVal sender As Object, ByVal e As System.EventArgs)
-    Dim item As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
-    MenuItemClick(item)
-  End Sub
-
-  Public Function MenuItemClick(item As System.Windows.Forms.ToolStripMenuItem) As Boolean Implements NoNoBetResources.IMenuHandler.MenuItemClick
-    Dim menu As ContextMenuStrip = CType(item.Tag, ContextMenuStrip)
-    Dim gridRow As DataGridViewRow = CType(menu.Tag, DataGridViewRow)
+  Public Overridable Function MenuItemClick(item As System.Windows.Forms.ToolStripMenuItem) As Boolean Implements NoNoBetResources.IMenuHandler.MenuItemClick
+    Dim menu As ContextMenuStrip = MyBase.GetMenuFromItem(item)
+    Dim gridRow As DataGridViewRow = MyBase.GetGridRowFromMenu(menu)
 
     Select Case item.Name
       Case "itemShowRacedayBettype"
@@ -65,7 +43,7 @@ Public Class BaseGridMenuHandler
       Case "itemShowHorseResults"
         Dim horseId As Integer = ApplicationResourceManager.GetRowColumnIntValue(gridRow, "horse_id")
         Dim horseResult As HorseResultsChart = New HorseResultsChart
-        horseResult.StartForm(True, horseId, _ResourceManager)
+        horseResult.StartForm(True, horseId, Me.ResourceManager)
         Return True
       Case "itemDo"
         'MessageBox.Show("Doing something...")
@@ -82,10 +60,9 @@ Public Class BaseGridMenuHandler
 
   End Function
 
-  Public Function MenuShow(menu As System.Windows.Forms.ContextMenuStrip, pos As System.Drawing.Point) As Boolean Implements NoNoBetResources.IMenuHandler.MenuShow
+  Public Overridable Function MenuBeforeShow(menu As System.Windows.Forms.ContextMenuStrip) As Boolean Implements NoNoBetResources.IMenuHandler.MenuBeforeShow
     'Enable/Disable items
     'menu.Items.Item("").Enabled = False
-    menu.Show(pos)
     Return True
   End Function
 

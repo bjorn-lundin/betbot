@@ -3,6 +3,6 @@
 Public Interface IMenuHandler
   Property ResourceManager As ApplicationResourceManager
   Function MenuCreate(ByVal menuName As String) As ContextMenuStrip
-  Function MenuShow(ByVal menu As ContextMenuStrip, ByVal pos As System.Drawing.Point) As Boolean
+  Function MenuBeforeShow(ByVal menu As ContextMenuStrip) As Boolean
   Function MenuItemClick(ByVal item As ToolStripMenuItem) As Boolean
 End Interface
