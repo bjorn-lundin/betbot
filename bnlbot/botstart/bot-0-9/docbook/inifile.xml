@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='iso8859-1'?>
+<chapter xml:id='inifile' xmlns='http://docbook.org/ns/docbook' version='5.0' >
+    <title>Configuration</title>
+    <para>
+      This document presents selected results from the bot beeing feed by a market fetcher simulator.
+      The bot is running with the same logic as if it was the real thing.
+      It is feed a marketid, and it picks it up from the database, making business decisons.
+      These decisions are mainly configurd in <filename>betfair.ini</filename>
+      which is located in the user's home directoty within the betbot file system
+    </para>
+    <para>
+    A snippet from the file may look like
+      <programlisting>
+[HORSES_PLC_LAY4_IE]
+enabled=true
+bet_size=30.0
+dry_run=True
+max_daily_profit=100000.0
+max_daily_loss=-250
+allow_in_play=False
+countries=IE
+allowed_days=mo,tu,we,fr,su
+no_of_winners=3
+min_num_runners=7
+max_num_runners=25
+      </programlisting>
+    The bot will figure out that this is a lay4 bet on horses in the place markets in
+    Ireland from the section name.
+    The rest is kind of self explanatory.
+    </para>
+    <para>
+    However, for lay bets there are
+      <programlisting>
+max_lay_price=90.0
+min_lay_price=10.0
+lay_exit_early=True
+      </programlisting>
+      Meaning we make a lay bet on the first runner that has
+        10 &lt;= lay-price &lt;= 90.
+      Also, hardcoded in the program, there must be 7 horses better rated
+      by the back-price, than this one.
+      lay_exit_early may be false, which gets a horse with lay-price closer to 90.
+      If lay_exit_early is true, we get a runner closer to 10.
+    </para>
+    <para>
+      For back bets there are instead
+      <programlisting>
+back_price=6.5
+delta_price=0.3
+     </programlisting>
+     which make back bets on runners with back price 6.5 +- 0.3,
+     ie  6.0 &lt;0= back-price &lt;= 6.8
+    </para>
+</chapter>
