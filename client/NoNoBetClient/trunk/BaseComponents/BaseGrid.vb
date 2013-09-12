@@ -1,4 +1,5 @@
 ﻿Imports System.Windows.Forms
+Imports System.Xml
 Imports System.Windows.Forms.DataGridView
 Imports System.Reflection
 Imports NoNoBetResources
@@ -6,6 +7,8 @@ Imports NoNoBetResources.ApplicationResourceManager
 
 Public Class BaseGrid
   Inherits DataGridView
+
+  Public Const MenuHandlersConfigFileName As String = "MenuHandlersConfig.xml"
 
   Private Shared _MenuHandler As IMenuHandler = Nothing
 
@@ -26,11 +29,32 @@ Public Class BaseGrid
 
   Public Sub LoadMenuHandler()
     If (Not Me.DesignMode) Then
-      Dim fileName As String = IO.Path.Combine(Application.StartupPath, "MenuHandlers.dll")
-      Dim a As Assembly = Assembly.LoadFile(fileName)
-      Dim t As Type = a.GetType("MenuHandlers.BaseGridMenuHandler")
-      Dim o As Object = Activator.CreateInstance(t)
-      _MenuHandler = CType(o, IMenuHandler)
+      Dim configFileName As String = IO.Path.Combine(Application.StartupPath, MenuHandlersConfigFileName)
+
+      If IO.File.Exists(configFileName) Then
+        Dim fullFileName As String
+        Dim fileName As String
+        Dim className As String
+        Dim menuHandlersNodeList As XmlNodeList = Nothing
+        Dim node As XmlNode = Nothing
+        Dim xmlDoc As XmlDocument = New XmlDocument
+        xmlDoc.Load(configFileName)
+        'Select the /menuhandlers/menuhandler node list in XML document
+        menuHandlersNodeList = xmlDoc.SelectNodes("/menuhandlers/menuhandler")
+        node = menuHandlersNodeList.Item(0)
+        If (node IsNot Nothing) Then
+          Dim a As Assembly
+          Dim t As Type
+          Dim o As Object
+          fileName = node.Attributes.GetNamedItem("file").Value
+          className = node.Attributes.GetNamedItem("class").Value
+          fullFileName = IO.Path.Combine(Application.StartupPath, fileName)
+          a = Assembly.LoadFile(fullFileName)
+          t = a.GetType(IO.Path.GetFileNameWithoutExtension(fileName) + "." + className)
+          o = Activator.CreateInstance(t)
+          _MenuHandler = CType(o, IMenuHandler)
+        End If
+      End If
     End If
   End Sub
 

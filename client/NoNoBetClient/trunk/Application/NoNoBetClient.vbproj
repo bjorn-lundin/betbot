@@ -214,6 +214,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="Config\MenuHandlersConfig.xml" />
     <Content Include="Config\TermsConfig.xml">
       <SubType>Designer</SubType>
     </Content>
