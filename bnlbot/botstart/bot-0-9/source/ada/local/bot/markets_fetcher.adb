@@ -726,12 +726,13 @@ begin
      Log(Me, "Login");
 
     -- Ask a pythonscript to login for us, returning a token
-     My_Token.Login(
+     My_Token.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
           );    
+     My_Token.Login;
      
      Log(Me, "Logged in with token '" &  My_Token.Get & "'");
   else

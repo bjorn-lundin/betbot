@@ -297,12 +297,13 @@ begin
      Log(Me, "Login");
 
     -- Ask a pythonscript to login for us, returning a token
-     My_Token.Login(
+     My_Token.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
           );    
+     My_Token.Login;          
      Log(Me, "Logged in with token '" &  My_Token.Get & "'");
   else
      Log(Me, "set token '" & Sa_Par_Token.all & "'");
@@ -347,7 +348,7 @@ begin
                                   Now.Minute = 0 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
---      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Balance'Img);  --??
+      Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img);  --??
 --      Is_Time_To_Check_Balance := True;
       exit when Is_Time_To_Check_Balance;
     end loop;           
@@ -361,12 +362,7 @@ begin
         when Logged_Out => 
           delay 2.0;
           Log(Me, "Logged_Out, will log in again");  --??
-          My_Token.Login(
-           Username   => Ini.Get_Value("betfair","username",""),
-           Password   => Ini.Get_Value("betfair","password",""),
-           Product_Id => Ini.Get_Value("betfair","product_id",""),  
-           Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
-         );    
+          My_Token.Login;    
         when Timeout =>  delay 5.0;
       end case;           
     end loop Ask;
