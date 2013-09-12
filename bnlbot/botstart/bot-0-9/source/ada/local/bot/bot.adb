@@ -25,6 +25,7 @@ procedure Bot is
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";
   use type Bot_Types.Mode_Type;
+  OK : Boolean := False;
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Bot_Config.Config.Read; -- even from cmdline
@@ -43,12 +44,13 @@ begin
   case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
        Log(Me, "Login betfair");
-       My_Token.Login(
+       My_Token.Init(
          Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
          Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
          Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
          Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
        );
+       My_Token.Login;
        Log(Me, "Login betfair done");
     when Bot_Types.Simulation => null;
   end case;
@@ -87,13 +89,9 @@ begin
         Log(Me, "Timeout");
         case Bot_Config.Config.System_Section.Bot_Mode is
           when Bot_Types.Real       =>
-            if not My_Token.Keep_Alive then
-              My_Token.Login(
-                Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
-                Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
-                Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
-                Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
-              );
+            My_Token.Keep_Alive(OK);
+            if not OK then
+              My_Token.Login;
             end if;
           when Bot_Types.Simulation => null;
         end case;

@@ -20,13 +20,23 @@ package body Token is
 
   -- package EV renames Ada.Environment_Variables;
 
-  
-  
-  procedure Login(A_Token    : in out Token_Type;
+
+
+  procedure Init(A_Token : in out Token_Type ;
                   Username   : in     String;
                   Password   : in     String;
                   Product_Id : in     String;
                   Vendor_Id  : in     String) is
+  begin
+    A_Token.Username   := To_Unbounded_String(Username);
+    A_Token.Password   := To_Unbounded_String(Password);
+    A_Token.Product_Id := To_Unbounded_String(Product_Id);
+    A_Token.Vendor_Id  := To_Unbounded_String(Vendor_Id);
+  end Init;
+  
+  
+  
+  procedure Login(A_Token    : in out Token_Type) is
 --    Host : constant String := "nonodev.com";
     Host : constant String := "localhost";
     Host_Entry : Gnat.Sockets.Host_Entry_Type
@@ -49,10 +59,10 @@ package body Token is
 
     declare
        S : String := 
-         "username="   & Username &
-         ",password="  & Password &
-         ",productid=" & Product_id &
-         ",vendorid="  & Vendor_id;
+         "username="   & To_String(A_Token.Username) &
+         ",password="  & To_String(A_Token.Password) &
+         ",productid=" & To_String(A_Token.Product_id) &
+         ",vendorid="  & To_String(A_Token.Vendor_id);
     begin        
       Log(Me & "Login", "Request: '" & S & "'"); 
       String'Write (Channel, S);
@@ -84,6 +94,7 @@ package body Token is
         To_String(A_Token.The_Token) /= "USER_NOT_ACCOUNT_OWNER" then
 
        A_Token.Token_Is_Set := True;
+       A_Token.Login_Time := Sattmate_Calendar.Clock;
      else
        raise Login_Failed with To_String(A_Token.The_Token);
      end if;
@@ -112,13 +123,19 @@ package body Token is
   end Unset;
   -------------------------------------------------------------
   
-  function Keep_Alive (A_Token : in Token_Type) return Boolean is
+  procedure Keep_Alive (A_Token : in out Token_Type; Result : out Boolean ) is
     -- just get the eventtypes
     Json_String : String := "{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}";
     AWS_Keep_Alive_Reply     : Aws.Response.Data;
     JSON_Keep_Alive_Reply : JSON_Value := Create_Object; 
     pragma Warnings(Off,JSON_Keep_Alive_Reply);
+    Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    use  Sattmate_Calendar;
   begin
+    if Now - A_Token.Login_Time > (1,0,0,0,0) then
+      A_Token.Login;
+      Result := True;
+    else
 --       Log(Me & "Keep_Alive", "start"); 
        Aws.Headers.Set.Reset (Global_Headers);
        Aws.Headers.Set.Add (Global_Headers, "X-Authentication", A_Token.Get);
@@ -133,12 +150,13 @@ package body Token is
                                       Filename => "");
 
        Log(Me & "Keep_Alive", "stop - OK "); 
-       return True;
+       Result := True;
+    end if ;   
     exception   
       when others =>
         Log(Me & "Keep_Alive", Aws.Response.Message_Body(AWS_Keep_Alive_Reply)); 
         Log(Me & "Keep_Alive", "stop - FAIL "); 
-        return False;
+        Result := False;
   end Keep_Alive;
   
   
