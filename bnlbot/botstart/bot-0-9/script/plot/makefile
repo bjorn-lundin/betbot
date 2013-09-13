@@ -6,7 +6,8 @@
 
 UNAME := $(shell uname)
 
-DBHOST := localhost
+
+DBHOST := sebjlun-deb64
 #DBHOST := 192.168.0.13
 #DBHOST := nonodev.com
 ifeq ($(DBHOST),localhost)
@@ -33,6 +34,15 @@ ifeq ($(DBHOST),nonodev.com)
   DBPWD  := BettingFotboll1$$
   DBUSER := bnl
 endif
+
+ifeq ($(DBHOST),sebjlun-deb64)
+  DBNAME := bnl
+  DBPORT := 5432
+  DBPWD  := bnl
+  DBUSER := bnl
+endif
+
+
 
 #POWERDAYS := 128
 #START_DATE := 2013-01-01
@@ -121,8 +131,6 @@ test:
                                  --user=$(DBUSER) \
                                  --powerdays=$(shell echo $* | cut -d'-' -f2) \
                                  --betname=$(shell echo $(shell echo $* | cut -d'-' -f1) | tr '[:lower:]' '[:upper:]') > $*.dat2         
-
-
 
 %.xyz : %.dat2 profit_per_weekday.gpl
 	gnuplot -e "db_name='$(DBNAME)'" \

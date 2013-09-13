@@ -34,6 +34,8 @@ procedure Equity is
    type Saldo_Type is (Ref, Sim, Dry, His);
    Saldo : array (Saldo_Type'range) of Float_8 := (others => 0.0);
 
+   gDebug : Boolean := False;  
+   
    Abet : Table_Abets.Data_Type;
    Abethistory : Table_Abethistory.Data_Type;
 
@@ -53,7 +55,9 @@ procedure Equity is
    -------------------------------
    procedure Debug (What : String) is
    begin
-      Text_IO.Put_Line(Text_Io.Standard_Error, What);
+      if gDebug then
+        Text_Io.Put_Line (Text_Io.Standard_Error, Sattmate_Calendar.String_Date_Time_ISO (Clock, " " , "") & " " & What);
+      end if;  
    end Debug;
    pragma Warnings(Off, Debug);
    -------------------------------
@@ -145,6 +149,7 @@ begin
 
    Dates.Set("BETNAME",Sa_Par_Bet_Name.all);
                  
+   Debug("Start reading dates");           
    Dates.Open_Cursor;
    loop   
      Dates.Fetch(Eos(Date));
@@ -154,13 +159,15 @@ begin
      Insert_Date(Timestamp_List2,Start_Date);
    end loop;
    Dates.Close_Cursor;
+   Debug("Stop reading dates");           
    
    -- the same thing with 15 min intervals
    Start_Date := (2013,01,30,0,0,0,0);
    Stop_Date  := (2013,08,31,0,0,0,0);
     
+   Debug("Start fixing dates");           
    outer : loop   
-     Start_Date := Start_Date + (0,0,15,0,0); --15 mins
+     Start_Date := Start_Date + (0,1,0,0,0); -- 1 h --15 mins
 --     Log ("Treating ts : " & Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & 
 --                             Sattmate_Calendar.String_Time(Start_Date) );     
      Already_In_List := False;
@@ -186,7 +193,8 @@ begin
        Insert_Date(Timestamp_List,Start_Date);  -- insert them sorted
      end if;     
    end loop outer ;   
-   
+   Debug("Stop fixing dates");           
+
    Select_Results.Prepare( "select * " &
                             "from ABETS " &
                             "where BETNAME = :BETNAME " &
@@ -200,6 +208,7 @@ begin
    Saldo(Ref) := Saldo(Sim);
    Saldo(His) := 0.0;
    
+   Debug("Start processing dates");           
    -- now loop over all ts, both with db hit and 15 min interval
    while not Timestamps.Is_Empty(Timestamp_List) loop
      Timestamps.Remove_From_Head(Timestamp_List,Start_Date);
@@ -270,6 +279,7 @@ begin
               Integer'Image(Integer(Saldo(Sim))) & " | " &
               Integer'Image(Integer(Saldo(His))));
    end loop;
+   Debug("Stop processing dates");           
       
    T.Commit;
    Sql.Close_Session;
