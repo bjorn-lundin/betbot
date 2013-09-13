@@ -16,21 +16,21 @@ Public Class StartUp
   Private Shared _DbConnection As DbConnection
   Private Shared WithEvents _ConMan As ConnectionManager
 
+  ''' <summary>
+  ''' Start the application
+  ''' </summary>
+  ''' <returns></returns>
+  ''' <remarks></remarks>
   Public Shared Function Main() As Integer
     Dim workingDir As String = GetCurrentDirectory()
     Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
     workingDir = currDirectoryInfo.Parent.FullName
 
-    'Dim conString As DbConnectionString = New DbConnectionString
-    'Dim dbConDialog As DbConnectionDialog = New DbConnectionDialog
-    'dbConDialog.StartDialog(conString)
+    'Create and start a new Connection Manager
+    'Wait for StartApplication event before starting application
     _ConMan = New ConnectionManager
-
+    _ConMan.FormTitle = "NoNoBet Connection Manager"
     _ConMan.StartForm(True)
-
-    'Dim connectDialog As DbConnectionForm = New DbConnectionForm
-
-    'connectDialog.ExeceuteDialog(workingDir)
 
     Return 0
   End Function
