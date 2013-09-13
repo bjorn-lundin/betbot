@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 while getopts "a:u:" opt; do
 #  echo "$opt - $OPTARG"
 
@@ -29,3 +28,4 @@ export BOT_SCRIPT=$BOT_ROOT/script
 export BOT_SOURCE=$BOT_ROOT/source
 export BOT_DOC=$BOT_ROOT/docbook
 
+echo "run with BOT_USER= $BOT_USER"

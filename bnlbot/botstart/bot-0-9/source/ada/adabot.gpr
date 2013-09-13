@@ -1,4 +1,6 @@
+
 with "global";
+
 project Adabot is
 
    Sub_System := "bot";

@@ -5,7 +5,8 @@ package require Pgtcl
 set db "bnl"
 set host "localhost"
 set port 5432
-#set user "bnl"
+set user "bnl"
+set pass "bnl"
 set Bet_Name_List [list [lindex $argv 0]]
 #set Powerday_List [list 107 207 307 114 214 314 121 221 321 128 228 328 135 235 335]
 set Powerday_List [list 107 207 307 114 214 314 121 221 321 128 228 328]
@@ -14,7 +15,7 @@ global Weekday_Profit_Array(null)
 global Weekday_Count_Array(null)
 global Weekday_Count_Pct_Array(null)
 
-set ::conn [pg_connect $db -host $host -port $port]
+set ::conn [pg_connect $db -host $host -port $port -user $user -password $pass]
 
 foreach Bet_Name $Bet_Name_List {
   puts "<?xml version=\'1.0\' encoding=\'iso8859-1\'?>"
