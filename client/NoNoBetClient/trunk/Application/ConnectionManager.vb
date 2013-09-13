@@ -141,9 +141,9 @@ Public Class ConnectionManager
     Me.ClientSize = New System.Drawing.Size(466, 287)
     Me.Controls.Add(Me.pnlTop)
     Me.Controls.Add(Me.pnlBottom)
-    Me.FormTitle = "NoNoBet Connection Manager"
+    Me.FormTitle = "Connection Manager"
     Me.Name = "ConnectionManager"
-    Me.Text = "NoNoBet Connection Manager"
+    Me.Text = "Connection Manager"
     Me.pnlBottom.ResumeLayout(False)
     Me.pnlTop.ResumeLayout(False)
     Me.pnlTop.PerformLayout()
