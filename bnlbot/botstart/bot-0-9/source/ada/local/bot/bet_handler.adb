@@ -23,6 +23,8 @@ with Aws.Headers;
 with Aws.Headers.Set;
 with Sattmate_Exception;
 with Process_IO;
+with Bot_Svn_Info;
+
 pragma Elaborate_All(Aws.Headers);
 
 package body Bet_Handler is
@@ -581,7 +583,7 @@ package body Bet_Handler is
       when Fav2 | Fav3 | Fav4 | Fav5 | Fav6 =>
         declare
           Index : Integer ;
-          Max_Back_Price : Float_8;
+          Max_Back_Price : Float_8 := Float_8 (Bet.Bot_Cfg.Max_Odds);
         begin
 
           if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
@@ -589,38 +591,28 @@ package body Bet_Handler is
               when 7    =>
                 if Bet.Bot_Cfg.Bet_Type = Fav2 then
                   Index := 2;
-                  Max_Back_Price := 10.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav3 then
                   Index := 3;
-                  Max_Back_Price := 10.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav4 then
                   Index := 4;
-                  Max_Back_Price := 12.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav5 then
                   Index := 5;
-                  Max_Back_Price := 14.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav6 then
                   Index := 6;
-                  Max_Back_Price := 14.0;
                 else
                   raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
                 end if;
               when 4339 =>
                 if Bet.Bot_Cfg.Bet_Type = Fav2 then
                   Index := 2;
-                  Max_Back_Price := 10.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav3 then
                   Index := 3;
-                  Max_Back_Price := 10.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav4 then
                   Index := 4;
-                  Max_Back_Price := 12.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav5 then
                   Index := 5;
-                  Max_Back_Price := 14.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav6 then
                   Index := 6;
-                  Max_Back_Price := 14.0;
                 else
                   raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
                 end if;
@@ -631,38 +623,28 @@ package body Bet_Handler is
               when 7    =>
                 if Bet.Bot_Cfg.Bet_Type = Fav2 then
                   Index := 2;
-                  Max_Back_Price := 3.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav3 then
                   Index := 3;
-                  Max_Back_Price := 4.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav4 then
                   Index := 4;
-                  Max_Back_Price := 5.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav5 then
                   Index := 5;
-                  Max_Back_Price := 6.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav6 then
                   Index := 6;
-                  Max_Back_Price := 7.0;
                 else
                   raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
                 end if;
               when 4339 =>
                 if Bet.Bot_Cfg.Bet_Type = Fav2 then
                   Index := 2;
-                  Max_Back_Price := 2.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav3 then
                   Index := 3;
-                  Max_Back_Price := 3.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav4 then
                   Index := 4;
-                  Max_Back_Price := 3.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav5 then
                   Index := 5;
-                  Max_Back_Price := 4.0;
                 elsif Bet.Bot_Cfg.Bet_Type = Fav6 then
                   Index := 6;
-                  Max_Back_Price := 4.0;
                 else
                   raise Bad_Data with "Bad bettype: " & Bet.Bot_Cfg.Bet_Type'Img;
                 end if;
@@ -753,93 +735,8 @@ package body Bet_Handler is
         end;
 
       when Lay1 .. Lay9 =>
+        Max_Lay_Price := Max_Lay_Price_Type(Bet.Bot_Cfg.Max_Odds);
         -- check min_lay_price < price <= max_lay_price
-        -- we can not loop for dogs. Check how many turns for horses
-        if General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "WIN" then
-          case Bet.Bet_Info.Event.Eventtypeid is
-            when 7    => null;
-              if    Bet.Bot_Cfg.Bet_Type = Lay1 then
-                Max_Lay_Price := 6.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay2 then
-                Max_Lay_Price := 6.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay3 then
-                Max_Lay_Price := 8.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
-                Max_Lay_Price := 10.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 15.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 17.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay7 then
-                Max_Lay_Price := 20.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay8 then
-                Max_Lay_Price := 25.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay9 then
-                Max_Lay_Price := 30.0;
-              end if;
-
-            when 4339 => --no lay on hounds
-              if    Bet.Bot_Cfg.Bet_Type = Lay1 then
-                Max_Lay_Price := 3.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay2 then
-                Max_Lay_Price := 3.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay3 then
-                Max_Lay_Price := 3.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
-                Max_Lay_Price := 4.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 4.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 5.0;
-              else
-                Max_Lay_Price := 10.0;
-              end if;
-            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
-          end case;
-        elsif General_Routines.Trim(Bet.Bet_Info.Market.Markettype) = "PLACE" then
-
-          case Bet.Bet_Info.Event.Eventtypeid is
-            when 7    =>
-              if    Bet.Bot_Cfg.Bet_Type = Lay1 then
-                Max_Lay_Price := 2.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay2 then
-                Max_Lay_Price := 3.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay3 then
-                Max_Lay_Price := 4.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
-                Max_Lay_Price := 5.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 8.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 10.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay7 then
-                Max_Lay_Price := 12.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay8 then
-                Max_Lay_Price := 15.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay9 then
-                Max_Lay_Price := 20.0;
-              end if;
-            when 4339 => --no lay on hounds
-              if    Bet.Bot_Cfg.Bet_Type = Lay1 then
-                Max_Lay_Price := 2.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay2 then
-                Max_Lay_Price := 3.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay3 then
-                Max_Lay_Price := 4.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay4 then
-                Max_Lay_Price := 5.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay5 then
-                Max_Lay_Price := 8.0;
-              elsif Bet.Bot_Cfg.Bet_Type = Lay6 then
-                Max_Lay_Price := 10.0;
-              else
-              Max_Lay_Price := 20.0;
-              end if;
-            when others => raise Bad_Data with "Bad eventtype: " & Bet.Bet_Info.Event.Eventtypeid'Img;
-          end case;
-        else
-          raise Bad_Data with "Bad markettype: '" &  General_Routines.Trim(Bet.Bet_Info.Market.Markettype) & "'";
-        end if;
 --        -- check favorite odds (i.e. there is a clear favorite)
 --        if Bet.Bet_Info.Runner_Array(1).Price.Backprice > Max_Favorite_Odds then
 ----          Log(Me & "Check_Conditions_Fulfilled", "favorite sucks odds " & Bet.Bet_Info.Runner_Array(1).Price.Backprice'Img &
@@ -1474,30 +1371,32 @@ package body Bet_Handler is
   begin
 
 --  type Data_Type is record
---      Betid :          Integer_8  := 0 ; -- Primary Key
---      Marketid :       String (1..11) := (others => ' ') ; -- non unique index 2
---      Betmode  :       Integer_4  := 0 ; --,
---      Powerdays :      Integer_4  := 0 ; --,
+--      Betid :    Integer_8  := 0 ; -- Primary Key
+--      Marketid :    String (1..11) := (others => ' ') ; -- non unique index 2
+--      Betmode :    Integer_4  := 0 ; --
+--      Powerdays :    Integer_4  := 0 ; -- non unique index 3
 --      Selectionid :    Integer_4  := 0 ; --
---      Reference :      String (1..30) := (others => ' ') ; --
---      Size :           Float_8  := 0.0 ; --
---      Price :          Float_8  := 0.0 ; --
---      Side :           String (1..4) := (others => ' ') ; --
---      Betname :        String (1..50) := (others => ' ') ; --
---      Betwon :         Integer_4  := 0 ; -- non unique index 3
---      Profit :         Float_8  := 0.0 ; --
---      Status :         String (1..50) := (others => ' ') ; --
---      Exestatus :      String (1..50) := (others => ' ') ; --
---      Exeerrcode :     String (1..50) := (others => ' ') ; --
---      Inststatus :     String (1..50) := (others => ' ') ; --
+--      Reference :    String (1..30) := (others => ' ') ; --
+--      Size :    Float_8  := 0.0 ; --
+--      Price :    Float_8  := 0.0 ; --
+--      Side :    String (1..4) := (others => ' ') ; --
+--      Betname :    String (1..100) := (others => ' ') ; -- non unique index 4
+--      Betwon :    Boolean  := False ; -- non unique index 5
+--      Profit :    Float_8  := 0.0 ; --
+--      Status :    String (1..50) := (others => ' ') ; --
+--      Exestatus :    String (1..50) := (others => ' ') ; --
+--      Exeerrcode :    String (1..50) := (others => ' ') ; --
+--      Inststatus :    String (1..50) := (others => ' ') ; --
 --      Insterrcode :    String (1..50) := (others => ' ') ; --
---      Betplaced :      Time_Type  := Time_Type_First ; --
---      Pricematched :   Float_8  := 0.0 ; --
+--      Startts :    Time_Type  := Time_Type_First ; -- non unique index 6
+--      Betplaced :    Time_Type  := Time_Type_First ; -- non unique index 7
+--      Pricematched :    Float_8  := 0.0 ; --
 --      Sizematched :    Float_8  := 0.0 ; --
---      Runnername :     String (1..50) := (others => ' ') ; --
---      Fullmarketname : String (1..200) := (others => ' ') ; --
---      Ixxlupd :        String (1..15) := (others => ' ') ; --
---      Ixxluts :        Time_Type  := Time_Type_First ; --
+--      Runnername :    String (1..50) := (others => ' ') ; --
+--      Fullmarketname :    String (1..50) := (others => ' ') ; --
+--      Svnrevision :    Integer_4  := 0 ; --
+--      Ixxlupd :    String (1..15) := (others => ' ') ; --
+--      Ixxluts :    Time_Type  := Time_Type_First ; --
 --  end record;
 
     case Bet.Bot_Cfg.Bet_Type is
@@ -1577,11 +1476,11 @@ package body Bet_Handler is
                                                 Content_Type => "application/json",
                                                 Headers      =>  My_Headers,
                                                 Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-        Log(Me & "Make_Bet", "Got reply ");
         begin
           if String'(Aws.Response.Message_Body(Answer_Place_Orders)) /= "Post Timeout" then
             Reply_Place_Orders := Read (Strm     => Aws.Response.Message_Body(Answer_Place_Orders),
                                         Filename => "");
+            Log(Me & "Make_Bet", "Got reply: " & Reply_Place_Orders.Write  );
           else
             Log(Me & "Make_Bet", "Post Timeout -> Give up placeOrder");
             return;
@@ -1853,6 +1752,7 @@ package body Bet_Handler is
       Sizematched    => Float_8(Size_Matched),
       Runnername     => Runner_Name,
       Fullmarketname => Bet.Bet_Info.Market.Marketname,
+      Svnrevision    => Bot_Svn_Info.Revision,
       Ixxlupd        => (others => ' '), --set by insert
       Ixxluts        => Now              --set by insert
     );

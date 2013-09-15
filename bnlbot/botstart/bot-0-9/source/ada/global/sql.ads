@@ -347,7 +347,7 @@ private
       Status  : Transaction_Status_Type   := None;
       Counter : Transaction_Identity_Type := 0;
    end record;
-   procedure Finalize (T : in out Transaction_Type);
+--   procedure Finalize (T : in out Transaction_Type);
    
 --   type Transaction_Type is tagged limited record
 --      Status  : Transaction_Status_Type   := None;

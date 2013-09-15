@@ -33,7 +33,7 @@ begin
   if Bot_Config.Config.System_Section.Daemonize then
     Posix.Daemonize;
   end if;
-
+  
    --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
@@ -65,6 +65,12 @@ begin
   Log(Me, "db Connected");
 
   Log(Me, "Start main loop");
+  
+  if not Bot_Config.Config.Global_Section.Logging then
+    Logging.Close;
+    Logging.Set_Quiet(True);
+  end if;
+  
   Main_Loop : loop
     begin
       Log(Me, "Start receive");
