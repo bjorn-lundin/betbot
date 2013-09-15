@@ -66,14 +66,14 @@ package body Sql is
    end Make_Dollar_Variable ;
    ------------------------------------------
    
-   procedure Finalize (T : in out Transaction_Type) is
-   begin -- we do not want to leave scoop with a running transaction !!
-     null;
-     return;
-     if T.Counter > 0 then
-       raise Transaction_Error with "Uncommited Transaction went out of scoop!";
-     end if;  
-   end Finalize;
+--   procedure Finalize (T : in out Transaction_Type) is
+--   begin -- we do not want to leave scoop with a running transaction !!
+--     null;
+--     return;
+--     if T.Counter > 0 then
+--       raise Transaction_Error with "Uncommited Transaction went out of scoop!";
+--     end if;  
+--   end Finalize;
 
    ------------------------------------------
    
@@ -261,30 +261,17 @@ package body Sql is
 
       Log ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
       Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
-      if not Eol then
+      loop
+        exit when Eol;
          Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
-         loop
-            Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
-            exit when Eol;
-            Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
-         end loop;
-      end if;
+         Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
+      end loop;
       Private_Statement.Prepared_Statement := Tmp;
       Log ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
    end Fill_Data_In_Prepared_Statement;
 
-
-
-
-
    ------------------------------------------------------------
    -- start local procs
-   ------------------------------------------------------------
-
-
-   ------------------------------------------------------------
-
-
    ------------------------------------------------------------
 
    function Get_New_Transaction return Transaction_Identity_Type is
@@ -542,8 +529,8 @@ package body Sql is
 
       Log ("begin");
       Global_Connection.Exec ("begin", Dml_Result);
-      Dml_Status := Result_Status (Dml_Result);
-      Clear (Dml_Result);
+      Dml_Status := Dml_Result.Result_Status;
+      Dml_Result.Clear;
       if Pgerror (Dml_Status) then
          Print_Errors ("Start_Transaction", Dml_Status);
          raise Postgresql_Error;
@@ -591,8 +578,8 @@ package body Sql is
 
       Log ("commit");
       Global_Connection.Exec ("commit", Dml_Result);
-      Dml_Status := Result_Status (Dml_Result);
-      Clear (Dml_Result);
+      Dml_Status := Dml_Result.Result_Status;
+      Dml_Result.Clear;
 
       if Pgerror (Dml_Status) then
          Print_Errors ("commit", Dml_Status);
@@ -629,8 +616,8 @@ package body Sql is
       end case;
       Log ("rollback");
       Global_Connection.Exec ("rollback", Dml_Result);
-      Dml_Status := Result_Status (Dml_Result);
-      Clear (Dml_Result);
+      Dml_Status := Dml_Result.Result_Status;
+      Dml_Result.Clear;
       if Pgerror (Dml_Status) then
          Print_Errors ("rollback", Dml_Status);
          raise Postgresql_Error;
@@ -707,7 +694,7 @@ package body Sql is
             Private_Statement.Type_Of_Statement := A_Ddl;
          end if;
          Private_Statement.Original_Statement := To_Unbounded_String (Command) ;
-         Private_Statement.Exchange_Binder_Variables;
+         Private_Statement.Exchange_Binder_Variables; -- sets Is_Prepared
          Log ("Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
          --      declare
          --        use Interfaces.C, Interfaces.C.Strings;
@@ -730,6 +717,7 @@ package body Sql is
          Log ("Prepare - Already prepared Stm: '" & Stm & "'");
       end if;
    end Prepare;
+   pragma Inline(Prepare);
 
    procedure Prepare (Statement : in out Statement_Type;
                       Command   : in String) is
@@ -737,6 +725,7 @@ package body Sql is
       Statement.Do_Initialize;
       Prepare (Statement.Private_Statement.all, Command);
    end Prepare;
+   pragma Inline(Prepare);
    ------------------------------------------------------------
 
 
@@ -796,7 +785,6 @@ package body Sql is
    --------------------------------------------------
    procedure Open_Cursor (Private_Statement : in out Private_Statement_Type) is
       Status           : Exec_Status_Type;
-      Dml_Result       : Result_Type;
       Savepoint_Result : Result_Type;
    begin
       -- check for open database and prepared Statement too!!
@@ -812,10 +800,10 @@ package body Sql is
       Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
 
       Global_Connection.Exec ("savepoint A_SELECT", Savepoint_Result);
-      Status := Result_Status (Savepoint_Result);
+      Status := Savepoint_Result.Result_Status;
+      Savepoint_Result.Clear;
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint A_SELECT", Status);
-         Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
 
@@ -823,21 +811,22 @@ package body Sql is
          Declare_String : String :=
                             "declare " & Private_Statement.Cursor_Name & " cursor without hold for " &
                             To_String (Private_Statement.Prepared_Statement);
+         Dml_Result       : Result_Type;
       begin
          Global_Connection.Exec (Declare_String, Dml_Result);
          Log ("SQL.OPEN_CURSOR: " & Declare_String);
-         Status := Result_Status (Dml_Result);
+         Status := Dml_Result.Result_Status;
          if Pgerror (Status) then
             Print_Errors ("Open_Cursor", Status);
             declare
                Errors : Error_Array_Type := Determine_Errors (Dml_Result, Declare_String);
             begin
-               Clear (Dml_Result);
+               Dml_Result.Clear;
                Global_Connection.Exec ("rollback to savepoint A_SELECT", Savepoint_Result);
-               Status := Result_Status (Savepoint_Result);
+               Status := Savepoint_Result.Result_Status;
+               Savepoint_Result.Clear;
                if Pgerror (Status) then
                   Print_Errors ("Open_Cursor rollback to savepoint A_SELECT", Status);
-                  Clear (Savepoint_Result);
                   raise Postgresql_Error;
                end if;
 
@@ -850,24 +839,27 @@ package body Sql is
                end if;
             end;
             raise Postgresql_Error;
+         else             
+            Dml_Result.Clear;
          end if;
       end;
-      Clear (Dml_Result);
 
       Global_Connection.Exec ("release savepoint A_SELECT", Savepoint_Result);
-      Status := Result_Status (Savepoint_Result);
+      Status := Savepoint_Result.Result_Status;
+      Savepoint_Result.Clear ; -- bnl 2013-09-15
       if Pgerror (Status) then
          Print_Errors ("Open_Cursor savepoint release A_SELECT", Status);
-         Clear (Savepoint_Result);
          raise Postgresql_Error;
       end if;
-
    end Open_Cursor;
+   pragma Inline(Open_Cursor);
+
    --------------------------------------------
    procedure Open_Cursor (Statement : in Statement_Type) is
    begin
       Open_Cursor (Statement.Private_Statement.all);
    end Open_Cursor;
+   pragma Inline(Open_Cursor);
 
    ------------------------------------------------------------
 
@@ -920,12 +912,14 @@ package body Sql is
       end if;
       Log ("current row is now" & Natural'Image (Private_Statement.Current_Row));
    end Fetch;
+   pragma Inline(Fetch);
 
    procedure Fetch (Statement  : in Statement_Type;
                     End_Of_Set : out Boolean) is
    begin
       Fetch (Statement.Private_Statement.all, End_Of_Set);
    end Fetch;
+   pragma Inline(Fetch);
 
     ------------------------------------------------------------
 
@@ -958,11 +952,13 @@ package body Sql is
       Private_Statement.Number_Actually_Fetched := 0;
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
    end Close_Cursor;
+   pragma Inline(Close_Cursor);
 
    procedure Close_Cursor (Statement : in Statement_Type) is
    begin
       Close_Cursor (Statement.Private_Statement.all);
    end Close_Cursor;
+   pragma Inline(Close_Cursor);
 
    -------------------------------------------------------------
 
@@ -1134,12 +1130,14 @@ package body Sql is
       end case;
       Log ("Execute end");
    end Execute;
+   pragma Inline(Execute);
    -----------------------------------------------------------
    procedure Execute (Statement           : in Statement_Type;
                       No_Of_Affected_Rows : out Natural) is
    begin
       Execute (Statement.Private_Statement.all, No_Of_Affected_Rows);
    end Execute;
+   pragma Inline(Execute);
    ------------------------------------------------------------
 
    procedure Execute (Statement : in  Statement_Type) is
@@ -1150,6 +1148,7 @@ package body Sql is
          raise No_Such_Row;
       end if;
    end Execute;
+   pragma Inline(Execute);
 
    ------------------------------------------------------------
 
@@ -1160,6 +1159,7 @@ package body Sql is
                                      Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                      Field_Index_Type (Parameter));
    end Is_Null;
+   pragma Inline(Is_Null);
 
    ------------------------------------------------------------
 
@@ -1168,6 +1168,7 @@ package body Sql is
    begin
       return Is_Null (Statement, Positive (Field_Index (Statement.Private_Statement.Result, Parameter)));
    end Is_Null;
+   pragma Inline(Is_Null);
 
    --------------------------------------------------------------
    -- end cursor handling procs
@@ -1200,6 +1201,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_4'Image (Value)), An_Integer);
    end Set;
+   
 
    ------------------------------------------------------------
    procedure Set (Statement : in out Statement_Type;
@@ -1208,6 +1210,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_8'Image (Value)), An_Integer);
    end Set;
+   
 
    ------------------------------------------------------------
 
@@ -1217,6 +1220,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Float'Image (Float (Value))), A_Float);
    end Set;
+   
 
    ---------------------------------------------------------
    procedure Set (Statement : in out Statement_Type;
@@ -1227,6 +1231,7 @@ package body Sql is
       Local_Value (1) := Value;
       Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_Character);
    end Set;
+   
    -------------------------------------------------------------
 
    procedure Set (Statement : in out Statement_Type;
@@ -1235,6 +1240,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, General_Routines.Lower_Case (Value'Img), A_String);
    end Set;
+   
    -------------------------------------------------------------
 
    procedure Set_Date (Statement : in out Statement_Type;
@@ -1275,9 +1281,6 @@ package body Sql is
       
 --      Ada.Text_Io.Put_Line("Set_Timestamp: '" & Local_Time_1 & "'");
       Statement.Private_Statement.Update_Map (Parameter, Local_Time_1, A_Timestamp);
-      
-      
-      
    end Set_Timestamp;
    ------------------------------------------------------------
 
@@ -1287,6 +1290,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, "NULL", Null_Type);
    end Set_Null;
+   pragma Inline(Set_Null);
 
    ------------------------------------------------------------
 
@@ -1295,6 +1299,7 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, "NULL", Null_Type);
    end Set_Null_Date;
+   pragma Inline(Set_Null_Date);
 
    --------------------------------------------------------------
    -- end Set handling procs
@@ -1324,6 +1329,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1334,6 +1340,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1357,6 +1364,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1367,6 +1375,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1391,6 +1400,7 @@ package body Sql is
              raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
        end;      
    end Get;
+   
 
    -----------------------------------------------------------
 
@@ -1401,6 +1411,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ----------------------------------------------------------
 
@@ -1427,6 +1438,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
+   
 
    ----------------------------------------------------------
 
@@ -1437,6 +1449,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ----------------------------------------------------------
 
@@ -1460,6 +1473,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1470,6 +1484,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ------------------------------------------------------------
    procedure Get (Statement : in Statement_Type;
@@ -1498,6 +1513,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1508,6 +1524,7 @@ package body Sql is
    begin
       Get (Statement, Positive (Field_Number), Value);
    end Get;
+   
 
    ------------------------------------------------------------
 
@@ -1531,7 +1548,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Date;
-
+   pragma Inline(Get_Date);
    ------------------------------------------------------------
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in String;
@@ -1540,6 +1557,7 @@ package body Sql is
    begin
       Get_Date (Statement, Positive (Field_Number), Value);
    end Get_Date;
+   pragma Inline(Get_Date);
 
    ------------------------------------------------------------
 
@@ -1563,6 +1581,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Time;
+   pragma Inline(Get_Time);
 
    --------------------------------------------------------------
 
@@ -1574,6 +1593,7 @@ package body Sql is
    begin
       Get_Time (Statement, Positive (Field_Number), Value);
    end Get_Time;
+   pragma Inline(Get_Time);
 
    ---------------------------------------------------------------
    procedure Get_Timestamp (Statement : in Statement_Type;
@@ -1596,6 +1616,7 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Timestamp;
+   pragma Inline(Get_Timestamp);
 
    --------------------------------------------------------------
 
@@ -1607,6 +1628,7 @@ package body Sql is
    begin
       Get_Timestamp (Statement, Positive (Field_Number), Value);
    end Get_Timestamp;
+   pragma Inline(Get_Timestamp);
    ------------------------------------------------------------
    -- end Get handling procs
    ------------------------------------------------------------

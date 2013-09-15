@@ -24,6 +24,7 @@
         <Column Name="sizematched"      Size="8"   Type="6"  AllowNull="0" Description="size price"/>        
         <Column Name="runnername"       Size="50"  Type="1"  AllowNull="0" Description="name of runner"/>
         <Column Name="fullmarketname"   Size="50"  Type="1"  AllowNull="0" Description="name of market"/>
+        <Column Name="svnrevision"      Size="9"   Type="2"  AllowNull="0" Description="svn revision of bot"/>
         <Column Name="ixxlupd"          Size="15"  Type="1"  AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"          Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="betid" type="primary"/>

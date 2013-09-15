@@ -23,6 +23,7 @@ package Bot_Config is
     Delay_Between_Turns_No_Markets  : Float_8 := 7.0;
     Delay_Between_Turns             : Float_8 := 5.0;
     Network_Failure_Delay           : Float_8 := 60.0;
+    Logging                         : Boolean := True;
   end record;  
 
   type Bet_Section_Type is record
@@ -49,6 +50,7 @@ package Bot_Config is
     Bet_Mode         : Bet_Mode_Type          := Dry;    
     Allowed_Days     : Allowed_Days_Array     := (others => False);
     Powerdays        : Integer_4              := 0;
+    Max_Odds         : Back_Price_Type        := 20.0; -- only for Lay1-Lay9, fav2-fav6
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   
@@ -82,6 +84,7 @@ package Bot_Config is
   type Config_Type is tagged record
      Bot_User          : Unbounded_String      := Null_Unbounded_String;
      Bot_Log_File_Name : Unbounded_String      := Null_Unbounded_String;
+     Bot_Ini_File_Name : Unbounded_String      := Null_Unbounded_String ;
      System_Section    : System_Section_Type;
      Global_Section    : Global_Section_Type; 
 --     Bet_Section       : Bet_Section_Type; 

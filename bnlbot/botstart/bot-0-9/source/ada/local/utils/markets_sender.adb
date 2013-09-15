@@ -131,46 +131,59 @@ begin
           Do_Send := True;
           if Trim(Amarket.Markettype) = "PLACE" then
             if    Aevent.Countrycode = "US" then
-              Move("horse_plc_us", Receiver.Name);
+              Move("horses_plc_us", Receiver.Name);
             elsif Aevent.Countrycode = "GB" then
-              Move("horse_plc_gb", Receiver.Name);
+              Move("horses_plc_gb", Receiver.Name);
             elsif Aevent.Countrycode = "IE" then
-              Move("horse_plc_ie", Receiver.Name);
+              Move("horses_plc_ie", Receiver.Name);
             elsif Aevent.Countrycode = "ZA" then
-              Move("horse_plc_za", Receiver.Name);
+              Move("horses_plc_za", Receiver.Name);
             elsif Aevent.Countrycode = "SG" then
-              Move("horse_plc_sg", Receiver.Name);
+              Move("horses_plc_sg", Receiver.Name);
             elsif Aevent.Countrycode = "FR" then
-              Move("horse_plc_fr", Receiver.Name);
+              Move("horses_plc_fr", Receiver.Name);
             else
-               Move("horse_plc_xx", Receiver.Name);
+              Do_Send := False;
+              Move("horses_plc_xx", Receiver.Name);
             end if;            
 
           elsif Trim(Amarket.Markettype) = "WIN" then     
 --            Do_Send := False;
             if    Aevent.Countrycode = "US" then
-              Move("horse_win_us", Receiver.Name);
+              Move("horses_win_us", Receiver.Name);
             elsif Aevent.Countrycode = "GB" then
-              Move("horse_win_gb", Receiver.Name);
+              Move("horses_win_gb", Receiver.Name);
             elsif Aevent.Countrycode = "IE" then
-              Move("horse_win_ie", Receiver.Name);
+              Move("horses_win_ie", Receiver.Name);
             elsif Aevent.Countrycode = "ZA" then
-              Move("horse_win_za", Receiver.Name);
+              Move("horses_win_za", Receiver.Name);
             elsif Aevent.Countrycode = "SG" then
-              Move("horse_win_sg", Receiver.Name);
+              Move("horses_win_sg", Receiver.Name);
             elsif Aevent.Countrycode = "FR" then
-              Move("horse_win_fr", Receiver.Name);
+              Move("horses_win_fr", Receiver.Name);
             else
-              Move("horse_win_xx", Receiver.Name);            
+              Do_Send := False;
+              Move("horses_win_xx", Receiver.Name);            
             end if;                 
           end if;
         
         elsif Aevent.Eventtypeid = 4339 and Ba_Hound then -- hound
           Do_Send := True;
           if Trim(Amarket.Markettype) = "PLACE" then
-              Move("hound_plc_xx", Receiver.Name);
+            if    Aevent.Countrycode = "GB" then
+              Move("hounds_plc_gb", Receiver.Name);
+            else
+              Do_Send := False;
+              Move("hounds_plc_xx", Receiver.Name);
+            end if;              
+            
           elsif Trim(Amarket.Markettype) = "WIN" then     
-              Move("hound_win_xx", Receiver.Name);
+            if    Aevent.Countrycode = "GB" then
+              Move("hounds_win_gb", Receiver.Name);
+            else
+              Do_Send := False;
+              Move("hounds_win_xx", Receiver.Name);
+            end if;              
           end if;        
         end if;
         if Do_Send then       

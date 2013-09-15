@@ -36,9 +36,10 @@ project Global is
 -- -gnat05      No warnings when Ada05 featues are used                 9.6-10368
 -- -gnatwW - Do not warn if we assume a string to start at index 1
 
+
+
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat05",
-                                              "-O0",
                                               "-fstack-check",
                                               "-gnata",
                                               "-gnatvoU",
@@ -69,11 +70,13 @@ project Global is
 --                  Smsk & "/utility/aws/" & Target_Machine);
 
 
+  -- heavy optimze on x64
+
    package Compiler is
       case Target_Machine is
-         when "lnx_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
-         when "lnx_arm" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
-         when "lnx_x64" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
+         when "lnx_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
+         when "lnx_arm" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
+         when "lnx_x64" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O3");
       end case;
    end Compiler;
 
@@ -93,7 +96,7 @@ project Global is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu
+      for Default_Switches ("ada") use ("-k", "-s", "-j1"); -- use 1 cpu 
    end Builder;
 
 

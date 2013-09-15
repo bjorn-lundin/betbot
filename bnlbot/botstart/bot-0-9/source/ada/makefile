@@ -42,6 +42,7 @@ $(OBJECT_DIR_BOT) :
 $(OBJECT_DIR_JSON) :
 	mkdir -p $(OBJECT_DIR_JSON)
 
+.PHONY : $(TARGET_ADA_INFO_SPEC)
 $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 

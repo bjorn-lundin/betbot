@@ -20,6 +20,7 @@ package body Bot_Config is
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
+  Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
 
@@ -65,6 +66,12 @@ package body Bot_Config is
          Ba_Daemon'access,
          Long_Switch => "--daemon",
          Help        => "become daemon at startup");
+         
+      Define_Switch
+        (Cmd_Line,
+         Sa_Par_Inifile'access,
+         Long_Switch => "--inifile=",
+         Help        => "use alternative inifile");
       Getopt (Cmd_Line);  -- process the command line
       Command_Line_Is_Parsed := True;
     end if;
@@ -73,8 +80,14 @@ package body Bot_Config is
     if Ev.Exists("BOT_HOME") then
 
       Cfg.Bot_Log_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/log/") & Cfg.Bot_User & To_Unbounded_String(".log");
-
-      Ini.Load(Ev.Value("BOT_HOME") & "/" & "betfair.ini") ;
+      
+      if Sa_Par_Inifile.all = "" then
+        Cfg.Bot_Ini_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/" & "betfair.ini");
+      else 
+        Cfg.Bot_Ini_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
+      end if;      
+      Ini.Load(To_String(Cfg.Bot_Ini_File_Name)) ;
+      
       -- Gloal
       Cfg.Global_Section.Delay_Between_Turns_Bad_Funding :=
            Float_8'Value(Ini.Get_Value("Global","Delay_Between_Turns_Bad_Funding","60.0"));
@@ -87,6 +100,8 @@ package body Bot_Config is
 
       Cfg.Global_Section.Network_Failure_Delay :=
            Float_8'Value(Ini.Get_Value("Global","Network_Failure_Delay","60.0"));
+           
+      Cfg.Global_Section.Logging := Ini.Get_Value("Global", "logging", True);
 
       --system, expanded ...
       Cfg.System_Section.Bot_Root   := To_Unbounded_String(EV.Value("BOT_ROOT"));
@@ -126,6 +141,7 @@ package body Bot_Config is
             Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners",""));
             Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners",""));
             Bet_Section.Powerdays := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"powerdays",0));
+            Bet_Section.Max_Odds := Back_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_odds","20.0"));
 
             Bet_Section.Bet_Mode := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
 
@@ -340,6 +356,7 @@ package body Bot_Config is
        "<Config>" &
          "<Bot_User>" & To_String(Cfg.Bot_User) & "</Bot_User>" &
          "<Bot_Log_File_Name>" & To_String(Cfg.Bot_Log_File_Name) & "</Bot_Log_File_Name>" &
+         "<Bot_Ini_File_Name>" & To_String(Cfg.Bot_Ini_File_Name) & "</Bot_Ini_File_Name>" &
          "<System>" &
            "<Bot_Root>"   & To_String(Cfg.System_Section.Bot_Root) & "</Bot_Root>" &
            "<Bot_Config>" & To_String(Cfg.System_Section.Bot_Config) & "</Bot_Config>" &
@@ -355,6 +372,7 @@ package body Bot_Config is
            "<Delay_Between_Turns_No_Markets>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns_No_Markets) & "</Delay_Between_Turns_No_Markets>" &
            "<Delay_Between_Turns>" & F8_Image(Cfg.Global_Section.Delay_Between_Turns) & "</Delay_Between_Turns>" &
            "<Network_Failure_Delay>" & F8_Image(Cfg.Global_Section.Network_Failure_Delay) & "</Network_Failure_Delay>" &
+           "<Logging>" & Cfg.Global_Section.Logging'Img & "</Logging>" &
          "</Global>" &
          "<Bets>" );
 
@@ -382,6 +400,7 @@ package body Bot_Config is
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" &
                "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" &
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" &
+               "<Max_Odds>" & F8_Image(Float_8(Bet_Section.Max_Odds)) & "</Max_Odds>" &
              "</Bets>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;
