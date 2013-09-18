@@ -37,7 +37,6 @@
 
 with Interfaces.C.Strings; use Interfaces.C, Interfaces.C.Strings;
 
-
 package Pgada.Thin is
 
    --   pragma Preelaborate;
@@ -61,6 +60,9 @@ package Pgada.Thin is
    type Pg_Conn_Access is access Pg_Conn;
    pragma Convention (C, Pg_Conn_Access);
 
+   
+   
+   
    type Pg_Result is null record;
    type Pg_Result_Access is access Pg_Result;
    pragma Convention (C, Pg_Result_Access);

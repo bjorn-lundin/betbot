@@ -37,6 +37,8 @@
 
 with Ada.Finalization;
 with Pgada.Thin; use Pgada.Thin;
+with Ada.Strings;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Pgada.Database is
 
@@ -68,6 +70,16 @@ package Pgada.Database is
    function Port (Connection : Connection_Type) return Positive;
    function Options (Connection : Connection_Type) return String;
    function Tty (Connection : Connection_Type) return String;
+   procedure Set_Host (Connection : in out Connection_Type; Host : String);
+   procedure Set_Port (Connection : in out Connection_Type; Port : Natural);
+   procedure Set_Options (Connection : in out Connection_Type; Options : String);
+   procedure Set_Tty (Connection : in out Connection_Type; Tty : String);
+   procedure Set_Db_Name (Connection : in out Connection_Type; Db_Name : String);
+   procedure Set_User (Connection : in out Connection_Type; User : String);
+   procedure Set_Password (Connection : in out Connection_Type; Password : String);
+   procedure Login(Connection : in out Connection_Type) ;
+   
+   
    --  Query characteristics of an open connection
 
    type Connection_Status_Type is (Connection_Ok, Connection_Bad);
@@ -215,14 +227,21 @@ package Pgada.Database is
    function Escape (Conn   : in Connection_Type;
                     Source : in String) return String;
 
-
 private
 
    type Connection_Type is new Ada.Finalization.Limited_Controlled with record
       Actual       : Thin.Pg_Conn_Access;
       Encoding     : Encoding_Type := Utf_8; --bnl
       Is_Connected : Boolean := False;       --bnl
+      Host         : Unbounded_String  := Null_Unbounded_String;
+      Port         : Natural := 5432;
+      Options      : Unbounded_String  := Null_Unbounded_String;
+      Tty          : Unbounded_String  := Null_Unbounded_String;
+      Db_Name      : Unbounded_String  := Null_Unbounded_String;
+      User         : Unbounded_String  := Null_Unbounded_String;
+      Password     : Unbounded_String  := Null_Unbounded_String;
    end record;
+   
    procedure Finalize (Connection : in out Connection_Type);
 
    type Natural_Access is access Natural;

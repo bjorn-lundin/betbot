@@ -22,7 +22,7 @@ procedure Sql_Ifc_Leak_Finder is
 
 
 --   Sa_Date      : aliased Gnat.Strings.String_Access;
-   I_Num_Days   : aliased Integer := 2;
+   I_Num_Days   : aliased Integer := 200;
 --   Config       : Command_Line_Configuration;
    cnt : integer := 0;
 
@@ -49,15 +49,16 @@ begin
    Sql.Connect
      (Host     => "localhost",
       Port     => 5432,
-      Db_Name  => "bfhistory",
+      Db_Name  => "bnl",
       Login    => "bnl",
       Password => "bnl");
 
    Sql.Prepare (Select_All,
-                   "select * from HISTORY " &
-                   "where LATESTTAKEN >= :START " &
-                   "and LATESTTAKEN <= :STOP " &
-                   "order by EVENTID, SELECTIONID, LATESTTAKEN");
+                   "select * from AMARKETS " &
+                   "where STARTTS >= :START " &
+                   "and STARTTS <= :STOP " &
+                   "and 1 =2 " &  --impossilble
+                   "");
 
    Start_Date := Sattmate_Calendar.To_Time_Type ("2011-01-01", "00:00:00:000");
    Stop_Date  := Sattmate_Calendar.To_Time_Type ("2011-03-01", "23:59:59:999");
@@ -65,8 +66,8 @@ begin
    Sql.Set_Timestamp(Select_all, "START", Start_date);
    Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
 
-   Sql.Start_Read_Write_Transaction (T);
    for i in 0 .. I_Num_Days loop
+   Sql.Start_Read_Write_Transaction (T);
          Cnt := 0;
          Sql.Open_Cursor(Select_All);
          loop
@@ -76,15 +77,15 @@ begin
            exit when Eos;
          end loop;
          Sql.Close_Cursor(Select_All);
-   end loop;
    Sql.Commit (T);
+   end loop;
 
    Log ("wait 25 before close");
    delay 25.0;
 
    Sql.Close_Session;
-   Log ("wait 25 before die");
-   delay 25.0;
+--   Log ("wait 25 before die");
+--   delay 25.0;
 
 exception
    when E : others =>
