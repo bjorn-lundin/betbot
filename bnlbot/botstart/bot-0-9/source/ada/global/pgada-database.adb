@@ -430,6 +430,20 @@ package body Pgada.Database is
    -- Set_DB_Login --
    ------------------
 
+   procedure Login(Connection : in out Connection_Type) is
+   begin
+     Connection.Set_Db_Login(
+         Host       => To_String(Connection.Host),
+         Port       => Connection.Port,
+         Options    => To_String(Connection.Options),
+         Tty        => To_String(Connection.Tty),
+         Db_Name    => To_String(Connection.Db_Name),
+         Login      => To_String(Connection.User),
+         Password   => To_String(Connection.Password)
+     );
+   end Login;
+   
+   
    procedure Set_Db_Login (Connection : in out Connection_Type;
                            Host       : in String  := "";
                            Port       : in Natural := 0;
@@ -452,6 +466,10 @@ package body Pgada.Database is
       else
          C_Port := New_String (Positive'Image (Port));
       end if;
+--??      if Connection.Actual /= null then
+--??        Free(Connection.Actual);
+--??      end if;
+      
       Connection.Actual :=
         Pq_Set_Db_Login (C_Host, C_Port, C_Options, C_Tty, C_Db_Name,
                          C_Login, C_Password);
@@ -821,8 +839,44 @@ package body Pgada.Database is
          return Result;
       end;
    end Escape;
+   ------------------
+   
+   procedure Set_Host (Connection : in out Connection_Type; Host : String) is
+   begin
+     Connection.Host := To_Unbounded_String(Host);
+   end Set_Host;
+   
+   procedure Set_Port (Connection : in out Connection_Type; Port : Natural) is
+   begin
+     Connection.Port := Port;
+   end Set_Port;
+   
+   procedure Set_Options (Connection : in out Connection_Type; Options : String) is
+   begin
+     Connection.Options := To_Unbounded_String(Options);
+   end Set_Options;
+   
+   procedure Set_Tty (Connection : in out Connection_Type; Tty : String) is
+   begin
+     Connection.Tty := To_Unbounded_String(Tty);
+   end Set_Tty;
+   
+   procedure Set_Db_Name (Connection : in out Connection_Type; Db_Name : String) is
+   begin
+     Connection.Db_Name := To_Unbounded_String(Db_Name);
+   end Set_Db_Name;
+   
 
+   procedure Set_User (Connection : in out Connection_Type; User : String) is
+   begin
+     Connection.User := To_Unbounded_String(User);
+   end Set_User;
+   
 
-
+   procedure Set_Password (Connection : in out Connection_Type; Password : String) is
+   begin
+     Connection.Password := To_Unbounded_String(Password);
+   end Set_Password;
+   
 end Pgada.Database;
 

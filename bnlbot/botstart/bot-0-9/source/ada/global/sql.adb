@@ -17,6 +17,10 @@ package body Sql is
    Global_Indent_Level            : Integer := 0;
    Global_Indent_Step             : Integer := 2;
    Global_Transaction_Identity    : Transaction_Identity_Type;
+   
+   
+   Global_Transaction_Counter_Current : Integer_4 := 0;
+   Global_Transaction_Counter_Max     : Integer_4 := 20;
 
 
 --leakfinding   type Open_Statement_Type is record
@@ -380,6 +384,15 @@ package body Sql is
                       Password   : in String := "")     is
       Local_Status : Connection_Status_Type;
    begin
+   
+      Global_Connection.Set_Host(Host);
+      Global_Connection.Set_Port(Port);
+      Global_Connection.Set_Options(Options);
+      Global_Connection.Set_Tty(Tty);
+      Global_Connection.Set_Db_Name(Db_Name);
+      Global_Connection.Set_User(Login);
+      Global_Connection.Set_Password(Password);
+   
       Set_Db_Login (Global_Connection,
                     Host      => Host,
                     Port      => Port,
@@ -409,6 +422,29 @@ package body Sql is
             raise Not_Connected with "Sql.Connect: Not_Connected" ;
       end case;
    end Connect;
+   --------------------------------------------------------------
+   procedure Reconnect is
+      Local_Status : Connection_Status_Type;
+   begin
+      Global_Connection.Login;
+
+      Local_Status := Status (Global_Connection);
+      case Local_Status is
+         when Connection_Ok =>
+            Global_Connection.Set_Connected (True);
+            Set_Transaction_Isolation_Level (Read_Commited, Session);
+            begin
+               Global_Connection.Set_Encoding (Latin_1);
+               Global_Connection.Set_Client_Encoding ("LATIN1");
+            end;
+
+         when Connection_Bad =>
+            Global_Connection.Set_Connected (False);
+--            Ada.Text_IO.Put_Line ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
+            Ada.Text_IO.Put_Line (Error_Message (Global_Connection));
+            raise Not_Connected with "Sql.Connect: Not_Connected" ;
+      end case;
+   end Reconnect;
 
    ---------------------------------------------------------------
 
@@ -510,6 +546,14 @@ package body Sql is
       -- check if transaction already in progress
       case Global_Transaction.Status is
          when None =>
+            -- reconnect to kill libpq process. It grows ...
+            Global_Transaction_Counter_Current := Global_Transaction_Counter_Current +1;
+            if Global_Transaction_Counter_Current >= Global_Transaction_Counter_Max then
+              Global_Transaction_Counter_Current := 0;
+              Close_Session;
+              Reconnect;
+            end if;       
+         
             T.Counter := Get_New_Transaction;
             Global_Transaction.Counter := T.Counter;
          when Read_Only =>
@@ -982,7 +1026,7 @@ package body Sql is
             when Rollback_To => Global_Connection.Exec ("rollback to savepoint " & P_Stm.Type_Of_Statement'Img, Dml_Result);
          end case;
          
-         Dml_Status := Result_Status (Dml_Result);
+         Dml_Status := Dml_Result.Result_Status;
          Dml_Result.Clear;
          
          if Pgerror (Dml_Status) then
@@ -1000,7 +1044,7 @@ package body Sql is
       begin
          --      Log("Handle_Error -> '" & Err_String & "'" );
          if Clear_Statement then
-            Clear (P_Stm.Result);
+            P_Stm.Result.Clear;
          end if;
          -- rollback to the savepoint
          Handle_Savepoint (How => Rollback_To, P_Stm => P_Stm);
@@ -1060,7 +1104,7 @@ package body Sql is
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
-            Status := Result_Status (Private_Statement.Result);
+            Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
 -- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
@@ -1079,7 +1123,7 @@ package body Sql is
 
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
-            Status := Result_Status (Private_Statement.Result);
+            Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
 -- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
@@ -1100,7 +1144,7 @@ package body Sql is
 
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
-            Status := Result_Status (Private_Statement.Result);
+            Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
 -- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
@@ -1119,7 +1163,7 @@ package body Sql is
             No_Of_Affected_Rows := Natural'Last;
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
                                     Private_Statement.Result);
-            Status := Result_Status (Private_Statement.Result);
+            Status := Private_Statement.Result.Result_Status;
             if Pgerror (Status) then
 -- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
