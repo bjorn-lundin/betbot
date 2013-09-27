@@ -1,4 +1,5 @@
-﻿Imports NoNoBetBaseComponents
+﻿Imports System.Windows.Forms
+Imports NoNoBetBaseComponents
 
 Public Class Tables
   Inherits BaseForm
