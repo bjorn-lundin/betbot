@@ -86,6 +86,12 @@
     <Compile Include="BaseGridForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ConnectionManager.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DbConnectionDialog.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="IBaseComponent.vb" />
     <Compile Include="IBaseDialog.vb" />
     <Compile Include="IBaseForm.vb" />
@@ -108,6 +114,9 @@
     <Compile Include="BaseGrid.vb">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Tables.vb">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="BaseDialog.resx">
@@ -116,11 +125,20 @@
     <EmbeddedResource Include="BaseGridForm.resx">
       <DependentUpon>BaseGridForm.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionManager.resx">
+      <DependentUpon>ConnectionManager.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DbConnectionDialog.resx">
+      <DependentUpon>DbConnectionDialog.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tables.resx">
+      <DependentUpon>Tables.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
