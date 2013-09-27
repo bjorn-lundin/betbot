@@ -1,6 +1,6 @@
 ﻿Imports System.Windows.Forms
-Imports DbInterface
-Imports BaseComponents
+Imports NoNoBetDbInterface
+Imports NoNoBetBaseComponents
 Imports NoNoBetResources
 
 Public Class MainBetTypes

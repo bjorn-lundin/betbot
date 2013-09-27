@@ -1,4 +1,4 @@
-﻿Imports BaseComponents
+﻿Imports NoNoBetBaseComponents
 Imports System.Windows.Forms.DataVisualization.Charting
 Imports System.Drawing
 Imports NoNoBetResources

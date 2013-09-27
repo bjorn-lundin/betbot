@@ -1,6 +1,6 @@
 ﻿Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
 Imports NoNoBetResources
 Imports NoNoBetComponents.RaceBetSim
 
@@ -15,7 +15,7 @@ Public Class StatForm
   Friend WithEvents textTotRaces As System.Windows.Forms.TextBox
   Friend WithEvents buttonTotRaces As System.Windows.Forms.Button
   Friend WithEvents groupStartPosStat As System.Windows.Forms.GroupBox
-  Friend WithEvents gridStartPosStats As BaseComponents.BaseGrid
+  Friend WithEvents gridStartPosStats As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents buttonStartPosStats As System.Windows.Forms.Button
   Friend WithEvents labelTrack As System.Windows.Forms.Label
   Friend WithEvents comboTracks As System.Windows.Forms.ComboBox
@@ -50,7 +50,7 @@ Public Class StatForm
     Me.buttonStartPosStats = New System.Windows.Forms.Button()
     Me.labelTrack = New System.Windows.Forms.Label()
     Me.comboTracks = New System.Windows.Forms.ComboBox()
-    Me.gridStartPosStats = New BaseComponents.BaseGrid()
+    Me.gridStartPosStats = New NoNoBetBaseComponents.BaseGrid()
     Me.groupStartType = New System.Windows.Forms.GroupBox()
     Me.radioAuto = New System.Windows.Forms.RadioButton()
     Me.radioIgnore = New System.Windows.Forms.RadioButton()
@@ -401,15 +401,15 @@ Public Class StatForm
   End Sub
 
   Private Function GetStartDateClause() As String
-    Return "(race.date >= " & DbConnection.DateToSqlString(dpStartdate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    Return "(race.date >= " & DbConnection.DateToSqlString(dpStartdate.Value, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
   End Function
 
   Private Function GetEndDateClause(ByVal endDate As Date) As String
-    Return "(race.date <= " & DbConnection.DateToSqlString(endDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    Return "(race.date <= " & DbConnection.DateToSqlString(endDate, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
   End Function
 
   Private Function GetStartDateClause(ByVal startDate As Date) As String
-    Return "(race.date >= " & DbConnection.DateToSqlString(startDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    Return "(race.date >= " & DbConnection.DateToSqlString(startDate, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
   End Function
 
   'Private Function GetAutoStartClause() As String
@@ -436,7 +436,7 @@ Public Class StatForm
   End Function
 
   Private Function GetEndDateClause() As String
-    Return "(race.date <= " & DbConnection.DateToSqlString(dpEndDate.Value, DbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
+    Return "(race.date <= " & DbConnection.DateToSqlString(dpEndDate.Value, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ")"
   End Function
 
   Private Function UseTrack() As Boolean

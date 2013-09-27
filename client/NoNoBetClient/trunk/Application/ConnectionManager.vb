@@ -1,5 +1,5 @@
-﻿Imports BaseComponents
-Imports DbInterface
+﻿Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
 Imports NoNoBetComponents
 Imports NoNoBetConfig
 Imports NoNoBetResources

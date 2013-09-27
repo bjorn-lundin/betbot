@@ -1,11 +1,11 @@
 ﻿Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
 Imports NoNoBetResources
 
 Public Class RaceBetSim
   Inherits BaseForm
-  Friend WithEvents gridRaces As BaseComponents.BaseGrid
+  Friend WithEvents gridRaces As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents groupTop As System.Windows.Forms.GroupBox
   Friend WithEvents groupTopBottom As System.Windows.Forms.GroupBox
   Friend WithEvents radioIgnore As System.Windows.Forms.RadioButton
@@ -66,7 +66,7 @@ Public Class RaceBetSim
     Me.dpEndDate = New System.Windows.Forms.DateTimePicker()
     Me.comboTracks = New System.Windows.Forms.ComboBox()
     Me.labelStartDate = New System.Windows.Forms.Label()
-    Me.gridRaces = New BaseComponents.BaseGrid()
+    Me.gridRaces = New NoNoBetBaseComponents.BaseGrid()
     Me.butttonBet = New System.Windows.Forms.Button()
     Me.radioBetTypeWinner = New System.Windows.Forms.RadioButton()
     Me.radioBetTypePlace = New System.Windows.Forms.RadioButton()
@@ -591,9 +591,9 @@ Public Class RaceBetSim
                          "JOIN race_ekipage ON (race_ekipage.ekipage_id = ekipage.id) " & _
                          "JOIN race ON (race_ekipage.race_id = race.id) " & _
                          "JOIN horse ON (ekipage.horse_id = horse.id) " & _
-                         "WHERE (race.track = " & DbInterface.DbConnection.SqlBuildValueString(trackName) & ") " & _
-                           "AND (race.date >= " & DbConnection.DateToSqlString(startDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ") " & _
-                           "AND (race.date <= " & DbConnection.DateToSqlString(endDate, DbInterface.DbConnection.DateFormatMode.DateOnly) & ") "
+                         "WHERE (race.track = " & NoNoBetDbInterface.DbConnection.SqlBuildValueString(trackName) & ") " & _
+                           "AND (race.date >= " & DbConnection.DateToSqlString(startDate, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ") " & _
+                           "AND (race.date <= " & DbConnection.DateToSqlString(endDate, NoNoBetDbInterface.DbConnection.DateFormatMode.DateOnly) & ") "
 
     startTypeClause = StatForm.GetStartTypeClause(GetStartType())
     If (startTypeClause.Length > 0) Then

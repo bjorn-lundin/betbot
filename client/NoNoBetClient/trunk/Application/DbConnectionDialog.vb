@@ -1,8 +1,8 @@
 ﻿Imports Microsoft.Win32
-Imports DbInterface
+Imports NoNoBetDbInterface
 
 Public Class DbConnectionDialog
-  Inherits BaseComponents.BaseForm
+  Inherits NoNoBetBaseComponents.BaseForm
 
   Private Sub InitializeComponent()
     Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(DbConnectionDialog))
@@ -416,7 +416,7 @@ Public Class DbConnectionDialog
   Friend WithEvents ButtonSaveParams As System.Windows.Forms.Button
 
   ''Private _DbConnectionString As DbInterface.DbConnectionString
-  Private _DbConnection As DbInterface.DbConnection
+  Private _DbConnection As NoNoBetDbInterface.DbConnection
   Private _DialogResult As Boolean = False
 
   Public Sub New()
@@ -433,7 +433,7 @@ Public Class DbConnectionDialog
   '  Return _DbConnectionString
   'End Function
 
-  Public Function GetDbConnection() As DbInterface.DbConnection
+  Public Function GetDbConnection() As NoNoBetDbInterface.DbConnection
     Return _DbConnection
   End Function
 
@@ -466,7 +466,7 @@ Public Class DbConnectionDialog
       _DbConnection = Nothing
     End If
 
-    _DbConnection = New DbInterface.DbConnection(dbConStr)
+    _DbConnection = New NoNoBetDbInterface.DbConnection(dbConStr)
 
     Return _DbConnection.Open()
   End Function

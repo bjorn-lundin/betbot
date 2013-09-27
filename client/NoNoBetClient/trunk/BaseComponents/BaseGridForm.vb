@@ -5,10 +5,10 @@ Public Class BaseGridForm
   Implements IBaseGridForm
 
 
-  Friend WithEvents Grid As BaseComponents.BaseGrid
+  Friend WithEvents Grid As NoNoBetBaseComponents.BaseGrid
 
   Private Sub InitializeComponent()
-    Me.Grid = New BaseComponents.BaseGrid()
+    Me.Grid = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.Grid, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
     '

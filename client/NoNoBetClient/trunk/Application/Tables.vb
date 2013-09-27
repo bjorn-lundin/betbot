@@ -1,16 +1,16 @@
-﻿Imports BaseComponents
+﻿Imports NoNoBetBaseComponents
 
 Public Class Tables
   Inherits BaseForm
   Friend WithEvents cboTables As System.Windows.Forms.ComboBox
   Friend WithEvents btnShow As System.Windows.Forms.Button
   Friend WithEvents grpBottom As System.Windows.Forms.GroupBox
-  Friend WithEvents gridTable As BaseComponents.BaseGrid
+  Friend WithEvents gridTable As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents grpTop As System.Windows.Forms.GroupBox
 
   Private Sub InitializeComponent()
     Me.grpTop = New System.Windows.Forms.GroupBox()
-    Me.gridTable = New BaseComponents.BaseGrid()
+    Me.gridTable = New NoNoBetBaseComponents.BaseGrid()
     Me.grpBottom = New System.Windows.Forms.GroupBox()
     Me.btnShow = New System.Windows.Forms.Button()
     Me.cboTables = New System.Windows.Forms.ComboBox()

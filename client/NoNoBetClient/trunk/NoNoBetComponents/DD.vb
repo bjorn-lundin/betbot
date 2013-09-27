@@ -1,16 +1,16 @@
-﻿Imports DbInterface
+﻿Imports NoNoBetDbInterface
 Imports NoNoBetDb
-Imports BaseComponents
+Imports NoNoBetBaseComponents
 Imports NoNoBetResources
 
 Public Class DD
   Inherits BaseForm
 
   Friend WithEvents tabPageResult As System.Windows.Forms.TabPage
-  Friend WithEvents gridDD2 As BaseComponents.BaseGrid
-  Friend WithEvents gridDDResult As BaseComponents.BaseGrid
+  Friend WithEvents gridDD2 As NoNoBetBaseComponents.BaseGrid
+  Friend WithEvents gridDDResult As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents tabPageDD2 As System.Windows.Forms.TabPage
-  Friend WithEvents gridDD1 As BaseComponents.BaseGrid
+  Friend WithEvents gridDD1 As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents tabPageDD1 As System.Windows.Forms.TabPage
   Friend WithEvents TabControl As System.Windows.Forms.TabControl
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
@@ -21,9 +21,9 @@ Public Class DD
     Me.tabPageDD1 = New System.Windows.Forms.TabPage()
     Me.tabPageDD2 = New System.Windows.Forms.TabPage()
     Me.tabPageResult = New System.Windows.Forms.TabPage()
-    Me.gridDD1 = New BaseComponents.BaseGrid()
-    Me.gridDD2 = New BaseComponents.BaseGrid()
-    Me.gridDDResult = New BaseComponents.BaseGrid()
+    Me.gridDD1 = New NoNoBetBaseComponents.BaseGrid()
+    Me.gridDD2 = New NoNoBetBaseComponents.BaseGrid()
+    Me.gridDDResult = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SplitContainer1.Panel2.SuspendLayout()
     Me.SplitContainer1.SuspendLayout()
