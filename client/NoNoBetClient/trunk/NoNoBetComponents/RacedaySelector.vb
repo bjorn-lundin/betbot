@@ -1,11 +1,11 @@
-﻿Imports DbInterface
+﻿Imports NoNoBetDbInterface
 Imports NoNoBetDb
-Imports BaseComponents
+Imports NoNoBetBaseComponents
 Imports NoNoBetResources
 
 Public Class RacedaySelector
-  Inherits BaseComponents.BaseForm
-  Friend WithEvents gridRacedays As BaseComponents.BaseGrid
+  Inherits NoNoBetBaseComponents.BaseForm
+  Friend WithEvents gridRacedays As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents dtpFrom As System.Windows.Forms.DateTimePicker
   Friend WithEvents dtpTo As System.Windows.Forms.DateTimePicker
   Friend WithEvents cboCountry As System.Windows.Forms.ComboBox
@@ -15,12 +15,12 @@ Public Class RacedaySelector
   Friend WithEvents lblTo As System.Windows.Forms.Label
   Friend WithEvents lblFrom As System.Windows.Forms.Label
   Friend WithEvents grpBottom As System.Windows.Forms.GroupBox
-  Friend WithEvents gridBottom As BaseComponents.BaseGrid
+  Friend WithEvents gridBottom As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
 
   Private Sub InitializeComponent()
     Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-    Me.gridRacedays = New BaseComponents.BaseGrid()
+    Me.gridRacedays = New NoNoBetBaseComponents.BaseGrid()
     Me.grpTop = New System.Windows.Forms.GroupBox()
     Me.Label1 = New System.Windows.Forms.Label()
     Me.lblTo = New System.Windows.Forms.Label()
@@ -30,7 +30,7 @@ Public Class RacedaySelector
     Me.dtpTo = New System.Windows.Forms.DateTimePicker()
     Me.dtpFrom = New System.Windows.Forms.DateTimePicker()
     Me.grpBottom = New System.Windows.Forms.GroupBox()
-    Me.gridBottom = New BaseComponents.BaseGrid()
+    Me.gridBottom = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SplitContainer1.Panel1.SuspendLayout()
     Me.SplitContainer1.Panel2.SuspendLayout()
@@ -208,7 +208,7 @@ Public Class RacedaySelector
     gridRacedays.ExecuteSql(MyBase.ResourceManager, sql)
   End Sub
 
-  Private Sub gridRacedays_RowChange(sender As Object, e As BaseComponents.BaseGrid.RowChangeEventArgs) Handles gridRacedays.RowChange
+  Private Sub gridRacedays_RowChange(sender As Object, e As NoNoBetBaseComponents.BaseGrid.RowChangeEventArgs) Handles gridRacedays.RowChange
     If _IsLoaded Then
       Dim sql As String
 

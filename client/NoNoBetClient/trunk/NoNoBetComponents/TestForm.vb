@@ -1,6 +1,6 @@
 ﻿Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
 
 Public Class TestForm
   Inherits BaseForm

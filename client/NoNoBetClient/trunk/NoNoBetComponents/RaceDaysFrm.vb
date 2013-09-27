@@ -1,9 +1,9 @@
 ﻿Imports System
 Imports System.Windows
 Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
-Imports DbInterface.DbConnection
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
+Imports NoNoBetDbInterface.DbConnection
 Imports NoNoBetComponents
 Imports NoNoBetDb
 

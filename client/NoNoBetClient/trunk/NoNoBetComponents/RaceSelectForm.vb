@@ -1,9 +1,9 @@
 ﻿Imports System
 Imports System.Windows
 Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
-Imports DbInterface.DbConnection
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
+Imports NoNoBetDbInterface.DbConnection
 Imports NoNoBetComponents
 Imports NoNoBetDb
 
@@ -15,7 +15,7 @@ Public Class RaceSelectForm
   Friend WithEvents ButtonSearch As System.Windows.Forms.Button
   Friend WithEvents LabelFromDate As System.Windows.Forms.Label
   Friend WithEvents FromDate As System.Windows.Forms.DateTimePicker
-  Friend WithEvents GridRaces As BaseComponents.BaseGrid
+  Friend WithEvents GridRaces As NoNoBetBaseComponents.BaseGrid
 
   Private _Loaded As Boolean = False
 
@@ -87,7 +87,7 @@ Public Class RaceSelectForm
     Me.FromDate = New System.Windows.Forms.DateTimePicker()
     Me.LabelFromDate = New System.Windows.Forms.Label()
     Me.ButtonSearch = New System.Windows.Forms.Button()
-    Me.GridRaces = New BaseComponents.BaseGrid()
+    Me.GridRaces = New NoNoBetBaseComponents.BaseGrid()
     Me.TopPanel.SuspendLayout()
     CType(Me.GridRaces, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()

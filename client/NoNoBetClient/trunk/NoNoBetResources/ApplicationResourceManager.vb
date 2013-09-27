@@ -1,4 +1,4 @@
-﻿Imports DbInterface
+﻿Imports NoNoBetDbInterface
 Imports NoNoBetConfig
 Imports System.Windows.Forms
 

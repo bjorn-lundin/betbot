@@ -1,6 +1,6 @@
 ﻿Public Class HorseStatForm
-  Inherits BaseComponents.BaseForm
-  Friend WithEvents Grid As BaseComponents.BaseGrid
+  Inherits NoNoBetBaseComponents.BaseForm
+  Friend WithEvents Grid As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents TopPanel As System.Windows.Forms.Panel
   Friend WithEvents HorseNameLabel As System.Windows.Forms.Label
   Friend WithEvents HorseIdLabel As System.Windows.Forms.Label
@@ -24,13 +24,13 @@
     InitializeComponent()
   End Sub
 
-  Public Overloads Sub StartForm(ByVal dbCon As DbInterface.DbConnection, ByVal horseId As Integer)
+  Public Overloads Sub StartForm(ByVal dbCon As NoNoBetDbInterface.DbConnection, ByVal horseId As Integer)
     _HorseId = horseId
     MyBase.StartForm(True, MyBase.ResourceManager)
   End Sub
 
   Private Sub InitializeComponent()
-    Me.Grid = New BaseComponents.BaseGrid()
+    Me.Grid = New NoNoBetBaseComponents.BaseGrid()
     Me.TopPanel = New System.Windows.Forms.Panel()
     Me.HorseNameLabel = New System.Windows.Forms.Label()
     Me.HorseIdLabel = New System.Windows.Forms.Label()

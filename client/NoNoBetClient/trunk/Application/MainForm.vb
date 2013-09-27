@@ -1,12 +1,12 @@
-﻿Imports BaseComponents
+﻿Imports NoNoBetBaseComponents
 
 Public Class MainForm
   Inherits BaseForm
 
-  Friend WithEvents TableGrid As BaseComponents.BaseGrid
+  Friend WithEvents TableGrid As NoNoBetBaseComponents.BaseGrid
 
   Private Sub InitializeComponent()
-    Me.TableGrid = New BaseComponents.BaseGrid()
+    Me.TableGrid = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.TableGrid, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
     '

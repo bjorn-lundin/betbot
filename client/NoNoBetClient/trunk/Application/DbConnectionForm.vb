@@ -1,4 +1,4 @@
-﻿Imports BaseComponents
+﻿Imports NoNoBetBaseComponents
 Imports NoNoBetConfig
 Imports NoNoBetComponents
 Imports NoNoBetResources
@@ -7,8 +7,8 @@ Imports System.Data
 Imports System.Windows.Forms
 Imports System.Xml
 Imports System.IO
-Imports DbInterface
-Imports DbInterface.DbConnection
+Imports NoNoBetDbInterface
+Imports NoNoBetDbInterface.DbConnection
 Imports Microsoft.Win32
 
 Public Class DbConnectionForm
@@ -96,7 +96,7 @@ Public Class DbConnectionForm
     UpdateConnectionData()
   End Sub
 
-  Private Sub _DbConn_Notification(ByVal sender As Object, ByVal e As DbInterface.DbConnection.DbNotificationEventArgs) Handles _DbConn.Notification
+  Private Sub _DbConn_Notification(ByVal sender As Object, ByVal e As NoNoBetDbInterface.DbConnection.DbNotificationEventArgs) Handles _DbConn.Notification
     txtCondition.Text = e.Condition
     txtInfo.Text = e.Information
     txtPID.Text = e.PID.ToString

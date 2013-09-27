@@ -1,17 +1,17 @@
-﻿Imports DbInterface
+﻿Imports NoNoBetDbInterface
 Imports NoNoBetDb
-Imports BaseComponents
+Imports NoNoBetBaseComponents
 Imports NoNoBetResources
 
 Public Class VP
   Inherits BaseForm
 
-  Friend WithEvents gridTop As BaseComponents.BaseGrid
+  Friend WithEvents gridTop As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents tabControl As System.Windows.Forms.TabControl
   Friend WithEvents tabPageStart As System.Windows.Forms.TabPage
-  Friend WithEvents gridStart As BaseComponents.BaseGrid
+  Friend WithEvents gridStart As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents tabPageResult As System.Windows.Forms.TabPage
-  Friend WithEvents gridResult As BaseComponents.BaseGrid
+  Friend WithEvents gridResult As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
 
   Private _Raceday_Id As Integer
@@ -20,12 +20,12 @@ Public Class VP
 
   Private Sub InitializeComponent()
     Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-    Me.gridTop = New BaseComponents.BaseGrid()
+    Me.gridTop = New NoNoBetBaseComponents.BaseGrid()
     Me.tabControl = New System.Windows.Forms.TabControl()
     Me.tabPageStart = New System.Windows.Forms.TabPage()
     Me.tabPageResult = New System.Windows.Forms.TabPage()
-    Me.gridStart = New BaseComponents.BaseGrid()
-    Me.gridResult = New BaseComponents.BaseGrid()
+    Me.gridStart = New NoNoBetBaseComponents.BaseGrid()
+    Me.gridResult = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SplitContainer1.Panel1.SuspendLayout()
     Me.SplitContainer1.Panel2.SuspendLayout()
@@ -149,7 +149,7 @@ Public Class VP
     MyBase.StartForm(asDialog, resourceMan)
   End Sub
 
-  Private Sub gridTop_RowChange(sender As Object, e As BaseComponents.BaseGrid.RowChangeEventArgs) Handles gridTop.RowChange
+  Private Sub gridTop_RowChange(sender As Object, e As NoNoBetBaseComponents.BaseGrid.RowChangeEventArgs) Handles gridTop.RowChange
     If _IsLoaded Then
       If (e.Row IsNot Nothing) Then
         Dim raceId As Integer = ApplicationResourceManager.GetRowColumnIntValue(e.Row, "id")

@@ -1,4 +1,4 @@
-﻿Imports DbInterface.DbConnection
+﻿Imports NoNoBetDbInterface.DbConnection
 Public Class Race
     Private Const _TableName As String = "race"
     Private Const _RacesSelect As String = "SELECT date,track FROM " & _TableName

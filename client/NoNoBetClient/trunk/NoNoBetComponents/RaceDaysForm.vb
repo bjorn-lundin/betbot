@@ -1,24 +1,24 @@
 ﻿Imports System
 Imports System.Windows
 Imports System.Windows.Forms
-Imports BaseComponents
-Imports DbInterface
-Imports DbInterface.DbConnection
+Imports NoNoBetBaseComponents
+Imports NoNoBetDbInterface
+Imports NoNoBetDbInterface.DbConnection
 Imports NoNoBetComponents
 Imports NoNoBetDb
 
 Public Class RaceDaysForm
   Inherits BaseForm
-  Friend WithEvents gridRaceDays As BaseComponents.BaseGrid
+  Friend WithEvents gridRaceDays As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents dateStart As System.Windows.Forms.DateTimePicker
   Friend WithEvents radioStartdate As System.Windows.Forms.RadioButton
   Friend WithEvents radioAllDates As System.Windows.Forms.RadioButton
   Friend WithEvents buttonShow As System.Windows.Forms.Button
   Friend WithEvents panelTop As System.Windows.Forms.Panel
-  Friend WithEvents gridRaces As BaseComponents.BaseGrid
+  Friend WithEvents gridRaces As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
   Friend WithEvents SplitContainer2 As System.Windows.Forms.SplitContainer
-  Friend WithEvents gridRaceEquipages As BaseComponents.BaseGrid
+  Friend WithEvents gridRaceEquipages As NoNoBetBaseComponents.BaseGrid
   Friend WithEvents buttonClose As System.Windows.Forms.Button
   Friend WithEvents HorseStat As System.Windows.Forms.Button
 
@@ -36,11 +36,11 @@ Public Class RaceDaysForm
     Me.dateStart = New System.Windows.Forms.DateTimePicker()
     Me.radioStartdate = New System.Windows.Forms.RadioButton()
     Me.radioAllDates = New System.Windows.Forms.RadioButton()
-    Me.gridRaceDays = New BaseComponents.BaseGrid()
-    Me.gridRaces = New BaseComponents.BaseGrid()
+    Me.gridRaceDays = New NoNoBetBaseComponents.BaseGrid()
+    Me.gridRaces = New NoNoBetBaseComponents.BaseGrid()
     Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
     Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
-    Me.gridRaceEquipages = New BaseComponents.BaseGrid()
+    Me.gridRaceEquipages = New NoNoBetBaseComponents.BaseGrid()
     Me.HorseStat = New System.Windows.Forms.Button()
     Me.panelTop.SuspendLayout()
     CType(Me.gridRaceDays, System.ComponentModel.ISupportInitialize).BeginInit()
