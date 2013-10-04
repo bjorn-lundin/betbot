@@ -356,6 +356,7 @@ package body Bet_Handler is
 
     case Powerdays is
       when   0    => Sum := 0.0;                           History_OK := Sum > 0.0;
+      when 100    => Sum := 1.0;                           History_OK := Sum > 0.0;
       when 107    => Sum := Bet.Bet_History.Sum_07_Linear; History_OK := Sum > 0.0;
       when 207    => Sum := Bet.Bet_History.Sum_07_Square; History_OK := Sum > 0.0;
       when 307    => Sum := Bet.Bet_History.Sum_07_Cube  ; History_OK := Sum > 0.0;
@@ -694,7 +695,7 @@ package body Bet_Handler is
           case Bet.Bet_Info.Event.Eventtypeid is
             when 7    =>
               Min_Num_Animals_Before_Me := Num_Runners ;  -- always many horses before mine ...
-              Max_Favorite_Odds := 2.0;
+              Max_Favorite_Odds := 3.0;
             when 4339 =>
               Min_Num_Animals_Before_Me := 6;                --always last hound
               Max_Favorite_Odds := 1.5;
@@ -719,7 +720,7 @@ package body Bet_Handler is
               Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid; -- save the selection
               Bet.Bet_Info.Used_Index   := i; --index in the array of our selection
               Was_Ok := True;
-              -- Configure if we wnat highe-end or low-end if more than on fits the criterias
+              -- Configure if we want high-end or low-end if more than on fits the criterias
               if Bet.Bot_Cfg.Lay_Exit_Early then
                 exit;
               end if;
@@ -1423,7 +1424,7 @@ package body Bet_Handler is
         -- prepare the AWS
         Aws.Headers.Set.Reset(My_Headers);
         Aws.Headers.Set.Add (My_Headers, "X-Authentication", A_Token.Get);
-        Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
+        Aws.Headers.Set.Add (My_Headers, "X-Application", A_Token.Get_App_Key);
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
         Limit_Order.Set_Field (Field_Name => "persistenceType", Field      => "LAPSE");
@@ -1691,6 +1692,7 @@ package body Bet_Handler is
           Average_Price_Matched := Float(Bet.Bot_Cfg.Bet_Size);
           Size_Matched := Float(Price);
           Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
+          
       when Dry =>
           Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
           Move( "EXECUTION_COMPLETE", Order_Status);
@@ -1705,6 +1707,7 @@ package body Bet_Handler is
           Bethistory.Betid := Bet_Id ;
           Bethistory.Powerdays := Powerdays;
           case Powerdays is
+            when 100    => Bethistory.Historysum := 1.0;
             when 107    => Bethistory.Historysum := Bet.Bet_History.Sum_07_Linear;
             when 207    => Bethistory.Historysum := Bet.Bet_History.Sum_07_Square;
             when 307    => Bethistory.Historysum := Bet.Bet_History.Sum_07_Cube  ;

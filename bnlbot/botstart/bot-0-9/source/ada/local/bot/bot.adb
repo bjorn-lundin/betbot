@@ -48,7 +48,8 @@ begin
          Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
          Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
          Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
-         Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_id)
+         Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_Id),
+         App_Key    => To_String(Bot_Config.Config.Betfair_Section.App_Key)
        );
        My_Token.Login;
        Log(Me, "Login betfair done");

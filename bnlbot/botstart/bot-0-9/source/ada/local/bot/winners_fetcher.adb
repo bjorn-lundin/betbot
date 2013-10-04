@@ -293,7 +293,7 @@ begin
     if Get_Horses then
       Log (Me, "Get horses");
       R := Aws.Client.Get(URL      => URL_HORSES,
-                          Timeouts =>  Aws.Client.Timeouts (Each => 120.0));
+                          Timeouts =>  Aws.Client.Timeouts (Each => 240.0));
 
       if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
         raise Bad_Data with "Get Timout at " & URL_HORSES;
@@ -316,7 +316,7 @@ begin
     if Get_Hounds then
       Log (Me, "Get hounds");
       R := Aws.Client.Get(URL      => URL_HOUNDS,
-                          Timeouts =>  Aws.Client.Timeouts (Each => 120.0));
+                          Timeouts =>  Aws.Client.Timeouts (Each => 240.0));
       if String'(Aws.Response.Message_Body(R)) = "Get Timeout" then
         raise Bad_Data with "Get Timout at " & URL_HOUNDS;
       end if;

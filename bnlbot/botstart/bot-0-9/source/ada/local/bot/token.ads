@@ -3,7 +3,7 @@ with Sattmate_Calendar;
 
 package Token is
 
-  App_Key          : constant String   := "q0XW4VGRNoHuaszo";
+--  App_Key          : constant String   := "q0XW4VGRNoHuaszo";
   App_Key_Delayed  : constant String   := "fhGwsk2Qay4zEw2Q";
   Application_ID   : constant Positive := 1662;
   Application_Name : constant String := "bnl-bot";
@@ -25,7 +25,8 @@ package Token is
                   Username   : in     String;
                   Password   : in     String;
                   Product_Id : in     String;
-                  Vendor_Id  : in     String) ;
+                  Vendor_Id  : in     String;
+                  App_Key    : in     String) ;
   
   procedure Login(A_Token : in out Token_Type) ;
                   
@@ -33,6 +34,7 @@ package Token is
   procedure Set (A_Token  : in out Token_Type; The_Token : String);
   procedure Unset (A_Token : in out Token_Type) ;
   procedure Keep_Alive (A_Token : in out Token_Type ; Result : out Boolean);
+  function  Get_App_Key (A_Token  :        Token_Type) return String;
   
 private
   type Token_Type is tagged record
@@ -43,5 +45,6 @@ private
     Password     : Unbounded_String := Null_Unbounded_String; 
     Product_Id   : Unbounded_String := Null_Unbounded_String;
     Vendor_Id    : Unbounded_String := Null_Unbounded_String; 
+    App_Key      : Unbounded_String := Null_Unbounded_String; 
   end record;
 end Token;
