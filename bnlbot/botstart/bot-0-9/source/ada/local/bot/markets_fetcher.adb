@@ -730,7 +730,8 @@ begin
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
-            Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
+            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+            App_Key    => Ini.Get_Value("betfair","appkey","")
           );    
      My_Token.Login;
      
@@ -746,7 +747,7 @@ begin
    --conn.setRequestProperty("X-Application", appKey);
    --conn.setRequestProperty("Accept", "application/json");    
   Aws.Headers.Set.Add (My_Headers, "X-Authentication", My_Token.Get);
-  Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
+  Aws.Headers.Set.Add (My_Headers, "X-Application", My_Token.Get_App_Key);
   Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 --   Log(Me, "Headers set");
 

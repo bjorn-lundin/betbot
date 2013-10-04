@@ -332,6 +332,7 @@ package body Bot_Config is
       Cfg.Betfair_Section.Password   := To_Unbounded_String(Ini.Get_Value("betfair","password",""));
       Cfg.Betfair_Section.Product_Id := To_Unbounded_String(Ini.Get_Value("betfair","product_id",""));
       Cfg.Betfair_Section.Vendor_Id  := To_Unbounded_String(Ini.Get_Value("betfair","vendor_id",""));
+      Cfg.Betfair_Section.App_Key    := To_Unbounded_String(Ini.Get_Value("betfair","appkey",""));
       --db stuff
       Cfg.Database_Section.Name       := To_Unbounded_String(Ini.Get_Value("database","name",""));
       Cfg.Database_Section.Username   := To_Unbounded_String(Ini.Get_Value("database","username",""));

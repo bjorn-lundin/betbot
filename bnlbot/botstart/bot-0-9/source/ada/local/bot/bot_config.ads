@@ -72,6 +72,7 @@ package Bot_Config is
     Password   : Unbounded_String := Null_Unbounded_String ; 
     Product_Id : Unbounded_String := Null_Unbounded_String ; 
     Vendor_Id  : Unbounded_String := Null_Unbounded_String ; 
+    App_Key    : Unbounded_String := Null_Unbounded_String ;
   end record;  
     
   type Login_Database_Section_Type is record

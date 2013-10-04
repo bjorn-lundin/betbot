@@ -114,8 +114,10 @@ procedure Saldo_Fetcher is
      Error, 
      APINGException, 
      Data  : JSON_Value := Create_Object;
+     Is_Error : Boolean := False;
   begin 
       if Reply.Has_Field("error") then
+        Is_Error := True;      
         --    "error": {
         --        "code": -32099,
         --        "data": {
@@ -149,20 +151,20 @@ procedure Saldo_Fetcher is
                 if APINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
                   return True;
                 end if;
-              else
-                raise No_Such_Field with "APINGException - errorCode";
+--              else
+--                raise No_Such_Field with "APINGException - errorCode";
               end if;
-            else
-              raise No_Such_Field with "Data - APINGException";
+--            else
+--              raise No_Such_Field with "Data - APINGException";
             end if;
-          else
-            raise  No_Such_Field with "Error - data";
+--          else
+--            raise  No_Such_Field with "Error - data";
           end if;
-        else
-          raise No_Such_Field with "Error - code";
+--        else
+--          raise No_Such_Field with "Error - code";
         end if;
       end if;
-    return False;      
+    return Is_Error;      
   end API_Exceptions_Are_Present;    
   ---------------------------------------------------------------------
   
@@ -186,7 +188,7 @@ procedure Saldo_Fetcher is
    --conn.setRequestProperty("Accept", "application/json");    
    
     Aws.Headers.Set.Add (My_Headers, "X-Authentication", Tkn.Get);
-    Aws.Headers.Set.Add (My_Headers, "X-Application", Token.App_Key);
+    Aws.Headers.Set.Add (My_Headers, "X-Application", Tkn.Get_App_Key);
     Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
     -- params is empty ...                     
@@ -301,7 +303,8 @@ begin
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
-            Vendor_id  => Ini.Get_Value("betfair","vendor_id","")
+            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+            App_Key    => Ini.Get_Value("betfair","appkey","")
           );    
      My_Token.Login;          
      Log(Me, "Logged in with token '" &  My_Token.Get & "'");
@@ -341,11 +344,11 @@ begin
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
         end case;  
       exception
-          when Process_io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
+          when Process_Io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
       end;
       Now := Sattmate_Calendar.Clock;
       Is_Time_To_Check_Balance := Now.Hour = 5 and then 
-                                  Now.Minute = 0 and then
+                                  Now.Minute = 00 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img);  --??

@@ -26,12 +26,14 @@ package body Token is
                   Username   : in     String;
                   Password   : in     String;
                   Product_Id : in     String;
-                  Vendor_Id  : in     String) is
+                  Vendor_Id  : in     String;
+                  App_Key    : in     String) is
   begin
     A_Token.Username   := To_Unbounded_String(Username);
     A_Token.Password   := To_Unbounded_String(Password);
     A_Token.Product_Id := To_Unbounded_String(Product_Id);
     A_Token.Vendor_Id  := To_Unbounded_String(Vendor_Id);
+    A_Token.App_Key    := To_Unbounded_String(App_Key);
   end Init;
   
   
@@ -123,6 +125,11 @@ package body Token is
   end Unset;
   -------------------------------------------------------------
   
+  function  Get_App_Key (A_Token  :        Token_Type) return String is
+  begin
+    return To_String(A_Token.App_Key);
+  end Get_App_Key;
+  
   procedure Keep_Alive (A_Token : in out Token_Type; Result : out Boolean ) is
     -- just get the eventtypes
     Json_String : String := "{""jsonrpc"": ""2.0"", ""method"": ""SportsAPING/v1.0/listEventTypes"", ""params"": {""filter"":{}}, ""id"": 1}";
@@ -139,7 +146,7 @@ package body Token is
 --       Log(Me & "Keep_Alive", "start"); 
        Aws.Headers.Set.Reset (Global_Headers);
        Aws.Headers.Set.Add (Global_Headers, "X-Authentication", A_Token.Get);
-       Aws.Headers.Set.Add (Global_Headers, "X-Application", Token.App_Key);
+       Aws.Headers.Set.Add (Global_Headers, "X-Application", A_Token.Get_App_Key);
        Aws.Headers.Set.Add (Global_Headers, "Accept", "application/json");
        AWS_Keep_Alive_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                                 Data         =>  Json_String,
