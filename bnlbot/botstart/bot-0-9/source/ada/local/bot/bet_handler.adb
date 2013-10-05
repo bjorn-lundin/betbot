@@ -409,6 +409,10 @@ package body Bet_Handler is
                 -- we have Won enough for today, STOP bettting!
                 Continue_Betting := False;
                 Log (Me & "Try_Make_New_Bet", "YES !! We have won enough for today, STOP bettting.");
+              elsif Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
+                -- we have lost enough for today, give up!
+                Continue_Betting := False;
+                Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
               else
                 -- we have won today, but haven't reach our ceiling yet
                 Continue_Betting := True;
