@@ -31,6 +31,7 @@ package Bot_Config is
 --    DR_Name          : Unbounded_String       := Null_Unbounded_String;
     Max_Daily_Loss   : Max_Daily_Loss_Type    := 0.0;
     Max_Daily_Profit : Max_Daily_Profit_Type  := 0.0;
+    Max_Daily_Num_Losses : Integer_4          := 0;
     Back_Price       : Back_Price_Type        := 0.0;
     Delta_Price      : Delta_Price_Type       := 0.0;
     Max_Lay_Price    : Max_Lay_Price_Type     := 0.0;
