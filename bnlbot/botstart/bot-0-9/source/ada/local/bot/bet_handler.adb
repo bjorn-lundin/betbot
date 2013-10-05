@@ -386,7 +386,7 @@ package body Bet_Handler is
 --        if Fulfilled then
           if Powerdays > 0 then
             Todays_Profit := Bet.Profit_Today(Powerdays => Powerdays);
-            Lost_Today :=  Bet.Has_Lost_Today(Powerdays => Powerdays);
+            Lost_Today := Bet.Num_Losses_Today(Powerdays => Powerdays) > Bet.Bot_Cfg.Max_Daily_Num_Losses;
 
             -- if we have a loss today, settle with positive result
             if Lost_Today then
@@ -1214,14 +1214,14 @@ package body Bet_Handler is
     return Profit_Type(Profit);
   end Profit_Today;
   ------------------------------------------------------------------------------------------------------
-  function Has_Lost_Today(Bet : Bet_Type; Powerdays : Integer_4) return Boolean is
+  function Num_Losses_Today(Bet : Bet_Type; Powerdays : Integer_4) return Integer_4 is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     use Sattmate_Calendar;
     Start_Date, End_Date : Time_Type := Clock;
+    Num_Losses : Integer_4 := 0;
   begin
     T.Start;
-
       Start_Date := Bet.Bet_Info.Market.Startts;
       End_Date := Bet.Bet_Info.Market.Startts;
 
@@ -1236,7 +1236,7 @@ package body Bet_Handler is
       End_Date.MilliSecond := 999;
 
       Select_Lost_Today.Prepare(
-        "select 'A' " &
+        "select count('a') " &
         "from ABETS " &
         "where STARTTS >= :STARTOFDAY " &
         "and POWERDAYS = :POWERDAYS " &
@@ -1253,16 +1253,16 @@ package body Bet_Handler is
       Select_Lost_Today.Set_Timestamp( "ENDOFDAY",End_Date);
       Select_Lost_Today.Open_Cursor;
       Select_Lost_Today.Fetch(Eos);
+      if not Eos then
+        Select_Lost_Today.Get(1, Num_Losses); 
+      else
+        Num_Losses := 0;
+      end if;
       Select_Lost_Today.Close_Cursor;
     T.Commit;
-    if not Eos then
-      Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost today: " & Sattmate_Calendar.String_Date(Start_Date));
-      return True;
-    else
-      Log(Me & "Has_Lost_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS NOT lost today: " & Sattmate_Calendar.String_Date(Start_Date));
-      return False;
-    end if;
-  end Has_Lost_Today;
+    Log(Me & "Num_Losses_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost" & Num_Losses'Img & " times today: " & Sattmate_Calendar.String_Date(Start_Date));
+    return Num_Losses;    
+  end Num_Losses_Today;
 
   ------------------------------------------------------------------------------------------------------
 --  function To_String(Bet : Bet_Type) return String;

@@ -92,10 +92,10 @@ private
 --                          Powerdays : in     Integer_4) ;
 --  procedure Make_Simulation_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
                           
-  function Exists        (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
-  function Profit_Today  (Bet : Bet_Type; Powerdays : Integer_4) return Profit_Type;
-  function Has_Lost_Today(Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
-  function In_The_Air    (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
+  function Exists          (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
+  function Profit_Today    (Bet : Bet_Type; Powerdays : Integer_4) return Profit_Type;
+  function Num_Losses_Today(Bet : Bet_Type; Powerdays : Integer_4) return Integer_4;
+  function In_The_Air      (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
   
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record
