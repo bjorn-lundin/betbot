@@ -377,7 +377,7 @@ package body Bet_Handler is
     Log(Me & "Do_Try", "Powerdays " & Powerdays'Img & " History_OK: " & History_OK'Img);
 
     Exists := Bet.Exists(Powerdays => Powerdays);
-    In_The_Air := Bet.In_The_Air(Powerdays => Powerdays);
+    In_The_Air := Bet.Num_In_The_Air(Powerdays => Powerdays) > Bet.Bot_Cfg.Max_Num_In_The_Air;
 
     if not In_The_Air then
       if not Exists then
@@ -1306,14 +1306,15 @@ package body Bet_Handler is
     return not Eos;
   end Exists;
   ---------------------------------------------------------------
-  function In_The_Air(Bet : Bet_Type; Powerdays : Integer_4) return Boolean is
+  function Num_In_The_Air(Bet : Bet_Type; Powerdays : Integer_4) return Integer_4 is
     T    : Sql.Transaction_Type;
     Eos  : Boolean := False;
-    Abet : Table_Abets.Data_Type;
+--    Abet : Table_Abets.Data_Type;
+    Num : Integer_4 := 0;
   begin
     T.Start;
       Select_In_The_Air.Prepare(
-         "select * " &
+         "select count('a') " &
          "from " &
            "ABETS " &
          "where BETWON is null " &
@@ -1328,16 +1329,14 @@ package body Bet_Handler is
       Select_In_The_Air.Open_Cursor;
       Select_In_The_Air.Fetch( Eos);
       if not Eos then
-        Abet := Table_Abets.Get(Select_In_The_Air);
-        Log(Me & "In_The_Air", "Unsettled bet exists " & Table_Abets.To_String(Abet));
-      else
---        Log(Me & "In_The_Air", "Bet does not exist");
-         null;
+        Select_In_The_Air.Get(1,Num);
+--        Abet := Table_Abets.Get(Select_In_The_Air);
+--        Log(Me & "In_The_Air", "Unsettled bet exists " & Table_Abets.To_String(Abet));
       end if;
       Select_In_The_Air.Close_Cursor;
     T.Commit;
-    return not Eos;
-  end In_The_Air;
+    return Num;
+  end Num_In_The_Air;
   ---------------------------------------------------------------
 
   procedure Make_Bet(Bet       : in out Bet_Type;

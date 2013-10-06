@@ -95,7 +95,7 @@ private
   function Exists          (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
   function Profit_Today    (Bet : Bet_Type; Powerdays : Integer_4) return Profit_Type;
   function Num_Losses_Today(Bet : Bet_Type; Powerdays : Integer_4) return Integer_4;
-  function In_The_Air      (Bet : Bet_Type; Powerdays : Integer_4) return Boolean;
+  function Num_In_The_Air  (Bet : Bet_Type; Powerdays : Integer_4) return Integer_4;
   
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record

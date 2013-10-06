@@ -32,6 +32,7 @@ package Bot_Config is
     Max_Daily_Loss   : Max_Daily_Loss_Type    := 0.0;
     Max_Daily_Profit : Max_Daily_Profit_Type  := 0.0;
     Max_Daily_Num_Losses : Integer_4          := 0;
+    Max_Num_In_The_Air   : Integer_4          := 0;
     Back_Price       : Back_Price_Type        := 0.0;
     Delta_Price      : Delta_Price_Type       := 0.0;
     Max_Lay_Price    : Max_Lay_Price_Type     := 0.0;
