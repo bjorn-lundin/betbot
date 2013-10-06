@@ -130,6 +130,8 @@ package body Bot_Config is
             Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss",""));
             Bet_Section.Max_Daily_Profit := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit",""));
             Bet_Section.Max_Daily_Num_Losses := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_num_losses",0));
+            Bet_Section.Max_Num_In_The_Air := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_in_the_air",0));
+            
             Bet_Section.Back_Price := Back_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"back_price","0.0"));
             Bet_Section.Delta_Price := Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","0.0"));
             Bet_Section.Max_Lay_Price := Max_Lay_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_lay_price","0.0"));
