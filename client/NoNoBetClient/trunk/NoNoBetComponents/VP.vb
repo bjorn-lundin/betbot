@@ -23,8 +23,8 @@ Public Class VP
     Me.gridTop = New NoNoBetBaseComponents.BaseGrid()
     Me.tabControl = New System.Windows.Forms.TabControl()
     Me.tabPageStart = New System.Windows.Forms.TabPage()
-    Me.tabPageResult = New System.Windows.Forms.TabPage()
     Me.gridStart = New NoNoBetBaseComponents.BaseGrid()
+    Me.tabPageResult = New System.Windows.Forms.TabPage()
     Me.gridResult = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SplitContainer1.Panel1.SuspendLayout()
@@ -33,8 +33,8 @@ Public Class VP
     CType(Me.gridTop, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.tabControl.SuspendLayout()
     Me.tabPageStart.SuspendLayout()
-    Me.tabPageResult.SuspendLayout()
     CType(Me.gridStart, System.ComponentModel.ISupportInitialize).BeginInit()
+    Me.tabPageResult.SuspendLayout()
     CType(Me.gridResult, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
     '
@@ -52,8 +52,8 @@ Public Class VP
     'SplitContainer1.Panel2
     '
     Me.SplitContainer1.Panel2.Controls.Add(Me.tabControl)
-    Me.SplitContainer1.Size = New System.Drawing.Size(453, 415)
-    Me.SplitContainer1.SplitterDistance = 212
+    Me.SplitContainer1.Size = New System.Drawing.Size(837, 491)
+    Me.SplitContainer1.SplitterDistance = 250
     Me.SplitContainer1.TabIndex = 0
     '
     'gridTop
@@ -63,7 +63,7 @@ Public Class VP
     Me.gridTop.Id = Nothing
     Me.gridTop.Location = New System.Drawing.Point(0, 0)
     Me.gridTop.Name = "gridTop"
-    Me.gridTop.Size = New System.Drawing.Size(453, 212)
+    Me.gridTop.Size = New System.Drawing.Size(837, 250)
     Me.gridTop.TabIndex = 0
     '
     'tabControl
@@ -74,7 +74,7 @@ Public Class VP
     Me.tabControl.Location = New System.Drawing.Point(0, 0)
     Me.tabControl.Name = "tabControl"
     Me.tabControl.SelectedIndex = 0
-    Me.tabControl.Size = New System.Drawing.Size(453, 199)
+    Me.tabControl.Size = New System.Drawing.Size(837, 237)
     Me.tabControl.TabIndex = 0
     '
     'tabPageStart
@@ -83,10 +83,20 @@ Public Class VP
     Me.tabPageStart.Location = New System.Drawing.Point(4, 22)
     Me.tabPageStart.Name = "tabPageStart"
     Me.tabPageStart.Padding = New System.Windows.Forms.Padding(3)
-    Me.tabPageStart.Size = New System.Drawing.Size(445, 173)
+    Me.tabPageStart.Size = New System.Drawing.Size(829, 211)
     Me.tabPageStart.TabIndex = 0
     Me.tabPageStart.Text = "Start"
     Me.tabPageStart.UseVisualStyleBackColor = True
+    '
+    'gridStart
+    '
+    Me.gridStart.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+    Me.gridStart.Dock = System.Windows.Forms.DockStyle.Fill
+    Me.gridStart.Id = Nothing
+    Me.gridStart.Location = New System.Drawing.Point(3, 3)
+    Me.gridStart.Name = "gridStart"
+    Me.gridStart.Size = New System.Drawing.Size(823, 205)
+    Me.gridStart.TabIndex = 0
     '
     'tabPageResult
     '
@@ -98,16 +108,6 @@ Public Class VP
     Me.tabPageResult.TabIndex = 1
     Me.tabPageResult.Text = "Result"
     Me.tabPageResult.UseVisualStyleBackColor = True
-    '
-    'gridStart
-    '
-    Me.gridStart.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-    Me.gridStart.Dock = System.Windows.Forms.DockStyle.Fill
-    Me.gridStart.Id = Nothing
-    Me.gridStart.Location = New System.Drawing.Point(3, 3)
-    Me.gridStart.Name = "gridStart"
-    Me.gridStart.Size = New System.Drawing.Size(439, 167)
-    Me.gridStart.TabIndex = 0
     '
     'gridResult
     '
@@ -121,7 +121,7 @@ Public Class VP
     '
     'VP
     '
-    Me.ClientSize = New System.Drawing.Size(453, 415)
+    Me.ClientSize = New System.Drawing.Size(837, 491)
     Me.Controls.Add(Me.SplitContainer1)
     Me.Name = "VP"
     Me.SplitContainer1.Panel1.ResumeLayout(False)
@@ -131,8 +131,8 @@ Public Class VP
     CType(Me.gridTop, System.ComponentModel.ISupportInitialize).EndInit()
     Me.tabControl.ResumeLayout(False)
     Me.tabPageStart.ResumeLayout(False)
-    Me.tabPageResult.ResumeLayout(False)
     CType(Me.gridStart, System.ComponentModel.ISupportInitialize).EndInit()
+    Me.tabPageResult.ResumeLayout(False)
     CType(Me.gridResult, System.ComponentModel.ISupportInitialize).EndInit()
     Me.ResumeLayout(False)
 
