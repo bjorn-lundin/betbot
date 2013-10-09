@@ -1706,8 +1706,8 @@ package body Bet_Handler is
           Move( "SUCCESS", Instruction_Report_Status);
           Move( "SUCCESS", Instruction_Report_Error_Code);
           Move( "SUCCESS", Execution_Report_Status);
-          Average_Price_Matched := Float(Bet.Bot_Cfg.Bet_Size);
-          Size_Matched := Float(Price);
+          Average_Price_Matched := Float(Price);
+          Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
           Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
           
       when Dry =>
@@ -1718,8 +1718,8 @@ package body Bet_Handler is
           Move( "SUCCESS", Instruction_Report_Status);
           Move( "SUCCESS", Instruction_Report_Error_Code);
           Move( "SUCCESS", Execution_Report_Status);
-          Average_Price_Matched := Float(Bet.Bot_Cfg.Bet_Size);
-          Size_Matched := Float(Price);
+          Average_Price_Matched := Float(Price);
+          Size_Matched := Float(Bet.Bot_Cfg.Bet_Size) ;
           Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
           Bethistory.Betid := Bet_Id ;
           Bethistory.Powerdays := Powerdays;
