@@ -349,6 +349,7 @@ package body Bet_Handler is
       Todays_Profit : Profit_Type := 0.0;
       Continue_Betting : Boolean := False;
       Lost_Today : Boolean := True;
+      Lost_Too_Many_Times_Today : Boolean := True;
       In_The_Air, Exists : Boolean := True;
       History_OK : Boolean := False;
       Sum : Float_8 := 0.0;
@@ -386,7 +387,8 @@ package body Bet_Handler is
 --        if Fulfilled then
           if Powerdays > 0 then
             Todays_Profit := Bet.Profit_Today(Powerdays => Powerdays);
-            Lost_Today := Bet.Num_Losses_Today(Powerdays => Powerdays) > Bet.Bot_Cfg.Max_Daily_Num_Losses;
+            
+            Lost_Today := Bet.Num_Losses_Today(Powerdays => Powerdays) >= 1;
 
             -- if we have a loss today, settle with positive result
             if Lost_Today then
@@ -396,9 +398,21 @@ package body Bet_Handler is
                 Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much already will NOT continue.");
 
               elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Loss then
-                -- we have lost today, and are still in loss. We risk to lose some more, in order to have a chance to be profitable. Keep bettting!
-                Continue_Betting := True;
-                Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
+              
+                Lost_Too_Many_Times_Today := Bet.Num_Losses_Today(Powerdays => Powerdays) > Bet.Bot_Cfg.Max_Daily_Num_Losses;
+                if Lost_Too_Many_Times_Today then
+                -- we have lost Too many times, give up
+                  Continue_Betting := False;
+                  Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too many times today, will NOT continue.");
+                else           
+              
+                -- we have lost today, and are still in loss. 
+                -- We risk to lose some more, in order to have a chance to be profitable. 
+                --Keep bettting!
+                  Continue_Betting := True;
+                  Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
+                end if;
+                
               else
                 -- we have lost today, but are back on the winning side. Stop bettting, and be happy
                 Continue_Betting := False;

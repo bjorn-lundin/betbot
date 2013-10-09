@@ -392,6 +392,8 @@ package body Bot_Config is
                "<Delta_Price>" & F8_Image(Float_8(Bet_Section.Delta_Price)) & "</Delta_Price>" &
                "<Max_Lay_Price>" & F8_Image(Float_8(Bet_Section.Max_Lay_Price)) & "</Max_Lay_Price>" &
                "<Min_Lay_Price>" & F8_Image(Float_8(Bet_Section.Min_Lay_Price)) & "</Min_Lay_Price>" &
+               "<Max_Daily_Num_Losses>" & Bet_Section.Max_Daily_Num_Losses'Img & "</Max_Daily_Num_Losses>" &
+               "<Max_Num_In_The_Air>" & Bet_Section.Max_Num_In_The_Air'Img & "</Max_Num_In_The_Air>" &
                "<Favorite_By>" & F8_Image(Float_8(Bet_Section.Favorite_By)) & "</Favorite_By>" &
                "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" &
                "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
