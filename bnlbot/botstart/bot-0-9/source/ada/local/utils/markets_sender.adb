@@ -26,10 +26,10 @@ procedure Markets_Sender is
 --  package AD renames Ada.Directories;
 
   Me : constant String := "Main.";
-  Ba_Daemon    : aliased Boolean := False;
-  Ba_Horse    : aliased Boolean := False;
-  Ba_Hound    : aliased Boolean := False;
-  Ba_Log       : aliased Boolean := False;
+  Ba_Daemon       : aliased Boolean := False;
+  Ba_Horse        : aliased Boolean := False;
+  Ba_Hound        : aliased Boolean := False;
+  Ba_Log          : aliased Boolean := False;
   Sa_Par_Marketid : aliased Gnat.Strings.String_Access;
   Config : Command_Line_Configuration;
   My_Lock  : Lock.Lock_Type;
@@ -46,7 +46,7 @@ procedure Markets_Sender is
   Tot,Cur : Natural := 0;
   type Eos_Type is (Event,Winner);
   Eos : array (Eos_Type'range) of Boolean := (others => False);
-
+  Ts : Sattmate_Calendar.Time_Type;
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
   Define_Switch
@@ -102,12 +102,15 @@ begin
 
   T.Start;
   
-  if Sa_Par_Marketid.all /= "" then
-    Markets.Prepare("select * from AMARKETS where MARKETID >= :MARKETID order by STARTTS");
-    Markets.Set("MARKETID", Sa_Par_Marketid.all);
-  else
-    Markets.Prepare("select * from AMARKETS order by STARTTS");
-  end if;
+--  if Sa_Par_Marketid.all /= "" then
+--    Markets.Prepare("select * from AMARKETS where MARKETID >= :MARKETID order by STARTTS");
+--    Markets.Set("MARKETID", Sa_Par_Marketid.all);
+--  else
+    Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
+    Ts := (2013,07,30,0,0,0,0);
+    Markets.Set_Timestamp("TS", Ts);
+    
+--  end if;
   Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);
 --  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);
   T.Commit;

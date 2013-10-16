@@ -27,6 +27,9 @@ project Adabot is
                  "equity.adb",
                  "profit_per_weekday.adb",
                  "check_bot_running.adb",
+                 "greening_up_1.adb",
+                 "greening_up_2.adb",
+                 "greening_up_3.adb",
 --                 "test_pio.adb",
                  "sql_ifc_leak_finder.adb"
    );

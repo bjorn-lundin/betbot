@@ -41,7 +41,7 @@ done
 export BOT_NAME=markets_sender
 echo "starting $BOT_NAME"
 
-$BOT_TARGET/bin/markets_sender --horses --hounds --marketid=$MARKETID
+$BOT_TARGET/bin/markets_sender --horses --hounds
 #$BOT_TARGET/bin/markets_sender --hounds --marketid=$MARKETID
 
 

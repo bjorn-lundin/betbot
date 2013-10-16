@@ -28,6 +28,11 @@
         <Index Columns="eventid,selectionid,latesttaken" type="index"/>
         <Index Columns="eventid,selectionid" type="index"/>
         <Index Columns="fulldescription" type="index"/>
-
+        <Index Columns="firsttaken" type="index"/>
+        <Index Columns="eventid,selectionid,firsttaken" type="index"/>
+        <Index Columns="scheduledoff" type="index"/>
+        <Index Columns="scheduledoff,selectionid,firsttaken" type="index"/>
+        
+        
     </Table>
 </MaAstro>

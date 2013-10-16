@@ -90,6 +90,31 @@ procedure Migrate_G3_G3 is
   end loop;
   Log(Me, "Stop");
  end Insert_G3_Markets;
+ -----------------------------------------------------------------------------------------
+ 
+ 
+ procedure Remove_Old_G3_Markets_Already_In_New_Db(List : in out Table_Amarkets.Amarkets_List_Pack.List_Type) is
+   Tmp_List  : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+   Amarket: Table_Amarkets.Data_Type;
+   Eos : Boolean := False;
+ begin  -- this is run in new db
+   while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(List) loop
+     Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(List, Amarket);
+     Table_Amarkets.Read(Amarket, Eos) ;
+     if Eos then -- keep only if not in new db
+       Table_Amarkets.Amarkets_List_Pack.Insert_At_Tail(Tmp_List, Amarket);
+     end if;
+   end loop;
+ 
+   -- move back to oldlist
+   while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Tmp_List) loop
+     Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Tmp_List, Amarket);
+     Table_Amarkets.Amarkets_List_Pack.Insert_At_Tail(List, Amarket);
+   end loop;
+  
+   Table_Amarkets.Amarkets_List_Pack.Release(Tmp_List);
+ end Remove_Old_G3_Markets_Already_In_New_Db;
+
  
  -----------------------------------------------------------------------------------------
  procedure Read_G3_Runners(List       : in out Table_Arunners.Arunners_List_Pack.List_Type;
@@ -213,7 +238,12 @@ procedure Migrate_G3_G3 is
     if Left mod 1_000 = 0 then
       Log ("left/tot :" & Left'img & "/" & Trim(Tot'Img));
     end if;
-    Table_Awinners.Insert(Awinner);    
+    begin
+      Table_Awinners.Insert(Awinner);
+    exception
+      when Sql.Duplicate_Index =>
+        Log("ignoring winner duplicate " & Table_Awinners.To_String(Awinner));
+    end;  
     -----------------------------------------
   end loop;    
   Log(Me, "Stop");
@@ -257,7 +287,12 @@ procedure Migrate_G3_G3 is
     if Left mod 1_000 = 0 then
       Log ("left/tot :" & Left'img & "/" & Trim(Tot'Img));
     end if;
-    Table_Anonrunners.Insert(Nonrunner);    
+    begin
+      Table_Anonrunners.Insert(Nonrunner);    
+    exception
+      when Sql.Duplicate_Index =>
+        Log("ignoring nonrunner duplicate " & Table_Anonrunners.To_String(NonRunner));
+    end;  
     -----------------------------------------
   end loop;    
   Log(Me, "Stop");
@@ -320,12 +355,12 @@ begin
   (Config,
    Sa_Par_Startts'access,
    Long_Switch => "--startts=",
-   Help    => "timstamp of first market, yyyy-mm-dd_hh24:mi:ss.ms");
+   Help    => "timestamp of first market, yyyy-mm-dd_hh24:mi:ss.ms");
   Define_Switch
   (Config,
    Sa_Par_Stopts'access,
    Long_Switch => "--stopts=",
-   Help    => "timstamp of last market, yyyy-mm-dd_hh24:mi:ss.ms");
+   Help    => "timestamp of last market, yyyy-mm-dd_hh24:mi:ss.ms");
 
    Getopt (Config); -- process the command line
 
@@ -343,7 +378,7 @@ begin
   -- log in to old database
   Log(Me, "log in to old database");
   Sql.Connect
-     (Host   => "192.168.0.13",
+     (Host   => "192.168.1.13",
       Port   => 5432,
       Db_Name => "bnl",
       Login  => "bnl",
@@ -353,6 +388,41 @@ begin
   -- read to list
   T.Start;
     Read_G3_Markets(G3_Market_List,Par_Startts ,Par_Stopts);
+  T.Commit;
+
+  Log(Me, "close old db");
+  Sql.Close_Session;
+ 
+  Log(Me, "log in to new database");
+  Sql.Connect
+     (Host   => "localhost",
+      Port   => 5432,
+      Db_Name => "bnl",
+      Login  => "bnl",
+      Password => "bnl");
+  Log(Me, "db Connected");
+
+  -- remove markets alreayd in new db from list
+  T.Start;
+    Remove_Old_G3_Markets_Already_In_New_Db(G3_Market_List);
+  T.Commit;
+  
+  Log(Me, "close new db");
+  Sql.Close_Session;
+  
+  
+  Log(Me, "log in to old database");
+  Sql.Connect
+     (Host   => "192.168.1.13",
+      Port   => 5432,
+      Db_Name => "bnl",
+      Login  => "bnl",
+      Password => "bnl");
+  Log(Me, "db Connected");
+  
+  Log(Me, "read rest in old db");
+
+  T.Start;
     Read_G3_Events(G3_Event_List, G3_Market_List);
     Read_G3_Nonrunners(G3_Nonrunner_List, G3_Market_List);
     Read_G3_Prices(G3_Price_List, G3_Market_List);

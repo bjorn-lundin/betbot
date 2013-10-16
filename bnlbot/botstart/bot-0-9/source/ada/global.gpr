@@ -76,7 +76,7 @@ project Global is
       case Target_Machine is
          when "lnx_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
          when "lnx_arm" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
-         when "lnx_x64" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O3");
+         when "lnx_x64" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
       end case;
    end Compiler;
 
