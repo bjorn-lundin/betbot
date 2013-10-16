@@ -36,27 +36,34 @@
         <revremark>Added Grey hounds</revremark>
       </revision>
       
+      <revision>
+        <revnumber>0.13</revnumber>
+        <date>2013-09-23</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Added more simulations, giving more chapters</revremark>
+      </revision>
+      
+      <revision>
+        <revnumber>0.14</revnumber>
+        <date>2013-09-27</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Cherrypicked best bets, and analyzed per weekday, less chapters</revremark>
+      </revision>
+      
     </revhistory>
   </info>
 
   <xi:include href='preface.xml'/>
   <xi:include href='inifile.xml'/>
   <xi:include href='plots.xml'/>
-  <xi:include href='horses_win_fav2_gb.chapter'/>
-  <xi:include href='horses_win_fav5_ie.chapter'/>
-  <xi:include href='horses_win_fav4_ie.chapter'/>
-  <xi:include href='horses_plc_lay4_ie.chapter'/>
-  <xi:include href='horses_plc_lay4_gb.chapter'/>
-  <xi:include href='horses_win_lay5_ie.chapter'/>
-  <xi:include href='horses_win_lay4_gb.chapter'/>
-  
-  <xi:include href='hounds_plc_lay6_gb.chapter'/>
-  <xi:include href='hounds_win_fav3_gb.chapter'/>
-  <xi:include href='hounds_win_fav5_gb.chapter'/>
-  <xi:include href='hounds_win_fav4_gb.chapter'/>
-  <xi:include href='hounds_plc_fav3_gb.chapter'/>
-  <xi:include href='hounds_plc_fav5_gb.chapter'/>
-  <xi:include href='hounds_plc_lay3_gb.chapter'/>
+
+  <xi:include href='horses_win_lay1_gb_6.chapter'/>
+  <xi:include href='horses_win_lay3_gb_12.chapter'/>
+  <xi:include href='horses_win_lay4_gb_12.chapter'/>
+  <xi:include href='horses_win_lay6_gb_15.chapter'/>
+  <xi:include href='horses_win_fav2_gb_8.chapter'/>
+  <xi:include href='horses_win_fav5_gb_11.chapter'/>
+  <xi:include href='hounds_plc_lay6_gb_8.chapter'/>
   
   <xi:include href='database_description.xml'/>
 

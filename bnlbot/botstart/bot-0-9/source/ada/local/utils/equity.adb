@@ -18,7 +18,7 @@ procedure Equity is
    Sa_Par_Host          : aliased Gnat.Strings.String_Access;
    Sa_Par_Db_Pwd        : aliased Gnat.Strings.String_Access;
    Sa_Par_Db_User       : aliased Gnat.Strings.String_Access;
-   Sa_Par_Bet_Name   : aliased Gnat.Strings.String_Access;
+   Sa_Par_Bet_Name      : aliased Gnat.Strings.String_Access;
    Sa_Saldo             : aliased Gnat.Strings.String_Access;
    Ia_Powerdays         : aliased Integer;
    Config               : Command_Line_Configuration;
@@ -33,6 +33,7 @@ procedure Equity is
    Profit : Float_8 := 0.0;
    type Saldo_Type is (Ref, Sim, Dry, His);
    Saldo : array (Saldo_Type'range) of Float_8 := (others => 0.0);
+   Ts : Sattmate_Calendar.Time_Type;
 
    gDebug : Boolean := False;  
    
@@ -145,10 +146,18 @@ begin
                  "from ABETS  " &
                  "where BETNAME = :BETNAME " &
                  "and BETMODE = 4 " & -- ref bets
+                 "and STARTTS >= :TS " &
                  "order by STARTTS");
 
    Dates.Set("BETNAME",Sa_Par_Bet_Name.all);
-                 
+   Ts := Sattmate_Calendar.Clock - (7*8,0,0,0,0) ; --today - 8 weeks --(2013,08,01,0,0,0,0);
+   Ts.Hour        := 0;
+   Ts.Minute      := 0;
+   Ts.Second      := 0;
+   Ts.Millisecond := 0;
+   
+   Dates.Set_Timestamp("TS", Ts);
+   
    Debug("Start reading dates");           
    Dates.Open_Cursor;
    loop   
@@ -161,9 +170,9 @@ begin
    Dates.Close_Cursor;
    Debug("Stop reading dates");           
    
-   -- the same thing with 15 min intervals
-   Start_Date := (2013,01,30,0,0,0,0);
-   Stop_Date  := (2013,08,31,0,0,0,0);
+   -- the same thing with 1 h intervals
+   Start_Date := Ts;
+   Stop_Date  := Sattmate_Calendar.Clock ; -- today/now   --(2013,09,30,0,0,0,0);
     
    Debug("Start fixing dates");           
    outer : loop   
@@ -209,7 +218,7 @@ begin
    Saldo(His) := 0.0;
    
    Debug("Start processing dates");           
-   -- now loop over all ts, both with db hit and 15 min interval
+   -- now loop over all ts, both with db hit and 1 h interval
    while not Timestamps.Is_Empty(Timestamp_List) loop
      Timestamps.Remove_From_Head(Timestamp_List,Start_Date);
      

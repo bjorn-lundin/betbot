@@ -33,6 +33,7 @@ foreach Bet_Name $Bet_Name_List {
     puts "               scalfit=\'1\'/>"
     puts "  </imageobject>"
     puts "</mediaobject>"
+#        -- b.startts::date > (select current_date - interval '420 days') \
 
     set query " select \
         count('a'), \
@@ -57,7 +58,7 @@ foreach Bet_Name $Bet_Name_List {
       from \
         abets b, amarkets m, aevents e \
       where \
-        b.startts::date > (select current_date - interval '420 days') \
+        b.startts::date > '2013-07-30' \
         and b.status = 'EXECUTION_COMPLETE' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \
@@ -106,6 +107,7 @@ foreach Bet_Name $Bet_Name_List {
       puts "<entry>[lindex $Tuple 8]</entry><entry>[lindex $Tuple 9]</entry></row>"
     }
     puts "</tbody></tgroup></table>"
+#       -- b.startts::date > (select current_date - interval '420 days') \
 
     # how is the income spread across weekdays?
     set query " select \
@@ -118,7 +120,7 @@ foreach Bet_Name $Bet_Name_List {
       from \
         abets b, amarkets m, aevents e \
       where \
-        b.startts::date > (select current_date - interval '420 days') \
+        b.startts::date > '2013-07-30' \
         and b.status = 'EXECUTION_COMPLETE' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \

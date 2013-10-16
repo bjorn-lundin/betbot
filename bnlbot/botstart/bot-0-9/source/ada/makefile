@@ -28,7 +28,7 @@ tables : $(ST)/table_history.ads  $(ST)/table_history2.ads \
          $(ST)/table_awinners.ads $(ST)/table_abets.ads \
          $(ST)/table_anonrunners.ads $(ST)/table_abalances.ads \
          $(ST)/table_drymarkets.ads $(ST)/table_dryrunners.ads \
-         $(ST)/table_dryresults.ads  $(ST)/table_abethistory.ads \
+         $(ST)/table_dryresults.ads $(ST)/table_abethistory.ads \
 
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
