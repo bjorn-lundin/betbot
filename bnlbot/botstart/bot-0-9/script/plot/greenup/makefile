@@ -74,99 +74,62 @@ MIN_MAX_LIST := \
   10_20_5_2 \
   10_20_5_3 \
   10_20_5_4 \
-  15_25_1_1 \
-  15_25_1_2 \
-  15_25_1_3 \
-  15_25_1_4 \
-  15_25_2_1 \
-  15_25_2_2 \
-  15_25_2_3 \
-  15_25_2_4 \
-  15_25_3_1 \
-  15_25_3_2 \
-  15_25_3_3 \
-  15_25_3_4 \
-  15_25_4_1 \
-  15_25_4_2 \
-  15_25_4_3 \
-  15_25_4_4 \
-  15_25_5_1 \
-  15_25_5_2 \
-  15_25_5_3 \
-  15_25_5_4 \
-  30_40_1_1 \
-  30_40_1_2 \
-  30_40_1_3 \
-  30_40_1_4 \
-  30_40_2_1 \
-  30_40_2_2 \
-  30_40_2_3 \
-  30_40_2_4 \
-  30_40_3_1 \
-  30_40_3_2 \
-  30_40_3_3 \
-  30_40_3_4 \
-  30_40_4_1 \
-  30_40_4_2 \
-  30_40_4_3 \
-  30_40_4_4 \
-  30_40_5_1 \
-  30_40_5_2 \
-  30_40_5_3 \
-  30_40_5_4 \
-  
-#  10_20_3_2 \
-#  10_20_1_3 \
-#  10_20_2_3 \
-#  10_20_3_3 \
-#   5_15_1_1 \
-#   5_15_2_1 \
-#   5_15_3_1 \
-#   5_15_1_2 \
-#   5_15_2_2 \
-#  15_25_2_2 \
-#   5_15_3_2 \
-#  15_25_3_2 \
-#   5_15_1_3 \
+#  15_25_1_1 \
+#  15_25_1_2 \
 #  15_25_1_3 \
-#   5_15_2_3 \
+#  15_25_1_4 \
+#  15_25_2_1 \
+#  15_25_2_2 \
 #  15_25_2_3 \
-#   5_15_3_3 \
+#  15_25_2_4 \
+#  15_25_3_1 \
+#  15_25_3_2 \
 #  15_25_3_3 \
+#  15_25_3_4 \
+#  15_25_4_1 \
+#  15_25_4_2 \
+#  15_25_4_3 \
+#  15_25_4_4 \
+#  15_25_5_1 \
+#  15_25_5_2 \
+#  15_25_5_3 \
+#  15_25_5_4 \
      
-PREFIX :=hound
+PREFIX1 :=horse
+PREFIX2 :=hound
 COUNTRY :=GB
-BET_TYPE :=all win plc
 
-BET_NAMES_1 := $(foreach i,$(MIN_MAX_LIST), $(PREFIX)_$(i)_$(COUNTRY))
+BET_NAMES_1 := $(foreach i,$(MIN_MAX_LIST), $(PREFIX1)_$(i)_$(COUNTRY))
+BET_NAMES_2 := $(foreach i,$(MIN_MAX_LIST), $(PREFIX2)_$(i)_$(COUNTRY))
+BET_NAMES := $(BET_NAMES_1) $(BET_NAMES_2)
 
-#BET_TYPE_1 := $(foreach i,$(BET_NAMES_1), $(foreach j,$(BET_TYPE), $(i)_$(j)))
+#PNG_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.png)
+#PNG_WINS := $(foreach i,$(BET_NAMES), $(i)_win.png)
+#PNG_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.png)
+#PNGS := $(PNG_ALLS) $(PNG_WINS) $(PNG_PLCS) 
 
-ALLS := $(foreach i,$(BET_NAMES_1), $(i)_all)
-WINS := $(foreach i,$(BET_NAMES_1), $(i)_win)
-PLCS := $(foreach i,$(BET_NAMES_1), $(i)_plc)
+PNGS := $(foreach i,$(BET_NAMES), $(i).png)
 
-PNG_ALLS := $(foreach i,$(PLCS), $(i).png)
-PNG_WINS := $(foreach i,$(WINS), $(i).png)
-PNG_PLCS := $(foreach i,$(PLCS), $(i).png)
-PNGS := $(PNG_ALLS) $(PNG_WINS) $(PNG_PLCS)
+#PLT_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.plt)
+#PLT_WINS := $(foreach i,$(BET_NAMES), $(i)_win.plt)
+#PLT_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.plt)
+#PLTS := $(PLT_ALLS) $(PLT_WINS) $(PLT_PLCS) 
 
-PLT_ALLS := $(foreach i,$(PLCS), $(i).plt)
-PLT_WINS := $(foreach i,$(WINS), $(i).plt)
-PLT_PLCS := $(foreach i,$(PLCS), $(i).plt)
-PLTS := $(PLT_ALLS) $(PLT_WINS) $(PLT_PLCS)
+PLTS := $(foreach i,$(BET_NAMES), $(i).plt)
 
+DATS := $(foreach i,$(BET_NAMES), $(i).dat)
 
 #dela upp på plc/win/all
 
 all  : 
-	@echo $(ALLS)
+	@echo $(PNGS)
 	@echo "--------"
 plts : $(PLTS)
 
 pngs : $(PNGS)
+
+dats : $(DATS)
     
-#min/max/delta/hours_before
 
 
 
@@ -184,14 +147,17 @@ split_dats :
 # $* is the stem
 # $@ is the target file name
 
-#%.dat : $(BOT_TARGET)/bin/greening_up_2 
-#	$(BOT_TARGET)/bin/greening_up_2  \
-#                                    --max_odds=$(shell echo $* | cut -d'_' -f3) \
-#                                    --min_odds=$(shell echo $* | cut -d'_' -f2) \
-#                                    --delta_odds=$(shell echo $* | cut -d'_' -f4) \
-#                                    --hours_before_start=$(shell echo $* | cut -d'_' -f5) \
-#                                    --start_date=$(START_DATE) \
-#                                    --stop_date=$(STOP_DATE) > $@
+#animal_min_max_delta_hours_before
+#hound_10_20_4_3_GB.png
+%.dat : $(BOT_TARGET)/bin/greening_up_2 
+	$(BOT_TARGET)/bin/greening_up_2  \
+      --animal=$(shell echo $* | cut -d'_' -f1) \
+      --min_odds=$(shell echo $* | cut -d'_' -f2) \
+      --max_odds=$(shell echo $* | cut -d'_' -f3) \
+      --delta_odds=$(shell echo $* | cut -d'_' -f4) \
+      --hours_before_start=$(shell echo $* | cut -d'_' -f5) \
+      --start_date=$(START_DATE) \
+      --stop_date=$(STOP_DATE) > $@
 
 
 %.plt : %.dat $(BOT_TARGET)/bin/greening_up_3
