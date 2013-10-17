@@ -14,10 +14,11 @@ with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
 
 procedure Greening_Up_2 is
-   History : Table_History.Data_Type;
+    History : Table_History.Data_Type;
+    Bad_Input : exception;
                      
     type H_Type is record
-      Scheduledoff : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+      Scheduledoff : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
       Eventid  : Integer_4 := 0;
       Selectionid : Integer_4 := 0;
     end record;     
@@ -30,15 +31,16 @@ procedure Greening_Up_2 is
    Select_All,
    Stm_Select_Eventid_Selectionid_O : Sql.Statement_Type;
 
-   Start_Date       : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
-   Stop_Date        : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
-   Global_Stop_Date : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+   Start_Date       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   Stop_Date        : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   Global_Stop_Date : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
 
    Eos,
    Eos2             : Boolean := False;
 
    Config           : Command_Line_Configuration;
 
+   Sa_Par_Animal         : aliased Gnat.Strings.String_Access;
    Sa_Par_Start_Date     : aliased Gnat.Strings.String_Access;
    Sa_Par_Stop_Date      : aliased Gnat.Strings.String_Access;
    Ia_Hours_Before_Start : aliased Integer := 1;
@@ -79,6 +81,12 @@ begin
       
    Define_Switch
      (Config      => Config,
+      Output      => Sa_Par_Animal'access,
+      Long_Switch => "--animal=",
+      Help        => "what animal is racing");
+      
+   Define_Switch
+     (Config      => Config,
       Output      => Ia_Hours_Before_Start'access,
       Long_Switch => "--hours_before_start=",
       Help        => "How hany hours in advance to place the bet");
@@ -104,9 +112,11 @@ begin
       
    Getopt (Config);  -- process the command line
 
-   if Sa_Par_Start_Date.all = "" or else Sa_Par_Stop_Date.all = "" then
+   if Sa_Par_Start_Date.all = "" or else 
+     Sa_Par_Stop_Date.all = "" or else 
+     Sa_Par_Animal.all = "" then
      Display_Help (Config);
-     return ;
+     return;
    end if;
 
    Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Par_Start_Date.all, "00:00:00:000");
@@ -115,7 +125,6 @@ begin
    Stop_Date  := Stop_Date  - Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --remove a day first
 
    Global_Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
-
 
    Log ("Connect db");
    Sql.Connect
@@ -133,25 +142,46 @@ begin
 
       T.Start;
       
-      Select_All.Prepare (
-          "select SCHEDULEDOFF, EVENTID, SELECTIONID from HISTORY " &
-          "where SCHEDULEDOFF >= :START " &
-          "and SCHEDULEDOFF <= :STOP " &
-          "and EVENT <> 'Forecast' " &
-          "and SPORTSID = 4339 " &
-          "and FULLDESCRIPTION <> 'Ante Post' " &
---          "and COUNTRY in ('GBR','IRE','USA','FRA','RSA') " &
---          "and COUNTRY in ('GBR') " &
-          "and lower(FULLDESCRIPTION) not like '% v %'  " &
-          "and lower(FULLDESCRIPTION) not like '%forecast%'  " &
-          "and lower(FULLDESCRIPTION) not like '%challenge%'  " &
-          "and lower(FULLDESCRIPTION) not like '%fc%'  " &
-          "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
-          "and lower(FULLDESCRIPTION) not like '%reverse%'  " &
-          "and lower(FULLDESCRIPTION) not like '%without%'  " &
---          "and inplay = 'PE' " &   -- pre event !!
-          "group by SCHEDULEDOFF, EVENTID, SELECTIONID " &
-          "order by SCHEDULEDOFF, EVENTID, SELECTIONID ");
+      if Sa_Par_Animal.all = "horse" then  
+        Select_All.Prepare (
+            "select SCHEDULEDOFF, EVENTID, SELECTIONID from HISTORY " &
+            "where SCHEDULEDOFF >= :START " &
+            "and SCHEDULEDOFF <= :STOP " &
+            "and EVENT <> 'Forecast' " &
+            "and SPORTSID = 7 " &
+            "and FULLDESCRIPTION <> 'Ante Post' " &
+   --          "and COUNTRY in ('GBR','IRE','USA','FRA','RSA') " &
+            "and COUNTRY in ('GBR') " &
+            "and lower(FULLDESCRIPTION) not like '% v %'  " &
+            "and lower(FULLDESCRIPTION) not like '%forecast%'  " &
+            "and lower(FULLDESCRIPTION) not like '%challenge%'  " &
+            "and lower(FULLDESCRIPTION) not like '%fc%'  " &
+            "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
+            "and lower(FULLDESCRIPTION) not like '%reverse%'  " &
+            "and lower(FULLDESCRIPTION) not like '%without%'  " &
+            "group by SCHEDULEDOFF, EVENTID, SELECTIONID " &
+            "order by SCHEDULEDOFF, EVENTID, SELECTIONID ");
+            
+      elsif Sa_Par_Animal.all = "hound" then  
+        Select_All.Prepare (
+            "select SCHEDULEDOFF, EVENTID, SELECTIONID from HISTORY " &
+            "where SCHEDULEDOFF >= :START " &
+            "and SCHEDULEDOFF <= :STOP " &
+            "and EVENT <> 'Forecast' " &
+            "and SPORTSID = 4339 " &
+            "and FULLDESCRIPTION <> 'Ante Post' " &
+            "and lower(FULLDESCRIPTION) not like '% v %'  " &
+            "and lower(FULLDESCRIPTION) not like '%forecast%'  " &
+            "and lower(FULLDESCRIPTION) not like '%challenge%'  " &
+            "and lower(FULLDESCRIPTION) not like '%fc%'  " &
+            "and lower(FULLDESCRIPTION) not like '%daily win%'  " &
+            "and lower(FULLDESCRIPTION) not like '%reverse%'  " &
+            "and lower(FULLDESCRIPTION) not like '%without%'  " &
+            "group by SCHEDULEDOFF, EVENTID, SELECTIONID " &
+            "order by SCHEDULEDOFF, EVENTID, SELECTIONID ");
+      else 
+        raise Bad_Input with "bad animal: '" & Sa_Par_Animal.all & "'";
+      end if;       
 
       Select_All.Set_Timestamp("START", Start_date);
       Select_All.Set_Timestamp("STOP",  Stop_date);
@@ -171,7 +201,7 @@ begin
             "from HISTORY " &
             "where EVENTID = :EVENTID " &
             "and SELECTIONID = :SELECTIONID " &
-            "order by FIRSTTAKEN desc"  ) ;
+            "order by FIRSTTAKEN"  ) ;
 
       Loop_All : while not H_Pack.Is_Empty(H_List) loop
           H_Pack.Remove_From_Head(H_List, H_Data);           
@@ -185,7 +215,8 @@ begin
             exit Loop_Runner when Eos2;
             History := Table_History.Get(Stm_Select_Eventid_Selectionid_O);
             
-            if History.Scheduledoff - History.Firsttaken <= (0,Hour_Type(Ia_Hours_Before_Start),0,0,0) then -- 1 h
+            if History.Scheduledoff - History.Firsttaken  >= (0,Hour_Type(Ia_Hours_Before_Start),0,0,0) and then -- 1 h
+               History.Scheduledoff - History.Latesttaken <= (0,Hour_Type(Ia_Hours_Before_Start),0,0,0)     then -- 1 h
                if Outcome = No_Bet_Laid then
                   -- do the back bet                 
                   if Float_8(Ia_Min_Odds) <= History.Odds and then
@@ -194,22 +225,22 @@ begin
                      Outcome := Backed_Won;
                   end if;   
                end if;
-       
-               if Outcome = Backed_Won then
-               -- if odds are lower, lay bet it
-                  if History.Odds <= Back_Odds - Float_8(Ia_Delta_Odds)  then
-                  -- in sim, assume that we get matched with smallets possible margin 
-                  -- or else outcome becomes too big. ie even if the odds falls from 18 -> 12, 
-                  -- assume match at 17
---                     Lay_Odds := History.Odds;
-                     Lay_Odds := Back_Odds - Float_8(Ia_Delta_Odds);
-                     Lay_Size := (Back_Size * Back_Odds) / Lay_Odds ;
-                     Outcome  := Greened_Up;         
-                     -- we now have our green up
-                     exit Loop_Runner;
-                  end if;   
-               end if;      
             end if;   
+       
+            if Outcome = Backed_Won then
+            -- if odds are lower, lay bet it
+               if History.Odds <= Back_Odds - Float_8(Ia_Delta_Odds)  then
+               -- in sim, assume that we get matched with smallets possible margin 
+               -- or else outcome becomes too big. ie even if the odds falls from 18 -> 12, 
+               -- assume match at 17
+--                  Lay_Odds := History.Odds;
+                  Lay_Odds := Back_Odds - Float_8(Ia_Delta_Odds);
+                  Lay_Size := (Back_Size * Back_Odds) / Lay_Odds ;
+                  Outcome  := Greened_Up;         
+                  -- we now have our green up
+                  exit Loop_Runner;
+               end if;   
+            end if;      
           end loop Loop_Runner;            
           Stm_Select_Eventid_Selectionid_O.Close_Cursor;
          --new runner ...
