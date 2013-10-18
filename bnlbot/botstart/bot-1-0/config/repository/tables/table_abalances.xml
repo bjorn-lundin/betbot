@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Wiz="3" Desc="Saldo" Name="ABALANCES" Tablespace="">
+        <Column Name="baldate"          Size="23"  Type="15" AllowNull="0" Description="ts of balance"/>
+        <Column Name="balance"          Size="8"   Type="6"  AllowNull="0" Description="balance"/>
+        <Column Name="exposure"         Size="8"   Type="6"  AllowNull="0" Description="exposure"/>
+        <Column Name="ixxlupd"          Size="15"  Type="1"  AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"          Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="baldate" type="primary"/>
+    </Table>
+</MaAstro>

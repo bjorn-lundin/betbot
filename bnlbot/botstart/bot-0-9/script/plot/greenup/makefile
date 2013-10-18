@@ -103,19 +103,19 @@ BET_NAMES_1 := $(foreach i,$(MIN_MAX_LIST), $(PREFIX1)_$(i)_$(COUNTRY))
 BET_NAMES_2 := $(foreach i,$(MIN_MAX_LIST), $(PREFIX2)_$(i)_$(COUNTRY))
 BET_NAMES := $(BET_NAMES_1) $(BET_NAMES_2)
 
-#PNG_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.png)
-#PNG_WINS := $(foreach i,$(BET_NAMES), $(i)_win.png)
-#PNG_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.png)
-#PNGS := $(PNG_ALLS) $(PNG_WINS) $(PNG_PLCS) 
+PNG_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.png)
+PNG_WINS := $(foreach i,$(BET_NAMES), $(i)_win.png)
+PNG_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.png)
+PNGS := $(PNG_ALLS) $(PNG_WINS) $(PNG_PLCS) 
 
-PNGS := $(foreach i,$(BET_NAMES), $(i).png)
+#PNGS := $(foreach i,$(BET_NAMES), $(i).png)
 
-#PLT_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.plt)
-#PLT_WINS := $(foreach i,$(BET_NAMES), $(i)_win.plt)
-#PLT_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.plt)
-#PLTS := $(PLT_ALLS) $(PLT_WINS) $(PLT_PLCS) 
+PLT_ALLS := $(foreach i,$(BET_NAMES), $(i)_all.plt)
+PLT_WINS := $(foreach i,$(BET_NAMES), $(i)_win.plt)
+PLT_PLCS := $(foreach i,$(BET_NAMES), $(i)_plc.plt)
+PLTS := $(PLT_ALLS) $(PLT_WINS) $(PLT_PLCS) 
 
-PLTS := $(foreach i,$(BET_NAMES), $(i).plt)
+#PLTS := $(foreach i,$(BET_NAMES), $(i).plt)
 
 DATS := $(foreach i,$(BET_NAMES), $(i).dat)
 
