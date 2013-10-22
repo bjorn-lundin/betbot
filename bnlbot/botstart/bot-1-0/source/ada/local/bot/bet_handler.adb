@@ -9,7 +9,7 @@ with Bot_Config; use Bot_Config;
 with Bot_System_Number;
 with Table_Abets;
 with Table_Awinners;
-with Table_Abethistory;
+--with Table_Abethistory;
 --with Table_Arunners;
 with Table_Anonrunners;
 with Sql;
@@ -40,23 +40,10 @@ package body Bet_Handler is
   Select_Runners,
   Select_In_The_Air,
   Select_Exists,
-  Select_History,
   Select_Prices : Sql.Statement_Type;
 
   Me : constant String := "Bet_Handler.";
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
-
-  type Bet_History_Record is record
-    Weight_1   : Float_8 := 0.0;
-    Weight_2   : Float_8 := 0.0;
-    Weight_3   : Float_8 := 0.0;
-    Start_Date : Sattmate_Calendar.Time_Type;
-    End_Date   : Sattmate_Calendar.Time_Type;
-    Profit     : Float_8 := 0.0;
-  end record;
-
-  type Bet_History_Array is array (Integer range <>) of Bet_History_Record;
-
 
   Global_Odds_Table : array(1 .. 350) of Float_8 := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
@@ -173,7 +160,6 @@ package body Bet_Handler is
 
     T.Commit;
 
-
     Table_Aprices.Aprices_List_Pack.Release(Price_List);
     Table_Arunners.Arunners_List_Pack.Release(Runner_List);
 
@@ -205,20 +191,13 @@ package body Bet_Handler is
 --                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &
 --                                 "evt-name: " &  Bet.Bet_Info.Event.Eventname);
 
-
-
     Bet.Check_Conditions_Fulfilled(Fulfilled);
     if not Fulfilled then
       Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " betting condition NOT fulfilled ");
-      return;
+    else 
+      Bet.Do_Try(A_Token => A_Token);
     end if;
-
-    case Bot_Config.Config.System_Section.Bot_Mode is
-      when Simulation =>
-        Bet.Do_Try(A_Token => A_Token);
-      when Real =>
-        Bet.Do_Try(A_Token => A_Token);
-    end case;
+    
   end Try_Make_New_Bet;
 
   -------------------------------------------------------------------------------
@@ -236,9 +215,11 @@ package body Bet_Handler is
     exception
       when E: Bad_Data =>
         Sattmate_Exception.Tracebackinfo(E);
+        return;
       when F: No_Data =>
         Sattmate_Exception.Tracebackinfo(F);
-    end ;
+        return;
+  end ;
 
     Num_Runners := Bet_Info.Last_Runner;
 
@@ -281,9 +262,9 @@ package body Bet_Handler is
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
     --changes here needs changes in bot_config as well !!!
-    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_grn1_") > Natural(0) then
+    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Back_") > Natural(0) then
       null;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_grn2_") > Natural(0) then
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Lay_") > Natural(0) then
       null;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";
@@ -303,95 +284,76 @@ package body Bet_Handler is
     -- see if we can make a bet now
       Todays_Profit : Profit_Type := 0.0;
       Continue_Betting : Boolean := False;
-      Lost_Today : Boolean := True;
-      Lost_Too_Many_Times_Today : Boolean := True;
-      In_The_Air, Exists : Boolean := True;
+      Too_Many_In_The_Air, Exists : Boolean := True;
   begin
     Exists := Bet.Exists;
-    In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
-
-    if not In_The_Air then
+    Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
+    Todays_Profit := Bet.Profit_Today;   
+    
+    if not Too_Many_In_The_Air then
       if not Exists then
-            Todays_Profit := Bet.Profit_Today;
-            
-            Lost_Today := Bet.Num_Losses_Today >= 1;
+        if Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Profit then
+          -- we have Won enough for today, STOP bettting!
+          Continue_Betting := False;
+          Log (Me & "Do_Try", "YES !! We have won enough for today, STOP bettting.");
+        elsif Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
+          -- we have lost enough for today, give up!
+          Continue_Betting := False;
+          Log (Me & "Do_Try", "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
+        else
+          -- we have won today, but haven't reach our ceiling yet
+          Continue_Betting := True;
+          Log (Me & "Do_Try", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
+        end if;
+ 
+        if Continue_Betting then
+          if Bet.Enabled then
+            for i in 1 ..  Bet.Bet_Info.Last_Runner loop
+              declare
+                Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
+                Lay_Price  : Bet_Price_Type := Back_Price - Bet.Bot_Cfg.Delta_Price;              
+                Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
+                Lay_Size   : Bet_Size_Type  := (Back_Size * Back_Price) / Lay_Price;
+              begin
+                if Bet.Bot_Cfg.Min_Price <= Back_Price and then
+                   Back_Price <= Bet.Bot_Cfg.Max_Price then
 
-            -- if we have a loss today, settle with positive result
-            if Lost_Today then
-              if Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
-                -- we have lost enough for today, give up!
-                Continue_Betting := False;
-                Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much already will NOT continue.");
-
-              elsif Todays_Profit < Profit_Type(0.0) and then Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Loss then
-              
-                Lost_Too_Many_Times_Today := Bet.Num_Losses_Today > Bet.Bot_Cfg.Max_Daily_Num_Losses;
-                if Lost_Too_Many_Times_Today then
-                -- we have lost Too many times, give up
-                  Continue_Betting := False;
-                  Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too many times today, will NOT continue.");
-                else           
-              
-                -- we have lost today, and are still in loss. 
-                -- We risk to lose some more, in order to have a chance to be profitable. 
-                --Keep bettting!
-                  Continue_Betting := True;
-                  Log (Me & "Try_Make_New_Bet", "DONT GIVE UP! We have lost today, but will continue.");
-                end if;
-                
-              else
-                -- we have lost today, but are back on the winning side. Stop bettting, and be happy
-                Continue_Betting := False;
-                Log (Me & "Try_Make_New_Bet", "We have lost today, but are ok now. Settle with that, Will NOT continue until tomorrow");
-              end if;
-            else -- we have NOT lost today
-              if Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Profit then
-                -- we have Won enough for today, STOP bettting!
-                Continue_Betting := False;
-                Log (Me & "Try_Make_New_Bet", "YES !! We have won enough for today, STOP bettting.");
-              elsif Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
-                -- we have lost enough for today, give up!
-                Continue_Betting := False;
-                Log (Me & "Try_Make_New_Bet", "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
-              else
-                -- we have won today, but haven't reach our ceiling yet
-                Continue_Betting := True;
-                Log (Me & "Try_Make_New_Bet", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
-              end if;
-            end if;
-
-            if Continue_Betting then
-              if Bet.Enabled then
                   case Bet.Bot_Cfg.Bet_Mode is
                     when Real => 
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Grn1);
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Grn2);
+                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                                   Back_Price => Back_Price, Back_Size => Back_Size, 
+                                   Lay_Price => Lay_Price, Lay_Size => Lay_Size);
+                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                   Back_Price => Back_Price, Back_Size => Back_Size,
+                                   Lay_Price => Lay_Price, Lay_Size => Lay_Size);
                     when Sim  => 
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim, A_Bet_Type => Grn1);
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim, A_Bet_Type => Grn2);
+                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                                   Back_Price => Back_Price, Back_Size => Back_Size, 
+                                   Lay_Price => Lay_Price, Lay_Size => Lay_Size);
+                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                                   Back_Price => Back_Price, Back_Size => Back_Size, 
+                                   Lay_Price => Lay_Price, Lay_Size => Lay_Size);
                   end case;
-              end if; -- enabled
-            end if;-- continue betting
+                end if;  
+              end;  
+            end loop;  
+          end if; -- enabled
+        end if;-- continue betting
       else
-        Log(Me & "Try_Make_New_Bet", "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid);
+        Log(Me & "Do_Try", "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid);
       end if;
     else
-      Log(Me & "Try_Make_New_Bet", "Bet in the air, wait for it to be settled: " & Bet.Bet_Info.Market.Marketid);
+      Log(Me & "Do_Try", "Too many bets in the air, wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
     end if;
   end Do_Try;
 
   -----------------------------------------------------------------------
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
-    Price_Fav, Price_2nd_Fav : Table_Aprices.Data_Type;
-    Min_Num_Animals_Before_Me  : Integer := 0;
-    --Tmp_Num_Runners,
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
-    Max_Favorite_Odds : Float_8 := 0.0;
-    Max_Lay_Price : Max_Lay_Price_Type := 10.0;
     use General_Routines;
   begin
     Result := True;
-    Log(Me & "Check_Conditions_Fulfilled", "Bet.Bot_Cfg.Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img );
+    Log(Me & "Check_Conditions_Fulfilled", "marketid " &  General_Routines.Trim(Bet.Bet_Info.Market.Marketid ));
 
     -- some sanity checks
     case Bet.Bet_Info.Event.Eventtypeid is
@@ -501,28 +463,6 @@ package body Bet_Handler is
       return;
     end if;
 
-    case Bet.Bot_Cfg.Bet_Type is
-      when Grn1 =>
-        Price_Fav     := Bet.Bet_Info.Runner_Array(1).Price;
-        Price_2nd_Fav := Bet.Bet_Info.Runner_Array(2).Price;
-
-        pragma compile_time_warning(true, "fix checks for price");
-        -- check price within backprice +- deltaprice
-        if  Bet.Bot_Cfg.Back_Price - Bet.Bot_Cfg.Delta_Price <= Price_Fav.Backprice and then
-            Price_Fav.Backprice <= Bet.Bot_Cfg.Back_Price + Bet.Bot_Cfg.Delta_Price and then
-            Price_Fav.Backprice + Bet.Bot_Cfg.Favorite_By < Price_2nd_Fav.Backprice then
-
-          Bet.Bet_Info.Selection_Id := Price_Fav.Selectionid;
-          Bet.Bet_Info.Used_Index   := 1; --index in the array of our selection
-        else
-          Log(Me & "Check_Conditions_Fulfilled", "bad odds");
-          Result := False;
-          return;
-        end if;
-      when Grn2 => -- greenup make 2 bets here
-        null;
-        pragma compile_time_warning(true, "What checks here? grn1 succesful?");
-    end case;
 
   end Check_Conditions_Fulfilled;
   ------------------------------------------------------------------------------------------------------
@@ -562,8 +502,7 @@ package body Bet_Handler is
           "and BETWON is not null " &
           "and BETNAME = :BETNAME " );
 
-      Select_Profit_Today.Set("BETMODE",  Bet_Mode(Sim));
-      pragma Compile_time_warning(true, "betmode ??");
+      Select_Profit_Today.Set("BETMODE",  Bet_Mode(Real));
       Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
 
       Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
@@ -611,8 +550,7 @@ package body Bet_Handler is
         "and BETWON is not null " &
         "and BETNAME = :BETNAME " );
 
-      Select_Lost_Today.Set("BETMODE",  Bet_Mode(Sim));
-      pragma Compile_time_warning(true, "betmode ??");
+      Select_Lost_Today.Set("BETMODE",  Bet_Mode(Real));
       Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       Select_Lost_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
       Select_Lost_Today.Set_Timestamp( "ENDOFDAY",End_Date);
@@ -642,21 +580,20 @@ package body Bet_Handler is
          "from " &
            "ABETS " &
          "where MARKETID = :MARKETID " &
+         "and SELECTIONID = :SELECTIONID " &
          "and BETMODE = :BETMODE " &
          "and BETNAME = :BETNAME ");
 
-      Select_Exists.Set("BETMODE",  Bet_Mode(Sim));
-      pragma Compile_time_warning(true, "betmode ??");
+      Select_Exists.Set("SELECTIONID",  Bet.Bet_Info.Selection_Id);
+      Select_Exists.Set("BETMODE",  Bet_Mode(Real));
       Select_Exists.Set("BETNAME",  To_String(Bet.Bot_Cfg.Bet_Name));
-
---      Log(Me & "Exists", "marketid '" & Bet.Bet_Info.Market.Marketid & "'");
       Select_Exists.Set("MARKETID", Bet.Bet_Info.Market.Marketid);
 
       Select_Exists.Open_Cursor;
       Select_Exists.Fetch( Eos);
       if not Eos then
         Abet := Table_Abets.Get(Select_Exists);
-        Log(Me & "Exists", "Bet does exist " & Table_Abets.To_String(Abet));
+        Log(Me & "Exists", "Bet does already exist " & Table_Abets.To_String(Abet));
       else
         null;
 --        Log(Me & "Exists", "Bet does not exist");
@@ -669,7 +606,6 @@ package body Bet_Handler is
   function Num_In_The_Air(Bet : Bet_Type) return Integer_4 is
     T    : Sql.Transaction_Type;
     Eos  : Boolean := False;
---    Abet : Table_Abets.Data_Type;
     Num : Integer_4 := 0;
   begin
     T.Start;
@@ -681,16 +617,13 @@ package body Bet_Handler is
          "and BETMODE = :BETMODE " &
          "and BETNAME = :BETNAME ");
 
-      Select_In_The_Air.Set("BETMODE",  Bet_Mode(Sim));
-      pragma Compile_time_warning(true, "betmode ??");
+      Select_In_The_Air.Set("BETMODE",  Bet_Mode(Real));
       Select_In_The_Air.Set("BETNAME",  To_String(Bet.Bot_Cfg.Bet_Name));
 
       Select_In_The_Air.Open_Cursor;
       Select_In_The_Air.Fetch( Eos);
       if not Eos then
         Select_In_The_Air.Get(1,Num);
---        Abet := Table_Abets.Get(Select_In_The_Air);
---        Log(Me & "In_The_Air", "Unsettled bet exists " & Table_Abets.To_String(Abet));
       end if;
       Select_In_The_Air.Close_Cursor;
     T.Commit;
@@ -698,10 +631,15 @@ package body Bet_Handler is
   end Num_In_The_Air;
   ---------------------------------------------------------------
 
-  procedure Make_Bet(Bet       : in out Bet_Type;
-                     Betmode   : in     Bet_Mode_Type;
-                     A_Token   : in out Token.Token_Type;
-                     A_Bet_Type  : in Bet_Type_Type) is
+  procedure Make_Bet(Bet        : in out Bet_Type;
+                     Betmode    : in     Bet_Mode_Type;
+                     A_Token    : in out Token.Token_Type;
+                     A_Bet_Type : in Bet_Type_Type;
+                     Back_Price : in Bet_Price_Type;
+                     Back_Size  : in Bet_Size_Type;
+                     Lay_Price  : in Bet_Price_Type;
+                     Lay_Size   : in Bet_Size_Type) is
+                     
     Abet : Table_Abets.Data_Type;
     Price : Float_8 := 0.0;
     Pip : Pip_Type ;
@@ -731,7 +669,6 @@ package body Bet_Handler is
     Instruction    : JSON_Value := Create_Object;
     Limit_Order    : JSON_Value := Create_Object;
     Instructions   : JSON_Array := Empty_Array;
-    Bethistory : Table_Abethistory.Data_Type;
   begin
 
 --  type Data_Type is record
@@ -764,15 +701,14 @@ package body Bet_Handler is
 --  end record;
 
     case A_Bet_Type is
-      when Grn1  =>
-        Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice;
+      when Green_Up_Back  =>
+        Price := Float_8(Back_Price);
         Pip.Init(Price);
         Price := Pip.Previous_Price;
         Move("BACK", Side);
 
-      when Grn2  =>
-        pragma Compile_time_warning(True, "chcek price of backbet -delta");
-        Price := Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Layprice;
+      when Green_Up_Lay  =>
+        Price := Float_8(Lay_Price);
         Pip.Init(Price);
         Price := Pip.Next_Price;
         Move("LAY", Side);
@@ -793,15 +729,14 @@ package body Bet_Handler is
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
         case A_Bet_Type is
-          when Grn1 =>
+          when Green_Up_Back =>
             Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
-            Limit_Order.Set_Field (Field_Name => "price",           Field      => Float(Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field      => Float(Bet.Bot_Cfg.Bet_Size));
-          when Grn2 => 
-            Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "-----");
-            Limit_Order.Set_Field (Field_Name => "price",           Field      => Float(Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field      => Float(Bet.Bot_Cfg.Bet_Size));
-          pragma Compile_time_warning(True, "Not LAPSE and calculate price/size");
+            Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Price));
+            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Back_Size));
+          when Green_Up_Lay => 
+            Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Price));
+            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Lay_Size));
         end case;
 
         Instruction.Set_Field (Field_Name => "limitOrder",      Field      => Limit_Order);
@@ -813,17 +748,18 @@ package body Bet_Handler is
         Append (Instructions , Instruction);
 --      will get INVALID_CUSTOMER_REF from betfair if not unique
 --        Params.Set_Field (Field_Name => "customerRef",          Field      => "some ref to fill in later"); -- what to put here?
+        pragma Compile_time_warning(True, "customerRef to keep pair together?");
         Params.Set_Field (Field_Name => "instructions",         Field      => Instructions);
         Params.Set_Field (Field_Name => "marketId",             Field      => Bet.Bet_Info.Market.Marketid);
 
         Query_Place_Orders.Set_Field (Field_Name => "params",   Field      => Params);
         case A_Bet_Type is
-          when Grn1 =>
+          when Green_Up_Back =>
             Query_Place_Orders.Set_Field (Field_Name => "id",       Field      => 15);          -- what to put here?
-          when Grn2 => 
+          when Green_Up_Lay => 
             Query_Place_Orders.Set_Field (Field_Name => "id",       Field      => 15);          -- what to put here?
-          pragma Compile_time_warning(True, "id to keep pair together?");
         end case;
+        pragma Compile_time_warning(True, "id to keep pair together?");
         Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
         Query_Place_Orders.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
 
@@ -967,7 +903,6 @@ package body Bet_Handler is
         declare
           Result           : JSON_Value := Create_Object;
           InstructionsItem : JSON_Value := Create_Object;
---          Instruction    : JSON_Value := Create_Object;
           Instructions   : JSON_Array := Empty_Array;
         begin
 
@@ -1067,17 +1002,15 @@ package body Bet_Handler is
         Move( "SUCCESS", Execution_Report_Error_Code);
         Move( "SUCCESS", Instruction_Report_Status);
         Move( "SUCCESS", Instruction_Report_Error_Code);
-        Move( "SUCCESS", Execution_Report_Status);
         case A_Bet_Type is
-          when Grn1 =>
+          when Green_Up_Back =>
             Average_Price_Matched := Float(Price);
             Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
             Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);          
-          when Grn2 => 
+          when Green_Up_Lay => 
             Average_Price_Matched := Float(Price);
             Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
             Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);          
-            pragma Compile_time_warning(True, "Not LAPSE and calculate price/size");
         end case;
     end case;
 
@@ -1230,9 +1163,9 @@ package body Bet_Handler is
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
       if Trim(Bet.Side) = "BACK" then
-        Side := Grn1;
+        Side := Green_Up_Back;
       elsif Trim(Bet.Side(1..3)) = "LAY" then --lay + lay1-lay6
-        Side := Grn2;
+        Side := Green_Up_Lay;
       else
         Illegal_Data := True;
         Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
@@ -1268,19 +1201,19 @@ package body Bet_Handler is
           Selection_In_Winners := not Eos(Awinner);
 
           case Side is
-            when Grn1 => Bet_Won := Selection_In_Winners;
-            when Grn2 => Bet_Won := not Selection_In_Winners;
+            when Green_Up_Back => Bet_Won := Selection_In_Winners;
+            when Green_Up_Lay => Bet_Won := not Selection_In_Winners;
           end case;
 
           if Bet_Won then
             case Side is     -- Betfair takes 5% provision on winnings
-              when Grn1 => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
-              when Grn2 => Profit := 0.95 * Bet.Size;
+              when Green_Up_Back => Profit := 0.95 * Bet.Size * (Bet.Price - 1.0);
+              when Green_Up_Lay => Profit := 0.95 * Bet.Size;
             end case;
           else -- lost :-(
             case Side is
-              when Grn1 => Profit := - Bet.Size;
-              when Grn2 => Profit := - Bet.Size * (Bet.Price - 1.0);
+              when Green_Up_Back => Profit := - Bet.Size;
+              when Green_Up_Lay => Profit := - Bet.Size * (Bet.Price - 1.0);
             end case;
           end if;
 
@@ -1316,9 +1249,9 @@ package body Bet_Handler is
   end Check_Bets;
   ------------------------------------------------------------------------------
   procedure Test_Bet is
-    B : Bet_Type;
+--    B : Bet_Type;
 --    T : Sql.Transaction_Type;
-    OK : Boolean := False;
+--    OK : Boolean := False;
   begin
     null;
 --    T.Start;
