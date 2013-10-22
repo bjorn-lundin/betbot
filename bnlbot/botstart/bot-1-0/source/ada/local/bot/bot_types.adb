@@ -110,7 +110,7 @@ package body Bot_Types is
    ---------------------------------------------
    function "/" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type is
    begin
-     return Left * Bet_Size_Type(Right);
+     return Left / Bet_Size_Type(Right);
    end "/";
    ---------------------------------------------
    

@@ -763,7 +763,7 @@ begin
    -- Create JSON arrays
   Append(Exchange_Ids , Create("1"));      -- Not Australia 
   Append(Event_Type_Ids , Create("7"));    -- horse
-  Append(Event_Type_Ids , Create("4339")); -- hound
+--  Append(Event_Type_Ids , Create("4339")); -- hound
 --   none for all countries   
 --   Append(Market_Countries , Create("GB"));
 --   Append(Market_Countries , Create("US"));

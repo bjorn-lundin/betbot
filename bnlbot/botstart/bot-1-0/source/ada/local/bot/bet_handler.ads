@@ -66,10 +66,8 @@ private
                      Betmode    : in     Bet_Mode_Type; 
                      A_Token    : in out Token.Token_Type;
                      A_Bet_Type : in Bet_Type_Type;
-                     Back_Price : in Bet_Price_Type;
-                     Back_Size  : in Bet_Size_Type;
-                     Lay_Price  : in Bet_Price_Type;
-                     Lay_Size   : in Bet_Size_Type) ;
+                     Price : in Bet_Price_Type;
+                     Size  : in Bet_Size_Type) ;
 
                      
   function Exists          (Bet : Bet_Type) return Boolean;
