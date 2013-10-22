@@ -62,15 +62,16 @@ private
 
   
   
-  procedure Make_Bet(Bet       : in out Bet_Type;
-                     Betmode   : in     Bet_Mode_Type; 
-                     A_Token   : in out Token.Token_Type;
-                     A_Bet_Type  : in Bet_Type_Type) ;
---  procedure Make_Real_Bet(Bet       : in out Bet_Type;
---                          A_Token   : in out Token.Token_Type;
---                          Powerdays : in     Integer_4) ;
---  procedure Make_Simulation_Bet(Bet : in out Bet_Type; Powerdays : in Integer_4) ;
-                          
+  procedure Make_Bet(Bet        : in out Bet_Type;
+                     Betmode    : in     Bet_Mode_Type; 
+                     A_Token    : in out Token.Token_Type;
+                     A_Bet_Type : in Bet_Type_Type;
+                     Back_Price : in Bet_Price_Type;
+                     Back_Size  : in Bet_Size_Type;
+                     Lay_Price  : in Bet_Price_Type;
+                     Lay_Size   : in Bet_Size_Type) ;
+
+                     
   function Exists          (Bet : Bet_Type) return Boolean;
   function Profit_Today    (Bet : Bet_Type) return Profit_Type;
   function Num_Losses_Today(Bet : Bet_Type) return Integer_4;

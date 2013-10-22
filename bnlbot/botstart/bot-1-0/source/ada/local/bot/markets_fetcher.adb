@@ -812,7 +812,9 @@ begin
       when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
     end case;   
 
-    UTC_Time_Stop := UTC_Time_Start + Eleven_Seconds; 
+    --Now set that time 1 hour ahead:
+    UTC_Time_Start := UTC_Time_Start + One_Hour;
+    UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
     Market_Start_Time.Set_Field(Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));

@@ -8,7 +8,7 @@ package Bot_Types is
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place, Winner);
-   type Bet_Type_Type is (Grn1, Grn2); 
+   type Bet_Type_Type is (Green_Up_Back, Green_Up_Lay); 
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
@@ -54,5 +54,11 @@ package Bot_Types is
 
    function "=" (Left : Integer_4 ; Right : Num_Winners_Type) return Boolean ;
 
+   function "-" (Left : Bet_Price_Type ; Right : Delta_Price_Type) return Bet_Price_Type;
+   function "*" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
+   function "/" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
+
+   
+   
    
 end Bot_Types;
