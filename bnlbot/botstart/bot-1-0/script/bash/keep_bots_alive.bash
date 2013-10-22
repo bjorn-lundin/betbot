@@ -56,7 +56,7 @@ function Check_Bots_For_User () {
 
 export BOT_USER=$1
 
-. $BOT_START/bot.bash -u $BOT_USER -a no
+. $BOT_START/bot.bash $BOT_USER 
 
 [ ! -r $BOT_HOME/login.ini ] && return 0
 
@@ -156,7 +156,7 @@ $BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
 
 USER_LIST=$(ls $BOT_START/user)
 
-#USER_LIST="bnl"
+USER_LIST="bnl"
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER

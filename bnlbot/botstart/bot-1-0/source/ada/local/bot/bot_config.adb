@@ -38,7 +38,7 @@ package body Bot_Config is
   procedure Read(Cfg : in out Config_Type) is
     function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
    -- function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
-   type Cfg_Type is (Bet, Market, Animal);
+   type Cfg_Type is ( Market, Animal);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
     Log(Me & "Read start");
