@@ -1,21 +1,21 @@
 #!/bin/bash
 
-while getopts "a:u:" opt; do
-#  echo "$opt - $OPTARG"
+BOT_USER=$1
 
-  case $opt in
-    a)  action=$OPTARG ;;
-    u)  BOT_USER=$OPTARG ;;
-    *)
-      echo "$0 -a action [stop|start] -u user" >&2
-      exit 1
-      ;;
-  esac
-done
-
-
-[ -z $action ] && echo "missing action" >&2 && exit 1
-[ -z $BOT_USER ] && echo "missing user" >&2 && exit 1
+#while getopts "u:" OPT; do
+##  echo "$OPT - $OPTARG"
+#  case $OPT in
+#    u)  BOT_USER=$OPTARG ;;
+#    *)
+#      echo "$0 -u user" >&2
+#      exit 1
+#      ;;
+#  esac
+#done
+#dialog --msgbox "$OPT - $OPTARG"  7 45
+#
+#
+#[ -z $OPTARG ] && echo "missing user" >&2 
 
 export BOT_USER
 
@@ -28,4 +28,6 @@ export BOT_SCRIPT=$BOT_ROOT/script
 export BOT_SOURCE=$BOT_ROOT/source
 export BOT_DOC=$BOT_ROOT/docbook
 
-echo "run with BOT_USER= $BOT_USER"
+
+#dialog --msgbox "run with BOT_USER= $BOT_USER"  7 45
+

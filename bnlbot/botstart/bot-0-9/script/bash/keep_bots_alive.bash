@@ -15,8 +15,7 @@ TZ='Europe/Stockholm'
 export TZ
 export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
-. $BOT_START/bot.bash -ubnl -a no
-
+. $BOT_START/bot.bash bnl
 
 #start the login daemon if not running
 #pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
@@ -27,7 +26,7 @@ export BOT_START=/home/bnl/bnlbot/botstart
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #0
 
-ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
+ps -ef | grep login_daemon.py | grep -v grep >/dev/null
 RESULT_LOGIN_DAEMON=$?
 if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
   echo "Started login_daemon"
@@ -43,20 +42,18 @@ fi
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #0
 
-ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+ps -ef | grep mail_proxy.py | grep -v grep >/dev/null
 RESULT_MAIL_PROXY=$?
 if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
   echo "Started mail_proxy"
   /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
 fi
 
-
-
 function Check_Bots_For_User () {
 
 export BOT_USER=$1
 
-. $BOT_START/bot.bash -u $BOT_USER -a no
+. $BOT_START/bot.bash $BOT_USER 
 
 [ ! -r $BOT_HOME/login.ini ] && return 0
 
@@ -71,7 +68,7 @@ export BOT_USER=$1
 ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
 RESULT_MARKETS_FETCHER=$?
 if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
-  echo "Started markets_fetcher"
+  echo "Started markets_fetcher for user $BOT_USER"
   export BOT_NAME=markets_fetcher
   $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
 fi
@@ -100,7 +97,7 @@ fi
 ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
 RESULT_BOT=$?
 if [ $RESULT_BOT -eq 1 ] ; then
-  echo "Started bot"
+  echo "Started bot for user $BOT_USER"
   export BOT_NAME=bot
   $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
 fi
@@ -116,7 +113,7 @@ fi
 ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
 if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-  echo "Started saldo_fetcher"
+  echo "Started saldo_fetcher for user $BOT_USER"
   export BOT_NAME=saldo_fetcher
   $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
 fi

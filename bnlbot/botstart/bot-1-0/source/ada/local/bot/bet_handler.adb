@@ -127,9 +127,11 @@ package body Bet_Handler is
       exit when Eos(A_Price);
       Max_Idx := Max_Idx +1;
       Bet_Info.Runner_Array(Max_Idx).Price := Table_Aprices.Get(Select_Prices);
+      Log(Me & "Create", Table_Aprices.To_String(Bet_Info.Runner_Array(Max_Idx).Price));
     end loop;
     Select_Prices.Close_Cursor;
     Bet_Info.Last_Runner := Max_Idx;
+    Log(Me & "Create", "Bet_Info.Last_Runner:" & Bet_Info.Last_Runner'Img);
 
     if Bet_Info.Last_Runner = 0 then
       T.Rollback;
@@ -152,6 +154,9 @@ package body Bet_Handler is
         T.Rollback;
         Table_Aprices.Aprices_List_Pack.Release(Price_List);
         Table_Arunners.Arunners_List_Pack.Release(Runner_List);
+        Log(Me & "Create", "No runner in market '" & Bet_Info.Runner_Array(i).Price.Marketid &
+                            "' selectionid " & Bet_Info.Runner_Array(i).Price.Selectionid'Img);
+        
         raise Bad_Data with "No runner in market '" & Bet_Info.Runner_Array(i).Price.Marketid &
                             "' selectionid " & Bet_Info.Runner_Array(i).Price.Selectionid'Img;
       end if;
@@ -249,7 +254,8 @@ package body Bet_Handler is
     end loop;
     Log(Me & "Treat_Market", "end market:" & Market_Notification.Market_Id);
   exception
-    when Bad_Data =>
+    when E: Bad_Data =>
+        Sattmate_Exception.Tracebackinfo(E);
       Log(Me & "Treat_Market", "BAD DATA, skip:" & Market_Notification.Market_Id);
   end Treat_Market;
 
@@ -265,6 +271,8 @@ package body Bet_Handler is
     if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Back_") > Natural(0) then
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Lay_") > Natural(0) then
+      null;
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_greenup_") > Natural(0) then
       null;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";
