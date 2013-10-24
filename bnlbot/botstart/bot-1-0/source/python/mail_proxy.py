@@ -16,14 +16,17 @@ class Mailer_ses(object):
     """ The Funding Object """
     avail_balance = None
     exposure = None
+    account = None
     
-    def __init__ (self,avail,expo):
+    def __init__ (self,avail,expo,account):
         self.avail_balance = avail
         self.exposure = expo
+        self.account = account
 
     def mail_saldo(self) :
         subject = 'BetBot Saldo Report'
         body = 'Dagens saldo-rapport '
+        body += '\r\n konto:     ' + self.account
         body += '\r\n saldo:     ' + str( self.avail_balance )
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
@@ -57,19 +60,22 @@ class Mailer_ses(object):
 class Mailer_gmail(object) :
     avail_balance = None
     exposure = None
+    account = None    
     SMTP_SERVER = 'smtp.gmail.com'
     SMTP_PORT = 587
     SENDER = 'bnlbetbot@gmail.com'
     RECIPIENT = 'b.f.lundin@gmail.com'
     PASSWORD = 'Alice2010'
 
-    def __init__ (self,avail,expo):
+    def __init__ (self,avail,expo,account):
         self.avail_balance = avail
         self.exposure = expo
+        self.account = account
 
     def mail_saldo(self) :
         subject = 'BetBot Saldo Report'
         body = 'Dagens saldo-rapport '
+        body += '\r\n konto:     ' + self.account
         body += '\r\n saldo:     ' + str( self.avail_balance )
         body += '\r\n exposure:  ' + str( self.exposure )
         body += '\r\n timestamp: ' + str( datetime.datetime.now() )
@@ -111,19 +117,20 @@ def main():
 #        print 'Connected by', addr
         data = conn.recv(1024)
         if not data: continue
-        #got 'avail=available,expo=exposure'
+        #got 'avail=available,expo=exposure,account=bnlbnl'
         input=data.split(',')
         avail = input[0].split('=')[1]
         expo  = input[1].split('=')[1]
+        account = input[2].split('=')[1]
         
         host = socket.gethostname()
         
 #        print 'input', input
         # amazon hosts starts with 'ip' 
         if host[:2] == 'ip' :
-            m = Mailer_ses(avail,expo)
+            m = Mailer_ses(avail,expo,account)
         else :  
-            m = Mailer_gmail(avail,expo)
+            m = Mailer_gmail(avail,expo,account)
             
         m.mail_saldo()        
         conn.send("saldo is mailed")

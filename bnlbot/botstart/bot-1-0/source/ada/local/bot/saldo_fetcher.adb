@@ -85,7 +85,8 @@ procedure Saldo_Fetcher is
     declare
        S : String := 
          "available=" & F8_Image(Saldo.Balance) &
-         ",exposed="  & F8_Image(Saldo.Exposure);
+         ",exposed="  & F8_Image(Saldo.Exposure) & 
+         ",account=" & Ini.Get_Value("betfair","username","");
     begin        
       Log(Me & "Mail_Saldo", "Request: '" & S & "'"); 
       String'Write (Channel, S);
