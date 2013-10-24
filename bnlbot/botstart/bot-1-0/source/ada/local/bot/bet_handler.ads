@@ -20,6 +20,7 @@ package Bet_Handler is
 
   procedure Check_Bets;
   procedure Test_Bet; 
+  procedure Check_If_Bet_Accepted(Tkn : Token.Token_Type);
   
 private
 
@@ -62,18 +63,20 @@ private
 
   
   
-  procedure Make_Bet(Bet        : in out Bet_Type;
-                     Betmode    : in     Bet_Mode_Type; 
-                     A_Token    : in out Token.Token_Type;
-                     A_Bet_Type : in Bet_Type_Type;
-                     Price : in Bet_Price_Type;
-                     Size  : in Bet_Size_Type) ;
+  procedure Make_Bet(Bet           : in out Bet_Type;
+                     Betmode       : in     Bet_Mode_Type; 
+                     A_Token       : in out Token.Token_Type;
+                     A_Bet_Type    : in     Bet_Type_Type;
+                     Price         : in     Bet_Price_Type;
+                     Size          : in     Bet_Size_Type;
+                     Price_Matched :    out Bet_Price_Type) ;
 
                      
   function Exists          (Bet : Bet_Type) return Boolean;
   function Profit_Today    (Bet : Bet_Type) return Profit_Type;
   function Num_Losses_Today(Bet : Bet_Type) return Integer_4;
   function Num_In_The_Air  (Bet : Bet_Type) return Integer_4;
+  
   
   ---------------------------------------------------------------------------------
   type Pip_Type is tagged record
@@ -86,7 +89,7 @@ private
   procedure Init(Pip : in out Pip_Type; Price : Float_8) ;
   function Next_Price(Pip : Pip_Type) return Float_8;
   function Previous_Price(Pip : Pip_Type) return Float_8;
-   
+  
 end Bet_Handler;
 
 

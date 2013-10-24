@@ -24,6 +24,8 @@ with Aws.Headers.Set;
 with Sattmate_Exception;
 with Process_IO;
 with Bot_Svn_Info;
+with RPC;
+
 
 pragma Elaborate_All(Aws.Headers);
 
@@ -37,6 +39,7 @@ package body Bet_Handler is
   Select_Profit_Today,
   Select_Dry_Run_Bets,
 --  Select_Real_Bets,
+  Select_Executable_Bets,
   Select_Runners,
   Select_In_The_Air,
   Select_Exists,
@@ -293,6 +296,8 @@ package body Bet_Handler is
       Todays_Profit : Profit_Type := 0.0;
       Continue_Betting : Boolean := False;
       Too_Many_In_The_Air, Exists : Boolean := True;
+      Price_Matched : Bet_Price_Type := 0.0;
+
   begin
     Exists := Bet.Exists;
     Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
@@ -323,27 +328,31 @@ package body Bet_Handler is
               declare
                 use  General_Routines;
                 Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
-                Lay_Price  : Bet_Price_Type := Back_Price - Bet.Bot_Cfg.Delta_Price;              
-                Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
+                Lay_Price  : Bet_Price_Type := Back_Price - Bet.Bot_Cfg.Delta_Price; --re-calculated below
+                Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;                --re-calculated below   
                 Lay_Size   : Bet_Size_Type  := (Back_Size * Back_Price) / Lay_Price;
               begin
-                Log(Me & "Do_Try", "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                   "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                   "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                   "Lay_Size: " & F8_Image(Float_8(Lay_Size)));                                   
                 if Bet.Bot_Cfg.Min_Price <= Back_Price and then
                    Back_Price <= Bet.Bot_Cfg.Max_Price then
                   case Bet.Bot_Cfg.Bet_Mode is
                     when Real => 
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
-                                   Price => Back_Price, Size => Back_Size);
+                                   Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                      -- use the matched back_price             
+                      Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;              
+                      Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
+                      Log(Me & "Do_Try", "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                   "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                   "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                   "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                                   
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
-                                   Price => Lay_Price, Size => Lay_Size);
+                                   Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
                     when Sim  => 
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
-                                   Price => Back_Price, Size => Back_Size);
+                                   Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
-                                   Price => Lay_Price, Size => Lay_Size);
+                                   Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
                   end case;
                 end if;  
               end;  
@@ -647,21 +656,22 @@ package body Bet_Handler is
                      A_Token    : in out Token.Token_Type;
                      A_Bet_Type : in Bet_Type_Type;
                      Price      : in Bet_Price_Type;
-                     Size       : in Bet_Size_Type) is
+                     Size       : in Bet_Size_Type;
+                     Price_Matched : out Bet_Price_Type) is
                      
     Abet : Table_Abets.Data_Type;
     Local_Price : Float_8 := Float_8(Price);
     Pip : Pip_Type ;
-    Side                           : String (1..4)  :=  (others => ' ') ;
+    Side                           : String (1..4)   :=  (others => ' ') ;
     Bet_Name                       : String (1..100) :=  (others => ' ') ;
-    Execution_Report_Status        : String (1..50) :=  (others => ' ') ;
-    Execution_Report_Error_Code    : String (1..50) :=  (others => ' ') ;
-    Instruction_Report_Status      : String (1..50) :=  (others => ' ') ;
-    Instruction_Report_Error_Code  : String (1..50) :=  (others => ' ') ;
-    Tmp_Bet_Id                     : String (1..20) :=  (others => ' ') ;
-    Customer_Reference             : String (1..30) :=  (others => ' ') ;
-    Runner_Name                    : String (1..50) :=  (others => ' ') ;
-    Order_Status                   : String (1..50) :=  (others => ' ') ;
+    Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
+    Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
+    Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
+    Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
+    Tmp_Bet_Id                     : String (1..20)  :=  (others => ' ') ;
+    Customer_Reference             : String (1..30)  :=  (others => ' ') ;
+    Runner_Name                    : String (1..50)  :=  (others => ' ') ;
+    Order_Status                   : String (1..50)  :=  (others => ' ') ;
     Size_Matched,
     Average_Price_Matched          : Float := 0.0;
     Powerdays                      : Integer_4 := 0;
@@ -674,11 +684,13 @@ package body Bet_Handler is
     Reply_Place_Orders,
     Query_Place_Orders : JSON_Value := Create_Object;
 
+    
     Params         : JSON_Value := Create_Object;
     Instruction    : JSON_Value := Create_Object;
     Limit_Order    : JSON_Value := Create_Object;
     Instructions   : JSON_Array := Empty_Array;
   begin
+    Price_Matched := 0.0;
 
 --  type Data_Type is record
 --      Betid :    Integer_8  := 0 ; -- Primary Key
@@ -823,60 +835,12 @@ package body Bet_Handler is
 
         -- parse out the reply.
         -- check for API exception/Error first
-        declare
-           Error,
---           Code,
-           APINGException,
-           Data                      : JSON_Value := Create_Object;
-        begin
-          if Reply_Place_Orders.Has_Field("error") then
-            --    "error": {
-            --        "code": -32099,
-            --        "data": {
-            --            "exceptionname": "APINGException",
-            --            "APINGException": {
-            --                "requestUUID": "prdang001-06060844-000842110f",
-            --                "errorCode": "INVALID_SESSION_INFORMATION",
-            --                "errorDetails": "The session token passed is invalid"
-            --                }
-            --            },
-            --            "message": "ANGX-0003"
-            --        }
-            Log(Me & "Make_Bet - Error",Aws.Response.Message_Body(Answer_Place_Orders));
-            Error := Reply_Place_Orders.Get("error");
-            if Error.Has_Field("code") then
---              Code := Error.Get("code");
-              Log(Me & "Make_Bet", "error.code " & Integer(Integer'(Error.Get("code")))'Img);
-
-              if Error.Has_Field("data") then
-                Data := Error.Get("data");
-                if Data.Has_Field("APINGException") then
-                  APINGException := Data.Get("APINGException");
-                  if APINGException.Has_Field("errorCode") then
-                    Log(Me & "Make_Bet", "APINGException.errorCode " & APINGException.Get("errorCode"));
-                    if APINGException.Has_Field("errorDetails") then
-                      Log(Me & "Make_Bet", "APINGException.errorDetails " & APINGException.Get("errorDetails"));
-                    else
-                      Log(Me & "Make_Bet", "APINGException.errorDetails no details found :-(");
-                    end if;
-                    if Data.Has_Field("exceptionname") then
-                     Log(Me, "exceptionname " & Data.Get("exceptionname"));
-                    end if;
-                    raise Suicide with String'(APINGException.Get("errorCode")); -- exit main loop, let cron restart program
-                  else
-                    raise No_Such_Field with "APINGException - errorCode";
-                  end if;
-                else
-                  raise No_Such_Field with "Data - APINGException";
-                end if;
-              else
-                raise  No_Such_Field with "Error - data";
-              end if;
-            else
-              raise No_Such_Field with "Error - code";
-            end if;
-          end if;
-        end;
+        
+        if RPC.API_Exceptions_Are_Present(Reply_Place_Orders) then
+          Log(Me & "Make_Bet", "APINGException is present, return");
+          return;
+        end if;
+        
 -- {
 --    "jsonrpc":"2.0",
 --    "result":
@@ -1004,6 +968,7 @@ package body Bet_Handler is
           if InstructionsItem.Has_Field("averagePriceMatched") then
             Log(Me & "Make_Bet", "got InstructionsItem.averagePriceMatched");
             Average_Price_Matched := InstructionsItem.Get("averagePriceMatched");
+            Price_Matched := Bet_Price_Type(Average_Price_Matched);
           end if;
         end ;
 
@@ -1024,6 +989,8 @@ package body Bet_Handler is
             Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
             Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);          
         end case;
+        Price_Matched := Bet_Price_Type(Average_Price_Matched);
+        
     end case;
 
     if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
@@ -1262,6 +1229,41 @@ package body Bet_Handler is
     Table_Abets.Abets_List_Pack.Release(Bet_List);
   end Check_Bets;
   ------------------------------------------------------------------------------
+  
+  procedure Check_If_Bet_Accepted(Tkn : Token.Token_Type) is 
+    T : Sql.Transaction_Type;
+    Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
+    Bet      : Table_Abets.Data_Type;
+  begin
+    T.Start;
+    -- check the dry run bets
+    Select_Executable_Bets.Prepare(
+      "select * from ABETS " &
+      "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
+      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+      "and STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
+
+    Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
+    Table_Abets.Read_List(Select_Executable_Bets, Bet_List);
+
+    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
+      Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
+      
+      if RPC.Bet_Is_Matched(Bet.Betid, Tkn) then
+        Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
+        Bet.Status := (others => ' ');
+        Move("EXECUTION_COMPLETE", Bet.Status);         
+        Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
+        Table_Abets.Update_Withcheck(Bet);
+      end if;
+    end loop;  
+    T.Commit;
+
+    Table_Abets.Abets_List_Pack.Release(Bet_List);
+  end Check_If_Bet_Accepted;
+ ---------------------------------------------------------------------------------
+  
   procedure Test_Bet is
 --    B : Bet_Type;
 --    T : Sql.Transaction_Type;
