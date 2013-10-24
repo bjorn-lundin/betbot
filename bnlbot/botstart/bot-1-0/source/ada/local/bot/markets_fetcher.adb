@@ -34,6 +34,9 @@ with Process_IO;
 with Bot_Messages;
 with Core_Messages;
 
+
+with RPC ; use RPC;
+
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
@@ -627,57 +630,7 @@ procedure Markets_Fetcher is
     Log(Me, "Insert_Runners_Prices stop"); 
   end Insert_Runners_Prices;
   ---------------------------------------------------------------------
-  function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
-     Error, 
-     APINGException, 
-     Data                      : JSON_Value := Create_Object;
-  begin 
-    if Reply.Has_Field("error") then
-      --    "error": {
-      --        "code": -32099,
-      --        "data": {
-      --            "exceptionname": "APINGException",
-      --            "APINGException": {
-      --                "requestUUID": "prdang001-06060844-000842110f",
-      --                "errorCode": "INVALID_SESSION_INFORMATION",
-      --                "errorDetails": "The session token passed is invalid"
-      --                }
-      --            },
-      --            "message": "ANGX-0003"
-      --        }
-      Error := Reply.Get("error");
-      if Error.Has_Field("code") then
-        Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
-  
-        if Error.Has_Field("data") then
-          Data := Error.Get("data");
-          if Data.Has_Field("APINGException") then
-            APINGException := Data.Get("APINGException");
-            if APINGException.Has_Field("errorCode") then
-              Log(Me, "APINGException.errorCode " & APINGException.Get("errorCode"));
-              if APINGException.Has_Field("errorDetails") then
-                Log(Me, "APINGException.errorDetails " & APINGException.Get("errorDetails"));
-              end if;
-              if Data.Has_Field("exceptionname") then
-                Log(Me, "exceptionname " & Data.Get("exceptionname"));
-              end if;
-              return True; -- exit main loop, let cron restart program
-            else  
-              raise No_Such_Field with "APINGException - errorCode";
-            end if;          
-          else  
-            raise No_Such_Field with "Data - APINGException";
-          end if;          
-        else  
-          raise  No_Such_Field with "Error - data";
-        end if;          
-      else
-        raise No_Such_Field with "Error - code";
-      end if;          
-    end if;  
-    return False;      
-  end API_Exceptions_Are_Present;    
-  ---------------------------------------------------------------------
+
   
    
 ------------------------------ main start -------------------------------------
