@@ -322,8 +322,6 @@ package body Bet_Handler is
         if Continue_Betting then
           if Bet.Enabled then
             for i in 1 ..  Bet.Bet_Info.Last_Runner loop
-            
-                 
               Bet.Bet_Info.Used_Index  := i;     -- used in make_bet     
               declare
                 use  General_Routines;
@@ -346,8 +344,13 @@ package body Bet_Handler is
                                    "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
                                    "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
                                    
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
-                                   Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                      if Price_Matched > 0.0 then
+                        Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                     Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                      else 
+                        Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
+                      end if;
+                      
                     when Sim  => 
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
                                    Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
@@ -807,10 +810,7 @@ package body Bet_Handler is
     --}
 
         Log(Me & "Make_Bet", "posting: " & Query_Place_Orders.Write  );
-        
-        Log(Me & "Make_Bet", "nothing posted, dry_run only" );
-        return;
-        
+                
         Answer_Place_Orders := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                                 Data         =>  Query_Place_Orders.Write,
                                                 Content_Type => "application/json",
