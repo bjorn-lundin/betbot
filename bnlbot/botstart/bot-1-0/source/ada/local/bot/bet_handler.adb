@@ -1203,9 +1203,10 @@ package body Bet_Handler is
           end case;
 
           if Bet_Won then
-            case Side is     -- Betfair takes 5% provision on winnings
-              when Green_Up_Back => Profit := 0.95 * Bet.Sizematched * (Bet.Pricematched - 1.0);
-              when Green_Up_Lay  => Profit := 0.95 * Bet.Sizematched;
+            case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
+                             -- so it won't do to calculate per bet. leave that to the sql-script summarising
+              when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
+              when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
             end case;
           else -- lost :-(
             case Side is
