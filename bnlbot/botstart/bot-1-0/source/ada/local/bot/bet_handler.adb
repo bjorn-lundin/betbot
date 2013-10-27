@@ -322,13 +322,16 @@ package body Bet_Handler is
         if Continue_Betting then
           if Bet.Enabled then
             for i in 1 ..  Bet.Bet_Info.Last_Runner loop
-              Bet.Bet_Info.Used_Index  := i;     -- used in make_bet     
+              Bet.Bet_Info.Used_Index := i;     -- used in make_bet     
+              Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid;  -- used in make_bet     
               declare
                 use  General_Routines;
                 Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
                 Lay_Price  : Bet_Price_Type := Back_Price - Bet.Bot_Cfg.Delta_Price; --re-calculated below
                 Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;                --re-calculated below   
                 Lay_Size   : Bet_Size_Type  := (Back_Size * Back_Price) / Lay_Price;
+                Pip : Pip_Type ;
+
               begin
                 if Bet.Bot_Cfg.Min_Price <= Back_Price and then
                    Back_Price <= Bet.Bot_Cfg.Max_Price then
@@ -337,7 +340,11 @@ package body Bet_Handler is
                       Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
                                    Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                       -- use the matched back_price             
-                      Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;              
+                      Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
+                      Pip.Init(Float_8(Lay_Price));
+                      Lay_Price := Bet_Price_Type(Pip.Pip_Price);
+
+                      
                       Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
                       Log(Me & "Do_Try", "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
                                    "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
@@ -654,13 +661,13 @@ package body Bet_Handler is
   end Num_In_The_Air;
   ---------------------------------------------------------------
 
-  procedure Make_Bet(Bet        : in out Bet_Type;
-                     Betmode    : in     Bet_Mode_Type;
-                     A_Token    : in out Token.Token_Type;
-                     A_Bet_Type : in Bet_Type_Type;
-                     Price      : in Bet_Price_Type;
-                     Size       : in Bet_Size_Type;
-                     Price_Matched : out Bet_Price_Type) is
+  procedure Make_Bet(Bet           : in out Bet_Type;
+                     Betmode       : in     Bet_Mode_Type;
+                     A_Token       : in out Token.Token_Type;
+                     A_Bet_Type    : in     Bet_Type_Type;
+                     Price         : in     Bet_Price_Type;
+                     Size          : in     Bet_Size_Type;
+                     Price_Matched :    out Bet_Price_Type) is
                      
     Abet : Table_Abets.Data_Type;
     Local_Price : Float_8 := Float_8(Price);
@@ -679,6 +686,9 @@ package body Bet_Handler is
     Average_Price_Matched          : Float := 0.0;
     Powerdays                      : Integer_4 := 0;
 
+    Local_Size :  Bet_Size_Type := Size;
+    
+    
     Bet_Id : Integer_8 := 0;
     Now    : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     T      : Sql.Transaction_Type;
@@ -730,9 +740,9 @@ package body Bet_Handler is
         Local_Price := Pip.Previous_Price;
         Move("BACK", Side);
 
-      when Green_Up_Lay  =>
-        Pip.Init(Local_Price);
-        Local_Price := Pip.Next_Price;
+      when Green_Up_Lay  => 
+--  not when greening up      Pip.Init(Local_Price); 
+--        Local_Price := Pip.Next_Price;
         Move("LAY", Side);
 
     end case;
@@ -750,16 +760,23 @@ package body Bet_Handler is
         Aws.Headers.Set.Add (My_Headers, "X-Authentication", A_Token.Get);
         Aws.Headers.Set.Add (My_Headers, "X-Application", A_Token.Get_App_Key);
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
+        
+        
+        declare
+          Size_String : String := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
+        begin
+          Local_Size := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
+        end;
 
         case A_Bet_Type is
           when Green_Up_Back =>
             Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
             Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Local_Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Size));
+            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Local_Size));
           when Green_Up_Lay => 
             Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
             Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Local_Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Size));
+            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Local_Size));
         end case;
 
         Instruction.Set_Field (Field_Name => "limitOrder",      Field      => Limit_Order);
@@ -1005,7 +1022,7 @@ package body Bet_Handler is
       Powerdays      => Powerdays,
       Selectionid    => Bet.Bet_Info.Selection_Id,
       Reference      => (others => '-'),
-      Size           => Float_8(Size),
+      Size           => Float_8(Local_Size),
       Price          => Local_Price,
       Side           => Side,
       Betname        => Bet_Name,
@@ -1133,7 +1150,6 @@ package body Bet_Handler is
       "select * from ABETS " &
       "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
       "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-      "and STATUS = 'EXECUTION_COMPLETE' " & --only acctepted bets ...
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
 
     Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
@@ -1234,12 +1250,18 @@ package body Bet_Handler is
     T : Sql.Transaction_Type;
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet      : Table_Abets.Data_Type;
+    Avg_Price_Matched : Bet_Price_Type := 0.0;
+    Is_Matched        : Boolean        := False;
+    Size_Matched      : Bet_Size_Type  := 0.0;
+    
+    
   begin
     T.Start;
     -- check the dry run bets
     Select_Executable_Bets.Prepare(
       "select * from ABETS " &
       "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
+      "and BETID > 1000000000 " & -- no dry_run bets
       "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
 
@@ -1250,12 +1272,19 @@ package body Bet_Handler is
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
       
-      if RPC.Bet_Is_Matched(Bet.Betid, Tkn) then
+      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Matched, Avg_Price_Matched, Size_Matched);
+      
+      if Is_Matched then
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Bet.Status := (others => ' ');
         Move("EXECUTION_COMPLETE", Bet.Status);         
+        Bet.Pricematched := Float_8(Avg_Price_Matched);
+        Bet.Sizematched := Float_8(Size_Matched);
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Table_Abets.Update_Withcheck(Bet);
+        Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+        Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+        Update_Betwon_To_Null.Execute;
       end if;
     end loop;  
     T.Commit;

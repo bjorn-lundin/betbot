@@ -102,6 +102,8 @@ begin
             if not OK then
               My_Token.Login;
             end if;
+            Bet_Handler.Check_If_Bet_Accepted(My_Token);
+            Bet_Handler.Check_Bets;
           when Bot_Types.Simulation => null;
         end case;
         Bet_Handler.Check_Bets;

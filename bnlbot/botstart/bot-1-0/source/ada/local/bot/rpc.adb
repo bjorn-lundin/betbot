@@ -74,7 +74,12 @@ package body RPC is
   end API_Exceptions_Are_Present;    
   ---------------------------------------------------------------------
   
-  function Bet_Is_Matched(Betid : Integer_8 ; Tkn : Token.Token_Type) return Boolean is
+  procedure Bet_Is_Matched(Betid             : Integer_8 ; 
+                           Tkn               : Token.Token_Type; 
+                           Is_Matched        : out Boolean; 
+                           AVG_Price_Matched : out Bet_Price_Type;
+                           Size_Matched      : out Bet_Size_Type
+                           ) is
     Current_Order_Item,
     Result, 
 --    Status,
@@ -82,6 +87,7 @@ package body RPC is
     DateRange, 
     Json_Reply,    
     Json_Query   : JSON_Value := Create_Object;
+    
     
     Current_Orders,    
     Bet_Ids      : JSON_Array := Empty_Array;
@@ -98,6 +104,10 @@ package body RPC is
 --     },
 --     "id": 1
 --}
+    Is_Matched := False;
+    AVG_Price_Matched := 0.0;
+    Size_Matched := 0.0;
+    
     Append (Bet_Ids, Create(String_Betid));    
     Params.Set_Field     (Field_Name => "betIds",          Field => Bet_Ids);
     Params.Set_Field     (Field_Name => "placesDateRange", Field => DateRange);    
@@ -127,73 +137,92 @@ package body RPC is
         Log(Me & "Bet_Is_Matched", "Got reply: " & Json_Reply.Write  );
       else
         Log(Me & "Bet_Is_Matched", "Post Timeout -> Give up listCurrentOrders");
-        return False;
+        return ;
       end if;
     exception
       when others =>
          Log(Me & "Bet_Is_Matched", "***********************  Bad reply start *********************************");
          Log(Me & "Bet_Is_Matched", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
          Log(Me & "Bet_Is_Matched", "***********************  Bad reply stop  ********" );
-         return False;
+         return ;
     end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
-      return False;
+      return ;
     end if;
 
     -- ok, got a valid Json reply, parse it
- -- {
- --     "jsonrpc": "2.0",
- --     "result": {
- --          "currentOrders": [{
- --               "betId": "31049748925",
- --               "marketId": "1.111558021",
- --               "selectionId": 7539782,
- --               "handicap": 0.0,
- --               "priceSize": {
- --                    "price": 40.0,
- --                    "size": 30.0
- --               },
- --               "bspLiability": 0.0,
- --               "placedDate": "2013-10-23T16:42:52.000Z",
- --               "averagePriceMatched": 0.0,
- --               "sizeMatched": 0.0,
- --               "sizeRemaining": 30.0,
- --               "sizeLapsed": 0.0,
- --               "sizeCancelled": 0.0,
- --               "sizeVoided": 0.0,
- --               "regulatorCode": "MALTA LOTTERIES AND GAMBLING AUTHORITY", 
- --               "side": "BACK",
- --               "status": "EXECUTABLE",
- --               "persistenceType": "LAPSE",
- --               "orderType": "LIMIT"
- --          }],
- --          "moreAvailable": false
- --     },
- --     "id": 1
- -- }     
-
+--      {
+--      	"id": 15,
+--      	"jsonrpc": "2.0",
+--      	"result": {
+--      		"moreAvailable": false,
+--      		"currentOrders": [{
+--      			"marketId": "1.111593623",
+--      			"betId": "31122359882",
+--      			"handicap": 0.00000E+00,
+--      			"orderType": "LIMIT",
+--      			"sizeCancelled": 0.00000E+00,
+--      			"bspLiability": 0.00000E+00,
+--      			"selectionId": 7662169,
+--      			"sizeVoided": 0.00000E+00,
+--      			"status": "EXECUTION_COMPLETE",
+--      			"matchedDate": "2013-10-26T12:49:26.000Z",
+--      			"placedDate": "2013-10-26T11:44:54.000Z",
+--      			"sizeLapsed": 0.00000E+00,
+--      			"side": "LAY",
+--      			"priceSize": {
+--      				"size": 3.21200E+01,
+--      				"price": 1.65000E+01
+--      			},
+--      			"regulatorCode": "MALTA LOTTERIES AND GAMBLING AUTHORITY",
+--      			"sizeMatched": 3.21200E+01,
+--      			"persistenceType": "PERSIST",
+--      			"sizeRemaining": 0.00000E+00,
+--      			"averagePriceMatched": 1.65000E+01
+--      		}]
+--      	}
+--      }
     if Json_Reply.Has_Field("result") then
       Result := Json_Reply.Get("result");
     else
       Log(Me & "Bet_Is_Matched", "NO RESULT!!" );
-      return False;
+      return ;
     end if;
 
     if Result.Has_Field("currentOrders") then
-      Log(Me & "Bet_Is_Matched", "got currentOrders");
       Current_Orders := Result.Get("currentOrders");
+      Log(Me & "Bet_Is_Matched", "got currentOrders, len: " & Length(Current_Orders)'Img);
+
+      if Length(Current_Orders) > Natural(0) then
+        Current_Order_Item := Get(Current_Orders, 1); -- always element 1, since we only have 1
+        Log(Me & "Bet_Is_Matched", "got Current_Order_Item");
  
-      Current_Order_Item := Get(Current_Orders, 1); -- always element 1, since we only have 1
-      Log(Me & "Bet_Is_Matched", "got Current_Order_Item");
+        if Current_Order_Item.Has_Field("averagePriceMatched") then
+          declare
+            Tmp : Float := Current_Order_Item.Get("averagePriceMatched"); 
+          begin  
+            AVG_Price_Matched := Bet_Price_Type(Tmp);
+          end ;
+        end if;
+        
+        if Current_Order_Item.Has_Field("sizeMatched") then
+          declare
+            Tmp : Float := Current_Order_Item.Get("sizeMatched"); 
+          begin  
+            Size_Matched := Bet_Size_Type(Tmp);
+          end ;
+        end if;
  
-      if Current_Order_Item.Has_Field("status") then
-        Log(Me & "Bet_Is_Matched", "got Current_Order_Item.Status");
-        return Current_Order_Item.Get("status") = "EXECUTION_COMPLETE";   
-      end if;         
+        if Current_Order_Item.Has_Field("status") then
+          Log(Me & "Bet_Is_Matched", "got Current_Order_Item.Status");
+          Is_Matched := Current_Order_Item.Get("status") = "EXECUTION_COMPLETE";   
+        end if;
+      end if;        
     end if;
-    return False;
+   Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Float_8(AVG_Price_Matched)))  ;
+    
  
   end Bet_Is_Matched;
   -----------------------------------------------------------------  
