@@ -31,8 +31,8 @@ pragma Elaborate_All(Aws.Headers);
 
 package body Bet_Handler is
 
-  Suicide,
-  No_Such_Field : exception;
+  Suicide: exception;
+--  No_Such_Field : exception;
 
   Update_Betwon_To_Null,
   Select_Lost_Today,
@@ -323,49 +323,108 @@ package body Bet_Handler is
           if Bet.Enabled then
             for i in 1 ..  Bet.Bet_Info.Last_Runner loop
               Bet.Bet_Info.Used_Index := i;     -- used in make_bet     
-              Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid;  -- used in make_bet     
-              declare
-                use  General_Routines;
-                Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
-                Lay_Price  : Bet_Price_Type := Back_Price - Bet.Bot_Cfg.Delta_Price; --re-calculated below
-                Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;                --re-calculated below   
-                Lay_Size   : Bet_Size_Type  := (Back_Size * Back_Price) / Lay_Price;
-                Pip : Pip_Type ;
+              Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid;  -- used in make_bet   
 
-              begin
-                if Bet.Bot_Cfg.Min_Price <= Back_Price and then
-                   Back_Price <= Bet.Bot_Cfg.Max_Price then
-                  case Bet.Bot_Cfg.Bet_Mode is
-                    when Real => 
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
-                                   Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                      -- use the matched back_price             
-                      Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
-                      Pip.Init(Float_8(Lay_Price));
-                      Lay_Price := Bet_Price_Type(Pip.Pip_Price);
+              case Bet.Bot_Cfg.Green_Up_Mode is
+                when Back_First_Then_Lay =>
+                  declare
+                    use  General_Routines;
+                    Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
+                    Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;   
+                    Lay_Price  : Bet_Price_Type := 0.0;
+                    Lay_Size   : Bet_Size_Type  := 0.0;
+                    Pip_Lay    : Pip_Type ;
+                    Pip_Back   : Pip_Type ;
+    
+                  begin
+                    if Bet.Bot_Cfg.Min_Price <= Back_Price and then
+                       Back_Price <= Bet.Bot_Cfg.Max_Price then
+                      Pip_Back.Init(Float_8(Back_Price));
+                      Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
+                       
+                      case Bet.Bot_Cfg.Bet_Mode is
+                        when Real => 
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                                       Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                          -- use the matched back_price             
+                          Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
+                          Pip_Lay.Init(Float_8(Lay_Price));
+                          Lay_Price := Bet_Price_Type(Pip_Lay.Pip_Price);    
+                          
+                          Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
+                          Log(Me & "Do_Try", Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                                       
+                          if Price_Matched > 0.0 then
+                            Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                         Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          else 
+                            Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
+                          end if;
+                          
+                        when Sim  => 
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                                       Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                      end case;
+                    end if;  
+                  end;  
+                when Lay_First_Then_Back =>
+                  declare
+                    use  General_Routines;
+                    Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
+                    Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;  
+                    Back_Price : Bet_Price_Type := 0.0;
+                    Back_Size  : Bet_Size_Type  := 0.0;
+                    Pip_Lay    : Pip_Type ;
+                    Pip_Back   : Pip_Type ;
+    
+                  begin
+                    
+                    if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
+                       Lay_Price <= Bet.Bot_Cfg.Max_Price then
 
-                      
-                      Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
-                      Log(Me & "Do_Try", "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                   "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                   "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                   "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-                                   
-                      if Price_Matched > 0.0 then
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
-                                     Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                      else 
-                        Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
-                      end if;
-                      
-                    when Sim  => 
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
-                                   Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                      Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
-                                   Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                  end case;
-                end if;  
-              end;  
+                      Pip_Lay.Init(Float_8(Lay_Price));
+                      Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+                       
+                      case Bet.Bot_Cfg.Bet_Mode is
+                        when Real => 
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          -- use the matched lay_price             
+                          Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
+                          Pip_Back.Init(Float_8(Back_Price));
+                          Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
+                              
+                          Back_Size := (Lay_Size * Lay_Price) / Back_Price;
+                          Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                                       
+                                       
+                                       
+                          if Price_Matched > 0.0 then
+                            Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                                         Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                          else 
+                            Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");                                      
+                          end if;
+                          
+                        when Sim  => 
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                                       Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                      end case;
+                    end if;  
+                  end;  
+              end case;
             end loop;  
           end if; -- enabled
         end if;-- continue betting
@@ -671,7 +730,7 @@ package body Bet_Handler is
                      
     Abet : Table_Abets.Data_Type;
     Local_Price : Float_8 := Float_8(Price);
-    Pip : Pip_Type ;
+
     Side                           : String (1..4)   :=  (others => ' ') ;
     Bet_Name                       : String (1..100) :=  (others => ' ') ;
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
@@ -736,8 +795,8 @@ package body Bet_Handler is
 
     case A_Bet_Type is
       when Green_Up_Back  =>
-        Pip.Init(Local_Price);
-        Local_Price := Pip.Previous_Price;
+--        Pip.Init(Local_Price);
+--        Local_Price := Pip.Previous_Price;
         Move("BACK", Side);
 
       when Green_Up_Lay  => 
@@ -761,7 +820,6 @@ package body Bet_Handler is
         Aws.Headers.Set.Add (My_Headers, "X-Application", A_Token.Get_App_Key);
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
         
-        
         declare
           Size_String : String := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
         begin
@@ -770,34 +828,40 @@ package body Bet_Handler is
 
         case A_Bet_Type is
           when Green_Up_Back =>
-            Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
-            Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Local_Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Local_Size));
+            case Bet.Bot_Cfg.Green_Up_Mode is
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            end case;            
+            Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
+            Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
           when Green_Up_Lay => 
-            Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
-            Limit_Order.Set_Field (Field_Name => "price",           Field => Float(Local_Price));
-            Limit_Order.Set_Field (Field_Name => "size",            Field => Float(Local_Size));
+            case Bet.Bot_Cfg.Green_Up_Mode is
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+            end case;            
+            Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
+            Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
         end case;
 
-        Instruction.Set_Field (Field_Name => "limitOrder",      Field      => Limit_Order);
-        Instruction.Set_Field (Field_Name => "orderType",       Field      => "LIMIT");
-        Instruction.Set_Field (Field_Name => "side",            Field      => General_Routines.Trim(Side));
-        Instruction.Set_Field (Field_Name => "handicap",        Field      => 0);
-        Instruction.Set_Field (Field_Name => "selectionId",     Field      => Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
+        Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
+        Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
+        Instruction.Set_Field (Field_Name => "side",        Field => General_Routines.Trim(Side));
+        Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
+        Instruction.Set_Field (Field_Name => "selectionId", Field => Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
 
         Append (Instructions , Instruction);
 --      will get INVALID_CUSTOMER_REF from betfair if not unique
 --        Params.Set_Field (Field_Name => "customerRef",          Field      => "some ref to fill in later"); -- what to put here?
-        pragma Compile_time_warning(True, "customerRef to keep pair together?");
-        Params.Set_Field (Field_Name => "instructions",         Field      => Instructions);
-        Params.Set_Field (Field_Name => "marketId",             Field      => Bet.Bet_Info.Market.Marketid);
+--        pragma Compile_time_warning(True, "customerRef to keep pair together?");
+        Params.Set_Field (Field_Name => "instructions", Field => Instructions);
+        Params.Set_Field (Field_Name => "marketId",     Field => Bet.Bet_Info.Market.Marketid);
 
-        Query_Place_Orders.Set_Field (Field_Name => "params",   Field      => Params);
+        Query_Place_Orders.Set_Field (Field_Name => "params", Field => Params);
         case A_Bet_Type is
           when Green_Up_Back =>
-            Query_Place_Orders.Set_Field (Field_Name => "id",       Field      => 15);          -- what to put here?
+            Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
           when Green_Up_Lay => 
-            Query_Place_Orders.Set_Field (Field_Name => "id",       Field      => 15);          -- what to put here?
+            Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
         end case;
         pragma Compile_time_warning(True, "id to keep pair together?");
         Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");

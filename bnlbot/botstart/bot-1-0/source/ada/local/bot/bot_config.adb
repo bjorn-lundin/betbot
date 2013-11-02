@@ -37,7 +37,8 @@ package body Bot_Config is
 
   procedure Read(Cfg : in out Config_Type) is
     function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
-   -- function Get_Animal is new Ini.Get_Enumeration_Value(Animal_Type);
+    function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
+   
    type Cfg_Type is ( Market, Animal);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
@@ -125,23 +126,21 @@ package body Bot_Config is
           Log("Read","Section: " & Ini.Get_Section_Name(i));
           if Lower_Case(Ini.Get_Section_Name(i)) /= "system" and Lower_Case(Ini.Get_Section_Name(i)) /= "global" then
 
-            Bet_Section.Bet_Name := To_Unbounded_String(Ini.Get_Section_Name(i));
-            Bet_Section.Enabled := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
-            Bet_Section.Max_Daily_Loss := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss","-200.0"));
-            Bet_Section.Max_Daily_Profit := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit","100000000.0"));
+            Bet_Section.Bet_Name           := To_Unbounded_String(Ini.Get_Section_Name(i));
+            Bet_Section.Enabled            := Ini.Get_Value(Ini.Get_Section_Name(i),"enabled", False);
+            Bet_Section.Max_Daily_Loss     := Max_Daily_Loss_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_loss","-200.0"));
+            Bet_Section.Max_Daily_Profit   := Max_Daily_Profit_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_daily_profit","100000000.0"));
             Bet_Section.Max_Num_In_The_Air := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_in_the_air",1));
-            
-            Bet_Section.Delta_Price := Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","1.0"));
-            Bet_Section.Max_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_price","20.0"));
-            Bet_Section.Min_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_price","10.0"));
-            Bet_Section.Bet_Size := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size","30.0"));
-            Bet_Section.Allow_In_Play := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
-            Bet_Section.Max_Num_Runners := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners","25"));
-            Bet_Section.Min_Num_Runners := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners","8"));
-            Bet_Section.Num_Winners := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners","1"));
-
-            Bet_Section.Bet_Mode := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
-
+            Bet_Section.Delta_Price        := Delta_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_price","1.0"));
+            Bet_Section.Max_Price          := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_price","20.0"));
+            Bet_Section.Min_Price          := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_price","10.0"));
+            Bet_Section.Bet_Size           := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size","30.0"));
+            Bet_Section.Allow_In_Play      := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
+            Bet_Section.Max_Num_Runners    := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners","25"));
+            Bet_Section.Min_Num_Runners    := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners","8"));
+            Bet_Section.Num_Winners        := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners","1"));
+            Bet_Section.Bet_Mode           := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
+            Bet_Section.Green_Up_Mode      := Get_Green_Up_Mode(Ini.Get_Section_Name(i),"green_up_mode", Back_First_Then_Lay) ;
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
@@ -330,6 +329,7 @@ package body Bot_Config is
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" &
                "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" &
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" &
+               "<Green_Up_Mode>" & Bet_Section.Green_Up_Mode'Img & "</Green_Up_Mode>" &
              "</Bet>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;

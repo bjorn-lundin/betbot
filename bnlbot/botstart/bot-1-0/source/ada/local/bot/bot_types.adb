@@ -101,7 +101,11 @@ package body Bot_Types is
    begin
      return Left - Bet_Price_Type(Right);
    end "-";
-   
+   ---------------------------------------------
+   function "+" (Left : Bet_Price_Type ; Right : Delta_Price_Type) return Bet_Price_Type is
+   begin
+     return Left + Bet_Price_Type(Right);
+   end "+";   
    ---------------------------------------------
    function "*" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type is
    begin
