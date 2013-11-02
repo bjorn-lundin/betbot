@@ -156,7 +156,7 @@ $BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
 
 USER_LIST=$(ls $BOT_START/user)
 
-USER_LIST="bnl"
+USER_LIST="bnl jmb"
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER
