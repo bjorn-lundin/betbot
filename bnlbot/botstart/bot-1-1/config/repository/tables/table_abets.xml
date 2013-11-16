@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<MaAstro>
+    <Table Wiz="3" Desc="Bets" Name="ABETS" Tablespace="">
+        <Column Name="betid"            Size="18"  Type="3"  AllowNull="0" Description="bet id"/>
+        <Column Name="marketid"         Size="11"  Type="1"  AllowNull="0" Description="market id"/>
+        <Column Name="betmode"          Size="9"   Type="2"  AllowNull="0" Description="dry,real,sim"/>
+        <Column Name="powerdays"        Size="9"   Type="2"  AllowNull="0" Description="power of denominator"/>
+        <Column Name="selectionid"      Size="9"   Type="2"  AllowNull="0" Description="selection id"/>
+        <Column Name="reference"        Size="30"  Type="1"  AllowNull="0" Description="reference"/>
+        <Column Name="size"             Size="8"   Type="6"  AllowNull="0" Description="wanted size"/>
+        <Column Name="price"            Size="8"   Type="6"  AllowNull="0" Description="wanted price"/>
+        <Column Name="side"             Size="4"   Type="1"  AllowNull="0" Description="BACK/LAY"/>
+        <Column Name="betname"          Size="100" Type="1"  AllowNull="0" Description="name of bet"/>
+        <Column Name="betwon"           Size="9"   Type="7"  AllowNull="1" Description="success"/>
+        <Column Name="profit"           Size="8"   Type="6"  AllowNull="0" Description="vinst"/>
+        <Column Name="status"           Size="50"  Type="1"  AllowNull="0" Description="status"/>
+        <Column Name="exestatus"        Size="50"  Type="1"  AllowNull="0" Description="execution status"/>
+        <Column Name="exeerrcode"       Size="50"  Type="1"  AllowNull="0" Description="execution errcode"/>
+        <Column Name="inststatus"       Size="50"  Type="1"  AllowNull="0" Description="intruction status"/>
+        <Column Name="insterrcode"      Size="50"  Type="1"  AllowNull="0" Description="intruction errcode"/>
+        <Column Name="startts"          Size="23"  Type="15" AllowNull="1" Description="start ts according to market"/>
+        <Column Name="betplaced"        Size="23"  Type="15" AllowNull="1" Description="when bet was placed"/>
+        <Column Name="pricematched"     Size="8"   Type="6"  AllowNull="0" Description="matched price"/>
+        <Column Name="sizematched"      Size="8"   Type="6"  AllowNull="0" Description="size price"/>        
+        <Column Name="runnername"       Size="50"  Type="1"  AllowNull="0" Description="name of runner"/>
+        <Column Name="fullmarketname"   Size="50"  Type="1"  AllowNull="0" Description="name of market"/>
+        <Column Name="svnrevision"      Size="9"   Type="2"  AllowNull="0" Description="svn revision of bot"/>
+        <Column Name="ixxlupd"          Size="15"  Type="1"  AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"          Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="betid" type="primary"/>
+        <Index Columns="marketid" type="index"/>
+        <Index Columns="betwon" type="index"/>
+        <Index Columns="powerdays" type="index"/>
+        <Index Columns="betplaced" type="index"/>
+        <Index Columns="startts" type="index"/>
+        <Index Columns="betname" type="index"/>
+    </Table>
+</MaAstro>

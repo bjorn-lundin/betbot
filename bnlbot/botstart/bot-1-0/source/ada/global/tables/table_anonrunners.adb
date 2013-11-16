@@ -33,6 +33,12 @@ package body Table_Anonrunners is
   Stm_Select_I1_Marketid,
   Stm_Delete_I1_Marketid : Sql.Statement_Type; 
 
+  -- Index 
+  Stm_Select_Count_Marketid ,
+  Stm_Select_Marketid ,
+  Stm_Delete_Marketid ,
+  Stm_Select_Marketid_O : Sql.Statement_Type;
+
 
   -- Procedures for DBMS DEF
   -- Primary key
@@ -44,10 +50,10 @@ package body Table_Anonrunners is
     else
       Data.Marketid := (others => ' ');
     end if;
-    if not Sql.Is_Null(Stm, "NAME") then
-      Sql.Get(Stm, "NAME", Data.Name);
+    if not Sql.Is_Null(Stm, "SELECTIONID") then
+      Sql.Get(Stm, "SELECTIONID", Data.Selectionid);
     else
-      Data.Name := (others => ' ');
+      Data.Selectionid := 0;
     end if;
     if not Sql.Is_Null(Stm, "IXXLUPD") then
       Sql.Get(Stm, "IXXLUPD", Data.Ixxlupd);
@@ -64,12 +70,12 @@ package body Table_Anonrunners is
 ---------------------------------------------
 
   function Get(Marketid : String;
-                       Name : String) return Table_Anonrunners.Data_Type is
+                       Selectionid : Integer_4) return Table_Anonrunners.Data_Type is
     Data       : Table_Anonrunners.Data_Type;
     End_Of_Set : Boolean := True;
   begin
     Data.Marketid := Marketid;
-    Data.Name := Name;
+    Data.Selectionid := Selectionid;
     Read(Data, End_Of_Set);
     return Data;
   end Get;
@@ -84,7 +90,7 @@ package body Table_Anonrunners is
   begin
     if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
     if Order then
-      Sql.Prepare(Stm_Select_All_O, "select * from ANONRUNNERS order by MARKETID, NAME");
+      Sql.Prepare(Stm_Select_All_O, "select * from ANONRUNNERS order by MARKETID, SELECTIONID");
       Read_List(Stm_Select_All_O, List, Max);
     else
       Sql.Prepare(Stm_Select_All, "select * from ANONRUNNERS");
@@ -120,12 +126,12 @@ package body Table_Anonrunners is
 --------------------------------------------
 
   function Is_Existing(Marketid : String;
-                       Name : String) return Boolean is
+                       Selectionid : Integer_4) return Boolean is
     Data       : Table_Anonrunners.Data_Type;
     End_Of_Set : Boolean := True;
   begin
     Data.Marketid := Marketid;
-    Data.Name := Name;
+    Data.Selectionid := Selectionid;
     Read(Data, End_Of_Set);
     return not End_Of_Set;
   end Is_Existing;
@@ -140,9 +146,9 @@ package body Table_Anonrunners is
     if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
     Sql.Prepare(Stm_Select, " select * from ANONRUNNERS " & 
             "where MARKETID=:MARKETID" &
-            " and NAME=:NAME" ) ;
+            " and SELECTIONID=:SELECTIONID" ) ;
     Sql.Set(Stm_Select, "MARKETID", Data.Marketid);
-    Sql.Set(Stm_Select, "NAME", Data.Name);
+    Sql.Set(Stm_Select, "SELECTIONID", Data.Selectionid);
 
     Sql.Open_Cursor(Stm_Select);
     Sql.Fetch(Stm_Select, End_Of_Set);
@@ -158,9 +164,9 @@ package body Table_Anonrunners is
   begin
     Sql.Prepare(Stm_Delete, " delete from ANONRUNNERS " & 
             "where MARKETID=:MARKETID" &
-            " and NAME=:NAME" ) ;
+            " and SELECTIONID=:SELECTIONID" ) ;
     Sql.Set(Stm_Delete, "MARKETID", Data.Marketid);
-    Sql.Set(Stm_Delete, "NAME", Data.Name);
+    Sql.Set(Stm_Delete, "SELECTIONID", Data.Selectionid);
 
     Sql.Execute(Stm_Delete);
   end Delete;
@@ -174,9 +180,9 @@ package body Table_Anonrunners is
             "IXXLUPD=:IXXLUPD," &
             "IXXLUTS=:IXXLUTS " &
             "where MARKETID=:MARKETID " &
-            "and NAME=:NAME " ) ;
+            "and SELECTIONID=:SELECTIONID " ) ;
     Sql.Set(Stm_Update, "MARKETID",Data.Marketid);
-    Sql.Set(Stm_Update, "NAME",Data.Name);
+    Sql.Set(Stm_Update, "SELECTIONID",Data.Selectionid);
     if not Keep_Timestamp then
       null; --for tables without Ixxlupd
       Data.Ixxlupd := Process.Name;
@@ -198,11 +204,11 @@ package body Table_Anonrunners is
     end if;
     Sql.Prepare(Stm_Insert, "insert into ANONRUNNERS values (" &
             ":MARKETID, " &
-            ":NAME, " &
+            ":SELECTIONID, " &
             ":IXXLUPD, " &
             ":IXXLUTS) " ) ;
     Sql.Set(Stm_Insert, "MARKETID",Data.Marketid);
-    Sql.Set(Stm_Insert, "NAME",Data.Name);
+    Sql.Set(Stm_Insert, "SELECTIONID",Data.Selectionid);
     if not Keep_Timestamp then
       null; --for tables without Ixxlupd
       Data.Ixxlupd := Process.Name;
@@ -218,11 +224,11 @@ package body Table_Anonrunners is
   begin
     Sql.Prepare(Stm_Delete_With_Check, " delete from ANONRUNNERS " & 
             "where MARKETID=:MARKETID" &
-            " and NAME=:NAME" &
+            " and SELECTIONID=:SELECTIONID" &
             " and IXXLUPD=:IXXLUPD" &
             " and IXXLUTS=:IXXLUTS" ) ;
     Sql.Set(Stm_Delete_With_Check, "MARKETID", Data.Marketid);
-    Sql.Set(Stm_Delete_With_Check, "NAME", Data.Name);
+    Sql.Set(Stm_Delete_With_Check, "SELECTIONID", Data.Selectionid);
     Sql.Set(Stm_Delete_With_Check, "IXXLUPD", Data.Ixxlupd);
     Sql.Set_Timestamp(Stm_Delete_With_Check, "IXXLUTS", Data.Ixxluts);
 
@@ -239,7 +245,7 @@ package body Table_Anonrunners is
             "IXXLUPD=:IXXLUPD," &
             "IXXLUTS=:IXXLUTS " &
             "where MARKETID=:MARKETID " &
-            "and NAME=:NAME " &
+            "and SELECTIONID=:SELECTIONID " &
             "and IXXLUPD=:OLD_IXXLUPD " &
             "and IXXLUTS=:OLD_IXXLUTS " ) ;
     Sql.Set(Stm_Update_With_Check, "OLD_IXXLUPD",Data.Ixxlupd);
@@ -249,7 +255,7 @@ package body Table_Anonrunners is
       Data.Ixxluts := Now;
     end if;
     Sql.Set(Stm_Update_With_Check, "MARKETID",Data.Marketid);
-    Sql.Set(Stm_Update_With_Check, "NAME",Data.Name);
+    Sql.Set(Stm_Update_With_Check, "SELECTIONID",Data.Selectionid);
     if not Keep_Timestamp then
       null; --for tables without Ixxlupd
       Data.Ixxlupd := Process.Name;
@@ -275,7 +281,7 @@ package body Table_Anonrunners is
     if Order then
       Sql.Prepare(Stm_Select_I1_Marketid_O, " select * from ANONRUNNERS " & 
             "where MARKETID=:MARKETID" &
-            " order by MARKETID, NAME"); 
+            " order by MARKETID, SELECTIONID"); 
       Sql.Set(Stm_Select_I1_Marketid_O, "MARKETID", Data.Marketid);
  
       Read_List(Stm_Select_I1_Marketid_O, List, Max);
@@ -315,6 +321,82 @@ package body Table_Anonrunners is
   end Is_Existing_I1 ;
   --------------------------------------------
 
+  -- Index 
+
+  procedure Read_Marketid(Data  : in     Table_Anonrunners.Data_Type;
+                       List  : in out Anonrunners_List_Pack.List_Type;
+                       Order : in     Boolean := False;
+                       Max   : in     Integer_4 := Integer_4'Last) is
+    use Sql;
+    Start_Trans : constant Boolean := (Sql.Transaction_Status = Sql.None);
+    Transaction : Sql.Transaction_Type;
+  begin
+    if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
+    if Order then
+      Sql.Prepare(Stm_Select_Marketid_O, " select * from ANONRUNNERS " & 
+            "where MARKETID=:MARKETID" &
+            " order by MARKETID, SELECTIONID "  ) ; 
+      Sql.Set(Stm_Select_Marketid_O, "MARKETID", Data.Marketid);
+ 
+      Read_List(Stm_Select_Marketid_O, List, Max);
+    else
+      Sql.Prepare(Stm_Select_Marketid, " select * from ANONRUNNERS " & 
+            "where MARKETID=:MARKETID"  ) ; 
+      Sql.Set(Stm_Select_Marketid, "MARKETID", Data.Marketid);
+ 
+      Read_List(Stm_Select_Marketid, List, Max);
+    end if;
+    if Start_Trans then Sql.Commit(Transaction); end if;
+  end Read_Marketid;
+---------------------------------------------
+  procedure Read_One_Marketid(Data       : in out Table_Anonrunners.Data_Type;
+                           Order      : in     Boolean := False;
+                           End_Of_Set : in out Boolean) is
+    List : Anonrunners_List_Pack.List_Type := Anonrunners_List_Pack.Create;
+  begin
+    Read_Marketid(Data, List, Order, 1);
+    if Anonrunners_List_Pack.Is_Empty(List) then
+      End_Of_Set := True;
+    else
+      End_Of_Set := False;
+      Anonrunners_List_Pack.Remove_From_Head(List, Data);
+    end if;
+    Anonrunners_List_Pack.Release(List);
+    end Read_One_Marketid;
+---------------------------------------------
+
+  function Count_Marketid(Data : Table_Anonrunners.Data_Type) return Integer_4 is
+    use Sql;
+    Count       : Integer_4 := 0;
+    End_Of_Set  : Boolean := False;
+    Start_Trans : constant Boolean := (Sql.Transaction_Status = Sql.None);
+    Transaction : Sql.Transaction_Type;
+  begin
+    if Start_Trans then Sql.Start_Read_Write_Transaction(Transaction); end if;
+    Sql.Prepare(Stm_Select_Count_Marketid, "select count('a') from ANONRUNNERS where MARKETID = :MARKETID ");
+    Sql.Set(Stm_Select_Count_Marketid, "MARKETID", Data.Marketid);
+ 
+    Sql.Open_Cursor(Stm_Select_Count_Marketid);
+    Sql.Fetch(Stm_Select_Count_Marketid, End_Of_Set);
+    if not End_Of_Set then
+      Sql.Get(Stm_Select_Count_Marketid, 1, Count);
+    end if;
+    Sql.Close_Cursor(Stm_Select_Count_Marketid);
+    if Start_Trans then Sql.Commit(Transaction); end if;
+    return Count;
+  end Count_Marketid;
+---------------------------------------------
+  procedure Delete_Marketid(Data  : in     Table_Anonrunners.Data_Type) is
+  begin
+      Sql.Prepare(Stm_Delete_Marketid, " delete from ANONRUNNERS " & 
+            "where MARKETID=:MARKETID"  ) ; 
+      Sql.Set(Stm_Delete_Marketid, "MARKETID", Data.Marketid);
+ 
+    Sql.Execute(Stm_Delete_Marketid);
+  end Delete_Marketid;
+---------------------------------------------
+
+
 
   -- Procedures for all DBMS
 
@@ -338,7 +420,7 @@ package body Table_Anonrunners is
   begin
     return
           " Marketid = " & General_Routines.Skip_Trailing_Blanks(Data.Marketid) &
-          " Name = " & General_Routines.Skip_Trailing_Blanks(Data.Name) &
+          " Selectionid = " & Integer_4'Image(Data.Selectionid) &
           " Ixxlupd = " & General_Routines.Skip_Trailing_Blanks(Data.Ixxlupd) &
           " Ixxluts = " & Sattmate_Calendar.String_Date_And_Time(Data.Ixxluts, Milliseconds => true) &
           "";

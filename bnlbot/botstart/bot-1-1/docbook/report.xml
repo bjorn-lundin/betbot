@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='iso8859-1' ?>
+<book xmlns='http://docbook.org/ns/docbook'
+      xmlns:xi='http://www.w3.org/2001/XInclude' version='5.0'>
+  <title>bnl-bot reports</title>
+  <info>
+    <author>
+      <firstname>Björn</firstname>
+      <surname>Lundin</surname>
+    </author>
+    <date>August 27, 2013</date>
+    <copyright>
+       <year>2013</year>
+       <holder>Björntjänst</holder>
+    </copyright>
+
+    <revhistory>
+
+      <revision>
+        <revnumber>0.1</revnumber>
+        <date>2013-08-27</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Initial version</revremark>
+      </revision>
+
+      <revision>
+        <revnumber>0.11</revnumber>
+        <date>2013-09-02</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>More metatags, introduced Profit/Risk as most important KPI</revremark>
+      </revision>
+
+      <revision>
+        <revnumber>0.12</revnumber>
+        <date>2013-09-06</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Added Grey hounds</revremark>
+      </revision>
+      
+      <revision>
+        <revnumber>0.13</revnumber>
+        <date>2013-09-23</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Added more simulations, giving more chapters</revremark>
+      </revision>
+      
+      <revision>
+        <revnumber>0.14</revnumber>
+        <date>2013-09-27</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Cherrypicked best bets, and analyzed per weekday, less chapters</revremark>
+      </revision>
+      
+    </revhistory>
+  </info>
+
+  <xi:include href='preface.xml'/>
+  <xi:include href='inifile.xml'/>
+  <xi:include href='plots.xml'/>
+
+  <xi:include href='horses_win_lay1_gb_6.chapter'/>
+  <xi:include href='horses_win_lay3_gb_12.chapter'/>
+  <xi:include href='horses_win_lay4_gb_12.chapter'/>
+  <xi:include href='horses_win_lay6_gb_15.chapter'/>
+  <xi:include href='horses_win_fav2_gb_8.chapter'/>
+  <xi:include href='horses_win_fav5_gb_11.chapter'/>
+  <xi:include href='hounds_plc_lay6_gb_8.chapter'/>
+  
+  <xi:include href='database_description.xml'/>
+
+</book>
+
+
