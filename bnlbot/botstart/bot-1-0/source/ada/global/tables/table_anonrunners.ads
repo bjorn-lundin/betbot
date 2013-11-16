@@ -18,7 +18,7 @@ package Table_Anonrunners is
 
   type Data_Type is record
       Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
-      Name :    String (1..50) := (others => ' ') ; -- Primary Key
+      Selectionid :    Integer_4  := 0 ; -- Primary Key
       Ixxlupd :    String (1..15) := (others => ' ') ; --
       Ixxluts :    Time_Type  := Time_Type_First ; --
   end record;
@@ -33,7 +33,7 @@ package Table_Anonrunners is
   -- Column names as strings 
   --
   Marketid_Name : constant String := "MARKETID";
-  Name_Name : constant String := "NAME";
+  Selectionid_Name : constant String := "SELECTIONID";
   Ixxlupd_Name : constant String := "IXXLUPD";
   Ixxluts_Name : constant String := "IXXLUTS";
   -- 
@@ -41,7 +41,7 @@ package Table_Anonrunners is
   --
   type Column_Type is (
         Marketid,
-        Name,
+        Selectionid,
         Ixxlupd,
         Ixxluts);
 
@@ -55,10 +55,10 @@ package Table_Anonrunners is
                  End_Of_Set : in out Boolean);
   --------------------------------------------
   function Is_Existing(Marketid : String;
-                       Name : String) return Boolean;
+                       Selectionid : Integer_4) return Boolean;
   --------------------------------------------
   function Get(Marketid : String;
-                       Name : String) return Table_Anonrunners.Data_Type;
+                       Selectionid : Integer_4) return Table_Anonrunners.Data_Type;
   --------------------------------------------
 
   procedure Read_List(Stm  : in     Sql.Statement_Type;
@@ -92,6 +92,26 @@ package Table_Anonrunners is
 
   function Is_Existing_I1(
                  Marketid     : in String )      return Boolean;
+
+  -- Index 
+
+  procedure Read_Marketid(Data  : in     Table_Anonrunners.Data_Type;
+                       List  : in out Anonrunners_List_Pack.List_Type;
+                       Order : in     Boolean := False;
+                       Max   : in     Integer_4 := Integer_4'Last);
+  --------------------------------------------
+
+  procedure Read_One_Marketid(Data       : in out Table_Anonrunners.Data_Type;
+                           Order      : in     Boolean := False;
+                           End_Of_Set : in out Boolean);
+  --------------------------------------------
+
+  function Count_Marketid(Data : Table_Anonrunners.Data_Type) return Integer_4;
+  --------------------------------------------
+
+
+  procedure Delete_Marketid(Data  : in     Table_Anonrunners.Data_Type);
+  --------------------------------------------
 
 
   -- Procedures for all DBMS
