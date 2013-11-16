@@ -314,6 +314,7 @@ package body Bot_Config is
              Append(Return_String,
              "<Bet>" &
                "<Bet_Name>" & To_String(Bet_Section.Bet_Name) & "</Bet_Name>" &
+               "<Enabled>" & Bet_Section.Enabled'Img & "</Enabled>" &
                "<Max_Daily_Loss>" & F8_Image(Float_8(Bet_Section.Max_Daily_Loss)) & "</Max_Daily_Loss>" &
                "<Max_Daily_Profit>" & F8_Image(Float_8(Bet_Section.Max_Daily_Profit)) & "</Max_Daily_Profit>" &
                "<Delta_Price>" & F8_Image(Float_8(Bet_Section.Delta_Price)) & "</Delta_Price>" &
