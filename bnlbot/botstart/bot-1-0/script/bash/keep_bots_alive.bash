@@ -113,13 +113,13 @@ fi
 #  $BOT_TARGET/bin/saldo_fetcher --daemon
 #fi
 
-########ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
-########RESULT_SALDO_FETCHER=$?
-########if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-########  echo "Started saldo_fetcher"
-########  export BOT_NAME=saldo_fetcher
-########  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
-########fi
+ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
+RESULT_SALDO_FETCHER=$?
+if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
+  echo "Started saldo_fetcher"
+  export BOT_NAME=saldo_fetcher
+  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
+fi
 
 
 ######## winners_fetcher ###########
@@ -156,7 +156,7 @@ $BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
 
 USER_LIST=$(ls $BOT_START/user)
 
-USER_LIST="bnl"
+USER_LIST="bnl jmb"
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER
