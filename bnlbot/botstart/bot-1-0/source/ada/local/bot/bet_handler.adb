@@ -405,6 +405,26 @@ package body Bet_Handler is
                         Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
+                        
+                        Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                        
+                        if Back_Size < 30.0 then
+                            Log(Me & "Do_Try", "Back_Size too small " & F8_Image(Float_8(Back_Size)) & " set to 30.0");
+                            Back_Size := 30.0;
+                            Back_Price := Bet_Price_Type (Float_8(Lay_Size * Lay_Price) / Float_8(Back_Size));
+                            Log(Me & "Do_Try", "Recalculated " & Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                            
+                        end if;  
+                        
+                        
                         Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
                                      "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
                                      "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
@@ -414,6 +434,7 @@ package body Bet_Handler is
                                      
                                      
                         if Price_Matched > 0.0 then
+                        
                           Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
                                        Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                         else 
@@ -1202,11 +1223,11 @@ package body Bet_Handler is
     Illegal_Data : Boolean := False;
     Side       : Bet_Type_Type;
     Winner     : Table_Awinners.Data_Type;
---    Runner     : Table_Arunners.Data_Type;
+    Runner     : Table_Arunners.Data_Type;
     Non_Runner : Table_Anonrunners.Data_Type;
-    type Eos_Type is (AWinner,
-                     --Arunner, 
-                      Anonrunner);
+    type Eos_Type is (AWinner, Arunner, Anonrunner);
+
+
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners,Bet_Won : Boolean := False;
     Profit  : Float_8 := 0.0;
@@ -1238,32 +1259,35 @@ package body Bet_Handler is
       end if;
       if not Illegal_Data then
         -- do we have a non-runner?
---        Runner.Marketid := Bet.Marketid;
---        Runner.Selectionid := Bet.Selectionid;
---        Table_Arunners.Read(Runner, Eos(Arunner));
---
---        if not Eos(Arunner) then
---          Non_Runner.Marketid := Runner.Marketid;
---          Non_Runner.Name  := Runner.Runnernamestripped;
---          Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
---        end if;
---
---        if not Eos(Anonrunner) then
---          -- non -runner - void the bet
---          Bet.Betwon := True;
---          Bet.Profit := 0.0;
---          begin
---            Table_Abets.Update_Withcheck(Bet);
---          exception
---            when Sql.No_Such_Row =>
---              Did_Exit := True;
---              T.Rollback; -- let the other one do the update
---              exit;
---          end ;
+        Runner.Marketid := Bet.Marketid;
+        Runner.Selectionid := Bet.Selectionid;
+        Table_Arunners.Read(Runner, Eos(Arunner));
 
-        Non_Runner.Marketid    := Bet.Marketid;
-        Non_Runner.Selectionid := Bet.Selectionid;
-        Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if not Eos(Arunner) then
+          Non_Runner.Marketid := Runner.Marketid;
+
+          Non_Runner.Name  := Runner.Runnernamestripped;
+          Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
+        end if;
 
         if not Eos(Anonrunner) then
           -- non -runner - void the bet
@@ -1312,7 +1336,8 @@ package body Bet_Handler is
                T.Rollback; -- let the other one do the update
                exit Inner;
           end ;
-        end if; -- non-runner
+
+        end if;
       end if; -- Illegal data
     end loop Inner;
 
