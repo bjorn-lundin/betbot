@@ -97,13 +97,13 @@ fi
 #fi
 
 
-#######ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
-#######RESULT_BOT=$?
-#######if [ $RESULT_BOT -eq 1 ] ; then
-#######  echo "Started bot"
-#######  export BOT_NAME=bot
-#######  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
-#######fi
+ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
+RESULT_BOT=$?
+if [ $RESULT_BOT -eq 1 ] ; then
+  echo "Started bot"
+  export BOT_NAME=bot
+  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
+fi
 
 ########### saldo_fetcher ############
 #$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
@@ -124,41 +124,32 @@ fi
 
 ######## winners_fetcher ###########
 
-##########if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
-##########
-##########  #who holds the lock, and since when, and when expires
-##########  locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
-##########  lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
-##########  lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
-##########  
-##########  now=$(date "+ %F %T")
-##########  
-##########  #convert to epoch, compare integers is easy
-##########  epoch_now=$(date --date="$now" +%s)
-##########  epoch_lock_expires=$(date --date="$lock_expires" +%s)
-##########  
-##########  # kill if lock is more than 10 minutes old (time is in lockfile)
-##########  if [ $epoch_now -gt $epoch_lock_expires ] ; then
-##########    kill -term $locked_by_pid >/dev/null 2>&1
-##########    sleep 1
-##########    kill -kill $locked_by_pid >/dev/null 2>&1
-##########    sleep 1
-##########  fi
-##########fi
-##########
-##########export BOT_NAME=winners_fetcher
-##########$BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
-###################### winners_fetcher stop #########
+if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
 
-
-
-ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
-RESULT_SALDO_FETCHER=$?
-if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-  echo "Started winners_fetcher_json"
-  export BOT_NAME=winners_fetcher_json
-  $BOT_TARGET/bin/winners_fetcher_json --daemon --user=$BOT_USER
+  #who holds the lock, and since when, and when expires
+  locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
+  lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
+  lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
+  
+  now=$(date "+ %F %T")
+  
+  #convert to epoch, compare integers is easy
+  epoch_now=$(date --date="$now" +%s)
+  epoch_lock_expires=$(date --date="$lock_expires" +%s)
+  
+  # kill if lock is more than 10 minutes old (time is in lockfile)
+  if [ $epoch_now -gt $epoch_lock_expires ] ; then
+    kill -term $locked_by_pid >/dev/null 2>&1
+    sleep 1
+    kill -kill $locked_by_pid >/dev/null 2>&1
+    sleep 1
+  fi
 fi
+
+export BOT_NAME=winners_fetcher
+$BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
+############ winners_fetcher stop #########
+
 
 
 }
