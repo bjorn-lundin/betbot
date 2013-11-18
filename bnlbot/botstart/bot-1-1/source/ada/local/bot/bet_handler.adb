@@ -405,6 +405,26 @@ package body Bet_Handler is
                         Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
+                        
+                        Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                        
+                        if Back_Size < 30.0 then
+                            Log(Me & "Do_Try", "Back_Size too small " & F8_Image(Float_8(Back_Size)) & " set to 30.0");
+                            Back_Size := 30.0;
+                            Back_Price := Bet_Price_Type (Float_8(Lay_Size * Lay_Price) / Float_8(Back_Size));
+                            Log(Me & "Do_Try", "Recalculated " & Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                            
+                        end if;  
+                        
+                        
                         Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
                                      "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
                                      "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
