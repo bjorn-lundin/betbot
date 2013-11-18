@@ -1215,7 +1215,7 @@ package body Bet_Handler is
   ---------------------------------
 
   -------------------------------------------------
-  procedure Check_Bets is
+   procedure Check_Bets is
     use General_Routines;
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet      : Table_Abets.Data_Type;
@@ -1226,8 +1226,6 @@ package body Bet_Handler is
     Runner     : Table_Arunners.Data_Type;
     Non_Runner : Table_Anonrunners.Data_Type;
     type Eos_Type is (AWinner, Arunner, Anonrunner);
-
-
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners,Bet_Won : Boolean := False;
     Profit  : Float_8 := 0.0;
@@ -1263,28 +1261,8 @@ package body Bet_Handler is
         Runner.Selectionid := Bet.Selectionid;
         Table_Arunners.Read(Runner, Eos(Arunner));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if not Eos(Arunner) then
           Non_Runner.Marketid := Runner.Marketid;
-
           Non_Runner.Name  := Runner.Runnernamestripped;
           Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
         end if;
@@ -1301,7 +1279,6 @@ package body Bet_Handler is
               T.Rollback; -- let the other one do the update
               exit;
           end ;
-
         else -- ok, lets continue
           Winner.Marketid := Bet.Marketid;
           Winner.Selectionid := Bet.Selectionid;
@@ -1336,10 +1313,10 @@ package body Bet_Handler is
                T.Rollback; -- let the other one do the update
                exit Inner;
           end ;
-
         end if;
       end if; -- Illegal data
     end loop Inner;
+
 
 --    -- check the real bets
 --    Select_Real_Bets.Prepare(
