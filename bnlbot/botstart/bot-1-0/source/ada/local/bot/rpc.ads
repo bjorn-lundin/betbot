@@ -3,8 +3,8 @@ with Gnatcoll.Json; use Gnatcoll.Json;
 with Sattmate_Types; use Sattmate_Types;
 with Token;
 with Bot_Types; use Bot_Types;
-with Table_Awinners;
-with Table_Anonrunners;
+-- with Table_Awinners;
+-- with Table_Anonrunners;
 
 package RPC is
 
@@ -17,10 +17,10 @@ package RPC is
                            ) ;
   
 
-  procedure Check_Market_Result(Market_Id       : in Market_Id_Type;
-                                Tkn             : in Token.Token_Type;
-                                Winner_List     : in out Table_Awinners.Awinners_List_Pack.List_Type;
-                                Non_Runner_List : in out Table_Anonrunners.Anonrunners_List_Pack.List_Type);
+--  procedure Check_Market_Result(Market_Id       : in Market_Id_Type;
+--                                Tkn             : in Token.Token_Type;
+--                                Winner_List     : in out Table_Awinners.Awinners_List_Pack.List_Type;
+--                                Non_Runner_List : in out Table_Anonrunners.Anonrunners_List_Pack.List_Type);
 
   
 end RPC;    
