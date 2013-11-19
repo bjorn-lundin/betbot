@@ -316,15 +316,19 @@ package body Bet_Handler is
         Continue_Betting := True;
         Log (Me & "Do_Try", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
       end if;
-    
+
+      -- for a given market, the most expensive bet is the one with highest odds.
+      -- a bet wiht odds 15 costs something. Another LAY bet on THAT market with odds less than 15 costs nothing.
+      -- Because only 1 will win (if we bet on WIN markets)
+      Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
+      if Too_Many_In_The_Air then
+        Continue_Betting := False;
+        Log(Me & "Do_Try", "Too many bets in the air discovered , wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
+      end if;
+      
       if Continue_Betting then
         if Bet.Enabled then
           Runner_Loop : for i in 1 ..  Bet.Bet_Info.Last_Runner loop            
-            Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
-            if Too_Many_In_The_Air then
-              Log(Me & "Do_Try", "Too many bets in the air discovered in Runner_Loop, exit, wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
-              exit Runner_Loop;
-            end if;
           
             Bet.Bet_Info.Used_Index := i;     -- used in make_bet     
             Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid;  -- used in make_bet   
@@ -402,7 +406,7 @@ package body Bet_Handler is
                         -- use the matched lay_price             
                         Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
                         Pip_Back.Init(Float_8(Back_Price));
-                        Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
+                        Back_Price := Bet_Price_Type(Pip_Back.Next_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
                         
@@ -421,7 +425,8 @@ package body Bet_Handler is
                                      "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
                                      "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
                                      "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-                            
+                            Pip_Back.Init(Float_8(Back_Price));
+                            Back_Price := Bet_Price_Type(Pip_Back.Next_Price);                            
                         end if;  
                         
                         
