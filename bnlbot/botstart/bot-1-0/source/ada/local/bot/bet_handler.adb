@@ -406,7 +406,7 @@ package body Bet_Handler is
                         -- use the matched lay_price             
                         Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
                         Pip_Back.Init(Float_8(Back_Price));
-                        Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+                        Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
                         
@@ -426,7 +426,7 @@ package body Bet_Handler is
                                      "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
                                      "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
                             Pip_Back.Init(Float_8(Back_Price));
-                            Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+                            Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                         end if;  
                         
                         
@@ -1362,9 +1362,9 @@ package body Bet_Handler is
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
       "and M.STATUS in ('CLOSED','SETTLED') " &
-      "and BETID > 1000000000 " & -- no dry_run bets
-      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-      "and STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
+      "and B.BETID > 1000000000 " & -- no dry_run bets
+      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+      "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
 
 
 
