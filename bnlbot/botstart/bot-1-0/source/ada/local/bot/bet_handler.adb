@@ -1416,9 +1416,9 @@ package body Bet_Handler is
     Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
 
     while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
-      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
       Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &    
-      " market to check, checking " & Table_Amarkets.To_String(Market));  
+      " market left to check, checking " & Table_Amarkets.To_String(Market));  
+      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
       
       RPC.Market_Status_Is_Changed(Market, Tkn, Is_Changed);
       
