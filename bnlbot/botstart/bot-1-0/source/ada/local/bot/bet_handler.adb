@@ -1407,9 +1407,9 @@ package body Bet_Handler is
 
     while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
       Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &    
-      " market left to check, checking " & Table_Amarkets.To_String(Market));  
+      " market left to check");
       Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
-      
+      Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));  
       RPC.Market_Status_Is_Changed(Market, Tkn, Is_Changed);
       
       if Is_Changed then
