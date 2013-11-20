@@ -1230,20 +1230,21 @@ package body Bet_Handler is
     Winner     : Table_Awinners.Data_Type;
     Runner     : Table_Arunners.Data_Type;
     Non_Runner : Table_Anonrunners.Data_Type;
-    type Eos_Type is (AWinner, Arunner, Anonrunner);
-    Eos : array (Eos_Type'range) of Boolean := (others => False);
-    Selection_In_Winners,Bet_Won : Boolean := False;
-    Profit  : Float_8 := 0.0;
-    Did_Exit : Boolean := False;
+    type Eos_Type is (Awinner, Arunner, Anonrunner);
+    Eos        : array (Eos_Type'range) of Boolean := (others => False);
+    Selection_In_Winners, 
+    Did_Exit,
+    Bet_Won               : Boolean := False;
+    Profit                : Float_8 := 0.0;
   begin
 
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
       "select B.* from ABETS B, AMARKETS M " &
-      "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
-      "and B.BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
-      "and M.STATUS in ('SETTLED','CLOSED') " &
+      "where B.MARKETID = M.MARKETID " & 
+      "and B.BETWON is null " & -- will be not null if updated
+      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
       "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
 
@@ -1324,7 +1325,6 @@ package body Bet_Handler is
       end if; -- Illegal data
     end loop Inner;
 
-
 --    -- check the real bets
 --    Select_Real_Bets.Prepare(
 --      "select * from ABETS where betwon is null and betname not like 'DR_%' " &
@@ -1350,18 +1350,10 @@ package body Bet_Handler is
     Avg_Price_Matched : Bet_Price_Type := 0.0;
     Is_Matched        : Boolean        := False;
     Size_Matched      : Bet_Size_Type  := 0.0;
-    
-    
   begin
     T.Start;
     -- check the dry run bets
     Select_Executable_Bets.Prepare(
---      "select * from ABETS " &
---      "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
---      "and BETID > 1000000000 " & -- no dry_run bets
---      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
---      "and STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
-
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
       "and M.STATUS in ('CLOSED','SETTLED','SUSPENDED') " & -- This is not updated!!!
@@ -1369,8 +1361,6 @@ package body Bet_Handler is
       "and B.BETID > 1000000000 " & -- no dry_run bets
       "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
-
-
 
     Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Executable_Bets, Bet_List);
@@ -1409,10 +1399,10 @@ package body Bet_Handler is
     
   begin
     T.Start;
-    -- check the dry run bets
+    
     Select_Ongoing_Markets.Prepare(
       "select M.* from AMARKETS M " &
-      "where M.STATUS in ('OPEN')"); --only not acctepted bets ...
+      "where M.STATUS in ('OPEN','SUSPENDED') order by M.STARTTS"); 
     Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
 
     while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
