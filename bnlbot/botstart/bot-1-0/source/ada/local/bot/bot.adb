@@ -71,6 +71,9 @@ begin
     Logging.Close;
     Logging.Set_Quiet(True);
   end if;
+  Bet_Handler.Check_Market_Status(My_Token);
+  Bet_Handler.Check_If_Bet_Accepted(My_Token);
+  Bet_Handler.Check_Bets;
   
   Main_Loop : loop
     begin
