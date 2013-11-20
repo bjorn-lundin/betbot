@@ -21,6 +21,7 @@ package Bet_Handler is
   procedure Check_Bets;
   procedure Test_Bet; 
   procedure Check_If_Bet_Accepted(Tkn : Token.Token_Type);
+  procedure Check_Market_Status(Tkn : Token.Token_Type) ;
   
 private
 

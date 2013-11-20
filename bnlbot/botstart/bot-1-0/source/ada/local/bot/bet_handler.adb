@@ -40,6 +40,7 @@ package body Bet_Handler is
   Select_Dry_Run_Bets,
 --  Select_Real_Bets,
   Select_Executable_Bets,
+  Select_Ongoing_Markets,  
   Select_Runners,
   Select_In_The_Air,
   Select_Exists,
@@ -1361,7 +1362,7 @@ package body Bet_Handler is
 
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
-      "and M.STATUS in ('CLOSED','SETTLED') " &
+      "and M.STATUS in ('CLOSED','SETTLED') " & -- This is not updated!!!
       "and B.BETID > 1000000000 " & -- no dry_run bets
       "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
@@ -1395,7 +1396,41 @@ package body Bet_Handler is
     Table_Abets.Abets_List_Pack.Release(Bet_List);
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
-  
+
+
+  procedure Check_Market_Status(Tkn : Token.Token_Type) is 
+    T : Sql.Transaction_Type;
+    Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+    Market      : Table_Amarkets.Data_Type;
+    Is_Changed  : Boolean        := False;
+    
+  begin
+    T.Start;
+    -- check the dry run bets
+    Select_Ongoing_Markets.Prepare(
+      "select M.* from AMARKETS M " &
+      "where M.STATUS in ('OPEN')"); --only not acctepted bets ...
+    Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
+
+    while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
+      Log(Me & "Check_Market_Status", "Check market " & Table_Amarkets.To_String(Market));  
+      
+      RPC.Market_Status_Is_Changed(Market, Tkn, Is_Changed);
+      
+      if Is_Changed then
+        Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));  
+        Table_Amarkets.Update_Withcheck(Market);
+      end if;
+    end loop;  
+    T.Commit;
+
+    Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+  end Check_Market_Status;
+ ---------------------------------------------------------------------------------
+
+
+ 
   procedure Test_Bet is
 --    B : Bet_Type;
 --    T : Sql.Transaction_Type;
