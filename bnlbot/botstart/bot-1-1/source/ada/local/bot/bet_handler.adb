@@ -40,6 +40,7 @@ package body Bet_Handler is
   Select_Dry_Run_Bets,
 --  Select_Real_Bets,
   Select_Executable_Bets,
+  Select_Ongoing_Markets,  
   Select_Runners,
   Select_In_The_Air,
   Select_Exists,
@@ -1241,10 +1242,12 @@ package body Bet_Handler is
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
-      "select * from ABETS " &
-      "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
-      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
+      "select B.* from ABETS B, AMARKETS M " &
+      "where B.MARKETID = M.MARKETID " & 
+      "and B.BETWON is null " & -- will be not null if updated
+      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
+      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
 
     Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
@@ -1366,17 +1369,17 @@ package body Bet_Handler is
     Avg_Price_Matched : Bet_Price_Type := 0.0;
     Is_Matched        : Boolean        := False;
     Size_Matched      : Bet_Size_Type  := 0.0;
-    
-    
   begin
     T.Start;
     -- check the dry run bets
     Select_Executable_Bets.Prepare(
-      "select * from ABETS " &
-      "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
-      "and BETID > 1000000000 " & -- no dry_run bets
-      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-      "and STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
+      "select B.* from ABETS B, AMARKETS M " &
+      "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
+      "and M.STATUS in ('CLOSED','SETTLED','SUSPENDED') " & -- This is not updated!!!
+      "and B.BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
+      "and B.BETID > 1000000000 " & -- no dry_run bets
+      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+      "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
 
     Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Executable_Bets, Bet_List);
@@ -1406,6 +1409,41 @@ package body Bet_Handler is
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
   
+
+  procedure Check_Market_Status(Tkn : Token.Token_Type) is 
+    T : Sql.Transaction_Type;
+    Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+    Market      : Table_Amarkets.Data_Type;
+    Is_Changed  : Boolean        := False;
+    
+  begin
+    T.Start;
+    
+    Select_Ongoing_Markets.Prepare(
+      "select M.* from AMARKETS M " &
+      "where M.STATUS in ('OPEN','SUSPENDED') order by M.STARTTS"); 
+    Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
+
+    while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+      Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &    
+      " market left to check");
+      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
+      Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));  
+      RPC.Market_Status_Is_Changed(Market, Tkn, Is_Changed);
+      
+      if Is_Changed then
+        Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));  
+        Table_Amarkets.Update_Withcheck(Market);
+      end if;
+    end loop;  
+    T.Commit;
+
+    Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+  end Check_Market_Status;
+ ---------------------------------------------------------------------------------
+
+
+ 
   procedure Test_Bet is
 --    B : Bet_Type;
 --    T : Sql.Transaction_Type;

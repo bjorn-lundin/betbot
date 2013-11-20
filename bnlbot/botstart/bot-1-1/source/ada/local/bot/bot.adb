@@ -71,6 +71,9 @@ begin
     Logging.Close;
     Logging.Set_Quiet(True);
   end if;
+  Bet_Handler.Check_Market_Status(My_Token);
+  Bet_Handler.Check_If_Bet_Accepted(My_Token);
+  Bet_Handler.Check_Bets;
   
   Main_Loop : loop
     begin
@@ -85,9 +88,11 @@ begin
           Bot_Config.Re_Read_Config ;
         when Bot_Messages.Market_Notification_Message    =>
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
+          Bet_Handler.Check_Market_Status(My_Token);
           Bet_Handler.Check_If_Bet_Accepted(My_Token);
           Bet_Handler.Check_Bets;
         when Bot_Messages.New_Winners_Arrived_Notification_Message =>
+          Bet_Handler.Check_Market_Status(My_Token);
           Bet_Handler.Check_If_Bet_Accepted(My_Token);
           Bet_Handler.Check_Bets;
         when others =>
@@ -102,11 +107,11 @@ begin
             if not OK then
               My_Token.Login;
             end if;
+            Bet_Handler.Check_Market_Status(My_Token);
             Bet_Handler.Check_If_Bet_Accepted(My_Token);
             Bet_Handler.Check_Bets;
           when Bot_Types.Simulation => null;
         end case;
-        Bet_Handler.Check_Bets;
     end;
   end loop Main_Loop;
   Log(Me, "Close Db");

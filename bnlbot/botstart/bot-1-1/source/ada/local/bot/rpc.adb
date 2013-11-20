@@ -1,8 +1,8 @@
 
 
 
---with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
@@ -441,5 +441,186 @@ package body RPC is
     end if;
   
   end Check_Market_Result;
+----------------------------------------------------------------
+  procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
+                                     Tkn        : in     Token.Token_Type;
+                                     Is_Changed :    out Boolean) is
+--{
+--     "jsonrpc": "2.0",
+--     "method": "SportsAPING/v1.0/listMarketBook",
+--     "params": {
+--          "marketIds": ["1.111572663"]
+--     },
+--     "id": 1
+--}  
+
+    Result, 
+    Params,
+--    Status,
+    Json_Reply,    
+    Json_Query          : JSON_Value := Create_Object;
+    
+    Result_Array, Market_Ids : JSON_Array := Empty_Array;
+    AWS_Reply           : Aws.Response.Data;
+    Market_Id_Received  : Market_Id_Type := (others => ' ');
+  begin
+    Is_Changed := False;
+    
+    Append (Market_Ids, Create(Market.Marketid));    
+    Params.Set_Field     (Field_Name => "marketIds", Field => Market_Ids);
+    Json_Query.Set_Field (Field_Name => "params",  Field => Params);
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
+    Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
+    Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+    
+    Log(Me & "Market_Status_Is_Changed", "posting: " & Json_Query.Write);
+    
+    Aws.Headers.Set.Reset(My_Headers);
+    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Tkn.Get);
+    Aws.Headers.Set.Add (My_Headers, "X-Application", Tkn.Get_App_Key);
+    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
+    
+    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+                                  Data         =>  Json_Query.Write,
+                                  Content_Type => "application/json",
+                                  Headers      =>  My_Headers,
+                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+    Log(Me & "Market_Status_Is_Changed", "Got reply, check it ");
+
+    begin
+      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                            Filename => "");
+        Log(Me & "Market_Status_Is_Changed", "Got reply: " & Json_Reply.Write  );
+      else
+        Log(Me & "Market_Status_Is_Changed", "Post Timeout -> Give up listMarketBook");
+        return ;
+      end if;
+    exception
+      when others =>
+         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply start *********************************");
+         Log(Me & "Market_Status_Is_Changed", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply stop  ********" );
+         return ;
+    end ;
+
+    -- ok, got a valid Json reply, check for errors
+    if API_Exceptions_Are_Present(Json_Reply) then
+      return ;
+    end if;
+
+    -- ok, got a valid Json reply, parse it
+--{
+--     "jsonrpc": "2.0",
+--     "result": [{
+--          "marketId": "1.111572663",
+--          "isMarketDataDelayed": false,
+--          "betDelay": 1,
+--          "bspReconciled": true,
+--          "complete": true,
+--          "inplay": true,
+--          "numberOfWinners": 1,
+--          "numberOfRunners": 9,
+--          "numberOfActiveRunners": 0,
+--          "totalMatched": 0.0,
+--          "totalAvailable": 0.0,
+--          "crossMatching": false,
+--          "runnersVoidable": false,
+--          "version": 624435001,
+--          "runners": [{
+--               "selectionId": 5662977,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 5.3,
+--               "removalDate": "2013-10-25T16:19:41.000Z",
+--               "status": "REMOVED"
+--          },
+--          {
+--               "selectionId": 6477571,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 52.5,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 6437577,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 12.4,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 6458897,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 10.6,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 4729721,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 9.6,
+--               "status": "WINNER"
+--          },
+--          {
+--               "selectionId": 6784150,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 4.9,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 3917956,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 6.6,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 6290196,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 2.4,
+--               "status": "LOSER"
+--          },
+--          {
+--               "selectionId": 5119099,
+--               "handicap": 0.0,
+--               "adjustmentFactor": 1.3,
+--               "status": "LOSER"
+--          }],
+--          "status": "CLOSED"
+--     }],
+--     "id": 1
+--}
+
+    if Json_Reply.Has_Field("result") then
+      Result_Array := Json_Reply.Get("result");
+      Result := Get(Result_Array,1); -- one element in array only
+    else
+      Log(Me & "Market_Status_Is_Changed", "NO RESULT!!" );
+      return ;
+    end if;
+
+    
+    if Result.Has_Field("marketId") then
+      Market_Id_Received := Result.Get("marketId");
+      Log(Me & "Market_Status_Is_Changed", "got marketId '" & Market_Id_Received & "'");
+    else   
+      Log(Me & "Market_Status_Is_Changed", "NO marketId, return!");
+      return;
+    end if;
+    
+    if Result.Has_Field("status") then
+    
+      Is_Changed := Result.Get("status")(1..3) /= Market.Status(1..3);
+      
+      if Is_Changed then
+        Market.Status := (others => ' ');
+        Move( Result.Get("status"), Market.Status);
+      end if;
+
+      Log(Me & "Market_Status_Is_Changed", "Status changed for market '" & Market_Id_Received & "' " &
+                                          Is_Changed'img & " status " & Market.Status);
+    else
+      Log(Me & "Market_Status_Is_Changed", "No status field found!!!");
+    end if;
+    
+  
+  end Market_Status_Is_Changed;
+    
   ----------------------------------------------------------------
 end RPC;

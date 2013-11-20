@@ -5,6 +5,7 @@ with Token;
 with Bot_Types; use Bot_Types;
 with Table_Awinners;
 with Table_Anonrunners;
+with Table_Amarkets;
 
 package RPC is
 
@@ -16,6 +17,9 @@ package RPC is
                            Size_Matched      : out Bet_Size_Type
                            ) ;
   
+  procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
+                                     Tkn        : in     Token.Token_Type;
+                                     Is_Changed :    out Boolean);
 
   procedure Check_Market_Result(Market_Id       : in Market_Id_Type;
                                 Tkn             : in Token.Token_Type;
