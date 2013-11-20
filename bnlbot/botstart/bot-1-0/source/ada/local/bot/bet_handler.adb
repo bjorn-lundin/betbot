@@ -1240,9 +1240,11 @@ package body Bet_Handler is
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
-      "select * from ABETS " &
-      "where BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
-      "and IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+      "select B.* from ABETS B, AMARKETS M " &
+      "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
+      "and B.BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
+      "and M.STATUS in ('SETTLED','CLOSED') " &
+      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" ); -- must have had time to check ...
 
     Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
@@ -1362,7 +1364,8 @@ package body Bet_Handler is
 
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
-      "and M.STATUS in ('CLOSED','SETTLED') " & -- This is not updated!!!
+      "and M.STATUS in ('CLOSED','SETTLED','SUSPENDED') " & -- This is not updated!!!
+      "and B.BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
       "and B.BETID > 1000000000 " & -- no dry_run bets
       "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
