@@ -1237,6 +1237,7 @@ package body Bet_Handler is
     Bet_Won               : Boolean := False;
     Profit                : Float_8 := 0.0;
   begin
+    Log(Me & "Check_Bets", "start");
 
     T.Start;
     -- check the dry run bets
@@ -1340,6 +1341,7 @@ package body Bet_Handler is
     end if;
 
     Table_Abets.Abets_List_Pack.Release(Bet_List);
+    Log(Me & "Check_Bets", "stop");
   end Check_Bets;
   ------------------------------------------------------------------------------
   
@@ -1352,6 +1354,7 @@ package body Bet_Handler is
     Is_Removed        : Boolean        := False;
     Size_Matched      : Bet_Size_Type  := 0.0;
   begin
+    Log(Me & "Check_If_Bet_Accepted", "start");
     T.Start;
     -- check the dry run bets
     Select_Executable_Bets.Prepare(
@@ -1392,6 +1395,8 @@ package body Bet_Handler is
     T.Commit;
 
     Table_Abets.Abets_List_Pack.Release(Bet_List);
+    Log(Me & "Check_If_Bet_Accepted", "stop");
+    
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
 
@@ -1403,6 +1408,7 @@ package body Bet_Handler is
     Is_Changed  : Boolean        := False;
     
   begin
+    Log(Me & "Check_Market_Status", "start");
     T.Start;
     
     Select_Ongoing_Markets.Prepare(
@@ -1425,6 +1431,7 @@ package body Bet_Handler is
     T.Commit;
 
     Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+    Log(Me & "Check_Market_Status", "stop");
   end Check_Market_Status;
  ---------------------------------------------------------------------------------
 
