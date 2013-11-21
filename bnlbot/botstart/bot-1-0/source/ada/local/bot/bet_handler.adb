@@ -858,15 +858,19 @@ package body Bet_Handler is
         case A_Bet_Type is
           when Green_Up_Back =>
             case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
-              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_Second_Bet_Persistance'Img);
             end case;            
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
           when Green_Up_Lay => 
             case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
-              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_Second_Bet_Persistance'Img);
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
             end case;            
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
