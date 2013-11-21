@@ -882,7 +882,7 @@ package body Sql is
                   raise No_Such_Column;
                end if;
             end;
-            raise Postgresql_Error;
+            raise Postgresql_Error with To_String (Private_Statement.Prepared_Statement);
          else             
             Dml_Result.Clear;
          end if;

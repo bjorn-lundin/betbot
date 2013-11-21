@@ -26,7 +26,7 @@ project Adabot is
                  "plot_race_all_runners.adb",
 --                 "bet_checker.adb",
                  "bot_send.adb",
-                 "lay_all_if_profitable.adb",
+--                 "lay_all_if_profitable.adb",
                  "migrate_g2_g3.adb",
                  "migrate_g3_g3.adb",
 --                 "equity.adb",

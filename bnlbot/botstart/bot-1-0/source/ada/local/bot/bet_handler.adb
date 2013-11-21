@@ -1348,7 +1348,8 @@ package body Bet_Handler is
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet      : Table_Abets.Data_Type;
     Avg_Price_Matched : Bet_Price_Type := 0.0;
-    Is_Matched        : Boolean        := False;
+    Is_Matched,
+    Is_Removed        : Boolean        := False;
     Size_Matched      : Bet_Size_Type  := 0.0;
   begin
     T.Start;
@@ -1369,14 +1370,18 @@ package body Bet_Handler is
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
       
-      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Matched, Avg_Price_Matched, Size_Matched);
+      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Removed ,Is_Matched, Avg_Price_Matched, Size_Matched);
       
       if Is_Matched then
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Bet.Status := (others => ' ');
-        Move("EXECUTION_COMPLETE", Bet.Status);         
-        Bet.Pricematched := Float_8(Avg_Price_Matched);
-        Bet.Sizematched := Float_8(Size_Matched);
+        if Is_Removed then
+          Move("EXECUTABLE_NO_MATCH", Bet.Status); --?
+        else
+          Move("EXECUTION_COMPLETE", Bet.Status);         
+          Bet.Pricematched := Float_8(Avg_Price_Matched);
+          Bet.Sizematched := Float_8(Size_Matched);
+        end if;
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Table_Abets.Update_Withcheck(Bet);
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
