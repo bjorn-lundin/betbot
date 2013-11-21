@@ -46,6 +46,10 @@ package Bot_Config is
     Bet_Mode         : Bet_Mode_Type          := Sim;    
     Allowed_Days     : Allowed_Days_Array     := (others => False);
     Green_Up_Mode    : Green_Up_Mode_Type     := Back_First_Then_Lay;
+    Lay_First_Bet_Persistance   : Bet_Persistence_Type := Lapse;
+    Back_First_Bet_Persistance  : Bet_Persistence_Type := Lapse;
+    Lay_Second_Bet_Persistance  : Bet_Persistence_Type := Persist;
+    Back_Second_Bet_Persistance : Bet_Persistence_Type := Persist;
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   

@@ -76,6 +76,7 @@ package body RPC is
   
   procedure Bet_Is_Matched(Betid             : Integer_8 ; 
                            Tkn               : Token.Token_Type; 
+                           Is_Removed        : out Boolean; 
                            Is_Matched        : out Boolean; 
                            AVG_Price_Matched : out Bet_Price_Type;
                            Size_Matched      : out Bet_Size_Type
@@ -196,6 +197,7 @@ package body RPC is
       Log(Me & "Bet_Is_Matched", "got currentOrders, len: " & Length(Current_Orders)'Img);
 
       if Length(Current_Orders) > Natural(0) then
+        Is_Removed := False;
         Current_Order_Item := Get(Current_Orders, 1); -- always element 1, since we only have 1
         Log(Me & "Bet_Is_Matched", "got Current_Order_Item");
  
@@ -219,6 +221,9 @@ package body RPC is
           Log(Me & "Bet_Is_Matched", "got Current_Order_Item.Status");
           Is_Matched := Current_Order_Item.Get("status") = "EXECUTION_COMPLETE";   
         end if;
+      else -- len = 0  
+        Is_Removed := True;
+        Is_Matched := True;   
       end if;        
     end if;
     Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Float_8(AVG_Price_Matched)))  ;

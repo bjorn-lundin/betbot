@@ -28,12 +28,16 @@ package Bot_Types is
    type Favorite_By_Type is new Float_8;
    type Profit_Type is new Float_8;
    
+   type Bet_Persistence_Type is (Lapse, Persist, Market_On_Close);
+   
    type Mode_Type is (Real, Simulation);
    type Bet_Mode_Type is ( Real, Sim);
    for Bet_Mode_Type'Size use Integer_4'Size;
    for Bet_Mode_Type use ( Real => 2, Sim => 3);
    function Bet_Mode is new Unchecked_Conversion(Bet_Mode_Type, Integer_4);
    function Bet_Mode is new Unchecked_Conversion(Integer_4, Bet_Mode_Type);
+   
+   
    
    
    type Green_Up_Mode_Type is (Lay_First_Then_Back, Back_First_Then_Lay);
