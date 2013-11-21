@@ -38,6 +38,9 @@ package body Bot_Config is
   procedure Read(Cfg : in out Config_Type) is
     function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
     function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
+    function Get_Bet_Persistence is new Ini.Get_Enumeration_Value(Bet_Persistence_Type);
+    
+    
    
    type Cfg_Type is ( Market, Animal);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
@@ -141,6 +144,10 @@ package body Bot_Config is
             Bet_Section.Num_Winners        := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners","1"));
             Bet_Section.Bet_Mode           := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
             Bet_Section.Green_Up_Mode      := Get_Green_Up_Mode(Ini.Get_Section_Name(i),"green_up_mode", Back_First_Then_Lay) ;
+            Bet_Section.Lay_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_first_bet_persistance", Lapse) ;
+            Bet_Section.Back_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_first_bet_persistance", Lapse) ;
+            Bet_Section.Lay_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_second_bet_persistance", Persist) ;
+            Bet_Section.Back_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_second_bet_persistance", Persist) ;
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
@@ -331,6 +338,12 @@ package body Bot_Config is
                "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" &
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" &
                "<Green_Up_Mode>" & Bet_Section.Green_Up_Mode'Img & "</Green_Up_Mode>" &
+               "<Lay_First_Bet_Persistance>" & Bet_Section.Lay_First_Bet_Persistance'Img & "</Lay_First_Bet_Persistance>" &
+               "<Back_First_Bet_Persistance>" & Bet_Section.Back_First_Bet_Persistance'Img & "</Back_First_Bet_Persistance>" &
+               "<Lay_Second_Bet_Persistance>" & Bet_Section.Lay_Second_Bet_Persistance'Img & "</Lay_Second_Bet_Persistance>" &
+               "<Back_Second_Bet_Persistance>" & Bet_Section.Back_Second_Bet_Persistance'Img & "</Back_Second_Bet_Persistance>" &
+               
+               
              "</Bet>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;

@@ -858,15 +858,19 @@ package body Bet_Handler is
         case A_Bet_Type is
           when Green_Up_Back =>
             case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
-              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_Second_Bet_Persistance'Img);
             end case;            
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
           when Green_Up_Lay => 
             case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
-              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
+            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_Second_Bet_Persistance'Img);
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
             end case;            
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
@@ -1238,6 +1242,7 @@ package body Bet_Handler is
     Profit  : Float_8 := 0.0;
     Did_Exit : Boolean := False;
   begin
+    Log(Me & "Check_Bets", "start");
 
     T.Start;
     -- check the dry run bets
@@ -1359,6 +1364,7 @@ package body Bet_Handler is
     end if;
 
     Table_Abets.Abets_List_Pack.Release(Bet_List);
+    Log(Me & "Check_Bets", "stop");
   end Check_Bets;
   ------------------------------------------------------------------------------
   
@@ -1367,9 +1373,11 @@ package body Bet_Handler is
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet      : Table_Abets.Data_Type;
     Avg_Price_Matched : Bet_Price_Type := 0.0;
-    Is_Matched        : Boolean        := False;
+    Is_Matched,
+    Is_Removed        : Boolean        := False;
     Size_Matched      : Bet_Size_Type  := 0.0;
   begin
+    Log(Me & "Check_If_Bet_Accepted", "start");
     T.Start;
     -- check the dry run bets
     Select_Executable_Bets.Prepare(
@@ -1388,14 +1396,18 @@ package body Bet_Handler is
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
       
-      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Matched, Avg_Price_Matched, Size_Matched);
+      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Removed ,Is_Matched, Avg_Price_Matched, Size_Matched);
       
       if Is_Matched then
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Bet.Status := (others => ' ');
+        if Is_Removed then
+          Move("EXECUTABLE_NO_MATCH", Bet.Status); --?
+        else
         Move("EXECUTION_COMPLETE", Bet.Status);         
         Bet.Pricematched := Float_8(Avg_Price_Matched);
         Bet.Sizematched := Float_8(Size_Matched);
+        end if;
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
         Table_Abets.Update_Withcheck(Bet);
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
@@ -1406,6 +1418,8 @@ package body Bet_Handler is
     T.Commit;
 
     Table_Abets.Abets_List_Pack.Release(Bet_List);
+    Log(Me & "Check_If_Bet_Accepted", "stop");
+    
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
   
@@ -1417,6 +1431,7 @@ package body Bet_Handler is
     Is_Changed  : Boolean        := False;
     
   begin
+    Log(Me & "Check_Market_Status", "start");
     T.Start;
     
     Select_Ongoing_Markets.Prepare(
@@ -1439,6 +1454,7 @@ package body Bet_Handler is
     T.Commit;
 
     Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+    Log(Me & "Check_Market_Status", "stop");
   end Check_Market_Status;
  ---------------------------------------------------------------------------------
 
