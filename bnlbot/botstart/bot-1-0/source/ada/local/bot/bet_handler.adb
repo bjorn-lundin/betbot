@@ -407,7 +407,7 @@ package body Bet_Handler is
                         -- use the matched lay_price             
                         Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
                         Pip_Back.Init(Float_8(Back_Price));
-                        Back_Price := Bet_Price_Type(Pip_Back.Next_Price);
+                        Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
                         
@@ -427,7 +427,7 @@ package body Bet_Handler is
                                      "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
                                      "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
                             Pip_Back.Init(Float_8(Back_Price));
-                            Back_Price := Bet_Price_Type(Pip_Back.Next_Price);                            
+                            Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);                            
                         end if;  
                         
                         
@@ -739,9 +739,9 @@ package body Bet_Handler is
       Select_In_The_Air.Set("BETNAME",  To_String(Bet.Bot_Cfg.Bet_Name));
 
       Select_In_The_Air.Open_Cursor;
-      Select_In_The_Air.Fetch( Eos);
+      Select_In_The_Air.Fetch(Eos);
       if not Eos then
-        Select_In_The_Air.Get(1,Num);
+        Select_In_The_Air.Get(1, Num);
       end if;
       Select_In_The_Air.Close_Cursor;
     T.Commit;
@@ -858,8 +858,6 @@ package body Bet_Handler is
         case A_Bet_Type is
           when Green_Up_Back =>
             case Bet.Bot_Cfg.Green_Up_Mode is
-            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
-            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
               when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
               when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_Second_Bet_Persistance'Img);
             end case;            
@@ -867,8 +865,6 @@ package body Bet_Handler is
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
           when Green_Up_Lay => 
             case Bet.Bot_Cfg.Green_Up_Mode is
-            --  when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "PERSIST");
-            --  when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => "LAPSE");
               when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_Second_Bet_Persistance'Img);
               when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
             end case;            
