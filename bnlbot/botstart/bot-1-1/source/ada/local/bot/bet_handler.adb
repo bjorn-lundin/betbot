@@ -407,7 +407,7 @@ package body Bet_Handler is
                         -- use the matched lay_price             
                         Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
                         Pip_Back.Init(Float_8(Back_Price));
-                        Back_Price := Bet_Price_Type(Pip_Back.Next_Price);
+                        Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
                             
                         Back_Size := (Lay_Size * Lay_Price) / Back_Price;
                         
@@ -427,7 +427,7 @@ package body Bet_Handler is
                                      "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
                                      "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
                             Pip_Back.Init(Float_8(Back_Price));
-                            Back_Price := Bet_Price_Type(Pip_Back.Next_Price);                            
+                            Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);                            
                         end if;  
                         
                         
