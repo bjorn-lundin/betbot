@@ -27,6 +27,7 @@ package Bot_Types is
    type Num_Winners_Type is new Byte;
    type Favorite_By_Type is new Float_8;
    type Profit_Type is new Float_8;
+   type Max_Exposure_Type is new Float_8;
    
    type Bet_Persistence_Type is (Lapse, Persist, Market_On_Close);
    
@@ -72,6 +73,7 @@ package Bot_Types is
    function "*" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
    function "/" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
 
+   function ">" (Left : Float_8 ; Right : Max_Exposure_Type) return Boolean ;
    
    
    

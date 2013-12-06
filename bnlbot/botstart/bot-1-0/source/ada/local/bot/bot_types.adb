@@ -117,6 +117,11 @@ package body Bot_Types is
      return Left / Bet_Size_Type(Right);
    end "/";
    ---------------------------------------------
+   function ">" (Left : Float_8 ; Right : Max_Exposure_Type) return Boolean is
+   begin
+     return Left > Float_8(Right);
+   end ">";
+   ---------------------------------------------
    
    
 end Bot_Types;

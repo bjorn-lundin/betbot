@@ -35,7 +35,7 @@ with Bot_Messages;
 with Core_Messages;
 
 
-with RPC ; use RPC;
+with RPC ; -- use RPC;
 
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -48,7 +48,6 @@ procedure Markets_Fetcher is
   No_Such_UTC_Offset,
   No_Such_Field  : exception;
 
-  Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon    : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
@@ -86,7 +85,6 @@ procedure Markets_Fetcher is
   
 ----------------------------------------------
   
-  My_Token : Token.Token_Type;
   My_Lock  : Lock.Lock_Type;
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     
@@ -653,12 +651,6 @@ begin
     Help        => "user of bot");
 
   
-  Define_Switch
-    (Cmd_Line,
-     Sa_Par_Token'access,
-     "-t:",
-     Long_Switch => "--token=",
-     Help        => "use this token, if token is already retrieved");
 
   Define_Switch
      (Cmd_Line,
@@ -675,32 +667,26 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take("markets_fetcher");
    
-  if Sa_Par_Token.all = "" then
-     Log(Me, "Login");
+  Log(Me, "Login");
 
     -- Ask a pythonscript to login for us, returning a token
-     My_Token.Init(
+  Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
           );    
-     My_Token.Login;
+  Rpc.Login;
      
-     Log(Me, "Logged in with token '" &  My_Token.Get & "'");
-  else
-     Log(Me, "set token '" & Sa_Par_Token.all & "'");
-     My_Token.Set(Sa_Par_Token.all);
-  end if;
 
    --http://forum.bdp.betfair.com/showthread.php?t=1832&page=2
    --conn.setRequestProperty("content-type", "application/json");
    --conn.setRequestProperty("X-Authentication", token);
    --conn.setRequestProperty("X-Application", appKey);
    --conn.setRequestProperty("Accept", "application/json");    
-  Aws.Headers.Set.Add (My_Headers, "X-Authentication", My_Token.Get);
-  Aws.Headers.Set.Add (My_Headers, "X-Application", My_Token.Get_App_Key);
+  Aws.Headers.Set.Add (My_Headers, "X-Authentication", Rpc.Get_Token.Get);
+  Aws.Headers.Set.Add (My_Headers, "X-Application", Rpc.Get_Token.Get_App_Key);
   Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 --   Log(Me, "Headers set");
 
@@ -827,7 +813,7 @@ begin
 
     
     if Parsed_Ok1 then                             
-      if API_Exceptions_Are_Present(Reply_List_Market_Catalogue) then
+      if Rpc.API_Exceptions_Are_Present(Reply_List_Market_Catalogue) then
         exit Main_loop;  --  exit main loop, let cron restart program
       end if;
  

@@ -27,6 +27,7 @@ project Adabot is
 --                 "bet_checker.adb",
                  "bot_send.adb",
 --                 "lay_all_if_profitable.adb",
+                 "migrate_g1_g4.adb",
                  "migrate_g2_g3.adb",
                  "migrate_g3_g3.adb",
 --                 "equity.adb",

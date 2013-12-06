@@ -143,6 +143,7 @@ package body Bot_Config is
             Bet_Section.Min_Num_Runners    := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners","8"));
             Bet_Section.Num_Winners        := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners","1"));
             Bet_Section.Bet_Mode           := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
+            Bet_Section.Max_Exposure       := Max_Exposure_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_exposure","600.0"));
             Bet_Section.Green_Up_Mode      := Get_Green_Up_Mode(Ini.Get_Section_Name(i),"green_up_mode", Back_First_Then_Lay) ;
             Bet_Section.Lay_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_first_bet_persistance", Lapse) ;
             Bet_Section.Back_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_first_bet_persistance", Lapse) ;

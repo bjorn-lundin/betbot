@@ -1,7 +1,6 @@
 --with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Exception;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-with Token;
 with General_Routines; use General_Routines;
 with Bot_Config;
 with Lock;
@@ -16,11 +15,11 @@ with Core_Messages;
 with Ada.Environment_Variables;
 with Bet_Handler;
 with Bot_Svn_Info;
+with Rpc;
 
 procedure Bot is
   package EV renames Ada.Environment_Variables;
   Timeout  : Duration := 120.0;
-  My_Token : Token.Token_Type;
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";
@@ -44,14 +43,14 @@ begin
   case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
        Log(Me, "Login betfair");
-       My_Token.Init(
+       Rpc.Init(
          Username   => To_String(Bot_Config.Config.Betfair_Section.Username),
          Password   => To_String(Bot_Config.Config.Betfair_Section.Password),
          Product_Id => To_String(Bot_Config.Config.Betfair_Section.Product_Id),
          Vendor_id  => To_String(Bot_Config.Config.Betfair_Section.Vendor_Id),
          App_Key    => To_String(Bot_Config.Config.Betfair_Section.App_Key)
        );
-       My_Token.Login;
+       Rpc.Login;
        Log(Me, "Login betfair done");
     when Bot_Types.Simulation => null;
   end case;
@@ -71,8 +70,8 @@ begin
     Logging.Close;
     Logging.Set_Quiet(True);
   end if;
-  Bet_Handler.Check_Market_Status(My_Token);
-  Bet_Handler.Check_If_Bet_Accepted(My_Token);
+  Bet_Handler.Check_Market_Status;
+  Bet_Handler.Check_If_Bet_Accepted;
   Bet_Handler.Check_Bets;
   
   Main_Loop : loop
@@ -87,13 +86,13 @@ begin
         when Core_Messages.Read_Config_Message           =>
           Bot_Config.Re_Read_Config ;
         when Bot_Messages.Market_Notification_Message    =>
-          Bet_Handler.Treat_Market( Bot_Messages.Data(Msg),My_Token);
-          Bet_Handler.Check_Market_Status(My_Token);
-          Bet_Handler.Check_If_Bet_Accepted(My_Token);
+          Bet_Handler.Treat_Market( Bot_Messages.Data(Msg));
+          Bet_Handler.Check_Market_Status;
+          Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         when Bot_Messages.New_Winners_Arrived_Notification_Message =>
-          Bet_Handler.Check_Market_Status(My_Token);
-          Bet_Handler.Check_If_Bet_Accepted(My_Token);
+          Bet_Handler.Check_Market_Status;
+          Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
@@ -103,12 +102,12 @@ begin
         Log(Me, "Timeout");
         case Bot_Config.Config.System_Section.Bot_Mode is
           when Bot_Types.Real       =>
-            My_Token.Keep_Alive(OK);
+            Rpc.Keep_Alive(OK);
             if not OK then
-              My_Token.Login;
+              Rpc.Login;
             end if;
-            Bet_Handler.Check_Market_Status(My_Token);
-            Bet_Handler.Check_If_Bet_Accepted(My_Token);
+            Bet_Handler.Check_Market_Status;
+            Bet_Handler.Check_If_Bet_Accepted;
             Bet_Handler.Check_Bets;
           when Bot_Types.Simulation => null;
         end case;
