@@ -87,7 +87,6 @@ begin
       begin
         Log(Me, "Start receive");
         Process_Io.Receive(Msg, Timeout);
-        Timeout := Long_Timeout; -- first time fast ...
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  =>
             exit Main_Loop;
@@ -96,6 +95,7 @@ begin
         end case;
       exception
         when Process_Io.Timeout =>
+          Timeout := Long_Timeout; -- first time fast ...
           Log(Me, "Timeout");
           Rpc.Keep_Alive(OK);
           if not OK then
