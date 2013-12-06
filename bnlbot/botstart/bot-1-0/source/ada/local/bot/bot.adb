@@ -70,7 +70,7 @@ begin
     Logging.Close;
     Logging.Set_Quiet(True);
   end if;
-  Bet_Handler.Check_Market_Status;
+--  Bet_Handler.Check_Market_Status;
   Bet_Handler.Check_If_Bet_Accepted;
   Bet_Handler.Check_Bets;
   
@@ -87,11 +87,11 @@ begin
           Bot_Config.Re_Read_Config ;
         when Bot_Messages.Market_Notification_Message    =>
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg));
-          Bet_Handler.Check_Market_Status;
+--          Bet_Handler.Check_Market_Status;
           Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         when Bot_Messages.New_Winners_Arrived_Notification_Message =>
-          Bet_Handler.Check_Market_Status;
+--          Bet_Handler.Check_Market_Status;
           Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         when others =>
@@ -106,7 +106,7 @@ begin
             if not OK then
               Rpc.Login;
             end if;
-            Bet_Handler.Check_Market_Status;
+--            Bet_Handler.Check_Market_Status;
             Bet_Handler.Check_If_Bet_Accepted;
             Bet_Handler.Check_Bets;
           when Bot_Types.Simulation => null;
