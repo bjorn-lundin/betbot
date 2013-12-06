@@ -1,8 +1,9 @@
 
 
-
+with Sattmate_Exception;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
@@ -10,6 +11,7 @@ with Aws.Headers.Set;
 with Aws.Response;
 with General_Routines; use General_Routines;
 with Aws.Client;
+--with Token;
 
 pragma Elaborate_All (AWS.Headers);
 
@@ -20,6 +22,54 @@ package body RPC is
   Me : constant String := "RPC.";
 
   No_Such_Field : exception;
+  
+  
+  Global_Token : Token.Token_Type;
+  ---------------------------------
+  
+  
+  procedure Login is
+  begin
+    Global_Token.Login;
+  end Login;
+
+  procedure Init(Username   : in     String;
+                 Password   : in     String;
+                 Product_Id : in     String;
+                 Vendor_Id  : in     String;
+                 App_Key    : in     String) is
+  begin
+       Global_Token.Init(
+         Username   => Username,
+         Password   => Password,
+         Product_Id => Product_Id,
+         Vendor_id  => Vendor_Id,
+         App_Key    => App_Key
+       );  
+  end Init;  
+  
+  
+  function Get_Token return Token.Token_Type is
+  begin
+    return Global_Token;
+  end Get_Token;
+  
+  
+  procedure Keep_Alive (Result : out Boolean) is
+  begin
+    Global_Token.Keep_Alive(Result);
+  end Keep_Alive;  
+  
+  
+  procedure Reset_AWS_Headers is
+  begin
+    Aws.Headers.Set.Reset(My_Headers);
+    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (My_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");  
+  end Reset_AWS_Headers;
+  
+  
   
   
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
@@ -75,7 +125,6 @@ package body RPC is
   ---------------------------------------------------------------------
   
   procedure Bet_Is_Matched(Betid             : Integer_8 ; 
-                           Tkn               : Token.Token_Type; 
                            Is_Removed        : out Boolean; 
                            Is_Matched        : out Boolean; 
                            AVG_Price_Matched : out Bet_Price_Type;
@@ -93,7 +142,7 @@ package body RPC is
     Current_Orders,    
     Bet_Ids      : JSON_Array := Empty_Array;
     String_Betid : String     := Trim(Betid'Img);
-    AWS_Reply       : Aws.Response.Data;
+    AWS_Reply    : Aws.Response.Data;
   begin
 --{
 --     "jsonrpc": "2.0",
@@ -119,11 +168,7 @@ package body RPC is
     
     Log(Me, "posting: " & Json_Query.Write);
     
-    Aws.Headers.Set.Reset(My_Headers);
-    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Tkn.Get);
-    Aws.Headers.Set.Add (My_Headers, "X-Application", Tkn.Get_App_Key);
-    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
-    
+    Reset_AWS_Headers;    
     AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                   Data         =>  Json_Query.Write,
                                   Content_Type => "application/json",
@@ -267,10 +312,7 @@ package body RPC is
 --    
 --    Log(Me, "posting: " & Json_Query.Write);
 --    
---    Aws.Headers.Set.Reset(My_Headers);
---    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Tkn.Get);
---    Aws.Headers.Set.Add (My_Headers, "X-Application", Tkn.Get_App_Key);
---    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
+--    Reset_AWS_Headers;    
 --    
 --    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
 --                                  Data         =>  Json_Query.Write,
@@ -449,7 +491,6 @@ package body RPC is
   ----------------------------------------------------------------
   
   procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
-                                     Tkn        : in     Token.Token_Type;
                                      Is_Changed :    out Boolean) is
 --{
 --     "jsonrpc": "2.0",
@@ -481,10 +522,7 @@ package body RPC is
     
     Log(Me & "Market_Status_Is_Changed", "posting: " & Json_Query.Write);
     
-    Aws.Headers.Set.Reset(My_Headers);
-    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Tkn.Get);
-    Aws.Headers.Set.Add (My_Headers, "X-Application", Tkn.Get_App_Key);
-    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
+    Reset_AWS_Headers;    
     
     AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                   Data         =>  Json_Query.Write,
@@ -624,8 +662,78 @@ package body RPC is
     else
       Log(Me & "Market_Status_Is_Changed", "No status field found!!!");
     end if;
-    
-  
   end Market_Status_Is_Changed;
+  ---------------------------------------
+  procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) is
+    My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    Parsed_Ok : Boolean := True;
+    Query_Get_Account_Funds           : JSON_Value := Create_Object;
+    Reply_Get_Account_Funds           : JSON_Value := Create_Object;
+    Answer_Get_Account_Funds          : Aws.Response.Data;
+    Params                            : JSON_Value := Create_Object;
+    Result                            : JSON_Value := Create_Object;
+  begin
+     Betfair_Result := Ok;
+
+    Reset_AWS_Headers;    
+
+    -- params is empty ...                     
+    Query_Get_Account_Funds.Set_Field (Field_Name => "params",  Field => Params);
+    Query_Get_Account_Funds.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+    Query_Get_Account_Funds.Set_Field (Field_Name => "method",  Field => "AccountAPING/v1.0/getAccountFunds");
+    Query_Get_Account_Funds.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+
+    Log(Me, "posting " & Query_Get_Account_Funds.Write);
+    Answer_Get_Account_Funds := Aws.Client.Post (Url          =>  Token.URL_ACCOUNT,
+                                                 Data         =>  Query_Get_Account_Funds.Write,
+                                                 Content_Type => "application/json",
+                                                 Headers      =>  My_Headers,
+                                                 Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
+     
+    --  Load the reply into a json object
+    Log(Me, "Got reply");
+    begin
+      Reply_Get_Account_Funds := Read (Strm     => Aws.Response.Message_Body(Answer_Get_Account_Funds),
+                                       Filename => "");
+      Log(Me, Reply_Get_Account_Funds.Write);
+    exception
+      when E: others =>
+        Parsed_Ok := False;
+        Log(Me, "Bad reply: " & Aws.Response.Message_Body(Answer_Get_Account_Funds));
+        Sattmate_Exception.Tracebackinfo(E);
+        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+        if Aws.Response.Message_Body(Answer_Get_Account_Funds) = "Post Timeout" then 
+          Betfair_Result := Timeout ;
+          return;
+        end if;  
+    end ;       
+    Aws.Headers.Set.Reset (My_Headers);
+
+    if Parsed_Ok then                             
+      if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
+        Log(Me & "Get_Balance - Error",Aws.Response.Message_Body(Answer_Get_Account_Funds));
+      
+        -- try again
+        Betfair_Result := Logged_Out ;
+        return;
+      end if;
+ 
+      if Reply_Get_Account_Funds.Has_Field("result") then
+         Result := Reply_Get_Account_Funds.Get("result");
+         if Result.Has_Field("availableToBetBalance") then
+           Saldo.Balance := Float_8(Float'(Result.Get("availableToBetBalance")));
+         else  
+           raise No_Such_Field with "Object 'Result' - Field 'availableToBetBalance'";        
+         end if;
+           
+         if Result.Has_Field("exposure") then
+           Saldo.Exposure := Float_8(Float'(Result.Get("exposure")));
+         else  
+           raise No_Such_Field with "Object 'Result' - Field 'exposure'";        
+         end if;          
+      end if;  
+    end if;    
+  end Get_Balance;    
   
+  --------------------------------------- 
 end RPC;

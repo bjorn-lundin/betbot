@@ -1,3 +1,4 @@
+
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
@@ -12,6 +13,7 @@ with Table_Awinners;
 --with Table_Abethistory;
 --with Table_Arunners;
 with Table_Anonrunners;
+with Table_Abalances;
 with Sql;
 with General_Routines;
 with Sattmate_Calendar;
@@ -24,8 +26,8 @@ with Aws.Headers.Set;
 with Sattmate_Exception;
 with Process_IO;
 with Bot_Svn_Info;
-with RPC;
-
+with Rpc;
+with Token;
 
 pragma Elaborate_All(Aws.Headers);
 
@@ -186,8 +188,7 @@ package body Bet_Handler is
   -------------------------------------------------------------------------------
 
   procedure Try_Make_New_Bet (Bet_Info : in out Bet_Info_Record;
-                              Bot_Cfg  : in out Bot_Config.Bet_Section_Type;
-                              A_Token  : in out Token.Token_Type) is
+                              Bot_Cfg  : in out Bot_Config.Bet_Section_Type) is
     -- see if we can make a bet now
     Bet       : Bet_Type := Create(Bet_Info, Bot_Cfg);
     Fulfilled : Boolean  := True;
@@ -204,15 +205,14 @@ package body Bet_Handler is
     if not Fulfilled then
       Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " betting condition NOT fulfilled ");
     else 
-      Bet.Do_Try(A_Token => A_Token);
+      Bet.Do_Try;
     end if;
     
   end Try_Make_New_Bet;
 
   -------------------------------------------------------------------------------
 
-  procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record;
-                         A_Token             : in out Token.Token_Type) is
+  procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record) is
     Bet_Info : Bet_Info_Record ;
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
@@ -253,7 +253,7 @@ package body Bet_Handler is
     Bet_Pack.Get_First(Bot_Config.Config.Bet_Section_List, Bet_Section,Eol);
     loop
       exit when Eol;
-      Bet_Info.Try_Make_New_Bet(Bet_Section, A_Token);
+      Bet_Info.Try_Make_New_Bet(Bet_Section);
       Bet_Pack.Get_Next(Bot_Config.Config.Bet_Section_List, Bet_Section, Eol);
     end loop;
     Log(Me & "Treat_Market", "end market:" & Market_Notification.Market_Id);
@@ -291,8 +291,7 @@ package body Bet_Handler is
   end Enabled;
   -----------------------------------------------------------------------
 
-  procedure Do_Try(Bet       : in out Bet_Type;
-                   A_Token   : in out Token.Token_Type) is
+  procedure Do_Try(Bet : in out Bet_Type) is
     -- see if we can make a bet now
       Todays_Profit : Profit_Type := 0.0;
       Continue_Betting : Boolean := False;
@@ -353,7 +352,7 @@ package body Bet_Handler is
                      
                     case Bet.Bot_Cfg.Bet_Mode is
                       when Real => 
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                        Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back, 
                                      Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                         -- use the matched back_price             
                         Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
@@ -368,16 +367,16 @@ package body Bet_Handler is
                                      "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
                                      
                         if Price_Matched > 0.0 then
-                          Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
                                        Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
                         else 
                           Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
                         end if;
                         
                       when Sim  => 
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
                                      Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
                                      Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
                     end case;
                   end if;  
@@ -391,7 +390,10 @@ package body Bet_Handler is
                   Back_Size  : Bet_Size_Type  := 0.0;
                   Pip_Lay    : Pip_Type ;
                   Pip_Back   : Pip_Type ;
-    
+                  Betfair_Result : Rpc.Result_Type ; 
+                  Saldo          : Table_Abalances.Data_Type;
+                  Expected_Exposure_This_Bet : Float_8 := 0.0;
+                  use type Rpc.Result_Type;
                 begin
                   
                   if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
@@ -399,10 +401,32 @@ package body Bet_Handler is
     
                     Pip_Lay.Init(Float_8(Lay_Price));
                     Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+                    
+                    --before we bet anything, check finances first
+                    Rpc.Get_Balance(Betfair_Result, Saldo);
+                    if Betfair_Result = Rpc.Ok then
+                      -- calculate expected exposure for this bet
+                      Expected_Exposure_This_Bet := Float_8(Lay_Size * (Lay_Price - Bet_Price_Type(1.0)));
+                      if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
+                        Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
+                        Log(Me & "Do_Try", "cur/this bet/max" &
+                             F8_Image(abs(Saldo.Exposure))  & "/" &
+                             F8_Image(Expected_Exposure_This_Bet)  & "/" &
+                             F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
+                        exit; --loop                            
+                      end if;                      
+                      
+                    else
+                      Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);                                      
+                      exit; --loop
+                    end if;
+                    
+                    
+                    
                      
                     case Bet.Bot_Cfg.Bet_Mode is
                       when Real => 
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                        Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
                                      Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
                         -- use the matched lay_price             
                         Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
@@ -432,8 +456,7 @@ package body Bet_Handler is
                               Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
                             end loop;                        
                         end if;  
-                        
-                        
+                                              
                         Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
                                      "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
                                      "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
@@ -443,16 +466,16 @@ package body Bet_Handler is
                                      
                                      
                         if Price_Matched > 0.0 then                        
-                          Bet.Make_Bet(A_Token => A_Token, Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back, 
                                        Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                         else 
                           Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");                                      
                         end if;
                         
                       when Sim  => 
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
                                      Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                        Bet.Make_Bet(A_Token => A_Token, Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
                                      Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
                     end case;
                   end if;  
@@ -754,11 +777,14 @@ package body Bet_Handler is
 
   procedure Make_Bet(Bet           : in out Bet_Type;
                      Betmode       : in     Bet_Mode_Type;
-                     A_Token       : in out Token.Token_Type;
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
                      Price_Matched :    out Bet_Price_Type) is
+
+
+    A_Token : Token.Token_Type := Rpc.Get_Token;
+
                      
     Abet : Table_Abets.Data_Type;
     Local_Price : Float_8 := Float_8(Price);
@@ -1348,7 +1374,7 @@ package body Bet_Handler is
   end Check_Bets;
   ------------------------------------------------------------------------------
   
-  procedure Check_If_Bet_Accepted(Tkn : Token.Token_Type) is 
+  procedure Check_If_Bet_Accepted is 
     T : Sql.Transaction_Type;
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet      : Table_Abets.Data_Type;
@@ -1376,7 +1402,7 @@ package body Bet_Handler is
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
       
-      RPC.Bet_Is_Matched(Bet.Betid, Tkn, Is_Removed ,Is_Matched, Avg_Price_Matched, Size_Matched);
+      RPC.Bet_Is_Matched(Bet.Betid, Is_Removed ,Is_Matched, Avg_Price_Matched, Size_Matched);
       
       if Is_Matched then
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  
@@ -1404,7 +1430,7 @@ package body Bet_Handler is
  ---------------------------------------------------------------------------------
 
 
-  procedure Check_Market_Status(Tkn : Token.Token_Type) is 
+  procedure Check_Market_Status is 
     T : Sql.Transaction_Type;
     Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
     Market      : Table_Amarkets.Data_Type;
@@ -1424,7 +1450,7 @@ package body Bet_Handler is
       " market left to check");
       Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
       Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));  
-      RPC.Market_Status_Is_Changed(Market, Tkn, Is_Changed);
+      RPC.Market_Status_Is_Changed(Market, Is_Changed);
       
       if Is_Changed then
         Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));  

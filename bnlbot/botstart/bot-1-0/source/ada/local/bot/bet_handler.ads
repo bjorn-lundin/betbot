@@ -3,7 +3,6 @@ with Sattmate_Types; use Sattmate_Types;
 with Bot_Types ; use Bot_Types;
 
 with Bot_Messages;
-with Token;
 with Table_Aevents;
 with Table_Amarkets;
 with Table_Aprices;
@@ -15,13 +14,12 @@ package Bet_Handler is
   No_Data : exception;
 
 
-  procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record;
-                         A_Token             : in out Token.Token_Type) ;
+  procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record) ;
 
   procedure Check_Bets;
   procedure Test_Bet; 
-  procedure Check_If_Bet_Accepted(Tkn : Token.Token_Type);
-  procedure Check_Market_Status(Tkn : Token.Token_Type) ;
+  procedure Check_If_Bet_Accepted;
+  procedure Check_Market_Status ;
   
 private
 
@@ -42,8 +40,7 @@ private
   function Create (Market_Notification : in Bot_Messages.Market_Notification_Record) return Bet_Info_Record;
   overriding procedure Finalize (Bet_Info : in out Bet_Info_Record) ;
   procedure Try_Make_New_Bet (Bet_Info : in out Bet_Info_Record; 
-                              Bot_Cfg  : in out Bot_Config.Bet_Section_Type;
-                              A_Token  : in out Token.Token_Type) ;
+                              Bot_Cfg  : in out Bot_Config.Bet_Section_Type) ;
 
   ------------------------------------------------------------------------------------
 
@@ -56,8 +53,7 @@ private
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type;
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) ;
 
-  procedure Do_Try(Bet       : in out Bet_Type;
-                 A_Token   : in out Token.Token_Type) ;
+  procedure Do_Try(Bet       : in out Bet_Type) ;
                  
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
@@ -66,7 +62,6 @@ private
   
   procedure Make_Bet(Bet           : in out Bet_Type;
                      Betmode       : in     Bet_Mode_Type; 
-                     A_Token       : in out Token.Token_Type;
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
