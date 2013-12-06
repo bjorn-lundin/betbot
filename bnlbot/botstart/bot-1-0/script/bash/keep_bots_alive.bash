@@ -154,9 +154,8 @@ $BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
 #zip logfiles every hour, on minute 17 in the background
 MINUTE=$(date +"%M")
 
-#set path to tclsh and zip ?
 if [[ $MINUTE == "17" ]] ; then
-  tclsh $BOT_SCRIPT/tcl/move_or_zip_logfile.tcl & 
+  tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl & 
 fi 
 
 
