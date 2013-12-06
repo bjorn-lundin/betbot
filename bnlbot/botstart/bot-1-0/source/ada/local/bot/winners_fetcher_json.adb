@@ -48,7 +48,7 @@ procedure Winners_Fetcher_Json is
   
   Select_Unsettled_Bets : Sql.Statement_Type;
   
-  My_Token : Token.Token_Type;
+--  My_Token : Token.Token_Type;
   Msg      : Process_Io.Message_Type;
   Timeout  : Duration := 47.0;
   
@@ -75,7 +75,6 @@ procedure Winners_Fetcher_Json is
         Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
   
         Rpc.Check_Market_Result(Market_Id       => Bet.Marketid,
-                                Tkn             => My_Token,
                                 Winner_List     => Winner_List,
                                 Non_Runner_List => Non_Runner_List);
   
@@ -139,14 +138,14 @@ begin
     My_Lock.Take("winners_fetcher_json");    
     
     Log(Me, "Login betfair");
-    My_Token.Init(
+    Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
     );
-    My_Token.Login;
+    Rpc.Login;
     
 --    Log (Me, "connect db");
     Sql.Connect
@@ -176,9 +175,9 @@ begin
       exception
         when Process_Io.Timeout =>
           Log(Me, "Timeout");
-          My_Token.Keep_Alive(OK);
+          Rpc.Keep_Alive(OK);
           if not OK then
-            My_Token.Login;
+            Rpc.Login;
           end if;
 
           Check_Unsettled_Bets(Has_Inserted_Winner);
