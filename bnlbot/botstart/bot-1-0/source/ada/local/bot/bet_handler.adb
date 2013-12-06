@@ -1486,7 +1486,7 @@ package body Bet_Handler is
           "from AMARKETS M, ARUNNERS R " &
           "where M.MARKETID = R.MARKETID " &
           "and M.STATUS in ('SETTLED','CLOSED') " &
-          "and R.STATUS = 'NOT_SET_YET') " &
+          "and R.STATUS in ('', 'NOT_SET_YET') ) " &
       "order by STARTTS" ); 
     
     
