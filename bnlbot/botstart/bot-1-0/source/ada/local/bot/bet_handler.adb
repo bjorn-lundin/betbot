@@ -40,7 +40,7 @@ package body Bet_Handler is
   Select_Lost_Today,
   Select_Profit_Today,
   Select_Dry_Run_Bets,
---  Select_Real_Bets,
+  Select_Unsettled_Markets,
   Select_Executable_Bets,
   Select_Ongoing_Markets,  
   Select_Runners,
@@ -1276,7 +1276,8 @@ package body Bet_Handler is
       "and B.BETWON is null " & -- will be not null if updated
       "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
       "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
+--      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
+      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...
 
     Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
@@ -1442,7 +1443,7 @@ package body Bet_Handler is
     
     Select_Ongoing_Markets.Prepare(
       "select M.* from AMARKETS M " &
-      "where M.STATUS in ('OPEN','SUSPENDED') order by M.STARTTS"); 
+      "where M.STATUS <> 'CLOSED' order by M.STARTTS"); 
     Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
 
     while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
@@ -1464,7 +1465,69 @@ package body Bet_Handler is
   end Check_Market_Status;
  ---------------------------------------------------------------------------------
 
+  procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) is
+    T : Sql.Transaction_Type;
+    List_Runner : Table_Arunners.Data_Type;
+    Db_Runner : Table_Arunners.Data_Type;
+    Runner_List : Table_Arunners.Arunners_List_Pack.List_Type := Table_Arunners.Arunners_List_Pack.Create;
+    Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+    
+    Market : Table_Amarkets.Data_Type;
+    type Eos_Type is ( Arunners);
+    Eos : array (Eos_Type'range) of Boolean := (others => False);
+    
+  begin
+    Log (Me, "Check_Unsettled_Markets start");
+    Inserted_Winner := False;
+    T.Start;  
+    Select_Unsettled_Markets.Prepare(
+      "select * from AMARKETS where MARKETID in ( " &     
+          "select distinct(M.MARKETID) " & 
+          "from AMARKETS M, ARUNNERS R " &
+          "where M.MARKETID = R.MARKETID " &
+          "and M.STATUS in ('SETTLED','CLOSED') " &
+          "and R.STATUS = 'NOT_SET_YET') " &
+      "order by STARTTS" ); 
+    
+    
+      Table_Amarkets.Read_List(Select_Unsettled_Markets, Market_List);
+  
+      Market_Loop : while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+        Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
+  
+        Rpc.Check_Market_Result(Market_Id   => Market.Marketid,
+                                Runner_List => Runner_List);
+        
+        Runner_Loop : while not Table_Arunners.Arunners_List_Pack.Is_Empty(Runner_List) loop
+          Table_Arunners.Arunners_List_Pack.Remove_From_Head(Runner_List, List_Runner);
+          Db_Runner := List_Runner;
+          
+          Table_Arunners.Read(Db_Runner, Eos(Arunners));
+          if Eos(Arunners) then
+            Log (Me, "missing runner in db !! " & Table_Arunners.To_String(Db_Runner));
+          else
+            if List_Runner.Status(1..2) = "WI" then
+              Log (Me, "Got winner : " & Table_Arunners.To_String(List_Runner));
+              Inserted_Winner := True;
+            end if;            
+            Db_Runner.Status := List_Runner.Status;
+            Table_Arunners.Update_Withcheck(Db_Runner);                
+          end if;
+          
+        end loop Runner_Loop;       
+      end loop Market_Loop;
+    Sql.Commit (T);
+    Table_Arunners.Arunners_List_Pack.Release(Runner_List);
+    Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+    Log (Me, "Check_Unsettled_Markets stop");
+  exception
+    when Sql.Duplicate_Index =>
+      Sql.Rollback(T);
+      Log (Me, "Check_Unsettled_Markets Duplicate index");
+      Inserted_Winner := False;
+  end Check_Unsettled_Markets;
 
+ 
  
   procedure Test_Bet is
 --    B : Bet_Type;

@@ -20,6 +20,7 @@ package Bet_Handler is
   procedure Test_Bet; 
   procedure Check_If_Bet_Accepted;
   procedure Check_Market_Status ;
+  procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) ;
   
 private
 

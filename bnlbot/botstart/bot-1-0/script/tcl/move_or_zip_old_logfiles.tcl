@@ -54,7 +54,7 @@ proc Find_Zip_Utility {} {
         Dbg "zip utility '$Local_Compressor' not found, exiting"
         exit 1
     }
-	Dbg  "Local_Compressor -> '$Local_Compressor'"
+#	Dbg  "Local_Compressor -> '$Local_Compressor'"
 	return $Local_Compressor
 }
 #-----------------------------------------------------
@@ -204,12 +204,12 @@ proc Traverse_Directories {f} {
 
 ############### start main ########################
 
-Dbg "Start"
+#Dbg "Start"
 set ::Compressor [Find_Zip_Utility]
 set This_Pwd [pwd]
 Traverse_Directories $::env(BOT_HOME)
 cd $This_Pwd
-Dbg "Stop"
+#Dbg "Stop"
 
 ############### stop main ########################
 
