@@ -338,6 +338,7 @@ package body Bot_Config is
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" &
                "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" &
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" &
+               "<Max_Exposure>" & F8_Image(Float_8(Bet_Section.Max_Exposure)) & "</Max_Exposure>" &
                "<Green_Up_Mode>" & Bet_Section.Green_Up_Mode'Img & "</Green_Up_Mode>" &
                "<Lay_First_Bet_Persistance>" & Bet_Section.Lay_First_Bet_Persistance'Img & "</Lay_First_Bet_Persistance>" &
                "<Back_First_Bet_Persistance>" & Bet_Section.Back_First_Bet_Persistance'Img & "</Back_First_Bet_Persistance>" &
