@@ -465,6 +465,8 @@ procedure Markets_Fetcher is
               Move(General_Routines.Trim(DB_Runner.Sortprio'Img), Runnernamenum);
        end case;
 
+       Move("NOT_SET_YET", DB_Runner.Status);
+       
        Start_Paranthesis := -1;
        Stop_Paranthesis  := -1;
 
