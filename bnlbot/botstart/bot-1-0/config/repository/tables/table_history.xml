@@ -32,6 +32,7 @@
         <Index Columns="eventid,selectionid,firsttaken" type="index"/>
         <Index Columns="scheduledoff" type="index"/>
         <Index Columns="scheduledoff,selectionid,firsttaken" type="index"/>
+        <Index Columns="inplay" type="index"/>
         
         
     </Table>
