@@ -15,7 +15,7 @@ project Adabot is
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
    External_Hostname := external ("HOSTNAME","NOT_SET");
-   type Hostname_Type is ("Hp-mini", "ip-10-226-226-88", "sebjlun-deb64", "pi");
+   type Hostname_Type is ("Hp-mini", "ip-10-226-226-88", "sebjlun-deb64", "raspberrypi");
 
    Hostname : Hostname_Type := External_Hostname;
 
