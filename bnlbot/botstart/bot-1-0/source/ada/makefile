@@ -15,8 +15,7 @@ EXE_DIR_BOT     := $(BOT_TARGET)/bin
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 
-
-.PHONY : json_test adabot tables
+.PHONY : adabot tables
 
 all: tables adabot
 #/etc/logrotate.d/bnlbot
@@ -47,7 +46,8 @@ $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
-	gnatmake -P adabot
+	echo $(HOSTNAME)
+	gnatmake -P adabot -XHOSTNAME=$(HOSTNAME)
 
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada

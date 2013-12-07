@@ -14,36 +14,29 @@ project Adabot is
                         
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
+   External_Hostname := external ("HOSTNAME","NOT_SET");
+   type Hostname_Type is ("Hp-mini", "ip-10-226-226-88", "sebjlun-deb64");
+
+   Hostname : Hostname_Type := External_Hostname;
+
+   System_Mains := ("bot.adb",
+                    "markets_fetcher.adb",
+                    "saldo_fetcher.adb",
+                    "winners_fetcher_json.adb");
+                    
+   Stat_Mains   := ("profit_per_weekday.adb",
+                    "change_10_percent.adb",
+                    "greening_up_1.adb",
+                    "greening_up_2.adb",
+                    "greening_up_3.adb");
+    
+   Other_Mains := ("ini_reader.adb");
    
-   
-   
-   for Main use ("ini_reader.adb",
-                 "bot.adb", 
---                 "signal_tester.adb",
-                 "markets_sender.adb",
-                 "winners_fetcher.adb",
-                 "winners_fetcher_json.adb",
-                 "markets_fetcher.adb",
-                 "back_all.adb",
-                 "back_all_2.adb",
-                 "saldo_fetcher.adb",
-                 "plot_race_all_runners.adb",
---                 "bet_checker.adb",
-                 "bot_send.adb",
---                 "lay_all_if_profitable.adb",
-                 "migrate_g1_g4.adb",
-                 "migrate_g2_g3.adb",
-                 "migrate_g3_g3.adb",
---                 "equity.adb",
-                 "profit_per_weekday.adb",
-                 "change_10_percent.adb",
-                 "check_bot_running.adb",
-                 "greening_up_1.adb",
-                 "greening_up_2.adb",
-                 "greening_up_3.adb",
---                 "test_pio.adb",
-                 "sql_ifc_leak_finder.adb"
-   );
+   case Hostname is
+      when "Hp-mini"          =>  for Main use System_Mains;
+      when "ip-10-226-226-88" =>  for Main use System_Mains;
+      when "sebjlun-deb64"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
+   end case;
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;
