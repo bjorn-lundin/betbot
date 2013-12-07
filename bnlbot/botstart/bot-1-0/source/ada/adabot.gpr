@@ -20,6 +20,7 @@ project Adabot is
    Hostname : Hostname_Type := External_Hostname;
 
    System_Mains := ("bot.adb",
+                    "bot_send.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb");
