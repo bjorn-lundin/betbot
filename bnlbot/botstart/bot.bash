@@ -21,7 +21,7 @@ export BOT_USER
 
 #BOT_START is set in .bashrc
 export BOT_HOME=$BOT_START/user/$BOT_USER
-export BOT_ROOT=$BOT_START/bot-1-1
+export BOT_ROOT=$BOT_START/bot-1-0
 export BOT_TARGET=$BOT_ROOT/target
 export BOT_CONFIG=$BOT_ROOT/config
 export BOT_SCRIPT=$BOT_ROOT/script

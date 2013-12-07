@@ -143,8 +143,10 @@ if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
   fi
 fi
 
+
 export BOT_NAME=winners_fetcher
 $BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
+
 ############ winners_fetcher stop #########
 
 }
