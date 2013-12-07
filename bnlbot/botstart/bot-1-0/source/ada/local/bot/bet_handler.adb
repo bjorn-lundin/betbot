@@ -9,10 +9,6 @@ with Gnatcoll.Json; use Gnatcoll.Json;
 with Bot_Config; use Bot_Config;
 with Bot_System_Number;
 with Table_Abets;
-with Table_Awinners;
---with Table_Abethistory;
---with Table_Arunners;
-with Table_Anonrunners;
 with Table_Abalances;
 with Sql;
 with General_Routines;
@@ -325,9 +321,37 @@ package body Bet_Handler is
         Continue_Betting := False;
         Log(Me & "Do_Try", "Too many bets in the air discovered , wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
       end if;
+
+      --before we bet anything, check finances first
+      
+      declare
+        Betfair_Result : Rpc.Result_Type ; 
+        Saldo          : Table_Abalances.Data_Type;
+        Expected_Exposure_This_Bet : Float_8 := 0.0;
+        use type Rpc.Result_Type;
+        use General_Routines;
+      begin      
+        Rpc.Get_Balance(Betfair_Result, Saldo);
+        if Betfair_Result = Rpc.Ok then
+          -- calculate expected exposure for this bet
+          Expected_Exposure_This_Bet := Float_8(Bet.Bot_Cfg.Bet_Size * (Bet.Bot_Cfg.Max_Price - Bet_Price_Type(1.0)));
+          if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
+            Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
+            Log(Me & "Do_Try", "cur/this bet/max" &
+                 F8_Image(abs(Saldo.Exposure))  & "/" &
+                 F8_Image(Expected_Exposure_This_Bet)  & "/" &
+                 F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
+            Continue_Betting := False;
+          end if;                      
+        else
+          Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);                                      
+          Continue_Betting := False;
+        end if;
+      end;
       
       if Continue_Betting then
         if Bet.Enabled then
+        
           Runner_Loop : for i in 1 ..  Bet.Bet_Info.Last_Runner loop            
           
             Bet.Bet_Info.Used_Index := i;     -- used in make_bet     
@@ -390,10 +414,6 @@ package body Bet_Handler is
                   Back_Size  : Bet_Size_Type  := 0.0;
                   Pip_Lay    : Pip_Type ;
                   Pip_Back   : Pip_Type ;
-                  Betfair_Result : Rpc.Result_Type ; 
-                  Saldo          : Table_Abalances.Data_Type;
-                  Expected_Exposure_This_Bet : Float_8 := 0.0;
-                  use type Rpc.Result_Type;
                 begin
                   
                   if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
@@ -401,29 +421,7 @@ package body Bet_Handler is
     
                     Pip_Lay.Init(Float_8(Lay_Price));
                     Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
-                    
-                    --before we bet anything, check finances first
-                    Rpc.Get_Balance(Betfair_Result, Saldo);
-                    if Betfair_Result = Rpc.Ok then
-                      -- calculate expected exposure for this bet
-                      Expected_Exposure_This_Bet := Float_8(Lay_Size * (Lay_Price - Bet_Price_Type(1.0)));
-                      if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
-                        Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
-                        Log(Me & "Do_Try", "cur/this bet/max" &
-                             F8_Image(abs(Saldo.Exposure))  & "/" &
-                             F8_Image(Expected_Exposure_This_Bet)  & "/" &
-                             F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
-                        exit; --loop                            
-                      end if;                      
-                      
-                    else
-                      Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);                                      
-                      exit; --loop
-                    end if;
-                    
-                    
-                    
-                     
+                                         
                     case Bet.Bot_Cfg.Bet_Mode is
                       when Real => 
                         Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
@@ -921,7 +919,7 @@ package body Bet_Handler is
           when Green_Up_Lay => 
             Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
         end case;
-        pragma Compile_time_warning(True, "id to keep pair together?");
+--        pragma Compile_time_warning(True, "id to keep pair together?");
         Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
         Query_Place_Orders.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
 
@@ -1256,10 +1254,13 @@ package body Bet_Handler is
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
     Side       : Bet_Type_Type;
-    Winner     : Table_Awinners.Data_Type;
+--    Winner     : Table_Awinners.Data_Type;
     Runner     : Table_Arunners.Data_Type;
-    Non_Runner : Table_Anonrunners.Data_Type;
-    type Eos_Type is (Awinner, Arunner, Anonrunner);
+--    Non_Runner : Table_Anonrunners.Data_Type;
+    type Eos_Type is (--Awinner, 
+                      Arunner --,
+                     -- Anonrunner
+                     );
     Eos        : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners, 
     Did_Exit,
@@ -1295,64 +1296,69 @@ package body Bet_Handler is
         Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
       end if;
       if not Illegal_Data then
-        -- do we have a non-runner?
         Runner.Marketid := Bet.Marketid;
         Runner.Selectionid := Bet.Selectionid;
         Table_Arunners.Read(Runner, Eos(Arunner));
 
         if not Eos(Arunner) then
-          Non_Runner.Marketid := Runner.Marketid;
-          Non_Runner.Name  := Runner.Runnernamestripped;
-          Table_Anonrunners.Read(Non_Runner, Eos(Anonrunner));
-        end if;
+        -- do we have a non-runner?
+          if Runner.Status(1..7) = "REMOVED" then
+            -- non -runner - void the bet
+            Bet.Betwon := True;
+            Bet.Profit := 0.0;
+            begin
+              Table_Abets.Update_Withcheck(Bet);
+            exception
+              when Sql.No_Such_Row =>
+                Did_Exit := True;
+                T.Rollback; -- let the other one do the update
+                exit;
+            end ;
 
-        if not Eos(Anonrunner) then
-          -- non -runner - void the bet
-          Bet.Betwon := True;
-          Bet.Profit := 0.0;
-          begin
-            Table_Abets.Update_Withcheck(Bet);
-          exception
-            when Sql.No_Such_Row =>
-              Did_Exit := True;
-              T.Rollback; -- let the other one do the update
-              exit;
-          end ;
-        else -- ok, lets continue
-          Winner.Marketid := Bet.Marketid;
-          Winner.Selectionid := Bet.Selectionid;
-          Table_Awinners.Read(Winner, Eos(Awinner));
-          Selection_In_Winners := not Eos(Awinner);
-
-          case Side is
-            when Green_Up_Back => Bet_Won := Selection_In_Winners;
-            when Green_Up_Lay  => Bet_Won := not Selection_In_Winners;
-          end case;
-
-          if Bet_Won then
-            case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
-                             -- so it won't do to calculate per bet. leave that to the sql-script summarising
-              when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
-              when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
-            end case;
-          else -- lost :-(
-            case Side is
-              when Green_Up_Back => Profit := - Bet.Sizematched;
-              when Green_Up_Lay  => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
-            end case;
+          elsif Runner.Status(1..6) = "WINNER" then
+          -- this one won
+            Selection_In_Winners := True;
+          elsif Runner.Status(1..5) = "LOSER" then
+          -- this one won
+            Selection_In_Winners := False;
+          else
+            Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
+            exit Inner;    
           end if;
+        else
+            Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
+            exit Inner;    
+        
+        end if;        
 
-          Bet.Betwon := Bet_Won;
-          Bet.Profit := Profit;
-          begin
-            Table_Abets.Update_Withcheck(Bet);
-          exception
-            when Sql.No_Such_Row =>
-               Did_Exit := True;
-               T.Rollback; -- let the other one do the update
-               exit Inner;
-          end ;
+        case Side is
+          when Green_Up_Back => Bet_Won := Selection_In_Winners;
+          when Green_Up_Lay  => Bet_Won := not Selection_In_Winners;
+        end case;
+        
+        if Bet_Won then
+          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
+                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
+            when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
+            when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
+          end case;
+        else -- lost :-(
+          case Side is
+            when Green_Up_Back => Profit := - Bet.Sizematched;
+            when Green_Up_Lay  => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
+          end case;
         end if;
+        
+        Bet.Betwon := Bet_Won;
+        Bet.Profit := Profit;
+        begin
+          Table_Abets.Update_Withcheck(Bet);
+        exception
+          when Sql.No_Such_Row =>
+             Did_Exit := True;
+             T.Rollback; -- let the other one do the update
+             exit Inner;
+        end ;
       end if; -- Illegal data
     end loop Inner;
 
@@ -1477,7 +1483,7 @@ package body Bet_Handler is
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     
   begin
-    Log (Me, "Check_Unsettled_Markets start");
+    Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets start");
     Inserted_Winner := False;
     T.Start;  
     Select_Unsettled_Markets.Prepare(
@@ -1504,13 +1510,13 @@ package body Bet_Handler is
           
           Table_Arunners.Read(Db_Runner, Eos(Arunners));
           if Eos(Arunners) then
-            Log (Me, "missing runner in db !! " & Table_Arunners.To_String(Db_Runner));
+            Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Table_Arunners.To_String(Db_Runner));
           else
-            if List_Runner.Status(1..2) = "WI" then
-              Log (Me, "Got winner : " & Table_Arunners.To_String(List_Runner));
+            Db_Runner.Status := List_Runner.Status;
+            if Db_Runner.Status(1..2) = "WI" then
+              Log (Me & "Check_Unsettled_Markets", "Got winner : " & Table_Arunners.To_String(Db_Runner));
               Inserted_Winner := True;
             end if;            
-            Db_Runner.Status := List_Runner.Status;
             Table_Arunners.Update_Withcheck(Db_Runner);                
           end if;
           
@@ -1519,11 +1525,11 @@ package body Bet_Handler is
     Sql.Commit (T);
     Table_Arunners.Arunners_List_Pack.Release(Runner_List);
     Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
-    Log (Me, "Check_Unsettled_Markets stop");
+    Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets stop");
   exception
     when Sql.Duplicate_Index =>
       Sql.Rollback(T);
-      Log (Me, "Check_Unsettled_Markets Duplicate index");
+      Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets Duplicate index");
       Inserted_Winner := False;
   end Check_Unsettled_Markets;
 
