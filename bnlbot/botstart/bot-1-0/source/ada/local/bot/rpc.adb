@@ -17,7 +17,7 @@ pragma Elaborate_All (AWS.Headers);
 
 package body RPC is
 
-  My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+  Global_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
 
   Me : constant String := "RPC.";
 
@@ -63,10 +63,10 @@ package body RPC is
   
   procedure Reset_AWS_Headers is
   begin
-    Aws.Headers.Set.Reset(My_Headers);
-    Aws.Headers.Set.Add (My_Headers, "X-Authentication", Global_Token.Get);
-    Aws.Headers.Set.Add (My_Headers, "X-Application", Global_Token.Get_App_Key);
-    Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");  
+    Aws.Headers.Set.Reset(Global_HTTP_Headers);
+    Aws.Headers.Set.Add (Global_HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (Global_HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (Global_HTTP_Headers, "Accept", "application/json");  
   end Reset_AWS_Headers;
   
   
@@ -78,22 +78,27 @@ package body RPC is
      Data                      : JSON_Value := Create_Object;
   begin 
     if Reply.Has_Field("error") then
-      --    "error": {
-      --        "code": -32099,
-      --        "data": {
-      --            "exceptionname": "APINGException",
-      --            "APINGException": {
-      --                "requestUUID": "prdang001-06060844-000842110f",
-      --                "errorCode": "INVALID_SESSION_INFORMATION",
-      --                "errorDetails": "The session token passed is invalid"
-      --                }
-      --            },
-      --            "message": "ANGX-0003"
-      --        }
+--              {
+--                  "id": 15,
+--                  "jsonrpc": "2.0",
+--                  "error": {
+--                      "code": -32099,
+--                      "data": {
+--                          "AccountAPINGException": {
+--                              "requestUUID": "prdaan001-10091152-0001162118",
+--                              "errorCode": "NO_SESSION",
+--                              "errorDetails": "Session token is required for this operation"
+--                          },
+--                          "exceptionname": "AccountAPINGException"
+--                      },
+--                      "message": "AANGX-0010"
+--                  }
+--              }      
+      
+      
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
-        Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
-  
+        Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);  
         if Error.Has_Field("data") then
           Data := Error.Get("data");
           if Data.Has_Field("APINGException") then
@@ -172,7 +177,7 @@ package body RPC is
     AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                   Data         =>  Json_Query.Write,
                                   Content_Type => "application/json",
-                                  Headers      =>  My_Headers,
+                                  Headers      =>  Global_HTTP_Headers,
                                   Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Bet_Is_Matched", "Got reply, check it ");
 
@@ -200,35 +205,35 @@ package body RPC is
 
     -- ok, got a valid Json reply, parse it
 --      {
---      	"id": 15,
---      	"jsonrpc": "2.0",
---      	"result": {
---      		"moreAvailable": false,
---      		"currentOrders": [{
---      			"marketId": "1.111593623",
---      			"betId": "31122359882",
---      			"handicap": 0.00000E+00,
---      			"orderType": "LIMIT",
---      			"sizeCancelled": 0.00000E+00,
---      			"bspLiability": 0.00000E+00,
---      			"selectionId": 7662169,
---      			"sizeVoided": 0.00000E+00,
---      			"status": "EXECUTION_COMPLETE",
---      			"matchedDate": "2013-10-26T12:49:26.000Z",
---      			"placedDate": "2013-10-26T11:44:54.000Z",
---      			"sizeLapsed": 0.00000E+00,
---      			"side": "LAY",
---      			"priceSize": {
---      				"size": 3.21200E+01,
---      				"price": 1.65000E+01
---      			},
---      			"regulatorCode": "MALTA LOTTERIES AND GAMBLING AUTHORITY",
---      			"sizeMatched": 3.21200E+01,
---      			"persistenceType": "PERSIST",
---      			"sizeRemaining": 0.00000E+00,
---      			"averagePriceMatched": 1.65000E+01
---      		}]
---      	}
+--          "id": 15,
+--          "jsonrpc": "2.0",
+--          "result": {
+--              "moreAvailable": false,
+--              "currentOrders": [{
+--                  "marketId": "1.111593623",
+--                  "betId": "31122359882",
+--                  "handicap": 0.00000E+00,
+--                  "orderType": "LIMIT",
+--                  "sizeCancelled": 0.00000E+00,
+--                  "bspLiability": 0.00000E+00,
+--                  "selectionId": 7662169,
+--                  "sizeVoided": 0.00000E+00,
+--                  "status": "EXECUTION_COMPLETE",
+--                  "matchedDate": "2013-10-26T12:49:26.000Z",
+--                  "placedDate": "2013-10-26T11:44:54.000Z",
+--                  "sizeLapsed": 0.00000E+00,
+--                  "side": "LAY",
+--                  "priceSize": {
+--                      "size": 3.21200E+01,
+--                      "price": 1.65000E+01
+--                  },
+--                  "regulatorCode": "MALTA LOTTERIES AND GAMBLING AUTHORITY",
+--                  "sizeMatched": 3.21200E+01,
+--                  "persistenceType": "PERSIST",
+--                  "sizeRemaining": 0.00000E+00,
+--                  "averagePriceMatched": 1.65000E+01
+--              }]
+--          }
 --      }
     if Json_Reply.Has_Field("result") then
       Result := Json_Reply.Get("result");
@@ -312,7 +317,7 @@ package body RPC is
     AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                   Data         =>  Json_Query.Write,
                                   Content_Type => "application/json",
-                                  Headers      =>  My_Headers,
+                                  Headers      =>  Global_HTTP_Headers,
                                   Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Check_Market_Result", "Got reply, check it ");
 
@@ -539,7 +544,7 @@ package body RPC is
     AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
                                   Data         =>  Json_Query.Write,
                                   Content_Type => "application/json",
-                                  Headers      =>  My_Headers,
+                                  Headers      =>  Global_HTTP_Headers,
                                   Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Market_Status_Is_Changed", "Got reply, check it ");
 
@@ -682,7 +687,6 @@ package body RPC is
   end Market_Status_Is_Changed;
   ---------------------------------------
   procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) is
-    My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Parsed_Ok : Boolean := True;
     Query_Get_Account_Funds           : JSON_Value := Create_Object;
     Reply_Get_Account_Funds           : JSON_Value := Create_Object;
@@ -704,7 +708,7 @@ package body RPC is
     Answer_Get_Account_Funds := Aws.Client.Post (Url          =>  Token.URL_ACCOUNT,
                                                  Data         =>  Query_Get_Account_Funds.Write,
                                                  Content_Type => "application/json",
-                                                 Headers      =>  My_Headers,
+                                                 Headers      =>  Global_HTTP_Headers,
                                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
      
     --  Load the reply into a json object
@@ -724,7 +728,6 @@ package body RPC is
           return;
         end if;  
     end ;       
-    Aws.Headers.Set.Reset (My_Headers);
 
     if Parsed_Ok then                             
       if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
