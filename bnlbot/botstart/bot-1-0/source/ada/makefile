@@ -46,7 +46,7 @@ $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
-	echo $(HOSTNAME)
+	@echo "building on host $(HOSTNAME)"
 	gnatmake -P adabot -XHOSTNAME=$(HOSTNAME)
 
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
