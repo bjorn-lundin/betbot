@@ -13,7 +13,6 @@ with Sattmate_Calendar; use Sattmate_Calendar;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 with Rpc;
-with Token ;
 with Lock ;
 with Posix;
 with Table_Abalances;
@@ -23,21 +22,16 @@ with Logging; use Logging;
 with Ada.Environment_Variables;
 
 with Process_IO;
---with Bot_Messages;
 with Core_Messages;
 
 procedure Saldo_Fetcher is
   package EV renames Ada.Environment_Variables;
---  package AD renames Ada.Directories;
 
   use type Rpc.Result_Type;
   
   Me : constant String := "Main.";  
 
   Msg      : Process_Io.Message_Type;
-
---  No_Such_UTC_Offset,
---  No_Such_Field  : exception;
 
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -46,12 +40,7 @@ procedure Saldo_Fetcher is
   
   Betfair_Result : Rpc.Result_Type := Rpc.Ok;
  
-----------------------------------------------
-  
-  My_Token : Token.Token_Type;
   My_Lock  : Lock.Lock_Type;
-    
- 
 ---------------------------------------------------------------  
 
   procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
@@ -164,24 +153,17 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take("saldo_fetcher");
    
-  if Sa_Par_Token.all = "" then
-     Log(Me, "Login");
-
     -- Ask a pythonscript to login for us, returning a token
-     My_Token.Init(
+  Log(Me, "Login betfair");
+  Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
           );    
-     My_Token.Login;          
-     Log(Me, "Logged in with token '" &  My_Token.Get & "'");
-  else
-     Log(Me, "set token '" & Sa_Par_Token.all & "'");
-     My_Token.Set(Sa_Par_Token.all);
-  end if;
-
+  Rpc.Login; 
+  Log(Me, "Login betfair done");
   
   
 --  UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
@@ -199,7 +181,6 @@ begin
          Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
          Password => Ini.Get_Value("database_saldo_fetcher","password",""));
 
-  Rpc.Login; 
          
    -- json stuff
 
@@ -218,7 +199,7 @@ begin
           when Process_Io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
       end;
       Now := Sattmate_Calendar.Clock;
-      Is_Time_To_Check_Balance := Now.Hour = 5 and then 
+      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
                                   Now.Minute = 00 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
