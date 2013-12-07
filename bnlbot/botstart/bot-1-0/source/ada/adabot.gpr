@@ -15,7 +15,7 @@ project Adabot is
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
    External_Hostname := external ("HOSTNAME","NOT_SET");
-   type Hostname_Type is ("Hp-mini", "ip-10-226-226-88", "sebjlun-deb64", "raspberrypi");
+   type Hostname_Type is ("HP-Mini", "ip-10-226-226-88", "sebjlun-deb64", "raspberrypi");
 
    Hostname : Hostname_Type := External_Hostname;
 
@@ -35,7 +35,7 @@ project Adabot is
    
    case Hostname is
       when "raspberrypi"      =>  for Main use System_Mains;
-      when "Hp-mini"          =>  for Main use System_Mains;
+      when "HP-Mini"          =>  for Main use System_Mains;
       when "ip-10-226-226-88" =>  for Main use System_Mains;
       when "sebjlun-deb64"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
    end case;
