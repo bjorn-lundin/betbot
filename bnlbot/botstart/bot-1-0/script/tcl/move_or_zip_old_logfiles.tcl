@@ -16,7 +16,7 @@
 ###############################################################
 # Config start
 #Want output? If set, writes to stderr. 
-set Debug 1
+set Debug 0
 
 #The zip utility to use, defined in Find_Zip_Utility
 set Compressor {}
