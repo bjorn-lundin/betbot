@@ -3,7 +3,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 --with Ada.Calendar;
---with Sattmate_Types; use Sattmate_Types;
+with Sattmate_Types; use Sattmate_Types;
 with Sql;
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
@@ -20,7 +20,7 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Core_Messages;
 with Bet_Handler;
-
+with Sattmate_Calendar;
 
 procedure Winners_Fetcher_Json is
   package EV renames Ada.Environment_Variables;
@@ -38,7 +38,8 @@ procedure Winners_Fetcher_Json is
   
 
   Ba_Daemon : aliased Boolean := False;
-  
+  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Is_Time_To_Exit : Boolean := False;
 ----------------------------------------------
 
   
@@ -114,12 +115,18 @@ begin
                 Bot_Messages.Send(Receiver, NWARNR);
             end;
           end if;
-          
       end;
+      Now := Sattmate_Calendar.Clock;
+      --restart every day
+      Is_Time_To_Exit := Now.Hour = 01 and then 
+                         Now.Minute = 02 ;
+      
+      exit Main_Loop when Is_Time_To_Exit;
+      
     end loop Main_Loop;
 
     Sql.Close_Session;
---    Log (Me, "db closed");
+    Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
 
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
