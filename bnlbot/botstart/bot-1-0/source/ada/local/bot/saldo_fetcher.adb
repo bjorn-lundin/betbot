@@ -114,7 +114,8 @@ procedure Saldo_Fetcher is
   
    
 ------------------------------ main start -------------------------------------
-  Is_Time_To_Check_Balance : Boolean ;
+  Is_Time_To_Check_Balance,
+  Is_Time_To_Exit  : Boolean := False;
   Day_Last_Check : Sattmate_Calendar.Day_Type := 1;
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
   
@@ -187,7 +188,7 @@ begin
    -- Create JSON arrays
   
   Main_Loop : loop  
-    loop   
+    Receive_Loop : loop   
       begin
         Process_Io.Receive(Msg, 5.0);
         Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & General_Routines.Trim(Process_Io.Sender(Msg).Name));
@@ -199,14 +200,23 @@ begin
           when Process_Io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
       end;
       Now := Sattmate_Calendar.Clock;
+      --restart every day
+      Is_Time_To_Exit          := Now.Hour = 01 and then 
+                                  Now.Minute = 00 and then
+                                  Now.Second >= 50 and then 
+                                  Day_Last_Check /= Now.Day;
+                                  
       Is_Time_To_Check_Balance := Now.Hour = 05 and then 
                                   Now.Minute = 00 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img);  --??
 --      Is_Time_To_Check_Balance := True;
-      exit when Is_Time_To_Check_Balance;
-    end loop;           
+      exit Receive_Loop when Is_Time_To_Check_Balance;
+      
+      exit Main_Loop when Is_Time_To_Exit;
+      
+    end loop Receive_Loop;  
     Day_Last_Check := Now.Day;
     
     Ask : loop
