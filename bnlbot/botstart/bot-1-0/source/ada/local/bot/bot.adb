@@ -1,4 +1,5 @@
---with Sattmate_Types; use Sattmate_Types;
+with Sattmate_Types; use Sattmate_Types;
+with Sattmate_Calendar; use Sattmate_Calendar;
 with Sattmate_Exception;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with General_Routines; use General_Routines;
@@ -25,6 +26,10 @@ procedure Bot is
   Me       : constant String := "Main";
   use type Bot_Types.Mode_Type;
   OK : Boolean := False;
+  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  
+  Is_Time_To_Exit : Boolean := False;
+  
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Bot_Config.Config.Read; -- even from cmdline
@@ -112,10 +117,19 @@ begin
           when Bot_Types.Simulation => null;
         end case;
     end;
+    
+    
+    --restart every day
+    Is_Time_To_Exit := Now.Hour = 01 and then 
+                     (Now.Minute = 02 or Now.Minute = 03) ; -- timeout = 2 min
+  
+    exit Main_Loop when Is_Time_To_Exit;
+    
+    
   end loop Main_Loop;
   Log(Me, "Close Db");
   Sql.Close_Session;
-  Log(Me, "Db Closed");
+  Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
 exception

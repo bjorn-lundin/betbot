@@ -85,6 +85,9 @@ procedure Markets_Fetcher is
   
 ----------------------------------------------
   
+  Is_Time_To_Exit : Boolean := False;
+  
+  
   My_Lock  : Lock.Lock_Type;
   My_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     
@@ -741,6 +744,12 @@ begin
       Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
       Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);  --??
       exit when Is_Time_To_Check_Markets;
+      
+      --restart every day
+      Is_Time_To_Exit := Now.Hour = 01 and then 
+                       Now.Minute = 02 ;
+    
+      exit Main_Loop when Is_Time_To_Exit;
     end loop;           
     Minute_Last_Check := Now.Minute;
     
@@ -972,11 +981,12 @@ begin
           Bot_Messages.Send(Receiver, MNR);
         end loop;
       end;  
-    end if;    
+    end if;        
   end loop Main_Loop; 
                
   Log(Me, "shutting down, close db");
   Sql.Close_Session;
+  Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
   Log(Me, "after do_exit");
