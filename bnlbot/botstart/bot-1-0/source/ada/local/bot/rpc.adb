@@ -567,7 +567,8 @@ package body RPC is
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
-      return ;
+      raise JSON_Exception with "Bad rpc in Rpc.Market_Status_Is_Changed";
+--      return ;
     end if;
 
     -- ok, got a valid Json reply, parse it
