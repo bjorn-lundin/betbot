@@ -11,7 +11,7 @@ package RPC is
 
 
   type Result_Type is (Ok, Timeout, Logged_Out);
-  
+  JSON_Exception : exception;
   
   procedure Login;
   procedure Init(Username   : in     String;
