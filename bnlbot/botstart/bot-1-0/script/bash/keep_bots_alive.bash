@@ -41,14 +41,14 @@ fi
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
 #pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-#0
+#
 
-#########ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-#########RESULT_MAIL_PROXY=$?
-#########if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-#########  echo "Started mail_proxy"
-#########  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-#########fi
+ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+RESULT_MAIL_PROXY=$?
+if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+  echo "Started mail_proxy"
+  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+fi
 
 
 
@@ -71,7 +71,7 @@ export BOT_USER=$1
 ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
 RESULT_MARKETS_FETCHER=$?
 if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
-  echo "Started markets_fetcher"
+  echo "Started markets_fetcher $BOT_USER"
   export BOT_NAME=markets_fetcher
   $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
 fi
@@ -100,38 +100,26 @@ fi
 ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
 RESULT_BOT=$?
 if [ $RESULT_BOT -eq 1 ] ; then
-  echo "Started bot"
+  echo "Started bot $BOT_USER"
   export BOT_NAME=bot
   $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
 fi
 
-########### saldo_fetcher ############
-#$BOT_TARGET/bin/check_bot_running --botname=saldo_fetcher > /dev/null 2>&1
-#RESULT_SALDO_FETCHER=$?
-#if [ $RESULT_SALDO_FETCHER -eq 0 ] ; then
-#  export BOT_NAME=saldo_fetcher
-#  $BOT_TARGET/bin/saldo_fetcher --daemon
-#fi
-
 ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_SALDO_FETCHER=$?
 if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-  echo "Started saldo_fetcher"
+  echo "Started saldo_fetcher $BOT_USER"
   export BOT_NAME=saldo_fetcher
   $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
 fi
 
-
-
 ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_WJ_FETCHER=$?
 if [ $RESULT_WJ_FETCHER -eq 1 ] ; then
-  echo "Started winners_fetcher_json"
+  echo "Started winners_fetcher_json $BOT_USER"
   export BOT_NAME=w_fetch_json
   $BOT_TARGET/bin/winners_fetcher_json --daemon --user=$BOT_USER
 fi
-
-
 
 
 ######### winners_fetcher ###########
@@ -167,7 +155,7 @@ fi
 MINUTE=$(date +"%M")
 
 if [[ $MINUTE == "17" ]] ; then
-  tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl & 
+  tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER & 
 fi 
 
 
@@ -183,4 +171,16 @@ for USER in $USER_LIST ; do
 done
 
 
+HOUR=$(date +"%H")
+
+MINUTE=$(date +"%M")
+
+if [[ $HOUR == "08" ]] ; then
+  if [[ $MINUTE == "05" ]] ; then
+    DATE_DAY=$(date +"%d")
+    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${DATE_DAY}.dmp.gz &
+    sleep 30
+    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${DATE_DAY}.dmp.gz &
+  fi
+fi
 
