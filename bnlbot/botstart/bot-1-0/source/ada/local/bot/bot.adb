@@ -117,11 +117,11 @@ begin
           when Bot_Types.Simulation => null;
         end case;
     end;
-    
+    Now := Sattmate_Calendar.Clock;
     
     --restart every day
-    Is_Time_To_Exit := Now.Hour = 01 and then 
-                     (Now.Minute = 02 or Now.Minute = 03) ; -- timeout = 2 min
+    Is_Time_To_Exit := Now.Hour = 05 and then 
+                     ( Now.Minute = 02 or Now.Minute = 03) ; -- timeout = 2 min
   
     exit Main_Loop when Is_Time_To_Exit;
     
