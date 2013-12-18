@@ -14,10 +14,9 @@ project Adabot is
                         
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
-   External_Hostname := external ("HOSTNAME","NOT_SET");
-   type Hostname_Type is ("HP-Mini", "ip-10-226-226-88", "sebjlun-deb64", "raspberrypi");
-
-   Hostname : Hostname_Type := External_Hostname;
+   type Bot_Mode_Type is ("PROD", "TEST", "DEV");
+   
+   Bot_Mode : Bot_Mode_Type := external ("BOT_MODE","NOT_SET");
 
    System_Mains := ("bot.adb",
                     "bot_send.adb",
@@ -33,11 +32,10 @@ project Adabot is
     
    Other_Mains := ("ini_reader.adb");
    
-   case Hostname is
-      when "raspberrypi"      =>  for Main use System_Mains;
-      when "HP-Mini"          =>  for Main use System_Mains;
-      when "ip-10-226-226-88" =>  for Main use System_Mains;
-      when "sebjlun-deb64"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
+   case Bot_Mode is
+      when "PROD"   =>  for Main use System_Mains;
+      when "TEST"   =>  for Main use System_Mains;
+      when "DEV"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
    end case;
 
    package Compiler renames Global.Compiler;
