@@ -149,6 +149,8 @@ package body Bot_Config is
             Bet_Section.Back_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_first_bet_persistance", Lapse) ;
             Bet_Section.Lay_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_second_bet_persistance", Persist) ;
             Bet_Section.Back_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_second_bet_persistance", Persist) ;
+            Bet_Section.Min_Num_Runners_Better_Ranked := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners_better_ranked",3));
+            
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
@@ -344,8 +346,7 @@ package body Bot_Config is
                "<Back_First_Bet_Persistance>" & Bet_Section.Back_First_Bet_Persistance'Img & "</Back_First_Bet_Persistance>" &
                "<Lay_Second_Bet_Persistance>" & Bet_Section.Lay_Second_Bet_Persistance'Img & "</Lay_Second_Bet_Persistance>" &
                "<Back_Second_Bet_Persistance>" & Bet_Section.Back_Second_Bet_Persistance'Img & "</Back_Second_Bet_Persistance>" &
-               
-               
+               "<Min_Num_Runners_Better_Ranked>" & Bet_Section.Min_Num_Runners_Better_Ranked'Img & "</Min_Num_Runners_Better_Ranked>" &
              "</Bet>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;

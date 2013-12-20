@@ -51,6 +51,7 @@ package Bot_Config is
     Back_First_Bet_Persistance  : Bet_Persistence_Type := Lapse;
     Lay_Second_Bet_Persistance  : Bet_Persistence_Type := Persist;
     Back_Second_Bet_Persistance : Bet_Persistence_Type := Persist;
+    Min_Num_Runners_Better_Ranked  : Integer_4   := 3;
   end record;  
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
   
