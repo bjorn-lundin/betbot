@@ -356,132 +356,141 @@ package body Bet_Handler is
           
             Bet.Bet_Info.Used_Index := i;     -- used in make_bet     
             Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(i).Price.Selectionid;  -- used in make_bet   
+            
+            --Allow only if i is > than 'Min_Num_Runners_Better_Ranked'
+            
+            if Integer_4(i) > Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked then
+            
     
-            case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay =>
-                declare
-                  use  General_Routines;
-                  Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
-                  Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;   
-                  Lay_Price  : Bet_Price_Type := 0.0;
-                  Lay_Size   : Bet_Size_Type  := 0.0;
-                  Pip_Lay    : Pip_Type ;
-                  Pip_Back   : Pip_Type ;
-    
-                begin
-                  if Bet.Bot_Cfg.Min_Price <= Back_Price and then
-                     Back_Price <= Bet.Bot_Cfg.Max_Price then
-                    Pip_Back.Init(Float_8(Back_Price));
-                    Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
-                     
-                    case Bet.Bot_Cfg.Bet_Mode is
-                      when Real => 
-                        Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back, 
-                                     Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                        -- use the matched back_price             
-                        Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
-                        Pip_Lay.Init(Float_8(Lay_Price));
-                        Lay_Price := Bet_Price_Type(Pip_Lay.Pip_Price);    
-                        
-                        Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
-                        Log(Me & "Do_Try", Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
-                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-                                     
-                        if Price_Matched > 0.0 then
-                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
-                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                        else 
-                          Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
-                        end if;
-                        
-                      when Sim  => 
-                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
-                                     Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
-                                     Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                    end case;
-                  end if;  
-                end;  
-              when Lay_First_Then_Back =>
-                declare
-                  use  General_Routines;
-                  Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
-                  Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;  
-                  Back_Price : Bet_Price_Type := 0.0;
-                  Back_Size  : Bet_Size_Type  := 0.0;
-                  Pip_Lay    : Pip_Type ;
-                  Pip_Back   : Pip_Type ;
-                begin
-                  
-                  if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
-                     Lay_Price <= Bet.Bot_Cfg.Max_Price then
-    
-                    Pip_Lay.Init(Float_8(Lay_Price));
-                    Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
-                                         
-                    case Bet.Bot_Cfg.Bet_Mode is
-                      when Real => 
-                        Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
-                                     Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                        -- use the matched lay_price             
-                        Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
-                        Pip_Back.Init(Float_8(Back_Price));
-                        Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
-                        Back_Size := (Lay_Size * Lay_Price) / Back_Price;
-                        
-                        Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
-                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-                        
-                        if Back_Size < 30.0 then
-                            Log(Me & "Do_Try", "Back_Size too small " & F8_Image(Float_8(Back_Size)) & " set to 30.0");
-                            Back_Size := 30.0;
-                            Back_Price := Bet_Price_Type (Float_8(Lay_Size * Lay_Price) / Float_8(Back_Size));
-                            Log(Me & "Do_Try", "Recalculated " & Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
-                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-  --                          Pip_Back.Init(Float_8(Back_Price));
-  --                          Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);                            
-                            for i in 1 .. 2 loop 
-                              Pip_Back.Init(Float_8(Back_Price));
-                              Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
-                            end loop;                        
-                        end if;  
-                                              
-                        Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
-                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
-                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
-                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
-                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-                                     
-                                     
-                                     
-                        if Price_Matched > 0.0 then                        
+              case Bet.Bot_Cfg.Green_Up_Mode is
+                when Back_First_Then_Lay =>
+                  declare
+                    use  General_Routines;
+                    Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
+                    Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;   
+                    Lay_Price  : Bet_Price_Type := 0.0;
+                    Lay_Size   : Bet_Size_Type  := 0.0;
+                    Pip_Lay    : Pip_Type ;
+                    Pip_Back   : Pip_Type ;
+      
+                  begin
+                    if Bet.Bot_Cfg.Min_Price <= Back_Price and then
+                       Back_Price <= Bet.Bot_Cfg.Max_Price then
+                      Pip_Back.Init(Float_8(Back_Price));
+                      Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
+                       
+                      case Bet.Bot_Cfg.Bet_Mode is
+                        when Real => 
                           Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back, 
                                        Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                        else 
-                          Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");                                      
-                        end if;
-                        
-                      when Sim  => 
-                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
-                                     Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
-                        Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
-                                     Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
-                    end case;
-                  end if;  
-                end;  
-            end case;
+                          -- use the matched back_price             
+                          Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;   
+                          Pip_Lay.Init(Float_8(Lay_Price));
+                          Lay_Price := Bet_Price_Type(Pip_Lay.Pip_Price);    
+                          
+                          Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
+                          Log(Me & "Do_Try", Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                                       
+                          if Price_Matched > 0.0 then
+                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                         Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          else 
+                            Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");                                      
+                          end if;
+                          
+                        when Sim  => 
+                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                                       Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                      end case;
+                    end if;  
+                  end;  
+                when Lay_First_Then_Back =>
+                  declare
+                    use  General_Routines;
+                    Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
+                    Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;  
+                    Back_Price : Bet_Price_Type := 0.0;
+                    Back_Size  : Bet_Size_Type  := 0.0;
+                    Pip_Lay    : Pip_Type ;
+                    Pip_Back   : Pip_Type ;
+                  begin
+                    
+                    if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
+                       Lay_Price <= Bet.Bot_Cfg.Max_Price then
+      
+                      Pip_Lay.Init(Float_8(Lay_Price));
+                      Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+                                           
+                      case Bet.Bot_Cfg.Bet_Mode is
+                        when Real => 
+                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          -- use the matched lay_price             
+                          Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;   
+                          Pip_Back.Init(Float_8(Back_Price));
+                          Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+                          Back_Size := (Lay_Size * Lay_Price) / Back_Price;
+                          
+                          Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                          
+                          if Back_Size < 30.0 then
+                              Log(Me & "Do_Try", "Back_Size too small " & F8_Image(Float_8(Back_Size)) & " set to 30.0");
+                              Back_Size := 30.0;
+                              Back_Price := Bet_Price_Type (Float_8(Lay_Size * Lay_Price) / Float_8(Back_Size));
+                              Log(Me & "Do_Try", "Recalculated " & Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+    --                          Pip_Back.Init(Float_8(Back_Price));
+    --                          Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);                            
+                              for i in 1 .. 2 loop 
+                                Pip_Back.Init(Float_8(Back_Price));
+                                Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+                              end loop;                        
+                          end if;  
+                                                
+                          Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " & 
+                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
+                                       
+                                       
+                                       
+                          if Price_Matched > 0.0 then                        
+                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back, 
+                                         Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                          else 
+                            Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");                                      
+                          end if;
+                          
+                        when Sim  => 
+                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay, 
+                                       Price => Lay_Price, Size => Lay_Size, Price_Matched => Price_Matched);
+                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back, 
+                                       Price => Back_Price, Size => Back_Size, Price_Matched => Price_Matched);
+                      end case;
+                    end if;  
+                  end;  
+              end case;
+            else
+              Log(Me & "Do_Try", "i:" & i'Img & " Min_Num_Runners_Better_Ranked" & Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked'Img & 
+                     ". This runner is ranked too high, no bet");   
+            end if;            
           end loop Runner_Loop;  
         else 
-          Log(Me & "Do_Try", "bet diabled " & To_String(Bet.Bot_Cfg.Bet_Name));   
+          Log(Me & "Do_Try", "bet disabled " & To_String(Bet.Bot_Cfg.Bet_Name));   
         end if; -- enabled
       end if;-- continue betting
     else
