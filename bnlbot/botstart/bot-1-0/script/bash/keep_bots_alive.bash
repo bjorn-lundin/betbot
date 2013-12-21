@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#exit 0
+exit 0
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
 #install with
