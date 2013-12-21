@@ -36,6 +36,7 @@ package body Bet_Handler is
   Select_Lost_Today,
   Select_Profit_Today,
   Select_Dry_Run_Bets,
+  Select_Real_Bets,
   Select_Unsettled_Markets,
   Select_Executable_Bets,
   Select_Ongoing_Markets,  
@@ -1259,7 +1260,7 @@ package body Bet_Handler is
    procedure Check_Bets is
     use General_Routines;
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
-    Bet      : Table_Abets.Data_Type;
+    Bet,Bet_From_List      : Table_Abets.Data_Type;
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
     Side       : Bet_Type_Type;
@@ -1267,7 +1268,8 @@ package body Bet_Handler is
     Runner     : Table_Arunners.Data_Type;
 --    Non_Runner : Table_Anonrunners.Data_Type;
     type Eos_Type is (--Awinner, 
-                      Arunner --,
+                      Arunner ,
+                      Abets
                      -- Anonrunner
                      );
     Eos        : array (Eos_Type'range) of Boolean := (others => False);
@@ -1275,116 +1277,166 @@ package body Bet_Handler is
     Did_Exit,
     Bet_Won               : Boolean := False;
     Profit                : Float_8 := 0.0;
+    Start_Ts              : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+    Stop_Ts               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+    
+    Rpc_Status : Rpc.Result_Type;
+    use type Sattmate_Calendar.Time_Type;
+    
   begin
     Log(Me & "Check_Bets", "start");
 
+--    T.Start;
+--    -- check the dry run bets
+--    Select_Dry_Run_Bets.Prepare(
+--      "select B.* from ABETS B, AMARKETS M " &
+--      "where B.MARKETID = M.MARKETID " & 
+--      "and B.BETWON is null " & -- will be not null if updated
+--      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
+--      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+----      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
+--      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...
+--
+--    Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
+--    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
+--
+--    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+--      Illegal_Data := False;
+--      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
+--      Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
+--      if Trim(Bet.Side) = "BACK" then
+--        Side := Green_Up_Back;
+--      elsif Trim(Bet.Side(1..3)) = "LAY" then --lay + lay1-lay6
+--        Side := Green_Up_Lay;
+--      else
+--        Illegal_Data := True;
+--        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
+--      end if;
+--      if not Illegal_Data then
+--        Runner.Marketid := Bet.Marketid;
+--        Runner.Selectionid := Bet.Selectionid;
+--        Table_Arunners.Read(Runner, Eos(Arunner));
+--
+--        if not Eos(Arunner) then
+--        -- do we have a non-runner?
+--          if Runner.Status(1..7) = "REMOVED" then
+--            -- non -runner - void the bet
+--            Bet.Betwon := True;
+--            Bet.Profit := 0.0;
+--            begin
+--              Table_Abets.Update_Withcheck(Bet);
+--            exception
+--              when Sql.No_Such_Row =>
+--                Did_Exit := True;
+--                T.Rollback; -- let the other one do the update
+--                exit;
+--            end ;
+--
+--          elsif Runner.Status(1..6) = "WINNER" then
+--          -- this one won
+--            Selection_In_Winners := True;
+--          elsif Runner.Status(1..5) = "LOSER" then
+--          -- this one won
+--            Selection_In_Winners := False;
+--          else
+--            Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
+--            exit Inner;    
+--          end if;
+--        else
+--            Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
+--            exit Inner;    
+--        
+--        end if;        
+--
+--        case Side is
+--          when Green_Up_Back => Bet_Won := Selection_In_Winners;
+--          when Green_Up_Lay  => Bet_Won := not Selection_In_Winners;
+--        end case;
+--        
+--        if Bet_Won then
+--          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
+--                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
+--            when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
+--            when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
+--          end case;
+--        else -- lost :-(
+--          case Side is
+--            when Green_Up_Back => Profit := - Bet.Sizematched;
+--            when Green_Up_Lay  => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
+--          end case;
+--        end if;
+--        
+--        Bet.Betwon := Bet_Won;
+--        Bet.Profit := Profit;
+--        begin
+--          Table_Abets.Update_Withcheck(Bet);
+--        exception
+--          when Sql.No_Such_Row =>
+--             Did_Exit := True;
+--             T.Rollback; -- let the other one do the update
+--             exit Inner;
+--        end ;
+--      end if; -- Illegal data
+--    end loop Inner;
+
+    
+    
+    
+    -- check the real bets
     T.Start;
-    -- check the dry run bets
-    Select_Dry_Run_Bets.Prepare(
-      "select B.* from ABETS B, AMARKETS M " &
-      "where B.MARKETID = M.MARKETID " & 
-      "and B.BETWON is null " & -- will be not null if updated
-      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
-      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
---      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
-      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...
+    Select_Real_Bets.Prepare(
+      "select min(STARTTS) from ABETS where BETWON is null");
+      
+    Select_Real_Bets.Open_Cursor;  
+    Select_Real_Bets.Fetch(Eos(Abets)); 
+    if not Eos(Abets) then
+      Select_Real_Bets.Get_Timestamp(1, Start_Ts);  
+      Stop_Ts := Start_Ts + (1,0,0,0,0); -- 1 day
+    else
+      Stop_Ts  := Sattmate_Calendar.Clock ; -- now
+      Start_Ts := Stop_Ts - (1,0,0,0,0);    -- 1 day
+    end if;
+    
+    
+    Select_Real_Bets.Close_Cursor;  
+    T.Commit;
 
-    Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
-    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
-
-    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
-      Illegal_Data := False;
-      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
-      Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
-      if Trim(Bet.Side) = "BACK" then
-        Side := Green_Up_Back;
-      elsif Trim(Bet.Side(1..3)) = "LAY" then --lay + lay1-lay6
-        Side := Green_Up_Lay;
-      else
-        Illegal_Data := True;
-        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
-      end if;
-      if not Illegal_Data then
-        Runner.Marketid := Bet.Marketid;
-        Runner.Selectionid := Bet.Selectionid;
-        Table_Arunners.Read(Runner, Eos(Arunner));
-
-        if not Eos(Arunner) then
-        -- do we have a non-runner?
-          if Runner.Status(1..7) = "REMOVED" then
-            -- non -runner - void the bet
-            Bet.Betwon := True;
-            Bet.Profit := 0.0;
-            begin
-              Table_Abets.Update_Withcheck(Bet);
-            exception
-              when Sql.No_Such_Row =>
-                Did_Exit := True;
-                T.Rollback; -- let the other one do the update
-                exit;
-            end ;
-
-          elsif Runner.Status(1..6) = "WINNER" then
-          -- this one won
-            Selection_In_Winners := True;
-          elsif Runner.Status(1..5) = "LOSER" then
-          -- this one won
-            Selection_In_Winners := False;
-          else
-            Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
-            exit Inner;    
-          end if;
-        else
-            Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
-            exit Inner;    
-        
-        end if;        
-
-        case Side is
-          when Green_Up_Back => Bet_Won := Selection_In_Winners;
-          when Green_Up_Lay  => Bet_Won := not Selection_In_Winners;
-        end case;
-        
-        if Bet_Won then
-          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
-                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
-            when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
-            when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
-          end case;
-        else -- lost :-(
-          case Side is
-            when Green_Up_Back => Profit := - Bet.Sizematched;
-            when Green_Up_Lay  => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
-          end case;
-        end if;
-        
-        Bet.Betwon := Bet_Won;
-        Bet.Profit := Profit;
+    for i in Cleared_Bet_Status_Type'range loop    
+      Rpc.Get_Cleared_Bet_Info_List(Bet_Status     => i,
+                                    Settled_From   => Start_Ts,
+                                    Settled_To     => Stop_Ts,
+                                    Betfair_Result => Rpc_Status,
+                                    Bet_List       => Bet_List) ;
+    end loop;
+    
+    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet_From_List);
+      
+      -- Call Betfair here ! Profit & Loss
+      
+      Bet.Betid := Bet_From_List.Betid;
+      Table_Abets.Read(Bet,Eos(Abets));
+      if not Eos(Abets) then
+        Bet.Pricematched := Bet_From_List.Pricematched;
+        Bet.Sizematched  := Bet_From_List.Sizematched;
+        Bet.Profit       := Bet_From_List.Profit;
+        Bet.Status       := Bet_From_List.Status;
+      
         begin
+          T.Start;
           Table_Abets.Update_Withcheck(Bet);
+          Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);      
+          
+          T.Commit;
         exception
           when Sql.No_Such_Row =>
-             Did_Exit := True;
              T.Rollback; -- let the other one do the update
-             exit Inner;
+             Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
         end ;
-      end if; -- Illegal data
-    end loop Inner;
-
---    -- check the real bets
---    Select_Real_Bets.Prepare(
---      "select * from ABETS where betwon is null and betname not like 'DR_%' " &
---      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = ABETS.MARKETID)" );
---    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
---    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
---      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
---      -- Call Betfair here ! Profit & Loss
---    end loop;
-
-    if not Did_Exit then
-      T.Commit;
-    end if;
-
+      else
+        Log(Me & "Check_Bets", "EOS!! " & Table_Abets.To_String(Bet));      
+      end if;
+    end loop;
     Table_Abets.Abets_List_Pack.Release(Bet_List);
     Log(Me & "Check_Bets", "stop");
   end Check_Bets;
@@ -1401,24 +1453,24 @@ package body Bet_Handler is
   begin
     Log(Me & "Check_If_Bet_Accepted", "start");
     T.Start;
-    -- check the dry run bets
+    -- check the real bets
     Select_Executable_Bets.Prepare(
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " & -- all bets, until profit and loss are fixed in API-NG
       "and M.STATUS in ('CLOSED','SETTLED','SUSPENDED') " & -- This is not updated!!!
       "and B.BETWON is null " & -- all bets, until profit and loss are fixed in API-NG
       "and B.BETID > 1000000000 " & -- no dry_run bets
-      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
+--      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
 
-    Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
+--    Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Executable_Bets, Bet_List);
 
     while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
       Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));  
       
-      RPC.Bet_Is_Matched(Bet.Betid, Is_Removed ,Is_Matched, Avg_Price_Matched, Size_Matched);
+      RPC.Bet_Is_Matched(Bet.Betid, Is_Removed, Is_Matched, Avg_Price_Matched, Size_Matched);
       
       if Is_Matched then
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Table_Abets.To_String(Bet));  

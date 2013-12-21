@@ -17,10 +17,11 @@ with Bet_Handler;
 with Gnat.Command_Line; use Gnat.Command_Line;
 --with Gnat.Strings;
 with Ini;
+with Rpc;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 300.0; 
+  Timeout  : Duration := 5.0; 
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
@@ -62,7 +63,19 @@ begin
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
   Log(Me, "db Connected");        
-         
+
+  Log(Me, "Login betfair");
+  Rpc.Init(
+            Username   => Ini.Get_Value("betfair","username",""),
+            Password   => Ini.Get_Value("betfair","password",""),
+            Product_Id => Ini.Get_Value("betfair","product_id",""),  
+            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+            App_Key    => Ini.Get_Value("betfair","appkey","")
+          );    
+  Rpc.Login; 
+  Log(Me, "Login betfair done");
+
+  
   Bet_Handler.Check_Bets;
   Log(Me, "Start main loop");
   Main_Loop : loop
