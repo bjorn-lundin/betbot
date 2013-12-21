@@ -20,7 +20,6 @@ project Adabot is
 
    System_Mains := ("bot.adb",
                     "bot_send.adb",
-                    "bet_checker.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb");
@@ -31,7 +30,8 @@ project Adabot is
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
-   Other_Mains := ("ini_reader.adb");
+   Other_Mains := ("ini_reader.adb",
+                   "bet_checker.adb");
    
    case Bot_Mode is
       when "PROD"   =>  for Main use System_Mains;
