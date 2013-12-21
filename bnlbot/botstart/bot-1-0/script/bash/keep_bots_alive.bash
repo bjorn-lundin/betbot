@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exit 0
+#exit 0
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
 #install with
@@ -175,7 +175,7 @@ HOUR=$(date +"%H")
 
 MINUTE=$(date +"%M")
 
-if [[ $HOUR == "08" ]] ; then
+if [[ $HOUR == "02" ]] ; then
   if [[ $MINUTE == "05" ]] ; then
     DATE_DAY=$(date +"%d")
     pg_dump jmb |gzip > /home/bnl/datadump/jmb_${DATE_DAY}.dmp.gz &
