@@ -1411,9 +1411,8 @@ package body Bet_Handler is
     
     while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
       Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet_From_List);
-      
       -- Call Betfair here ! Profit & Loss
-      
+      Bet := Table_Abets.Empty_Data;
       Bet.Betid := Bet_From_List.Betid;
       Table_Abets.Read(Bet,Eos(Abets));
       if not Eos(Abets) then
