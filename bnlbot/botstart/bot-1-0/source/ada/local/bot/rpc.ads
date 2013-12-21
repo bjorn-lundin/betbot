@@ -5,7 +5,10 @@ with Bot_Types; use Bot_Types;
 with Table_Arunners;
 with Table_Amarkets;
 with Table_Abalances;
+with Table_Abets;
+
 with Token;
+with Sattmate_Calendar;
 
 package RPC is
 
@@ -43,5 +46,10 @@ package RPC is
   procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
                                 Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type);
 
+  procedure Get_Cleared_Bet_Info_List(Bet_Status     : in Bet_Status_Type;
+                                      Settled_From   : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+                                      Settled_To     : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+                                      Betfair_Result : out Result_Type;
+                                      Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) ;
   
 end RPC;    

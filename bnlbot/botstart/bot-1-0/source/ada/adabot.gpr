@@ -20,6 +20,7 @@ project Adabot is
 
    System_Mains := ("bot.adb",
                     "bot_send.adb",
+                    "bet_checker.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb");

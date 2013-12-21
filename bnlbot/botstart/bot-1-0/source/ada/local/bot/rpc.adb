@@ -72,6 +72,52 @@ package body RPC is
   
   
   
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out Float_8;
+                      Found    : out Boolean) is
+    Tmp : Float := 0.0;
+  begin
+    Found := False;
+    if Container.Has_Field(Field) then
+      Tmp := Container.Get(Field);
+      Found := True;
+    end if;
+    Target := Float_8(Tmp);
+  end Get_Value;
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out Integer_8;
+                      Found    : out Boolean) is
+    Tmp : String (1..20)  :=  (others => ' ') ;
+  begin
+    Target := Integer_8'First;
+    Found := False;
+    if Container.Has_Field(Field) then
+      Move( Container.Get(Field), Tmp );
+      if Tmp(2) = '.' then
+        Target := Integer_8'Value(Tmp(3 .. Tmp'Last));
+      else
+        Target := Integer_8'Value(Tmp);
+      end if;   
+      Found := True;
+    end if;  
+  end Get_Value;
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out String;
+                      Found    : out Boolean) is
+  begin
+    Target := (others => ' ') ;
+    Found := False;
+    if Container.Has_Field(Field) then
+      Move( Container.Get(Field), Target );
+      Found := True;
+    end if;  
+  end Get_Value;  
+  
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error, 
      APINGException, 
@@ -118,9 +164,11 @@ package body RPC is
           else  
             raise No_Such_Field with "Data - APINGException";
           end if;          
-        else  
-          raise  No_Such_Field with "Error - data";
         end if;          
+        if Error.Has_Field("message") then
+          Log(Me, "Error.Message " & Error.Get("message"));
+        end if;          
+        
       else
         raise No_Such_Field with "Error - code";
       end if;          
@@ -757,4 +805,116 @@ package body RPC is
   end Get_Balance;    
   
   --------------------------------------- 
+  procedure Get_Cleared_Bet_Info_List(Bet_Status     : in Bet_Status_Type;
+                                      Settled_From   : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+                                      Settled_To     : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+                                      Betfair_Result : out Result_Type;
+                                      Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
+    Parsed_Ok : Boolean := True;
+    JSON_Query : JSON_Value := Create_Object;
+    JSON_Reply : JSON_Value := Create_Object;
+    AWS_Reply  : Aws.Response.Data;
+    Params     : JSON_Value := Create_Object;
+    Result     : JSON_Value := Create_Object;    
+    Settled_Date_Range : JSON_Value := Create_Object;
+    Cleared_Orders     : JSON_Array := Empty_Array;
+    Cleared_Order      : JSON_Value := Create_Object;
+    
+    Local_Bet          : Table_Abets.Data_Type;
+    Found              : Boolean := False;
+                                      
+  begin
+    Betfair_Result := Ok;
+
+    Reset_AWS_Headers;    
+
+    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","Z"));
+    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","Z"));
+    
+    Params.Set_Field (Field_Name => "groupBy", Field => "BET");
+    Params.Set_Field (Field_Name => "includeItemDescription", Field => False);
+    Params.Set_Field (Field_Name => "settledDateRange", Field => Settled_Date_Range);
+    Params.Set_Field (Field_Name => "betStatus",        Field => Bet_Status'Img);
+    -- params is empty ...                     
+    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listClearedOrders");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+
+    Log(Me, "posting " & JSON_Query.Write);
+    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+                                  Data         =>  JSON_Query.Write,
+                                  Content_Type => "application/json",
+                                  Headers      =>  Global_HTTP_Headers,
+                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
+     
+    --  Load the reply into a json object
+    Log(Me, "Got reply");
+    begin
+      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                          Filename => "");
+      Log(Me, JSON_Reply.Write);
+    exception
+      when E: others =>
+        Parsed_Ok := False;
+        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+        Sattmate_Exception.Tracebackinfo(E);
+        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
+          Betfair_Result := Timeout ;
+          return;
+        end if;  
+    end ;       
+
+    if Parsed_Ok then                             
+      if API_Exceptions_Are_Present(JSON_Reply) then
+        Log(Me & "Get_Balance - Error" , Aws.Response.Message_Body(AWS_Reply));
+      
+        -- try again
+        Betfair_Result := Logged_Out ;
+        return;
+      end if;
+      
+      if JSON_Reply.Has_Field("result") then
+         Result := JSON_Reply.Get("result");
+         if Result.Has_Field("clearedOrders") then
+           Cleared_Orders := Result.Get("clearedOrders");
+           if Length(Cleared_Orders) > Integer(0) then
+             for i in 1 .. Length (Cleared_Orders) loop
+               Log(Me & "Get_Cleared_Bet_Info_List" , " we have cleared order #:" & i'img & " with status: " & Bet_Status'Img);
+               
+               Cleared_Order := Get(Cleared_Orders, i);
+               Local_Bet := Table_Abets.Empty_Data;
+               Get_Value(Container => Cleared_Order,
+                         Field     => "betId",
+                         Target    => Local_Bet.Betid,
+                         Found     => Found);
+                         
+               Get_Value(Container => Cleared_Order,
+                         Field     => "priceMatched",
+                         Target    => Local_Bet.Pricematched,
+                         Found     => Found);
+                         
+               Get_Value(Container => Cleared_Order,
+                         Field     => "sizeSettled",
+                         Target    => Local_Bet.Sizematched,
+                         Found     => Found);
+                         
+               Get_Value(Container => Cleared_Order,
+                         Field     => "profit",
+                         Target    => Local_Bet.Profit,
+                         Found     => Found);
+                         
+               Move(Bet_Status'Img, Local_Bet.Status);    
+               
+               Table_Abets.Abets_List_Pack.Insert_At_Tail(Bet_List, Local_Bet);          
+             end loop; 
+           else
+             Log(Me & "Get_Cleared_Bet_Info_List", "No cleared orders received with status " & Bet_Status'Img);      
+           end if;        
+         end if;
+      end if;  
+    end if;    
+  end Get_Cleared_Bet_Info_List;    
+  -----------------------------------
 end RPC;
