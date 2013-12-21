@@ -66,7 +66,8 @@ private
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
-                     Price_Matched :    out Bet_Price_Type) ;
+                     Price_Matched :    out Bet_Price_Type;
+                     Size_Matched  :    out Bet_Size_Type ) ;
 
                      
   function Exists          (Bet : Bet_Type) return Boolean;

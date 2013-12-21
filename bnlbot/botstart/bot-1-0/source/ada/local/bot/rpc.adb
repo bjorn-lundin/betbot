@@ -828,8 +828,8 @@ package body RPC is
 
     Reset_AWS_Headers;    
 
-    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","Z"));
-    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","Z"));
+    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","CET"));
+    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","CET"));
     
     Params.Set_Field (Field_Name => "groupBy", Field => "BET");
     Params.Set_Field (Field_Name => "includeItemDescription", Field => False);
