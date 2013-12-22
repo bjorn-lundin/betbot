@@ -1438,8 +1438,6 @@ package body Bet_Handler is
       Stop_Ts  := Sattmate_Calendar.Clock ; -- now
       Start_Ts := Stop_Ts - (1,0,0,0,0);    -- 1 day
     end if;
-    
-    
     Select_Real_Bets.Close_Cursor;  
     T.Commit;
 
@@ -1462,6 +1460,7 @@ package body Bet_Handler is
         Bet.Sizematched  := Bet_From_List.Sizematched;
         Bet.Profit       := Bet_From_List.Profit;
         Bet.Status       := Bet_From_List.Status;
+        Bet.Betwon       := Bet.Profit >= 0.0;
       
         begin
           T.Start;
