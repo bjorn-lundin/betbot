@@ -450,7 +450,17 @@ package body Bet_Handler is
                             Pip_Back.Init(1000.0);
                             loop
                               Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
-                              exit when Back_Size * Back_Price <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));                            
+                              exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));                            
+                              Pip_Back.Init(Float_8(Back_Price));
+                              Log(Me & "Do_Try - loop (again)",
+                                     "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
+                                     "Size_Matched * (Price_Matched - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Size_Matched * (Price_Matched - Bet_Price_Type(1.0)))) & " " &
+                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " & 
+                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " & 
+                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " & 
+                                     "Price_Matched: " & F8_Image(Float_8(Price_Matched)) & " " & 
+                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " & 
+                                     "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
                             end loop;  
                               
                             
