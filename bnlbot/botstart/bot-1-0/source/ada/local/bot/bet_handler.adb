@@ -315,6 +315,20 @@ package body Bet_Handler is
         Log (Me & "Do_Try", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
       end if;
 
+      -- we neead a favorite with odds less than Bet.Bot_Cfg.Race_Favorite_Max_Price
+      if Continue_Betting then
+        declare
+          use General_Routines;
+          Favorite_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(1).Price.Backprice);
+        begin
+          if Favorite_Price > Bet.Bot_Cfg.Race_Favorite_Max_Price then
+            Log(Me & "Do_Try", "No clear favorite, best odds= " & F8_Image(Float_8(Favorite_Price)) &
+                               " Race_Favorite_Max_Price " & F8_Image(Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price)));
+            Continue_Betting := False;
+          end if;
+        end;
+      end if;
+
       -- for a given market, the most expensive bet is the one with highest odds.
       -- a bet wiht odds 15 costs something. Another LAY bet on THAT market with odds less than 15 costs nothing.
       -- Because only 1 will win (if we bet on WIN markets)

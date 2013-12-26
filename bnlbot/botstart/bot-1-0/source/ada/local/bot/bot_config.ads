@@ -10,21 +10,21 @@ package Bot_Config is
 
 --  type Country_Type is record
 --    Country : String (1..2) := (others => ' ');
---  end record;  
+--  end record;
 
 --  package Country_Pack is new Simple_List_Class(Country_Type);
 
   Bad_Config : exception;
-  
+
   type Allowed_Days_Array is array(Sattmate_Calendar.Week_Day_Type'range) of Boolean;
-  
+
   type Global_Section_Type is record
     Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;
     Delay_Between_Turns_No_Markets  : Float_8 := 7.0;
     Delay_Between_Turns             : Float_8 := 5.0;
     Network_Failure_Delay           : Float_8 := 60.0;
     Logging                         : Boolean := True;
-  end record;  
+  end record;
 
   type Bet_Section_Type is record
     Bet_Name         : Unbounded_String       := Null_Unbounded_String;
@@ -38,13 +38,13 @@ package Bot_Config is
     Delta_Size       : Bet_Size_Type          := 20.0;
     Enabled          : Boolean                := False;
     Allow_In_Play    : Boolean                := True;
-    Animal           : Animal_Type            := Horse;     
-    Market_Type      : Bet_Market_Type        := Winner; 
+    Animal           : Animal_Type            := Horse;
+    Market_Type      : Bet_Market_Type        := Winner;
     Max_Num_Runners  : Max_Num_Runners_Type   := 25;
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
-    Bet_Mode         : Bet_Mode_Type          := Sim;    
+    Bet_Mode         : Bet_Mode_Type          := Sim;
     Allowed_Days     : Allowed_Days_Array     := (others => False);
     Green_Up_Mode    : Green_Up_Mode_Type     := Back_First_Then_Lay;
     Max_Exposure     : Max_Exposure_Type      := 600.0;
@@ -53,9 +53,10 @@ package Bot_Config is
     Lay_Second_Bet_Persistance  : Bet_Persistence_Type := Persist;
     Back_Second_Bet_Persistance : Bet_Persistence_Type := Persist;
     Min_Num_Runners_Better_Ranked  : Integer_4   := 3;
-  end record;  
+    Race_Favorite_Max_Price        : Bet_Price_Type := 6.0;
+  end record;
   package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
-  
+
   type System_Section_Type is record
     -- BOT_START is set in .bashrc
     Bot_Root   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_START/bot-0-9
@@ -66,49 +67,49 @@ package Bot_Config is
     Bot_Home   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Daemonize  : Boolean          := True;
     Bot_Mode   : Mode_Type        := Real;
-  end record;  
-    
-    
+  end record;
+
+
   type Login_Betfair_Section_Type is record
-    Username   : Unbounded_String := Null_Unbounded_String ; 
-    Password   : Unbounded_String := Null_Unbounded_String ; 
-    Product_Id : Unbounded_String := Null_Unbounded_String ; 
-    Vendor_Id  : Unbounded_String := Null_Unbounded_String ; 
+    Username   : Unbounded_String := Null_Unbounded_String ;
+    Password   : Unbounded_String := Null_Unbounded_String ;
+    Product_Id : Unbounded_String := Null_Unbounded_String ;
+    Vendor_Id  : Unbounded_String := Null_Unbounded_String ;
     App_Key    : Unbounded_String := Null_Unbounded_String ;
-  end record;  
-    
+  end record;
+
   type Login_Database_Section_Type is record
-    Name     : Unbounded_String := Null_Unbounded_String ; 
-    Username : Unbounded_String := Null_Unbounded_String ; 
-    Password : Unbounded_String := Null_Unbounded_String ; 
-    Host     : Unbounded_String := Null_Unbounded_String ; 
-  end record;  
-    
+    Name     : Unbounded_String := Null_Unbounded_String ;
+    Username : Unbounded_String := Null_Unbounded_String ;
+    Password : Unbounded_String := Null_Unbounded_String ;
+    Host     : Unbounded_String := Null_Unbounded_String ;
+  end record;
+
   type Config_Type is tagged record
      Bot_User          : Unbounded_String      := Null_Unbounded_String;
      Bot_Log_File_Name : Unbounded_String      := Null_Unbounded_String;
      Bot_Ini_File_Name : Unbounded_String      := Null_Unbounded_String ;
      System_Section    : System_Section_Type;
-     Global_Section    : Global_Section_Type; 
---     Bet_Section       : Bet_Section_Type; 
-     Bet_Section_List  : Bet_Pack.List_Type    := Bet_Pack.Create; 
-     Betfair_Section   : Login_Betfair_Section_Type;  
-     Database_Section  : Login_Database_Section_Type;  
+     Global_Section    : Global_Section_Type;
+--     Bet_Section       : Bet_Section_Type;
+     Bet_Section_List  : Bet_Pack.List_Type    := Bet_Pack.Create;
+     Betfair_Section   : Login_Betfair_Section_Type;
+     Database_Section  : Login_Database_Section_Type;
   end record;
-  
+
   procedure Read(Cfg : in out Config_Type);
   procedure Clear(Cfg : in out Config_Type);
   function To_String(Cfg : Config_Type) return String;
-  
-  
-  
+
+
+
   Config : Config_Type;
-  
+
   procedure Re_Read_Config ;
 
-  
-  
 
-  
+
+
+
 end Bot_Config;
 
