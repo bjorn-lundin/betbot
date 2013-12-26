@@ -39,9 +39,9 @@ package body Bot_Config is
     function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
     function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
     function Get_Bet_Persistence is new Ini.Get_Enumeration_Value(Bet_Persistence_Type);
-    
-    
-   
+
+
+
    type Cfg_Type is ( Market, Animal);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
@@ -70,7 +70,7 @@ package body Bot_Config is
          Ba_Daemon'access,
          Long_Switch => "--daemon",
          Help        => "become daemon at startup");
-         
+
       Define_Switch
         (Cmd_Line,
          Sa_Par_Inifile'access,
@@ -84,14 +84,14 @@ package body Bot_Config is
     if Ev.Exists("BOT_HOME") then
 
       Cfg.Bot_Log_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/log/") & Cfg.Bot_User & To_Unbounded_String(".log");
-      
+
       if Sa_Par_Inifile.all = "" then
         Cfg.Bot_Ini_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/" & "betfair.ini");
-      else 
+      else
         Cfg.Bot_Ini_File_Name := To_Unbounded_String(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
-      end if;      
+      end if;
       Ini.Load(To_String(Cfg.Bot_Ini_File_Name)) ;
-      
+
       -- Gloal
       Cfg.Global_Section.Delay_Between_Turns_Bad_Funding :=
            Float_8'Value(Ini.Get_Value("Global","Delay_Between_Turns_Bad_Funding","60.0"));
@@ -104,7 +104,7 @@ package body Bot_Config is
 
       Cfg.Global_Section.Network_Failure_Delay :=
            Float_8'Value(Ini.Get_Value("Global","Network_Failure_Delay","60.0"));
-           
+
       Cfg.Global_Section.Logging := Ini.Get_Value("Global", "logging", True);
 
       --system, expanded ...
@@ -151,7 +151,8 @@ package body Bot_Config is
             Bet_Section.Lay_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_second_bet_persistance", Persist) ;
             Bet_Section.Back_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_second_bet_persistance", Persist) ;
             Bet_Section.Min_Num_Runners_Better_Ranked := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners_better_ranked",3));
-            
+            Bet_Section.Race_Favorite_Max_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"race_favorite_max_price","6.0"));
+
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
@@ -161,7 +162,7 @@ package body Bot_Config is
               Bet_Section.Animal := Horse;
               Was_Set(Animal) := True;
             end if;
-            
+
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > Natural(0) then
               Bet_Section.Market_Type := Place;
               Was_Set(Market) := True;
@@ -349,6 +350,7 @@ package body Bot_Config is
                "<Lay_Second_Bet_Persistance>" & Bet_Section.Lay_Second_Bet_Persistance'Img & "</Lay_Second_Bet_Persistance>" &
                "<Back_Second_Bet_Persistance>" & Bet_Section.Back_Second_Bet_Persistance'Img & "</Back_Second_Bet_Persistance>" &
                "<Min_Num_Runners_Better_Ranked>" & Bet_Section.Min_Num_Runners_Better_Ranked'Img & "</Min_Num_Runners_Better_Ranked>" &
+               "<Race_Favorite_Max_Price>" & F8_Image(Float_8(Bet_Section.Race_Favorite_Max_Price)) & "</Race_Favorite_Max_Price>" &
              "</Bet>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;
