@@ -45,6 +45,16 @@ begin
   Log(Bot_Config.Config.To_String);
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
+  Log(Me, "Connect Db");
+  Sql.Connect
+        (Host     => To_String(Bot_Config.Config.Database_Section.Host),
+         Port     => 5432,
+         Db_Name  => To_String(Bot_Config.Config.Database_Section.Name),
+         Login    => To_String(Bot_Config.Config.Database_Section.Username),
+         Password => To_String(Bot_Config.Config.Database_Section.Password));
+  Log(Me, "db Connected");
+
+  
   case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
        Log(Me, "Login betfair");
@@ -60,14 +70,6 @@ begin
     when Bot_Types.Simulation => null;
   end case;
 
-  Log(Me, "Connect Db");
-  Sql.Connect
-        (Host     => To_String(Bot_Config.Config.Database_Section.Host),
-         Port     => 5432,
-         Db_Name  => To_String(Bot_Config.Config.Database_Section.Name),
-         Login    => To_String(Bot_Config.Config.Database_Section.Username),
-         Password => To_String(Bot_Config.Config.Database_Section.Password));
-  Log(Me, "db Connected");
 
   Log(Me, "Start main loop");
   
