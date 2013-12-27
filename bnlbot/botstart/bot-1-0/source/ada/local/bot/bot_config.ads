@@ -45,8 +45,9 @@ package Bot_Config is
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
     Bet_Mode         : Bet_Mode_Type          := Sim;
+    Bet_Type         : Bet_Type_Type          := Greenup;
     Allowed_Days     : Allowed_Days_Array     := (others => False);
-    Green_Up_Mode    : Green_Up_Mode_Type     := Back_First_Then_Lay;
+    Green_Up_Mode    : Green_Up_Mode_Type     := None;
     Max_Exposure     : Max_Exposure_Type      := 600.0;
     Lay_First_Bet_Persistance   : Bet_Persistence_Type := Lapse;
     Back_First_Bet_Persistance  : Bet_Persistence_Type := Lapse;

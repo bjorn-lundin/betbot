@@ -31,6 +31,7 @@ project Adabot is
                     "greening_up_3.adb");
     
    Other_Mains := ("ini_reader.adb",
+                   "back_all_g4.adb",
                    "bet_checker.adb");
    
    case Bot_Mode is
