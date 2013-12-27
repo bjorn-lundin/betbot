@@ -39,10 +39,11 @@ package body Bot_Config is
     function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
     function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
     function Get_Bet_Persistence is new Ini.Get_Enumeration_Value(Bet_Persistence_Type);
+--    function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
 
 
 
-   type Cfg_Type is ( Market, Animal);
+   type Cfg_Type is ( Market, Animal, Type_Of_Bet);
    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
     Log(Me & "Read start");
@@ -152,7 +153,20 @@ package body Bot_Config is
             Bet_Section.Back_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_second_bet_persistance", Persist) ;
             Bet_Section.Min_Num_Runners_Better_Ranked := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners_better_ranked",3));
             Bet_Section.Race_Favorite_Max_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"race_favorite_max_price","6.0"));
-
+                      
+            
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_greenup_") > Natural(0) then
+              Bet_Section.Bet_Type := Greenup;
+              Was_Set(Type_Of_Bet) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_lay_") > Natural(0) then
+              Bet_Section.Bet_Type := Lay;
+              Was_Set(Type_Of_Bet) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_back_") > Natural(0) then
+              Bet_Section.Bet_Type := Back;
+              Was_Set(Type_Of_Bet) := True;
+            end if;
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "hounds_") > Natural(0) then
               Bet_Section.Animal := Hound;
@@ -351,6 +365,7 @@ package body Bot_Config is
                "<Back_Second_Bet_Persistance>" & Bet_Section.Back_Second_Bet_Persistance'Img & "</Back_Second_Bet_Persistance>" &
                "<Min_Num_Runners_Better_Ranked>" & Bet_Section.Min_Num_Runners_Better_Ranked'Img & "</Min_Num_Runners_Better_Ranked>" &
                "<Race_Favorite_Max_Price>" & F8_Image(Float_8(Bet_Section.Race_Favorite_Max_Price)) & "</Race_Favorite_Max_Price>" &
+               "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" &
              "</Bet>"  );
              Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;

@@ -12,7 +12,7 @@ package Bot_Types is
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place, Winner);
-   type Bet_Type_Type is (Green_Up_Back, Green_Up_Lay); 
+   type Bet_Type_Type is (Greenup, Back, Lay); 
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
@@ -45,7 +45,7 @@ package Bot_Types is
    type JSON_Data_Type is (I4,Flt,Ts,Str);
    
    
-   type Green_Up_Mode_Type is (Lay_First_Then_Back, Back_First_Then_Lay);
+   type Green_Up_Mode_Type is (None, Lay_First_Then_Back, Back_First_Then_Lay);
    
    subtype Market_Id_Type is String(Table_Amarkets.Empty_Data.Marketid'range);
 

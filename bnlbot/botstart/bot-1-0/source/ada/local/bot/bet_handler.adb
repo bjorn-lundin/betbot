@@ -35,7 +35,7 @@ package body Bet_Handler is
   Update_Betwon_To_Null,
   Select_Lost_Today,
   Select_Profit_Today,
---  Select_Dry_Run_Bets,
+  Select_Dry_Run_Bets,
   Select_Real_Bets,
   Select_Unsettled_Markets,
   Select_Executable_Bets,
@@ -315,7 +315,7 @@ package body Bet_Handler is
         Log (Me & "Do_Try", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
       end if;
 
-      -- we neead a favorite with odds less than Bet.Bot_Cfg.Race_Favorite_Max_Price
+      -- we need a favorite with odds less than Bet.Bot_Cfg.Race_Favorite_Max_Price
       if Continue_Betting then
         declare
           use General_Routines;
@@ -339,32 +339,35 @@ package body Bet_Handler is
       end if;
 
       --before we bet anything, check finances first
-
-      declare
-        Betfair_Result : Rpc.Result_Type ;
-        Saldo          : Table_Abalances.Data_Type;
-        Expected_Exposure_This_Bet : Float_8 := 0.0;
-        use type Rpc.Result_Type;
-        use General_Routines;
-      begin
-        Rpc.Get_Balance(Betfair_Result, Saldo);
-        if Betfair_Result = Rpc.Ok then
-          -- calculate expected exposure for this bet
-          Expected_Exposure_This_Bet := Float_8(Bet.Bot_Cfg.Bet_Size * (Bet.Bot_Cfg.Max_Price - Bet_Price_Type(1.0)));
-          if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
-            Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
-            Log(Me & "Do_Try", "cur/this bet/max" &
-                 F8_Image(abs(Saldo.Exposure))  & "/" &
-                 F8_Image(Expected_Exposure_This_Bet)  & "/" &
-                 F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
-            Continue_Betting := False;
-          end if;
-        else
-          Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);
-          Continue_Betting := False;
-        end if;
-      end;
-
+      case  Bet.Bot_Cfg.Bet_Mode is
+        when  Real =>
+          declare
+            Betfair_Result : Rpc.Result_Type ;
+            Saldo          : Table_Abalances.Data_Type;
+            Expected_Exposure_This_Bet : Float_8 := 0.0;
+            use type Rpc.Result_Type;
+            use General_Routines;
+          begin
+            Rpc.Get_Balance(Betfair_Result, Saldo);
+            if Betfair_Result = Rpc.Ok then
+              -- calculate expected exposure for this bet
+              Expected_Exposure_This_Bet := Float_8(Bet.Bot_Cfg.Bet_Size * (Bet.Bot_Cfg.Max_Price - Bet_Price_Type(1.0)));
+              if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
+                Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
+                Log(Me & "Do_Try", "cur/this bet/max" &
+                     F8_Image(abs(Saldo.Exposure))  & "/" &
+                     F8_Image(Expected_Exposure_This_Bet)  & "/" &
+                     F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
+                Continue_Betting := False;
+              end if;
+            else
+              Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);
+              Continue_Betting := False;
+            end if;
+          end;
+        when Sim => null;
+      end case;        
+    
       if Continue_Betting then
         if Bet.Enabled then
 
@@ -397,7 +400,7 @@ package body Bet_Handler is
 
                       case Bet.Bot_Cfg.Bet_Mode is
                         when Real =>
-                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back,
+                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Back,
                                        Price => Back_Price, Size => Back_Size,
                                        Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           -- use the matched back_price
@@ -413,20 +416,15 @@ package body Bet_Handler is
                                        "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
 
                           if Price_Matched > 0.0 then
-                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay,
+                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Lay,
                                          Price => Lay_Price, Size => Lay_Size,
                                          Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           else
                             Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");
                           end if;
 
-                        when Sim  =>
-                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back,
-                                       Price => Back_Price, Size => Back_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
-                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay,
-                                       Price => Lay_Price, Size => Lay_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                        when Sim  => raise Suicide with "Green_Up_Mode Back_First_Then_Lay and sim does not match";
+                            
                       end case;
                     end if;
                   end;
@@ -449,7 +447,7 @@ package body Bet_Handler is
 
                       case Bet.Bot_Cfg.Bet_Mode is
                         when Real =>
-                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Lay,
+                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Lay,
                                        Price => Lay_Price, Size => Lay_Size,
                                        Price_Matched => Price_Matched, Size_Matched => Size_Matched);
 
@@ -466,17 +464,8 @@ package body Bet_Handler is
                               Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
                               exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));
                               Pip_Back.Init(Float_8(Back_Price));
---                              Log(Me & "Do_Try - loop (again)",
---                                     "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
---                                     "Size_Matched * (Price_Matched - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Size_Matched * (Price_Matched - Bet_Price_Type(1.0)))) & " " &
---                                     "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " &
---                                     "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " &
---                                     "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " &
---                                     "Price_Matched: " & F8_Image(Float_8(Price_Matched)) & " " &
---                                     "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
---                                     "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
                             end loop;
-                            Log(Me & "Do_Try - loop (again)",
+                            Log(Me & "Do_Try ",
                                    "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
                                    "Size_Matched * (Price_Matched - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Size_Matched * (Price_Matched - Bet_Price_Type(1.0)))) & " " &
                                    "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " &
@@ -486,57 +475,57 @@ package body Bet_Handler is
                                    "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                    "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
 
-
-                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Green_Up_Back,
+                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Back,
                                          Price => Back_Price, Size => Back_Size,
                                          Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           else
                             Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");
                           end if;
 
-
---                          if Back_Size < 30.0 then
---                              Log(Me & "Do_Try", "Back_Size too small " & F8_Image(Float_8(Back_Size)) & " set to 30.0");
---                              Back_Size := 30.0;
---
---                             Pip_Back.Init(1000.0);
---                             loop
---                               Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
---                               exit when Back_Size*Back_Price <= Lay_Size * (Price_Matched -1);
---                             end loop;
---
---                              Back_Price := Bet_Price_Type (Float_8(Lay_Size * Lay_Price) / Float_8(Back_Size));
---                              Log(Me & "Do_Try", "Recalculated " & Bet.Bot_Cfg.Green_Up_Mode'Img & " " &
---                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " &
---                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " &
---                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " &
---                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
---    --                          Pip_Back.Init(Float_8(Back_Price));
---    --                          Back_Price := Bet_Price_Type(Pip_Back.Pip_Price);
---                              for i in 1 .. 2 loop
---                                Pip_Back.Init(Float_8(Back_Price));
---                                Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
---                              end loop;
---                          end if;
-
---                          Log(Me & "Do_Try",  Bet.Bot_Cfg.Green_Up_Mode'Img & " " &
---                                       "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " &
---                                       "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " &
---                                       "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " &
---                                       "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
-
-
-
-                        when Sim  =>
-                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Lay,
-                                       Price => Lay_Price, Size => Lay_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
-                          Bet.Make_Bet(Betmode => Sim,  A_Bet_Type => Green_Up_Back,
-                                       Price => Back_Price, Size => Back_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                        when Sim  => raise Suicide with "Green_Up_Mode Lay_First_Then_Back and sim does not match";
                       end case;
                     end if;
                   end;
+                when None => -- ordinary bets, mostly sims  
+                  case Bet.Bot_Cfg.Bet_Type is
+                    when Back =>
+                      declare
+                        use  General_Routines;
+                        Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
+                        Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
+                        Pip_Back   : Pip_Type ;
+                      begin
+                        if Bet.Bot_Cfg.Min_Price <= Back_Price and then
+                           Back_Price <= Bet.Bot_Cfg.Max_Price then
+                          Pip_Back.Init(Float_8(Back_Price));
+                          Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
+    
+                          Bet.Make_Bet(Betmode => Bet.Bot_Cfg.Bet_Mode , A_Bet_Type => Back,
+                                           Price => Back_Price, Size => Back_Size,
+                                           Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                        end if;
+                      end;
+                      
+                    when Lay =>
+                      declare
+                        use  General_Routines;
+                        Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
+                        Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
+                        Pip_Lay    : Pip_Type ;
+                      begin
+                        if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
+                           Lay_Price <= Bet.Bot_Cfg.Max_Price then
+    
+                          Pip_Lay.Init(Float_8(Lay_Price));
+                          Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+    
+                          Bet.Make_Bet(Betmode => Bet.Bot_Cfg.Bet_Mode, A_Bet_Type => Lay,
+                                           Price => Lay_Price, Size => Lay_Size,
+                                           Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                        end if;
+                      end;
+                    when Greenup => raise Suicide with "Bet_Side Greenup and None does not match";
+                end case;
               end case;
             else
               Log(Me & "Do_Try", "i:" & i'Img & " Min_Num_Runners_Better_Ranked" & Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked'Img &
@@ -915,16 +904,9 @@ package body Bet_Handler is
 --  end record;
 
     case A_Bet_Type is
-      when Green_Up_Back  =>
---        Pip.Init(Local_Price);
---        Local_Price := Pip.Previous_Price;
-        Move("BACK", Side);
-
-      when Green_Up_Lay  =>
---  not when greening up      Pip.Init(Local_Price);
---        Local_Price := Pip.Next_Price;
-        Move("LAY", Side);
-
+      when Back    => Move("BACK", Side);
+      when Lay     =>  Move("LAY", Side);   
+      when Greenup => raise Suicide with "bad data GREENUP";      
     end case;
 
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
@@ -948,20 +930,23 @@ package body Bet_Handler is
         end;
 
         case A_Bet_Type is
-          when Green_Up_Back =>
+          when Back =>
             case Bet.Bot_Cfg.Green_Up_Mode is
               when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
               when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_Second_Bet_Persistance'Img);
+              when None                => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
             end case;
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
-          when Green_Up_Lay =>
+          when Lay =>
             case Bet.Bot_Cfg.Green_Up_Mode is
-              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_Second_Bet_Persistance'Img);
-              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field =>  Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
+              when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Lay_Second_Bet_Persistance'Img);
+              when Lay_First_Then_Back => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
+              when None                => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Lay_First_Bet_Persistance'Img);
             end case;
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
+          when Greenup => raise Suicide with "bad data GREENUP";      
         end case;
 
         Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
@@ -979,10 +964,9 @@ package body Bet_Handler is
 
         Query_Place_Orders.Set_Field (Field_Name => "params", Field => Params);
         case A_Bet_Type is
-          when Green_Up_Back =>
-            Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
-          when Green_Up_Lay =>
-            Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
+          when Back    => Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
+          when Lay     => Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
+          when Greenup => raise Suicide with "bad data GREENUP";      
         end case;
 --        pragma Compile_time_warning(True, "id to keep pair together?");
         Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
@@ -1183,14 +1167,16 @@ package body Bet_Handler is
         Move( "SUCCESS", Instruction_Report_Status);
         Move( "SUCCESS", Instruction_Report_Error_Code);
         case A_Bet_Type is
-          when Green_Up_Back =>
+          when Back =>
             Average_Price_Matched := Float(Local_Price);
             L_Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
             Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
-          when Green_Up_Lay =>
+          when Lay =>
             Average_Price_Matched := Float(Local_Price);
             L_Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
             Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
+          when Greenup => raise Suicide with "bad data GREENUP";      
+            
         end case;
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
 
@@ -1318,21 +1304,15 @@ package body Bet_Handler is
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet,Bet_From_List      : Table_Abets.Data_Type;
     T        : Sql.Transaction_Type;
---    Illegal_Data : Boolean := False;
---    Side       : Bet_Type_Type;
---    Winner     : Table_Awinners.Data_Type;
---    Runner     : Table_Arunners.Data_Type;
---    Non_Runner : Table_Anonrunners.Data_Type;
-    type Eos_Type is (--Awinner,
- --                     Arunner ,
-                      Abets
-                     -- Anonrunner
-                     );
+    Illegal_Data : Boolean := False;
+    Side       : Bet_Type_Type;
+    Runner     : Table_Arunners.Data_Type;
+    type Eos_Type is (Arunner ,
+                      Abets);
     Eos        : array (Eos_Type'range) of Boolean := (others => False);
---    Selection_In_Winners,
---    Did_Exit,
- --   Bet_Won               : Boolean := False;
- --   Profit                : Float_8 := 0.0;
+    Selection_In_Winners,
+    Bet_Won               : Boolean := False;
+    Profit                : Float_8 := 0.0;
     Start_Ts              : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
     Stop_Ts               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
 
@@ -1342,98 +1322,98 @@ package body Bet_Handler is
   begin
     Log(Me & "Check_Bets", "start");
 
---    T.Start;
---    -- check the dry run bets
---    Select_Dry_Run_Bets.Prepare(
---      "select B.* from ABETS B, AMARKETS M " &
---      "where B.MARKETID = M.MARKETID " &
---      "and B.BETWON is null " & -- will be not null if updated
---      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
+    T.Start;
+    -- check the dry run bets
+    Select_Dry_Run_Bets.Prepare(
+      "select B.* from ABETS B, AMARKETS M " &
+      "where B.MARKETID = M.MARKETID " &
+      "and B.BETWON is null " & -- will be not null if updated
+      "and B.BETID < 1000000000 " & -- local bet
+      "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
 --      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
-----      "and exists (select 'a' from AWINNERS where AWINNERS.MARKETID = B.MARKETID)" ); -- must have had time to check ...
---      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...
---
+      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
 --    Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
---    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
---
---    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
---      Illegal_Data := False;
---      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
---      Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
---      if Trim(Bet.Side) = "BACK" then
---        Side := Green_Up_Back;
---      elsif Trim(Bet.Side(1..3)) = "LAY" then --lay + lay1-lay6
---        Side := Green_Up_Lay;
---      else
---        Illegal_Data := True;
---        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
---      end if;
---      if not Illegal_Data then
---        Runner.Marketid := Bet.Marketid;
---        Runner.Selectionid := Bet.Selectionid;
---        Table_Arunners.Read(Runner, Eos(Arunner));
---
---        if not Eos(Arunner) then
---        -- do we have a non-runner?
---          if Runner.Status(1..7) = "REMOVED" then
---            -- non -runner - void the bet
---            Bet.Betwon := True;
---            Bet.Profit := 0.0;
---            begin
---              Table_Abets.Update_Withcheck(Bet);
---            exception
---              when Sql.No_Such_Row =>
---                Did_Exit := True;
---                T.Rollback; -- let the other one do the update
---                exit;
---            end ;
---
---          elsif Runner.Status(1..6) = "WINNER" then
---          -- this one won
---            Selection_In_Winners := True;
---          elsif Runner.Status(1..5) = "LOSER" then
---          -- this one won
---            Selection_In_Winners := False;
---          else
---            Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
---            exit Inner;
---          end if;
---        else
---            Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
---            exit Inner;
---
---        end if;
---
---        case Side is
---          when Green_Up_Back => Bet_Won := Selection_In_Winners;
---          when Green_Up_Lay  => Bet_Won := not Selection_In_Winners;
---        end case;
---
---        if Bet_Won then
---          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
---                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
---            when Green_Up_Back => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
---            when Green_Up_Lay  => Profit := 1.0 * Bet.Sizematched;
---          end case;
---        else -- lost :-(
---          case Side is
---            when Green_Up_Back => Profit := - Bet.Sizematched;
---            when Green_Up_Lay  => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
---          end case;
---        end if;
---
---        Bet.Betwon := Bet_Won;
---        Bet.Profit := Profit;
---        begin
---          Table_Abets.Update_Withcheck(Bet);
---        exception
---          when Sql.No_Such_Row =>
---             Did_Exit := True;
---             T.Rollback; -- let the other one do the update
---             exit Inner;
---        end ;
---      end if; -- Illegal data
---    end loop Inner;
+    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
+
+    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+      Illegal_Data := False;
+      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
+      Log(Me & "Check_Bets", "Check bet " & Table_Abets.To_String(Bet));
+      if Trim(Bet.Side) = "BACK" then
+        Side := Back;
+      elsif Trim(Bet.Side(1..3)) = "LAY" then --lay + lay1-lay6
+        Side := Lay;
+      else
+        Illegal_Data := True;
+        Log(Me & "Check_Bets", "Illegal_Data ! side -> " &  Trim(Bet.Side));
+      end if;
+      if not Illegal_Data then
+        Runner.Marketid := Bet.Marketid;
+        Runner.Selectionid := Bet.Selectionid;
+        Table_Arunners.Read(Runner, Eos(Arunner));
+
+        if not Eos(Arunner) then
+        -- do we have a non-runner?
+          if Runner.Status(1..7) = "REMOVED" then
+            -- non -runner - void the bet
+            Bet.Betwon := True;
+            Bet.Profit := 0.0;
+            begin
+              Table_Abets.Update_Withcheck(Bet);
+            exception
+              when Sql.No_Such_Row =>
+                T.Rollback; -- let the other one do the update
+                exit;
+            end ;
+
+          elsif Runner.Status(1..6) = "WINNER" then
+          -- this one won
+            Selection_In_Winners := True;
+          elsif Runner.Status(1..5) = "LOSER" then
+          -- this one won
+            Selection_In_Winners := False;
+          else
+            Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
+            exit Inner;
+          end if;
+        else
+            Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
+            exit Inner;
+
+        end if;
+
+        case Side is
+          when Back    => Bet_Won := Selection_In_Winners;
+          when Lay     => Bet_Won := not Selection_In_Winners;
+          when Greenup => raise Suicide with "bad data GREENUP";            
+        end case;
+
+        if Bet_Won then
+          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
+                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
+            when Back    => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
+            when Lay     => Profit := 1.0 * Bet.Sizematched;
+            when Greenup => raise Suicide with "bad data GREENUP";            
+          end case;
+        else -- lost :-(
+          case Side is
+            when Back    => Profit := - Bet.Sizematched;
+            when Lay     => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
+            when Greenup => raise Suicide with "bad data GREENUP";            
+          end case;
+        end if;
+
+        Bet.Betwon := Bet_Won;
+        Bet.Profit := Profit;
+        begin
+          Table_Abets.Update_Withcheck(Bet);
+        exception
+          when Sql.No_Such_Row =>
+             T.Rollback; -- let the other one do the update
+             exit Inner;
+        end ;
+      end if; -- Illegal data
+    end loop Inner;
 
 
 
@@ -1441,7 +1421,7 @@ package body Bet_Handler is
     -- check the real bets
     T.Start;
     Select_Real_Bets.Prepare(
-      "select min(STARTTS) from ABETS where BETWON is null");
+      "select min(STARTTS) from ABETS where BETWON is null and BETID > 1000000000");
 
     Select_Real_Bets.Open_Cursor;
     Select_Real_Bets.Fetch(Eos(Abets));
