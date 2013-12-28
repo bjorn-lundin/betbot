@@ -275,10 +275,6 @@ package body Bet_Handler is
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_greenup_") > Natural(0) then
       null;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > Natural(0) then
-      null;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > Natural(0) then
-      null;
     else
       raise Bad_Data with "bad bet type: '" & Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)) & "'";
     end if;
@@ -1338,6 +1334,7 @@ package body Bet_Handler is
       "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
 --    Select_Dry_Run_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
+    T.Commit;
 
     Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
       Illegal_Data := False;
@@ -1363,7 +1360,9 @@ package body Bet_Handler is
             Bet.Betwon := True;
             Bet.Profit := 0.0;
             begin
+              T.Start;
               Table_Abets.Update_Withcheck(Bet);
+              T.Commit;
             exception
               when Sql.No_Such_Row =>
                 T.Rollback; -- let the other one do the update
@@ -1383,7 +1382,6 @@ package body Bet_Handler is
         else
             Log(Me & "Check_Bets", "runner not found ?? " & Table_Arunners.To_String(Runner));
             exit Inner;
-
         end if;
 
         case Side is
@@ -1410,7 +1408,9 @@ package body Bet_Handler is
         Bet.Betwon := Bet_Won;
         Bet.Profit := Profit;
         begin
+          T.Start;
           Table_Abets.Update_Withcheck(Bet);
+          T.Commit;
         exception
           when Sql.No_Such_Row =>
              T.Rollback; -- let the other one do the update
@@ -1460,17 +1460,21 @@ package body Bet_Handler is
         Bet.Status       := Bet_From_List.Status;
         Bet.Betwon       := Bet.Profit >= 0.0;
 
-        begin
-          T.Start;
-          Table_Abets.Update_Withcheck(Bet);
-          Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);
-
-          T.Commit;
-        exception
-          when Sql.No_Such_Row =>
-             T.Rollback; -- let the other one do the update
-             Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
-        end ;
+        if Bet.Status(1..6) /= "VOIDED" and then
+          Bet.Status(1..9) /= "CANCELLED" and then
+          Bet.Status(1..6) /= "LAPSED" and then
+          Bet.Status(1..7) /= "SETTLED"  then          
+          begin
+            T.Start;
+            Table_Abets.Update_Withcheck(Bet);
+            T.Commit;
+            Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);
+          exception
+            when Sql.No_Such_Row =>
+               T.Rollback; -- let the other one do the update
+               Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
+          end ;
+        end if;              
       else
         Log(Me & "Check_Bets", "EOS!! " & Table_Abets.To_String(Bet));
       end if;
