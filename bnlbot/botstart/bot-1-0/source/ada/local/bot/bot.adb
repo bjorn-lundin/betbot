@@ -29,7 +29,7 @@ procedure Bot is
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
   
   Is_Time_To_Exit : Boolean := False;
-  
+  use type Sql.Transaction_Status_Type;
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Bot_Config.Config.Read; -- even from cmdline
@@ -86,6 +86,9 @@ begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      if Sql.Transaction_Status /= Sql.None then
+        raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+      end if;
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
@@ -107,6 +110,10 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
+        if Sql.Transaction_Status /= Sql.None then
+          raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+        end if;
+        
         case Bot_Config.Config.System_Section.Bot_Mode is
           when Bot_Types.Real       =>
             Rpc.Keep_Alive(OK);
