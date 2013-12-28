@@ -40,6 +40,7 @@ with RPC ; -- use RPC;
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
 --  package AD renames Ada.Directories;
+  use type Sql.Transaction_Status_Type;
   
   Me : constant String := "Main.";  
 
@@ -732,6 +733,10 @@ begin
     loop   
       begin
         Process_Io.Receive(Msg, 5.0);
+        if Sql.Transaction_Status /= Sql.None then
+          raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+        end if;
+        
         Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & General_Routines.Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  => exit Main_Loop;
@@ -739,6 +744,9 @@ begin
         end case;  
       exception
           when Process_io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
+          if Sql.Transaction_Status /= Sql.None then
+            raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+          end if;
       end;
       Now := Sattmate_Calendar.Clock;
       Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;

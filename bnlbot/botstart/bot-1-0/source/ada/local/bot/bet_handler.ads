@@ -84,7 +84,7 @@ private
      Upper_Index   : Integer := 0;
      This_Index    : Integer := 0;
   end record;
-  procedure Init(Pip : in out Pip_Type; Price : Float_8) ;
+  procedure Init(Pip : in out Pip_Type; Price : Float_8;Silent : Boolean := False) ;
   function Next_Price(Pip : Pip_Type) return Float_8;
   function Previous_Price(Pip : Pip_Type) return Float_8;
   

@@ -42,6 +42,7 @@ procedure Winners_Fetcher_Json is
   Is_Time_To_Exit : Boolean := False;
 ----------------------------------------------
 
+  use type Sql.Transaction_Status_Type;
   
 begin
    Define_Switch
@@ -88,6 +89,9 @@ begin
       begin
         Log(Me, "Start receive");
         Process_Io.Receive(Msg, Timeout);
+        if Sql.Transaction_Status /= Sql.None then
+          raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+        end if;
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  =>
             exit Main_Loop;
@@ -96,6 +100,9 @@ begin
         end case;
       exception
         when Process_Io.Timeout =>
+          if Sql.Transaction_Status /= Sql.None then
+            raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+          end if;
           Timeout := Long_Timeout; -- first time fast ...
           Log(Me, "Timeout");
           Rpc.Keep_Alive(OK);
