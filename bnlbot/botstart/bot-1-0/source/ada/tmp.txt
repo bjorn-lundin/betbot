@@ -1,6 +1,0 @@
-
-Execution terminated by unhandled exception
-Exception name: GNAT.AWK.FILE_ERROR
-Message: [??:0] File /home/bnl/bnlbot/botstart/bot-0-9/script/plot/green_10_20_1_1_GB.green not found.
-Call stack traceback locations:
-0x7f2584a6c73a 0x7f2584a6d025 0x7f2584a6d8f5 0x4191eb 0x4059b0 0x7f258410ceab 0x405487
