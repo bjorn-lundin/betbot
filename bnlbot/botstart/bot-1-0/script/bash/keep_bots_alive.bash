@@ -71,83 +71,71 @@ fi
 
 function Check_Bots_For_User () {
 
-export BOT_USER=$1
-
-. $BOT_START/bot.bash $BOT_USER 
-
-[ ! -r $BOT_HOME/login.ini ] && return 0
-
-
-#try to lock the file $BOT_TARGET/locks/market_fetcher
-#$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
-#RESULT_MARKETS_FETCHER=$?
-#if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
-#  export BOT_NAME=markets_fetcher
-#  $BOT_TARGET/bin/markets_fetcher --daemon
-#fi
-ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
-RESULT_MARKETS_FETCHER=$?
-if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
-  echo "Started markets_fetcher $BOT_USER"
-  export BOT_NAME=markets_fetcher
-  $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
-fi
-
-#if the lock can be aquired, the process is NOT running - start it
-
-##bot  is not running
-#bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
-#bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
-#0
-
-##bot  is running
-#bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
-#bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
-#1
-
-########## bot ############
-$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
-RESULT_BOT=$?
-if [ $RESULT_BOT -eq 0 ] ; then
-  export BOT_NAME=bot
-  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon  --mode=$BOT_MODE
-fi
-
-
-ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
-RESULT_BOT=$?
-if [ $RESULT_BOT -eq 1 ] ; then
-  echo "Started bot $BOT_USER"
-  export BOT_NAME=bot
-  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE
-fi
-
-#ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
-#RESULT_SALDO_FETCHER=$?
-#if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-#  echo "Started saldo_fetcher $BOT_USER"
-#  export BOT_NAME=saldo_fetcher
-#  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
-#fi
-
-ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
-RESULT_WJ_FETCHER=$?
-if [ $RESULT_WJ_FETCHER -eq 1 ] ; then
-  echo "Started winners_fetcher_json $BOT_USER"
-  export BOT_NAME=w_fetch_json
-  $BOT_TARGET/bin/winners_fetcher_json --daemon --user=$BOT_USER
-fi
-
-
-
-
-#zip logfiles every hour, on minute 17 in the background
-MINUTE=$(date +"%M")
-
-if [[ $MINUTE == "17" ]] ; then
-  tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER & 
-fi 
-
+  export BOT_USER=$1
+  
+  . $BOT_START/bot.bash $BOT_USER 
+  
+  [ ! -r $BOT_HOME/login.ini ] && return 0
+    
+  #try to lock the file $BOT_TARGET/locks/market_fetcher
+  #$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
+  #RESULT_MARKETS_FETCHER=$?
+  #if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
+  #  export BOT_NAME=markets_fetcher
+  #  $BOT_TARGET/bin/markets_fetcher --daemon
+  #fi
+  ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
+  RESULT_MARKETS_FETCHER=$?
+  if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
+    echo "Started markets_fetcher $BOT_USER"
+    export BOT_NAME=markets_fetcher
+    $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
+  fi
+  
+  #if the lock can be aquired, the process is NOT running - start it
+  
+  ##bot  is not running
+  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
+  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
+  #0
+  
+  ##bot  is running
+  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
+  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
+  #1
+  
+  ########## bot ############
+  
+  ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
+  RESULT_BOT=$?
+  if [ $RESULT_BOT -eq 1 ] ; then
+    echo "Started bot $BOT_USER"
+    export BOT_NAME=bot
+    $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE
+  fi
+  
+  ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
+  RESULT_SALDO_FETCHER=$?
+  if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
+    echo "Started saldo_fetcher $BOT_USER"
+    export BOT_NAME=saldo_fetcher
+    $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
+  fi
+  
+  ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
+  RESULT_WJ_FETCHER=$?
+  if [ $RESULT_WJ_FETCHER -eq 1 ] ; then
+    echo "Started winners_fetcher_json $BOT_USER"
+    export BOT_NAME=w_fetch_json
+    $BOT_TARGET/bin/winners_fetcher_json --daemon --user=$BOT_USER
+  fi
+  
+  #zip logfiles every hour, on minute 17 in the background
+  MINUTE=$(date +"%M")
+  
+  if [[ $MINUTE == "17" ]] ; then
+    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER & 
+  fi 
 
 }
 
