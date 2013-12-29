@@ -1434,13 +1434,17 @@ package body Bet_Handler is
     if not Eos(Abets) then
       Select_Real_Bets.Get_Timestamp(1, Start_Ts);
       Stop_Ts := Start_Ts + (1,0,0,0,0); -- 1 day
-    else
-      Stop_Ts  := Sattmate_Calendar.Clock ; -- now
-      Start_Ts := Stop_Ts - (1,0,0,0,0);    -- 1 day
+--    else
+--      Stop_Ts  := Sattmate_Calendar.Clock ; -- now
+--      Start_Ts := Stop_Ts - (1,0,0,0,0);    -- 1 day
     end if;
     Select_Real_Bets.Close_Cursor;
     T.Commit;
 
+    if Start_Ts = Sattmate_Calendar.Time_Type_First then
+      Eos(Abets) := True;
+    end if;
+    
     if not Eos(Abets) then
       for i in Cleared_Bet_Status_Type'range loop
         Rpc.Get_Cleared_Bet_Info_List(Bet_Status     => i,
