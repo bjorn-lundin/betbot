@@ -24,7 +24,7 @@ procedure Bot is
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";
-  use type Bot_Types.Mode_Type;
+  use type Bot_Types.Bot_Mode_Type;
   OK : Boolean := False;
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
   

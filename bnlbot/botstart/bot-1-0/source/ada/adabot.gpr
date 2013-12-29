@@ -24,8 +24,7 @@ project Adabot is
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb");
                     
-   Stat_Mains   := ("profit_per_weekday.adb",
-                    "change_10_percent.adb",
+   Stat_Mains   := ("change_10_percent.adb",
                     "greening_up_1.adb",
                     "greening_up_2.adb",
                     "greening_up_3.adb");

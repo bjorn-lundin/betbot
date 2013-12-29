@@ -62,7 +62,6 @@ private
   
   
   procedure Make_Bet(Bet           : in out Bet_Type;
-                     Betmode       : in     Bet_Mode_Type; 
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;

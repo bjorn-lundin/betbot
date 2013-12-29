@@ -31,12 +31,11 @@ package Bot_Types is
    
    type Bet_Persistence_Type is (Lapse, Persist, Market_On_Close);
    
-   type Mode_Type is (Real, Simulation);
-   type Bet_Mode_Type is ( Real, Sim);
-   for Bet_Mode_Type'Size use Integer_4'Size;
-   for Bet_Mode_Type use ( Real => 2, Sim => 3);
-   function Bet_Mode is new Unchecked_Conversion(Bet_Mode_Type, Integer_4);
-   function Bet_Mode is new Unchecked_Conversion(Integer_4, Bet_Mode_Type);
+   type Bot_Mode_Type is (Real, Simulation);
+   for Bot_Mode_Type'Size use Integer_4'Size;
+   for Bot_Mode_Type use ( Real => 2, Simulation => 3);
+   function Bot_Mode is new Unchecked_Conversion(Bot_Mode_Type, Integer_4);
+   function Bot_Mode is new Unchecked_Conversion(Integer_4, Bot_Mode_Type);
    
    
    type Bet_Status_Type is (Executable, Execution_Complete, Settled, Lapsed, Voided, Cancelled);
