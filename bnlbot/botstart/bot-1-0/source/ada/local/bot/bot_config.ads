@@ -44,7 +44,7 @@ package Bot_Config is
     Min_Num_Runners  : Min_Num_Runners_Type   := 8;
     Num_Winners      : Num_Winners_Type       := 1;
     Countries        : Unbounded_String       := Null_Unbounded_String ;
-    Bet_Mode         : Bet_Mode_Type          := Sim;
+--    Bet_Mode         : Bet_Mode_Type          := Sim;
     Bet_Type         : Bet_Type_Type          := Greenup;
     Allowed_Days     : Allowed_Days_Array     := (others => False);
     Green_Up_Mode    : Green_Up_Mode_Type     := None;
@@ -67,7 +67,7 @@ package Bot_Config is
     Bot_Script : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Bot_Home   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/script
     Daemonize  : Boolean          := True;
-    Bot_Mode   : Mode_Type        := Real;
+    Bot_Mode   : Bot_Mode_Type        := Real;
   end record;
 
 

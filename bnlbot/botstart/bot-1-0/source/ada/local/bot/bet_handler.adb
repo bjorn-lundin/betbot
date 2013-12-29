@@ -339,8 +339,8 @@ package body Bet_Handler is
       end if;
 
       --before we bet anything, check finances first
-      case  Bet.Bot_Cfg.Bet_Mode is
-        when  Real =>
+      case Bot_Config.Config.System_Section.Bot_Mode is
+        when Real =>
           declare
             Betfair_Result : Rpc.Result_Type ;
             Saldo          : Table_Abalances.Data_Type;
@@ -365,7 +365,7 @@ package body Bet_Handler is
               Continue_Betting := False;
             end if;
           end;
-        when Sim => null;
+        when Simulation => null;
       end case;        
     
       if Continue_Betting then
@@ -379,7 +379,6 @@ package body Bet_Handler is
             --Allow only if i is > than 'Min_Num_Runners_Better_Ranked'
 
             if Integer_4(i) > Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked then
-
 
               case Bet.Bot_Cfg.Green_Up_Mode is
                 when Back_First_Then_Lay =>
@@ -398,9 +397,9 @@ package body Bet_Handler is
                       Pip_Back.Init(Float_8(Back_Price));
                       Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
 
-                      case Bet.Bot_Cfg.Bet_Mode is
+                      case Bot_Config.Config.System_Section.Bot_Mode is
                         when Real =>
-                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Back,
+                          Bet.Make_Bet(A_Bet_Type => Back,
                                        Price => Back_Price, Size => Back_Size,
                                        Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           -- use the matched back_price
@@ -416,14 +415,14 @@ package body Bet_Handler is
                                        "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
 
                           if Price_Matched > 0.0 then
-                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Lay,
+                            Bet.Make_Bet(A_Bet_Type => Lay,
                                          Price => Lay_Price, Size => Lay_Size,
                                          Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           else
                             Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");
                           end if;
 
-                        when Sim  => raise Suicide with "Green_Up_Mode Back_First_Then_Lay and sim does not match";
+                        when Simulation  => raise Suicide with "Green_Up_Mode Back_First_Then_Lay and Simulation does not match";
                             
                       end case;
                     end if;
@@ -445,9 +444,9 @@ package body Bet_Handler is
                       Pip_Lay.Init(Float_8(Lay_Price));
                       Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
 
-                      case Bet.Bot_Cfg.Bet_Mode is
+                      case Bot_Config.Config.System_Section.Bot_Mode is
                         when Real =>
-                          Bet.Make_Bet(Betmode => Real, A_Bet_Type => Lay,
+                          Bet.Make_Bet(A_Bet_Type => Lay,
                                        Price => Lay_Price, Size => Lay_Size,
                                        Price_Matched => Price_Matched, Size_Matched => Size_Matched);
 
@@ -475,18 +474,18 @@ package body Bet_Handler is
                                    "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                    "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
 
-                            Bet.Make_Bet(Betmode => Real, A_Bet_Type => Back,
+                            Bet.Make_Bet(A_Bet_Type => Back,
                                          Price => Back_Price, Size => Back_Size,
                                          Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                           else
                             Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");
                           end if;
 
-                        when Sim  => raise Suicide with "Green_Up_Mode Lay_First_Then_Back and sim does not match";
+                        when Simulation  => raise Suicide with "Green_Up_Mode Lay_First_Then_Back and Simulation does not match";
                       end case;
                     end if;
                   end;
-                when None => -- ordinary bets, mostly sims  
+                when None => -- ordinary bets, mostly Simulations  
                   case Bet.Bot_Cfg.Bet_Type is
                     when Back =>
                       declare
@@ -500,9 +499,9 @@ package body Bet_Handler is
                           Pip_Back.Init(Float_8(Back_Price));
                           Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
     
-                          Bet.Make_Bet(Betmode => Bet.Bot_Cfg.Bet_Mode , A_Bet_Type => Back,
-                                           Price => Back_Price, Size => Back_Size,
-                                           Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type => Back,
+                                       Price => Back_Price, Size => Back_Size,
+                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                         end if;
                       end;
                       
@@ -519,9 +518,9 @@ package body Bet_Handler is
                           Pip_Lay.Init(Float_8(Lay_Price));
                           Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
     
-                          Bet.Make_Bet(Betmode => Bet.Bot_Cfg.Bet_Mode, A_Bet_Type => Lay,
-                                           Price => Lay_Price, Size => Lay_Size,
-                                           Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type => Lay,
+                                       Price => Lay_Price, Size => Lay_Size,
+                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
                         end if;
                       end;
                     when Greenup => raise Suicide with "Bet_Side Greenup and None does not match";
@@ -694,11 +693,11 @@ package body Bet_Handler is
         "where " &
           "STARTTS >= :STARTOFDAY " &
           "and STARTTS <= :ENDOFDAY " &
-          "and BETMODE = :BETMODE " &
+          "and BETMODE = :BOTMODE " &
           "and BETWON is not null " &
           "and BETNAME = :BETNAME " );
 
-      Select_Profit_Today.Set("BETMODE", Bet_Mode(Real));
+      Select_Profit_Today.Set("BOTMODE", Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
 
       Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
@@ -741,12 +740,12 @@ package body Bet_Handler is
         "from ABETS " &
         "where STARTTS >= :STARTOFDAY " &
         "and STARTTS <= :ENDOFDAY " &
-        "and BETMODE = :BETMODE " &
+        "and BETMODE = :BOTMODE " &
         "and PROFIT < 0.0 " &
         "and BETWON is not null " &
         "and BETNAME = :BETNAME " );
 
-      Select_Lost_Today.Set("BETMODE",  Bet_Mode(Real));
+      Select_Lost_Today.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
       Select_Lost_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
       Select_Lost_Today.Set_Timestamp( "ENDOFDAY",End_Date);
@@ -777,11 +776,11 @@ package body Bet_Handler is
            "ABETS " &
          "where MARKETID = :MARKETID " &
          "and SELECTIONID = :SELECTIONID " &
-         "and BETMODE = :BETMODE " &
+         "and BETMODE = :BOTMODE " &
          "and BETNAME = :BETNAME ");
 
       Select_Exists.Set("SELECTIONID",  Bet.Bet_Info.Selection_Id);
-      Select_Exists.Set("BETMODE",  Bet_Mode(Real));
+      Select_Exists.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Exists.Set("BETNAME",  To_String(Bet.Bot_Cfg.Bet_Name));
       Select_Exists.Set("MARKETID", Bet.Bet_Info.Market.Marketid);
 
@@ -810,11 +809,11 @@ package body Bet_Handler is
          "from " &
            "ABETS " &
          "where BETWON is null " &
-         "and BETMODE = :BETMODE " &
+         "and BETMODE = :BOTMODE " &
          "and BETNAME = :BETNAME ");
 
-      Select_In_The_Air.Set("BETMODE",  Bet_Mode(Real));
-      Select_In_The_Air.Set("BETNAME",  To_String(Bet.Bot_Cfg.Bet_Name));
+      Select_In_The_Air.Set("BOTMODE", Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
+      Select_In_The_Air.Set("BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
 
       Select_In_The_Air.Open_Cursor;
       Select_In_The_Air.Fetch(Eos);
@@ -828,7 +827,6 @@ package body Bet_Handler is
   ---------------------------------------------------------------
 
   procedure Make_Bet(Bet           : in out Bet_Type;
-                     Betmode       : in     Bet_Mode_Type;
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
@@ -879,7 +877,7 @@ package body Bet_Handler is
 --  type Data_Type is record
 --      Betid :    Integer_8  := 0 ; -- Primary Key
 --      Marketid :    String (1..11) := (others => ' ') ; -- non unique index 2
---      Betmode :    Integer_4  := 0 ; --
+--      Botmode :    Integer_4  := 0 ; --
 --      Powerdays :    Integer_4  := 0 ; -- non unique index 3
 --      Selectionid :    Integer_4  := 0 ; --
 --      Reference :    String (1..30) := (others => ' ') ; --
@@ -914,9 +912,9 @@ package body Bet_Handler is
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
     Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
 
-    Log(Me & "Make_Bet", "Side :" & Side & " Betmode: " & Betmode'Img);
+    Log(Me & "Make_Bet", "Side :" & Side & " Botmode: " & Bot_Config.Config.System_Section.Bot_Mode'Img);
 
-    case Betmode is
+    case Bot_Config.Config.System_Section.Bot_Mode is
       when Real =>
 
         -- prepare the AWS
@@ -1161,7 +1159,7 @@ package body Bet_Handler is
           end if;
         end ;
 
-      when Sim =>
+      when Simulation =>
         Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
         Move( "EXECUTION_COMPLETE", Order_Status);
         Move( "SUCCESS", Execution_Report_Status);
@@ -1192,7 +1190,7 @@ package body Bet_Handler is
     Abet := (
       Betid          => Bet_Id,
       Marketid       => Bet.Bet_Info.Market.Marketid,
-      Betmode        => Bet_Mode(Betmode),
+      Betmode        => Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode),
       Powerdays      => Powerdays,
       Selectionid    => Bet.Bet_Info.Selection_Id,
       Reference      => (others => '-'),

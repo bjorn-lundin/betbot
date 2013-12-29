@@ -36,15 +36,10 @@ package body Bot_Config is
     -----------------------------------------------------
 
   procedure Read(Cfg : in out Config_Type) is
-    function Get_Bet_Mode is new Ini.Get_Enumeration_Value(Bet_Mode_Type);
     function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
     function Get_Bet_Persistence is new Ini.Get_Enumeration_Value(Bet_Persistence_Type);
---    function Get_Bet_Type is new Ini.Get_Enumeration_Value(Bet_Type_Type);
-
-
-
-   type Cfg_Type is ( Market, Animal, Type_Of_Bet);
-   Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
+    type Cfg_Type is ( Market, Animal, Type_Of_Bet);
+    Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
     Log(Me & "Read start");
     if not Command_Line_Is_Parsed then
@@ -144,7 +139,7 @@ package body Bot_Config is
             Bet_Section.Max_Num_Runners    := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners","25"));
             Bet_Section.Min_Num_Runners    := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners","8"));
             Bet_Section.Num_Winners        := Num_Winners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"no_of_winners","1"));
-            Bet_Section.Bet_Mode           := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
+--            Bet_Section.Bet_Mode           := Get_Bet_Mode(Ini.Get_Section_Name(i),"mode", Sim) ;
             Bet_Section.Max_Exposure       := Max_Exposure_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_exposure","600.0"));
             Bet_Section.Green_Up_Mode      := Get_Green_Up_Mode(Ini.Get_Section_Name(i),"green_up_mode", Back_First_Then_Lay) ;
             Bet_Section.Lay_First_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_first_bet_persistance", Lapse) ;
@@ -349,7 +344,7 @@ package body Bot_Config is
                "<Max_Num_In_The_Air>" & Bet_Section.Max_Num_In_The_Air'Img & "</Max_Num_In_The_Air>" &
                "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" &
                "<Delta_Size>" & F8_Image(Float_8(Bet_Section.Delta_Size)) & "</Delta_Size>" &
-               "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
+--               "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" &
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" &
                "<Market_Type>" & Bet_Section.Market_Type'Img & "</Market_Type>" &
