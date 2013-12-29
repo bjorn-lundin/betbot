@@ -11,8 +11,8 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Posix;
 with Table_Amarkets;
-with Table_Awinners;
 with Table_Aevents;
+with Table_Arunners;
 with Ini;
 with Logging; use Logging;
 
@@ -40,7 +40,7 @@ procedure Markets_Sender is
   Amarkets_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
   Amarket :  Table_Amarkets.Data_Type;
   Aevent :  Table_Aevents.Data_Type;
-  Awinner : Table_Awinners.Data_Type;
+  Arunner : Table_Arunners.Data_Type;
   MNR      : Bot_Messages.Market_Notification_Record;
   Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
   Tot,Cur : Natural := 0;
@@ -119,12 +119,17 @@ begin
   while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Amarkets_List) loop
      Cur := Cur +1;
      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Amarkets_List, Amarket);
-     Awinner.Marketid := Amarket.Marketid;
-     Table_Awinners.Read_One_Marketid(Awinner,False,Eos(Winner));
+     Arunner.Marketid := Amarket.Marketid;
+     Move("WINNER",Arunner.Status);
+     Table_Arunners.Read_One_Marketid_status(Arunner,
+                                             Order      => False,
+                                             End_Of_Set => Eos(Winner));
+     
      if not Eos(Winner) then -- need to have a winner
        MNR.Market_Id := (others => ' ');
        Receiver.Name := (others => ' ');
        Move(Amarket.Marketid, MNR.Market_Id);
+       Move("bot", Receiver.Name);
        
        Aevent.Eventid := Amarket.Eventid;
        Table_Aevents.Read(Aevent,Eos(Event));
@@ -153,24 +158,26 @@ begin
           elsif Trim(Amarket.Markettype) = "WIN" then     
 --            Do_Send := False;
             if    Aevent.Countrycode = "US" then
-              Move("horses_win_us", Receiver.Name);
+--              Move("horses_win_us", Receiver.Name);
               Do_Send := False;
             elsif Aevent.Countrycode = "GB" then
-              Move("horses_win_gb", Receiver.Name);
+--              Move("horses_win_gb", Receiver.Name);
+              Do_Send := True;
             elsif Aevent.Countrycode = "IE" then
-              Move("horses_win_ie", Receiver.Name);
+--              Move("horses_win_ie", Receiver.Name);
+              Do_Send := True;
             elsif Aevent.Countrycode = "ZA" then
-              Move("horses_win_za", Receiver.Name);
+--              Move("horses_win_za", Receiver.Name);
               Do_Send := False;
             elsif Aevent.Countrycode = "SG" then
-              Move("horses_win_sg", Receiver.Name);
+--              Move("horses_win_sg", Receiver.Name);
               Do_Send := False;
             elsif Aevent.Countrycode = "FR" then
-              Move("horses_win_fr", Receiver.Name);
+--              Move("horses_win_fr", Receiver.Name);
               Do_Send := False;
             else
               Do_Send := False;
-              Move("horses_win_xx", Receiver.Name);            
+--              Move("horses_win_xx", Receiver.Name);            
             end if;                 
           end if;
         
