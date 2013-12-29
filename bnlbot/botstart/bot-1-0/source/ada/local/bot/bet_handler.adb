@@ -632,7 +632,7 @@ package body Bet_Handler is
       end if;
 
       if not Found then
-          Log(Me & "Check_Conditions_Fulfilled", "wrong country for this bot should be in : '" & Countries & "' is '" & Bet.Bet_Info.Event.Countrycode & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong country. OK countries are  : '" & Countries & "' market country is '" & Bet.Bet_Info.Event.Countrycode & "'");
           Result := False;
           return ; -- wrong country for this bot
       end if;
@@ -650,14 +650,16 @@ package body Bet_Handler is
       end if;
     end;
 
-    -- check market status --?
-    if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
-      Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
-      Result := False;
-      return;
-    end if;
-
-
+    case Bot_Config.Config.System_Section.Bot_Mode is 
+      when Real =>
+        -- check market status --?
+        if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
+          Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
+          Result := False;
+          return;
+        end if;
+      when Simulation => null; -- simulation has only closed orders ...
+    end case;       
   end Check_Conditions_Fulfilled;
   ------------------------------------------------------------------------------------------------------
 
