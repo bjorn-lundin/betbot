@@ -269,9 +269,9 @@ package body Bet_Handler is
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
     --changes here needs changes in bot_config as well !!!
-    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Back_") > Natural(0) then
+    if Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_back_") > Natural(0) then
       null;
-    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_Green_Up_Lay_") > Natural(0) then
+    elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_lay_") > Natural(0) then
       null;
     elsif Position( Lower_Case(To_String(Tmp.Bot_Cfg.Bet_Name)), "_greenup_") > Natural(0) then
       null;
@@ -1441,46 +1441,48 @@ package body Bet_Handler is
     Select_Real_Bets.Close_Cursor;
     T.Commit;
 
-    for i in Cleared_Bet_Status_Type'range loop
-      Rpc.Get_Cleared_Bet_Info_List(Bet_Status     => i,
-                                    Settled_From   => Start_Ts,
-                                    Settled_To     => Stop_Ts,
-                                    Betfair_Result => Rpc_Status,
-                                    Bet_List       => Bet_List) ;
-    end loop;
+    if not Eos(Abets) then
+      for i in Cleared_Bet_Status_Type'range loop
+        Rpc.Get_Cleared_Bet_Info_List(Bet_Status     => i,
+                                      Settled_From   => Start_Ts,
+                                      Settled_To     => Stop_Ts,
+                                      Betfair_Result => Rpc_Status,
+                                      Bet_List       => Bet_List) ;
+      end loop;
 
-    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
-      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet_From_List);
-      -- Call Betfair here ! Profit & Loss
-      Bet := Table_Abets.Empty_Data;
-      Bet.Betid := Bet_From_List.Betid;
-      Table_Abets.Read(Bet,Eos(Abets));
-      if not Eos(Abets) then
-        Bet.Pricematched := Bet_From_List.Pricematched;
-        Bet.Sizematched  := Bet_From_List.Sizematched;
-        Bet.Profit       := Bet_From_List.Profit;
-        Bet.Status       := Bet_From_List.Status;
-        Bet.Betwon       := Bet.Profit >= 0.0;
-
-        if Bet.Status(1..6) /= "VOIDED" and then
-          Bet.Status(1..9) /= "CANCELLED" and then
-          Bet.Status(1..6) /= "LAPSED" and then
-          Bet.Status(1..7) /= "SETTLED"  then          
-          begin
-            T.Start;
-            Table_Abets.Update_Withcheck(Bet);
-            T.Commit;
-            Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);
-          exception
-            when Sql.No_Such_Row =>
-               T.Rollback; -- let the other one do the update
-               Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
-          end ;
-        end if;              
-      else
-        Log(Me & "Check_Bets", "EOS!! " & Table_Abets.To_String(Bet));
-      end if;
-    end loop;
+      while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
+        Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet_From_List);
+        -- Call Betfair here ! Profit & Loss
+        Bet := Table_Abets.Empty_Data;
+        Bet.Betid := Bet_From_List.Betid;
+        Table_Abets.Read(Bet,Eos(Abets));
+        if not Eos(Abets) then
+          Bet.Pricematched := Bet_From_List.Pricematched;
+          Bet.Sizematched  := Bet_From_List.Sizematched;
+          Bet.Profit       := Bet_From_List.Profit;
+          Bet.Status       := Bet_From_List.Status;
+          Bet.Betwon       := Bet.Profit >= 0.0;
+  
+          if Bet.Status(1..6) /= "VOIDED" and then
+            Bet.Status(1..9) /= "CANCELLED" and then
+            Bet.Status(1..6) /= "LAPSED" and then
+            Bet.Status(1..7) /= "SETTLED"  then          
+            begin
+              T.Start;
+              Table_Abets.Update_Withcheck(Bet);
+              T.Commit;
+              Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);
+            exception
+              when Sql.No_Such_Row =>
+                 T.Rollback; -- let the other one do the update
+                 Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
+            end ;
+          end if;              
+        else
+          Log(Me & "Check_Bets", "EOS!! " & Table_Abets.To_String(Bet));
+        end if;
+      end loop;
+    end if;
     Table_Abets.Abets_List_Pack.Release(Bet_List);
     Log(Me & "Check_Bets", "stop");
   end Check_Bets;
@@ -1550,27 +1552,30 @@ package body Bet_Handler is
 
   begin
     Log(Me & "Check_Market_Status", "start");
-    T.Start;
-
-    Select_Ongoing_Markets.Prepare(
-      "select M.* from AMARKETS M " &
-      "where M.STATUS <> 'CLOSED' order by M.STARTTS");
-    Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
-
-    while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
-      Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &
-      " market left to check");
-      Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
-      Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
-      RPC.Market_Status_Is_Changed(Market, Is_Changed);
-
-      if Is_Changed then
-        Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));
-        Table_Amarkets.Update_Withcheck(Market);
-      end if;
-    end loop;
-    T.Commit;
-
+    
+    case Bot_Config.Config.System_Section.Bot_Mode is 
+      when Real =>
+        T.Start;
+        Select_Ongoing_Markets.Prepare(
+          "select M.* from AMARKETS M " &
+          "where M.STATUS <> 'CLOSED' order by M.STARTTS");
+        Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
+     
+        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+          Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &
+          " market left to check");
+          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
+          Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
+          RPC.Market_Status_Is_Changed(Market, Is_Changed);
+     
+          if Is_Changed then
+            Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));
+            Table_Amarkets.Update_Withcheck(Market);
+          end if;
+        end loop;
+        T.Commit;
+      when Simulation => null;
+    end case;       
     Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
     Log(Me & "Check_Market_Status", "stop");
   end Check_Market_Status;

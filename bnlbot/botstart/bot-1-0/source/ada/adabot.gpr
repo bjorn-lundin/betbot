@@ -32,6 +32,7 @@ project Adabot is
     
    Other_Mains := ("ini_reader.adb",
                    "back_all_g4.adb",
+                   "markets_sender.adb",                   
                    "bet_checker.adb");
    
    case Bot_Mode is
