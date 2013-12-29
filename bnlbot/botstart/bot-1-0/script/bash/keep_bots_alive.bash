@@ -105,13 +105,13 @@ fi
 #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
 #1
 
-########### bot ############
-#$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
-#RESULT_BOT=$?
-#if [ $RESULT_BOT -eq 0 ] ; then
-#  export BOT_NAME=bot
-#  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon
-#fi
+########## bot ############
+$BOT_TARGET/bin/check_bot_running --botname=bot > /dev/null 2>&1
+RESULT_BOT=$?
+if [ $RESULT_BOT -eq 0 ] ; then
+  export BOT_NAME=bot
+  $BOT_TARGET/bin/bot --user=$BOT_USER --daemon  --mode=$BOT_MODE
+fi
 
 
 ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
