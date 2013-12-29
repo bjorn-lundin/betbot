@@ -18,6 +18,16 @@ export BOT_START=/home/bnl/bnlbot/botstart
 . $BOT_START/bot.bash bnl
 
 
+#amazon machines starts with 'ip'
+HOSTNAME=$(hostname)
+case $HOSTNAME in
+  ip*) 
+    export BOT_MODE=real;;
+    *)
+    export BOT_MODE=simulation;;
+esac
+
+
 #start the login daemon if not running
 #pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
@@ -102,7 +112,7 @@ RESULT_BOT=$?
 if [ $RESULT_BOT -eq 1 ] ; then
   echo "Started bot $BOT_USER"
   export BOT_NAME=bot
-  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER
+  $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE
 fi
 
 ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
@@ -177,10 +187,10 @@ MINUTE=$(date +"%M")
 
 if [[ $HOUR == "02" ]] ; then
   if [[ $MINUTE == "05" ]] ; then
-    DATE_DAY=$(date +"%d")
-    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${DATE_DAY}.dmp.gz &
+    WEEK_DAY=$(date +"%u")
+    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
     sleep 30
-    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${DATE_DAY}.dmp.gz &
+    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
   fi
 fi
 
