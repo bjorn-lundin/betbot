@@ -9,7 +9,7 @@ import datetime
 
 AIS_TYPE = 'test'
 AIS_HOME = '/home/sejoabi/workspace/ais/trunk'
-AIS_DATA = '/home/sejoabi/workspace/ais/trunk'
+AIS_DATA = '/home/sejoabi/data/ais'
 AIS_VERSION = '8'
 AIS_LOGDIR = os.path.normpath(os.path.join(AIS_DATA, 'log'))
 AIS_DBDUMPDIR = os.path.normpath(os.path.join(AIS_DATA, 'db_dump'))
