@@ -47,8 +47,17 @@ Create a Python virtual environment
 Activate Python virtual environment
     . ./xyz/bin/activate
 
-Install all packages listed in pip_freeze.txt
-    pip install -r pip_freeze.txt
+Install operation packages (specified versions)
+    pip install --ignore-installed --requirement=operation_pip_requirements.txt
+
+or
+
+Install operation packages (latest)
+    pip install --ignore-installed --requirement=operation_pip_requirements_latest.txt
+
+Install development packages (latest)
+    pip install --ignore-installed --requirement=development_pip_requirements_latest.txt
+
 
 Postgresql
 ----------
