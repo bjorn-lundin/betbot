@@ -4,7 +4,14 @@
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
 #install with
-#echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" | crontab
+
+#crontab -l > crontab.tmp
+#echo "25 3 * * * /home/bnl/bnlbot/do_backup_db.bash" >  crontab.tmp
+#echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" >>  crontab.tmp
+#crontab -r
+#cat crontab.tmp | crontab
+#crontab -l
+#rm crontab.tmp 
 
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
@@ -53,12 +60,12 @@ fi
 #pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
 #
 
-ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-RESULT_MAIL_PROXY=$?
-if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-  echo "Started mail_proxy"
-  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-fi
+#ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+#RESULT_MAIL_PROXY=$?
+#if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+#  echo "Started mail_proxy"
+#  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+#fi
 
 
 
@@ -115,13 +122,13 @@ if [ $RESULT_BOT -eq 1 ] ; then
   $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE
 fi
 
-ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
-RESULT_SALDO_FETCHER=$?
-if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-  echo "Started saldo_fetcher $BOT_USER"
-  export BOT_NAME=saldo_fetcher
-  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
-fi
+#ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
+#RESULT_SALDO_FETCHER=$?
+#if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
+#  echo "Started saldo_fetcher $BOT_USER"
+#  export BOT_NAME=saldo_fetcher
+#  $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
+#fi
 
 ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
 RESULT_WJ_FETCHER=$?
@@ -132,33 +139,6 @@ if [ $RESULT_WJ_FETCHER -eq 1 ] ; then
 fi
 
 
-######### winners_fetcher ###########
-#
-#if [ -r $BOT_HOME/locks/winners_fetcher ] ; then
-#
-#  #who holds the lock, and since when, and when expires
-#  locked_by_pid=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f1)
-#  lock_placed=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f2)
-#  lock_expires=$(cat $BOT_HOME/locks/winners_fetcher | cut -d'|' -f3)
-#  
-#  now=$(date "+ %F %T")
-#  
-#  #convert to epoch, compare integers is easy
-#  epoch_now=$(date --date="$now" +%s)
-#  epoch_lock_expires=$(date --date="$lock_expires" +%s)
-#  
-#  # kill if lock is more than 10 minutes old (time is in lockfile)
-#  if [ $epoch_now -gt $epoch_lock_expires ] ; then
-#    kill -term $locked_by_pid >/dev/null 2>&1
-#    sleep 1
-#    kill -kill $locked_by_pid >/dev/null 2>&1
-#    sleep 1
-#  fi
-#fi
-#
-#export BOT_NAME=winners_fetcher
-#$BOT_TARGET/bin/winners_fetcher --user=$BOT_USER
-############ winners_fetcher stop #########
 
 
 #zip logfiles every hour, on minute 17 in the background
@@ -173,7 +153,15 @@ fi
 
 USER_LIST=$(ls $BOT_START/user)
 
-USER_LIST="bnl jmb"
+if [[ $BOT_MODE == "real" ]] ; then
+  USER_LIST="bnl jmb"
+fi 
+
+if [[ $BOT_MODE == "simulation" ]] ; then
+  USER_LIST="bnl"
+fi 
+
+  
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER
@@ -181,16 +169,30 @@ for USER in $USER_LIST ; do
 done
 
 
-HOUR=$(date +"%H")
+#HOUR=$(date +"%H")
+#
+#MINUTE=$(date +"%M")
+#
+#if [[ $HOUR == "02" ]] ; then
+#  if [[ $MINUTE == "05" ]] ; then
+#    DATE_DAY=$(date +"%d")
+#    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${DATE_DAY}.dmp.gz &
+#    sleep 30
+#    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${DATE_DAY}.dmp.gz &
+#  fi
+#fi
 
-MINUTE=$(date +"%M")
+if [[ $BOT_MODE == "real" ]] ; then
 
-if [[ $HOUR == "02" ]] ; then
-  if [[ $MINUTE == "05" ]] ; then
-    WEEK_DAY=$(date +"%u")
-    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
-    sleep 30
-    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
+  MINUTE=$(date +"%M")
+  
+  if [[ $HOUR == "02" ]] ; then
+    if [[ $MINUTE == "05" ]] ; then
+      WEEK_DAY=$(date +"%u")
+      pg_dump jmb |gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
+      sleep 30
+      pg_dump bnls |gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
+    fi
   fi
 fi
 
