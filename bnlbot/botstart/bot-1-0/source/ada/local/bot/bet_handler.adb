@@ -1320,7 +1320,7 @@ package body Bet_Handler is
 
     Rpc_Status : Rpc.Result_Type;
     use type Sattmate_Calendar.Time_Type;
-
+    Do_Update : Boolean := True;
   begin
     Log(Me & "Check_Bets", "start");
 
@@ -1460,17 +1460,29 @@ package body Bet_Handler is
         Bet := Table_Abets.Empty_Data;
         Bet.Betid := Bet_From_List.Betid;
         Table_Abets.Read(Bet,Eos(Abets));
+        Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " Eos(Abets) = " & Eos(Abets)'Img);
         if not Eos(Abets) then
           Bet.Pricematched := Bet_From_List.Pricematched;
           Bet.Sizematched  := Bet_From_List.Sizematched;
           Bet.Profit       := Bet_From_List.Profit;
           Bet.Status       := Bet_From_List.Status;
           Bet.Betwon       := Bet.Profit >= 0.0;
+          Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " status = " & Bet.Status);
   
-          if Bet.Status(1..6) /= "VOIDED" and then
-            Bet.Status(1..9) /= "CANCELLED" and then
-            Bet.Status(1..6) /= "LAPSED" and then
-            Bet.Status(1..7) /= "SETTLED"  then          
+          Do_Update := Bet.Status(1..6) /= "VOIDED";
+          if not Do_Update then
+            Do_Update := Bet.Status(1..9) /= "CANCELLED";
+          end if;          
+          if not Do_Update then
+            Do_Update := Bet.Status(1..6) /= "LAPSED";
+          end if;          
+          if not Do_Update then
+            Do_Update := Bet.Status(1..7) /= "SETTLED";
+          end if;          
+  
+          Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " Do_Update = " & Do_Update'Img);
+  
+          if Do_Update then          
             begin
               T.Start;
               Table_Abets.Update_Withcheck(Bet);
