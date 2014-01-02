@@ -1,5 +1,5 @@
 #!/bin/sh
-AIS_VIRT_ENV="/home/sejoabi/pip_test_env"
+AIS_VIRT_ENV="/home/sejoabi/workspace/py_virt_envs/ais_py_env"
 AIS_HOME="/home/sejoabi/workspace/ais/trunk"
 AIS_APP="$AIS_HOME/app.py"
 
