@@ -36,6 +36,16 @@ AIS_RACEDAY_BETTYPE_EXCLUDE = \
         'date':datetime.date(2013,05,13), 
         'track':32
     },
+    {
+        'bettype':'Trio',
+        'date':datetime.date(2013,07,12),
+        'track':67
+    },
+    {
+        'bettype':'Trio',
+        'date':datetime.date(2013,11,20),
+        'track':78
+    },
 ]
 
 if AIS_TYPE == 'test':
