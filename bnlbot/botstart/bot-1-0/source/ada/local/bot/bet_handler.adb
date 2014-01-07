@@ -453,17 +453,30 @@ package body Bet_Handler is
                           if Price_Matched > 0.0 then
                             -- use the matched lay_price
                             Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;
-                            Back_Size := Lay_Size - Bet.Bot_Cfg.Delta_Size;
-                            if Back_Size < 30.0 then
-                              Back_Size := 30.0;
-                            end if;
+--                            Back_Size := Lay_Size - Bet.Bot_Cfg.Delta_Size;
+                            Pip_Back.Init(Float_8(Back_Price), Silent => True);
 
-                            Pip_Back.Init(1000.0, Silent => True);
-                            loop
-                              Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+                            Back_Size := Lay_Size;
+                            loop -- decrease with 10 öre until we meet
+                              Back_Size := Back_Size - 0.10;
                               exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));
-                              Pip_Back.Init(Float_8(Back_Price), Silent => True);
+                              
+                              if Back_Size < 30.0 then
+                                Back_Size := 30.0;
+                                exit;
+                              end if;
                             end loop;
+                            
+                            
+                            
+--                            Pip_Back.Init(1000.0, Silent => True);
+--                            loop
+--                              Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
+--                              exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));
+--                              Pip_Back.Init(Float_8(Back_Price), Silent => True);
+--                            end loop;
+
+
                             Log(Me & "Do_Try ",
                                    "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
                                    "Size_Matched * (Price_Matched - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Size_Matched * (Price_Matched - Bet_Price_Type(1.0)))) & " " &
