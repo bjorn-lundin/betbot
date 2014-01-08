@@ -455,7 +455,7 @@ package body Bet_Handler is
                             Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;
 --                            Back_Size := Lay_Size - Bet.Bot_Cfg.Delta_Size;
                             Pip_Back.Init(Float_8(Back_Price), Silent => True);
-
+                            Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
                             Back_Size := Lay_Size;
                             loop -- decrease with 10 öre until we meet
                               Back_Size := Back_Size - 0.10;
