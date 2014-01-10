@@ -940,7 +940,7 @@ package body RPC is
     Instruction.Set_Field (Field_Name => "betId", Field => Trim(Bet_Id'Img));
     Append(Instructions, Instruction);
     
-    Params.Set_Field (Field_Name => "marketID", Field => Market_Id);
+    Params.Set_Field (Field_Name => "marketId", Field => Market_Id);
     Params.Set_Field (Field_Name => "instructions", Field => Instructions);
 
     
