@@ -97,6 +97,7 @@ procedure Markets_Fetcher is
   Eleven_Seconds  : Sattmate_Calendar.Interval_Type := (0,0,0,11,0);
 --  One_Half_Minute : Sattmate_Calendar.Interval_Type := (0,0,0,30,0);
 --  One_Minute      : Sattmate_Calendar.Interval_Type := (0,0,1,0,0);
+  Five_Minutes      : Sattmate_Calendar.Interval_Type := (0,0,5,0,0);
   One_Hour        : Sattmate_Calendar.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Sattmate_Calendar.Interval_Type := (0,2,0,0,0);
   T : Sql.Transaction_Type;
@@ -771,7 +772,8 @@ begin
     end case;   
 
     --Now set that time 1 hour ahead:
-    UTC_Time_Start := UTC_Time_Start + One_Hour;
+--    UTC_Time_Start := UTC_Time_Start + One_Hour;
+    UTC_Time_Start := UTC_Time_Start + Five_Minutes;    
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
