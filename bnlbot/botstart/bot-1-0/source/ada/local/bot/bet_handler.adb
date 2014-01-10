@@ -295,6 +295,8 @@ package body Bet_Handler is
       Too_Many_In_The_Air, Exists : Boolean := True;
       Price_Matched : Bet_Price_Type := 0.0;
       Size_Matched : Bet_Size_Type := 0.0;
+      Bet_Id       : Integer_8 := 0;
+
 
   begin
     Exists := Bet.Exists;
@@ -399,9 +401,12 @@ package body Bet_Handler is
 
                       case Bot_Config.Config.System_Section.Bot_Mode is
                         when Real =>
-                          Bet.Make_Bet(A_Bet_Type => Back,
-                                       Price => Back_Price, Size => Back_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type    => Back,
+                                       Price         => Back_Price, 
+                                       Size          => Back_Size,
+                                       Price_Matched => Price_Matched, 
+                                       Size_Matched  => Size_Matched,
+                                       Bet_Id        => Bet_Id);
                           -- use the matched back_price
                           Lay_Price := Price_Matched - Bet.Bot_Cfg.Delta_Price;
                           Pip_Lay.Init(Float_8(Lay_Price));
@@ -415,9 +420,12 @@ package body Bet_Handler is
                                        "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
 
                           if Price_Matched > 0.0 then
-                            Bet.Make_Bet(A_Bet_Type => Lay,
-                                         Price => Lay_Price, Size => Lay_Size,
-                                         Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                            Bet.Make_Bet(A_Bet_Type    => Lay,
+                                         Price         => Lay_Price, 
+                                         Size          => Lay_Size,
+                                         Price_Matched => Price_Matched, 
+                                         Size_Matched  => Size_Matched,
+                                         Bet_Id        => Bet_Id);
                           else
                             Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");
                           end if;
@@ -442,18 +450,20 @@ package body Bet_Handler is
                        Lay_Price <= Bet.Bot_Cfg.Max_Price then
 
                       Pip_Lay.Init(Float_8(Lay_Price));
-                      Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+                      Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make 'sure' we get the Lay-bet
 
                       case Bot_Config.Config.System_Section.Bot_Mode is
                         when Real =>
-                          Bet.Make_Bet(A_Bet_Type => Lay,
-                                       Price => Lay_Price, Size => Lay_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type    => Lay,
+                                       Price         => Lay_Price,
+                                       Size          => Lay_Size,
+                                       Price_Matched => Price_Matched,
+                                       Size_Matched  => Size_Matched,
+                                       Bet_Id        => Bet_Id);
 
                           if Price_Matched > 0.0 then
                             -- use the matched lay_price
                             Back_Price := Price_Matched + Bet.Bot_Cfg.Delta_Price;
---                            Back_Size := Lay_Size - Bet.Bot_Cfg.Delta_Size;
                             Pip_Back.Init(Float_8(Back_Price), Silent => False);
                             Back_Price := Bet_Price_Type(Pip_Back.Next_Price);
                             Back_Size := Lay_Size;
@@ -467,15 +477,6 @@ package body Bet_Handler is
                               end if;
                             end loop;
                             
-                            
-                            
---                            Pip_Back.Init(1000.0, Silent => True);
---                            loop
---                              Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);
---                              exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));
---                              Pip_Back.Init(Float_8(Back_Price), Silent => True);
---                            end loop;
-
 
                             Log(Me & "Do_Try ",
                                    "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
@@ -487,11 +488,16 @@ package body Bet_Handler is
                                    "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                    "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
 
-                            Bet.Make_Bet(A_Bet_Type => Back,
-                                         Price => Back_Price, Size => Back_Size,
-                                         Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                            Bet.Make_Bet(A_Bet_Type    => Back,
+                                         Price         => Back_Price,
+                                         Size          => Back_Size,
+                                         Price_Matched => Price_Matched,
+                                         Size_Matched  => Size_Matched,
+                                         Bet_Id        => Bet_Id);
                           else
-                            Log(Me & "Do_Try", "Lay bet not matched -> no back bet made");
+                            Log(Me & "Do_Try", "Lay bet not matched -> no back bet made, cancel Lay bet");
+                            Rpc.Cancel_Bet(Market_Id => Bet.Bet_Info.Market.Marketid, 
+                                           Bet_Id    => Bet_Id);
                           end if;
 
                         when Simulation  => raise Suicide with "Green_Up_Mode Lay_First_Then_Back and Simulation does not match";
@@ -512,9 +518,12 @@ package body Bet_Handler is
                           Pip_Back.Init(Float_8(Back_Price));
                           Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
     
-                          Bet.Make_Bet(A_Bet_Type => Back,
-                                       Price => Back_Price, Size => Back_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type    => Back,
+                                       Price         => Back_Price,
+                                       Size          => Back_Size,
+                                       Price_Matched => Price_Matched, 
+                                       Size_Matched  => Size_Matched,
+                                       Bet_Id        => Bet_Id);
                         end if;
                       end;
                       
@@ -531,9 +540,12 @@ package body Bet_Handler is
                           Pip_Lay.Init(Float_8(Lay_Price));
                           Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
     
-                          Bet.Make_Bet(A_Bet_Type => Lay,
-                                       Price => Lay_Price, Size => Lay_Size,
-                                       Price_Matched => Price_Matched, Size_Matched => Size_Matched);
+                          Bet.Make_Bet(A_Bet_Type    => Lay,
+                                       Price         => Lay_Price,
+                                       Size          => Lay_Size,
+                                       Price_Matched => Price_Matched,
+                                       Size_Matched  => Size_Matched,
+                                       Bet_Id        => Bet_Id);
                         end if;
                       end;
                     when Greenup => raise Suicide with "Bet_Side Greenup and None does not match";
@@ -844,7 +856,8 @@ package body Bet_Handler is
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
                      Price_Matched :    out Bet_Price_Type;
-                     Size_Matched  :    out Bet_Size_Type ) is
+                     Size_Matched  :    out Bet_Size_Type;
+                     Bet_Id        :    out Integer_8 ) is
 
 
     A_Token : Token.Token_Type := Rpc.Get_Token;
@@ -870,7 +883,7 @@ package body Bet_Handler is
     Local_Size :  Bet_Size_Type := Size;
 
 
-    Bet_Id : Integer_8 := 0;
+--    Bet_Id : Integer_8 := 0;
     Now    : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     T      : Sql.Transaction_Type;
 
@@ -886,6 +899,7 @@ package body Bet_Handler is
   begin
     Price_Matched := 0.0;
     Size_Matched := 0.0;
+    Bet_Id := 0;
 
 --  type Data_Type is record
 --      Betid :    Integer_8  := 0 ; -- Primary Key

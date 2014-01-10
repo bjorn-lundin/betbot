@@ -51,5 +51,10 @@ package RPC is
                                       Settled_To     : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
                                       Betfair_Result : out Result_Type;
                                       Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) ;
+                                      
+  procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
+                       Bet_Id    : in Integer_8);
+                                      
+                                      
   
 end RPC;    

@@ -810,6 +810,8 @@ package body RPC is
                                       Settled_To     : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
                                       Betfair_Result : out Result_Type;
                                       Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
+    pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though                                      
+                                      
     Parsed_Ok : Boolean := True;
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
@@ -916,5 +918,73 @@ package body RPC is
       end if;  
     end if;    
   end Get_Cleared_Bet_Info_List;    
+  -----------------------------------
+  
+  procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
+                       Bet_Id    : in Integer_8) is
+    Parsed_Ok : Boolean := True;
+    JSON_Query : JSON_Value := Create_Object;
+    JSON_Reply : JSON_Value := Create_Object;
+    AWS_Reply  : Aws.Response.Data;
+    Params     : JSON_Value := Create_Object;
+--    Result     : JSON_Value := Create_Object;    
+    Instruction  : JSON_Value := Create_Object;
+    Instructions : JSON_Array := Empty_Array;
+    Betfair_Result : Result_Type;
+    
+  begin
+    Betfair_Result := Ok;
+
+    Reset_AWS_Headers;    
+
+    Instruction.Set_Field (Field_Name => "betId", Field => Trim(Bet_Id'Img));
+    Append(Instructions, Instruction);
+    
+    Params.Set_Field (Field_Name => "marketID", Field => Market_Id);
+    Params.Set_Field (Field_Name => "instructions", Field => Instructions);
+
+    
+    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);    
+    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/cancelOrders");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+
+    Log(Me & "Cancel_Bet", "posting " & JSON_Query.Write);
+    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+                                  Data         =>  JSON_Query.Write,
+                                  Content_Type => "application/json",
+                                  Headers      =>  Global_HTTP_Headers,
+                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
+     
+    --  Load the reply into a json object
+    Log(Me & "Cancel_Bet", "Got reply");
+    begin
+      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                          Filename => "");
+      Log(Me & "Cancel_Bet", JSON_Reply.Write);
+    exception
+      when E: others =>
+        Parsed_Ok := False;
+        Log(Me & "Cancel_Bet", "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+        Sattmate_Exception.Tracebackinfo(E);
+        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
+          Betfair_Result := Timeout ;
+          return;
+        end if;  
+    end ;       
+
+    if Parsed_Ok then                             
+      if API_Exceptions_Are_Present(JSON_Reply) then
+        Log(Me & "Cancel_Bet" , Aws.Response.Message_Body(AWS_Reply));
+        -- try again
+        Betfair_Result := Logged_Out ;
+        return;
+      end if;
+    end if;  
+    Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
+      
+  end  Cancel_Bet;
+  
   -----------------------------------
 end RPC;
