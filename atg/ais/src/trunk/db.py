@@ -106,6 +106,7 @@ class Raceday(BASE):
     racecard_available = Column(Boolean)
     raceday_date = Column(Date)
     trot = Column(Boolean)
+    cancelled = Column(Boolean)
     track_id = Column(Integer, ForeignKey('track.id'))
     track = relationship("Track")
     races = relationship('Race')
@@ -126,7 +127,8 @@ class Raceday(BASE):
             self.racecard_available, 
             self.raceday_date, 
             self.trot,
-            self.track_id 
+            self.track_id,
+            self.cancelled
         ) 
         part1 = "<Raceday( "
         part2 = "'%s', " * len(params)
@@ -266,6 +268,7 @@ class Race(BASE):
     track_surface_code = Column(String)
     track_surface_domestic_text = Column(String)
     track_surface_english_text = Column(String)
+    cancelled = Column(Boolean)
     raceday_id = Column(Integer, ForeignKey('raceday.id'))
     raceday = relationship('Raceday')
     horses = relationship('RaceHorseAssociation')
@@ -280,7 +283,8 @@ class Race(BASE):
             self.post_time,
             self.post_time_utc,
             self.race_nr,
-            self.bettypes
+            self.bettypes,
+            self.cancelled
          ) 
         part1 = "<Race( "
         part2 = "'%s', " * len(params)

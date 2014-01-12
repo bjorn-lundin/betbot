@@ -95,6 +95,13 @@ def load_into_db(datadir=None):
                     raceday.raceday_date = raceday_date
                     raceday.trot = bool(racedayinfo.trot)
                     raceday.track_id = track.id
+                    # Parameter added in AIS 9
+                    # racedayinfo.canceled
+                    try:
+                        racedayinfo.canceled
+                    except AttributeError:
+                        racedayinfo.canceled = False
+                    raceday.cancelled = bool(racedayinfo.canceled)
                     db.create(raceday)
 
                     races_and_bettypes = \
@@ -138,6 +145,13 @@ def load_into_db(datadir=None):
                                     race.bettype_childs.append(bettype)
                                 else:
                                     race.bettypes.append(bettype)
+                            # Parameter added in AIS 9
+                            # raceinfo.canceled
+                            try:
+                                raceinfo.canceled
+                            except AttributeError:
+                                raceinfo.canceled = False
+                            race.cancelled = bool(raceinfo.canceled)
                             db.create(race)
                     
             now = datetime.datetime.now()
@@ -223,7 +237,6 @@ def print_all_data(datadir=None):
     data_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
     for filepath in data_filelist:
         filename = util.get_filename_from_path(filepath)
-        LOG.debug('Parsing ' + filename)
         xml_string = util.get_cleaned_xml_string(filepath=filepath)
         
         # Convenience flag when developing
@@ -277,7 +290,14 @@ def print_all_data(datadir=None):
             print(racedayinfo.track.englishText)
             print(racedayinfo.trackKey.trackId)
             print(racedayinfo.trot)
-
+            # Parameter added in AIS 9
+            # racedayinfo.canceled
+            try:
+                racedayinfo.canceled
+            except AttributeError:
+                racedayinfo.canceled = False
+            print(racedayinfo.canceled)
+            
             for bettype in racedayinfo.betTypes.getchildren():
                 print(bettype.hasResult)
                 print(bettype.name.code)
@@ -306,6 +326,13 @@ def print_all_data(datadir=None):
                 print(raceinfo.trackSurface.code)
                 print(raceinfo.trackSurface.domesticText)
                 print(raceinfo.trackSurface.englishText)
+                # Parameter added in AIS 9
+                # raceinfo.canceled
+                try:
+                    raceinfo.canceled
+                except AttributeError:
+                    raceinfo.canceled = False
+                print(raceinfo.canceled)
 
 if __name__ == "__main__":
     pass
