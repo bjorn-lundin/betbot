@@ -25,37 +25,28 @@ export BOT_START=/home/bnl/bnlbot/botstart
 . $BOT_START/bot.bash bnl
 
 
-#start the login daemon if not running
-#pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-#1
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-#pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-#0
+case $BOT_MACHINE_ROLE in 
+  PROD)
+    ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
+    RESULT_LOGIN_DAEMON=$?
+    if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
+      echo "Started login_daemon"
+      /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
+      sleep 10
+    fi
+  
+    ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
+    RESULT_MAIL_PROXY=$?
+    if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
+      echo "Started mail_proxy"
+      /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
+    fi
+  
+    ;;    
+esac
 
-ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
-RESULT_LOGIN_DAEMON=$?
-if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
-  echo "Started login_daemon"
-  /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
-fi
 
-#start the mailer proxy daemon if not running
-#pi@raspberrypi ~/bnlbot/botROOT/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-#1
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ ps -ef | grep winners_fetcher|  grep -v grep
-#pi       22629     1 73 23:52 ?        00:00:19 /home/pi/bnlbot/botstart/bot-0-9/target/bin/winners_fetcher --daemon
-#pi@raspberrypi ~/bnlbot/botstart/bot-0-9/source/ada $ echo $?
-#
 
-#ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-#RESULT_MAIL_PROXY=$?
-#if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-#  echo "Started mail_proxy"
-#  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-#fi
 
 
 function Check_Bots_For_User () {
@@ -161,6 +152,7 @@ for USER in $USER_LIST ; do
   Check_Bots_For_User $USER
 #  echo "stop $USER"
 done
+
  
 case $BOT_MACHINE_ROLE in 
   PROD)
