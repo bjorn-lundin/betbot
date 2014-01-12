@@ -280,8 +280,9 @@ def eod_download_via_calendar(params=None):
             
             # Some racedays don't have the data they should. Check if
             # this raceday is stated in exclude list
-            if track_id in raceday_exclude and \
-                    str(raceday_date) == raceday_exclude[track_id]:
+            date_str = str(raceday_date)
+            if date_str in raceday_exclude and \
+                    track_id in raceday_exclude[date_str]:
                 LOG.info('Raceday exclude date={date}, track={track_id}'
                  .format(track_id=track_id, date=raceday_date))
                 continue
