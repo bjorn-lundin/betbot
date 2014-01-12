@@ -599,11 +599,11 @@ package body Bet_Handler is
           return ; -- wrong markettype for this bot
         end if;
       when Place =>
---        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "PLACE" then
+        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "PLACE" then
 ----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot
---        end if;
+        end if;
     end case;
 
     if Num_Runners < Bet.Bot_Cfg.Min_Num_Runners or else

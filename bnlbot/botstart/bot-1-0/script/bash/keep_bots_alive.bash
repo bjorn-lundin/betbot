@@ -5,8 +5,8 @@
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
 #install with
 
-#crontab -l > crontab.tmp
 #echo "25 3 * * * /home/bnl/bnlbot/do_backup_db.bash" >  crontab.tmp
+#crontab -l > crontab.tmp
 #echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" >>  crontab.tmp
 #crontab -r
 #cat crontab.tmp | crontab
@@ -23,16 +23,6 @@ export TZ
 export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
-
-
-#amazon machines starts with 'ip'
-HOSTNAME=$(hostname)
-case $HOSTNAME in
-  ip*) 
-    export BOT_MODE=real;;
-    *)
-    export BOT_MODE=simulation;;
-esac
 
 
 #start the login daemon if not running
@@ -66,7 +56,6 @@ fi
 #  echo "Started mail_proxy"
 #  /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
 #fi
-
 
 
 function Check_Bots_For_User () {
@@ -106,13 +95,32 @@ function Check_Bots_For_User () {
   
   ########## bot ############
   
-  ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep -v grep >/dev/null
-  RESULT_BOT=$?
-  if [ $RESULT_BOT -eq 1 ] ; then
-    echo "Started bot $BOT_USER"
-    export BOT_NAME=bot
-    $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE
-  fi
+  
+  case $BOT_MACHINE_ROLE in 
+    PROD) BOT_LIST="bot" ;;
+    TEST) BOT_LIST="bot" ;;
+    SIM)  BOT_LIST="horses_plc_gb horses_win_gb hounds_plc_gb hounds_win_gb" ;;
+    *)    BOT_LIST="" ;;
+  esac
+  
+  for bot in $BOT_LIST ; do
+    if [[ $bot != "bot" ]] ; then
+      ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep "inifile=$bot" | grep -v grep >/dev/null
+    else
+      ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep "inifile=betfair.ini" | grep -v grep >/dev/null
+    fi
+    
+    RESULT_BOT=$?
+    if [ $RESULT_BOT -eq 1 ] ; then
+      echo "Started $bot $BOT_USER - bot_home=$BOT_HOME -- bot=$bot"
+      export BOT_NAME=$bot
+      if [[ $bot != "bot" ]] ; then
+        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=$bot.ini
+      else
+        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=betfair.ini
+      fi      
+    fi
+  done 
   
   ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
   RESULT_SALDO_FETCHER=$?
@@ -141,13 +149,11 @@ function Check_Bots_For_User () {
 
 USER_LIST=$(ls $BOT_START/user)
 
-if [[ $BOT_MODE == "real" ]] ; then
-  USER_LIST="bnl jmb"
-fi 
 
-if [[ $BOT_MODE == "simulation" ]] ; then
-  USER_LIST="bnl"
-fi 
+case $BOT_MACHINE_ROLE in 
+  PROD) USER_LIST="bnl jmb" ;;
+     *) USER_LIST="bnl"     ;;
+esac  
 
   
 for USER in $USER_LIST ; do
@@ -155,32 +161,21 @@ for USER in $USER_LIST ; do
   Check_Bots_For_User $USER
 #  echo "stop $USER"
 done
-
-
-#HOUR=$(date +"%H")
-#
-#MINUTE=$(date +"%M")
-#
-#if [[ $HOUR == "02" ]] ; then
-#  if [[ $MINUTE == "05" ]] ; then
-#    DATE_DAY=$(date +"%d")
-#    pg_dump jmb |gzip > /home/bnl/datadump/jmb_${DATE_DAY}.dmp.gz &
-#    sleep 30
-#    pg_dump bnls |gzip > /home/bnl/datadump/bnls_${DATE_DAY}.dmp.gz &
-#  fi
-#fi
-
-if [[ $BOT_MODE == "real" ]] ; then
-
-  MINUTE=$(date +"%M")
-  
-  if [[ $HOUR == "02" ]] ; then
-    if [[ $MINUTE == "05" ]] ; then
-      WEEK_DAY=$(date +"%u")
-      pg_dump jmb |gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
-      sleep 30
-      pg_dump bnls |gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
+ 
+case $BOT_MACHINE_ROLE in 
+  PROD)
+    HOUR=$(date +"%H")
+    MINUTE=$(date +"%M")  
+    if [[ $HOUR == "02" ]] ; then
+      if [[ $MINUTE == "05" ]] ; then
+        WEEK_DAY=$(date +"%u")
+        pg_dump jmb  | gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
+        sleep 30
+        pg_dump bnls | gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
+      fi
     fi
-  fi
-fi
+  ;;  
+    
+esac
+
 
