@@ -13,6 +13,7 @@
         <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="marketid,selectionid" type="primary"/>
         <Index Columns="runnernamestripped" type="index"/>
+        <Index Columns="marketid,status" type="index"/>
         <Index Columns="status" type="index"/>
     </Table>
 </MaAstro>

@@ -14,9 +14,9 @@ project Adabot is
                         
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
-   type Bot_Mode_Type is ("PROD", "TEST", "DEV");
+   type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM");
    
-   Bot_Mode : Bot_Mode_Type := external ("BOT_MODE","NOT_SET");
+   Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
    System_Mains := ("bot.adb",
                     "bot_send.adb",
@@ -30,15 +30,15 @@ project Adabot is
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
-   Other_Mains := ("ini_reader.adb",
+   Other_Mains := (--"ini_reader.adb",
                    "back_all_g4.adb",
                    "markets_sender.adb",                   
                    "bet_checker.adb");
    
-   case Bot_Mode is
+   case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;
       when "TEST"   =>  for Main use System_Mains;
-      when "DEV"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
+      when "SIM"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
    end case;
 
    package Compiler renames Global.Compiler;

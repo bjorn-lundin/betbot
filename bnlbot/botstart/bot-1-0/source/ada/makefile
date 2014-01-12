@@ -48,8 +48,8 @@ $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
-	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE)"
-	gnatmake -P adabot -XHOSTNAME=$(BOT_MODE)
+	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
+	gnatmake -P adabot
 
 $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
@@ -57,11 +57,11 @@ $(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
 	cd $(ST) && rm table_history.ada
 	$(TP) -p history > $(ST)/history.sql
 
-$(ST)/table_history2.ads : $(BOT_CONFIG)/repository/tables/table_history2.xml
-	$(TP) -t history2 > $(ST)/table_history2.ada
-	cd $(ST) && gnatchop -w -gnat05 table_history2.ada
-	cd $(ST) && rm table_history2.ada
-	$(TP) -p history2 > $(ST)/history2.sql
+#$(ST)/table_history2.ads : $(BOT_CONFIG)/repository/tables/table_history2.xml
+#	$(TP) -t history2 > $(ST)/table_history2.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_history2.ada
+#	cd $(ST) && rm table_history2.ada
+#	$(TP) -p history2 > $(ST)/history2.sql
 
 $(ST)/table_amarkets.ads : $(BOT_CONFIG)/repository/tables/table_amarkets.xml
 	$(TP) -t amarkets > $(ST)/table_amarkets.ada
@@ -88,11 +88,11 @@ $(ST)/table_aprices.ads : $(BOT_CONFIG)/repository/tables/table_aprices.xml
 	$(TP) -p aprices > $(ST)/aprices.sql
 
 
-$(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
-	$(TP) -t awinners > $(ST)/table_awinners.ada
-	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada
-	cd $(ST) && rm table_awinners.ada
-	$(TP) -p awinners > $(ST)/awinners.sql
+#$(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
+#	$(TP) -t awinners > $(ST)/table_awinners.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada
+#	cd $(ST) && rm table_awinners.ada
+#	$(TP) -p awinners > $(ST)/awinners.sql
 
 #$(ST)/table_animals.ads : $(BOT_CONFIG)/repository/tables/table_animals.xml
 #	$(TP) -t animals > $(ST)/table_animals.ada
@@ -106,11 +106,11 @@ $(ST)/table_abets.ads : $(BOT_CONFIG)/repository/tables/table_abets.xml
 	cd $(ST) && rm table_abets.ada
 	$(TP) -p abets > $(ST)/abets.sql
 
-$(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
-	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
-	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
-	cd $(ST) && rm table_anonrunners.ada
-	$(TP) -p anonrunners > $(ST)/anonrunners.sql
+#$(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
+#	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
+#	cd $(ST) && rm table_anonrunners.ada
+#	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
 $(ST)/table_abalances.ads : $(BOT_CONFIG)/repository/tables/table_abalances.xml
 	$(TP) -t abalances > $(ST)/table_abalances.ada
@@ -118,29 +118,29 @@ $(ST)/table_abalances.ads : $(BOT_CONFIG)/repository/tables/table_abalances.xml
 	cd $(ST) && rm table_abalances.ada
 	$(TP) -p abalances > $(ST)/abalances.sql
 
-$(ST)/table_drymarkets.ads : $(BOT_CONFIG)/repository/tables/table_drymarkets.xml
-	$(TP) -t drymarkets > $(ST)/table_drymarkets.ada
-	cd $(ST) && gnatchop -w -gnat05 table_drymarkets.ada
-	cd $(ST) && rm table_drymarkets.ada
-	$(TP) -p drymarkets > $(ST)/drymarkets.sql
+#$(ST)/table_drymarkets.ads : $(BOT_CONFIG)/repository/tables/table_drymarkets.xml
+#	$(TP) -t drymarkets > $(ST)/table_drymarkets.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_drymarkets.ada
+#	cd $(ST) && rm table_drymarkets.ada
+#	$(TP) -p drymarkets > $(ST)/drymarkets.sql
+#
+#$(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xml
+#	$(TP) -t dryrunners > $(ST)/table_dryrunners.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
+#	cd $(ST) && rm table_dryrunners.ada
+#	$(TP) -p dryrunners > $(ST)/dryrunners.sql
+#
+#$(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xml
+#	$(TP) -t dryresults > $(ST)/table_dryresults.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
+#	cd $(ST) && rm table_dryresults.ada
+#	$(TP) -p dryresults > $(ST)/dryresults.sql
 
-$(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xml
-	$(TP) -t dryrunners > $(ST)/table_dryrunners.ada
-	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
-	cd $(ST) && rm table_dryrunners.ada
-	$(TP) -p dryrunners > $(ST)/dryrunners.sql
-
-$(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xml
-	$(TP) -t dryresults > $(ST)/table_dryresults.ada
-	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
-	cd $(ST) && rm table_dryresults.ada
-	$(TP) -p dryresults > $(ST)/dryresults.sql
-
-$(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.xml
-	$(TP) -t abethistory > $(ST)/table_abethistory.ada
-	cd $(ST) && gnatchop -w -gnat05 table_abethistory.ada
-	cd $(ST) && rm table_abethistory.ada
-	$(TP) -p abethistory > $(ST)/abethistory.sql
+#$(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.xml
+#	$(TP) -t abethistory > $(ST)/table_abethistory.ada
+#	cd $(ST) && gnatchop -w -gnat05 table_abethistory.ada
+#	cd $(ST) && rm table_abethistory.ada
+#	$(TP) -p abethistory > $(ST)/abethistory.sql
 
 #/etc/logrotate.d/bnlbot:
 #	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
