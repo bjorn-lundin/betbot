@@ -14,7 +14,12 @@ AIS_VERSION = '8'
 AIS_LOGDIR = os.path.normpath(os.path.join(AIS_DATA, 'log'))
 AIS_DBDUMPDIR = os.path.normpath(os.path.join(AIS_DATA, 'db_dump'))
 AIS_RACEDAY_HISTORY = 6 # Nbr of history days in ATG database
-AIS_RACEDAY_EXCLUDE = {17:'2011-10-21', 23:'2011-10-22', 54:'2013-01-30', 35:'2013-04-07', 17:'2013-12-30'}
+AIS_RACEDAY_EXCLUDE = {
+    '2011-10-21':[17], 
+    '2011-10-22':[23], 
+    '2013-01-30':[54], 
+    '2013-04-07':[35], 
+    '2013-12-30':[17]}
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
 AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
 AIS_EOD_DOWNLOAD_TIMEOUT = 60 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
