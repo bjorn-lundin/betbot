@@ -134,7 +134,7 @@ package body Bot_Config is
             Bet_Section.Max_Price          := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_price","20.0"));
             Bet_Section.Min_Price          := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_price","10.0"));
             Bet_Section.Bet_Size           := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"bet_size","30.0"));
-            Bet_Section.Delta_Size         := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_size","20.0"));
+--            Bet_Section.Delta_Size         := Bet_Size_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"delta_size","20.0"));
             Bet_Section.Allow_In_Play      := Ini.Get_Value(Ini.Get_Section_Name(i),"allow_in_play", False);
             Bet_Section.Max_Num_Runners    := Max_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"max_num_runners","25"));
             Bet_Section.Min_Num_Runners    := Min_Num_Runners_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners","8"));
@@ -343,7 +343,7 @@ package body Bot_Config is
                "<Min_Price>" & F8_Image(Float_8(Bet_Section.Min_Price)) & "</Min_Price>" &
                "<Max_Num_In_The_Air>" & Bet_Section.Max_Num_In_The_Air'Img & "</Max_Num_In_The_Air>" &
                "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" &
-               "<Delta_Size>" & F8_Image(Float_8(Bet_Section.Delta_Size)) & "</Delta_Size>" &
+--               "<Delta_Size>" & F8_Image(Float_8(Bet_Section.Delta_Size)) & "</Delta_Size>" &
 --               "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" &
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" &
