@@ -35,7 +35,7 @@ package Bot_Config is
     Max_Price        : Bet_Price_Type         := 0.0;
     Min_Price        : Bet_Price_Type         := 0.0;
     Bet_Size         : Bet_Size_Type          := 0.0;
-    Delta_Size       : Bet_Size_Type          := 20.0;
+ --   Delta_Size       : Bet_Size_Type          := 20.0;
     Enabled          : Boolean                := False;
     Allow_In_Play    : Boolean                := True;
     Animal           : Animal_Type            := Horse;
