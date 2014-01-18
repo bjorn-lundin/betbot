@@ -12,6 +12,8 @@ with Aws.Response;
 with General_Routines; use General_Routines;
 with Aws.Client;
 --with Token;
+with Bot_System_Number;
+with Bot_Svn_Info;
 
 pragma Elaborate_All (AWS.Headers);
 
@@ -984,7 +986,565 @@ package body RPC is
     end if;  
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
       
-  end  Cancel_Bet;
-  
+  end  Cancel_Bet;  
   -----------------------------------
+  
+  
+  procedure Get_Market_Prices(Market_Id : in Market_Id_Type; 
+                              Market    : out Table_Amarkets.Data_Type;
+                              Pricelist : in out Table_Aprices.Aprices_List_Pack.List_Type;
+                              In_Play   : out Boolean) is
+    Parsed_Ok : Boolean := True;
+    Market_Ids   : JSON_Array := Empty_Array;
+    JSON_Query   : JSON_Value := Create_Object;
+    JSON_Reply   : JSON_Value := Create_Object;
+    JSON_Market  : JSON_Value := Create_Object;
+    AWS_Reply    : Aws.Response.Data;
+    Params       : JSON_Value := Create_Object;
+    Result       : JSON_Array := Empty_Array;   
+--    Instruction  : JSON_Value := Create_Object;
+--    Instructions : JSON_Array := Empty_Array;
+    Betfair_Result : Result_Type;
+    Price_Projection : JSON_Value := Create_Object;
+    Market_Description : JSON_Value := Create_Object;
+    Event  : JSON_Value := Create_Object;
+    Price_Data                  : JSON_Array := Empty_Array;
+
+    ----------------------------------------------
+    procedure Parse_Market(J_Market  : in JSON_Value;
+                           DB_Market : out Table_Amarkets.Data_Type ;
+                           In_Play_Market : out Boolean) is
+    begin
+      In_Play_Market := False;
+      if J_Market.Has_Field("marketId") then
+        Move(J_Market.Get("marketId"), DB_Market.Marketid);
+      else
+        raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+      end if;
+      
+      if J_Market.Has_Field("marketName") then
+        Move(J_Market.Get("marketName"), DB_Market.Marketname);
+      else
+        Move("No market name", DB_Market.Marketname);
+      end if;
+  
+      if J_Market.Has_Field("betDelay") then
+        DB_Market.Betdelay := Integer_4(Integer'(J_Market.Get("betDelay")) );
+      else
+        raise No_Such_Field with "Object 'Market' - Field 'betDelay'";
+      end if;
+   
+      if J_Market.Has_Field("description") then
+        Market_Description := J_Market.Get("description");
+        if Market_Description.Has_Field("marketType") then
+          Move(Market_Description.Get("marketType"), DB_Market.Markettype);
+        else
+          Move("NOTYPE", DB_Market.Markettype);
+        end if;
+      else
+        Move("NOTYPE", DB_Market.Markettype);
+      end if;
+  
+      if J_Market.Has_Field("marketStartTime") then
+        declare
+          Tmp : String := J_Market.Get("marketStartTime");
+        begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z", 
+          DB_Market.Startts := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
+        end;
+      else
+         DB_Market.Startts := Sattmate_Calendar.Time_Type_First;
+      end if;
+
+      if J_Market.Has_Field("event") then
+        Event := J_Market.Get("event");
+        if Event.Has_Field("id") then
+          Move(Event.Get("id"), DB_Market.Eventid);
+        else
+          Move("NO EVENT", DB_Market.Eventid);
+        end if;
+      else
+        Move("NO EVENT", DB_Market.Eventid);
+      end if;    
+      
+      if J_Market.Has_Field("inplay") then
+        In_Play_Market := J_Market.Get("inplay");
+      else
+        raise No_Such_Field with "Object 'Market' - Field 'inplay'";
+      end if;
+      
+      if J_Market.Has_Field("status") then
+         Move(J_Market.Get("status"), DB_Market.Status);
+      else
+         Move("NO STATUS", DB_Market.Status);
+      end if;
+      
+      Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market)); 
+    
+    end Parse_Market;
+    ---------------------------------    
+    
+    procedure Parse_Runners(J_Market      : in     JSON_Value;
+                            Pricelist     : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
+      pragma Warnings(Off,Pricelist);                            
+      Back, Lay, Ex, Runner        : JSON_Value := Create_Object;
+      Back_Array,Lay_Array,Runner_Prices : JSON_Array := Empty_Array;
+      Array_Length      :  Natural;
+      Array_Length_Back :  Natural;
+      Array_Length_Lay  :  Natural;
+      Now           : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+--      Eos : Boolean := False;
+      DB_Runner_Price : Table_Aprices.Data_Type;
+    begin
+    
+      Log(Me, "Parse_Runners start"); 
+      --some fields are missing if runner is removed, accept that
+      Runner_Prices := J_Market.Get("runners");
+      Array_Length  := Length (Runner_Prices);
+      
+      for J in 1 .. Array_Length loop
+        DB_Runner_Price := Table_Aprices.Empty_Data;
+      
+         Log(Me, "Parse_Runner start"); 
+         Runner := Get (Arr   => Runner_Prices, Index => J);
+         Log(Me, "  " & Runner.Write);
+         
+         if J_Market.Has_Field("marketId") then
+           Move(J_Market.Get("marketId"), DB_Runner_Price.Marketid);
+         else
+           raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+         end if;
+  
+         if Runner.Has_Field("selectionId") then
+           DB_Runner_Price.Selectionid := Integer_4(Integer'(Runner.Get("selectionId")));
+         else
+           raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
+         end if;
+  
+         if Runner.Has_Field("status") then
+           Move(Runner.Get("status"), DB_Runner_Price.Status);
+         else
+           raise No_Such_Field with "Object 'Runner' - Field 'status'";
+         end if;
+         
+         if Runner.Has_Field("totalMatched") then
+           DB_Runner_Price.Totalmatched := Float_8(Float'(Runner.Get("totalMatched")));
+         end if;
+  
+         DB_Runner_Price.Pricets := Now;
+  
+         if Runner.Has_Field("ex") then
+           Ex := Runner.Get("ex");
+           if Ex.Has_Field("availableToBack") then
+             Back_Array := Ex.Get("availableToBack");
+             Array_Length_Back := Length(Back_Array);
+             if Array_Length_Back >= 1 then
+                Back := Get (Arr   => Back_Array, Index => 1);
+               if Back.Has_Field("price") then
+                 DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
+               else
+                 raise No_Such_Field with "Object 'Back' - Field 'price'";
+               end if;
+             end if;
+           else
+             raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";         
+           end if;          
+           
+           if Ex.Has_Field("availableToLay") then
+             Lay_Array := Ex.Get("availableToLay");
+             Array_Length_Lay := Length(Lay_Array);
+             if Array_Length_Lay >= 1 then
+                Lay := Get (Arr   => Lay_Array, Index => 1);
+               if Lay.Has_Field("price") then
+                 DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
+               else
+                 raise No_Such_Field with "Object 'Lay' - Field 'price'";
+               end if;
+             end if;
+           else
+             raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";         
+           end if;
+         else -- no 'ex'
+           raise No_Such_Field with "Object 'Runner' - Field 'ex'";         
+         end if;
+         
+         Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Pricelist, DB_Runner_Price);
+         Log(Me, Table_Aprices.To_String(DB_Runner_Price));
+         
+         Log(Me, "Parse_Runner stop"); 
+      end loop;
+      Log(Me, "Parse_Runners stop"); 
+    
+    end Parse_Runners;
+    ---------------------------------       
+    
+        
+  begin
+    Betfair_Result := Ok;
+
+    Reset_AWS_Headers;    
+    Append(Market_Ids, Create(Market_Id));
+    Append (Price_Data , Create("EX_BEST_OFFERS"));    
+          
+    Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
+          
+    Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
+    Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");    
+    Params.Set_Field (Field_Name => "locale",          Field => "sv");
+    Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids);
+          
+    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
+    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+    
+    Log(Me, "posting: " & JSON_Query.Write);
+       
+    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+                                  Data         =>  JSON_Query.Write,
+                                  Content_Type =>  "application/json",
+                                  Headers      =>  Global_HTTP_Headers,
+                                  Timeouts     =>  Aws.Client.Timeouts(Each => 30.0));
+    Log(Me, "Got reply " );
+                 
+     --  Load the Reply_List_Market_Catalogue into a json object
+    begin
+      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                          Filename => "");
+      Parsed_Ok := True; 
+    exception
+      when E: others =>
+        Parsed_Ok := False; 
+        Sattmate_Exception.Tracebackinfo(E);
+        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+    end ;       
+  
+    if Parsed_Ok then
+      Log(Me, "Got reply " & JSON_Reply.Write);
+       --  Iterate the Reply_List_Market_Book object. 
+      if JSON_Reply.Has_Field("result") then
+        Log(Me, "we have result ");
+        Result := JSON_Reply.Get("result");
+        for i in 1 .. Length(Result) loop
+          Log(Me, "we have result #:" & i'img);
+          JSON_Market := Get(Result, i);
+          Log("JSON_Market " & JSON_Market.Write);
+          Parse_Market(JSON_Market, Market, In_Play);
+          if JSON_Market.Has_Field("runners") then
+            Parse_Runners(JSON_Market, Pricelist);
+          end if;
+        end loop;
+      end if;    
+    end if; -- parsed_ok    
+  end Get_Market_Prices;
+  ----------------------------------------------------------------------------------
+  procedure Place_Bet (Bet_Name         : in Bet_Name_Type;
+                       Market_Id        : in Market_Id_Type; 
+                       Side             : in Bet_Side_Type;
+                       Runner_Name      : in Runner_Name_Type;
+                       Selection_Id     : in Integer_4;
+                       Size             : in Bet_Size_Type;
+                       Price            : in Bet_Price_Type;
+                       Bet_Persistence  : in Bet_Persistence_Type;
+                       Bet              : out Table_Abets.Data_Type
+                       
+                       
+                       ) is
+--    Parsed_Ok : Boolean := True;
+--    Market_Ids   : JSON_Array := Empty_Array;
+    JSON_Query   : JSON_Value := Create_Object;
+    JSON_Reply   : JSON_Value := Create_Object;
+--    JSON_Market  : JSON_Value := Create_Object;
+    AWS_Reply    : Aws.Response.Data;
+    Params       : JSON_Value := Create_Object;
+    Limit_Order  : JSON_Value := Create_Object;
+--    Result       : JSON_Array := Empty_Array;   
+    Instruction  : JSON_Value := Create_Object;
+    Instructions : JSON_Array := Empty_Array;
+    Betfair_Result : Result_Type;
+--    Price_Projection : JSON_Value := Create_Object;
+--    Market_Description : JSON_Value := Create_Object;
+--    Event  : JSON_Value := Create_Object;
+--    Price_Data                  : JSON_Array := Empty_Array;
+    
+                       
+
+    Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
+    Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
+    Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
+    Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
+    Tmp_Bet_Id                     : String (1..20)  :=  (others => ' ') ;
+    Customer_Reference             : String (1..30)  :=  (others => ' ') ;
+    Order_Status                   : String (1..50)  :=  (others => ' ') ;
+    L_Size_Matched,
+    Average_Price_Matched          : Float := 0.0;
+    Powerdays                      : Integer_4 := 0;
+
+    Bet_Id : Integer_8 := 0;
+    Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock; 
+    
+    Price_String : String := General_Routines.F8_Image(Float_8(Price)); -- 2 decimals only
+    Local_Price :  Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
+  
+    Size_String : String := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
+    Local_Size :  Bet_Size_Type := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
+       
+    Price_Matched : Bet_Price_Type := 0.0;
+    Size_Matched  : Bet_Size_Type  := 0.0;
+       
+    Side_String : Bet_Side_String_Type := (others => ' ');   
+       
+  begin
+    Betfair_Result := Ok;
+    Move(Side'Img, Side_String);
+
+    Reset_AWS_Headers;    
+
+    Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet_Persistence'Img);
+    Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
+    Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
+
+    Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
+    Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
+    Instruction.Set_Field (Field_Name => "side",        Field => Side'Img);
+    Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
+    Instruction.Set_Field (Field_Name => "selectionId", Field => Integer(Selection_Id));
+
+    Append (Instructions , Instruction);
+    
+    Params.Set_Field (Field_Name => "instructions", Field => Instructions);
+    Params.Set_Field (Field_Name => "marketId",     Field => General_Routines.Trim(Market_Id));
+
+    JSON_Query.Set_Field (Field_Name => "params", Field => Params);
+    JSON_Query.Set_Field (Field_Name => "id", Field => 16);      
+    JSON_Query.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
+
+    --{
+    --    "jsonrpc": "2.0",
+    --    "method": "SportsAPING/v1.0/placeOrders",
+    --    "params": {
+    --        "marketId": "' + marketId + '",
+    --        "instructions": [
+    --            {
+    --                "selectionId": "' + str(selectionId) + '",
+    --                "handicap": "0",
+    --                "side": "BACK",
+    --                "orderType": "LIMIT",
+    --                "limitOrder": {
+    --                    "size": "0.01",
+    --                    "price": "1.50",
+    --                    "persistenceType": "LAPSE"
+    --                }
+    --            }
+    --        ],
+    --        "customerRef": "test12121212121"
+    --    },
+    --    "id": 1
+    --}
+
+    Log(Me & "Make_Bet", "posting: " & JSON_Query.Write  );
+
+    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+                                  Data         =>  JSON_Query.Write,
+                                  Content_Type => "application/json",
+                                  Headers      =>  Global_HTTP_Headers,
+                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+    begin
+      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+        JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                            Filename => "");
+        Log(Me & "Make_Bet", "Got reply: " & JSON_Reply.Write  );
+      else
+        Log(Me & "Make_Bet", "Post Timeout -> Give up placeOrder");
+        return;
+      end if;
+    exception
+      when others =>
+         Log(Me & "Make_Bet", "***********************  Bad reply start *********************************");
+         Log(Me & "Make_Bet", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+         Log(Me & "Make_Bet", "***********************  Bad reply stop  ********  -> Give up placeOrders" );
+         return;
+    end ;
+
+    -- parse out the reply.
+    -- check for API exception/Error first
+
+    if RPC.API_Exceptions_Are_Present(JSON_Reply) then
+      Log(Me & "Make_Bet", "APINGException is present, return");
+      return;
+    end if;
+
+-- {
+--    "jsonrpc":"2.0",
+--    "result":
+--            {
+--                "status":"SUCCESS",
+--                "marketId":"1.110689758",
+--                "instructionReports":
+--                    [
+--                        {
+--                             "status":"SUCCESS",
+--                             "instruction":
+--                                {
+--                                   "orderType":"LIMIT",
+--                                   "selectionId":6644807,
+--                                   "handicap":0.0,
+--                                   "side":"BACK",
+--                                   "limitOrder":
+--                                       {
+--                                          "size":30.0,
+--                                          "price":2.3,
+--                                          "persistenceType":"LAPSE"
+--                                        }
+--                               },
+--                               "betId":"29225429632",
+--                               "placedDate":"2013-08-24T12:43:54.000Z",
+--                               "averagePriceMatched":2.3399999999999994,
+--                               "sizeMatched":30.0
+--                        }
+--                    ]
+--                },
+--        "id":15
+--}
+
+    -- ok we have a parsable answer with no formal errors.
+    -- lets look at it
+    declare
+      Result           : JSON_Value := Create_Object;
+      InstructionsItem : JSON_Value := Create_Object;
+      Instructions     : JSON_Array := Empty_Array;
+    begin
+
+      if JSON_Reply.Has_Field("result") then
+        Result := JSON_Reply.Get("result");
+      else
+          Log(Me & "Make_Bet", "NO RESULT!!" );
+          raise JSON_Exception with "Betfair reply has no result!";
+      end if;
+
+      -- sanity check, but what to do if fail?
+      if JSON_Reply.Has_Field("customerRef") then
+        Move( Params.Get("customerRef"), Customer_Reference);
+
+        if General_Routines.Trim(Customer_Reference) /= String'(JSON_Reply.Get("customerRef")) then
+          Log(Me & "Make_Bet", "expected customerRef '" & Params.Get("customerRef") &
+              "' received customerRef '" & JSON_Reply.Get("customerRef"));
+        end if;
+      end if;
+
+      if Result.Has_Field("marketid") then
+        if General_Routines.Trim(Market_Id) /= String'(Result.Get("marketid")) then
+          Log(Me & "Make_Bet", "expected marketid '" & General_Routines.Trim(Market_Id) &
+              "' received marketid '" & Result.Get("marketid"));
+        end if;
+      end if;
+
+      if Result.Has_Field("status") then
+        Log(Me & "Make_Bet", "got result.status");
+        Move( Result.Get("status"), Execution_Report_Status);
+      end if;
+
+      if Result.Has_Field("errorCode") then
+        Log(Me & "Make_Bet", "got result.errorCode");
+        Move( Result.Get("errorCode"), Execution_Report_Error_Code);
+      end if;
+
+      if Result.Has_Field("instructionReports") then
+        Instructions := Result.Get("instructionReports");
+        Log(Me & "Make_Bet", "got result.instructionReports");
+
+        InstructionsItem  := Get(Instructions, 1); -- always element 1, since we only have 1
+        Log(Me & "Make_Bet", "got InstructionsItem");
+
+        if InstructionsItem.Has_Field("status") then
+          Log(Me & "Make_Bet", "got InstructionsItem.Status");
+          Move(InstructionsItem.Get("status"), Instruction_Report_Status);
+        end if;
+
+        if InstructionsItem.Has_Field("errorCode") then
+          Log(Me & "Make_Bet", "got InstructionsItem.errorCode");
+          Move(InstructionsItem.Get("errorCode"), Instruction_Report_Error_Code);
+        end if;
+      end if;
+
+      if InstructionsItem.Has_Field("instruction") then
+        Log(Me & "Make_Bet", "got InstructionsItem.instruction");
+        Instruction := InstructionsItem.Get("instruction");
+      else
+        Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
+        raise JSON_Exception with "Betfair reply has no Instruction!";
+      end if;
+
+      -- get selectionid?
+
+      if InstructionsItem.Has_Field("betId") then
+        Move( InstructionsItem.Get("betId"), Tmp_Bet_Id );
+        Log(Me & "Make_Bet", "got InstructionsItem.betid");
+        if Tmp_Bet_Id(2) = '.' then
+          Bet_Id := Integer_8'Value(Tmp_Bet_Id(3 .. Tmp_Bet_Id'Last));
+        else
+          Bet_Id := Integer_8'Value(Tmp_Bet_Id);
+        end if;
+      end if;
+
+      if InstructionsItem.Has_Field("sizeMatched") then
+        Log(Me & "Make_Bet", "got InstructionsItem.sizeMatched");
+        L_Size_Matched := InstructionsItem.Get("sizeMatched");
+        Size_Matched := Bet_Size_Type(L_Size_Matched);
+      end if;
+
+      if abs(Float_8(L_Size_Matched) - Float_8(Size)) < 0.0001 then
+        Move( "EXECUTION_COMPLETE", Order_Status );
+      else
+        Move( "EXECUTABLE", Order_Status );
+      end if;
+
+      if InstructionsItem.Has_Field("averagePriceMatched") then
+        Log(Me & "Make_Bet", "got InstructionsItem.averagePriceMatched");
+        Average_Price_Matched := InstructionsItem.Get("averagePriceMatched");
+        Price_Matched := Bet_Price_Type(Average_Price_Matched);
+      end if;
+    end ;
+        
+    if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
+      Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
+    end if;
+
+    Bet := (
+      Betid          => Bet_Id,
+      Marketid       => Market_Id,
+      Betmode        => Bot_Mode(Real),
+      Powerdays      => Powerdays,
+      Selectionid    => Selection_Id,
+      Reference      => (others => '-'),
+      Size           => Float_8(Local_Size),
+      Price          => Float_8(Local_Price),
+      Side           => Side_String,
+      Betname        => Bet_Name,
+      Betwon         => False,
+      Profit         => 0.0,
+      Status         => Order_Status, -- ??
+      Exestatus      => Execution_Report_Status,
+      Exeerrcode     => Execution_Report_Error_Code,
+      Inststatus     => Instruction_Report_Status,
+      Insterrcode    => Instruction_Report_Error_Code,
+      Startts        => Sattmate_Calendar.Time_Type_First,
+      Betplaced      => Now,
+      Pricematched   => Float_8(Price_Matched),
+      Sizematched    => Float_8(Size_Matched),
+      Runnername     => Runner_Name,
+      Fullmarketname => (others => ' '),
+      Svnrevision    => Bot_Svn_Info.Revision,
+      Ixxlupd        => (others => ' '), --set by insert
+      Ixxluts        => Now              --set by insert
+    );
+ 
+ 
+  end Place_Bet;  
+  ------------------------------------------ 
+  
+  
+  
+  
 end RPC;

@@ -6,6 +6,7 @@ with Table_Arunners;
 with Table_Amarkets;
 with Table_Abalances;
 with Table_Abets;
+with Table_Aprices;
 
 with Token;
 with Sattmate_Calendar;
@@ -34,13 +35,13 @@ package RPC is
                            Is_Removed        : out Boolean; 
                            Is_Matched        : out Boolean; 
                            AVG_Price_Matched : out Bet_Price_Type;
-                           Size_Matched      : out Bet_Size_Type
-                           ) ;
+                           Size_Matched      : out Bet_Size_Type) ;
   
   procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
                                      Is_Changed :    out Boolean);
 
-  procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) ;
+  procedure Get_Balance(Betfair_Result : out Result_Type ;
+                        Saldo : out Table_Abalances.Data_Type) ;
                                      
                                      
   procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
@@ -55,6 +56,21 @@ package RPC is
   procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
                        Bet_Id    : in Integer_8);
                                       
+  procedure Get_Market_Prices(Market_Id : in Market_Id_Type; 
+                              Market    : out Table_Amarkets.Data_Type;
+                              Pricelist : in out Table_Aprices.Aprices_List_Pack.List_Type;
+                              In_Play   : out Boolean);
+                              
+  procedure Place_Bet (Bet_Name         : in Bet_Name_Type;
+                       Market_Id        : in Market_Id_Type; 
+                       Side             : in Bet_Side_Type;
+                       Runner_Name      : in Runner_Name_Type;
+                       Selection_Id     : in Integer_4;
+                       Size             : in Bet_Size_Type;
+                       Price            : in Bet_Price_Type;
+                       Bet_Persistence  : in Bet_Persistence_Type;
+                       Bet              : out Table_Abets.Data_Type);
+                              
                                       
   
 end RPC;    

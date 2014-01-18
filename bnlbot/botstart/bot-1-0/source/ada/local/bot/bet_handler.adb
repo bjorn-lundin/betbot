@@ -332,7 +332,7 @@ package body Bet_Handler is
       end if;
 
       -- for a given market, the most expensive bet is the one with highest odds.
-      -- a bet wiht odds 15 costs something. Another LAY bet on THAT market with odds less than 15 costs nothing.
+      -- a bet with odds 15 costs something. Another LAY bet on THAT market with odds less than 15 costs nothing.
       -- Because only 1 will win (if we bet on WIN markets)
       Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
       if Too_Many_In_The_Air then

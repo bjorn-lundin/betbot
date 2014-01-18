@@ -4,15 +4,17 @@ with Unchecked_Conversion;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded ; 
 
 with Table_Amarkets;
-
-
+with Table_Arunners;
+with Table_Abets;
 
 package Bot_Types is
 
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place, Winner);
+   type Bet_Side_Type is (Back, Lay);
    type Bet_Type_Type is (Greenup, Back, Lay); 
+   
    type Animal_Type is (Horse, Hound);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;
@@ -47,6 +49,9 @@ package Bot_Types is
    type Green_Up_Mode_Type is (None, Lay_First_Then_Back, Back_First_Then_Lay);
    
    subtype Market_Id_Type is String(Table_Amarkets.Empty_Data.Marketid'range);
+   subtype Runner_Name_Type is String(Table_Arunners.Empty_Data.Runnername'range);
+   subtype Bet_Name_Type is String(Table_Abets.Empty_Data.Betname'range);
+   subtype Bet_Side_String_Type is String(Table_Abets.Empty_Data.Side'range);
 
    
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
