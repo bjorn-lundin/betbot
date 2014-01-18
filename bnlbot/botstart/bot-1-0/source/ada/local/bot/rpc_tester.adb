@@ -174,9 +174,9 @@ begin
           Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));         
         end loop;
         
-        if Best_Runners(1).Backprice <= Float_8(1.2) and then 
+        if Best_Runners(1).Backprice <= Float_8(1.15) and then 
            Best_Runners(1).Backprice >= Float_8(1.0) and then 
-           Best_Runners(2).Backprice >=4.0 then
+           Best_Runners(2).Backprice >= 7.0 then
           Log("Place bet on " & Table_Aprices.To_String(Best_Runners(1))); 
           
           declare
