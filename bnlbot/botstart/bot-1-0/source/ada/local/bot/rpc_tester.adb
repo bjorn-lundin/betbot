@@ -1,8 +1,9 @@
 --with Text_Io;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
---with Sql;
---with General_Routines; use General_Routines;
+with Bot_Types; use Bot_Types;
+with Sql;
+with General_Routines; use General_Routines;
 --with Ada.Streams;
 
 --with Gnat.Sockets;
@@ -11,6 +12,9 @@ with Gnat.Strings;
 
 --with Sattmate_Calendar; use Sattmate_Calendar;
 --with Gnatcoll.Json; use Gnatcoll.Json;
+
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Rpc;
 --with Lock ;
@@ -23,6 +27,10 @@ with Ada.Environment_Variables;
 
 --with Process_IO;
 --with Core_Messages;
+with Table_Amarkets;
+with Table_Aprices;
+with Table_Abets;
+with Table_Arunners;
 
 procedure Rpc_Tester is
   package EV renames Ada.Environment_Variables;
@@ -37,6 +45,8 @@ procedure Rpc_Tester is
   Sa_Par_Betid : aliased Gnat.Strings.String_Access;
   Sa_Par_Marketid : aliased Gnat.Strings.String_Access;
   Cmd_Line : Command_Line_Configuration;
+  
+  Update_Betwon_To_Null : Sql.Statement_Type;
   
 --  Betfair_Result : Rpc.Result_Type := Rpc.Ok;
  
@@ -86,7 +96,19 @@ begin
 
      
   Getopt (Cmd_Line);  -- process the command line
-   
+
+
+  Log(Me, "Connect Db");
+  Sql.Connect
+        (Host     => Ini.Get_Value("database", "host", ""),
+         Port     => Ini.Get_Value("database", "port", 5432),
+         Db_Name  => Ini.Get_Value("database", "nono", ""),
+         Login    => Ini.Get_Value("database", "bnl", ""),
+         Password =>Ini.Get_Value("database", "bnl", ""));
+  Log(Me, "db Connected");
+
+
+  
     -- Ask a pythonscript to login for us, returning a token
   Log(Me, "Login betfair");
   Rpc.Init(
@@ -99,14 +121,134 @@ begin
   Rpc.Login; 
   Log(Me, "Login betfair done");
   
-  Rpc.Cancel_Bet(Market_Id => Sa_Par_Marketid.all,
-                 Bet_Id    => Integer_8'Value(Sa_Par_Betid.all));  
+  
+  
+--  Rpc.Cancel_Bet(Market_Id => Sa_Par_Marketid.all,
+--                 Bet_Id    => Integer_8'Value(Sa_Par_Betid.all));  
                
-  Log(Me, "do_exit");
+    declare
+      Market    : Table_Amarkets.Data_Type;
+      Pricelist : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
+      Price,Tmp : Table_Aprices.Data_Type;
+      In_Play   : Boolean := False;
+      Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+      Eol : Boolean := False;
+    begin     
+      loop
+        Table_Aprices.Aprices_List_Pack.Remove_All(Pricelist);
+        Rpc.Get_Market_Prices(Market_Id => Sa_Par_Marketid.all, 
+                              Market    => Market,
+                              Pricelist => Pricelist,
+                              In_Play   => In_Play);
+        
+--        exit when not In_Play or else Market.Status(1..4) /= "OPEN";
+        exit when Market.Status(1..4) /= "OPEN";
+        -- ok find the runner with lowest backprice:        
+        Price.Backprice := 10000.0;
+        Table_Aprices.Aprices_List_Pack.Get_First(Pricelist,Tmp,Eol);
+        loop
+          exit when Eol;          
+          if Tmp.Status(1..6) = "ACTIVE" and then 
+             Tmp.Backprice < Price.Backprice then
+            Price := Tmp;
+          end if;        
+          Table_Aprices.Aprices_List_Pack.Get_Next(Pricelist,Tmp,Eol);
+        end loop;
+        Best_Runners(1) := Price;
+        -- find #2
+        Price.Backprice := 10000.0;
+        Table_Aprices.Aprices_List_Pack.Get_First(Pricelist,Tmp,Eol);
+        loop
+          exit when Eol;          
+          if Tmp.Status(1..6) = "ACTIVE" and then
+             Tmp.Backprice < Price.Backprice and then 
+             Tmp.Selectionid /= Best_Runners(1).Selectionid then
+            Price := Tmp;
+          end if;        
+          Table_Aprices.Aprices_List_Pack.Get_Next(Pricelist,Tmp,Eol);
+        end loop;
+        Best_Runners(2) := Price;
+        
+        
+        for i in Best_Runners'range loop
+          Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));         
+        end loop;
+        
+        if Best_Runners(1).Backprice <= Float_8(1.2) and then 
+           Best_Runners(1).Backprice >= Float_8(1.0) and then 
+           Best_Runners(2).Backprice >=4.0 then
+          Log("Place bet on " & Table_Aprices.To_String(Best_Runners(1))); 
+          
+          declare
+            T : Sql.Transaction_Type;
+            Bet : Table_Abets.Data_Type;
+            Bet_Name : Bet_Name_Type := (others => ' ');
+            Market_Id : Market_Id_Type := (others => ' ');
+            Runner : Table_Arunners.Data_Type;
+            Runner_Name : Runner_Name_Type := (others => ' ');
+            Market : Table_Amarkets.Data_Type;
+            Eos : Boolean := False;
+          begin
+            Move("HORSES_WIN_BACK_FINISH_ANY", Bet_Name);
+            Move(Sa_Par_Marketid.all, Market_Id);
+            
+            Rpc.Place_Bet (Bet_Name         => Bet_Name,
+                           Market_Id        => Market_Id, 
+                           Side             => Back,
+                           Runner_Name      => Runner_Name,
+                           Selection_Id     => Best_Runners(1).Selectionid,
+                           Size             => 30.0,
+                           Price            => 1.01,
+                           Bet_Persistence  => Persist,
+                           Bet              => Bet);
+            
+            
+            T.Start;
+              -- fix som missing fields first
+              Runner.Marketid := Market_Id;
+              Runner.Selectionid := Best_Runners(1).Selectionid;
+              Table_Arunners.Read(Runner, Eos);
+              if not Eos then
+                Bet.Runnername := Runner.Runnername;
+              else
+                Log(Me & "Make_Bet", "no runnername found");
+              end if;
+              
+              Market.Marketid := Market_Id;
+              Table_Amarkets.Read(Market, Eos);
+              if not Eos then
+                Bet.Startts := Market.Startts;
+                Bet.Fullmarketname := Market.Marketname;
+              else
+                Log(Me & "Make_Bet", "no market found");
+              end if;
+            
+              Table_Abets.Insert(Bet);
+              Log(Me & "Make_Bet", Bet_Name & " inserted bet: " & Table_Abets.To_String(Bet));
+              if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
+                Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+                Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
+                Sql.Execute(Update_Betwon_To_Null);
+              end if;
+            T.Commit;
+          end ;
+    
+          
+          
+          exit;           
+        end if;
+        
+        
+        
+      end loop;    
+    end;           
+  Log(Me, "Close Db");
+  Sql.Close_Session;
  
 exception
 
   when E: others =>
     Sattmate_Exception.Tracebackinfo(E);
+    Sql.Close_Session;
 end Rpc_Tester;
 

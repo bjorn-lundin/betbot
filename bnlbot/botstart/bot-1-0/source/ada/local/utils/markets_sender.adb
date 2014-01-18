@@ -72,10 +72,10 @@ begin
   Define_Switch
      (Config,
       Sa_Par_Countrycodes'access,
-      Long_Switch => "--countrycodes",
+      Long_Switch => "--countrycodes=",
       Help        => "countrycodes commaseparated. Applies only to horses");
 
-      Define_Switch
+  Define_Switch
      (Config,
       Ba_Horse'access,
       Long_Switch => "--horses",
