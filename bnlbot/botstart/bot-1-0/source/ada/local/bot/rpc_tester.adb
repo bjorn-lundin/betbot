@@ -102,9 +102,9 @@ begin
   Sql.Connect
         (Host     => Ini.Get_Value("database", "host", ""),
          Port     => Ini.Get_Value("database", "port", 5432),
-         Db_Name  => Ini.Get_Value("database", "nono", ""),
-         Login    => Ini.Get_Value("database", "bnl", ""),
-         Password =>Ini.Get_Value("database", "bnl", ""));
+         Db_Name  => Ini.Get_Value("database", "name", ""),
+         Login    => Ini.Get_Value("database", "username", ""),
+         Password =>Ini.Get_Value("database", "password", ""));
   Log(Me, "db Connected");
 
 
