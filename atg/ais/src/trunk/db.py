@@ -108,6 +108,7 @@ class Raceday(BASE):
     trot = Column(Boolean)
     cancelled = Column(Boolean)
     track_id = Column(Integer, ForeignKey('track.id'))
+    virt_track_id = Column(Integer)
     track = relationship("Track")
     races = relationship('Race')
 
@@ -128,6 +129,7 @@ class Raceday(BASE):
             self.raceday_date, 
             self.trot,
             self.track_id,
+            self.virt_track_id,
             self.cancelled
         ) 
         part1 = "<Raceday( "
@@ -143,13 +145,14 @@ class Raceday(BASE):
         return DB_SESSION.query(Raceday).all()
     
     @staticmethod
-    def read(track_id=None, raceday_date=None):
+    def read(raceday_date=None, track_id=None, virt_track_id=None):
         '''
         Read a raceday entity in database
         '''
         result = DB_SESSION.query(Raceday).filter_by(
+            raceday_date = raceday_date,
             track_id = track_id,
-            raceday_date = raceday_date
+            virt_track_id = virt_track_id
         ).first()
         return result
 

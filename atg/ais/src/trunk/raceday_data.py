@@ -58,7 +58,20 @@ def load_into_db(datadir=None):
                     racedayinfo.raceDayDate.month,
                     racedayinfo.raceDayDate.date
                 )
-                raceday = db.Raceday.read(track_id=track.id, raceday_date=raceday_date)
+                virt_track_id = None
+                try:
+                    racedayinfo.multipleTrackPoolSetups
+                except AttributeError:
+                    racedayinfo.multipleTrackPoolSetups = None
+                if racedayinfo.multipleTrackPoolSetups is not None:
+                    for multipletrackpoolsetup in racedayinfo.multipleTrackPoolSetups.getchildren():
+                        virt_track_id = int(multipletrackpoolsetup.trackKey.trackId)
+                        # Only one unique virtual track for one raceday
+                        break
+                raceday = db.Raceday.read(
+                    raceday_date=raceday_date, 
+                    track_id=track.id, 
+                    virt_track_id=virt_track_id)
                 if raceday is None:
                     raceday = db.Raceday()
                     raceday.country_code = str(racedayinfo.country.code)
@@ -95,6 +108,7 @@ def load_into_db(datadir=None):
                     raceday.raceday_date = raceday_date
                     raceday.trot = bool(racedayinfo.trot)
                     raceday.track_id = track.id
+                    raceday.virt_track_id = virt_track_id
                     # Parameter added in AIS 9
                     # racedayinfo.canceled
                     try:
@@ -104,11 +118,11 @@ def load_into_db(datadir=None):
                     raceday.cancelled = bool(racedayinfo.canceled)
                     db.create(raceday)
 
-                    races_and_bettypes = \
-                        get_races_and_bettypes(
-                            racedayinfo=racedayinfo,
-                            filename=filename
-                        )
+#                     races_and_bettypes = \
+#                         get_races_and_bettypes(
+#                             racedayinfo=racedayinfo,
+#                             filename=filename
+#                         )
 
                     for raceinfo in racedayinfo.raceInfos.getchildren():
                         race_nr = int(raceinfo.raceNr)
@@ -140,11 +154,11 @@ def load_into_db(datadir=None):
                             race.track_surface_domestic_text = unicode(raceinfo.trackSurface.domesticText)
                             race.track_surface_english_text = str(raceinfo.trackSurface.englishText)
                             race.raceday_id = raceday.id
-                            for bettype in races_and_bettypes[race_nr]:
-                                if isinstance(bettype, db.BettypeChild):
-                                    race.bettype_childs.append(bettype)
-                                else:
-                                    race.bettypes.append(bettype)
+#                             for bettype in races_and_bettypes[race_nr]:
+#                                 if isinstance(bettype, db.BettypeChild):
+#                                     race.bettype_childs.append(bettype)
+#                                 else:
+#                                     race.bettypes.append(bettype)
                             # Parameter added in AIS 9
                             # raceinfo.canceled
                             try:
@@ -235,7 +249,6 @@ def print_all_data(datadir=None):
     '''
     filelist = sorted(util.list_files_with_path(datadir))
     data_filelist = [f for f in filelist if 'fetchRaceDayCalendar' in f]
-#     data_filelist = ['/home/sejoabi/data/ais/test_data/fetchRaceDayCalendar_20140112_all_9_test.xml']
     print(data_filelist)
     for filepath in data_filelist:
         filename = util.get_filename_from_path(filepath)
@@ -292,7 +305,6 @@ def print_all_data(datadir=None):
                     print(multipletrackpoolsetup.track.domesticText)
                     print(multipletrackpoolsetup.track.englishText)
                     print(multipletrackpoolsetup.trackKey.trackId)
-                    
         for racedayinfo in racedaycalendar.raceDayInfos.getchildren():
             print(racedayinfo.country.code)
             print(racedayinfo.firstRacePostTime.date.date)
@@ -317,53 +329,39 @@ def print_all_data(datadir=None):
             print(racedayinfo.meetingType.code)
             print(racedayinfo.meetingType.domesticText)
             print(racedayinfo.meetingType.englishText)
-
             # Parameter added in AIS 9
             # racedayinfo.multipleTrackPoolSetups
             try:
                 racedayinfo.multipleTrackPoolSetups
             except AttributeError:
-                print('EEEE')
                 racedayinfo.multipleTrackPoolSetups = None
             if racedayinfo.multipleTrackPoolSetups is not None:
                 for multipletrackpoolsetup in racedayinfo.multipleTrackPoolSetups.getchildren():
                     print(multipletrackpoolsetup.betType.code)
                     print(multipletrackpoolsetup.betType.domesticText)
                     print(multipletrackpoolsetup.betType.englishText)
-                    
                     for trackdata in multipletrackpoolsetup.hostTrack.getchildren():
                         print(trackdata.track.code)
                         print(trackdata.track.domesticText)
                         print(trackdata.track.englishText)
                         print(trackdata.trackKey.trackId)
-                        
                     for leginfo in multipletrackpoolsetup.legInfo.getchildren():
                         print(leginfo.hostTrack.track.code)
                         print(leginfo.hostTrack.track.domesticText)
                         print(leginfo.hostTrack.track.englishText)
-                        
                         print(leginfo.hostTrack.trackKey.trackId)
-                        
                         print(leginfo.legNr)
                         print(leginfo.raceNr)
                         print(leginfo.trot)
-                    
                     print(multipletrackpoolsetup.multipleTrackName)
                     print(multipletrackpoolsetup.multipleTrackNameEnglish)
-                    
                     print(multipletrackpoolsetup.raceDayDate.year)
                     print(multipletrackpoolsetup.raceDayDate.month)
                     print(multipletrackpoolsetup.raceDayDate.date)
-                    
                     print(multipletrackpoolsetup.track.code)
                     print(multipletrackpoolsetup.track.domesticText)
                     print(multipletrackpoolsetup.track.englishText)
-
                     print(multipletrackpoolsetup.trackKey.trackId)
-                    
-#                     import time
-#                     time.sleep(2)
-            
             print(racedayinfo.raceCardAvailable)
             print(racedayinfo.raceDayDate.date)
             print(racedayinfo.raceDayDate.month)
@@ -380,7 +378,6 @@ def print_all_data(datadir=None):
             except AttributeError:
                 racedayinfo.canceled = False
             print(racedayinfo.canceled)
-            
             for bettype in racedayinfo.betTypes.getchildren():
                 print(bettype.hasResult)
                 print(bettype.name.code)
@@ -389,7 +386,6 @@ def print_all_data(datadir=None):
                 print(bettype.national)
                 for race_nr in bettype.races.getchildren():
                     print(race_nr)
-        
             for raceinfo in racedayinfo.raceInfos.getchildren():
                 for bettype_code in raceinfo.betTypeCodes.getchildren():
                     print(bettype_code)
@@ -422,12 +418,8 @@ def print_all_data(datadir=None):
                 racedayinfo.sportSystemId
             except AttributeError:
                 racedayinfo.sportSystemId = None
-            print('xx: ', str(racedayinfo.sportSystemId))
-            import time
-            time.sleep(1)
-
+            print(racedayinfo.sportSystemId)
 
 if __name__ == "__main__":
-#    pass
     print_all_data('/home/sejoabi/data/ais/test_data')
     
