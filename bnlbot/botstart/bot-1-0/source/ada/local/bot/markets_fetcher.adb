@@ -981,12 +981,19 @@ begin
         MNR      : Bot_Messages.Market_Notification_Record;
         Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
       begin
-        Move("bot", Receiver.Name);
         for i in 1 .. Length (Market_Ids) loop
           Market := Get(Market_Ids, i);
           MNR.Market_Id := (others => ' ');
           Move(String'(Market.Get),MNR.Market_Id);
+          
+          Receiver.Name := (others => ' ');
+          Move("bot", Receiver.Name);
           Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
+          Bot_Messages.Send(Receiver, MNR);
+          
+          Receiver.Name := (others => ' ');
+          Move("poll", Receiver.Name);
+          Log(Me, "Notifying 'poll' with marketid: '" & MNR.Market_Id & "'");
           Bot_Messages.Send(Receiver, MNR);
         end loop;
       end;  

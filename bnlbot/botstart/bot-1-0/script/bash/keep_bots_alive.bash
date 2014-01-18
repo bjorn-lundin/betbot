@@ -112,6 +112,15 @@ function Check_Bots_For_User () {
       fi      
     fi
   done 
+
+
+  ps -ef | grep bin/poll | grep user=$BOT_USER | grep -v grep >/dev/null
+  RESULT_POLL=$?
+  if [ $RESULT_POLL -eq 1 ] ; then
+    echo "Started poll $BOT_USER"
+    export BOT_NAME=poll
+    $BOT_TARGET/bin/poll --daemon --user=$BOT_USER --inifile=poll.ini
+  fi
   
   ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
   RESULT_SALDO_FETCHER=$?
