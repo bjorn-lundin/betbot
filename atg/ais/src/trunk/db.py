@@ -364,6 +364,19 @@ class Bettype(BASE):
         ).first()
         return result
 
+    @staticmethod
+    def virtual_bettypes_set(raceday_date=None, virt_track_id=None):
+        '''
+        Return a set of bettypes related to virtual track id
+        '''
+        bt = DB_SESSION.query(Bettype.name_code)\
+            .join(Raceday.virt_bet_types).filter(
+            Raceday.raceday_date == raceday_date,
+            Raceday.virt_track_id == virt_track_id
+        ).all()
+        virt_bettypes = [x[0] for x in bt]    
+        return set(virt_bettypes)
+
 class BettypeChild(BASE):
     '''
     Database entity BettypeChild
@@ -797,10 +810,4 @@ def init_db_client(db_init=False):
         BASE.metadata.create_all(ENGINE)
 
 if __name__ == '__main__':
-    result = \
-        DB_SESSION.execute(
-            'select name_code from bettype where id in ' + \
-            '(select bettype_id from race_bettype where race_id ' + \
-            'in (select id from race where raceday_id = :raceday_id))', {'raceday_id':2}).fetchall()
-    print(result)
     exit(0)
