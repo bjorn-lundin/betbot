@@ -1073,20 +1073,17 @@ package body RPC is
                               Pricelist : in out Table_Aprices.Aprices_List_Pack.List_Type;
                               In_Play   : out Boolean) is
     Parsed_Ok : Boolean := True;
-    Market_Ids   : JSON_Array := Empty_Array;
-    JSON_Query   : JSON_Value := Create_Object;
-    JSON_Reply   : JSON_Value := Create_Object;
-    JSON_Market  : JSON_Value := Create_Object;
-    AWS_Reply    : Aws.Response.Data;
-    Params       : JSON_Value := Create_Object;
-    Result       : JSON_Array := Empty_Array;   
---    Instruction  : JSON_Value := Create_Object;
---    Instructions : JSON_Array := Empty_Array;
---    Betfair_Result : Result_Type;
-    Price_Projection : JSON_Value := Create_Object;
+    Market_Ids         : JSON_Array := Empty_Array;
+    JSON_Query         : JSON_Value := Create_Object;
+    JSON_Reply         : JSON_Value := Create_Object;
+    JSON_Market        : JSON_Value := Create_Object;
+    AWS_Reply          : Aws.Response.Data;
+    Params             : JSON_Value := Create_Object;
+    Result             : JSON_Array := Empty_Array;   
+    Price_Projection   : JSON_Value := Create_Object;
     Market_Description : JSON_Value := Create_Object;
-    Event  : JSON_Value := Create_Object;
-    Price_Data                  : JSON_Array := Empty_Array;
+    Event              : JSON_Value := Create_Object;
+    Price_Data         : JSON_Array := Empty_Array;
 
     ----------------------------------------------
     procedure Parse_Market(J_Market  : in JSON_Value;
@@ -1094,9 +1091,7 @@ package body RPC is
                            In_Play_Market : out Boolean) is
       Found : Boolean := True;                     
     begin
-      In_Play_Market := False;
-      
-      
+            
       Get_Value(Container => J_Market,
                 Field     => "marketId",
                 Target    => DB_Market.Marketid,
@@ -1105,11 +1100,6 @@ package body RPC is
         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
       end if;
       
---      if J_Market.Has_Field("marketId") then
---        Move(J_Market.Get("marketId"), DB_Market.Marketid);
---      else
---        raise No_Such_Field with "Object 'Market' - Field 'marketId'";
---      end if;
       
       Get_Value(Container => J_Market,
                 Field     => "marketName",
@@ -1118,73 +1108,27 @@ package body RPC is
       if not Found then
         Move("No market name", DB_Market.Marketname);
       end if;
-                
---      if J_Market.Has_Field("marketName") then
---        Move(J_Market.Get("marketName"), DB_Market.Marketname);
---      else
---        Move("No market name", DB_Market.Marketname);
---      end if;
-  
+                  
       Get_Value(Container => J_Market,
                 Field     => "betDelay",
                 Target    => DB_Market.Betdelay,
                 Found     => Found);
-                
---      if J_Market.Has_Field("betDelay") then
---        DB_Market.Betdelay := Integer_4(Integer'(J_Market.Get("betDelay")) );
---      else
---        raise No_Such_Field with "Object 'Market' - Field 'betDelay'";
---      end if;
-   
-        Get_Value(Container => J_Market,
-                  Field     => "description",
-                  Target    => Market_Description,
+                   
+      Get_Value(Container => J_Market,
+                Field     => "description",
+                Target    => Market_Description,
+                Found     => Found);
+      if Found then
+        Get_Value(Container => Market_Description,
+                  Field     => "marketType",
+                  Target    => DB_Market.Markettype,
                   Found     => Found);
-        if Found then
-          Get_Value(Container => Market_Description,
-                    Field     => "marketType",
-                    Target    => DB_Market.Markettype,
-                    Found     => Found);
-        end if;         
+      end if;         
    
---      if J_Market.Has_Field("description") then
---        Market_Description := J_Market.Get("description");
---        if Market_Description.Has_Field("marketType") then
---          Move(Market_Description.Get("marketType"), DB_Market.Markettype);
---        else
---          Move("NOTYPE", DB_Market.Markettype);
---        end if;
---      else
---        Move("NOTYPE", DB_Market.Markettype);
---      end if;
-
       Get_Value(Container => J_Market,
                 Field     => "marketStartTime",
                 Target    => DB_Market.Startts,
                 Found     => Found);
-
-  
---      if J_Market.Has_Field("marketStartTime") then
---        declare
---          Tmp : String := J_Market.Get("marketStartTime");
---        begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z", 
---          DB_Market.Startts := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
---        end;
---      else
---         DB_Market.Startts := Sattmate_Calendar.Time_Type_First;
---      end if;
-
---      if J_Market.Has_Field("event") then
---        Event := J_Market.Get("event");
---        if Event.Has_Field("id") then
---          Move(Event.Get("id"), DB_Market.Eventid);
---        else
---          Move("NO EVENT", DB_Market.Eventid);
---        end if;
---      else
---        Move("NO EVENT", DB_Market.Eventid);
---      end if;    
-
       
       Get_Value(Container => J_Market,
                 Field     => "event",
@@ -1202,21 +1146,10 @@ package body RPC is
         Move("NO EVENT", DB_Market.Eventid);      
       end if;      
       
-      
-      
-      
-      
       Get_Value(Container => J_Market,
                 Field     => "inplay",
                 Target    => In_Play_Market,
                 Found     => Found);
-
-      
---      if J_Market.Has_Field("inplay") then
---        In_Play_Market := J_Market.Get("inplay");
---      else
---        raise No_Such_Field with "Object 'Market' - Field 'inplay'";
---      end if;
       
       Get_Value(Container => J_Market,
                 Field     => "status",
@@ -1225,13 +1158,7 @@ package body RPC is
       if not Found then
         Move("NO STATUS", DB_Market.Status);
       end if;
-                
---      if J_Market.Has_Field("status") then
---         Move(J_Market.Get("status"), DB_Market.Status);
---      else
---         Move("NO STATUS", DB_Market.Status);
---      end if;
-      
+                      
       Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market)); 
     
     end Parse_Market;
@@ -1240,100 +1167,105 @@ package body RPC is
     procedure Parse_Runners(J_Market      : in     JSON_Value;
                             Pricelist     : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
       pragma Warnings(Off,Pricelist);                            
-      Back, Lay, Ex, Runner        : JSON_Value := Create_Object;
-      Back_Array,Lay_Array,Runner_Prices : JSON_Array := Empty_Array;
-      Array_Length      :  Natural;
-      Array_Length_Back :  Natural;
-      Array_Length_Lay  :  Natural;
-      Now           : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
---      Eos : Boolean := False;
-      DB_Runner_Price : Table_Aprices.Data_Type;
+      Back, 
+      Lay, 
+      Ex, 
+      Runner            : JSON_Value := Create_Object;
+      Back_Array,
+      Lay_Array,
+      Runner_Prices     : JSON_Array := Empty_Array;
+      Array_Length      : Natural;
+      Array_Length_Back : Natural;
+      Array_Length_Lay  : Natural;
+      Now               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+      Found             : Boolean := False;
+      DB_Runner_Price   : Table_Aprices.Data_Type;
     begin
     
-      Log(Me, "Parse_Runners start"); 
-      --some fields are missing if runner is removed, accept that
       Runner_Prices := J_Market.Get("runners");
       Array_Length  := Length (Runner_Prices);
       
       for J in 1 .. Array_Length loop
         DB_Runner_Price := Table_Aprices.Empty_Data;
       
-         Log(Me, "Parse_Runner start"); 
-         Runner := Get (Arr   => Runner_Prices, Index => J);
-         Log(Me, "  " & Runner.Write);
-         
-         if J_Market.Has_Field("marketId") then
-           Move(J_Market.Get("marketId"), DB_Runner_Price.Marketid);
-         else
-           raise No_Such_Field with "Object 'Market' - Field 'marketId'";
-         end if;
+        Runner := Get (Arr   => Runner_Prices, Index => J);
+
+        Get_Value(Container => J_Market,
+                  Field     => "marketId",
+                  Target    => DB_Runner_Price.Marketid,
+                  Found     => Found);
+        if not Found then
+          raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+        end if;
+
+        Get_Value(Container => Runner,
+                  Field     => "selectionId",
+                  Target    => DB_Runner_Price.Selectionid,
+                  Found     => Found);
+        if not Found then
+          raise No_Such_Field with "Object 'Market' - Field 'selectionId'";
+        end if;
+
+        Get_Value(Container => Runner,
+                  Field     => "status",
+                  Target    => DB_Runner_Price.Status,
+                  Found     => Found);
+        if not Found then
+          raise No_Such_Field with "Object 'Market' - Field 'status'";
+        end if;
+
+        Get_Value(Container => Runner,
+                  Field     => "totalMatched",
+                  Target    => DB_Runner_Price.Totalmatched,
+                  Found     => Found);
   
-         if Runner.Has_Field("selectionId") then
-           DB_Runner_Price.Selectionid := Integer_4(Integer'(Runner.Get("selectionId")));
-         else
-           raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
-         end if;
+        DB_Runner_Price.Pricets := Now;
   
-         if Runner.Has_Field("status") then
-           Move(Runner.Get("status"), DB_Runner_Price.Status);
-         else
-           raise No_Such_Field with "Object 'Runner' - Field 'status'";
-         end if;
+        if Runner.Has_Field("ex") then
+          Ex := Runner.Get("ex");
+          if Ex.Has_Field("availableToBack") then
+            Back_Array := Ex.Get("availableToBack");
+            Array_Length_Back := Length(Back_Array);
+            if Array_Length_Back >= 1 then
+               Back := Get (Arr   => Back_Array, Index => 1);
+              if Back.Has_Field("price") then
+                DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
+              else
+                raise No_Such_Field with "Object 'Back' - Field 'price'";
+              end if;
+            end if;
+          else
+            raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";         
+          end if;          
+          
+          if Ex.Has_Field("availableToLay") then
+            Lay_Array := Ex.Get("availableToLay");
+            Array_Length_Lay := Length(Lay_Array);
+            if Array_Length_Lay >= 1 then
+               Lay := Get (Arr   => Lay_Array, Index => 1);
+              if Lay.Has_Field("price") then
+                DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
+              else
+                raise No_Such_Field with "Object 'Lay' - Field 'price'";
+              end if;
+            end if;
+          else
+            raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";         
+          end if;
+        else -- no 'ex'
+          raise No_Such_Field with "Object 'Runner' - Field 'ex'";         
+        end if;
          
-         if Runner.Has_Field("totalMatched") then
-           DB_Runner_Price.Totalmatched := Float_8(Float'(Runner.Get("totalMatched")));
-         end if;
-  
-         DB_Runner_Price.Pricets := Now;
-  
-         if Runner.Has_Field("ex") then
-           Ex := Runner.Get("ex");
-           if Ex.Has_Field("availableToBack") then
-             Back_Array := Ex.Get("availableToBack");
-             Array_Length_Back := Length(Back_Array);
-             if Array_Length_Back >= 1 then
-                Back := Get (Arr   => Back_Array, Index => 1);
-               if Back.Has_Field("price") then
-                 DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
-               else
-                 raise No_Such_Field with "Object 'Back' - Field 'price'";
-               end if;
-             end if;
-           else
-             raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";         
-           end if;          
-           
-           if Ex.Has_Field("availableToLay") then
-             Lay_Array := Ex.Get("availableToLay");
-             Array_Length_Lay := Length(Lay_Array);
-             if Array_Length_Lay >= 1 then
-                Lay := Get (Arr   => Lay_Array, Index => 1);
-               if Lay.Has_Field("price") then
-                 DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
-               else
-                 raise No_Such_Field with "Object 'Lay' - Field 'price'";
-               end if;
-             end if;
-           else
-             raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";         
-           end if;
-         else -- no 'ex'
-           raise No_Such_Field with "Object 'Runner' - Field 'ex'";         
-         end if;
+        Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Pricelist, DB_Runner_Price);
+        Log(Me, Table_Aprices.To_String(DB_Runner_Price));
          
-         Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Pricelist, DB_Runner_Price);
-         Log(Me, Table_Aprices.To_String(DB_Runner_Price));
-         
-         Log(Me, "Parse_Runner stop"); 
-      end loop;
-      Log(Me, "Parse_Runners stop"); 
-    
+      end loop;    
     end Parse_Runners;
     ---------------------------------       
     
         
   begin
---    Betfair_Result := Ok;
+    In_Play := False;
 
     Reset_AWS_Headers;    
     Append(Market_Ids, Create(Market_Id));
@@ -1373,15 +1305,17 @@ package body RPC is
     end ;       
   
     if Parsed_Ok then
-      Log(Me, "Got reply " & JSON_Reply.Write);
+      if RPC.API_Exceptions_Are_Present(JSON_Reply) then
+        Log(Me & "Get_Market_Prices", "APINGException is present, return");
+        return;
+      end if;
+    
        --  Iterate the Reply_List_Market_Book object. 
       if JSON_Reply.Has_Field("result") then
         Log(Me, "we have result ");
         Result := JSON_Reply.Get("result");
         for i in 1 .. Length(Result) loop
-          Log(Me, "we have result #:" & i'img);
           JSON_Market := Get(Result, i);
-          Log("JSON_Market " & JSON_Market.Write);
           Parse_Market(JSON_Market, Market, In_Play);
           if JSON_Market.Has_Field("runners") then
             Parse_Runners(JSON_Market, Pricelist);
@@ -1399,56 +1333,44 @@ package body RPC is
                        Size             : in Bet_Size_Type;
                        Price            : in Bet_Price_Type;
                        Bet_Persistence  : in Bet_Persistence_Type;
-                       Bet              : out Table_Abets.Data_Type
-                       
-                       
-                       ) is
---    Parsed_Ok : Boolean := True;
---    Market_Ids   : JSON_Array := Empty_Array;
+                       Bet              : out Table_Abets.Data_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
---    JSON_Market  : JSON_Value := Create_Object;
     AWS_Reply    : Aws.Response.Data;
     Params       : JSON_Value := Create_Object;
     Limit_Order  : JSON_Value := Create_Object;
---    Result       : JSON_Array := Empty_Array;   
     Instruction  : JSON_Value := Create_Object;
     Instructions : JSON_Array := Empty_Array;
---    Betfair_Result : Result_Type;
---    Price_Projection : JSON_Value := Create_Object;
---    Market_Description : JSON_Value := Create_Object;
---    Event  : JSON_Value := Create_Object;
---    Price_Data                  : JSON_Array := Empty_Array;
     
                        
-
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
     Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
     Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
-    Tmp_Bet_Id                     : String (1..20)  :=  (others => ' ') ;
-    Customer_Reference             : String (1..30)  :=  (others => ' ') ;
+--    Tmp_Bet_Id                     : String (1..20)  :=  (others => ' ') ;
+--    Customer_Reference             : String (1..30)  :=  (others => ' ') ;
     Order_Status                   : String (1..50)  :=  (others => ' ') ;
     L_Size_Matched,
-    Average_Price_Matched          : Float := 0.0;
+    Average_Price_Matched          : Float_8 := 0.0;
+--    Average_Price_Matched          : Float := 0.0;
     Powerdays                      : Integer_4 := 0;
 
     Bet_Id : Integer_8 := 0;
     Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock; 
     
-    Price_String : String := General_Routines.F8_Image(Float_8(Price)); -- 2 decimals only
-    Local_Price :  Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
+    Price_String  : String         := General_Routines.F8_Image(Float_8(Price)); -- 2 decimals only
+    Local_Price   : Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
   
-    Size_String : String := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
-    Local_Size :  Bet_Size_Type := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
+    Size_String   : String         := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
+    Local_Size    : Bet_Size_Type  := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
        
     Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched  : Bet_Size_Type  := 0.0;
        
-    Side_String : Bet_Side_String_Type := (others => ' ');   
+    Side_String   : Bet_Side_String_Type := (others => ' ');   
+    Found         : Boolean              := False;
        
   begin
---    Betfair_Result := Ok;
     Move(Side'Img, Side_String);
 
     Reset_AWS_Headers;    
@@ -1569,40 +1491,42 @@ package body RPC is
       Instructions     : JSON_Array := Empty_Array;
     begin
 
-      if JSON_Reply.Has_Field("result") then
-        Result := JSON_Reply.Get("result");
-      else
-          Log(Me & "Make_Bet", "NO RESULT!!" );
-          raise JSON_Exception with "Betfair reply has no result!";
+--      if JSON_Reply.Has_Field("result") then
+--        Result := JSON_Reply.Get("result");
+--      else
+--          Log(Me & "Make_Bet", "NO RESULT!!" );
+--          raise JSON_Exception with "Betfair reply has no result!";
+--      end if;    
+      
+      Get_Value(Container => JSON_Reply,
+                Field     => "result",
+                Target    => Result,
+                Found     => Found);
+      if not Found then
+        Log(Me & "Make_Bet", "NO RESULT!!" );
+        raise JSON_Exception with "Betfair reply has no result!";
       end if;
+      
+--      if Result.Has_Field("status") then
+--        Log(Me & "Make_Bet", "got result.status");
+--        Move( Result.Get("status"), Execution_Report_Status);
+--      end if;
+      Get_Value(Container => Result,
+                Field     => "status",
+                Target    => Execution_Report_Status,
+                Found     => Found);
 
-      -- sanity check, but what to do if fail?
-      if JSON_Reply.Has_Field("customerRef") then
-        Move( Params.Get("customerRef"), Customer_Reference);
-
-        if General_Routines.Trim(Customer_Reference) /= String'(JSON_Reply.Get("customerRef")) then
-          Log(Me & "Make_Bet", "expected customerRef '" & Params.Get("customerRef") &
-              "' received customerRef '" & JSON_Reply.Get("customerRef"));
-        end if;
-      end if;
-
-      if Result.Has_Field("marketid") then
-        if General_Routines.Trim(Market_Id) /= String'(Result.Get("marketid")) then
-          Log(Me & "Make_Bet", "expected marketid '" & General_Routines.Trim(Market_Id) &
-              "' received marketid '" & Result.Get("marketid"));
-        end if;
-      end if;
-
-      if Result.Has_Field("status") then
-        Log(Me & "Make_Bet", "got result.status");
-        Move( Result.Get("status"), Execution_Report_Status);
-      end if;
-
-      if Result.Has_Field("errorCode") then
-        Log(Me & "Make_Bet", "got result.errorCode");
-        Move( Result.Get("errorCode"), Execution_Report_Error_Code);
-      end if;
-
+                
+--      if Result.Has_Field("errorCode") then
+--        Log(Me & "Make_Bet", "got result.errorCode");
+--        Move( Result.Get("errorCode"), Execution_Report_Error_Code);
+--      end if;
+      Get_Value(Container => Result,
+                Field     => "errorCode",
+                Target    => Execution_Report_Error_Code,
+                Found     => Found);
+                
+                
       if Result.Has_Field("instructionReports") then
         Instructions := Result.Get("instructionReports");
         Log(Me & "Make_Bet", "got result.instructionReports");
@@ -1610,54 +1534,95 @@ package body RPC is
         InstructionsItem  := Get(Instructions, 1); -- always element 1, since we only have 1
         Log(Me & "Make_Bet", "got InstructionsItem");
 
-        if InstructionsItem.Has_Field("status") then
-          Log(Me & "Make_Bet", "got InstructionsItem.Status");
-          Move(InstructionsItem.Get("status"), Instruction_Report_Status);
-        end if;
+--        if InstructionsItem.Has_Field("status") then
+--          Log(Me & "Make_Bet", "got InstructionsItem.Status");
+--          Move(InstructionsItem.Get("status"), Instruction_Report_Status);
+--        end if;
+        Get_Value(Container => InstructionsItem,
+                  Field     => "status",
+                  Target    => Instruction_Report_Status,
+                  Found     => Found);
 
-        if InstructionsItem.Has_Field("errorCode") then
-          Log(Me & "Make_Bet", "got InstructionsItem.errorCode");
-          Move(InstructionsItem.Get("errorCode"), Instruction_Report_Error_Code);
-        end if;
+--        if InstructionsItem.Has_Field("errorCode") then
+--          Log(Me & "Make_Bet", "got InstructionsItem.errorCode");
+--          Move(InstructionsItem.Get("errorCode"), Instruction_Report_Error_Code);
+--        end if;
+        Get_Value(Container => InstructionsItem,
+                  Field     => "errorCode",
+                  Target    => Instruction_Report_Error_Code,
+                  Found     => Found);
       end if;
 
-      if InstructionsItem.Has_Field("instruction") then
-        Log(Me & "Make_Bet", "got InstructionsItem.instruction");
-        Instruction := InstructionsItem.Get("instruction");
-      else
+--      if InstructionsItem.Has_Field("instruction") then
+--        Log(Me & "Make_Bet", "got InstructionsItem.instruction");
+--        Instruction := InstructionsItem.Get("instruction");
+--      else
+--        Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
+--        raise JSON_Exception with "Betfair reply has no Instruction!";
+--      end if;
+      Get_Value(Container => InstructionsItem,
+                Field     => "instruction",
+                Target    => Instruction,
+                Found     => Found);
+      if not Found then
         Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
         raise JSON_Exception with "Betfair reply has no Instruction!";
-      end if;
+      end if;      
 
       -- get selectionid?
 
-      if InstructionsItem.Has_Field("betId") then
-        Move( InstructionsItem.Get("betId"), Tmp_Bet_Id );
-        Log(Me & "Make_Bet", "got InstructionsItem.betid");
-        if Tmp_Bet_Id(2) = '.' then
-          Bet_Id := Integer_8'Value(Tmp_Bet_Id(3 .. Tmp_Bet_Id'Last));
-        else
-          Bet_Id := Integer_8'Value(Tmp_Bet_Id);
-        end if;
-      end if;
+--      if InstructionsItem.Has_Field("betId") then
+--        Move( InstructionsItem.Get("betId"), Tmp_Bet_Id );
+--        Log(Me & "Make_Bet", "got InstructionsItem.betid");
+--        if Tmp_Bet_Id(2) = '.' then
+--          Bet_Id := Integer_8'Value(Tmp_Bet_Id(3 .. Tmp_Bet_Id'Last));
+--        else
+--          Bet_Id := Integer_8'Value(Tmp_Bet_Id);
+--        end if;
+--      end if;
+      Get_Value(Container => InstructionsItem,
+                Field     => "betId",
+                Target    => Bet_Id,
+                Found     => Found);
+      
+      
+--      if InstructionsItem.Has_Field("sizeMatched") then
+--        Log(Me & "Make_Bet", "got InstructionsItem.sizeMatched");
+--        L_Size_Matched := InstructionsItem.Get("sizeMatched");
+--        Size_Matched := Bet_Size_Type(L_Size_Matched);
+--      end if;
 
-      if InstructionsItem.Has_Field("sizeMatched") then
-        Log(Me & "Make_Bet", "got InstructionsItem.sizeMatched");
-        L_Size_Matched := InstructionsItem.Get("sizeMatched");
+      Get_Value(Container => InstructionsItem,
+                Field     => "sizeMatched",
+                Target    => L_Size_Matched,
+                Found     => Found);
+      if Found then
         Size_Matched := Bet_Size_Type(L_Size_Matched);
-      end if;
-
-      if abs(Float_8(L_Size_Matched) - Float_8(Size)) < 0.0001 then
+      end if;        
+      
+      
+--      if abs(Float_8(L_Size_Matched) - Float_8(Size)) < 0.0001 then
+      if abs(L_Size_Matched - Float_8(Size)) < 0.0001 then
         Move( "EXECUTION_COMPLETE", Order_Status );
       else
         Move( "EXECUTABLE", Order_Status );
       end if;
 
-      if InstructionsItem.Has_Field("averagePriceMatched") then
-        Log(Me & "Make_Bet", "got InstructionsItem.averagePriceMatched");
-        Average_Price_Matched := InstructionsItem.Get("averagePriceMatched");
+      
+--      if InstructionsItem.Has_Field("averagePriceMatched") then
+--        Log(Me & "Make_Bet", "got InstructionsItem.averagePriceMatched");
+--        Average_Price_Matched := InstructionsItem.Get("averagePriceMatched");
+--        Price_Matched := Bet_Price_Type(Average_Price_Matched);
+--      end if;
+
+      Get_Value(Container => InstructionsItem,
+                Field     => "averagePriceMatched",
+                Target    => Average_Price_Matched,
+                Found     => Found);
+      if Found then
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
-      end if;
+      end if;        
+      
     end ;
         
     if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
