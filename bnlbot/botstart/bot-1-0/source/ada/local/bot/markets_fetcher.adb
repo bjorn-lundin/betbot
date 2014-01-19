@@ -228,7 +228,7 @@ procedure Markets_Fetcher is
     if Market.Has_Field("description") then
       Market_Description := Market.Get("description");
       if Market_Description.Has_Field("marketType") then
-        Move(Market_Description.Get("marketType"), DB_Market.Markettype);
+        Move(Market_Description.Get("marketType"), DB_Market.Markettype, Drop => Right);
       else
         raise No_Such_Field with "Object 'Market_Description' - Field 'marketType'";
       end if;
@@ -710,6 +710,7 @@ begin
   Append(Exchange_Ids , Create("1"));      -- Not Australia 
   Append(Event_Type_Ids , Create("7"));    -- horse
   Append(Event_Type_Ids , Create("4339")); -- hound
+  Append(Event_Type_Ids , Create("1")); -- football
 --   none for all countries   
 --   Append(Market_Countries , Create("GB"));
 --   Append(Market_Countries , Create("US"));
@@ -719,6 +720,7 @@ begin
   
   Append(Market_Type_Codes , Create("WIN"));
   Append(Market_Type_Codes , Create("PLACE"));
+  Append(Market_Type_Codes , Create("MATCH_ODDS")); -- for football
   
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
