@@ -81,6 +81,14 @@ class RacedayCalendar(BASE):
         ).first()
         return result
 
+RACEDAY_VIRT_BETTYPE_ASSOCIATION = \
+    Table(
+        'raceday_virt_bettype', BASE.metadata,
+        Column('id', Integer, primary_key=True),
+        Column('raceday_id', Integer, ForeignKey('raceday.id')),
+        Column('bettype_id', Integer, ForeignKey('bettype.id')),
+    )
+
 class Raceday(BASE):
     '''
     Database entity Raceday
@@ -88,7 +96,6 @@ class Raceday(BASE):
     * itspEventCode
     * country_domestic_text (country_code suffice)
     * country_english_text (country_code suffice)
-
     '''
     __tablename__ = 'raceday'
     id = Column(Integer, primary_key=True)
@@ -111,6 +118,7 @@ class Raceday(BASE):
     virt_track_id = Column(Integer)
     track = relationship("Track")
     races = relationship('Race')
+    virt_bet_types = relationship('Bettype', secondary=RACEDAY_VIRT_BETTYPE_ASSOCIATION)
 
     def __repr__(self):
         params = (
@@ -789,4 +797,10 @@ def init_db_client(db_init=False):
         BASE.metadata.create_all(ENGINE)
 
 if __name__ == '__main__':
+    result = \
+        DB_SESSION.execute(
+            'select name_code from bettype where id in ' + \
+            '(select bettype_id from race_bettype where race_id ' + \
+            'in (select id from race where raceday_id = :raceday_id))', {'raceday_id':2}).fetchall()
+    print(result)
     exit(0)
