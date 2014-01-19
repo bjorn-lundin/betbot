@@ -11,6 +11,7 @@ import datetime
 import time
 import conf
 import ais_httpclient
+import re
 
 LOG = logging.getLogger('AIS')
 
@@ -25,7 +26,7 @@ def call_ais_service(params=None, date=None, track_id=None):
              + ' with date={0}, track={1}'
              .format(date, track_id))
     result = None
-    filename = util.generate_file_name_2(
+    filename, filename_re = util.generate_file_name_2(
         ais_service=ais_service,
         date=date,
         track_id=track_id,
@@ -35,7 +36,21 @@ def call_ais_service(params=None, date=None, track_id=None):
     # If the result has already been downloaded do nothing
     datapath = params['datadir']
     filelist = util.list_files(datapath)
-    if filelist and filename in filelist:
+    
+    # When introducing new AIS version (AIS 9) the AIS
+    # version number can no longer be part of comparison
+    
+    fn_re = re.compile(filename_re)
+    
+#     if filelist and filename in filelist:
+    filematch = False
+    if filelist:
+        for file in filelist:
+            m = fn_re.match(file)
+            if m is not None:
+                filematch = True
+                break
+    if filematch:
         LOG.debug('Data already saved in {0}'
                  .format(filename))
     else:
@@ -82,7 +97,22 @@ def racing_card_service(params=None, date=None, track_id=None):
     '''
     params['service'] = 'fetchRacingCard'
     call_ais_service(params=params, date=date, track_id=track_id)
+
+def bettype_racing_card_service(params=None, date=None, 
+                                bettype=None, track_id=None):
+    '''
+    Introduced in AIS 9 to be able to fetch racing cards for 
+    multiple track pools
     
+    Calls AIS service fetchBetTypeRacingCard
+    
+    Racing cards consists of a lot of static information and 
+    should be fetched sparingly. Racing cards should only be 
+    fetched for upcoming races.
+    '''
+    params['service'] = 'fetch' + bettype + 'RacingCard'
+    call_ais_service(params=params, date=date, track_id=track_id)
+
 def track_bet_info_service(params=None, date=None, track_id=None):
     '''
     Calls AIS service fetchTrackBetInfo
@@ -261,6 +291,13 @@ def eod_download_via_calendar(params=None):
         track = db.Track.read(pk_id=raceday.track_id)
         track_id = track.atg_id
         raceday_date = datetime.date(date.year, date.month, date.day)
+        virt_track_id = raceday.virt_track_id
+        virt_bettypes = None
+        if virt_track_id is not None:
+            virt_bettypes = db.Bettype.virtual_bettypes_set(
+                raceday_date=raceday_date, 
+                virt_track_id=raceday.virt_track_id
+            )
         
         # Upcomming raceday
         if raceday_date == (date_now + datetime.timedelta(days=1)):
@@ -290,8 +327,17 @@ def eod_download_via_calendar(params=None):
             racing_card_service(
                 params=params, 
                 date=date, 
-                track_id=track_id,
+                track_id=track_id
             )
+            
+            if virt_track_id is not None:
+                for bettype in virt_bettypes:
+                    bettype_racing_card_service(
+                        params=params, 
+                        date=date,
+                        bettype=bettype,
+                        track_id=virt_track_id
+                    )
             
             track_bet_info_service(
                 params=params, 
@@ -308,16 +354,18 @@ def eod_download_via_calendar(params=None):
             for race in raceday.races:
                 for bettype in race.bettypes:
                     bettype = bettype_servicename[bettype.name_code]
+                    this_track_id = track_id
+                    if virt_bettypes and bettype in virt_bettypes:
+                        this_track_id = virt_track_id
                     pool_info_service(
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track_id=track_id, 
+                        track_id=this_track_id,
                     )
-                    
                     result_service(
                         params=params, 
                         bettype=bettype, 
                         date=date, 
-                        track_id=track_id,
+                        track_id=this_track_id,
                     )
