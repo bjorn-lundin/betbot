@@ -134,17 +134,22 @@ def generate_file_name_2(ais_service=None, date=None, track_id=None,
         # for fetchRaceDayCalendar fetched today
         date=datetime.datetime.now()
         track_id='all'
-    result = ais_service
-    result += '_'
-    result += date_to_string(date)
-    result += '_'
-    result += str(track_id)
-    result += '_'
-    result += ais_version
-    result += '_'
-    result += ais_type
-    result += '.xml'
-    return result
+    filename = ais_service
+    filename += '_'
+    filename += date_to_string(date)
+    filename += '_'
+    filename += str(track_id)
+    filename += '_'
+    filename_re = filename
+    filename += ais_version
+    filename += '_'
+    filename += ais_type
+    filename += '.xml'
+    filename_re += '\d+\.*\d*'
+    filename_re += '_'
+    filename_re += ais_type
+    filename_re += '.xml'
+    return filename, filename_re
 
 def list_files(dir_path=None):
     '''
