@@ -199,7 +199,7 @@ procedure Poll is
           
           
           --- make 2 PLC bets too
-          Move("HORSES_PLC_BACK_FINISH_1.15_7.0", Bet_Name);
+          Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", Bet_Name);
           T.Start;
             Find_Plc_Market.Prepare(
               "select M.* from AMARKETS M, APRICES P " &
@@ -263,6 +263,7 @@ procedure Poll is
             end if;
           T.Commit;
           -- and the winner as place too
+          Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);          
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
                          Market_Id        => Market_Id, 
                          Side             => Back,
