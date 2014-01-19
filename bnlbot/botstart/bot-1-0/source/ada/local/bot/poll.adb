@@ -41,7 +41,7 @@ procedure Poll is
   My_Lock  : Lock.Lock_Type;
 
   Msg      : Process_Io.Message_Type;
-  
+  Find_Plc_Market,
   Update_Betwon_To_Null : Sql.Statement_Type;
   
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -155,7 +155,7 @@ procedure Poll is
           Market : Table_Amarkets.Data_Type;
           Eos : Boolean := False;
         begin
-          Move("HORSES_WIN_BACK_FINISH_ANY", Bet_Name);
+          Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
           Move(Market_Notification.Market_Id, Market_Id);
           
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
@@ -196,6 +196,112 @@ procedure Poll is
               Sql.Execute(Update_Betwon_To_Null);
             end if;
           T.Commit;
+          
+          
+          --- make 2 PLC bets too
+          Move("HORSES_PLC_BACK_FINISH_1.15_7.0", Bet_Name);
+          T.Start;
+            Find_Plc_Market.Prepare(
+              "select M.* from AMARKETS M, APRICES P " &
+              "where M.MARKETID = P.MARKETID "  &
+              "and M.MARKETID = P.MARKETID "  &
+              "and P.SELECTIONID = :SELECTIONID "  &
+              "and M.MARKETTYPE = 'PLACE' "  &
+              "and M.STATUS = 'OPEN' " ) ;
+            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
+            Find_Plc_Market.Open_Cursor;
+            Find_Plc_Market.Fetch(Eos);
+            if not Eos then
+              Market := Table_Amarkets.Get(Find_Plc_Market);
+            else
+              Log(Me & "Make_Bet", "no PLACE market found");
+              T.Commit;
+              exit;
+            end if;
+            Find_Plc_Market.Close_Cursor;
+          T.Commit;
+          
+          
+          Market_Id := Market.Marketid;
+          
+          Rpc.Place_Bet (Bet_Name         => Bet_Name,
+                         Market_Id        => Market_Id, 
+                         Side             => Back,
+                         Runner_Name      => Runner_Name,
+                         Selection_Id     => Best_Runners(2).Selectionid,
+                         Size             => Global_Size,
+                         Price            => 1.01,
+                         Bet_Persistence  => Persist,
+                         Bet              => Bet);
+                   
+          T.Start;
+            -- fix som missing fields first
+            Runner.Marketid := Market_Id;
+            Runner.Selectionid := Best_Runners(1).Selectionid;
+            Table_Arunners.Read(Runner, Eos);
+            if not Eos then
+              Bet.Runnername := Runner.Runnername;
+            else
+              Log(Me & "Make_Bet", "no runnername found");
+            end if;
+            
+            Market.Marketid := Market_Id;
+            Table_Amarkets.Read(Market, Eos);
+            if not Eos then
+              Bet.Startts := Market.Startts;
+              Bet.Fullmarketname := Market.Marketname;
+            else
+              Log(Me & "Make_Bet", "no market found");
+            end if;
+          
+            Table_Abets.Insert(Bet);
+            Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
+            if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
+              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+              Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
+              Sql.Execute(Update_Betwon_To_Null);
+            end if;
+          T.Commit;
+          -- and the winner as place too
+          Rpc.Place_Bet (Bet_Name         => Bet_Name,
+                         Market_Id        => Market_Id, 
+                         Side             => Back,
+                         Runner_Name      => Runner_Name,
+                         Selection_Id     => Best_Runners(1).Selectionid,
+                         Size             => Global_Size,
+                         Price            => 1.01,
+                         Bet_Persistence  => Persist,
+                         Bet              => Bet);
+                   
+          T.Start;
+            -- fix som missing fields first
+            Runner.Marketid := Market_Id;
+            Runner.Selectionid := Best_Runners(1).Selectionid;
+            Table_Arunners.Read(Runner, Eos);
+            if not Eos then
+              Bet.Runnername := Runner.Runnername;
+            else
+              Log(Me & "Make_Bet", "no runnername found");
+            end if;
+            
+            Market.Marketid := Market_Id;
+            Table_Amarkets.Read(Market, Eos);
+            if not Eos then
+              Bet.Startts := Market.Startts;
+              Bet.Fullmarketname := Market.Marketname;
+            else
+              Log(Me & "Make_Bet", "no market found");
+            end if;
+          
+            Table_Abets.Insert(Bet);
+            Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
+            if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
+              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+              Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
+              Sql.Execute(Update_Betwon_To_Null);
+            end if;
+          T.Commit;
+          
         end ;
         exit;           
       end if;
