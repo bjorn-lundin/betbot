@@ -74,28 +74,47 @@ package body RPC is
   
   
   
+
+  
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out Boolean;
+                      Found    : out Boolean ) is
+  begin
+    if Container.Has_Field(Field) then
+      Target := Container.Get(Field);
+      Found := True;
+    else
+      Found := False;
+      Target := False;
+    end if;
+  end Get_Value;  
+  
   procedure Get_Value(Container: in JSON_Value;
                       Field    : in String;
                       Target   : out Float_8;
-                      Found    : out Boolean) is
+                      Found    : out Boolean ) is
     Tmp : Float := 0.0;
+    Default  : Float_8 := 0.0;
   begin
-    Found := False;
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
       Found := True;
+      Target := Float_8(Tmp);
+    else
+      Found := False;
+      Target := Default;
     end if;
-    Target := Float_8(Tmp);
   end Get_Value;
   
   procedure Get_Value(Container: in JSON_Value;
                       Field    : in String;
                       Target   : out Integer_8;
-                      Found    : out Boolean) is
+                      Found    : out Boolean ) is
     Tmp : String (1..20)  :=  (others => ' ') ;
+    Default  : Integer_8 := Integer_8'First;
   begin
-    Target := Integer_8'First;
-    Found := False;
     if Container.Has_Field(Field) then
       Move( Container.Get(Field), Tmp );
       if Tmp(2) = '.' then
@@ -104,6 +123,9 @@ package body RPC is
         Target := Integer_8'Value(Tmp);
       end if;   
       Found := True;
+    else
+      Target := Default;
+      Found := False;    
     end if;  
   end Get_Value;
   
@@ -112,13 +134,69 @@ package body RPC is
                       Target   : out String;
                       Found    : out Boolean) is
   begin
-    Target := (others => ' ') ;
-    Found := False;
     if Container.Has_Field(Field) then
-      Move( Container.Get(Field), Target );
+      Move( Source => Container.Get(Field), Target => Target , Drop => Right);
       Found := True;
+    else
+      Target := (others => ' ');
+      Found  := False;  
     end if;  
   end Get_Value;  
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out JSON_Value;
+                      Found    : out Boolean) is
+  begin
+    if Container.Has_Field(Field) then
+      Target := Container.Get(Field);
+      Found := True;
+    else
+      Target := JSON_Null;
+      Found  := False;  
+    end if;  
+  end Get_Value;  
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out Integer_4;
+                      Found    : out Boolean) is
+   Tmp : Integer := 0 ;
+   Default  : Integer_4 := Integer_4'First;
+ begin
+    if Container.Has_Field(Field) then
+      Tmp := Container.Get(Field);
+      Found := True;
+      Target := Integer_4(Tmp);
+    else  
+      Target := Default;
+      Found := False;
+    end if;  
+  end Get_Value; 
+  
+  procedure Get_Value(Container: in JSON_Value;
+                      Field    : in String;
+                      Target   : out Sattmate_Calendar.Time_Type;
+                      Found    : out Boolean) is
+   Default : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;  
+  begin
+    if Container.Has_Field(Field) then
+      declare
+        Tmp : String := Container.Get(Field);
+      begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z", 
+        Target := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
+      end;
+      Found := True;
+    else
+      Target := Default;
+      Found  := False;  
+    end if;  
+  end Get_Value;  
+  
+  ------------------------------------------------------------------
+  
+  
+  
   
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error, 
@@ -1004,7 +1082,7 @@ package body RPC is
     Result       : JSON_Array := Empty_Array;   
 --    Instruction  : JSON_Value := Create_Object;
 --    Instructions : JSON_Array := Empty_Array;
-    Betfair_Result : Result_Type;
+--    Betfair_Result : Result_Type;
     Price_Projection : JSON_Value := Create_Object;
     Market_Description : JSON_Value := Create_Object;
     Event  : JSON_Value := Create_Object;
@@ -1014,69 +1092,145 @@ package body RPC is
     procedure Parse_Market(J_Market  : in JSON_Value;
                            DB_Market : out Table_Amarkets.Data_Type ;
                            In_Play_Market : out Boolean) is
+      Found : Boolean := True;                     
     begin
       In_Play_Market := False;
-      if J_Market.Has_Field("marketId") then
-        Move(J_Market.Get("marketId"), DB_Market.Marketid);
-      else
+      
+      
+      Get_Value(Container => J_Market,
+                Field     => "marketId",
+                Target    => DB_Market.Marketid,
+                Found     => Found);
+      if not Found then
         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
       end if;
       
-      if J_Market.Has_Field("marketName") then
-        Move(J_Market.Get("marketName"), DB_Market.Marketname);
-      else
+--      if J_Market.Has_Field("marketId") then
+--        Move(J_Market.Get("marketId"), DB_Market.Marketid);
+--      else
+--        raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+--      end if;
+      
+      Get_Value(Container => J_Market,
+                Field     => "marketName",
+                Target    => DB_Market.Marketname,
+                Found     => Found);
+      if not Found then
         Move("No market name", DB_Market.Marketname);
       end if;
+                
+--      if J_Market.Has_Field("marketName") then
+--        Move(J_Market.Get("marketName"), DB_Market.Marketname);
+--      else
+--        Move("No market name", DB_Market.Marketname);
+--      end if;
   
-      if J_Market.Has_Field("betDelay") then
-        DB_Market.Betdelay := Integer_4(Integer'(J_Market.Get("betDelay")) );
-      else
-        raise No_Such_Field with "Object 'Market' - Field 'betDelay'";
-      end if;
+      Get_Value(Container => J_Market,
+                Field     => "betDelay",
+                Target    => DB_Market.Betdelay,
+                Found     => Found);
+                
+--      if J_Market.Has_Field("betDelay") then
+--        DB_Market.Betdelay := Integer_4(Integer'(J_Market.Get("betDelay")) );
+--      else
+--        raise No_Such_Field with "Object 'Market' - Field 'betDelay'";
+--      end if;
    
-      if J_Market.Has_Field("description") then
-        Market_Description := J_Market.Get("description");
-        if Market_Description.Has_Field("marketType") then
-          Move(Market_Description.Get("marketType"), DB_Market.Markettype);
-        else
-          Move("NOTYPE", DB_Market.Markettype);
-        end if;
-      else
-        Move("NOTYPE", DB_Market.Markettype);
-      end if;
-  
-      if J_Market.Has_Field("marketStartTime") then
-        declare
-          Tmp : String := J_Market.Get("marketStartTime");
-        begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z", 
-          DB_Market.Startts := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
-        end;
-      else
-         DB_Market.Startts := Sattmate_Calendar.Time_Type_First;
-      end if;
+        Get_Value(Container => J_Market,
+                  Field     => "description",
+                  Target    => Market_Description,
+                  Found     => Found);
+        if Found then
+          Get_Value(Container => Market_Description,
+                    Field     => "marketType",
+                    Target    => DB_Market.Markettype,
+                    Found     => Found);
+        end if;         
+   
+--      if J_Market.Has_Field("description") then
+--        Market_Description := J_Market.Get("description");
+--        if Market_Description.Has_Field("marketType") then
+--          Move(Market_Description.Get("marketType"), DB_Market.Markettype);
+--        else
+--          Move("NOTYPE", DB_Market.Markettype);
+--        end if;
+--      else
+--        Move("NOTYPE", DB_Market.Markettype);
+--      end if;
 
-      if J_Market.Has_Field("event") then
-        Event := J_Market.Get("event");
-        if Event.Has_Field("id") then
-          Move(Event.Get("id"), DB_Market.Eventid);
-        else
-          Move("NO EVENT", DB_Market.Eventid);
+      Get_Value(Container => J_Market,
+                Field     => "marketStartTime",
+                Target    => DB_Market.Startts,
+                Found     => Found);
+
+  
+--      if J_Market.Has_Field("marketStartTime") then
+--        declare
+--          Tmp : String := J_Market.Get("marketStartTime");
+--        begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z", 
+--          DB_Market.Startts := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
+--        end;
+--      else
+--         DB_Market.Startts := Sattmate_Calendar.Time_Type_First;
+--      end if;
+
+--      if J_Market.Has_Field("event") then
+--        Event := J_Market.Get("event");
+--        if Event.Has_Field("id") then
+--          Move(Event.Get("id"), DB_Market.Eventid);
+--        else
+--          Move("NO EVENT", DB_Market.Eventid);
+--        end if;
+--      else
+--        Move("NO EVENT", DB_Market.Eventid);
+--      end if;    
+
+      
+      Get_Value(Container => J_Market,
+                Field     => "event",
+                Target    => Event,
+                Found     => Found);
+      if Found then
+        Get_Value(Container => Event,
+                  Field     => "if",
+                  Target    => DB_Market.Eventid,
+                  Found     => Found);
+        if not Found then
+          Move("NO EVENT", DB_Market.Eventid);      
         end if;
-      else
-        Move("NO EVENT", DB_Market.Eventid);
-      end if;    
+      else  
+        Move("NO EVENT", DB_Market.Eventid);      
+      end if;      
       
-      if J_Market.Has_Field("inplay") then
-        In_Play_Market := J_Market.Get("inplay");
-      else
-        raise No_Such_Field with "Object 'Market' - Field 'inplay'";
-      end if;
       
-      if J_Market.Has_Field("status") then
-         Move(J_Market.Get("status"), DB_Market.Status);
-      else
-         Move("NO STATUS", DB_Market.Status);
+      
+      
+      
+      Get_Value(Container => J_Market,
+                Field     => "inplay",
+                Target    => In_Play_Market,
+                Found     => Found);
+
+      
+--      if J_Market.Has_Field("inplay") then
+--        In_Play_Market := J_Market.Get("inplay");
+--      else
+--        raise No_Such_Field with "Object 'Market' - Field 'inplay'";
+--      end if;
+      
+      Get_Value(Container => J_Market,
+                Field     => "status",
+                Target    => DB_Market.Status,
+                Found     => Found);
+      if not Found then
+        Move("NO STATUS", DB_Market.Status);
       end if;
+                
+--      if J_Market.Has_Field("status") then
+--         Move(J_Market.Get("status"), DB_Market.Status);
+--      else
+--         Move("NO STATUS", DB_Market.Status);
+--      end if;
       
       Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market)); 
     
@@ -1179,7 +1333,7 @@ package body RPC is
     
         
   begin
-    Betfair_Result := Ok;
+--    Betfair_Result := Ok;
 
     Reset_AWS_Headers;    
     Append(Market_Ids, Create(Market_Id));
@@ -1260,7 +1414,7 @@ package body RPC is
 --    Result       : JSON_Array := Empty_Array;   
     Instruction  : JSON_Value := Create_Object;
     Instructions : JSON_Array := Empty_Array;
-    Betfair_Result : Result_Type;
+--    Betfair_Result : Result_Type;
 --    Price_Projection : JSON_Value := Create_Object;
 --    Market_Description : JSON_Value := Create_Object;
 --    Event  : JSON_Value := Create_Object;
@@ -1294,7 +1448,7 @@ package body RPC is
     Side_String : Bet_Side_String_Type := (others => ' ');   
        
   begin
-    Betfair_Result := Ok;
+--    Betfair_Result := Ok;
     Move(Side'Img, Side_String);
 
     Reset_AWS_Headers;    
