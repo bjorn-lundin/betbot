@@ -755,6 +755,9 @@ package body Bet_Handler is
             if Cntry = Bet.Bet_Info.Event.Countrycode then
               Found := True;
               exit;
+            elsif Cntry = "AL" then
+              Found := True;
+              exit;
             end if;
           when others =>
             case Index is
