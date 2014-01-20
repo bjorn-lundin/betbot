@@ -1490,13 +1490,6 @@ package body RPC is
       InstructionsItem : JSON_Value := Create_Object;
       Instructions     : JSON_Array := Empty_Array;
     begin
-
---      if JSON_Reply.Has_Field("result") then
---        Result := JSON_Reply.Get("result");
---      else
---          Log(Me & "Make_Bet", "NO RESULT!!" );
---          raise JSON_Exception with "Betfair reply has no result!";
---      end if;    
       
       Get_Value(Container => JSON_Reply,
                 Field     => "result",
@@ -1507,20 +1500,11 @@ package body RPC is
         raise JSON_Exception with "Betfair reply has no result!";
       end if;
       
---      if Result.Has_Field("status") then
---        Log(Me & "Make_Bet", "got result.status");
---        Move( Result.Get("status"), Execution_Report_Status);
---      end if;
       Get_Value(Container => Result,
                 Field     => "status",
                 Target    => Execution_Report_Status,
                 Found     => Found);
 
-                
---      if Result.Has_Field("errorCode") then
---        Log(Me & "Make_Bet", "got result.errorCode");
---        Move( Result.Get("errorCode"), Execution_Report_Error_Code);
---      end if;
       Get_Value(Container => Result,
                 Field     => "errorCode",
                 Target    => Execution_Report_Error_Code,
@@ -1534,32 +1518,17 @@ package body RPC is
         InstructionsItem  := Get(Instructions, 1); -- always element 1, since we only have 1
         Log(Me & "Make_Bet", "got InstructionsItem");
 
---        if InstructionsItem.Has_Field("status") then
---          Log(Me & "Make_Bet", "got InstructionsItem.Status");
---          Move(InstructionsItem.Get("status"), Instruction_Report_Status);
---        end if;
         Get_Value(Container => InstructionsItem,
                   Field     => "status",
                   Target    => Instruction_Report_Status,
                   Found     => Found);
 
---        if InstructionsItem.Has_Field("errorCode") then
---          Log(Me & "Make_Bet", "got InstructionsItem.errorCode");
---          Move(InstructionsItem.Get("errorCode"), Instruction_Report_Error_Code);
---        end if;
         Get_Value(Container => InstructionsItem,
                   Field     => "errorCode",
                   Target    => Instruction_Report_Error_Code,
                   Found     => Found);
       end if;
 
---      if InstructionsItem.Has_Field("instruction") then
---        Log(Me & "Make_Bet", "got InstructionsItem.instruction");
---        Instruction := InstructionsItem.Get("instruction");
---      else
---        Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
---        raise JSON_Exception with "Betfair reply has no Instruction!";
---      end if;
       Get_Value(Container => InstructionsItem,
                 Field     => "instruction",
                 Target    => Instruction,
@@ -1569,29 +1538,11 @@ package body RPC is
         raise JSON_Exception with "Betfair reply has no Instruction!";
       end if;      
 
-      -- get selectionid?
-
---      if InstructionsItem.Has_Field("betId") then
---        Move( InstructionsItem.Get("betId"), Tmp_Bet_Id );
---        Log(Me & "Make_Bet", "got InstructionsItem.betid");
---        if Tmp_Bet_Id(2) = '.' then
---          Bet_Id := Integer_8'Value(Tmp_Bet_Id(3 .. Tmp_Bet_Id'Last));
---        else
---          Bet_Id := Integer_8'Value(Tmp_Bet_Id);
---        end if;
---      end if;
       Get_Value(Container => InstructionsItem,
                 Field     => "betId",
                 Target    => Bet_Id,
                 Found     => Found);
       
-      
---      if InstructionsItem.Has_Field("sizeMatched") then
---        Log(Me & "Make_Bet", "got InstructionsItem.sizeMatched");
---        L_Size_Matched := InstructionsItem.Get("sizeMatched");
---        Size_Matched := Bet_Size_Type(L_Size_Matched);
---      end if;
-
       Get_Value(Container => InstructionsItem,
                 Field     => "sizeMatched",
                 Target    => L_Size_Matched,
@@ -1601,19 +1552,11 @@ package body RPC is
       end if;        
       
       
---      if abs(Float_8(L_Size_Matched) - Float_8(Size)) < 0.0001 then
       if abs(L_Size_Matched - Float_8(Size)) < 0.0001 then
         Move( "EXECUTION_COMPLETE", Order_Status );
       else
         Move( "EXECUTABLE", Order_Status );
       end if;
-
-      
---      if InstructionsItem.Has_Field("averagePriceMatched") then
---        Log(Me & "Make_Bet", "got InstructionsItem.averagePriceMatched");
---        Average_Price_Matched := InstructionsItem.Get("averagePriceMatched");
---        Price_Matched := Bet_Price_Type(Average_Price_Matched);
---      end if;
 
       Get_Value(Container => InstructionsItem,
                 Field     => "averagePriceMatched",
@@ -1662,8 +1605,5 @@ package body RPC is
  
   end Place_Bet;  
   ------------------------------------------ 
-  
-  
-  
   
 end RPC;

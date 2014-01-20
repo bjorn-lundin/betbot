@@ -171,6 +171,10 @@ package body Bot_Config is
               Bet_Section.Animal := Horse;
               Was_Set(Animal) := True;
             end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "human") > Natural(0) then
+              Bet_Section.Animal := Human;
+              Was_Set(Animal) := True;
+            end if;
 
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_plc_") > Natural(0) then
               Bet_Section.Market_Type := Place;
