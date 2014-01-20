@@ -188,6 +188,10 @@ package body Bot_Config is
               Bet_Section.Market_Type := Winner;
               Was_Set(Market) := True;
             end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_match_") > Natural(0) then
+              Bet_Section.Market_Type := Match_Odds;
+              Was_Set(Market) := True;
+            end if;
 
             for i in Was_Set'range loop
               if not Was_Set(i) then
