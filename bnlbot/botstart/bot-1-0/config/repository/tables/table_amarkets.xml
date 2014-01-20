@@ -5,7 +5,7 @@
         <Column Name="marketname"         Size="50" Type="1"  AllowNull="0" Description="market name"/>
         <Column Name="startts"            Size="23" Type="15" AllowNull="0" Description="timestamp start"/>
         <Column Name="eventid"            Size="11" Type="1"  AllowNull="0" Description="event id"/>
-        <Column Name="markettype"         Size="6"  Type="1"  AllowNull="0" Description="WINNER/PLACE"/>
+        <Column Name="markettype"         Size="25" Type="1"  AllowNull="0" Description="WINNER/PLACE"/>
         <Column Name="status"             Size="50" Type="1"  AllowNull="0" Description="status"/>
         <Column Name="betdelay"           Size="9"  Type="2"  AllowNull="0" Description="betdelay"/>
         <Column Name="numwinners"         Size="9"  Type="2"  AllowNull="0" Description="num winners"/>
