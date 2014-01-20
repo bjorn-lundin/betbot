@@ -464,25 +464,25 @@ package body Bet_Handler is
                                 --j may only be 1,2 or 3
                                 case j is
                                   when 1 => -- the others 2,3
-                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(2).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                     Bet.Bet_Info.Runner_Array(3).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(2).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                     Bet.Bet_Info.Runner_Array(3).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     if not Match_Odds_Ok then
-                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(3).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                       Bet.Bet_Info.Runner_Array(2).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(3).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                       Bet.Bet_Info.Runner_Array(2).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     end if;                                    
                                   when 2 => 
-                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(1).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                     Bet.Bet_Info.Runner_Array(3).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(1).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                     Bet.Bet_Info.Runner_Array(3).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     if not Match_Odds_Ok then
-                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(3).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                       Bet.Bet_Info.Runner_Array(1).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(3).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                       Bet.Bet_Info.Runner_Array(1).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     end if;                                    
                                   when 3 =>
-                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(2).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                     Bet.Bet_Info.Runner_Array(1).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                    Match_Odds_Ok := Bet.Bet_Info.Runner_Array(2).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                     Bet.Bet_Info.Runner_Array(1).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     if not Match_Odds_Ok then
-                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(1).Price.Backprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
-                                                       Bet.Bet_Info.Runner_Array(2).Price.Backprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
+                                      Match_Odds_Ok := Bet.Bet_Info.Runner_Array(1).Price.Layprice <= Float_8(Bet.Bot_Cfg.Min_Price) and then
+                                                       Bet.Bet_Info.Runner_Array(2).Price.Layprice >= Float_8(Bet.Bot_Cfg.Max_Price) ;
                                     end if;                                    
                                   when others => raise Bad_Data with "bad index on The Draw, not in 1,2,3" & j'Img;
                                 end case;
@@ -753,9 +753,6 @@ package body Bet_Handler is
             if Cntry = Bet.Bet_Info.Event.Countrycode then
               Found := True;
               exit;
-            elsif Cntry = "AL" then
-              Found := True;
-              exit;
             end if;
           when others =>
             case Index is
@@ -772,8 +769,12 @@ package body Bet_Handler is
       -- check also for the last entry (EN,IE)
       if Cntry = Bet.Bet_Info.Event.Countrycode then
         Found := True;
+      elsif Cntry = "AL" then
+        Found := True;
+      elsif Countries = "AL" then
+        Found := True;
       end if;
-
+      
       if not Found then
           Log(Me & "Check_Conditions_Fulfilled", "wrong country. OK countries are  : '" & Countries & "' market country is '" & Bet.Bet_Info.Event.Countrycode & "'");
           Result := False;
