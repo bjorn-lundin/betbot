@@ -513,12 +513,10 @@ package body Bet_Handler is
                                       loop -- decrease with 10 öre until we meet
                                         Back_Size := Back_Size - 0.10;
                                         exit when Back_Size * (Back_Price - Bet_Price_Type(1.0)) <= Size_Matched * (Price_Matched - Bet_Price_Type(1.0));
-                                        
-                                        if Back_Size < 30.0 then
-                                          Back_Size := 30.0;
-                                          exit;
-                                        end if;
                                       end loop;                                    
+                                      if Back_Size < 30.0 then
+                                        Back_Size := 30.0;
+                                      end if;                                        
           
                                       Log(Me & "Do_Try ",
                                              "Back_Size * (Back_Price - Bet_Price_Type(1.0)) " & F8_Image(Float_8(Back_Size * (Back_Price - Bet_Price_Type(1.0)))) & " " &
