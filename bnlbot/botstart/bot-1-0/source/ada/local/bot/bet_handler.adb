@@ -452,6 +452,7 @@ package body Bet_Handler is
                     case  Bet.Bet_Info.Event.Eventtypeid is
                       when 1 => -- Football
                         case Bet.Bot_Cfg.Market_Type is
+                          when Correct_Score | Half_Time_Score => raise Bad_Data with "no Logig implemented for Greenup with Football:" & Bet.Bot_Cfg.Market_Type'Img;
                           when Winner | Place => raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bot_Cfg.Market_Type'Img;
                           when Match_Odds =>
                             -- Always 3 runners, Home,draw,away
@@ -633,24 +634,103 @@ package body Bet_Handler is
                       
                     when Lay =>
                       declare
-                        use  General_Routines;
+                        use General_Routines;
                         Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
                         Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                         Pip_Lay    : Pip_Type ;
+                        All_Expected_Runners_Are_Present : Boolean := False;
+                        Sum        : Integer := 0;
                       begin
-                        if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
-                           Lay_Price <= Bet.Bot_Cfg.Max_Price then
-    
-                          Pip_Lay.Init(Float_8(Lay_Price));
-                          Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
-    
-                          Bet.Make_Bet(A_Bet_Type    => Lay,
-                                       Price         => Lay_Price,
-                                       Size          => Lay_Size,
-                                       Price_Matched => Price_Matched,
-                                       Size_Matched  => Size_Matched,
-                                       Bet_Id        => Bet_Id);
-                        end if;
+                        case  Bet.Bet_Info.Event.Eventtypeid is
+                          when 1 =>  -- Football
+                          --bnl start
+                            case Bet.Bot_Cfg.Market_Type is
+                              when Winner | Place => raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bot_Cfg.Market_Type'Img;
+                              when Match_Odds =>     raise Bad_Data with "no Logic for Laying Football Match_Odds";
+                              when Correct_Score | Half_Time_Score =>
+                                -- Always 3 runners, Home,draw,away
+                                -- The only known is runnername 'The Draw', so use that one only.
+                                if Bet.Bet_Info.Runner_Array(i).Runner.Runnername(1 .. 12) = "Any Unquoted" then
+                                  -- check that all runners we think are there really are there
+                                  
+                                  for k in 1 ..  Bet.Bet_Info.Last_Runner loop
+                                        if    Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-0" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-0" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-0" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-0" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-1" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-1" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-1" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-1" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-2" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-2" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-2" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-2" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-3" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-3" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-3" then
+                                          Sum := Sum + 1;
+                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-3" then
+                                          Sum := Sum + 1;
+                                        end if;                                      
+                                  end loop;
+                                  case Bet.Bot_Cfg.Market_Type is
+                                    when Correct_Score   => All_Expected_Runners_Are_Present := Sum = 16; -- up to 3
+                                    when Half_Time_Score => All_Expected_Runners_Are_Present := Sum =  9; -- up to 2
+                                    when others          => raise Bad_Data with "no sum top compare with:" & Bet.Bot_Cfg.Market_Type'Img;
+                                  end case;
+                                
+                                  -- check that we have a reasonbly odds for laying the "Any Unquoted" option
+                                  if All_Expected_Runners_Are_Present and then
+                                     Bet.Bot_Cfg.Min_Price <= Lay_Price and then
+                                     Lay_Price <= Bet.Bot_Cfg.Max_Price then
+              
+                                    Pip_Lay.Init(Float_8(Lay_Price));
+                                    Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make 'sure' we get the Lay-bet
+              
+                                    Bet.Make_Bet(A_Bet_Type    => Lay,
+                                                 Price         => Lay_Price,
+                                                 Size          => Lay_Size,
+                                                 Price_Matched => Price_Matched,
+                                                 Size_Matched  => Size_Matched,
+                                                 Bet_Id        => Bet_Id);
+              
+                                  end if;
+                                end if; -- runnername = "Any Unquoted"
+                            end case;
+                          
+                          --bnl stop                          
+                        
+                          when 7 | 4339 =>  -- horse | hound
+                            if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
+                               Lay_Price <= Bet.Bot_Cfg.Max_Price then
+        
+                              Pip_Lay.Init(Float_8(Lay_Price));
+                              Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
+        
+                              Bet.Make_Bet(A_Bet_Type    => Lay,
+                                           Price         => Lay_Price,
+                                           Size          => Lay_Size,
+                                           Price_Matched => Price_Matched,
+                                           Size_Matched  => Size_Matched,
+                                           Bet_Id        => Bet_Id);
+                            end if;
+                          when others => raise Bad_Data with "not supported eventtype:" & Bet.Bet_Info.Event.Eventtypeid'Img;
+                        end case;  
                       end;
                     when Greenup => raise Suicide with "Bet_Side Greenup and None does not match";
                 end case;
@@ -716,6 +796,18 @@ package body Bet_Handler is
         end if;
       when Match_Odds =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "MATCH_ODDS" then
+----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Result := False;
+          return ; -- wrong markettype for this bot
+        end if;
+      when Correct_Score =>
+        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "CORRECT_SCORE" then
+----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Result := False;
+          return ; -- wrong markettype for this bot
+        end if;
+      when Half_Time_Score =>
+        if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "HALF_TIME_SCORE" then
 ----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot

@@ -152,7 +152,8 @@ procedure Poll is
           Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
           Runner_Name : Runner_Name_Type := (others => ' ');
-          Market : Table_Amarkets.Data_Type;
+          type Market_Type is (Win,Place);
+          Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
           Eos : Boolean := False;
         begin
           Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
@@ -179,11 +180,11 @@ procedure Poll is
               Log(Me & "Make_Bet", "no runnername found");
             end if;
             
-            Market.Marketid := Market_Id;
-            Table_Amarkets.Read(Market, Eos);
+            Markets(Win).Marketid := Market_Id;
+            Table_Amarkets.Read(Markets(Win), Eos);
             if not Eos then
-              Bet.Startts := Market.Startts;
-              Bet.Fullmarketname := Market.Marketname;
+              Bet.Startts := Markets(Win).Startts;
+              Bet.Fullmarketname := Markets(Win).Marketname;
             else
               Log(Me & "Make_Bet", "no market found");
             end if;
@@ -206,7 +207,12 @@ procedure Poll is
             Find_Plc_Market.Open_Cursor;
             Find_Plc_Market.Fetch(Eos);
             if not Eos then
-              Market := Table_Amarkets.Get(Find_Plc_Market);
+              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
+              if Markets(Win).Startts /= Markets(Place).Startts then
+                 Log(Me & "Make_Bet", "Wrong PLACE market found");
+                 T.Commit;
+                 exit;
+              end if;
             else
               Log(Me & "Make_Bet", "no PLACE market found");
               T.Commit;
@@ -215,7 +221,7 @@ procedure Poll is
             Find_Plc_Market.Close_Cursor;
           T.Commit;
           
-          Market_Id := Market.Marketid;
+          Market_Id := Markets(Place).Marketid;
 
           -- and the winner as place too
           Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);          
