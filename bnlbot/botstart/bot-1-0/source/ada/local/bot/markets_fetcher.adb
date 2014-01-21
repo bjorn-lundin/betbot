@@ -145,7 +145,7 @@ procedure Markets_Fetcher is
     if Event.Has_Field("countryCode") then
       Move(Event.Get("countryCode"), DB_Event.Countrycode);
     else
-      raise No_Such_Field with "Object 'Event' - Field 'countryCode'";
+      Move("XX", DB_Event.Countrycode);
     end if;
     
     if Event.Has_Field("openDate") then
