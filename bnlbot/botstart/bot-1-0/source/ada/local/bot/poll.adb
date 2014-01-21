@@ -195,12 +195,6 @@ procedure Poll is
               Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
               Sql.Execute(Update_Betwon_To_Null);
             end if;
-          T.Commit;
-          
-          
-          --- make 2 PLC bets too
-          Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", Bet_Name);
-          T.Start;
             Find_Plc_Market.Prepare(
               "select M.* from AMARKETS M, APRICES P " &
               "where M.MARKETID = P.MARKETID "  &
@@ -221,47 +215,8 @@ procedure Poll is
             Find_Plc_Market.Close_Cursor;
           T.Commit;
           
-          
           Market_Id := Market.Marketid;
-          
-          Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                         Market_Id        => Market_Id, 
-                         Side             => Back,
-                         Runner_Name      => Runner_Name,
-                         Selection_Id     => Best_Runners(2).Selectionid,
-                         Size             => Global_Size,
-                         Price            => 1.01,
-                         Bet_Persistence  => Persist,
-                         Bet              => Bet);
-                   
-          T.Start;
-            -- fix som missing fields first
-            Runner.Marketid := Market_Id;
-            Runner.Selectionid := Best_Runners(1).Selectionid;
-            Table_Arunners.Read(Runner, Eos);
-            if not Eos then
-              Bet.Runnername := Runner.Runnername;
-            else
-              Log(Me & "Make_Bet", "no runnername found");
-            end if;
-            
-            Market.Marketid := Market_Id;
-            Table_Amarkets.Read(Market, Eos);
-            if not Eos then
-              Bet.Startts := Market.Startts;
-              Bet.Fullmarketname := Market.Marketname;
-            else
-              Log(Me & "Make_Bet", "no market found");
-            end if;
-          
-            Table_Abets.Insert(Bet);
-            Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
-            if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
-              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-              Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
-              Sql.Execute(Update_Betwon_To_Null);
-            end if;
-          T.Commit;
+
           -- and the winner as place too
           Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);          
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
