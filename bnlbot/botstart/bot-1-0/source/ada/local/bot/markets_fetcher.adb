@@ -722,6 +722,9 @@ begin
   Append(Market_Type_Codes , Create("PLACE"));
   Append(Market_Type_Codes , Create("MATCH_ODDS"));    -- for football (to lay the draw)
   Append(Market_Type_Codes , Create("CORRECT_SCORE")); -- for football (to lay 0-0)
+  Append(Market_Type_Codes , Create("HALF_TIME_SCORE")); -- for football (to lay 0-0)
+  
+  
   
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
