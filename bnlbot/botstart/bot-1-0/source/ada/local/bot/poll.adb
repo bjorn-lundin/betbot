@@ -159,7 +159,14 @@ procedure Poll is
           Eos : Boolean := False;
         begin
           Move(Market_Notification.Market_Id, Market_Id);
-          -- find the place market                   
+          -- find the place market   
+          Markets(Win).Marketid := Market_Id;
+          Table_Amarkets.Read(Markets(Win), Eos);
+          if Eos then
+            Log(Me & "Make_Bet", "no WIN market found");
+            exit Poll_Loop;
+          end if;
+          
           T.Start;
             Find_Plc_Market.Prepare(
               "select M.* from AMARKETS M, APRICES P " &
