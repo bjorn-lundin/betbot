@@ -54,6 +54,9 @@ procedure Poll is
   Global_2nd_Min_Price : Back_Price_Type := 7.0; 
   Now : Sattmate_Calendar.Time_Type;
   
+  Global_Max_Turns_Not_Started_Race    : Integer_4 := 17;  --17*30s -> 8.5 min
+  Global_Current_Turn_Not_Started_Race : Integer_4 := 0; 
+  
   Global_Enabled,
   Ok, 
   Is_Time_To_Exit : Boolean := False;
@@ -96,6 +99,8 @@ procedure Poll is
       return;
     end if;
     
+    Global_Current_Turn_Not_Started_Race := 0;
+
     -- do the poll
     Poll_Loop : loop
       Table_Aprices.Aprices_List_Pack.Remove_All(Pricelist);
@@ -107,7 +112,13 @@ procedure Poll is
       exit when Market.Status(1..4) /= "OPEN";
       
       if not In_Play then
-        delay 30.0; -- no need for heavy polling before start of race
+        if Global_Current_Turn_Not_Started_Race >= Global_Max_Turns_Not_Started_Race then
+           Log(Me & "Make_Bet", "Market took too long time to start, give up");
+           exit Poll_Loop;
+        else
+          Global_Current_Turn_Not_Started_Race := Global_Current_Turn_Not_Started_Race +1;
+          delay 30.0; -- no need for heavy polling before start of race            
+        end if; 
       else
         delay 0.05; -- to avoid more that 20 polls/sec      
       end if;
