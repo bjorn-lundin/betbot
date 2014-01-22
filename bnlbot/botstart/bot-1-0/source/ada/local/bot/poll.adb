@@ -69,6 +69,10 @@ procedure Poll is
     In_Play   : Boolean := False;
     Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
+    type Market_Type is (Win
+                               --,Place
+                               );
+    Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;    
   begin     
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
   
@@ -98,7 +102,8 @@ procedure Poll is
       Log(Me & "Run", "no market found");
       return;
     end if;
-    
+    Markets(Win):= Market;
+
     Global_Current_Turn_Not_Started_Race := 0;
 
     -- do the poll
@@ -120,7 +125,7 @@ procedure Poll is
           delay 30.0; -- no need for heavy polling before start of race            
         end if; 
       else
-        delay 0.05; -- to avoid more that 20 polls/sec      
+        delay 0.05; -- to avoid more than 20 polls/sec      
       end if;
       
       -- ok find the runner with lowest backprice:        
@@ -162,18 +167,14 @@ procedure Poll is
           T : Sql.Transaction_Type;
           Bet : Table_Abets.Data_Type;
           Bet_Name : Bet_Name_Type := (others => ' ');
-          Market_Id : Market_Id_Type := (others => ' ');
+--          Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
 --          Runner_Name : Runner_Name_Type := (others => ' ');
-          type Market_Type is (Win
-                               --,Place
-                               );
-          Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
           Eos : Boolean := False;
         begin
-          Move(Market_Notification.Market_Id, Market_Id);
+--          Move(Market_Notification.Market_Id, Market_Id);
           -- find the place market   
-          Markets(Win):= Market;
+--          Markets(Win):= Market;
 --          Markets(Win).Marketid := Market_Id;
 --          Table_Amarkets.Read(Markets(Win), Eos);
 --          if Eos then
@@ -245,7 +246,7 @@ procedure Poll is
       end if;
     end loop Poll_Loop;    
   end Run;
-
+  ---------------------------------------------------------------------
 
   use type Sql.Transaction_Status_Type;  
 ------------------------------ main start -------------------------------------

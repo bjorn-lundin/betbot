@@ -1,6 +1,6 @@
 
 
-with Sattmate_Exception;
+--with Sattmate_Exception;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
@@ -72,7 +72,36 @@ package body RPC is
   end Reset_AWS_Headers;
   
   
-  
+  procedure Get_JSON_Reply (Query : in     JSON_Value;
+                            Reply : in out JSON_Value;
+                            URL   : in     String) is
+    AWS_Reply    : Aws.Response.Data;  
+  begin
+    Reset_AWS_Headers;    
+    Log(Me  & "Get_JSON_Reply", "posting: " & Query.Write);
+    AWS_Reply := Aws.Client.Post (Url          => URL,
+                                  Data         => Query.Write,
+                                  Content_Type => "application/json",
+                                  Headers      => Global_HTTP_Headers,
+                                  Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    Log(Me & "Get_JSON_Reply", "Got reply, check it ");
+
+      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+        Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                       Filename => "");
+        Log(Me & "Get_JSON_Reply", "Got reply: " & Reply.Write  );
+      else
+        Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+        return ;
+      end if;
+    exception
+      when others =>
+         Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
+         Log(Me & "Get_JSON_Reply", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+         Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
+         return ;
+  end Get_JSON_Reply;
+
   
 
   
@@ -275,7 +304,7 @@ package body RPC is
     Current_Orders,    
     Bet_Ids      : JSON_Array := Empty_Array;
     String_Betid : String     := Trim(Betid'Img);
-    AWS_Reply    : Aws.Response.Data;
+--    AWS_Reply    : Aws.Response.Data;
   begin
 --{
 --     "jsonrpc": "2.0",
@@ -299,32 +328,36 @@ package body RPC is
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listCurrentOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
     
-    Log(Me, "posting: " & Json_Query.Write);
-    
-    Reset_AWS_Headers;    
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  Json_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-    Log(Me & "Bet_Is_Matched", "Got reply, check it ");
+    Get_JSON_Reply (Query => Json_Query,
+                    Reply => Json_Reply,
+                    URL   => Token.URL_BETTING); 
 
-    begin
-      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
-        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                            Filename => "");
-        Log(Me & "Bet_Is_Matched", "Got reply: " & Json_Reply.Write  );
-      else
-        Log(Me & "Bet_Is_Matched", "Post Timeout -> Give up listCurrentOrders");
-        return ;
-      end if;
-    exception
-      when others =>
-         Log(Me & "Bet_Is_Matched", "***********************  Bad reply start *********************************");
-         Log(Me & "Bet_Is_Matched", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
-         Log(Me & "Bet_Is_Matched", "***********************  Bad reply stop  ********" );
-         return ;
-    end ;
+
+--    Log(Me, "posting: " & Json_Query.Write);  
+--    Reset_AWS_Headers;    
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  Json_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+--    Log(Me & "Bet_Is_Matched", "Got reply, check it ");
+--
+--    begin
+--      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+--        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                            Filename => "");
+--        Log(Me & "Bet_Is_Matched", "Got reply: " & Json_Reply.Write  );
+--      else
+--        Log(Me & "Bet_Is_Matched", "Post Timeout -> Give up listCurrentOrders");
+--        return ;
+--      end if;
+--    exception
+--      when others =>
+--         Log(Me & "Bet_Is_Matched", "***********************  Bad reply start *********************************");
+--         Log(Me & "Bet_Is_Matched", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+--         Log(Me & "Bet_Is_Matched", "***********************  Bad reply stop  ********" );
+--         return ;
+--    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -427,7 +460,7 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
     
     Result_Array,Runners, Market_Ids : JSON_Array := Empty_Array;
-    AWS_Reply           : Aws.Response.Data;
+  --  AWS_Reply           : Aws.Response.Data;
     Market_Id_Received  : Market_Id_Type := (others => ' ');
   begin
     
@@ -437,34 +470,37 @@ package body RPC is
     Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
-    
-    Log(Me, "posting: " & Json_Query.Write);
-    
-    Reset_AWS_Headers;    
-    
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  Json_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-    Log(Me & "Check_Market_Result", "Got reply, check it ");
 
-    begin
-      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
-        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                            Filename => "");
-        Log(Me & "Check_Market_Result", "Got reply: " & Json_Reply.Write  );
-      else
-        Log(Me & "Check_Market_Result", "Post Timeout -> Give up listMarketBook");
-        return ;
-      end if;
-    exception
-      when others =>
-         Log(Me & "Check_Market_Result", "***********************  Bad reply start *********************************");
-         Log(Me & "Check_Market_Result", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
-         Log(Me & "Check_Market_Result", "***********************  Bad reply stop  ********" );
-         return ;
-    end ;
+    Get_JSON_Reply (Query => Json_Query,
+                    Reply => Json_Reply,
+                    URL   => Token.URL_BETTING); 
+
+    
+--    Log(Me, "posting: " & Json_Query.Write);
+--    Reset_AWS_Headers;    
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  Json_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+--    Log(Me & "Check_Market_Result", "Got reply, check it ");
+--
+--    begin
+--      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+--        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                            Filename => "");
+--        Log(Me & "Check_Market_Result", "Got reply: " & Json_Reply.Write  );
+--      else
+--        Log(Me & "Check_Market_Result", "Post Timeout -> Give up listMarketBook");
+--        return ;
+--      end if;
+--    exception
+--      when others =>
+--         Log(Me & "Check_Market_Result", "***********************  Bad reply start *********************************");
+--         Log(Me & "Check_Market_Result", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+--         Log(Me & "Check_Market_Result", "***********************  Bad reply stop  ********" );
+--         return ;
+--    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -653,7 +689,7 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
     
     Result_Array, Market_Ids : JSON_Array := Empty_Array;
-    AWS_Reply           : Aws.Response.Data;
+    --AWS_Reply           : Aws.Response.Data;
     Market_Id_Received  : Market_Id_Type := (others => ' ');
   begin
     Is_Changed := False;
@@ -665,33 +701,36 @@ package body RPC is
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
     
-    Log(Me & "Market_Status_Is_Changed", "posting: " & Json_Query.Write);
-    
-    Reset_AWS_Headers;    
-    
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  Json_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-    Log(Me & "Market_Status_Is_Changed", "Got reply, check it ");
+    Get_JSON_Reply (Query => Json_Query,
+                    Reply => Json_Reply,
+                    URL   => Token.URL_BETTING); 
 
-    begin
-      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
-        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                            Filename => "");
-        Log(Me & "Market_Status_Is_Changed", "Got reply: " & Json_Reply.Write  );
-      else
-        Log(Me & "Market_Status_Is_Changed", "Post Timeout -> Give up listMarketBook");
-        return ;
-      end if;
-    exception
-      when others =>
-         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply start *********************************");
-         Log(Me & "Market_Status_Is_Changed", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
-         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply stop  ********" );
-         return ;
-    end ;
+    
+--    Log(Me & "Market_Status_Is_Changed", "posting: " & Json_Query.Write);  
+--    Reset_AWS_Headers;    
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  Json_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+--    Log(Me & "Market_Status_Is_Changed", "Got reply, check it ");
+--
+--    begin
+--      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+--        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                            Filename => "");
+--        Log(Me & "Market_Status_Is_Changed", "Got reply: " & Json_Reply.Write  );
+--      else
+--        Log(Me & "Market_Status_Is_Changed", "Post Timeout -> Give up listMarketBook");
+--        return ;
+--      end if;
+--    exception
+--      when others =>
+--         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply start *********************************");
+--         Log(Me & "Market_Status_Is_Changed", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+--         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply stop  ********" );
+--         return ;
+--    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -816,16 +855,14 @@ package body RPC is
   end Market_Status_Is_Changed;
   ---------------------------------------
   procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) is
-    Parsed_Ok : Boolean := True;
     Query_Get_Account_Funds           : JSON_Value := Create_Object;
     Reply_Get_Account_Funds           : JSON_Value := Create_Object;
-    Answer_Get_Account_Funds          : Aws.Response.Data;
+--    Answer_Get_Account_Funds          : Aws.Response.Data;
     Params                            : JSON_Value := Create_Object;
     Result                            : JSON_Value := Create_Object;
   begin
      Betfair_Result := Ok;
 
-    Reset_AWS_Headers;    
 
     -- params is empty ...                     
     Query_Get_Account_Funds.Set_Field (Field_Name => "params",  Field => Params);
@@ -833,55 +870,57 @@ package body RPC is
     Query_Get_Account_Funds.Set_Field (Field_Name => "method",  Field => "AccountAPING/v1.0/getAccountFunds");
     Query_Get_Account_Funds.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
-    Log(Me, "posting " & Query_Get_Account_Funds.Write);
-    Answer_Get_Account_Funds := Aws.Client.Post (Url          =>  Token.URL_ACCOUNT,
-                                                 Data         =>  Query_Get_Account_Funds.Write,
-                                                 Content_Type => "application/json",
-                                                 Headers      =>  Global_HTTP_Headers,
-                                                 Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
-     
-    --  Load the reply into a json object
-    Log(Me, "Got reply");
-    begin
-      Reply_Get_Account_Funds := Read (Strm     => Aws.Response.Message_Body(Answer_Get_Account_Funds),
-                                       Filename => "");
-      Log(Me, Reply_Get_Account_Funds.Write);
-    exception
-      when E: others =>
-        Parsed_Ok := False;
-        Log(Me, "Bad reply: " & Aws.Response.Message_Body(Answer_Get_Account_Funds));
-        Sattmate_Exception.Tracebackinfo(E);
-        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
-        if Aws.Response.Message_Body(Answer_Get_Account_Funds) = "Post Timeout" then 
-          Betfair_Result := Timeout ;
-          return;
-        end if;  
-    end ;       
+    Get_JSON_Reply (Query => Query_Get_Account_Funds,
+                    Reply => Reply_Get_Account_Funds,
+                    URL   => Token.URL_ACCOUNT); 
+    
+--    Reset_AWS_Headers;    
+--    Log(Me, "posting " & Query_Get_Account_Funds.Write);
+--    Answer_Get_Account_Funds := Aws.Client.Post (Url          =>  Token.URL_ACCOUNT,
+--                                                 Data         =>  Query_Get_Account_Funds.Write,
+--                                                 Content_Type => "application/json",
+--                                                 Headers      =>  Global_HTTP_Headers,
+--                                                 Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));     
+--    --  Load the reply into a json object
+--    Log(Me, "Got reply");
+--    begin
+--      Reply_Get_Account_Funds := Read (Strm     => Aws.Response.Message_Body(Answer_Get_Account_Funds),
+--                                       Filename => "");
+--      Log(Me, Reply_Get_Account_Funds.Write);
+--    exception
+--      when E: others =>
+--        Parsed_Ok := False;
+--        Log(Me, "Bad reply: " & Aws.Response.Message_Body(Answer_Get_Account_Funds));
+--        Sattmate_Exception.Tracebackinfo(E);
+--        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+--        if Aws.Response.Message_Body(Answer_Get_Account_Funds) = "Post Timeout" then 
+--          Betfair_Result := Timeout ;
+--          return;
+--        end if;  
+--    end ;       
 
-    if Parsed_Ok then                             
-      if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
-        Log(Me & "Get_Balance - Error",Aws.Response.Message_Body(Answer_Get_Account_Funds));
+    if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
+--        Log(Me & "Get_Balance - Error",Aws.Response.Message_Body(Answer_Get_Account_Funds));
       
         -- try again
-        Betfair_Result := Logged_Out ;
-        return;
-      end if;
- 
-      if Reply_Get_Account_Funds.Has_Field("result") then
-         Result := Reply_Get_Account_Funds.Get("result");
-         if Result.Has_Field("availableToBetBalance") then
-           Saldo.Balance := Float_8(Float'(Result.Get("availableToBetBalance")));
-         else  
-           raise No_Such_Field with "Object 'Result' - Field 'availableToBetBalance'";        
-         end if;
-           
-         if Result.Has_Field("exposure") then
-           Saldo.Exposure := Float_8(Float'(Result.Get("exposure")));
-         else  
-           raise No_Such_Field with "Object 'Result' - Field 'exposure'";        
-         end if;          
-      end if;  
-    end if;    
+      Betfair_Result := Logged_Out ;
+      return;
+    end if;
+
+    if Reply_Get_Account_Funds.Has_Field("result") then
+       Result := Reply_Get_Account_Funds.Get("result");
+       if Result.Has_Field("availableToBetBalance") then
+         Saldo.Balance := Float_8(Float'(Result.Get("availableToBetBalance")));
+       else  
+         raise No_Such_Field with "Object 'Result' - Field 'availableToBetBalance'";        
+       end if;
+         
+       if Result.Has_Field("exposure") then
+         Saldo.Exposure := Float_8(Float'(Result.Get("exposure")));
+       else  
+         raise No_Such_Field with "Object 'Result' - Field 'exposure'";        
+       end if;          
+    end if;  
   end Get_Balance;    
   
   --------------------------------------- 
@@ -892,10 +931,9 @@ package body RPC is
                                       Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
     pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though                                      
                                       
-    Parsed_Ok : Boolean := True;
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
-    AWS_Reply  : Aws.Response.Data;
+    --AWS_Reply  : Aws.Response.Data;
     Params     : JSON_Value := Create_Object;
     Result     : JSON_Value := Create_Object;    
     Settled_Date_Range : JSON_Value := Create_Object;
@@ -908,7 +946,6 @@ package body RPC is
   begin
     Betfair_Result := Ok;
 
-    Reset_AWS_Headers;    
 
     Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","Z"));
     Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","Z"));
@@ -923,89 +960,92 @@ package body RPC is
     JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listClearedOrders");
     JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
-    Log(Me, "posting " & JSON_Query.Write);
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  JSON_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
-     
-    --  Load the reply into a json object
-    Log(Me, "Got reply");
-    begin
-      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                          Filename => "");
-      Log(Me, JSON_Reply.Write);
-    exception
-      when E: others =>
-        Parsed_Ok := False;
-        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
-        Sattmate_Exception.Tracebackinfo(E);
-        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
-        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
-          Betfair_Result := Timeout ;
-          return;
-        end if;  
-    end ;       
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING); 
 
-    if Parsed_Ok then                             
-      if API_Exceptions_Are_Present(JSON_Reply) then
-        Log(Me & "Get_Balance - Error" , Aws.Response.Message_Body(AWS_Reply));
-      
-        -- try again
-        Betfair_Result := Logged_Out ;
-        return;
-      end if;
-      
-      if JSON_Reply.Has_Field("result") then
-         Result := JSON_Reply.Get("result");
-         if Result.Has_Field("clearedOrders") then
-           Cleared_Orders := Result.Get("clearedOrders");
-           if Length(Cleared_Orders) > Integer(0) then
-             for i in 1 .. Length (Cleared_Orders) loop
-               Log(Me & "Get_Cleared_Bet_Info_List" , " we have cleared order #:" & i'img & " with status: " & Bet_Status'Img);
-               
-               Cleared_Order := Get(Cleared_Orders, i);
-               Local_Bet := Table_Abets.Empty_Data;
-               Get_Value(Container => Cleared_Order,
-                         Field     => "betId",
-                         Target    => Local_Bet.Betid,
-                         Found     => Found);
-                         
-               Get_Value(Container => Cleared_Order,
-                         Field     => "priceMatched",
-                         Target    => Local_Bet.Pricematched,
-                         Found     => Found);
-                         
-               Get_Value(Container => Cleared_Order,
-                         Field     => "sizeSettled",
-                         Target    => Local_Bet.Sizematched,
-                         Found     => Found);
-                         
-               Get_Value(Container => Cleared_Order,
-                         Field     => "profit",
-                         Target    => Local_Bet.Profit,
-                         Found     => Found);
-                         
-               Move(Bet_Status'Img, Local_Bet.Status);    
-               
-               Table_Abets.Abets_List_Pack.Insert_At_Tail(Bet_List, Local_Bet);          
-             end loop; 
-           else
-             Log(Me & "Get_Cleared_Bet_Info_List", "No cleared orders received with status " & Bet_Status'Img);      
-           end if;        
-         end if;
-      end if;  
-    end if;    
+    
+--    Reset_AWS_Headers;    
+--    Log(Me, "posting " & JSON_Query.Write);
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  JSON_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
+--     
+--    --  Load the reply into a json object
+--    Log(Me, "Got reply");
+--    begin
+--      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                          Filename => "");
+--      Log(Me, JSON_Reply.Write);
+--    exception
+--      when E: others =>
+--        Parsed_Ok := False;
+--        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+--        Sattmate_Exception.Tracebackinfo(E);
+--        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+--        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
+--          Betfair_Result := Timeout ;
+--          return;
+--        end if;  
+--    end ;       
+
+    if API_Exceptions_Are_Present(JSON_Reply) then
+--        Log(Me & "Get_Balance - Error" , Aws.Response.Message_Body(AWS_Reply));
+    
+      -- try again
+      Betfair_Result := Logged_Out ;
+      return;
+    end if;
+    
+    if JSON_Reply.Has_Field("result") then
+       Result := JSON_Reply.Get("result");
+       if Result.Has_Field("clearedOrders") then
+         Cleared_Orders := Result.Get("clearedOrders");
+         if Length(Cleared_Orders) > Integer(0) then
+           for i in 1 .. Length (Cleared_Orders) loop
+             Log(Me & "Get_Cleared_Bet_Info_List" , " we have cleared order #:" & i'img & " with status: " & Bet_Status'Img);
+             
+             Cleared_Order := Get(Cleared_Orders, i);
+             Local_Bet := Table_Abets.Empty_Data;
+             Get_Value(Container => Cleared_Order,
+                       Field     => "betId",
+                       Target    => Local_Bet.Betid,
+                       Found     => Found);
+                       
+             Get_Value(Container => Cleared_Order,
+                       Field     => "priceMatched",
+                       Target    => Local_Bet.Pricematched,
+                       Found     => Found);
+                       
+             Get_Value(Container => Cleared_Order,
+                       Field     => "sizeSettled",
+                       Target    => Local_Bet.Sizematched,
+                       Found     => Found);
+                       
+             Get_Value(Container => Cleared_Order,
+                       Field     => "profit",
+                       Target    => Local_Bet.Profit,
+                       Found     => Found);
+                       
+             Move(Bet_Status'Img, Local_Bet.Status);    
+             
+             Table_Abets.Abets_List_Pack.Insert_At_Tail(Bet_List, Local_Bet);          
+           end loop; 
+         else
+           Log(Me & "Get_Cleared_Bet_Info_List", "No cleared orders received with status " & Bet_Status'Img);      
+         end if;        
+       end if;
+    end if;  
   end Get_Cleared_Bet_Info_List;    
   -----------------------------------
   
   procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
                        Bet_Id    : in Integer_8) is
-    Parsed_Ok : Boolean := True;
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
-    AWS_Reply  : Aws.Response.Data;
+    --AWS_Reply  : Aws.Response.Data;
     Params     : JSON_Value := Create_Object;
 --    Result     : JSON_Value := Create_Object;    
     Instruction  : JSON_Value := Create_Object;
@@ -1015,7 +1055,6 @@ package body RPC is
   begin
     Betfair_Result := Ok;
 
-    Reset_AWS_Headers;    
 
     Instruction.Set_Field (Field_Name => "betId", Field => Trim(Bet_Id'Img));
     Append(Instructions, Instruction);
@@ -1029,41 +1068,44 @@ package body RPC is
     JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/cancelOrders");
     JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
-    Log(Me & "Cancel_Bet", "posting " & JSON_Query.Write);
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  JSON_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
-     
-    --  Load the reply into a json object
-    Log(Me & "Cancel_Bet", "Got reply");
-    begin
-      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                          Filename => "");
-      Log(Me & "Cancel_Bet", JSON_Reply.Write);
-    exception
-      when E: others =>
-        Parsed_Ok := False;
-        Log(Me & "Cancel_Bet", "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
-        Sattmate_Exception.Tracebackinfo(E);
-        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
-        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
-          Betfair_Result := Timeout ;
-          return;
-        end if;  
-    end ;       
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING); 
+    
+    
+--    Reset_AWS_Headers;    
+--    Log(Me & "Cancel_Bet", "posting " & JSON_Query.Write);
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  JSON_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
+--     
+--    --  Load the reply into a json object
+--    Log(Me & "Cancel_Bet", "Got reply");
+--    begin
+--      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                          Filename => "");
+--      Log(Me & "Cancel_Bet", JSON_Reply.Write);
+--    exception
+--      when E: others =>
+--        Parsed_Ok := False;
+--        Log(Me & "Cancel_Bet", "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+--        Sattmate_Exception.Tracebackinfo(E);
+--        --Timeout is given as Aws.Response.Message_Body = "Post Timeout" 
+--        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then 
+--          Betfair_Result := Timeout ;
+--          return;
+--        end if;  
+--    end ;       
 
-    if Parsed_Ok then                             
-      if API_Exceptions_Are_Present(JSON_Reply) then
-        Log(Me & "Cancel_Bet" , Aws.Response.Message_Body(AWS_Reply));
+    if API_Exceptions_Are_Present(JSON_Reply) then
+--        Log(Me & "Cancel_Bet" , Aws.Response.Message_Body(AWS_Reply));
         -- try again
-        Betfair_Result := Logged_Out ;
-        return;
-      end if;
-    end if;  
+      Betfair_Result := Logged_Out ;
+      return;
+    end if;
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
-      
   end  Cancel_Bet;  
   -----------------------------------
   
@@ -1072,12 +1114,11 @@ package body RPC is
                               Market    : out Table_Amarkets.Data_Type;
                               Pricelist : in out Table_Aprices.Aprices_List_Pack.List_Type;
                               In_Play   : out Boolean) is
-    Parsed_Ok : Boolean := True;
     Market_Ids         : JSON_Array := Empty_Array;
     JSON_Query         : JSON_Value := Create_Object;
     JSON_Reply         : JSON_Value := Create_Object;
     JSON_Market        : JSON_Value := Create_Object;
-    AWS_Reply          : Aws.Response.Data;
+    --AWS_Reply          : Aws.Response.Data;
     Params             : JSON_Value := Create_Object;
     Result             : JSON_Array := Empty_Array;   
     Price_Projection   : JSON_Value := Create_Object;
@@ -1267,7 +1308,6 @@ package body RPC is
   begin
     In_Play := False;
 
-    Reset_AWS_Headers;    
     Append(Market_Ids, Create(Market_Id));
     Append (Price_Data , Create("EX_BEST_OFFERS"));    
           
@@ -1283,46 +1323,50 @@ package body RPC is
     JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
     
-    Log(Me, "posting: " & JSON_Query.Write);
-       
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  JSON_Query.Write,
-                                  Content_Type =>  "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts(Each => 30.0));
-    Log(Me, "Got reply " );
-                 
-     --  Load the Reply_List_Market_Catalogue into a json object
-    begin
-      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                          Filename => "");
-      Parsed_Ok := True; 
-    exception
-      when E: others =>
-        Parsed_Ok := False; 
-        Sattmate_Exception.Tracebackinfo(E);
-        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
-    end ;       
+
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING); 
+
+
+--    Reset_AWS_Headers;    
+--    Log(Me, "posting: " & JSON_Query.Write);       
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  JSON_Query.Write,
+--                                  Content_Type =>  "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts(Each => 30.0));
+--    Log(Me, "Got reply " );
+--                 
+--     --  Load the Reply_List_Market_Catalogue into a json object
+--    begin
+--      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                          Filename => "");
+--      Parsed_Ok := True; 
+--    exception
+--      when E: others =>
+--        Parsed_Ok := False; 
+--        Sattmate_Exception.Tracebackinfo(E);
+--        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
+--    end ;       
   
-    if Parsed_Ok then
-      if RPC.API_Exceptions_Are_Present(JSON_Reply) then
-        Log(Me & "Get_Market_Prices", "APINGException is present, return");
-        return;
-      end if;
-    
-       --  Iterate the Reply_List_Market_Book object. 
-      if JSON_Reply.Has_Field("result") then
-        Log(Me, "we have result ");
-        Result := JSON_Reply.Get("result");
-        for i in 1 .. Length(Result) loop
-          JSON_Market := Get(Result, i);
-          Parse_Market(JSON_Market, Market, In_Play);
-          if JSON_Market.Has_Field("runners") then
-            Parse_Runners(JSON_Market, Pricelist);
-          end if;
-        end loop;
-      end if;    
-    end if; -- parsed_ok    
+    if RPC.API_Exceptions_Are_Present(JSON_Reply) then
+      Log(Me & "Get_Market_Prices", "APINGException is present, return");
+      return;
+    end if;
+  
+     --  Iterate the Reply_List_Market_Book object. 
+    if JSON_Reply.Has_Field("result") then
+      Log(Me, "we have result ");
+      Result := JSON_Reply.Get("result");
+      for i in 1 .. Length(Result) loop
+        JSON_Market := Get(Result, i);
+        Parse_Market(JSON_Market, Market, In_Play);
+        if JSON_Market.Has_Field("runners") then
+          Parse_Runners(JSON_Market, Pricelist);
+        end if;
+      end loop;
+    end if;    
   end Get_Market_Prices;
   ----------------------------------------------------------------------------------
   procedure Place_Bet (Bet_Name         : in Bet_Name_Type;
@@ -1336,7 +1380,7 @@ package body RPC is
                        Bet              : out Table_Abets.Data_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
-    AWS_Reply    : Aws.Response.Data;
+    --AWS_Reply    : Aws.Response.Data;
     Params       : JSON_Value := Create_Object;
     Limit_Order  : JSON_Value := Create_Object;
     Instruction  : JSON_Value := Create_Object;
@@ -1373,7 +1417,6 @@ package body RPC is
   begin
     Move(Side'Img, Side_String);
 
-    Reset_AWS_Headers;    
 
     Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet_Persistence'Img);
     Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
@@ -1418,29 +1461,34 @@ package body RPC is
     --    "id": 1
     --}
 
-    Log(Me & "Make_Bet", "posting: " & JSON_Query.Write  );
-
-    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
-                                  Data         =>  JSON_Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      =>  Global_HTTP_Headers,
-                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
-    begin
-      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
-        JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
-                            Filename => "");
-        Log(Me & "Make_Bet", "Got reply: " & JSON_Reply.Write  );
-      else
-        Log(Me & "Make_Bet", "Post Timeout -> Give up placeOrder");
-        return;
-      end if;
-    exception
-      when others =>
-         Log(Me & "Make_Bet", "***********************  Bad reply start *********************************");
-         Log(Me & "Make_Bet", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
-         Log(Me & "Make_Bet", "***********************  Bad reply stop  ********  -> Give up placeOrders" );
-         return;
-    end ;
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING); 
+    
+--    Reset_AWS_Headers;        
+--    Log(Me & "Make_Bet", "posting: " & JSON_Query.Write  );
+--
+--    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
+--                                  Data         =>  JSON_Query.Write,
+--                                  Content_Type => "application/json",
+--                                  Headers      =>  Global_HTTP_Headers,
+--                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
+--    begin
+--      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+--        JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+--                            Filename => "");
+--        Log(Me & "Make_Bet", "Got reply: " & JSON_Reply.Write  );
+--      else
+--        Log(Me & "Make_Bet", "Post Timeout -> Give up placeOrder");
+--        return;
+--      end if;
+--    exception
+--      when others =>
+--         Log(Me & "Make_Bet", "***********************  Bad reply start *********************************");
+--         Log(Me & "Make_Bet", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
+--         Log(Me & "Make_Bet", "***********************  Bad reply stop  ********  -> Give up placeOrders" );
+--         return;
+--    end ;
 
     -- parse out the reply.
     -- check for API exception/Error first
