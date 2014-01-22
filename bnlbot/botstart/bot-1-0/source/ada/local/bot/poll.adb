@@ -97,7 +97,7 @@ procedure Poll is
     end if;
     
     -- do the poll
-    loop
+    Poll_Loop : loop
       Table_Aprices.Aprices_List_Pack.Remove_All(Pricelist);
       Rpc.Get_Market_Prices(Market_Id => Market_Notification.Market_Id, 
                             Market    => Market,
@@ -107,7 +107,9 @@ procedure Poll is
       exit when Market.Status(1..4) /= "OPEN";
       
       if not In_Play then
-        delay 2.0; -- no need for heavy polling before start of race
+        delay 30.0; -- no need for heavy polling before start of race
+      else
+        delay 0.05; -- to avoid more that 20 polls/sec      
       end if;
       
       -- ok find the runner with lowest backprice:        
@@ -151,51 +153,14 @@ procedure Poll is
           Bet_Name : Bet_Name_Type := (others => ' ');
           Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
-          Runner_Name : Runner_Name_Type := (others => ' ');
+--          Runner_Name : Runner_Name_Type := (others => ' ');
           type Market_Type is (Win,Place);
           Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
           Eos : Boolean := False;
         begin
-          Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
           Move(Market_Notification.Market_Id, Market_Id);
-          
-          Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                         Market_Id        => Market_Id, 
-                         Side             => Back,
-                         Runner_Name      => Runner_Name,
-                         Selection_Id     => Best_Runners(1).Selectionid,
-                         Size             => Global_Size,
-                         Price            => 1.01,
-                         Bet_Persistence  => Persist,
-                         Bet              => Bet);
-                   
+          -- find the place market                   
           T.Start;
-            -- fix som missing fields first
-            Runner.Marketid := Market_Id;
-            Runner.Selectionid := Best_Runners(1).Selectionid;
-            Table_Arunners.Read(Runner, Eos);
-            if not Eos then
-              Bet.Runnername := Runner.Runnername;
-            else
-              Log(Me & "Make_Bet", "no runnername found");
-            end if;
-            
-            Markets(Win).Marketid := Market_Id;
-            Table_Amarkets.Read(Markets(Win), Eos);
-            if not Eos then
-              Bet.Startts := Markets(Win).Startts;
-              Bet.Fullmarketname := Markets(Win).Marketname;
-            else
-              Log(Me & "Make_Bet", "no market found");
-            end if;
-          
-            Table_Abets.Insert(Bet);
-            Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
-            if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
-              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-              Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
-              Sql.Execute(Update_Betwon_To_Null);
-            end if;
             Find_Plc_Market.Prepare(
               "select M.* from AMARKETS M, APRICES P " &
               "where M.MARKETID = P.MARKETID "  &
@@ -209,26 +174,34 @@ procedure Poll is
             if not Eos then
               Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
               if Markets(Win).Startts /= Markets(Place).Startts then
-                 Log(Me & "Make_Bet", "Wrong PLACE market found");
+                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
+                 Find_Plc_Market.Close_Cursor;
                  T.Commit;
-                 exit;
+                 exit Poll_Loop;
               end if;
             else
               Log(Me & "Make_Bet", "no PLACE market found");
-              T.Commit;
-              exit;
             end if;
             Find_Plc_Market.Close_Cursor;
+            
+            -- fix som missing fields first
+            Runner.Marketid := Markets(Place).Marketid;
+            Runner.Selectionid := Best_Runners(1).Selectionid;
+            Table_Arunners.Read(Runner, Eos);
+            if not Eos then
+              Bet.Runnername := Runner.Runnername;
+            else
+              Log(Me & "Make_Bet", "no runnername found");
+            end if;            
+            
           T.Commit;
-          
-          Market_Id := Markets(Place).Marketid;
 
-          -- and the winner as place too
+          -- the winner as place at the price 
           Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);          
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                         Market_Id        => Market_Id, 
+                         Market_Id        => Markets(Place).Marketid, 
                          Side             => Back,
-                         Runner_Name      => Runner_Name,
+                         Runner_Name      => Runner.Runnername,
                          Selection_Id     => Best_Runners(1).Selectionid,
                          Size             => Global_Size,
                          Price            => 1.01,
@@ -236,25 +209,8 @@ procedure Poll is
                          Bet              => Bet);
                    
           T.Start;
-            -- fix som missing fields first
-            Runner.Marketid := Market_Id;
-            Runner.Selectionid := Best_Runners(1).Selectionid;
-            Table_Arunners.Read(Runner, Eos);
-            if not Eos then
-              Bet.Runnername := Runner.Runnername;
-            else
-              Log(Me & "Make_Bet", "no runnername found");
-            end if;
-            
-            Market.Marketid := Market_Id;
-            Table_Amarkets.Read(Market, Eos);
-            if not Eos then
-              Bet.Startts := Market.Startts;
-              Bet.Fullmarketname := Market.Marketname;
-            else
-              Log(Me & "Make_Bet", "no market found");
-            end if;
-          
+            Bet.Startts := Markets(Place).Startts;
+            Bet.Fullmarketname := Markets(Place).Marketname;
             Table_Abets.Insert(Bet);
             Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
             if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
@@ -263,11 +219,10 @@ procedure Poll is
               Sql.Execute(Update_Betwon_To_Null);
             end if;
           T.Commit;
-          
         end ;
-        exit;           
+        exit Poll_Loop;           
       end if;
-    end loop;    
+    end loop Poll_Loop;    
   end Run;
 
 
