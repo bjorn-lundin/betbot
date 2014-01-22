@@ -41,7 +41,7 @@ procedure Poll is
   My_Lock  : Lock.Lock_Type;
 
   Msg      : Process_Io.Message_Type;
-  Find_Plc_Market,
+  --Find_Plc_Market,
   Update_Betwon_To_Null : Sql.Statement_Type;
   
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -165,45 +165,48 @@ procedure Poll is
           Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
 --          Runner_Name : Runner_Name_Type := (others => ' ');
-          type Market_Type is (Win,Place);
+          type Market_Type is (Win
+                               --,Place
+                               );
           Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
           Eos : Boolean := False;
         begin
           Move(Market_Notification.Market_Id, Market_Id);
           -- find the place market   
-          Markets(Win).Marketid := Market_Id;
-          Table_Amarkets.Read(Markets(Win), Eos);
-          if Eos then
-            Log(Me & "Make_Bet", "no WIN market found");
-            exit Poll_Loop;
-          end if;
+          Markets(Win):= Market;
+--          Markets(Win).Marketid := Market_Id;
+--          Table_Amarkets.Read(Markets(Win), Eos);
+--          if Eos then
+--            Log(Me & "Make_Bet", "no WIN market found");
+--            exit Poll_Loop;
+--          end if;
           
           T.Start;
-            Find_Plc_Market.Prepare(
-              "select M.* from AMARKETS M, APRICES P " &
-              "where M.MARKETID = P.MARKETID "  &
-              "and M.MARKETID = P.MARKETID "  &
-              "and P.SELECTIONID = :SELECTIONID "  &
-              "and M.MARKETTYPE = 'PLACE' "  &
-              "and M.STATUS = 'OPEN' " ) ;
-            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
-            Find_Plc_Market.Open_Cursor;
-            Find_Plc_Market.Fetch(Eos);
-            if not Eos then
-              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
-              if Markets(Win).Startts /= Markets(Place).Startts then
-                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
-                 Find_Plc_Market.Close_Cursor;
-                 T.Commit;
-                 exit Poll_Loop;
-              end if;
-            else
-              Log(Me & "Make_Bet", "no PLACE market found");
-            end if;
-            Find_Plc_Market.Close_Cursor;
+--            Find_Plc_Market.Prepare(
+--              "select M.* from AMARKETS M, APRICES P " &
+--              "where M.MARKETID = P.MARKETID "  &
+--              "and M.MARKETID = P.MARKETID "  &
+--              "and P.SELECTIONID = :SELECTIONID "  &
+--              "and M.MARKETTYPE = 'PLACE' "  &
+--              "and M.STATUS = 'OPEN' " ) ;
+--            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
+--            Find_Plc_Market.Open_Cursor;
+--            Find_Plc_Market.Fetch(Eos);
+--            if not Eos then
+--              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
+--              if Markets(Win).Startts /= Markets(Place).Startts then
+--                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
+--                 Find_Plc_Market.Close_Cursor;
+--                 T.Commit;
+--                 exit Poll_Loop;
+--              end if;
+--            else
+--              Log(Me & "Make_Bet", "no PLACE market found");
+--            end if;
+--            Find_Plc_Market.Close_Cursor;
             
             -- fix som missing fields first
-            Runner.Marketid := Markets(Place).Marketid;
+            Runner.Marketid := Markets(Win).Marketid;
             Runner.Selectionid := Best_Runners(1).Selectionid;
             Table_Arunners.Read(Runner, Eos);
             if not Eos then
@@ -214,10 +217,10 @@ procedure Poll is
             
           T.Commit;
 
-          -- the winner as place at the price 
-          Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);          
+          -- the LEADER as WIN at the price 
+          Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);          
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                         Market_Id        => Markets(Place).Marketid, 
+                         Market_Id        => Markets(Win).Marketid, 
                          Side             => Back,
                          Runner_Name      => Runner.Runnername,
                          Selection_Id     => Best_Runners(1).Selectionid,
@@ -227,8 +230,8 @@ procedure Poll is
                          Bet              => Bet);
                    
           T.Start;
-            Bet.Startts := Markets(Place).Startts;
-            Bet.Fullmarketname := Markets(Place).Marketname;
+            Bet.Startts := Markets(Win).Startts;
+            Bet.Fullmarketname := Markets(Win).Marketname;
             Table_Abets.Insert(Bet);
             Log(Me & "Make_Bet", General_Routines.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(Bet));
             if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then

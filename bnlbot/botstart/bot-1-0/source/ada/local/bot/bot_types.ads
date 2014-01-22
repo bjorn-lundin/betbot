@@ -40,8 +40,8 @@ package Bot_Types is
    function Bot_Mode is new Unchecked_Conversion(Integer_4, Bot_Mode_Type);
    
    
-   type Bet_Status_Type is (Executable, Execution_Complete, Settled, Lapsed, Voided, Cancelled);
-   subtype Cleared_Bet_Status_Type is Bet_Status_Type range Settled .. Cancelled;
+   type Bet_Status_Type is (Executable, Execution_Complete, Voided, Cancelled, Lapsed, Settled);
+   subtype Cleared_Bet_Status_Type is Bet_Status_Type range  Voided .. Settled ;
    
    type JSON_Data_Type is (I4,Flt,Ts,Str);
    
