@@ -422,6 +422,7 @@ begin
   
   Log(Me, "Close Db");
   Sql.Close_Session;
+  Rpc.Logout;
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
  

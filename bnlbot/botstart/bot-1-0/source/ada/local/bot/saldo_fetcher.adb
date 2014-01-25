@@ -236,6 +236,7 @@ begin
                
   Log(Me, "shutting down, close db");
   Sql.Close_Session;
+  Rpc.Logout;
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
   Log(Me, "after do_exit");
