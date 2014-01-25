@@ -1144,7 +1144,7 @@ package body Bet_Handler is
 
     case A_Bet_Type is
       when Back    => Move("BACK", Side);
-      when Lay     =>  Move("LAY", Side);   
+      when Lay     => Move("LAY", Side);   
       when Greenup => raise Suicide with "bad data GREENUP";      
     end case;
 

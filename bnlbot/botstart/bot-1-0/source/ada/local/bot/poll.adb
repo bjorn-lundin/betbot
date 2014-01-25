@@ -42,6 +42,7 @@ procedure Poll is
 
   Msg      : Process_Io.Message_Type;
   --Find_Plc_Market,
+  Select_Profit_Today,
   Update_Betwon_To_Null : Sql.Statement_Type;
   
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -53,13 +54,64 @@ procedure Poll is
   Global_Fav_Max_Price : Back_Price_Type := 1.15; 
   Global_2nd_Min_Price : Back_Price_Type := 7.0; 
   Now : Sattmate_Calendar.Time_Type;
-  
+  Global_Max_Loss_Per_Day : Float_8 := -500.0;
   Global_Max_Turns_Not_Started_Race    : Integer_4 := 17;  --17*30s -> 8.5 min
   Global_Current_Turn_Not_Started_Race : Integer_4 := 0; 
   
   Global_Enabled,
   Ok, 
   Is_Time_To_Exit : Boolean := False;
+
+  -------------------------------------------------------------   
+  
+  function Profit_Today(Bet_Name : String) return Float_8 is
+    T : Sql.Transaction_Type;
+    Eos : Boolean := False;
+    Start_Date, End_Date : Time_Type := Clock;
+    Profit : Float_8 := 0.0;
+  begin
+    T.Start;
+      Start_Date := Sattmate_Calendar.Clock;
+      End_Date := Sattmate_Calendar.Clock;
+
+      Start_Date.Hour        := 0;
+      Start_Date.Minute      := 0;
+      Start_Date.Second      := 0;
+      Start_Date.MilliSecond := 0;
+
+      End_Date.Hour        := 23;
+      End_Date.Minute      := 59;
+      End_Date.Second      := 59;
+      End_Date.MilliSecond := 999;
+
+      Select_Profit_Today.Prepare(
+        "select sum(PROFIT) " &
+        "from ABETS " &
+        "where STARTTS >= :STARTOFDAY " &
+        "and STARTTS <= :ENDOFDAY " &
+--        "and BETMODE = :BOTMODE " &
+--        "and PROFIT < 0.0 " &
+        "and BETWON is not null " &
+        "and BETNAME = :BETNAME " );
+
+--      Select_Profit_Today.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
+      Select_Profit_Today.Set("BETNAME", Bet_Name);
+      Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
+      Select_Profit_Today.Set_Timestamp( "ENDOFDAY",End_Date);
+      Select_Profit_Today.Open_Cursor;
+      Select_Profit_Today.Fetch(Eos);
+      if not Eos then
+        Select_Profit_Today.Get(1, Profit);
+      else
+        Profit := 0.0;
+      end if;
+      Select_Profit_Today.Close_Cursor;
+    T.Commit;
+    Log(Me & "Profit_Today", Bet_Name & " :" & " HAS earned" & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
+    return Profit;
+  end Profit_Today;
+
+  
   -------------------------------------------------------------   
   procedure Run(Market_Notification : in     Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
@@ -73,10 +125,18 @@ procedure Poll is
                                --,Place
                                );
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;    
+    Bet_Name : Bet_Name_Type := (others => ' '); 
   begin     
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
   
     Market.Marketid := Market_Notification.Market_Id;
+    
+    Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);     
+    if Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
+      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
+      return;
+    end if;
+    
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -166,7 +226,6 @@ procedure Poll is
         declare
           T : Sql.Transaction_Type;
           Bet : Table_Abets.Data_Type;
-          Bet_Name : Bet_Name_Type := (others => ' ');
 --          Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
 --          Runner_Name : Runner_Name_Type := (others => ' ');
@@ -219,7 +278,9 @@ procedure Poll is
           T.Commit;
 
           -- the LEADER as WIN at the price 
-          Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);          
+          
+          
+          
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
                          Market_Id        => Markets(Win).Marketid, 
                          Side             => Back,
@@ -292,6 +353,7 @@ begin
   Global_Fav_Max_Price := Back_Price_Type'Value(Ini.Get_Value("finish","fav_max_price","1.15")); 
   Global_2nd_Min_Price := Back_Price_Type'Value(Ini.Get_Value("finish","2nd_min_price","7.0")); 
   Global_Enabled := Ini.Get_Value("finish","enabled",false); 
+  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","global_max_loss_per_day","-500.0")); 
        
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");  
