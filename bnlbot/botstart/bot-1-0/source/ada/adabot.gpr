@@ -34,7 +34,8 @@ project Adabot is
    Other_Mains := (--"ini_reader.adb",
                    "back_all_g4.adb",
                    "markets_sender.adb",                   
-                   "bet_checker.adb");
+                   "bet_checker.adb",
+                   "test_login.adb");
    
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;

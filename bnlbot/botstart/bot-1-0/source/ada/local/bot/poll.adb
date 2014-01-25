@@ -107,7 +107,7 @@ procedure Poll is
       end if;
       Select_Profit_Today.Close_Cursor;
     T.Commit;
-    Log(Me & "Profit_Today", Bet_Name & " :" & " HAS earned" & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
+    Log(Me & "Profit_Today", Bet_Name & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
     return Profit;
   end Profit_Today;
 
@@ -353,7 +353,7 @@ begin
   Global_Fav_Max_Price := Back_Price_Type'Value(Ini.Get_Value("finish","fav_max_price","1.15")); 
   Global_2nd_Min_Price := Back_Price_Type'Value(Ini.Get_Value("finish","2nd_min_price","7.0")); 
   Global_Enabled := Ini.Get_Value("finish","enabled",false); 
-  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","global_max_loss_per_day","-500.0")); 
+  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0")); 
        
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");  

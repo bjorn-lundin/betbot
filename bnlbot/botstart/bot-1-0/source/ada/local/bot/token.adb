@@ -125,10 +125,36 @@ package body Token is
   end Unset;
   -------------------------------------------------------------
   
-  function  Get_App_Key (A_Token  :        Token_Type) return String is
+  function  Get_App_Key (A_Token : Token_Type) return String is
   begin
     return To_String(A_Token.App_Key);
   end Get_App_Key;
+  -------------------------------------------------------------
+  
+  function  Get_Username (A_Token : Token_Type) return String is
+  begin
+    return To_String(A_Token.Username);
+  end Get_Username;
+  -------------------------------------------------------------
+  
+  function  Get_Password (A_Token : Token_Type) return String is
+  begin
+    return To_String(A_Token.Password);
+  end Get_Password;
+  -------------------------------------------------------------
+  
+  function  Get_Product_Id (A_Token : Token_Type) return String is
+  begin
+    return To_String(A_Token.Product_Id);
+  end Get_Product_Id;
+  -------------------------------------------------------------
+  
+  function  Get_Vendor_Id (A_Token : Token_Type) return String is
+  begin
+    return To_String(A_Token.Vendor_Id);
+  end Get_Vendor_Id;
+  -----------------------------------------------------------
+   
   
   procedure Keep_Alive (A_Token : in out Token_Type; Result : out Boolean ) is
     -- just get the eventtypes
