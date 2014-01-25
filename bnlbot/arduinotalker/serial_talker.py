@@ -87,7 +87,7 @@ def main():
 
   now = datetime.datetime.now()
   if now.minute % 2 == 0 :
-    source = 1
+    source = 2
   else :
     source = 2
     return
@@ -114,26 +114,15 @@ def main():
                            host='nonodev.com' \
                            password='BettingFotboll1$' ")
 
-    bets = [#'DRY_RUN_HORSES_WINNER_BACK_BET_30_09',
-            'HORSES_WINNER_BACK_BET_65_03',
-            'DRY_RUN_HORSES_WINNER_BACK_BET_60_05',
-            'DRY_RUN_HOUNDS_WINNER_BACK_BET_35_01',
-            'DRY_RUN_HOUNDS_WINNER_BACK_BET_36_01',
-            'HOUNDS_WINNER_BACK_BET_36_01',
-            'HOUNDS_WINNER_BACK_BET_45_07',  
-            'HORSES_WINNER_LAY_BET_35_40',
-            'DRY_RUN_HORSES_PLC_LAY_17_22_0_200_5',    
+    bets = ['HORSES_WIN_FAV2_GB',
+            'HORSES_WIN_FAV4_IE',
+            'HORSES_PLC_LAY4_GB',
+            'HORSES_PLC_LAY4_IE',
+            'HORSES_WIN_LAY5_IE',
+            'HORSES_WIN_LAY4_GB',  
+            'HOUNDS_WIN_FAV5_GB',
+            'HOUNDS_WIN_FAV4_GB',    
             'DRY_RUN_HORSES_WIN_LAY_15_21_5_200_0']
-
-#            'HORSES_WINNER_BACK_BET_30_09',
-#            'HORSES_WINNER_BACK_BET_29_10',
-#            'DRY_RUN_HORSES_WINNER_BACK_BET_28_10',
-#            'DRY_RUN_HORSES_WINNER_BACK_BET_27_10',
-#            'DRY_RUN_HORSES_WINNER_BACK_BET_25_10',
-#            'DRY_RUN_HORSES_WINNER_BACK_BET_24_10',
-#            'DRY_RUN_HORSES_WINNER_BACK_BET_23_10',
-#            'DRY_RUN_HOUNDS_WINNER_BACK_BET_35_01'
-
                              
   ser = serial.Serial(
     port='/dev/ttyUSB0',
