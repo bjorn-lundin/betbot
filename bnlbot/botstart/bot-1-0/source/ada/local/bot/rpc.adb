@@ -30,10 +30,10 @@ package body RPC is
   ---------------------------------
   
   
-  procedure Login is
-  begin
-    Global_Token.Login;
-  end Login;
+--  procedure Login is
+--  begin
+--    Global_Token.Login;
+--  end Login;
 
   procedure Init(Username   : in     String;
                  Password   : in     String;
@@ -70,6 +70,68 @@ package body RPC is
     Aws.Headers.Set.Add (Global_HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
     Aws.Headers.Set.Add (Global_HTTP_Headers, "Accept", "application/json");  
   end Reset_AWS_Headers;
+  
+  procedure Login is
+    Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    AWS_Reply    : Aws.Response.Data;  
+    Header : AWS.Headers.List;
+  begin
+    Aws.Headers.Set.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+--    Aws.Client.Set_Debug(True);
+    
+    declare
+      Data : String :=  "username=" & Global_Token.Get_Username & "&" &
+                         "password=" & Global_Token.Get_Password &"&" &
+                         "login=true" & "&" &
+                         "redirectMethod=POST" & "&" &
+                         "product=home.betfair.int" & "&" &
+                         "product=home.betfair.int" & "&" &
+                         "url=https://www.betfair.com/";
+    begin
+      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/login",
+                                    Data         => Data,
+                                    Content_Type => "application/x-www-form-urlencoded",
+                                    Headers      => Login_HTTP_Headers,
+                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    end ;                              
+--    Log(Me & "Login2", "reply" & Aws.Response.Message_Body(AWS_Reply));
+    
+    Header := AWS.Response.Header(AWS_Reply);
+    
+    for i in 1 .. AWS.Headers.Length(Header) loop
+      declare
+        Head : String := AWS.Headers.Get_Line(Header,i);
+        Index_First_Equal : Integer := 0;
+        Index_First_Semi_Colon : Integer := 0;
+        
+      begin
+        if Position(Head,"ssoid") > Integer(0) then
+          Log("Login2"," " & Head);
+          for i in Head'range loop
+            case Head(i) is
+              when '=' =>
+                if Index_First_Equal = 0 then
+                  Index_First_Equal := i;
+                end if;
+                
+              when ';' => 
+                if Index_First_Semi_Colon = 0 then
+                  Index_First_Semi_Colon := i;
+                end if;
+              when others => null;            
+            end case;
+          end loop;
+          if Index_First_Equal > Integer(0) and then Index_First_Semi_Colon > Index_First_Equal then
+            Log("Login2","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
+            Global_Token.Set(Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1));
+          end if;
+        end if;
+      end;  
+    end loop;
+      
+--  Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/   
+  
+  end Login;
   
   
   procedure Get_JSON_Reply (Query : in     JSON_Value;

@@ -34,7 +34,12 @@ package Token is
   procedure Set (A_Token  : in out Token_Type; The_Token : String);
   procedure Unset (A_Token : in out Token_Type) ;
   procedure Keep_Alive (A_Token : in out Token_Type ; Result : out Boolean);
-  function  Get_App_Key (A_Token  :        Token_Type) return String;
+  function  Get_App_Key (A_Token  : Token_Type) return String;
+  function  Get_Username(A_Token  : Token_Type) return String;
+  function  Get_Password(A_Token  : Token_Type) return String;
+  function  Get_Product_Id(A_Token  : Token_Type) return String;
+  function  Get_Vendor_Id(A_Token  : Token_Type) return String;
+ 
   
 private
   type Token_Type is tagged record
