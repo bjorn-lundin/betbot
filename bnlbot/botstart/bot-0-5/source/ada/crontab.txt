@@ -1,2 +1,0 @@
-* * * * * /usr/bin/python /home/pi/bnlbot/arduinotalker/serial_talker.py
-* * * * * /home/pi/bnlbot/botstart/bot-0-5/target/bin/dry_runner_mover > /dev/null 2>&1

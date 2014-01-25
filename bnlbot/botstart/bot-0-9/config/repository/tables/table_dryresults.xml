@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
-    <Table Desc="collected results " Name="DRYRESULTS" Tablespace="">
-        <Column Name="marketid"    Size="9" Type="2" AllowNull="0" Description="market id"/>
-        <Column Name="selectionid" Size="9" Type="2" AllowNull="0" Description="selection_id"/>
-        <Index Columns="marketid,selectionid" type="primary"/>
-    </Table>
-</MaAstro>
-
