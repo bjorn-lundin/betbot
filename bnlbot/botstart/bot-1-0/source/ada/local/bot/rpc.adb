@@ -57,10 +57,10 @@ package body RPC is
   end Get_Token;
   
   
-  procedure Keep_Alive (Result : out Boolean) is
-  begin
-    Global_Token.Keep_Alive(Result);
-  end Keep_Alive;  
+--  procedure Keep_Alive (Result : out Boolean) is
+--  begin
+--    Global_Token.Keep_Alive(Result);
+--  end Keep_Alive;  
   
   
   procedure Reset_AWS_Headers is
@@ -132,27 +132,49 @@ package body RPC is
   
 
   procedure Logout is
-    Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    Logout_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;  
   begin
-    Aws.Headers.Set.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
-    Aws.Headers.Set.Add (Login_HTTP_Headers, "Accept", "application/json");
-    Aws.Headers.Set.Add (Login_HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
 --    Aws.Client.Set_Debug(True);
     
     AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/logout",
                                   Data         => "", --Data,
                                   Content_Type => "application/x-www-form-urlencoded",
-                                  Headers      => Login_HTTP_Headers,
+                                  Headers      => Logout_HTTP_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Logout", Aws.Response.Message_Body(AWS_Reply));
     
     if Position( Aws.Response.Message_Body(AWS_Reply),"""status"":""SUCCESS""") > Integer(0) then
       Global_Token.Unset;
     end if;     
-    
   end Logout;
 
+
+
+  procedure Keep_Alive(Result : out Boolean )is
+    Keep_Alive_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    AWS_Reply    : Aws.Response.Data;  
+  begin
+    Result := True;
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "X-Authentication", Global_Token.Get);
+--    Aws.Client.Set_Debug(True);
+    
+    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/keepAlive",
+                                  Data         => "", --Data,
+                                  Content_Type => "application/x-www-form-urlencoded",
+                                  Headers      => Keep_Alive_HTTP_Headers,
+                                  Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    Log(Me & "Logout", Aws.Response.Message_Body(AWS_Reply));
+    
+    if Position( Aws.Response.Message_Body(AWS_Reply),"""status"":""FAIL""") > Integer(0) then
+      Result := False;
+    end if;        
+  end Keep_Alive;
 
   
   procedure Get_JSON_Reply (Query : in     JSON_Value;
