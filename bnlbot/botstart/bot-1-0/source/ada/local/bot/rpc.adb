@@ -94,7 +94,7 @@ package body RPC is
                                     Headers      => Login_HTTP_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     end ;                              
---    Log(Me & "Login2", "reply" & Aws.Response.Message_Body(AWS_Reply));
+--    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
     
     Header := AWS.Response.Header(AWS_Reply);
     
@@ -103,10 +103,10 @@ package body RPC is
         Head : String := AWS.Headers.Get_Line(Header,i);
         Index_First_Equal : Integer := 0;
         Index_First_Semi_Colon : Integer := 0;
-        
+--  Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/           
       begin
         if Position(Head,"ssoid") > Integer(0) then
-          Log("Login2"," " & Head);
+          Log("Login"," " & Head);
           for i in Head'range loop
             case Head(i) is
               when '=' =>
@@ -122,17 +122,38 @@ package body RPC is
             end case;
           end loop;
           if Index_First_Equal > Integer(0) and then Index_First_Semi_Colon > Index_First_Equal then
-            Log("Login2","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
+            Log("Login","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
             Global_Token.Set(Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1));
           end if;
         end if;
       end;  
     end loop;
-      
---  Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/   
-  
   end Login;
   
+
+  procedure Logout is
+    Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    AWS_Reply    : Aws.Response.Data;  
+  begin
+    Aws.Headers.Set.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Login_HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (Login_HTTP_Headers, "X-Authentication", Global_Token.Get);
+--    Aws.Client.Set_Debug(True);
+    
+    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/logout",
+                                  Data         => "", --Data,
+                                  Content_Type => "application/x-www-form-urlencoded",
+                                  Headers      => Login_HTTP_Headers,
+                                  Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    Log(Me & "Logout", Aws.Response.Message_Body(AWS_Reply));
+    
+    if Position( Aws.Response.Message_Body(AWS_Reply),"""status"":""SUCCESS""") > Integer(0) then
+      Global_Token.Unset;
+    end if;     
+    
+  end Logout;
+
+
   
   procedure Get_JSON_Reply (Query : in     JSON_Value;
                             Reply : in out JSON_Value;
