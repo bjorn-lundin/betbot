@@ -18,6 +18,7 @@ package RPC is
   JSON_Exception : exception;
   
   procedure Login;
+  procedure Logout;
   procedure Init(Username   : in     String;
                  Password   : in     String;
                  Product_Id : in     String;
