@@ -39,6 +39,7 @@ procedure Bet_Placer is
   
   Update_Betwon_To_Null : Sql.Statement_Type;
   
+  Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
@@ -119,6 +120,12 @@ begin
       Ba_Daemon'access,
       Long_Switch => "--daemon",
       Help        => "become daemon at startup");
+      
+    Define_Switch
+       (Cmd_Line,
+        Sa_Par_Mode'access,
+        Long_Switch => "--mode=",
+        Help        => "mode of bot - (real, simulation)");
 
    Define_Switch
      (Cmd_Line,
