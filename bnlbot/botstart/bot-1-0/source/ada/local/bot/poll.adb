@@ -77,6 +77,8 @@ procedure Poll is
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;    
     Bet_Name : Bet_Name_Type := (others => ' '); 
+    Found_Place : Boolean := True;
+    T : Sql.Transaction_Type;
   begin     
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
   
@@ -115,8 +117,34 @@ procedure Poll is
     end if;
     Markets(Win):= Market;
 
-    Global_Current_Turn_Not_Started_Race := 0;
-
+    Global_Current_Turn_Not_Started_Race := 0; 
+    
+    T.Start;
+      Find_Plc_Market.Prepare(
+        "select M.* from AMARKETS M, APRICES P " &
+        "where M.MARKETID = P.MARKETID "  &
+        "and M.MARKETID = P.MARKETID "  &
+        "and P.SELECTIONID = :SELECTIONID "  &
+        "and M.MARKETTYPE = 'PLACE' "  &
+        "and M.STATUS = 'OPEN' " ) ;
+      Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
+      Find_Plc_Market.Open_Cursor;
+      Find_Plc_Market.Fetch(Eos);
+      if not Eos then
+        Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
+        if Markets(Win).Startts /= Markets(Place).Startts then
+           Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
+           Found_Place := False;
+        end if;
+      else
+        Log(Me & "Make_Bet", "no PLACE market found");
+        Found_Place := False;
+      end if;
+      Find_Plc_Market.Close_Cursor;
+    T.Commit;
+       
+    
+    
     -- do the poll
     Poll_Loop : loop
       Table_Aprices.Aprices_List_Pack.Remove_All(Pricelist);
@@ -175,83 +203,49 @@ procedure Poll is
         Log("Place bet on " & Table_Aprices.To_String(Best_Runners(1))); 
         
         declare
-          T : Sql.Transaction_Type;
           Bet : Table_Abets.Data_Type;
 --          Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
 --          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
-          Found_Place : Boolean := True;
         begin
---          Move(Market_Notification.Market_Id, Market_Id);
-          -- find the place market   
---          Markets(Win):= Market;
---          Markets(Win).Marketid := Market_Id;
---          Table_Amarkets.Read(Markets(Win), Eos);
---          if Eos then
---            Log(Me & "Make_Bet", "no WIN market found");
---            exit Poll_Loop;
---          end if;
-          T.Start;
-            Find_Plc_Market.Prepare(
-              "select M.* from AMARKETS M, APRICES P " &
-              "where M.MARKETID = P.MARKETID "  &
-              "and M.MARKETID = P.MARKETID "  &
-              "and P.SELECTIONID = :SELECTIONID "  &
-              "and M.MARKETTYPE = 'PLACE' "  &
-              "and M.STATUS = 'OPEN' " ) ;
-            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
-            Find_Plc_Market.Open_Cursor;
-            Find_Plc_Market.Fetch(Eos);
-            if not Eos then
-              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
-              if Markets(Win).Startts /= Markets(Place).Startts then
-                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
-                 Found_Place := False;
-              end if;
-            else
-              Log(Me & "Make_Bet", "no PLACE market found");
-              Found_Place := False;
-            end if;
-            Find_Plc_Market.Close_Cursor;
             
-            if Found_Place then
-              declare
-                PBB : Bot_Messages.Place_Back_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);     
-                Move(Markets(Place).Marketid, PBB.Market_Id);
-                Move("1.01", PBB.Price);
-                Move("0.0", PBB.Size); -- set by receiver's ini-file
-                PBB.Selection_Id := Best_Runners(1).Selectionid;          
-                Move("bet_placer_1", Receiver.Name);
-                Bot_Messages.Send(Receiver, PBB);              
-              end;
-              declare
-                PBB : Bot_Messages.Place_Back_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
-                Move(Markets(Place).Marketid, PBB.Market_Id);
-                Move("1.01", PBB.Price);
-                Move("0.0", PBB.Size); -- set by receiver's ini-file
-                PBB.Selection_Id := Best_Runners(2).Selectionid;          
-                Move("bet_placer_2", Receiver.Name);
-                Bot_Messages.Send(Receiver, PBB);              
-              end;
-            end if;            
+          if Found_Place then
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);     
+              Move(Markets(Place).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              Move("0.0", PBB.Size); -- set by receiver's ini-file
+              PBB.Selection_Id := Best_Runners(1).Selectionid;          
+              Move("bet_placer_1", Receiver.Name);
+              Bot_Messages.Send(Receiver, PBB);              
+            end;
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
+              Move(Markets(Place).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              Move("0.0", PBB.Size); -- set by receiver's ini-file
+              PBB.Selection_Id := Best_Runners(2).Selectionid;          
+              Move("bet_placer_2", Receiver.Name);
+              Bot_Messages.Send(Receiver, PBB);              
+            end;
+          end if;            
             
-            -- fix som missing fields first
-            Runner.Marketid := Markets(Win).Marketid;
-            Runner.Selectionid := Best_Runners(1).Selectionid;
-            Table_Arunners.Read(Runner, Eos);
-            if not Eos then
-              Bet.Runnername := Runner.Runnername;
-            else
-              Log(Me & "Make_Bet", "no runnername found");
-            end if;            
-          T.Commit;
+          -- fix som missing fields first
+          Runner.Marketid := Markets(Win).Marketid;
+          Runner.Selectionid := Best_Runners(1).Selectionid;
+          Table_Arunners.Read(Runner, Eos);
+          if not Eos then
+            Bet.Runnername := Runner.Runnername;
+          else
+            Log(Me & "Make_Bet", "no runnername found");
+          end if;            
 
           -- the LEADER as WIN at the price 
           
