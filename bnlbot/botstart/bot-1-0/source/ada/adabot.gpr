@@ -24,6 +24,7 @@ project Adabot is
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb",
+                    "bet_placer.adb",
                     "rpc_tester");
                     
    Stat_Mains   := ("change_10_percent.adb",

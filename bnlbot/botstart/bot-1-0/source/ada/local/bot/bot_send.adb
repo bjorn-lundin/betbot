@@ -36,7 +36,7 @@ begin
         (Cmd_Line,
          Sa_Par_Data'access,
          "-d:",
-         Long_Switch => "--data:",
+         Long_Switch => "--data=",
          Help        => "what data to send, first field");
 
     Getopt (Cmd_Line);  -- process the command line 
@@ -85,6 +85,24 @@ begin
         
         Move(Sa_Par_Rec.all, Receiver.Name);
         Bot_Messages.Send(Receiver, MNR);
+      end;
+    elsif Lower_Case(Sa_Par_Msg.all) = "place_back_bet" then
+      declare
+        PBB : Bot_Messages.Place_Back_Bet_Record;
+      begin
+        if Sa_Par_Data.all /= "" then
+          Move(Sa_Par_Data.all, PBB.Market_Id);
+          Move("TEST_BOT_NAME_FOR_A_HORSE_MARKET", PBB.Bet_Name);
+          Move("200.26", PBB.Price);
+          Move("1.34", PBB.Size);
+          PBB.Selection_Id := 12650;          
+        else
+          Text_Io.Put_Line(Text_Io.Standard_Error, "Place_Back_Bet_Record needs data");
+          return;
+        end if;
+        
+        Move(Sa_Par_Rec.all, Receiver.Name);
+        Bot_Messages.Send(Receiver, PBB);
       end;
     
     else

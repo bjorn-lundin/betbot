@@ -29,6 +29,7 @@ with Table_Abets;
 with Table_Arunners;
 
 with Bot_Svn_Info;
+with Bet;
 
 procedure Poll is
   package EV renames Ada.Environment_Variables;
@@ -41,8 +42,7 @@ procedure Poll is
   My_Lock  : Lock.Lock_Type;
 
   Msg      : Process_Io.Message_Type;
-  --Find_Plc_Market,
-  Select_Profit_Today,
+  Find_Plc_Market,
   Update_Betwon_To_Null : Sql.Statement_Type;
   
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -63,53 +63,6 @@ procedure Poll is
   Is_Time_To_Exit : Boolean := False;
 
   -------------------------------------------------------------   
-  
-  function Profit_Today(Bet_Name : String) return Float_8 is
-    T : Sql.Transaction_Type;
-    Eos : Boolean := False;
-    Start_Date, End_Date : Time_Type := Clock;
-    Profit : Float_8 := 0.0;
-  begin
-    T.Start;
-      Start_Date := Sattmate_Calendar.Clock;
-      End_Date := Sattmate_Calendar.Clock;
-
-      Start_Date.Hour        := 0;
-      Start_Date.Minute      := 0;
-      Start_Date.Second      := 0;
-      Start_Date.MilliSecond := 0;
-
-      End_Date.Hour        := 23;
-      End_Date.Minute      := 59;
-      End_Date.Second      := 59;
-      End_Date.MilliSecond := 999;
-
-      Select_Profit_Today.Prepare(
-        "select sum(PROFIT) " &
-        "from ABETS " &
-        "where STARTTS >= :STARTOFDAY " &
-        "and STARTTS <= :ENDOFDAY " &
---        "and BETMODE = :BOTMODE " &
---        "and PROFIT < 0.0 " &
-        "and BETWON is not null " &
-        "and BETNAME = :BETNAME " );
-
---      Select_Profit_Today.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
-      Select_Profit_Today.Set("BETNAME", Bet_Name);
-      Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
-      Select_Profit_Today.Set_Timestamp( "ENDOFDAY",End_Date);
-      Select_Profit_Today.Open_Cursor;
-      Select_Profit_Today.Fetch(Eos);
-      if not Eos then
-        Select_Profit_Today.Get(1, Profit);
-      else
-        Profit := 0.0;
-      end if;
-      Select_Profit_Today.Close_Cursor;
-    T.Commit;
-    Log(Me & "Profit_Today", Bet_Name & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
-    return Profit;
-  end Profit_Today;
 
   
   -------------------------------------------------------------   
@@ -121,9 +74,7 @@ procedure Poll is
     In_Play   : Boolean := False;
     Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
-    type Market_Type is (Win
-                               --,Place
-                               );
+    type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;    
     Bet_Name : Bet_Name_Type := (others => ' '); 
   begin     
@@ -132,7 +83,7 @@ procedure Poll is
     Market.Marketid := Market_Notification.Market_Id;
     
     Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);     
-    if Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
+    if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
       Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
       return;
     end if;
@@ -230,6 +181,7 @@ procedure Poll is
           Runner : Table_Arunners.Data_Type;
 --          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
+          Found_Place : Boolean := True;
         begin
 --          Move(Market_Notification.Market_Id, Market_Id);
           -- find the place market   
@@ -240,30 +192,55 @@ procedure Poll is
 --            Log(Me & "Make_Bet", "no WIN market found");
 --            exit Poll_Loop;
 --          end if;
-          
           T.Start;
---            Find_Plc_Market.Prepare(
---              "select M.* from AMARKETS M, APRICES P " &
---              "where M.MARKETID = P.MARKETID "  &
---              "and M.MARKETID = P.MARKETID "  &
---              "and P.SELECTIONID = :SELECTIONID "  &
---              "and M.MARKETTYPE = 'PLACE' "  &
---              "and M.STATUS = 'OPEN' " ) ;
---            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
---            Find_Plc_Market.Open_Cursor;
---            Find_Plc_Market.Fetch(Eos);
---            if not Eos then
---              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
---              if Markets(Win).Startts /= Markets(Place).Startts then
---                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
---                 Find_Plc_Market.Close_Cursor;
---                 T.Commit;
---                 exit Poll_Loop;
---              end if;
---            else
---              Log(Me & "Make_Bet", "no PLACE market found");
---            end if;
---            Find_Plc_Market.Close_Cursor;
+            Find_Plc_Market.Prepare(
+              "select M.* from AMARKETS M, APRICES P " &
+              "where M.MARKETID = P.MARKETID "  &
+              "and M.MARKETID = P.MARKETID "  &
+              "and P.SELECTIONID = :SELECTIONID "  &
+              "and M.MARKETTYPE = 'PLACE' "  &
+              "and M.STATUS = 'OPEN' " ) ;
+            Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
+            Find_Plc_Market.Open_Cursor;
+            Find_Plc_Market.Fetch(Eos);
+            if not Eos then
+              Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
+              if Markets(Win).Startts /= Markets(Place).Startts then
+                 Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
+                 Found_Place := False;
+              end if;
+            else
+              Log(Me & "Make_Bet", "no PLACE market found");
+              Found_Place := False;
+            end if;
+            Find_Plc_Market.Close_Cursor;
+            
+            if Found_Place then
+              declare
+                PBB : Bot_Messages.Place_Back_Bet_Record;
+                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              begin
+                Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);     
+                Move(Markets(Place).Marketid, PBB.Market_Id);
+                Move("1.01", PBB.Price);
+                Move("0.0", PBB.Size); -- set by receiver's ini-file
+                PBB.Selection_Id := Best_Runners(1).Selectionid;          
+                Move("bet_placer_1", Receiver.Name);
+                Bot_Messages.Send(Receiver, PBB);              
+              end;
+              declare
+                PBB : Bot_Messages.Place_Back_Bet_Record;
+                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              begin
+                Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
+                Move(Markets(Place).Marketid, PBB.Market_Id);
+                Move("1.01", PBB.Price);
+                Move("0.0", PBB.Size); -- set by receiver's ini-file
+                PBB.Selection_Id := Best_Runners(2).Selectionid;          
+                Move("bet_placer_2", Receiver.Name);
+                Bot_Messages.Send(Receiver, PBB);              
+              end;
+            end if;            
             
             -- fix som missing fields first
             Runner.Marketid := Markets(Win).Marketid;
@@ -274,12 +251,9 @@ procedure Poll is
             else
               Log(Me & "Make_Bet", "no runnername found");
             end if;            
-            
           T.Commit;
 
           -- the LEADER as WIN at the price 
-          
-          
           
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
                          Market_Id        => Markets(Win).Marketid, 
@@ -377,6 +351,10 @@ begin
   Rpc.Login; 
   Log(Me, "Login betfair done");
   
+  
+  if Global_Enabled then
+    Global_Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
+  end if;
   
   
   Main_Loop : loop
