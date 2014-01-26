@@ -1,6 +1,7 @@
 
 with Sattmate_Types;  use Sattmate_Types;
 with Process_Io;
+with Bot_Types; use Bot_Types;
 pragma Elaborate_All(Process_Io);--9.3-0028
 
 
@@ -10,14 +11,15 @@ package Bot_Messages is
 
   Market_Notification_Message : constant Process_io.Identity_Type := 2000;
   New_Winners_Arrived_Notification_Message : constant Process_io.Identity_Type := 2001;
+  Place_Back_Bet_Message : constant Process_io.Identity_Type := 2002;
 
   ----------------------------------------------------------------
   type Market_Notification_Record is record
-      Market_Id : String(1..11) := (others => ' ');
+      Market_Id : Market_Id_Type := (others => ' ');
   end record;
   for Market_Notification_Record'alignment use 4;
   for Market_Notification_Record use record
-      Market_Id at 0 range 0..8*11-1;
+      Market_Id at 0 range 0..8*11 -1;
   end record;
   for Market_Notification_Record'Size use 8*11;
 
@@ -26,7 +28,7 @@ package Bot_Messages is
   package Market_Notification_Package is new Process_Io.Generic_Io
           (Identity        => Market_Notification_Message,
            Data_Type       => Market_Notification_Record,
-           Data_Descriptor => (1 => Process_Io.String_Type(11)));
+           Data_Descriptor => (1 => Process_Io.String_Type(Market_Id_Type'length)));
   --
   function  Data   (Message: Process_Io.Message_Type)
             return  Market_Notification_Record
@@ -65,4 +67,49 @@ package Bot_Messages is
                     Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
             renames New_Winners_Arrived_Notification_Package.Send;
   ---------------------------------------------------------------------------            
+  
+  ----------------------------------------------------------------
+  type Place_Back_Bet_Record is record
+      Bet_Name     : Bet_Name_Type    := (others => ' ');
+      Market_Id    : Market_Id_Type   := (others => ' ');
+      Selection_Id : Integer_4        := 0;
+      Size         : String(1..7)     := (others => ' ');
+      Price        : String(1..6)     := (others => ' ');
+  end record;
+  
+--  for Place_Back_Bet_Record'alignment use 4;
+--  for Place_Back_Bet_Record use record
+--      Bet_Name at 0 range 0..8*100-1;
+--      Bet_Name     : Bet_Name_Type    := (others => ' ');
+--      Market_Id    : Market_Id_Type   := (others => ' ');
+--      Selection_Id : Integer_4        := 0;
+--      Size         : String(1..7);    := (others => ' ');
+--      Price        : String(1..4);    := (others => ' ');
+--  end record;
+--  for Market_Notification_Record'Size use 8*11;
+
+  ----------------------------------------------------------------
+  
+  package Place_Back_Bet_Package is new Process_Io.Generic_Io
+          (Identity        => Place_Back_Bet_Message,
+           Data_Type       => Place_Back_Bet_Record,
+           Data_Descriptor => (1 => Process_Io.String_Type(100),
+                               2 => Process_Io.String_Type(11),
+                               3 => Process_Io.Integer_4_Type,
+                               4 => Process_Io.String_Type(7),
+                               5 => Process_Io.String_Type(6)
+                              )
+           );
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  Place_Back_Bet_Record
+            renames Place_Back_Bet_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : Place_Back_Bet_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames Place_Back_Bet_Package.Send;
+  
+  -----------------------------------------------------------------------
+  
 end Bot_Messages;

@@ -88,13 +88,15 @@ package body RPC is
                          "product=home.betfair.int" & "&" &
                          "url=https://www.betfair.com/";
     begin
+      Log(Me & "Login", "Data '" & Data & "'");
+      
       AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/login",
                                     Data         => Data,
                                     Content_Type => "application/x-www-form-urlencoded",
                                     Headers      => Login_HTTP_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     end ;                              
---    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
+    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
     
     Header := AWS.Response.Header(AWS_Reply);
     
