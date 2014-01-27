@@ -53,7 +53,7 @@ package body Bet is
       end if;
       Select_Profit_Today.Close_Cursor;
     T.Commit;
-    Log(Me & "Profit_Today", Bet_Name & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
+    Log(Me & "Profit_Today", Trim(Bet_Name) & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
     return Profit;
   end Profit_Today;
   ------------------------------------------------------------
