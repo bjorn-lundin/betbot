@@ -82,7 +82,7 @@ procedure Poll is
   begin     
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
   
-    Market.Marketid := Market_Notification.Market_Id;
+    Markets(Win).Marketid := Market_Notification.Market_Id;
     
     Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);     
     if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
@@ -209,6 +209,7 @@ procedure Poll is
 --          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
         begin
+        Log("Found_Place " & Found_Place'Img ); 
             
           if Found_Place then
             declare
@@ -221,6 +222,7 @@ procedure Poll is
               Move("0.0", PBB.Size); -- set by receiver's ini-file
               PBB.Selection_Id := Best_Runners(1).Selectionid;          
               Move("bet_placer_1", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
               Bot_Messages.Send(Receiver, PBB);              
             end;
             declare
@@ -233,6 +235,7 @@ procedure Poll is
               Move("0.0", PBB.Size); -- set by receiver's ini-file
               PBB.Selection_Id := Best_Runners(2).Selectionid;          
               Move("bet_placer_2", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
               Bot_Messages.Send(Receiver, PBB);              
             end;
           end if;            
