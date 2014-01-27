@@ -82,7 +82,7 @@ procedure Poll is
   begin     
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
   
-    Markets(Win).Marketid := Market_Notification.Market_Id;
+    Market.Marketid := Market_Notification.Market_Id;
     
     Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);     
     if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
@@ -121,13 +121,15 @@ procedure Poll is
     
     T.Start;
       Find_Plc_Market.Prepare(
-        "select M.* from AMARKETS M, APRICES P " &
-        "where M.MARKETID = P.MARKETID "  &
-        "and M.MARKETID = P.MARKETID "  &
-        "and P.SELECTIONID = :SELECTIONID "  &
-        "and M.MARKETTYPE = 'PLACE' "  &
-        "and M.STATUS = 'OPEN' " ) ;
-      Find_Plc_Market.Set("SELECTIONID", Best_Runners(1).Selectionid);  
+        "select MP.* from AMARKETS MW, AMARKETS MP " &
+        "where MW.EVENTID = MP.EVENTID " &
+        "and MW.STARTTS = MP.STARTTS " &
+        "and MW.MARKETID = :WINMARKETID " &
+        "and MP.MARKETTYPE = 'PLACE' " &
+        "and MW.MARKETTYPE = 'WIN' " &
+        "and MP.STATUS = 'OPEN'" ) ;
+        
+      Find_Plc_Market.Set("WINMARKETID", Markets(Win).Marketid);  
       Find_Plc_Market.Open_Cursor;
       Find_Plc_Market.Fetch(Eos);
       if not Eos then
