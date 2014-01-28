@@ -25,7 +25,7 @@ project Adabot is
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
-                    "rpc_tester");
+                    "mailer.adb");
                     
    Stat_Mains   := ("change_10_percent.adb",
                     "greening_up_1.adb",
@@ -36,7 +36,8 @@ project Adabot is
                    "back_all_g4.adb",
                    "markets_sender.adb",                   
                    "bet_checker.adb",
-                   "test_login.adb");
+                   "test_login.adb",
+                   "rpc_tester.adb");
    
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;
