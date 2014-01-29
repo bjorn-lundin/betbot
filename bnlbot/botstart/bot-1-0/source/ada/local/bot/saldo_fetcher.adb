@@ -119,7 +119,7 @@ procedure Saldo_Fetcher is
   Day_Last_Check : Sattmate_Calendar.Day_Type := 1;
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
   
-  
+  OK : Boolean := False;
   Saldo : Table_Abalances.Data_Type;
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -154,7 +154,6 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take("saldo_fetcher");
    
-    -- Ask a pythonscript to login for us, returning a token
   Log(Me, "Login betfair");
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
@@ -165,15 +164,6 @@ begin
           );    
   Rpc.Login; 
   Log(Me, "Login betfair done");
-  
-  
---  UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
---  case UTC_Offset_Minutes is
---      when 60     => UTC_Time_Start := Now - One_Hour;
---      when 120    => UTC_Time_Start := Now - Two_Hours;
---      when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
---  end case;   
-
 
   Sql.Connect
         (Host     => Ini.Get_Value("database_saldo_fetcher","host",""),
@@ -182,10 +172,6 @@ begin
          Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
          Password => Ini.Get_Value("database_saldo_fetcher","password",""));
 
-         
-   -- json stuff
-
-   -- Create JSON arrays
   
   Main_Loop : loop  
     Receive_Loop : loop   
@@ -197,7 +183,9 @@ begin
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
         end case;  
       exception
-          when Process_Io.Timeout => null ; -- rewrite to something nicer !!Get_Markets;    
+        when Process_Io.Timeout => 
+          Rpc.Keep_Alive(OK); 
+          exit Main_Loop when not OK;     
       end;
       Now := Sattmate_Calendar.Clock;
       --restart every day
