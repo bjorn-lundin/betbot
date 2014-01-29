@@ -1,0 +1,36 @@
+
+
+with "../../source/ada/global";
+with "../gwindows";
+with "aws.gpr";
+
+project Saldo_Check is
+
+   AL    := Global.Bot_Source & "/ada/local";
+
+   for Source_Dirs use (".",
+                        AL & "/" & "bot",
+                        AL & "/" & "utils");
+   
+   for Object_Dir use gwindows'Object_Dir;
+   for Exec_Dir use gwindows'Exec_Dir;
+   
+   for Main use ("saldo_check.adb", "tutorial2.adb");
+   
+   package Compiler is   
+      for Default_Switches ("ada") use ("-Os", "-g", "-gnat05", "-gnatwaKM");
+      -- , "-gnatyaAbcefhiklmnprtux");
+   end Compiler;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-j2");
+   end Builder;
+   
+   package Linker is
+     for Default_Switches ("ada") use ("-L" & Global.Pg_Bin, "-lpq");
+   end Linker;
+   
+   
+   
+   
+end Saldo_Check;

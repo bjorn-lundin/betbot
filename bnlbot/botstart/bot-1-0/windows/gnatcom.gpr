@@ -1,0 +1,16 @@
+
+
+
+project Gnatcom is
+   bot_win := external ("BOT_WIN", "BOT_WIN_not_set");
+   src := external ("GNATCOM", "GNATCOM_not_set");
+
+   for Source_Dirs use (src & "/framework");
+   for Object_Dir use bot_win & "/obj";   
+   for Exec_Dir use bot_win & "/exe"  ;
+   
+   package Compiler is   
+      for Default_Switches ("ada") use ("-Os", "-g", "-gnat05", "-gnatweaKM", "-gnatyaAbcefhiklmnprtux");
+   end Compiler;
+   
+end Gnatcom;
