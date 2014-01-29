@@ -1250,26 +1250,22 @@ package body RPC is
 --      raise No_Such_Field with "Object 'Event_Type' - Field 'id'";
 --    end if;
     
-    --this should be an int accept string too!!
+    --this should be a string but accept int too!!
+    declare
+      T : String(1..5) := (others => ' ');
     begin
       Get_Value(Container => J_Event_Type,
                 Field     => "id",
-                Target    => DB_Event.Eventtypeid,
+                Target    => T,
                 Found     => Found);              
+      DB_Event.Eventtypeid := Integer_4'Value(T);
     exception
       when System.Assertions.Assert_Failure =>
-        -- try string type
-        Log(Me & Service, "try string instead of I4"); 
-        declare
-          T : String(1..5) := (others => ' ');
-        begin
-          Get_Value(Container => J_Event_Type,
-                    Field     => "id",
-                    Target    => T,
-                    Found     => Found);              
-          DB_Event.Eventtypeid := Integer_4'Value(T);
-          Log(Me & Service, "strange, it worked"); 
-        end ;               
+        -- try i4 type
+        Get_Value(Container => J_Event_Type,
+                  Field     => "id",
+                  Target    => DB_Event.Eventtypeid,
+                  Found     => Found);              
     end;    
 
     Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
