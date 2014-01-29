@@ -11,7 +11,6 @@ with General_Routines; use General_Routines;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
-with System.Assertions;
 pragma Elaborate_All (AWS.Headers);
 
 package body RPC is
@@ -246,7 +245,7 @@ package body RPC is
       Move( Source => Container.Get(Field), Target => Target , Drop => Right);
       Found := True;
     else
-      Found  := False;
+      Found := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
@@ -260,7 +259,7 @@ package body RPC is
       Target := Container.Get(Field);
       Found := True;
     else
-      Found  := False;
+      Found := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
@@ -294,7 +293,7 @@ package body RPC is
       end;
       Found := True;
     else
-      Found  := False;
+      Found := False;
     end if;
   end Get_Value;
 
@@ -1250,7 +1249,6 @@ package body RPC is
 --      raise No_Such_Field with "Object 'Event_Type' - Field 'id'";
 --    end if;
     
-    --this should be a string but accept int too!!
     declare
       T : String(1..5) := (others => ' ');
     begin
@@ -1259,13 +1257,6 @@ package body RPC is
                 Target    => T,
                 Found     => Found);              
       DB_Event.Eventtypeid := Integer_4'Value(T);
-    exception
-      when System.Assertions.Assert_Failure =>
-        -- try i4 type
-        Get_Value(Container => J_Event_Type,
-                  Field     => "id",
-                  Target    => DB_Event.Eventtypeid,
-                  Found     => Found);              
     end;    
 
     Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
