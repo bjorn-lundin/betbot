@@ -118,6 +118,7 @@ procedure Saldo_Fetcher is
   Is_Time_To_Exit  : Boolean := False;
   Day_Last_Check : Sattmate_Calendar.Day_Type := 1;
   Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+  Last_Keep_Alive : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
   
   OK : Boolean := False;
   Saldo : Table_Abalances.Data_Type;
@@ -184,8 +185,12 @@ begin
         end case;  
       exception
         when Process_Io.Timeout => 
-          Rpc.Keep_Alive(OK); 
-          exit Main_Loop when not OK;     
+          Now := Sattmate_Calendar.Clock;
+          if Now - (0,0,10,0,0) > Last_Keep_Alive then
+            Rpc.Keep_Alive(OK); 
+            Last_Keep_Alive := Now;
+            exit Main_Loop when not OK;     
+          end if;
       end;
       Now := Sattmate_Calendar.Clock;
       --restart every day
