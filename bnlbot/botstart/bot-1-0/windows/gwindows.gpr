@@ -1,0 +1,20 @@
+
+with "gnatcom.gpr";
+
+project GWindows is
+
+   src := external ("GWINDOWS", "GWINDOWS_not_set");
+   for Source_Dirs use (src & "/framework");
+   
+   for Object_Dir use gnatcom'Object_Dir;
+   for Exec_Dir use gnatcom'Exec_Dir;
+   
+   package Compiler is   
+      for Default_Switches ("ada") use ("-Os", "-g", "-gnat95", "-gnatweaKM", "-gnatyaAbcefhiklmnprtux");
+   end Compiler;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-j2");
+   end Builder;
+   
+end GWindows;
