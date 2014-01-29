@@ -84,7 +84,7 @@ procedure Poll is
   
     Market.Marketid := Market_Notification.Market_Id;
     
-    Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);     
+    Move("HORSES_WIN_BACK_FINISH_1.10_7.0", Bet_Name);     
     if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
       Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
       return;
@@ -218,7 +218,7 @@ procedure Poll is
               PBB : Bot_Messages.Place_Back_Bet_Record;
               Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
             begin
-              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);     
+              Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", PBB.Bet_Name);     
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
               Move("0.0", PBB.Size); -- set by receiver's ini-file
@@ -227,19 +227,19 @@ procedure Poll is
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
               Bot_Messages.Send(Receiver, PBB);              
             end;
-            declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-            begin
-              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
-              Move(Markets(Place).Marketid, PBB.Market_Id);
-              Move("1.01", PBB.Price);
-              Move("0.0", PBB.Size); -- set by receiver's ini-file
-              PBB.Selection_Id := Best_Runners(2).Selectionid;          
-              Move("bet_placer_2", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
-              Bot_Messages.Send(Receiver, PBB);              
-            end;
+--            declare
+--              PBB : Bot_Messages.Place_Back_Bet_Record;
+--              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+--            begin
+--              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
+--              Move(Markets(Place).Marketid, PBB.Market_Id);
+--              Move("1.01", PBB.Price);
+--              Move("0.0", PBB.Size); -- set by receiver's ini-file
+--              PBB.Selection_Id := Best_Runners(2).Selectionid;          
+--              Move("bet_placer_2", Receiver.Name);
+--              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
+--              Bot_Messages.Send(Receiver, PBB);              
+--            end;
           end if;            
             
           -- fix som missing fields first
