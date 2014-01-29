@@ -11,7 +11,7 @@ with General_Routines; use General_Routines;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
-
+with System.Assertions;
 pragma Elaborate_All (AWS.Headers);
 
 package body RPC is
@@ -1250,11 +1250,27 @@ package body RPC is
 --      raise No_Such_Field with "Object 'Event_Type' - Field 'id'";
 --    end if;
     
-    Get_Value(Container => J_Event_Type,
-              Field     => "id",
-              Target    => DB_Event.Eventtypeid,
-              Found     => Found);              
-
+    --this should be an int accept string too!!
+    begin
+      Get_Value(Container => J_Event_Type,
+                Field     => "id",
+                Target    => DB_Event.Eventtypeid,
+                Found     => Found);              
+    exception
+      when System.Assertions.Assert_Failure =>
+        -- try string type
+        Log(Me & Service, "try string instead of I4"); 
+        declare
+          T : String(1..5) := (others => ' ');
+        begin
+          Get_Value(Container => J_Event_Type,
+                    Field     => "id",
+                    Target    => T,
+                    Found     => Found);              
+          DB_Event.Eventtypeid := Integer_4'Value(T);
+          Log(Me & Service, "strange, it worked"); 
+        end ;               
+    end;    
 
     Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
     Log(Me & Service, "stop"); 

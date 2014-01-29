@@ -361,7 +361,7 @@ begin
          end if;
          
          if Market.Has_Field("eventType") then
-           Event_Type :=  Market.Get("eventType");
+           Event_Type := Market.Get("eventType");
            Insert_Event(Event, Event_Type);
          else
             Log(Me, "we no eventType:" & i'img & " eventType:" & Event_Type.Write );
