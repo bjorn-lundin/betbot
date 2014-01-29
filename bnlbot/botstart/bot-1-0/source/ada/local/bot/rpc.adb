@@ -1,9 +1,7 @@
 
 
---with Sattmate_Exception;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
---with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
@@ -11,7 +9,6 @@ with Aws.Headers.Set;
 with Aws.Response;
 with General_Routines; use General_Routines;
 with Aws.Client;
---with Token;
 with Bot_System_Number;
 with Bot_Svn_Info;
 
@@ -19,7 +16,6 @@ pragma Elaborate_All (AWS.Headers);
 
 package body RPC is
 
-  Global_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
 
   Me : constant String := "RPC.";
 
@@ -43,7 +39,6 @@ package body RPC is
        );
   end Init;
 
-
   ------------------------------------------------------------------------------
   function Get_Token return Token.Token_Type is
   begin
@@ -51,21 +46,12 @@ package body RPC is
   end Get_Token;
   ------------------------------------------------------------------------------
 
-  procedure Reset_AWS_Headers is
-  begin
-    Aws.Headers.Set.Reset(Global_HTTP_Headers);
-    Aws.Headers.Set.Add (Global_HTTP_Headers, "X-Authentication", Global_Token.Get);
-    Aws.Headers.Set.Add (Global_HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
-    Aws.Headers.Set.Add (Global_HTTP_Headers, "Accept", "application/json");
-  end Reset_AWS_Headers;
-
   procedure Login is
     Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
     Header : AWS.Headers.List;
   begin
     Aws.Headers.Set.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
---    Aws.Client.Set_Debug(True);
 
     declare
       Data : String :=  "username=" & Global_Token.Get_Username & "&" &
@@ -129,7 +115,6 @@ package body RPC is
     Aws.Headers.Set.Add (Logout_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
     Aws.Headers.Set.Add (Logout_HTTP_Headers, "Accept", "application/json");
     Aws.Headers.Set.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
---    Aws.Client.Set_Debug(True);
 
     AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/logout",
                                   Data         => "", --Data,
@@ -152,7 +137,6 @@ package body RPC is
     Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
     Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
     Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "X-Authentication", Global_Token.Get);
---    Aws.Client.Set_Debug(True);
 
     AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/keepAlive",
                                   Data         => "", --Data,
@@ -171,13 +155,16 @@ package body RPC is
                             Reply : in out JSON_Value;
                             URL   : in     String) is
     AWS_Reply    : Aws.Response.Data;
+    HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
   begin
-    Reset_AWS_Headers;
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (HTTP_Headers, "Accept", "application/json");
     Log(Me  & "Get_JSON_Reply", "posting: " & Query.Write);
     AWS_Reply := Aws.Client.Post (Url          => URL,
                                   Data         => Query.Write,
                                   Content_Type => "application/json",
-                                  Headers      => Global_HTTP_Headers,
+                                  Headers      => HTTP_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 
@@ -187,9 +174,10 @@ package body RPC is
         Log(Me & "Get_JSON_Reply", "Got reply: " & Reply.Write  );
       else
         Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
-        return ;
+        raise POST_Timeout ;
       end if;
     exception
+      when POST_Timeout => raise;
       when others =>
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
          Log(Me & "Get_JSON_Reply", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
@@ -199,27 +187,25 @@ package body RPC is
 
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out Boolean;
-                      Found    : out Boolean ) is
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out Boolean;
+                      Found    :    out Boolean ) is
   begin
     if Container.Has_Field(Field) then
       Target := Container.Get(Field);
       Found := True;
     else
       Found := False;
-      Target := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out Float_8;
-                      Found    : out Boolean ) is
+  procedure Get_Value(Container: in    JSON_Value;
+                      Field    : in     String;
+                      Target   : in out Float_8;
+                      Found    :    out Boolean ) is
     Tmp : Float := 0.0;
-    Default  : Float_8 := 0.0;
   begin
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
@@ -227,17 +213,15 @@ package body RPC is
       Target := Float_8(Tmp);
     else
       Found := False;
-      Target := Default;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out Integer_8;
-                      Found    : out Boolean ) is
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out Integer_8;
+                      Found    :    out Boolean ) is
     Tmp : String (1..20)  :=  (others => ' ') ;
-    Default  : Integer_8 := Integer_8'First;
   begin
     if Container.Has_Field(Field) then
       Move( Container.Get(Field), Tmp );
@@ -248,65 +232,59 @@ package body RPC is
       end if;
       Found := True;
     else
-      Target := Default;
       Found := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out String;
-                      Found    : out Boolean) is
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out String;
+                      Found    : out    Boolean) is
   begin
     if Container.Has_Field(Field) then
       Move( Source => Container.Get(Field), Target => Target , Drop => Right);
       Found := True;
     else
-      Target := (others => ' ');
       Found  := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out JSON_Value;
-                      Found    : out Boolean) is
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out JSON_Value;
+                      Found    : out    Boolean) is
   begin
     if Container.Has_Field(Field) then
       Target := Container.Get(Field);
       Found := True;
     else
-      Target := JSON_Null;
       Found  := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out Integer_4;
-                      Found    : out Boolean) is
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out Integer_4;
+                      Found    :    out Boolean) is
    Tmp : Integer := 0 ;
-   Default  : Integer_4 := Integer_4'First;
  begin
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
       Found := True;
       Target := Integer_4(Tmp);
     else
-      Target := Default;
       Found := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
 
-  procedure Get_Value(Container: in JSON_Value;
-                      Field    : in String;
-                      Target   : out Sattmate_Calendar.Time_Type;
-                      Found    : out Boolean) is
-   Default : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  procedure Get_Value(Container: in     JSON_Value;
+                      Field    : in     String;
+                      Target   : in out Sattmate_Calendar.Time_Type;
+                      Found    :    out Boolean) is
   begin
     if Container.Has_Field(Field) then
       declare
@@ -316,7 +294,6 @@ package body RPC is
       end;
       Found := True;
     else
-      Target := Default;
       Found  := False;
     end if;
   end Get_Value;
@@ -391,7 +368,6 @@ package body RPC is
                            ) is
     Current_Order_Item,
     Result,
---    Status,
     Params,
     DateRange,
     Json_Reply,
@@ -401,7 +377,6 @@ package body RPC is
     Current_Orders,
     Bet_Ids      : JSON_Array := Empty_Array;
     String_Betid : String     := Trim(Betid'Img);
---    AWS_Reply    : Aws.Response.Data;
   begin
 --{
 --     "jsonrpc": "2.0",
@@ -428,33 +403,6 @@ package body RPC is
     Get_JSON_Reply (Query => Json_Query,
                     Reply => Json_Reply,
                     URL   => Token.URL_BETTING);
-
-
---    Log(Me, "posting: " & Json_Query.Write);
---    Reset_AWS_Headers;
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  Json_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
---    Log(Me & "Bet_Is_Matched", "Got reply, check it ");
---
---    begin
---      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
---        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                            Filename => "");
---        Log(Me & "Bet_Is_Matched", "Got reply: " & Json_Reply.Write  );
---      else
---        Log(Me & "Bet_Is_Matched", "Post Timeout -> Give up listCurrentOrders");
---        return ;
---      end if;
---    exception
---      when others =>
---         Log(Me & "Bet_Is_Matched", "***********************  Bad reply start *********************************");
---         Log(Me & "Bet_Is_Matched", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
---         Log(Me & "Bet_Is_Matched", "***********************  Bad reply stop  ********" );
---         return ;
---    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -557,7 +505,6 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
 
     Result_Array,Runners, Market_Ids : JSON_Array := Empty_Array;
-  --  AWS_Reply           : Aws.Response.Data;
     Market_Id_Received  : Market_Id_Type := (others => ' ');
   begin
 
@@ -571,33 +518,6 @@ package body RPC is
     Get_JSON_Reply (Query => Json_Query,
                     Reply => Json_Reply,
                     URL   => Token.URL_BETTING);
-
-
---    Log(Me, "posting: " & Json_Query.Write);
---    Reset_AWS_Headers;
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  Json_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
---    Log(Me & "Check_Market_Result", "Got reply, check it ");
---
---    begin
---      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
---        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                            Filename => "");
---        Log(Me & "Check_Market_Result", "Got reply: " & Json_Reply.Write  );
---      else
---        Log(Me & "Check_Market_Result", "Post Timeout -> Give up listMarketBook");
---        return ;
---      end if;
---    exception
---      when others =>
---         Log(Me & "Check_Market_Result", "***********************  Bad reply start *********************************");
---         Log(Me & "Check_Market_Result", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
---         Log(Me & "Check_Market_Result", "***********************  Bad reply stop  ********" );
---         return ;
---    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -786,7 +706,6 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
 
     Result_Array, Market_Ids : JSON_Array := Empty_Array;
-    --AWS_Reply           : Aws.Response.Data;
     Market_Id_Received  : Market_Id_Type := (others => ' ');
   begin
     Is_Changed := False;
@@ -801,33 +720,6 @@ package body RPC is
     Get_JSON_Reply (Query => Json_Query,
                     Reply => Json_Reply,
                     URL   => Token.URL_BETTING);
-
-
---    Log(Me & "Market_Status_Is_Changed", "posting: " & Json_Query.Write);
---    Reset_AWS_Headers;
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  Json_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
---    Log(Me & "Market_Status_Is_Changed", "Got reply, check it ");
---
---    begin
---      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
---        Json_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                            Filename => "");
---        Log(Me & "Market_Status_Is_Changed", "Got reply: " & Json_Reply.Write  );
---      else
---        Log(Me & "Market_Status_Is_Changed", "Post Timeout -> Give up listMarketBook");
---        return ;
---      end if;
---    exception
---      when others =>
---         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply start *********************************");
---         Log(Me & "Market_Status_Is_Changed", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
---         Log(Me & "Market_Status_Is_Changed", "***********************  Bad reply stop  ********" );
---         return ;
---    end ;
 
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
@@ -954,7 +846,6 @@ package body RPC is
   procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) is
     Query_Get_Account_Funds           : JSON_Value := Create_Object;
     Reply_Get_Account_Funds           : JSON_Value := Create_Object;
---    Answer_Get_Account_Funds          : Aws.Response.Data;
     Params                            : JSON_Value := Create_Object;
     Result                            : JSON_Value := Create_Object;
   begin
@@ -970,31 +861,6 @@ package body RPC is
     Get_JSON_Reply (Query => Query_Get_Account_Funds,
                     Reply => Reply_Get_Account_Funds,
                     URL   => Token.URL_ACCOUNT);
-
---    Reset_AWS_Headers;
---    Log(Me, "posting " & Query_Get_Account_Funds.Write);
---    Answer_Get_Account_Funds := Aws.Client.Post (Url          =>  Token.URL_ACCOUNT,
---                                                 Data         =>  Query_Get_Account_Funds.Write,
---                                                 Content_Type => "application/json",
---                                                 Headers      =>  Global_HTTP_Headers,
---                                                 Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
---    --  Load the reply into a json object
---    Log(Me, "Got reply");
---    begin
---      Reply_Get_Account_Funds := Read (Strm     => Aws.Response.Message_Body(Answer_Get_Account_Funds),
---                                       Filename => "");
---      Log(Me, Reply_Get_Account_Funds.Write);
---    exception
---      when E: others =>
---        Parsed_Ok := False;
---        Log(Me, "Bad reply: " & Aws.Response.Message_Body(Answer_Get_Account_Funds));
---        Sattmate_Exception.Tracebackinfo(E);
---        --Timeout is given as Aws.Response.Message_Body = "Post Timeout"
---        if Aws.Response.Message_Body(Answer_Get_Account_Funds) = "Post Timeout" then
---          Betfair_Result := Timeout ;
---          return;
---        end if;
---    end ;
 
     if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
 --        Log(Me & "Get_Balance - Error",Aws.Response.Message_Body(Answer_Get_Account_Funds));
@@ -1061,37 +927,7 @@ package body RPC is
                    Reply => JSON_Reply,
                    URL   => Token.URL_BETTING);
 
-
---    Reset_AWS_Headers;
---    Log(Me, "posting " & JSON_Query.Write);
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  JSON_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
---
---    --  Load the reply into a json object
---    Log(Me, "Got reply");
---    begin
---      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                          Filename => "");
---      Log(Me, JSON_Reply.Write);
---    exception
---      when E: others =>
---        Parsed_Ok := False;
---        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
---        Sattmate_Exception.Tracebackinfo(E);
---        --Timeout is given as Aws.Response.Message_Body = "Post Timeout"
---        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then
---          Betfair_Result := Timeout ;
---          return;
---        end if;
---    end ;
-
     if API_Exceptions_Are_Present(JSON_Reply) then
---        Log(Me & "Get_Balance - Error" , Aws.Response.Message_Body(AWS_Reply));
-
-      -- try again
       Betfair_Result := Logged_Out ;
       return;
     end if;
@@ -1142,9 +978,7 @@ package body RPC is
                        Bet_Id    : in Integer_8) is
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
-    --AWS_Reply  : Aws.Response.Data;
     Params     : JSON_Value := Create_Object;
---    Result     : JSON_Value := Create_Object;
     Instruction  : JSON_Value := Create_Object;
     Instructions : JSON_Array := Empty_Array;
     Betfair_Result : Result_Type;
@@ -1169,238 +1003,278 @@ package body RPC is
                    Reply => JSON_Reply,
                    URL   => Token.URL_BETTING);
 
-
---    Reset_AWS_Headers;
---    Log(Me & "Cancel_Bet", "posting " & JSON_Query.Write);
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  JSON_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 120.0));
---
---    --  Load the reply into a json object
---    Log(Me & "Cancel_Bet", "Got reply");
---    begin
---      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                          Filename => "");
---      Log(Me & "Cancel_Bet", JSON_Reply.Write);
---    exception
---      when E: others =>
---        Parsed_Ok := False;
---        Log(Me & "Cancel_Bet", "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
---        Sattmate_Exception.Tracebackinfo(E);
---        --Timeout is given as Aws.Response.Message_Body = "Post Timeout"
---        if Aws.Response.Message_Body(AWS_Reply) = "Post Timeout" then
---          Betfair_Result := Timeout ;
---          return;
---        end if;
---    end ;
-
     if API_Exceptions_Are_Present(JSON_Reply) then
---        Log(Me & "Cancel_Bet" , Aws.Response.Message_Body(AWS_Reply));
-        -- try again
       Betfair_Result := Logged_Out ;
       return;
     end if;
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
   end  Cancel_Bet;
   -----------------------------------
+  
+  procedure Parse_Prices(J_Market   : in     JSON_Value;
+                         Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
+    pragma Warnings(Off,Price_List);
+    Back,
+    Lay,
+    Ex,
+    Runner            : JSON_Value := Create_Object;
+    Back_Array,
+    Lay_Array,
+    Runner_Prices     : JSON_Array := Empty_Array;
+    Array_Length      : Natural;
+    Array_Length_Back : Natural;
+    Array_Length_Lay  : Natural;
+    Now               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Found             : Boolean := False;
+    DB_Runner_Price   : Table_Aprices.Data_Type;
+      
+    --        "runners": [{
+    --            "handicap": 0.00000E+00,
+    --            "totalMatched": 0.00000E+00,
+    --            "selectionId": 7311189,
+    --            "status": "ACTIVE",
+    --            "ex": {
+    --                "tradedVolume": [],
+    --                "availableToBack": [{
+    --                    "size": 1.47106E+03,
+    --                    "price": 1.06000E+00
+    --                },
+    --                {
+    --                    "size": 4.14300E+01,
+    --                    "price": 1.04000E+00
+    --                },
+    --                {
+    --                    "size": 8.28656E+03,
+    --                    "price": 1.03000E+00
+    --                }],
+    --                "availableToLay": [{
+    --                    "size": 2.07160E+02,
+    --                    "price": 4.00000E+01
+    --                }]
+    --            }
+    --        },
+    --  type Data_Type is record
+    --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
+    --      Selectionid :    Integer_4  := 0 ; -- Primary Key
+    --      Pricets :    Time_Type  := Time_Type_First ; -- Primary Key
+    --      Status :    String (1..50) := (others => ' ') ; --
+    --      Totalmatched :    Float_8  := 0.0 ; --
+    --      Backprice :    Float_8  := 0.0 ; --
+    --      Layprice :    Float_8  := 0.0 ; --
+    --      Ixxlupd :    String (1..15) := (others => ' ') ; --
+    --      Ixxluts :    Time_Type  := Time_Type_First ; --
+    --  end record;
+      
+      
+  begin
+    Runner_Prices := J_Market.Get("runners");
+    Array_Length  := Length (Runner_Prices);
 
+    for J in 1 .. Array_Length loop
+      DB_Runner_Price := Table_Aprices.Empty_Data;
 
-  procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
-                              Market    : out Table_Amarkets.Data_Type;
-                              Pricelist : in out Table_Aprices.Aprices_List_Pack.List_Type;
-                              In_Play   : out Boolean) is
-    Market_Ids         : JSON_Array := Empty_Array;
-    JSON_Query         : JSON_Value := Create_Object;
-    JSON_Reply         : JSON_Value := Create_Object;
-    JSON_Market        : JSON_Value := Create_Object;
-    --AWS_Reply          : Aws.Response.Data;
-    Params             : JSON_Value := Create_Object;
-    Result             : JSON_Array := Empty_Array;
-    Price_Projection   : JSON_Value := Create_Object;
-    Market_Description : JSON_Value := Create_Object;
-    Event              : JSON_Value := Create_Object;
-    Price_Data         : JSON_Array := Empty_Array;
-
-    ----------------------------------------------
-    procedure Parse_Market(J_Market  : in JSON_Value;
-                           DB_Market : out Table_Amarkets.Data_Type ;
-                           In_Play_Market : out Boolean) is
-      Found : Boolean := True;
-    begin
+      Runner := Get (Arr   => Runner_Prices, Index => J);
 
       Get_Value(Container => J_Market,
                 Field     => "marketId",
-                Target    => DB_Market.Marketid,
+                Target    => DB_Runner_Price.Marketid,
                 Found     => Found);
       if not Found then
         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
       end if;
 
-
-      Get_Value(Container => J_Market,
-                Field     => "marketName",
-                Target    => DB_Market.Marketname,
+      Get_Value(Container => Runner,
+                Field     => "selectionId",
+                Target    => DB_Runner_Price.Selectionid,
                 Found     => Found);
       if not Found then
-        Move("No market name", DB_Market.Marketname);
+        raise No_Such_Field with "Object 'Market' - Field 'selectionId'";
       end if;
 
-      Get_Value(Container => J_Market,
-                Field     => "betDelay",
-                Target    => DB_Market.Betdelay,
-                Found     => Found);
-
-      Get_Value(Container => J_Market,
-                Field     => "description",
-                Target    => Market_Description,
-                Found     => Found);
-      if Found then
-        Get_Value(Container => Market_Description,
-                  Field     => "marketType",
-                  Target    => DB_Market.Markettype,
-                  Found     => Found);
-      end if;
-
-      Get_Value(Container => J_Market,
-                Field     => "marketStartTime",
-                Target    => DB_Market.Startts,
-                Found     => Found);
-
-      Get_Value(Container => J_Market,
-                Field     => "event",
-                Target    => Event,
-                Found     => Found);
-      if Found then
-        Get_Value(Container => Event,
-                  Field     => "if",
-                  Target    => DB_Market.Eventid,
-                  Found     => Found);
-        if not Found then
-          Move("NO EVENT", DB_Market.Eventid);
-        end if;
-      else
-        Move("NO EVENT", DB_Market.Eventid);
-      end if;
-
-      Get_Value(Container => J_Market,
-                Field     => "inplay",
-                Target    => In_Play_Market,
-                Found     => Found);
-
-      Get_Value(Container => J_Market,
+      Get_Value(Container => Runner,
                 Field     => "status",
-                Target    => DB_Market.Status,
+                Target    => DB_Runner_Price.Status,
                 Found     => Found);
       if not Found then
-        Move("NO STATUS", DB_Market.Status);
+        raise No_Such_Field with "Object 'Market' - Field 'status'";
       end if;
 
-      Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market));
+      Get_Value(Container => Runner,
+                Field     => "totalMatched",
+                Target    => DB_Runner_Price.Totalmatched,
+                Found     => Found);
 
-    end Parse_Market;
-    ---------------------------------
+      DB_Runner_Price.Pricets := Now;
 
-    procedure Parse_Runners(J_Market      : in     JSON_Value;
-                            Pricelist     : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
-      pragma Warnings(Off,Pricelist);
-      Back,
-      Lay,
-      Ex,
-      Runner            : JSON_Value := Create_Object;
-      Back_Array,
-      Lay_Array,
-      Runner_Prices     : JSON_Array := Empty_Array;
-      Array_Length      : Natural;
-      Array_Length_Back : Natural;
-      Array_Length_Lay  : Natural;
-      Now               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
-      Found             : Boolean := False;
-      DB_Runner_Price   : Table_Aprices.Data_Type;
-    begin
-
-      Runner_Prices := J_Market.Get("runners");
-      Array_Length  := Length (Runner_Prices);
-
-      for J in 1 .. Array_Length loop
-        DB_Runner_Price := Table_Aprices.Empty_Data;
-
-        Runner := Get (Arr   => Runner_Prices, Index => J);
-
-        Get_Value(Container => J_Market,
-                  Field     => "marketId",
-                  Target    => DB_Runner_Price.Marketid,
-                  Found     => Found);
-        if not Found then
-          raise No_Such_Field with "Object 'Market' - Field 'marketId'";
-        end if;
-
-        Get_Value(Container => Runner,
-                  Field     => "selectionId",
-                  Target    => DB_Runner_Price.Selectionid,
-                  Found     => Found);
-        if not Found then
-          raise No_Such_Field with "Object 'Market' - Field 'selectionId'";
-        end if;
-
-        Get_Value(Container => Runner,
-                  Field     => "status",
-                  Target    => DB_Runner_Price.Status,
-                  Found     => Found);
-        if not Found then
-          raise No_Such_Field with "Object 'Market' - Field 'status'";
-        end if;
-
-        Get_Value(Container => Runner,
-                  Field     => "totalMatched",
-                  Target    => DB_Runner_Price.Totalmatched,
-                  Found     => Found);
-
-        DB_Runner_Price.Pricets := Now;
-
-        if Runner.Has_Field("ex") then
-          Ex := Runner.Get("ex");
-          if Ex.Has_Field("availableToBack") then
-            Back_Array := Ex.Get("availableToBack");
-            Array_Length_Back := Length(Back_Array);
-            if Array_Length_Back >= 1 then
-               Back := Get (Arr   => Back_Array, Index => 1);
-              if Back.Has_Field("price") then
-                DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
-              else
-                raise No_Such_Field with "Object 'Back' - Field 'price'";
-              end if;
+      if Runner.Has_Field("ex") then
+        Ex := Runner.Get("ex");
+        if Ex.Has_Field("availableToBack") then
+          Back_Array := Ex.Get("availableToBack");
+          Array_Length_Back := Length(Back_Array);
+          if Array_Length_Back >= 1 then
+             Back := Get (Arr   => Back_Array, Index => 1);
+            if Back.Has_Field("price") then
+              DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
+            else
+              raise No_Such_Field with "Object 'Back' - Field 'price'";
             end if;
-          else
-            raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";
           end if;
-
-          if Ex.Has_Field("availableToLay") then
-            Lay_Array := Ex.Get("availableToLay");
-            Array_Length_Lay := Length(Lay_Array);
-            if Array_Length_Lay >= 1 then
-               Lay := Get (Arr   => Lay_Array, Index => 1);
-              if Lay.Has_Field("price") then
-                DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
-              else
-                raise No_Such_Field with "Object 'Lay' - Field 'price'";
-              end if;
-            end if;
-          else
-            raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";
-          end if;
-        else -- no 'ex'
-          raise No_Such_Field with "Object 'Runner' - Field 'ex'";
+        else
+          raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";
         end if;
 
-        Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Pricelist, DB_Runner_Price);
-        Log(Me, Table_Aprices.To_String(DB_Runner_Price));
+        if Ex.Has_Field("availableToLay") then
+          Lay_Array := Ex.Get("availableToLay");
+          Array_Length_Lay := Length(Lay_Array);
+          if Array_Length_Lay >= 1 then
+             Lay := Get (Arr   => Lay_Array, Index => 1);
+            if Lay.Has_Field("price") then
+              DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
+            else
+              raise No_Such_Field with "Object 'Lay' - Field 'price'";
+            end if;
+          end if;
+        else
+          raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";
+        end if;
+      else -- no 'ex'
+        raise No_Such_Field with "Object 'Runner' - Field 'ex'";
+      end if;
 
-      end loop;
-    end Parse_Runners;
-    ---------------------------------
+      Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Price_List, DB_Runner_Price);
+      Log(Me, Table_Aprices.To_String(DB_Runner_Price));
 
+    end loop;
+  end Parse_Prices;
+  
+  ---------------------------------
+  
+  
+  
+  ---------------------------------
+  
+  procedure Parse_Event (J_Event, J_Event_Type : in     JSON_Value ; 
+                         DB_Event              : in out Table_Aevents.Data_Type) is
+    Service : constant String := "Parse_Event";
+   -- event:{"id":"27026778",
+   --         "name":"Monm 22nd Jun", 
+   --         "countryCode":"GB", 
+   --         "openDate":"2013-06-22T17:39:00.000Z", 
+   --         "timezone":"Europe/London",
+   --         "venue":"Monmore"}
+   -- eventType:{"id":"7", 
+  --              "name":"Horse Racing"}    
+--  type Data_Type is record
+--      Eventid :    String (1..11) := (others => ' ') ; -- Primary Key
+--      Eventname :    String (1..50) := (others => ' ') ; --
+--      Countrycode :    String (1..2) := (others => ' ') ; -- non unique index 2
+--      Timezone :    String (1..50) := (others => ' ') ; --
+--      Opents :    Time_Type  := Time_Type_First ; -- non unique index 3
+--      Eventtypeid :    Integer_4  := 0 ; -- non unique index 4
+--      Ixxlupd :    String (1..15) := (others => ' ') ; --
+--      Ixxluts :    Time_Type  := Time_Type_First ; --
+--  end record;
+    Found : Boolean := False;
+  begin
+    Log(Me & Service, "start"); 
+    
+--    if J_Event.Has_Field("id") then
+--      Move(J_Event.Get("id"), DB_Event.Eventid);
+--    else
+--      raise No_Such_Field with "Object 'Event' - Field 'id'";
+--    end if;
+
+    Get_Value(Container => J_Event,
+              Field     => "id",
+              Target    => DB_Event.Eventid,
+              Found     => Found);
+
+    
+--    if J_Event.Has_Field("name") then
+--      Move(J_Event.Get("name"), DB_Event.Eventname);
+--    else
+--      raise No_Such_Field with "Object 'Event' - Field 'name'";
+--    end if;
+    
+    Get_Value(Container => J_Event,
+              Field     => "name",
+              Target    => DB_Event.Eventname,
+              Found     => Found);
+    
+    
+--    if J_Event.Has_Field("countryCode") then
+--      Move(J_Event.Get("countryCode"), DB_Event.Countrycode);
+--    else
+--      Move("XX", DB_Event.Countrycode);
+--    end if;
+
+    Get_Value(Container => J_Event,
+              Field     => "countryCode",
+              Target    => DB_Event.Countrycode,
+              Found     => Found);              
+    if not Found then
+      Move("XX", DB_Event.Countrycode);
+    end if;
+    
+--    if J_Event.Has_Field("openDate") then
+--      declare
+--        Tmp : String := J_Event.Get("openDate");
+--      begin  --       "openDate":"2013-06-22T17:39:00.000Z", 
+--        DB_Event.Opents := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
+--      end;
+--    else
+--      raise No_Such_Field with "Object 'Event' - Field 'openDate'";
+--    end if;
+
+    Get_Value(Container => J_Event,
+              Field     => "openDate",
+              Target    => DB_Event.Opents,
+              Found     => Found);              
+
+--    if J_Event.Has_Field("timezone") then
+--      Move(J_Event.Get("timezone"), DB_Event.Timezone);
+--    else
+--      raise No_Such_Field with "Object 'Event' - Field 'timezone'";
+--    end if;
+    
+    Get_Value(Container => J_Event,
+              Field     => "timezone",
+              Target    => DB_Event.Timezone,
+              Found     => Found);              
+    
+    
+--    -- event_type !!
+--    if J_Event_Type.Has_Field("id") then
+--      DB_Event.Eventtypeid := Integer_4'Value(J_Event_Type.Get("id"));
+--    else
+--      raise No_Such_Field with "Object 'Event_Type' - Field 'id'";
+--    end if;
+    
+    Get_Value(Container => J_Event_Type,
+              Field     => "id",
+              Target    => DB_Event.Eventtypeid,
+              Found     => Found);              
+
+
+    Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
+    Log(Me & Service, "stop"); 
+  
+  end Parse_Event;  
+  
+  ---------------------------------
+  
+  procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
+                              Market    : out Table_Amarkets.Data_Type;
+                              Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type;
+                              In_Play   : out Boolean) is
+    Market_Ids         : JSON_Array := Empty_Array;
+    JSON_Query         : JSON_Value := Create_Object;
+    JSON_Reply         : JSON_Value := Create_Object;
+    JSON_Market        : JSON_Value := Create_Object;
+    Params             : JSON_Value := Create_Object;
+    Result             : JSON_Array := Empty_Array;
+    Price_Projection   : JSON_Value := Create_Object;
+    Price_Data         : JSON_Array := Empty_Array;
 
   begin
     In_Play := False;
@@ -1425,28 +1299,6 @@ package body RPC is
                    Reply => JSON_Reply,
                    URL   => Token.URL_BETTING);
 
-
---    Reset_AWS_Headers;
---    Log(Me, "posting: " & JSON_Query.Write);
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  JSON_Query.Write,
---                                  Content_Type =>  "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts(Each => 30.0));
---    Log(Me, "Got reply " );
---
---     --  Load the Reply_List_Market_Catalogue into a json object
---    begin
---      JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                          Filename => "");
---      Parsed_Ok := True;
---    exception
---      when E: others =>
---        Parsed_Ok := False;
---        Sattmate_Exception.Tracebackinfo(E);
---        Log(Me, "Bad reply: " & Aws.Response.Message_Body(AWS_Reply));
---    end ;
-
     if RPC.API_Exceptions_Are_Present(JSON_Reply) then
       Log(Me & "Get_Market_Prices", "APINGException is present, return");
       return;
@@ -1460,7 +1312,7 @@ package body RPC is
         JSON_Market := Get(Result, i);
         Parse_Market(JSON_Market, Market, In_Play);
         if JSON_Market.Has_Field("runners") then
-          Parse_Runners(JSON_Market, Pricelist);
+          Parse_Prices(JSON_Market, Price_List);
         end if;
       end loop;
     end if;
@@ -1488,12 +1340,9 @@ package body RPC is
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
     Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
     Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
---    Tmp_Bet_Id                     : String (1..20)  :=  (others => ' ') ;
---    Customer_Reference             : String (1..30)  :=  (others => ' ') ;
     Order_Status                   : String (1..50)  :=  (others => ' ') ;
     L_Size_Matched,
     Average_Price_Matched          : Float_8 := 0.0;
---    Average_Price_Matched          : Float := 0.0;
     Powerdays                      : Integer_4 := 0;
 
     Bet_Id : Integer_8 := 0;
@@ -1561,32 +1410,6 @@ package body RPC is
     Get_JSON_Reply(Query => JSON_Query,
                    Reply => JSON_Reply,
                    URL   => Token.URL_BETTING);
-
---    Reset_AWS_Headers;
---    Log(Me & "Make_Bet", "posting: " & JSON_Query.Write  );
---
---    AWS_Reply := Aws.Client.Post (Url          =>  Token.URL_BETTING,
---                                  Data         =>  JSON_Query.Write,
---                                  Content_Type => "application/json",
---                                  Headers      =>  Global_HTTP_Headers,
---                                  Timeouts     =>  Aws.Client.Timeouts (Each => 30.0));
---    begin
---      if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
---        JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
---                            Filename => "");
---        Log(Me & "Make_Bet", "Got reply: " & JSON_Reply.Write  );
---      else
---        Log(Me & "Make_Bet", "Post Timeout -> Give up placeOrder");
---        return;
---      end if;
---    exception
---      when others =>
---         Log(Me & "Make_Bet", "***********************  Bad reply start *********************************");
---         Log(Me & "Make_Bet", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
---         Log(Me & "Make_Bet", "***********************  Bad reply stop  ********  -> Give up placeOrders" );
---         return;
---    end ;
-
     -- parse out the reply.
     -- check for API exception/Error first
 
@@ -1751,4 +1574,332 @@ package body RPC is
   end Place_Bet;
   ------------------------------------------
 
+  
+  procedure Parse_Runners(J_Market      : in     JSON_Value ; 
+                          Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
+    Service : constant String := "Parse_Runners";
+    DB_Runner : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
+    Found   : Boolean := False;
+--        "runners": [{
+--            "sortPriority": 1,
+--            "handicap": 0.00000E+00,
+--            "selectionId": 6271034,
+--            "runnerName": "1. Russelena Blue"
+--        },
+--  type Data_Type is record
+--      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
+--      Selectionid :    Integer_4  := 0 ; -- Primary Key
+--      Sortprio :    Integer_4  := 0 ; --
+--      Handicap :    Float_8  := 0.0 ; --
+--      Runnername :    String (1..50) := (others => ' ') ; --
+--      Runnernamestripped :    String (1..50) := (others => ' ') ; -- non unique index 3
+--      Runnernamenum :    String (1..2) := (others => ' ') ; --
+--      Ixxlupd :    String (1..15) := (others => ' ') ; --
+--      Ixxluts :    Time_Type  := Time_Type_First ; --
+--  end record;
+   Runners      : JSON_Array := Empty_Array;
+   Runner       : JSON_Value := Create_Object;
+   Array_Length : Natural ;
+   
+   Runnernamestripped : String := DB_Runner.Runnernamestripped;
+   Runnernamenum      : String := DB_Runner.Runnernamenum;
+   Start_Paranthesis,
+   Stop_Paranthesis : Integer := 0;
+   
+  begin
+    Log(Me & Service, "start"); 
+    Runners := J_Market.Get("runners");
+    Array_Length := Length (Runners);
+    
+    for J in 1 .. Array_Length loop
+      DB_Runner := Table_Arunners.Empty_Data;
+       Runner := Get (Arr   => Runners, Index => J);
+       Log(Me & Service, "  " & Runner.Write);
+       
+       
+       Get_Value(Container => J_Market,
+                 Field     => "marketId",
+                 Target    => DB_Runner.Marketid,
+                 Found     => Found);
+                 
+       if not Found then 
+         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+       end if;
+--       if Market.Has_Field("marketId") then
+--         Move(Market.Get("marketId"), DB_Runner.Marketid);
+--       else
+--         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+--       end if;
+          
+       Get_Value(Container => Runner,
+                 Field     => "sortPriority",
+                 Target    => DB_Runner.Sortprio,
+                 Found     => Found);
+       if not Found then 
+         raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
+       end if;
+--       if Runner.Has_Field("sortPriority") then
+--         DB_Runner.Sortprio := Integer_4(Integer'(Runner.Get("sortPriority")));
+--       else
+--         raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
+--       end if;
+       
+       Get_Value(Container => Runner,
+                 Field     => "handicap",
+                 Target    => DB_Runner.Handicap,
+                 Found     => Found);
+       if not Found then 
+         raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
+       end if;
+--       if Runner.Has_Field("handicap") then
+--         DB_Runner.Handicap := Float_8(Float'(Runner.Get("handicap")));
+--       else
+--         raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
+--       end if;
+       
+       Get_Value(Container => Runner,
+                 Field     => "selectionId",
+                 Target    => DB_Runner.Selectionid,
+                 Found     => Found);
+       if not Found then 
+         raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
+       end if;
+--       if Runner.Has_Field("selectionId") then
+--         DB_Runner.Selectionid := Integer_4(Integer'(Runner.Get("selectionId")));
+--       else
+--         raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
+--       end if;
+
+       Get_Value(Container => Runner,
+                 Field     => "runnerName",
+                 Target    => DB_Runner.Runnername,
+                 Found     => Found);
+       if not Found then 
+         raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
+       end if;
+--       if Runner.Has_Field("runnerName") then
+--         Move(Runner.Get("runnerName"), DB_Runner.Runnername);
+--       else
+--         raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
+--       end if;
+       
+       -- fix runner name
+       Runnernamestripped := (others => ' ');
+       Runnernamenum := (others => ' ');
+
+       case DB_Runner.Runnername(1) is
+           when '1'..'9' =>
+              if DB_Runner.Runnername(2) = '.' and then
+                 DB_Runner.Runnername(3) = ' ' then
+                Runnernamestripped := DB_Runner.Runnername(4 .. DB_Runner.Runnername'Last) & "   ";
+                Runnernamenum := DB_Runner.Runnername(1..1) & ' ';
+              elsif
+                 DB_Runner.Runnername(3) = '.' and then
+                 DB_Runner.Runnername(4) = ' ' then
+                Runnernamestripped := DB_Runner.Runnername(5 .. DB_Runner.Runnername'Last) & "    ";
+                Runnernamenum := DB_Runner.Runnername(1..2);
+              else
+                null;
+              end if;
+
+           when others => 
+              Runnernamestripped := DB_Runner.Runnername;
+              Move(General_Routines.Trim(DB_Runner.Sortprio'Img), Runnernamenum);
+       end case;
+
+       Move("NOT_SET_YET", DB_Runner.Status);
+       
+       Start_Paranthesis := -1;
+       Stop_Paranthesis  := -1;
+
+       for i in Runnernamestripped'range loop
+         case Runnernamestripped(i) is
+           when '('    => Start_Paranthesis := i;
+           when ')'    => Stop_Paranthesis  := i;
+           when others => null;
+         end case;
+       end loop;
+
+       if  Start_Paranthesis > Integer(-1) and then
+           Stop_Paranthesis > Integer(-1) and then
+           General_Routines.Lower_Case(Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis)) = "(res)" then
+--           Log(Me & Service, Runnernamestripped);
+         Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis) := (others => ' ');
+--           Log(Me & Service, Runnernamestripped);
+       end if;
+       DB_Runner.Runnernamestripped := Runnernamestripped;
+       DB_Runner.Runnernamenum      := Runnernamenum;
+  
+       Log(Me & Service, Table_Arunners.To_String(DB_Runner)); 
+       
+       Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
+                
+    end loop;
+    Log(Me & Service, "stop"); 
+  end Parse_Runners;
+  
+  ------------------------------------------
+  procedure Parse_Market (J_Market       : in     JSON_Value ; 
+                          DB_Market      : in out Table_Amarkets.Data_Type ;
+                          In_Play_Market :    out Boolean) is
+    Service : constant String := "Parse_Market";
+    Eos,Found    : Boolean    := False;
+    Event  : JSON_Value := Create_Object;
+    Market_Description : JSON_Value := Create_Object;
+    -- this routine parses replies from both 
+    -- * List_Market_Catalogue
+    -- * List_Market_Book
+    
+    --List_Market_Catalogue
+    --      "result": [{
+    --        "marketId": "1.109863141",
+    --        "event": {..},
+    --        "eventType": {..},
+    --        "runners": [{..},{..},{..} ... ],
+    --        "marketName": "A4 480m",
+    --        "marketStartTime": "2013-06-24T10:19:00.000Z"
+    --        }]
+    
+    -- List_Market_Book
+    --    "result": [{
+    --        "numberOfWinners": 2,
+    --        "betDelay": 0,
+    --        "marketId": "1.109863158",
+    --        "totalAvailable": 6.02089E+04,
+    --        "bspReconciled": false,
+    --        "numberOfRunners": 6,
+    --        "numberOfActiveRunners": 6,
+    --        "totalMatched": 0.00000E+00,
+    --        "runners": [{ ... }], 
+    --        "inplay": false,
+    --        "status": "OPEN",
+    --        "runnersVoidable": false,
+    --        "version": 540333571,
+    --        "isMarketDataDelayed": false,
+    --        "crossMatching": true,
+    --        "complete": true
+    
+    
+    --  type Data_Type is record
+    --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
+    --      Marketname :    String (1..50) := (others => ' ') ; --
+    --      Startts :    Time_Type  := Time_Type_First ; --
+    --      Eventid :    String (1..11) := (others => ' ') ; -- non unique index 2
+    --      Markettype :    String (1..6) := (others => ' ') ; -- non unique index 3
+    --      Status :    String (1..50) := (others => ' ') ; -- non unique index 4
+    --      Betdelay :    Integer_4  := 0 ; --
+    --      Numwinners :    Integer_4  := 0 ; -- non unique index 5
+    --      Numrunners :    Integer_4  := 0 ; --
+    --      Numactiverunners :    Integer_4  := 0 ; --
+    --      Totalmatched :    Float_8  := 0.0 ; --
+    --      Totalavailable :    Float_8  := 0.0 ; --
+    --      Ixxlupd :    String (1..15) := (others => ' ') ; --
+    --      Ixxluts :    Time_Type  := Time_Type_First ; --
+    --  end record;
+    
+  begin  
+    Log(Me & Service, "start"); 
+    In_Play_Market := False;
+    Get_Value(Container => J_Market,
+              Field     => "marketId",
+              Target    =>  DB_Market.Marketid,
+              Found     => Found);
+    if Found then 
+      Table_Amarkets.Read(Db_Market, Eos);
+    end if;
+
+    Get_Value(Container => J_Market,
+              Field     => "marketName",
+              Target    =>  DB_Market.Marketname,
+              Found     => Found);
+    
+    
+    Get_Value(Container => J_Market,
+              Field     => "description",
+              Target    => Market_Description,
+              Found     => Found);
+    if Found then
+      Get_Value(Container => Market_Description,
+                Field     => "marketType",
+                Target    => DB_Market.Markettype,
+                Found     => Found);    
+    end if;     
+
+    Get_Value(Container => J_Market,
+              Field     => "marketStartTime",
+              Target    =>  DB_Market.Startts,
+              Found     => Found);
+
+
+    Get_Value(Container => J_Market,
+              Field     => "event",
+              Target    => Event,
+              Found     => Found);
+    if Found then
+      Get_Value(Container => Event,
+                Field     => "id",
+                Target    => DB_Market.Eventid,
+                Found     => Found);
+      if not Found then
+        Move("NO EVENT", DB_Market.Eventid);
+      end if;
+    else
+      Move("NO EVENT", DB_Market.Eventid);
+    end if;
+
+    Get_Value(Container => J_Market,
+              Field     => "inplay",
+              Target    => In_Play_Market,
+              Found     => Found);
+    
+    
+    -- update start
+    
+
+    Get_Value(Container => J_Market,
+              Field     => "numberOfWinners",
+              Target    => DB_Market.Numwinners,
+              Found     => Found);
+  
+    Get_Value(Container => J_Market,
+              Field     => "totalAvailable",
+              Target    => DB_Market.Totalavailable,
+              Found     => Found);
+
+    Get_Value(Container => J_Market,
+              Field     => "numberOfRunners",
+              Target    => DB_Market.Numrunners,
+              Found     => Found);
+
+    Get_Value(Container => J_Market,
+              Field     => "numberOfActiveRunners",
+              Target    => DB_Market.Numactiverunners,
+              Found     => Found);
+
+    Get_Value(Container => J_Market,
+              Field     => "totalMatched",
+              Target    => DB_Market.Totalmatched,
+              Found     => Found);
+
+    Get_Value(Container => J_Market,
+              Field     => "status",
+              Target    => DB_Market.Status,
+              Found     => Found);
+    if not Found then
+      Move("NO STATUS", DB_Market.Status);
+    end if;
+
+    Get_Value(Container => J_Market,
+              Field     => "betDelay",
+              Target    => DB_Market.Betdelay,
+              Found     => Found);
+    
+    
+    Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market));    
+    Log(Me & Service, Table_Amarkets.To_String(DB_Market)); 
+    Log(Me & Service, "stop"); 
+ 
+  end Parse_Market;
+  
+  
 end RPC;
