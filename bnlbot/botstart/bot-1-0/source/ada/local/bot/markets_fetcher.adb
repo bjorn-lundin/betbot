@@ -113,13 +113,13 @@ procedure Markets_Fetcher is
     DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
     Eos, In_Play    : Boolean    := False;
   begin
-    Log(Me & Service, "start");     
+    Log(Me & Service, "start " & Table_Amarkets.To_String(DB_Market) );     
     Rpc.Parse_Market(Market, DB_Market, In_Play);
     Table_Amarkets.Read(DB_Market, Eos);
     if Eos then
       Table_Amarkets.Insert(DB_Market);
     end if;         
-    Log(Me & Service, "stop"); 
+    Log(Me & Service, "stop " & Table_Amarkets.To_String(DB_Market)); 
   end Insert_Market;
   ----------------------------------------------------------------
   procedure Update_Market(Market : JSON_Value) is
