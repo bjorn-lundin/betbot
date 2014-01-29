@@ -128,36 +128,36 @@ begin
                
     declare
       Market    : Table_Amarkets.Data_Type;
-      Pricelist : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
+      Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
       Price,Tmp : Table_Aprices.Data_Type;
       In_Play   : Boolean := False;
       Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
       Eol : Boolean := False;
     begin     
       loop
-        Table_Aprices.Aprices_List_Pack.Remove_All(Pricelist);
-        Rpc.Get_Market_Prices(Market_Id => Sa_Par_Marketid.all, 
-                              Market    => Market,
-                              Pricelist => Pricelist,
-                              In_Play   => In_Play);
+        Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
+        Rpc.Get_Market_Prices(Market_Id  => Sa_Par_Marketid.all, 
+                              Market     => Market,
+                              Price_List => Price_List,
+                              In_Play    => In_Play);
         
 --        exit when not In_Play or else Market.Status(1..4) /= "OPEN";
         exit when Market.Status(1..4) /= "OPEN";
         -- ok find the runner with lowest backprice:        
         Price.Backprice := 10000.0;
-        Table_Aprices.Aprices_List_Pack.Get_First(Pricelist,Tmp,Eol);
+        Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
         loop
           exit when Eol;          
           if Tmp.Status(1..6) = "ACTIVE" and then 
              Tmp.Backprice < Price.Backprice then
             Price := Tmp;
           end if;        
-          Table_Aprices.Aprices_List_Pack.Get_Next(Pricelist,Tmp,Eol);
+          Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
         end loop;
         Best_Runners(1) := Price;
         -- find #2
         Price.Backprice := 10000.0;
-        Table_Aprices.Aprices_List_Pack.Get_First(Pricelist,Tmp,Eol);
+        Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
         loop
           exit when Eol;          
           if Tmp.Status(1..6) = "ACTIVE" and then
@@ -165,7 +165,7 @@ begin
              Tmp.Selectionid /= Best_Runners(1).Selectionid then
             Price := Tmp;
           end if;        
-          Table_Aprices.Aprices_List_Pack.Get_Next(Pricelist,Tmp,Eol);
+          Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
         end loop;
         Best_Runners(2) := Price;
         

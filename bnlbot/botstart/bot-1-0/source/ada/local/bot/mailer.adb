@@ -1,6 +1,6 @@
 
 with AWS;  use AWS;
-with AWS.SMTP; -- use AWS.SMTP;
+with AWS.SMTP; 
 with Text_Io;
 with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
@@ -10,7 +10,6 @@ procedure Mailer is
   Auth : aliased constant SMTP.Authentication.Plain.Credential :=
       SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
     
---      email-smtp.us-east-1.amazonaws.com
   SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";   
   Status : SMTP.Status; 
   SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
