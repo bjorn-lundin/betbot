@@ -114,12 +114,12 @@ begin
           
           if Has_Inserted_Winner then
             declare
-                NWARNR   : Bot_Messages.New_Winners_Arrived_Notification_Record;
-                Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+              NWANR   : Bot_Messages.New_Winners_Arrived_Notification_Record;
+              Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
             begin
-                Move("bot", Receiver.Name);
-                Log(Me, "Notifying 'bot' of that new winners are arrived");
-                Bot_Messages.Send(Receiver, NWARNR);
+              Move("bot", Receiver.Name);
+              Log(Me, "Notifying 'bot' of that new winners are arrived");
+              Bot_Messages.Send(Receiver, NWANR);
             end;
           end if;
       end;

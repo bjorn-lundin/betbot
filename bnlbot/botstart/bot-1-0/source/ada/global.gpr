@@ -4,7 +4,7 @@ with "aws";
 project Global is
 
    Os_Architecture := external ("OS_ARCHITECTURE","lnx_x86");
-   type Target_Type is ("lnx_x86", "lnx_arm", "lnx_x64");
+   type Target_Type is ("lnx_x86", "lnx_arm", "lnx_x64", "win_x86");
 
    Target_Machine : Target_Type := Os_Architecture;
 
@@ -17,8 +17,6 @@ project Global is
    Data_Base : Data_Base_Type := "POSTGRESQL";
 
    Pg_Bin := external ("PG_BIN2", "/usr/lib");
-   Lib_Sattmate := external ("SATTMATE_A", "SATTMATE_A_not_set");
-   Application_Type := external ("APPLICATION_TYPE", "SATTMATE_A_not_set");
 
    Bot_Target := external ("BOT_TARGET", "BOT_TARGET_not_set");
    Bot_Source := external ("BOT_SOURCE", "BOT_SOURCE_not_set");
@@ -45,7 +43,7 @@ project Global is
                                               "-gnatvoU",
                                               "-gnatwlaKW");
 
-   for Object_Dir use "../../target/objects";
+   for Object_Dir use Bot_Target & "/objects";
    
    Xml_Source := (Bot_Source & "/ada/global/xmlada/dom",
                   Bot_Source & "/ada/global/xmlada/sax",
@@ -77,6 +75,7 @@ project Global is
          when "lnx_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
          when "lnx_arm" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
          when "lnx_x64" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
+         when "win_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
       end case;
    end Compiler;
 
@@ -91,6 +90,7 @@ project Global is
                when "lnx_x86" => for Default_Switches ("ada") use ("-L" & Pg_Bin, "-lpq");
                when "lnx_arm" => for Default_Switches ("ada") use ("-L" & Pg_Bin, "-lpq");
                when "lnx_x64" => for Default_Switches ("ada") use ("-L" & Pg_Bin, "-lpq");
+               when "win_x86" => for Default_Switches ("ada") use ("-L" & Pg_Bin, "-lpq");
             end case;
       end case;
    end Linker;

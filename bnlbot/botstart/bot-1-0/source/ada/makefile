@@ -6,14 +6,15 @@
 
 UNAME := $(shell uname)
 
-TP := tclsh $(BOT_SCRIPT)/tcl/make_table_package.tcl
-ST := $(BOT_SOURCE)/ada/global/tables
+TPG :=  $(subst \,/, $(BOT_SCRIPT)/tcl/make_table_package.tcl)
+TP := tclsh $(TPG)
+ST := $(subst \,/, $(BOT_SOURCE)/ada/global/tables)
 
-OBJECT_DIR_JSON := $(BOT_TARGET)/objects/json
-OBJECT_DIR_BOT  := $(BOT_TARGET)/objects/bot
-EXE_DIR_BOT     := $(BOT_TARGET)/bin
-LOG_DIR_BOT     := $(BOT_TARGET)/log
-TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
+OBJECT_DIR_JSON := $(subst \,/, $(BOT_TARGET)/objects/json)
+OBJECT_DIR_BOT  := $(subst \,/, $(BOT_TARGET)/objects/bot)
+EXE_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/bin)
+LOG_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/log)
+TARGET_ADA_INFO_SPEC := $(subst \,/, $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads)
 
 .PHONY : adabot tables
 
@@ -51,68 +52,68 @@ adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gnatmake -P adabot
 
-$(ST)/table_history.ads : $(BOT_CONFIG)/repository/tables/table_history.xml
+$(ST)/table_history.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_history.xml
 	$(TP) -t history > $(ST)/table_history.ada
 	cd $(ST) && gnatchop -w -gnat05 table_history.ada
 	cd $(ST) && rm table_history.ada
 	$(TP) -p history > $(ST)/history.sql
 
-#$(ST)/table_history2.ads : $(BOT_CONFIG)/repository/tables/table_history2.xml
+#$(ST)/table_history2.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_history2.xml
 #	$(TP) -t history2 > $(ST)/table_history2.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_history2.ada
 #	cd $(ST) && rm table_history2.ada
 #	$(TP) -p history2 > $(ST)/history2.sql
 
-$(ST)/table_amarkets.ads : $(BOT_CONFIG)/repository/tables/table_amarkets.xml
+$(ST)/table_amarkets.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_amarkets.xml
 	$(TP) -t amarkets > $(ST)/table_amarkets.ada
 	cd $(ST) && gnatchop -w -gnat05 table_amarkets.ada
 	cd $(ST) && rm table_amarkets.ada
 	$(TP) -p amarkets > $(ST)/amarkets.sql
 
-$(ST)/table_aevents.ads : $(BOT_CONFIG)/repository/tables/table_aevents.xml
+$(ST)/table_aevents.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aevents.xml
 	$(TP) -t aevents > $(ST)/table_aevents.ada
 	cd $(ST) && gnatchop -w -gnat05 table_aevents.ada
 	cd $(ST) && rm table_aevents.ada
 	$(TP) -p aevents > $(ST)/aevents.sql
 
-$(ST)/table_arunners.ads : $(BOT_CONFIG)/repository/tables/table_arunners.xml
+$(ST)/table_arunners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_arunners.xml
 	$(TP) -t arunners > $(ST)/table_arunners.ada
 	cd $(ST) && gnatchop -w -gnat05 table_arunners.ada
 	cd $(ST) && rm table_arunners.ada
 	$(TP) -p arunners > $(ST)/arunners.sql
 
-$(ST)/table_aprices.ads : $(BOT_CONFIG)/repository/tables/table_aprices.xml
+$(ST)/table_aprices.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aprices.xml
 	$(TP) -t aprices > $(ST)/table_aprices.ada
 	cd $(ST) && gnatchop -w -gnat05 table_aprices.ada
 	cd $(ST) && rm table_aprices.ada
 	$(TP) -p aprices > $(ST)/aprices.sql
 
 
-#$(ST)/table_awinners.ads : $(BOT_CONFIG)/repository/tables/table_awinners.xml
+#$(ST)/table_awinners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_awinners.xml
 #	$(TP) -t awinners > $(ST)/table_awinners.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada
 #	cd $(ST) && rm table_awinners.ada
 #	$(TP) -p awinners > $(ST)/awinners.sql
 
-#$(ST)/table_animals.ads : $(BOT_CONFIG)/repository/tables/table_animals.xml
+#$(ST)/table_animals.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_animals.xml
 #	$(TP) -t animals > $(ST)/table_animals.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_animals.ada
 #	cd $(ST) && rm table_animals.ada
 #	$(TP) -p animals > $(ST)/animals.sql
 
-$(ST)/table_abets.ads : $(BOT_CONFIG)/repository/tables/table_abets.xml
+$(ST)/table_abets.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abets.xml
 	$(TP) -t abets > $(ST)/table_abets.ada
 	cd $(ST) && gnatchop -w -gnat05 table_abets.ada
 	cd $(ST) && rm table_abets.ada
 	$(TP) -p abets > $(ST)/abets.sql
 
-#$(ST)/table_anonrunners.ads : $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
+#$(ST)/table_anonrunners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
 #	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
 #	cd $(ST) && rm table_anonrunners.ada
 #	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
-$(ST)/table_abalances.ads : $(BOT_CONFIG)/repository/tables/table_abalances.xml
+$(ST)/table_abalances.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abalances.xml
 	$(TP) -t abalances > $(ST)/table_abalances.ada
 	cd $(ST) && gnatchop -w -gnat05 table_abalances.ada
 	cd $(ST) && rm table_abalances.ada
