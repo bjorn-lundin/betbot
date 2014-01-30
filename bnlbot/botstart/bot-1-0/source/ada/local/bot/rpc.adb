@@ -29,13 +29,16 @@ package body RPC is
                  Vendor_Id  : in     String;
                  App_Key    : in     String) is
   begin
-       Global_Token.Init(
-         Username   => Username,
-         Password   => Password,
-         Product_Id => Product_Id,
-         Vendor_id  => Vendor_Id,
-         App_Key    => App_Key
-       );
+    Log(Me & "Init", "start");
+
+     Global_Token.Init(
+       Username   => Username,
+       Password   => Password,
+       Product_Id => Product_Id,
+       Vendor_id  => Vendor_Id,
+       App_Key    => App_Key
+     );
+    Log(Me & "Init", "stop");
   end Init;
 
   ------------------------------------------------------------------------------
