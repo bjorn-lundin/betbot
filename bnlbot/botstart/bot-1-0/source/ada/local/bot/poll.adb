@@ -213,7 +213,7 @@ procedure Poll is
         begin
         Log("Found_Place " & Found_Place'Img ); 
             
-          if Found_Place then
+          if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
             declare
               PBB : Bot_Messages.Place_Back_Bet_Record;
               Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
