@@ -7,16 +7,19 @@ with Rpc;
 with Sattmate_Exception;
 with Logging; use Logging;
 with Table_Abalances;
+with Sattmate_Calendar;
 
 procedure Saldo_Check is
 --   pragma Linker_Options ("-mwindows");
    Main_Window : Main_Window_Type;
 
-   Saldo_Text_Label   : Label_Type;
-   Exposed_Text_Label : Label_Type;
+   Last_Updated_Text_Label   : Label_Type;
+   Saldo_Text_Label          : Label_Type;
+   Exposed_Text_Label        : Label_Type;
    
-   Saldo_Value_Label   : Label_Type;
-   Exposed_Value_Label : Label_Type;
+   Last_Updated_Value_Label  : Label_Type;
+   Saldo_Value_Label         : Label_Type;
+   Exposed_Value_Label       : Label_Type;
    R : Rpc.Result_Type;
    Bal : Table_Abalances.Data_Type;
 
@@ -51,6 +54,7 @@ procedure Saldo_Check is
           Log(Table_Abalances.To_String(Bal));
           Text (Saldo_Value_Label, GWindows.GStrings.Image(Integer(Bal.Balance)));
           Text (Exposed_Value_Label, GWindows.GStrings.Image(Integer(Bal.Exposure)));
+          Text (Last_Updated_Value_Label, GWindows.GStrings.To_GString_From_String(Sattmate_Calendar.String_Time));
           Cnt := 0;
         end if;  
         delay 1.0;
@@ -68,10 +72,12 @@ procedure Saldo_Check is
 begin
    Create (Main_Window, "Saldo Checker", Width => 200, Height => 100);
    Visible(Main_Window, True);
-   Create (Saldo_Text_Label, Main_Window,     "Saldo:", 10, 10, 70, 25, Right);
-   Create (Exposed_Text_Label, Main_Window, "Exposed:", 10, 30, 70, 25, Right);
-   Create (Saldo_Value_Label, Main_Window,         "2", 90, 10, 40, 25, Right);
-   Create (Exposed_Value_Label, Main_Window,       "3", 90, 30, 40, 25, Right);
+   Create (Saldo_Text_Label, Main_Window,              "Saldo:",  5, 10, 70, 25, Right);
+   Create (Exposed_Text_Label, Main_Window,          "Exposed:",  5, 30, 70, 25, Right);
+   Create (Last_Updated_Text_Label, Main_Window, "Last update:",  5, 50, 70, 25, Right);
+   Create (Saldo_Value_Label, Main_Window,                  "2", 90, 10, 70, 25, Right);
+   Create (Exposed_Value_Label, Main_Window,                "3", 90, 25, 70, 25, Right);
+   Create (Last_Updated_Value_Label, Main_Window,           "4", 90, 35, 70, 25, Right);
    Log("Main", "Will start task");
    Updater.Start;
    Log("Main", "task is started");
