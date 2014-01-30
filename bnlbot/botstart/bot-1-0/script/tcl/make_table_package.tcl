@@ -652,7 +652,7 @@ proc Print_Global_Index_Info {} {
           Ixxlupd {
             append S "    if not Keep_Timestamp then\n"
             append S "      null; --for tables without Ixxlupd\n"
-            append S "      Data.Ixxlupd := Process.Name;\n"
+            append S "      Data.Ixxlupd := Process_Name;\n"
 #            append S "      Data.Ixxlupd := Process.Name(1..12);\n"
             append S "    end if;\n"
             append S "    [Set_Non_Null $Col_Type $Stm_Name $COL_NAME]"
@@ -1081,7 +1081,10 @@ proc Print_Header_Body {Name Type Node Columns Out_File} {
 proc Print_Withs_Body {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
 #  puts $Out_File "with Process_Io, General_Routines, Text_Io, Standard8, Cgi;"
-  puts $Out_File "with Process_io, General_Routines, Text_Io;"
+
+  puts $Out_File "with Ada.Strings; use Ada.Strings;"
+  puts $Out_File "with Ada.Strings.Fixed; use Ada.Strings.Fixed;"
+  puts $Out_File "with Ada.Environment_Variables, General_Routines, Text_Io;"
 #  if {[Is_S08_Table $Name]} {
     puts $Out_File "with Ada.Strings.Fixed;"
 #    puts $Out_File "with Sax.Readers;              use Sax.Readers;"
@@ -1628,8 +1631,9 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     #################################################################################
     puts $Out_File "  procedure Update(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
     puts $Out_File "  begin"
+    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
 
     puts $Out_File [Prepare_All_Columns Stm_Update "\"update $TABLE_NAME set \""  $Columns 1 0 0]
     puts $Out_File [Set_All_Columns Stm_Update $Columns 0 1]
@@ -1647,8 +1651,9 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Insert(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
     puts $Out_File "  begin"
+    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
     puts $Out_File  "    if not Keep_Timestamp then"
@@ -1695,8 +1700,9 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Update_Withcheck(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process : Process_Io.Process_Type     := Process_Io.This_Process;"
+    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
     puts $Out_File "  begin"
+    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
     puts $Out_File ""
     puts $Out_File [Prepare_All_Columns Stm_Update_With_Check "\"update $TABLE_NAME set \""  $Columns 1 1 0]
     puts $Out_File [Set_All_Columns Stm_Update_With_Check $Columns 1 1]
