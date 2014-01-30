@@ -21,14 +21,11 @@ endif
 ifeq ($(UNAME),MINGW32_NT-6.1)
   export PLATFORM :=windows
   export OS :=W2k8
-  export OS_ARCHITECTURE :=win_x86
-  export BOT_HOME :=win_x86
-
 endif
 
 export .RECIPEPREFIX = @
 
-all : saldo_check run
+all : saldo_check
 
 .PHONY : saldo_check run
 
@@ -37,5 +34,5 @@ saldo_check :
 	gnatmake -P saldo_check.gpr
 
 run :
-	../exe/saldo_check
+	cd ../exe/ && saldo_check
 
