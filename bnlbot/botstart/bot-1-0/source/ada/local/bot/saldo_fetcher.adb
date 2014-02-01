@@ -174,6 +174,11 @@ begin
          Password => Ini.Get_Value("database_saldo_fetcher","password",""));
 
   
+  -- to get mail on the 1st of each month too, if restart
+  if Now.Day = 1 then
+    Day_Last_Check := 2;
+  end if;
+  
   Main_Loop : loop  
     Receive_Loop : loop   
       begin
@@ -203,7 +208,9 @@ begin
                                   Now.Minute = 00 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
-      Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img);  --??
+      Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
+      " Day_Last_Check:" & Day_Last_Check'Img &
+      " Now.Day:" & Now.Day'Img);  --??
 --      Is_Time_To_Check_Balance := True;
       exit Receive_Loop when Is_Time_To_Check_Balance;
       
