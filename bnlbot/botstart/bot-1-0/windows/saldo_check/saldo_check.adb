@@ -64,6 +64,12 @@ procedure Saldo_Check is
         Cnt := Cnt +1;
         if Cnt >= 60 then
           Rpc.Get_Balance(R, Bal) ;
+          case R is
+            when Rpc.OK => null;
+            when others => 
+              Rpc.Logout;
+              Rpc.Login;
+          end case;  
           Log(Table_Abalances.To_String(Bal));
           Saldo_Value_Label.Text (GWindows.GStrings.Image(Integer(Bal.Balance)));
           Exposed_Value_Label.Text(GWindows.GStrings.Image(Integer(Bal.Exposure)));
