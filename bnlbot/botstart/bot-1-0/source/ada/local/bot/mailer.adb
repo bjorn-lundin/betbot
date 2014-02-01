@@ -10,13 +10,21 @@ procedure Mailer is
   Auth : aliased constant SMTP.Authentication.Plain.Credential :=
       SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
     
-  SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";   
+--  SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";   
+  SMTP_Server_Name : constant String := "localhost";   
+
   Status : SMTP.Status; 
+--  SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+--                                (SMTP_Server_Name,
+--                                 Port       => 465,
+--                                 Secure     => True,
+--                                 Credential => Auth'Unchecked_Access);
   SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                 (SMTP_Server_Name,
-                                 Port       => 465,
-                                 Secure     => True,
-                                 Credential => Auth'Unchecked_Access);
+                                 Port       => 2002
+--                                 Secure     => True,
+--                                 Credential => Auth'Unchecked_Access
+                                 );
 begin
 
 
