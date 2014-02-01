@@ -11,10 +11,10 @@ with General_Routines; use General_Routines;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
+
 pragma Elaborate_All (AWS.Headers);
 
 package body RPC is
-
 
   Me : constant String := "RPC.";
 
@@ -248,7 +248,7 @@ package body RPC is
       Move( Source => Container.Get(Field), Target => Target , Drop => Right);
       Found := True;
     else
-      Found := False;
+      Found  := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ package body RPC is
       Target := Container.Get(Field);
       Found := True;
     else
-      Found := False;
+      Found  := False;
     end if;
   end Get_Value;
   ------------------------------------------------------------------------------
@@ -296,12 +296,11 @@ package body RPC is
       end;
       Found := True;
     else
-      Found := False;
+      Found  := False;
     end if;
   end Get_Value;
 
   ------------------------------------------------------------------
-
 
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error,
@@ -325,7 +324,6 @@ package body RPC is
 --                      "message": "AANGX-0010"
 --                  }
 --              }
-
 
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
@@ -853,7 +851,6 @@ package body RPC is
   begin
      Betfair_Result := Ok;
 
-
     -- params is empty ...
     Query_Get_Account_Funds.Set_Field (Field_Name => "params",  Field => Params);
     Query_Get_Account_Funds.Set_Field (Field_Name => "id",      Field => 15);          -- ???
@@ -910,7 +907,6 @@ package body RPC is
 
   begin
     Betfair_Result := Ok;
-
 
     Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","Z"));
     Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","Z"));
@@ -988,13 +984,11 @@ package body RPC is
   begin
     Betfair_Result := Ok;
 
-
     Instruction.Set_Field (Field_Name => "betId", Field => Trim(Bet_Id'Img));
     Append(Instructions, Instruction);
 
     Params.Set_Field (Field_Name => "marketId", Field => Market_Id);
     Params.Set_Field (Field_Name => "instructions", Field => Instructions);
-
 
     JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
     JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
@@ -1179,36 +1173,16 @@ package body RPC is
     Found : Boolean := False;
   begin
     Log(Me & Service, "start"); 
-    
---    if J_Event.Has_Field("id") then
---      Move(J_Event.Get("id"), DB_Event.Eventid);
---    else
---      raise No_Such_Field with "Object 'Event' - Field 'id'";
---    end if;
 
     Get_Value(Container => J_Event,
               Field     => "id",
               Target    => DB_Event.Eventid,
               Found     => Found);
 
-    
---    if J_Event.Has_Field("name") then
---      Move(J_Event.Get("name"), DB_Event.Eventname);
---    else
---      raise No_Such_Field with "Object 'Event' - Field 'name'";
---    end if;
-    
     Get_Value(Container => J_Event,
               Field     => "name",
               Target    => DB_Event.Eventname,
               Found     => Found);
-    
-    
---    if J_Event.Has_Field("countryCode") then
---      Move(J_Event.Get("countryCode"), DB_Event.Countrycode);
---    else
---      Move("XX", DB_Event.Countrycode);
---    end if;
 
     Get_Value(Container => J_Event,
               Field     => "countryCode",
@@ -1218,49 +1192,21 @@ package body RPC is
       Move("XX", DB_Event.Countrycode);
     end if;
     
---    if J_Event.Has_Field("openDate") then
---      declare
---        Tmp : String := J_Event.Get("openDate");
---      begin  --       "openDate":"2013-06-22T17:39:00.000Z", 
---        DB_Event.Opents := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
---      end;
---    else
---      raise No_Such_Field with "Object 'Event' - Field 'openDate'";
---    end if;
-
     Get_Value(Container => J_Event,
               Field     => "openDate",
               Target    => DB_Event.Opents,
               Found     => Found);              
-
---    if J_Event.Has_Field("timezone") then
---      Move(J_Event.Get("timezone"), DB_Event.Timezone);
---    else
---      raise No_Such_Field with "Object 'Event' - Field 'timezone'";
---    end if;
     
     Get_Value(Container => J_Event,
               Field     => "timezone",
               Target    => DB_Event.Timezone,
               Found     => Found);              
     
-    
---    -- event_type !!
---    if J_Event_Type.Has_Field("id") then
---      DB_Event.Eventtypeid := Integer_4'Value(J_Event_Type.Get("id"));
---    else
---      raise No_Such_Field with "Object 'Event_Type' - Field 'id'";
---    end if;
-    
-    declare
-      T : String(1..5) := (others => ' ');
-    begin
-      Get_Value(Container => J_Event_Type,
-                Field     => "id",
-                Target    => T,
-                Found     => Found);              
-      DB_Event.Eventtypeid := Integer_4'Value(T);
-    end;    
+    -- event_type !!   
+    Get_Value(Container => J_Event_Type,
+              Field     => "id",
+              Target    => DB_Event.Eventtypeid,
+              Found     => Found);              
 
     Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
     Log(Me & Service, "stop"); 
@@ -1539,7 +1485,6 @@ package body RPC is
       if Found then
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
       end if;
-
     end ;
 
     if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
@@ -1631,11 +1576,6 @@ package body RPC is
        if not Found then 
          raise No_Such_Field with "Object 'Market' - Field 'marketId'";
        end if;
---       if Market.Has_Field("marketId") then
---         Move(Market.Get("marketId"), DB_Runner.Marketid);
---       else
---         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
---       end if;
           
        Get_Value(Container => Runner,
                  Field     => "sortPriority",
@@ -1644,11 +1584,6 @@ package body RPC is
        if not Found then 
          raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
        end if;
---       if Runner.Has_Field("sortPriority") then
---         DB_Runner.Sortprio := Integer_4(Integer'(Runner.Get("sortPriority")));
---       else
---         raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
---       end if;
        
        Get_Value(Container => Runner,
                  Field     => "handicap",
@@ -1657,11 +1592,6 @@ package body RPC is
        if not Found then 
          raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
        end if;
---       if Runner.Has_Field("handicap") then
---         DB_Runner.Handicap := Float_8(Float'(Runner.Get("handicap")));
---       else
---         raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
---       end if;
        
        Get_Value(Container => Runner,
                  Field     => "selectionId",
@@ -1670,11 +1600,6 @@ package body RPC is
        if not Found then 
          raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
        end if;
---       if Runner.Has_Field("selectionId") then
---         DB_Runner.Selectionid := Integer_4(Integer'(Runner.Get("selectionId")));
---       else
---         raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
---       end if;
 
        Get_Value(Container => Runner,
                  Field     => "runnerName",
@@ -1683,11 +1608,6 @@ package body RPC is
        if not Found then 
          raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
        end if;
---       if Runner.Has_Field("runnerName") then
---         Move(Runner.Get("runnerName"), DB_Runner.Runnername);
---       else
---         raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
---       end if;
        
        -- fix runner name
        Runnernamestripped := (others => ' ');
@@ -1729,9 +1649,7 @@ package body RPC is
        if  Start_Paranthesis > Integer(-1) and then
            Stop_Paranthesis > Integer(-1) and then
            General_Routines.Lower_Case(Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis)) = "(res)" then
---           Log(Me & Service, Runnernamestripped);
          Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis) := (others => ' ');
---           Log(Me & Service, Runnernamestripped);
        end if;
        DB_Runner.Runnernamestripped := Runnernamestripped;
        DB_Runner.Runnernamenum      := Runnernamenum;
@@ -1846,6 +1764,11 @@ package body RPC is
                 Field     => "id",
                 Target    => DB_Market.Eventid,
                 Found     => Found);
+      if not Found then
+        Move("NO EVENT", DB_Market.Eventid);
+      end if;
+    else
+      Move("NO EVENT", DB_Market.Eventid);
     end if;
 
     Get_Value(Container => J_Market,
@@ -1854,9 +1777,8 @@ package body RPC is
               Found     => Found);
     
     
-    -- update start
+    -- update start, ie these fields are in Market_Book only
     
-
     Get_Value(Container => J_Market,
               Field     => "numberOfWinners",
               Target    => DB_Market.Numwinners,
@@ -1886,18 +1808,19 @@ package body RPC is
               Field     => "status",
               Target    => DB_Market.Status,
               Found     => Found);
+    if not Found then
+      Move("NO STATUS", DB_Market.Status);
+    end if;
 
     Get_Value(Container => J_Market,
               Field     => "betDelay",
               Target    => DB_Market.Betdelay,
               Found     => Found);
     
-    
     Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market));    
     Log(Me & Service, Table_Amarkets.To_String(DB_Market)); 
     Log(Me & Service, "stop"); 
  
   end Parse_Market;
-  
   
 end RPC;
