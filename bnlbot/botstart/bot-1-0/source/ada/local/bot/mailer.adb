@@ -5,26 +5,27 @@ with Text_Io;
 with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
-
+with AWS.Net;
 procedure Mailer is
   Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-      SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
-    
---  SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";   
-  SMTP_Server_Name : constant String := "localhost";   
+      SMTP.Authentication.Plain.Initialize ("AKIAIZJNVMLZKG27FQTA", 
+                      "AmGnNLwlPS4q8K6QwrnL5OlYuS+7E8WcIqVfD3pHxC0Z");
+  SMTP_Server_Name : constant String := "email-smtp.us-east-1.amazonaws.com";   
+--  SMTP_Server_Name : constant String := "localhost";   
 
   Status : SMTP.Status; 
---  SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
---                                (SMTP_Server_Name,
---                                 Port       => 465,
---                                 Secure     => True,
---                                 Credential => Auth'Unchecked_Access);
   SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                 (SMTP_Server_Name,
-                                 Port       => 2002
+                                 Port       => 2465,
+                                 Secure     => True,
+                                 Family     => Net.Family_Inet,
+                                 Credential => Auth'Unchecked_Access);
+--  SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+--                                (SMTP_Server_Name,
+--                                 Port       => 2002
 --                                 Secure     => True,
 --                                 Credential => Auth'Unchecked_Access
-                                 );
+--                                 );
 begin
 
 
@@ -33,7 +34,7 @@ begin
 
   SMTP.Client.Send(Server  => SMTP_Server,
                    From    => SMTP.E_Mail ("Nonobet Betbot", "betbot@nonobet.com"),
-                   To      => SMTP.E_Mail("", "b.f.lundin@gmail.com"),
+                   To      => SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
                    Subject => "About AWS SMTP protocol",
                    Message => "From Amazon",
                    Status  => Status);
