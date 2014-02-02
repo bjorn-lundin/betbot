@@ -1006,7 +1006,7 @@ package body RPC is
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
   end  Cancel_Bet;
   -----------------------------------
-  
+
   procedure Parse_Prices(J_Market   : in     JSON_Value;
                          Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
     pragma Warnings(Off,Price_List);
@@ -1023,7 +1023,7 @@ package body RPC is
     Now               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     Found             : Boolean := False;
     DB_Runner_Price   : Table_Aprices.Data_Type;
-      
+
     --        "runners": [{
     --            "handicap": 0.00000E+00,
     --            "totalMatched": 0.00000E+00,
@@ -1060,8 +1060,8 @@ package body RPC is
     --      Ixxlupd :    String (1..15) := (others => ' ') ; --
     --      Ixxluts :    Time_Type  := Time_Type_First ; --
     --  end record;
-      
-      
+
+
   begin
     Runner_Prices := J_Market.Get("runners");
     Array_Length  := Length (Runner_Prices);
@@ -1142,24 +1142,24 @@ package body RPC is
 
     end loop;
   end Parse_Prices;
-  
+
   ---------------------------------
-  
-  
-  
+
+
+
   ---------------------------------
-  
-  procedure Parse_Event (J_Event, J_Event_Type : in     JSON_Value ; 
+
+  procedure Parse_Event (J_Event, J_Event_Type : in     JSON_Value ;
                          DB_Event              : in out Table_Aevents.Data_Type) is
     Service : constant String := "Parse_Event";
    -- event:{"id":"27026778",
-   --         "name":"Monm 22nd Jun", 
-   --         "countryCode":"GB", 
-   --         "openDate":"2013-06-22T17:39:00.000Z", 
+   --         "name":"Monm 22nd Jun",
+   --         "countryCode":"GB",
+   --         "openDate":"2013-06-22T17:39:00.000Z",
    --         "timezone":"Europe/London",
    --         "venue":"Monmore"}
-   -- eventType:{"id":"7", 
-  --              "name":"Horse Racing"}    
+   -- eventType:{"id":"7",
+  --              "name":"Horse Racing"}
 --  type Data_Type is record
 --      Eventid :    String (1..11) := (others => ' ') ; -- Primary Key
 --      Eventname :    String (1..50) := (others => ' ') ; --
@@ -1172,7 +1172,7 @@ package body RPC is
 --  end record;
     Found : Boolean := False;
   begin
-    Log(Me & Service, "start"); 
+    Log(Me & Service, "start");
 
     Get_Value(Container => J_Event,
               Field     => "id",
@@ -1187,34 +1187,43 @@ package body RPC is
     Get_Value(Container => J_Event,
               Field     => "countryCode",
               Target    => DB_Event.Countrycode,
-              Found     => Found);              
+              Found     => Found);
     if not Found then
       Move("XX", DB_Event.Countrycode);
     end if;
-    
+
     Get_Value(Container => J_Event,
               Field     => "openDate",
               Target    => DB_Event.Opents,
-              Found     => Found);              
-    
+              Found     => Found);
+
     Get_Value(Container => J_Event,
               Field     => "timezone",
               Target    => DB_Event.Timezone,
-              Found     => Found);              
-    
-    -- event_type !!   
-    Get_Value(Container => J_Event_Type,
-              Field     => "id",
-              Target    => DB_Event.Eventtypeid,
-              Found     => Found);              
+              Found     => Found);
 
-    Log(Me & Service, Table_Aevents.To_String(DB_Event)); 
-    Log(Me & Service, "stop"); 
-  
-  end Parse_Event;  
-  
+    -- event_type !!
+--    Get_Value(Container => J_Event_Type,
+--              Field     => "id",
+--              Target    => DB_Event.Eventtypeid,
+--              Found     => Found);
+
+    declare
+      T : String(1..5) := (others => ' ');
+    begin
+      Get_Value(Container => J_Event_Type,
+                Field     => "id",
+                Target    => T,
+                Found     => Found);
+      DB_Event.Eventtypeid := Integer_4'Value(T);
+    end;
+    Log(Me & Service, Table_Aevents.To_String(DB_Event));
+    Log(Me & Service, "stop");
+
+  end Parse_Event;
+
   ---------------------------------
-  
+
   procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
                               Market    : out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type;
@@ -1525,8 +1534,8 @@ package body RPC is
   end Place_Bet;
   ------------------------------------------
 
-  
-  procedure Parse_Runners(J_Market      : in     JSON_Value ; 
+
+  procedure Parse_Runners(J_Market      : in     JSON_Value ;
                           Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
     Service : constant String := "Parse_Runners";
     DB_Runner : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
@@ -1551,53 +1560,53 @@ package body RPC is
    Runners      : JSON_Array := Empty_Array;
    Runner       : JSON_Value := Create_Object;
    Array_Length : Natural ;
-   
+
    Runnernamestripped : String := DB_Runner.Runnernamestripped;
    Runnernamenum      : String := DB_Runner.Runnernamenum;
    Start_Paranthesis,
    Stop_Paranthesis : Integer := 0;
-   
+
   begin
-    Log(Me & Service, "start"); 
+    Log(Me & Service, "start");
     Runners := J_Market.Get("runners");
     Array_Length := Length (Runners);
-    
+
     for J in 1 .. Array_Length loop
       DB_Runner := Table_Arunners.Empty_Data;
        Runner := Get (Arr   => Runners, Index => J);
        Log(Me & Service, "  " & Runner.Write);
-       
-       
+
+
        Get_Value(Container => J_Market,
                  Field     => "marketId",
                  Target    => DB_Runner.Marketid,
                  Found     => Found);
-                 
-       if not Found then 
+
+       if not Found then
          raise No_Such_Field with "Object 'Market' - Field 'marketId'";
        end if;
-          
+
        Get_Value(Container => Runner,
                  Field     => "sortPriority",
                  Target    => DB_Runner.Sortprio,
                  Found     => Found);
-       if not Found then 
+       if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
        end if;
-       
+
        Get_Value(Container => Runner,
                  Field     => "handicap",
                  Target    => DB_Runner.Handicap,
                  Found     => Found);
-       if not Found then 
+       if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
        end if;
-       
+
        Get_Value(Container => Runner,
                  Field     => "selectionId",
                  Target    => DB_Runner.Selectionid,
                  Found     => Found);
-       if not Found then 
+       if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
        end if;
 
@@ -1605,10 +1614,10 @@ package body RPC is
                  Field     => "runnerName",
                  Target    => DB_Runner.Runnername,
                  Found     => Found);
-       if not Found then 
+       if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
        end if;
-       
+
        -- fix runner name
        Runnernamestripped := (others => ' ');
        Runnernamenum := (others => ' ');
@@ -1628,13 +1637,13 @@ package body RPC is
                 null;
               end if;
 
-           when others => 
+           when others =>
               Runnernamestripped := DB_Runner.Runnername;
               Move(General_Routines.Trim(DB_Runner.Sortprio'Img), Runnernamenum);
        end case;
 
        Move("NOT_SET_YET", DB_Runner.Status);
-       
+
        Start_Paranthesis := -1;
        Stop_Paranthesis  := -1;
 
@@ -1653,27 +1662,27 @@ package body RPC is
        end if;
        DB_Runner.Runnernamestripped := Runnernamestripped;
        DB_Runner.Runnernamenum      := Runnernamenum;
-  
-       Log(Me & Service, Table_Arunners.To_String(DB_Runner)); 
-       
+
+       Log(Me & Service, Table_Arunners.To_String(DB_Runner));
+
        Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
-                
+
     end loop;
-    Log(Me & Service, "stop"); 
+    Log(Me & Service, "stop");
   end Parse_Runners;
-  
+
   ------------------------------------------
-  procedure Parse_Market (J_Market       : in     JSON_Value ; 
+  procedure Parse_Market (J_Market       : in     JSON_Value ;
                           DB_Market      : in out Table_Amarkets.Data_Type ;
                           In_Play_Market :    out Boolean) is
     Service : constant String := "Parse_Market";
     Eos,Found    : Boolean    := False;
     Event  : JSON_Value := Create_Object;
     Market_Description : JSON_Value := Create_Object;
-    -- this routine parses replies from both 
+    -- this routine parses replies from both
     -- * List_Market_Catalogue
     -- * List_Market_Book
-    
+
     --List_Market_Catalogue
     --      "result": [{
     --        "marketId": "1.109863141",
@@ -1683,7 +1692,7 @@ package body RPC is
     --        "marketName": "A4 480m",
     --        "marketStartTime": "2013-06-24T10:19:00.000Z"
     --        }]
-    
+
     -- List_Market_Book
     --    "result": [{
     --        "numberOfWinners": 2,
@@ -1694,7 +1703,7 @@ package body RPC is
     --        "numberOfRunners": 6,
     --        "numberOfActiveRunners": 6,
     --        "totalMatched": 0.00000E+00,
-    --        "runners": [{ ... }], 
+    --        "runners": [{ ... }],
     --        "inplay": false,
     --        "status": "OPEN",
     --        "runnersVoidable": false,
@@ -1702,8 +1711,8 @@ package body RPC is
     --        "isMarketDataDelayed": false,
     --        "crossMatching": true,
     --        "complete": true
-    
-    
+
+
     --  type Data_Type is record
     --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
     --      Marketname :    String (1..50) := (others => ' ') ; --
@@ -1720,15 +1729,15 @@ package body RPC is
     --      Ixxlupd :    String (1..15) := (others => ' ') ; --
     --      Ixxluts :    Time_Type  := Time_Type_First ; --
     --  end record;
-    
-  begin  
-    Log(Me & Service, "start"); 
+
+  begin
+    Log(Me & Service, "start");
     In_Play_Market := False;
     Get_Value(Container => J_Market,
               Field     => "marketId",
               Target    =>  DB_Market.Marketid,
               Found     => Found);
-    if Found then 
+    if Found then
       Table_Amarkets.Read(Db_Market, Eos);
     end if;
 
@@ -1736,8 +1745,8 @@ package body RPC is
               Field     => "marketName",
               Target    =>  DB_Market.Marketname,
               Found     => Found);
-    
-    
+
+
     Get_Value(Container => J_Market,
               Field     => "description",
               Target    => Market_Description,
@@ -1746,8 +1755,8 @@ package body RPC is
       Get_Value(Container => Market_Description,
                 Field     => "marketType",
                 Target    => DB_Market.Markettype,
-                Found     => Found);    
-    end if;     
+                Found     => Found);
+    end if;
 
     Get_Value(Container => J_Market,
               Field     => "marketStartTime",
@@ -1775,15 +1784,15 @@ package body RPC is
               Field     => "inplay",
               Target    => In_Play_Market,
               Found     => Found);
-    
-    
+
+
     -- update start, ie these fields are in Market_Book only
-    
+
     Get_Value(Container => J_Market,
               Field     => "numberOfWinners",
               Target    => DB_Market.Numwinners,
               Found     => Found);
-  
+
     Get_Value(Container => J_Market,
               Field     => "totalAvailable",
               Target    => DB_Market.Totalavailable,
@@ -1816,11 +1825,11 @@ package body RPC is
               Field     => "betDelay",
               Target    => DB_Market.Betdelay,
               Found     => Found);
-    
-    Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market));    
-    Log(Me & Service, Table_Amarkets.To_String(DB_Market)); 
-    Log(Me & Service, "stop"); 
- 
+
+    Log(Me, "In_Play_Market: " & In_Play_Market'Img &  Table_Amarkets.To_String(DB_Market));
+    Log(Me & Service, Table_Amarkets.To_String(DB_Market));
+    Log(Me & Service, "stop");
+
   end Parse_Market;
-  
+
 end RPC;
