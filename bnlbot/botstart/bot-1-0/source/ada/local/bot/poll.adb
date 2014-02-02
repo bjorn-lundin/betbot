@@ -6,20 +6,16 @@ with Sql;
 with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Bot_Messages;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-
 with Rpc;
 with Lock ;
 with Posix;
 with Ini;
 with Logging; use Logging;
-
 with Ada.Environment_Variables;
-
 with Process_IO;
 with Core_Messages;
 with Table_Amarkets;
@@ -30,42 +26,41 @@ with Table_Arunners;
 
 with Bot_Svn_Info;
 with Bet;
+with Config;
 
 procedure Poll is
   package EV renames Ada.Environment_Variables;
 
   use type Rpc.Result_Type;
-  
-  Me : constant String := "Poll.";  
-  
+
+  Me : constant String := "Poll.";
+
   Timeout  : Duration := 120.0;
   My_Lock  : Lock.Lock_Type;
 
   Msg      : Process_Io.Message_Type;
   Find_Plc_Market,
   Update_Betwon_To_Null : Sql.Statement_Type;
-  
+
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
-   
-  Global_Size : Bet_Size_type := 30.0; 
-  Global_Fav_Max_Price : Back_Price_Type := 1.15; 
-  Global_2nd_Min_Price : Back_Price_Type := 7.0; 
+
+--  Global_Size : Bet_Size_type := 30.0;
+--  Global_Fav_Max_Price : Back_Price_Type := 1.15;
+--  Global_2nd_Min_Price : Back_Price_Type := 7.0;
   Now : Sattmate_Calendar.Time_Type;
-  Global_Max_Loss_Per_Day : Float_8 := -500.0;
-  Global_Max_Turns_Not_Started_Race    : Integer_4 := 17;  --17*30s -> 8.5 min
-  Global_Current_Turn_Not_Started_Race : Integer_4 := 0; 
-  
-  Global_Enabled,
-  Ok, 
+--  Global_Max_Loss_Per_Day : Float_8 := -500.0;
+--  Global_Max_Turns_Not_Started_Race    : Integer_4 := 17;  --17*30s -> 8.5 min
+
+--  Global_Enabled,
+  Ok,
   Is_Time_To_Exit : Boolean := False;
+  Cfg : Config.Config_Type;
+  -------------------------------------------------------------
 
-  -------------------------------------------------------------   
-
-  
-  -------------------------------------------------------------   
+  -------------------------------------------------------------
   procedure Run(Market_Notification : in     Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
@@ -75,21 +70,23 @@ procedure Poll is
     Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
-    Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;    
-    Bet_Name : Bet_Name_Type := (others => ' '); 
+    Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
+    Bet_Name : Bet_Name_Type := (others => ' ');
     Found_Place : Boolean := True;
     T : Sql.Transaction_Type;
-  begin     
+    Current_Turn_Not_Started_Race : Integer_4 := 0;
+
+  begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
-  
+
     Market.Marketid := Market_Notification.Market_Id;
-    
-    Move("HORSES_WIN_BACK_FINISH_1.10_7.0", Bet_Name);     
-    if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
-      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
+
+    Move("HORSES_WIN_BACK_FINISH_1.10_7.0", Bet_Name);
+    if Bet.Profit_Today(Bet_Name) < Cfg.Max_Loss_Per_Day then
+      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Cfg.Max_Loss_Per_Day));
       return;
     end if;
-    
+
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -101,24 +98,23 @@ procedure Poll is
         if not Eos then
           if Event.Eventtypeid /= Integer_4(7) then
             Log(Me & "Run", "not a HORSE market: " &  Market_Notification.Market_Id);
-            return;           
-          elsif Event.Countrycode(1..2) /= "GB" then
-            Log(Me & "Run", "not a GB market: " &  Market_Notification.Market_Id);
-            return;                     
+            return;
+          elsif not Cfg.Country_Is_Ok(Event.Countrycode) then
+--          elsif Event.Countrycode(1..2) /= "GB" then
+            Log(Me & "Run", "not an country,  market: " &  Market_Notification.Market_Id);
+            return;
           end if;
         else
           Log(Me & "Run", "no event found");
           return;
-        end if;                
-      end if;      
+        end if;
+      end if;
     else
       Log(Me & "Run", "no market found");
       return;
     end if;
     Markets(Win):= Market;
 
-    Global_Current_Turn_Not_Started_Race := 0; 
-    
     T.Start;
       Find_Plc_Market.Prepare(
         "select MP.* from AMARKETS MW, AMARKETS MP " &
@@ -128,8 +124,8 @@ procedure Poll is
         "and MP.MARKETTYPE = 'PLACE' " &
         "and MW.MARKETTYPE = 'WIN' " &
         "and MP.STATUS = 'OPEN'" ) ;
-        
-      Find_Plc_Market.Set("WINMARKETID", Markets(Win).Marketid);  
+
+      Find_Plc_Market.Set("WINMARKETID", Markets(Win).Marketid);
       Find_Plc_Market.Open_Cursor;
       Find_Plc_Market.Fetch(Eos);
       if not Eos then
@@ -144,40 +140,38 @@ procedure Poll is
       end if;
       Find_Plc_Market.Close_Cursor;
     T.Commit;
-       
-    
-    
+
     -- do the poll
     Poll_Loop : loop
       Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
-      Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id, 
+      Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
                             Market     => Market,
                             Price_List => Price_List,
                             In_Play    => In_Play);
-      
+
       exit when Market.Status(1..4) /= "OPEN";
-      
+
       if not In_Play then
-        if Global_Current_Turn_Not_Started_Race >= Global_Max_Turns_Not_Started_Race then
+        if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
            Log(Me & "Make_Bet", "Market took too long time to start, give up");
            exit Poll_Loop;
         else
-          Global_Current_Turn_Not_Started_Race := Global_Current_Turn_Not_Started_Race +1;
-          delay 30.0; -- no need for heavy polling before start of race            
-        end if; 
+          Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
+          delay 30.0; -- no need for heavy polling before start of race
+        end if;
       else
-        delay 0.05; -- to avoid more than 20 polls/sec      
+        delay 0.05; -- to avoid more than 20 polls/sec
       end if;
-      
-      -- ok find the runner with lowest backprice:        
+
+      -- ok find the runner with lowest backprice:
       Price.Backprice := 10000.0;
       Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
       loop
-        exit when Eol;          
-        if Tmp.Status(1..6) = "ACTIVE" and then 
+        exit when Eol;
+        if Tmp.Status(1..6) = "ACTIVE" and then
            Tmp.Backprice < Price.Backprice then
           Price := Tmp;
-        end if;        
+        end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(1) := Price;
@@ -185,25 +179,25 @@ procedure Poll is
       Price.Backprice := 10000.0;
       Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
       loop
-        exit when Eol;          
+        exit when Eol;
         if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then 
+           Tmp.Backprice < Price.Backprice and then
            Tmp.Selectionid /= Best_Runners(1).Selectionid then
           Price := Tmp;
-        end if;        
+        end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(2) := Price;
-      
+
       for i in Best_Runners'range loop
-        Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));         
+        Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
-      
-      if Best_Runners(1).Backprice <= Float_8(Global_Fav_Max_Price) and then 
-         Best_Runners(1).Backprice >= Float_8(1.0) and then 
-         Best_Runners(2).Backprice >= Float_8(Global_2nd_Min_Price) then
-        Log("Place bet on " & Table_Aprices.To_String(Best_Runners(1))); 
-        
+
+      if Best_Runners(1).Backprice <= Float_8(Cfg.Fav_Max_Price) and then
+         Best_Runners(1).Backprice >= Float_8(1.0) and then
+         Best_Runners(2).Backprice >= Float_8(Cfg.Second_Fav_Min_Price) then
+        Log("Place bet on " & Table_Aprices.To_String(Best_Runners(1)));
+
         declare
           Bet : Table_Abets.Data_Type;
 --          Market_Id : Market_Id_Type := (others => ' ');
@@ -211,37 +205,37 @@ procedure Poll is
 --          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
         begin
-        Log("Found_Place " & Found_Place'Img ); 
-            
+        Log("Found_Place " & Found_Place'Img );
+
           if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
             declare
               PBB : Bot_Messages.Place_Back_Bet_Record;
               Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
             begin
-              Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", PBB.Bet_Name);     
+              Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", PBB.Bet_Name);
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
               Move("0.0", PBB.Size); -- set by receiver's ini-file
-              PBB.Selection_Id := Best_Runners(1).Selectionid;          
+              PBB.Selection_Id := Best_Runners(1).Selectionid;
               Move("bet_placer_1", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
-              Bot_Messages.Send(Receiver, PBB);              
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PBB);
             end;
 --            declare
 --              PBB : Bot_Messages.Place_Back_Bet_Record;
 --              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
 --            begin
---              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);     
+--              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2", PBB.Bet_Name);
 --              Move(Markets(Place).Marketid, PBB.Market_Id);
 --              Move("1.01", PBB.Price);
 --              Move("0.0", PBB.Size); -- set by receiver's ini-file
---              PBB.Selection_Id := Best_Runners(2).Selectionid;          
+--              PBB.Selection_Id := Best_Runners(2).Selectionid;
 --              Move("bet_placer_2", Receiver.Name);
---              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img ); 
---              Bot_Messages.Send(Receiver, PBB);              
+--              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+--              Bot_Messages.Send(Receiver, PBB);
 --            end;
-          end if;            
-            
+          end if;
+
           -- fix som missing fields first
           Runner.Marketid := Markets(Win).Marketid;
           Runner.Selectionid := Best_Runners(1).Selectionid;
@@ -250,20 +244,20 @@ procedure Poll is
             Bet.Runnername := Runner.Runnername;
           else
             Log(Me & "Make_Bet", "no runnername found");
-          end if;            
+          end if;
 
-          -- the LEADER as WIN at the price 
-          
+          -- the LEADER as WIN at the price
+
           Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                         Market_Id        => Markets(Win).Marketid, 
+                         Market_Id        => Markets(Win).Marketid,
                          Side             => Back,
                          Runner_Name      => Runner.Runnername,
                          Selection_Id     => Best_Runners(1).Selectionid,
-                         Size             => Global_Size,
+                         Size             => Cfg.Size,
                          Price            => 1.01,
                          Bet_Persistence  => Persist,
                          Bet              => Bet);
-                   
+
           T.Start;
             Bet.Startts := Markets(Win).Startts;
             Bet.Fullmarketname := Markets(Win).Marketname;
@@ -276,13 +270,13 @@ procedure Poll is
             end if;
           T.Commit;
         end ;
-        exit Poll_Loop;           
+        exit Poll_Loop;
       end if;
-    end loop Poll_Loop;    
+    end loop Poll_Loop;
   end Run;
   ---------------------------------------------------------------------
 
-  use type Sql.Transaction_Status_Type;  
+  use type Sql.Transaction_Status_Type;
 ------------------------------ main start -------------------------------------
 
 begin
@@ -311,25 +305,18 @@ begin
   if Ba_Daemon then
     Posix.Daemonize;
   end if;
-  
+
    --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
-  
+
   Logging.Open(EV.Value("BOT_HOME") & "/log/poll.log");
 
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
-  
-  
-  Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
-  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0")); 
-  Global_Fav_Max_Price := Back_Price_Type'Value(Ini.Get_Value("finish","fav_max_price","1.15")); 
-  Global_2nd_Min_Price := Back_Price_Type'Value(Ini.Get_Value("finish","2nd_min_price","7.0")); 
-  Global_Enabled := Ini.Get_Value("finish","enabled",false); 
-  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0")); 
-       
 
-  Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");  
+  Cfg := Config.Create(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
+  Log(Cfg.To_String);
+  Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
         (Host     => Ini.Get_Value("database", "host", ""),
@@ -343,19 +330,17 @@ begin
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
-            Product_Id => Ini.Get_Value("betfair","product_id",""),  
+            Product_Id => Ini.Get_Value("betfair","product_id",""),
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
-          );    
-  Rpc.Login; 
+          );
+  Rpc.Login;
   Log(Me, "Login betfair done");
-  
-  
-  if Global_Enabled then
-    Global_Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
+
+  if Cfg.Enabled then
+    Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
-  
-  
+
   Main_Loop : loop
     begin
       Log(Me, "Start receive");
@@ -368,11 +353,11 @@ begin
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
         when Bot_Messages.Market_Notification_Message    =>
-          if Global_Enabled then
-            Run(Bot_Messages.Data(Msg));          
-          else          
+          if Cfg.Enabled then
+            Run(Bot_Messages.Data(Msg));
+          else
             Log(Me, "Poll is not eanbled in poll.ini");
-          end if;           
+          end if;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -381,28 +366,24 @@ begin
         Rpc.Keep_Alive(OK);
         if not OK then
           Rpc.Login;
-        end if;    
+        end if;
     end;
     Now := Sattmate_Calendar.Clock;
-    
-    --restart every day
-    Is_Time_To_Exit := Now.Hour = 05 and then 
-                     ( Now.Minute = 02 or Now.Minute = 03) ; -- timeout = 2 min
-  
-    exit Main_Loop when Is_Time_To_Exit;
-       
-  end loop Main_Loop;  
-  
-  
-  
 
-  
+    --restart every day
+    Is_Time_To_Exit := Now.Hour = 05 and then
+                     ( Now.Minute = 02 or Now.Minute = 03) ; -- timeout = 2 min
+
+    exit Main_Loop when Is_Time_To_Exit;
+
+  end loop Main_Loop;
+
   Log(Me, "Close Db");
   Sql.Close_Session;
   Rpc.Logout;
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
- 
+
 exception
   when Lock.Lock_Error =>
     Log(Me, "lock error, exit");
