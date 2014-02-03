@@ -81,7 +81,10 @@ procedure Poll is
 
     Market.Marketid := Market_Notification.Market_Id;
 
-    Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
+--    Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);
+    
+    
     if Bet.Profit_Today(Bet_Name) < Cfg.Max_Loss_Per_Day then
       Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Cfg.Max_Loss_Per_Day));
       return;
@@ -205,22 +208,22 @@ procedure Poll is
 --          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
         begin
-        Log("Found_Place " & Found_Place'Img );
+          Log("Found_Place " & Found_Place'Img );
 
           if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
-            declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-            begin
-              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);
-              Move(Markets(Place).Marketid, PBB.Market_Id);
-              Move("1.01", PBB.Price);
-              Move("0.0", PBB.Size); -- set by receiver's ini-file
-              PBB.Selection_Id := Best_Runners(1).Selectionid;
-              Move("bet_placer_1", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-              Bot_Messages.Send(Receiver, PBB);
-            end;
+--            declare
+--              PBB : Bot_Messages.Place_Back_Bet_Record;
+--              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+--            begin
+--              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);
+--              Move(Markets(Place).Marketid, PBB.Market_Id);
+--              Move("1.01", PBB.Price);
+--              Move("0.0", PBB.Size); -- set by receiver's ini-file
+--              PBB.Selection_Id := Best_Runners(1).Selectionid;
+--              Move("bet_placer_1", Receiver.Name);
+--              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+--              Bot_Messages.Send(Receiver, PBB);
+--            end;
 --            declare
 --              PBB : Bot_Messages.Place_Back_Bet_Record;
 --              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
@@ -234,22 +237,21 @@ procedure Poll is
 --              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
 --              Bot_Messages.Send(Receiver, PBB);
 --            end;
-          end if;
 
-          -- fix som missing fields first
-          Runner.Marketid := Markets(Win).Marketid;
-          Runner.Selectionid := Best_Runners(1).Selectionid;
-          Table_Arunners.Read(Runner, Eos);
-          if not Eos then
-            Bet.Runnername := Runner.Runnername;
-          else
-            Log(Me & "Make_Bet", "no runnername found");
-          end if;
-
-          -- the LEADER as WIN at the price
-          if Cfg.Enabled then  
+            -- fix som missing fields first
+            Runner.Marketid := Markets(Win).Marketid;
+            Runner.Selectionid := Best_Runners(1).Selectionid;
+            Table_Arunners.Read(Runner, Eos);
+            if not Eos then
+              Bet.Runnername := Runner.Runnername;
+            else
+              Log(Me & "Make_Bet", "no runnername found");
+            end if;
+            
+            -- the LEADER as PLC at the price
             Rpc.Place_Bet (Bet_Name         => Bet_Name,
-                           Market_Id        => Markets(Win).Marketid,
+--                           Market_Id        => Markets(Win).Marketid,
+                           Market_Id        => Markets(Place).Marketid,
                            Side             => Back,
                            Runner_Name      => Runner.Runnername,
                            Selection_Id     => Best_Runners(1).Selectionid,
@@ -257,7 +259,7 @@ procedure Poll is
                            Price            => 1.01,
                            Bet_Persistence  => Persist,
                            Bet              => Bet);
-  
+          
             T.Start;
               Bet.Startts := Markets(Win).Startts;
               Bet.Fullmarketname := Markets(Win).Marketname;
@@ -269,9 +271,7 @@ procedure Poll is
                 Sql.Execute(Update_Betwon_To_Null);
               end if;
             T.Commit;
-          else
-            Log(Me & "Run", "Poll is not enabled in poll.ini");
-          end if;          
+          end if;
         end ;
         exit Poll_Loop;
       end if;
@@ -356,13 +356,11 @@ begin
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
         when Bot_Messages.Market_Notification_Message    =>
-           -- Always do the polling, look at enabled before placing bets instead
-           -- so that bet_placer can place even if poll does not
---          if Cfg.Enabled then
+          if Cfg.Enabled then
             Run(Bot_Messages.Data(Msg));
---          else
---            Log(Me, "Poll is not eanbled in poll.ini");
---          end if;
+          else
+            Log(Me, "Poll is not eanbled in poll.ini");
+          end if;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
