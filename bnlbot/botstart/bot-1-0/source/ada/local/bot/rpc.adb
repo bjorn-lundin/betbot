@@ -305,9 +305,8 @@ package body RPC is
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error,
      APINGException,
-     Data                      : JSON_Value := Create_Object;
-  begin
-    if Reply.Has_Field("error") then
+     Data             : JSON_Value := Create_Object;
+     Has_Error        : Boolean := False;
 --              {
 --                  "id": 15,
 --                  "jsonrpc": "2.0",
@@ -324,7 +323,9 @@ package body RPC is
 --                      "message": "AANGX-0010"
 --                  }
 --              }
-
+  begin
+    if Reply.Has_Field("error") then
+      Has_Error := True;
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
         Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
@@ -340,7 +341,6 @@ package body RPC is
               if Data.Has_Field("exceptionname") then
                 Log(Me, "exceptionname " & Data.Get("exceptionname"));
               end if;
-              return True; -- exit main loop, let cron restart program
             else
               raise No_Such_Field with "APINGException - errorCode";
             end if;
@@ -351,12 +351,11 @@ package body RPC is
         if Error.Has_Field("message") then
           Log(Me, "Error.Message " & Error.Get("message"));
         end if;
-
       else
         raise No_Such_Field with "Error - code";
       end if;
     end if;
-    return False;
+    return Has_Error;
   end API_Exceptions_Are_Present;
   ---------------------------------------------------------------------
 
