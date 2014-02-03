@@ -11,11 +11,11 @@ with Sattmate_Exception;
 with Logging; use Logging;
 with Table_Abalances;
 with Sattmate_Calendar;
---with My_Types ; -- use My_Types;
-
+with Ada.Directories;
+with Ada.Command_Line;
 
 procedure Saldo_Check is
---   pragma Linker_Options ("-mwindows");
+   pragma Linker_Options ("-mwindows");
 
    Last_Updated_Text_Label   : GWindows.Static_Controls.Label_Type;
    Saldo_Text_Label          : GWindows.Static_Controls.Label_Type;
@@ -96,6 +96,7 @@ procedure Saldo_Check is
    ------------------------
    
 begin
+   Logging.Open(Ada.Directories.Containing_Directory(Ada.Command_Line.Command_Name) & "\saldo_checker.log");
    Main_Window.Create("Saldo Checker", Width => 200, Height => 100);
 --   Main_Window.Visible(True);
    Saldo_Text_Label.Create(Main_Window,              "Saldo: ",  5,  3, 90, 15, GWindows.Static_Controls.Right);
