@@ -63,6 +63,7 @@ procedure Saldo_Check is
         exit when Global_Stop;
         Cnt := Cnt +1;
         if Cnt >= 60 then
+          Bal := Table_Abalances.Empty_Data;
           Rpc.Get_Balance(R, Bal) ;
           case R is
             when Rpc.OK => null;
