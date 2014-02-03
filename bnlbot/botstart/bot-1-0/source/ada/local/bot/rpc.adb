@@ -1772,11 +1772,6 @@ package body RPC is
                 Field     => "id",
                 Target    => DB_Market.Eventid,
                 Found     => Found);
-      if not Found then
-        Move("NO EVENT", DB_Market.Eventid);
-      end if;
-    else
-      Move("NO EVENT", DB_Market.Eventid);
     end if;
 
     Get_Value(Container => J_Market,
@@ -1816,9 +1811,6 @@ package body RPC is
               Field     => "status",
               Target    => DB_Market.Status,
               Found     => Found);
-    if not Found then
-      Move("NO STATUS", DB_Market.Status);
-    end if;
 
     Get_Value(Container => J_Market,
               Field     => "betDelay",
