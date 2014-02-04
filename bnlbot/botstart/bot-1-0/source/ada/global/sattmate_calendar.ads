@@ -299,7 +299,6 @@ package Sattmate_Calendar is
       return     Week_Type;
 
    --9.6-11859 start
-   --  function STRING_DATE (DATE : in CALENDAR.TIME := CALENDAR.CLOCK)
    function String_Date
      (Date : in Calendar.Time := To_Calendar_Time (Clock))
       return String;
@@ -309,7 +308,6 @@ package Sattmate_Calendar is
 
 
    function String_Time
-   --           (DATE         : in CALENDAR.TIME := CALENDAR.CLOCK;
      (Date         : in Calendar.Time := To_Calendar_Time (Clock);
       Hours        : in Boolean       := True;
       Minutes      : in Boolean       := True;
@@ -317,7 +315,6 @@ package Sattmate_Calendar is
       Milliseconds : in Boolean       := False)
       return         String;
    function String_Date_And_Time
-   --           (DATE         : in CALENDAR.TIME := CALENDAR.CLOCK;
      (Date         : in Calendar.Time := To_Calendar_Time (Clock);
       Hours        : in Boolean       := True;
       Minutes      : in Boolean       := True;
