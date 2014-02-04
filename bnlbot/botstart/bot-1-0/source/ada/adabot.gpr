@@ -32,10 +32,11 @@ project Adabot is
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
-   Other_Mains := (--"ini_reader.adb",
+   Other_Mains := ("ini_reader.adb",
                    "back_all_g4.adb",
                    "markets_sender.adb",                   
                    "bet_checker.adb",
+                   "lay_football.adb",
                    "test_login.adb",
                    "rpc_tester.adb");
    
