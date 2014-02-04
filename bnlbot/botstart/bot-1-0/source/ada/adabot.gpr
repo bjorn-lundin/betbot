@@ -34,7 +34,8 @@ project Adabot is
     
    Other_Mains := ("ini_reader.adb",
                    "back_all_g4.adb",
-                   "markets_sender.adb",                   
+                   "markets_sender.adb",  
+                   "send_aws_mail.adb",                   
                    "bet_checker.adb",
                    "lay_football.adb",
                    "test_login.adb",
