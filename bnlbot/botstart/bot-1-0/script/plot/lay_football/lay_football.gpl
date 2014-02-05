@@ -1,0 +1,27 @@
+set datafile commentschars '#'
+set datafile separator '|'
+set terminal pngcairo size 2000,768 background '#ffffff'
+set output target_png
+set title bet_type
+
+#set contour base
+
+set pm3d map
+set pm3d corners2color c1
+
+#set dgrid3d
+
+#set pm3d at s
+#unset surface 
+
+#set contour base
+#set cntrparam levels auto 10
+
+set pm3d interpolate 0,0
+#
+#
+splot data_file 
+# w pm3d 
+
+
+
