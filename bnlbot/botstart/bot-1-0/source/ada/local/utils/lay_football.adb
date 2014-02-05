@@ -2,11 +2,11 @@
 with Sattmate_Types ; use Sattmate_Types;
 with Sattmate_Exception;
 with Sql;
---with Text_Io;
+with Text_Io;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
 --with Sattmate_Calendar; use Sattmate_Calendar;
-with Logging; use Logging;
+--with Logging; use Logging;
 --with General_Routines; use General_Routines;
 
 with Table_Amarkets;
@@ -101,7 +101,7 @@ begin
 --
 --   Global_Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
 
-   Log ("Connect db");
+--   Log ("Connect db");
    Sql.Connect
      (Host     => "localhost",
       Port     => 5432,
@@ -175,10 +175,10 @@ begin
            Data_Ok := False;       
         end if;
         
-        Log(Table_Amarkets.To_String(Market));
-        Log("Home " & Table_Aprices.To_String(Prices_Match_Odds(Home)));
-        Log("away " & Table_Aprices.To_String(Prices_Match_Odds(away)));
-        Log("draw " & Table_Aprices.To_String(Prices_Match_Odds(draw)));
+--        Log(Table_Amarkets.To_String(Market));
+--        Log("Home " & Table_Aprices.To_String(Prices_Match_Odds(Home)));
+--        Log("away " & Table_Aprices.To_String(Prices_Match_Odds(away)));
+--        Log("draw " & Table_Aprices.To_String(Prices_Match_Odds(draw)));
         
         if Data_OK and then 
            Prices_Match_Odds(Home).Layprice <= Min_Odds and then
@@ -196,7 +196,7 @@ begin
 
            elsif Runner.Status(1..6) = "WINNER" then
              -- bet lost
-             Profit := Lay_Size * (Prices_Any_Unquoted.Layprice - 1.0);
+             Profit := -Lay_Size * (Prices_Any_Unquoted.Layprice - 1.0);
            else
              Profit := 0.0;
            end if;             
@@ -214,8 +214,10 @@ begin
    end loop Main;
 
    Sql.Close_Session;
-
-   Log("Total profit = " & Integer_4(Global_Profit)'Img);  
+   Text_Io.Put_Line(
+      (Sa_Par_Min_Odds.all & "|" &
+       Sa_Par_Max_Odds.all & "|" &
+       Integer_4(Global_Profit)'Img));  
 exception
    when E: others =>
       Sattmate_Exception.Tracebackinfo(E);
