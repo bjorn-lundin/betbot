@@ -1289,12 +1289,10 @@ package body RPC is
                        Bet              : out Table_Abets.Data_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
-    --AWS_Reply    : Aws.Response.Data;
     Params       : JSON_Value := Create_Object;
     Limit_Order  : JSON_Value := Create_Object;
     Instruction  : JSON_Value := Create_Object;
     Instructions : JSON_Array := Empty_Array;
-
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
@@ -1322,7 +1320,6 @@ package body RPC is
 
   begin
     Move(Side'Img, Side_String);
-
 
     Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet_Persistence'Img);
     Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
@@ -1479,7 +1476,6 @@ package body RPC is
         Size_Matched := Bet_Size_Type(L_Size_Matched);
       end if;
 
-
       if abs(L_Size_Matched - Float_8(Size)) < 0.0001 then
         Move( "EXECUTION_COMPLETE", Order_Status );
       else
@@ -1529,10 +1525,8 @@ package body RPC is
       Ixxluts        => Now              --set by insert
     );
 
-
   end Place_Bet;
   ------------------------------------------
-
 
   procedure Parse_Runners(J_Market      : in     JSON_Value ;
                           Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
@@ -1711,7 +1705,6 @@ package body RPC is
     --        "crossMatching": true,
     --        "complete": true
 
-
     --  type Data_Type is record
     --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
     --      Marketname :    String (1..50) := (others => ' ') ; --
@@ -1778,7 +1771,6 @@ package body RPC is
               Field     => "inplay",
               Target    => In_Play_Market,
               Found     => Found);
-
 
     -- update start, ie these fields are in Market_Book only
 
