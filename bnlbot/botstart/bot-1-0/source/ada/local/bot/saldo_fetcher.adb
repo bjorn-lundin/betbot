@@ -4,11 +4,10 @@ with Ada.Directories;
 
 with Ada.Characters;
 with Ada.Characters.Latin_1;
---with Ada.Streams;
 
-with Unicode;
-with Unicode.Encodings;
-with Unicode.CES;
+--with Unicode;
+--with Unicode.Encodings;
+--with Unicode.CES;
 --with Text_Io;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
@@ -30,7 +29,6 @@ with Table_Abalances;
 with Ini;
 with Logging; use Logging;
 
-
 with Process_IO;
 with Core_Messages;
 
@@ -39,7 +37,6 @@ with AWS.SMTP;
 with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
-
 
 procedure Saldo_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -68,58 +65,15 @@ procedure Saldo_Fetcher is
 --                    To   => Get_By_Name("iso-8859-15"));
 --
 --  end To_Iso_Latin_15;
-  -------------------------------------------------------
-  function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String is
-    use Unicode.Encodings;
-  begin
-    return  Convert(Str  => Str,
-                    From => Get_By_Name("iso-8859-15"),
-                    To   => Get_By_Name("utf-8"));
-  end To_Utf8;
-  -------------------------------------------------------
-
-
---  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
---    pragma unreferenced(T);
---    -- use the pythonscript mail_proxy to send away the mail
---    Host : constant String := "localhost";
---    Host_Entry : Gnat.Sockets.Host_Entry_Type
---               := GNAT.Sockets.Get_Host_By_Name(Host);
---
---    Address : Gnat.Sockets.Sock_Addr_Type;
---    Socket  : Gnat.Sockets.Socket_Type;
---    Channel : Gnat.Sockets.Stream_Access;
---    Data    : Ada.Streams.Stream_Element_Array (1..1_000);
---    Size    : Ada.Streams.Stream_Element_Offset;
---    Str     : String(1 .. 1_000) := (others => ' ');
+--  -------------------------------------------------------
+--  function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String is
+--    use Unicode.Encodings;
 --  begin
---     -- Open a connection to the host
---     Address.Addr := Gnat.Sockets.Addresses(Host_Entry, 1);
---     Address.Port := 27_124;
---     Gnat.Sockets.Create_Socket (Socket);
---     Gnat.Sockets.Connect_Socket (Socket, Address);
---     
---     Channel := Gnat.Sockets.Stream (Socket);
---
---    declare
---       S : String := 
---         "available=" & F8_Image(Saldo.Balance) &
---         ",exposed="  & F8_Image(Saldo.Exposure) & 
---         ",account=" & Ini.Get_Value("betfair","username","");
---    begin        
---      Log(Me & "Mail_Saldo", "Request: '" & S & "'"); 
---      String'Write (Channel, S);
---    end ;
---     --get the reply
---    GNAT.Sockets.Receive_Socket(Socket, Data, Size);
---    for i in 1 .. Size loop
---     Str(integer(i)):= Character'Val(Data(i));
---    end loop;     
---    Log(Me, "reply: '" & Str(1 .. Integer(Size)) & "'"); 
---    Log(Me, "Insert_Saldo stop"); 
---  end Mail_Saldo;
-
------------------------------------------------------------------
+--    return  Convert(Str  => Str,
+--                    From => Get_By_Name("iso-8859-15"),
+--                    To   => Get_By_Name("utf-8"));
+--  end To_Utf8;
+--  -------------------------------------------------------
   
   procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type) is
      T       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
@@ -147,13 +101,9 @@ procedure Saldo_Fetcher is
           "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
           
---      Receivers : constant SMTP.Recipients :=  (
---                  SMTP.E_Mail("Björn Lundin", "b.f.lundin@gmail.com") ,
---                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
---                ); 
       Receivers : constant SMTP.Recipients :=  (
-                  SMTP.E_Mail(To_Utf8("Björn Lundin"), "b.f.lundin@gmail.com"),
-                  SMTP.E_Mail(To_Utf8("Björn Jobb"), "bjorn.lundin@se.consafelogistics.com")
+                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com") ,
+                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
                 ); 
     begin     
       SMTP.Client.Send(Server  => SMTP_Server,
@@ -166,7 +116,6 @@ procedure Saldo_Fetcher is
     if not SMTP.Is_Ok (Status) then
       Log (Me & "Mail_Saldo", "Can't send message: " & SMTP.Status_Message (Status));
     end if;                  
-  
   end Mail_Saldo;
 
 ---------------------------------  
@@ -175,7 +124,7 @@ procedure Saldo_Fetcher is
   begin
     Log(Me, "Insert_Saldo start"); 
     Log(Me, Table_Abalances.To_String(S)); 
---    Table_Abalances.Insert(S);  
+    Table_Abalances.Insert(S);  
     Log(Me, "Insert_Saldo stop"); 
   end Insert_Saldo;
 
@@ -193,13 +142,10 @@ procedure Saldo_Fetcher is
       T.Start;
       Insert_Saldo(Saldo);
       T.Commit;
---      Mail_Saldo(Saldo, Now);
       Mail_Saldo(Saldo);
-    end if;
-    
+    end if;  
   end Balance;    
-  
-   
+     
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Balance,
   Is_Time_To_Exit  : Boolean := False;
@@ -290,14 +236,11 @@ begin
                                   Now.Minute = 00 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
-                                  
-      Is_Time_To_Check_Balance := Now.Minute = 15 and then
-                                  Now.Second >= 50  ; 
-                                    
---      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
---                                  Now.Minute = 00 and then
---                                  Now.Second >= 50 and then 
---                                  Day_Last_Check /= Now.Day;
+                                                                      
+      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
+                                  Now.Minute = 00 and then
+                                  Now.Second >= 50 and then 
+                                  Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
       " Day_Last_Check:" & Day_Last_Check'Img &
       " Now.Day:" & Now.Day'Img);  --??
