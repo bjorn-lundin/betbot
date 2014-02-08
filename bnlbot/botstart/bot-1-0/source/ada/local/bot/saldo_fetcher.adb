@@ -12,9 +12,10 @@ with Sattmate_Types; use Sattmate_Types;
 with Sql;
 with General_Routines; use General_Routines;
 
---with Gnat.Sockets;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
+with GNAT;
+with GNAT.Sockets;
+with GNAT.Command_Line; use GNAT.Command_Line;
+with GNAT.Strings;
 
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Gnatcoll.Json; use Gnatcoll.Json;
@@ -122,7 +123,7 @@ procedure Saldo_Fetcher is
           "saldo:     " & F8_Image(Saldo.Balance) & Cr & Lf &
           "exposure:  " & F8_Image(Saldo.Exposure)  & Cr & Lf &
           "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
-          "sent from: " & Ada.Environment_Variables.Value("HOSTNAME") ;
+          "sent from: " & GNAT.Sockets.Host_Name ;
           
 --      Receivers : constant SMTP.Recipients :=  (
 --                  SMTP.E_Mail("Björn Lundin", "b.f.lundin@gmail.com") ,
@@ -268,7 +269,7 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                   
-      Is_Time_To_Check_Balance := Now.Minute = 40 and then
+      Is_Time_To_Check_Balance := Now.Minute = 59 and then
                                   Now.Second >= 50  ; 
                                     
 --      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
