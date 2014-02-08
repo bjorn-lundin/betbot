@@ -1,11 +1,18 @@
+with Ada;
+with Ada.Environment_Variables;
+with Ada.Directories;
+
+with Ada.Characters;
+with Ada.Characters.Latin_1;
+--with Ada.Streams;
+
 --with Text_Io;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Sql;
 with General_Routines; use General_Routines;
-with Ada.Streams;
 
-with Gnat.Sockets;
+--with Gnat.Sockets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
@@ -19,10 +26,16 @@ with Table_Abalances;
 with Ini;
 with Logging; use Logging;
 
-with Ada.Environment_Variables;
 
 with Process_IO;
 with Core_Messages;
+
+with AWS;
+with AWS.SMTP; 
+with AWS.SMTP.Authentication;
+with AWS.SMTP.Authentication.Plain;
+with AWS.SMTP.Client;
+
 
 procedure Saldo_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -43,53 +56,103 @@ procedure Saldo_Fetcher is
   My_Lock  : Lock.Lock_Type;
 ---------------------------------------------------------------  
 
-  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
-    pragma unreferenced(T);
-    -- use the pythonscript mail_proxy to send away the mail
-    Host : constant String := "localhost";
-    Host_Entry : Gnat.Sockets.Host_Entry_Type
-               := GNAT.Sockets.Get_Host_By_Name(Host);
-
-    Address : Gnat.Sockets.Sock_Addr_Type;
-    Socket  : Gnat.Sockets.Socket_Type;
-    Channel : Gnat.Sockets.Stream_Access;
-    Data    : Ada.Streams.Stream_Element_Array (1..1_000);
-    Size    : Ada.Streams.Stream_Element_Offset;
-    Str     : String(1 .. 1_000) := (others => ' ');
-  begin
-     -- Open a connection to the host
-     Address.Addr := Gnat.Sockets.Addresses(Host_Entry, 1);
-     Address.Port := 27_124;
-     Gnat.Sockets.Create_Socket (Socket);
-     Gnat.Sockets.Connect_Socket (Socket, Address);
-     
-     Channel := Gnat.Sockets.Stream (Socket);
-
-    declare
-       S : String := 
-         "available=" & F8_Image(Saldo.Balance) &
-         ",exposed="  & F8_Image(Saldo.Exposure) & 
-         ",account=" & Ini.Get_Value("betfair","username","");
-    begin        
-      Log(Me & "Mail_Saldo", "Request: '" & S & "'"); 
-      String'Write (Channel, S);
-    end ;
-     --get the reply
-    GNAT.Sockets.Receive_Socket(Socket, Data, Size);
-    for i in 1 .. Size loop
-     Str(integer(i)):= Character'Val(Data(i));
-    end loop;     
-    Log(Me, "reply: '" & Str(1 .. Integer(Size)) & "'"); 
-    Log(Me, "Insert_Saldo stop"); 
-  end Mail_Saldo;
+--  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
+--    pragma unreferenced(T);
+--    -- use the pythonscript mail_proxy to send away the mail
+--    Host : constant String := "localhost";
+--    Host_Entry : Gnat.Sockets.Host_Entry_Type
+--               := GNAT.Sockets.Get_Host_By_Name(Host);
+--
+--    Address : Gnat.Sockets.Sock_Addr_Type;
+--    Socket  : Gnat.Sockets.Socket_Type;
+--    Channel : Gnat.Sockets.Stream_Access;
+--    Data    : Ada.Streams.Stream_Element_Array (1..1_000);
+--    Size    : Ada.Streams.Stream_Element_Offset;
+--    Str     : String(1 .. 1_000) := (others => ' ');
+--  begin
+--     -- Open a connection to the host
+--     Address.Addr := Gnat.Sockets.Addresses(Host_Entry, 1);
+--     Address.Port := 27_124;
+--     Gnat.Sockets.Create_Socket (Socket);
+--     Gnat.Sockets.Connect_Socket (Socket, Address);
+--     
+--     Channel := Gnat.Sockets.Stream (Socket);
+--
+--    declare
+--       S : String := 
+--         "available=" & F8_Image(Saldo.Balance) &
+--         ",exposed="  & F8_Image(Saldo.Exposure) & 
+--         ",account=" & Ini.Get_Value("betfair","username","");
+--    begin        
+--      Log(Me & "Mail_Saldo", "Request: '" & S & "'"); 
+--      String'Write (Channel, S);
+--    end ;
+--     --get the reply
+--    GNAT.Sockets.Receive_Socket(Socket, Data, Size);
+--    for i in 1 .. Size loop
+--     Str(integer(i)):= Character'Val(Data(i));
+--    end loop;     
+--    Log(Me, "reply: '" & Str(1 .. Integer(Size)) & "'"); 
+--    Log(Me, "Insert_Saldo stop"); 
+--  end Mail_Saldo;
 
 -----------------------------------------------------------------
+  
+  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type) is
+     T       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+     Subject : constant String             := "BetBot Saldo Report";
+     use AWS;
+     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
+     Status : SMTP.Status; 
+  begin
+    Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
+    declare
+      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", 
+                                              "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
+      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+                                  (SMTP_Server_Name,
+                                   Port       => 2465,
+                                   Secure     => True,
+                                   Credential => Auth'Unchecked_Access);                                  
+      use Ada.Characters.Latin_1;
+      Msg : constant String := 
+          "Dagens saldo-rapport " & Cr & Lf &
+          "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &
+          "saldo:     " & F8_Image(Saldo.Balance) & Cr & Lf &
+          "exposure:  " & F8_Image(Saldo.Exposure)  & Cr & Lf &
+          "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
+          "sent from: " & Ada.Environment_Variables.Value("HOSTNAME") ;
+          
+--      Receivers : constant SMTP.Recipients :=  (
+--                  SMTP.E_Mail("Björn Lundin", "b.f.lundin@gmail.com") ,
+--                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
+--                ); 
+      Receivers : constant SMTP.Recipients :=  (
+                  SMTP.E_Mail("Björn Lundin", "b.f.lundin@gmail.com"),
+                  SMTP.E_Mail("Björn Jobb", "bjorn.lundin@se.consafelogistics.com")
+                ); 
+    begin     
+      SMTP.Client.Send(Server  => SMTP_Server,
+                       From    => SMTP.E_Mail ("Nonobet Betbot", "betbot@nonobet.com"),
+                       To      => Receivers,
+                       Subject => Subject,
+                       Message => Msg,
+                       Status  => Status);
+    end;                   
+    if not SMTP.Is_Ok (Status) then
+      Log (Me & "Mail_Saldo", "Can't send message: " & SMTP.Status_Message (Status));
+    end if;                  
+  
+  end Mail_Saldo;
+
+---------------------------------  
   
   procedure Insert_Saldo(S : in out Table_Abalances.Data_Type) is
   begin
     Log(Me, "Insert_Saldo start"); 
     Log(Me, Table_Abalances.To_String(S)); 
-    Table_Abalances.Insert(S);  
+--    Table_Abalances.Insert(S);  
     Log(Me, "Insert_Saldo stop"); 
   end Insert_Saldo;
 
@@ -107,7 +170,8 @@ procedure Saldo_Fetcher is
       T.Start;
       Insert_Saldo(Saldo);
       T.Commit;
-      Mail_Saldo(Saldo, Now);
+--      Mail_Saldo(Saldo, Now);
+      Mail_Saldo(Saldo);
     end if;
     
   end Balance;    
@@ -204,10 +268,13 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                   
-      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
-                                  Now.Minute = 00 and then
-                                  Now.Second >= 50 and then 
-                                  Day_Last_Check /= Now.Day;
+      Is_Time_To_Check_Balance := Now.Minute = 40 and then
+                                  Now.Second >= 50  ; 
+                                    
+--      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
+--                                  Now.Minute = 00 and then
+--                                  Now.Second >= 50 and then 
+--                                  Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
       " Day_Last_Check:" & Day_Last_Check'Img &
       " Now.Day:" & Now.Day'Img);  --??

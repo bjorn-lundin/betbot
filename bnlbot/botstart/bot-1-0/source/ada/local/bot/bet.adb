@@ -35,12 +35,9 @@ package body Bet is
         "from ABETS " &
         "where STARTTS >= :STARTOFDAY " &
         "and STARTTS <= :ENDOFDAY " &
---        "and BETMODE = :BOTMODE " &
---        "and PROFIT < 0.0 " &
         "and BETWON is not null " &
         "and BETNAME = :BETNAME " );
 
---      Select_Profit_Today.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Profit_Today.Set("BETNAME", Bet_Name);
       Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
       Select_Profit_Today.Set_Timestamp( "ENDOFDAY",End_Date);

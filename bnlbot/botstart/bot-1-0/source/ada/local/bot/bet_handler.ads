@@ -13,7 +13,6 @@ package Bet_Handler is
   Bad_Data,
   No_Data : exception;
 
-
   procedure Treat_Market(Market_Notification : in     Bot_Messages.Market_Notification_Record) ;
 
   procedure Check_Bets;
@@ -59,8 +58,6 @@ private
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
 
-  
-  
   procedure Make_Bet(Bet           : in out Bet_Type;
                      A_Bet_Type    : in     Bet_Type_Type;
                      Price         : in     Bet_Price_Type;
