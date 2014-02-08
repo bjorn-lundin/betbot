@@ -6,6 +6,9 @@ with Ada.Characters;
 with Ada.Characters.Latin_1;
 --with Ada.Streams;
 
+with Unicode;
+with Unicode.Encodings;
+with Unicode.CES;
 --with Text_Io;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
@@ -56,6 +59,25 @@ procedure Saldo_Fetcher is
  
   My_Lock  : Lock.Lock_Type;
 ---------------------------------------------------------------  
+
+--  function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is
+--    use Unicode.Encodings;
+--  begin
+--    return  Convert(Str  => Str,
+--                    From => Get_By_Name("utf-8"),
+--                    To   => Get_By_Name("iso-8859-15"));
+--
+--  end To_Iso_Latin_15;
+  -------------------------------------------------------
+  function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String is
+    use Unicode.Encodings;
+  begin
+    return  Convert(Str  => Str,
+                    From => Get_By_Name("iso-8859-15"),
+                    To   => Get_By_Name("utf-8"));
+  end To_Utf8;
+  -------------------------------------------------------
+
 
 --  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type; T : Sattmate_Calendar.Time_Type) is
 --    pragma unreferenced(T);
@@ -130,8 +152,8 @@ procedure Saldo_Fetcher is
 --                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
 --                ); 
       Receivers : constant SMTP.Recipients :=  (
-                  SMTP.E_Mail("Björn Lundin", "b.f.lundin@gmail.com"),
-                  SMTP.E_Mail("Björn Jobb", "bjorn.lundin@se.consafelogistics.com")
+                  SMTP.E_Mail(To_Utf8("Björn Lundin"), "b.f.lundin@gmail.com"),
+                  SMTP.E_Mail(To_Utf8("Björn Jobb"), "bjorn.lundin@se.consafelogistics.com")
                 ); 
     begin     
       SMTP.Client.Send(Server  => SMTP_Server,
@@ -269,7 +291,7 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                   
-      Is_Time_To_Check_Balance := Now.Minute = 59 and then
+      Is_Time_To_Check_Balance := Now.Minute = 15 and then
                                   Now.Second >= 50  ; 
                                     
 --      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
