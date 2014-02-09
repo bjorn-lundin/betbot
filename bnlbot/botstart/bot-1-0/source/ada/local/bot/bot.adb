@@ -71,7 +71,6 @@ begin
        Log(Me, "No login to betfair, we are in simulation mode");
   end case;
 
-
   Log(Me, "Start main loop");
   
   if not Bot_Config.Config.Global_Section.Logging then

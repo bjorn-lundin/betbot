@@ -37,6 +37,7 @@ project Adabot is
                    "markets_sender.adb",  
                    "bet_checker.adb",
                    "lay_football.adb",
+                   "insert_blank_line.adb",
                    "test_login.adb",
                    "rpc_tester.adb");
    

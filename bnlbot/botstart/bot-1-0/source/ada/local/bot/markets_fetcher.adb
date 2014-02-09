@@ -328,9 +328,9 @@ begin
                        
     Params.Set_Field (Field_Name => "filter",           Field => Filter);                     
     Params.Set_Field (Field_Name => "marketProjection", Field => Market_Projection);  
-    Params.Set_Field (Field_Name => "locale",           Field => "sv");               
+    Params.Set_Field (Field_Name => "locale",           Field => "en"); -- to get ' the draw instead of 'Oavgjort'               
     Params.Set_Field (Field_Name => "sort",             Field => "FIRST_TO_START");
-    Params.Set_Field (Field_Name => "maxResults",       Field => "30");
+    Params.Set_Field (Field_Name => "maxResults",       Field => "300");
                       
     Query_List_Market_Catalogue.Set_Field (Field_Name => "params",  Field => Params);
     Query_List_Market_Catalogue.Set_Field (Field_Name => "id",      Field => 15);          -- ???
