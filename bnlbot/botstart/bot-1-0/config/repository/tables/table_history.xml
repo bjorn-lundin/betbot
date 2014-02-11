@@ -19,8 +19,10 @@
         <Column Name="firsttaken"      Size="0"   Type="15" AllowNull="0" Description=""/>
         <Column Name="winflag"         Size="8"   Type="7"  AllowNull="0" Description=""/>
         <Column Name="inplay"          Size="2"   Type="1"  AllowNull="0" Description=""/>
+<!--        
         <Column Name="ixxlupd"         Size="15"  Type="1"  AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"         Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
+-->        
         <Index Columns="pk" type="primary"/>
         <Index Columns="sportsid" type="index"/>
         <Index Columns="eventid" type="index"/>

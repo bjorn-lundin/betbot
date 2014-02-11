@@ -1,5 +1,7 @@
 
 with Sattmate_Types ; use Sattmate_Types;
+with Bot_Types ; use Bot_Types;
+
 with Sattmate_Exception;
 with Sql;
 with Text_Io;
@@ -7,43 +9,59 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
 --with Sattmate_Calendar; use Sattmate_Calendar;
 --with Logging; use Logging;
---with General_Routines; use General_Routines;
-
-with Table_Amarkets;
-with Table_Aprices;
-with Table_Arunners;
+with General_Routines; use General_Routines;
+with Simple_List_Class;
+pragma Elaborate_All(Simple_List_Class);
 
 procedure Lay_Football is
    
-   type Result_Type is (Home, Draw, Away);   
-   Prices_Match_Odds : array (Result_Type'range) of Table_Aprices.Data_Type;
-   Got_Data : array (Result_Type'range) of Boolean := (others => False);
-   
-   Market : Table_Amarkets.Data_Type;
-   Runner : Table_Arunners.Data_Type;
+  T : Sql.Transaction_Type;
+  Select_Any_Unquoted  : Sql.Statement_Type;
 
-   Prices_Any_Unquoted : Table_Aprices.Data_Type ;
-                       
-   Prices_Any_Unquoted_List : Table_Aprices.Aprices_List_Pack.List_Type :=
-                                            Table_Aprices.Aprices_List_Pack.Create;
-   T : Sql.Transaction_Type;
-   Select_Any_Unquoted,
-   Select_Match_Odds : Sql.Statement_Type;
+  Eos, Eol  : Boolean := False;
+  Config           : Command_Line_Configuration;
 
-   Eos,
-   Eos2             : Boolean := False;
-   Config           : Command_Line_Configuration;
-
-   Sa_Par_Country_Code   : aliased Gnat.Strings.String_Access;
-   Sa_Par_Market_Type    : aliased Gnat.Strings.String_Access;
-   Sa_Par_Min_Odds       : aliased Gnat.Strings.String_Access;
-   Sa_Par_Max_Odds       : aliased Gnat.Strings.String_Access;
-   
-   Min_Odds, Max_Odds    : Float_8 := 0.0;
-   Global_Profit, Profit : Float_8 := 0.0;
-   
-   Lay_Size  : Float_8 := 30.0;   
-   Commission : Float_8 := 0.065;
+  Sa_Par_Country_Code   : aliased Gnat.Strings.String_Access;
+  Sa_Par_Market_Type    : aliased Gnat.Strings.String_Access;
+  Sa_Par_Min_Odds_Score : aliased Gnat.Strings.String_Access;
+  Sa_Par_Max_Odds_Score : aliased Gnat.Strings.String_Access;
+  Sa_Par_Min_Odds_Match : aliased Gnat.Strings.String_Access;
+  Sa_Par_Max_Odds_Match : aliased Gnat.Strings.String_Access;
+  
+  Min_Odds_Score, Max_Odds_Score    : Float_8 := 0.0;
+  Min_Odds_Match, Max_Odds_Match    : Float_8 := 0.0;
+  
+  Match_Odds, Score_Odds : Float_8 := 0.0;
+  
+  Global_Profit, Profit : Float_8 := 0.0;
+  
+  Lay_Size  : Float_8 := 30.0;   
+  Commission : Float_8 := 0.065;
+  type Result_Type is (Winner, Loser, Removed, Not_Set_Yet ,Other, Tot);
+  
+  Cnt : array (Result_Type'range) of Integer_4 := (others => 0);
+  
+  type Runner_Info is record
+    Runner_Name : Runner_Name_Type := (others => ' ');
+    Status      : Status_Type      := (others => ' ');
+    Back_Price  : Float_8          := 0.0;
+    Lay_Price   : Float_8          := 0.0;      
+  end record;
+  
+  type Runner_Info_Type is (Score, Home, Draw, Away);   
+  type Runner_Array is array (Runner_Info_Type'range) of Runner_Info;
+  
+  type Market_Info is record
+    Event_Name      : Event_Name_Type := (others => ' ');
+    Match_Market_Id : Market_Id_Type  := (others => ' ');
+    Score_Market_Id : Market_Id_Type  := (others => ' ');
+    Runner          : Runner_Array;
+  end record;
+  
+  package Info_Pkg is new SImple_List_Class(Market_Info);
+  List : Info_Pkg.List_Type := Info_Pkg.Create;
+  
+  Info : Market_Info;
    --------------------------------------------------------------------------
 begin      
   Define_Switch
@@ -60,27 +78,44 @@ begin
      
   Define_Switch
     (Config      => Config,
-     Output      => Sa_Par_Max_Odds'access,
-     Long_Switch => "--max_odds=",
-     Help        => "Max odds to accept, inclusive, to place the bet");
+     Output      => Sa_Par_Max_Odds_Score'access,
+     Long_Switch => "--max_odds_score=",
+     Help        => "Max odds to accept, inclusive, for the score, to place the bet");
      
   Define_Switch
     (Config      => Config,
-     Output      => Sa_Par_Min_Odds'access,
-     Long_Switch => "--min_odds=",
-     Help        => "Min odds to accept, inclusive, to place the bet");
+     Output      => Sa_Par_Min_Odds_Score'access,
+     Long_Switch => "--min_odds_score=",
+     Help        => "Min odds to accept, inclusive,for the score, to place the bet");
+
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Max_Odds_Match'access,
+     Long_Switch => "--max_odds_match=",
+     Help        => "Max odds to accept, inclusive, for the match, to place the bet");
+     
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Min_Odds_Match'access,
+     Long_Switch => "--min_odds_match=",
+     Help        => "Min odds to accept, inclusive,for the match, to place the bet");
+
      
   Getopt (Config);  -- process the command line
 
-  if Sa_Par_Min_Odds.all = "" or else 
-    Sa_Par_Max_Odds.all = "" or else 
+  if Sa_Par_Min_Odds_Score.all = "" or else 
+    Sa_Par_Max_Odds_Score.all = "" or else 
+    Sa_Par_Max_Odds_Match.all = "" or else 
+    Sa_Par_Max_Odds_Match.all = "" or else 
     Sa_Par_Market_Type.all = "" then
     Display_Help (Config);
     return;
   end if;
 
-  Min_Odds := Float_8'Value(Sa_Par_Min_Odds.all);
-  Max_Odds := Float_8'Value(Sa_Par_Max_Odds.all);
+  Min_Odds_Score := Float_8'Value(Sa_Par_Min_Odds_Score.all);
+  Max_Odds_Score := Float_8'Value(Sa_Par_Max_Odds_Score.all);
+  Max_Odds_Match := Float_8'Value(Sa_Par_Max_Odds_Match.all);
+  Min_Odds_Match := Float_8'Value(Sa_Par_Min_Odds_Match.all);
 
   Sql.Connect
     (Host     => "localhost",
@@ -90,124 +125,238 @@ begin
      Password => "bnl");
 
   T.Start;
-    if Sa_Par_Country_Code.all = "YY" then -- any country
-      Select_Any_Unquoted.Prepare (
-         "select " &
-         " P.* " &
-         "from " &
-         "  AMARKETS M, AEVENTS E, ARUNNERS R, APRICES P " &
-         "where " &
-         "  M.EVENTID = E.EVENTID " &
-         "  and M.MARKETID = R.MARKETID " &
-         "  and P.MARKETID = R.MARKETID " &
-         "  and P.SELECTIONID = R.SELECTIONID " &
-         "  and E.EVENTTYPEID = 1 " &
-         "  and M.MARKETTYPE = :MARKETTYPE " &
-         "  and R.RUNNERNAME = 'Any Unquoted' " &
-         "order by " &
-         "  M.MARKETID, " &
-         "  M.STARTTS ");
-      Select_Any_Unquoted.Set("MARKETTYPE", Sa_Par_Market_Type.all);
-    else -- specific country
-      Select_Any_Unquoted.Prepare (
-         "select " &
-         " P.* " &
-         "from " &
-         "  AMARKETS M, AEVENTS E, ARUNNERS R, APRICES P " &
-         "where " &
-         "  M.EVENTID = E.EVENTID " &
-         "  and M.MARKETID = R.MARKETID " &
-         "  and P.MARKETID = R.MARKETID " &
-         "  and P.SELECTIONID = R.SELECTIONID " &
-         "  and E.EVENTTYPEID = 1 " &
-         "  and E.COUNTRYCODE = :COUNTRYCODE " &
-         "  and M.MARKETTYPE = :MARKETTYPE " &
-         "  and R.RUNNERNAME = 'Any Unquoted' " &
-         "order by " &
-         "  M.MARKETID, " &
-         "  M.STARTTS ");
-      Select_Any_Unquoted.Set("COUNTRYCODE", Sa_Par_Country_Code.all);
-      Select_Any_Unquoted.Set("MARKETTYPE", Sa_Par_Market_Type.all);
-    end if;
+     
+      if Sa_Par_Country_Code.all = "YY" then -- any country
+        Select_Any_Unquoted.Prepare (
+          "select " &
+          "  E.EVENTNAME        EVENTNAME, " &
+          "  M_SCORE.STARTTS    SCORE_STARTTS, " &
+          "  M_SCORE.MARKETID   SCORE_MARKETID, " &
+          "  M_MATCH.MARKETID   MATCH_MARKETID, " &
+          "  R_SCORE.RUNNERNAME R_SCORE_RUNNERNAME, " &
+          "  R_SCORE.STATUS     R_SCORE_STATUS, " &
+          "  P_SCORE.BACKPRICE  P_SCORE_BACKPRICE, " &
+          "  P_SCORE.LAYPRICE   P_SCORE_LAYPRICE, " &
+          "  R_HOME.RUNNERNAME  R_HOME_RUNNERNAME, " &
+          "  R_HOME.STATUS      R_HOME_STATUS, " &
+          "  P_HOME.BACKPRICE   P_HOME_BACKPRICE, " &
+          "  P_HOME.LAYPRICE    P_HOME_LAYPRICE, " &
+          "  R_DRAW.RUNNERNAME  R_DRAW_RUNNERNAME, " &
+          "  R_DRAW.STATUS      R_DRAW_STATUS, " &
+          "  P_DRAW.BACKPRICE   P_DRAW_BACKPRICE, " &
+          "  P_DRAW.LAYPRICE    P_DRAW_LAYPRICE, " &
+          "  R_AWAY.RUNNERNAME  R_AWAY_RUNNERNAME, " &
+          "  R_AWAY.STATUS      R_AWAY_STATUS, " &
+          "  P_AWAY.BACKPRICE   P_AWAY_BACKPRICE, " &
+          "  P_AWAY.LAYPRICE    P_AWAY_LAYPRICE " &
+          "from " &
+          "  AEVENTS  E, " &
+          "  AMARKETS M_SCORE, " & 
+          "  AMARKETS M_MATCH, " &
+          "  ARUNNERS R_SCORE, " &
+          "  APRICES  P_SCORE, " &
+          "  ARUNNERS R_HOME, " &
+          "  APRICES  P_HOME, " &
+          "  ARUNNERS R_DRAW, " &
+          "  APRICES  P_DRAW, " &
+          "  ARUNNERS R_AWAY, " &
+          "  APRICES  P_AWAY " &
+          "where E.EVENTID          = M_SCORE.EVENTID " &
+          "and E.EVENTID            = M_MATCH.EVENTID " &
+          "and P_SCORE.MARKETID     = M_SCORE.MARKETID " &
+          "and P_SCORE.MARKETID     = R_SCORE.MARKETID " &
+          "and P_SCORE.SELECTIONID  = R_SCORE.SELECTIONID " &
+          "" &
+          "and P_HOME.MARKETID      = M_MATCH.MARKETID " &
+          "and P_HOME.MARKETID      = R_HOME.MARKETID " &
+          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
+          "and R_HOME.RUNNERNAME    = substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 ) " &
+          "" &
+          "and P_DRAW.MARKETID      = M_MATCH.MARKETID " &
+          "and P_DRAW.MARKETID      = R_DRAW.MARKETID " &
+          "and P_DRAW.SELECTIONID   = R_DRAW.SELECTIONID " & 
+          "and R_DRAW.RUNNERNAME    in ('The Draw','Oavgjort') " & 
+          "" &
+          "and P_AWAY.MARKETID      = M_MATCH.MARKETID " & 
+          "and P_AWAY.MARKETID      = R_AWAY.MARKETID " & 
+          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
+          "and R_AWAY.RUNNERNAME    = substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 ) " &
+          "" &
+          "and E.EVENTTYPEID        = 1 " & 
+          "and M_SCORE.MARKETTYPE   = :MARKETTYPE " &   
+          "and M_MATCH.MARKETTYPE   = 'MATCH_ODDS' " &
+          "and ((R_SCORE.RUNNERNAME = 'Any Unquoted') or (R_SCORE.RUNNERNAME like '%vriga')) " &
+          "order by " & 
+          "  M_SCORE.STARTTS, " &
+          "  E.EVENTID ");
+  
+      else -- specific country
+        Select_Any_Unquoted.Prepare (
+          "select " &
+          "  E.EVENTNAME        EVENTNAME, " &
+          "  M_SCORE.STARTTS    SCORE_STARTTS, " &
+          "  M_SCORE.MARKETID   SCORE_MARKETID, " &
+          "  M_MATCH.MARKETID   MATCH_MARKETID, " &
+          "  R_SCORE.RUNNERNAME R_SCORE_RUNNERNAME, " &
+          "  R_SCORE.STATUS     R_SCORE_STATUS, " &
+          "  P_SCORE.BACKPRICE  P_SCORE_BACKPRICE, " &
+          "  P_SCORE.LAYPRICE   P_SCORE_LAYPRICE, " &
+          "  R_HOME.RUNNERNAME  R_HOME_RUNNERNAME, " &
+          "  R_HOME.STATUS      R_HOME_STATUS, " &
+          "  P_HOME.BACKPRICE   P_HOME_BACKPRICE, " &
+          "  P_HOME.LAYPRICE    P_HOME_LAYPRICE, " &
+          "  R_DRAW.RUNNERNAME  R_DRAW_RUNNERNAME, " &
+          "  R_DRAW.STATUS      R_DRAW_STATUS, " &
+          "  P_DRAW.BACKPRICE   P_DRAW_BACKPRICE, " &
+          "  P_DRAW.LAYPRICE    P_DRAW_LAYPRICE, " &
+          "  R_AWAY.RUNNERNAME  R_AWAY_RUNNERNAME, " &
+          "  R_AWAY.STATUS      R_AWAY_STATUS, " &
+          "  P_AWAY.BACKPRICE   P_AWAY_BACKPRICE, " &
+          "  P_AWAY.LAYPRICE    P_AWAY_LAYPRICE " &
+          "from " &
+          "  AEVENTS  E, " &
+          "  AMARKETS M_SCORE, " & 
+          "  AMARKETS M_MATCH, " &
+          "  ARUNNERS R_SCORE, " &
+          "  APRICES  P_SCORE, " &
+          "  ARUNNERS R_HOME, " &
+          "  APRICES  P_HOME, " &
+          "  ARUNNERS R_DRAW, " &
+          "  APRICES  P_DRAW, " &
+          "  ARUNNERS R_AWAY, " &
+          "  APRICES  P_AWAY " &
+          "where E.EVENTID          = M_SCORE.EVENTID " &
+          "and E.EVENTID            = M_MATCH.EVENTID " &
+          "and P_SCORE.MARKETID     = M_SCORE.MARKETID " &
+          "and P_SCORE.MARKETID     = R_SCORE.MARKETID " &
+          "and P_SCORE.SELECTIONID  = R_SCORE.SELECTIONID " &
+          "" &
+          "and P_HOME.MARKETID      = M_MATCH.MARKETID " &
+          "and P_HOME.MARKETID      = R_HOME.MARKETID " &
+          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
+          "and R_HOME.RUNNERNAME    = substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 ) " &
+          "" &
+          "and P_DRAW.MARKETID      = M_MATCH.MARKETID " &
+          "and P_DRAW.MARKETID      = R_DRAW.MARKETID " &
+          "and P_DRAW.SELECTIONID   = R_DRAW.SELECTIONID " & 
+          "and R_DRAW.RUNNERNAME    in ('The Draw','Oavgjort') " & 
+          "" &
+          "and P_AWAY.MARKETID      = M_MATCH.MARKETID " & 
+          "and P_AWAY.MARKETID      = R_AWAY.MARKETID " & 
+          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
+          "and R_AWAY.RUNNERNAME    = substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 ) " &
+          "" &
+          "and E.EVENTTYPEID        = 1 " & 
+          "and E.COUNTRYCODE        = :COUNTRYCODE " & 
+          "and M_SCORE.MARKETTYPE   = :MARKETTYPE " &   
+          "and M_MATCH.MARKETTYPE   = 'MATCH_ODDS' " &
+          "and ((R_SCORE.RUNNERNAME = 'Any Unquoted') or (R_SCORE.RUNNERNAME like '%vriga')) " &
+          "order by " & 
+          "  M_SCORE.STARTTS, " &
+          "  E.EVENTID ");
+        Select_Any_Unquoted.Set("COUNTRYCODE", Sa_Par_Country_Code.all);
+      end if;
+     
+  Match_Odds := Min_Odds_Match - Float_8(0.1);
+  Score_Odds := Min_Odds_Score - Float_8(1.0);
+  
+  -- Get resultset into list
+  
+  Select_Any_Unquoted.Set("MARKETTYPE", Sa_Par_Market_Type.all);
+  Select_Any_Unquoted.Open_Cursor;
+  Odds_List_Loop : loop
+    Select_Any_Unquoted.Fetch(Eos);
+    exit when Eos;
+    Select_Any_Unquoted.Get("EVENTNAME", Info.Event_Name);
+    Select_Any_Unquoted.Get("SCORE_MARKETID", Info.Score_Market_Id);
+    Select_Any_Unquoted.Get("MATCH_MARKETID", Info.Match_Market_Id);
+    Select_Any_Unquoted.Get("R_SCORE_RUNNERNAME", Info.Runner(Score).Runner_Name);
+    Select_Any_Unquoted.Get("R_SCORE_STATUS", Info.Runner(Score).Status);
+    Select_Any_Unquoted.Get("P_SCORE_BACKPRICE", Info.Runner(Score).Back_Price);
+    Select_Any_Unquoted.Get("P_SCORE_LAYPRICE", Info.Runner(Score).Lay_Price);
     
-    Table_Aprices.Read_List(Select_Any_Unquoted, Prices_Any_Unquoted_List);
-
-    Select_Match_Odds.Prepare( 
-          "select R.RUNNERNAME, P.* " & 
-          "from APRICES P, ARUNNERS R, AMARKETS M " &
-          "where M.EVENTID = :EVENTID " &
-          "and M.MARKETTYPE = 'MATCH_ODDS' " &
-          "and M.MARKETID = R.MARKETID " &
-          "and P.MARKETID = R.MARKETID " &
-          "and P.SELECTIONID = R.SELECTIONID " &
-          "order by R.SORTPRIO"  ) ;
-
-    Loop_All : while not Table_Aprices.Aprices_List_Pack.Is_Empty(Prices_Any_Unquoted_List) loop
-      Table_Aprices.Aprices_List_Pack.Remove_From_Head(Prices_Any_Unquoted_List, Prices_Any_Unquoted);    
-
-      Market.Marketid := Prices_Any_Unquoted.Marketid;
-      Table_Amarkets.Read(Market, Eos2);
-      -- get the corresponding MATCH_ODDS market - linked via eventid
-      Select_Match_Odds.Set("EVENTID", Market.Eventid);
-      
-      Got_Data := (others => False);
-      Select_Match_Odds.Open_Cursor;
-      Odds_List_Loop : loop
-        Select_Match_Odds.Fetch(Eos);
-        exit when Eos or else Eos2;
-        Runner.Runnername := (others => ' ');
-        Select_Match_Odds.Get("RUNNERNAME", Runner.Runnername); 
-        if Runner.Runnername(1..8) = "The Draw" then
-          Prices_Match_Odds(Draw) := Table_Aprices.Get(Select_Match_Odds);
-          Got_Data(Draw) := True;
-        else
-          if not Got_Data(Home) then
-            Prices_Match_Odds(Home) := Table_Aprices.Get(Select_Match_Odds);        
-            Got_Data(Home) := True;
-          else
-            Prices_Match_Odds(Away) := Table_Aprices.Get(Select_Match_Odds);
-            Got_Data(Away) := True;
-          end if;
-        end if;
-      end loop Odds_List_Loop;      
-      Select_Match_Odds.Close_Cursor;
-      
-    --        Log(Table_Amarkets.To_String(Market));
-    --        Log("Home " & Table_Aprices.To_String(Prices_Match_Odds(Home)));
-    --        Log("away " & Table_Aprices.To_String(Prices_Match_Odds(Away)));
-    --        Log("draw " & Table_Aprices.To_String(Prices_Match_Odds(Draw)));
-      
-      if Got_Data(Home) and then Prices_Match_Odds(Home).Layprice <= Min_Odds and then
-                                 Prices_Match_Odds(Home).Layprice > 0.0       and then
-         Got_Data(Away) and then Prices_Match_Odds(Away).Layprice <= Min_Odds and then
-                                 Prices_Match_Odds(Away).Layprice > 0.0       and then
-         Prices_Any_Unquoted.Layprice  <= Max_Odds then
-         
-         Runner := Table_Arunners.Empty_Data;
-         Runner.Marketid := Prices_Any_Unquoted.Marketid;
-         Runner.Selectionid := Prices_Any_Unquoted.Selectionid;
-         Table_Arunners.Read(Runner, Eos);
-                   
-         if Runner.Status(1..5) = "LOSER" then
-           -- bet won
-           Profit := Lay_Size * (1.0 - Commission);            
-
-         elsif Runner.Status(1..6) = "WINNER" then
-           -- bet lost
-           Profit := -Lay_Size * (Prices_Any_Unquoted.Layprice - 1.0);
-         else
-           Profit := 0.0;
-         end if;                        
-      end if;           
-      Global_Profit := Global_Profit + Profit;                   
-    end loop Loop_All;
-  T.Commit ;
-
+    Select_Any_Unquoted.Get("R_HOME_RUNNERNAME", Info.Runner(Home).Runner_Name);
+    Select_Any_Unquoted.Get("R_HOME_STATUS", Info.Runner(Home).Status);
+    Select_Any_Unquoted.Get("P_HOME_BACKPRICE", Info.Runner(Home).Back_Price);
+    Select_Any_Unquoted.Get("P_Home_Layprice", Info.Runner(Home).Lay_Price);
+    
+    Select_Any_Unquoted.Get("R_DRAW_RUNNERNAME", Info.Runner(Draw).Runner_Name);
+    Select_Any_Unquoted.Get("R_DRAW_STATUS", Info.Runner(Draw).Status);
+    Select_Any_Unquoted.Get("P_DRAW_BACKPRICE", Info.Runner(Draw).Back_Price);
+    Select_Any_Unquoted.Get("P_DRAW_LAYPRICE", Info.Runner(Draw).Lay_Price);
+    
+    Select_Any_Unquoted.Get("R_AWAY_RUNNERNAME", Info.Runner(Away).Runner_Name);
+    Select_Any_Unquoted.Get("R_AWAY_STATUS", Info.Runner(Away).Status);
+    Select_Any_Unquoted.Get("P_AWAY_BACKPRICE", Info.Runner(Away).Back_Price);
+    Select_Any_Unquoted.Get("P_AWAY_LAYPRICE", Info.Runner(Away).Lay_Price);
+ 
+    Info_Pkg.Insert_At_Tail(List, Info);
+  end loop Odds_List_Loop;      
+  Select_Any_Unquoted.Close_Cursor;
+  T.Commit ; 
   Sql.Close_Session;
-  Text_Io.Put_Line(
-      (Sa_Par_Min_Odds.all & "|" &
-       Sa_Par_Max_Odds.all & "|" &
-       Integer_4(Global_Profit)'Img));  
+  
+  Score_Odds_Loop : loop
+    Score_Odds := Score_Odds + Float_8(1.0);
+    exit Score_Odds_Loop when Score_Odds > Max_Odds_Score;   
+    
+    Match_Odds_Loop : loop
+      Match_Odds := Match_Odds + Float_8(0.1);
+      exit Match_Odds_Loop when Match_Odds > Max_Odds_Match;
+    
+      Global_Profit := 0.0;
+      Cnt := (others => 0);
+      Info_Pkg.Get_First(List,Info,Eol);
+      List_Loop : loop  
+        exit List_Loop when Eol;
+        if abs(Info.Runner(Score).Lay_Price - Score_Odds) > Float_8(0.0001) and then  -- at score odds
+           abs(Info.Runner(Home).Lay_Price - Info.Runner(Away).Lay_Price) <= Match_Odds and then  -- less than match odds
+               Info.Runner(Score).Lay_Price   > Float_8(1.0) and then  --real figures
+               Info.Runner(Home).Back_Price  >= Float_8(2.0) and then  -- some fix price
+               Info.Runner(Away).Back_Price  >= Float_8(2.0) and then  -- some fix price
+               Info.Runner(Home).Back_Price  <= Float_8(7.0) and then  -- some fix price
+               Info.Runner(Away).Back_Price  <= Float_8(7.0) then      -- some fix price
+           
+           Cnt(Tot) := Cnt(Tot) +1;
+           if Info.Runner(Score).Status(1..5) = "LOSER" then
+             Cnt(Loser) := Cnt(Loser) +1;
+             -- bet won
+             Profit := Lay_Size * (1.0 - Commission);              
+           elsif Info.Runner(Score).Status(1..6) = "WINNER" then
+             Cnt(Winner) := Cnt(Winner) +1;
+             -- bet lost
+             Profit := -Lay_Size * (Info.Runner(Score).Lay_Price - 1.0);
+           elsif Info.Runner(Score).Status(1..7) = "REMOVED" then
+             Cnt(Removed) := Cnt(Removed) +1;
+             -- runner cancelled
+             Profit := 0.0;
+           elsif Info.Runner(Score).Status(1..11) = "NOT_SET_YET" then
+             Cnt(Not_Set_Yet) := Cnt(Not_Set_Yet) +1;
+             -- runner cancelled
+             Profit := 0.0;
+           else
+             -- dont know
+             Cnt(Other) := Cnt(Other) +1;
+             Profit := 0.0;
+           end if;                        
+           Global_Profit := Global_Profit + Profit;                            
+        end if;   
+      Info_Pkg.Get_Next(List,Info,Eol);
+      end loop List_Loop;  
+      Text_Io.Put_Line(F8_Image(Match_Odds) & "|" &
+                       F8_Image(Score_Odds) & "|" &
+                       Integer_4(Global_Profit)'Img & "|" &  
+                       Cnt(Tot)'Img & "|" &  
+                       Cnt(Loser)'Img & "|" &  
+                       Cnt(Winner)'Img & "|" &  
+                       Cnt(Removed)'Img & "|" &  
+                       Cnt(Not_Set_Yet)'Img & "|" &  
+                       Cnt(Other)'Img);
+    end loop Match_Odds_Loop;
+    Match_Odds := Min_Odds_Match - Float_8(0.1);
+    Text_Io.Put_Line("");
+  end loop Score_Odds_Loop;    
+  Info_Pkg.Release(List);
 exception
    when E: others =>
       Sattmate_Exception.Tracebackinfo(E);
