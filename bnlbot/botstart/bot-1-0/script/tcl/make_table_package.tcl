@@ -1631,9 +1631,17 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     #################################################################################
     puts $Out_File "  procedure Update(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
-    puts $Out_File "  begin"
-    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+    
+    set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
+    set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
+    
+    if {$Has_IXX ||$Has_IXX_Ts} {
+      puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
+      puts $Out_File "  begin"
+      puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+    } else {
+      puts $Out_File "  begin"
+    }
 
     puts $Out_File [Prepare_All_Columns Stm_Update "\"update $TABLE_NAME set \""  $Columns 1 0 0]
     puts $Out_File [Set_All_Columns Stm_Update $Columns 0 1]
@@ -1651,11 +1659,18 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Insert(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
-    puts $Out_File "  begin"
-    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
+    
+    if {$Has_IXX ||$Has_IXX_Ts} {
+      puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
+      puts $Out_File "  begin"
+      puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+    } else {
+      puts $Out_File "  begin"
+    }
+       
     puts $Out_File  "    if not Keep_Timestamp then"
     puts $Out_File  "      null; --for tables without IXX*"
 
@@ -1700,9 +1715,18 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     ###################################################################################
     puts $Out_File "  procedure Update_Withcheck(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
     puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
-    puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
-    puts $Out_File "  begin"
-    puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+    
+    set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
+    set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
+    
+    if {$Has_IXX ||$Has_IXX_Ts} {
+      puts $Out_File "    Process_Name : String(Data.Ixxlupd'range) := (others => ' ');"
+      puts $Out_File "  begin"
+      puts $Out_File "    Move( Ada.Environment_Variables.Value(\"BOT_NAME\"), Process_Name);"
+    } else {
+      puts $Out_File "  begin"
+    }
+    
     puts $Out_File ""
     puts $Out_File [Prepare_All_Columns Stm_Update_With_Check "\"update $TABLE_NAME set \""  $Columns 1 1 0]
     puts $Out_File [Set_All_Columns Stm_Update_With_Check $Columns 1 1]
