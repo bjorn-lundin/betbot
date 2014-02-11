@@ -7,7 +7,7 @@
 
 
 proc do_echo {low high i j k} { 
-  puts "\[HORSES_PLC_${low}_${high}_LAY_GB_${i}_${j}_${k}\]"
+  puts "\[HORSES_WIN_${low}_${high}_LAY_GB_${i}_${j}_${k}\]"
   puts "enabled=true"
   puts "bet_size=30.0"
   puts "max_daily_profit=100000.0"
@@ -16,7 +16,7 @@ proc do_echo {low high i j k} {
   puts "max_price=$high"
   puts "min_price=$low"
   puts "mode=sim"
-  puts "no_of_winners=3"
+  puts "no_of_winners=1"
   puts "min_num_runners=$i"
   puts "max_num_runners=25"
   puts "allowed_days=al"
@@ -29,12 +29,12 @@ proc do_echo {low high i j k} {
 }
 
 
-foreach l [list 2 3 4 5 6  ] {
-  foreach h [list 3 4 5 6 7 ] {
+foreach l [list 30 35 40 45 50  ] {
+  foreach h [list 50 60 70 ] {
     if {[expr $l < $h ]} {
-      foreach i [list 7 8 9 10 11] {
-        foreach j [list 4 5 6] {
-          foreach k [list 9.0 ] {
+      foreach i [list 6 7 ] {
+        foreach j [list 1 ] {
+          foreach k [list 4.0 5.0 6.0] {
             do_echo $l $h $i $j $k
           }
         }
