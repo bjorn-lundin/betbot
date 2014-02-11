@@ -1434,6 +1434,7 @@ package body Sql is
                                   Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                   Field_Index_Type (Parameter));
        begin
+--          Ada.Text_Io.Put_Line("Parameter:" & Parameter'Img & " - value '" & Local_String & "'");         
           if Local_String'Length = 0 then
              Value := (others => ' ');
           else
@@ -1453,6 +1454,7 @@ package body Sql is
                   Value     : out String) is
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
+--      Ada.Text_Io.Put_Line("Parameter: '" & Parameter & "'");         
       Get (Statement, Positive (Field_Number), Value);
    end Get;
    

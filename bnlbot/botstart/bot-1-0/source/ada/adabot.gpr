@@ -29,14 +29,16 @@ project Adabot is
                     
    Stat_Mains   := ("change_10_percent.adb",
                     "greening_up_1.adb",
+                    "lay_football.adb",
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
    Other_Mains := ("ini_reader.adb",
                    "back_all_g4.adb",
                    "markets_sender.adb",  
+--                   "migrate_g1_g4_football.adb", 
+                   "remove_duplicates_from_history.adb",                   
                    "bet_checker.adb",
-                   "lay_football.adb",
                    "insert_blank_line.adb",
                    "test_login.adb",
                    "rpc_tester.adb");
