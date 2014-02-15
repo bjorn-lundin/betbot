@@ -18,7 +18,7 @@ package body Bot_Config is
   Unimplemented    : exception ;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
-  Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
+--  Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Sa_Par_Dispatch : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
@@ -38,6 +38,9 @@ package body Bot_Config is
   procedure Read(Cfg : in out Config_Type) is
     function Get_Green_Up_Mode is new Ini.Get_Enumeration_Value(Green_Up_Mode_Type);
     function Get_Bet_Persistence is new Ini.Get_Enumeration_Value(Bet_Persistence_Type);
+    function Get_Bot_Mode is new Ini.Get_Enumeration_Value(Bot_Mode_Type);
+    
+    
     type Cfg_Type is ( Market, Animal, Type_Of_Bet);
     Was_Set : array (Cfg_Type'range) of Boolean := (others => False);
   begin
@@ -49,11 +52,11 @@ package body Bot_Config is
         Long_Switch => "--user=",
         Help        => "user of bot");
 
-      Define_Switch
-       (Cmd_Line,
-        Sa_Par_Mode'access,
-        Long_Switch => "--mode=",
-        Help        => "mode of bot - (real, simulation)");
+--      Define_Switch
+--       (Cmd_Line,
+--        Sa_Par_Mode'access,
+--        Long_Switch => "--mode=",
+--        Help        => "mode of bot - (real, simulation)");
 
       Define_Switch
        (Cmd_Line,
@@ -111,11 +114,15 @@ package body Bot_Config is
       Cfg.System_Section.Bot_Script := To_Unbounded_String(EV.Value("BOT_SCRIPT"));
       Cfg.System_Section.Bot_Home   := To_Unbounded_String(EV.Value("BOT_HOME"));
       Cfg.System_Section.Daemonize  := Ba_Daemon;
-
+      
+      Cfg.System_Section.Bot_Mode   := Get_Bot_Mode("global","bot_mode", Real) ;
+      
+      
+      
 --      Log("Read","Cfg.System_Section.Bot_Mode: '" &  Sa_Par_Mode.all & "'" &  Sa_Par_Mode.all'first'img &  Sa_Par_Mode.all'last'img);
-      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(Sa_Par_Mode.all'first .. Sa_Par_Mode.all'first + 3 -1) = "sim" then
-        Cfg.System_Section.Bot_Mode  := Simulation;  -- real by default
-      end if;
+--      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(Sa_Par_Mode.all'first .. Sa_Par_Mode.all'first + 3 -1) = "sim" then
+--        Cfg.System_Section.Bot_Mode  := Simulation;  -- real by default
+--      end if;
 
       declare
         Num_Sections : Natural := Ini.Get_Section_Count;

@@ -20,7 +20,7 @@ with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
 with Sattmate_Exception;
---with Process_IO;
+with Process_IO;
 with Bot_Svn_Info;
 with Rpc;
 with Token;
@@ -320,18 +320,23 @@ package body Bet_Handler is
       end if;
 
       -- we need a favorite with odds less than Bet.Bot_Cfg.Race_Favorite_Max_Price
-      if Continue_Betting then
-        declare
-          use General_Routines;
-          Favorite_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(1).Price.Backprice);
-        begin
-          if Favorite_Price > Bet.Bot_Cfg.Race_Favorite_Max_Price then
-            Log(Me & "Do_Try", "No clear favorite, best odds= " & F8_Image(Float_8(Favorite_Price)) &
-                               " Race_Favorite_Max_Price " & F8_Image(Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price)));
-            Continue_Betting := False;
-          end if;
-        end;
-      end if;
+      
+      case Bet.Bet_Info.Event.Eventtypeid is
+        when 7 =>    -- horses
+        if Continue_Betting then
+          declare
+            use General_Routines;
+            Favorite_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(1).Price.Backprice);
+          begin
+            if Favorite_Price > Bet.Bot_Cfg.Race_Favorite_Max_Price then
+              Log(Me & "Do_Try", "No clear favorite, best odds= " & F8_Image(Float_8(Favorite_Price)) &
+                                 " Race_Favorite_Max_Price " & F8_Image(Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price)));
+              Continue_Betting := False;
+            end if;
+          end;
+        end if;
+        when others => null;
+      end case;  
 
       -- for a given market, the most expensive bet is the one with highest odds.
       -- a bet with odds 15 costs something. Another LAY bet on THAT market with odds less than 15 costs nothing.
@@ -638,82 +643,8 @@ package body Bet_Handler is
                         Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
                         Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                         Pip_Lay    : Pip_Type ;
-                        All_Expected_Runners_Are_Present : Boolean := False;
-                        Sum        : Integer := 0;
                       begin
                         case  Bet.Bet_Info.Event.Eventtypeid is
-                          when 1 =>  -- Football
-                          --bnl start
-                            case Bet.Bot_Cfg.Market_Type is
-                              when Winner | Place => raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bot_Cfg.Market_Type'Img;
-                              when Match_Odds =>     raise Bad_Data with "no Logic for Laying Football Match_Odds";
-                              when Correct_Score | Half_Time_Score =>
-                                -- Always 3 runners, Home,draw,away
-                                -- The only known is runnername 'The Draw', so use that one only.
-                                if Bet.Bet_Info.Runner_Array(i).Runner.Runnername(1 .. 12) = "Any Unquoted" then
-                                  -- check that all runners we think are there really are there
-                                  
-                                  for k in 1 ..  Bet.Bet_Info.Last_Runner loop
-                                        if    Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-0" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-0" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-0" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-0" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-1" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-1" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-1" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-1" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-2" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-2" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-2" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-2" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "0-3" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "1-3" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "2-3" then
-                                          Sum := Sum + 1;
-                                        elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(i).Runner.Runnername) = "3-3" then
-                                          Sum := Sum + 1;
-                                        end if;                                      
-                                  end loop;
-                                  case Bet.Bot_Cfg.Market_Type is
-                                    when Correct_Score   => All_Expected_Runners_Are_Present := Sum = 16; -- up to 3
-                                    when Half_Time_Score => All_Expected_Runners_Are_Present := Sum =  9; -- up to 2
-                                    when others          => raise Bad_Data with "no sum top compare with:" & Bet.Bot_Cfg.Market_Type'Img;
-                                  end case;
-                                
-                                  -- check that we have a reasonbly odds for laying the "Any Unquoted" option
-                                  if All_Expected_Runners_Are_Present and then
-                                     Bet.Bot_Cfg.Min_Price <= Lay_Price and then
-                                     Lay_Price <= Bet.Bot_Cfg.Max_Price then
-              
-                                    Pip_Lay.Init(Float_8(Lay_Price));
-                                    Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make 'sure' we get the Lay-bet
-              
-                                    Bet.Make_Bet(A_Bet_Type    => Lay,
-                                                 Price         => Lay_Price,
-                                                 Size          => Lay_Size,
-                                                 Price_Matched => Price_Matched,
-                                                 Size_Matched  => Size_Matched,
-                                                 Bet_Id        => Bet_Id);
-              
-                                  end if;
-                                end if; -- runnername = "Any Unquoted"
-                            end case;
-                          
-                          --bnl stop                          
                         
                           when 7 | 4339 =>  -- horse | hound
                             if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
@@ -740,6 +671,192 @@ package body Bet_Handler is
                      ". This runner is ranked too high, no bet");
             end if;
           end loop Runner_Loop;
+          
+          --for football start...
+          declare
+            use General_Routines;
+            Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
+            Pip_Lay    : Pip_Type ;
+            All_Expected_Runners_Are_Present,
+            Match_Odds_Exists              : Boolean := False;
+            Sum        : Integer := 0;
+            
+            Market_Data : Table_Amarkets.Data_Type;
+            Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+            type Price_Type is (Home,Draw,Away);
+            Price : array (Price_Type'range) of Table_Aprices.Data_Type;
+          begin
+            case Bet.Bot_Cfg.Bet_Type is
+              when Back    => raise Suicide with "Bet_Side Back and football not implemented";
+              when Greenup => raise Suicide with "Bet_Side Greenup and football not implemented";
+              when Lay     =>
+    
+                case Bet.Bet_Info.Event.Eventtypeid is
+                  when 1 =>  -- Football
+                  --bnl start
+                    case Bet.Bot_Cfg.Market_Type is
+                      when Winner | Place => raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bot_Cfg.Market_Type'Img;
+                      when Match_Odds =>     
+                      -- find the Correct_Score | Half_Time_Score markets and 
+                      -- resend the market notification, now when Match_Odds exists
+                        Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
+                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
+                        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+                          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
+                          if Market_Data.Markettype = "HALF_TIME_SCORE          " or else
+                             Market_Data.Markettype = "CORRECT_SCORE            " then                 
+                            declare
+                              MNR      : Bot_Messages.Market_Notification_Record;
+                              Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+                            begin
+                              MNR.Market_Id := (others => ' ');
+                              Move(Market_Data.Marketid, MNR.Market_Id);
+                              Move("bot", Receiver.Name);
+                              Log(Me, "Notifying 'bot' (self) with marketid: '" & MNR.Market_Id & "'");
+                              Bot_Messages.Send(Receiver, MNR);
+                            end;
+                          end if;  
+                        end loop;
+                        Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+                      when Correct_Score | Half_Time_Score =>
+                        -- exit if not Match_odds exists
+                        Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
+                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
+                        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+                          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
+                          if Market_Data.Markettype = "MATCH_ODDS               " then                 
+                            Match_Odds_Exists := True;
+                            exit; -- Market_Data is the MATCH_ODDS now
+                          end if;
+                        end loop;
+                        Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
+                        if not Match_Odds_Exists then
+                          Log(Me, "No corresponding MATCH_ODDS market found - wait for it: '" & Bet.Bet_Info.Market.Marketid & "'");
+                          return;
+                        end if;
+                        
+                        declare
+                          Runner : Table_Arunners.Data_Type;
+                          Tmp_Price : Table_Aprices.Data_Type;
+                          Eos_Runner : Boolean := False;
+                          Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
+                          Fetched : array(Price_Type'range) of Boolean := (others => False);
+                        begin
+                        -- Always 3 runners, Home,draw,away in MATCH_ODDS - get them
+                          Tmp_Price.Marketid := Market_Data.Marketid;
+                          Table_Aprices.Read_I1_Marketid(Tmp_Price, Price_List);
+                          
+                          while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
+                            Table_Aprices.Aprices_List_Pack.Remove_From_Head(Price_List, Tmp_Price);
+                            -- The draw 
+                            Runner.Marketid := Tmp_Price.Marketid;
+                            Runner.Selectionid := Tmp_Price.Selectionid;
+                            Table_Arunners.Read(Runner, Eos_Runner);
+                            -- The only known is runnername 'The Draw', so use that one only for test.                    
+                            if not Eos_Runner then
+                              if Runner.Runnername(1..8) = "The Draw" then
+                                if not Fetched(Draw) then
+                                  Price(Draw) := Tmp_Price;
+                                  Fetched(Draw) := True;
+                                end if;  
+                              else
+                                if not Fetched(Home) then
+                                  Price(Home) := Tmp_Price;
+                                  Fetched(Home) := True;
+                                elsif not Fetched(Away) then
+                                  Price(Away) := Tmp_Price;
+                                  Fetched(Away) := True;
+                                end if;  
+                              end if;
+                            end if;
+                          end loop;
+                          Table_Aprices.Aprices_List_Pack.Release(Price_List);
+                          -- now all of Home/Draw/Away must be fetched - check it
+                          if not Fetched(Home) and Fetched(Draw) and Fetched(Away) then
+                            Log(Me, "Missing a runner in MATCH_ODDS: '" &  Market_Data.Marketid & "'");
+                            return;                        
+                          end if;
+                        end;
+                                
+                        -- check that all runners we think are there really are there                        
+                        for k in 1 ..  Bet.Bet_Info.Last_Runner loop
+                          if    Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "0-0" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "1-0" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "2-0" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "3-0" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "0-1" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "1-1" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "2-1" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "3-1" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "0-2" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "1-2" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "2-2" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "3-2" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "0-3" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "1-3" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "2-3" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "3-3" then
+                            Sum := Sum + 1;
+                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "Any Unquoted" then
+                            Bet.Bet_Info.Used_Index := k;     -- used in make_bet
+                            Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(k).Price.Selectionid;  -- used in make_bet
+                            Sum := Sum + 1;
+                          end if;                                      
+                        end loop;
+                        
+                        case Bet.Bot_Cfg.Market_Type is
+                          when Correct_Score   => All_Expected_Runners_Are_Present := Sum = 17; -- up to 3
+                          when Half_Time_Score => All_Expected_Runners_Are_Present := Sum = 10; -- up to 2
+                          when others          => raise Bad_Data with "no sum to compare with:" & Bet.Bot_Cfg.Market_Type'Img;
+                        end case;                          
+                        
+                        -- check that we have a reasonbly odds for laying the "Any Unquoted" option
+                        if All_Expected_Runners_Are_Present and then
+                           abs(Price(Home).Layprice - Price(Away).Layprice) <= Float_8(Bet.Bot_Cfg.Delta_Price) and then
+                           Price(Home).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price) and then  
+                           Price(Away).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price) and then  
+                           Price(Home).Backprice <= Float_8(Bet.Bot_Cfg.Max_Price) and then  
+                           Price(Away).Backprice <= Float_8(Bet.Bot_Cfg.Max_Price) and then 
+                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice <= Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price) then -- not too expensive ..
+                           
+                          Pip_Lay.Init(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice);
+                          Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice := Pip_Lay.Next_Price;  -- make 'sure' we get the Lay-bet
+    
+                          Bet.Make_Bet(A_Bet_Type    => Lay,
+                                       Price         => Bet_Price_Type(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice),
+                                       Size          => Lay_Size,
+                                       Price_Matched => Price_Matched,
+                                       Size_Matched  => Size_Matched,
+                                       Bet_Id        => Bet_Id);
+
+                          Log(Me & "Do_Try ",
+                                 "Lay_Price: " & F8_Image(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice) & " " &
+                                 "Price_Matched: " & F8_Image(Float_8(Price_Matched)) & " " &
+                                 "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
+                                 "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
+                                       
+                        end if;
+                    end case;
+                  when others => raise Suicide with "Eventtypeid must be football (1), not " & Bet.Bet_Info.Event.Eventtypeid'Img;
+                end case;
+            end case;
+          end;
+          -- for football stop
         else
           Log(Me & "Do_Try", "bet disabled " & To_String(Bet.Bot_Cfg.Bet_Name));
         end if; -- enabled
@@ -1071,9 +1188,7 @@ package body Bet_Handler is
                      Size_Matched  :    out Bet_Size_Type;
                      Bet_Id        :    out Integer_8 ) is
 
-
     A_Token : Token.Token_Type := Rpc.Get_Token;
-
 
     Abet : Table_Abets.Data_Type;
     Local_Price : Float_8 := Float_8(Price);
@@ -1094,7 +1209,6 @@ package body Bet_Handler is
 
     Local_Size :  Bet_Size_Type := Size;
 
-
 --    Bet_Id : Integer_8 := 0;
     Now    : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
     T      : Sql.Transaction_Type;
@@ -1102,7 +1216,6 @@ package body Bet_Handler is
     Answer_Place_Orders : Aws.Response.Data;
     Reply_Place_Orders,
     Query_Place_Orders : JSON_Value := Create_Object;
-
 
     Params         : JSON_Value := Create_Object;
     Instruction    : JSON_Value := Create_Object;
