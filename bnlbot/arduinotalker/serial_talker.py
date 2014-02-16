@@ -30,6 +30,7 @@ def get_row_weeks_back(conn, betname, delta_weeks)  :
     cur.execute("select sum(B.PROFIT) " \
                  "from ABETS B  " \
                  "where B.BETNAME = %s " \
+                 "and B.BETMODE = 2 " \
                  "and B.BETWON is not NULL " \
                  "and B.BETPLACED >= %s " \
                  "and B.BETPLACED <= %s " ,
@@ -64,6 +65,7 @@ def get_row(conn, betname, delta_days)  :
                  "from ABETS B " \
                  "where B.BETNAME = %s " \
                  "and B.BETWON is not NULL " \
+                 "and B.BETMODE = 2 " \
                  "and B.BETPLACED >= %s " \
                  "and B.BETPLACED <= %s ",
                    (betname,day_start,day_stop))  
@@ -85,6 +87,7 @@ def get_row(conn, betname, delta_days)  :
 def main():
   # Main program block
 
+  buff = ""
   now = datetime.datetime.now()
   if now.minute % 2 == 0 :
     source = 2
@@ -114,26 +117,16 @@ def main():
                            host='nonodev.com' \
                            password='BettingFotboll1$' ")
 
-    bets = ['HORSES_WIN_FAV2_GB',
-            'HORSES_WIN_FAV4_IE',
-            'HORSES_PLC_LAY4_GB',
-            'HORSES_PLC_LAY4_IE',
-            'HORSES_WIN_LAY5_IE',
-            'HORSES_WIN_LAY4_GB',  
-            'HOUNDS_WIN_FAV5_GB',
-            'HOUNDS_WIN_FAV4_GB',    
-            'DRY_RUN_HORSES_WIN_LAY_15_21_5_200_0']
+    bets = ['HORSES_WIN_BACK_FINISH_1.10_7.0',
+            'HORSES_PLC_BACK_FINISH_1.10_7.0_1',    
+            'HORSES_WIN_BACK_FINISH_1.15_7.0',
+            'HORSES_PLC_BACK_FINISH_1.15_7.0_1',  
+            'HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0',
+            'HORSES_WIN_6.8_8.2_GREENUP_GB_LB',
+            'HORSES_WIN_6.8_12.0_GREENUP_GB_LB_7_2_5.0',
+            'HUMAN_MATCH_3.5_6.0_GREENUP_GB_LB',
+            'HORSES_WIN_6.8_8.2_LAY_GB_7_1_6']
                              
-  ser = serial.Serial(
-    port='/dev/ttyUSB0',
-    baudrate=38400,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS)
-
-  ser.open()
-             
-#  ser.write('-----------------------------------------------------------------------------\r\n')
 
   row0 = {}
   row0['0'] = 0
@@ -145,12 +138,11 @@ def main():
   row0['6'] = 6
   row0['typ'] = 'Typ av bet/antal dagar sedan'
   
-  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
-  ser.write(lcd_row_0 + '\r\n')
+  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0  
+  buff = lcd_row_0 + '\r\n'
 #  print lcd_row_0
 
-
-  ser.write('------------------------------------------------------------------------------\r\n')
+  buff += '------------------------------------------------------------------------------\r\n'
 
   for bet in bets :                               
     row1 = {}
@@ -162,12 +154,12 @@ def main():
     row1['4'] = get_row(conn, bet, -4)
     row1['5'] = get_row(conn, bet, -5)
     row1['6'] = get_row(conn, bet, -6)
-    row1['typ'] = bet
+    #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
+    row1['typ'] = bet[7:]
     lcd_row_1 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
- #   print lcd_row_1
-    ser.write(lcd_row_1 + '\r\n')
-    
-  ser.write('------------------------------------------------------------------------------\r\n')
+    buff += lcd_row_1 + '\r\n'
+  buff += '------------------------------------------------------------------------------\r\n'
+  
   row0['typ'] = 'Typ av bet/result veckor tillbaka'    
   row0['0'] = 0
   row0['1'] = 1
@@ -177,9 +169,9 @@ def main():
   row0['5'] = 5
   row0['6'] = 'Summa'
   lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
-  ser.write(lcd_row_0 + '\r\n')
-  ser.write('------------------------------------------------------------------------------\r\n')
-
+  buff += lcd_row_0 + '\r\n'
+  buff += '------------------------------------------------------------------------------\r\n'
+  
   for bet in bets :                               
     row2 = {}
     row2['0'] = get_row_weeks_back(conn, bet,  0)
@@ -188,32 +180,25 @@ def main():
     row2['3'] = get_row_weeks_back(conn, bet, -3)
     row2['4'] = get_row_weeks_back(conn, bet, -4)
     row2['5'] = get_row_weeks_back(conn, bet, -5)
-#    row2['6'] = get_row_weeks_back(conn, bet, -6)
-    row2['typ'] = bet
+    #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
+    row2['typ'] = bet[7:]
 
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])     
     lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
-#    print lcd_row_2
-    ser.write(lcd_row_2 + '\r\n')
-    
-#  ser.write('-----------------------------------------------------------------------------\r\n')
-#  ser.write('\r\n\r\n\r\n\r\n\r\n\r\n')
- 
+    buff += lcd_row_2 + '\r\n'  
+#  print buff  
 
+  ser = serial.Serial(
+    port='/dev/ttyUSB0',
+    baudrate=38400,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS)
+  ser.open()
+  ser.write(buff)
   ser.close()
-
-
-#  ser.write('1') # clear display
-#  sleep(1)
-#  ser.write('3,0,0,'+ lcd_row_1 ) # string
-#  sleep(2)
-#  ser.write('3,1,0,'+ lcd_row_2) # string
-#  ser.write('2,0,3,'+lcd_row_1) # numeric
-
-
-    
-  
+#############################################################
 if __name__ == '__main__':
   #make print flush now!
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
