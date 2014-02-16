@@ -155,8 +155,10 @@ procedure Saldo_Fetcher is
   
   OK : Boolean := False;
   Saldo : Table_Abalances.Data_Type;
+  Global_Enabled : Boolean := True;
 begin
-  Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
+  Ini.Load(Ev.Value("BOT_HOME") & "/login.ini"); 
+  Global_Enabled := Ini.Get_Value("email","enabled",True);
  
   Logging.Open(EV.Value("BOT_HOME") & "/log/saldo_fetcher.log");
   
@@ -252,19 +254,23 @@ begin
     end loop Receive_Loop;  
     Day_Last_Check := Now.Day;
     
-    Ask : loop
-      Balance(Betfair_Result, Saldo );
-      Log(Me, "Ask_Balance result : " & Betfair_Result 'Img);
-      case Betfair_Result is
-        when Rpc.Ok => exit Ask ;
-        when Rpc.Logged_Out => 
-          delay 2.0;
-          Log(Me, "Logged_Out, will log in again");  --??
-          Rpc.Login;    
-        when Rpc.Timeout =>  delay 5.0;
-      end case;           
-    end loop Ask;
     
+    if Global_Enabled then   
+      Ask : loop
+        Balance(Betfair_Result, Saldo );
+        Log(Me, "Ask_Balance result : " & Betfair_Result 'Img);
+        case Betfair_Result is
+          when Rpc.Ok => exit Ask ;
+          when Rpc.Logged_Out => 
+            delay 2.0;
+            Log(Me, "Logged_Out, will log in again");  --??
+            Rpc.Login;    
+          when Rpc.Timeout =>  delay 5.0;
+        end case;           
+      end loop Ask;
+    else  
+      Log(Me, "sending mails not enables in [email] section of login.ini");
+    end if;  
   end loop Main_Loop; 
                
   Log(Me, "shutting down, close db");
