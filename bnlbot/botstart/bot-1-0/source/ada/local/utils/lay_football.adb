@@ -27,6 +27,10 @@ procedure Lay_Football is
   Sa_Par_Max_Odds_Score : aliased Gnat.Strings.String_Access;
   Sa_Par_Min_Odds_Match : aliased Gnat.Strings.String_Access;
   Sa_Par_Max_Odds_Match : aliased Gnat.Strings.String_Access;
+  Sa_Par_Database       : aliased Gnat.Strings.String_Access;
+  Sa_Par_Hostname       : aliased Gnat.Strings.String_Access;
+  Sa_Par_Username       : aliased Gnat.Strings.String_Access;
+  Sa_Par_Password       : aliased Gnat.Strings.String_Access;
   
   Min_Odds_Score, Max_Odds_Score    : Float_8 := 0.0;
   Min_Odds_Match, Max_Odds_Match    : Float_8 := 0.0;
@@ -100,8 +104,31 @@ begin
      Long_Switch => "--min_odds_match=",
      Help        => "Min odds to accept, inclusive,for the match, to place the bet");
 
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Hostname'access,
+     Long_Switch => "--hostname=",
+     Help        => "hostname");
      
-  Getopt (Config);  -- process the command line
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Database'access,
+     Long_Switch => "--database=",
+     Help        => "database");
+     
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Username'access,
+     Long_Switch => "--username=",
+     Help        => "username");
+
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Password'access,
+     Long_Switch => "--password=",
+     Help        => "password");
+
+   Getopt (Config);  -- process the command line
 
   if Sa_Par_Min_Odds_Score.all = "" or else 
     Sa_Par_Max_Odds_Score.all = "" or else 
@@ -118,11 +145,11 @@ begin
   Min_Odds_Match := Float_8'Value(Sa_Par_Min_Odds_Match.all);
 
   Sql.Connect
-    (Host     => "localhost",
-     Port     => 5432,
-     Db_Name  => "nono",
-     Login    => "bnl",
-     Password => "bnl");
+     (Host     => Sa_Par_Hostname.all,
+      Port     => 5432,
+      Db_Name  => Sa_Par_Database.all,
+      Login    => Sa_Par_Username.all,
+      Password => Sa_Par_Password.all);
 
   T.Start;
      
@@ -169,23 +196,25 @@ begin
           "" &
           "and P_HOME.MARKETID      = M_MATCH.MARKETID " &
           "and P_HOME.MARKETID      = R_HOME.MARKETID " &
-          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
-          "and R_HOME.RUNNERNAME    = substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 ) " &
+          "and P_HOME.SELECTIONID   = (select min(SELECTIONID) from APRICES where SELECTIONID <> 58805 and APRICES.MARKETID = P_HOME.MARKETID) " &
+--          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
+--          "and R_HOME.RUNNERNAME    = trim(substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 )) " &
           "" &
           "and P_DRAW.MARKETID      = M_MATCH.MARKETID " &
           "and P_DRAW.MARKETID      = R_DRAW.MARKETID " &
           "and P_DRAW.SELECTIONID   = R_DRAW.SELECTIONID " & 
-          "and R_DRAW.RUNNERNAME    in ('The Draw','Oavgjort') " & 
+          "and R_DRAW.RUNNERNAME    = 'The Draw' " & 
           "" &
           "and P_AWAY.MARKETID      = M_MATCH.MARKETID " & 
           "and P_AWAY.MARKETID      = R_AWAY.MARKETID " & 
-          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
-          "and R_AWAY.RUNNERNAME    = substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 ) " &
+          "and P_AWAY.SELECTIONID   = (select max(SELECTIONID) from APRICES where SELECTIONID <> 58805 and APRICES.MARKETID = P_AWAY.MARKETID) " &
+--          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
+--          "and R_AWAY.RUNNERNAME    = trim(substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 )) " &
           "" &
           "and E.EVENTTYPEID        = 1 " & 
           "and M_SCORE.MARKETTYPE   = :MARKETTYPE " &   
           "and M_MATCH.MARKETTYPE   = 'MATCH_ODDS' " &
-          "and ((R_SCORE.RUNNERNAME = 'Any Unquoted') or (R_SCORE.RUNNERNAME like '%vriga')) " &
+          "and R_SCORE.RUNNERNAME = 'Any Unquoted' " &
           "order by " & 
           "  M_SCORE.STARTTS, " &
           "  E.EVENTID ");
@@ -233,24 +262,26 @@ begin
           "" &
           "and P_HOME.MARKETID      = M_MATCH.MARKETID " &
           "and P_HOME.MARKETID      = R_HOME.MARKETID " &
-          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
-          "and R_HOME.RUNNERNAME    = substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 ) " &
+          "and P_HOME.SELECTIONID   = (select min(SELECTIONID) from APRICES where SELECTIONID <> 58805 and APRICES.MARKETID = P_HOME.MARKETID) " &
+--          "and P_HOME.SELECTIONID   = R_HOME.SELECTIONID " &
+--          "and R_HOME.RUNNERNAME    = trim(substring(E.EVENTNAME for position(' v ' in E.EVENTNAME)-1 )) " &
           "" &
           "and P_DRAW.MARKETID      = M_MATCH.MARKETID " &
           "and P_DRAW.MARKETID      = R_DRAW.MARKETID " &
           "and P_DRAW.SELECTIONID   = R_DRAW.SELECTIONID " & 
-          "and R_DRAW.RUNNERNAME    in ('The Draw','Oavgjort') " & 
+          "and R_DRAW.RUNNERNAME    = 'The Draw' " & 
           "" &
           "and P_AWAY.MARKETID      = M_MATCH.MARKETID " & 
           "and P_AWAY.MARKETID      = R_AWAY.MARKETID " & 
-          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
-          "and R_AWAY.RUNNERNAME    = substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 ) " &
+          "and P_AWAY.SELECTIONID   = (select max(SELECTIONID) from APRICES where SELECTIONID <> 58805 and APRICES.MARKETID = P_AWAY.MARKETID) " &
+--          "and P_AWAY.SELECTIONID   = R_AWAY.SELECTIONID " & 
+--          "and R_AWAY.RUNNERNAME    = trim(substring(E.EVENTNAME from position(' v ' in E.EVENTNAME)+3 )) " &
           "" &
           "and E.EVENTTYPEID        = 1 " & 
           "and E.COUNTRYCODE        = :COUNTRYCODE " & 
           "and M_SCORE.MARKETTYPE   = :MARKETTYPE " &   
           "and M_MATCH.MARKETTYPE   = 'MATCH_ODDS' " &
-          "and ((R_SCORE.RUNNERNAME = 'Any Unquoted') or (R_SCORE.RUNNERNAME like '%vriga')) " &
+          "and R_SCORE.RUNNERNAME   = 'Any Unquoted' " &
           "order by " & 
           "  M_SCORE.STARTTS, " &
           "  E.EVENTID ");

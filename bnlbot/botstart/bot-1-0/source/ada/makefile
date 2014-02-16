@@ -22,7 +22,7 @@ all: tables adabot
 #/etc/logrotate.d/bnlbot
 
 
-tables : $(ST)/table_history.ads \
+tables : $(ST)/table_history.ads  $(ST)/table_alinks.ads \
          $(ST)/table_aevents.ads  $(ST)/table_amarkets.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
          $(ST)/table_abets.ads    $(ST)/table_abalances.ads \
@@ -58,6 +58,12 @@ $(ST)/table_history.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_history.x
 	cd $(ST) && rm table_history.ada
 	$(TP) -p history > $(ST)/history.sql
 
+$(ST)/table_alinks.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_alinks.xml
+	$(TP) -t alinks > $(ST)/table_alinks.ada
+	cd $(ST) && gnatchop -w -gnat05 table_alinks.ada
+	cd $(ST) && rm table_alinks.ada
+	$(TP) -p alinks > $(ST)/alinks.sql
+    
 #$(ST)/table_history2.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_history2.xml
 #	$(TP) -t history2 > $(ST)/table_history2.ada
 #	cd $(ST) && gnatchop -w -gnat05 table_history2.ada

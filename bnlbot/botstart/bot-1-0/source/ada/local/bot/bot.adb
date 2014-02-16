@@ -139,7 +139,12 @@ begin
   Log(Me, "Close Db");
   Sql.Close_Session;
   Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
-  Rpc.Logout;
+ 
+  case Bot_Config.Config.System_Section.Bot_Mode is
+    when Bot_Types.Real       => Rpc.Logout;
+    when Bot_Types.Simulation => null;
+  end case;
+  
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
 exception
