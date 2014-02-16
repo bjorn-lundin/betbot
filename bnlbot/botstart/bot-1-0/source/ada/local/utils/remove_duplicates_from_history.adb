@@ -9,8 +9,8 @@ with Sattmate_Types; use Sattmate_Types;
 --with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 --with General_Routines; use General_Routines;
 
---with Gnat.Command_Line; use Gnat.Command_Line;
---with Gnat.Strings;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
 with Sattmate_Exception;
 
 with Simple_List_Class;
@@ -31,6 +31,12 @@ procedure Remove_Duplicates_From_History is
   Select_Order_By_Firsttaken,
   Select_Keys : Sql.Statement_Type;
  
+  Config           : Command_Line_Configuration;
+  Sa_Par_Database  : aliased Gnat.Strings.String_Access;
+  Sa_Par_Hostname  : aliased Gnat.Strings.String_Access;
+  Sa_Par_Username  : aliased Gnat.Strings.String_Access;
+  Sa_Par_Password  : aliased Gnat.Strings.String_Access;
+  
   type Key_Type is record
     Eventid : Integer_4 := 0;
     Selectionid : Integer_4 := 0;
@@ -85,13 +91,47 @@ procedure Remove_Duplicates_From_History is
   Cnt : Integer := 0;
 begin 
  
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Hostname'access,
+     Long_Switch => "--hostname=",
+     Help        => "hostname");
+     
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Database'access,
+     Long_Switch => "--database=",
+     Help        => "database");
+     
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Username'access,
+     Long_Switch => "--username=",
+     Help        => "username");
+
+  Define_Switch
+    (Config      => Config,
+     Output      => Sa_Par_Password'access,
+     Long_Switch => "--password=",
+     Help        => "password");
+
+   Getopt (Config);  -- process the command line
+
+  if Sa_Par_Hostname.all = "" or else 
+    Sa_Par_Database.all = "" or else 
+    Sa_Par_Username.all = "" or else 
+    Sa_Par_Password.all = "" then
+    Display_Help (Config);
+    return;
+  end if;
+ 
   Log(Me, "log into database");
   Sql.Connect
-     (Host   => "localhost",
-      Port   => 5432,
-      Db_Name => "bnl",
-      Login  => "bnl",
-      Password => "bnl");
+     (Host     => Sa_Par_Hostname.all,
+      Port     => 5432,
+      Db_Name  => Sa_Par_Database.all,
+      Login    => Sa_Par_Username.all,
+      Password => Sa_Par_Password.all);
   Log(Me, "db Connected");
   
   T.Start;

@@ -29,6 +29,7 @@ procedure Markets_Sender is
   Ba_Daemon       : aliased Boolean := False;
   Ba_Horse        : aliased Boolean := False;
   Ba_Hound        : aliased Boolean := False;
+  Ba_Football     : aliased Boolean := False;
   Ba_Log          : aliased Boolean := False;
   Sa_Par_Marketid : aliased Gnat.Strings.String_Access;
   Sa_Par_Countrycodes  : aliased Gnat.Strings.String_Access;
@@ -87,6 +88,12 @@ begin
       Long_Switch => "--hounds",
       Help        => "send hound markets");
       
+  Define_Switch
+     (Config,
+      Ba_Football'access,
+      Long_Switch => "--football",
+      Help        => "send football markets");
+      
   Getopt (Config);  -- process the command line
 
   if Ba_Log then
@@ -115,7 +122,8 @@ begin
 --    Markets.Set("MARKETID", Sa_Par_Marketid.all);
 --  else
     Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
-    Ts := (2013,07,30,0,0,0,0);
+--    Ts := (2013,12,30,0,0,0,0);
+    Ts := (2014,1,18,0,0,0,0);
     Markets.Set_Timestamp("TS", Ts);
     
 --  end if;
@@ -207,7 +215,20 @@ begin
               Move("hounds_win_xx", Receiver.Name);
               Do_Send := False;
             end if;              
+          end if;  
+        elsif Aevent.Eventtypeid = 1 and then Ba_Football then -- football
+
+          if Trim(Amarket.Markettype) = "MATCH_ODDS" then
+              Move("football", Receiver.Name);
+              Do_Send := True;
+          elsif Trim(Amarket.Markettype) = "CORRECT_SCORE" then
+              Move("football", Receiver.Name);
+              Do_Send := True;
+          elsif Trim(Amarket.Markettype) = "HALF_TIME_SCORE" then
+              Move("football_2", Receiver.Name);
+              Do_Send := True;
           end if;        
+          
         end if;
         if Do_Send then       
           Log(Me, "Notifying " & Trim(Receiver.Name) & " with marketid: '" & MNR.Market_Id   & "' Startts = " &

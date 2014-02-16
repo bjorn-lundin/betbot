@@ -211,19 +211,19 @@ procedure Poll is
           Log("Found_Place " & Found_Place'Img );
 
           if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
---            declare
---              PBB : Bot_Messages.Place_Back_Bet_Record;
---              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
---            begin
---              Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", PBB.Bet_Name);
---              Move(Markets(Place).Marketid, PBB.Market_Id);
---              Move("1.01", PBB.Price);
---              Move("0.0", PBB.Size); -- set by receiver's ini-file
---              PBB.Selection_Id := Best_Runners(1).Selectionid;
---              Move("bet_placer_1", Receiver.Name);
---              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
---              Bot_Messages.Send(Receiver, PBB);
---            end;
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              Move("HORSES_WIN_BACK_FINISH_1.15_7.0", PBB.Bet_Name);
+              Move(Markets(Win).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              Move("0.0", PBB.Size); -- set by receiver's ini-file
+              PBB.Selection_Id := Best_Runners(1).Selectionid;
+              Move("bet_placer_1", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PBB);
+            end;
 --            declare
 --              PBB : Bot_Messages.Place_Back_Bet_Record;
 --              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));

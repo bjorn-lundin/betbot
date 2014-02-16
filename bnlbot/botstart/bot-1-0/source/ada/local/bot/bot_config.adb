@@ -154,8 +154,7 @@ package body Bot_Config is
             Bet_Section.Lay_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"lay_second_bet_persistance", Persist) ;
             Bet_Section.Back_Second_Bet_Persistance  := Get_Bet_Persistence(Ini.Get_Section_Name(i),"back_second_bet_persistance", Persist) ;
             Bet_Section.Min_Num_Runners_Better_Ranked := Integer_4(Ini.Get_Value(Ini.Get_Section_Name(i),"min_num_runners_better_ranked",3));
-            Bet_Section.Race_Favorite_Max_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"race_favorite_max_price","6.0"));
-                      
+            Bet_Section.Race_Favorite_Max_Price := Bet_Price_Type'Value(Ini.Get_Value(Ini.Get_Section_Name(i),"race_favorite_max_price","6.0"));                      
             
             if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_greenup_") > Natural(0) then
               Bet_Section.Bet_Type := Greenup;

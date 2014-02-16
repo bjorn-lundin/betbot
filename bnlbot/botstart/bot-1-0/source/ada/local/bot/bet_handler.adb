@@ -192,17 +192,21 @@ package body Bet_Handler is
   begin
     Log(Me & "Try_Make_New_Bet", "Bet_name " & To_String(Bot_Cfg.Bet_Name) );
 
---    Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
---                                 "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &
---                                 "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &
---                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &
---                                 "evt-name: " &  Bet.Bet_Info.Event.Eventname);
+    Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
+                                 "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &
+                                 "Markettype: " &  General_Routines.Trim(Bet.Bet_Info.Market.Markettype) & " " &
+                                 "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &
+                                 "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &
+                                 "evt-name: " &  General_Routines.Trim(Bet.Bet_Info.Event.Eventname));
 
     Bet.Check_Conditions_Fulfilled(Fulfilled);
     if not Fulfilled then
       Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " betting condition NOT fulfilled ");
-    else
-      Bet.Do_Try;
+    else  
+      case Bet.Bet_Info.Event.Eventtypeid is
+        when 1      => Bet.Do_Try2; -- Football
+        when others => Bet.Do_Try;  -- horse/hound
+      end case;        
     end if;
 
   end Try_Make_New_Bet;
@@ -291,14 +295,14 @@ package body Bet_Handler is
   -----------------------------------------------------------------------
 
   procedure Do_Try(Bet : in out Bet_Type) is
-    -- see if we can make a bet now
-      Todays_Profit : Profit_Type := 0.0;
-      Continue_Betting : Boolean := False;
-      Too_Many_In_The_Air, Exists : Boolean := True;
-      Price_Matched : Bet_Price_Type := 0.0;
-      Size_Matched : Bet_Size_Type := 0.0;
-      Bet_Id       : Integer_8 := 0;
-
+    Service : constant String := "Do_Try";
+  -- see if we can make a bet now
+    Todays_Profit : Profit_Type := 0.0;
+    Continue_Betting : Boolean := False;
+    Too_Many_In_The_Air, Exists : Boolean := True;
+    Price_Matched : Bet_Price_Type := 0.0;
+    Size_Matched : Bet_Size_Type := 0.0;
+    Bet_Id       : Integer_8 := 0;
 
   begin
     Exists := Bet.Exists;
@@ -308,15 +312,15 @@ package body Bet_Handler is
       if Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Profit then
         -- we have Won enough for today, STOP bettting!
         Continue_Betting := False;
-        Log (Me & "Do_Try", "YES !! We have won enough for today, STOP bettting.");
+        Log (Me & Service, "YES !! We have won enough for today, STOP bettting.");
       elsif Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
         -- we have lost enough for today, give up!
         Continue_Betting := False;
-        Log (Me & "Do_Try", "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
+        Log (Me & Service, "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
       else
         -- we have won today, but haven't reach our ceiling yet
         Continue_Betting := True;
-        Log (Me & "Do_Try", "YES !! We (probably) have won today, but not enough, KEEP bettting.");
+        Log (Me & Service, "YES !! We (probably) have won today, but not enough, KEEP bettting.");
       end if;
 
       -- we need a favorite with odds less than Bet.Bot_Cfg.Race_Favorite_Max_Price
@@ -329,7 +333,7 @@ package body Bet_Handler is
             Favorite_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(1).Price.Backprice);
           begin
             if Favorite_Price > Bet.Bot_Cfg.Race_Favorite_Max_Price then
-              Log(Me & "Do_Try", "No clear favorite, best odds= " & F8_Image(Float_8(Favorite_Price)) &
+              Log(Me & Service, "No clear favorite, best odds= " & F8_Image(Float_8(Favorite_Price)) &
                                  " Race_Favorite_Max_Price " & F8_Image(Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price)));
               Continue_Betting := False;
             end if;
@@ -344,7 +348,7 @@ package body Bet_Handler is
       Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
       if Too_Many_In_The_Air then
         Continue_Betting := False;
-        Log(Me & "Do_Try", "Too many bets in the air discovered , wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
+        Log(Me & Service, "Too many bets in the air discovered , wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
       end if;
 
       --before we bet anything, check finances first
@@ -362,15 +366,15 @@ package body Bet_Handler is
               -- calculate expected exposure for this bet
               Expected_Exposure_This_Bet := Float_8(Bet.Bot_Cfg.Bet_Size * (Bet.Bot_Cfg.Max_Price - Bet_Price_Type(1.0)));
               if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
-                Log(Me & "Do_Try", "check saldo, this bet will create too much exposure, refuse" );
-                Log(Me & "Do_Try", "cur/this bet/max" &
+                Log(Me & Service, "check saldo, this bet will create too much exposure, refuse" );
+                Log(Me & Service, "cur/this bet/max" &
                      F8_Image(abs(Saldo.Exposure))  & "/" &
                      F8_Image(Expected_Exposure_This_Bet)  & "/" &
                      F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
                 Continue_Betting := False;
               end if;
             else
-              Log(Me & "Do_Try", "check saldo failed, exit " & Betfair_Result'Img);
+              Log(Me & Service, "check saldo failed, exit " & Betfair_Result'Img);
               Continue_Betting := False;
             end if;
           end;
@@ -420,7 +424,7 @@ package body Bet_Handler is
                           Lay_Price := Bet_Price_Type(Pip_Lay.Pip_Price);
 
                           Lay_Size  := (Back_Size * Back_Price) / Lay_Price;
-                          Log(Me & "Do_Try", Bet.Bot_Cfg.Green_Up_Mode'Img & " " &
+                          Log(Me & Service, Bet.Bot_Cfg.Green_Up_Mode'Img & " " &
                                        "Back_Price: " & F8_Image(Float_8(Back_Price)) & " " &
                                        "Back_Size: " & F8_Image(Float_8(Back_Size)) & " " &
                                        "Lay_Price: " & F8_Image(Float_8(Lay_Price)) & " " &
@@ -434,7 +438,7 @@ package body Bet_Handler is
                                          Size_Matched  => Size_Matched,
                                          Bet_Id        => Bet_Id);
                           else
-                            Log(Me & "Do_Try", "Back bet not matched -> no lay bet made");
+                            Log(Me & Service, "Back bet not matched -> no lay bet made");
                           end if;
 
                         when Simulation  => raise Suicide with "Green_Up_Mode Back_First_Then_Lay and Simulation does not match";
@@ -541,7 +545,7 @@ package body Bet_Handler is
                                                    Size_Matched  => Size_Matched,
                                                    Bet_Id        => Bet_Id);
                                     else
-                                      Log(Me & "Do_Try", "Lay bet not matched -> no back bet made, cancel Lay bet");
+                                      Log(Me & Service, "Lay bet not matched -> no back bet made, cancel Lay bet");
                                       Rpc.Cancel_Bet(Market_Id => Bet.Bet_Info.Market.Marketid, 
                                                      Bet_Id    => Bet_Id);
                                     end if;
@@ -550,9 +554,7 @@ package body Bet_Handler is
                               end if;
                             end if; -- runername = "The Draw"
                         end case;
-                      
-                      
-                      
+                                          
                       when 7 | 4339 =>  -- horse | hound
                         if Bet.Bot_Cfg.Min_Price <= Lay_Price and then
                            Lay_Price <= Bet.Bot_Cfg.Max_Price then
@@ -603,7 +605,7 @@ package body Bet_Handler is
                                              Size_Matched  => Size_Matched,
                                              Bet_Id        => Bet_Id);
                               else
-                                Log(Me & "Do_Try", "Lay bet not matched -> no back bet made, cancel Lay bet");
+                                Log(Me & Service, "Lay bet not matched -> no back bet made, cancel Lay bet");
                                 Rpc.Cancel_Bet(Market_Id => Bet.Bet_Info.Market.Marketid, 
                                                Bet_Id    => Bet_Id);
                               end if;
@@ -614,6 +616,7 @@ package body Bet_Handler is
                       when others => raise Bad_Data with "not supported eventtype:" & Bet.Bet_Info.Event.Eventtypeid'Img;
                     end case;    
                   end;
+                  
                 when None => -- ordinary bets, mostly Simulations  
                   case Bet.Bot_Cfg.Bet_Type is
                     when Back =>
@@ -667,11 +670,91 @@ package body Bet_Handler is
                 end case;
               end case;
             else
-              Log(Me & "Do_Try", "i:" & i'Img & " Min_Num_Runners_Better_Ranked" & Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked'Img &
-                     ". This runner is ranked too high, no bet");
+              case Bet.Bet_Info.Event.Eventtypeid is
+                  when 1 => null;            
+                  when others => Log(Me & Service, "i:" & i'Img & " Min_Num_Runners_Better_Ranked" & Bet.Bot_Cfg.Min_Num_Runners_Better_Ranked'Img &
+                                                 ". This runner is ranked too high, no bet");
+              end case;
             end if;
           end loop Runner_Loop;
-          
+        else
+          Log(Me & Service, "bet disabled " & To_String(Bet.Bot_Cfg.Bet_Name));
+        end if; -- enabled
+      end if;-- continue betting
+    else
+      Log(Me & Service, "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid);
+    end if;
+  end Do_Try;
+
+  -----------------------------------------------------------------------
+  procedure Do_Try2(Bet : in out Bet_Type) is
+    Service : constant String := "Do_Try2";
+    -- see if we can make a bet now
+    Todays_Profit : Profit_Type := 0.0;
+    Continue_Betting : Boolean := False;
+    Too_Many_In_The_Air, Exists : Boolean := True;
+    Price_Matched : Bet_Price_Type := 0.0;
+    Size_Matched : Bet_Size_Type := 0.0;
+    Bet_Id       : Integer_8 := 0;
+
+  begin
+    Exists := Bet.Exists;
+    Todays_Profit := Bet.Profit_Today;
+
+    if not Exists then
+      if Todays_Profit >= Bet.Bot_Cfg.Max_Daily_Profit then
+        -- we have Won enough for today, STOP bettting!
+        Continue_Betting := False;
+        Log (Me & Service, "YES !! We have won enough for today, STOP bettting.");
+      elsif Todays_Profit < Bet.Bot_Cfg.Max_Daily_Loss then
+        -- we have lost enough for today, give up!
+        Continue_Betting := False;
+        Log (Me & Service, "GIVE UP! We have lost too much eventhough max_daily_num_losses is ok.");
+      else
+        -- we have won today, but haven't reach our ceiling yet
+        Continue_Betting := True;
+        Log (Me & Service, "YES !! We (probably) have won today, but not enough, KEEP bettting.");
+      end if;
+      
+      Too_Many_In_The_Air := Bet.Num_In_The_Air > Bet.Bot_Cfg.Max_Num_In_The_Air;
+      if Too_Many_In_The_Air then
+        Continue_Betting := False;
+        Log(Me & Service, "Too many bets in the air discovered , wait for some to be settled, max= " & Bet.Bot_Cfg.Max_Num_In_The_Air'Img);
+      end if;
+
+      --before we bet anything, check finances first
+      case Bot_Config.Config.System_Section.Bot_Mode is
+        when Real =>
+          declare
+            Betfair_Result : Rpc.Result_Type ;
+            Saldo          : Table_Abalances.Data_Type;
+            Expected_Exposure_This_Bet : Float_8 := 0.0;
+            use type Rpc.Result_Type;
+            use General_Routines;
+          begin
+            Rpc.Get_Balance(Betfair_Result, Saldo);
+            if Betfair_Result = Rpc.Ok then
+              -- calculate expected exposure for this bet
+              Expected_Exposure_This_Bet := Float_8(Bet.Bot_Cfg.Bet_Size * (Bet.Bot_Cfg.Max_Price - Bet_Price_Type(1.0)));
+              if Expected_Exposure_This_Bet + abs(Saldo.Exposure) > Bet.Bot_Cfg.Max_Exposure then
+                Log(Me & Service, "check saldo, this bet will create too much exposure, refuse" );
+                Log(Me & Service, "cur/this bet/max" &
+                     F8_Image(abs(Saldo.Exposure))  & "/" &
+                     F8_Image(Expected_Exposure_This_Bet)  & "/" &
+                     F8_Image(Float_8(Bet.Bot_Cfg.Max_Exposure)) );
+                Continue_Betting := False;
+              end if;
+            else
+              Log(Me & Service, "check saldo failed, exit " & Betfair_Result'Img);
+              Continue_Betting := False;
+            end if;
+          end;
+        when Simulation => null;
+      end case;        
+    
+      if Continue_Betting then
+        if Bet.Enabled then
+          Log(Me & Service, "start football");         
           --for football start...
           declare
             use General_Routines;
@@ -690,17 +773,24 @@ package body Bet_Handler is
               when Back    => raise Suicide with "Bet_Side Back and football not implemented";
               when Greenup => raise Suicide with "Bet_Side Greenup and football not implemented";
               when Lay     =>
-    
+--                Log(Me & Service, "start football LAY");
+
                 case Bet.Bet_Info.Event.Eventtypeid is
                   when 1 =>  -- Football
+--                    Log(Me & Service, "start football LAY 1");
                   --bnl start
-                    case Bet.Bot_Cfg.Market_Type is
-                      when Winner | Place => raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bot_Cfg.Market_Type'Img;
-                      when Match_Odds =>     
+                    if Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "winner" then
+                      raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bet_Info.Market.Markettype;
+                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "place" then
+                      raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bet_Info.Market.Markettype;
+                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "match_odds" then
+                      Log(Me & Service, "start football LAY 1 Match_Odds");
                       -- find the Correct_Score | Half_Time_Score markets and 
                       -- resend the market notification, now when Match_Odds exists
                         Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
-                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
+                        -- get the other markets for this event                        
+                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List); 
+                        Log(Me & Service, "Read eventid done, items: " & Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'img);
                         while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
                           Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
                           if Market_Data.Markettype = "HALF_TIME_SCORE          " or else
@@ -711,17 +801,21 @@ package body Bet_Handler is
                             begin
                               MNR.Market_Id := (others => ' ');
                               Move(Market_Data.Marketid, MNR.Market_Id);
-                              Move("bot", Receiver.Name);
-                              Log(Me, "Notifying 'bot' (self) with marketid: '" & MNR.Market_Id & "'");
+                              Move("football_2", Receiver.Name);
+                              Log(Me, "Notifying 'football_2'  with marketid: '" & MNR.Market_Id & "'");
                               Bot_Messages.Send(Receiver, MNR);
                             end;
                           end if;  
                         end loop;
                         Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
-                      when Correct_Score | Half_Time_Score =>
+                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "correct_score" or 
+                           Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "half_time_score" then 
+                        Log(Me & Service, "start football LAY 1 Correct_Score | Half_Time_Score");
                         -- exit if not Match_odds exists
                         Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
                         Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
+                        Log(Me & Service, "Read eventid done, items: " & Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'img);
+                        -- get the match_odds market for this event                        
                         while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
                           Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
                           if Market_Data.Markettype = "MATCH_ODDS               " then                 
@@ -754,7 +848,7 @@ package body Bet_Handler is
                             Table_Arunners.Read(Runner, Eos_Runner);
                             -- The only known is runnername 'The Draw', so use that one only for test.                    
                             if not Eos_Runner then
-                              if Runner.Runnername(1..8) = "The Draw" then
+                              if Lower_Case(Skip_all_Blanks(Runner.Runnername)) = "thedraw" then
                                 if not Fetched(Draw) then
                                   Price(Draw) := Tmp_Price;
                                   Fetched(Draw) := True;
@@ -812,21 +906,29 @@ package body Bet_Handler is
                             Sum := Sum + 1;
                           elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "3-3" then
                             Sum := Sum + 1;
-                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "Any Unquoted" then
+                            -- Lower_Case & SKLIP_ALL_BLANKS -> anyunquoted without space ....
+                            -- and sometimes is callled The Draw
+                            -- therefore, use sel id . does not change
+                          elsif Lower_Case(Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername)) = "anyunquoted" then
                             Bet.Bet_Info.Used_Index := k;     -- used in make_bet
                             Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(k).Price.Selectionid;  -- used in make_bet
                             Sum := Sum + 1;
                           end if;                                      
                         end loop;
                         
-                        case Bet.Bot_Cfg.Market_Type is
-                          when Correct_Score   => All_Expected_Runners_Are_Present := Sum = 17; -- up to 3
-                          when Half_Time_Score => All_Expected_Runners_Are_Present := Sum = 10; -- up to 2
-                          when others          => raise Bad_Data with "no sum to compare with:" & Bet.Bot_Cfg.Market_Type'Img;
-                        end case;                          
+                        if Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "correct_score" then
+                          All_Expected_Runners_Are_Present := Sum = 17; -- up to 3
+                        elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "half_time_score" then  
+                          All_Expected_Runners_Are_Present := Sum = 10; -- up to 2
+                        else
+                          raise Bad_Data with "no sum to compare with:" & Trim(Lower_Case(Bet.Bet_Info.Market.Markettype));
+                        end if;
+--                        Log(Me & Service, "sum:" & Sum'Img & " All_Expected_Runners_Are_Present " & All_Expected_Runners_Are_Present'Img);
                         
                         -- check that we have a reasonbly odds for laying the "Any Unquoted" option
                         if All_Expected_Runners_Are_Present and then
+                           Bet.Bet_Info.Used_Index > Integer(0) and then
+                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice > Float_8(1.0) and then
                            abs(Price(Home).Layprice - Price(Away).Layprice) <= Float_8(Bet.Bot_Cfg.Delta_Price) and then
                            Price(Home).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price) and then  
                            Price(Away).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price) and then  
@@ -844,29 +946,55 @@ package body Bet_Handler is
                                        Size_Matched  => Size_Matched,
                                        Bet_Id        => Bet_Id);
 
-                          Log(Me & "Do_Try ",
+                          Log(Me & Service,
                                  "Lay_Price: " & F8_Image(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice) & " " &
                                  "Price_Matched: " & F8_Image(Float_8(Price_Matched)) & " " &
                                  "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                  "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
-                                       
+                        else
+                           Log(Me & Service,"No bet start");
+                           Log(Me & Service ,Boolean'Image(Bet.Bet_Info.Used_Index > Integer(0))); 
+                           if Bet.Bet_Info.Used_Index > Integer(0) then
+                             Log(Me & Service,Boolean'Image(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice <= Float_8(Bet.Bot_Cfg.Race_Favorite_Max_Price))); -- not too expensive ..
+                             Log(Me & Service,Boolean'Image( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice > Float_8(1.0)));
+                           end if;  
+                           Log(Me & Service,Boolean'Image(abs(Price(Home).Layprice - Price(Away).Layprice) <= Float_8(Bet.Bot_Cfg.Delta_Price)));
+                           Log(Me & Service,Boolean'Image(Price(Home).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price)));
+                           Log(Me & Service,Boolean'Image(Price(Away).Backprice >= Float_8(Bet.Bot_Cfg.Min_Price)));  
+                           Log(Me & Service,Boolean'Image(Price(Home).Backprice <= Float_8(Bet.Bot_Cfg.Max_Price)));  
+                           Log(Me & Service,Boolean'Image(Price(Away).Backprice <= Float_8(Bet.Bot_Cfg.Max_Price))); 
+
+                           Log(Me & Service,Bet.Bet_Info.Used_Index'Img); 
+                           if Bet.Bet_Info.Used_Index > Integer(0) then
+                             Log(Me & Service,F8_Image( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice)); 
+                             Log(Me & Service,F8_Image( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice ));
+                           end if;  
+                           Log(Me & Service,F8_Image(Float_8(abs(Price(Home).Layprice - Price(Away).Layprice))));
+                           Log(Me & Service,F8_Image( Price(Home).Backprice));
+                           Log(Me & Service,F8_Image( Price(Away).Backprice));  
+                           Log(Me & Service,F8_Image( Price(Home).Backprice));  
+                           Log(Me & Service,F8_Image( Price(Away).Backprice)); 
+                           Log(Me & Service, "No bet stop");                   
+
+                           
                         end if;
-                    end case;
+                        Log(Me & Service, "Done");
+                    end if;
                   when others => raise Suicide with "Eventtypeid must be football (1), not " & Bet.Bet_Info.Event.Eventtypeid'Img;
                 end case;
             end case;
           end;
           -- for football stop
         else
-          Log(Me & "Do_Try", "bet disabled " & To_String(Bet.Bot_Cfg.Bet_Name));
+          Log(Me & Service, "bet disabled " & To_String(Bet.Bot_Cfg.Bet_Name));
         end if; -- enabled
       end if;-- continue betting
     else
-      Log(Me & "Do_Try", "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid);
+      Log(Me & Service, "Bet alredy placed on this market: " & Bet.Bet_Info.Market.Marketid);
     end if;
-  end Do_Try;
+  end Do_Try2;
 
-  -----------------------------------------------------------------------
+
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
     use General_Routines;
@@ -878,19 +1006,19 @@ package body Bet_Handler is
     case Bet.Bet_Info.Event.Eventtypeid is
       when 1 => -- Football
         if Bet.Bot_Cfg.Animal /= Human then
---          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be human, is " & Bet.Bot_Cfg.Animal'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be human, is " & Bet.Bot_Cfg.Animal'Img);
           Result := False;
           return ; -- wrong animal for this bot
         end if;
       when 7 =>    -- horses
         if Bet.Bot_Cfg.Animal /= Horse then
---          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be horse, is " & Bet.Bot_Cfg.Animal'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be horse, is " & Bet.Bot_Cfg.Animal'Img);
           Result := False;
           return ; -- wrong animal for this bot
         end if;
       when 4339 => -- hounds
         if Bet.Bot_Cfg.Animal /= Hound then
---          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be hound, is " & Bet.Bot_Cfg.Animal'Img);
+          Log(Me & "Check_Conditions_Fulfilled", "wrong animal for this bot should be hound, is " & Bet.Bot_Cfg.Animal'Img);
           Result := False;
           return ; -- wrong animal for this bot
         end if;
@@ -901,31 +1029,31 @@ package body Bet_Handler is
     case Bet.Bot_Cfg.Market_Type is
       when Winner =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "WIN" then
---          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot
         end if;
       when Place =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "PLACE" then
-----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot
         end if;
-      when Match_Odds =>
+      when Match_Odds => null;
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "MATCH_ODDS" then
-----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
-          return ; -- wrong markettype for this bot
+          return ; -- wrong markettype for this bot, pass on to football_2 in do_try2
         end if;
       when Correct_Score =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "CORRECT_SCORE" then
-----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot
         end if;
       when Half_Time_Score =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "HALF_TIME_SCORE" then
-----          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
+          Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
           return ; -- wrong markettype for this bot
         end if;

@@ -54,6 +54,7 @@ private
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) ;
 
   procedure Do_Try(Bet       : in out Bet_Type) ;
+  procedure Do_Try2(Bet       : in out Bet_Type) ;
                  
 --  function To_String(Bet : Bet_Type) return String;
   function Enabled(Bet : Bet_Type) return Boolean;
