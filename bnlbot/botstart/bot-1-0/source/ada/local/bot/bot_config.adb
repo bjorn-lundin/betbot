@@ -117,8 +117,6 @@ package body Bot_Config is
       
       Cfg.System_Section.Bot_Mode   := Get_Bot_Mode("global","bot_mode", Real) ;
       
-      
-      
 --      Log("Read","Cfg.System_Section.Bot_Mode: '" &  Sa_Par_Mode.all & "'" &  Sa_Par_Mode.all'first'img &  Sa_Par_Mode.all'last'img);
 --      if Sa_Par_Mode.all'length >= 3 and then Sa_Par_Mode.all(Sa_Par_Mode.all'first .. Sa_Par_Mode.all'first + 3 -1) = "sim" then
 --        Cfg.System_Section.Bot_Mode  := Simulation;  -- real by default
