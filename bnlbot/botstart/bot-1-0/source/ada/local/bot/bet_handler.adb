@@ -20,7 +20,7 @@ with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
 with Sattmate_Exception;
-with Process_IO;
+--with Process_IO;
 with Bot_Svn_Info;
 with Rpc;
 with Token;
@@ -773,43 +773,18 @@ package body Bet_Handler is
               when Back    => raise Suicide with "Bet_Side Back and football not implemented";
               when Greenup => raise Suicide with "Bet_Side Greenup and football not implemented";
               when Lay     =>
---                Log(Me & Service, "start football LAY");
 
                 case Bet.Bet_Info.Event.Eventtypeid is
                   when 1 =>  -- Football
---                    Log(Me & Service, "start football LAY 1");
                   --bnl start
-                    if Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "winner" then
+                    if Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "WINNER" then
                       raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bet_Info.Market.Markettype;
-                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "place" then
+                    elsif Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "PLACE" then
                       raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bet_Info.Market.Markettype;
-                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "match_odds" then
-                      Log(Me & Service, "start football LAY 1 Match_Odds");
-                      -- find the Correct_Score | Half_Time_Score markets and 
-                      -- resend the market notification, now when Match_Odds exists
-                        Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
-                        -- get the other markets for this event                        
-                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List); 
-                        Log(Me & Service, "Read eventid done, items: " & Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'img);
-                        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
-                          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
-                          if Market_Data.Markettype = "HALF_TIME_SCORE          " or else
-                             Market_Data.Markettype = "CORRECT_SCORE            " then                 
-                            declare
-                              MNR      : Bot_Messages.Market_Notification_Record;
-                              Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
-                            begin
-                              MNR.Market_Id := (others => ' ');
-                              Move(Market_Data.Marketid, MNR.Market_Id);
-                              Move("football_2", Receiver.Name);
-                              Log(Me, "Notifying 'football_2'  with marketid: '" & MNR.Market_Id & "'");
-                              Bot_Messages.Send(Receiver, MNR);
-                            end;
-                          end if;  
-                        end loop;
-                        Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
-                    elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "correct_score" or 
-                           Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "half_time_score" then 
+                    elsif Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "MATCH_ODDS" then
+                      raise Bad_Data with "not supported Market_Type with Football:" & Bet.Bet_Info.Market.Markettype;
+                    elsif Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "CORRECT_SCORE" or 
+                           Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "HALF_TIME_SCORE" then 
                         Log(Me & Service, "start football LAY 1 Correct_Score | Half_Time_Score");
                         -- exit if not Match_odds exists
                         Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
@@ -916,12 +891,12 @@ package body Bet_Handler is
                           end if;                                      
                         end loop;
                         
-                        if Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "correct_score" then
+                        if Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "CORRECT_SCORE" then
                           All_Expected_Runners_Are_Present := Sum = 17; -- up to 3
-                        elsif Trim(Lower_Case(Bet.Bet_Info.Market.Markettype)) = "half_time_score" then  
+                        elsif Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "HALF_TIME_SCORE" then  
                           All_Expected_Runners_Are_Present := Sum = 10; -- up to 2
                         else
-                          raise Bad_Data with "no sum to compare with:" & Trim(Lower_Case(Bet.Bet_Info.Market.Markettype));
+                          raise Bad_Data with "no sum to compare with:" & Trim(Upper_Case(Bet.Bet_Info.Market.Markettype));
                         end if;
 --                        Log(Me & Service, "sum:" & Sum'Img & " All_Expected_Runners_Are_Present " & All_Expected_Runners_Are_Present'Img);
                         
@@ -1039,7 +1014,7 @@ package body Bet_Handler is
           Result := False;
           return ; -- wrong markettype for this bot
         end if;
-      when Match_Odds => null;
+      when Match_Odds =>
         if Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) /= "MATCH_ODDS" then
           Log(Me & "Check_Conditions_Fulfilled", "wrong Markettype for this bot should be: '" &  Bet.Bot_Cfg.Market_Type'Img & "' is '" & Upper_Case(Trim(Bet.Bet_Info.Market.Markettype)) & "'");
           Result := False;
