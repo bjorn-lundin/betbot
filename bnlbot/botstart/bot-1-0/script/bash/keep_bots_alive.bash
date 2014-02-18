@@ -24,31 +24,6 @@ export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
 
-
-case $BOT_MACHINE_ROLE in 
-  PROD)
-    ps -ef | grep login_daemon.py|  grep -v grep >/dev/null
-    RESULT_LOGIN_DAEMON=$?
-    if [ $RESULT_LOGIN_DAEMON -eq 1 ] ; then
-      echo "Started login_daemon"
-      /usr/bin/python $BOT_SOURCE/python/login_daemon.py &
-      sleep 10
-    fi
-  
-    ps -ef | grep mail_proxy.py|  grep -v grep >/dev/null
-    RESULT_MAIL_PROXY=$?
-    if [ $RESULT_MAIL_PROXY -eq 1 ] ; then
-      echo "Started mail_proxy"
-      /usr/bin/python $BOT_SOURCE/python/mail_proxy.py &
-    fi
-  
-    ;;    
-esac
-
-
-
-
-
 function Check_Bots_For_User () {
 
   export BOT_USER=$1
@@ -84,8 +59,7 @@ function Check_Bots_For_User () {
   #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
   #1
   
-  ########## bot ############
-  
+  ########## bot ############  
   
   case $BOT_MACHINE_ROLE in 
     PROD) BOT_LIST="bot" ;;
@@ -106,13 +80,23 @@ function Check_Bots_For_User () {
       echo "Started $bot $BOT_USER - bot_home=$BOT_HOME -- bot=$bot"
       export BOT_NAME=$bot
       if [[ $bot != "bot" ]] ; then
-        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=$bot.ini
+        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --inifile=$bot.ini
       else
-        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=betfair.ini
+        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --inifile=betfair.ini
       fi      
     fi
   done 
-
+  
+  BET_PLACER_LIST="bet_placer_1"
+  for placer in $BET_PLACER_LIST ; do
+    ps -ef | grep bin/bet_placer | grep "user=$BOT_USER" | grep "inifile=$placer.ini" | grep -v grep >/dev/null    
+    RESULT_PLACER=$?
+    if [ $RESULT_PLACER -eq 1 ] ; then
+      echo "Started $placer $BOT_USER - bot_home=$BOT_HOME -- placer=$placer"
+      export BOT_NAME=$placer
+      $BOT_TARGET/bin/bet_placer --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=$placer.ini
+    fi
+  done 
 
   ps -ef | grep bin/poll | grep user=$BOT_USER | grep -v grep >/dev/null
   RESULT_POLL=$?
@@ -144,24 +128,18 @@ function Check_Bots_For_User () {
   if [[ $MINUTE == "17" ]] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER & 
   fi 
-
 }
 
-USER_LIST=$(ls $BOT_START/user)
-
-
 case $BOT_MACHINE_ROLE in 
-  PROD) USER_LIST="bnl jmb" ;;
+  PROD) USER_LIST=$(ls $BOT_START/user) ;;
      *) USER_LIST="bnl"     ;;
 esac  
-
   
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER
 #  echo "stop $USER"
 done
-
  
 case $BOT_MACHINE_ROLE in 
   PROD)
@@ -173,6 +151,8 @@ case $BOT_MACHINE_ROLE in
         pg_dump jmb  | gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
         sleep 30
         pg_dump bnls | gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
+        sleep 30
+        pg_dump dry | gzip > /home/bnl/datadump/dry_${WEEK_DAY}.dmp.gz &
       fi
     fi
   ;;  
