@@ -16,7 +16,11 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
+
+
 [ -r /var/lock/bot ] && exit 0
+
+export PG_DUMP=/usr/lib/postgresql/9.3/bin/pg_dump
 
 TZ='Europe/Stockholm'
 export TZ
@@ -147,16 +151,11 @@ case $BOT_MACHINE_ROLE in
     MINUTE=$(date +"%M")  
     if [[ $HOUR == "02" ]] ; then
       if [[ $MINUTE == "05" ]] ; then
-        WEEK_DAY=$(date +"%u")
-        pg_dump jmb  | gzip > /home/bnl/datadump/jmb_${WEEK_DAY}.dmp.gz &
-        sleep 30
-        pg_dump bnls | gzip > /home/bnl/datadump/bnls_${WEEK_DAY}.dmp.gz &
-        sleep 30
-        pg_dump dry | gzip > /home/bnl/datadump/dry_${WEEK_DAY}.dmp.gz &
+        WEEK_DAY=$(date +"%u")        
+        for u in $USER_LIST ; do
+          $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
+        done
       fi
     fi
   ;;  
-    
 esac
-
-
