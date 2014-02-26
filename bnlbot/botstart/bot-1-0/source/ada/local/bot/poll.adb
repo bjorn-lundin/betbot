@@ -67,7 +67,7 @@ procedure Poll is
     Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
     Price,Tmp : Table_Aprices.Data_Type;
     In_Play   : Boolean := False;
-    Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
@@ -192,7 +192,7 @@ procedure Poll is
       end loop;
       Best_Runners(2) := Price;
 
-      for i in Best_Runners'range loop
+      for i in 1 .. 2 loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
 
@@ -275,6 +275,42 @@ procedure Poll is
         end ;
         exit Poll_Loop;
       end if;
+     
+      -- find #3 -- for stats
+      Price.Backprice := 10000.0;
+      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      loop
+        exit when Eol;
+        if Tmp.Status(1..6) = "ACTIVE" and then
+           Tmp.Backprice < Price.Backprice and then
+           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(2).Selectionid then
+          Price := Tmp;
+        end if;
+        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+      end loop;
+      Best_Runners(3) := Price;
+      
+      -- find #4 -- for stats
+      Price.Backprice := 10000.0;
+      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      loop
+        exit when Eol;
+        if Tmp.Status(1..6) = "ACTIVE" and then
+           Tmp.Backprice < Price.Backprice and then
+           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(2).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(3).Selectionid then
+          Price := Tmp;
+        end if;
+        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+      end loop;
+      Best_Runners(4) := Price;
+      
+      for i in Best_Runners'range loop
+        Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
+      end loop;
+        
     end loop Poll_Loop;
   end Run;
   ---------------------------------------------------------------------
