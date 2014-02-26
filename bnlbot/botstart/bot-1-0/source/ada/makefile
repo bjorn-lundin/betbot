@@ -26,6 +26,7 @@ tables : $(ST)/table_history.ads  $(ST)/table_alinks.ads \
          $(ST)/table_aevents.ads  $(ST)/table_amarkets.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
          $(ST)/table_abets.ads    $(ST)/table_abalances.ads \
+         $(ST)/table_apricesfinish.ads \
 
 #$(ST)/table_anonrunners.ads         
 #$(ST)/table_awinners.ads
@@ -94,6 +95,11 @@ $(ST)/table_aprices.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aprices.x
 	cd $(ST) && rm table_aprices.ada
 	$(TP) -p aprices > $(ST)/aprices.sql
 
+$(ST)/table_apricesfinish.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_apricesfinish.xml
+	$(TP) -t apricesfinish > $(ST)/table_apricesfinish.ada
+	cd $(ST) && gnatchop -w -gnat05 table_apricesfinish.ada
+	cd $(ST) && rm table_apricesfinish.ada
+	$(TP) -p apricesfinish > $(ST)/apricesfinish.sql
 
 #$(ST)/table_awinners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_awinners.xml
 #	$(TP) -t awinners > $(ST)/table_awinners.ada
