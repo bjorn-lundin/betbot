@@ -23,6 +23,7 @@ with Table_Aevents;
 with Table_Aprices;
 with Table_Abets;
 with Table_Arunners;
+with Table_Apricesfinish;
 
 with Bot_Svn_Info;
 with Bet;
@@ -274,40 +275,41 @@ procedure Poll is
           end if;
         end ;
         exit Poll_Loop;
-      end if;
-     
-      -- find #3 -- for stats
+      end if;     
+    end loop Poll_Loop;
+    
+    declare
+      Stat : Table_Apricesfinish.Data_Type;
+    begin
+      -- insert into finish table
+      T.Start;
       Price.Backprice := 10000.0;
       Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
       loop
         exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(2).Selectionid then
-          Price := Tmp;
-        end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
-      end loop;
-      Best_Runners(3) := Price;
-      
-      -- find #4 -- for stats
-      Price.Backprice := 10000.0;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(2).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(3).Selectionid then
-          Price := Tmp;
+        if Tmp.Status(1..6) = "ACTIVE" then
+          Stat := (
+            Marketid     =>  Tmp.Marketid,
+            Selectionid  =>  Tmp.Selectionid,
+            Pricets      =>  Tmp.Pricets,
+            Status       =>  Tmp.Status,
+            Totalmatched =>  Tmp.Totalmatched,
+            Backprice    =>  Tmp.Backprice,
+            Layprice     =>  Tmp.Layprice,
+            Ixxlupd      =>  Tmp.Ixxlupd,
+            Ixxluts      =>  Tmp.Ixxluts
+          );
+          begin
+            Table_Apricesfinish.Insert(Stat);
+          exception
+            when Sql.Duplicate_Index => null;
+          end;          
         end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(4) := Price;
-      
-    end loop Poll_Loop;
+      T.Commit;
+    end;
     
     for i in Best_Runners'range loop
       Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
