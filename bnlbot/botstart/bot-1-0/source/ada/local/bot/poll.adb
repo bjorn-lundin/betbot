@@ -307,11 +307,12 @@ procedure Poll is
       end loop;
       Best_Runners(4) := Price;
       
-      for i in Best_Runners'range loop
-        Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
-      end loop;
-        
     end loop Poll_Loop;
+    
+    for i in Best_Runners'range loop
+      Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
+    end loop;
+        
   end Run;
   ---------------------------------------------------------------------
 
