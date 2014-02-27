@@ -68,7 +68,7 @@ procedure Poll is
     Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
     Price,Tmp : Table_Aprices.Data_Type;
     In_Play   : Boolean := False;
-    Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Best_Runners : array (1..2) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
@@ -307,7 +307,6 @@ procedure Poll is
         end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
-      Best_Runners(4) := Price;
       T.Commit;
     end;
     
