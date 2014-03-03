@@ -8,6 +8,12 @@ import os
 import psycopg2
 import datetime
 import serial
+import signal
+
+def signal_handler(signal, frame):
+        print 'You pressed Ctrl+C!'
+        sys.exit(0)
+
 
 def get_row_weeks_back(conn, betname, delta_weeks)  :
     result = 0
@@ -26,11 +32,11 @@ def get_row_weeks_back(conn, betname, delta_weeks)  :
 #    print 'mon2', mon2
 #    print 'sun2', sun2
     
+#                 "and B.BETMODE = 2 " \
     cur = conn.cursor()
     cur.execute("select sum(B.PROFIT) " \
                  "from ABETS B  " \
                  "where B.BETNAME = %s " \
-                 "and B.BETMODE = 2 " \
                  "and B.BETWON is not NULL " \
                  "and B.BETPLACED >= %s " \
                  "and B.BETPLACED <= %s " ,
@@ -60,12 +66,12 @@ def get_row(conn, betname, delta_days)  :
     day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
 #    print betname, day_start, day_stop
     cur = conn.cursor()
+#                 "and B.BETMODE = 2 " \
     cur.execute("select " \
                  "sum(B.PROFIT) " \
                  "from ABETS B " \
                  "where B.BETNAME = %s " \
                  "and B.BETWON is not NULL " \
-                 "and B.BETMODE = 2 " \
                  "and B.BETPLACED >= %s " \
                  "and B.BETPLACED <= %s ",
                    (betname,day_start,day_stop))  
@@ -84,37 +90,39 @@ def get_row(conn, betname, delta_days)  :
     conn.commit()
     return result 
     ################################## end get_row
-def main():
-  # Main program block
+    
+    
 
+    
+def main(source):
+  # return
+  # Main program block
   buff = ""
-  now = datetime.datetime.now()
-  if now.minute % 2 == 0 :
+  if source == 1 :
     source = 2
   else :
-    source = 2
-    return
+    source = 1
 
   if source == 1 :
-    conn = psycopg2.connect("dbname='bnl' \
+    conn = psycopg2.connect("dbname='dry' \
                            user='bnl' \
-                           host='192.168.0.13' \
-                           password=None") 
+                           host='db.nonodev.com' \
+                           password='BettingFotboll1$' ")
 
-    bets = ['DR_HORSES_WIN_LAY_LATE_GB_30_60',
-            'DR_HORSES_WIN_LAY_LATE_IE_35_50',
-            'DR_HORSES_WIN_LAY_GO_EARLY_GB_30_60',
-            'DR_HORSES_WIN_LAY_EARLY_GB_10_90',
-            'DR_HORSES_WIN_BACK_GB_60_05',
-            'DR_HORSES_WIN_LAY_LATE_GB_35_50',
-            'DR_HORSES_WIN_LAY_EARLY_FR_30_60',
-            'DR_HORSES_WIN_LAY_EARLY_GB_30_60',
-            'DR_HOUNDS_WIN_BACK_GB_45_07'   ]
+    bets = ['HORSES_WIN_22.0_24.0_6_25_BACK_GB',
+            'HORSES_WIN_7.4_8.4_6_25_LAY_GB',
+            'HORSES_WIN_26.0_26.0_6_25_BACK_GB',
+            'HORSES_WIN_55.0_55.0_6_50_LAY_IE',
+            'HORSES_WIN_55.0_55.0_6_50_LAY_GB',
+            'HORSES_WIN_30.0_30.0_6_50_LAY_IE',
+            'HUMAN_HALF-TIME-SCORE_2.0_9.0_4.0_25_LAY_XX',
+            'HUMAN_FULL-TIME-SCORE_2.0_9.0_4.0_25_LAY_MX',
+            'HUMAN_HALF-TIME-SCORE_2.0_9.0_4.0_25_LAY_GB'   ]
 
   elif source == 2 :
-    conn = psycopg2.connect("dbname='bnls' \
+    conn = psycopg2.connect("dbname='bnl' \
                            user='bnl' \
-                           host='nonodev.com' \
+                           host='db.nonodev.com' \
                            password='BettingFotboll1$' ")
 
     bets = ['HORSES_WIN_BACK_FINISH_1.10_7.0',
@@ -136,10 +144,13 @@ def main():
   row0['4'] = 4
   row0['5'] = 5
   row0['6'] = 6
-  row0['typ'] = 'Typ av bet/antal dagar sedan'
+  if source == 1 :
+    row0['typ'] = 'TEST Typ av bet/antal dagar sedan'
+  else :
+    row0['typ'] = 'REAL Typ av bet/antal dagar sedan'
   
   lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0  
-  buff = lcd_row_0 + '\r\n'
+  buff += lcd_row_0 + '\r\n'
 #  print lcd_row_0
 
   buff += '------------------------------------------------------------------------------\r\n'
@@ -187,20 +198,31 @@ def main():
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])     
     lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
     buff += lcd_row_2 + '\r\n'  
-#  print buff  
 
-  ser = serial.Serial(
-    port='/dev/ttyUSB0',
-    baudrate=38400,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS)
-  ser.open()
-  ser.write(buff)
-  ser.close()
+  print buff[:-2]
+  conn.close()
+  return source
+
+#  sys.stdout.write("fghj")
+#  ser = serial.Serial(
+#    port='/dev/ttyUSB0',
+#    baudrate=38400,
+#    parity=serial.PARITY_NONE,
+#    stopbits=serial.STOPBITS_ONE,
+#    bytesize=serial.EIGHTBITS)
+#  ser.open()
+#  ser.write(buff)
+#  ser.close()
 #############################################################
 if __name__ == '__main__':
   #make print flush now!
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-  main()
+  signal.signal(signal.SIGINT, signal_handler)
+  global_source = 1
+  while True:
+      global_source = main(global_source)
+      time.sleep(60)
+#      for x in range(0, 78):
+#        time.sleep(1)
+#        sys.stdout.write('.')
 
