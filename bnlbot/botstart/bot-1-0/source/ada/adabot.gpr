@@ -30,6 +30,7 @@ project Adabot is
    Stat_Mains   := ("change_10_percent.adb",
                     "greening_up_1.adb",
                     "lay_football.adb",
+                    "lay_at_finish.adb",
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
@@ -40,6 +41,7 @@ project Adabot is
                    "remove_duplicates_from_history.adb",                   
                    "remove_duplicates_from_events.adb",                   
                    "bet_checker.adb",
+                   "sql_ifc_leak_finder.adb",
                    "insert_blank_line.adb",
                    "test_login.adb",
                    "rpc_tester.adb");
