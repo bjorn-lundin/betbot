@@ -104,7 +104,6 @@ procedure Poll is
             Log(Me & "Run", "not a HORSE market: " &  Market_Notification.Market_Id);
             return;
           elsif not Cfg.Country_Is_Ok(Event.Countrycode) then
---          elsif Event.Countrycode(1..2) /= "GB" then
             Log(Me & "Run", "not an country,  market: " &  Market_Notification.Market_Id);
             return;
           end if;
@@ -204,27 +203,26 @@ procedure Poll is
 
         declare
           Bet : Table_Abets.Data_Type;
---          Market_Id : Market_Id_Type := (others => ' ');
           Runner : Table_Arunners.Data_Type;
---          Runner_Name : Runner_Name_Type := (others => ' ');
           Eos : Boolean := False;
         begin
           Log("Found_Place " & Found_Place'Img );
-
           if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
-            declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-            begin
-              Move("HORSES_WIN_BACK_FINISH_1.15_7.0", PBB.Bet_Name);
-              Move(Markets(Win).Marketid, PBB.Market_Id);
-              Move("1.01", PBB.Price);
-              Move("0.0", PBB.Size); -- set by receiver's ini-file
-              PBB.Selection_Id := Best_Runners(1).Selectionid;
-              Move("bet_placer_1", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-              Bot_Messages.Send(Receiver, PBB);
-            end;
+            -- the LEADER as WINNER at the price
+--            declare
+--              PBB : Bot_Messages.Place_Back_Bet_Record;
+--              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+--            begin
+--              Move("HORSES_WIN_BACK_FINISH_1.15_7.0", PBB.Bet_Name);
+--              Move(Markets(Win).Marketid, PBB.Market_Id);
+--              Move("1.01", PBB.Price);
+--              Move("0.0", PBB.Size); -- set by receiver's ini-file
+--              PBB.Selection_Id := Best_Runners(1).Selectionid;
+--              Move("bet_placer_1", Receiver.Name);
+--              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+--              Bot_Messages.Send(Receiver, PBB);
+--            end;
+            -- the SECOND PLACE as PLACED at the price
 --            declare
 --              PBB : Bot_Messages.Place_Back_Bet_Record;
 --              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
@@ -251,7 +249,6 @@ procedure Poll is
             
             -- the LEADER as PLC at the price
             Rpc.Place_Bet (Bet_Name         => Bet_Name,
---                           Market_Id        => Markets(Win).Marketid,
                            Market_Id        => Markets(Place).Marketid,
                            Side             => Back,
                            Runner_Name      => Runner.Runnername,
@@ -260,7 +257,6 @@ procedure Poll is
                            Price            => 1.01,
                            Bet_Persistence  => Persist,
                            Bet              => Bet);
-          
             T.Start;
               Bet.Startts := Markets(Win).Startts;
               Bet.Fullmarketname := Markets(Win).Marketname;
@@ -316,7 +312,6 @@ procedure Poll is
         
   end Run;
   ---------------------------------------------------------------------
-
   use type Sql.Transaction_Status_Type;
 ------------------------------ main start -------------------------------------
 
@@ -341,7 +336,6 @@ begin
       Help        => "use alternative inifile");
 
   Getopt (Cmd_Line);  -- process the command line
-
 
   if Ba_Daemon then
     Posix.Daemonize;
