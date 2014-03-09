@@ -47,41 +47,42 @@ begin
 
    Log ("Connect db");
    Sql.Connect
-     (Host     => "localhost",
+     (Host     => "nonodev.com",
       Port     => 5432,
       Db_Name  => "bnl",
       Login    => "bnl",
-      Password => "bnl");
+      Password => "BettingFotboll1$");
+   Log ("Connected db");
 
-   Sql.Prepare (Select_All,
-                   "select * from AMARKETS " &
-                   "where STARTTS >= :START " &
-                   "and STARTTS <= :STOP " &
-                   "and 1 =2 " &  --impossilble
-                   "");
-
-   Start_Date := Sattmate_Calendar.To_Time_Type ("2011-01-01", "00:00:00:000");
-   Stop_Date  := Sattmate_Calendar.To_Time_Type ("2011-03-01", "23:59:59:999");
-
-   Sql.Set_Timestamp(Select_all, "START", Start_date);
-   Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
-
-   for i in 0 .. I_Num_Days loop
-   Sql.Start_Read_Write_Transaction (T);
-         Cnt := 0;
-         Sql.Open_Cursor(Select_All);
-         loop
-           Cnt := Cnt + 1;
-           Log ("turn #" & i'img & Cnt'Img & " " & eos'img);
-           Sql.Fetch(Select_All,Eos);
-           exit when Eos;
-         end loop;
-         Sql.Close_Cursor(Select_All);
-   Sql.Commit (T);
-   end loop;
-
-   Log ("wait 25 before close");
-   delay 25.0;
+--   Sql.Prepare (Select_All,
+--                   "select * from AMARKETS " &
+--                   "where STARTTS >= :START " &
+--                   "and STARTTS <= :STOP " &
+--                   "and 1 =2 " &  --impossilble
+--                   "");
+--
+--   Start_Date := Sattmate_Calendar.To_Time_Type ("2011-01-01", "00:00:00:000");
+--   Stop_Date  := Sattmate_Calendar.To_Time_Type ("2011-03-01", "23:59:59:999");
+--
+--   Sql.Set_Timestamp(Select_all, "START", Start_date);
+--   Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
+--
+--   for i in 0 .. I_Num_Days loop
+--   Sql.Start_Read_Write_Transaction (T);
+--         Cnt := 0;
+--         Sql.Open_Cursor(Select_All);
+--         loop
+--           Cnt := Cnt + 1;
+--           Log ("turn #" & i'img & Cnt'Img & " " & eos'img);
+--           Sql.Fetch(Select_All,Eos);
+--           exit when Eos;
+--         end loop;
+--         Sql.Close_Cursor(Select_All);
+--   Sql.Commit (T);
+--   end loop;
+--
+--   Log ("wait 25 before close");
+--   delay 25.0;
 
    Sql.Close_Session;
 --   Log ("wait 25 before die");
