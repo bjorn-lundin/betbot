@@ -443,6 +443,12 @@ package body Pgada.Database is
      );
    end Login;
    
+   procedure Login(Connection : in out Connection_Type; Conn_Info : String) is
+     C_Conn_Info : Chars_Ptr := C_String_Or_Null (Conn_Info);
+   begin
+     Connection.Actual := PQ_Connectdb (C_Conn_Info);
+     Free(C_Conn_Info);
+   end Login;   
    
    procedure Set_Db_Login (Connection : in out Connection_Type;
                            Host       : in String  := "";

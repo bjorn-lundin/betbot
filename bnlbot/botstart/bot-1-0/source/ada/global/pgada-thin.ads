@@ -79,6 +79,10 @@ package Pgada.Thin is
                              return Pg_Conn_Access;
    pragma Import (C, Pq_Set_Db_Login, "PQsetdbLogin");
 
+   
+   function PQ_Connectdb (Conn_Info : Chars_Ptr) return Pg_Conn_Access;
+   pragma Import (C, PQ_Connectdb, "PQconnectdb");
+   
    function Pq_Db (Conn : Pg_Conn_Access) return Chars_Ptr;
    pragma Import (C, Pq_Db, "PQdb");
 

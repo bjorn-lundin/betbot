@@ -381,7 +381,8 @@ package body Sql is
                       Tty        : in String  := "";
                       Db_Name    : in String  := "";
                       Login      : in String := "";
-                      Password   : in String := "")     is
+                      Password   : in String := "";
+                      SSL_Mode   : in String := "require") is
       Local_Status : Connection_Status_Type;
    begin
    
@@ -393,14 +394,26 @@ package body Sql is
       Global_Connection.Set_User(Login);
       Global_Connection.Set_Password(Password);
    
-      Set_Db_Login (Global_Connection,
-                    Host      => Host,
-                    Port      => Port,
-                    Options   => Options,
-                    Tty       => Tty,
-                    Db_Name   => Db_Name,
-                    Login     => Login,
-                    Password  => Password);
+      Global_Connection.Login(Conn_Info => "host=" & Host & " " & 
+                                           "port=" & Port'Img & " " &
+                                           "dbname=" & Db_Name & " " &
+                                           "user=" & Login & " " &
+                                           "password=" & Password & " " &
+                                           "sslmode=" & SSL_Mode);
+   
+      Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
+                                                                       Login & "', '" & 
+                                                                       Password & "', '" & 
+                                                                       SSL_Mode & "'");
+   
+--      Set_Db_Login (Global_Connection,
+--                    Host      => Host,
+--                    Port      => Port,
+--                    Options   => Options,
+--                    Tty       => Tty,
+--                    Db_Name   => Db_Name,
+--                    Login     => Login,
+--                    Password  => Password);
 
       Local_Status := Status (Global_Connection);
       case Local_Status is
@@ -991,7 +1004,6 @@ package body Sql is
          Print_Errors ("Close_This_Cursor", Dml_Status);
          raise Postgresql_Error;
       end if;
-      Private_Statement.Is_Ok_To_Close := False;
       Private_Statement.Current_Row := 0;
       Private_Statement.Number_Actually_Fetched := 0;
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
