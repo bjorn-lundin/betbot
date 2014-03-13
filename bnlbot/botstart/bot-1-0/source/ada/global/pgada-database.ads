@@ -78,6 +78,7 @@ package Pgada.Database is
    procedure Set_User (Connection : in out Connection_Type; User : String);
    procedure Set_Password (Connection : in out Connection_Type; Password : String);
    procedure Login(Connection : in out Connection_Type) ;
+   procedure Login(Connection : in out Connection_Type; Conn_Info : String);
    
    
    --  Query characteristics of an open connection

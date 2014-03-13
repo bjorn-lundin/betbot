@@ -53,14 +53,15 @@ package Sql is
    procedure Open_Odbc_Session (D1 : String; D2 : String; D3 : String);
 
    procedure Close_Session;
-
+   --http://www.postgresql.org/docs/9.3/static/libpq-connect.html
    procedure Connect (Host       : in String  := "";
                       Port       : in Natural := 5432;
                       Options    : in String  := "";
                       Tty        : in String  := "";
                       Db_Name    : in String  := "";
                       Login      : in String := "";
-                      Password   : in String := "");
+                      Password   : in String := "";
+                      SSL_Mode   : in String := "require"); --disable,allow,prefer,require,verify-ca,verify-full
 
    function  Is_Session_Open return Boolean;
 
@@ -309,15 +310,12 @@ private
       Parameter_Map           : Map.List_Type := Map.Create;
       Result                  : Result_Type;
       Dml_Result              : Result_Type;
-      Is_Ok_To_Close          : Boolean := False; -- is set in close_cursor, commit/rollback uses it
       Is_Open                 : Boolean := False; --set/unset in open/close check in fetch
       Type_Of_Statement       : Statement_Type_Type;
       Current_Row             : Natural := 0;
       Number_To_Fetch         : Natural := 10_000;
       Number_Actually_Fetched : Natural := 0;
       Number_Parameters       : Natural := 0;
-      --	State                   : String(1..5) := (others => ' ');
-      --    Error_MessageU          : Unbounded_String := To_Unbounded_String("");
    end record;
 
    --  procedure Initialize (Object : in out Private_Statement_Type) ;
@@ -348,11 +346,7 @@ private
       Counter : Transaction_Identity_Type := 0;
    end record;
 --   procedure Finalize (T : in out Transaction_Type);
-   
---   type Transaction_Type is tagged limited record
---      Status  : Transaction_Status_Type   := None;
---      Counter : Transaction_Identity_Type := 0;
---   end record;
+
 end Sql;
 
 
