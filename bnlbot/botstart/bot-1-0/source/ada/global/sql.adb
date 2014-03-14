@@ -5,6 +5,7 @@ with Ada.Characters.Handling;
 -- with Ada.Exceptions ;
 with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
+with Ada.Environment_Variables;
 
 package body Sql is
 
@@ -383,9 +384,8 @@ package body Sql is
                       Login      : in String := "";
                       Password   : in String := "";
                       SSL_Mode   : in String := "require") is
-      Local_Status : Connection_Status_Type;
-   begin
-   
+      Local_Status : Connection_Status_Type;      
+   begin   
       Global_Connection.Set_Host(Host);
       Global_Connection.Set_Port(Port);
       Global_Connection.Set_Options(Options);
@@ -393,14 +393,22 @@ package body Sql is
       Global_Connection.Set_Db_Name(Db_Name);
       Global_Connection.Set_User(Login);
       Global_Connection.Set_Password(Password);
-   
-      Global_Connection.Login(Conn_Info => "host=" & Host & " " & 
-                                           "port=" & Port'Img & " " &
-                                           "dbname=" & Db_Name & " " &
-                                           "user=" & Login & " " &
-                                           "password=" & Password & " " &
-                                           "sslmode=" & SSL_Mode);
-   
+
+      declare
+        Login_String : String :=  "host=" & Host & " " & 
+                                  "port=" & Port'Img & " " &
+                                  "dbname=" & Db_Name & " " &
+                                  "user=" & Login & " " &
+                                  "password=" & Password & " " &
+                                  "sslmode=" & SSL_Mode;        
+      begin                            
+        if Ada.Environment_Variables.Exists("BOT_NAME") then
+          Global_Connection.Login(Conn_Info => Login_String & " application_name=" &
+                 Ada.Characters.Handling.To_Lower(Ada.Environment_Variables.Value("BOT_NAME")));
+        else
+          Global_Connection.Login(Conn_Info => Login_String);
+        end if;        
+      end;
       Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
                                                                        Login & "', '" & 
                                                                        Password & "', '" & 
