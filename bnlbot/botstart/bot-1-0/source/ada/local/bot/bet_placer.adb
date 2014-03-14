@@ -113,7 +113,7 @@ procedure Bet_Placer is
     Eos : array (Eos_Type'range) of Boolean := (others => False);
 --    use Bot_Types;
 
-    Bet_Name                       : String (1..100) :=  (others => ' ') ;
+--    Bet_Name                       : String (1..100) :=  (others => ' ') ;
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
     Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
@@ -162,7 +162,7 @@ procedure Bet_Placer is
       Size           => Float_8(Global_Size),
       Price          => Local_Price,
       Side           => "LAY ",
-      Betname        => Bet_Name,
+      Betname        => Place_Lay_Bet.Bet_Name,
       Betwon         => False,
       Profit         => 0.0,
       Status         => Order_Status, -- ??
@@ -174,7 +174,7 @@ procedure Bet_Placer is
       Betplaced      => Now,
       Pricematched   => Float_8(Average_Price_Matched),
       Sizematched    => Float_8(L_Size_Matched),
-      Runnername     => (others => ' '),
+      Runnername     => A_Runner.Runnername,
       Fullmarketname => A_Market.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
       Ixxlupd        => (others => ' '), --set by insert
