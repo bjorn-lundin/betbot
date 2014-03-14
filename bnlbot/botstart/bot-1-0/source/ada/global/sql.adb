@@ -406,7 +406,7 @@ package body Sql is
           Global_Connection.Login(Conn_Info => Login_String & " application_name=" &
                  Ada.Characters.Handling.To_Lower(Ada.Environment_Variables.Value("BOT_NAME")));
         else
-          Global_Connection.Login(Conn_Info => Login_String);
+          Global_Connection.Login(Conn_Info => Login_String & " application_name=no_name");
         end if;        
       end;
       Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
