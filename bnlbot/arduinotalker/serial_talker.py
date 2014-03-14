@@ -107,7 +107,8 @@ def main(source):
     conn = psycopg2.connect("dbname='dry' \
                            user='bnl' \
                            host='db.nonodev.com' \
-                           password='BettingFotboll1$' ")
+                           password='BettingFotboll1$' \
+                           sslmode=require")
 
     bets = ['HORSES_WIN_22.0_24.0_6_25_BACK_GB',
             'HORSES_WIN_7.4_8.4_6_25_LAY_GB',
@@ -123,15 +124,16 @@ def main(source):
     conn = psycopg2.connect("dbname='bnl' \
                            user='bnl' \
                            host='db.nonodev.com' \
-                           password='BettingFotboll1$' ")
-
+                           password='BettingFotboll1$' \
+                           sslmode=require")
+                           
     bets = ['HORSES_WIN_BACK_FINISH_1.10_7.0',
             'HORSES_PLC_BACK_FINISH_1.10_7.0_1',    
             'HORSES_WIN_BACK_FINISH_1.15_7.0',
             'HORSES_PLC_BACK_FINISH_1.15_7.0_1',  
-            'HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0',
+            'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3',
+            'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_4',
             'HORSES_WIN_6.8_8.2_GREENUP_GB_LB',
-            'HORSES_WIN_6.8_12.0_GREENUP_GB_LB_7_2_5.0',
             'HUMAN_MATCH_3.5_6.0_GREENUP_GB_LB',
             'HORSES_WIN_6.8_8.2_LAY_GB_7_1_6']
                              
