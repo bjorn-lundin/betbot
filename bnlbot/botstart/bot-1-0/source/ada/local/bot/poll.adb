@@ -273,7 +273,10 @@ procedure Poll is
 --              Bot_Messages.Send(Receiver, PBB);
 --            end;
             -- LAY bad horses ...
-            if Best_Runners(3).Backprice >= Float_8(1.0) then
+            if Best_Runners(1).Backprice <= Float_8(1.15) and then
+               Best_Runners(2).Backprice >= Float_8(7.0) and then
+               Best_Runners(3).Backprice >= Float_8(1.0) and then
+               Best_Runners(3).Layprice  <= Float_8(30.0) then
               declare
                 PLB : Bot_Messages.Place_Lay_Bet_Record;
                 Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
@@ -289,7 +292,10 @@ procedure Poll is
                 Bot_Messages.Send(Receiver, PLB);
               end;
             end if;  
-            if Best_Runners(4).Backprice >= Float_8(1.0) then
+            if Best_Runners(1).Backprice <= Float_8(1.15) and then
+               Best_Runners(2).Backprice >= Float_8(7.0) and then
+               Best_Runners(4).Backprice >= Float_8(1.0) and then
+               Best_Runners(4).Layprice  <= Float_8(30.0) then
               -- LAY bad horses ...
               declare
                 PLB : Bot_Messages.Place_Lay_Bet_Record;
