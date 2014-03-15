@@ -68,7 +68,7 @@ procedure Poll is
     Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
     Price,Tmp : Table_Aprices.Data_Type;
     In_Play   : Boolean := False;
-    Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Best_Runners : array (1..3) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
@@ -211,24 +211,8 @@ procedure Poll is
       end loop;
       Best_Runners(3) := Price;
       
-      -- find #4
-      Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10000.0;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(2).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(3).Selectionid then
-          Price := Tmp;
-        end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
-      end loop;
-      Best_Runners(4) := Price;
       
-      for i in 1 .. 2 loop
+      for i in 1 .. 3 loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
 
@@ -275,8 +259,28 @@ procedure Poll is
             -- LAY bad horses ...
             if Best_Runners(1).Backprice <= Float_8(1.15) and then
                Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(3).Backprice >= Float_8(1.0) and then
-               Best_Runners(3).Layprice  <= Float_8(30.0) then
+               Best_Runners(2).Layprice  >= Float_8(1.0) and then
+               Best_Runners(2).Layprice  <= Float_8(25.0) then
+              declare
+                PLB : Bot_Messages.Place_Lay_Bet_Record;
+                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              begin
+                -- number 2 in the race
+                Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_2", PLB.Bet_Name);
+                Move(Markets(Win).Marketid, PLB.Market_Id);
+                Move("25", PLB.Price);
+                Move("30.0", PLB.Size); -- set by receiver's ini-file
+                PLB.Selection_Id := Best_Runners(2).Selectionid;
+                Move("bet_placer_1", Receiver.Name);
+                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
+                Bot_Messages.Send(Receiver, PLB);
+              end;
+            end if;  
+            if Best_Runners(1).Backprice <= Float_8(1.15) and then
+               Best_Runners(2).Backprice >= Float_8(7.0) and then
+               Best_Runners(3).Layprice  >= Float_8(1.0) and then
+               Best_Runners(3).Layprice  <= Float_8(25.0) then
+              -- LAY bad horses ...
               declare
                 PLB : Bot_Messages.Place_Lay_Bet_Record;
                 Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
@@ -287,26 +291,6 @@ procedure Poll is
                 Move("25", PLB.Price);
                 Move("30.0", PLB.Size); -- set by receiver's ini-file
                 PLB.Selection_Id := Best_Runners(3).Selectionid;
-                Move("bet_placer_1", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PLB);
-              end;
-            end if;  
-            if Best_Runners(1).Backprice <= Float_8(1.15) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(4).Backprice >= Float_8(1.0) and then
-               Best_Runners(4).Layprice  <= Float_8(30.0) then
-              -- LAY bad horses ...
-              declare
-                PLB : Bot_Messages.Place_Lay_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 3 in the race
-                Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_4", PLB.Bet_Name);
-                Move(Markets(Win).Marketid, PLB.Market_Id);
-                Move("25", PLB.Price);
-                Move("30.0", PLB.Size); -- set by receiver's ini-file
-                PLB.Selection_Id := Best_Runners(4).Selectionid;
                 Move("bet_placer_2", Receiver.Name);
                 Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PLB);
