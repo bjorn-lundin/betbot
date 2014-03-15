@@ -104,11 +104,12 @@ def main(source):
     source = 1
 
   if source == 1 :
-    conn = psycopg2.connect("dbname='dry' \
-                           user='bnl' \
-                           host='db.nonodev.com' \
-                           password='BettingFotboll1$' \
-                           sslmode=require")
+    conn = psycopg2.connect("dbname=dry \
+                           user=bnl \
+                           host=db.nonodev.com \
+                           password=BettingFotboll1$ \
+                           sslmode=require \
+                           application_name=serial_talker")
 
     bets = ['HORSES_WIN_22.0_24.0_6_25_BACK_GB',
             'HORSES_WIN_7.4_8.4_6_25_LAY_GB',
@@ -121,11 +122,12 @@ def main(source):
             'HUMAN_HALF-TIME-SCORE_2.0_9.0_4.0_25_LAY_GB'   ]
 
   elif source == 2 :
-    conn = psycopg2.connect("dbname='bnl' \
-                           user='bnl' \
-                           host='db.nonodev.com' \
-                           password='BettingFotboll1$' \
-                           sslmode=require")
+    conn = psycopg2.connect("dbname=bnl \
+                           user=bnl \
+                           host=db.nonodev.com \
+                           password=BettingFotboll1$ \
+                           sslmode=require \
+                           application_name=serial_talker")
                            
     bets = ['HORSES_WIN_BACK_FINISH_1.10_7.0',
             'HORSES_PLC_BACK_FINISH_1.10_7.0_1',    
