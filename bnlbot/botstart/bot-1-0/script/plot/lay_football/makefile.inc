@@ -6,20 +6,27 @@
 
 UNAME := $(shell uname)
 
-
-DBHOST := sebjlun-deb64
+#DBHOST := sebjlun-deb64
 #DBHOST := 192.168.0.13
-#DBHOST := nonodev.com
+DBHOST := nonodev.com
+
+ifeq ($(DBHOST),nonodev.com)
+  DBNAME :=bnls
+#  DBPORT := 5432
+  DBPWD  :=BettingFotboll1$$
+  DBUSER :=bnl
+endif
+
 ifeq ($(DBHOST),localhost)
   DBNAME := bnl
-  DBPORT := 5432
+#  DBPORT := 5432
   DBPWD  := bnl
   DBUSER := bnl
 endif
 
 ifeq ($(DBHOST),sebjlun-deb64)
-  DBNAME := nono
-  DBPORT := 5432
+  DBNAME := bnl
+#  DBPORT := 5432
   DBPWD  := bnl
   DBUSER := bnl
 endif

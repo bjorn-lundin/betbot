@@ -7,30 +7,12 @@
 UNAME := $(shell uname)
 
 
-DBHOST := sebjlun-deb64
-#DBHOST := 192.168.0.13
-#DBHOST := nonodev.com
-ifeq ($(DBHOST),localhost)
+DBHOST := db.nonodev.com
+
+ifeq ($(DBHOST),db.nonodev.com)
+# Go via ssh tunnel
   DBNAME := bnl
   DBPORT := 5432
-  DBPWD  := bnl
-  DBUSER := bnl
-endif
-
-ifeq ($(DBHOST),192.168.0.13)
-  DBNAME := betting
-  DBPORT := 5432
-  DBPWD  := bnl
-  DBUSER := bnl
-endif
-
-
-ifeq ($(DBHOST),nonodev.com)
-# Go via ssh tunnel
-  HOST := 127.0.0.1
-  DBNAME := bnls
-  DBPORT := 5433
-  #Escape a '$' with a '$'  BettingFotboll1$ is correct pwd
   DBPWD  := BettingFotboll1$$
   DBUSER := bnl
 endif
@@ -42,88 +24,85 @@ ifeq ($(DBHOST),sebjlun-deb64)
   DBUSER := bnl
 endif
 
-#POWERDAYS := 128
-START_DATE := 2012-01-01
-STOP_DATE  := 2013-12-31
-#SIZE := 30
-SALDO := 0
-POWERDAYSLIST := 107 207 307 114 214 314 121 221 321 128 228 328 135 235 335
     
-BET_NAMES := \
-  horses_win_lay1_gb_6 \
-  horses_win_lay3_gb_12 \
-  horses_win_lay4_gb_12 \
-  horses_win_lay6_gb_15 \
-  horses_win_fav2_gb_8 \
-  horses_win_fav5_gb_11 \
-  hounds_plc_lay6_gb_8
-     
-BET_NAMES_WITH_POWER := $(foreach i,$(POWERDAYSLIST), $(foreach j,$(BET_NAMES), $(j)-$(i)))
+BET_NAMES_DRY := \
+  HORSES_WIN_22.0_24.0_6_25_BACK_GB \
+  HORSES_WIN_29.0_34.0_6_25_LAY_GB \
+  HORSES_WIN_7.4_8.4_6_25_LAY_GB \
+  HORSES_WIN_55.0_55.0_6_50_LAY_GB \
+  HUMAN_FULL-TIME-SCORE_2.0_9.0_4.0_25_LAY_MX \
+  HORSES_WIN_19.5_19.5_6_25_BACK_GB \
+  HORSES_WIN_30.0_30.0_6_50_LAY_GB \
+  HORSES_WIN_16.5_16.5_6_25_BACK_IE \
+  HORSES_WIN_55.0_55.0_6_50_LAY_IE \
+  HORSES_WIN_15.5_15.5_6_25_BACK_GB
 
-PNGS := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).png)
-DATS := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).dat)
-PNG2S := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).xyz)
-DAT2S := $(foreach i,$(BET_NAMES_WITH_POWER), $(i).dat2)
 
-all  : $(PNGS)
+    
+BET_NAMES_REAL := \
+  HORSES_PLC_BACK_FINISH_1.15_7.0_1 
+
+
+BET_NAMES := $(BET_NAMES_REAL)
+  
+DATS := $(foreach i,$(BET_NAMES), $(i).dat)
+
+
+# do a wordcount of how many items in array
+NUMBETS := $(shell echo $(BET_NAMES) | wc -w )
+
+
+all  : png
 
 dat : $(DATS)
-png : $(PNGS)
-dat2 : $(DAT2S)
-png2 : $(PNG2S)
-xyz : $(PNG2S)
+
+
 
 test:
-	@echo $(BET_NAMES_WITH_POWER)
-	@echo $(PNG2S)
-	@echo $(DAT2S)
-    
+	@echo "---------------------"
+	@echo $(BET_NAMES)
+	@echo "---------------------"
+	@echo $(PNGS)
+	@echo "---------------------"
+	@echo $(DATS)
+	@echo "---------------------"
+
+PHONY : png
+png: $(DATS)
+	gnuplot -e "db_name='$(DBNAME)'" \
+            -e "numbets ='$(NUMBETS)'" \
+            -e "target_png='equity_top_$(NUMBETS).png'" \
+            -e "files='$(BET_NAMES)'" equity.gpl
 ## equity start ##
 #save the intermediate files too
-.PRECIOUS : %.dat
-.PRECIOUS : %.dat2
+#.PRECIOUS : %.dat
 
 # implict rules
 # create a dat and then a png file from that dat
 # $* is the stem
 # $@ is the target file name
 
-%.dat : $(BOT_TARGET)/bin/equity 
-	$(BOT_TARGET)/bin/equity --host=$(DBHOST) \
-                                 --database=$(DBNAME) \
-                                 --port=$(DBPORT) \
-                                 --pwd=$(DBPWD) \
-                                 --user=$(DBUSER) \
-                                 --powerdays=$(shell echo $* | cut -d'-' -f2) \
-                                 --betname=$(shell echo $(shell echo $* | cut -d'-' -f1) | tr '[:lower:]' '[:upper:]') \
-                                 --saldo=$(SALDO) > $*.dat         
-
-%.png : %.dat equity.gpl
-	gnuplot -e "db_name='$(DBNAME)'" \
-            -e "bet_type='$*'" \
-            -e "target_png='$@'" \
-            -e "powerdays='$(shell echo $* | cut -d'-' -f2)'" \
-            -e "data_file='$*.dat'" equity.gpl
+   
+%.dat:
+	psql --host=$(DBHOST)\
+    --username=$(DBUSER) \
+    --tuples-only \
+    --command="select STARTTS,sum(PROFIT) from ABETS where BETNAME ='$*' group by STARTTS order by STARTTS" \
+    --output=tmp.dat $(DBNAME)
+	cat tmp.dat | awk -F '|' '{i=i+$$2; print $$1,FS,i}' |  head -n-1 >  $*.dat
 	@echo "done gnuplot $* - $@ - $<"        
-    
-%.dat2 : $(BOT_TARGET)/bin/profit_per_weekday 
-	$(BOT_TARGET)/bin/profit_per_weekday --host=$(DBHOST) \
-                                 --database=$(DBNAME) \
-                                 --port=$(DBPORT) \
-                                 --pwd=$(DBPWD) \
-                                 --user=$(DBUSER) \
-                                 --powerdays=$(shell echo $* | cut -d'-' -f2) \
-                                 --betname=$(shell echo $(shell echo $* | cut -d'-' -f1) | tr '[:lower:]' '[:upper:]') > $*.dat2         
 
-%.xyz : %.dat2 profit_per_weekday.gpl
-	gnuplot -e "db_name='$(DBNAME)'" \
-            -e "bet_type='$*'" \
-            -e "target_png='$@'" \
-            -e "powerdays='$(shell echo $* | cut -d'-' -f2)'" \
-            -e "data_file='$*.dat2'" profit_per_weekday.gpl
-	@echo "done gnuplot $* - $@ - $<"        
-    
 
+
+#%.dat : $(BOT_TARGET)/bin/equity 
+#	$(BOT_TARGET)/bin/equity --host=$(DBHOST) \
+#                                 --database=$(DBNAME) \
+#                                 --port=$(DBPORT) \
+#                                 --pwd=$(DBPWD) \
+#                                 --user=$(DBUSER) \
+#                                 --powerdays=$(shell echo $* | cut -d'-' -f2) \
+#                                 --betname=$(shell echo $(shell echo $* | cut -d'-' -f1) | tr '[:lower:]' '[:upper:]') \
+#                                 --saldo=$(SALDO) > $*.dat         
     
 
 .PHONY : clean

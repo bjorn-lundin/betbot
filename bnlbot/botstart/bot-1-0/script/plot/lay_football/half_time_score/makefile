@@ -29,7 +29,9 @@ test:
 .PRECIOUS : %.dat
     
 %.dat : $(BOT_TARGET)/bin/lay_football
-	$(BOT_TARGET)/bin/lay_football --market_type=HALF_TIME_SCORE \
+#	@echo --hostname=$(DBHOST) --database=$(DBNAME) --username=$(DBUSER) --password=$(DBPWD)
+	$(BOT_TARGET)/bin/lay_football --hostname=$(DBHOST) --database=$(DBNAME) --username=$(DBUSER) --password=$(DBPWD) \
+                                   --market_type=HALF_TIME_SCORE \
                                    --country_code=$(shell echo $* | cut -d'_' -f4) \
                                    --min_odds_score=4  \
                                    --max_odds_score=35 \
