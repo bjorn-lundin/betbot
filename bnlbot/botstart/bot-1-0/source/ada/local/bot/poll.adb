@@ -94,7 +94,10 @@ procedure Poll is
     if 0.0 < Cfg.Size and then Cfg.Size < 1.0 then
       -- to have the size = a portion of the saldo
       Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-      Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance);
+      Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance + Saldo.Exposure);
+      if Bet_Size < Bet_Size_Type(Saldo.Balance) then
+        Bet_Size := Bet_Size_Type(Saldo.Balance);
+      end if;
     end if;  
     
     Table_Amarkets.Read(Market, Eos);
