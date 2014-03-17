@@ -24,7 +24,7 @@ with Table_Aprices;
 with Table_Abets;
 with Table_Arunners;
 with Table_Apricesfinish;
-
+with Table_Abalances;
 with Bot_Svn_Info;
 with Bet;
 with Config;
@@ -76,21 +76,27 @@ procedure Poll is
     Found_Place : Boolean := True;
     T : Sql.Transaction_Type;
     Current_Turn_Not_Started_Race : Integer_4 := 0;
-
+    Bet_Size : Bet_Size_Type:= Cfg.Size;
+    Betfair_Result : Rpc.Result_Type := Rpc.Result_Type'first;
+    Saldo : Table_Abalances.Data_Type;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
 
     Market.Marketid := Market_Notification.Market_Id;
 
---    Move("HORSES_WIN_BACK_FINISH_1.15_7.0", Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);
-    
-    
+        
     if Bet.Profit_Today(Bet_Name) < Cfg.Max_Loss_Per_Day then
       Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Cfg.Max_Loss_Per_Day));
       return;
     end if;
-
+        
+    if 0.0 < Cfg.Size and then Cfg.Size < 1.0 then
+      -- to have the size = a portion of the saldo
+      Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
+      Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance);
+    end if;  
+    
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -313,7 +319,7 @@ procedure Poll is
                            Side             => Back,
                            Runner_Name      => Runner.Runnername,
                            Selection_Id     => Best_Runners(1).Selectionid,
-                           Size             => Cfg.Size,
+                           Size             => Bet_Size,
                            Price            => 1.01,
                            Bet_Persistence  => Persist,
                            Bet              => Bet);
