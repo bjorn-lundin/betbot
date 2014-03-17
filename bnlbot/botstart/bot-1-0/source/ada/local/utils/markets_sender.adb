@@ -123,7 +123,7 @@ begin
 --  else
     Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
 --    Ts := (2013,12,30,0,0,0,0);
-    Ts := (2014,1,18,0,0,0,0);
+    Ts := (2012,1,18,0,0,0,0);
     Markets.Set_Timestamp("TS", Ts);
     
 --  end if;
