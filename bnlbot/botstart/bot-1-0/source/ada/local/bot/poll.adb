@@ -339,10 +339,10 @@ procedure Poll is
     begin
       -- insert into finish table
       T.Start;
-      Price.Backprice := 10000.0;
       Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
       loop
         exit when Eol;
+        Log("about to insert into Apricesfinish: " & Table_Aprices.To_String(Tmp));
         if Tmp.Status(1..6) = "ACTIVE" then
           Stat := (
             Marketid     =>  Tmp.Marketid,
@@ -357,8 +357,10 @@ procedure Poll is
           );
           begin
             Table_Apricesfinish.Insert(Stat);
+            Log("Has inserted: " & Table_Aprices.To_String(Tmp));
           exception
-            when Sql.Duplicate_Index => null;
+            when Sql.Duplicate_Index => 
+            Log("Duplicate_Index on: " & Table_Aprices.To_String(Tmp));
           end;          
         end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
