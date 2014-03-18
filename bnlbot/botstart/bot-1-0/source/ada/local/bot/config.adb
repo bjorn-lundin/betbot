@@ -9,8 +9,11 @@ package body Config is
   Bad_Data : exception;
   -------------------------------------------------------------
   function Create(Filename : String) return Config_Type is
+    Service : constant String := "Create";
     Cfg : Config_Type;
   begin
+     Log(Me & Service, "read ini file :'" & Filename & "'");
+
      Ini.Load(Filename);
      Cfg.Size                 := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0")); 
      Cfg.Fav_Max_Price        := Back_Price_Type'Value(Ini.Get_Value("finish","fav_max_price","1.15")); 
