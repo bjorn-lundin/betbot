@@ -97,14 +97,15 @@ procedure Poll is
       Saldo.Exposure := abs(Saldo.Exposure);
       if Saldo.Exposure > Float_8(0.0) then
         Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance + Saldo.Exposure);
-        if Bet_Size < Bet_Size_Type(Saldo.Balance) then
+        Log(Me & "Run", "Bet_Size 1 " & F8_Image(Float_8(Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+        if Bet_Size > Bet_Size_Type(Saldo.Balance) then
           Bet_Size := Bet_Size_Type(Saldo.Balance);
         end if;
       else
         Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance);
       end if;
     end if;
-    Log(Me & "Run", "Bet_Size " & F8_Image(Float_8(Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+    Log(Me & "Run", "Bet_Size 2 " & F8_Image(Float_8(Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
 
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
