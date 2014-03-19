@@ -85,21 +85,27 @@ procedure Poll is
     Market.Marketid := Market_Notification.Market_Id;
 
     Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bet_Name);
-        
+
     if Bet.Profit_Today(Bet_Name) < Cfg.Max_Loss_Per_Day then
       Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Cfg.Max_Loss_Per_Day));
       return;
     end if;
-        
+
     if 0.0 < Cfg.Size and then Cfg.Size < 1.0 then
       -- to have the size = a portion of the saldo
       Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-      Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance + Saldo.Exposure);
-      if Bet_Size < Bet_Size_Type(Saldo.Balance) then
-        Bet_Size := Bet_Size_Type(Saldo.Balance);
+      Saldo.Exposure := abs(Saldo.Exposure);
+      if Saldo.Exposure > Float_8(0.0) then
+        Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance + Saldo.Exposure);
+        if Bet_Size < Bet_Size_Type(Saldo.Balance) then
+          Bet_Size := Bet_Size_Type(Saldo.Balance);
+        end if;
+      else
+        Bet_Size := Cfg.Size * Bet_Size_Type(Saldo.Balance);
       end if;
-    end if;  
-    
+    end if;
+    Log(Me & "Run", "Bet_Size " & F8_Image(Float_8(Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -188,7 +194,7 @@ procedure Poll is
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(1) := Price;
-      
+
       -- find #2
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
@@ -203,7 +209,7 @@ procedure Poll is
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(2) := Price;
-      
+
       -- find #3
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
@@ -219,8 +225,8 @@ procedure Poll is
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       Best_Runners(3) := Price;
-      
-      
+
+
       for i in 1 .. 3 loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
@@ -284,7 +290,7 @@ procedure Poll is
                 Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PLB);
               end;
-            end if;  
+            end if;
             if Best_Runners(1).Backprice <= Float_8(1.15) and then
                Best_Runners(2).Backprice >= Float_8(7.0) and then
                Best_Runners(3).Layprice  >= Float_8(1.0) and then
@@ -304,7 +310,7 @@ procedure Poll is
                 Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PLB);
               end;
-            end if;  
+            end if;
 
             -- fix som missing fields first
             Runner.Marketid := Markets(Win).Marketid;
@@ -315,7 +321,7 @@ procedure Poll is
             else
               Log(Me & "Make_Bet", "no runnername found");
             end if;
-            
+
             -- the LEADER as PLC at the price
             Rpc.Place_Bet (Bet_Name         => Bet_Name,
                            Market_Id        => Markets(Place).Marketid,
@@ -340,9 +346,9 @@ procedure Poll is
           end if;
         end ;
         exit Poll_Loop;
-      end if;     
+      end if;
     end loop Poll_Loop;
-    
+
     declare
       Stat : Table_Apricesfinish.Data_Type;
     begin
@@ -368,19 +374,19 @@ procedure Poll is
             Table_Apricesfinish.Insert(Stat);
             Log("Has inserted: " & Table_Aprices.To_String(Tmp));
           exception
-            when Sql.Duplicate_Index => 
+            when Sql.Duplicate_Index =>
             Log("Duplicate_Index on: " & Table_Aprices.To_String(Tmp));
-          end;          
+          end;
         end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       T.Commit;
     end;
-    
+
     for i in Best_Runners'range loop
       Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
     end loop;
-        
+
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
