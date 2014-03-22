@@ -48,7 +48,7 @@ procedure Bet_Placer is
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
 
-  Global_Size : Bet_Size_type := 30.0;
+--  Global_Size : Bet_Size_type := 30.0;
   Global_Max_Loss_Per_Day : Float_8 := -500.0;
   Global_Enabled : Boolean := False;
 
@@ -61,15 +61,15 @@ procedure Bet_Placer is
     type Eos_Type is (Market, Runner);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
 
-    Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
-    Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
-    Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
-    Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
-    Order_Status                   : String (1..50)  :=  (others => ' ') ;
-    L_Size_Matched,
-    Average_Price_Matched          : Float           := 0.0;
-    Bet_Id                         : Integer_8       := 0;
-    Local_Price : Float_8 := Float_8'Value(Place_Back_Bet.Price);
+--    Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
+--    Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
+--    Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
+--    Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
+--    Order_Status                   : String (1..50)  :=  (others => ' ') ;
+--    L_Size_Matched,
+--    Average_Price_Matched          : Float           := 0.0;
+--    Bet_Id                         : Integer_8       := 0;
+--    Local_Price : Float_8 := Float_8'Value(Place_Back_Bet.Price);
   begin
     Log("'" & Place_Back_Bet.Bet_Name & "'");
     Log("'" & Place_Back_Bet.Market_Id & "'");
@@ -77,10 +77,10 @@ procedure Bet_Placer is
     Log("'" & Place_Back_Bet.Size & "'");
     Log("'" & Place_Back_Bet.Price & "'");
 
-    if Bet.Profit_Today(Place_Back_Bet.Bet_Name) < Global_Max_Loss_Per_Day then
-      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
-      return;
-    end if;
+--    if Bet.Profit_Today(Place_Back_Bet.Bet_Name) < Global_Max_Loss_Per_Day then
+--      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
+--      return;
+--    end if;
 
     A_Market.Marketid := Place_Back_Bet.Market_Id;
     Table_Amarkets.Read(A_Market, Eos(Market) );
@@ -88,55 +88,16 @@ procedure Bet_Placer is
     A_Runner.Marketid := Place_Back_Bet.Market_Id;
     A_Runner.Selectionid := Place_Back_Bet.Selection_Id;
     Table_Arunners.Read(A_Runner, Eos(Runner) );
-    
-    Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
-    Move( "EXECUTION_COMPLETE", Order_Status);
-    Move( "SUCCESS", Execution_Report_Status);
-    Move( "SUCCESS", Execution_Report_Error_Code);
-    Move( "SUCCESS", Instruction_Report_Status);
-    Move( "SUCCESS", Instruction_Report_Error_Code);
-    Average_Price_Matched := Float(Local_Price);
-    L_Size_Matched := Float(Global_Size);
-    
-    A_Bet := (
-      Betid          => Bet_Id,
-      Marketid       => Place_Back_Bet.Market_Id,
-      Betmode        => Bot_Mode(Bot_Types.Simulation),
-      Powerdays      => 0,
-      Selectionid    => Place_Back_Bet.Selection_Id,
-      Reference      => (others => '-'),
-      Size           => Float_8(Global_Size),
-      Price          => Local_Price,
-      Side           => "BACK",
-      Betname        => Place_Back_Bet.Bet_Name,
-      Betwon         => False,
-      Profit         => 0.0,
-      Status         => Order_Status, -- ??
-      Exestatus      => Execution_Report_Status,
-      Exeerrcode     => Execution_Report_Error_Code,
-      Inststatus     => Instruction_Report_Status,
-      Insterrcode    => Instruction_Report_Error_Code,
-      Startts        => A_Market.Startts,
-      Betplaced      => Now,
-      Pricematched   => Float_8(Average_Price_Matched),
-      Sizematched    => Float_8(L_Size_Matched),
-      Runnername     => A_Runner.Runnername,
-      Fullmarketname => A_Market.Marketname,
-      Svnrevision    => Bot_Svn_Info.Revision,
-      Ixxlupd        => (others => ' '), --set by insert
-      Ixxluts        => Now              --set by insert
-    );
-
-
---    Rpc.Place_Bet (Bet_Name         => Place_Back_Bet.Bet_Name,
---                   Market_Id        => Place_Back_Bet.Market_Id,
---                   Side             => Back,
---                   Runner_Name      => A_Runner.Runnername,
---                   Selection_Id     => Place_Back_Bet.Selection_Id,
---                   Size             => Global_Size,  -- --Bet_Size_Type'Value(Trim(Place_Back_Bet.Size)),
---                   Price            => Bet_Price_Type'Value(Trim(Place_Back_Bet.Price)),
---                   Bet_Persistence  => Persist,
---                   Bet              => A_Bet);
+ 
+    Rpc.Place_Bet (Bet_Name         => Place_Back_Bet.Bet_Name,
+                   Market_Id        => Place_Back_Bet.Market_Id,
+                   Side             => Back,
+                   Runner_Name      => A_Runner.Runnername,
+                   Selection_Id     => Place_Back_Bet.Selection_Id,
+                   Size             => Bet_Size_Type'Value(Trim(Place_Back_Bet.Size)),
+                   Price            => Bet_Price_Type'Value(Trim(Place_Back_Bet.Price)),
+                   Bet_Persistence  => Persist,
+                   Bet              => A_Bet);
 
     T.Start;
       A_Bet.Startts := A_Market.Startts;
@@ -169,6 +130,7 @@ procedure Bet_Placer is
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
     Local_Price : Float_8 := Float_8'Value(Place_Lay_Bet.Price);
+    Local_Size  : Float_8 := Float_8'Value(Place_Lay_Bet.Size);
     
   begin
     Log("'" & Place_Lay_Bet.Bet_Name & "'");
@@ -196,7 +158,7 @@ procedure Bet_Placer is
     Move( "SUCCESS", Instruction_Report_Status);
     Move( "SUCCESS", Instruction_Report_Error_Code);
     Average_Price_Matched := Float(Local_Price);
-    L_Size_Matched := Float(Global_Size);
+    L_Size_Matched := Float(Local_Size);
     
     A_Bet := (
       Betid          => Bet_Id,
@@ -205,7 +167,7 @@ procedure Bet_Placer is
       Powerdays      => 0,
       Selectionid    => Place_Lay_Bet.Selection_Id,
       Reference      => (others => '-'),
-      Size           => Float_8(Global_Size),
+      Size           => Local_Size,
       Price          => Local_Price,
       Side           => "LAY ",
       Betname        => Place_Lay_Bet.Bet_Name,
@@ -232,7 +194,7 @@ procedure Bet_Placer is
 --                   Side             => Lay,
 --                   Runner_Name      => A_Runner.Runnername,
 --                   Selection_Id     => Place_Lay_Bet.Selection_Id,
---                   Size             => Global_Size,  -- --Bet_Size_Type'Value(Trim(Place_Back_Bet.Size)),
+--                   Size             => Bet_Size_Type'Value(Trim(Place_Back_Bet.Size)),
 --                   Price            => Bet_Price_Type'Value(Trim(Place_Lay_Bet.Price)),
 --                   Bet_Persistence  => Persist,
 --                   Bet              => A_Bet);
@@ -314,7 +276,7 @@ begin
   Log(Me, "Login betfair done");
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
-  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0"));
+--  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0"));
   Global_Enabled := Ini.Get_Value("finish","enabled",false);
   Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0"));
 

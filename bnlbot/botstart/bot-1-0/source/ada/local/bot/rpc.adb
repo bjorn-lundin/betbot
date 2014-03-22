@@ -1137,7 +1137,7 @@ package body RPC is
       end if;
 
       Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Price_List, DB_Runner_Price);
-      Log(Me, Table_Aprices.To_String(DB_Runner_Price));
+      Log(Me & "Parse_Prices", Table_Aprices.To_String(DB_Runner_Price));
 
     end loop;
   end Parse_Prices;
