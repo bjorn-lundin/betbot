@@ -12,7 +12,14 @@ package Bot_Types is
 
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
-   type Bet_Market_Type is (Place, Winner, Match_Odds, Correct_Score, Half_Time_Score);
+   type Bet_Market_Type is (Place, 
+                            Winner, 
+                            Match_Odds, 
+                            Correct_Score, 
+                            Half_Time_Score, 
+                            Hat_Tricked_Scored, 
+                            Penalty_Taken,
+                            Sending_Off);
    type Bet_Side_Type is (Back, Lay);
    type Bet_Type_Type is (Greenup, Back, Lay); 
    

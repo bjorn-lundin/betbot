@@ -31,6 +31,9 @@ project Adabot is
                     "greening_up_1.adb",
                     "lay_football.adb",
                     "lay_at_finish.adb",
+                    "lay_during_race.adb",
+                    "prices_during_race.adb",
+                    "plot_race_prices.adb",
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     
