@@ -877,7 +877,7 @@ package body Bet_Handler is
                         -- check that we have a reasonbly odds for backing 'No'
                         if All_Expected_Runners_Are_Present and then
                            Bet.Bet_Info.Used_Index > Integer(0) and then
-                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice >  Float_8(Bet.Bot_Cfg.Min_Price) then -- not too low ..
+                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice >=  Float_8(Bet.Bot_Cfg.Min_Price) then -- not too low ..
                            
                           Pip_Back.Init(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice);
                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice := Pip_Back.Previous_Price;  -- make 'sure' we get the Lay-bet
