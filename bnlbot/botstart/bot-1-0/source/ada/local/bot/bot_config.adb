@@ -208,7 +208,19 @@ package body Bot_Config is
               Bet_Section.Market_Type := Correct_Score;
               Was_Set(Market) := True;
             end if;
-
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_hat-tricked-scored_") > Natural(0) then
+              Bet_Section.Market_Type := Hat_Tricked_Scored;
+              Was_Set(Market) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_penalty-taken_") > Natural(0) then
+              Bet_Section.Market_Type := Penalty_Taken;
+              Was_Set(Market) := True;
+            end if;
+            if Position( Lower_Case(To_String(Bet_Section.Bet_Name)), "_sending-off_") > Natural(0) then
+              Bet_Section.Market_Type := Sending_Off;
+              Was_Set(Market) := True;
+            end if;
+            
             for i in Was_Set'range loop
               if not Was_Set(i) then
                 raise Bad_Data with I'Img & " was not set";
