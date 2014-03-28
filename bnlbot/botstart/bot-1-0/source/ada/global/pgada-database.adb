@@ -219,6 +219,7 @@ package body Pgada.Database is
       procedure Free is
         new Ada.Unchecked_Deallocation (Natural, Natural_Access);
    begin
+      pragma Compile_Time_Warning(True, "Is this correct?? Pgada.Database.Finalize...");
       Result.Ref_Count.all := Result.Ref_Count.all - 1;
       if Result.Ref_Count.all = 0 and then Result.Actual /= null then
          Free (Result.Ref_Count);

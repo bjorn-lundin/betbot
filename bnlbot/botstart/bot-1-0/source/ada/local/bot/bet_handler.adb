@@ -790,73 +790,14 @@ package body Bet_Handler is
                     elsif Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "HAT_TRICKED_SCORED" or 
                            Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "PENALTY_TAKEN" or 
                            Trim(Upper_Case(Bet.Bet_Info.Market.Markettype)) = "SENDING_OFF" then 
+                           
                         Log(Me & Service, "start football Back " &  Trim(Upper_Case(Bet.Bet_Info.Market.Markettype))  );
-                        -- exit if not Match_odds exists
-                        Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
-                        Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
-                        Log(Me & Service, "Read eventid done, items: " & Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'img);
---                        -- get the match_odds market for this event 
---                        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
---                          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market_Data);
---                          if Market_Data.Markettype = "MATCH_ODDS               " then                 
---                            Match_Odds_Exists := True;
---                            exit; -- Market_Data is the MATCH_ODDS now
---                          end if;
---                        end loop;
---                        Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
---                        if not Match_Odds_Exists then
---                          Log(Me, "No corresponding MATCH_ODDS market found - wait for it: '" & Bet.Bet_Info.Market.Marketid & "'");
---                          return;
---                        end if;
                         
---                        declare
---                          Runner : Table_Arunners.Data_Type;
---                          Tmp_Price : Table_Aprices.Data_Type;
---                          Eos_Runner : Boolean := False;
---                          Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
---                          Fetched : array(Price_Type'range) of Boolean := (others => False);
---                        begin
---                        -- Always 3 runners, Home,draw,away in MATCH_ODDS - get them
---                          Tmp_Price.Marketid := Market_Data.Marketid;
---                          Table_Aprices.Read_I1_Marketid(Tmp_Price, Price_List);
---                          
---                          while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
---                            Table_Aprices.Aprices_List_Pack.Remove_From_Head(Price_List, Tmp_Price);
---                            -- The draw 
---                            Runner.Marketid := Tmp_Price.Marketid;
---                            Runner.Selectionid := Tmp_Price.Selectionid;
---                            Table_Arunners.Read(Runner, Eos_Runner);
---                            -- The only known is runnername 'The Draw', so use that one only for test.                    
---                            if not Eos_Runner then
---                              if Lower_Case(Skip_all_Blanks(Runner.Runnername)) = "thedraw" then
---                                if not Fetched(Draw) then
---                                  Price(Draw) := Tmp_Price;
---                                  Fetched(Draw) := True;
---                                end if;  
---                              else
---                                if not Fetched(Home) then
---                                  Price(Home) := Tmp_Price;
---                                  Fetched(Home) := True;
---                                elsif not Fetched(Away) then
---                                  Price(Away) := Tmp_Price;
---                                  Fetched(Away) := True;
---                                end if;  
---                              end if;
---                            end if;
---                          end loop;
---                          Table_Aprices.Aprices_List_Pack.Release(Price_List);
---                          -- now all of Home/Draw/Away must be fetched - check it
---                          if not (Fetched(Home) and Fetched(Draw) and Fetched(Away)) then
---                            Log(Me, "Missing a runner in MATCH_ODDS: '" &  Market_Data.Marketid & "'");
---                            return;                        
---                          end if;
---                        end;
-                                
                         -- check that all runners we think are there really are there                        
                         for k in 1 ..  Bet.Bet_Info.Last_Runner loop
-                          if    Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "yes" then
+                          if    Lower_Case(Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername)) = "yes" then
                             Sum := Sum + 1;
-                          elsif Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername) = "no" then
+                          elsif Lower_Case(Skip_All_Blanks(Bet.Bet_Info.Runner_Array(k).Runner.Runnername)) = "no" then
                             Sum := Sum + 1;
                             Bet.Bet_Info.Used_Index := k;     -- used in make_bet
                             Bet.Bet_Info.Selection_Id := Bet.Bet_Info.Runner_Array(k).Price.Selectionid;  -- used in make_bet
@@ -872,12 +813,12 @@ package body Bet_Handler is
                         else
                           raise Bad_Data with "no sum to compare with:" & Trim(Upper_Case(Bet.Bet_Info.Market.Markettype));
                         end if;
---                        Log(Me & Service, "sum:" & Sum'Img & " All_Expected_Runners_Are_Present " & All_Expected_Runners_Are_Present'Img);
+                        Log(Me & Service, "sum:" & Sum'Img & " All_Expected_Runners_Are_Present " & All_Expected_Runners_Are_Present'Img);
                         
                         -- check that we have a reasonbly odds for backing 'No'
                         if All_Expected_Runners_Are_Present and then
                            Bet.Bet_Info.Used_Index > Integer(0) and then
-                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice >=  Float_8(Bet.Bot_Cfg.Min_Price) then -- not too low ..
+                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Price.Backprice >= Float_8(Bet.Bot_Cfg.Min_Price) then -- not too low ..
                            
                           Pip_Back.Init(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice);
                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice := Pip_Back.Previous_Price;  -- make 'sure' we get the Lay-bet
