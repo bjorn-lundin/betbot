@@ -100,9 +100,10 @@ procedure Poll is
     
     -- second record : 
     Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
+    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
 
     -- third record : 
-    Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3", Bets_Allowed(Lay_Third).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_1.15_7.0_3", Bets_Allowed(Lay_Third).Bet_Name);
     Bets_Allowed(Lay_Third).Bet_Size := 30.0;
     
     -- check if ok to bet and set bet size
