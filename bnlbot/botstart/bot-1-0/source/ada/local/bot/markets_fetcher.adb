@@ -265,6 +265,8 @@ begin
   Append(Market_Type_Codes , Create("HAT_TRICKED_SCORED")); -- for football
   Append(Market_Type_Codes , Create("ODD_OR_EVEN"));        -- for football 
   Append(Market_Type_Codes , Create("PENALTY_TAKEN"));      -- for football 
+  Append(Market_Type_Codes , Create("WIN_BOTH_HALVES"));    -- for football 
+  Append(Market_Type_Codes , Create("WIN_HALF"));           -- for football 
   
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
