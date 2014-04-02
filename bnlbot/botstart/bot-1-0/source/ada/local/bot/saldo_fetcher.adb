@@ -211,7 +211,7 @@ begin
   
   -- to get mail on the 1st of each month too, if restart
   if Now.Day = 1 then
-    Day_Last_Check := 2;
+    Day_Last_Check := 12; --cannot be 2, if restart day 01 ...
   end if;
   
   Main_Loop : loop  
@@ -239,8 +239,8 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                                                       
-      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
-                                  Now.Minute = 00 and then
+      Is_Time_To_Check_Balance := Now.Hour = 09 and then 
+                                  Now.Minute = 18 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
