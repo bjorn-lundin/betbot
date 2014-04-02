@@ -1,3 +1,6 @@
+with "florist";
+with "global";
+
 project serial_talker is
 
    type Target_Machine_Type is ("lnx_x86","lnx_arm");
@@ -53,7 +56,9 @@ project serial_talker is
 
    for Object_Dir use Str & "/objects";
    for Exec_Dir use Str & "/exe"  ;
-   for Main use ("serial_talker.adb");
+   for Main use ("serial_talker.adb",
+                 "saldo_fetcher.adb",
+                 "serial.adb");
 
    for Source_Dirs use (".") ;
 
