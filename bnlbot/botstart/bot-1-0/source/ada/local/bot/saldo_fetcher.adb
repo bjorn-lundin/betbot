@@ -239,8 +239,8 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                                                       
-      Is_Time_To_Check_Balance := Now.Hour = 09 and then 
-                                  Now.Minute = 18 and then
+      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
+                                  Now.Minute = 10 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
