@@ -132,13 +132,13 @@ def main(g):
                            sslmode=require \
                            application_name=serial_talker")
 
-    bets = ['HORSES_WIN_BACK_FINISH_1.10_7.0',
-            'HORSES_PLC_BACK_FINISH_1.10_7.0_1',
-            'HORSES_WIN_BACK_FINISH_1.15_7.0',
+    bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'HORSES_PLC_BACK_FINISH_1.15_7.0_1',
-            'HORSES_WIN_LAY_FINISH_1.15_7.0_3',
+            'HORSES_PLC_BACK_FINISH_1.50_8.0_1',
+            'DR_HORSES_WIN_LAY_FINISH_1.10_7.0_3',
             'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3',
-            'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_4',
+            'DR_HORSES_WIN_LAY_FINISH_1.50_8.0_3',
+            'HORSES_WIN_LAY_FINISH_1.15_7.0_3',
             'HUMAN_MATCH_3.5_6.0_GREENUP_GB_LB',
             'HORSES_WIN_6.8_8.2_LAY_GB_7_1_6']
 
@@ -173,7 +173,11 @@ def main(g):
     row1['5'] = get_row(conn, bet, -5)
     row1['6'] = get_row(conn, bet, -6)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
-    row1['typ'] = bet[7:]
+    if len(bet) > 36 :
+      row1['typ'] = bet[7:]
+    else :
+      row1['typ'] = bet
+        
     lcd_row_1 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
     buff += lcd_row_1 + '\r\n'
   buff += '------------------------------------------------------------------------------\r\n'
@@ -199,7 +203,11 @@ def main(g):
     row2['4'] = get_row_weeks_back(conn, bet, -4)
     row2['5'] = get_row_weeks_back(conn, bet, -5)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
-    row2['typ'] = bet[7:]
+    if len(bet) > 36 :
+      row2['typ'] = bet[7:]
+    else :
+      row2['typ'] = bet
+    
 
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])
