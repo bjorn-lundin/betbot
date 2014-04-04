@@ -111,8 +111,8 @@ procedure Poll is
     Bets_Allowed(Lay_Low).Bet_Size := 30.0;
     
     -- Lay_Medium : 
-    Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3", Bets_Allowed(Lay_Low).Bet_Name);
-    Bets_Allowed(Lay_Low).Bet_Size := 30.0;
+    Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3", Bets_Allowed(Lay_Medium).Bet_Name);
+    Bets_Allowed(Lay_Medium).Bet_Size := 30.0;
     
     -- Lay_High : 
     Move("DR_HORSES_WIN_LAY_FINISH_1.50_8.0_3", Bets_Allowed(Lay_High).Bet_Name);
