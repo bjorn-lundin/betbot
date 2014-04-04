@@ -388,8 +388,8 @@ procedure Poll is
               -- LAY the third one  ...
             if not Bets_Allowed(Lay_High).Has_Betted and then
                Bets_Allowed(Lay_High).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.15) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
+               Best_Runners(1).Backprice <= Float_8(1.50) and then
+               Best_Runners(2).Backprice >= Float_8(8.0) and then
                Best_Runners(3).Layprice  >= Float_8(1.0) and then
                Best_Runners(3).Layprice  <= Float_8(25.0) then
               declare
