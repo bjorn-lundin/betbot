@@ -313,29 +313,29 @@ procedure Poll is
               end;
             end if;
             
-              -- Back The leader in PLC market again, but different requirements...
-            if not Bets_Allowed(Back_High).Has_Betted and then
-               Bets_Allowed(Back_High).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.50) and then
-               Best_Runners(2).Backprice >= Float_8(8.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0)  then
-              -- Back The leader in PLC market...
-              declare
-                PBB : Bot_Messages.Place_Back_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 1 in the race
-                PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
-                Move(Markets(Place).Marketid, PBB.Market_Id);
-                Move("1.01", PBB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
-                PBB.Selection_Id := Best_Runners(1).Selectionid;
-                Move("bet_placer_3", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PBB);
-                Bets_Allowed(Back_High).Has_Betted := True;
-              end;
-            end if;
+--              -- Back The leader in PLC market again, but different requirements...
+--            if not Bets_Allowed(Back_High).Has_Betted and then
+--               Bets_Allowed(Back_High).Is_Allowed_To_Bet and then
+--               Best_Runners(1).Backprice <= Float_8(1.50) and then
+--               Best_Runners(2).Backprice >= Float_8(8.0) and then
+--               Best_Runners(3).Layprice  >= Float_8(1.0)  then
+--              -- Back The leader in PLC market...
+--              declare
+--                PBB : Bot_Messages.Place_Back_Bet_Record;
+--                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+--              begin
+--                -- number 1 in the race
+--                PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
+--                Move(Markets(Place).Marketid, PBB.Market_Id);
+--                Move("1.01", PBB.Price);
+--                Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
+--                PBB.Selection_Id := Best_Runners(1).Selectionid;
+--                Move("bet_placer_3", Receiver.Name);
+--                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+--                Bot_Messages.Send(Receiver, PBB);
+--                Bets_Allowed(Back_High).Has_Betted := True;
+--              end;
+--            end if;
             
               -- Back The leader in PLC market again, but different requirements...
             if not Bets_Allowed(Lay_Low).Has_Betted and then
