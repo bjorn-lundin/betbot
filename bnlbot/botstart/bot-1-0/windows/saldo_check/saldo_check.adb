@@ -1,11 +1,17 @@
 with GWindows;                    use GWindows;
-with GWindows.Windows.Main; use GWindows.Windows.Main;
+with GWindows.Application;
+--with GWindows.Windows.Main; use GWindows.Windows.Main;
 --with GWindows.Static_Controls; --use GWindows.Static_Controls;
 with GWindows.GStrings; use GWindows.GStrings;
 with GWindows.Drawing_Objects;    use GWindows.Drawing_Objects;
 with GWindows.Windows;            use GWindows.Windows;
-with GWindows.Application;
 with GWindows.System_Tray;        use GWindows.System_Tray;
+with GWindows.Menus;                    use GWindows.Menus;
+with GWindows.Types;
+
+with Interfaces.C;
+
+--with Text_io;
 with Sattmate_Types;        use Sattmate_Types;
 with Rpc;
 with Sattmate_Exception;
@@ -26,9 +32,70 @@ procedure Saldo_Check is
    Notify_Data : Notify_Icon_Data;
    I, Ib : Icon_Type;
    NL : constant GCharacter := GCharacter'Val (10); -- New Line   
-   Main_Window : Main_Window_Type;
+   
    use type Table_Abalances.Data_Type;   
    pragma Warnings(Off, Global_Stop); -- surpress warning about not modified in loop
+
+
+   --------------------------------------------------------
+   --  The following is only for getting the popup menu  --
+   --------------------------------------------------------
+
+   Systray_Menu : Menu_Type := Create_Popup;
+   --  Menu ID's
+   ID_Exit     : constant := 100;
+--   ID_Show     : constant := 101;
+--   ID_Hide     : constant := 102;
+
+   type My_Window_Type is new Window_Type with null record;
+
+   overriding procedure On_Menu_Select (Window : in out My_Window_Type;
+                                        Item   : in     Integer);
+
+   overriding procedure On_Message
+     (Window       : in out My_Window_Type;
+      message      : in     Interfaces.C.unsigned;
+      wParam       : in     GWindows.Types.Wparam;
+      lParam       : in     GWindows.Types.Lparam;
+      Return_Value : in out GWindows.Types.Lresult)
+   is
+      WM_RBUTTONUP : constant := 517;
+   begin
+--      Text_IO.Put_Line ("inside On_Message");
+      if Integer (message) = WM_TRAY_MESSAGE then
+         if Integer (lParam) = WM_RBUTTONUP then
+            -- Text_IO.Put_Line ("will do Immediate_Popup_Menu");
+            Immediate_Popup_Menu (Systray_Menu, Window);
+            -- Text_IO.Put_Line ("did do Immediate_Popup_Menu");
+         end if;
+      end if;
+      --  Call parent method
+      On_Message (
+         Window_Type (Window),
+         message,
+         wParam,
+         lParam,
+         Return_Value
+      );
+--      Text_IO.Put_Line ("leaving On_Message");
+   end On_Message;
+
+   overriding procedure On_Menu_Select (Window : in out My_Window_Type;
+                                        Item   : in     Integer) is
+      pragma Unreferenced(Window);                                  
+   begin
+      -- Text_IO.Put_Line ("inside On_Menu_Select with item" & Item'Img);
+      case Item is
+--         when ID_Show =>   Window.Show;
+--         when ID_Hide =>   Window.Hide;
+         when ID_Exit =>  GWindows.Application.End_Application; -- will let go from messageloop
+         when others  =>  null;
+      end case;
+      -- Text_IO.Put_Line ("leaving On_Menu_Select with item" & Item'Img);
+   end On_Menu_Select;
+   
+   Main_Window : My_Window_Type;
+
    -----------------------------------
    task Updater is
      entry Start;
@@ -100,6 +167,7 @@ procedure Saldo_Check is
            exit;
        end;    
      end loop;  
+     Rpc.Logout;
    end Updater;
    ------------------------
    
@@ -127,7 +195,23 @@ begin
    );
    --  Now the fun part:
    Notify_Data.Notify_Icon (Add);   
-
+   
+   --  Menu fun
+   --
+--   Append_Item (Systray_Menu, "&Show window", ID_Show);
+--   Append_Item (Systray_Menu, "&Hide window", ID_Hide);
+--   Append_Separator (Systray_Menu);
+   Append_Item (Systray_Menu, "E&xit", ID_Exit);
+--   State (Systray_Menu, Command, ID_Exit, Grayed);
+   --
+   --  Activate messaging, such as mouse clicks in
+   --  the vicinity of the systray icon
+   --
+   Set_Windows_Messaging (Notify_Data);
+   Notify_Icon (Notify_Data, Modify);
+   --
+   
+   Log("Main", "hanging on the Messge_Loop");
    GWindows.Application.Message_Loop;
 
    Global_Stop := True;
