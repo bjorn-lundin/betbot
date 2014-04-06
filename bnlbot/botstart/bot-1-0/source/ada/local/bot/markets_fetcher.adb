@@ -512,7 +512,13 @@ begin
                         Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & Sibling_Id & "'");
                         Bot_Messages.Send(Receiver, MNR);
-                      end if;                
+                      end if;        
+
+                    -- poll_and_log is alway interested in MATCH_ODDS                        
+                      Receiver.Name := (others => ' ');
+                      Move("poll_and_log", Receiver.Name);
+                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
+                      Bot_Messages.Send(Receiver, MNR);
                     
                     -- if MATCH_ODDS exists,go ahead
                     -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
