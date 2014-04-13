@@ -409,10 +409,10 @@ package body Sql is
           Global_Connection.Login(Conn_Info => Login_String & " application_name=no_name");
         end if;        
       end;
-      Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
-                                                                       Login & "', '" & 
-                                                                       Password & "', '" & 
-                                                                       SSL_Mode & "'");
+--      Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
+--                                                                       Login & "', '" & 
+--                                                                       Password & "', '" & 
+--                                                                       SSL_Mode & "'");
    
 --      Set_Db_Login (Global_Connection,
 --                    Host      => Host,
