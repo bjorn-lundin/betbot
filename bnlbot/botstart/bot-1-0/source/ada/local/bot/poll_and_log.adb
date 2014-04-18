@@ -35,7 +35,7 @@ procedure Poll_And_Log is
 
   Me : constant String := "Poll_And_Log.";
 
-  Timeout  : Duration := 30.0;
+  Timeout  : Duration := 5.0;
   My_Lock  : Lock.Lock_Type;
 
   Msg      : Process_Io.Message_Type;

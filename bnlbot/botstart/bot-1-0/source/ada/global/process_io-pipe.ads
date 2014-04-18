@@ -31,33 +31,33 @@ package Process_Io.Pipe is
       Last_Received : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
     end record;
 
-  for Pio_Status_Record'alignment use 4;
-
-  for Pio_Status_Record use record
-      Num_Sent      at    0 range 0..4*8-1;
-      Num_Received  at    4 range 0..4*8-1;
-      Num_Untreated at    8 range 0..4*8-1;
-      Num_Fail_Sent at   12 range 0..4*8-1;
-      Num_Timeout   at   16 range 0..4*8-1;
-      Created       at   20 range 0..7*2*8-1;  -- 7 integer_2
-      Last_Sent     at   36 range 0..7*2*8-1;
-      Last_Received at   52 range 0..7*2*8-1;
-
-  end record;
-                                 -- I4   Fillers time_type
-  for Pio_Status_Record'size use 8*(5*4+ 2*2 + 3*7*2);
+--  for Pio_Status_Record'alignment use 4;
+--
+--  for Pio_Status_Record use record
+--      Num_Sent      at    0 range 0..4*8-1;
+--      Num_Received  at    4 range 0..4*8-1;
+--      Num_Untreated at    8 range 0..4*8-1;
+--      Num_Fail_Sent at   12 range 0..4*8-1;
+--      Num_Timeout   at   16 range 0..4*8-1;
+--      Created       at   20 range 0..7*2*8-1;  -- 7 integer_2
+--      Last_Sent     at   36 range 0..7*2*8-1;
+--      Last_Received at   52 range 0..7*2*8-1;
+--
+--  end record;
+--                                 -- I4   Fillers time_type
+--  for Pio_Status_Record'size use 8*(5*4+ 2*2 + 3*7*2);
 
   ------------------------------------------------------------
   type Pio_Enquire_Status_Record is record
       Mode      : Integer                   := 0;
   end record;
-  for Pio_Enquire_Status_Record'alignment use 4;
-
-  for Pio_Enquire_Status_Record use record
-      Mode      at   0 range 0..31;
-  end record;
-
-  for Pio_Enquire_Status_Record'size use 8*4;
+--  for Pio_Enquire_Status_Record'alignment use 4;
+--
+--  for Pio_Enquire_Status_Record use record
+--      Mode      at   0 range 0..31;
+--  end record;
+--
+--  for Pio_Enquire_Status_Record'size use 8*4;
 
   ------------------------------------------------------------
   type Pio_Queue_Record is record
@@ -65,15 +65,15 @@ package Process_Io.Pipe is
       Node     : Process_Io.Name_Type := (others => ' ');
 	  Identity : Process_Io.Identity_Type := Process_Io.Identity_Type'First;
   end record;
-  for Pio_Queue_Record'alignment use 4;
-
-  for Pio_Queue_Record use record
-      Name      at   0  range 0..15*8-1;
-      Node      at   16 range 0..15*8-1;
-      Identity  at   32 range 0..4*8-1;
-  end record;
-                                 --strings pads i4
-  for Pio_Queue_Record'size use 8*(2*15 + 2*1 +1*4);
+--  for Pio_Queue_Record'alignment use 4;
+--
+--  for Pio_Queue_Record use record
+--      Name      at   0  range 0..15*8-1;
+--      Node      at   16 range 0..15*8-1;
+--      Identity  at   32 range 0..4*8-1;
+--  end record;
+--                                 --strings pads i4
+--  for Pio_Queue_Record'size use 8*(2*15 + 2*1 +1*4);
 
 
   -- pio utility stuff above

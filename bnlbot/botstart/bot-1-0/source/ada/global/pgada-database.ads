@@ -249,10 +249,10 @@ private
 
    type Result_Type is new Ada.Finalization.Controlled with record
       Actual    : Thin.Pg_Result_Access;
-      Ref_Count : Natural_Access := new Integer'(1);
+--      Ref_Count : Natural_Access := new Integer'(1);
       Encoding  : Encoding_Type := Utf_8;    --bnl
    end record;
-   procedure Adjust (Result : in out Result_Type);
+  -- procedure Adjust (Result : in out Result_Type);
    procedure Finalize (Result : in out Result_Type);
 
 end Pgada.Database;
