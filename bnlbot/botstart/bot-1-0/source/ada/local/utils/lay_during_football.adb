@@ -32,6 +32,10 @@ procedure Lay_During_Football is
      Lay_Price  : Float_8:= 0.0;
      V_Back     : V_Back_Type := (others => 0.0);
      A_Back     : Float_8 := 0.0;
+     V_Lay      : V_Back_Type := (others => 0.0);
+     A_Lay      : Float_8 := 0.0;
+     A2_Back    : Float_8 := 0.0;
+     A2_Lay     : Float_8 := 0.0;
    end record;
    
    Runners : array(Runners_Type_Type'range) of Runners_Type;
@@ -58,16 +62,20 @@ procedure Lay_During_Football is
 
    Config           : Command_Line_Configuration;
 
+   Is_For_Plot : aliased Boolean := False;
    Ia_Other_Team_Min_Back_Odds : aliased Integer;
    Ia_Draw_Min_Back_Odds : aliased Integer;
    IA_Min_Minutes_Into_Game : aliased Integer;
    SA_Back_At_Price         : aliased Gnat.Strings.String_Access;
 --   SA_Lay_At_Price          : aliased Gnat.Strings.String_Access; 
 
-   Global_Back_At_Price              : Float_8 :=  0.0;
-   Global_Back_Price              : Float_8 :=  0.0;
+   Global_Back_At_Price           : Float_8 := 2.50;
+   Global_Back_At_Price2          : Float_8 := 3.0;
+
+
+   Global_Back_Price              : Float_8 :=   0.0;
    Global_Back_Size               : Float_8 := 100.0;
-   Global_Lay_Size                : Float_8 := 30.0;
+   Global_Lay_Size                : Float_8 :=  30.0;
 --   Global_Lay_Price              : Float_8 :=  0.0;
 
    Income, Stake: Float_8 := 0.0;
@@ -90,8 +98,12 @@ procedure Lay_During_Football is
    Current_Game_Time, 
    Game_Start : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
 
+------------------------------------------------------------------
    procedure Fix_Average(R : in out Runners_Type ) is
    begin
+     R.A2_Back := R.A_Back;
+     R.A2_Lay  := R.A_Lay;
+          
      R.V_Back(5) := R.V_Back(4); 
      R.V_Back(4) := R.V_Back(3); 
      R.V_Back(3) := R.V_Back(2); 
@@ -99,12 +111,26 @@ procedure Lay_During_Football is
      R.V_Back(1) := R.Back_Price; 
      
      R.A_Back := 0.0;
-     for i in  R.V_Back'range loop
+     for i in R.V_Back'range loop
        R.A_Back := R.A_Back + R.V_Back(i);
      end loop;
      R.A_Back := R.A_Back / Float_8(R.V_Back'Length);  
+
+     R.V_Lay(5) := R.V_Lay(4); 
+     R.V_Lay(4) := R.V_Lay(3); 
+     R.V_Lay(3) := R.V_Lay(2); 
+     R.V_Lay(2) := R.V_Lay(1); 
+     R.V_Lay(1) := R.Lay_Price; 
+     
+     R.A_Lay := 0.0;
+     for i in R.V_Lay'range loop
+       R.A_Lay := R.A_Lay + R.V_Lay(i);
+     end loop;
+     R.A_Lay := R.A_Lay / Float_8(R.V_Lay'Length);  
+     
    end Fix_Average;
-   
+
+------------------------------------------------------------------   
    function To_String(R : Runners_Type ) return String is
    begin
      return Table_Arunners.To_String(R.Runner) & " " &
@@ -118,45 +144,52 @@ procedure Lay_During_Football is
                    F8_Image(R.V_Back(5));     
    end To_String;
 begin
-  Define_Switch
-    (Config      => Config,
-     Output      => IA_Min_Minutes_Into_Game'access,
-     Long_Switch => "--min_minutes=",
-     Help        => "Min minutes into game ");
-
-  Define_Switch
-    (Config      => Config,
-     Output      => Ia_Other_Team_Min_Back_Odds'access,
-     Long_Switch => "--other_min_back=",
-     Help        => "Min odds for other team at back time ");
-     
-  Define_Switch
-    (Config      => Config,
-     Output      => Ia_Draw_Min_Back_Odds'access,
-     Long_Switch => "--draw_min_back=",
-     Help        => "Min odds for draw at back time ");
-     
-  Define_Switch
-    (Config      => Config,
-     Output      => SA_Back_At_Price'access,
-     Long_Switch => "--back_at_price=",
-     Help        => "Back the runner at this price(Back)");
-
+--  Define_Switch
+--    (Config      => Config,
+--     Output      => Is_For_Plot'access,
+--     Long_Switch => "--plot",
+--     Help        => "Minimizes debug output ");
+--     
+--  Define_Switch
+--    (Config      => Config,
+--     Output      => Ia_Min_Minutes_Into_Game'access,
+--     Long_Switch => "--min_minutes=",
+--     Help        => "Min minutes into game ");
+--
+--  Define_Switch
+--    (Config      => Config,
+--     Output      => Ia_Other_Team_Min_Back_Odds'access,
+--     Long_Switch => "--other_min_back=",
+--     Help        => "Min odds for other team at back time ");
+--     
+--  Define_Switch
+--    (Config      => Config,
+--     Output      => Ia_Draw_Min_Back_Odds'access,
+--     Long_Switch => "--draw_min_back=",
+--     Help        => "Min odds for draw at back time ");
+--     
+--  Define_Switch
+--    (Config      => Config,
+--     Output      => Sa_Back_At_Price'access,
+--     Long_Switch => "--back_at_price=",
+--     Help        => "Back the runner at this price(Back)");
+--
 --  Define_Switch
 --    (Config      => Config,
 --     Output      => IA_Max_Lay_Price'access,
 --     Long_Switch => "--max_lay_price=",
 --     Help        => "Runner cannot have higer price that this when layed (Lay)");
 
-  Getopt (Config);  -- process the command line
-
---     if Ia_Best_Position = 0 or else
---       Ia_Max_Odds = 0 then
+--  Getopt (Config);  -- process the command line
+--
+--     if Ia_Other_Team_Min_Back_Odds = 0 or else
+--       Ia_Draw_Min_Back_Odds = 0 or else
+--       Sa_Back_At_Price.all = "" then
 --       Display_Help (Config);
 --       return;
 --     end if;
 
-  Global_Back_At_Price := Float_8'Value(SA_Back_At_Price.all);
+--  Global_Back_At_Price := Float_8'Value(SA_Back_At_Price.all);
 
 --  Log ("Connect db");
   Sql.Connect
@@ -168,11 +201,22 @@ begin
 --  Log ("Connected to db");
 
   T.Start;
-  Select_All_Markets.Prepare ("select distinct(RP.MARKETID) " &
-                      "from ARACEPRICES RP, AMARKETS M " &
-                      "where M.MARKETID = RP.MARKETID " &
-                      "and M.MARKETTYPE = 'MATCH_ODDS' " &
-                      "order by RP.MARKETID");
+  -- we need order by startts for plots
+  Select_All_Markets.Prepare (
+      "select M1.MARKETID from AMARKETS M1 " &
+      "where M1.MARKETID in ( " &
+        "select distinct(RP.MARKETID) " & 
+        "from ARACEPRICES RP, AMARKETS M2 " & 
+        "where M2.MARKETID = RP.MARKETID " & 
+        "and M2.MARKETTYPE = 'MATCH_ODDS' " & 
+      ") " &
+      "order by M1.STARTTS " );
+  
+--  Select_All_Markets.Prepare ("select distinct(RP.MARKETID) " &
+--                      "from ARACEPRICES RP, AMARKETS M " &
+--                      "where M.MARKETID = RP.MARKETID " &
+--                      "and M.MARKETTYPE = 'MATCH_ODDS' " &
+--                      "order by RP.MARKETID");
                       
   Select_Race_Runners_In_One_Market.Prepare( "select * " &
         "from ARUNNERS " &
@@ -288,26 +332,32 @@ begin
         if Game_Start = Sattmate_Calendar.Time_Type_First then 
           Game_Start := Current_Game_Time;
         end if;      
---        Log("|Start market|" & Data.Marketid & "|" & trim(Runners(Home).Runner.Runnername) & " - " & Trim(Runners(Away).Runner.Runnername) );      
         
-        if    Current_Game_Time - Game_Start > (0,1,20,0,0) and then 
-              Current_Game_Time - Game_Start < (0,1,40,0,0) and then
-              Runners(Away).A_Back > Float_8(Ia_Other_Team_Min_Back_Odds) and then
-              Runners(Draw).A_Back > Float_8(Ia_Draw_Min_Back_Odds) and then
-              
-              Runners(Home).Back_Price >= 1.0 and then
-              Runners(Home).A_Back <= Global_Back_At_Price then  
+        if     Current_Game_Time - Game_Start > (0,0,10,0,0) and then
+               Runners(Home).Lay_Price >= 0.0 and then
+               Runners(Home).Back_Price >= 1.0 and then
+               Global_Back_At_Price -0.1 <= Runners(Home).A_Back and then  
+               Runners(Home).A_Back <= Global_Back_At_Price + Float_8(0.1) and then  
+               
+               Global_Back_At_Price2 -0.2 <= Runners(Home).A2_Back and then  
+               Runners(Home).A2_Back <= Global_Back_At_Price2 + Float_8(0.2) and then  
+               
+               Runners(Home).A_Back / Runners(Home).A_Lay >= 0.9 then  
+                  
           Bet_Status := Bet_Laid;
           Runner := Runners(Home).Runner;
           Global_Back_Price :=  Runners(Home).Back_Price;          
           exit Game_Loop;
-        elsif Current_Game_Time - Game_Start > (0,1,20,0,0) and then 
-              Current_Game_Time - Game_Start < (0,1,40,0,0) and then
-              Runners(Home).A_Back > Float_8(Ia_Other_Team_Min_Back_Odds) and then
-              Runners(Draw).A_Back > Float_8(Ia_Draw_Min_Back_Odds) and then
-              
-              Runners(Away).Back_Price >= 1.0 and then
-              Runners(Away).A_Back <= Global_Back_At_Price then  
+        elsif Current_Game_Time - Game_Start > (0,0,10,0,0) and then
+                  Runners(Away).Lay_Price >= 0.0 and then
+                  Runners(Away).Back_Price >= 1.0 and then
+                  Global_Back_At_Price -0.1 <= Runners(Away).A_Back and then  
+                  Runners(Away).A_Back <= Global_Back_At_Price + Float_8(0.1) and then  
+                  
+                  Global_Back_At_Price2 -0.2 <= Runners(Away).A2_Back and then  
+                  Runners(Away).A2_Back <= Global_Back_At_Price2 + Float_8(0.2) and then  
+                  
+                  Runners(Away).A_Back / Runners(Away).A_Lay >= 0.9 then    
           Bet_Status := Bet_Laid;
           Runner := Runners(Away).Runner;         
           Global_Back_Price :=  Runners(Away).Back_Price;
@@ -336,11 +386,11 @@ begin
             Bet_Status := Back_Bet_Lost;
           else
             Bet_Status := Bad_Bet;
-            Log("CHANGE_1-BET_NOT_LAID: " & Table_Araceprices.To_String(Prices));
+           -- Log("CHANGE_1-BET_NOT_LAID: " & Table_Araceprices.To_String(Prices));
           end if;
         else
           Bet_Status := Bad_Bet;
-          Log("CHANGE_2-BET_NOT_LAID: " & Table_Araceprices.To_String(Prices));
+          -- Log("CHANGE_2-BET_NOT_LAID: " & Table_Araceprices.To_String(Prices));
         end if;
       end if;
       
@@ -358,13 +408,13 @@ begin
            Income := 0.0;
            Stake  := Global_Back_Size;
            Profit := - Stake;
-          Log(" Current_Game_Time - Game_Start = " &         
-            String_Interval(Interval     => Current_Game_Time - Game_Start ,
-                            Days         => False,
-                            Hours        => True,
-                            Minutes      => True,
-                            Seconds      => False,
-                            Milliseconds => False));
+--          Log(" Current_Game_Time - Game_Start = " &         
+--            String_Interval(Interval     => Current_Game_Time - Game_Start ,
+--                            Days         => False,
+--                            Hours        => True,
+--                            Minutes      => True,
+--                            Seconds      => False,
+--                            Milliseconds => False));
 --          Log("Home " & To_String(Runners(Home))); 
 --          Log("Draw " & To_String(Runners(Draw))); 
 --          Log("Away " & To_String(Runners(Away))); 
@@ -396,31 +446,32 @@ begin
     
       Global_Profit := Global_Profit + Profit;
       if Bet_Status /= No_Bet_Laid then
-        Log("|" & Runner.Marketid & "|" &  Runner.Selectionid'Img & "|"  
-        & Integer_4(Global_Profit)'Img & "|" & Bet_Status'Img & "|"  & F8_Image(Global_Back_Price));
-      end if;  
- --     Log("|Stop  runner|" & Data.Marketid & "|" &  Data.Selectionid'Img);      
-    
-      
+        Log("|" & 
+            Runner.Marketid & "|" &  
+            Runner.Selectionid'Img & "|" & 
+            String_Date_Time_ISO (Date => Market.Startts, T => " ", TZ => "") & "|" & 
+            Integer_4(Global_Profit)'Img & "|" & 
+            Bet_Status'Img & "|" & 
+            F8_Image(Global_Back_Price));
+      end if;
       Select_Prices_For_All_Runners_In_One_Market.Close_Cursor; 
     end if;  
---    Log("|Stop  market|" & Data.Marketid);      
   end loop Select_All_Markets_Loop;
   Select_All_Markets.Close_Cursor;
   T.Commit ;
 
   Sql.Close_Session;
-
-  Log("Total profit = " & Integer_4(Global_Profit)'Img);
-  for i in Bet_Status_Type'range loop
-    Log(i'Img & Stats(i).Hits'Img & Integer_4(Stats(i).Profit)'Img);
-  end loop;
-  Log("used --min_minutes=" & IA_Min_Minutes_Into_Game'Img &
-    " --back_at_price=" & SA_Back_At_Price.all & 
-    " --draw_min_back=" & Ia_Draw_Min_Back_Odds'Img & 
-    " --other_min_back=" & Ia_Other_Team_Min_Back_Odds'Img 
-    );
-    
+  if not Is_For_Plot then
+    Log("Total profit = " & Integer_4(Global_Profit)'Img);
+    for i in Bet_Status_Type'range loop
+      Log(i'Img & Stats(i).Hits'Img & Integer_4(Stats(i).Profit)'Img);
+    end loop;
+--    Log("used --min_minutes=" & IA_Min_Minutes_Into_Game'Img &
+--      " --back_at_price=" & SA_Back_At_Price.all & 
+--      " --draw_min_back=" & Ia_Draw_Min_Back_Odds'Img & 
+--      " --other_min_back=" & Ia_Other_Team_Min_Back_Odds'Img 
+--      );
+  end if;  
        
 exception
    when E: others =>

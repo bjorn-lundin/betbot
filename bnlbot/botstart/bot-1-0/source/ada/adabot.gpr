@@ -33,6 +33,7 @@ project Adabot is
                     "lay_football.adb",
                     "lay_at_finish.adb",
                     "lay_during_football.adb",
+                    "print_lay_during_football_odds.adb",
                     "lay_during_race.adb",
                     "prices_during_race.adb",
                     "plot_race_prices.adb",

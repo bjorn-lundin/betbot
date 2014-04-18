@@ -1538,4 +1538,11 @@ package body Sattmate_Calendar is
      return Da & T & Ti & TZ;
    end String_Date_Time_ISO;
    
+   
+   function To_String(D : Time_Type) return String is
+   begin
+     return String_Date_Time_ISO(Date => D, T => " " , Tz => "" );
+   end To_String;
+
+   
 end Sattmate_Calendar;

@@ -81,16 +81,8 @@ package Sattmate_Calendar is
    subtype Interval_Day_Type is Integer_4 range 0 .. Integer_4'Last;
    subtype Seconds_Type is Integer_4 range 0 .. Integer_4'Last; --v8.2
 
-   type Time_Type is record
-      Year        : Year_Type;
-      Month       : Month_Type;
-      Day         : Day_Type;
-      Hour        : Hour_Type;
-      Minute      : Minute_Type;
-      Second      : Second_Type;
-      Millisecond : Millisecond_Type;
-   end record;
-
+   
+   ------------------------ Interval type start --------------------------------
    type Interval_Type is record
       Days         : Interval_Day_Type;
       Hours        : Hour_Type;
@@ -99,13 +91,175 @@ package Sattmate_Calendar is
       Milliseconds : Millisecond_Type;
    end record;
 
+   
+
+   function "<" (Left, Right : in Interval_Type) return Boolean;
+   function "<=" (Left, Right : in Interval_Type) return Boolean;
+   function ">" (Left, Right : in Interval_Type) return Boolean;
+   function ">=" (Left, Right : in Interval_Type) return Boolean;
+
+   function To_Interval
+     (Day_Duration : in Calendar.Day_Duration)
+      return         Interval_Type;
+
+   function To_Interval (Seconds : in Seconds_Type) return Interval_Type;
+   -- v8.2
+   function To_Seconds (Interval : in Interval_Type) return Seconds_Type;
+   -- v8.2
+
+   function To_Day_Duration
+     (Interval : in Interval_Type)
+      return     Calendar.Day_Duration;
+   -- This function does not use the term DAYS in the record INTERVAL_TYPE.
+
+
+   function "+" (Left, Right : in Interval_Type) return Interval_Type;
+
+   function "-" (Left, Right : in Interval_Type) return Interval_Type;
+   
+   
+   function String_Interval
+     (Interval     : in Interval_Type;
+      Days         : in Boolean := True;
+      Hours        : in Boolean := True;
+      Minutes      : in Boolean := True;
+      Seconds      : in Boolean := True;
+      Milliseconds : in Boolean := True)
+      return         String;
+
+   -- Enter in the BOOLEAN parameters the values you wish to be returned.
+   -- Example of returned a interval is : 00001:15:30:05.003
+   
+   
+   
+   
+   
+   
+   ---------------------------Interval_Type  Stop ----------------------------------------------------------
+   
    --9.8-18065 start
    type Clock_Type is record
       Hour   : Hour_Type;
       Minute : Minute_Type;
       Second : Second_Type;
    end record;
+   
+   
+   ------------------------ Time_Type start --------------------------------
+   
+   type Time_Type is tagged record
+      Year        : Year_Type;
+      Month       : Month_Type;
+      Day         : Day_Type;
+      Hour        : Hour_Type;
+      Minute      : Minute_Type;
+      Second      : Second_Type;
+      Millisecond : Millisecond_Type;
+   end record;
+   
+   
+   function Is_Legal (Time : in Time_Type) return Boolean;
+   --
+   -- v8.2b End
+
+   function Clock return Time_Type;
+   --9.8-xxxx New function
+   -- Date_Str => "DD-MON-YYYY" ("09-DEC-2008), Time_Str =>
+   --"HH:MM:SS.ZZZ"("10:01:32.123")
+   function To_Time_Type
+     (Date_Str : String;
+      Time_Str : String)
+      return     Time_Type;
+
+   Invalid_Date_Format : exception; -- chg-25546
+   -- is raised by bad data in To_Time_Type
+
+   function To_Time (Date : in Calendar.Time) return Time_Type;
+   function To_Calendar_Time (Date : in Time_Type) return Calendar.Time;
+   function To_Time
+     (Year        : in Year_Type;
+      Year_Day    : in Year_Day_Type;
+      Hour        : in Hour_Type;
+      Minute      : in Minute_Type;
+      Second      : in Second_Type;
+      Millisecond : in Millisecond_Type)
+      return        Time_Type;
+
+   function To_Time
+     (Year        : in Year_Type;
+      Week        : in Week_Type;
+      Day         : in Week_Day_Type;
+      Hour        : in Hour_Type        := Hour_Type'First;
+      Minute      : in Minute_Type      := Minute_Type'First;
+      Second      : in Second_Type      := Second_Type'First;
+      Millisecond : in Millisecond_Type := Millisecond_Type'First)
+      return        Time_Type; -- v8.2
+
+   function "<" (Left, Right : in Time_Type) return Boolean;
+   function "<=" (Left, Right : in Time_Type) return Boolean;
+   function ">" (Left, Right : in Time_Type) return Boolean;
+   function ">=" (Left, Right : in Time_Type) return Boolean;
+   
+   
+   function "+"
+     (Left  : in Time_Type;
+      Right : in Interval_Type)
+      return  Time_Type;
+   function "+"
+     (Left  : in Interval_Type;
+      Right : in Time_Type)
+      return  Time_Type;
+
+   function "+"
+     (Left  : in Time_Type;
+      Right : in Year_Day_Type)
+      return  Time_Type;
+   function "+"
+     (Left  : in Year_Day_Type;
+      Right : in Time_Type)
+      return  Time_Type;
+
+   function "-" (Left, Right : in Time_Type) return Interval_Type;
+   function "-"
+     (Left  : in Time_Type;
+      Right : in Interval_Type)
+      return  Time_Type;
+   function "-"
+     (Left  : in Time_Type;
+      Right : in Year_Day_Type)
+      return  Time_Type;
+   
+   function Year_Day_Of (Date : in Time_Type) return Year_Day_Type;
+   function Week_Day_Of (Date : in Time_Type) return Week_Day_Type;
+   function Week_Of (Date : in Time_Type) return Week_Type;
+   function String_Date_ISO (Date : in Time_Type) return String ;
+   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z") return String ;
+   
+   function To_String(D : Time_Type) return String;
+   
+   
+   function String_Date (Date : in Time_Type) return String;
+   function String_Time
+     (Date         : in Time_Type;
+      Hours        : in Boolean := True;
+      Minutes      : in Boolean := True;
+      Seconds      : in Boolean := True;
+      Milliseconds : in Boolean := False)
+      return         String;
+   function String_Date_And_Time
+     (Date         : in Time_Type;
+      Hours        : in Boolean := True;
+      Minutes      : in Boolean := True;
+      Seconds      : in Boolean := True;
+      Milliseconds : in Boolean := False)
+      return         String;
+   
+
    function Clock_Of (T : in Time_Type) return Clock_Type;
+   
+   ------------------------ Time_Type start --------------------------------
+   
+   
    function "<=" (Left, Right : in Clock_Type) return Boolean;
    function ">=" (Left, Right : in Clock_Type) return Boolean;
    function To_String (C : in Clock_Type) return String;
@@ -167,107 +321,17 @@ package Sattmate_Calendar is
       Year_Day : in Year_Day_Type)
       return     Boolean;
 
-   function Is_Legal (Time : in Time_Type) return Boolean;
-   --
-   -- v8.2b End
-
-   function Clock return Time_Type;
 
    --9.6-11859 new function, returns SATTMATE_CALENDAR.CLOCK, in
    --CALENDAR.TIME-format
    function Calendar_Clock return  Calendar.Time;
 
-   --9.8-xxxx New function
-   -- Date_Str => "DD-MON-YYYY" ("09-DEC-2008), Time_Str =>
-   --"HH:MM:SS.ZZZ"("10:01:32.123")
-   function To_Time_Type
-     (Date_Str : String;
-      Time_Str : String)
-      return     Time_Type;
 
-   Invalid_Date_Format : exception; -- chg-25546
-   -- is raised by bad data in To_Time_Type
 
-   function To_Time (Date : in Calendar.Time) return Time_Type;
-   function To_Calendar_Time (Date : in Time_Type) return Calendar.Time;
-   function To_Time
-     (Year        : in Year_Type;
-      Year_Day    : in Year_Day_Type;
-      Hour        : in Hour_Type;
-      Minute      : in Minute_Type;
-      Second      : in Second_Type;
-      Millisecond : in Millisecond_Type)
-      return        Time_Type;
-
-   function To_Time
-     (Year        : in Year_Type;
-      Week        : in Week_Type;
-      Day         : in Week_Day_Type;
-      Hour        : in Hour_Type        := Hour_Type'First;
-      Minute      : in Minute_Type      := Minute_Type'First;
-      Second      : in Second_Type      := Second_Type'First;
-      Millisecond : in Millisecond_Type := Millisecond_Type'First)
-      return        Time_Type; -- v8.2
-
-   function "<" (Left, Right : in Time_Type) return Boolean;
-   function "<=" (Left, Right : in Time_Type) return Boolean;
-   function ">" (Left, Right : in Time_Type) return Boolean;
-   function ">=" (Left, Right : in Time_Type) return Boolean;
-
-   function "<" (Left, Right : in Interval_Type) return Boolean;
-   function "<=" (Left, Right : in Interval_Type) return Boolean;
-   function ">" (Left, Right : in Interval_Type) return Boolean;
-   function ">=" (Left, Right : in Interval_Type) return Boolean;
-
-   function To_Interval
-     (Day_Duration : in Calendar.Day_Duration)
-      return         Interval_Type;
-
-   function To_Interval (Seconds : in Seconds_Type) return Interval_Type;
-   -- v8.2
-   function To_Seconds (Interval : in Interval_Type) return Seconds_Type;
-   -- v8.2
-
-   function To_Day_Duration
-     (Interval : in Interval_Type)
-      return     Calendar.Day_Duration;
-   -- This function does not use the term DAYS in the record INTERVAL_TYPE.
-
-   function "+"
-     (Left  : in Time_Type;
-      Right : in Interval_Type)
-      return  Time_Type;
-   function "+"
-     (Left  : in Interval_Type;
-      Right : in Time_Type)
-      return  Time_Type;
-
-   function "+"
-     (Left  : in Time_Type;
-      Right : in Year_Day_Type)
-      return  Time_Type;
-   function "+"
-     (Left  : in Year_Day_Type;
-      Right : in Time_Type)
-      return  Time_Type;
-
-   function "-" (Left, Right : in Time_Type) return Interval_Type;
-   function "-"
-     (Left  : in Time_Type;
-      Right : in Interval_Type)
-      return  Time_Type;
-   function "-"
-     (Left  : in Time_Type;
-      Right : in Year_Day_Type)
-      return  Time_Type;
-
-   function "+" (Left, Right : in Interval_Type) return Interval_Type;
-
-   function "-" (Left, Right : in Interval_Type) return Interval_Type;
+   
 
    function Is_Leap_Year (Year : in Year_Type) return Boolean;
 
-   function Year_Day_Of (Date : in Time_Type) return Year_Day_Type;
    function Year_Day_Of
      (Year  : in Year_Type;
       Month : in Month_Type;
@@ -280,14 +344,13 @@ package Sattmate_Calendar is
       Month : in Month_Type)
       return  Day_Type;
 
-   function Week_Day_Of (Date : in Time_Type) return Week_Day_Type;
+   
    function Week_Day_Of
      (Year  : in Year_Type;
       Month : in Month_Type;
       Day   : in Day_Type)
       return  Week_Day_Type;
 
-   function Week_Of (Date : in Time_Type) return Week_Type;
    function Week_Of
      (Year  : in Year_Type;
       Month : in Month_Type;
@@ -303,8 +366,6 @@ package Sattmate_Calendar is
      (Date : in Calendar.Time := To_Calendar_Time (Clock))
       return String;
 
-   function String_Date_ISO (Date : in Time_Type) return String ;
-   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z") return String ;
 
    function String_Time
      (Date         : in Calendar.Time := To_Calendar_Time (Clock);
@@ -322,37 +383,11 @@ package Sattmate_Calendar is
       return         String;
    --9.6-11859 stop
 
-   function String_Date (Date : in Time_Type) return String;
-   function String_Time
-     (Date         : in Time_Type;
-      Hours        : in Boolean := True;
-      Minutes      : in Boolean := True;
-      Seconds      : in Boolean := True;
-      Milliseconds : in Boolean := False)
-      return         String;
-   function String_Date_And_Time
-     (Date         : in Time_Type;
-      Hours        : in Boolean := True;
-      Minutes      : in Boolean := True;
-      Seconds      : in Boolean := True;
-      Milliseconds : in Boolean := False)
-      return         String;
 
    -- Enter in the BOOLEAN parameters in the STRING_TIME functions the values
    -- you wish to be returned.
    -- Example of returned date is : 01-Jan-1984
    -- Example of returned time is : 15:30:05.001
 
-   function String_Interval
-     (Interval     : in Interval_Type;
-      Days         : in Boolean := True;
-      Hours        : in Boolean := True;
-      Minutes      : in Boolean := True;
-      Seconds      : in Boolean := True;
-      Milliseconds : in Boolean := True)
-      return         String;
-
-   -- Enter in the BOOLEAN parameters the values you wish to be returned.
-   -- Example of returned a interval is : 00001:15:30:05.003
 
 end Sattmate_Calendar;

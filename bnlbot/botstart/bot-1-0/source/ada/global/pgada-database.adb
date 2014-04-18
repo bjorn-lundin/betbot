@@ -35,7 +35,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
+--with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;       use Interfaces.C, Interfaces.C.Strings;
 --with Text_Io;
 --with Ada.Exceptions;
@@ -71,12 +71,12 @@ package body Pgada.Database is
    -- Adjust --
    ------------
 
-   procedure Adjust (Result : in out Result_Type) is
-   begin
-      --      Text_io.put_Line("Adjust - Will set Ref_Count set to:" & Natural'Image(Result.Ref_Count.all + 1));
-      Result.Ref_Count.all := Result.Ref_Count.all + 1;
-      --      Text_io.put_Line("Adjust - Has  set Ref_Count set to:" & Natural'Image(Result.Ref_Count.all + 1));
-   end Adjust;
+--   procedure Adjust (Result : in out Result_Type) is
+--   begin
+--    --  Text_io.put_Line("Adjust - Will set Ref_Count set to:" & Natural'Image(Result.Ref_Count.all + 1));
+--      Result.Ref_Count.all := Result.Ref_Count.all + 1;
+--    --  Text_io.put_Line("Adjust - Has  set Ref_Count set to:" & Natural'Image(Result.Ref_Count.all + 1));
+--   end Adjust;
 
    ----------------------
    -- C_String_Or_Null --
@@ -216,15 +216,15 @@ package body Pgada.Database is
    --------------
 
    procedure Finalize (Result : in out Result_Type) is
-      procedure Free is
-        new Ada.Unchecked_Deallocation (Natural, Natural_Access);
+--      procedure Free is
+--        new Ada.Unchecked_Deallocation (Natural, Natural_Access);
    begin
-      pragma Compile_Time_Warning(True, "Is this correct?? Pgada.Database.Finalize...");
-      Result.Ref_Count.all := Result.Ref_Count.all - 1;
-      if Result.Ref_Count.all = 0 and then Result.Actual /= null then
-         Free (Result.Ref_Count);
+--      pragma Compile_Time_Warning(True, "Is this correct?? Pgada.Database.Finalize...");
+--      Result.Ref_Count.all := Result.Ref_Count.all - 1;
+--      if Result.Ref_Count.all = 0 and then Result.Actual /= null then
+--         Free (Result.Ref_Count);
          Clear (Result);
-      end if;
+--      end if;
    end Finalize;
 
    ------------
