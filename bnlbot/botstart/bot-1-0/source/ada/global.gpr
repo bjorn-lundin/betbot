@@ -51,10 +51,11 @@ project Global is
                   Bot_Source & "/ada/global/xmlada/schema",
                   Bot_Source & "/ada/global/xmlada/unicode");
 
-      Common_Source_Dirs := ( "local",
-                              "global",
-                              "global/gnatcoll",
-                              "global/tables");
+   Common_Source_Dirs := ( "local",
+                           "global",
+                           "global/process_io",
+                           "global/gnatcoll",
+                           "global/tables");
 
       case XML_Sources_Dir is
          when "GNAT" =>
@@ -66,10 +67,7 @@ project Global is
 --   Aws_Source := (Smsk & "/utility/aws",
 --                  Smsk & "/utility/aws/choises",
 --                  Smsk & "/utility/aws/" & Target_Machine);
-
-
-  -- heavy optimze on x64
-
+   
    package Compiler is
       case Target_Machine is
          when "lnx_x86" => for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");

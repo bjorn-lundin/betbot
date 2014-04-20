@@ -4,13 +4,14 @@ with Sql;
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Logging; use Logging;
 with General_Routines; use General_Routines;
-
+with Table_Abets;
 
 package body Bet is
   Me : constant String := "Bet.";
+  Select_Exists,
   Select_Profit_Today : Sql.Statement_Type;
   ------------------------------------------------------------
-  function Profit_Today(Bet_Name : String) return Float_8 is
+  function Profit_Today(Bet_Name : Bet_Name_Type) return Float_8 is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     Start_Date, End_Date : Time_Type := Clock;
@@ -54,5 +55,33 @@ package body Bet is
     return Profit;
   end Profit_Today;
   ------------------------------------------------------------
+  function Exists(Bet_Name : Bet_Name_Type; Market_Id : Market_Id_Type) return Boolean is
+    T    : Sql.Transaction_Type;
+    Eos  : Boolean := False;
+    Abet : Table_Abets.Data_Type;
+  begin
+    T.Start;
+      Select_Exists.Prepare(
+         "select * " &
+         "from " &
+           "ABETS " &
+         "where MARKETID = :MARKETID " &
+         "and BETNAME = :BETNAME ");
 
+      Select_Exists.Set("BETNAME",  Bet_Name);
+      Select_Exists.Set("MARKETID", Market_Id);
+
+      Select_Exists.Open_Cursor;
+      Select_Exists.Fetch( Eos);
+      if not Eos then
+        Abet := Table_Abets.Get(Select_Exists);
+        Log(Me & "Exists", "Bet does already exist " & Table_Abets.To_String(Abet));
+      else
+        null;
+--        Log(Me & "Exists", "Bet does not exist");
+      end if;
+      Select_Exists.Close_Cursor;
+    T.Commit;
+    return not Eos;
+  end Exists;
 end Bet;
