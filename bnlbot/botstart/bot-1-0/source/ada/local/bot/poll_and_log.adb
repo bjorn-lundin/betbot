@@ -116,22 +116,17 @@ procedure Poll_And_Log is
       end loop;
       T.Commit;
     end;
-    
+
+    -- there are 3 items in list, home,draw,away selection ids for the same market.
+    -- send 1 only    
     declare
       Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
       MNR      : Bot_Messages.Market_Notification_Record;
-      Eol      : Boolean := False;
-      Tmp      : Table_Aprices.Data_Type;
     begin
       Move("football_better", Receiver.Name);
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
-      loop
-        exit when Eol;
-        Log(Me, "Notifying 'football_better' with marketid: '" & Tmp.Marketid & "'");
-        MNR.Market_Id := Tmp.Marketid;
-        Bot_Messages.Send(Receiver, MNR);        
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
-      end loop;
+      Log(Me, "Notifying 'football_better' with marketid: '" & Market_Id & "'");
+      MNR.Market_Id := Market_Id;
+      Bot_Messages.Send(Receiver, MNR);        
     end;
     Table_Aprices.Aprices_List_Pack.Release(Price_List); 
     return Success;
