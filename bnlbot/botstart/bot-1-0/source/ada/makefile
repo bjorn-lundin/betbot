@@ -17,9 +17,9 @@ LOG_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/log)
 TARGET_ADA_INFO_SPEC := $(subst \,/, $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads)
 PIPE_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/pipes)
 
-#C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
-#C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
-#C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
+C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
+C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
+C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
 
 .PHONY : adabot tables
 
@@ -57,7 +57,7 @@ $(PIPE_DIR_BOT) :
 $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
-adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
+adabot : $(TARGET_ADA_INFO_SPEC) $(OBJECT_DIR_BOT) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gnatmake -P adabot
 
@@ -182,11 +182,11 @@ $(ST)/table_abalances.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abalanc
 #    }"
 
 
-#$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
-#	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
-#
-#$(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
-#	$(C_CONSTANTS_EXE) > $(C_CONSTANTS_OUTPUT)    
+$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
+	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
+
+$(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
+	$(C_CONSTANTS_EXE) > $(C_CONSTANTS_OUTPUT)    
     
 clean:
 	gnatclean -P adabot
