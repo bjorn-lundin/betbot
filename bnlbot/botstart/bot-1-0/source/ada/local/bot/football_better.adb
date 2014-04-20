@@ -52,7 +52,7 @@ procedure Football_Better is
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
 
---  Global_Size : Bet_Size_type := 30.0;
+  Global_Size : Bet_Size_type := 30.0;
   Global_Max_Loss_Per_Day : Float_8 := -300.0;
   Global_Enabled : Boolean := False;
   type Runners_Type_Type is (Home,  Away, Draw);
@@ -98,7 +98,7 @@ procedure Football_Better is
     Log("'" & Place_Back_Bet.Price & "'");
 
     if Bet.Profit_Today(Place_Back_Bet.Bet_Name) < Global_Max_Loss_Per_Day then
-      Log(Me & "Run", "lost too much today, max loss is (hardcoded) " & F8_Image(Global_Max_Loss_Per_Day));
+      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
       return;
     end if;
 
@@ -282,6 +282,8 @@ procedure Football_Better is
     type Eos_Type is (Runner_Data, Market_Data);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     
+    String_Size : String(1..7) := (others => ' ');
+    
   begin
     Log(Me & "Check_Match_Status", "Treat market '" & Notification.Market_Id & "'");
     
@@ -447,11 +449,12 @@ procedure Football_Better is
     
     OK := Selection_Id > 0;
     if OK then
+      Move(F8_Image(Float_8(Global_Size)),String_Size);
       Place_Back_Bet_Data := (
          Bet_Name     => Bet_Name,
          Market_Id    => Notification.Market_Id,
          Selection_Id => Selection_Id,
-         Size         => " 100.00",
+         Size         => String_Size,
          Price        =>  "  1.01"
       );      
 
@@ -523,9 +526,9 @@ begin
   Log(Me, "Login betfair done");
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
---  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0"));
-  Global_Enabled := Ini.Get_Value("finish","enabled",false);
---  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0"));
+  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("football","size","30.0"));
+  Global_Enabled := Ini.Get_Value("football","enabled",false);
+  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("football","max_loss_per_day","-500.0"));
 
   Log(Me, "Start main loop");
   
@@ -543,7 +546,11 @@ begin
         -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
         
         when Bot_Messages.Market_Notification_Message    =>
-          Check_Match_Status( Bot_Messages.Data(Msg));
+          if Global_Enabled then
+            Check_Match_Status( Bot_Messages.Data(Msg));
+          else  
+            Log(Me, "Check_Match_Status is disabled in inifile");  --??
+          end if;
         
         when Bot_Messages.Place_Back_Bet_Message    =>
           if Global_Enabled then
