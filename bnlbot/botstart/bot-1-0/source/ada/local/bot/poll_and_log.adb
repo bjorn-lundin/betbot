@@ -1,4 +1,6 @@
 --with Text_Io;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Sattmate_Exception;
 with Sattmate_Types; use Sattmate_Types;
 with Bot_Types; use Bot_Types;
@@ -97,23 +99,39 @@ procedure Poll_And_Log is
             Selectionid  =>  Tmp.Selectionid,
             Pricets      =>  Tmp.Pricets,
             Status       =>  Tmp.Status,
---            Totalmatched =>  Tmp.Totalmatched,
             Backprice    =>  Tmp.Backprice,
             Layprice     =>  Tmp.Layprice,
             Ixxlupd      =>  Tmp.Ixxlupd,
             Ixxluts      =>  Tmp.Ixxluts
           );
           begin
-            Table_Araceprices.Insert(Stat);
-            Log("Has inserted: " & Table_Aprices.To_String(Tmp));
+            Stat.Insert;
+            Log("Has inserted: " & Tmp.To_String);
           exception
             when Sql.Duplicate_Index =>
-            Log("Duplicate_Index on: " & Table_Aprices.To_String(Tmp));
+            Log("Duplicate_Index on: " & Tmp.To_String);
           end;
         end if;
         Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       T.Commit;
+    end;
+    
+    declare
+      Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+      MNR      : Bot_Messages.Market_Notification_Record;
+      Eol      : Boolean := False;
+      Tmp      : Table_Aprices.Data_Type;
+    begin
+      Move("football_better", Receiver.Name);
+      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      loop
+        exit when Eol;
+        Log(Me, "Notifying 'football_better' with marketid: '" & Tmp.Marketid & "'");
+        MNR.Market_Id := Tmp.Marketid;
+        Bot_Messages.Send(Receiver, MNR);        
+        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+      end loop;
     end;
     Table_Aprices.Aprices_List_Pack.Release(Price_List); 
     return Success;
@@ -158,8 +176,6 @@ procedure Poll_And_Log is
     Market_Id_Pck.Release(Closed_Market_Id_List);
   end Do_Poll_All;
 -----------------------------------------------------------------                      
-
-
 
 begin
 
