@@ -18,7 +18,7 @@ package require Repo_Utils
 package require Get_Opt
 package require ART_Definitions
 ##########################################################
-## global constant until figured out how to determinie it
+## global constant until figured out how to determine it
 set IDF_Numbering I1
 
 #proc Get_Attributes {Element} {
@@ -697,6 +697,7 @@ proc Print_Withs_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;"
 #  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Uniface_Request, Sql, Simple_List_Class;"
   puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Sql, Simple_List_Class;"
+  puts $Out_File "with Table_Utils;  --All tables inherit from here"
   puts $Out_File ""
 }
 ##########################################################
@@ -709,8 +710,42 @@ proc Print_Package_Start_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "package Table\_$Mixed_Name is\n"
 #  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar, Uniface_Request;\n"
   puts $Out_File "  use Sattmate_Types, Sattmate_Calendar;\n"
-  puts $Out_File "  type Data_Type is record"
 
+  puts $Out_File "  -- \n  -- Table name as string \n  --"
+  puts $Out_File "  Table_$Mixed_Name\_Name : constant String := \"$Upper_Name\";"
+
+  puts $Out_File "  Table_$Mixed_Name\_Set_Name : constant String := \"$Upper_Name\_SET\";"
+#chg-25420
+  puts $Out_File "  Table_$Mixed_Name\_Row_Name : constant String := \"$Upper_Name\_ROW\";"
+
+  puts $Out_File "  -- \n  -- Column names as strings \n  --"
+  foreach col $Columns {
+    array set Attributes [Repo_Utils::Get_Attributes $col]
+    set Mixed_Column_Name [string totitle $Attributes(Name)]
+#    set Upper_Column_Name [string toupper $Attributes(Name)]
+    set Upper_Column_Name [Field_Caseing $Attributes(Name)]
+    puts $Out_File "  $Mixed_Column_Name\_Name : constant String := \"$Upper_Column_Name\";"
+  }
+
+  puts $Out_File "  -- \n  -- Column names as enumerator literals \n  --"
+
+  set s "  type Column_Type is \(\n"
+  foreach col $Columns {
+    array set Attributes [Repo_Utils::Get_Attributes $col]
+    set Mixed_Column_Name [string totitle $Attributes(Name)]
+    append s "        $Mixed_Column_Name,\n"
+  }
+  set pos [string last , $s]
+  set s2 [string replace $s $pos $pos "\)"]
+  set s3 [string replace $s2 end end ";"]
+  puts $Out_File "$s3\n"
+
+  
+# puts $Out_File "  type Data_Type is tagged record"
+  puts $Out_File "  type Data_Type is new Table_Utils.Root_Table_Type with record"
+
+  
+  
   set Columns [::dom::DOMImplementation selectNode $Node $::Column_Element_Name]
   set Index_Counter 0
   foreach col $Columns {
@@ -745,41 +780,8 @@ proc Print_Package_Start_Spec {Name Type Node Columns Out_File} {
     puts $Out_File "      [string totitle $Attributes(Name)] :    $Data_Type $Range := $Null_Data ; $Comment"
   }
   puts $Out_File "  end record;"
-
-#  if {[Is_S08_Table $Name]} {
-    puts $Out_File "  Empty_Data : Table_$Mixed_Name.Data_Type;"
-#  }
-
-  puts $Out_File "  -- \n  -- Table name as string \n  --"
-  puts $Out_File "  Table_$Mixed_Name\_Name : constant String := \"$Upper_Name\";"
-
-  puts $Out_File "  Table_$Mixed_Name\_Set_Name : constant String := \"$Upper_Name\_SET\";"
-#chg-25420
-  puts $Out_File "  Table_$Mixed_Name\_Row_Name : constant String := \"$Upper_Name\_ROW\";"
-
-  puts $Out_File "  -- \n  -- Column names as strings \n  --"
-  foreach col $Columns {
-    array set Attributes [Repo_Utils::Get_Attributes $col]
-    set Mixed_Column_Name [string totitle $Attributes(Name)]
-#    set Upper_Column_Name [string toupper $Attributes(Name)]
-    set Upper_Column_Name [Field_Caseing $Attributes(Name)]
-    puts $Out_File "  $Mixed_Column_Name\_Name : constant String := \"$Upper_Column_Name\";"
-  }
-
-  puts $Out_File "  -- \n  -- Column names as enumerator literals \n  --"
-
-  set s "  type Column_Type is \(\n"
-  foreach col $Columns {
-    array set Attributes [Repo_Utils::Get_Attributes $col]
-    set Mixed_Column_Name [string totitle $Attributes(Name)]
-    append s "        $Mixed_Column_Name,\n"
-  }
-  set pos [string last , $s]
-  set s2 [string replace $s $pos $pos "\)"]
-  set s3 [string replace $s2 end end ";"]
-  puts $Out_File "$s3\n"
-
-  puts $Out_File "  package $Mixed_Name\_List_Pack is new Simple_List_Class\(Table_$Mixed_Name.Data_Type\);"
+  
+  
 }
 
 ##########################################################
@@ -791,12 +793,6 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
     set Ret_Val {}
     regsub -all {,} $Field _ field_name    ; # replace all ',' with '_'
     set Field_Name [string totitle $field_name]
-    append Ret_Val "\n"
-    append Ret_Val "  procedure Read\_$Field_Name\(Data  : in     Table\_$Table_Name.Data_Type;\n"
-    append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
-    append Ret_Val "                       Order : in     Boolean := False;\n"
-    append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last);\n"
-    append Ret_Val "  --------------------------------------------\n"
 
     append Ret_Val "\n"
     append Ret_Val "  procedure Read_One\_$Field_Name\(Data       : in out Table\_$Table_Name.Data_Type;\n"
@@ -857,12 +853,6 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
       set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
       append Orig_Fld \_$fld
       append Ret_Val "\n"
-      append Ret_Val "  procedure Read\_$local_IDF_Numbering$Orig_Fld\(Data  : in     Table\_$Table_Name.Data_Type;\n"
-      append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
-      append Ret_Val "                       Order : in     Boolean := False;\n"
-      append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last);\n"
-      append Ret_Val "  --------------------------------------------\n"
-      append Ret_Val "\n"
       append Ret_Val "  procedure Delete\_$local_IDF_Numbering$Orig_Fld\(Data  : in     Table\_$Table_Name.Data_Type\);\n"
       append Ret_Val "  --------------------------------------------\n"
       append Ret_Val "\n"
@@ -888,7 +878,6 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
 
  ##--##--##--##--##--##--##--##--
 
-
   if {[string equal $Type $ART_Definitions::Clreqs]} {
     return 0
   }
@@ -898,7 +887,7 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
   set Has_IXX_Ts_Fields [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
 
 #Functions operating on Primary Key
-  puts $Out_File ""
+  puts $Out_File "\n -- start Print_Def_Functions_Body start --"
   puts $Out_File "  -- Procedures for DBMS DEF"
   puts $Out_File "  -- Primary key"
   ##############################################################
@@ -939,20 +928,6 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
 
   ##############################################################
 
-# Always these
-  puts $Out_File ""
-  puts $Out_File "  procedure Read_List(Stm  : in     Sql.Statement_Type;"
-  puts $Out_File "                      List : in out $Table_Name\_List_Pack.List_Type;"
-  puts $Out_File "                      Max  : in     Integer_4 := Integer_4'Last);"
-  puts $Out_File "  --------------------------------------------"
-  ##############################################################
-
-  puts $Out_File "  procedure Read_All(List  : in out $Table_Name\_List_Pack.List_Type;"
-  puts $Out_File "                     Order : in     Boolean := False;"
-  puts $Out_File "                     Max   : in     Integer_4 := Integer_4'Last);"
-  puts $Out_File "  --------------------------------------------"
-
-  ##############################################################
 
   puts $Out_File "  procedure Delete(Data : in Table\_$Table_Name.Data_Type);"
   puts $Out_File "  --------------------------------------------"
@@ -1009,7 +984,130 @@ proc Print_Def_Functions_Spec {Name Type Node Columns Out_File} {
       }
     }
   }
+  puts $Out_File "\n -- stop Print_Def_Functions_Body stop --"
+  
 }
+# -- Print_Def_Functions_Spec stop
+
+proc Print_Def_Functions_Lists_Spec {Name Type Node Columns Out_File} {
+#  puts $Out_File "[info level 0]"
+  ##--##--##--##--##--##--##--##--
+  proc Index_Procs {Field Table_Name} {
+    set Ret_Val {}
+    regsub -all {,} $Field _ field_name    ; # replace all ',' with '_'
+    set Field_Name [string totitle $field_name]
+    append Ret_Val "\n"
+    append Ret_Val "  procedure Read\_$Field_Name\(Data  : in     Table\_$Table_Name.Data_Type\'class;\n"
+    append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
+    append Ret_Val "                       Order : in     Boolean := False;\n"
+    append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last);\n"
+    append Ret_Val "  --------------------------------------------\n"
+
+
+    return $Ret_Val
+  }
+
+  ##--##--##--##--##--##--##--##--
+  proc Foreign_Procs {Field Table_Name} {
+    return [Index_Procs $Field $Table_Name]
+  }
+  ##--##--##--##--##--##--##--##--
+
+  proc Primary_Procs {Fields Table_Name Columns} {
+    ## for pk's with several fields
+    #puts "-- debug Fields, Table_Name -> $Fields , $Table_Name"
+    set Ret_Val {}
+    set Field_Name_List [split $Fields ","]
+    set Number_Of_Commas_Replaced [regsub -all {,} $Fields _ field_names]   ; # replace all ',' with '_'
+    if {! $Number_Of_Commas_Replaced} {
+          # no replacements -> no commas -> only one keyfield -> return
+          return ""
+        }
+    set Orig_Fld {}
+    set Last_Field_Name [lindex $Field_Name_List end] ; # we need this, so we can skip it.
+    foreach fld $Field_Name_List {
+          if {[string equal $fld $Last_Field_Name]} {
+            break
+          }
+      set fld [string totitle $fld]
+      set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
+      append Orig_Fld \_$fld
+      append Ret_Val "\n"
+      append Ret_Val "  procedure Read\_$local_IDF_Numbering$Orig_Fld\(Data  : in     Table\_$Table_Name.Data_Type\'class;\n"
+      append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
+      append Ret_Val "                       Order : in     Boolean := False;\n"
+      append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last);\n"
+      append Ret_Val "  --------------------------------------------\n"
+      append Ret_Val "\n"
+    }
+    return $Ret_Val
+  }
+
+ ##--##--##--##--##--##--##--##--
+
+
+  if {[string equal $Type $ART_Definitions::Clreqs]} {
+    return 0
+  }
+  set Table_Name [string totitle $Name]
+  set Columns [::dom::DOMImplementation selectNode $Node $::Column_Element_Name]
+  set Has_IXX_Fields [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
+  set Has_IXX_Ts_Fields [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
+
+  ##############################################################
+  puts $Out_File "\n -- start Print_Def_Functions_Lists_Spec start --"
+  
+  set Mixed_Name [string totitle $Name]
+  puts $Out_File "  package $Mixed_Name\_List_Pack is new Simple_List_Class\(Table_$Mixed_Name.Data_Type\);"
+  
+# Always these
+  puts $Out_File ""
+  puts $Out_File "  procedure Read_List(Stm  : in     Sql.Statement_Type;"
+  puts $Out_File "                      List : in out $Table_Name\_List_Pack.List_Type;"
+  puts $Out_File "                      Max  : in     Integer_4 := Integer_4'Last);"
+  puts $Out_File "  --------------------------------------------"
+  ##############################################################
+
+  puts $Out_File "  procedure Read_All(List  : in out $Table_Name\_List_Pack.List_Type;"
+  puts $Out_File "                     Order : in     Boolean := False;"
+  puts $Out_File "                     Max   : in     Integer_4 := Integer_4'Last);"
+  puts $Out_File "  --------------------------------------------"
+
+  ##############################################################
+
+
+  set Indices [::dom::DOMImplementation selectNode $Node $::Index_Element_Name]
+
+  foreach Index $Indices {
+    array set Index_Attributes [Repo_Utils::Get_Attributes $Index]
+
+    switch -exact -- $Index_Attributes(type) {
+      primary {
+        puts $Out_File "  -- Primary keys, when several fields"
+        puts $Out_File [Primary_Procs $Index_Attributes(Columns) $Table_Name $Columns]
+          }
+      candidate {
+        puts $Out_File "  -- Candidate key Not possible here...."
+#        puts $Out_File [Candidate_Procs $Index_Attributes(Columns) $Table_Name]
+      }
+      index {
+        puts $Out_File "  -- Index "
+        puts $Out_File [Index_Procs $Index_Attributes(Columns) $Table_Name]
+      }
+      foreign {
+        puts $Out_File "  -- Index Foreign key"
+        puts $Out_File [Foreign_Procs $Index_Attributes(Columns) $Table_Name]
+      }
+      default {
+        puts stderr "  Unknown indextype: $Index_Attributes(type)"
+        puts stderr "    Valid: primary, candidate, index, foreign"
+        exit 1
+      }
+    }
+  }
+  puts $Out_File "\n -- stop Print_Def_Functions_Lists_Spec stop --"
+}
+# Print_Def_Functions_Lists_Spec stop
 
 ########################################################
 proc Print_Ud4_Functions_Spec {Name Type Node Columns Out_File} {
@@ -1066,10 +1164,14 @@ proc Print_XML_Functions_Spec {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_Package_End_Spec {Name Type Node Columns Out_File} {
+
   set Mixed_Name [string totitle $Name]
+  puts $Out_File "\n  Empty_Data : Table_$Mixed_Name.Data_Type;"
   puts $Out_File "end Table\_$Mixed_Name ;\n"
 }
 ########################################################
+
+
 
 proc Print_Header_Body {Name Type Node Columns Out_File} {
   Header $Out_File
@@ -1180,7 +1282,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
 
     set Stm "Stm_Select\_$Field_Name"
     append Ret_Val "\n"
-    append Ret_Val "  procedure Read\_$Field_Name\(Data  : in     Table\_$Table_Name.Data_Type;\n"
+    append Ret_Val "  procedure Read\_$Field_Name\(Data  : in     Table\_$Table_Name.Data_Type\'class;\n"
     append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
     append Ret_Val "                       Order : in     Boolean := False;\n"
     append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last) is\n"
@@ -1333,7 +1435,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
       set local_IDF_Numbering $::IDF_Numbering ; # Parameter in? Where do we get it from?
       append Orig_Fld \_$fld
       append Ret_Val "\n"
-      append Ret_Val "  procedure Read\_$local_IDF_Numbering$Orig_Fld\(Data  : in     Table\_$Table_Name.Data_Type;\n"
+      append Ret_Val "  procedure Read\_$local_IDF_Numbering$Orig_Fld\(Data  : in     Table\_$Table_Name.Data_Type\'class;\n"
       append Ret_Val "                       List  : in out $Table_Name\_List_Pack.List_Type;\n"
       append Ret_Val "                       Order : in     Boolean := False;\n"
       append Ret_Val "                       Max   : in     Integer_4 := Integer_4'Last) is\n"
@@ -2285,7 +2387,8 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 
 ########################################################
 proc Print_Package_End_Body {Name Type Node Columns Out_File} {
-  Print_Package_End_Spec $Name $Type $Node $Columns $Out_File
+  set Mixed_Name [string totitle $Name]
+  puts $Out_File "end Table\_$Mixed_Name ;\n"
 }
 
 ########################################################
@@ -2297,6 +2400,7 @@ proc Create_Ada_Spec {Name Type Node Columns Out_File} {
   Print_Def_Functions_Spec $Name $Type $Node $Columns $Out_File
 #  Print_Ud4_Functions_Spec $Name $Type $Node $Columns $Out_File
   Print_XML_Functions_Spec $Name $Type $Node $Columns $Out_File
+  Print_Def_Functions_Lists_Spec $Name $Type $Node $Columns $Out_File
   Print_Package_End_Spec   $Name $Type $Node $Columns $Out_File
 }
 ########################################################
