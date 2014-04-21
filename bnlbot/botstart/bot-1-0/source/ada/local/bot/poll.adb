@@ -67,6 +67,7 @@ procedure Poll is
     Event     : Table_Aevents.Data_Type;
     Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
     Price,Tmp : Table_Aprices.Data_Type;
+    Has_Been_In_Play,
     In_Play   : Boolean := False;
     Best_Runners : array (1..3) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
@@ -196,18 +197,24 @@ procedure Poll is
 
       exit Poll_Loop when Market.Status(1..4) /= "OPEN";
 
---      if not In_Play then
---        if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
---           Log(Me & "Make_Bet", "Market took too long time to start, give up");
---           exit Poll_Loop;
---        else
---          Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
---          delay 30.0; -- no need for heavy polling before start of race
---        end if;
---      else
---        delay 0.05; -- to avoid more than 20 polls/sec
---      end if;
-      delay 0.05;
+      if not Has_Been_In_Play then
+        -- toggle the first time we see in-play=true
+        -- makes us insensible to Betfair toggling bug
+        Has_Been_In_Play := In_Play;
+      end if;
+
+      if not Has_Been_In_Play then
+        if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
+           Log(Me & "Make_Bet", "Market took too long time to start, give up");
+           exit Poll_Loop;
+        else
+          Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
+          delay 30.0; -- no need for heavy polling before start of race
+        end if;
+      else
+        delay 0.05; -- to avoid more than 20 polls/sec
+      end if;
+      
       -- ok find the runner with lowest backprice:
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
