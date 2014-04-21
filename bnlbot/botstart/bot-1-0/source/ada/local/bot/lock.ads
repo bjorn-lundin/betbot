@@ -8,8 +8,9 @@ package Lock is
   procedure Take(A_Lock : in out Lock_Type; Name : in String);
 private
   type Lock_Type is new Ada.Finalization.Controlled with record
-    Name : Unbounded_String := Null_Unbounded_String;
-    Fd    : Posix.Int := Posix.Int'First;
+    Name                   : Unbounded_String := Null_Unbounded_String;
+    Fd                     : Posix.Int        := Posix.Int'First;
+    Currently_Holding_Lock : Boolean          := False;
   end record;
   
   overriding procedure Finalize(A_Lock : in out Lock_Type);

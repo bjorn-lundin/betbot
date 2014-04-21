@@ -34,8 +34,10 @@ package body Lock is
      L.L_Start := 0;
      L.L_Len := 0;
      Fcntl( result, A_Lock.Fd, F_SETLK, L );
+     A_Lock.Currently_Holding_Lock := True;
      if result = -1 then
         Log(Me & "Take", "Take lock failed, Errno =" & Errno'Img);
+        A_Lock.Currently_Holding_Lock := False;
         raise Lock_Error with "Errno =" & Errno'Img ;
      end if;
   -- file is now locked
@@ -65,12 +67,13 @@ package body Lock is
   end Take;
   ------------------------------------------------------------------
   
-   procedure Finalize(A_Lock : in out Lock_Type) is
-     L      : Lockstruct;
-     Result : int;
-   begin
+  procedure Finalize(A_Lock : in out Lock_Type) is
+    L      : Lockstruct;
+    Result : int;
+  begin
 --      Log(Me & "Finalize", "Remove loc");    
       -- unlock file
+    if A_Lock.Currently_Holding_Lock then
       L.L_Start := 0;
       L.L_Len := 0;
       L.L_Type := F_UNLCK;
@@ -80,6 +83,7 @@ package body Lock is
         Log(Me & "Finalize", "fcntl failed in unlock/Finalize, Errno =" & Errno'Img);
       end if;      
 --      Log(Me & "Finalize", "Lock removed");
+    end if; 
    end Finalize;
   ------------------------------------------------------------------
   
