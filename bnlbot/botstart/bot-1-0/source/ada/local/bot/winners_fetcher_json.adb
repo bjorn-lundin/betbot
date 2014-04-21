@@ -64,7 +64,7 @@ begin
     if Ba_Daemon then
       Posix.Daemonize;
     end if;
-    My_Lock.Take("winners_fetcher_json");    
+    My_Lock.Take(EV.Value("BOT_NAME"));    
     
     Log(Me, "Login betfair");
     Rpc.Init(
