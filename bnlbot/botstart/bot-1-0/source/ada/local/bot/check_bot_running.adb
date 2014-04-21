@@ -5,10 +5,10 @@ with Gnat.Command_Line;  use Gnat.Command_Line;
 with Gnat.Strings;
 with Text_Io; use Text_Io;
 procedure Check_Bot_Running is
-  My_Lock : Lock.Lock_Type;
+  My_Lock    : Lock.Lock_Type;
   Sa_Par_Bot : aliased Gnat.Strings.String_Access;
   Ba_Debug   : aliased Boolean := False;
-  Config : Command_Line_Configuration;
+  Config     : Command_Line_Configuration;
 begin
   Set_Exit_Status(Success);
   Define_Switch
@@ -31,6 +31,8 @@ begin
   end if;
   if Ba_Debug then
     Put_Line(Standard_Error, "get lock: '" & Sa_Par_Bot.all & "'");
+  else
+    Log.Set_Quiet(True);  
   end if;
   My_Lock.Take(Sa_Par_Bot.all);
   if Ba_Debug then
