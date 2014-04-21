@@ -1,32 +1,26 @@
 --------------------------------------------------------------------------------
 --
-
+with Interfaces.C;
 with Interfaces.C.Strings;
 with Sattmate_Types; use Sattmate_Types;
 with C_Constants;
 
 package Posix is
 
-
-
-
   type Byte is new Sattmate_Types.Byte;
-
   type Short is new Integer_2;
-
   type Unsigned_Short is new Word;
-
-  type INT is new Integer_4;
+  type Int is new Integer_4;
 
 --------------------------------------------------------------------
-  type MODE_T is range 0..2_147_483_647;
-  for MODE_T'SIZE use 32;
+  type Mode_T is range 0..2_147_483_647;
+  for Mode_T'size use 32;
   
-  type SIZE_T is new Integer_4;
+  type Size_T is new Integer_4;
 
 
   type Pid_T is range -1 .. 2_147_483_647;
-  for Pid_T'SIZE use 32;
+  for Pid_T'size use 32;
 
   O_RDONLY   : constant Int := Int(C_Constants.O_RDONLY);    -- open for reading only
   O_WRONLY   : constant Int := Int(C_Constants.O_WRONLY);    -- open for writing only
@@ -43,8 +37,6 @@ package Posix is
   O_LARGEFILE: constant Int := Int(C_Constants.O_LARGEFILE); -- not implemented in Linux (yet)
   O_DIRECTORY: constant Int := Int(C_Constants.O_DIRECTORY); -- error if file isn't a dir
   O_NOFOLLOW : constant Int := Int(C_Constants.O_NOFOLLOW);  -- if sym link, open link itself  
-
-  
 
    ------------ lock files start --------------
    type Short_Integer is new Sattmate_Types.Integer_2;
@@ -68,7 +60,6 @@ package Posix is
    F_GETOWN : constant Int := Int(C_Constants.F_GETOWN);
    F_SETSIG : constant Int := Int(C_Constants.F_SETSIG);
    F_GETSIG : constant Int := Int(C_Constants.F_GETSIG);   
-   
    
    type aWhenceMode is new Short_Integer;
    SEEK_SET : constant aWhenceMode := aWhenceMode(C_Constants.SEEK_SET); -- absolute position
@@ -100,8 +91,7 @@ package Posix is
   procedure Perror (Msg : String ) ;
   function Open(Path : Interfaces.C.Strings.Chars_Ptr ; flags : int ; mode : mode_t) return Int; 
   function Close(Fd : Int) return Int; 
-  function Errno return Int;
-  
+  function Errno return Int;  
   function Write(Fd : Int; Buf : Interfaces.C.Strings.Chars_Ptr; Count : Size_T) return Size_T;
   
 private
