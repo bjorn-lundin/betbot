@@ -547,7 +547,9 @@ begin
         
         when Bot_Messages.Market_Notification_Message    =>
           if Global_Enabled then
+            Log(Me & "start service Check_Match_Status");
             Check_Match_Status( Bot_Messages.Data(Msg));
+            Log(Me & "stop  service Check_Match_Status");
           else  
             Log(Me, "Check_Match_Status is disabled in inifile");  --??
           end if;

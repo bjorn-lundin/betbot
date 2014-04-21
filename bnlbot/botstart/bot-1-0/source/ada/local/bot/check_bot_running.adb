@@ -4,6 +4,7 @@ with Ada.Command_Line;   use Ada.Command_Line;
 with Gnat.Command_Line;  use Gnat.Command_Line;
 with Gnat.Strings;
 with Text_Io; use Text_Io;
+with Logging;
 procedure Check_Bot_Running is
   My_Lock    : Lock.Lock_Type;
   Sa_Par_Bot : aliased Gnat.Strings.String_Access;
@@ -32,7 +33,7 @@ begin
   if Ba_Debug then
     Put_Line(Standard_Error, "get lock: '" & Sa_Par_Bot.all & "'");
   else
-    Log.Set_Quiet(True);  
+    Logging.Set_Quiet(True);  
   end if;
   My_Lock.Take(Sa_Par_Bot.all);
   if Ba_Debug then
