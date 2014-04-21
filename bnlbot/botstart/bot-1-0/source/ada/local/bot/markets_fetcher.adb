@@ -221,7 +221,7 @@ begin
   end if;
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
-  My_Lock.Take("markets_fetcher");
+  My_Lock.Take(EV.Value("BOT_NAME"));    
    
   Log(Me, "Login");
 

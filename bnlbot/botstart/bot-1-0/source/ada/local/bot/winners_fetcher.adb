@@ -276,7 +276,7 @@ begin
 
     
     Posix.Daemonize;
-    My_Lock.Take("winners_fetcher");
+    My_Lock.Take(EV.Value("BOT_NAME"));    
 
     
     
