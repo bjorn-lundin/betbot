@@ -423,6 +423,7 @@ procedure Football_Better is
             
             
         Selection_Id := The_Runners(Home).Runner.Selectionid;
+        Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
         exit Game_Loop;  
         
       elsif Current_Game_Time - Game_Start > (0,0,10,0,0) and then
@@ -440,6 +441,7 @@ procedure Football_Better is
             
             
         Selection_Id := The_Runners(Away).Runner.Selectionid;
+        Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
         exit Game_Loop;  
       end if;
     
@@ -459,6 +461,8 @@ procedure Football_Better is
       );      
 
       Place_Back_Bet(Place_Back_Bet_Data);
+    else
+     Log(Me & "Check_Match_Status", "No bet laid this time!");   
     end if;
   
   end Check_Match_Status;
