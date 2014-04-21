@@ -27,6 +27,7 @@ project Adabot is
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
                     "football_better.adb",
+                    "check_bot_running.adb",
                     -- "pio.adb",
                     "mailer.adb");
                     
