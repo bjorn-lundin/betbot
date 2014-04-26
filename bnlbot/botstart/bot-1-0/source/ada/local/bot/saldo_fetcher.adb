@@ -5,6 +5,8 @@ with Ada.Directories;
 with Ada.Characters;
 with Ada.Characters.Latin_1;
 
+with Ada.Strings;
+with Ada.Strings.Fixed;
 --with Unicode;
 --with Unicode.Encodings;
 --with Unicode.CES;
@@ -38,6 +40,7 @@ with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
 
+
 procedure Saldo_Fetcher is
   package EV renames Ada.Environment_Variables;
 
@@ -46,7 +49,6 @@ procedure Saldo_Fetcher is
   Me : constant String := "Main.";  
 
   Msg      : Process_Io.Message_Type;
-
   Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon    : aliased Boolean := False;
@@ -55,26 +57,11 @@ procedure Saldo_Fetcher is
   Betfair_Result : Rpc.Result_Type := Rpc.Ok;
  
   My_Lock  : Lock.Lock_Type;
----------------------------------------------------------------  
+---------------------------------------------------------
 
---  function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is
---    use Unicode.Encodings;
---  begin
---    return  Convert(Str  => Str,
---                    From => Get_By_Name("utf-8"),
---                    To   => Get_By_Name("iso-8859-15"));
---
---  end To_Iso_Latin_15;
---  -------------------------------------------------------
---  function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String is
---    use Unicode.Encodings;
---  begin
---    return  Convert(Str  => Str,
---                    From => Get_By_Name("iso-8859-15"),
---                    To   => Get_By_Name("utf-8"));
---  end To_Utf8;
---  -------------------------------------------------------
-  
+  function Get_Db_Size(Db_Name : String ) return String ; -- forward declaration only
+
+
   procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type) is
      T       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
      Subject : constant String             := "BetBot Saldo Report";
@@ -98,6 +85,13 @@ procedure Saldo_Fetcher is
           "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &
           "saldo:     " & F8_Image(Saldo.Balance) & Cr & Lf &
           "exposure:  " & F8_Image(Saldo.Exposure)  & Cr & Lf &
+          Cr & Lf &
+          "Database sizes:" & Cr & Lf &
+          "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
+          "jmb " & Get_Db_Size("jmb")  & Cr & Lf &
+          "dry " & Get_Db_Size("dry")  & Cr & Lf &
+          "ais " & Get_Db_Size("ais")  & Cr & Lf &
+          Cr & Lf &          
           "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
           
@@ -145,6 +139,31 @@ procedure Saldo_Fetcher is
       Mail_Saldo(Saldo);
     end if;  
   end Balance;    
+     
+     
+  -----------------------------------------------------------
+  function Get_Db_Size(Db_Name : String ) return String is
+    Buff           : String(1..100) := (others => ' ');
+    Select_Db_Size : Sql.Statement_Type;
+    Eos            : Boolean := False;
+    use Ada.Strings;
+    use Ada.Strings.Fixed;
+    T : Sql.Transaction_Type;
+  begin
+    T.Start;
+    Select_Db_Size.Prepare ("SELECT pg_size_pretty(pg_database_size(:DBNAME))" );
+    Select_Db_Size.Set("DBNAME", Db_Name);
+    Select_Db_Size.Open_Cursor;
+    Select_Db_Size.Fetch(Eos);
+    if not Eos then
+      Select_Db_Size.Get(1, Buff);
+    else
+      Move("No such db: " & Db_Name, Buff);    
+    end if;
+    Select_Db_Size.Close_Cursor;
+    T.Commit;
+    return Trim(Buff);  
+  end Get_Db_Size;
      
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Balance,
@@ -269,7 +288,7 @@ begin
         end case;           
       end loop Ask;
     else  
-      Log(Me, "sending mails not enables in [email] section of login.ini");
+      Log(Me, "sending mails not enabled in [email] section of login.ini");
     end if;  
   end loop Main_Loop; 
                
