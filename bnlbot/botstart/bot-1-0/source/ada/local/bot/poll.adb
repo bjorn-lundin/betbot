@@ -147,7 +147,7 @@ procedure Poll is
             Log(Me & "Run", "not a HORSE market: " &  Market_Notification.Market_Id);
             return;
           elsif not Cfg.Country_Is_Ok(Event.Countrycode) then
-            Log(Me & "Run", "not an country,  market: " &  Market_Notification.Market_Id);
+            Log(Me & "Run", "not an OK country,  market: " &  Market_Notification.Market_Id);
             return;
           end if;
         else
