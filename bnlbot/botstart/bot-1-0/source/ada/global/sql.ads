@@ -227,6 +227,8 @@ package Sql is
    procedure Set_Null_Date (Statement : in out Statement_Type;
                             Parameter : String);
 
+   function Get_Prepared_Statement(Statement : Statement_Type) return String;
+
    ------------------------------------------------------------
    --  procedure Print_Errors(MyUnit   : in String;
    --                         MyStatus : in Exec_Status_Type);

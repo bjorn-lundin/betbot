@@ -1696,6 +1696,15 @@ package body Sql is
    end Get_Timestamp;
    pragma Inline(Get_Timestamp);
    ------------------------------------------------------------
+   
+   
+   
+   function Get_Prepared_Statement(Statement : Statement_Type) return String is
+   begin
+     return To_String (Statement.Private_Statement.Prepared_Statement);
+   end Get_Prepared_Statement;
+
+   ------------------------------------------------------------
    -- end Get handling procs
    ------------------------------------------------------------
 
