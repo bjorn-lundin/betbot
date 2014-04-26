@@ -10,7 +10,6 @@ UNAME := $(shell uname)
 DBHOST := db.nonodev.com
 
 ifeq ($(DBHOST),db.nonodev.com)
-# Go via ssh tunnel
   DBNAME := bnl
   DBPORT := 5432
   DBPWD  := BettingFotboll1$$
@@ -36,7 +35,6 @@ BET_NAMES_DRY := \
   HORSES_WIN_16.5_16.5_6_25_BACK_IE \
   HORSES_WIN_55.0_55.0_6_50_LAY_IE \
   HORSES_WIN_15.5_15.5_6_25_BACK_GB
-
 
     
 BET_NAMES_REAL := \

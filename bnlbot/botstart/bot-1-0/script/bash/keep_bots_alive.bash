@@ -140,8 +140,6 @@ case $BOT_MACHINE_ROLE in
         for u in $USER_LIST ; do
           $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
         done
-        sleep 30
-        pg_dump dry | gzip > /home/bnl/datadump/dry_${WEEK_DAY}.dmp.gz &
       fi
     fi
   ;;
