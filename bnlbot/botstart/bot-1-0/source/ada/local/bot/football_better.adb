@@ -367,7 +367,7 @@ procedure Football_Better is
         Select_Race_Runners_In_One_Market.Fetch(Eos(Runner_Data));
         exit when Eos(Runner_Data);
         The_Runners(i).Runner := Table_Arunners.Get(Select_Race_Runners_In_One_Market);
-        Log("Runners(" & i'Img & ").Runner" & The_Runners(i).Runner.To_String);
+        Log(Me & "Check_Match_Status", "Runners(" & i'Img & ").Runner" & The_Runners(i).Runner.To_String);
         if i /=  Runners_Type_Type'last then
           i := Runners_Type_Type'Succ(I);
         end if;  
@@ -386,7 +386,11 @@ procedure Football_Better is
     Select_Prices_For_All_Runners_In_One_Market.Open_Cursor; 
    
     Game_Loop : loop -- get a new market/odds combo
-      Select_Prices_For_All_Runners_In_One_Market.Fetch(Eos(Market_Data));         
+      Select_Prices_For_All_Runners_In_One_Market.Fetch(Eos(Market_Data));
+      Log(Me & "Check_Match_Status", "Eos(Market_Data) " & Eos(Market_Data)'Img);
+      if Eos(Market_Data) then
+         Log(Me & "Check_Match_Status-Get_Prepared_Statement",Select_Prices_For_All_Runners_In_One_Market.Get_Prepared_Statement);
+      end if;
       exit Game_Loop when Eos(Market_Data);
       Select_Prices_For_All_Runners_In_One_Market.Get_Timestamp("PRICETS", Current_Game_Time);
       
@@ -404,6 +408,7 @@ procedure Football_Better is
       end loop;
       
       if Game_Start = Sattmate_Calendar.Time_Type_First then 
+        Log(Me & "Check_Match_Status", "first lap in loop");
         Game_Start := Current_Game_Time;          
       end if;      
       
