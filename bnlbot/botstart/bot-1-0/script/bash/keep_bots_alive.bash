@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#exit 0
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
 #install with
@@ -97,7 +96,7 @@ function Check_Bots_For_User () {
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
     TEST) BOT_LIST="bot" ;;
-    SIM)  BOT_LIST="horses_plc_gb horses_win_gb hounds_plc_gb hounds_win_gb" ;;
+    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
     *)    BOT_LIST="" ;;
   esac
   for bot in $BOT_LIST ; do
@@ -124,20 +123,15 @@ function Check_Bots_For_User () {
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 }
-
-case $BOT_MACHINE_ROLE in
-  PROD) USER_LIST=$(ls $BOT_START/user) ;;
-     *) USER_LIST="bnl"     ;;
-esac
-
-for USER in $USER_LIST ; do
-#  echo "start $USER"
-  Check_Bots_For_User $USER
-#  echo "stop $USER"
-done
-
+# start here 
 case $BOT_MACHINE_ROLE in
   PROD)
+    #check the bots, and startup if  necessarry
+    USER_LIST=$(ls $BOT_START/user) ;;
+    for USER in $USER_LIST ; do
+      Check_Bots_For_User $USER
+    done
+  
     HOUR=$(date +"%H")
     MINUTE=$(date +"%M")
     if [[ $HOUR == "06" ]] ; then
@@ -146,7 +140,12 @@ case $BOT_MACHINE_ROLE in
         for u in $USER_LIST ; do
           $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
         done
+        sleep 30
+        pg_dump dry | gzip > /home/bnl/datadump/dry_${WEEK_DAY}.dmp.gz &
       fi
     fi
   ;;
+  *) 
+  #do nothing on non-PROD hosts
+  exit 0 ;;
 esac
