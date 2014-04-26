@@ -11,7 +11,7 @@
 #crontab -r
 #cat crontab.tmp | crontab
 #crontab -l
-#rm crontab.tmp 
+#rm crontab.tmp
 
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
@@ -28,134 +28,125 @@ export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
 
+
+function Start_Bot () {
+
+  #if the lock can be aquired, the process is NOT running - start it
+
+  ##bot  is not running
+  #$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
+  #$ echo $?
+  #0
+
+  ##bot  is running
+  #$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
+  #$ echo $?
+  #1
+  BOT_USER=$1
+  BOT_NAME=$2
+  EXE_NAME=$3
+  INI_NAME=$4
+  MODE=$5
+
+  if [ "$INI_NAME" != "" ] ; then
+    INI_NAME=" --inifile=$INI_NAME"
+  fi
+
+  if [ "$MODE" != "" ] ; then
+    MODE=" --mode=$MODE"
+  fi
+  
+  $BOT_TARGET/bin/check_bot_running --botname=$BOT_NAME
+  RESULT=$?
+  if [ $RESULT -eq 0 ] ; then
+    echo "--------------------------------"
+    echo "will run $BOT_NAME"
+    echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
+    export BOT_NAME
+    $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
+    echo "Started $BOT_NAME for $BOT_USER"
+    echo "--------------------------------"
+  fi
+}
+
+
 function Check_Bots_For_User () {
 
   export BOT_USER=$1
-  
-  . $BOT_START/bot.bash $BOT_USER 
-  
+
+  . $BOT_START/bot.bash $BOT_USER
+  #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
-    
-  #try to lock the file $BOT_TARGET/locks/market_fetcher
-  #$BOT_TARGET/bin/check_bot_running --botname=markets_fetcher >/dev/null 2>&1
-  #RESULT_MARKETS_FETCHER=$?
-  #if [ $RESULT_MARKETS_FETCHER -eq 0 ] ; then
-  #  export BOT_NAME=markets_fetcher
-  #  $BOT_TARGET/bin/markets_fetcher --daemon
-  #fi
-  ps -ef | grep bin/markets_fetcher | grep -v grep | grep user=$BOT_USER >/dev/null
-  RESULT_MARKETS_FETCHER=$?
-  if [ $RESULT_MARKETS_FETCHER -eq 1 ] ; then
-    echo "Started markets_fetcher $BOT_USER"
-    export BOT_NAME=markets_fetcher
-    $BOT_TARGET/bin/markets_fetcher --daemon --user=$BOT_USER
-  fi
+
+  #BOT_USER=$1
+  #BOT_NAME=$2
+  #EXE_NAME=$3
+  #INI_NAME=$4
+  #MODE=$5
+
+  Start_Bot $BOT_USER markets_fetcher markets_fetcher
+
+  Start_Bot $BOT_USER poll poll poll.ini
+
+  Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
+
+  Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
+
+  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   
-  #if the lock can be aquired, the process is NOT running - start it
-  
-  ##bot  is not running
-  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
-  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
-  #0
-  
-  ##bot  is running
-  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ $BOT_TARGET/bin/check_bot_running --botname=market_fetcher
-  #bnl@sebjlun-deb:~/bnlbot/botstart/bot-0-9/source/ada$ echo $?
-  #1
-  
-  ########## bot ############  
-  
-  case $BOT_MACHINE_ROLE in 
+  case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
     TEST) BOT_LIST="bot" ;;
     SIM)  BOT_LIST="horses_plc_gb horses_win_gb hounds_plc_gb hounds_win_gb" ;;
     *)    BOT_LIST="" ;;
   esac
-  
   for bot in $BOT_LIST ; do
-    if [[ $bot != "bot" ]] ; then
-      ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep "inifile=$bot" | grep -v grep >/dev/null
+    if [[ $bot == "bot" ]] ; then
+      Start_Bot $BOT_USER $bot bot betfair.ini
     else
-      ps -ef | grep bin/bot | grep "user=$BOT_USER" | grep "inifile=betfair.ini" | grep -v grep >/dev/null
+      Start_Bot $BOT_USER $bot bot $bot.ini
     fi
-    
-    RESULT_BOT=$?
-    if [ $RESULT_BOT -eq 1 ] ; then
-      echo "Started $bot $BOT_USER - bot_home=$BOT_HOME -- bot=$bot"
-      export BOT_NAME=$bot
-      if [[ $bot != "bot" ]] ; then
-        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --inifile=$bot.ini
-      else
-        $BOT_TARGET/bin/bot --daemon --user=$BOT_USER --inifile=betfair.ini
-      fi      
-    fi
-  done 
-  
-  BET_PLACER_LIST="bet_placer_1"
-  for placer in $BET_PLACER_LIST ; do
-    ps -ef | grep bin/bet_placer | grep "user=$BOT_USER" | grep "inifile=$placer.ini" | grep -v grep >/dev/null    
-    RESULT_PLACER=$?
-    if [ $RESULT_PLACER -eq 1 ] ; then
-      echo "Started $placer $BOT_USER - bot_home=$BOT_HOME -- placer=$placer"
-      export BOT_NAME=$placer
-      $BOT_TARGET/bin/bet_placer --daemon --user=$BOT_USER --mode=$BOT_MODE --inifile=$placer.ini
-    fi
-  done 
+  done
 
-  ps -ef | grep bin/poll | grep user=$BOT_USER | grep -v grep >/dev/null
-  RESULT_POLL=$?
-  if [ $RESULT_POLL -eq 1 ] ; then
-    echo "Started poll $BOT_USER"
-    export BOT_NAME=poll
-    $BOT_TARGET/bin/poll --daemon --user=$BOT_USER --inifile=poll.ini
-  fi
-  
-  ps -ef | grep bin/saldo_fetcher | grep user=$BOT_USER | grep -v grep >/dev/null
-  RESULT_SALDO_FETCHER=$?
-  if [ $RESULT_SALDO_FETCHER -eq 1 ] ; then
-    echo "Started saldo_fetcher $BOT_USER"
-    export BOT_NAME=saldo_fetcher
-    $BOT_TARGET/bin/saldo_fetcher --daemon --user=$BOT_USER
-  fi
-  
-  ps -ef | grep bin/winners_fetcher_json | grep user=$BOT_USER | grep -v grep >/dev/null
-  RESULT_WJ_FETCHER=$?
-  if [ $RESULT_WJ_FETCHER -eq 1 ] ; then
-    echo "Started winners_fetcher_json $BOT_USER"
-    export BOT_NAME=w_fetch_json
-    $BOT_TARGET/bin/winners_fetcher_json --daemon --user=$BOT_USER
-  fi
-  
+  BET_PLACER_LIST="bet_placer_1 bet_placer_2 bet_placer_3"
+  for placer in $BET_PLACER_LIST ; do
+    Start_Bot $BOT_USER $placer bet_placer $placer.ini
+  done
+
+  BET_PLACER_LIST="football_better"
+  for placer in $BET_PLACER_LIST ; do
+    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
+  done
+
   #zip logfiles every hour, on minute 17 in the background
   MINUTE=$(date +"%M")
-  
   if [[ $MINUTE == "17" ]] ; then
-    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER & 
-  fi 
+    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+  fi
 }
 
-case $BOT_MACHINE_ROLE in 
+case $BOT_MACHINE_ROLE in
   PROD) USER_LIST=$(ls $BOT_START/user) ;;
      *) USER_LIST="bnl"     ;;
-esac  
-  
+esac
+
 for USER in $USER_LIST ; do
 #  echo "start $USER"
   Check_Bots_For_User $USER
 #  echo "stop $USER"
 done
- 
-case $BOT_MACHINE_ROLE in 
+
+case $BOT_MACHINE_ROLE in
   PROD)
     HOUR=$(date +"%H")
-    MINUTE=$(date +"%M")  
-    if [[ $HOUR == "02" ]] ; then
-      if [[ $MINUTE == "05" ]] ; then
-        WEEK_DAY=$(date +"%u")        
+    MINUTE=$(date +"%M")
+    if [[ $HOUR == "06" ]] ; then
+      if [[ $MINUTE == "45" ]] ; then
+        WEEK_DAY=$(date +"%u")
         for u in $USER_LIST ; do
           $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
         done
       fi
     fi
-  ;;  
+  ;;
 esac
