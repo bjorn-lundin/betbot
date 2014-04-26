@@ -80,13 +80,9 @@ function Check_Bots_For_User () {
   #MODE=$5
 
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
-
   Start_Bot $BOT_USER poll poll poll.ini
-
   Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
-
   Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   
   case $BOT_MACHINE_ROLE in
@@ -123,9 +119,10 @@ function Check_Bots_For_User () {
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
-    USER_LIST=$(ls $BOT_START/user) ;;
-    for USER in $USER_LIST ; do
-      Check_Bots_For_User $USER
+    USER_LIST=$(ls $BOT_START/user)
+    HOST=db.nonodev.com
+    for USR in $USER_LIST ; do
+      Check_Bots_For_User $USR
     done
   
     HOUR=$(date +"%H")
@@ -133,8 +130,8 @@ case $BOT_MACHINE_ROLE in
     if [ $HOUR == "06" ] ; then
       if [ $MINUTE == "45" ] ; then
         WEEK_DAY=$(date +"%u")
-        for u in $USER_LIST ; do
-          $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
+        for USR in $USER_LIST ; do
+          $PG_DUMP --host=$HOST --username=bnl $USR | gzip > /home/bnl/datadump/${USR}_${WEEK_DAY}.dmp.gz &
         done
       fi
     fi
