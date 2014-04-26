@@ -1987,7 +1987,7 @@ package body Bet_Handler is
     -- BET_STATUS='PRELIMINARY'
     T.Start;
     Select_Real_Bets.Prepare(
-      "select min(STARTTS) from ABETS where BETSTATUS = 'PRELIMINARY' ");
+      "select min(STARTTS) from ABETS where STATUS = 'PRELIMINARY' ");
 --      "select min(STARTTS) from ABETS where BETWON is null and BETID > 1000000000");
 
     Select_Real_Bets.Open_Cursor;
