@@ -15,8 +15,6 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-
-
 [ -r /var/lock/bot ] && exit 0
 
 export PG_DUMP=/usr/lib/postgresql/9.3/bin/pg_dump
@@ -26,7 +24,6 @@ export TZ
 export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
-
 
 function Start_Bot () {
 
@@ -68,7 +65,6 @@ function Start_Bot () {
   fi
 }
 
-
 function Check_Bots_For_User () {
 
   export BOT_USER=$1
@@ -100,7 +96,7 @@ function Check_Bots_For_User () {
     *)    BOT_LIST="" ;;
   esac
   for bot in $BOT_LIST ; do
-    if [[ $bot == "bot" ]] ; then
+    if [ $bot == "bot" ] ; then
       Start_Bot $BOT_USER $bot bot betfair.ini
     else
       Start_Bot $BOT_USER $bot bot $bot.ini
@@ -119,7 +115,7 @@ function Check_Bots_For_User () {
 
   #zip logfiles every hour, on minute 17 in the background
   MINUTE=$(date +"%M")
-  if [[ $MINUTE == "17" ]] ; then
+  if [ $MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 }
@@ -134,8 +130,8 @@ case $BOT_MACHINE_ROLE in
   
     HOUR=$(date +"%H")
     MINUTE=$(date +"%M")
-    if [[ $HOUR == "06" ]] ; then
-      if [[ $MINUTE == "45" ]] ; then
+    if [ $HOUR == "06" ] ; then
+      if [ $MINUTE == "45" ] ; then
         WEEK_DAY=$(date +"%u")
         for u in $USER_LIST ; do
           $PG_DUMP --host=db.nonodev.com --username=bnl $u | gzip > /home/bnl/datadump/${u}_${WEEK_DAY}.dmp.gz &
