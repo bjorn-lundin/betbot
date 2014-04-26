@@ -1877,6 +1877,10 @@ package body Bet_Handler is
     Do_Update : Boolean := True;
   begin
     Log(Me & "Check_Bets", "start");
+    
+    -- update ARUNNERS.STATUS with real result...    
+    -- is done by Winners_Fetcher_Json
+    --Get result, set status=PRELIMINARY for real bets   
 
     T.Start;
     -- check the dry run bets
@@ -1884,7 +1888,7 @@ package body Bet_Handler is
       "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " &
       "and B.BETWON is null " & -- will be not null if updated
-      "and B.BETID < 1000000000 " & -- local bet
+--      "and B.BETID < 1000000000 " & -- ALL BETS
       "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
 --      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
@@ -1924,7 +1928,6 @@ package body Bet_Handler is
                 T.Rollback; -- let the other one do the update
                 exit;
             end ;
-
           elsif Runner.Status(1..6) = "WINNER" then
           -- this one won
             Selection_In_Winners := True;
@@ -1963,6 +1966,11 @@ package body Bet_Handler is
 
         Bet.Betwon := Bet_Won;
         Bet.Profit := Profit;
+        if Bet.Betid > 1_000_000_000 then -- a real bet
+          Bet.Status := (others => ' ');
+          Move("PRELIMINARY", Bet.Status);            
+        end if;
+        
         begin
           T.Start;
           Table_Abets.Update_Withcheck(Bet);
@@ -1975,13 +1983,12 @@ package body Bet_Handler is
       end if; -- Illegal data
     end loop Inner;
 
-
-
-
     -- check the real bets
+    -- BET_STATUS='PRELIMINARY'
     T.Start;
     Select_Real_Bets.Prepare(
-      "select min(STARTTS) from ABETS where BETWON is null and BETID > 1000000000");
+      "select min(STARTTS) from ABETS where BETSTATUS = 'PRELIMINARY' ");
+--      "select min(STARTTS) from ABETS where BETWON is null and BETID > 1000000000");
 
     Select_Real_Bets.Open_Cursor;
     Select_Real_Bets.Fetch(Eos(Abets));
