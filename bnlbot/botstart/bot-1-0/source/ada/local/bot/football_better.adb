@@ -285,9 +285,12 @@ procedure Football_Better is
     type Eos_Type is (Runner_Data, Market_Data,Game_Start_Data);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     
-    String_Size : String(1..7) := (others => ' ');
-    First_Lap : Boolean := True;
+    String_Size  : String(1..7) := (others => ' ');
+    String_Price : String(1..6) := (others => ' ');
     
+    
+    First_Lap : Boolean := True;
+        
   begin
     Log(Me & "Check_Match_Status", "Treat market '" & Notification.Market_Id & "'");
     
@@ -444,7 +447,9 @@ procedure Football_Better is
             The_Runners(Draw).A_Back >= Lower_Bound_Green_Up then
             
         Selection_Id := The_Runners(Home).Runner.Selectionid;
+        Move(F8_Image( The_Runners(Home).Back_Price),String_Price);
         Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
+        
         exit Game_Loop;  
         
       elsif Time_Into_Game > (0,0,10,0,0) and then
@@ -461,6 +466,7 @@ procedure Football_Better is
             The_Runners(Draw).A_Back >= Lower_Bound_Green_Up then
             
         Selection_Id := The_Runners(Away).Runner.Selectionid;
+        Move(F8_Image( The_Runners(Away).Back_Price),String_Price);
         Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
         exit Game_Loop;  
       end if;
@@ -501,7 +507,7 @@ procedure Football_Better is
          Market_Id    => Notification.Market_Id,
          Selection_Id => Selection_Id,
          Size         => String_Size,
-         Price        =>  "  1.01"
+         Price        => String_Price
       );      
 
       Place_Back_Bet(Place_Back_Bet_Data);
