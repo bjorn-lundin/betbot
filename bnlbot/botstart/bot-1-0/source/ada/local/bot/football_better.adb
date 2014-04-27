@@ -292,9 +292,11 @@ procedure Football_Better is
     if not Eos(Market_Data) then
       if Market.Totalmatched < Min_Total_Matched then
         Log(Me & "Check_Match_Status", "too little totalmatched, skipping, " & F8_Image(Market.Totalmatched) & " < " & F8_Image(Min_Total_Matched) );
+        return;
       end if;  
     else
       Log(Me & "Check_Match_Status", "Missing market !!");
+      return;
     end if;
     
     Move("DR_HUMAN_BACK_MATCH-ODDS_" & 
@@ -386,6 +388,9 @@ procedure Football_Better is
     Select_Prices_For_All_Runners_In_One_Market.Open_Cursor; 
    
     Game_Loop : loop -- get a new market/odds combo
+      if Game_Start = Sattmate_Calendar.Time_Type_First then 
+        Log(Me & "Check_Match_Status", "first lap in loop");
+      end if;      
       Select_Prices_For_All_Runners_In_One_Market.Fetch(Eos(Market_Data));
       Log(Me & "Check_Match_Status", "Eos(Market_Data) " & Eos(Market_Data)'Img);
       if Eos(Market_Data) then
@@ -408,10 +413,9 @@ procedure Football_Better is
       end loop;
       
       if Game_Start = Sattmate_Calendar.Time_Type_First then 
-        Log(Me & "Check_Match_Status", "first lap in loop");
+        Log(Me & "Check_Match_Status", "game start set");
         Game_Start := Current_Game_Time;          
       end if;      
-      
         
       if    Current_Game_Time - Game_Start > (0,0,10,0,0) and then
             Current_Game_Time - Game_Start < (0,1,50,0,0) and then
@@ -425,7 +429,6 @@ procedure Football_Better is
             
             The_Runners(Away).A_Back >= Upper_Bound_Green_Up and then
             The_Runners(Draw).A_Back >= Lower_Bound_Green_Up then
-            
             
         Selection_Id := The_Runners(Home).Runner.Selectionid;
         Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
@@ -443,7 +446,6 @@ procedure Football_Better is
                              
             The_Runners(Home).A_Back >= Upper_Bound_Green_Up and then
             The_Runners(Draw).A_Back >= Lower_Bound_Green_Up then
-            
             
         Selection_Id := The_Runners(Away).Runner.Selectionid;
         Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
