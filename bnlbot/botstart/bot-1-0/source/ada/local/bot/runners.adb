@@ -33,8 +33,16 @@ package body Runners is
      R.A_Lay := R.A_Lay / Float_8(R.V_Lay'Length);  
 
 
-     -- slope     
-     R.K_Back := ( R.V_Back(1) - R.V_Back(2) ) / Float_8(To_Seconds(This_Ts - R.Last_Ts));
+     -- slope back
+     declare 
+       Denominator : Seconds_Type := To_Seconds(This_Ts - R.Last_Ts);
+     begin
+       if Denominator > 0 then
+         R.K_Back := ( R.V_Back(1) - R.V_Back(2) ) / Float_8(Denominator);
+       else
+         R.K_Back := 0.0;
+       end if;       
+     end ;
      
      R.K_Back_V(5) := R.K_Back_V(4); 
      R.K_Back_V(4) := R.K_Back_V(3); 
@@ -48,7 +56,18 @@ package body Runners is
      end loop;
      R.K_Back_Avg := R.K_Back_Avg / Float_8(R.K_Back_V'Length);  
      
-     R.K_Lay  := ( R.V_Lay(1)  - R.V_Lay(2)  ) / Float_8(To_Seconds(This_Ts - R.Last_Ts));
+     
+
+     -- slope lay
+     declare 
+       Denominator : Seconds_Type := To_Seconds(This_Ts - R.Last_Ts);
+     begin
+       if Denominator > 0 then
+         R.K_Lay := ( R.V_Lay(1) - R.V_Lay(2) ) / Float_8(Denominator);
+       else
+         R.K_Lay := 0.0;
+       end if;       
+     end ;
      
      R.K_Lay_V(5) := R.K_Lay_V(4); 
      R.K_Lay_V(4) := R.K_Lay_V(3); 

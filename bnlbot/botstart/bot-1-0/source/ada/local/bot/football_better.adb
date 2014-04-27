@@ -70,6 +70,9 @@ procedure Football_Better is
    
    Game_Start,
    Current_Game_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
+   
+   Time_Into_Game : Interval_Type := (0,0,0,0,0);
+
   
   ------------------------------------------------------
   procedure Place_Back_Bet(Place_Back_Bet : Bot_Messages.Place_Back_Bet_Record) is
@@ -417,8 +420,10 @@ procedure Football_Better is
         Game_Start := Current_Game_Time;          
       end if;      
         
-      if    Current_Game_Time - Game_Start > (0,0,10,0,0) and then
-            Current_Game_Time - Game_Start < (0,1,50,0,0) and then
+      Time_Into_Game := Current_Game_Time - Game_Start  ;
+      
+      if    Time_Into_Game > (0,0,10,0,0) and then
+            Time_Into_Game < (0,1,50,0,0) and then
             The_Runners(Home).Lay_Price >= 0.0 and then
             The_Runners(Home).Back_Price >= 1.0 and then
             Min_Global_Back_At_Price <= The_Runners(Home).A_Back and then  
@@ -434,8 +439,8 @@ procedure Football_Better is
         Log(Me & "Check_Match_Status", "bet on" & Selection_Id'Img);
         exit Game_Loop;  
         
-      elsif Current_Game_Time - Game_Start > (0,0,10,0,0) and then
-            Current_Game_Time - Game_Start < (0,1,50,0,0) and then
+      elsif Time_Into_Game > (0,0,10,0,0) and then
+            Time_Into_Game < (0,1,50,0,0) and then
             The_Runners(Away).Lay_Price >= 0.0 and then
             The_Runners(Away).Back_Price >= 1.0 and then
             Min_Global_Back_At_Price <= The_Runners(Away).A_Back and then  
@@ -452,35 +457,30 @@ procedure Football_Better is
         exit Game_Loop;  
       end if;
     
-      declare 
-       -- use Sattmate_Calendar;
-        Time_Into_Game : Interval_Type := Current_Game_Time - Game_Start;
-      begin
-        Log(Me & "Time_Into_Game " & String_Interval(Time_Into_Game) );
-        Log(Me & "+0h:10 min into game? : " & Boolean'Image( Current_Game_Time - Game_Start > (0,0,10,0,0)));
-        Log(Me & "-1h:50 min into game? : " & Boolean'Image( Current_Game_Time - Game_Start < (0,1,50,0,0)));
-        
-        Log(Me & "Home victory ?");        
-        Log(Me & "The_Runners(Home).Lay_Price " & F8_Image(The_Runners(Home).Lay_Price)   & " " & Boolean'Image( The_Runners(Home).Lay_Price >= 0.0));
-        Log(Me & "The_Runners(Home).Back_Price " & F8_Image(The_Runners(Home).Back_Price) & " " & Boolean'Image( The_Runners(Home).Back_Price >= 1.0));
-        Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( Min_Global_Back_At_Price <= The_Runners(Home).A_Back));
-        Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back <= Max_Global_Back_At_Price));
-        Log(Me & "The_Runners(Home).K_Back " & F8_Image( The_Runners(Home).K_Back)        & " " & Boolean'Image( The_Runners(Home).A_Back <= Max_Global_Back_At_Price));
-        Log(Me & "The_Runners(Home).K_Back_Avg " & F8_Image(The_Runners(Home).K_Back_Avg) & " " & Boolean'Image( The_Runners(Home).K_Back <= Float_8(0.0)));
-        Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back >= Upper_Bound_Green_Up));
-        Log(Me & "The_Runners(Draw).A_Back " & F8_Image(The_Runners(Draw).A_Back)         & " " & Boolean'Image( The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
+      Log(Me & "Time_Into_Game " & String_Interval(Time_Into_Game) );
+      Log(Me & "+0h:10 min into game? : " & Boolean'Image(Time_Into_Game > (0,0,10,0,0)));
+      Log(Me & "-1h:50 min into game? : " & Boolean'Image(Time_Into_Game < (0,1,50,0,0)));
+      
+      Log(Me & "Home victory ?");        
+      Log(Me & "The_Runners(Home).Lay_Price " & F8_Image(The_Runners(Home).Lay_Price)   & " " & Boolean'Image( The_Runners(Home).Lay_Price >= 0.0));
+      Log(Me & "The_Runners(Home).Back_Price " & F8_Image(The_Runners(Home).Back_Price) & " " & Boolean'Image( The_Runners(Home).Back_Price >= 1.0));
+      Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( Min_Global_Back_At_Price <= The_Runners(Home).A_Back));
+      Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back <= Max_Global_Back_At_Price));
+      Log(Me & "The_Runners(Home).K_Back " & F8_Image( The_Runners(Home).K_Back)        & " " & Boolean'Image( The_Runners(Home).A_Back <= Max_Global_Back_At_Price));
+      Log(Me & "The_Runners(Home).K_Back_Avg " & F8_Image(The_Runners(Home).K_Back_Avg) & " " & Boolean'Image( The_Runners(Home).K_Back <= Float_8(0.0)));
+      Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back >= Upper_Bound_Green_Up));
+      Log(Me & "The_Runners(Draw).A_Back " & F8_Image(The_Runners(Draw).A_Back)         & " " & Boolean'Image( The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
 
-        Log(Me & "Away victory ?");        
-        Log(Me & "The_Runners(Away).Lay_Price " & F8_Image(The_Runners(Away).Lay_Price)   & " " & Boolean'Image( The_Runners(Away).Lay_Price >= 0.0));
-        Log(Me & "The_Runners(Away).Back_Price " & F8_Image(The_Runners(Away).Back_Price) & " " & Boolean'Image( The_Runners(Away).Back_Price >= 1.0));
-        Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( Min_Global_Back_At_Price <= The_Runners(Away).A_Back));
-        Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back <= Max_Global_Back_At_Price));
-        Log(Me & "The_Runners(Away).K_Back " & F8_Image( The_Runners(Away).K_Back)        & " " & Boolean'Image( The_Runners(Away).K_Back <= Float_8(0.0)));
-        Log(Me & "The_Runners(Away).K_Back_Avg " & F8_Image(The_Runners(Away).K_Back_Avg) & " " & Boolean'Image( The_Runners(Away).A_Back >= Upper_Bound_Green_Up));
-        Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( The_Runners(Home).A_Back >= Upper_Bound_Green_Up));
-        Log(Me & "The_Runners(Draw).A_Back " & F8_Image(The_Runners(Draw).A_Back)         & " " & Boolean'Image( The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
+      Log(Me & "Away victory ?");        
+      Log(Me & "The_Runners(Away).Lay_Price " & F8_Image(The_Runners(Away).Lay_Price)   & " " & Boolean'Image( The_Runners(Away).Lay_Price >= 0.0));
+      Log(Me & "The_Runners(Away).Back_Price " & F8_Image(The_Runners(Away).Back_Price) & " " & Boolean'Image( The_Runners(Away).Back_Price >= 1.0));
+      Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( Min_Global_Back_At_Price <= The_Runners(Away).A_Back));
+      Log(Me & "The_Runners(Away).A_Back " & F8_Image(The_Runners(Away).A_Back)         & " " & Boolean'Image( The_Runners(Away).A_Back <= Max_Global_Back_At_Price));
+      Log(Me & "The_Runners(Away).K_Back " & F8_Image( The_Runners(Away).K_Back)        & " " & Boolean'Image( The_Runners(Away).K_Back <= Float_8(0.0)));
+      Log(Me & "The_Runners(Away).K_Back_Avg " & F8_Image(The_Runners(Away).K_Back_Avg) & " " & Boolean'Image( The_Runners(Away).A_Back >= Upper_Bound_Green_Up));
+      Log(Me & "The_Runners(Home).A_Back " & F8_Image(The_Runners(Home).A_Back)         & " " & Boolean'Image( The_Runners(Home).A_Back >= Upper_Bound_Green_Up));
+      Log(Me & "The_Runners(Draw).A_Back " & F8_Image(The_Runners(Draw).A_Back)         & " " & Boolean'Image( The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
              
-      end;
     
     end loop Game_Loop;
     Select_Prices_For_All_Runners_In_One_Market.Close_Cursor;  
