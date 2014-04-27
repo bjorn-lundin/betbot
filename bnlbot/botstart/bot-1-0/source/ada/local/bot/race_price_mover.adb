@@ -13,8 +13,8 @@ with Logging; use Logging;
 with Ada.Environment_Variables;
 --with Process_IO;
 --with Core_Messages;
-with Table_Araceprices;
-with Table_Aracepricesold;
+--with Table_Araceprices;
+--with Table_Aracepricesold;
 with Bot_Svn_Info;
 with Posix;
 
@@ -29,6 +29,7 @@ procedure Race_Price_Mover is
 
 --  Msg      : Process_Io.Message_Type;
   Select_Araceprices_To_Move : Sql.Statement_Type;
+  Select_Araceprices_To_Delete : Sql.Statement_Type;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
@@ -39,49 +40,81 @@ procedure Race_Price_Mover is
 
   -------------------------------------------------------------
   procedure Run is
-    Price_List : Table_Araceprices.Araceprices_List_Pack.List_Type := Table_Araceprices.Araceprices_List_Pack.Create;
-    Price : Table_Araceprices.Data_Type;
-    Old_Price : Table_Aracepricesold.Data_Type;
+--    Price_List : Table_Araceprices.Araceprices_List_Pack.List_Type := Table_Araceprices.Araceprices_List_Pack.Create;
+--    Price : Table_Araceprices.Data_Type;
+--    Old_Price : Table_Aracepricesold.Data_Type;
     T : Sql.Transaction_Type;
-    Cnt : Integer := 0;
+  --  Cnt : Integer := 0;
+    Rows_Inserted,
+    Rows_Deleted : Natural := 0;
   begin
 
     Outer_Loop : loop
-       Cnt := 0;
-       Log("about to insert into Apricesfinishold in chunks of 100_000");
+--      Cnt := 0;
+      Log("about to insert into Apricesfinishold in chunks of 100_000");
     
-       T.Start;
-       Select_Araceprices_To_Move.Prepare(
-         "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 100000"
-       );
-       Log ("Start read max 100_000 records");
-       Table_Araceprices.Read_List(Select_Araceprices_To_Move,Price_List);
-       Log ("stop read, got:" & Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img );
-       
-       exit Outer_Loop when Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List) = 0;
-       
-       while not Table_Araceprices.Araceprices_List_Pack.Is_Empty(Price_List) loop
-        Cnt := Cnt +1;
-        if Cnt mod 1_000 = 0 then
-          Log ("inserted 1000, " &  Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img & " left");
-        end if;
-        Table_Araceprices.Araceprices_List_Pack.Remove_From_Head(Price_List,Price);
-        Old_Price := (
-             Pricets      =>  Price.Pricets,
-             Marketid     =>  Price.Marketid,
-             Selectionid  =>  Price.Selectionid,
-             Status       =>  Price.Status,
-             Backprice    =>  Price.Backprice,
-             Layprice     =>  Price.Layprice,
-             Ixxlupd      =>  Price.Ixxlupd,
-             Ixxluts      =>  Price.Ixxluts
+      T.Start;
+        Select_Araceprices_To_Move.Prepare(
+          "insert into ARACEPRICESOLD " &
+          "select * from ARACEPRICES " &
+          "where PRICETS < current_timestamp - interval '1 day' " &
+          "order by PRICETS " &
+          "limit 100000 " 
         );
-        Old_Price.Insert;
-        Price.Delete_Withcheck;
-       end loop;
+       begin 
+         Select_Araceprices_To_Move.Execute(Rows_Inserted);
+       exception
+         when Sql.No_Such_Row => Rows_Inserted := 0;
+       end ;       
        
-       T.Commit;
-       Log("chunk ready");
+       Select_Araceprices_To_Delete.Prepare(
+          "delete from ARACEPRICES " &
+          "where PRICETS < current_timestamp - interval '1 day' " &
+          "order by PRICETS " &
+          "limit 100000 " 
+        );
+       begin 
+         Select_Araceprices_To_Delete.Execute(Rows_Deleted);
+       exception
+         when Sql.No_Such_Row => Rows_Deleted := 0;
+       end ;       
+       
+      T.Commit;
+      Log("chunk ready, Moved" & Rows_Inserted'Img & " and deleted" & Rows_Deleted'Img);
+      Exit Outer_Loop when Rows_Inserted = 0;               
+               
+               
+       
+-- way too slow       
+--       Select_Araceprices_To_Move.Prepare(
+--         "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 100000"
+--       );
+--       Log ("Start read max 100_000 records");
+--       Table_Araceprices.Read_List(Select_Araceprices_To_Move,Price_List);
+--       Log ("stop read, got:" & Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img );
+--       
+--       exit Outer_Loop when Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List) = 0;
+--       
+--       while not Table_Araceprices.Araceprices_List_Pack.Is_Empty(Price_List) loop
+--        Cnt := Cnt +1;
+--        if Cnt mod 1_000 = 0 then
+--          Log ("inserted 1000, " &  Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img & " left");
+--        end if;
+--        Table_Araceprices.Araceprices_List_Pack.Remove_From_Head(Price_List,Price);
+--        Old_Price := (
+--             Pricets      =>  Price.Pricets,
+--             Marketid     =>  Price.Marketid,
+--             Selectionid  =>  Price.Selectionid,
+--             Status       =>  Price.Status,
+--             Backprice    =>  Price.Backprice,
+--             Layprice     =>  Price.Layprice,
+--             Ixxlupd      =>  Price.Ixxlupd,
+--             Ixxluts      =>  Price.Ixxluts
+--        );
+--        Old_Price.Insert;
+--        Price.Delete_Withcheck;
+--       end loop;
+       
 
     end loop Outer_Loop ;
   end Run;
