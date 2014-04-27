@@ -388,7 +388,7 @@ procedure Football_Better is
     Select_Game_Start.Fetch(Eos(Game_Start_Data));
     if not Eos(Game_Start_Data) then
       -- use this rather tan startts, so we do not get trouble with delayed games nor with timezones...
-      Select_Game_Start.Get_Timestamp("PRICETS", Game_Start);
+      Select_Game_Start.Get_Timestamp(1, Game_Start);
     end if;
     Select_Game_Start.Close_Cursor;
        
