@@ -1,6 +1,7 @@
 --with Text_Io;
 with Sattmate_Exception;
 with Sql;
+with Sattmate_Types; use Sattmate_Types;
 --with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -44,21 +45,22 @@ procedure Race_Price_Mover is
 --    Price : Table_Araceprices.Data_Type;
 --    Old_Price : Table_Aracepricesold.Data_Type;
     T : Sql.Transaction_Type;
-  --  Cnt : Integer := 0;
+    Num : Integer_4 := 50;
     Rows_Inserted,
     Rows_Deleted : Natural := 0;
   begin
 
     Outer_Loop : loop
---      Cnt := 0;
-      Log("about to insert into Apricesfinishold in chunks of 100_000");
+      Log("about to insert into Apricesfinishold in chunks of 1 days worth of data, Num =" & Num'Img);
     
       T.Start;
+        
         Select_Araceprices_To_Move.Prepare(
           "insert into ARACEPRICESOLD " &
           "select * from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval '1 day' "
+          "where PRICETS < current_timestamp - interval ':NUM day' "
         );
+       Select_Araceprices_To_Move.Set("NUM",Num); 
        begin 
          Select_Araceprices_To_Move.Execute(Rows_Inserted);
        exception
@@ -67,8 +69,9 @@ procedure Race_Price_Mover is
        
        Select_Araceprices_To_Delete.Prepare(
           "delete from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval '1 day' " 
+          "where PRICETS < current_timestamp - interval ':NUM day' " 
         );
+       Select_Araceprices_To_Delete.Set("NUM",Num); 
        begin 
          Select_Araceprices_To_Delete.Execute(Rows_Deleted);
        exception
@@ -77,7 +80,8 @@ procedure Race_Price_Mover is
        
       T.Commit;
       Log("chunk ready, Moved" & Rows_Inserted'Img & " and deleted" & Rows_Deleted'Img);
-      Exit Outer_Loop when Rows_Inserted = 0;               
+      Num := Num -1;
+      exit Outer_Loop when Num = 2;               
                
                
        
