@@ -32,7 +32,7 @@ tables : $(ST)/table_history.ads  $(ST)/table_alinks.ads \
          $(ST)/table_arunners.ads $(ST)/table_aprices.ads \
          $(ST)/table_abets.ads    $(ST)/table_abalances.ads \
          $(ST)/table_apricesfinish.ads $(ST)/table_araceprices.ads \
-
+         $(ST)/table_aracepricesold.ads \
 #$(ST)/table_anonrunners.ads         
 #$(ST)/table_awinners.ads
 #$(ST)/table_abethistory.ads $(ST)/table_history2.ads
@@ -114,6 +114,12 @@ $(ST)/table_araceprices.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_arace
 	cd $(ST) && gnatchop -w -gnat05 table_araceprices.ada
 	cd $(ST) && rm table_araceprices.ada
 	$(TP) -p araceprices > $(ST)/araceprices.sql
+    
+$(ST)/table_aracepricesold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aracepricesold.xml
+	$(TP) -t aracepricesold > $(ST)/table_aracepricesold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_aracepricesold.ada
+	cd $(ST) && rm table_aracepricesold.ada
+	$(TP) -p aracepricesold > $(ST)/aracepricesold.sql
     
 #$(ST)/table_awinners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_awinners.xml
 #	$(TP) -t awinners > $(ST)/table_awinners.ada
