@@ -42,6 +42,7 @@ procedure Football_Better is
   Is_Time_To_Exit : Boolean := False;
   use type Sql.Transaction_Status_Type;
 
+  Select_Game_Start,
   Select_Race_Runners_In_One_Market,
   Select_Prices_For_All_Runners_In_One_Market,
   Update_Betwon_To_Null : Sql.Statement_Type;
@@ -58,20 +59,19 @@ procedure Football_Better is
   type Runners_Type_Type is (Home,  Away, Draw);
 
   The_Runners : array(Runners_Type_Type'range) of Runners.Runners_Type;
+    
+  Max_Global_Back_At_Price : Float_8 := 2.5;
+  Min_Global_Back_At_Price : Float_8 := 1.2;
+  Min_Total_Matched        : Float_8 := 100000.0;
+  Upper_Bound_Green_Up     : Float_8 := 10.0;
+  Lower_Bound_Green_Up     : Float_8 := 4.0; 
   
+  Some_Time_Ago : Sattmate_Calendar.Interval_Type := (0,0,2,0,0);
   
-   Max_Global_Back_At_Price : Float_8 := 2.5;
-   Min_Global_Back_At_Price : Float_8 := 1.2;
-   Min_Total_Matched        : Float_8 := 100000.0;
-   Upper_Bound_Green_Up     : Float_8 := 10.0;
-   Lower_Bound_Green_Up     : Float_8 := 4.0; 
-   
-   Some_Time_Ago : Sattmate_Calendar.Interval_Type := (0,0,2,0,0);
-   
-   Game_Start,
-   Current_Game_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
-   
-   Time_Into_Game : Interval_Type := (0,0,0,0,0);
+  Game_Start,
+  Current_Game_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
+  
+  Time_Into_Game : Interval_Type := (0,0,0,0,0);
 
   
   ------------------------------------------------------
@@ -282,10 +282,11 @@ procedure Football_Better is
     T : Sql.Transaction_Type;
     Ok : Boolean := False;
     Market : Table_Amarkets.Data_Type;
-    type Eos_Type is (Runner_Data, Market_Data);
+    type Eos_Type is (Runner_Data, Market_Data,Game_Start_Data);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
     
     String_Size : String(1..7) := (others => ' ');
+    First_Lap : Boolean := True;
     
   begin
     Log(Me & "Check_Match_Status", "Treat market '" & Notification.Market_Id & "'");
@@ -314,6 +315,8 @@ procedure Football_Better is
       Log(Me & "Check_Match_Status", "Bet already exists for this market - return");
       return;
     end if;  
+    
+    Select_Game_Start.Prepare("select min(PRICETS) from ARACEPRICES where MARKETID = :MARKETID");
     
     Select_Race_Runners_In_One_Market.Prepare( "select * " &
         "from ARUNNERS " &
@@ -380,8 +383,14 @@ procedure Football_Better is
     end ;
     Select_Race_Runners_In_One_Market.Close_Cursor;
     
-    Game_Start := Sattmate_Calendar.Time_Type_First;
-   
+    Select_Game_Start.Open_Cursor;
+    Select_Game_Start.Fetch(Eos(Game_Start_Data));
+    if not Eos(Game_Start_Data) then
+      -- use this rather tan startts, so we do not get trouble with delayed games nor with timezones...
+      Select_Game_Start.Get_Timestamp("PRICETS", Game_Start);
+    end if;
+    Select_Game_Start.Close_Cursor;
+       
     Select_Prices_For_All_Runners_In_One_Market.Set("MARKETID", Notification.Market_Id);
     Select_Prices_For_All_Runners_In_One_Market.Set("HOME_SELECTIONID", The_Runners(Home).Runner.Selectionid);
     Select_Prices_For_All_Runners_In_One_Market.Set("AWAY_SELECTIONID", The_Runners(Away).Runner.Selectionid);
@@ -391,8 +400,9 @@ procedure Football_Better is
     Select_Prices_For_All_Runners_In_One_Market.Open_Cursor; 
    
     Game_Loop : loop -- get a new market/odds combo
-      if Game_Start = Sattmate_Calendar.Time_Type_First then 
+      if First_Lap then 
         Log(Me & "Check_Match_Status", "first lap in loop");
+        First_Lap := False;
       end if;      
       Select_Prices_For_All_Runners_In_One_Market.Fetch(Eos(Market_Data));
       Log(Me & "Check_Match_Status", "Eos(Market_Data) " & Eos(Market_Data)'Img);
@@ -414,13 +424,8 @@ procedure Football_Better is
       for i in Runners_Type_Type'range loop
         The_Runners(i).Fix_Average(Current_Game_Time);
       end loop;
-      
-      if Game_Start = Sattmate_Calendar.Time_Type_First then 
-        Log(Me & "Check_Match_Status", "game start set");
-        Game_Start := Current_Game_Time;          
-      end if;      
-        
-      Time_Into_Game := Current_Game_Time - Game_Start  ;
+             
+      Time_Into_Game := Current_Game_Time - Game_Start;
       
       if    Time_Into_Game > (0,0,10,0,0) and then
             Time_Into_Game < (0,1,50,0,0) and then
