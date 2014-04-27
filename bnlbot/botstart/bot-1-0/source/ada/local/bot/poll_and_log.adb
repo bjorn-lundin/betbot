@@ -73,10 +73,14 @@ procedure Poll_And_Log is
                           In_Play    => In_Play);
 
 
-    if  Market.Status(1..6) = "CLOSED" then
+    if Market.Status(1..6) = "CLOSED" then
       return Closed;
     end if;
 
+    if Market.Totalmatched < Float_8(100_000.0) then
+      return Closed;
+    end if;
+    
     if not In_Play then
       return Wait;
     end if;

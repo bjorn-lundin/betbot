@@ -383,6 +383,7 @@ procedure Football_Better is
     end ;
     Select_Race_Runners_In_One_Market.Close_Cursor;
     
+    Select_Game_Start.Set("MARKETID", Notification.Market_Id);
     Select_Game_Start.Open_Cursor;
     Select_Game_Start.Fetch(Eos(Game_Start_Data));
     if not Eos(Game_Start_Data) then
