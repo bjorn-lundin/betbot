@@ -440,7 +440,7 @@ procedure Football_Better is
       Log(Me & "The_Runners(Home).A_Back     " & F8_Image(The_Runners(Home).A_Back)     & " Min_Global_Back_At_Price <= The_Runners(Home).A_Back  " & Boolean'Image(Min_Global_Back_At_Price <= The_Runners(Home).A_Back));
       Log(Me & "The_Runners(Home).A_Back     " & F8_Image(The_Runners(Home).A_Back)     & " The_Runners(Home).A_Back <= Max_Global_Back_At_Price  " & Boolean'Image(The_Runners(Home).A_Back <= Max_Global_Back_At_Price));
       Log(Me & "The_Runners(Home).K_Back     " & F8_Image(The_Runners(Home).K_Back)     & " The_Runners(Home).K_Back <= Float_8(0.0)              " & Boolean'Image(The_Runners(Home).K_Back <= Float_8(0.0)));
-      Log(Me & "The_Runners(Home).K_Back_Avg " & F8_Image(The_Runners(Home).K_Back_Avg) & " The_Runners(Home).K_Back <= Float_8(0.0)              " & Boolean'Image(The_Runners(Home).K_Back <= Float_8(0.0)));
+      Log(Me & "The_Runners(Home).K_Back_Avg " & F8_Image(The_Runners(Home).K_Back_Avg) & " The_Runners(Home).K_Back_Avg <= Float_8(0.0)          " & Boolean'Image(The_Runners(Home).K_Back_Avg <= Float_8(0.0)));
       Log(Me & "The_Runners(Away).A_Back     " & F8_Image(The_Runners(Away).A_Back)     & " The_Runners(Away).A_Back >= Upper_Bound_Green_Up      " & Boolean'Image(The_Runners(Away).A_Back >= Upper_Bound_Green_Up));
       Log(Me & "The_Runners(Draw).A_Back     " & F8_Image(The_Runners(Draw).A_Back)     & " The_Runners(Draw).A_Back >= Lower_Bound_Green_Up      " & Boolean'Image(The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
 
@@ -450,7 +450,7 @@ procedure Football_Better is
       Log(Me & "The_Runners(Away).A_Back     " & F8_Image(The_Runners(Away).A_Back)     & " Min_Global_Back_At_Price <= The_Runners(Away).A_Back  " & Boolean'Image(Min_Global_Back_At_Price <= The_Runners(Away).A_Back));
       Log(Me & "The_Runners(Away).A_Back     " & F8_Image(The_Runners(Away).A_Back)     & " The_Runners(Away).A_Back <= Max_Global_Back_At_Price  " & Boolean'Image(The_Runners(Away).A_Back <= Max_Global_Back_At_Price));
       Log(Me & "The_Runners(Away).K_Back     " & F8_Image(The_Runners(Away).K_Back)     & " The_Runners(Away).K_Back <= Float_8(0.0)              " & Boolean'Image(The_Runners(Away).K_Back <= Float_8(0.0)));
-      Log(Me & "The_Runners(Away).K_Back_Avg " & F8_Image(The_Runners(Away).K_Back_Avg) & " The_Runners(Away).A_Back >= Float_8(0.0)              " & Boolean'Image(The_Runners(Away).A_Back >= Float_8(0.0)));
+      Log(Me & "The_Runners(Away).K_Back_Avg " & F8_Image(The_Runners(Away).K_Back_Avg) & " The_Runners(Away).K_Back_Avg <= Float_8(0.0)          " & Boolean'Image(The_Runners(Away).K_Back_Avg <= Float_8(0.0)));
       Log(Me & "The_Runners(Home).A_Back     " & F8_Image(The_Runners(Home).A_Back)     & " The_Runners(Home).A_Back >= Upper_Bound_Green_Up      " & Boolean'Image(The_Runners(Home).A_Back >= Upper_Bound_Green_Up));
       Log(Me & "The_Runners(Draw).A_Back     " & F8_Image(The_Runners(Draw).A_Back)     & " The_Runners(Draw).A_Back >= Lower_Bound_Green_Up      " & Boolean'Image(The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
       
