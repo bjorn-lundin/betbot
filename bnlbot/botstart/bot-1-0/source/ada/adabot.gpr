@@ -50,15 +50,20 @@ project Adabot is
                    "remove_duplicates_from_history.adb",                   
                    "remove_duplicates_from_events.adb",                   
                    "bet_checker.adb",
-                   "sql_ifc_leak_finder.adb",
-                   "insert_blank_line.adb",
-                   "test_login.adb",
-                   "rpc_tester.adb");
+                   "insert_blank_line.adb");
+                   
+    Test_Programs := ("sql_ifc_leak_finder.adb",
+                      -- "test_list.adb",
+                      "test_login.adb",
+                      "rpc_tester.adb") ;                
    
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;
       when "TEST"   =>  for Main use System_Mains;
-      when "SIM"    =>  for Main use System_Mains & Stat_Mains & Other_Mains;
+      when "SIM"    =>  for Main use System_Mains & 
+                                     Stat_Mains & 
+                                     Other_Mains & 
+                                     Test_Programs;
    end case;
 
    package Compiler renames Global.Compiler;
