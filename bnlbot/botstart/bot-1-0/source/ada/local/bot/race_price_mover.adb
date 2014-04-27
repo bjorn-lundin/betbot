@@ -106,12 +106,12 @@ begin
   if Ba_Daemon then
     Posix.Daemonize;
   end if;
+  Logging.Open(EV.Value("BOT_HOME") & "/log/race_price_mover.log");
 
    --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/race_price_mover.log");
 
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
