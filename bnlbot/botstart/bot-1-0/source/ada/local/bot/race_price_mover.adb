@@ -50,7 +50,7 @@ procedure Race_Price_Mover is
     
        T.Start;
        Select_Araceprices_To_Move.Prepare(
-         "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 1000"
+         "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 100000"
        );
        Table_Araceprices.Read_List(Select_Araceprices_To_Move,Price_List);
        exit Outer_Loop when Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List) = 0;
