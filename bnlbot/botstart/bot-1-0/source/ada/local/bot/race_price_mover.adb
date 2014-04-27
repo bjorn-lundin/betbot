@@ -43,20 +43,28 @@ procedure Race_Price_Mover is
     Price : Table_Araceprices.Data_Type;
     Old_Price : Table_Aracepricesold.Data_Type;
     T : Sql.Transaction_Type;
-    
+    Cnt : Integer := 0;
   begin
 
     Outer_Loop : loop
+       Cnt := 0;
        Log("about to insert into Apricesfinishold in chunks of 100_000");
     
        T.Start;
        Select_Araceprices_To_Move.Prepare(
          "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 100000"
        );
+       Log ("Start read max 100_000 records");
        Table_Araceprices.Read_List(Select_Araceprices_To_Move,Price_List);
+       Log ("stop read, got:" & Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img );
+       
        exit Outer_Loop when Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List) = 0;
        
        while not Table_Araceprices.Araceprices_List_Pack.Is_Empty(Price_List) loop
+        Cnt := Cnt +1;
+        if Cnt mod 1_000 = 0 then
+          Log ("inserted 1000, " &  Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img & " left");
+        end if;
         Table_Araceprices.Araceprices_List_Pack.Remove_From_Head(Price_List,Price);
         Old_Price := (
              Pricets      =>  Price.Pricets,
