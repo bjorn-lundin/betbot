@@ -47,6 +47,7 @@ procedure Race_Price_Mover is
   begin
 
     Outer_Loop : loop
+       Log("about to insert into Apricesfinishold in chunks of 100_000");
     
        T.Start;
        Select_Araceprices_To_Move.Prepare(
@@ -57,7 +58,6 @@ procedure Race_Price_Mover is
        
        while not Table_Araceprices.Araceprices_List_Pack.Is_Empty(Price_List) loop
         Table_Araceprices.Araceprices_List_Pack.Remove_From_Head(Price_List,Price);
-        Log("about to insert into Apricesfinishold: " & Table_Araceprices.To_String(Price));
         Old_Price := (
              Pricets      =>  Price.Pricets,
              Marketid     =>  Price.Marketid,
@@ -73,6 +73,7 @@ procedure Race_Price_Mover is
        end loop;
        
        T.Commit;
+       Log("chunk ready");
 
     end loop Outer_Loop ;
   end Run;
