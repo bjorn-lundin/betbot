@@ -57,9 +57,7 @@ procedure Race_Price_Mover is
         Select_Araceprices_To_Move.Prepare(
           "insert into ARACEPRICESOLD " &
           "select * from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval '1 day' " &
-          "order by PRICETS " &
-          "limit 100000 " 
+          "where PRICETS < current_timestamp - interval '1 day' "
         );
        begin 
          Select_Araceprices_To_Move.Execute(Rows_Inserted);
@@ -69,9 +67,7 @@ procedure Race_Price_Mover is
        
        Select_Araceprices_To_Delete.Prepare(
           "delete from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval '1 day' " &
-          "order by PRICETS " &
-          "limit 100000 " 
+          "where PRICETS < current_timestamp - interval '1 day' " 
         );
        begin 
          Select_Araceprices_To_Delete.Execute(Rows_Deleted);
