@@ -96,6 +96,23 @@ class ThermalPrinter(object):
         self.printer.write(chr(35))
         self.printer.write(chr((printDensity << 4) | printBreakTime))
 
+#        # print test page 
+#        self.printer.write(chr(18)) # DC2
+#        self.printer.write(chr(84)) # T
+
+        
+#        #bnl set char code 850
+#        self.printer.write(self._ESC) # ESC - command
+#        self.printer.write(chr(116)) # t
+#        self.printer.write(chr(1)) # 0=437, 1=850
+#        
+#        #bnl set character set
+#        swedish = 5
+#        self.printer.write(self._ESC) # ESC - command
+#        self.printer.write(chr(82)) # R
+#        self.printer.write(chr(swedish)) # 5
+        
+        
     def reset(self):
         self.printer.write(self._ESC)
         self.printer.write(chr(64))
@@ -374,14 +391,15 @@ def printout_result_change(conn, pl, gl):
                  "and B.BETPLACED >= %s " \
                  "and B.BETPLACED <= %s " ,
                    (start, stop))
-    profit = 0
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
           result = row[0]
         else :
           result = 0
-    if profit == None: profit = 0
+          
+    if result is None:
+        result = 0
 
     profit = int(result)
 
@@ -447,6 +465,9 @@ if __name__ == '__main__':
   signal.signal(signal.SIGINT, signal_handler)
   g = Global_Obj()
   p = ThermalPrinter(serialport=ThermalPrinter.SERIALPORT)
+  p.print_text("TEST ‰Âˆƒ≈÷ßΩ!@£$Ä{[]}\n")
+  p.linefeed()
+  
   
   while True:
 #      g.to_string()
