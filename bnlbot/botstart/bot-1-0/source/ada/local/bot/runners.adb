@@ -54,9 +54,7 @@ package body Runners is
      for i in R.K_Back_V'range loop
        R.K_Back_Avg := R.K_Back_Avg + R.K_Back_V(i);
      end loop;
-     R.K_Back_Avg := R.K_Back_Avg / Float_8(R.K_Back_V'Length);  
-     
-     
+     R.K_Back_Avg := R.K_Back_Avg / Float_8(R.K_Back_V'Length);     
 
      -- slope lay
      declare 
@@ -80,7 +78,6 @@ package body Runners is
        R.K_Lay_Avg := R.K_Lay_Avg + R.K_Lay_V(i);
      end loop;
      R.K_Lay_Avg := R.K_Lay_Avg / Float_8(R.K_Lay_V'Length);  
-     
      
      R.Last_Ts := This_Ts;
    end Fix_Average;
