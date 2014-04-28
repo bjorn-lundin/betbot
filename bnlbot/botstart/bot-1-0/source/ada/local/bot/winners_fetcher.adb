@@ -356,10 +356,10 @@ begin
   when E: others =>
     Sattmate_Exception. Tracebackinfo(E);
     Logging.Close;
-    if Sql.Is_Session_Open then
-      Sql.Close_Session;
-      Log (Me, "db closed");
-    end if;
+--    if Sql.Is_Session_Open then
+--      Sql.Close_Session;
+--      Log (Me, "db closed");
+--    end if;
     Posix.Do_Exit(0); -- terminate
 end Winners_Fetcher;
 
