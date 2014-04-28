@@ -128,6 +128,13 @@ procedure Saldo_Fetcher is
     T : Sql.Transaction_Type;
     Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
   begin
+    Log(Me & "Balance", "Login in db");
+    Sql.Connect
+          (Host     => Ini.Get_Value("database_saldo_fetcher","host",""),
+           Port     => Ini.Get_Value("database_saldo_fetcher","port",5432),
+           Db_Name  => Ini.Get_Value("database_saldo_fetcher","name",""),
+           Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
+           Password => Ini.Get_Value("database_saldo_fetcher","password",""));
 
     Rpc.Get_Balance(Betfair_Result,Saldo);           
          
@@ -138,6 +145,8 @@ procedure Saldo_Fetcher is
       T.Commit;
       Mail_Saldo(Saldo);
     end if;  
+    Log(Me & "Balance", "Logoff from db");
+    Sql.Close_Session;
   end Balance;    
      
      
@@ -220,12 +229,12 @@ begin
   Rpc.Login; 
   Log(Me, "Login betfair done");
 
-  Sql.Connect
-        (Host     => Ini.Get_Value("database_saldo_fetcher","host",""),
-         Port     => Ini.Get_Value("database_saldo_fetcher","port",5432),
-         Db_Name  => Ini.Get_Value("database_saldo_fetcher","name",""),
-         Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
-         Password => Ini.Get_Value("database_saldo_fetcher","password",""));
+--  Sql.Connect
+--        (Host     => Ini.Get_Value("database_saldo_fetcher","host",""),
+--         Port     => Ini.Get_Value("database_saldo_fetcher","port",5432),
+--         Db_Name  => Ini.Get_Value("database_saldo_fetcher","name",""),
+--         Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
+--         Password => Ini.Get_Value("database_saldo_fetcher","password",""));
 
   
   -- to get mail on the 1st of each month too, if restart
@@ -258,8 +267,8 @@ begin
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
                                                                       
-      Is_Time_To_Check_Balance := Now.Hour = 05 and then 
-                                  Now.Minute = 10 and then
+      Is_Time_To_Check_Balance := Now.Hour = 08 and then 
+                                  Now.Minute = 35 and then
                                   Now.Second >= 50 and then 
                                   Day_Last_Check /= Now.Day;
       Log(Me, "Is_Time_To_Check_Balance: " & Is_Time_To_Check_Balance'Img &
@@ -292,8 +301,8 @@ begin
     end if;  
   end loop Main_Loop; 
                
-  Log(Me, "shutting down, close db");
-  Sql.Close_Session;
+--  Log(Me, "shutting down, close db");
+--  Sql.Close_Session;
   Rpc.Logout;
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
