@@ -349,8 +349,8 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
   when E: others => Sattmate_Exception.Tracebackinfo(E);
-    Log(Me, "Close Db");
-    Sql.Close_Session;
+--    Log(Me, "Close Db");
+--    Sql.Close_Session;
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
