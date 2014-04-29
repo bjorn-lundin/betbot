@@ -289,7 +289,11 @@ procedure Poll is
                 Move("1.01", PBB.Price);
                 Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size); 
                 PBB.Selection_Id := Best_Runners(1).Selectionid;
+                --split in half and send to two processes
                 Move("bet_placer_1", Receiver.Name);
+                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+                Bot_Messages.Send(Receiver, PBB);
+                Move("bet_placer_2", Receiver.Name);
                 Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PBB);
                 Bets_Allowed(Back_Low).Has_Betted := True;
