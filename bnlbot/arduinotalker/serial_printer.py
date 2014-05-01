@@ -1,16 +1,28 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
-#
-#import
-
+# class def. from http://learn.adafruit.com/pi-video-output-using-pygame/pointing-pygame-to-the-framebuffer
+# blah, blah...
+import os
+import pygame
 import time
+import random
+from time import strftime
+import psycopg2
 from time import sleep
 import sys
-import os
-import psycopg2
 import datetime
+
 import serial
 import signal
+
+#Set the framebuffer device to be the TFT
+os.environ["SDL_FBDEV"] = "/dev/fb1"
+
+
+
+
+######################
+## printer stuff
+
+
 
 
 
@@ -376,10 +388,106 @@ def signal_handler(signal, frame):
         sys.exit(0)
 
 
-def printout_result_change(conn, pl, gl):
+#######################
+## framebuffer stuff
+
+class pyscope :
+    screen = None;
+
+    def __init__(self):
+        "Ininitializes a new pygame screen using the framebuffer"
+        # Based on "Python GUI in Linux frame buffer"
+        # http://www.karoltomala.com/blog/?p=679
+        disp_no = os.getenv("DISPLAY")
+        if disp_no:
+            print "I'm running under X display = {0}".format(disp_no)
+        else:    
+            print "I'm NOT running under X display "
+
+        # Check which frame buffer drivers are available
+        # Start with fbcon since directfb hangs with composite output
+        drivers = ['fbcon', 'directfb', 'svgalib']
+        found = False
+        for driver in drivers:
+            # Make sure that SDL_VIDEODRIVER is set
+            if not os.getenv('SDL_VIDEODRIVER'):
+                os.putenv('SDL_VIDEODRIVER', driver)
+            try:
+                pygame.display.init()
+            except pygame.error:
+                print 'Driver: {0} failed.'.format(driver)
+                continue
+            found = True
+            break
+
+        if not found:
+            raise Exception('No suitable video driver found!')
+
+        size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        print "Framebuffer size: %d x %d" % (size[0], size[1])
+        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        # Clear the screen to start
+        self.screen.fill((0, 0, 0))
+        # Initialise font support
+        pygame.font.init()
+        # Render the screen
+        pygame.display.update()
+
+    def __del__(self):
+        "Destructor to make sure pygame shuts down, etc."
+
+    def test(self):
+        # Fill the screen with red (255, 0, 0)
+        red = (255, 0, 0)
+        self.screen.fill(red)
+        # Update the display
+        pygame.display.update()
+     
+    def displayText(self, sometext, size, line, color, clearScreen):
+     
+        """Used to display text to the screen. displayText is only configured to display
+        two lines on the TFT. Only clear screen when writing the first line"""
+        if clearScreen:
+            self.screen.fill((0, 0, 0))
+     
+        font = pygame.font.Font(None, size)
+        text = font.render(sometext, 0, color)
+        textpos = text.get_rect()
+        textpos.centerx = 160
+        if line == 1:
+             textpos.centery = 100
+             self.screen.blit(text,textpos)
+        elif line == 2:
+            textpos.centery = 200
+            self.screen.blit(text,textpos)
+
+
+    def display_profit(self,profit):
+        pygame.mouse.set_visible(0)
+        today = datetime.datetime.now()
+        self.displayText('Vinst hittills ' + str(today)[:-7] , 30, 1, (200,200,1), True )
+        self.displayText(str(profit) + "kr", 50, 2, (150,150,255), False )
+        pygame.display.flip()
+        pygame.display.update()
+
+  
+class Global_Obj():
+    profit = 0
+    ts =  datetime.datetime.now() - datetime.timedelta(days=1)
+    printed_today = False
+    
+    def to_string(self) :
+        print 'to_string.profit', self.profit
+        print 'to_string.ts', self.ts
+        print 'to_string.printed_today', self.printed_today
+
+ 
+ 
+################################### 
+
+def findout_result_change(conn, gl, s):
     #only if the real db is connected   
     #get todays profit up til now
-#    print 'in printout_result_change'
     today = datetime.datetime.now()
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
@@ -401,75 +509,73 @@ def printout_result_change(conn, pl, gl):
     if result is None:
         result = 0
 
-    profit = int(result)
-
-    if ( today.year > gl.ts.year ) or \
-       ( today.year == gl.ts.year and today.month > gl.ts.month  )  or \
-       ( today.year == gl.ts.year and today.month == gl.ts.month and today.day > gl.ts.day ) :
-#        print 'wrong day, reset day and profit'
-        gl.profit = 0
-        gl.ts = today
-    elif today.day == gl.ts.day:
-        if profit > gl.profit :
-           # print 'happy'
-            p.linefeed()
-            p.print_text(str(today) + '\n')
-            p.print_text("yes :-) " + str(profit) + " vinst hittills\n")
-            p.print_text("-----------------------")
-            p.linefeed()
-            p.linefeed()
-            p.linefeed()
-
-        elif profit < gl.profit :
-#            print 'sad'
-            p.linefeed()
-            p.print_text(str(today) + '\n')
-            p.print_text("Nej :-( " + str(profit) + " fˆrlust hittills\n")
-            p.print_text("-----------------------")
-            p.linefeed()
-            p.linefeed()
-            p.linefeed()
-#        else :
-#            print 'noprint'
-        gl.profit = profit
+    gl.ts = today
+    gl.profit = int(result)
     cur.close()
     conn.commit()
- #   print 'out printout_result_change'
+ 
 
-###################################
+ 
+def print_to_printer(p,g):
+    p.linefeed()
+    p.print_text("-----------------------")
+    p.linefeed()
+    p.print_text(str(today)[:-7])
+    p.linefeed()
+    p.print_text("Totalt " + str(g.profit) + " kr vinst idag!\n")
+    p.linefeed()
+    p.print_text("-----------------------")
+    p.linefeed()
+    p.linefeed()
+    p.linefeed()
+ 
+ 
+def main(c,g,s,p):
+  #check and perhaps print to screen  
+  findout_result_change(c, g, s)
+  s.display_profit(g.profit)
+  time_to_print = datetime.datetime(g.ts.year, g.ts.month, g.ts.day, 23, 0, 0)
+  
+  if g.ts > time_to_print and not g.printed_today :
+    print_to_printer(p,g)
+    g.printed_today = True
 
-def main(g,p):
+  # reset 
+  if g.ts < time_to_print and g.printed_today :
+    g.printed_today = False
+    
 
-  conn = psycopg2.connect("dbname=bnl \
+## start
+  
+# Create an instance of the PyScope class
+s = pyscope()
+g = Global_Obj()
+p = ThermalPrinter(serialport=ThermalPrinter.SERIALPORT)
+c = psycopg2.connect("dbname=bnl \
                            user=bnl \
                            host=db.nonodev.com \
                            password=BettingFotboll1$ \
                            sslmode=require \
                            application_name=serial_printer")
 
-  #check and perhaps print to printer  
-  printout_result_change(conn, p, g)
-  conn.close()
-#############################################################
 
-class Global_Obj():
-    profit = 0
-    ts =  datetime.datetime.now() - datetime.timedelta(days=1)
-    def to_string(self) :
-        print 'to_string.profit', self.profit
-        print 'to_string.ts', self.ts
+while True:
+    event = pygame.event.poll()
+    if event.type is pygame.QUIT:
+        print 'event = QUIT'
+        break
+    elif event.type is pygame.KEYDOWN:   
+       keyname = pygame.key.name(event.key)
+       print 'keyname = ', keyname 
+       if event.key == pygame.K_ESCAPE:    
+           print 'event = K_ESCAPE -> QUIT'
+           break       
+    elif event.type is pygame.NOEVENT:   
+        print 'event = NOEVENT - sleep 10 s'
+        main(c,g,s,p)
+        time.sleep(10)
     
-if __name__ == '__main__':
-  #make print flush now!
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-  signal.signal(signal.SIGINT, signal_handler)
-  g = Global_Obj()
-  p = ThermalPrinter(serialport=ThermalPrinter.SERIALPORT)
-  p.print_text("TEST ‰Âˆƒ≈÷ßΩ!@£$Ä{[]}\n")
-  p.linefeed()
-  
-  
-  while True:
-#      g.to_string()
-      main(g,p)
-      time.sleep(60)
+
+c.close() 
+
+      
