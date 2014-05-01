@@ -120,11 +120,13 @@ procedure Poll is
       end if;
     
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
-        -- to have the size = a portion of the saldo. Also. Divide this by num betters,
-        -- since we make several bets 
+        -- to have the size = a portion of the saldo. 
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-        Bets_Allowed(i).Bet_Size := (Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance) / Bet_Size_Type(Global_Num_Betters));
+        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
       end if;
+      -- Also, divide this by num betters, since we make several bets 
+      Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size / Bet_Size_Type(Global_Num_Betters);      
+
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
     
