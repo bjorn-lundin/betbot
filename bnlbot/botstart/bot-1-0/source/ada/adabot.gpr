@@ -54,7 +54,7 @@ project Adabot is
                    "insert_blank_line.adb");
                    
     Test_Programs := ("sql_ifc_leak_finder.adb",
-                      -- "test_list.adb",
+                      "test_list.adb",
                       "test_login.adb",
                       "rpc_tester.adb") ;                
    

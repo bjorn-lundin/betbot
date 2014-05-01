@@ -41,21 +41,14 @@ procedure Poll is
 
   Msg      : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
-  -- Update_Betwon_To_Null: Sql.Statement_Type; 
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
+  Global_Num_Betters : Integer_4 := 10;
 
---  Global_Size : Bet_Size_type := 30.0;
---  Global_Fav_Max_Price : Back_Price_Type := 1.15;
---  Global_2nd_Min_Price : Back_Price_Type := 7.0;
   Now : Sattmate_Calendar.Time_Type;
---  Global_Max_Loss_Per_Day : Float_8 := -500.0;
---  Global_Max_Turns_Not_Started_Race    : Integer_4 := 17;  --17*30s -> 8.5 min
-
---  Global_Enabled,
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
@@ -127,9 +120,10 @@ procedure Poll is
       end if;
     
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
-        -- to have the size = a portion of the saldo
+        -- to have the size = a portion of the saldo. Also. Divide this by num betters,
+        -- since we make several bets 
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
+        Bets_Allowed(i).Bet_Size := (Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance) / Bet_Size_Type(Global_Num_Betters));
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
@@ -265,64 +259,60 @@ procedure Poll is
       end loop;
 
       if Best_Runners(1).Backprice >= Float_8(1.0) then
---        declare
---          Bet : Table_Abets.Data_Type;
---          Runner : Table_Arunners.Data_Type;
---          Eos : Boolean := False;
- --       begin
---          Log("Found_Place " & Found_Place'Img );
-          if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
-            
-            if not Bets_Allowed(Back_Low).Has_Betted and then
-               Bets_Allowed(Back_Low).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.10) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0)  then
-              -- Back The leader in PLC market...
-              declare
-                PBB : Bot_Messages.Place_Back_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 1 in the race
-                PBB.Bet_Name := Bets_Allowed(Back_Low).Bet_Name;
-                Move(Markets(Place).Marketid, PBB.Market_Id);
-                Move("1.01", PBB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size); 
-                PBB.Selection_Id := Best_Runners(1).Selectionid;
-                --split in half and send to two processes
-                Move("bet_placer_1", Receiver.Name);
+        if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
+          
+          if not Bets_Allowed(Back_Low).Has_Betted and then
+             Bets_Allowed(Back_Low).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.10) and then
+             Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+            -- Back The leader in PLC market...
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 1 in the race
+              PBB.Bet_Name := Bets_Allowed(Back_Low).Bet_Name;
+              Move(Markets(Place).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              -- this is already divided by Global_Num_Betters
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size); 
+              
+              PBB.Selection_Id := Best_Runners(1).Selectionid;
+              --split and send to Global_Num_Betters processes
+              
+              for i in 1 .. Integer(Global_Num_Betters) loop
+                Move("bet_placer_" & Trim(i'Img), Receiver.Name);
                 Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PBB);
-                Move("bet_placer_2", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PBB);
-                Bets_Allowed(Back_Low).Has_Betted := True;
-              end;
-            end if;
-            
-              -- Back The leader in PLC market again, but different requirements...
-            if not Bets_Allowed(Back_Medium).Has_Betted and then
-               Bets_Allowed(Back_Medium).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.15) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0)  then
-              -- Back The leader in PLC market...
-              declare
-                PBB : Bot_Messages.Place_Back_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 1 in the race
-                PBB.Bet_Name := Bets_Allowed(Back_Medium).Bet_Name;
-                Move(Markets(Place).Marketid, PBB.Market_Id);
-                Move("1.01", PBB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
-                PBB.Selection_Id := Best_Runners(1).Selectionid;
-                Move("bet_placer_2", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PBB);
-                Bets_Allowed(Back_Medium).Has_Betted := True;
-              end;
-            end if;
+              end loop;
+              Bets_Allowed(Back_Low).Has_Betted := True;
+            end;
+          end if;
+          
+            -- Back The leader in PLC market again, but different requirements...
+          if not Bets_Allowed(Back_Medium).Has_Betted and then
+             Bets_Allowed(Back_Medium).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.15) and then
+             Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+            -- Back The leader in PLC market...
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 1 in the race
+              PBB.Bet_Name := Bets_Allowed(Back_Medium).Bet_Name;
+              Move(Markets(Place).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
+              PBB.Selection_Id := Best_Runners(1).Selectionid;
+              Move("bet_placer_2", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PBB);
+              Bets_Allowed(Back_Medium).Has_Betted := True;
+            end;
+          end if;
             
 --              -- Back The leader in PLC market again, but different requirements...
 --            if not Bets_Allowed(Back_High).Has_Betted and then
@@ -348,80 +338,79 @@ procedure Poll is
 --              end;
 --            end if;
             
-              -- Back The leader in PLC market again, but different requirements...
-            if not Bets_Allowed(Lay_Low).Has_Betted and then
-               Bets_Allowed(Lay_Low).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.10) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0) and then
-               Best_Runners(3).Layprice  <= Float_8(25.0) then
-              declare
-                PLB : Bot_Messages.Place_Lay_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 3 in the race
-                PLB.Bet_Name := Bets_Allowed(Lay_Low).Bet_Name;
-                Move(Markets(Win).Marketid, PLB.Market_Id);
-                Move("25", PLB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Lay_Low).Bet_Size)), PLB.Size); 
-                PLB.Selection_Id := Best_Runners(3).Selectionid;
-                Move("bet_placer_3", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PLB);
-                Bets_Allowed(Lay_Low).Has_Betted := True;
-              end;
-            end if;
-                        
-              -- LAY the third one  ...
-            if not Bets_Allowed(Lay_Medium).Has_Betted and then
-               Bets_Allowed(Lay_Medium).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.15) and then
-               Best_Runners(2).Backprice >= Float_8(7.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0) and then
-               Best_Runners(3).Layprice  <= Float_8(25.0) then
-              declare
-                PLB : Bot_Messages.Place_Lay_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 3 in the race
-                PLB.Bet_Name := Bets_Allowed(Lay_Medium).Bet_Name;
-                Move(Markets(Win).Marketid, PLB.Market_Id);
-                Move("25", PLB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Lay_Medium).Bet_Size)), PLB.Size); 
-                PLB.Selection_Id := Best_Runners(3).Selectionid;
-                Move("bet_placer_3", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PLB);
-                Bets_Allowed(Lay_Medium).Has_Betted := True;
-              end;
-            end if;
-            
-              -- LAY the third one  ...
-            if not Bets_Allowed(Lay_High).Has_Betted and then
-               Bets_Allowed(Lay_High).Is_Allowed_To_Bet and then
-               Best_Runners(1).Backprice <= Float_8(1.50) and then
-               Best_Runners(2).Backprice >= Float_8(8.0) and then
-               Best_Runners(3).Layprice  >= Float_8(1.0) and then
-               Best_Runners(3).Layprice  <= Float_8(25.0) then
-              declare
-                PLB : Bot_Messages.Place_Lay_Bet_Record;
-                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-              begin
-                -- number 3 in the race
-                PLB.Bet_Name := Bets_Allowed(Lay_High).Bet_Name;
-                Move(Markets(Win).Marketid, PLB.Market_Id);
-                Move("25", PLB.Price);
-                Move(F8_Image(Float_8(Bets_Allowed(Lay_High).Bet_Size)), PLB.Size); 
-                PLB.Selection_Id := Best_Runners(3).Selectionid;
-                Move("bet_placer_3", Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-                Bot_Messages.Send(Receiver, PLB);
-                Bets_Allowed(Lay_High).Has_Betted := True;
-              end;
-            end if;
-
+            -- Back The leader in PLC market again, but different requirements...
+          if not Bets_Allowed(Lay_Low).Has_Betted and then
+             Bets_Allowed(Lay_Low).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.10) and then
+             Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0) and then
+             Best_Runners(3).Layprice  <= Float_8(25.0) then
+            declare
+              PLB : Bot_Messages.Place_Lay_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 3 in the race
+              PLB.Bet_Name := Bets_Allowed(Lay_Low).Bet_Name;
+              Move(Markets(Win).Marketid, PLB.Market_Id);
+              Move("25", PLB.Price);
+              Move(F8_Image(Float_8(Bets_Allowed(Lay_Low).Bet_Size)), PLB.Size); 
+              PLB.Selection_Id := Best_Runners(3).Selectionid;
+              Move("bet_placer_3", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PLB);
+              Bets_Allowed(Lay_Low).Has_Betted := True;
+            end;
           end if;
---        end ;
+                      
+            -- LAY the third one  ...
+          if not Bets_Allowed(Lay_Medium).Has_Betted and then
+             Bets_Allowed(Lay_Medium).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.15) and then
+             Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0) and then
+             Best_Runners(3).Layprice  <= Float_8(25.0) then
+            declare
+              PLB : Bot_Messages.Place_Lay_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 3 in the race
+              PLB.Bet_Name := Bets_Allowed(Lay_Medium).Bet_Name;
+              Move(Markets(Win).Marketid, PLB.Market_Id);
+              Move("25", PLB.Price);
+              Move(F8_Image(Float_8(Bets_Allowed(Lay_Medium).Bet_Size)), PLB.Size); 
+              PLB.Selection_Id := Best_Runners(3).Selectionid;
+              Move("bet_placer_3", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PLB);
+              Bets_Allowed(Lay_Medium).Has_Betted := True;
+            end;
+          end if;
+          
+            -- LAY the third one  ...
+          if not Bets_Allowed(Lay_High).Has_Betted and then
+             Bets_Allowed(Lay_High).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.50) and then
+             Best_Runners(2).Backprice >= Float_8(8.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0) and then
+             Best_Runners(3).Layprice  <= Float_8(25.0) then
+            declare
+              PLB : Bot_Messages.Place_Lay_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 3 in the race
+              PLB.Bet_Name := Bets_Allowed(Lay_High).Bet_Name;
+              Move(Markets(Win).Marketid, PLB.Market_Id);
+              Move("25", PLB.Price);
+              Move(F8_Image(Float_8(Bets_Allowed(Lay_High).Bet_Size)), PLB.Size); 
+              PLB.Selection_Id := Best_Runners(3).Selectionid;
+              Move("bet_placer_3", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PLB);
+              Bets_Allowed(Lay_High).Has_Betted := True;
+            end;
+          end if;
+
+        end if;
       end if;
     end loop Poll_Loop;
 
