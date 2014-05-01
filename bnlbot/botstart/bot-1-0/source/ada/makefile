@@ -21,8 +21,13 @@ C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
 C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
 
-.PHONY : adabot tables
 
+.PHONY : log
+log :
+	$(MAKE) all 2>&1 | tee make.log
+
+
+.PHONY : adabot tables
 all: tables adabot
 #/etc/logrotate.d/bnlbot
 
