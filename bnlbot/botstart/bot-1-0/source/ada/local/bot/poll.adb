@@ -80,6 +80,7 @@ procedure Poll is
       Bet_Size          : Bet_Size_Type := Cfg.Size;
       Is_Allowed_To_Bet : Boolean := False;
       Has_Betted        : Boolean := False;
+      Split_Bet         : Boolean := False;
     end record;  
     
     Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
@@ -91,7 +92,7 @@ procedure Poll is
 
     -- Back_Low : 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low).Bet_Name);
-    
+    Bets_Allowed(Back_Low).Split_Bet := True;
     -- Back_Medium : 
     Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
     Bets_Allowed(Back_Medium).Bet_Size := 30.0;
@@ -124,9 +125,10 @@ procedure Poll is
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
       end if;
-      -- Also, divide this by num betters, since we make several bets 
-      Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size / Bet_Size_Type(Global_Num_Betters);      
-
+      -- Also, divide this by num betters, since we make several bets, if split bet
+      if Bets_Allowed(i).Split_Bet then
+        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size / Bet_Size_Type(Global_Num_Betters);      
+      end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
     
@@ -317,7 +319,7 @@ procedure Poll is
               Move("1.01", PBB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
               PBB.Selection_Id := Best_Runners(1).Selectionid;
-              Move("bet_placer_2", Receiver.Name);
+              Move("bet_placer_20", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PBB);
               Bets_Allowed(Back_Medium).Has_Betted := True;
@@ -365,7 +367,7 @@ procedure Poll is
               Move("25", PLB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Lay_Low).Bet_Size)), PLB.Size); 
               PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_3", Receiver.Name);
+              Move("bet_placer_30", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PLB);
               Bets_Allowed(Lay_Low).Has_Betted := True;
@@ -389,7 +391,7 @@ procedure Poll is
               Move("25", PLB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Lay_Medium).Bet_Size)), PLB.Size); 
               PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_3", Receiver.Name);
+              Move("bet_placer_30", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PLB);
               Bets_Allowed(Lay_Medium).Has_Betted := True;
@@ -413,7 +415,7 @@ procedure Poll is
               Move("25", PLB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Lay_High).Bet_Size)), PLB.Size); 
               PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_3", Receiver.Name);
+              Move("bet_placer_30", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PLB);
               Bets_Allowed(Lay_High).Has_Betted := True;
