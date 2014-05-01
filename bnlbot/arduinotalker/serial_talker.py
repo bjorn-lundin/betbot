@@ -104,7 +104,7 @@ def main(g):
   if g.source == 1 :
     g.source = 2
   else :
-    g.source = 1
+    g.source = 2
 
   if g.source == 1 :
     conn = psycopg2.connect("dbname=dry \
