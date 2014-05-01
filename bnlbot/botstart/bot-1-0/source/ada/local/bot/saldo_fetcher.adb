@@ -238,10 +238,12 @@ begin
 
   
   -- to get mail on the 1st of each month too, if restart
-  if Now.Day = 1 then
-    Day_Last_Check := 12; --cannot be 2, if restart day 01 ...
-  end if;
-  
+  case Now.Day is
+    when  1 .. 10 => Day_Last_Check := 20;
+    when 11 .. 20 => Day_Last_Check := 30;
+    when 21 .. 31 => Day_Last_Check := 10;
+  end case;
+ 
   Main_Loop : loop  
     Receive_Loop : loop   
       begin
