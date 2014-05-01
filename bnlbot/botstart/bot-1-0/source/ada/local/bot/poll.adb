@@ -283,11 +283,19 @@ procedure Poll is
               PBB.Selection_Id := Best_Runners(1).Selectionid;
               --split and send to Global_Num_Betters processes
               
+              Log("start pinging");
               for i in 1 .. Integer(Global_Num_Betters) loop
                 Move("bet_placer_" & Trim(i'Img), Receiver.Name);
-                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
                 Bot_Messages.Send(Receiver, PBB);
               end loop;
+              Log("stop pinging");
+              -- just to save time between logs
+              Receiver := ((others => ' '),(others => ' '));
+              for i in 1 .. Integer(Global_Num_Betters) loop
+                Move("bet_placer_" & Trim(i'Img), Receiver.Name);
+                Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              end loop;
+              
               Bets_Allowed(Back_Low).Has_Betted := True;
             end;
           end if;
