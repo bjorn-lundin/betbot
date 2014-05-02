@@ -60,7 +60,7 @@ procedure Football_Better is
 
   The_Runners : array(Runners_Type_Type'range) of Runners.Runners_Type;
     
-  Max_Global_Back_At_Price : Float_8 := 2.5;
+  Max_Global_Back_At_Price : Float_8 := 1.85;
   Min_Global_Back_At_Price : Float_8 := 1.2;
   Min_Total_Matched        : Float_8 := 100000.0;
   Upper_Bound_Green_Up     : Float_8 := 10.0;
@@ -458,8 +458,9 @@ procedure Football_Better is
       Log(Me & "The_Runners(Home).A_Back     " & F8_Image(The_Runners(Home).A_Back)     & " The_Runners(Home).A_Back >= Upper_Bound_Green_Up          " & Boolean'Image(The_Runners(Home).A_Back >= Upper_Bound_Green_Up));
       Log(Me & "The_Runners(Draw).A_Back     " & F8_Image(The_Runners(Draw).A_Back)     & " The_Runners(Draw).A_Back >= Lower_Bound_Green_Up          " & Boolean'Image(The_Runners(Draw).A_Back >= Lower_Bound_Green_Up));
       
-      if    Time_Into_Game > (0,0,10,0,0) and then
-            Time_Into_Game < (0,1,50,0,0) and then
+--      if    Time_Into_Game > (0,0,10,0,0) and then
+--            Time_Into_Game < (0,1,50,0,0) and then
+      if    Time_Into_Game <= (0,0,45,0,0) and then
             The_Runners(Home).Lay_Price >= 0.0 and then
             The_Runners(Home).Back_Price >= 1.0 and then
             -- both average and current back price must be within limits
@@ -480,8 +481,9 @@ procedure Football_Better is
         
         exit Game_Loop;  
         
-      elsif Time_Into_Game > (0,0,10,0,0) and then
-            Time_Into_Game < (0,1,50,0,0) and then
+--      elsif Time_Into_Game > (0,0,10,0,0) and then
+--            Time_Into_Game < (0,1,50,0,0) and then
+      elsif    Time_Into_Game <= (0,0,45,0,0) and then
             The_Runners(Away).Lay_Price >= 0.0 and then
             The_Runners(Away).Back_Price >= 1.0 and then
             -- both average and current back price must be within limits
