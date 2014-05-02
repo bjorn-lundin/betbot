@@ -15,9 +15,12 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
+#exit 0
+
 [ -r /var/lock/bot ] && exit 0
 
 export PG_DUMP=/usr/lib/postgresql/9.3/bin/pg_dump
+export VACUUMDB=/usr/lib/postgresql/9.3/bin/vacuumdb
 
 TZ='Europe/Stockholm'
 export TZ
@@ -99,9 +102,11 @@ function Check_Bots_For_User () {
     fi
   done
 
-  BET_PLACER_LIST="bet_placer_1 bet_placer_2 bet_placer_3"
+  BET_PLACER_LIST="bet_placer_1 bet_placer_2 bet_placer_3 bet_placer_4 bet_placer_5 \
+                   bet_placer_6 bet_placer_7 bet_placer_8 bet_placer_9 bet_placer_10 \
+                   bet_placer_20 bet_placer_30"
   for placer in $BET_PLACER_LIST ; do
-    Start_Bot $BOT_USER $placer bet_placer $placer.ini
+    Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
 
   BET_PLACER_LIST="football_better"
@@ -114,12 +119,19 @@ function Check_Bots_For_User () {
   if [ $MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
+  
+  if [ $MINUTE == "34" ] ; then
+    Start_Bot $BOT_USER race_price_move race_price_mover
+  fi
+  
+  
 }
 # start here 
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
-    USER_LIST=$(ls $BOT_START/user)
+    #USER_LIST=$(ls $BOT_START/user)
+    USER_LIST="bnl jmb"
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do
       Check_Bots_For_User $USR
@@ -135,6 +147,15 @@ case $BOT_MACHINE_ROLE in
         done
       fi
     fi
+    
+    if [ $HOUR == "05" ] ; then
+      if [ $MINUTE == "30" ] ; then
+        for USR in $USER_LIST ; do
+          $VACUUMDB --analyze --host=$HOST --dbname=${USR} --username=bnl &
+        done
+      fi
+    fi
+    
   ;;
   *) 
   #do nothing on non-PROD hosts
