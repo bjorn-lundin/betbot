@@ -267,7 +267,6 @@ begin
          Password => Ini.Get_Value("database","password",""));
   Log(Me, "db Connected");
 
-
   Log(Me, "Login betfair");
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
@@ -280,9 +279,7 @@ begin
   Log(Me, "Login betfair done");
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
---  Global_Size := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0"));
-  Global_Enabled := Ini.Get_Value("finish","enabled",false);
---  Global_Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0"));
+  Global_Enabled := Ini.Get_Value(Trim(Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
 
   Log(Me, "Start main loop");
 
