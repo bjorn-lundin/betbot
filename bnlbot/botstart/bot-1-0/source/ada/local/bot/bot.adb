@@ -53,7 +53,6 @@ begin
          Login    => To_String(Bot_Config.Config.Database_Section.Username),
          Password => To_String(Bot_Config.Config.Database_Section.Password));
   Log(Me, "db Connected");
-
   
   case Bot_Config.Config.System_Section.Bot_Mode is
     when Bot_Types.Real       =>
@@ -77,9 +76,6 @@ begin
     Logging.Close;
     Logging.Set_Quiet(True);
   end if;
---  Bet_Handler.Check_Market_Status;
-  Bet_Handler.Check_If_Bet_Accepted;
-  Bet_Handler.Check_Bets;
   
   Main_Loop : loop
     begin
@@ -97,13 +93,6 @@ begin
           Bot_Config.Re_Read_Config ;
         when Bot_Messages.Market_Notification_Message    =>
           Bet_Handler.Treat_Market( Bot_Messages.Data(Msg));
---          Bet_Handler.Check_Market_Status;
---          Bet_Handler.Check_If_Bet_Accepted;
---          Bet_Handler.Check_Bets;
---        when Bot_Messages.New_Winners_Arrived_Notification_Message =>
-----          Bet_Handler.Check_Market_Status;
---          Bet_Handler.Check_If_Bet_Accepted;
---          Bet_Handler.Check_Bets;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -120,9 +109,6 @@ begin
             if not OK then
               Rpc.Login;
             end if;
---            Bet_Handler.Check_Market_Status;
---            Bet_Handler.Check_If_Bet_Accepted;
---            Bet_Handler.Check_Bets;
           when Bot_Types.Simulation => null;
         end case;
     end;
