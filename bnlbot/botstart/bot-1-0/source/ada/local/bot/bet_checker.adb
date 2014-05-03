@@ -13,6 +13,8 @@ with Bet_Handler;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Ini;
 with Rpc;
+with Gnat.Strings;
+
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
@@ -21,10 +23,16 @@ procedure Bet_Checker is
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
   Ba_Daemon    : aliased Boolean := False;
+  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Config : Command_Line_Configuration;
   OK : Boolean := False;
   
 begin
+   Define_Switch
+     (Config,
+      Sa_Par_Bot_User'access,
+      Long_Switch => "--user=",
+      Help        => "user of bot");
 
   Define_Switch
      (Config,
