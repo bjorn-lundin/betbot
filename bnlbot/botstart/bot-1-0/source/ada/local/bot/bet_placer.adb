@@ -77,7 +77,7 @@ procedure Bet_Placer is
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
     Local_Price : Float_8 := Float_8(Price);
-    Local_Size  : Float_8 := Float_8(Integer(Size)); -- no decimals on size ...
+    Local_Size  : Float_8 := Float_8(Size); 
     Local_Side  : String (1..4) := (others => ' ');
     
   begin
@@ -175,8 +175,8 @@ procedure Bet_Placer is
               Market_Id    => Place_Back_Bet.Market_Id,
               Selection_Id => Place_Back_Bet.Selection_Id,
               Side         => Back,
-              Size         => Bet_Size_Type'Value(Place_Back_Bet.Price),
-              Price        => Bet_Price_Type'Value(Place_Back_Bet.Size)) ;
+              Size         => Bet_Size_Type'Value(Place_Back_Bet.Size),
+              Price        => Bet_Price_Type'Value(Place_Back_Bet.Price)) ;
   
   end Back_Bet;
 
@@ -187,8 +187,8 @@ procedure Bet_Placer is
               Market_Id    => Place_Lay_Bet.Market_Id,
               Selection_Id => Place_Lay_Bet.Selection_Id,
               Side         => Lay,
-              Size         => Bet_Size_Type'Value(Place_Lay_Bet.Price),
-              Price        => Bet_Price_Type'Value(Place_Lay_Bet.Size)) ;
+              Size         => Bet_Size_Type'Value(Place_Lay_Bet.Size),
+              Price        => Bet_Price_Type'Value(Place_Lay_Bet.Price)) ;
   end Lay_Bet;
 
   ------------------------------------------------------
