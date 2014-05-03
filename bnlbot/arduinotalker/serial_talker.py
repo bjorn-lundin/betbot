@@ -134,13 +134,13 @@ def main(g):
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'HORSES_PLC_BACK_FINISH_1.15_7.0_1',
-            'HORSES_PLC_BACK_FINISH_1.50_8.0_1',
             'HORSES_WIN_LAY_FINISH_1.10_7.0_3',
+            'DR_HORSES_PLC_BACK_FINISH_1.25_7.0_1',
             'DR_HORSES_WIN_LAY_FINISH_1.10_7.0_3',
             'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3',
-            'HORSES_WIN_LAY_FINISH_1.15_7.0_3',
             'DR_HUMAN_BACK_MATCH-ODDS_1.2-2.5_4.0_10.0',
-            'HORSES_WIN_6.8_8.2_LAY_GB_7_1_6']
+            'DR_HORSES_WIN_3.0_12.0_10_25_LAY_GB',
+            'DR_HORSES_WIN_3.0_12.0_10_25_LAY_IE']
 
 
   row0 = {}
