@@ -77,7 +77,7 @@ procedure Bet_Placer is
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
     Local_Price : Float_8 := Float_8(Price);
-    Local_Size  : Float_8 := Float_8(Size);
+    Local_Size  : Float_8 := Float_8(Integer(Size)); -- no decimals on size ...
     Local_Side  : String (1..4) := (others => ' ');
     
   begin
