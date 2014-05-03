@@ -117,8 +117,8 @@ begin
               NWANR   : Bot_Messages.New_Winners_Arrived_Notification_Record;
               Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
             begin
-              Move("bot", Receiver.Name);
-              Log(Me, "Notifying 'bot' of that new winners are arrived");
+              Move("bet_checker", Receiver.Name);
+              Log(Me, "Notifying 'bet_checker' of that new winners are arrived");
               Bot_Messages.Send(Receiver, NWANR);
             end;
           end if;
