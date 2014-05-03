@@ -26,6 +26,7 @@ project Adabot is
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
+                    "bet_checker.adb",
                     "football_better.adb",
                     -- "pio.adb",
                     "race_price_mover.adb",                    
@@ -50,7 +51,6 @@ project Adabot is
                    "migrate_g1_g4_football.adb", 
                    "remove_duplicates_from_history.adb",                   
                    "remove_duplicates_from_events.adb",                   
-                   "bet_checker.adb",
                    "insert_blank_line.adb");
                    
     Test_Programs := ("sql_ifc_leak_finder.adb",

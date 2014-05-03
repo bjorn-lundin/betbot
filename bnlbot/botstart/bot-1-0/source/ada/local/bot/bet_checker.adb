@@ -1,9 +1,5 @@
---with Sattmate_Types; use Sattmate_Types;
 with Sattmate_Exception;
---with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
---with Token;
 with General_Routines; use General_Routines;
---with Bot_Config;
 with Lock; 
 --with Text_io;
 with Sql;
@@ -15,27 +11,20 @@ with Core_Messages;
 with Ada.Environment_Variables;
 with Bet_Handler;
 with Gnat.Command_Line; use Gnat.Command_Line;
---with Gnat.Strings;
 with Ini;
 with Rpc;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 5.0; 
+  Timeout  : Duration := 25.0; 
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main";  
---  Sa_Par_Token : aliased Gnat.Strings.String_Access;
   Ba_Daemon    : aliased Boolean := False;
   Config : Command_Line_Configuration;
+  OK : Boolean := False;
   
 begin
---   Define_Switch
---    (Config,
---     Sa_Par_Token'access,
---     "-t:",
---     Long_Switch => "--token=",
---     Help        => "use this token, if token is already retrieved");
 
   Define_Switch
      (Config,
@@ -49,10 +38,11 @@ begin
     Posix.Daemonize;
   end if;
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/bet_checker.log");
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
-  My_Lock.Take("bet_checker");
+  My_Lock.Take(EV.Value("BOT_NAME"));
+  
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
    
   Log(Me, "Connect Db");
@@ -71,11 +61,10 @@ begin
             Product_Id => Ini.Get_Value("betfair","product_id",""),  
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
-          );    
+          );
   Rpc.Login; 
   Log(Me, "Login betfair done");
 
-  
   Bet_Handler.Check_Bets;
   Log(Me, "Start main loop");
   Main_Loop : loop
@@ -86,14 +75,21 @@ begin
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
       
       case Process_Io.Identity(Msg) is
-        when Core_Messages.Exit_Message                           => exit Main_Loop;
-        when Bot_Messages.New_Winners_Arrived_Notification_Message =>  Bet_Handler.Check_Bets;
+        when Core_Messages.Exit_Message                            => exit Main_Loop;
+        when Bot_Messages.New_Winners_Arrived_Notification_Message =>  
+          Bet_Handler.Check_If_Bet_Accepted;
+          Bet_Handler.Check_Bets;
         when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout start");
-        Bet_Handler.Check_Bets;
+          Rpc.Keep_Alive(OK);
+          if not OK then
+            Rpc.Login;
+          end if;
+          Bet_Handler.Check_If_Bet_Accepted;
+          Bet_Handler.Check_Bets;
         Log(Me, "Timeout stop");
     end;    
   end loop Main_Loop;
