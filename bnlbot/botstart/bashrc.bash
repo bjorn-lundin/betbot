@@ -163,8 +163,11 @@ alias stop_bet_placer_8='$BOT_TARGET/bin/bot_send --receiver=bet_placer_8 --mess
 alias stop_bet_placer_9='$BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit' 
 alias stop_bet_placer_10='$BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit' 
 alias stop_bet_placer_20='$BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit' 
+alias stop_bet_placer_21='$BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit' 
 alias stop_bet_placer_30='$BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit' 
 alias stop_football_better='$BOT_TARGET/bin/bot_send --receiver=football_better --message=exit' 
+
+alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
 
 alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_2 --message=exit && \
@@ -177,6 +180,7 @@ alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --m
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit'
 
 
@@ -197,6 +201,7 @@ alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=saldo_fetcher --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
@@ -210,15 +215,17 @@ done
 
 alias stop_bot_system=$S
                      
-function crp {           
-  echo " PID  STIME TIME      CMD"
-  for U in $USERS ; do
-    echo "---- $U --------------------------------------------------------"
-    ps -eo pid,stime,time,cmd | grep bot | grep user=$U | grep -v grep
-  done
-  echo "----------------------------------------------------------------"
-  date
-}
+#function crp {           
+#  echo " PID  STIME TIME      CMD"
+#  for U in $USERS ; do
+#    echo "---- $U --------------------------------------------------------"
+#    ps -eo pid,stime,time,cmd | grep bot | grep user=$U | grep -v grep
+#  done
+#  echo "----------------------------------------------------------------"
+#  date
+#}
+
+alias crp='$BOT_SCRIPT/bash/crp.bash'
 
 alias chguser='. $BOT_START/bot.bash $1'
 
