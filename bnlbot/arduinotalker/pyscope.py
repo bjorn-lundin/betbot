@@ -11,8 +11,6 @@ import datetime
 #import psycopg2
 #import sys
 
-
-
 class pyscope :
     screen = None;
 
@@ -94,6 +92,6 @@ class pyscope :
         pygame.mouse.set_visible(0)
         today = datetime.datetime.now()
         self.displayText('Vinst ' + str(today)[:-7] , 30, 1, (200,200,1), True )
-        self.displayText(str(profit) + ":-", 200, 2, (150,150,255), False )
+        self.displayText(str(profit) + "", 200, 2, (150,150,255), False )
         pygame.display.flip()
 #        pygame.display.update()
