@@ -31,14 +31,11 @@ with Config;
 
 procedure Poll is
   package EV renames Ada.Environment_Variables;
-
   use type Rpc.Result_Type;
 
   Me : constant String := "Poll.";
-
   Timeout  : Duration := 120.0;
   My_Lock  : Lock.Lock_Type;
-
   Msg      : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
 
@@ -53,8 +50,7 @@ procedure Poll is
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
-
-  -------------------------------------------------------------
+  
   procedure Run(Market_Notification : in     Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
@@ -66,14 +62,13 @@ procedure Poll is
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
---    Bet_Name : Bet_Name_Type := (others => ' ');
     Found_Place : Boolean := True;
     T : Sql.Transaction_Type;
     Current_Turn_Not_Started_Race : Integer_4 := 0;
     Betfair_Result : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo : Table_Abalances.Data_Type;
     
-    type Bet_Type is (Back_Low, Back_Medium, Back_High, Lay_Low, Lay_Medium, Lay_High);
+    type Bet_Type is (Back_Low, Back_Medium, Back_High, Lay_Low);
     
     type Allowed_Type is record
       Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -98,21 +93,13 @@ procedure Poll is
     Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
-    Move("HORSES_PLC_BACK_FINISH_1.50_8.0_1", Bets_Allowed(Back_High).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.25_7.0_1", Bets_Allowed(Back_High).Bet_Name);
     Bets_Allowed(Back_High).Bet_Size := 30.0;
 
     -- Lay_Low : 
     Move("HORSES_WIN_LAY_FINISH_1.10_7.0_3", Bets_Allowed(Lay_Low).Bet_Name);
     Bets_Allowed(Lay_Low).Bet_Size := 30.0;
-    
-    -- Lay_Medium : 
-    Move("DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3", Bets_Allowed(Lay_Medium).Bet_Name);
-    Bets_Allowed(Lay_Medium).Bet_Size := 30.0;
-    
-    -- Lay_High : 
-    Move("DR_HORSES_WIN_LAY_FINISH_1.50_8.0_3", Bets_Allowed(Lay_High).Bet_Name);
-    Bets_Allowed(Lay_High).Bet_Size := 30.0;
-    
+     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
       Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Cfg.Max_Loss_Per_Day;
@@ -216,21 +203,21 @@ procedure Poll is
       -- ok find the runner with lowest backprice:
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
         if Tmp.Status(1..6) = "ACTIVE" and then
            Tmp.Backprice < Price.Backprice then
           Price := Tmp;
         end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+        Price_List.Get_Next(Tmp,Eol);
       end loop;
       Best_Runners(1) := Price;
 
       -- find #2
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
         if Tmp.Status(1..6) = "ACTIVE" and then
@@ -238,14 +225,14 @@ procedure Poll is
            Tmp.Selectionid /= Best_Runners(1).Selectionid then
           Price := Tmp;
         end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+        Price_List.Get_Next(Tmp,Eol);
       end loop;
       Best_Runners(2) := Price;
 
       -- find #3
       Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10000.0;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
+      Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
         if Tmp.Status(1..6) = "ACTIVE" and then
@@ -254,7 +241,7 @@ procedure Poll is
            Tmp.Selectionid /= Best_Runners(2).Selectionid then
           Price := Tmp;
         end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
+        Price_List.Get_Next(Tmp,Eol);
       end loop;
       Best_Runners(3) := Price;
 
@@ -285,12 +272,10 @@ procedure Poll is
               PBB.Selection_Id := Best_Runners(1).Selectionid;
               --split and send to Global_Num_Betters processes
               
-              Log("start pinging");
               for i in 1 .. Integer(Global_Num_Betters) loop
                 Move("bet_placer_" & Trim(i'Img), Receiver.Name);
                 Bot_Messages.Send(Receiver, PBB);
               end loop;
-              Log("stop pinging");
               -- just to save time between logs
               Receiver := ((others => ' '),(others => ' '));
               for i in 1 .. Integer(Global_Num_Betters) loop
@@ -326,30 +311,30 @@ procedure Poll is
             end;
           end if;
             
---              -- Back The leader in PLC market again, but different requirements...
---            if not Bets_Allowed(Back_High).Has_Betted and then
---               Bets_Allowed(Back_High).Is_Allowed_To_Bet and then
---               Best_Runners(1).Backprice <= Float_8(1.50) and then
---               Best_Runners(2).Backprice >= Float_8(8.0) and then
---               Best_Runners(3).Layprice  >= Float_8(1.0)  then
---              -- Back The leader in PLC market...
---              declare
---                PBB : Bot_Messages.Place_Back_Bet_Record;
---                Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
---              begin
---                -- number 1 in the race
---                PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
---                Move(Markets(Place).Marketid, PBB.Market_Id);
---                Move("1.01", PBB.Price);
---                Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
---                PBB.Selection_Id := Best_Runners(1).Selectionid;
---                Move("bet_placer_3", Receiver.Name);
---                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
---                Bot_Messages.Send(Receiver, PBB);
---                Bets_Allowed(Back_High).Has_Betted := True;
---              end;
---            end if;
-            
+            -- Back The leader in PLC market again, but different requirements...
+          if not Bets_Allowed(Back_High).Has_Betted and then
+             Bets_Allowed(Back_High).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice <= Float_8(1.25) and then
+             Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+            -- Back The leader in PLC market...
+            declare
+              PBB : Bot_Messages.Place_Back_Bet_Record;
+              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+            begin
+              -- number 1 in the race
+              PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
+              Move(Markets(Place).Marketid, PBB.Market_Id);
+              Move("1.01", PBB.Price);
+              Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
+              PBB.Selection_Id := Best_Runners(1).Selectionid;
+              Move("bet_placer_30", Receiver.Name);
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Bot_Messages.Send(Receiver, PBB);
+              Bets_Allowed(Back_High).Has_Betted := True;
+            end;
+          end if;
+          
             -- Back The leader in PLC market again, but different requirements...
           if not Bets_Allowed(Lay_Low).Has_Betted and then
              Bets_Allowed(Lay_Low).Is_Allowed_To_Bet and then
@@ -367,103 +352,16 @@ procedure Poll is
               Move("25", PLB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Lay_Low).Bet_Size)), PLB.Size); 
               PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_30", Receiver.Name);
+              Move("bet_placer_21", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PLB);
               Bets_Allowed(Lay_Low).Has_Betted := True;
-            end;
-          end if;
-                      
-            -- LAY the third one  ...
-          if not Bets_Allowed(Lay_Medium).Has_Betted and then
-             Bets_Allowed(Lay_Medium).Is_Allowed_To_Bet and then
-             Best_Runners(1).Backprice <= Float_8(1.15) and then
-             Best_Runners(2).Backprice >= Float_8(7.0) and then
-             Best_Runners(3).Layprice  >= Float_8(1.0) and then
-             Best_Runners(3).Layprice  <= Float_8(25.0) then
-            declare
-              PLB : Bot_Messages.Place_Lay_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-            begin
-              -- number 3 in the race
-              PLB.Bet_Name := Bets_Allowed(Lay_Medium).Bet_Name;
-              Move(Markets(Win).Marketid, PLB.Market_Id);
-              Move("25", PLB.Price);
-              Move(F8_Image(Float_8(Bets_Allowed(Lay_Medium).Bet_Size)), PLB.Size); 
-              PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_30", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-              Bot_Messages.Send(Receiver, PLB);
-              Bets_Allowed(Lay_Medium).Has_Betted := True;
-            end;
-          end if;
-          
-            -- LAY the third one  ...
-          if not Bets_Allowed(Lay_High).Has_Betted and then
-             Bets_Allowed(Lay_High).Is_Allowed_To_Bet and then
-             Best_Runners(1).Backprice <= Float_8(1.50) and then
-             Best_Runners(2).Backprice >= Float_8(8.0) and then
-             Best_Runners(3).Layprice  >= Float_8(1.0) and then
-             Best_Runners(3).Layprice  <= Float_8(25.0) then
-            declare
-              PLB : Bot_Messages.Place_Lay_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
-            begin
-              -- number 3 in the race
-              PLB.Bet_Name := Bets_Allowed(Lay_High).Bet_Name;
-              Move(Markets(Win).Marketid, PLB.Market_Id);
-              Move("25", PLB.Price);
-              Move(F8_Image(Float_8(Bets_Allowed(Lay_High).Bet_Size)), PLB.Size); 
-              PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_30", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
-              Bot_Messages.Send(Receiver, PLB);
-              Bets_Allowed(Lay_High).Has_Betted := True;
             end;
           end if;
 
         end if;
       end if;
     end loop Poll_Loop;
-
---    declare
---      Stat : Table_Apricesfinish.Data_Type;
---    begin
---      -- insert into finish table
---      T.Start;
---      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
---      loop
---        exit when Eol;
---        Log("about to insert into Apricesfinish: " & Table_Aprices.To_String(Tmp));
---        if Tmp.Status(1..6) = "ACTIVE" then
---          Stat := (
---            Marketid     =>  Tmp.Marketid,
---            Selectionid  =>  Tmp.Selectionid,
---            Pricets      =>  Tmp.Pricets,
---            Status       =>  Tmp.Status,
---            Totalmatched =>  Tmp.Totalmatched,
---            Backprice    =>  Tmp.Backprice,
---            Layprice     =>  Tmp.Layprice,
---            Ixxlupd      =>  Tmp.Ixxlupd,
---            Ixxluts      =>  Tmp.Ixxluts
---          );
---          begin
---            Table_Apricesfinish.Insert(Stat);
---            Log("Has inserted: " & Table_Aprices.To_String(Tmp));
---          exception
---            when Sql.Duplicate_Index =>
---            Log("Duplicate_Index on: " & Table_Aprices.To_String(Tmp));
---          end;
---        end if;
---        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
---      end loop;
---      T.Commit;
---    end;
-
---    for i in Best_Runners'range loop
---      Log("Best_Runners@finish " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
---    end loop;
-
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;

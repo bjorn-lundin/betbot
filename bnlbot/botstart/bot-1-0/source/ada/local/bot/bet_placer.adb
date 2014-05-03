@@ -53,67 +53,14 @@ procedure Bet_Placer is
   Global_Enabled : Boolean := False;
 
   ------------------------------------------------------
-  procedure Place_Back_Bet(Place_Back_Bet : Bot_Messages.Place_Back_Bet_Record) is
-    T : Sql.Transaction_Type;
-    A_Bet : Table_Abets.Data_Type;
-    A_Market : Table_Amarkets.Data_Type;
-    A_Runner : Table_Arunners.Data_Type;
-    type Eos_Type is (Market, Runner);
-    Eos : array (Eos_Type'range) of Boolean := (others => False);
-
---    Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
---    Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
---    Instruction_Report_Status      : String (1..50)  :=  (others => ' ') ;
---    Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
---    Order_Status                   : String (1..50)  :=  (others => ' ') ;
---    L_Size_Matched,
---    Average_Price_Matched          : Float           := 0.0;
---    Bet_Id                         : Integer_8       := 0;
---    Local_Price : Float_8 := Float_8'Value(Place_Back_Bet.Price);
-  begin
-    Log("'" & Place_Back_Bet.Bet_Name & "'");
-    Log("'" & Place_Back_Bet.Market_Id & "'");
-    Log("'" & Place_Back_Bet.Selection_Id'Img & "'");
-    Log("'" & Place_Back_Bet.Size & "'");
-    Log("'" & Place_Back_Bet.Price & "'");
-
---    if Bet.Profit_Today(Place_Back_Bet.Bet_Name) < Global_Max_Loss_Per_Day then
---      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
---      return;
---    end if;
-
-    A_Market.Marketid := Place_Back_Bet.Market_Id;
-    Table_Amarkets.Read(A_Market, Eos(Market) );
-
-    A_Runner.Marketid := Place_Back_Bet.Market_Id;
-    A_Runner.Selectionid := Place_Back_Bet.Selection_Id;
-    Table_Arunners.Read(A_Runner, Eos(Runner) );
- 
-    Rpc.Place_Bet (Bet_Name         => Place_Back_Bet.Bet_Name,
-                   Market_Id        => Place_Back_Bet.Market_Id,
-                   Side             => Back,
-                   Runner_Name      => A_Runner.Runnername,
-                   Selection_Id     => Place_Back_Bet.Selection_Id,
-                   Size             => Bet_Size_Type'Value(Trim(Place_Back_Bet.Size)),
-                   Price            => Bet_Price_Type'Value(Trim(Place_Back_Bet.Price)),
-                   Bet_Persistence  => Persist,
-                   Bet              => A_Bet);
-
-    T.Start;
-      A_Bet.Startts := A_Market.Startts;
-      A_Bet.Fullmarketname := A_Market.Marketname;
-      Table_Abets.Insert(A_Bet);
-      Log(Me & "Make_Bet", Trim(Place_Back_Bet.Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
-      if Trim(A_Bet.Exestatus) = "SUCCESS" then
-        Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-        Sql.Set(Update_Betwon_To_Null,"BETID", A_Bet.Betid);
-        Sql.Execute(Update_Betwon_To_Null);
-      end if;
-    T.Commit;
-  end Place_Back_Bet;
-
-  ------------------------------------------------------
- procedure Place_Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
+  
+  procedure Place_Bet(Bet_Name     : Bet_Name_Type;
+                      Market_Id    : Market_Id_Type;
+                      Selection_Id : Integer_4;
+                      Side         : Bet_Side_Type;
+                      Size         : Bet_Size_Type;
+                      Price        : Bet_Price_Type) is
+                      
     T : Sql.Transaction_Type;
     A_Bet : Table_Abets.Data_Type;
     A_Market : Table_Amarkets.Data_Type;
@@ -129,29 +76,33 @@ procedure Bet_Placer is
     L_Size_Matched,
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
-    Local_Price : Float_8 := Float_8'Value(Place_Lay_Bet.Price);
-    Local_Size  : Float_8 := Float_8'Value(Place_Lay_Bet.Size);
+    Local_Price : Float_8 := Float_8(Price);
+    Local_Size  : Float_8 := Float_8(Size);
+    Local_Side  : String (1..4) := (others => ' ');
     
   begin
-    Log("'" & Place_Lay_Bet.Bet_Name & "'");
-    Log("'" & Place_Lay_Bet.Market_Id & "'");
-    Log("'" & Place_Lay_Bet.Selection_Id'Img & "'");
-    Log("'" & Place_Lay_Bet.Size & "'");
-    Log("'" & Place_Lay_Bet.Price & "'");
+    Move(Side'img, Local_Side);
+  
+    Log("'" & Bet_Name & "'");
+    Log("'" & Local_Side & "'");
+    Log("'" & Market_Id & "'");
+    Log("'" & Selection_Id'Img & "'");
+    Log("'" & F8_Image(Local_Price) & "'");
+    Log("'" & F8_Image(Local_Size) & "'");
 
---    if Bet.Profit_Today(Place_Lay_Bet.Bet_Name) < Global_Max_Loss_Per_Day then
+--    if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
 --      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
 --      return;
 --    end if;
 
-    A_Market.Marketid := Place_Lay_Bet.Market_Id;
+    A_Market.Marketid := Market_Id;
     Table_Amarkets.Read(A_Market, Eos(Market) );
 
-    A_Runner.Marketid := Place_Lay_Bet.Market_Id;
-    A_Runner.Selectionid := Place_Lay_Bet.Selection_Id;
-    Table_Arunners.Read(A_Runner, Eos(Runner) );
+    A_Runner.Marketid := Market_Id;
+    A_Runner.Selectionid := Selection_Id;
+    Table_Arunners.Read(A_Runner, Eos(Runner) );   
     
-    if Place_Lay_Bet.Bet_Name(1..2) = "DR" then
+    if Bet_Name(1..2) = "DR" then
     
       Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Move( "EXECUTION_COMPLETE", Order_Status);
@@ -164,15 +115,15 @@ procedure Bet_Placer is
       
       A_Bet := (
         Betid          => Bet_Id,
-        Marketid       => Place_Lay_Bet.Market_Id,
+        Marketid       => Market_Id,
         Betmode        => Bot_Mode(Bot_Types.Simulation),
         Powerdays      => 0,
-        Selectionid    => Place_Lay_Bet.Selection_Id,
+        Selectionid    => Selection_Id,
         Reference      => (others => '-'),
         Size           => Local_Size,
         Price          => Local_Price,
-        Side           => "LAY ",
-        Betname        => Place_Lay_Bet.Bet_Name,
+        Side           => Local_Side,
+        Betname        => Bet_Name,
         Betwon         => False,
         Profit         => 0.0,
         Status         => Order_Status, -- ??
@@ -191,30 +142,54 @@ procedure Bet_Placer is
         Ixxluts        => Now              --set by insert
       );
     else -- real bet  
-
-      Rpc.Place_Bet (Bet_Name         => Place_Lay_Bet.Bet_Name,
-                     Market_Id        => Place_Lay_Bet.Market_Id,
-                     Side             => Lay,
+ 
+      Rpc.Place_Bet (Bet_Name         => Bet_Name,
+                     Market_Id        => Market_Id,
+                     Side             => Side,
                      Runner_Name      => A_Runner.Runnername,
-                     Selection_Id     => Place_Lay_Bet.Selection_Id,
-                     Size             => Bet_Size_Type'Value(Trim(Place_Lay_Bet.Size)),
-                     Price            => Bet_Price_Type'Value(Trim(Place_Lay_Bet.Price)),
+                     Selection_Id     => Selection_Id,
+                     Size             => Size,
+                     Price            => Price,
                      Bet_Persistence  => Persist,
                      Bet              => A_Bet);
     end if; -- dry run 
-    
+
     T.Start;
       A_Bet.Startts := A_Market.Startts;
       A_Bet.Fullmarketname := A_Market.Marketname;
       Table_Abets.Insert(A_Bet);
-      Log(Me & "Make_Bet", Trim(Place_Lay_Bet.Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+      Log(Me & "Make_Bet", Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
       if Trim(A_Bet.Exestatus) = "SUCCESS" then
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
         Sql.Set(Update_Betwon_To_Null,"BETID", A_Bet.Betid);
         Sql.Execute(Update_Betwon_To_Null);
       end if;
     T.Commit;
-  end Place_Lay_Bet;
+  end Place_Bet;
+  
+  -------------------------------------------------------
+  
+  procedure Back_Bet(Place_Back_Bet : Bot_Messages.Place_Back_Bet_Record) is
+  begin
+    Place_Bet(Bet_Name     => Place_Back_Bet.Bet_Name,
+              Market_Id    => Place_Back_Bet.Market_Id,
+              Selection_Id => Place_Back_Bet.Selection_Id,
+              Side         => Back,
+              Size         => Bet_Size_Type'Value(Place_Back_Bet.Price),
+              Price        => Bet_Price_Type'Value(Place_Back_Bet.Size)) ;
+  
+  end Back_Bet;
+
+  ------------------------------------------------------
+ procedure Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
+ begin 
+    Place_Bet(Bet_Name     => Place_Lay_Bet.Bet_Name,
+              Market_Id    => Place_Lay_Bet.Market_Id,
+              Selection_Id => Place_Lay_Bet.Selection_Id,
+              Side         => Lay,
+              Size         => Bet_Size_Type'Value(Place_Lay_Bet.Price),
+              Price        => Bet_Price_Type'Value(Place_Lay_Bet.Size)) ;
+  end Lay_Bet;
 
   ------------------------------------------------------
 
@@ -302,11 +277,11 @@ begin
         -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
         when Bot_Messages.Place_Back_Bet_Message    =>
           if Global_Enabled then
-            Place_Back_Bet(Bot_Messages.Data(Msg));
+            Back_Bet(Bot_Messages.Data(Msg));
           end if;
         when Bot_Messages.Place_Lay_Bet_Message    =>
           if Global_Enabled then
-            Place_Lay_Bet(Bot_Messages.Data(Msg));
+            Lay_Bet(Bot_Messages.Data(Msg));
           end if;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
