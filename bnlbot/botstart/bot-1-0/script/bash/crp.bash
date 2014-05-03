@@ -16,16 +16,27 @@
 
 
 PID_FILE_DIRECTORIES="bnl jmb"
-
-for USER in PID_FILE_DIRECTORIES ; do 
-  echo " -- user $dir --- "
-  PID_FILE=$(ls ${BOT_HOME}/${USER}/locks)
+echo""
+echo "----------------  $(date)  --------------------------"
+for USER in $PID_FILE_DIRECTORIES ; do 
+  echo""
+  echo " ---------------- user $USER -------------------- "
+  DIR=${BOT_HOME}/../${USER}/locks
+  PID_FILE=$(ls ${DIR})
+  echo "    STARTTIME file          PID START      CPU   PROCESS"
   for f in $PID_FILE ; do
-    PID=$(cut -d'|' -f1 $f)
-    START=$(cut -d'|' -f2 $f)
-    PS_STUFF=$(ps -eo pid,stime,time,cmd | grep $PID)
-    echo "$START : $PS_STUFF"    
+    if [ "${f}" != "race_price_move" ] ; then
+      PID=$(cut -d'|' -f1  ${DIR}/$f)
+      START=$(cut -d'|' -f2  ${DIR}/$f)
+      PS_STUFF=$(ps -eo pid,stime,time | grep $PID | grep -v grep)
+      if [ "x${PS_STUFF}" == "x" ] ; then
+        PS_STUFF="seemingly not running ----- "
+      fi
+      echo "$START : ${PS_STUFF} : $f"   
+    fi  
   done
 done
-
+echo""
+echo "----------------  $(date)  --------------------------"
+echo""
 

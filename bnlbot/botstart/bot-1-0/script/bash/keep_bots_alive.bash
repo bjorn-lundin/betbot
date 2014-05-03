@@ -87,6 +87,7 @@ function Check_Bots_For_User () {
   Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
   Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+  Start_Bot $BOT_USER bet_checker bet_checker
   
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
@@ -104,7 +105,7 @@ function Check_Bots_For_User () {
 
   BET_PLACER_LIST="bet_placer_1 bet_placer_2 bet_placer_3 bet_placer_4 bet_placer_5 \
                    bet_placer_6 bet_placer_7 bet_placer_8 bet_placer_9 bet_placer_10 \
-                   bet_placer_20 bet_placer_30"
+                   bet_placer_20 bet_placer_21 bet_placer_30"
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
