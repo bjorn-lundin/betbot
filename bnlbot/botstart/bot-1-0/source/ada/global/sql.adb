@@ -178,13 +178,17 @@ package body Sql is
    begin
       --    Private_Statement.PG_Prepared_Statement := To_String("");
       Log ("Exchange_Binder_Variables-start (Original_Statement) '" & Orig_Stm & "'");
-      Command_Loop : for I in Cmd'Range loop
-         if Cmd (I) = ':' then
+      Command_Loop : for i in Cmd'Range loop
+       --allow postgresql's '::' casting by check char before and after this one, 
+       -- if not at ends of cmd
+         if Cmd (i) = ':' and then 
+            i /= Cmd'last and then Cmd (i+1) /= ':' and then 
+            i /= Cmd'first and then Cmd (i-1) /= ':' then
             Index := Index + 1;
-            Associate_Loop : for J in I + 1 .. Cmd'Last loop
+            Associate_Loop : for J in i + 1 .. Cmd'Last loop
                case Cmd (J) is
                   when ' ' | ')' | ',' =>
-                     Private_Statement.Associate (Cmd (I + 1 .. J - 1), Index);
+                     Private_Statement.Associate (Cmd (i + 1 .. J - 1), Index);
                      Append (Private_Statement.Pg_Prepared_Statement, Make_Dollar_Variable (Index) );
                      Binder_Parameter_Position_Stop := J;
                      exit Associate_Loop;
@@ -198,8 +202,8 @@ package body Sql is
             -- ...      and XLOCID = $2 and XLOCSIZ >= $3
             -- so skip (on first line  ^^^^^    and            ^^^^^
             -- by setting Binder_Parameter_Position_Stop to the char AFTER the bindword
-            if I >= Binder_Parameter_Position_Stop then
-               Append (Private_Statement.Pg_Prepared_Statement, Cmd (I));
+            if i >= Binder_Parameter_Position_Stop then
+               Append (Private_Statement.Pg_Prepared_Statement, Cmd (i));
             end if;
          end if;
       end loop Command_Loop;
