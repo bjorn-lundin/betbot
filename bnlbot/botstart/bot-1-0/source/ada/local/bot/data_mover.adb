@@ -19,7 +19,7 @@ with Ada.Environment_Variables;
 with Bot_Svn_Info;
 with Posix;
 
-procedure Race_Price_Mover is
+procedure Data_Mover is
   package EV renames Ada.Environment_Variables;
 
 
@@ -29,9 +29,11 @@ procedure Race_Price_Mover is
   My_Lock  : Lock.Lock_Type;
 
 --  Msg      : Process_Io.Message_Type;
-  Select_Araceprices_To_Move : Sql.Statement_Type;
-  Select_Araceprices_To_Delete : Sql.Statement_Type;
-
+  type Tables_Type is (Araceprices,Amarkets, Avents, Arunners, Aprices);
+  Select_To_Move   : array (Tables_Type'range) of Sql.Statement_Type;
+  Select_To_Delete : array (Tables_Type'range) of Sql.Statement_Type;
+ 
+  
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
@@ -45,78 +47,46 @@ procedure Race_Price_Mover is
 --    Price : Table_Araceprices.Data_Type;
 --    Old_Price : Table_Aracepricesold.Data_Type;
     T : Sql.Transaction_Type;
-    Num : Integer_4 := 50;
+    Num : Integer_4 := 500;
     Rows_Inserted,
     Rows_Deleted : Natural := 0;
   begin
-
-    Outer_Loop : loop
-      Log("about to insert into Apricesfinishold in chunks of 1 days worth of data, Num =" & Num'Img);
-    
-      T.Start;
-        
-        Select_Araceprices_To_Move.Prepare(
-          "insert into ARACEPRICESOLD " &
-          "select * from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval ':NUM day' "
-        );
-       Select_Araceprices_To_Move.Set("NUM",Num); 
-       begin 
-         Select_Araceprices_To_Move.Execute(Rows_Inserted);
-       exception
-         when Sql.No_Such_Row => Rows_Inserted := 0;
-       end ;       
-       
-       Select_Araceprices_To_Delete.Prepare(
-          "delete from ARACEPRICES " &
-          "where PRICETS < current_timestamp - interval ':NUM day' " 
-        );
-       Select_Araceprices_To_Delete.Set("NUM",Num); 
-       begin 
-         Select_Araceprices_To_Delete.Execute(Rows_Deleted);
-       exception
-         when Sql.No_Such_Row => Rows_Deleted := 0;
-       end ;       
-       
-      T.Commit;
-      Log("chunk ready, Moved" & Rows_Inserted'Img & " and deleted" & Rows_Deleted'Img);
-      Num := Num -1;
-      exit Outer_Loop when Num = 2;               
-               
-               
-       
--- way too slow       
---       Select_Araceprices_To_Move.Prepare(
---         "select * from ARACEPRICES where PRICETS < current_timestamp - interval '1 day' order by PRICETS limit 100000"
---       );
---       Log ("Start read max 100_000 records");
---       Table_Araceprices.Read_List(Select_Araceprices_To_Move,Price_List);
---       Log ("stop read, got:" & Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img );
---       
---       exit Outer_Loop when Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List) = 0;
---       
---       while not Table_Araceprices.Araceprices_List_Pack.Is_Empty(Price_List) loop
---        Cnt := Cnt +1;
---        if Cnt mod 1_000 = 0 then
---          Log ("inserted 1000, " &  Table_Araceprices.Araceprices_List_Pack.Get_Count(Price_List)'Img & " left");
---        end if;
---        Table_Araceprices.Araceprices_List_Pack.Remove_From_Head(Price_List,Price);
---        Old_Price := (
---             Pricets      =>  Price.Pricets,
---             Marketid     =>  Price.Marketid,
---             Selectionid  =>  Price.Selectionid,
---             Status       =>  Price.Status,
---             Backprice    =>  Price.Backprice,
---             Layprice     =>  Price.Layprice,
---             Ixxlupd      =>  Price.Ixxlupd,
---             Ixxluts      =>  Price.Ixxluts
---        );
---        Old_Price.Insert;
---        Price.Delete_Withcheck;
---       end loop;
-       
-
-    end loop Outer_Loop ;
+    Outer_Loop : for Table in Tables_Type'range loop
+       Inner_Loop : loop
+           Log("about to insert into " & Table'Img & " in chunks of 1 days worth of data, Num =" & Num'Img);      
+           T.Start;
+             Select_To_Move(Table).Prepare(
+               "insert into :OLDTABLE " &
+               "select * from :TABLE " &
+               "where IXXLUTS < current_timestamp - interval ':NUM day' "
+             );
+            Select_To_Move(Table).Set("OLDTABLE", Table'Img & "OLD"); 
+            Select_To_Move(Table).Set("TABLE",Table'Img); 
+            Select_To_Move(Table).Set("NUM",Num); 
+            begin 
+              Select_To_Move(Table).Execute(Rows_Inserted);
+            exception
+              when Sql.No_Such_Row => Rows_Inserted := 0;
+            end ;       
+            
+            Select_To_Delete(Table).Set("TABLE",Table'Img); 
+            Select_To_Delete(Table).Prepare(
+               "delete from :TABLE " &
+               "where IXXLUTS < current_timestamp - interval ':NUM day' " 
+             );
+            Select_To_Delete(Table).Set("NUM",Num); 
+            begin 
+              Select_To_Delete(Table).Execute(Rows_Deleted);
+            exception
+              when Sql.No_Such_Row => Rows_Deleted := 0;
+            end ;       
+            
+           T.Commit;
+           Log("chunk ready, Moved" & Rows_Inserted'Img & " and deleted" & Rows_Deleted'Img);
+           Num := Num -1;
+           exit Inner_Loop when Num = 7; -- leave a week              
+       end loop Inner_Loop ;
+    end loop Outer_Loop;   
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
@@ -184,5 +154,5 @@ exception
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-end Race_Price_Mover;
+end Data_Mover;
 
