@@ -26,7 +26,7 @@
 --9.5-10139 SNE        10-May-2006  Added the following new procedures GET, PUT, 
 --                                  UPDATE and DELETE.
 --------------------------------------------------------------------------------
--- #4516 BNL 25-Apr-2014 Made the list tagged. will deallocate itself when leaving scope. Object.verb syntax
+-- #4516 BNL 25-Apr-2014 Made the list tagged.  Object.verb syntax
 -----------------------------------------------------------------
 with Ada.Finalization;
 
@@ -205,7 +205,6 @@ private
   
   type List_Type is new Ada.Finalization.Controlled with record
       Header : Attribute_Type_Access;
-  --    Header : Attribute_Type;
       Is_Initialized : Boolean := False;
       
   end record;
