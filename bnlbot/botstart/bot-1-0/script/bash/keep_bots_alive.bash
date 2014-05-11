@@ -55,11 +55,11 @@ function Start_Bot () {
     MODE=" --mode=$MODE"
   fi
   
-  $BOT_TARGET/bin/check_bot_running --botname=$BOT_NAME
+  $BOT_TARGET/bin/check_bot_running --botname=$BOT_NAME  --debug > /dev/null 2>&1
   RESULT=$?
   if [ $RESULT -eq 0 ] ; then
     echo "--------------------------------"
-    echo "will run $BOT_NAME"
+    echo "will run '$BOT_NAME'"
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
     export BOT_NAME
     $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
@@ -122,7 +122,7 @@ function Check_Bots_For_User () {
   fi
   
   if [ $MINUTE == "34" ] ; then
-    Start_Bot $BOT_USER race_price_move race_price_mover
+    Start_Bot $BOT_USER data_move data_mover
   fi
   
   
@@ -149,14 +149,10 @@ case $BOT_MACHINE_ROLE in
       fi
     fi
     
-    if [ $HOUR == "05" ] ; then
-      if [ $MINUTE == "30" ] ; then
-        for USR in $USER_LIST ; do
-          $VACUUMDB --analyze --host=$HOST --dbname=${USR} --username=bnl &
-        done
-      fi
+    if [ $MINUTE == "40" ] ; then
+       $VACUUMDB --all --analyze --host=$HOST --username=bnl &
     fi
-    
+  
   ;;
   *) 
   #do nothing on non-PROD hosts
