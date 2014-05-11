@@ -16,11 +16,12 @@ procedure Data_Mover is
 
 
   Me : constant String := "Data_Mover.";
-  type Tables_Type is (Araceprices,Amarkets, Avents, Arunners, Aprices);
+  type Tables_Type is (Amarkets, Aevents, Arunners, Aprices, Araceprices);
 
   My_Lock          : Lock.Lock_Type;
-  Select_To_Move   : array (Tables_Type'range) of Sql.Statement_Type;
-  Select_To_Delete : array (Tables_Type'range) of Sql.Statement_Type;
+  Do_Move          : array (Tables_Type'range) of Sql.Statement_Type;
+  Do_Delete        : array (Tables_Type'range) of Sql.Statement_Type;
+  
   Sa_Par_Bot_User  : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile   : aliased Gnat.Strings.String_Access;
   Ba_Daemon        : aliased Boolean := False;
@@ -31,33 +32,36 @@ procedure Data_Mover is
   -------------------------------------------------------------
   procedure Run is
     T : Sql.Transaction_Type;
-    Num : Integer_4 := 500;
+    Num : Integer_4 := 250;
     Rows_Inserted,
     Rows_Deleted : Natural := 0;
   begin
     Outer_Loop : for Table in Tables_Type'range loop
+       Num := 250;
        Inner_Loop : loop
-           Log("about to insert into " & Table'Img & " in chunks of 1 days worth of data, Num =" & Num'Img);      
+           Log("about to insert into " & Table'Img & "OLD " & " in chunks of 1 days worth of data, Num =" & Num'Img);      
            T.Start;
-             Select_To_Move(Table).Prepare(
+             Do_Move(Table).Prepare(
                "insert into " & Table'Img & "OLD " & 
                "select * from " & Table'Img & " " &
                "where IXXLUTS < current_timestamp - interval ':NUM days' "
              );
-            Select_To_Move(Table).Set("NUM",Num); 
+            Do_Move(Table).Set("NUM",Num); 
             begin 
-              Select_To_Move(Table).Execute(Rows_Inserted);
+              Do_Move(Table).Execute(Rows_Inserted);
+              Log("Moved into " & Table'Img & "OLD " & Rows_Inserted'Img);      
             exception
               when Sql.No_Such_Row => Rows_Inserted := 0;
             end ;       
             
-            Select_To_Delete(Table).Prepare(
+            Do_Delete(Table).Prepare(
                "delete from " & Table'Img & " " & 
                "where IXXLUTS < current_timestamp - interval ':NUM days' " 
              );
-            Select_To_Delete(Table).Set("NUM",Num); 
+            Do_Delete(Table).Set("NUM",Num); 
             begin 
-              Select_To_Delete(Table).Execute(Rows_Deleted);
+              Do_Delete(Table).Execute(Rows_Deleted);
+              Log("Deleted from " & Table'Img & Rows_Deleted'Img);      
             exception
               when Sql.No_Such_Row => Rows_Deleted := 0;
             end ;       
@@ -98,7 +102,7 @@ begin
   if Ba_Daemon then
     Posix.Daemonize;
   end if;
-  Logging.Open(EV.Value("BOT_HOME") & "/log/race_price_mover.log");
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
 
    --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
