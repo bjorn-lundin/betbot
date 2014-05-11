@@ -30,7 +30,7 @@ for USER in $PID_FILE_DIRECTORIES ; do
       START=$(cut -d'|' -f2  ${DIR}/$f)
       PS_STUFF=$(ps -eo pid,stime,time | grep $PID | grep -v grep)
       if [ "x${PS_STUFF}" == "x" ] ; then
-        PS_STUFF="seemingly not running ----- "
+        PS_STUFF=" !!! seemingly not running ----- "
       fi
       echo "$START : ${PS_STUFF} : $f"   
     fi  
