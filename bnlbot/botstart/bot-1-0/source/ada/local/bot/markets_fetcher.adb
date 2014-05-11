@@ -256,17 +256,18 @@ begin
    
   Append(Market_Betting_Types , Create("ODDS"));
   
-  Append(Market_Type_Codes , Create("WIN"));                -- for horses/hounds
-  Append(Market_Type_Codes , Create("PLACE"));              -- for horses/hounds
-  Append(Market_Type_Codes , Create("MATCH_ODDS"));         -- for football (to lay the draw)
-  Append(Market_Type_Codes , Create("CORRECT_SCORE"));      -- for football (to lay 0-0)
-  Append(Market_Type_Codes , Create("HALF_TIME_SCORE"));    -- for football (to lay 0-0)
-  Append(Market_Type_Codes , Create("SENDING_OFF"));        -- for football 
-  Append(Market_Type_Codes , Create("HAT_TRICKED_SCORED")); -- for football
-  Append(Market_Type_Codes , Create("ODD_OR_EVEN"));        -- for football 
-  Append(Market_Type_Codes , Create("PENALTY_TAKEN"));      -- for football 
-  Append(Market_Type_Codes , Create("WIN_BOTH_HALVES"));    -- for football 
-  Append(Market_Type_Codes , Create("WIN_HALF"));           -- for football 
+  Append(Market_Type_Codes , Create("WIN"));                 -- for horses/hounds
+  Append(Market_Type_Codes , Create("PLACE"));               -- for horses/hounds
+  Append(Market_Type_Codes , Create("MATCH_ODDS"));          -- for football (to lay the draw)
+  Append(Market_Type_Codes , Create("CORRECT_SCORE"));       -- for football (to lay 0-0)
+  Append(Market_Type_Codes , Create("HALF_TIME_SCORE"));     -- for football (to lay 0-0)
+  Append(Market_Type_Codes , Create("SENDING_OFF"));         -- for football 
+  Append(Market_Type_Codes , Create("HAT_TRICKED_SCORED"));  -- for football
+  Append(Market_Type_Codes , Create("ODD_OR_EVEN"));         -- for football 
+  Append(Market_Type_Codes , Create("PENALTY_TAKEN"));       -- for football 
+  Append(Market_Type_Codes , Create("WIN_BOTH_HALVES"));     -- for football 
+  Append(Market_Type_Codes , Create("WIN_HALF"));            -- for football 
+  Append(Market_Type_Codes , Create("HALF_TIME_FULL_TIME")); -- for football 
   
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
