@@ -29,7 +29,7 @@ project Adabot is
                     "bet_checker.adb",
                     "football_better.adb",
                     -- "pio.adb",
-                    "race_price_mover.adb",                    
+                    "data_mover.adb",                    
                     "check_bot_running.adb"
                     );
                     

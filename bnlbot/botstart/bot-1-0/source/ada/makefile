@@ -38,6 +38,8 @@ tables : $(ST)/table_history.ads  $(ST)/table_alinks.ads \
          $(ST)/table_abets.ads    $(ST)/table_abalances.ads \
          $(ST)/table_apricesfinish.ads $(ST)/table_araceprices.ads \
          $(ST)/table_aracepricesold.ads \
+         $(ST)/table_aeventsold.ads  $(ST)/table_amarketsold.ads \
+         $(ST)/table_arunnersold.ads $(ST)/table_apricesold.ads
 #$(ST)/table_anonrunners.ads         
 #$(ST)/table_awinners.ads
 #$(ST)/table_abethistory.ads $(ST)/table_history2.ads
@@ -120,23 +122,6 @@ $(ST)/table_araceprices.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_arace
 	cd $(ST) && rm table_araceprices.ada
 	$(TP) -p araceprices > $(ST)/araceprices.sql
     
-$(ST)/table_aracepricesold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aracepricesold.xml
-	$(TP) -t aracepricesold > $(ST)/table_aracepricesold.ada
-	cd $(ST) && gnatchop -w -gnat05 table_aracepricesold.ada
-	cd $(ST) && rm table_aracepricesold.ada
-	$(TP) -p aracepricesold > $(ST)/aracepricesold.sql
-    
-#$(ST)/table_awinners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_awinners.xml
-#	$(TP) -t awinners > $(ST)/table_awinners.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_awinners.ada
-#	cd $(ST) && rm table_awinners.ada
-#	$(TP) -p awinners > $(ST)/awinners.sql
-
-#$(ST)/table_animals.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_animals.xml
-#	$(TP) -t animals > $(ST)/table_animals.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_animals.ada
-#	cd $(ST) && rm table_animals.ada
-#	$(TP) -p animals > $(ST)/animals.sql
 
 $(ST)/table_abets.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abets.xml
 	$(TP) -t abets > $(ST)/table_abets.ada
@@ -144,11 +129,6 @@ $(ST)/table_abets.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abets.xml
 	cd $(ST) && rm table_abets.ada
 	$(TP) -p abets > $(ST)/abets.sql
 
-#$(ST)/table_anonrunners.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_anonrunners.xml
-#	$(TP) -t anonrunners > $(ST)/table_anonrunners.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_anonrunners.ada
-#	cd $(ST) && rm table_anonrunners.ada
-#	$(TP) -p anonrunners > $(ST)/anonrunners.sql
 
 $(ST)/table_abalances.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abalances.xml
 	$(TP) -t abalances > $(ST)/table_abalances.ada
@@ -156,42 +136,35 @@ $(ST)/table_abalances.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_abalanc
 	cd $(ST) && rm table_abalances.ada
 	$(TP) -p abalances > $(ST)/abalances.sql
 
-#$(ST)/table_drymarkets.ads : $(BOT_CONFIG)/repository/tables/table_drymarkets.xml
-#	$(TP) -t drymarkets > $(ST)/table_drymarkets.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_drymarkets.ada
-#	cd $(ST) && rm table_drymarkets.ada
-#	$(TP) -p drymarkets > $(ST)/drymarkets.sql
-#
-#$(ST)/table_dryrunners.ads : $(BOT_CONFIG)/repository/tables/table_dryrunners.xml
-#	$(TP) -t dryrunners > $(ST)/table_dryrunners.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_dryrunners.ada
-#	cd $(ST) && rm table_dryrunners.ada
-#	$(TP) -p dryrunners > $(ST)/dryrunners.sql
-#
-#$(ST)/table_dryresults.ads : $(BOT_CONFIG)/repository/tables/table_dryresults.xml
-#	$(TP) -t dryresults > $(ST)/table_dryresults.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_dryresults.ada
-#	cd $(ST) && rm table_dryresults.ada
-#	$(TP) -p dryresults > $(ST)/dryresults.sql
+$(ST)/table_aracepricesold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aracepricesold.xml
+	$(TP) -t aracepricesold > $(ST)/table_aracepricesold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_aracepricesold.ada
+	cd $(ST) && rm table_aracepricesold.ada
+	$(TP) -p aracepricesold > $(ST)/aracepricesold.sql
 
-#$(ST)/table_abethistory.ads : $(BOT_CONFIG)/repository/tables/table_abethistory.xml
-#	$(TP) -t abethistory > $(ST)/table_abethistory.ada
-#	cd $(ST) && gnatchop -w -gnat05 table_abethistory.ada
-#	cd $(ST) && rm table_abethistory.ada
-#	$(TP) -p abethistory > $(ST)/abethistory.sql
+$(ST)/table_amarketsold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_amarketsold.xml
+	$(TP) -t amarketsold > $(ST)/table_amarketsold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_amarketsold.ada
+	cd $(ST) && rm table_amarketsold.ada
+	$(TP) -p amarketsold > $(ST)/amarketsold.sql
 
-#/etc/logrotate.d/bnlbot:
-#	echo "/home/bnl/bnlbot/botstart/bot-0-9/target/log/*.log { \
-#       size 2M \
-#       rotate 10 \
-#       copytruncate \
-#       delaycompress \
-#       compress \
-#       notifempty \
-#       missingok \
-#       su bnl bnl \
-#    }"
+$(ST)/table_aeventsold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_aeventsold.xml
+	$(TP) -t aeventsold > $(ST)/table_aeventsold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_aeventsold.ada
+	cd $(ST) && rm table_aeventsold.ada
+	$(TP) -p aeventsold > $(ST)/aeventsold.sql
 
+$(ST)/table_arunnersold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_arunnersold.xml
+	$(TP) -t arunnersold > $(ST)/table_arunnersold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_arunnersold.ada
+	cd $(ST) && rm table_arunnersold.ada
+	$(TP) -p arunnersold > $(ST)/arunnersold.sql
+
+$(ST)/table_apricesold.ads : $(TPG) $(BOT_CONFIG)/repository/tables/table_apricesold.xml
+	$(TP) -t apricesold > $(ST)/table_apricesold.ada
+	cd $(ST) && gnatchop -w -gnat05 table_apricesold.ada
+	cd $(ST) && rm table_apricesold.ada
+	$(TP) -p apricesold > $(ST)/apricesold.sql
 
 $(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
