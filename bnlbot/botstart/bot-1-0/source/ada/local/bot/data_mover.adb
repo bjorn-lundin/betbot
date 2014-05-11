@@ -2,20 +2,12 @@
 with Sattmate_Exception;
 with Sql;
 with Sattmate_Types; use Sattmate_Types;
---with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
---with Sattmate_Calendar; use Sattmate_Calendar;
---with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Lock ;
 with Ini;
 with Logging; use Logging;
 with Ada.Environment_Variables;
---with Process_IO;
---with Core_Messages;
---with Table_Araceprices;
---with Table_Aracepricesold;
 with Bot_Svn_Info;
 with Posix;
 
@@ -23,29 +15,21 @@ procedure Data_Mover is
   package EV renames Ada.Environment_Variables;
 
 
-  Me : constant String := "Poll.";
-
---  Timeout  : Duration := 120.0;
-  My_Lock  : Lock.Lock_Type;
-
---  Msg      : Process_Io.Message_Type;
+  Me : constant String := "Data_Mover.";
   type Tables_Type is (Araceprices,Amarkets, Avents, Arunners, Aprices);
+
+  My_Lock          : Lock.Lock_Type;
   Select_To_Move   : array (Tables_Type'range) of Sql.Statement_Type;
   Select_To_Delete : array (Tables_Type'range) of Sql.Statement_Type;
- 
-  
-  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
-  Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
-  Ba_Daemon       : aliased Boolean := False;
-  Cmd_Line : Command_Line_Configuration;
+  Sa_Par_Bot_User  : aliased Gnat.Strings.String_Access;
+  Sa_Par_Inifile   : aliased Gnat.Strings.String_Access;
+  Ba_Daemon        : aliased Boolean := False;
+  Cmd_Line         : Command_Line_Configuration;
 
   -------------------------------------------------------------
 
   -------------------------------------------------------------
   procedure Run is
---    Price_List : Table_Araceprices.Araceprices_List_Pack.List_Type := Table_Araceprices.Araceprices_List_Pack.Create;
---    Price : Table_Araceprices.Data_Type;
---    Old_Price : Table_Aracepricesold.Data_Type;
     T : Sql.Transaction_Type;
     Num : Integer_4 := 500;
     Rows_Inserted,
@@ -56,12 +40,10 @@ procedure Data_Mover is
            Log("about to insert into " & Table'Img & " in chunks of 1 days worth of data, Num =" & Num'Img);      
            T.Start;
              Select_To_Move(Table).Prepare(
-               "insert into :OLDTABLE " &
-               "select * from :TABLE " &
-               "where IXXLUTS < current_timestamp - interval ':NUM day' "
+               "insert into " & Table'Img & "OLD " & 
+               "select * from " & Table'Img & " " &
+               "where IXXLUTS < current_timestamp - interval ':NUM days' "
              );
-            Select_To_Move(Table).Set("OLDTABLE", Table'Img & "OLD"); 
-            Select_To_Move(Table).Set("TABLE",Table'Img); 
             Select_To_Move(Table).Set("NUM",Num); 
             begin 
               Select_To_Move(Table).Execute(Rows_Inserted);
@@ -69,10 +51,9 @@ procedure Data_Mover is
               when Sql.No_Such_Row => Rows_Inserted := 0;
             end ;       
             
-            Select_To_Delete(Table).Set("TABLE",Table'Img); 
             Select_To_Delete(Table).Prepare(
-               "delete from :TABLE " &
-               "where IXXLUTS < current_timestamp - interval ':NUM day' " 
+               "delete from " & Table'Img & " " & 
+               "where IXXLUTS < current_timestamp - interval ':NUM days' " 
              );
             Select_To_Delete(Table).Set("NUM",Num); 
             begin 
