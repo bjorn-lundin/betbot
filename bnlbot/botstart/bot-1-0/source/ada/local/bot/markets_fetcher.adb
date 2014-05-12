@@ -246,9 +246,10 @@ begin
 
    -- Create JSON arrays
   Append(Exchange_Ids , Create("1"));      -- Not Australia 
+  
   Append(Event_Type_Ids , Create("7"));    -- horse
   Append(Event_Type_Ids , Create("4339")); -- hound
-  Append(Event_Type_Ids , Create("1")); -- football
+  Append(Event_Type_Ids , Create("1"));    -- football
 --   none for all countries   
 --   Append(Market_Countries , Create("GB"));
 --   Append(Market_Countries , Create("US"));
@@ -383,61 +384,69 @@ begin
     end if;  
       -- now get the prices
  
+ 
+--bnl start loop? 
+    T.Commit;
+
     declare
        Params                      : JSON_Value := Create_Object;
        Price_Data                  : JSON_Array := Empty_Array;
        Price_Projection            : JSON_Value := Create_Object;
        Has_Id                      : Boolean  := False; 
+       One_Market_Id               : JSON_Array := Empty_Array;
     begin    
-      Market_Ids := Empty_Array;
+      Market_Ids    := Empty_Array;
       for i in 1 .. Length (Result_List_Market_Catalogue) loop
+        T.Start;
         Market := Get(Result_List_Market_Catalogue, i);
+        Has_Id := False;
         if Market.Has_Field("marketId") then
           Has_Id := True;
           Log(Me, "appending Marketid: '" & Market.Get("marketId") & "'" );
-          Append(Market_Ids, Create(string'(Market.Get("marketId"))));
+          Append(Market_Ids, Create(string'(Market.Get("marketId")))); --used further down
+          One_Market_Id := Empty_Array; --empty it here, to avoid TOO_MUCH_DATA replies
+          Append(One_Market_Id, Create(string'(Market.Get("marketId"))));
         end if;          
-      end loop;
+--      end loop;
       
-      if Has_Id then
-      
-        Append (Price_Data , Create("EX_BEST_OFFERS"));    
+        if Has_Id then
+          Append (Price_Data , Create("EX_BEST_OFFERS"));    
+          Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
+          Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
+          Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");    
+          Params.Set_Field (Field_Name => "locale",          Field => "sv");
+--          Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids); -- one market at a time, overflow otherwise
+          Params.Set_Field (Field_Name => "marketIds",       Field => One_Market_Id);
+          
+          Query_List_Market_Book.Set_Field (Field_Name => "params",  Field => Params);
+          Query_List_Market_Book.Set_Field (Field_Name => "id",      Field => 15);   --?
+          Query_List_Market_Book.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
+          Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+                
+          Rpc.Get_JSON_Reply(Query => Query_List_Market_Book,
+                             Reply => Reply_List_Market_Book,
+                             URL   => Token.URL_BETTING);
         
-        Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
-        
-        Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
-        Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");    
-        Params.Set_Field (Field_Name => "locale",          Field => "sv");
-        Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids);
-        
-        Query_List_Market_Book.Set_Field (Field_Name => "params",  Field => Params);
-        Query_List_Market_Book.Set_Field (Field_Name => "id",      Field => 15);   --?
-        Query_List_Market_Book.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
-        Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+             --  Iterate the Reply_List_Market_Book object. 
+          if Reply_List_Market_Book.Has_Field("result") then
+            Log(Me, "we have result ");
+            Result_List_Market_Book := Reply_List_Market_Book.Get("result");
+            for i in 1 .. Length (Result_List_Market_Book) loop
+              Log(Me, "we have result #:" & i'img);
+              Market := Get(Result_List_Market_Book, i);
               
-        Rpc.Get_JSON_Reply(Query => Query_List_Market_Book,
-                           Reply => Reply_List_Market_Book,
-                           URL   => Token.URL_BETTING);
-      
-           --  Iterate the Reply_List_Market_Book object. 
-        if Reply_List_Market_Book.Has_Field("result") then
-          Log(Me, "we have result ");
-          Result_List_Market_Book := Reply_List_Market_Book.Get("result");
-          for i in 1 .. Length (Result_List_Market_Book) loop
-            Log(Me, "we have result #:" & i'img);
-            Market := Get(Result_List_Market_Book, i);
-            
-            if Market.Has_Field("marketId") then
-              Update_Market(Market);
-              if Market.Has_Field("runners") then
-                 Insert_Prices(Market);
+              if Market.Has_Field("marketId") then
+                Update_Market(Market);
+                if Market.Has_Field("runners") then
+                   Insert_Prices(Market);
+                end if;
               end if;
-            end if;
-          end loop;
-        end if;    
-      end if; --has id          
-    end;  
-    T.Commit;
+            end loop;
+          end if;    
+        end if; --has id          
+        T.Commit;
+      end loop; --for loop
+    end;
     
     Log(Me, "Market_Found: " & Market_Found'Img);
     if Market_Found then 
