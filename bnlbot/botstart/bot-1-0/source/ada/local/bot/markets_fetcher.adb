@@ -503,26 +503,14 @@ begin
               
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------                
-                  when 1      => -- check markets for MATCH_ODDS/CORRECT_SCORE/HALF_TIME_SCORE
-                    -- if CORRECT_SCORE/HALF_TIME_SCORE exists, send their market id instead
+                  when 1      => -- check markets for MATCH_ODDS/CORRECT_SCORE/HALF_TIME_SCORE/HALF_TIME_FULL_TIME
+                    -- if CORRECT_SCORE/HALF_TIME_SCORE/HALF_TIME_FULL_TIME exists, send their market id instead
                     -- if they do not exist, send nothing, wait for the CORRECT_SCORE/HALF_TIME_SCORE to come in by itself
                     if Trim(Upper_Case(DB_Market.Markettype)) = "MATCH_ODDS" then
-                      Sibling_Market_Exists(Db_Event.Eventid, "CORRECT_SCORE", Sibling_Id, Exists);
-                      if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
-                        Log(Me, "Notifying 'bot' with marketid: '" & Sibling_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
-                      end if;     
-                      
-                      Sibling_Id := (others => ' ');
-                      Sibling_Market_Exists(Db_Event.Eventid, "HALF_TIME_SCORE", Sibling_Id, Exists);
-                      if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
-                        Log(Me, "Notifying 'bot' with marketid: '" & Sibling_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
-                      end if;        
+                      Receiver.Name := (others => ' ');
+                      Move("bot", Receiver.Name);
+                      Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id  & "'");
+                      Bot_Messages.Send(Receiver, MNR);
 
                     -- poll_and_log is alway interested in MATCH_ODDS                        
                       Receiver.Name := (others => ' ');
@@ -535,16 +523,24 @@ begin
                     -- it will then send the market ids of CORRECT_SCORE
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "CORRECT_SCORE" then
                        Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
+                       if Exists then
+                         Receiver.Name := (others => ' ');
+                         Move("bot", Receiver.Name);
+                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
+                         Bot_Messages.Send(Receiver, MNR);
+                       end if;                
+                    -- if MATCH_ODDS exists,go ahead
+                    -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
+                    -- it will then send the market ids of HALF_TIME_SCORE
+                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_SCORE" then
+                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
                         Receiver.Name := (others => ' ');
                         Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
                         Bot_Messages.Send(Receiver, MNR);
                       end if;                
-                    -- if MATCH_ODDS exists,go ahead
-                    -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
-                    -- it will then send the market ids of HALF_TIME_SCORE
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_SCORE" then
+                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_FULL_TIME" then
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
                         Receiver.Name := (others => ' ');
