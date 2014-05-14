@@ -317,7 +317,7 @@ procedure Poll is
           if not Bets_Allowed(Back_High).Has_Betted     and then
              Bets_Allowed(Back_High).Is_Allowed_To_Bet  and then
              Best_Runners(1).Backprice <= Float_8(1.10) and then
-             Best_Runners(2).Backprice <= Float_8(1.10) and then
+             Best_Runners(2).Backprice >= Float_8(1.10) and then  --do not care
              Best_Runners(3).Backprice >= Float_8(7.0)  and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
