@@ -93,7 +93,7 @@ procedure Poll is
     Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
-    Move("DR_HORSES_PLC_BACK_FINISH_1.25_7.0_1", Bets_Allowed(Back_High).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.10_1.10_7.0", Bets_Allowed(Back_High).Bet_Name);
     Bets_Allowed(Back_High).Bet_Size := 30.0;
 
     -- Lay_Low : 
@@ -118,6 +118,8 @@ procedure Poll is
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
+    -- turn off allowed to bet for lay bet
+    Bets_Allowed(Lay_Low).Is_Allowed_To_Bet := False;
     
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
@@ -312,10 +314,11 @@ procedure Poll is
           end if;
             
             -- Back The leader in PLC market again, but different requirements...
-          if not Bets_Allowed(Back_High).Has_Betted and then
-             Bets_Allowed(Back_High).Is_Allowed_To_Bet and then
-             Best_Runners(1).Backprice <= Float_8(1.25) and then
-             Best_Runners(2).Backprice >= Float_8(7.0) and then
+          if not Bets_Allowed(Back_High).Has_Betted     and then
+             Bets_Allowed(Back_High).Is_Allowed_To_Bet  and then
+             Best_Runners(1).Backprice <= Float_8(1.10) and then
+             Best_Runners(2).Backprice <= Float_8(1.10) and then
+             Best_Runners(3).Backprice >= Float_8(7.0)  and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
