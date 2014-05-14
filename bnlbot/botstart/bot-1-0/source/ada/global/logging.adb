@@ -34,6 +34,7 @@ package body Logging is
    
    ---------------------------------------------
    procedure New_Log_File_On_Exit(N : Boolean) is
+     pragma Unreferenced(N);
    begin
      Global_New_Log_File_On_Exit := False;
    end New_Log_File_On_Exit;

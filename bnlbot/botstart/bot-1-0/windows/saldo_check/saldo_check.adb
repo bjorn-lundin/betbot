@@ -109,7 +109,7 @@ procedure Saldo_Check is
        Log("Update_Task", "Task is starting");
        Rpc.Init(
          Username   => "bnlbnl",
-         Password   => "Rebecca1Lundin",
+         Password   => "@Bf@vinst@1",
          Product_Id => "82",
          Vendor_id  => "0",
          App_Key    => "q0XW4VGRNoHuaszo"
