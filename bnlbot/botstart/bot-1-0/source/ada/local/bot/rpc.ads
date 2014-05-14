@@ -16,7 +16,7 @@ package RPC is
 
 
   type Result_Type is (Ok, Timeout, Logged_Out);
-  JSON_Exception, POST_Timeout : exception;
+  JSON_Exception, POST_Timeout, Invalid_Session : exception;
   
   procedure Login;
   procedure Logout;

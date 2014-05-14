@@ -304,6 +304,7 @@ package body RPC is
 
   function API_Exceptions_Are_Present(Reply : JSON_Value) return Boolean is
      Error,
+     AccountAPINGException,
      APINGException,
      Data             : JSON_Value := Create_Object;
      Has_Error        : Boolean := False;
@@ -344,6 +345,16 @@ package body RPC is
             else
               raise No_Such_Field with "APINGException - errorCode";
             end if;
+          elsif Data.Has_Field("AccountAPINGException") then
+            AccountAPINGException := Data.Get("AccountAPINGException");
+            if AccountAPINGException.Has_Field("errorCode") then
+              Log(Me, "APINGException.errorCode " & AccountAPINGException.Get("errorCode"));
+              if AccountAPINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
+                raise Invalid_Session;
+              end if;              
+            else
+              raise No_Such_Field with "AccountAPINGException - errorCode";
+            end if;  
           else
             raise No_Such_Field with "Data - APINGException";
           end if;
@@ -860,13 +871,17 @@ package body RPC is
                     Reply => Reply_Get_Account_Funds,
                     URL   => Token.URL_ACCOUNT);
 
-    if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
---        Log(Me & "Get_Balance - Error",Aws.Response.Message_Body(Answer_Get_Account_Funds));
-
-        -- try again
-      Betfair_Result := Logged_Out ;
-      return;
-    end if;
+    begin                
+      if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
+          -- try again
+        Betfair_Result := Logged_Out ;
+        return;
+      end if;
+    exception
+      when Invalid_Session => 
+        Betfair_Result := Logged_Out ;
+        return;      
+    end ;      
 
     if Reply_Get_Account_Funds.Has_Field("result") then
        Result := Reply_Get_Account_Funds.Get("result");
