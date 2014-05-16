@@ -32,12 +32,12 @@ procedure Data_Mover is
   -------------------------------------------------------------
   procedure Run is
     T : Sql.Transaction_Type;
-    Num : Integer_4 := 250;
+    Num : Integer_4 := 30;
     Rows_Inserted,
     Rows_Deleted : Natural := 0;
   begin
     Outer_Loop : for Table in Tables_Type'range loop
-       Num := 250;
+       Num := 30;
        Inner_Loop : loop
            Log("about to insert into " & Table'Img & "OLD " & " in chunks of 1 days worth of data, Num =" & Num'Img);      
            T.Start;
