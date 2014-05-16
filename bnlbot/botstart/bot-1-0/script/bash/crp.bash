@@ -25,7 +25,7 @@ for USER in $PID_FILE_DIRECTORIES ; do
   PID_FILE=$(ls ${DIR})
   echo "    STARTTIME file          PID START      CPU   PROCESS"
   for f in $PID_FILE ; do
-    if [ "${f}" != "race_price_move" ] ; then
+    if [ "${f}" != "data_mover" ] ; then
       PID=$(cut -d'|' -f1  ${DIR}/$f)
       START=$(cut -d'|' -f2  ${DIR}/$f)
       PS_STUFF=$(ps -eo pid,stime,time | grep $PID | grep -v grep)
