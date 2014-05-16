@@ -121,10 +121,10 @@ function Check_Bots_For_User () {
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
   
-  if [ $MINUTE == "34" ] ; then
-    Start_Bot $BOT_USER data_move data_mover
-  fi
   
+  if [ $MINUTE == "29" ] ; then
+    Start_Bot $BOT_USER data_mover data_mover
+  fi
   
 }
 # start here 
