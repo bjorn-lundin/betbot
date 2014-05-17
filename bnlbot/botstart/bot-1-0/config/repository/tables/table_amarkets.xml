@@ -20,6 +20,7 @@
         <Index Columns="markettype" type="index"/>
         <Index Columns="status" type="index"/>
         <Index Columns="numwinners" type="index"/>
+        <Index Columns="ixxluts" type="index"/>
     </Table>
 </MaAstro>
 

@@ -16,5 +16,6 @@
         <Index Columns="status" type="index"/>
         <Index Columns="marketid" type="index"/>
         <Index Columns="pricets" type="index"/>
+        <Index Columns="ixxluts" type="index"/>
     </Table>
 </MaAstro>
