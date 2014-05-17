@@ -13,6 +13,7 @@
         <Index Columns="countrycode" type="index"/>
         <Index Columns="opents" type="index"/>
         <Index Columns="eventtypeid" type="index"/>
+        <Index Columns="ixxluts" type="index"/>
     </Table>
 </MaAstro>
 

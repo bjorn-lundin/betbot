@@ -15,6 +15,7 @@
         <Index Columns="runnernamestripped" type="index"/>
         <Index Columns="marketid,status" type="index"/>
         <Index Columns="status" type="index"/>
+        <Index Columns="ixxluts" type="index"/>
     </Table>
 </MaAstro>
 
