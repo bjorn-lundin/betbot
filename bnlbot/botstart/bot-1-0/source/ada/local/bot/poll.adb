@@ -43,7 +43,6 @@ procedure Poll is
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
-  Global_Num_Betters : Integer_4 := 10;
 
   Now : Sattmate_Calendar.Time_Type;
   Ok,
@@ -111,10 +110,6 @@ procedure Poll is
         -- to have the size = a portion of the saldo. 
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
-      end if;
-      -- Also, divide this by num betters, since we make several bets, if split bet
-      if Bets_Allowed(i).Split_Bet then
-        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size / Bet_Size_Type(Global_Num_Betters);      
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
@@ -268,22 +263,12 @@ procedure Poll is
               PBB.Bet_Name := Bets_Allowed(Back_Low).Bet_Name;
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
-              -- this is already divided by Global_Num_Betters
-              Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size); 
-              
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size);               
               PBB.Selection_Id := Best_Runners(1).Selectionid;
-              --split and send to Global_Num_Betters processes
-              
-              for i in 1 .. Integer(Global_Num_Betters) loop
-                Move("bet_placer_" & Trim(i'Img), Receiver.Name);
-                Bot_Messages.Send(Receiver, PBB);
-              end loop;
+              Move("bet_placer_1" , Receiver.Name);
+              Bot_Messages.Send(Receiver, PBB);
               -- just to save time between logs
-              Receiver := ((others => ' '),(others => ' '));
-              for i in 1 .. Integer(Global_Num_Betters) loop
-                Move("bet_placer_" & Trim(i'Img), Receiver.Name);
-                Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-              end loop;
+              Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
               
               Bets_Allowed(Back_Low).Has_Betted := True;
             end;
