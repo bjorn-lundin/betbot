@@ -2132,25 +2132,36 @@ package body Bet_Handler is
     
     case Bot_Config.Config.System_Section.Bot_Mode is 
       when Real =>
-        T.Start;
-        Select_Ongoing_Markets.Prepare(
-          "select M.* from AMARKETS M " &
-          "where M.STATUS <> 'CLOSED' order by M.STARTTS");
-        Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
-     
-        while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
-          Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &
-          " market left to check");
-          Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
-          Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
-          RPC.Market_Status_Is_Changed(Market, Is_Changed);
-     
-          if Is_Changed then
-            Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));
-            Table_Amarkets.Update_Withcheck(Market);
-          end if;
-        end loop;
-        T.Commit;
+        loop
+          begin
+            T.Start;
+            Select_Ongoing_Markets.Prepare(
+              "select M.* from AMARKETS M " &
+              "where M.STATUS <> 'CLOSED' order by M.STARTTS");
+            Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
+         
+            while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
+              Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &
+              " market left to check");
+              Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Market_List, Market);
+              Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
+              RPC.Market_Status_Is_Changed(Market, Is_Changed);
+         
+              if Is_Changed then
+                Log(Me & "Check_Market_Status", "update market " & Table_Amarkets.To_String(Market));
+                Table_Amarkets.Update_Withcheck(Market);
+              end if;
+            end loop;
+            T.Commit;
+            exit;
+          exception
+            when Sql.No_Such_Row => 
+              Log(Me & "Check_Market_Status", "trf conflict update market " & Table_Amarkets.To_String(Market));
+              T.Rollback;
+              Table_Amarkets.Amarkets_List_Pack.Remove_All(Market_List);
+          end;          
+        end loop;       
+        
       when Simulation => null;
     end case;       
     Table_Amarkets.Amarkets_List_Pack.Release(Market_List);
