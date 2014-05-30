@@ -67,14 +67,14 @@ procedure Poll is
     Betfair_Result : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo : Table_Abalances.Data_Type;
     
-    type Bet_Type is (Back_Low, Back_Medium, Back_High, Lay_Low);
+    type Bet_Type is (Back_Low, Back_Medium, Back_High, Lay_Low, 
+	                  Back_Low_Marker, Back_Medium_Marker, Back_High_Marker );
     
     type Allowed_Type is record
       Bet_Name          : Bet_Name_Type := (others => ' ');
       Bet_Size          : Bet_Size_Type := Cfg.Size;
       Is_Allowed_To_Bet : Boolean := False;
       Has_Betted        : Boolean := False;
-      Split_Bet         : Boolean := False;
     end record;  
     
     Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
@@ -86,10 +86,10 @@ procedure Poll is
 
     -- Back_Low : 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low).Bet_Name);
-    Bets_Allowed(Back_Low).Split_Bet := True;
+	
     -- Back_Medium : 
     Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
-    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
+--    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
     Move("DR_HORSES_PLC_BACK_FINISH_1.10_1.10_7.0", Bets_Allowed(Back_High).Bet_Name);
@@ -99,6 +99,20 @@ procedure Poll is
     Move("HORSES_WIN_LAY_FINISH_1.10_7.0_3", Bets_Allowed(Lay_Low).Bet_Name);
     Bets_Allowed(Lay_Low).Bet_Size := 30.0;
      
+	 
+	--markers
+    -- Back_Low : 
+    Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1_M", Bets_Allowed(Back_Low_Marker).Bet_Name);
+    Bets_Allowed(Back_Low_Marker).Bet_Size := 30.0;
+	
+    -- Back_Medium : 
+    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1_M", Bets_Allowed(Back_Medium_Marker).Bet_Name);
+    Bets_Allowed(Back_Medium_Marker).Bet_Size := 30.0;
+	
+    -- Back_High : 
+    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2_M", Bets_Allowed(Back_High_Marker).Bet_Name);
+    Bets_Allowed(Back_High_Marker).Bet_Size := 30.0;
+	 
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
       Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Cfg.Max_Loss_Per_Day;
@@ -115,7 +129,7 @@ procedure Poll is
     end loop;
     -- turn off allowed to bet for lay bet
     Bets_Allowed(Lay_Low).Is_Allowed_To_Bet := False;
-    
+	
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -256,21 +270,33 @@ procedure Poll is
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB             : Bot_Messages.Place_Back_Bet_Record;
+              Receiver        : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB_Marker      : Bot_Messages.Place_Back_Bet_Record;
+              Receiver_Marker : Process_Io.Process_Type := ((others => ' '),(others => ' '));
             begin
               -- number 1 in the race
               PBB.Bet_Name := Bets_Allowed(Back_Low).Bet_Name;
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
-              Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size);               
               PBB.Selection_Id := Best_Runners(1).Selectionid;
-              Move("bet_placer_1" , Receiver.Name);
+			  
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Low).Bet_Size)), PBB.Size);               
+              Move("bet_placer_10" , Receiver.Name);
               Bot_Messages.Send(Receiver, PBB);
-              -- just to save time between logs
-              Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-              
               Bets_Allowed(Back_Low).Has_Betted := True;
+			  
+			  --marker
+			  PBB_Marker := PBB;
+              PBB_Marker.Bet_Name := Bets_Allowed(Back_Low_Marker).Bet_Name;
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Low_Marker).Bet_Size)), PBB_Marker.Size);               
+              Move("bet_placer_11" , Receiver_Marker.Name);
+              Bot_Messages.Send(Receiver_Marker, PBB_Marker);
+              Bets_Allowed(Back_Low_Marker).Has_Betted := True;
+			  
+              -- just to save time between logs
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Log("ping '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
             end;
           end if;
           
@@ -282,44 +308,72 @@ procedure Poll is
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB             : Bot_Messages.Place_Back_Bet_Record;
+              Receiver        : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB_Marker      : Bot_Messages.Place_Back_Bet_Record;
+              Receiver_Marker : Process_Io.Process_Type := ((others => ' '),(others => ' '));
             begin
               -- number 1 in the race
               PBB.Bet_Name := Bets_Allowed(Back_Medium).Bet_Name;
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
-              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
               PBB.Selection_Id := Best_Runners(1).Selectionid;
+
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
               Move("bet_placer_20", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PBB);
               Bets_Allowed(Back_Medium).Has_Betted := True;
+			  
+			  --Marker
+			  PBB_Marker := PBB;
+              PBB_Marker.Bet_Name := Bets_Allowed(Back_Medium_Marker).Bet_Name;
+              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium_Marker).Bet_Size)), PBB_Marker.Size); 
+              Move("bet_placer_21", Receiver_Marker.Name);
+              Bot_Messages.Send(Receiver_Marker, PBB_Marker);
+              Bets_Allowed(Back_Medium_Marker).Has_Betted := True;
+			  
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Log("ping '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
+			  
             end;
           end if;
             
             -- Back The leader in PLC market again, but different requirements...
           if not Bets_Allowed(Back_High).Has_Betted     and then
              Bets_Allowed(Back_High).Is_Allowed_To_Bet  and then
-             Best_Runners(1).Backprice <= Float_8(1.10) and then
-             Best_Runners(2).Backprice >= Float_8(1.10) and then  --do not care
+             Best_Runners(1).Backprice <= Float_8(1.15) and then
+             Best_Runners(2).Backprice >= Float_8(1.15) and then  --do not care
              Best_Runners(3).Backprice >= Float_8(7.0)  and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
-              PBB : Bot_Messages.Place_Back_Bet_Record;
-              Receiver : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB             : Bot_Messages.Place_Back_Bet_Record;
+              Receiver        : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+              PBB_Marker      : Bot_Messages.Place_Back_Bet_Record;
+              Receiver_Marker : Process_Io.Process_Type := ((others => ' '),(others => ' '));
             begin
               -- number 1 in the race
-              PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
-              Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
               PBB.Selection_Id := Best_Runners(1).Selectionid;
+			  
+              PBB.Bet_Name := Bets_Allowed(Back_High).Bet_Name;
+              Move(F8_Image(Float_8(Bets_Allowed(Back_High).Bet_Size)), PBB.Size); 
               Move("bet_placer_30", Receiver.Name);
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PBB);
               Bets_Allowed(Back_High).Has_Betted := True;
+			  
+			  --marker
+			  PBB_Marker := PBB;
+              PBB_Marker.Bet_Name := Bets_Allowed(Back_High_Marker).Bet_Name;
+              Move(F8_Image(Float_8(Bets_Allowed(Back_High_Marker).Bet_Size)), PBB_Marker.Size); 
+              Move("bet_placer_31", Receiver_Marker.Name);
+              Bot_Messages.Send(Receiver_Marker, PBB_Marker);
+              Bets_Allowed(Back_High_Marker).Has_Betted := True;
+			  
+              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+              Log("ping '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
+			  
             end;
           end if;
           
@@ -340,7 +394,7 @@ procedure Poll is
               Move("25", PLB.Price);
               Move(F8_Image(Float_8(Bets_Allowed(Lay_Low).Bet_Size)), PLB.Size); 
               PLB.Selection_Id := Best_Runners(3).Selectionid;
-              Move("bet_placer_21", Receiver.Name);
+              Move("bet_placer_31", Receiver.Name);
               Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
               Bot_Messages.Send(Receiver, PLB);
               Bets_Allowed(Lay_Low).Has_Betted := True;
