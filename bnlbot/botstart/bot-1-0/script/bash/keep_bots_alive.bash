@@ -84,7 +84,7 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
   Start_Bot $BOT_USER poll poll poll.ini
-  Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
+#  Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
   Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   Start_Bot $BOT_USER bet_checker bet_checker
@@ -103,17 +103,15 @@ function Check_Bots_For_User () {
     fi
   done
 
-  BET_PLACER_LIST="bet_placer_1 bet_placer_2 bet_placer_3 bet_placer_4 bet_placer_5 \
-                   bet_placer_6 bet_placer_7 bet_placer_8 bet_placer_9 bet_placer_10 \
-                   bet_placer_20 bet_placer_21 bet_placer_30"
+  BET_PLACER_LIST="bet_placer_10 bet_placer_11 bet_placer_20 bet_placer_21 bet_placer_30 bet_placer_31"
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
 
-  BET_PLACER_LIST="football_better"
-  for placer in $BET_PLACER_LIST ; do
-    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
-  done
+#  BET_PLACER_LIST="football_better"
+#  for placer in $BET_PLACER_LIST ; do
+#    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
+#  done
 
   #zip logfiles every hour, on minute 17 in the background
   MINUTE=$(date +"%M")
@@ -122,8 +120,11 @@ function Check_Bots_For_User () {
   fi
   
   
-  if [ $MINUTE == "29" ] ; then
-    Start_Bot $BOT_USER data_mover data_mover
+  HOUR=$(date +"%H")
+  if [ $HOUR == "05" ] ; then
+    if [ $MINUTE == "20" ] ; then
+      Start_Bot $BOT_USER data_mover data_mover
+    fi
   fi
   
 }
@@ -140,7 +141,7 @@ case $BOT_MACHINE_ROLE in
   
     HOUR=$(date +"%H")
     MINUTE=$(date +"%M")
-    if [ $HOUR == "06" ] ; then
+    if [ $HOUR == "11" ] ; then
       if [ $MINUTE == "45" ] ; then
         WEEK_DAY=$(date +"%u")
         for USR in $USER_LIST ; do
