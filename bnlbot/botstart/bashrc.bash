@@ -152,37 +152,23 @@ alias stop_bot='$BOT_TARGET/bin/bot_send --receiver=bot --message=exit'
 alias stop_market_fetcher='$BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit' 
 alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll --message=exit' 
 alias stop_poll_and_log='$BOT_TARGET/bin/bot_send --receiver=poll_and_log --message=exit' 
-alias stop_bet_placer_1='$BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --message=exit' 
-alias stop_bet_placer_2='$BOT_TARGET/bin/bot_send --receiver=bet_placer_2 --message=exit' 
-alias stop_bet_placer_3='$BOT_TARGET/bin/bot_send --receiver=bet_placer_3 --message=exit' 
-alias stop_bet_placer_4='$BOT_TARGET/bin/bot_send --receiver=bet_placer_4 --message=exit' 
-alias stop_bet_placer_5='$BOT_TARGET/bin/bot_send --receiver=bet_placer_5 --message=exit' 
-alias stop_bet_placer_6='$BOT_TARGET/bin/bot_send --receiver=bet_placer_6 --message=exit' 
-alias stop_bet_placer_7='$BOT_TARGET/bin/bot_send --receiver=bet_placer_7 --message=exit' 
-alias stop_bet_placer_8='$BOT_TARGET/bin/bot_send --receiver=bet_placer_8 --message=exit' 
-alias stop_bet_placer_9='$BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit' 
 alias stop_bet_placer_10='$BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit' 
+alias stop_bet_placer_11='$BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit' 
 alias stop_bet_placer_20='$BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit' 
 alias stop_bet_placer_21='$BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit' 
 alias stop_bet_placer_30='$BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit' 
+alias stop_bet_placer_31='$BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit' 
 alias stop_football_better='$BOT_TARGET/bin/bot_send --receiver=football_better --message=exit' 
 
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
 
 alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_4 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_5 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_6 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_7 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_8 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit'
-
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit'
 
 alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bot --message=exit && \
@@ -190,19 +176,12 @@ alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
                      $BOT_TARGET/bin/bot_send --receiver=poll_and_log --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=football_better --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_4 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_5 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_6 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_7 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_8 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_9 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=saldo_fetcher --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
 
