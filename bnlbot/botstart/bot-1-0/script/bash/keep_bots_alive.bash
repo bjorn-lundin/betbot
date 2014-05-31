@@ -19,8 +19,8 @@
 
 [ -r /var/lock/bot ] && exit 0
 
-export PG_DUMP=/usr/lib/postgresql/9.3/bin/pg_dump
-export VACUUMDB=/usr/lib/postgresql/9.3/bin/vacuumdb
+export PG_DUMP=pg_dump
+export VACUUMDB=vacuumdb
 
 TZ='Europe/Stockholm'
 export TZ
