@@ -102,15 +102,15 @@ procedure Poll is
 	 
 	--markers
     -- Back_Low : 
-    Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1_M", Bets_Allowed(Back_Low_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low_Marker).Bet_Name);
     Bets_Allowed(Back_Low_Marker).Bet_Size := 30.0;
 	
     -- Back_Medium : 
-    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1_M", Bets_Allowed(Back_Medium_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium_Marker).Bet_Name);
     Bets_Allowed(Back_Medium_Marker).Bet_Size := 30.0;
 	
     -- Back_High : 
-    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_2_M", Bets_Allowed(Back_High_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.15_7.0_2", Bets_Allowed(Back_High_Marker).Bet_Name);
     Bets_Allowed(Back_High_Marker).Bet_Size := 30.0;
 	 
     -- check if ok to bet and set bet size
