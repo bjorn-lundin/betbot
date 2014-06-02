@@ -5,7 +5,7 @@ with Sattmate_Exception;
 with Sql;
 with Text_Io;
 with Table_Araceprices;
-with Gnat.Command_Line; use Gnat.Command_Line;
+--with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
 with Sattmate_Calendar; use Sattmate_Calendar;
 with Logging; use Logging;
@@ -16,7 +16,7 @@ pragma Elaborate_All(Simple_List_Class);
 
 procedure Plot_Race_Prices is
     History : Table_Araceprices.Data_Type;
-    Bad_Input : exception;
+--    Bad_Input : exception;
                      
     type H_Type is record
       Marketid  : Market_Id_Type := (others => ' ');
@@ -34,9 +34,9 @@ procedure Plot_Race_Prices is
    Eos,
    Eos2             : Boolean := False;
 
-   Config           : Command_Line_Configuration;
+--   Config           : Command_Line_Configuration;
 
-   Secs : Integer_4 := 0;
+--  Secs : Integer_4 := 0;
    F : Text_Io.File_Type;
    
    

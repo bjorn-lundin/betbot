@@ -1,30 +1,30 @@
 
-with sattmate_types ; use sattmate_types;
+--with sattmate_types ; use sattmate_types;
 with Sattmate_Exception;
 with Sql;
 
-with Gnat.Command_Line; use Gnat.Command_Line;
-with GNAT.Strings;
+--with Gnat.Command_Line; use Gnat.Command_Line;
+--with GNAT.Strings;
 with Logging; use Logging;
-with Sattmate_Calendar; use Sattmate_Calendar;
+--with Sattmate_Calendar; use Sattmate_Calendar;
 
 
 
 procedure Sql_Ifc_Leak_Finder is
 
-   T            : Sql.Transaction_Type;
-   Select_All   : Sql.Statement_Type;
+--   T            : Sql.Transaction_Type;
+ --  Select_All   : Sql.Statement_Type;
 
-   Eos          : Boolean := False;
+ --  Eos          : Boolean := False;
 
-   start_date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
-   stop_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+ --  start_date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+--   stop_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
 
 
 --   Sa_Date      : aliased Gnat.Strings.String_Access;
-   I_Num_Days   : aliased Integer := 200;
+--   I_Num_Days   : aliased Integer := 200;
 --   Config       : Command_Line_Configuration;
-   cnt : integer := 0;
+--   cnt : integer := 0;
 
 begin
 --   Define_Switch
