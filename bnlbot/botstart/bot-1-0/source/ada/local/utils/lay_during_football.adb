@@ -8,8 +8,8 @@ with Table_Araceprices;
 with Table_Arunners;
 with Table_Amarkets;
 with Table_Aevents;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with GNAT.Strings;
+--with Gnat.Command_Line; use Gnat.Command_Line;
+--with GNAT.Strings;
 with Sattmate_Calendar;  use Sattmate_Calendar;
 with Logging; use Logging;
 with General_Routines; use General_Routines;
@@ -60,13 +60,13 @@ procedure Lay_During_Football is
 
    Market : Table_Amarkets.Data_Type;
 
-   Config           : Command_Line_Configuration;
+--   Config           : Command_Line_Configuration;
 
    Is_For_Plot : aliased Boolean := False;
-   Ia_Other_Team_Min_Back_Odds : aliased Integer;
-   Ia_Draw_Min_Back_Odds : aliased Integer;
-   IA_Min_Minutes_Into_Game : aliased Integer;
-   SA_Back_At_Price         : aliased Gnat.Strings.String_Access;
+--   Ia_Other_Team_Min_Back_Odds : aliased Integer;
+ --  Ia_Draw_Min_Back_Odds : aliased Integer;
+ --  IA_Min_Minutes_Into_Game : aliased Integer;
+ --  SA_Back_At_Price         : aliased Gnat.Strings.String_Access;
 --   SA_Lay_At_Price          : aliased Gnat.Strings.String_Access; 
 
    Global_Back_At_Price           : Float_8 := 2.50;
@@ -131,18 +131,18 @@ procedure Lay_During_Football is
    end Fix_Average;
 
 ------------------------------------------------------------------   
-   function To_String(R : Runners_Type ) return String is
-   begin
-     return Table_Arunners.To_String(R.Runner) & " " &
-     "Back_Price = " & F8_Image(R.Back_Price) & " " &
-     "Lay_Price = " & F8_Image(R.Lay_Price) & " " &
-     "A_Back = " & F8_Image(R.A_Back) & " " &
-     "V_Back = " & F8_Image(R.V_Back(1)) & "," &
-                   F8_Image(R.V_Back(2)) & "," &
-                   F8_Image(R.V_Back(3)) & "," & 
-                   F8_Image(R.V_Back(4)) & "," & 
-                   F8_Image(R.V_Back(5));     
-   end To_String;
+--   function To_String(R : Runners_Type ) return String is
+--   begin
+--     return Table_Arunners.To_String(R.Runner) & " " &
+--     "Back_Price = " & F8_Image(R.Back_Price) & " " &
+--     "Lay_Price = " & F8_Image(R.Lay_Price) & " " &
+--     "A_Back = " & F8_Image(R.A_Back) & " " &
+--     "V_Back = " & F8_Image(R.V_Back(1)) & "," &
+--                   F8_Image(R.V_Back(2)) & "," &
+--                   F8_Image(R.V_Back(3)) & "," & 
+--                   F8_Image(R.V_Back(4)) & "," & 
+--                   F8_Image(R.V_Back(5));     
+--   end To_String;
 begin
 --  Define_Switch
 --    (Config      => Config,

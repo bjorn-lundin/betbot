@@ -1,8 +1,8 @@
 
 
-with Rpc;
-with Ini;
-with Ada.Environment_Variables;
+--with Rpc;
+--with Ini;
+--with Ada.Environment_Variables;
 with Logging; use Logging;
 with Sattmate_Exception;
 with Table_Abalances;
@@ -11,7 +11,7 @@ with Bot_Types; use Bot_Types;
 with General_Routines; use General_Routines;
 procedure Test_Login is
 
-   package EV renames Ada.Environment_Variables;
+--   package EV renames Ada.Environment_Variables;
  
   Saldo : Table_Abalances.Data_Type;
   
