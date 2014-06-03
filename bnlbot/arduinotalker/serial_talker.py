@@ -134,14 +134,13 @@ def main(g):
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'HORSES_PLC_BACK_FINISH_1.15_7.0_1',
-            'HORSES_WIN_LAY_FINISH_1.10_7.0_3',
-            'DR_HORSES_PLC_BACK_FINISH_1.25_7.0_1',
-            'DR_HORSES_WIN_LAY_FINISH_1.10_7.0_3',
-            'DR_HORSES_WIN_LAY_FINISH_1.15_7.0_3',
-            'DR_HUMAN_BACK_MATCH-ODDS_1.2-2.5_4.0_10.0',
+            'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
+            'MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
+            'DR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
+            'DR_HORSES_PLC_BACK_FINISH_1.25_12.0_1',
+            'DR_HORSES_PLC_BACK_FINISH_1.25_12.0_2',
             'DR_HORSES_WIN_3.0_12.0_10_25_LAY_GB',
             'DR_HORSES_WIN_3.0_12.0_10_25_LAY_IE']
-
 
   row0 = {}
   row0['0'] = 0
@@ -220,10 +219,9 @@ def main(g):
   conn.close()
 #  return source
 
-#  sys.stdout.write("fghj")
 #  ser = serial.Serial(
-#    port='/dev/ttyUSB0',
-#    baudrate=38400,
+#    port='/dev/rfcomm0',
+#    baudrate=19200,
 #    parity=serial.PARITY_NONE,
 #    stopbits=serial.STOPBITS_ONE,
 #    bytesize=serial.EIGHTBITS)
