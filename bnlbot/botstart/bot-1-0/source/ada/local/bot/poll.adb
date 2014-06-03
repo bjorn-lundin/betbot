@@ -88,11 +88,11 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low).Bet_Name);
 	
     -- Back_Medium : 
-    Move("HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
 --    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
-    Move("DR_HORSES_PLC_BACK_FINISH_1.10_1.10_7.0", Bets_Allowed(Back_High).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High).Bet_Name);
     Bets_Allowed(Back_High).Bet_Size := 30.0;
 
     -- Lay_Low : 
@@ -110,7 +110,7 @@ procedure Poll is
     Bets_Allowed(Back_Medium_Marker).Bet_Size := 30.0;
 	
     -- Back_High : 
-    Move("MR_HORSES_PLC_BACK_FINISH_1.15_7.0_2", Bets_Allowed(Back_High_Marker).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.25_12.0_2", Bets_Allowed(Back_High_Marker).Bet_Name);
     Bets_Allowed(Back_High_Marker).Bet_Size := 30.0;
 	 
     -- check if ok to bet and set bet size
@@ -301,9 +301,7 @@ procedure Poll is
           end if;
           
             -- Back The leader in PLC market again, but different requirements...
-          if not Bets_Allowed(Back_Medium).Has_Betted and then
-             Bets_Allowed(Back_Medium).Is_Allowed_To_Bet and then
-             Best_Runners(1).Backprice <= Float_8(1.15) and then
+          if Best_Runners(1).Backprice <= Float_8(1.15) and then
              Best_Runners(2).Backprice >= Float_8(7.0) and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
@@ -312,28 +310,42 @@ procedure Poll is
               Receiver        : Process_Io.Process_Type := ((others => ' '),(others => ' '));
               PBB_Marker      : Bot_Messages.Place_Back_Bet_Record;
               Receiver_Marker : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+			  Did_Bet_1,Did_Bet_2 : Boolean := False;
             begin
               -- number 1 in the race
               PBB.Bet_Name := Bets_Allowed(Back_Medium).Bet_Name;
               Move(Markets(Place).Marketid, PBB.Market_Id);
               Move("1.01", PBB.Price);
               PBB.Selection_Id := Best_Runners(1).Selectionid;
-
-              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
-              Move("bet_placer_20", Receiver.Name);
-              Bot_Messages.Send(Receiver, PBB);
-              Bets_Allowed(Back_Medium).Has_Betted := True;
+			  
+              if not Bets_Allowed(Back_Medium).Has_Betted and then
+			         Bets_Allowed(Back_Medium).Is_Allowed_To_Bet then
+                Move(F8_Image(Float_8(Bets_Allowed(Back_Medium).Bet_Size)), PBB.Size); 
+                Move("bet_placer_20", Receiver.Name);
+                Bot_Messages.Send(Receiver, PBB);
+                Bets_Allowed(Back_Medium).Has_Betted := True;
+				Did_Bet_1 := True;
+	          end if;
 			  
 			  --Marker
-			  PBB_Marker := PBB;
-              PBB_Marker.Bet_Name := Bets_Allowed(Back_Medium_Marker).Bet_Name;
-              Move(F8_Image(Float_8(Bets_Allowed(Back_Medium_Marker).Bet_Size)), PBB_Marker.Size); 
-              Move("bet_placer_21", Receiver_Marker.Name);
-              Bot_Messages.Send(Receiver_Marker, PBB_Marker);
-              Bets_Allowed(Back_Medium_Marker).Has_Betted := True;
+              if not Bets_Allowed(Back_Medium_Marker).Has_Betted and then 
+			         Bets_Allowed(Back_Medium_Marker).Is_Allowed_To_Bet then
+                PBB_Marker := PBB;
+                PBB_Marker.Bet_Name := Bets_Allowed(Back_Medium_Marker).Bet_Name;
+                Move(F8_Image(Float_8(Bets_Allowed(Back_Medium_Marker).Bet_Size)), PBB_Marker.Size); 
+                Move("bet_placer_21", Receiver_Marker.Name);
+                Bot_Messages.Send(Receiver_Marker, PBB_Marker);
+                Bets_Allowed(Back_Medium_Marker).Has_Betted := True;
+				Did_Bet_2 := True;
+	          end if;
 			  
-              Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
-              Log("ping '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
+              if Did_Bet_1 then
+                Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+	          end if;
+			  
+              if Did_Bet_2 then
+                Log("ping '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
+	          end if;
 			  
             end;
           end if;
@@ -341,9 +353,8 @@ procedure Poll is
             -- Back The leader in PLC market again, but different requirements...
           if not Bets_Allowed(Back_High).Has_Betted     and then
              Bets_Allowed(Back_High).Is_Allowed_To_Bet  and then
-             Best_Runners(1).Backprice <= Float_8(1.15) and then
-             Best_Runners(2).Backprice >= Float_8(1.15) and then  --do not care
-             Best_Runners(3).Backprice >= Float_8(7.0)  and then
+             Best_Runners(1).Backprice <= Float_8(1.25) and then
+             Best_Runners(3).Backprice >= Float_8(12.0) and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
