@@ -17,10 +17,9 @@ import thermal_printer
 
 ############ BNL start ####################
 def signal_handler(signal, frame):
-        print 'You pressed Ctrl+C!\n'
-        sys.exit(0)
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+        print '\nYou pressed Ctrl+C, will post QUIT)\n'
 ############end signal_handler #######################
-
 
 class global_obj():
     profit = 0
@@ -28,10 +27,9 @@ class global_obj():
 
     def __init__(self) :
       today = datetime.datetime.now()
-      self.time_to_print = datetime.datetime(today.year, today.month, today.day, 23, 0, 0)
+      self.time_to_print = datetime.datetime(today.year, today.month, today.day, 23, 55, 0)
 
     ############end __init__ #######################
-
 
     def to_string(self) :
         print 'to_string.profit', self.profit
@@ -41,7 +39,6 @@ class global_obj():
 
 ############end global_obj #######################
 
-
 class progress_bar():
     left   =  50
     top    = 220
@@ -49,12 +46,18 @@ class progress_bar():
     width  = 220
 
     def __init__(self,screen):
-      self.s = screen
+        self.s = screen
       
     def update(self,progress):
-      pygame.draw.rect(self.s, (255,255,255), pygame.Rect(0,0,320,240),1)
-      pygame.draw.rect(self.s, (255,255,255), pygame.Rect(self.left,self.top,self.width*progress,self.height))
-      pygame.draw.rect(self.s, (128,128,128), pygame.Rect(self.left,self.top,self.width,self.height), 1)
+        RED   = (255, 0, 0) 
+        GREEN = (0, 255, 0) 
+        WHITE = (255, 255, 255) 
+        BLACK = (0, 0, 0) 
+        GRAY = (128,128,128)
+    
+        pygame.draw.rect(self.s, GREEN, pygame.Rect(0,0,320,240),1)
+        pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width*progress, self.height))
+        pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width, self. height), 1)
 
     ############ end update ###############
 
@@ -67,13 +70,13 @@ def findout_result_change(conn, g, s):
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
     cur = conn.cursor()
-    cur.execute("select sum(B.PROFIT) " \
-                 "from ABETS B  " \
-                 "where B.BETWON is not NULL " \
-                 "and BETNAME not like 'DR%%' " \
-                 "and B.BETPLACED >= %s " \
-                 "and B.BETPLACED <= %s " ,
-                   (start, stop))
+    cur.execute("select sum(B.PROFIT)  \
+                 from ABETS B   \
+                 where B.BETWON is not NULL  \
+                 and BETNAME not like 'DR%%'  \
+                 and B.BETPLACED >= %s  \
+                 and B.BETPLACED <= %s " ,
+                 (start, stop))
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
@@ -94,7 +97,7 @@ def print_to_printer(p,g):
     p.linefeed()
     p.print_text("-----------------------")
     p.linefeed()
-    p.print_text(str(g.time_to_print)[:-7])
+    p.print_text(str(g.time_to_print))
     p.linefeed()
     p.print_text("Totalt " + str(g.profit) + " kr vinst idag!\n")
     p.linefeed()
@@ -133,29 +136,31 @@ c = psycopg2.connect("dbname=bnl \
                       password=BettingFotboll1$ \
                       sslmode=require \
                       application_name=serial_printer")
-cnt = 60
+cnt = 600
+maxcnt = cnt / 1.0 # amke it a float
 while True:
     cnt = cnt + 1
     event = pygame.event.poll()
-    print 'eventname = ', pygame.event.event_name(event.type)
+#    print 'eventname = ', pygame.event.event_name(event.type)
     if event.type is pygame.QUIT:
         break
     elif event.type is pygame.KEYDOWN:
        keyname = pygame.key.name(event.key)
-       print 'keyname = ', keyname
+#       print 'keyname = ', keyname
        if event.key == pygame.K_ESCAPE:
            break
     elif event.type is pygame.NOEVENT:
-        if cnt >= 60 :
+        if cnt >= maxcnt :
             s.clearScreen()
+            pb.update(0.0)
             show(c,g,s,p)
             cnt = 0
         else :
-            progress = cnt / 60.0
+            progress = cnt / maxcnt
             pb.update(progress)
 
     pygame.display.update()
-    pygame.time.delay(1000)
+    pygame.time.delay(100)
 
 c.close()
 
