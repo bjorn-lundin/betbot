@@ -1,0 +1,7 @@
+pylint
+ipython
+boto
+SQLAlchemy
+argparse
+psycopg2
+
