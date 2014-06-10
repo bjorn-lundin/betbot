@@ -87,10 +87,11 @@ procedure Poll_And_Log is
     end if;
 
     declare
-      Stat : Table_Araceprices.Data_Type;
-      Eol : Boolean := False;
-      Tmp : Table_Aprices.Data_Type;
-      T : Sql.Transaction_Type;
+      Stat   : Table_Araceprices.Data_Type;
+      Eol    : Boolean := False;
+      Tmp    : Table_Aprices.Data_Type;
+      T      : Sql.Transaction_Type;
+      Status : String (Tmp.Status'range ) := (others => ' ');
     begin
       -- insert into finish table
       T.Start;
@@ -98,12 +99,27 @@ procedure Poll_And_Log is
       loop
         exit when Eol;
         Log("about to insert into Araceprices: " & Table_Aprices.To_String(Tmp));
+        if  Market.Status(1..9)= "SUSPENDED" then
+          Log(Me & "Get_Market_Prices", "SUSPENDED marketid: '" & Market_Id & "'");
+        end if;    
+        
+        
+        
         if Tmp.Status(1..6) = "ACTIVE" then
+          if  Market.Status(1..9)= "SUSPENDED" then
+           Status(1..16) := "ACTIVE_SUSPENDED";
+          elsif  Market.Status(1..6)= "CLOSED" then
+           Status(1..13) := "ACTIVE_CLOSED";
+          else
+            Move( Tmp.Status, Status);          
+          end if;
+        
+        
           Stat := (
             Marketid     =>  Tmp.Marketid,
             Selectionid  =>  Tmp.Selectionid,
             Pricets      =>  Tmp.Pricets,
-            Status       =>  Tmp.Status,
+            Status       =>  Status,
             Backprice    =>  Tmp.Backprice,
             Layprice     =>  Tmp.Layprice,
             Ixxlupd      =>  Tmp.Ixxlupd,
@@ -168,6 +184,7 @@ procedure Poll_And_Log is
         exit Loop_Remove when Eol;
         if Market_Id2 = Market_Id then -- found one to delete
           Market_Id_Pck.Delete(List);
+          Log(Me & "Do_Poll_All", "removed marketid: '" & Market_Id & "' from polling list");
           exit Loop_Remove;
         end if;       
         Market_Id_Pck.Get_Next(List,Market_Id2,Eol);
