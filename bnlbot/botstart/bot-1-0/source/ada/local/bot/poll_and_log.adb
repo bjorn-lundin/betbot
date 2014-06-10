@@ -77,9 +77,10 @@ procedure Poll_And_Log is
       return Closed;
     end if;
 
-    if Market.Totalmatched < Float_8(100_000.0) then
-      return Closed;
-    end if;
+--    if Market.Markettype(1..10) = "MATCH_ODDS" and then
+--      Market.Totalmatched < Float_8(100_000.0) then
+--      return Closed;
+--    end if;
     
     if not In_Play then
       return Wait;
@@ -96,7 +97,7 @@ procedure Poll_And_Log is
       Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
       loop
         exit when Eol;
-        Log("about to insert into Apricesfinish: " & Table_Aprices.To_String(Tmp));
+        Log("about to insert into Araceprices: " & Table_Aprices.To_String(Tmp));
         if Tmp.Status(1..6) = "ACTIVE" then
           Stat := (
             Marketid     =>  Tmp.Marketid,
