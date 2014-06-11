@@ -124,6 +124,10 @@ procedure Poll is
         -- to have the size = a portion of the saldo. 
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
+        if Bets_Allowed(i).Bet_Size < 30.0 then
+          Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+          Bets_Allowed(i).Bet_Size := 30.0;
+        end if;  
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
