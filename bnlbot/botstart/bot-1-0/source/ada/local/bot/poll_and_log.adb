@@ -72,11 +72,6 @@ procedure Poll_And_Log is
                           Price_List => Price_List,
                           In_Play    => In_Play);
 
-
-    if Market.Status(1..6) = "CLOSED" then
-      return Closed;
-    end if;
-
 --    if Market.Markettype(1..10) = "MATCH_ODDS" and then
 --      Market.Totalmatched < Float_8(100_000.0) then
 --      return Closed;
@@ -137,6 +132,10 @@ procedure Poll_And_Log is
       end loop;
       T.Commit;
     end;
+
+    if Market.Status(1..6) = "CLOSED" then
+      return Closed;
+    end if;
 
     -- there are 3 items in list, home,draw,away selection ids for the same market.
     -- send 1 only    
