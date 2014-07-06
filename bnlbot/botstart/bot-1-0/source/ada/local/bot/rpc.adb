@@ -73,7 +73,29 @@ package body RPC is
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     end ;
     Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
-
+    
+    -- login reply should look something like below (522 chars)
+    -- <html>
+    -- <head>
+    --     <title>Login</title>
+    -- </head>
+    -- <body onload="document.postLogin.submit()">
+    -- <iframe src="https://secure.img-cdn.mediaplex.com/0/16689/universal.html?page_name=loggedin&amp;loggedin=1&amp;mpuid=6081705" HEIGHT="1" WIDTH="1" FRAMEBORDER="0" ></iframe>
+    -- <form name="postLogin" action="https://www.betfair.com/" method="POST">
+    --     <input type="hidden" name="productToken" value="UeJjgqWpxf3VstCg9VqFmrDhsrHQkOvHu7alH5NCldA="/>
+    --     <input type="hidden" name="loginStatus" value="SUCCESS"/>
+    -- </form>
+    -- </body>
+    -- </html>
+    
+    declare
+      String_Reply : String := Aws.Response.Message_Body(AWS_Reply);
+    begin  
+      if String_Reply'length < 500 then
+        raise Login_Failed with "Bad reply from server at login";
+      end if;
+    end ;
+    
     Header := AWS.Response.Header(AWS_Reply);
 
     for i in 1 .. AWS.Headers.Length(Header) loop
