@@ -206,7 +206,7 @@ package body RPC is
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
          Log(Me & "Get_JSON_Reply", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
-         return ;
+         raise Bad_Reply ;
   end Get_JSON_Reply;
 
   ------------------------------------------------------------------------------
