@@ -84,7 +84,7 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
   Start_Bot $BOT_USER poll poll poll.ini
-#  Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
+  Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
   Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   Start_Bot $BOT_USER bet_checker bet_checker
