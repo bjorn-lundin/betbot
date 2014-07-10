@@ -14,18 +14,21 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Ini;
 with Rpc;
 with Gnat.Strings;
-
+with Sattmate_Calendar;
+with Sattmate_Types; use Sattmate_Types;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 25.0; 
-  My_Lock  : Lock.Lock_Type;
-  Msg      : Process_Io.Message_Type;
-  Me       : constant String := "Main";  
-  Ba_Daemon    : aliased Boolean := False;
+  Timeout         : Duration := 25.0; 
+  My_Lock         : Lock.Lock_Type;
+  Msg             : Process_Io.Message_Type;
+  Me              : constant String := "Main";  
+  Ba_Daemon       : aliased Boolean := False;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
-  Config : Command_Line_Configuration;
-  OK : Boolean := False;
+  Config          : Command_Line_Configuration;
+  OK              : Boolean := False;
+  Is_Time_To_Exit : Boolean := False;
+  Now             : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
   
 begin
    Define_Switch
@@ -100,6 +103,15 @@ begin
           Bet_Handler.Check_Bets;
         Log(Me, "Timeout stop");
     end;    
+    
+    Now := Sattmate_Calendar.Clock;
+    --restart every day
+    Is_Time_To_Exit := Now.Hour = 01 and then 
+                       Now.Minute = 00 and then
+                       Now.Second >= 50 ;
+                                
+    exit Main_Loop when Is_Time_To_Exit;
+
   end loop Main_Loop;
   Log(Me, "Close Db");
   Sql.Close_Session;
