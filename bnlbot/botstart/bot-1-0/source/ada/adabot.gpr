@@ -47,6 +47,8 @@ project Adabot is
     
    Other_Mains := ("ini_reader.adb",
                    "back_all_g4.adb",
+                   "prepare_lay_all_g4_for_gnuplot.adb",
+                   "lay_all_g4.adb",
                    "markets_sender.adb",  
                    "migrate_g1_g4_football.adb", 
                    "remove_duplicates_from_history.adb",                   
