@@ -35,7 +35,10 @@ HOSTNAME=$(hostname)
 case $HOSTNAME in
   ip*)
     export BOT_MACHINE_ROLE=PROD
-    ;;   
+    ;;  
+  new.nonodev.com)    
+    export BOT_MACHINE_ROLE=PROD
+    ;;
   sebjlun*)
     export BOT_MACHINE_ROLE=SIM
     ;;
@@ -50,6 +53,9 @@ esac
 
 case $HOSTNAME in
   ip*) 
+    export BOT_MODE=real
+    ;;
+  new.nonodev.com)    
     export BOT_MODE=real
     ;;
     *)
