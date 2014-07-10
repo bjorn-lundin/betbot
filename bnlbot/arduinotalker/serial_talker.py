@@ -133,14 +133,14 @@ def main(g):
                            application_name=serial_talker")
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
-            'HORSES_PLC_BACK_FINISH_1.15_7.0_1',
+            'DR_HORSES_WIN_LAY_FINISH_1.10_10.0_3',
             'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.25_12.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.25_12.0_2',
-            'DR_HORSES_WIN_3.0_12.0_10_25_LAY_GB',
-            'DR_HORSES_WIN_3.0_12.0_10_25_LAY_IE']
+            'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_2',
+            'DR_HORSES_WIN_30_50_10_25_LAY_GB',
+            'DR_HORSES_WIN_30_50_10_25_LAY_IE',
+            'DR_HORSES_WIN_30_35_8_25_LAY_GB',
+            'DR_HORSES_WIN_30_35_8_25_LAY_IE']
 
   row0 = {}
   row0['0'] = 0
@@ -248,9 +248,12 @@ if __name__ == '__main__':
   while True:
 #      print '------------'
 #      g.to_string()
-      main(g)
+      try:
+          main(g)
+      except psycopg2.OperationalError:
+          print 'Bad network?'
+
       time.sleep(60)
 #      for x in range(0, 78):
 #        time.sleep(1)
 #        sys.stdout.write('.')
-
