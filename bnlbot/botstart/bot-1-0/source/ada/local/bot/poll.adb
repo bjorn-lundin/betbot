@@ -23,7 +23,7 @@ with Table_Aevents;
 with Table_Aprices;
 --with Table_Abets;
 --with Table_Arunners;
-with Table_Apricesfinish;
+--with Table_Apricesfinish;
 with Table_Abalances;
 with Bot_Svn_Info;
 with Bet;
@@ -55,8 +55,8 @@ procedure Poll is
     Event     : Table_Aevents.Data_Type;
     Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
     
-    Price_Finish      : Table_Apricesfinish.Data_Type;   
-    Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack.List_Type := Table_Apricesfinish.Apricesfinish_List_Pack.Create;
+--    Price_Finish      : Table_Apricesfinish.Data_Type;   
+--    Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack.List_Type := Table_Apricesfinish.Apricesfinish_List_Pack.Create;
     
     Price,Tmp : Table_Aprices.Data_Type;
     Has_Been_In_Play,
@@ -190,22 +190,22 @@ procedure Poll is
 
     -- do the poll
     Poll_Loop : loop
-      --Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
-      while not Price_List.Is_Empty loop
-        Price_List.Remove_From_Head(Price);
-        Price_Finish := (
-           Marketid     => Price.Marketid,
-           Selectionid  => Price.Selectionid,
-           Pricets      => Price.Pricets,
-           Status       => Price.Status,
-           Totalmatched => Price.Totalmatched,
-           Backprice    => Price.Backprice,
-           Layprice     => Price.Layprice,
-           Ixxlupd      => Price.Ixxlupd,
-           Ixxluts      => Price.Ixxluts
-        );
-        Price_Finish_List.Insert_At_Tail(Price_Finish);
-      end loop;
+--      --Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
+--      while not Price_List.Is_Empty loop
+--        Price_List.Remove_From_Head(Price);
+--        Price_Finish := (
+--           Marketid     => Price.Marketid,
+--           Selectionid  => Price.Selectionid,
+--           Pricets      => Price.Pricets,
+--           Status       => Price.Status,
+--           Totalmatched => Price.Totalmatched,
+--           Backprice    => Price.Backprice,
+--           Layprice     => Price.Layprice,
+--           Ixxlupd      => Price.Ixxlupd,
+--           Ixxluts      => Price.Ixxluts
+--        );
+--        Price_Finish_List.Insert_At_Tail(Price_Finish);
+--      end loop;
       
       
       
@@ -463,25 +463,25 @@ procedure Poll is
       end if;
     end loop Poll_Loop;
     
-    -- insert all the records now, in pricefinsih
-    Log("start insert records into Pricefinish:" & Price_Finish_List.Get_Count'Img);
-    T.Start;
-    begin
-      while not Price_Finish_List.Is_Empty loop
-        Price_Finish_List.Remove_From_Head(Price_Finish);
-        -- Log("will insert " & Price_Finish.To_String);
-        Price_Finish.Insert;
-      end loop;
-    T.Commit;
-    exception
-      when Sql.Duplicate_Index => 
-         Log("Duplicate index " & Price_Finish.To_String);
-         Price_Finish_List.Remove_All;
-         T.Rollback;
-    end;
-    Log("stop insert record into Pricefinish");
+--    -- insert all the records now, in pricefinsih
+--    Log("start insert records into Pricefinish:" & Price_Finish_List.Get_Count'Img);
+--    T.Start;
+--    begin
+--      while not Price_Finish_List.Is_Empty loop
+--        Price_Finish_List.Remove_From_Head(Price_Finish);
+--        -- Log("will insert " & Price_Finish.To_String);
+--        Price_Finish.Insert;
+--      end loop;
+--    T.Commit;
+--    exception
+--      when Sql.Duplicate_Index => 
+--         Log("Duplicate index " & Price_Finish.To_String);
+--         Price_Finish_List.Remove_All;
+--         T.Rollback;
+--    end;
+--    Log("stop insert record into Pricefinish");
+--    Price_Finish_List.Release;
     Price_List.Release;
-    Price_Finish_List.Release;
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
