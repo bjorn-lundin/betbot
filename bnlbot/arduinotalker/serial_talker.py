@@ -133,10 +133,10 @@ def main(g):
                            application_name=serial_talker")
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
-            'DR_HORSES_WIN_LAY_FINISH_1.10_10.0_3',
             'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_2',
+            'DR_HORSES_WIN_LAY_FINISH_1.10_10.0_3',
             'DR_HORSES_WIN_30_50_10_25_LAY_GB',
             'DR_HORSES_WIN_30_50_10_25_LAY_IE',
             'DR_HORSES_WIN_30_35_8_25_LAY_GB',
@@ -155,7 +155,7 @@ def main(g):
   else :
     row0['typ'] = 'REAL Typ av bet/antal dagar sedan'
 
-  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  lcd_row_0 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
   buff += lcd_row_0 + '\r\n'
 #  print lcd_row_0
 
@@ -172,12 +172,12 @@ def main(g):
     row1['5'] = get_row(conn, bet, -5)
     row1['6'] = get_row(conn, bet, -6)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
-    if len(bet) > 36 :
+    if len(bet) > 37 :
       row1['typ'] = bet[7:]
     else :
       row1['typ'] = bet
         
-    lcd_row_1 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
+    lcd_row_1 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
     buff += lcd_row_1 + '\r\n'
   buff += '------------------------------------------------------------------------------\r\n'
 
@@ -189,7 +189,7 @@ def main(g):
   row0['4'] = 4
   row0['5'] = 5
   row0['6'] = 'Summa'
-  lcd_row_0 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
+  lcd_row_0 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
   buff += lcd_row_0 + '\r\n'
   buff += '------------------------------------------------------------------------------\r\n'
 
@@ -202,7 +202,7 @@ def main(g):
     row2['4'] = get_row_weeks_back(conn, bet, -4)
     row2['5'] = get_row_weeks_back(conn, bet, -5)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
-    if len(bet) > 36 :
+    if len(bet) > 37 :
       row2['typ'] = bet[7:]
     else :
       row2['typ'] = bet
@@ -210,7 +210,7 @@ def main(g):
 
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])
-    lcd_row_2 = '%(typ)36s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
+    lcd_row_2 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
     buff += lcd_row_2 + '\r\n'
 
   #print to screen  
