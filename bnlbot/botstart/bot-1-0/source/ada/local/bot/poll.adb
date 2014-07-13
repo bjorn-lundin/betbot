@@ -190,7 +190,6 @@ procedure Poll is
 
     -- do the poll
     Poll_Loop : loop
---      --Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
 --      while not Price_List.Is_Empty loop
 --        Price_List.Remove_From_Head(Price);
 --        Price_Finish := (
@@ -206,9 +205,8 @@ procedure Poll is
 --        );
 --        Price_Finish_List.Insert_At_Tail(Price_Finish);
 --      end loop;
-      
-      
-      
+
+      Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);      
       Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
                             Market     => Market,
                             Price_List => Price_List,
