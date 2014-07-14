@@ -183,8 +183,9 @@ begin
             Stm_Select_Bets.Fetch(Eos);
             exit Loop_Bets when Eos;
             Bets := Table_Abets.Get(Stm_Select_Bets);           
+	    -- use Place data but name it Win market
             Text_Io.Create(F, Text_Io.Out_File,
-            General_Routines.Skip_All_Blanks("bets_" & Bets.Marketid & "_" & Bets.Betname & ".dat"));
+            General_Routines.Skip_All_Blanks("bets_" & H_Data.Marketid & "_" & Bets.Betname & ".dat"));
             Log("bet " & General_Routines.Trim(Bets.Betname)) ;
             
             Text_IO.Put_Line(F, Sattmate_Calendar.String_Date_Time_ISO(Bets.Betplaced, " ", "") & " | " & 

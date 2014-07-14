@@ -134,6 +134,9 @@ procedure Poll is
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
+    
+    Bets_Allowed(Back_Medium).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_Medium_Marker).Is_Allowed_To_Bet := False;   
 	
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
