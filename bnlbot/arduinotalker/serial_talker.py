@@ -133,8 +133,8 @@ def main(g):
                            application_name=serial_talker")
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
+            'HORSES_PLC_BACK_FINISH_1.25_12.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_2',
             'DR_HORSES_WIN_LAY_FINISH_1.10_10.0_3',
             'DR_HORSES_WIN_30_50_10_25_LAY_GB',
