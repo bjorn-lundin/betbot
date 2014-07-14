@@ -42,6 +42,7 @@ project Adabot is
                     "lay_during_race.adb",
                     "prices_during_race.adb",
                     "plot_race_prices.adb",
+                    "plot_race_prices2.adb",
                     "greening_up_2.adb",
                     "greening_up_3.adb");
     

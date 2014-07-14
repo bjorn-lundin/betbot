@@ -96,8 +96,8 @@ procedure Poll is
 --    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
-    Move("DR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High).Bet_Name);
-    Bets_Allowed(Back_High).Bet_Size := 30.0;
+    Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High).Bet_Name);
+--    Bets_Allowed(Back_High).Bet_Size := 30.0;
 
     -- Lay_Low : 
     Move("DR_HORSES_WIN_LAY_FINISH_1.10_10.0_3", Bets_Allowed(Lay_Low).Bet_Name);
