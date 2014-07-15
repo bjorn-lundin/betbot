@@ -207,7 +207,7 @@ begin
           end loop Loop_Bets;            
           Stm_Select_Bets.Close_Cursor;
           
-         --new runner ...
+         -- get the new runner ...
          
       end loop Loop_All;
       
