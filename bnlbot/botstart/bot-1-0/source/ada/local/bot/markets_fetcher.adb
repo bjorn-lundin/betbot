@@ -403,7 +403,7 @@ begin
     begin    
       Market_Ids    := Empty_Array;
       for i in 1 .. Length (Result_List_Market_Catalogue) loop
-        T.Start;
+--        T.Start;
         Market := Get(Result_List_Market_Catalogue, i);
         Has_Id := False;
         if Market.Has_Field("marketId") then
@@ -442,15 +442,28 @@ begin
               Market := Get(Result_List_Market_Book, i);
               
               if Market.Has_Field("marketId") then
-                Update_Market(Market);
-                if Market.Has_Field("runners") then
-                   Insert_Prices(Market);
-                end if;
+              
+                Trf_Loop : loop
+                  begin
+                    T.Start;
+                    Update_Market(Market);
+                    if Market.Has_Field("runners") then
+                       Insert_Prices(Market);
+                    end if;
+                    T.Commit;
+                    exit Trf_Loop;
+                  exception
+                    when Sql.No_Such_Row =>
+                      T.Rollback;
+                      Log(Me, "Trf conflict on update of marketid " & Market.Get("marketId"));      
+                      delay 0.1;                      
+                  end ;
+                end loop Trf_Loop;                
               end if;
             end loop;
           end if;    
         end if; --has id          
-        T.Commit;
+--        T.Commit;
       end loop; --for loop
     end;
     
