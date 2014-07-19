@@ -1,5 +1,5 @@
-with Sattmate_Exception;
-with General_Routines; use General_Routines;
+with Stacktrace;
+--with General_Routines; use General_Routines;
 with Lock; 
 --with Text_io;
 with Sql;
@@ -14,8 +14,8 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Ini;
 with Rpc;
 with Gnat.Strings;
-with Sattmate_Calendar;
-with Sattmate_Types; use Sattmate_Types;
+with Calendar2;
+with Types; use Types;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
@@ -28,7 +28,7 @@ procedure Bet_Checker is
   Config          : Command_Line_Configuration;
   OK              : Boolean := False;
   Is_Time_To_Exit : Boolean := False;
-  Now             : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+  Now             : Calendar2.Time_Type := Calendar2.Clock;
   
 begin
    Define_Switch
@@ -104,7 +104,7 @@ begin
         Log(Me, "Timeout stop");
     end;    
     
-    Now := Sattmate_Calendar.Clock;
+    Now := Calendar2.Clock;
     --restart every day
     Is_Time_To_Exit := Now.Hour = 01 and then 
                        Now.Minute = 00 and then
@@ -124,7 +124,7 @@ exception
   when Lock.Lock_Error => 
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 --    Log(Me, "Close Db");
 --    Sql.Close_Session;
     Log(Me, "Closed log and die");

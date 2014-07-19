@@ -1,7 +1,7 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 with Text_Io;
 --with Table_Araceprices;
@@ -9,9 +9,9 @@ with Table_Arunners;
 with Table_Amarkets;
 --with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
-with Sattmate_Calendar;  use Sattmate_Calendar;
+with Calendar2;  use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Runners;
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
@@ -73,7 +73,7 @@ procedure Print_Lay_During_Football_Odds is
    Path : constant String := "/home/bnl/bnlbot/botstart/bot-1-0/script/plot/lay_football/match_odds";
    
    Game_Start,
-   Current_Game_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
+   Current_Game_Time : Calendar2.Time_Type := Calendar2.Time_Type_First; 
    
    A_Bet_Laid : Float_8 := 0.0;
    
@@ -201,7 +201,7 @@ begin
       
       Text_Io.Create(File => F, Name => Path & "/" & Data.Marketid & ".dat");
       Bet_Status := No_Bet_Laid;
-      Game_Start := Sattmate_Calendar.Time_Type_First;
+      Game_Start := Calendar2.Time_Type_First;
       Back_Odds_Used := 0.0;
       
       Game_Loop : loop -- get a new market/odds combo
@@ -223,7 +223,7 @@ begin
         end loop;
         
         
-        if Game_Start = Sattmate_Calendar.Time_Type_First then 
+        if Game_Start = Calendar2.Time_Type_First then 
           Game_Start := Current_Game_Time;          
         end if;      
         
@@ -304,7 +304,7 @@ begin
         
         Text_Io.Put_Line(File => F, Item =>
 --            Current_Game_Time.To_String        & "|" & 
-            Sattmate_Calendar.String_Interval(Interval      => (Current_Game_Time - Game_Start), 
+            Calendar2.String_Interval(Interval      => (Current_Game_Time - Game_Start), 
                                                Days         => False,
                                                Milliseconds => False
                                                ) & "|" & 
@@ -394,5 +394,5 @@ begin
   
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Print_Lay_During_Football_Odds;

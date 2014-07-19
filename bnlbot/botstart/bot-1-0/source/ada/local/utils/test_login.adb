@@ -4,11 +4,11 @@
 --with Ini;
 --with Ada.Environment_Variables;
 with Logging; use Logging;
-with Sattmate_Exception;
+with Stacktrace;
 with Table_Abalances;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Types; use Bot_Types;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 procedure Test_Login is
 
 --   package EV renames Ada.Environment_Variables;
@@ -52,6 +52,6 @@ begin
   
   
 exception  
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 
 end Test_Login;

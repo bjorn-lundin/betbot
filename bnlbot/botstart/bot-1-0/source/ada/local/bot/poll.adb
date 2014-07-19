@@ -1,12 +1,12 @@
 --with Text_Io;
-with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
+with Stacktrace;
+with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Bot_Messages;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
@@ -44,7 +44,7 @@ procedure Poll is
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
 
-  Now : Sattmate_Calendar.Time_Type;
+  Now : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
@@ -576,7 +576,7 @@ begin
           Rpc.Login;
         end if;
     end;
-    Now := Sattmate_Calendar.Clock;
+    Now := Calendar2.Clock;
 
     --restart every day
     Is_Time_To_Exit := Now.Hour = 01 and then
@@ -597,7 +597,7 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 --    Log(Me, "Close Db");
 --    Sql.Close_Session;
     Log(Me, "Closed log and die");

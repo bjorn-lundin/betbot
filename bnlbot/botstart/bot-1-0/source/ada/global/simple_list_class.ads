@@ -1,33 +1,39 @@
---------------------------------------------------------------------------------
---
---	COPYRIGHT	SattControl AB, Malm|
---
---	FILE NAME	SIMPLE_LIST_CLASS_SPEC.ADA
---
---	RESPONSIBLE	Henrik Dannberg
---
---  DESCRIPTION  Generic package SIMPLE_LIST_CLASS_2
---               create lists with the following characteristics:
---               
---                  o  Elements can be inserted either first or last
---                     in the list.
---                  o  Elements can be read from first to last.
---                  o  Elements can be removed either from the start of
---                     the list or from the end of the list.
---               
---               No garbage collection is used. Instead, all internal
---               memory associated with an element is deallocated when
---               the element is removed from the list.
---
---------------------------------------------------------------------------------
---Version   Author     Date         Description
---------------------------------------------------------------------------------
---6.0       HKD        18-AUG-1994  Original version
---9.5-10139 SNE        10-May-2006  Added the following new procedures GET, PUT, 
---                                  UPDATE and DELETE.
---------------------------------------------------------------------------------
--- #4516 BNL 25-Apr-2014 Made the list tagged.  Object.verb syntax
------------------------------------------------------------------
+------------------------------------------------------------------------------
+--                                                                          --
+--                        Simple_List_Class                                 --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--  Copyright (c) Björn Lundin 2014                                         --
+--  All rights reserved.                                                    --
+--                                                                          --
+--  Redistribution and use in source and binary forms, with or without      --
+--  modification, are permitted provided that the following conditions      --
+--  are met:                                                                --
+--  1. Redistributions of source code must retain the above copyright       --
+--     notice, this list of conditions and the following disclaimer.        --
+--  2. Redistributions in binary form must reproduce the above copyright    --
+--     notice, this list of conditions and the following disclaimer in      --
+--     the documentation and/or other materials provided with the           --
+--     distribution.                                                        --
+--  3. Neither the name of Björn Lundin nor the names of its contributors   --
+--     may be used to endorse or promote products derived from this         --
+--     software without specific prior written permission.                  --
+--                                                                          --
+--  THIS SOFTWARE IS PROVIDED BY BJÖRN LUNDIN AND CONTRIBUTORS ``AS         --
+--  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT          --
+--  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS       --
+--  FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL BJÖRN       --
+--  LUNDIN OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,              --
+--  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES                --
+--  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR      --
+--  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)      --
+--  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN               --
+--  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR            --
+--  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,          --
+--  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                      --
+--                                                                          --
+------------------------------------------------------------------------------
 with Ada.Finalization;
 
 generic
@@ -36,8 +42,7 @@ generic
 package Simple_List_Class is
 
 
---#4516  type LIST_TYPE is private;
-    type List_Type is tagged private; --#4516
+    type List_Type is tagged private; 
 
   --
   -- Allocate a new empty list object
@@ -55,20 +60,6 @@ package Simple_List_Class is
   -- created. It is also illegal after it has been released.
   --
   function Is_Legal (List: List_Type) return Boolean;
-
-  --v9.5-10139
-  -- If you want to have the list sorted you can use this procedure to put
-  -- the elements into the list. You can either have the list sorted in ascending 
-  -- or descending order. If you instantiate the function RELATION_OPERATOR 
-  -- with a "less than" operator you will get an ascending list and with a 
-  -- "greater than" operator a descending list. If some elements are equal, the 
-  -- element which was put into the list first will be closest to the end of the 
-  -- list. 
-  -- After the procedure the list handler points at the new element.
-  --
-  generic
-    with function Relation_Operator (Left, Right : in Element_Type) return Boolean;    
-    procedure Put (List : in  List_Type; Element : in Element_Type);
 
   --
   -- Insert element as first in list.
@@ -94,30 +85,6 @@ package Simple_List_Class is
   procedure Get_Next (List       : in List_Type; 
                       Element    : out Element_Type;
                       End_Of_List: out Boolean);
-
-  -- v9.5-10139
-  -- If you want to make a search in the list, you have to put a key value into 
-  -- the ELEMENT_TYPE record before you call the procedure GET. If the record is
-  -- present in the list the record is returned, otherwise nothing is returned.
-  -- If the record is present the variable END_OF_LIST returns FALSE, otherwise
-  -- it returns TRUE. 
-  -- It is the function IS_EQUAL which decides whether a record in the list 
-  -- contains the key value or not. The parameter LEFT is the parameter used by
-  -- the element in the list and the parameter RIGHT by the your key value.
-  -- If the parameter CONTINUE_IN_LIST is FALSE then the search in the list will
-  -- start at the first record in the list LIST.
-  -- If the parameter CONTINUE_IN_LIST is TRUE then the search in the list will
-  -- start at the next record in the current list, i.e. the parameter LIST has
-  -- no meaning in this call.
-  -- If the element is not found, the list handler's pointer is undefined.
-  --
-  generic
-    with function Is_Equal (Left, Right : in Element_Type) return Boolean;
-  procedure Get 
-            (List             : in List_Type;
-             Element          : in out Element_Type;
-             End_Of_List      : out Boolean;
-             Continue_In_List : in Boolean := False);
 
   --
   -- Read and remove first element in list. Internal storage will be 

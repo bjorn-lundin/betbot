@@ -1,6 +1,6 @@
 
-with Sattmate_Types ; use Sattmate_Types;
-with Sattmate_Exception;
+with Types ; use Types;
+with Stacktrace;
 with Sql;
 with Text_Io;
 with Table_Arunners;
@@ -8,9 +8,9 @@ with Table_Aprices;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
@@ -28,8 +28,8 @@ procedure Back_All_G4 is
    T                     : Sql.Transaction_Type;
    Select_All            : Sql.Statement_Type;
 
-   Start_Date            : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-   Stop_Date             : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+   Start_Date            : Calendar2.Time_Type := Calendar2.Time_Type_First;
+   Stop_Date             : Calendar2.Time_Type := Calendar2.Time_Type_Last;
 
    Eos                   : Boolean := False;
 
@@ -99,15 +99,15 @@ begin
       return;
     end if;
 
-    Start_Date := Sattmate_Calendar.To_Time_Type (Sa_Par_Start_Date.all, "00:00:00:000");
-    Stop_Date  := Sattmate_Calendar.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
---   Start_Date := Start_Date - Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --remove a day first
---   Stop_Date  := Stop_Date  - Sattmate_Calendar.Interval_Type'(1,0,0,0,0); --remove a day first
+    Start_Date := Calendar2.To_Time_Type (Sa_Par_Start_Date.all, "00:00:00:000");
+    Stop_Date  := Calendar2.To_Time_Type (Sa_Par_Stop_Date.all, "23:59:59:999");
+--   Start_Date := Start_Date - Calendar2.Interval_Type'(1,0,0,0,0); --remove a day first
+--   Stop_Date  := Stop_Date  - Calendar2.Interval_Type'(1,0,0,0,0); --remove a day first
 
 
     Log ("params: " & 
-         "start_date=" &  Sattmate_Calendar.String_Date_And_Time(Start_Date) & " " &
-         "stop_date=" &  Sattmate_Calendar.String_Date_And_Time(Stop_Date) & " " &
+         "start_date=" &  Calendar2.String_Date_And_Time(Start_Date) & " " &
+         "stop_date=" &  Calendar2.String_Date_And_Time(Stop_Date) & " " &
          "animal=" & Sa_Par_Animal.all & " " &
          "max_odds=" & Ia_Max_Odds'Img & " " &
          "min_odds=" & Ia_Min_Odds'Img );
@@ -221,5 +221,5 @@ begin
    Log("Total profit = " & Integer_4(Global_Profit)'Img);
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Back_All_G4;

@@ -1,5 +1,5 @@
 with Ada.Finalization; 
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Types ; use Bot_Types;
 
 with Bot_Messages;

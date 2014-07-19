@@ -1,5 +1,5 @@
 
-with Sattmate_Types;  use Sattmate_Types;
+with Types;  use Types;
 with Process_Io;
 with Bot_Types; use Bot_Types;
 pragma Elaborate_All(Process_Io);--9.3-0028

@@ -1,5 +1,5 @@
 
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Types; use Bot_Types;
 package Bet is
   function Profit_Today(Bet_Name : Bet_Name_Type) return Float_8 ;

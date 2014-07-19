@@ -10,15 +10,15 @@ with Table_Awinners;
 
 with Sql;
 with Logging ; use Logging;
---with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
+--with Types; use Types;
+with Calendar2; use Calendar2;
 --with Ada.Strings ; use Ada.Strings;
 --with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with General_Routines; use General_Routines;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Sattmate_Exception;
+with Stacktrace;
 
 
 procedure Migrate_G3_G3 is
@@ -47,15 +47,15 @@ procedure Migrate_G3_G3 is
   Sa_Par_Startts   : aliased Gnat.Strings.String_Access;
   Sa_Par_Stopts    : aliased Gnat.Strings.String_Access;
   
-  Par_Startts   : Sattmate_Calendar.Time_Type;
-  Par_Stopts    : Sattmate_Calendar.Time_Type;
+  Par_Startts   : Calendar2.Time_Type;
+  Par_Stopts    : Calendar2.Time_Type;
   
   Config : Command_Line_Configuration;
              
  ------------------------------------------------------------------------------------------
  procedure Read_G3_Markets(List : in out Table_Amarkets.Amarkets_List_Pack.List_Type;
-                           Startts : Sattmate_Calendar.Time_Type;
-                           Stopts  : Sattmate_Calendar.Time_Type
+                           Startts : Calendar2.Time_Type;
+                           Stopts  : Calendar2.Time_Type
                            ) is
   Me : constant String := "Read_G3_Markets"; 
   Stm : Sql.Statement_Type;
@@ -372,8 +372,8 @@ begin
    Log(Me, "hardcoded dates 2013-08-11_12:51:00.001  -> 2013-12-31_23:59:59.999");
     
    
---   Par_Startts := Sattmate_Calendar.To_Time_Type(Sa_Par_Startts.all(1..10), Sa_Par_Startts.all(12..23) );
---   Par_Stopts  := Sattmate_Calendar.To_Time_Type(Sa_Par_Stopts.all(1..10),  Sa_Par_Stopts.all(12..23) );   
+--   Par_Startts := Calendar2.To_Time_Type(Sa_Par_Startts.all(1..10), Sa_Par_Startts.all(12..23) );
+--   Par_Stopts  := Calendar2.To_Time_Type(Sa_Par_Stopts.all(1..10),  Sa_Par_Stopts.all(12..23) );   
 
   -- log in to old database
   Log(Me, "log in to old database");
@@ -462,6 +462,6 @@ exception
   when  Gnat.Command_Line.Invalid_Switch =>
     Display_Help(Config);
   when E: others => 
-    Sattmate_Exception.Tracebackinfo(E); 
+    Stacktrace.Tracebackinfo(E); 
  
 end Migrate_G3_G3;

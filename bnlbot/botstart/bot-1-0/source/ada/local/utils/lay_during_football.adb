@@ -1,7 +1,7 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 --with Text_Io;
 with Table_Araceprices;
@@ -10,9 +10,9 @@ with Table_Amarkets;
 with Table_Aevents;
 --with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
-with Sattmate_Calendar;  use Sattmate_Calendar;
+with Calendar2;  use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
@@ -96,7 +96,7 @@ procedure Lay_During_Football is
 --   Cnt : Integer_4 := 0;
    
    Current_Game_Time, 
-   Game_Start : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
+   Game_Start : Calendar2.Time_Type := Calendar2.Time_Type_First; 
 
 ------------------------------------------------------------------
    procedure Fix_Average(R : in out Runners_Type ) is
@@ -309,7 +309,7 @@ begin
       Select_Prices_For_All_Runners_In_One_Market.Open_Cursor; 
       
       Bet_Status := No_Bet_Laid;
-      Game_Start := Sattmate_Calendar.Time_Type_First;
+      Game_Start := Calendar2.Time_Type_First;
       
       Game_Loop : loop -- get a new market/odds combo
         Select_Prices_For_All_Runners_In_One_Market.Fetch(Eos3);         
@@ -329,7 +329,7 @@ begin
         Fix_Average(Runners(Draw));
         
         Select_Prices_For_All_Runners_In_One_Market.Get_Timestamp("PRICETS", Current_Game_Time);
-        if Game_Start = Sattmate_Calendar.Time_Type_First then 
+        if Game_Start = Calendar2.Time_Type_First then 
           Game_Start := Current_Game_Time;
         end if;      
         
@@ -475,5 +475,5 @@ begin
        
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Lay_During_Football;

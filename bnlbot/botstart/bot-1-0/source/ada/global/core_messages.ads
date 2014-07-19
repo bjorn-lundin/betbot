@@ -1,9 +1,9 @@
 --------------------------------------------------------------------------------
 
 
-with Sattmate_Types;  use Sattmate_Types;
+with Types;  use Types;
 with Process_Io;
---with SATTMATE_CALENDAR;  -- v9.6
+--with Calendar2;  -- v9.6
 
 pragma Elaborate_All(Process_Io);--9.3-0028
 

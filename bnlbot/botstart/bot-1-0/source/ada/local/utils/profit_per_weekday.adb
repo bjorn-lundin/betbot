@@ -1,5 +1,5 @@
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Sattmate_Types;    use Sattmate_Types;
+with Types;    use Types;
 with Gnat.Strings;
 with Sql;
 with Logging;               use Logging;

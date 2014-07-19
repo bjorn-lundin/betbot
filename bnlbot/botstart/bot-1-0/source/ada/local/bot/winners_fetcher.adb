@@ -3,7 +3,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 with Ada.Calendar;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Sql;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
@@ -16,7 +16,7 @@ with Sax.Readers;        use Sax.Readers;
 with Input_Sources.Strings; use Input_Sources.Strings;
 with Unicode.CES;
 with Sax.Attributes;
-with Sattmate_Exception;
+with Stacktrace;
 with General_Routines;
 with Lock ;
 with Table_Awinners;
@@ -354,7 +354,7 @@ begin
   when Lock.Lock_Error =>
     Posix.Do_Exit(0); -- terminate
   when E: others =>
-    Sattmate_Exception. Tracebackinfo(E);
+    Stacktrace. Tracebackinfo(E);
     Logging.Close;
 --    if Sql.Is_Session_Open then
 --      Sql.Close_Session;

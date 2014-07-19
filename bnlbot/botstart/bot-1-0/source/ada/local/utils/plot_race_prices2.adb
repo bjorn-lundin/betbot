@@ -1,7 +1,7 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 with Text_Io;
 with Table_Apricesfinish;
@@ -10,9 +10,9 @@ with Table_Amarkets;
 with Table_Abets;
 --with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
@@ -156,14 +156,14 @@ begin
           end if;
           
           Text_Io.Create(F, Text_Io.Out_File,
-          General_Routines.Skip_All_Blanks(H_Data.Marketid & '_' & H_Data.Selectionid'Img & "_" & Suffix & ".dat"));
+          Skip_All_Blanks(H_Data.Marketid & '_' & H_Data.Selectionid'Img & "_" & Suffix & ".dat"));
           
           Loop_Runner : loop
             Stm_Select_Eventid_Selectionid_O.Fetch(Eos);
             exit Loop_Runner when Eos;
             History := Table_Apricesfinish.Get(Stm_Select_Eventid_Selectionid_O);           
             
-            Text_IO.Put_Line(F, Sattmate_Calendar.String_Date_Time_ISO(History.Pricets, " ", "") & " | " & 
+            Text_IO.Put_Line(F, Calendar2.String_Date_Time_ISO(History.Pricets, " ", "") & " | " & 
                               History.Marketid & " | " & 
                               History.Selectionid'Img & " | " & 
                               F8_Image(History.Backprice) & " | " & 
@@ -193,11 +193,11 @@ begin
             
 	    -- use Place data but name it Win market
             Text_Io.Create(F, Text_Io.Out_File,
-            General_Routines.Skip_All_Blanks("bets_" & H_Data.Marketid & "_" & Bets.Betname & "_" & Suffix & ".dat"));
-            Log("bet " & General_Routines.Trim(Bets.Betname)) ;
+            Skip_All_Blanks("bets_" & H_Data.Marketid & "_" & Bets.Betname & "_" & Suffix & ".dat"));
+            Log("bet " & Trim(Bets.Betname)) ;
             
-            Text_IO.Put_Line(F, Sattmate_Calendar.String_Date_Time_ISO(Bets.Betplaced, " ", "") & " | " & 
-                                General_Routines.Trim(Bets.Betname) & " | " & 
+            Text_IO.Put_Line(F, Calendar2.String_Date_Time_ISO(Bets.Betplaced, " ", "") & " | " & 
+                                Trim(Bets.Betname) & " | " & 
                                 F8_Image(Bets.Size) & " | " & 
                                 F8_Image(Bets.Price) & " | " & 
                                 F8_Image(Bets.Sizematched) & " | " & 
@@ -219,5 +219,5 @@ begin
 
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Plot_Race_Prices2;

@@ -1,10 +1,10 @@
 --with Text_Io;
-with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
+with Stacktrace;
+with Types; use Types;
 with Sql;
-with General_Routines;
+--with General_Routines;
 with Ada.Calendar.Time_Zones;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 with Ada.Strings; use Ada.Strings;
@@ -82,14 +82,14 @@ procedure Markets_Fetcher is
   Is_Time_To_Exit : Boolean := False;
   
   My_Lock  : Lock.Lock_Type;    
-  UTC_Time_Start, UTC_Time_Stop  : Sattmate_Calendar.Time_Type ;
+  UTC_Time_Start, UTC_Time_Stop  : Calendar2.Time_Type ;
   
-  Eleven_Seconds  : Sattmate_Calendar.Interval_Type := (0,0,0,11,0);
---  One_Half_Minute : Sattmate_Calendar.Interval_Type := (0,0,0,30,0);
---  One_Minute      : Sattmate_Calendar.Interval_Type := (0,0,1,0,0);
---  Five_Minutes      : Sattmate_Calendar.Interval_Type := (0,0,5,0,0);
-  One_Hour        : Sattmate_Calendar.Interval_Type := (0,1,0,0,0);
-  Two_Hours       : Sattmate_Calendar.Interval_Type := (0,2,0,0,0);
+  Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
+--  One_Half_Minute : Calendar2.Interval_Type := (0,0,0,30,0);
+--  One_Minute      : Calendar2.Interval_Type := (0,0,1,0,0);
+--  Five_Minutes      : Calendar2.Interval_Type := (0,0,5,0,0);
+  One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
+  Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
   T : Sql.Transaction_Type;
  
   Turns : Integer := 0;
@@ -194,8 +194,8 @@ procedure Markets_Fetcher is
   Is_Time_To_Check_Markets : Boolean ;
   Market_Found : Boolean;
   Market_Ids                  : JSON_Array := Empty_Array;
-  Minute_Last_Check : Sattmate_Calendar.Minute_Type := 0;
-  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+  Minute_Last_Check : Calendar2.Minute_Type := 0;
+  Now : Calendar2.Time_Type := Calendar2.Clock;
   
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -294,7 +294,7 @@ begin
           raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
         end if;
         
-        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & General_Routines.Trim(Process_Io.Sender(Msg).Name));
+        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  => exit Main_Loop;
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
@@ -305,7 +305,7 @@ begin
             raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
           end if;
       end;
-      Now := Sattmate_Calendar.Clock;
+      Now := Calendar2.Clock;
       Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
       Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);  --??
       exit when Is_Time_To_Check_Markets;
@@ -331,8 +331,8 @@ begin
 --    UTC_Time_Start := UTC_Time_Start + One_Hour;
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
-    Market_Start_Time.Set_Field(Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Start));
-    Market_Start_Time.Set_Field(Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(UTC_Time_Stop));
+    Market_Start_Time.Set_Field(Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(UTC_Time_Start));
+    Market_Start_Time.Set_Field(Field_Name => "to",   Field => Calendar2.String_Date_Time_ISO(UTC_Time_Stop));
    
     Filter.Set_Field (Field_Name => "exchangeIds",        Field => Exchange_Ids);                    
     Filter.Set_Field (Field_Name => "eventTypeIds",       Field => Event_Type_Ids);                      
@@ -470,7 +470,6 @@ begin
     Log(Me, "Market_Found: " & Market_Found'Img);
     if Market_Found then 
       declare
-        use General_Routines;
         Market   : JSON_Value := Create_Object;
         MNR      : Bot_Messages.Market_Notification_Record;
         Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
@@ -733,7 +732,7 @@ exception
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
     Posix.Do_Exit(0); -- terminate
 end Markets_Fetcher;
 

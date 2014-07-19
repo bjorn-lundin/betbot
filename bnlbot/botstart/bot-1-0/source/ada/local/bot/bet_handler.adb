@@ -3,7 +3,7 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
---with Sattmate_Types; use Sattmate_Types;
+--with Types; 
 with Gnatcoll.Json; use Gnatcoll.Json;
 --with Bot_Types; use  Bot_Types;
 with Bot_Config; use Bot_Config;
@@ -11,15 +11,14 @@ with Bot_System_Number;
 with Table_Abets;
 with Table_Abalances;
 with Sql;
-with General_Routines;
-with Sattmate_Calendar;
+with Calendar2;
 
 with Aws;
 with Aws.Client;
 with Aws.Response;
 with Aws.Headers;
 with Aws.Headers.Set;
-with Sattmate_Exception;
+with Stacktrace;
 --with Process_IO;
 with Bot_Svn_Info;
 with Rpc;
@@ -194,10 +193,10 @@ package body Bet_Handler is
 
     Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
                                  "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &
-                                 "Markettype: " &  General_Routines.Trim(Bet.Bet_Info.Market.Markettype) & " " &
+                                 "Markettype: " &  Types.Trim(Bet.Bet_Info.Market.Markettype) & " " &
                                  "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &
                                  "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &
-                                 "evt-name: " &  General_Routines.Trim(Bet.Bet_Info.Event.Eventname));
+                                 "evt-name: " &  Types.Trim(Bet.Bet_Info.Event.Eventname));
 
     Bet.Check_Conditions_Fulfilled(Fulfilled);
     if not Fulfilled then
@@ -218,16 +217,16 @@ package body Bet_Handler is
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
     Num_Runners : Integer ;
-    use General_Routines;
+    
   begin
     begin
       Bet_Info := Create(Market_Notification);
     exception
       when E: Bad_Data =>
-        Sattmate_Exception.Tracebackinfo(E);
+        Stacktrace.Tracebackinfo(E);
         return;
       when F: No_Data =>
-        Sattmate_Exception.Tracebackinfo(F);
+        Stacktrace.Tracebackinfo(F);
         return;
   end ;
 
@@ -260,7 +259,7 @@ package body Bet_Handler is
     Log(Me & "Treat_Market", "end market:" & Market_Notification.Market_Id);
   exception
     when E: Bad_Data =>
-        Sattmate_Exception.Tracebackinfo(E);
+        Stacktrace.Tracebackinfo(E);
       Log(Me & "Treat_Market", "BAD DATA, skip:" & Market_Notification.Market_Id);
   end Treat_Market;
 
@@ -268,7 +267,7 @@ package body Bet_Handler is
 
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type is
     Tmp : Bet_Type ;
-    use General_Routines;
+    
   begin
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
@@ -329,7 +328,7 @@ package body Bet_Handler is
         when 7 =>    -- horses
         if Continue_Betting then
           declare
-            use General_Routines;
+            
             Favorite_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(1).Price.Backprice);
           begin
             if Favorite_Price > Bet.Bot_Cfg.Race_Favorite_Max_Price then
@@ -359,7 +358,7 @@ package body Bet_Handler is
             Saldo          : Table_Abalances.Data_Type;
             Expected_Exposure_This_Bet : Float_8 := 0.0;
             use type Rpc.Result_Type;
-            use General_Routines;
+            
           begin
             Rpc.Get_Balance(Betfair_Result, Saldo);
             if Betfair_Result = Rpc.Ok then
@@ -396,7 +395,6 @@ package body Bet_Handler is
               case Bet.Bot_Cfg.Green_Up_Mode is
                 when Back_First_Then_Lay =>
                   declare
-                    use  General_Routines;
                     Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
                     Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                     Lay_Price  : Bet_Price_Type := 0.0;
@@ -448,7 +446,6 @@ package body Bet_Handler is
                   end;
                 when Lay_First_Then_Back =>
                   declare
-                    use  General_Routines;
                     Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
                     Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                     Back_Price : Bet_Price_Type := 0.0;
@@ -622,7 +619,6 @@ package body Bet_Handler is
                   case Bet.Bot_Cfg.Bet_Type is
                     when Back =>
                       declare
-                        use  General_Routines;
                         Back_Price : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Backprice);
                         Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                         Pip_Back   : Pip_Type ;
@@ -643,7 +639,7 @@ package body Bet_Handler is
                       
                     when Lay =>
                       declare
-                        use General_Routines;
+                        
                         Lay_Price  : Bet_Price_Type := Bet_Price_Type(Bet.Bet_Info.Runner_Array(i).Price.Layprice);
                         Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
                         Pip_Lay    : Pip_Type ;
@@ -731,7 +727,7 @@ package body Bet_Handler is
             Saldo          : Table_Abalances.Data_Type;
             Expected_Exposure_This_Bet : Float_8 := 0.0;
             use type Rpc.Result_Type;
-            use General_Routines;
+            
           begin
             Rpc.Get_Balance(Betfair_Result, Saldo);
             if Betfair_Result = Rpc.Ok then
@@ -758,7 +754,7 @@ package body Bet_Handler is
           Log(Me & Service, "start football");         
           --for football start...
           declare
-            use General_Routines;
+            
             Lay_Size   : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
             Back_Size  : Bet_Size_Type  := Bet.Bot_Cfg.Bet_Size ;
             Pip_Lay    : Pip_Type ;
@@ -1053,10 +1049,10 @@ package body Bet_Handler is
 
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
-    use General_Routines;
+    
   begin
     Result := True;
-    Log(Me & "Check_Conditions_Fulfilled", "marketid " &  General_Routines.Trim(Bet.Bet_Info.Market.Marketid ));
+    Log(Me & "Check_Conditions_Fulfilled", "marketid " &  Types.Trim(Bet.Bet_Info.Market.Marketid ));
 
     -- some sanity checks
     case Bet.Bet_Info.Event.Eventtypeid is
@@ -1195,7 +1191,7 @@ package body Bet_Handler is
 
     -- Allowed day ?
     declare
-      use Sattmate_Calendar;
+      use Calendar2;
       Race_Day : Week_Day_Type := Week_Day_Of(Bet.Bet_Info.Market.Startts);
     begin
       if not Bet.Bot_Cfg.Allowed_Days(Race_Day) then
@@ -1208,8 +1204,8 @@ package body Bet_Handler is
     case Bot_Config.Config.System_Section.Bot_Mode is 
       when Real =>
         -- check market status --?
-        if General_Routines.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
-          Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & General_Routines.Trim(Bet.Bet_Info.Market.Status) & "'");
+        if Types.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
+          Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & Types.Trim(Bet.Bet_Info.Market.Status) & "'");
           Result := False;
           return;
         end if;
@@ -1224,7 +1220,7 @@ package body Bet_Handler is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     Profit : Float_8 := 0.0;
-    use Sattmate_Calendar;
+    use Calendar2;
     Start_Date, End_Date : Time_Type := Clock;
   begin
     T.Start;
@@ -1256,8 +1252,8 @@ package body Bet_Handler is
       Select_Profit_Today.Set("BOTMODE", Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Profit_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
 
-      Select_Profit_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
-      Select_Profit_Today.Set_Timestamp( "ENDOFDAY",End_Date);
+      Select_Profit_Today.Set( "STARTOFDAY",Start_Date);
+      Select_Profit_Today.Set( "ENDOFDAY",End_Date);
       Select_Profit_Today.Open_Cursor;
       Select_Profit_Today.Fetch(Eos);
       if not Eos then
@@ -1273,7 +1269,7 @@ package body Bet_Handler is
   function Num_Losses_Today(Bet : Bet_Type) return Integer_4 is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
-    use Sattmate_Calendar;
+    use Calendar2;
     Start_Date, End_Date : Time_Type := Clock;
     Num_Losses : Integer_4 := 0;
   begin
@@ -1303,8 +1299,8 @@ package body Bet_Handler is
 
       Select_Lost_Today.Set("BOTMODE",  Bot_Mode(Bot_Config.Config.System_Section.Bot_Mode));
       Select_Lost_Today.Set( "BETNAME", To_String(Bet.Bot_Cfg.Bet_Name));
-      Select_Lost_Today.Set_Timestamp( "STARTOFDAY",Start_Date);
-      Select_Lost_Today.Set_Timestamp( "ENDOFDAY",End_Date);
+      Select_Lost_Today.Set( "STARTOFDAY",Start_Date);
+      Select_Lost_Today.Set( "ENDOFDAY",End_Date);
       Select_Lost_Today.Open_Cursor;
       Select_Lost_Today.Fetch(Eos);
       if not Eos then
@@ -1314,7 +1310,7 @@ package body Bet_Handler is
       end if;
       Select_Lost_Today.Close_Cursor;
     T.Commit;
-    Log(Me & "Num_Losses_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost" & Num_Losses'Img & " times today: " & Sattmate_Calendar.String_Date(Start_Date));
+    Log(Me & "Num_Losses_Today",  To_String(Bet.Bot_Cfg.Bet_Name) & " :" & " HAS lost" & Num_Losses'Img & " times today: " & Calendar2.String_Date(Start_Date));
     return Num_Losses;
   end Num_Losses_Today;
 
@@ -1412,7 +1408,7 @@ package body Bet_Handler is
     Local_Size :  Bet_Size_Type := Size;
 
 --    Bet_Id : Integer_8 := 0;
-    Now    : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Now    : Calendar2.Time_Type := Calendar2.Clock;
     T      : Sql.Transaction_Type;
 
     Answer_Place_Orders : Aws.Response.Data;
@@ -1478,7 +1474,7 @@ package body Bet_Handler is
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
         declare
-          Size_String : String := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
+          Size_String : String := Types.F8_Image(Float_8(Size)); -- 2 decimals only
         begin
           Local_Size := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
         end;
@@ -1505,7 +1501,7 @@ package body Bet_Handler is
 
         Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
         Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
-        Instruction.Set_Field (Field_Name => "side",        Field => General_Routines.Trim(Side));
+        Instruction.Set_Field (Field_Name => "side",        Field => Types.Trim(Side));
         Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
         Instruction.Set_Field (Field_Name => "selectionId", Field => Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
 
@@ -1633,15 +1629,15 @@ package body Bet_Handler is
           if Reply_Place_Orders.Has_Field("customerRef") then
             Move( Params.Get("customerRef"), Customer_Reference);
 
-            if General_Routines.Trim(Customer_Reference) /= String'(Reply_Place_Orders.Get("customerRef")) then
+            if Types.Trim(Customer_Reference) /= String'(Reply_Place_Orders.Get("customerRef")) then
               Log(Me & "Make_Bet", "expected customerRef '" & Params.Get("customerRef") &
                   "' received customerRef '" & Reply_Place_Orders.Get("customerRef"));
             end if;
           end if;
 
           if Result.Has_Field("marketid") then
-            if General_Routines.Trim(Bet.Bet_Info.Market.Marketid) /= String'(Result.Get("marketid")) then
-              Log(Me & "Make_Bet", "expected marketid '" & General_Routines.Trim(Bet.Bet_Info.Market.Marketid) &
+            if Types.Trim(Bet.Bet_Info.Market.Marketid) /= String'(Result.Get("marketid")) then
+              Log(Me & "Make_Bet", "expected marketid '" & Types.Trim(Bet.Bet_Info.Market.Marketid) &
                   "' received marketid '" & Result.Get("marketid"));
             end if;
           end if;
@@ -1736,7 +1732,7 @@ package body Bet_Handler is
 
     end case;
 
-    if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
+    if Types.Trim(Execution_Report_Status) /= "SUCCESS" then
       Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
@@ -1774,7 +1770,7 @@ package body Bet_Handler is
       T.Start;
         Table_Abets.Insert(Abet);
         Log(Me & "Make_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));
-        if General_Routines.Trim(Execution_Report_Status) = "SUCCESS" then
+        if Types.Trim(Execution_Report_Status) = "SUCCESS" then
           Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
           Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
           Sql.Execute(Update_Betwon_To_Null);
@@ -1826,12 +1822,12 @@ package body Bet_Handler is
     Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
     Pip := Local;
     if not Silent then
-      Log(Me & "Pip.Init", "Price: " & General_Routines.F8_Image(Price) & " became " &
-                                     General_Routines.F8_Image(Local.Pip_Price) &
+      Log(Me & "Pip.Init", "Price: " & Types.F8_Image(Price) & " became " &
+                                     Types.F8_Image(Local.Pip_Price) &
                          " Upper_Index " & Local.Upper_Index'Img &
-                         " Upper_Price " & General_Routines.F8_Image(Global_Odds_Table(Local.Upper_Index))  &
+                         " Upper_Price " & Types.F8_Image(Global_Odds_Table(Local.Upper_Index))  &
                          " Lower_Index " & Local.Lower_Index'Img &
-                         " Lower_Price " & General_Routines.F8_Image(Global_Odds_Table(Local.Lower_Index))  );
+                         " Lower_Price " & Types.F8_Image(Global_Odds_Table(Local.Lower_Index))  );
     end if;                     
   end Init;
   --------------------------------
@@ -1856,7 +1852,7 @@ package body Bet_Handler is
 
   -------------------------------------------------
    procedure Check_Bets is
-    use General_Routines;
+    
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet,Bet_From_List      : Table_Abets.Data_Type;
     T        : Sql.Transaction_Type;
@@ -1869,11 +1865,11 @@ package body Bet_Handler is
     Selection_In_Winners,
     Bet_Won               : Boolean := False;
     Profit                : Float_8 := 0.0;
-    Start_Ts              : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-    Stop_Ts               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+    Start_Ts              : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    Stop_Ts               : Calendar2.Time_Type := Calendar2.Time_Type_Last;
 
     Rpc_Status : Rpc.Result_Type;
-    use type Sattmate_Calendar.Time_Type;
+    use type Calendar2.Time_Type;
     Do_Update : Boolean := True;
   begin
     Log(Me & "Check_Bets", "start");
@@ -1996,13 +1992,13 @@ package body Bet_Handler is
       Select_Real_Bets.Get_Timestamp(1, Start_Ts);
       Stop_Ts := Start_Ts + (1,0,0,0,0); -- 1 day
 --    else
---      Stop_Ts  := Sattmate_Calendar.Clock ; -- now
+--      Stop_Ts  := Calendar2.Clock ; -- now
 --      Start_Ts := Stop_Ts - (1,0,0,0,0);    -- 1 day
     end if;
     Select_Real_Bets.Close_Cursor;
     T.Commit;
 
-    if Start_Ts = Sattmate_Calendar.Time_Type_First then
+    if Start_Ts = Calendar2.Time_Type_First then
       Eos(Abets) := True;
     end if;
     

@@ -1,6 +1,6 @@
 
 with Sql;
---with Sattmate_Calendar;
+--with Calendar2;
 --with Text_Io;
 
 with Logging ; use Logging;
@@ -73,8 +73,8 @@ package body Races is
                                 Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
                                 Animal      : Animal_Type;
-                                Start_Date  : Sattmate_Calendar.Time_Type;
-                                Stop_Date   : Sattmate_Calendar.Time_Type
+                                Start_Date  : Calendar2.Time_Type;
+                                Stop_Date   : Calendar2.Time_Type
                                ) is
       T               : Sql.Transaction_Type;
       Race_Ptr        : Race_Pointer_Type;
@@ -182,8 +182,8 @@ package body Races is
    end Get_Database_Data;
    ------------------------------------------------------------------------------
 
-   function Ok_To_Make_Bet (Last_Loss         : in Sattmate_Calendar.Time_Type;
-                            Eventdate        : in Sattmate_Calendar.Time_Type;
+   function Ok_To_Make_Bet (Last_Loss         : in Calendar2.Time_Type;
+                            Eventdate        : in Calendar2.Time_Type;
                             Profit            : in  Profit_Type ;
                             Max_Daily_Loss    : in Max_Daily_Loss_Type;
                             Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -191,7 +191,7 @@ package body Races is
       Bet_Laid : Boolean := True;
    begin
 --     return True;
-      --      Log("Make_Lay_Bet - last_loss:" & Sattmate_Calendar.String_Date_And_Time(Last_Loss));
+      --      Log("Make_Lay_Bet - last_loss:" & Calendar2.String_Date_And_Time(Last_Loss));
       -- are we allowed to bet at all? is this the day of the last loss ?
       -- then check if we lost more than allowed.
       if  Last_Loss.Day = Eventdate.Day and then
@@ -221,7 +221,7 @@ package body Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
-                           Last_Loss         : in  Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in  Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
                            Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -363,7 +363,7 @@ package body Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
-                           Last_Loss         : in Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
                            Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -439,7 +439,7 @@ package body Races is
                             Bet_Name          : in Bet_Name_Type;
                             Bet_Laid          : in out Boolean ;
                             Profit            : in  Profit_Type ;
-                            Last_Loss         : in  Sattmate_Calendar.Time_Type;
+                            Last_Loss         : in  Calendar2.Time_Type;
                             Saldo             : in out Saldo_Type ;
                             Max_Daily_Loss    : in Max_Daily_Loss_Type;
                             Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -517,7 +517,7 @@ package body Races is
    -----------------------------------------------------------------------------
    procedure Check_Result (Race              : in out Race_Type;
                            Profit            : in out Profit_Type;
-                           Last_Loss         : in out Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in out Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Bet_Won           : in out Boolean ;
                            Bet_Type          : in Bet_Type_Type ) is

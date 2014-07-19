@@ -1,16 +1,16 @@
 --with Text_Io;
-with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
+with Stacktrace;
+with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 --with Ada.Streams;
 
 --with Gnat.Sockets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
---with Sattmate_Calendar; use Sattmate_Calendar;
+--with Calendar2; use Calendar2;
 --with Gnatcoll.Json; use Gnatcoll.Json;
 
 with Ada.Strings; use Ada.Strings;
@@ -58,7 +58,7 @@ procedure Rpc_Tester is
   ---------------------------------------------------------------------
   
 --  procedure Balance( Betfair_Result : in out Rpc.Result_Type ; Saldo : out Table_Abalances.Data_Type) is
---    Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+--    Now : Calendar2.Time_Type := Calendar2.Clock;
 --  begin
 --
 --    Rpc.Get_Balance(Betfair_Result,Saldo);           
@@ -225,7 +225,7 @@ begin
             
               Table_Abets.Insert(Bet);
               Log(Me & "Make_Bet", Bet_Name & " inserted bet: " & Table_Abets.To_String(Bet));
-              if General_Routines.Trim(Bet.Exestatus) = "SUCCESS" then
+              if Trim(Bet.Exestatus) = "SUCCESS" then
                 Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
                 Sql.Set(Update_Betwon_To_Null,"BETID", Bet.Betid);
                 Sql.Execute(Update_Betwon_To_Null);
@@ -248,7 +248,7 @@ begin
 exception
 
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
     Sql.Close_Session;
 end Rpc_Tester;
 

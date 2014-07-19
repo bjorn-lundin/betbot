@@ -10,8 +10,8 @@ with Ada.Directories;
 with Posix;
 --with System_Services;
 with Text_io; use Text_io;
---with Sattmate_Types; use Sattmate_Types;
---with Sattmate_Calendar;
+--with Types; use Types;
+--with Calendar2;
 
 with Ada.Environment_Variables;
     
@@ -90,10 +90,10 @@ package body Process_Io.Pipe is
         declare
           I_S : String(1..Global_Indent) := (others => ' ');
         begin
-          Text_Io.Put_Line(I_S & Sattmate_Calendar.String_Time(Milliseconds => True) & "-" & What);
+          Text_Io.Put_Line(I_S & Calendar2.String_Time(Milliseconds => True) & "-" & What);
         end;
       else
-        Text_Io.Put_Line(Sattmate_Calendar.String_Time(Milliseconds => True) & "-" & What);
+        Text_Io.Put_Line(Calendar2.String_Time(Milliseconds => True) & "-" & What);
       end if;
     end if;
   end Log;
@@ -124,7 +124,7 @@ package body Process_Io.Pipe is
     aPipe.Device_Length := To_String(aPipe.Device)'Length;
     aPipe.C_Device := To_Unbounded_String(To_String(aPipe.Device) & Ascii.Nul);
     aPipe.C_Device_Length := To_String(aPipe.C_Device)'Length;
-    aPipe.Status.Created  := Sattmate_Calendar.Clock;
+    aPipe.Status.Created  := Calendar2.Clock;
     aPipe.Is_Initialized  := True;
     return aPipe;
   end Create;
@@ -313,7 +313,7 @@ package body Process_Io.Pipe is
   procedure Increase_Sent(aPipe : in out Pipe_Type) is
   begin
     aPipe.Status.Num_Sent  := aPipe.Status.Num_Sent+1;
-    aPipe.Status.Last_Sent := Sattmate_Calendar.Clock;
+    aPipe.Status.Last_Sent := Calendar2.Clock;
   end Increase_Sent;
   ------------------------------------------------------
   procedure Increase_Failed_Sent(aPipe : in out Pipe_Type) is
@@ -329,7 +329,7 @@ package body Process_Io.Pipe is
   procedure Increase_Received(aPipe : in out Pipe_Type) is
   begin
     aPipe.Status.Num_Received  := aPipe.Status.Num_Received+1;
-    aPipe.Status.Last_Received := Sattmate_Calendar.Clock;
+    aPipe.Status.Last_Received := Calendar2.Clock;
   end Increase_Received;
   ------------------------------------------------------
   procedure Send_Statistics(aPipe : in out Pipe_Type; Message : Process_Io.Message_Type) is

@@ -1,10 +1,10 @@
 
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Types ; use Bot_Types;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
-with Sattmate_Calendar;
+with Calendar2;
 
 package Bot_Config is
 
@@ -16,7 +16,7 @@ package Bot_Config is
 
   Bad_Config : exception;
 
-  type Allowed_Days_Array is array(Sattmate_Calendar.Week_Day_Type'range) of Boolean;
+  type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
 
   type Global_Section_Type is record
     Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;

@@ -1,12 +1,12 @@
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Exception;
+with Types; use Types;
+with Stacktrace;
 with Ada.Strings ; use Ada.Strings;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Text_io;
 with Bot_Messages;
 with Process_Io;
 with Core_Messages;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
@@ -114,5 +114,5 @@ begin
     end if;
 
 exception
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 end Bot_Send;

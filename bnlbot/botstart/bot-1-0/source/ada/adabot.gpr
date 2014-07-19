@@ -36,7 +36,7 @@ project Adabot is
    Stat_Mains   := ("change_10_percent.adb",
                     "greening_up_1.adb",
                     "lay_football.adb",
-                    "lay_at_finish.adb",
+--                    "lay_at_finish.adb",
                     "lay_during_football.adb",
                     "print_lay_during_football_odds.adb",
                     "lay_during_race.adb",

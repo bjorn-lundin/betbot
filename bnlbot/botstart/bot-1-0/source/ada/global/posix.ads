@@ -2,12 +2,12 @@
 --
 with Interfaces.C;
 with Interfaces.C.Strings;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with C_Constants;
 
 package Posix is
 
-  type Byte is new Sattmate_Types.Byte;
+  type Byte is new Types.Byte;
   type Short is new Integer_2;
   type Unsigned_Short is new Word;
   type Int is new Integer_4;
@@ -39,7 +39,7 @@ package Posix is
   O_NOFOLLOW : constant Int := Int(C_Constants.O_NOFOLLOW);  -- if sym link, open link itself  
 
    ------------ lock files start --------------
-   type Short_Integer is new Sattmate_Types.Integer_2;
+   type Short_Integer is new Types.Integer_2;
    
    type aLock is new Short_Integer;
    F_RDLCK : constant aLock := aLock(C_Constants.F_RDLCK); -- read lock

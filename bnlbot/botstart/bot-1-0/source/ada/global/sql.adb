@@ -1,8 +1,41 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                                  SQL                                     --
+--                                                                          --
+--                                 Body                                     --
+--                                                                          --
+--  Copyright (c) Björn Lundin 2014                                         --
+--  All rights reserved.                                                    --
+--                                                                          --
+--  Redistribution and use in source and binary forms, with or without      --
+--  modification, are permitted provided that the following conditions      --
+--  are met:                                                                --
+--  1. Redistributions of source code must retain the above copyright       --
+--     notice, this list of conditions and the following disclaimer.        --
+--  2. Redistributions in binary form must reproduce the above copyright    --
+--     notice, this list of conditions and the following disclaimer in      --
+--     the documentation and/or other materials provided with the           --
+--     distribution.                                                        --
+--  3. Neither the name of Björn Lundin nor the names of its contributors   --
+--     may be used to endorse or promote products derived from this         --
+--     software without specific prior written permission.                  --
+--                                                                          --
+--  THIS SOFTWARE IS PROVIDED BY BJÖRN LUNDIN AND CONTRIBUTORS ``AS         --
+--  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT          --
+--  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS       --
+--  FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL BJÖRN       --
+--  LUNDIN OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,              --
+--  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES                --
+--  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR      --
+--  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)      --
+--  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN               --
+--  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR            --
+--  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,          --
+--  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                      --
+--                                                                          --
+------------------------------------------------------------------------------
 with Ada.Text_Io;           
-with General_Routines;
-pragma Elaborate_All (General_Routines);
 with Ada.Characters.Handling;
--- with Ada.Exceptions ;
 with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
 with Ada.Environment_Variables;
@@ -22,16 +55,6 @@ package body Sql is
    
    Global_Transaction_Counter_Current : Integer_4 := 0;
    Global_Transaction_Counter_Max     : Integer_4 := 20;
-
-
---leakfinding   type Open_Statement_Type is record
---leakfinding      Statement_Pointer : Private_Statement_Type_Ptr;
---leakfinding   end record;
-
---leakfinding   package Open_Cursors is new Simple_List_Class (Open_Statement_Type);
-
---leakfinding   Global_Open_Statement_List : Open_Cursors.List_Type := Open_Cursors.Create;
---leakfinding   Global_Open_Statement      : Open_Statement_Type;
 
    type Error_Type is (Error_Duplicate_Index, Error_No_Such_Object, Error_No_Such_Column);
    type Error_Array_Type is array (Error_Type'Range) of Boolean;
@@ -67,7 +90,7 @@ package body Sql is
    ------------------------------------------------------------
    function Make_Dollar_Variable (Idx : Natural ) return String is
    begin
-      return General_Routines.Skip_All_Blanks (" $" & Natural'Image (Idx));
+      return Types.Skip_All_Blanks (" $" & Natural'Image (Idx));
    end Make_Dollar_Variable ;
    ------------------------------------------
    
@@ -107,7 +130,7 @@ package body Sql is
       Global_Statement_Index_Counter := Global_Statement_Index_Counter + 1;
       Private_Statement.Index                   := Global_Statement_Index_Counter;
       --    Log("Initialize Private_Statement_Type # " & Natural'Image(Private_Statement.Index));
-      Ada.Strings.Fixed.Move ("S" & General_Routines.Trim (Integer'Image (Private_Statement.Index)), Private_Statement.Statement_Name);
+      Ada.Strings.Fixed.Move ("S" & Types.Trim (Integer'Image (Private_Statement.Index)), Private_Statement.Statement_Name);
 
       Private_Statement.Cursor_Name     := Private_Statement.Statement_Name;
       Private_Statement.Cursor_Name (1) := 'C';
@@ -225,7 +248,7 @@ package body Sql is
          Start, Stop : Integer := 0;
          Look_For   : String  := Make_Dollar_Variable (Lmi.Index);
       begin
-         Start := General_Routines.Position (Cmd, Look_For);
+         Start := Types.Position (Cmd, Look_For);
          if Start > Cmd'First - 1 then
             Stop := Start + Look_For'Length ;
             --        Log("Cmd(Cmd'First .. Start-1) " & Cmd(Cmd'First .. Start-1) );
@@ -242,7 +265,7 @@ package body Sql is
                     To_Unbounded_String ("'" & Cmd (Stop .. Cmd'Last));
                when A_String   =>
                   declare
-                     Trimmed_Value : String := General_Routines.Trim (To_String (Lmi.Value));
+                     Trimmed_Value : String := Types.Trim (To_String (Lmi.Value));
                   begin
                      S := To_Unbounded_String (
                                                Cmd (Cmd'First .. Start - 1) &
@@ -317,12 +340,12 @@ package body Sql is
 
    --------------------------------------------------------------------------------
 
-   function Convert_To_Time (Mytime : String) return Sattmate_Calendar.Time_Type is
-      Local_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   function Convert_To_Time (Mytime : String) return Calendar2.Time_Type is
+      Local_Time : Calendar2.Time_Type := Calendar2.Time_Type_First;
    begin -- '11:22:32'
-      Local_Time.Hour   := Sattmate_Calendar.Hour_Type'Value (Mytime (1 .. 2));
-      Local_Time.Minute := Sattmate_Calendar.Minute_Type'Value (Mytime (4 .. 5));
-      Local_Time.Second := Sattmate_Calendar.Second_Type'Value (Mytime (7 .. 8));
+      Local_Time.Hour   := Calendar2.Hour_Type'Value (Mytime (1 .. 2));
+      Local_Time.Minute := Calendar2.Minute_Type'Value (Mytime (4 .. 5));
+      Local_Time.Second := Calendar2.Second_Type'Value (Mytime (7 .. 8));
       return Local_Time;
    exception
       when Constraint_Error =>
@@ -331,12 +354,12 @@ package body Sql is
 
    --------------------------------------------------------------------------------
 
-   function Convert_To_Date (Mydate : String) return Sattmate_Calendar.Time_Type is
-      Local_Date : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   function Convert_To_Date (Mydate : String) return Calendar2.Time_Type is
+      Local_Date : Calendar2.Time_Type := Calendar2.Time_Type_First;
    begin  -- '2002-01-06'
-      Local_Date.Year  := Sattmate_Calendar.Year_Type'Value (Mydate (1 .. 4));
-      Local_Date.Month := Sattmate_Calendar.Month_Type'Value (Mydate (6 .. 7));
-      Local_Date.Day   := Sattmate_Calendar.Day_Type'Value (Mydate (9 .. 10));
+      Local_Date.Year  := Calendar2.Year_Type'Value (Mydate (1 .. 4));
+      Local_Date.Month := Calendar2.Month_Type'Value (Mydate (6 .. 7));
+      Local_Date.Day   := Calendar2.Day_Type'Value (Mydate (9 .. 10));
       return Local_Date;
    exception
       when Constraint_Error =>
@@ -344,25 +367,25 @@ package body Sql is
    end Convert_To_Date;
 
    ------------------------------------------------------------
-   function Convert_To_Timestamp (Mytimestamp : String) return Sattmate_Calendar.Time_Type is
-      Local_Timestamp : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+   function Convert_To_Timestamp (Mytimestamp : String) return Calendar2.Time_Type is
+      Local_Timestamp : Calendar2.Time_Type := Calendar2.Time_Type_First;
    begin -- '2002-01-06 11:22:32.123' or
       -- '2002-01-06 11:22:32.12' or
       -- '2002-01-06 11:22:32.1' or
       -- '2002-01-06 11:22:32'
-      Local_Timestamp.Year        := Sattmate_Calendar.Year_Type'Value (Mytimestamp (1 .. 4));
-      Local_Timestamp.Month       := Sattmate_Calendar.Month_Type'Value (Mytimestamp (6 .. 7));
-      Local_Timestamp.Day         := Sattmate_Calendar.Day_Type'Value (Mytimestamp (9 .. 10));
-      Local_Timestamp.Hour        := Sattmate_Calendar.Hour_Type'Value (Mytimestamp (12 .. 13));
-      Local_Timestamp.Minute      := Sattmate_Calendar.Minute_Type'Value (Mytimestamp (15 .. 16));
-      Local_Timestamp.Second      := Sattmate_Calendar.Second_Type'Value (Mytimestamp (18 .. 19));
+      Local_Timestamp.Year        := Calendar2.Year_Type'Value (Mytimestamp (1 .. 4));
+      Local_Timestamp.Month       := Calendar2.Month_Type'Value (Mytimestamp (6 .. 7));
+      Local_Timestamp.Day         := Calendar2.Day_Type'Value (Mytimestamp (9 .. 10));
+      Local_Timestamp.Hour        := Calendar2.Hour_Type'Value (Mytimestamp (12 .. 13));
+      Local_Timestamp.Minute      := Calendar2.Minute_Type'Value (Mytimestamp (15 .. 16));
+      Local_Timestamp.Second      := Calendar2.Second_Type'Value (Mytimestamp (18 .. 19));
       Local_Timestamp.Millisecond := 0;
       if Mytimestamp'Length = 21 then -- ms like '.1'
-         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 21) & "00");
+         Local_Timestamp.Millisecond := Calendar2.Millisecond_Type'Value (Mytimestamp (21 .. 21) & "00");
       elsif Mytimestamp'Length = 22 then -- ms like '.14'
-         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 22) & "0");
+         Local_Timestamp.Millisecond := Calendar2.Millisecond_Type'Value (Mytimestamp (21 .. 22) & "0");
       elsif Mytimestamp'Length = 23 then -- ms like '.143'
-         Local_Timestamp.Millisecond := Sattmate_Calendar.Millisecond_Type'Value (Mytimestamp (21 .. 23));
+         Local_Timestamp.Millisecond := Calendar2.Millisecond_Type'Value (Mytimestamp (21 .. 23));
       end if;
       return Local_Timestamp;
    exception
@@ -413,19 +436,6 @@ package body Sql is
           Global_Connection.Login(Conn_Info => Login_String & " application_name=no_name");
         end if;        
       end;
---      Ada.Text_IO.Put_Line ("Connect : db_name,login,password,SSL_Mode ->: '" & Db_Name & "', '" & 
---                                                                       Login & "', '" & 
---                                                                       Password & "', '" & 
---                                                                       SSL_Mode & "'");
-   
---      Set_Db_Login (Global_Connection,
---                    Host      => Host,
---                    Port      => Port,
---                    Options   => Options,
---                    Tty       => Tty,
---                    Db_Name   => Db_Name,
---                    Login     => Login,
---                    Password  => Password);
 
       Local_Status := Status (Global_Connection);
       case Local_Status is
@@ -473,28 +483,8 @@ package body Sql is
 
    ---------------------------------------------------------------
 
-   procedure Open_Oracle_Session (User : String; Password : String) is
-   --    pragma Warnings(Off,User);
-   --    pragma Warnings(Off,Password);
-   begin
-      Connect (Db_Name => "sattmate", Login => User, Password => Password);
-   end Open_Oracle_Session;
-
-   ---------------------------------------------------------------
-
-   procedure Open_Odbc_Session (D1 : String; D2 : String; D3 : String) is
-   --    pragma Warnings(Off,d1);
-   --    pragma Warnings(Off,d2);
-   --    pragma Warnings(Off,d3);
-   begin
-      Connect (Db_Name => D1, Login => D2, Password => D3);
-   end Open_Odbc_Session;
-
-   --------------------------------------------------------------
-
    function Transaction_In_Progress return Boolean ;
-
-
+   
    procedure Close_Session is
    begin
       if Is_Session_Open then
@@ -746,7 +736,7 @@ package body Sql is
    procedure Prepare (Private_Statement : in out Private_Statement_Type;
                       Command           : in String) is
       use Ada.Characters.Handling;
-      Stm : String := General_Routines.Trim (To_Lower (Command));
+      Stm : String := Types.Trim (To_Lower (Command));
    begin
       if not Private_Statement.Is_Prepared then
          Private_Statement.Do_Initialize; -- instead of using Initialize, and get warnings
@@ -786,7 +776,6 @@ package body Sql is
          Log ("Prepare - Already prepared Stm: '" & Stm & "'");
       end if;
    end Prepare;
-   pragma Inline(Prepare);
 
    procedure Prepare (Statement : in out Statement_Type;
                       Command   : in String) is
@@ -794,7 +783,6 @@ package body Sql is
       Statement.Do_Initialize;
       Prepare (Statement.Private_Statement.all, Command);
    end Prepare;
-   pragma Inline(Prepare);
    ------------------------------------------------------------
 
 
@@ -921,14 +909,12 @@ package body Sql is
          raise Postgresql_Error;
       end if;
    end Open_Cursor;
-   pragma Inline(Open_Cursor);
 
    --------------------------------------------
    procedure Open_Cursor (Statement : in Statement_Type) is
    begin
       Open_Cursor (Statement.Private_Statement.all);
    end Open_Cursor;
-   pragma Inline(Open_Cursor);
 
    ------------------------------------------------------------
 
@@ -981,14 +967,12 @@ package body Sql is
       end if;
       Log ("current row is now" & Natural'Image (Private_Statement.Current_Row));
    end Fetch;
-   pragma Inline(Fetch);
 
    procedure Fetch (Statement  : in Statement_Type;
                     End_Of_Set : out Boolean) is
    begin
       Fetch (Statement.Private_Statement.all, End_Of_Set);
    end Fetch;
-   pragma Inline(Fetch);
 
     ------------------------------------------------------------
 
@@ -1020,13 +1004,11 @@ package body Sql is
       Private_Statement.Number_Actually_Fetched := 0;
       Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
    end Close_Cursor;
-   pragma Inline(Close_Cursor);
 
    procedure Close_Cursor (Statement : in Statement_Type) is
    begin
       Close_Cursor (Statement.Private_Statement.all);
    end Close_Cursor;
-   pragma Inline(Close_Cursor);
 
    -------------------------------------------------------------
 
@@ -1131,7 +1113,6 @@ package body Sql is
             Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
--- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
             Private_Statement.Result.Clear;
@@ -1150,7 +1131,6 @@ package body Sql is
             Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
--- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
 
@@ -1171,7 +1151,6 @@ package body Sql is
             Status := Private_Statement.Result.Result_Status;
 
             if Pgerror (Status) then
--- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
 
@@ -1189,7 +1168,6 @@ package body Sql is
                                     Private_Statement.Result);
             Status := Private_Statement.Result.Result_Status;
             if Pgerror (Status) then
--- memleak              Handle_Error (P_Stm => Private_Statement, Clear_Statement => True);
                Handle_Error (P_Stm => Private_Statement, Clear_Statement => False);
             end if;
             Private_Statement.Result.Clear;
@@ -1198,14 +1176,12 @@ package body Sql is
       end case;
       Log ("Execute end");
    end Execute;
-   pragma Inline(Execute);
    -----------------------------------------------------------
    procedure Execute (Statement           : in Statement_Type;
                       No_Of_Affected_Rows : out Natural) is
    begin
       Execute (Statement.Private_Statement.all, No_Of_Affected_Rows);
    end Execute;
-   pragma Inline(Execute);
    ------------------------------------------------------------
 
    procedure Execute (Statement : in  Statement_Type) is
@@ -1216,8 +1192,6 @@ package body Sql is
          raise No_Such_Row;
       end if;
    end Execute;
-   pragma Inline(Execute);
-
    ------------------------------------------------------------
 
    function Is_Null (Statement : Statement_Type;
@@ -1227,7 +1201,6 @@ package body Sql is
                                      Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                      Field_Index_Type (Parameter));
    end Is_Null;
-   pragma Inline(Is_Null);
 
    ------------------------------------------------------------
 
@@ -1236,7 +1209,6 @@ package body Sql is
    begin
       return Is_Null (Statement, Positive (Field_Index (Statement.Private_Statement.Result, Parameter)));
    end Is_Null;
-   pragma Inline(Is_Null);
 
    --------------------------------------------------------------
    -- end cursor handling procs
@@ -1249,12 +1221,12 @@ package body Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in String) is
-      Local_Value : constant String := General_Routines.Trim(Escape (Global_Connection, Value));
+      Local_Value : constant String := Types.Trim(Escape (Global_Connection, Value));
    begin
       if Local_Value(Local_Value'first) = ''' and then
          Local_Value(Local_Value'last) = ''' then
         Statement.Private_Statement.Update_Map (Parameter,
-           "'" &  General_Routines.Trim(Local_Value(Local_Value'first+1 .. Local_Value'last-1)) & "'",
+           "'" &  Types.Trim(Local_Value(Local_Value'first+1 .. Local_Value'last-1)) & "'",
             A_String);
       else
         Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
@@ -1267,7 +1239,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_4) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_4'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Integer_4'Image (Value)), An_Integer);
    end Set;
    
 
@@ -1276,7 +1248,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Integer_8'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Integer_8'Image (Value)), An_Integer);
    end Set;
    
 
@@ -1286,7 +1258,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Float_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Trim (Float'Image (Float (Value))), A_Float);
+      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Float'Image (Float (Value))), A_Float);
    end Set;
    
 
@@ -1306,23 +1278,23 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Boolean) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, General_Routines.Lower_Case (Value'Img), A_String);
+      Statement.Private_Statement.Update_Map (Parameter, Types.Lower_Case (Value'Img), A_String);
    end Set;
    
    -------------------------------------------------------------
 
    procedure Set_Date (Statement : in out Statement_Type;
                        Parameter : in String;
-                       Value     : in Sattmate_Calendar.Time_Type) is
+                       Value     : in Calendar2.Time_Type) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Sattmate_Calendar.String_Date (Value), A_Date);
+      Statement.Private_Statement.Update_Map (Parameter, Calendar2.String_Date (Value), A_Date);
    end Set_Date;
    ------------------------------------------------------------
 
    procedure Set_Time (Statement : in out Statement_Type;
                        Parameter : in String;
-                       Value     : in Sattmate_Calendar.Time_Type) is
-      Local_Time_1 : constant String := Sattmate_Calendar.String_Time (Value);
+                       Value     : in Calendar2.Time_Type) is
+      Local_Time_1 : constant String := Calendar2.String_Time (Value);
       Local_Time_2 : String (1 .. 6) := (others => ' ');
    begin
       Local_Time_2 (1 .. 2) := Local_Time_1 (1 .. 2);  -- remove ':' from time
@@ -1335,9 +1307,9 @@ package body Sql is
    ------------------------------------------------------------
    procedure Set_Timestamp (Statement : in out Statement_Type;
                             Parameter : in String;
-                            Value     : in Sattmate_Calendar.Time_Type) is
---      Local_Time_1 : constant String := Sattmate_Calendar.String_Date_And_Time (Value, Milliseconds => True);
-      Local_Time_1 : constant String := Sattmate_Calendar.String_Date_Time_ISO (Date => Value, T => " ", TZ => "");
+                            Value     : in Calendar2.Time_Type) is
+--      Local_Time_1 : constant String := Calendar2.String_Date_And_Time (Value, Milliseconds => True);
+      Local_Time_1 : constant String := Calendar2.String_Date_Time_ISO (Date => Value, T => " ", TZ => "");
       
       --    Local_Time_2 : String(1..6) := (others => ' ');
    begin -- '2002-01-06 11:22:32.123'
@@ -1352,13 +1324,28 @@ package body Sql is
    end Set_Timestamp;
    ------------------------------------------------------------
 
+    procedure Set(Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in  Calendar2.Time_Type) is
+    begin
+      Statement.Set_Timestamp(Parameter, Value);
+    end Set;
+        
+   ----------------------------------------------------------- 
+    procedure Set(Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in  Ada.Calendar.Time) is
+    begin
+      Statement.Set_Timestamp(Parameter, Calendar2.To_Time(Value));
+    end Set;
+        
+   ----------------------------------------------------------- 
 
    procedure Set_Null (Statement : in out Statement_Type;
                        Parameter : String) is
    begin
       Statement.Private_Statement.Update_Map (Parameter, "NULL", Null_Type);
    end Set_Null;
-   pragma Inline(Set_Null);
 
    ------------------------------------------------------------
 
@@ -1367,7 +1354,6 @@ package body Sql is
    begin
       Statement.Private_Statement.Update_Map (Parameter, "NULL", Null_Type);
    end Set_Null_Date;
-   pragma Inline(Set_Null_Date);
 
    --------------------------------------------------------------
    -- end Set handling procs
@@ -1600,7 +1586,7 @@ package body Sql is
 
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in Positive;
-                       Value     : out Sattmate_Calendar.Time_Type) is
+                       Value     : out Calendar2.Time_Type) is
    begin
       declare
          Local_String : constant String :=
@@ -1609,7 +1595,7 @@ package body Sql is
                                      Field_Index_Type (Parameter));
       begin
          if Local_String'Length = 0 then
-            Value := Sattmate_Calendar.Time_Type_First;
+            Value := Calendar2.Time_Type_First;
          else
             Value := Convert_To_Date (Local_String);
          end if;
@@ -1618,22 +1604,20 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Date;
-   pragma Inline(Get_Date);
    ------------------------------------------------------------
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in String;
-                       Value     : out Sattmate_Calendar.Time_Type) is
+                       Value     : out Calendar2.Time_Type) is
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
       Get_Date (Statement, Positive (Field_Number), Value);
    end Get_Date;
-   pragma Inline(Get_Date);
 
    ------------------------------------------------------------
 
    procedure Get_Time (Statement : in Statement_Type;
                        Parameter : in Positive;
-                       Value     : out Sattmate_Calendar.Time_Type) is
+                       Value     : out Calendar2.Time_Type) is
    begin
       declare
          Local_String : constant String :=
@@ -1642,7 +1626,7 @@ package body Sql is
                                      Field_Index_Type (Parameter));
       begin
          if Local_String'Length = 0 then
-            Value := Sattmate_Calendar.Time_Type_First;
+            Value := Calendar2.Time_Type_First;
          else
             Value := Convert_To_Time (Local_String);
          end if;
@@ -1651,24 +1635,22 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Time;
-   pragma Inline(Get_Time);
 
    --------------------------------------------------------------
 
    procedure Get_Time (Statement : in Statement_Type;
                        Parameter : in String;
-                       Value     : out Sattmate_Calendar.Time_Type) is
+                       Value     : out Calendar2.Time_Type) is
 
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
       Get_Time (Statement, Positive (Field_Number), Value);
    end Get_Time;
-   pragma Inline(Get_Time);
 
    ---------------------------------------------------------------
    procedure Get_Timestamp (Statement : in Statement_Type;
                             Parameter : in Positive;
-                            Value     : out Sattmate_Calendar.Time_Type) is
+                            Value     : out Calendar2.Time_Type) is
    begin
       declare
          Local_String : constant String :=
@@ -1677,7 +1659,7 @@ package body Sql is
                                      Field_Index_Type (Parameter));
       begin
          if Local_String'Length = 0 then
-            Value := Sattmate_Calendar.Time_Type_First;
+            Value := Calendar2.Time_Type_First;
          else
             Value := Convert_To_Timestamp (Local_String);
          end if;
@@ -1686,22 +1668,58 @@ package body Sql is
       when Constraint_Error =>
          raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
    end Get_Timestamp;
-   pragma Inline(Get_Timestamp);
 
    --------------------------------------------------------------
 
    procedure Get_Timestamp (Statement : in Statement_Type;
                             Parameter : in String;
-                            Value     : out Sattmate_Calendar.Time_Type) is
+                            Value     : out Calendar2.Time_Type) is
 
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
       Get_Timestamp (Statement, Positive (Field_Number), Value);
    end Get_Timestamp;
-   pragma Inline(Get_Timestamp);
-   ------------------------------------------------------------
    
+   ------------------------------------------------------------  
    
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
+                  Value     : out Ada.Calendar.Time) is
+     Tmp : Calendar2.Time_Type;
+   begin
+     Statement.Get_Timestamp(Parameter,Tmp);
+     Value := Calendar2.To_Calendar_Time(Tmp);
+   end Get;   
+   
+   ------------------------------------------------------------  
+                            
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Ada.Calendar.Time) is
+     Tmp : Calendar2.Time_Type;
+   begin
+     Statement.Get_Timestamp(Parameter,Tmp);
+     Value := Calendar2.To_Calendar_Time(Tmp);
+   end Get;   
+   
+   ------------------------------------------------------------  
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in Positive;
+                  Value     : out Calendar2.Time_Type) is
+   begin
+     Statement.Get_Timestamp(Parameter,Value);
+   end Get;   
+   
+   ------------------------------------------------------------  
+                            
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Calendar2.Time_Type) is
+   begin
+     Statement.Get_Timestamp(Parameter,Value);
+   end Get;   
+   
+   ------------------------------------------------------------  
    
    function Get_Prepared_Statement(Statement : Statement_Type) return String is
    begin
@@ -1711,95 +1729,6 @@ package body Sql is
    ------------------------------------------------------------
    -- end Get handling procs
    ------------------------------------------------------------
-
-   --------------------------------------------------------------
-   -- start unimplemented procs
-   ------------------------------------------------------------
-
-
-
-   -- v9.1-I141 New function
-   function Module return String is
-   begin
-      --    return CONTEXT.MODULE(1..SKIP_TRAILING_BLANKS (CONTEXT.MODULE)'Length);
-      return "Not implemented!";
-   end Module;
-
-   -- v9.1-I141 New function
-   function Action return String is
-   begin
-      --  return CONTEXT.ACTION(1..SKIP_TRAILING_BLANKS (CONTEXT.ACTION)'Length);
-      return "Function ACTION is not implemented!";
-   end Action;
-
-   -- v9.1-I141 New function
-   function Client_Info return String is
-   begin
-      --    return CONTEXT.CLIENT_INFO(1..SKIP_TRAILING_BLANKS (CONTEXT.CLIENT_INFO)'Length);
-      return "Function CLIENT_INFO is not implemented!";
-   end Client_Info;
-
-   -- v9.1-I141 New procedure
-   procedure Set_Module (Module : in String) is
-      pragma Warnings (Off, Module);
-   begin
-      --    CONTEXT.MODULE := (others => ' ');
-      --    if MODULE'Length > 0 then
-      --      if MODULE'Length > CONTEXT.MODULE'Length then
-      --        CONTEXT.MODULE := MODULE(1..CONTEXT.MODULE'Length);
-      --      else
-      --        CONTEXT.MODULE (1..MODULE'Length) := MODULE;
-      --      end if;
-      --    end if;
-      null;
-   end Set_Module;
-
-   -- v9.1-I141 New procedure
-   procedure Set_Action (Action : in String) is
-      pragma Warnings (Off, Action);
-   begin
-      --    CONTEXT.ACTION := (others => ' ');
-      --    if ACTION'Length > 0 then
-      --      if ACTION'Length > CONTEXT.ACTION'Length then
-      --        CONTEXT.ACTION := ACTION(1..CONTEXT.ACTION'Length);
-      --      else
-      --        CONTEXT.ACTION (1..ACTION'Length) := ACTION;
-      --      end if;
-      --    end if;
-      null;
-   end Set_Action;
-
-   -- v9.1-I141 New procedure
-   procedure Set_Client_Info (Client_Info : in String) is
-      pragma Warnings (Off, Client_Info);
-   begin
-      --    CONTEXT.CLIENT_INFO := (others => ' ');
-      --    if CLIENT_INFO'Length > 0 then
-      --      if CLIENT_INFO'Length > CONTEXT.CLIENT_INFO'Length then
-      --        CONTEXT.CLIENT_INFO := CLIENT_INFO(1..CONTEXT.CLIENT_INFO'Length);
-      --      else
-      --        CONTEXT.CLIENT_INFO (1..CLIENT_INFO'Length) := CLIENT_INFO;
-      --      end if;
-      --    end if;
-      null;
-   end Set_Client_Info;
-
-
-   function Last_Statement return String is		-- V8.3a
-      --    TEXT   : STRING(1..1024) := (others => ' ');
-      --    LENGTH : Integer := TEXT'Length;
-   begin
-      --    SQLIFC.LAST_STATEMENT (TEXT'ADDRESS, LENGTH'ADDRESS);
-      --    return TEXT(1..LENGTH);
-      return "Function LAST_STATEMENT is not implementeted!";
-   end Last_Statement;
-
-
-   function Error_Message return String is -- not implementet, dummy
-   begin
-      return "Error_Message not implemented";
-   end Error_Message;
-
 
    procedure Get_Column_Info
      (Statement   : Statement_Type;
@@ -1817,8 +1746,5 @@ package body Sql is
       return Nbr_Fields(Statement.Private_Statement.Result);     
    end Get_Nbr_Columns;
 
-
-   --------------------------------------------------------------
-   -- end unimplemented procs
    ------------------------------------------------------------
 end Sql;

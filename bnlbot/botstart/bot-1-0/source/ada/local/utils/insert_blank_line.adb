@@ -1,6 +1,6 @@
-with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
-with General_Routines; use General_Routines;
+with Stacktrace;
+with Types; use Types;
+--with General_Routines; use General_Routines;
 with GNAT; use GNAT;
 with GNAT.AWK;
 with Text_Io; use Text_Io;
@@ -44,5 +44,5 @@ begin
   AWK.Close (Computer_File);
 exception
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
 end Insert_Blank_Line;

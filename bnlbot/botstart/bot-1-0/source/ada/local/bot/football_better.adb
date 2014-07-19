@@ -1,10 +1,10 @@
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
-with Sattmate_Exception;
+with Types; use Types;
+with Calendar2; use Calendar2;
+with Stacktrace;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Ada.Strings ; use Ada.Strings;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 --with Bot_Config;
 with Lock;
 --with Text_io;
@@ -37,7 +37,7 @@ procedure Football_Better is
   Me       : constant String := "Main.";
  -- use type Bot_Types.Bot_Mode_Type;
   OK : Boolean := False;
-  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
 
   Is_Time_To_Exit : Boolean := False;
   use type Sql.Transaction_Status_Type;
@@ -66,10 +66,10 @@ procedure Football_Better is
   Upper_Bound_Green_Up     : Float_8 := 10.0;
   Lower_Bound_Green_Up     : Float_8 := 4.0; 
   
-  Some_Time_Ago : Sattmate_Calendar.Interval_Type := (0,0,2,0,0);
+  Some_Time_Ago : Calendar2.Interval_Type := (0,0,2,0,0);
   
   Game_Start,
-  Current_Game_Time : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First; 
+  Current_Game_Time : Calendar2.Time_Type := Calendar2.Time_Type_First; 
   
   Time_Into_Game : Interval_Type := (0,0,0,0,0);
   
@@ -398,7 +398,7 @@ procedure Football_Better is
     Select_Prices_For_All_Runners_In_One_Market.Set("HOME_SELECTIONID", The_Runners(Home).Runner.Selectionid);
     Select_Prices_For_All_Runners_In_One_Market.Set("AWAY_SELECTIONID", The_Runners(Away).Runner.Selectionid);
     Select_Prices_For_All_Runners_In_One_Market.Set("DRAW_SELECTIONID", The_Runners(Draw).Runner.Selectionid);
-    Select_Prices_For_All_Runners_In_One_Market.Set_Timestamp("SOME_TIME_AGO", Sattmate_Calendar.Clock - Some_Time_Ago );    
+    Select_Prices_For_All_Runners_In_One_Market.Set_Timestamp("SOME_TIME_AGO", Calendar2.Clock - Some_Time_Ago );    
     
     Select_Prices_For_All_Runners_In_One_Market.Open_Cursor; 
    
@@ -643,7 +643,7 @@ begin
           Rpc.Login;
         end if;
     end;
-    Now := Sattmate_Calendar.Clock;
+    Now := Calendar2.Clock;
 
     --restart every day
     Is_Time_To_Exit := Now.Hour = 05 and then
@@ -665,7 +665,7 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 --    Log(Me, "Close Db");
 --    Sql.Close_Session;
     Log(Me, "Closed log and die");
