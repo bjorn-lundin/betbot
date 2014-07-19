@@ -255,7 +255,7 @@ proc Print_Global_Index_Info {} {
                 append S "    Sql.Set_Time($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
               }
               TIMESTAMP_FORMAT {
-                append S "    Sql.Set_Timestamp($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
+                append S "    Sql.Set($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
               }
               default {
                 puts stderr "Set_Keyed_Sql_Statment I Table -> $Name , Col_Name -> $Col_Name Coltype -> $Col_Type is unknown..."
@@ -287,7 +287,7 @@ proc Print_Global_Index_Info {} {
                 append S "    Sql.Set_Time($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
               }
               TIMESTAMP_FORMAT {
-                append S "    Sql.Set_Timestamp($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
+                append S "    Sql.Set($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
               }
               default {
                 puts stderr "Set_Keyed_Sql_Statment II Table -> $Name , Col_Name -> $Col_Name Coltype -> $Col_Type is unknown..."
@@ -318,7 +318,7 @@ proc Print_Global_Index_Info {} {
       }
       if {$Has_IXX_Ts} {
         append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
-        append S "    Sql.Set_Timestamp($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
+        append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
       }
     }
 
@@ -515,7 +515,7 @@ proc Print_Global_Index_Info {} {
           append S "    Sql.Set_Time($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
         }
         TIMESTAMP_FORMAT {
-          append S "    Sql.Set_Timestamp($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
+          append S "    Sql.Set($Stm_Name,\"$COL_NAME\", Data.$Col_Name);\n"
         }
         default {
           puts stderr "Set_Index_Sql_Statment I Table -> $Name , Col_Name -> $Col_Name Coltype -> $Col_Type is unknown..."
@@ -538,7 +538,7 @@ proc Print_Global_Index_Info {} {
       }
       if {$Has_IXX_Ts} {
         append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUPD]\", Data.Ixxlupd);\n"
-        append S "    Sql.Set_Timestamp($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
+        append S "    Sql.Set($Stm_Name, \"[Field_Caseing IXXLUTS]\", Data.Ixxluts);\n"
       }
     }
     return $S
@@ -566,7 +566,7 @@ proc Print_Global_Index_Info {} {
               append S "Sql.Set_Time($Stm_Name, \"$COL_NAME\",Data.$Col_Name);\n"
             }
             TIMESTAMP_FORMAT {
-              append S "Sql.Set_Timestamp($Stm_Name, \"$COL_NAME\",Data.$Col_Name);\n"
+              append S "Sql.Set($Stm_Name, \"$COL_NAME\",Data.$Col_Name);\n"
             }
             default {
               puts stderr "Set_Non_Null Col_Name -> $Col_Name Coltype -> $Col_Type is unknown..."
@@ -599,7 +599,7 @@ proc Print_Global_Index_Info {} {
       }
       if {$Has_IXX_Ts} {
         append S "    Sql.Set($Stm_Name, \"[Field_Caseing OLD_IXXLUPD]\",Data.Ixxlupd);\n"
-        append S "    Sql.Set_Timestamp($Stm_Name, \"[Field_Caseing OLD_IXXLUTS]\",Data.Ixxluts);\n"
+        append S "    Sql.Set($Stm_Name, \"[Field_Caseing OLD_IXXLUTS]\",Data.Ixxluts);\n"
         append S "    if not Keep_Timestamp then\n"
         append S "      null; --for tables without Ixx* \n"
         append S "      Data.Ixxluts := Now;\n"
@@ -696,7 +696,7 @@ proc Print_Withs_Spec {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
   puts $Out_File "with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;"
 #  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Uniface_Request, Sql, Simple_List_Class;"
-  puts $Out_File "with Sattmate_Types, Sattmate_Calendar, Sql, Simple_List_Class;"
+  puts $Out_File "with Types, Calendar2, Sql, Simple_List_Class;"
   puts $Out_File "with Table_Utils;  --All tables inherit from here"
   puts $Out_File ""
 }
@@ -709,7 +709,7 @@ proc Print_Package_Start_Spec {Name Type Node Columns Out_File} {
 
   puts $Out_File "package Table\_$Mixed_Name is\n"
 #  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar, Uniface_Request;\n"
-  puts $Out_File "  use Sattmate_Types, Sattmate_Calendar;\n"
+  puts $Out_File "  use Types, Calendar2;\n"
 
   puts $Out_File "  -- \n  -- Table name as string \n  --"
   puts $Out_File "  Table_$Mixed_Name\_Name : constant String := \"$Upper_Name\";"
@@ -1182,11 +1182,11 @@ proc Print_Header_Body {Name Type Node Columns Out_File} {
 
 proc Print_Withs_Body {Name Type Node Columns Out_File} {
   puts $Out_File "pragma Warnings(Off);"
-#  puts $Out_File "with Process_Io, General_Routines, Text_Io, Standard8, Cgi;"
+#  puts $Out_File "with Process_Io,  Text_Io, Standard8, Cgi;"
 
   puts $Out_File "with Ada.Strings; use Ada.Strings;"
   puts $Out_File "with Ada.Strings.Fixed; use Ada.Strings.Fixed;"
-  puts $Out_File "with Ada.Environment_Variables, General_Routines, Text_Io;"
+  puts $Out_File "with Ada.Environment_Variables,  Text_Io;"
 #  if {[Is_S08_Table $Name]} {
     puts $Out_File "with Ada.Strings.Fixed;"
 #    puts $Out_File "with Sax.Readers;              use Sax.Readers;"
@@ -1732,7 +1732,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     set TABLE_NAME [Table_Caseing $Name]
     #################################################################################
     puts $Out_File "  procedure Update(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
-    puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
+    puts $Out_File "    Now     : Calendar2.Time_Type := Calendar2.Clock;"
     
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
@@ -1760,7 +1760,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     set TABLE_NAME [Table_Caseing $Name]
     ###################################################################################
     puts $Out_File "  procedure Insert(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
-    puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
+    puts $Out_File "    Now     : Calendar2.Time_Type := Calendar2.Clock;"
 
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
@@ -1816,7 +1816,7 @@ proc Print_Def_Functions_Body {Name Type Node Columns Out_File} {
     set TABLE_NAME [Table_Caseing $Name]
     ###################################################################################
     puts $Out_File "  procedure Update_Withcheck(Data : in out Table\_$Table_Name.Data_Type; Keep_Timestamp : in Boolean := False) is"
-    puts $Out_File "    Now     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;"
+    puts $Out_File "    Now     : Calendar2.Time_Type := Calendar2.Clock;"
     
     set Has_IXX [Repo_Utils::Table_Has_IXX_Fields_2 $Columns]
     set Has_IXX_Ts [Repo_Utils::Table_Has_IXX_Timestamp_2 $Columns]
@@ -2080,7 +2080,7 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #To_String
 
   puts $Out_File ""
-  puts $Out_File "  function Date_To_String(Date : in Sattmate_Calendar.Time_Type) return String is"
+  puts $Out_File "  function Date_To_String(Date : in Calendar2.Time_Type) return String is"
   puts $Out_File "    package Integer_2_Io is new Text_Io.Integer_Io(Integer_2);"
   puts $Out_File "    Date_String : String(1..10) := \"yyyy-mm-dd\";"
   puts $Out_File "  begin"
@@ -2108,7 +2108,7 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
         if {[string equal $Attributes(Size) 1]} {
           puts $Out_File "          \" $Col_Name = \" & Data.$Col_Name &"
         } else {
-          puts $Out_File "          \" $Col_Name = \" & General_Routines.Skip_Trailing_Blanks(Data.$Col_Name) &"
+          puts $Out_File "          \" $Col_Name = \" & Types.Trim(Data.$Col_Name) &"
         }
       }
       INTEGER_4_FORMAT {
@@ -2121,17 +2121,17 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
         puts $Out_File "          \" $Col_Name = \" & Boolean'Image(Data.$Col_Name) &"
       }
       FLOAT_8_FORMAT {
-#        puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_To_String(Data.$Col_Name) &"
-        puts $Out_File "          \" $Col_Name = \" &  General_Routines.F8_Image(Data.$Col_Name) &"
+#        puts $Out_File "          \" $Col_Name = \" &  Types.F8_To_String(Data.$Col_Name) &"
+        puts $Out_File "          \" $Col_Name = \" &  Types.F8_Image(Data.$Col_Name) &"
       }
       DATE_FORMAT {
-        puts $Out_File "          \" $Col_Name = \" & Sattmate_Calendar.String_Date(Data.$Col_Name) &"
+        puts $Out_File "          \" $Col_Name = \" & Calendar2.String_Date(Data.$Col_Name) &"
       }
       TIME_FORMAT {
-        puts $Out_File "          \" $Col_Name = \" & Sattmate_Calendar.String_Time(Data.$Col_Name) &"
+        puts $Out_File "          \" $Col_Name = \" & Calendar2.String_Time(Data.$Col_Name) &"
       }
       TIMESTAMP_FORMAT {
-        puts $Out_File "          \" $Col_Name = \" & Sattmate_Calendar.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) &"
+        puts $Out_File "          \" $Col_Name = \" & Calendar2.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) &"
       }
       CLOB_FORMAT  {
         puts $Out_File "          \" $Col_Name = \" & Ada.Strings.Unbounded.To_String(Data.$Col_Name) &"
@@ -2150,7 +2150,7 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #  puts $Out_File "  function Format_String(S : in String) return String is"
 #  puts $Out_File "    use Standard8; use CGI;"
 #  puts $Out_File "  begin"
-#  puts $Out_File "     return General_Routines.Skip_Trailing_Blanks(To_String(Cgi.Cvtput_Xml(To_String8(S))));"
+#  puts $Out_File "     return Types.Trim(To_String(Cgi.Cvtput_Xml(To_String8(S))));"
 #  puts $Out_File "  end Format_String;\n--------------------------------------------\n"
 #
 #
@@ -2177,26 +2177,26 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #        if {[string equal $Attributes(Size) 1]} {
 #          puts $Out_File "          \"\<$COL_NAME\>\" & Data.$Col_Name & \"\</$COL_NAME\>\" & Ls;"
 #        } else {
-#          puts $Out_File "          \"\<$COL_NAME\>\" & Format_String(General_Routines.Skip_Trailing_Blanks(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
+#          puts $Out_File "          \"\<$COL_NAME\>\" & Format_String(Types.Trim(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
 #        }
 #      }
 #      INTEGER_8_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_8'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  Types.Trim(Integer_8'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      INTEGER_4_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.Trim(Integer_4'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  Types.Trim(Integer_4'Image(Data.$Col_Name)) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      FLOAT_8_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" &  General_Routines.F8_To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" &  Types.F8_To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      DATE_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Calendar2.String_Date(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      TIME_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Time(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Calendar2.String_Time(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      TIMESTAMP_FORMAT {
-#        puts $Out_File "          \"\<$COL_NAME\>\" & Sattmate_Calendar.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) & \"\</$COL_NAME\>\" & Ls;"
+#        puts $Out_File "          \"\<$COL_NAME\>\" & Calendar2.String_Date_And_Time(Data.$Col_Name, Milliseconds => true) & \"\</$COL_NAME\>\" & Ls;"
 #      }
 #      CLOB_FORMAT {
 #        puts $Out_File "          \"\<$COL_NAME\>\" & Ada.Strings.Unbounded.To_String(Data.$Col_Name) & \"\</$COL_NAME\>\" & Ls;"
@@ -2348,9 +2348,9 @@ proc Print_XML_Functions_Body {Name Type Node Columns Out_File} {
 #        INTEGER_4_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_4\'value(The_Value)" }
 #        INTEGER_8_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Integer_8\'value(The_Value)" }
 #        FLOAT_8_FORMAT   { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Float_8\'value(The_Value)" }
-#        DATE_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value,\"00:00:00.000\")" }
-#        TIME_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(\"01-JAN-1901\", The_Value)" }
-#        TIMESTAMP_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Sattmate_Calendar.To_Time_Type(The_Value(1..11), The_Value(13..24))" }
+#        DATE_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Calendar2.To_Time_Type(The_Value,\"00:00:00.000\")" }
+#        TIME_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Calendar2.To_Time_Type(\"01-JAN-1901\", The_Value)" }
+#        TIMESTAMP_FORMAT { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Calendar2.To_Time_Type(The_Value(1..11), The_Value(13..24))" }
 #        CLOB_FORMAT      { set Cvtstr "Handler\.$Table_Name\_Data\.$Col_Name := Handler\.$Table_Name\_Data\.$Col_Name & Ada.Strings.Unbounded.To_Unbounded_String(The_Value)" }
 #        default          { set Cvtstr "null;-- No definitions for this field $Col_Name )" }
 #      }

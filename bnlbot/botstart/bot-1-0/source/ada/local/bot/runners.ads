@@ -1,6 +1,6 @@
 
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Types; use Types;
+with Calendar2; use Calendar2;
 with Table_Arunners;
 
 package Runners is

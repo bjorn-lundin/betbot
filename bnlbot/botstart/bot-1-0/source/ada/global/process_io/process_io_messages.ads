@@ -7,9 +7,9 @@
 
 with Process_IO; 
 pragma Elaborate(Process_IO);
---with Sattmate_Calendar;
+--with Calendar2;
 --with Core_Definition;      use Core_Definition;
---with Sattmate_Types; use Sattmate_Types;
+--with Types; use Types;
 with Process_Io.Pipe;
 
 package Process_Io_Messages is

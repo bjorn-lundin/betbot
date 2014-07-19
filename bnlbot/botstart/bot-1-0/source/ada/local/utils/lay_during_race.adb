@@ -1,7 +1,7 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 --with Text_Io;
 with Table_Araceprices;
@@ -9,7 +9,7 @@ with Table_Arunners;
 with Table_Amarkets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 ---with GNAT.Strings;
---with Sattmate_Calendar; -- use Sattmate_Calendar;
+--with Calendar2; -- use Calendar2;
 with Logging; use Logging;
 --with General_Routines; use General_Routines;
 
@@ -248,5 +248,5 @@ begin
     " --max_lay_price=" & IA_Max_Lay_Price'Img);
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Lay_During_Race;

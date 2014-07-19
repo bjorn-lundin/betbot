@@ -1,11 +1,11 @@
 --with Text_Io;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
-with Sattmate_Calendar;
+with Calendar2;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with General_Routines; use General_Routines;
-with Sattmate_Types ; use Sattmate_Types;
+--with General_Routines; use General_Routines;
+with Types ; use Types;
 with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -49,7 +49,7 @@ procedure Markets_Sender is
   Tot,Cur : Natural := 0;
   type Eos_Type is (Event,Winner);
   Eos : array (Eos_Type'range) of Boolean := (others => False);
-  Ts : Sattmate_Calendar.Time_Type;
+  Ts : Calendar2.Time_Type;
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
   Define_Switch
@@ -232,7 +232,7 @@ begin
         end if;
         if Do_Send then       
           Log(Me, "Notifying " & Trim(Receiver.Name) & " with marketid: '" & MNR.Market_Id   & "' Startts = " &
-                  Sattmate_Calendar.String_Date_And_Time(Amarket.Startts, Milliseconds => true)
+                  Calendar2.String_Date_And_Time(Amarket.Startts, Milliseconds => true)
                   & Cur'Img & "/" & Tot'Img);
           Bot_Messages.Send(Receiver, MNR);
         end if;  
@@ -251,7 +251,7 @@ exception
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
     Posix.Do_Exit(0); -- terminate
 end Markets_Sender;
 

@@ -1,5 +1,5 @@
 
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 
 package Bot_System_Number is
 

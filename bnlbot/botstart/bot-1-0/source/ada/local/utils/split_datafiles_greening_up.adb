@@ -1,6 +1,6 @@
 
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Types; use Types;
+with Calendar2; use Calendar2;
 
 with GNAT; use GNAT;
 with GNAT.AWK;
@@ -10,7 +10,7 @@ with Text_Io; use Text_Io;
 procedure Split_Datafiles_Greening_Up is
   Computer_File : AWK.Session_Type;
   Is_First_Line : Boolean := True;
-  Race_Start, T : Sattmate_Calendar.Time_Type;
+  Race_Start, T : Calendar2.Time_Type;
   
   Min_Odds   : constant Float_8 := 11.0;
   Max_Odds   : constant Float_8 := 20.0;
@@ -36,7 +36,7 @@ procedure Split_Datafiles_Greening_Up is
   Win_Flag : Boolean := False;
   
   -----------------------------------------------------  
-  function To_Time(S2: String) return Sattmate_Calendar.Time_Type is
+  function To_Time(S2: String) return Calendar2.Time_Type is
     
     Tmp : Time_Type;
     S : String (1 .. S2'Last - S2'First + 1) := S2; 

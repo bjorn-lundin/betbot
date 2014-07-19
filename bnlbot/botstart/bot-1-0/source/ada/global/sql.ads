@@ -1,9 +1,45 @@
-
+------------------------------------------------------------------------------
+--                                                                          --
+--                        Simple_List_Class                                 --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--  Copyright (c) Björn Lundin 2014                                         --
+--  All rights reserved.                                                    --
+--                                                                          --
+--  Redistribution and use in source and binary forms, with or without      --
+--  modification, are permitted provided that the following conditions      --
+--  are met:                                                                --
+--  1. Redistributions of source code must retain the above copyright       --
+--     notice, this list of conditions and the following disclaimer.        --
+--  2. Redistributions in binary form must reproduce the above copyright    --
+--     notice, this list of conditions and the following disclaimer in      --
+--     the documentation and/or other materials provided with the           --
+--     distribution.                                                        --
+--  3. Neither the name of Björn Lundin nor the names of its contributors   --
+--     may be used to endorse or promote products derived from this         --
+--     software without specific prior written permission.                  --
+--                                                                          --
+--  THIS SOFTWARE IS PROVIDED BY BJÖRN LUNDIN AND CONTRIBUTORS ``AS         --
+--  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT          --
+--  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS       --
+--  FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL BJÖRN       --
+--  LUNDIN OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,              --
+--  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES                --
+--  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR      --
+--  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)      --
+--  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN               --
+--  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR            --
+--  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,          --
+--  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                      --
+--                                                                          --
+------------------------------------------------------------------------------
+with Ada.Calendar;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Pgada.Database; use Pgada.Database;
 with Ada.Finalization; use Ada.Finalization;
-with Sattmate_Calendar;
-with Sattmate_Types; use Sattmate_Types;
+with Calendar2;
+with Types; use Types;
 
 with Simple_List_Class;
 pragma Elaborate_All (Simple_List_Class);
@@ -27,12 +63,7 @@ package Sql is
    No_Such_Parameter         : exception;
    Conversion_Error          : exception;
 
-   type Database_Type is (Rdb,         -- Not currently supported
-                          Oracle,
-                          Mimer,       -- Not currently supported
-                          Sql_Server,  -- Not currently supported
-                          Ms_Access,    -- Not currently supported
-                          Postgresql);  --bnl
+   type Database_Type is (Postgresql);
 
    -- Function Database returns the name of the current database.
    function Database return Database_Type;
@@ -41,16 +72,9 @@ package Sql is
    type Transaction_Isolation_Level_Type is (Read_Commited, Serializable);
    type Transaction_Isolation_Level_Scope_Type is (Transaction, Session);
 
---   type Transaction_Type is  limited private;
-
    type Statement_Type is new Limited_Controlled with private ;
 
-   --  type Statement_Type   is limited private;
-
    -----------------------------------------------------------
-   procedure Open_Oracle_Session (User : String; Password : String);
-
-   procedure Open_Odbc_Session (D1 : String; D2 : String; D3 : String);
 
    procedure Close_Session;
    --http://www.postgresql.org/docs/9.3/static/libpq-connect.html
@@ -64,6 +88,13 @@ package Sql is
                       SSL_Mode   : in String := "require"); --disable,allow,prefer,require,verify-ca,verify-full
 
    function  Is_Session_Open return Boolean;
+   
+   -- Start with Connect
+   -- There can be one connection only to a database.
+   -- This package is NOT task-safe
+   -- if several tasks are needed, create a serailising task, that handles ALL db interaction
+   
+   
 
    -----------------------------------------------------------
 
@@ -79,12 +110,53 @@ package Sql is
    procedure Rollback (T : in out Transaction_Type) ;
 
    function  Transaction_Status return Transaction_Status_Type;
+    
    -----------------------------------------------------------
 
    procedure Prepare (Statement : in out Statement_Type;
                       Command   : in String) ;
 
-
+   -- Start a  transaction before prepare/set/get/execute/open_cursor/close_cursor
+   -- prepare is done once per statement, even if prepare is called many times
+   
+   -- typical usage for reading data:
+      
+   --   Select_Stm : Sql.Statement_Type;
+   --   T : Sql.Transaction_Type:
+   --   Column : String(1.15) := (others => ' ');
+   -- begin
+   --   Sql.Connect (Host => "localhost", Port=> 5432,Db_Name=> "foo", Login=> "bar", Password => "");
+   --   T.Start;
+   --   Select_Stm.Prepare("select * from TABLE where STATUS <> :STATUS");
+   --   Select_Stm.Set("STATUS","CLOSED");
+   --   Select_Stm.Open_Cursor;
+   --   loop
+   --     Select_Stm.Fetch(End_Of_Set);
+   --     exit when End_Of_Set;
+   --     Select_Stm.Get("COLUMN", Column);
+   --     Text_Io.Put_Line ("3 : Got COLUMN: '" &  Column & "' from db");      
+   --     Text_Io.New_Line;
+   --   end loop;  
+   --   Select_Stm.Close_Cursor;
+   --   T.Commit;
+   --   Sql.Close_Session;
+   -- end  :
+   
+   -- typical usage for Writing data:
+      
+   --   Delete_Stm : Sql.Statement_Type;
+   --   T : Sql.Transaction_Type:
+   --   Num_Rows_Affected : Natural := 0;
+   -- begin
+   --   Sql.Connect (Host => "localhost", Port=> 5432,Db_Name=> "foo", Login=> "bar", Password => "");
+   --   T.Start;
+   --   Delete_Stm.Prepare("delete from TABLE where STATUS <> :STATUS");
+   --   Delete_Stm.Set("STATUS","CLOSED");
+   --   Delete_Stm.Execute(Num_Rows_Affected);
+   --   T.Commit;
+   --   Sql.Close_Session;
+   -- end  :
+   
    procedure Open_Cursor (Statement : in Statement_Type);
 
    procedure Fetch (Statement  : in Statement_Type;
@@ -93,6 +165,13 @@ package Sql is
    procedure Close_Cursor (Statement : in Statement_Type);
 
 
+   procedure Execute (Statement           : in Statement_Type;
+                      No_Of_Affected_Rows : out Natural) ;
+
+
+   procedure Execute (Statement : in Statement_Type) ;
+
+   -----------------------------------------------------------
    -----------------------------------------------------------
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;
@@ -144,27 +223,45 @@ package Sql is
 
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in String;
-                       Value     : out Sattmate_Calendar.Time_Type) ;
+                       Value     : out Calendar2.Time_Type) ;
 
    procedure Get_Time (Statement : in Statement_Type;
                        Parameter : in Positive;
-                       Value     : out Sattmate_Calendar.Time_Type) ;
+                       Value     : out Calendar2.Time_Type) ;
 
-   procedure Get_Timestamp (Statement : in Statement_Type;
-                            Parameter : in Positive;
-                            Value     : out Sattmate_Calendar.Time_Type) ;
 
    procedure Get_Date (Statement : in Statement_Type;
                        Parameter : in Positive;
-                       Value     : out Sattmate_Calendar.Time_Type) ;
+                       Value     : out Calendar2.Time_Type) ;
 
    procedure Get_Time (Statement : in Statement_Type;
                        Parameter : in String;
-                       Value     : out Sattmate_Calendar.Time_Type) ;
+                       Value     : out Calendar2.Time_Type) ;
 
    procedure Get_Timestamp (Statement : in Statement_Type;
+                            Parameter : in Positive;
+                            Value     : out Calendar2.Time_Type) ;
+                            
+   procedure Get_Timestamp (Statement : in Statement_Type;
                             Parameter : in String;
-                            Value     : out Sattmate_Calendar.Time_Type) ;
+                            Value     : out Calendar2.Time_Type) ;
+                            
+   procedure Get(Statement : in Statement_Type;
+                 Parameter : in Positive;
+                 Value     : out Calendar2.Time_Type) ;
+                 
+   procedure Get(Statement : in Statement_Type;
+                 Parameter : in String;
+                 Value     : out Calendar2.Time_Type) ;
+                 
+   procedure Get (Statement : in Statement_Type;
+   
+                  Parameter : in Positive;
+                  Value     : out Ada.Calendar.Time);
+                            
+   procedure Get (Statement : in Statement_Type;
+                  Parameter : in String;
+                  Value     : out Ada.Calendar.Time) ;                          
 
    -----------------------------------------------------------
 
@@ -194,24 +291,25 @@ package Sql is
 
    procedure Set_Date (Statement : in out Statement_Type;
                        Parameter : in String;
-                       Value     : in Sattmate_Calendar.Time_Type);
+                       Value     : in Calendar2.Time_Type);
 
    procedure Set_Time (Statement : in out Statement_Type;
                        Parameter : in String;
-                       Value     : in Sattmate_Calendar.Time_Type);
+                       Value     : in Calendar2.Time_Type);
 
    procedure Set_Timestamp (Statement : in out Statement_Type;
                             Parameter : in String;
-                            Value     : in Sattmate_Calendar.Time_Type);
+                            Value     : in Calendar2.Time_Type);
+                            
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in Calendar2.Time_Type);
+                            
+   procedure Set (Statement : in out Statement_Type;
+                  Parameter : in String;
+                  Value     : in  Ada.Calendar.Time);
    -----------------------------------------------------------
-
-   procedure Execute (Statement           : in Statement_Type;
-                      No_Of_Affected_Rows : out Natural) ;
-
-
-   procedure Execute (Statement : in Statement_Type) ;
-
-   --------------------------------------------------------------
+---
    function Is_Null (Statement : Statement_Type;
                      Parameter : Positive) return Boolean ;
 
@@ -235,21 +333,6 @@ package Sql is
 
 
    ------------------------------------------------------------
-   function Error_Message return String; -- not implementet, dummy
-   ------------------------------------------------------------
-   procedure Set_Module (Module : in String);
-
-   procedure Set_Action (Action : in String);
-
-   procedure Set_Client_Info (Client_Info : in String);
-
-   function Module return String;
-
-   function Action return String;
-
-   function Client_Info return String;
-
-   function Last_Statement return String; 		-- V8.3a
 
    procedure Get_Column_Info
      (Statement   : Statement_Type;

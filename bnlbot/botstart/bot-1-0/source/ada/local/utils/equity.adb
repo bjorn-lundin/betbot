@@ -1,8 +1,8 @@
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Sattmate_Types;    use Sattmate_Types;
+with Types;    use Types;
 with Gnat.Strings;
 with Sql;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Logging;               use Logging;
 with Text_IO;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
@@ -29,24 +29,24 @@ procedure Equity is
    type Eos_Type is (Date, Data, History);
    Eos : array (Eos_Type'range) of Boolean := (others => False);
    First_Time: Boolean := True;
-   First_Start_Date, Start_Date, Stop_Date: Sattmate_Calendar.Time_Type;
+   First_Start_Date, Start_Date, Stop_Date: Calendar2.Time_Type;
    Profit : Float_8 := 0.0;
    type Saldo_Type is (Ref, Sim, Dry, His);
    Saldo : array (Saldo_Type'range) of Float_8 := (others => 0.0);
-   Ts : Sattmate_Calendar.Time_Type;
+   Ts : Calendar2.Time_Type;
 
    gDebug : Boolean := False;  
    
    Abet : Table_Abets.Data_Type;
    Abethistory : Table_Abethistory.Data_Type;
 
-   package Timestamps is new Simple_List_Class(Sattmate_Calendar.Time_Type);
+   package Timestamps is new Simple_List_Class(Calendar2.Time_Type);
    Timestamp_List : Timestamps.List_Type := Timestamps.Create;
    Timestamp_List2 : Timestamps.List_Type := Timestamps.Create;
       
-   function Sort_Condition( Left, Right : Sattmate_Calendar.Time_Type) return Boolean is
+   function Sort_Condition( Left, Right : Calendar2.Time_Type) return Boolean is
     -- Sort new records in list with ascending string
-      --use Sattmate_Calendar;
+      --use Calendar2;
    begin
      return Left <= Right;
    end Sort_Condition;
@@ -57,7 +57,7 @@ procedure Equity is
    procedure Debug (What : String) is
    begin
       if gDebug then
-        Text_Io.Put_Line (Text_Io.Standard_Error, Sattmate_Calendar.String_Date_Time_ISO (Clock, " " , "") & " " & What);
+        Text_Io.Put_Line (Text_Io.Standard_Error, Calendar2.String_Date_Time_ISO (Clock, " " , "") & " " & What);
       end if;  
    end Debug;
    pragma Warnings(Off, Debug);
@@ -150,7 +150,7 @@ begin
                  "order by STARTTS");
 
    Dates.Set("BETNAME",Sa_Par_Bet_Name.all);
-   Ts := Sattmate_Calendar.Clock - (7*8,0,0,0,0) ; --today - 8 weeks --(2013,08,01,0,0,0,0);
+   Ts := Calendar2.Clock - (7*8,0,0,0,0) ; --today - 8 weeks --(2013,08,01,0,0,0,0);
    Ts.Hour        := 0;
    Ts.Minute      := 0;
    Ts.Second      := 0;
@@ -172,20 +172,20 @@ begin
    
    -- the same thing with 1 h intervals
    Start_Date := Ts;
-   Stop_Date  := Sattmate_Calendar.Clock ; -- today/now   --(2013,09,30,0,0,0,0);
+   Stop_Date  := Calendar2.Clock ; -- today/now   --(2013,09,30,0,0,0,0);
     
    Debug("Start fixing dates");           
    outer : loop   
      Start_Date := Start_Date + (0,1,0,0,0); -- 1 h --15 mins
---     Log ("Treating ts : " & Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & 
---                             Sattmate_Calendar.String_Time(Start_Date) );     
+--     Log ("Treating ts : " & Calendar2.String_Date_ISO(Start_Date) & " " & 
+--                             Calendar2.String_Time(Start_Date) );     
      Already_In_List := False;
      exit outer when Start_Date > Stop_Date;
      -- may not already exist in the list ...
      -- so loop and check the list
      declare
        Eol : Boolean := False;
-       Ts : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;    
+       Ts : Calendar2.Time_Type := Calendar2.Time_Type_First;    
      begin
         --funkar ej -> ny lista !!!
      
@@ -224,7 +224,7 @@ begin
      
      if First_Time then 
         First_Start_Date := Start_Date - (1,0,0,0,0);
-        Print(Sattmate_Calendar.String_Date_ISO(First_Start_Date) & " " & Sattmate_Calendar.String_Time(First_Start_Date) & " | " &
+        Print(Calendar2.String_Date_ISO(First_Start_Date) & " " & Calendar2.String_Time(First_Start_Date) & " | " &
               Integer'Image(Integer(Saldo(Ref))) & " | " &
               Integer'Image(Integer(Saldo(Dry))) & " | " &
               Integer'Image(Integer(Saldo(Sim))) & " | " &
@@ -282,7 +282,7 @@ begin
      Select_Results.Close_Cursor;
      Saldo(Dry) := Saldo(Dry) + Profit;
 
-     Print(Sattmate_Calendar.String_Date_ISO(Start_Date) & " " & Sattmate_Calendar.String_Time(Start_Date) & " | " &
+     Print(Calendar2.String_Date_ISO(Start_Date) & " " & Calendar2.String_Time(Start_Date) & " | " &
               Integer'Image(Integer(Saldo(Ref))) & " | " &
               Integer'Image(Integer(Saldo(Dry))) & " | " &
               Integer'Image(Integer(Saldo(Sim))) & " | " &

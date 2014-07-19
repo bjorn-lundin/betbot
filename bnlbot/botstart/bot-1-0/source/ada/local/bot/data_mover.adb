@@ -1,7 +1,7 @@
 --with Text_Io;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Lock ;
@@ -133,7 +133,7 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 --    Log(Me, "Close Db");
 --    Sql.Close_Session;
     Log(Me, "Closed log and die");

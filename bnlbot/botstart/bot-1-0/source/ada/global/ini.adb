@@ -23,7 +23,7 @@ with Unchecked_Deallocation;
 --with Sequential_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 --with Ada.Directories;
-with General_Routines;
+with Types;
 --with Ada.Command_Line;
 
 package body Ini is
@@ -69,7 +69,7 @@ package body Ini is
 
   function Is_Match (Left, Right: String) return Boolean is
   begin -- 9.8-17902
-    return General_Routines.Upper_Case(Left) = General_Routines.Upper_Case(Right);
+    return Types.Upper_Case(Left) = Types.Upper_Case(Right);
   end Is_Match;
 
 
@@ -289,7 +289,7 @@ package body Ini is
 --          My_Byte_Io.Open (File => Input_File,
 --                           Mode => My_Byte_Io.In_File,
 --                           Name => Name);
---          New_Name := To_Unbounded_String(General_Routines.Skip_All_Blanks(Name & "." & Integer'Image(Integer(Pid_Of_This_Process))));
+--          New_Name := To_Unbounded_String(Types.Skip_All_Blanks(Name & "." & Integer'Image(Integer(Pid_Of_This_Process))));
 --          My_Byte_Io.Create(File => Output_File,
 --                            Mode => My_Byte_Io.Out_File,
 --                            Name => To_String(New_Name));
@@ -501,7 +501,7 @@ package body Ini is
     if (S = null) then
       Define_Section (S, Section);
     end if;
-    Define_Variable (S, Variable, General_Routines.Skip_All_Blanks(Integer'Image(Value)));
+    Define_Variable (S, Variable, Types.Skip_All_Blanks(Integer'Image(Value)));
   end SET_VALUE;
 
 

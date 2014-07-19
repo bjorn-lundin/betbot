@@ -1,5 +1,5 @@
 
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Unchecked_Conversion;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded ; 
 

@@ -1,7 +1,7 @@
 
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
-with General_Routines; use General_Routines;
+with Types; use Types;
+with Calendar2; use Calendar2;
+--with General_Routines; use General_Routines;
 with Ada.Command_Line;      use Ada.Command_Line;
 
 with GNAT; use GNAT;
@@ -13,7 +13,7 @@ with Gnat.Strings;
 
 procedure Greening_Up_3 is
   Computer_File : AWK.Session_Type;
-  Race_Start, Old_Race_Start : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Race_Start, Old_Race_Start : Calendar2.Time_Type := Calendar2.Time_Type_First;
   Global_Profit, Race_Profit , Runner_Profit : Float_8 := 0.0;
   Count : Integer_4 := 0;
   Is_First_Line : Boolean := True;
@@ -22,7 +22,7 @@ procedure Greening_Up_3 is
   Config : Command_Line_Configuration;
 
   -----------------------------------------------------  
-  function To_Time(S2: String) return Sattmate_Calendar.Time_Type is
+  function To_Time(S2: String) return Calendar2.Time_Type is
     
     Tmp : Time_Type;
     S : String (1 .. S2'Last - S2'First + 1) := S2; 
@@ -79,7 +79,7 @@ begin
     
     if Race_Start /= Old_Race_Start then
       -- new race/date       
-      Put_Line(Sattmate_Calendar.String_Date_Time_ISO(Old_Race_Start, T => " ", TZ => "") & " | " &   
+      Put_Line(Calendar2.String_Date_Time_ISO(Old_Race_Start, T => " ", TZ => "") & " | " &   
                Count'Img             & " | " &     
                F8_Image(Race_Profit) & " | " &     
                F8_Image(Global_Profit) ); 

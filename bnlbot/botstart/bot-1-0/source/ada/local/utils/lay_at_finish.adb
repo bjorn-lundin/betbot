@@ -1,7 +1,7 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 --with Text_Io;
 with Table_Apricesfinish;
@@ -9,7 +9,7 @@ with Table_Arunners;
 with Table_Amarkets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 ---with GNAT.Strings;
-with Sattmate_Calendar; -- use Sattmate_Calendar;
+with Calendar2; -- use Calendar2;
 with Logging; use Logging;
 --with General_Routines; use General_Routines;
 
@@ -25,7 +25,7 @@ procedure Lay_At_Finish is
 
    type H_Type is record
      Marketid : Market_Id_Type := (others => ' ');
-     Startts  : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+     Startts  : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
    package H_Pack is new Simple_List_Class(H_Type);
@@ -35,7 +35,7 @@ procedure Lay_At_Finish is
 
     function Sort_Condition( Left, Right : H_Type) return Boolean is
     -- Sort new records in list with ascending ts
-      use type Sattmate_Calendar.Time_Type;
+      use type Calendar2.Time_Type;
     begin
       return Left.Startts <= Right.Startts;
     end Sort_Condition;
@@ -138,7 +138,7 @@ begin
         if not Eos2 then
           H_Data.Startts := Market.Startts;
         else
-          H_Data.Startts := Sattmate_Calendar.Time_Type_First;
+          H_Data.Startts := Calendar2.Time_Type_First;
         end if;
         Insert_Item_In_List(H_List, H_Data);
         H_Pack.Get_Next(H_List_2,H_Data,Eos);
@@ -219,7 +219,7 @@ begin
 --          Log(Bet_Status'Img & Table_Apricesfinish.To_String(Pricesfinish));
 
           Global_Profit := Global_Profit + Profit;
-          Log("|" & Sattmate_Calendar.String_Date_Time_ISO(H_Data.Startts, " ", "") & "|" & Integer_4(Global_Profit)'Img);
+          Log("|" & Calendar2.String_Date_Time_ISO(H_Data.Startts, " ", "") & "|" & Integer_4(Global_Profit)'Img);
 
       end loop Loop_All;
       T.Commit ;
@@ -235,5 +235,5 @@ begin
      " --max_odds=" & Ia_Max_Odds'Img);
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Lay_At_Finish;

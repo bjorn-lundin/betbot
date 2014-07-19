@@ -1,12 +1,12 @@
 
 
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Table_Drymarkets;
 with Table_Dryrunners;
 with Table_Dryresults;
 with Simple_List_Class;
 pragma Elaborate_All (Simple_List_Class);
-with Sattmate_Calendar;
+with Calendar2;
 with Unchecked_Conversion;
 
 package Races is
@@ -97,7 +97,7 @@ package Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
-                           Last_Loss         : in Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
                            Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -111,7 +111,7 @@ package Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid          : in out Boolean ;
                            Profit            : in  Profit_Type ;
-                           Last_Loss         : in Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Max_Daily_Loss    : in Max_Daily_Loss_Type;
                            Max_Profit_Factor : in Max_Profit_Factor_Type ;
@@ -125,7 +125,7 @@ package Races is
                            Bet_Name          : in Bet_Name_Type;
                            Bet_Laid               : in out Boolean ;
                            Profit                 : in  Profit_Type ;
-                           Last_Loss              : in  Sattmate_Calendar.Time_Type;
+                           Last_Loss              : in  Calendar2.Time_Type;
                            Saldo                  : in out Saldo_Type ;
                            Max_Daily_Loss         : in Max_Daily_Loss_Type;
                            Max_Profit_Factor      : in Max_Profit_Factor_Type ;
@@ -136,7 +136,7 @@ package Races is
 
    procedure Check_Result (Race              : in out Race_Type;
                            Profit            : in out Profit_Type;
-                           Last_Loss         : in out Sattmate_Calendar.Time_Type;
+                           Last_Loss         : in out Calendar2.Time_Type;
                            Saldo             : in out Saldo_Type ;
                            Bet_Won           : in out Boolean ;
                            Bet_Type          : in Bet_Type_Type ) ;
@@ -155,8 +155,8 @@ package Races is
                                 Db_Name     : in String;
                                 Bet_Type    : in Bet_Name_Type;
                                 Animal      : Animal_Type;
-                                Start_Date  : Sattmate_Calendar.Time_Type;
-                                Stop_Date   : Sattmate_Calendar.Time_Type
+                                Start_Date  : Calendar2.Time_Type;
+                                Stop_Date   : Calendar2.Time_Type
                                ) ;
 
 

@@ -9,16 +9,16 @@ with Table_Alinks;
 with Table_History;
 with Sql;
 with Logging ; use Logging;
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Types; use Types;
+with Calendar2; use Calendar2;
 with Ada.Strings ; use Ada.Strings;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
-with Sattmate_Exception;
+with Stacktrace;
 
 procedure Migrate_G1_G4_Football is
 --  Bad_Input : exception;
@@ -47,10 +47,10 @@ procedure Migrate_G1_G4_Football is
   Sa_Par_Password  : aliased Gnat.Strings.String_Access;
 
 
---  Par_Startts   : Sattmate_Calendar.Time_Type;
-  Par_Stopts    : Sattmate_Calendar.Time_Type;
-  Startts   : Sattmate_Calendar.Time_Type;
-  Stopts    : Sattmate_Calendar.Time_Type;
+--  Par_Startts   : Calendar2.Time_Type;
+  Par_Stopts    : Calendar2.Time_Type;
+  Startts   : Calendar2.Time_Type;
+  Stopts    : Calendar2.Time_Type;
   ----------------------------------------------------
   function Country_Code(Desc : String) return String is
 --    use General_Routines;
@@ -166,8 +166,8 @@ procedure Migrate_G1_G4_Football is
                     Runnerlist : in out Table_Arunners.Arunners_List_Pack.List_Type  ;
                     Pricelist  : in out Table_Aprices.Aprices_List_Pack.List_Type  ;
                     Linklist   : in out Table_Alinks.Alinks_List_Pack.List_Type ;
-                    Startts    : in     Sattmate_Calendar.Time_Type;
-                    Stopts     : in     Sattmate_Calendar.Time_Type
+                    Startts    : in     Calendar2.Time_Type;
+                    Stopts     : in     Calendar2.Time_Type
                             ) is
   Me : constant String := "Read_G1";
   Stm : Sql.Statement_Type;
@@ -534,5 +534,5 @@ exception
 --  when  Gnat.Command_Line.Invalid_Switch =>
 --    Display_Help(Config);
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
 end Migrate_G1_G4_Football;

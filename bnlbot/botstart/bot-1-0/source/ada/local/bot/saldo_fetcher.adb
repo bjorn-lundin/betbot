@@ -11,17 +11,17 @@ with Ada.Strings.Fixed;
 --with Unicode.Encodings;
 --with Unicode.CES;
 --with Text_Io;
-with Sattmate_Exception;
-with Sattmate_Types; use Sattmate_Types;
+with Stacktrace;
+with Types; use Types;
 with Sql;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 with GNAT;
 with GNAT.Sockets;
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Strings;
 
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 with Rpc;
@@ -63,7 +63,7 @@ procedure Saldo_Fetcher is
 
 
   procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type) is
-     T       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+     T       : Calendar2.Time_Type := Calendar2.Clock;
      Subject : constant String             := "BetBot Saldo Report";
      use AWS;
      SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
@@ -92,7 +92,7 @@ procedure Saldo_Fetcher is
           "dry " & Get_Db_Size("dry")  & Cr & Lf &
           "ais " & Get_Db_Size("ais")  & Cr & Lf &
           Cr & Lf &          
-          "timestamp: " & Sattmate_Calendar.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
+          "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
           
       Receivers : constant SMTP.Recipients :=  (
@@ -126,7 +126,7 @@ procedure Saldo_Fetcher is
   
   procedure Balance( Betfair_Result : in out Rpc.Result_Type ; Saldo : out Table_Abalances.Data_Type) is
     T : Sql.Transaction_Type;
-    Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Now : Calendar2.Time_Type := Calendar2.Clock;
   begin
     Log(Me & "Balance", "Login in db");
     Sql.Connect
@@ -177,9 +177,9 @@ procedure Saldo_Fetcher is
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Balance,
   Is_Time_To_Exit  : Boolean := False;
-  Day_Last_Check : Sattmate_Calendar.Day_Type := 1;
-  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
-  Last_Keep_Alive : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Day_Last_Check : Calendar2.Day_Type := 1;
+  Now : Calendar2.Time_Type := Calendar2.Clock;
+  Last_Keep_Alive : Calendar2.Time_Type := Calendar2.Time_Type_First;
   
   OK : Boolean := False;
   Saldo : Table_Abalances.Data_Type;
@@ -248,21 +248,21 @@ begin
     Receive_Loop : loop   
       begin
         Process_Io.Receive(Msg, 5.0);
-        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & General_Routines.Trim(Process_Io.Sender(Msg).Name));
+        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  => exit Main_Loop;
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
         end case;  
       exception
         when Process_Io.Timeout => 
-          Now := Sattmate_Calendar.Clock;
+          Now := Calendar2.Clock;
           if Now - (0,0,10,0,0) > Last_Keep_Alive then
             Rpc.Keep_Alive(OK); 
             Last_Keep_Alive := Now;
             exit Main_Loop when not OK;     
           end if;
       end;
-      Now := Sattmate_Calendar.Clock;
+      Now := Calendar2.Clock;
       --restart every day
       Is_Time_To_Exit          := Now.Hour = 01 and then 
                                   Now.Minute = 00 and then
@@ -315,7 +315,7 @@ exception
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
-    Sattmate_Exception.Tracebackinfo(E);
+    Stacktrace.Tracebackinfo(E);
     Posix.Do_Exit(0); -- terminate
 end Saldo_Fetcher;
 

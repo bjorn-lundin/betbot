@@ -2,12 +2,12 @@
 --
 --	COPYRIGHT	SattControl AB, Malm|
 --
---	FILE NAME	SATTMATE_TYPES_BODY.ADA
+--	FILE NAME	Types_BODY.ADA
 --
 --	RESPONSIBLE	Henrik Dannberg
 --
 --	DESCRIPTION	This file contains the body of the package
---			SATTMATE_TYPES. The package contains all basic data
+--			Types. The package contains all basic data
 --			types used by the SattMate system.
 --
 --------------------------------------------------------------------------------
@@ -37,7 +37,7 @@
 --	AUTHOR		Henrik Dannberg	10-JAN-1991
 --	VERIFIED BY	?
 --	DESCRIPTION	The following functions have been moved to package
---			SATTMATE_CALENDAR :
+--			Calendar2 :
 --
 --				INTEGER_4_TIME
 --				INTEGER_4_DATE
@@ -53,7 +53,7 @@ with Unchecked_Conversion;
 
 
 
-package body Sattmate_Types is
+package body Types is
 
    use type System.Bit_Order ; --9.4.1-8146
 
@@ -529,5 +529,5 @@ package body Sattmate_Types is
    end Xor_Check_Sum;
    -----------------------------------------------------------------------------
 
-end Sattmate_Types;
+end Types;
 

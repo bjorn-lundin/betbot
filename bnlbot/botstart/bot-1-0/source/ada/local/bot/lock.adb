@@ -1,9 +1,9 @@
 with Ada.Environment_Variables;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
---with Sattmate_Types;
+--with General_Routines; use General_Routines;
+with Types; use Types;
 with Interfaces.C.Strings;
-with Sattmate_Calendar;
+with Calendar2;
 
 
 package body Lock is
@@ -44,10 +44,10 @@ package body Lock is
     --put pid in file  
     declare
       use Interfaces.C;
-      use Sattmate_Calendar;
+      use Calendar2;
       Str : String := Trim(Posix.Getpid'img & "|" & 
-                      Sattmate_Calendar.String_Date_Time_ISO(Sattmate_Calendar.Clock, " ","") & "|" &  -- now
-                      Sattmate_Calendar.String_Date_Time_ISO(Sattmate_Calendar.Clock + (0,0,10,0,0), " ","") & "|" & --expire lock
+                      Calendar2.String_Date_Time_ISO(Calendar2.Clock, " ","") & "|" &  -- now
+                      Calendar2.String_Date_Time_ISO(Calendar2.Clock + (0,0,10,0,0), " ","") & "|" & --expire lock
                       Ascii.LF);
       C_Pid_Str : Chars_Ptr := New_String (Str);
       Size      : Posix.Size_t;

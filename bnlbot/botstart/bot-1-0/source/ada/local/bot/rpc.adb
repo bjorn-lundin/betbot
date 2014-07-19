@@ -7,7 +7,7 @@ with Aws;
 with Aws.Headers;
 with Aws.Headers.Set;
 with Aws.Response;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
@@ -307,14 +307,14 @@ package body RPC is
 
   procedure Get_Value(Container: in     JSON_Value;
                       Field    : in     String;
-                      Target   : in out Sattmate_Calendar.Time_Type;
+                      Target   : in out Calendar2.Time_Type;
                       Found    :    out Boolean) is
   begin
     if Container.Has_Field(Field) then
       declare
         Tmp : String := Container.Get(Field);
       begin  --       "marketStartTime":"2013-06-22T17:39:00.000Z",
-        Target := Sattmate_Calendar.To_Time_Type(Tmp(1..10), Tmp(12..23));
+        Target := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));
       end;
       Found := True;
     else
@@ -923,8 +923,8 @@ package body RPC is
 
   ---------------------------------------
   procedure Get_Cleared_Bet_Info_List(Bet_Status     : in Bet_Status_Type;
-                                      Settled_From   : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-                                      Settled_To     : in Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+                                      Settled_From   : in Calendar2.Time_Type := Calendar2.Time_Type_First;
+                                      Settled_To     : in Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result : out Result_Type;
                                       Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
     pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though
@@ -944,8 +944,8 @@ package body RPC is
   begin
     Betfair_Result := Ok;
 
-    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_From,"T","Z"));
-    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Sattmate_Calendar.String_Date_Time_ISO(Settled_To,  "T","Z"));
+    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(Settled_From,"T","Z"));
+    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Calendar2.String_Date_Time_ISO(Settled_To,  "T","Z"));
 
     Params.Set_Field (Field_Name => "groupBy", Field => "BET");
     Params.Set_Field (Field_Name => "includeItemDescription", Field => False);
@@ -1056,7 +1056,7 @@ package body RPC is
     Array_Length      : Natural;
     Array_Length_Back : Natural;
     Array_Length_Lay  : Natural;
-    Now               : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Now               : Calendar2.Time_Type := Calendar2.Clock;
     Found             : Boolean := False;
     DB_Runner_Price   : Table_Aprices.Data_Type;
 
@@ -1341,12 +1341,12 @@ package body RPC is
     Powerdays                      : Integer_4 := 0;
 
     Bet_Id : Integer_8 := 0;
-    Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Clock;
+    Now : Calendar2.Time_Type := Calendar2.Clock;
 
-    Price_String  : String         := General_Routines.F8_Image(Float_8(Price)); -- 2 decimals only
+    Price_String  : String         := F8_Image(Float_8(Price)); -- 2 decimals only
     Local_Price   : Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
 
-    Size_String   : String         := General_Routines.F8_Image(Float_8(Size)); -- 2 decimals only
+    Size_String   : String         := F8_Image(Float_8(Size)); -- 2 decimals only
     Local_Size    : Bet_Size_Type  := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
 
     Price_Matched : Bet_Price_Type := 0.0;
@@ -1371,7 +1371,7 @@ package body RPC is
     Append (Instructions , Instruction);
 
     Params.Set_Field (Field_Name => "instructions", Field => Instructions);
-    Params.Set_Field (Field_Name => "marketId",     Field => General_Routines.Trim(Market_Id));
+    Params.Set_Field (Field_Name => "marketId",     Field => Trim(Market_Id));
 
     JSON_Query.Set_Field (Field_Name => "params", Field => Params);
     JSON_Query.Set_Field (Field_Name => "id", Field => 16);
@@ -1528,7 +1528,7 @@ package body RPC is
       end if;
     end ;
 
-    if General_Routines.Trim(Execution_Report_Status) /= "SUCCESS" then
+    if Trim(Execution_Report_Status) /= "SUCCESS" then
       Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
@@ -1551,7 +1551,7 @@ package body RPC is
       Exeerrcode     => Execution_Report_Error_Code,
       Inststatus     => Instruction_Report_Status,
       Insterrcode    => Instruction_Report_Error_Code,
-      Startts        => Sattmate_Calendar.Time_Type_First,
+      Startts        => Calendar2.Time_Type_First,
       Betplaced      => Now,
       Pricematched   => Float_8(Price_Matched),
       Sizematched    => Float_8(Size_Matched),
@@ -1669,7 +1669,7 @@ package body RPC is
 
            when others =>
               Runnernamestripped := DB_Runner.Runnername;
-              Move(General_Routines.Trim(DB_Runner.Sortprio'Img), Runnernamenum);
+              Move(Trim(DB_Runner.Sortprio'Img), Runnernamenum);
        end case;
 
        Move("NOT_SET_YET", DB_Runner.Status);
@@ -1687,7 +1687,7 @@ package body RPC is
 
        if  Start_Paranthesis > Integer(-1) and then
            Stop_Paranthesis > Integer(-1) and then
-           General_Routines.Lower_Case(Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis)) = "(res)" then
+           Lower_Case(Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis)) = "(res)" then
          Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis) := (others => ' ');
        end if;
        DB_Runner.Runnernamestripped := Runnernamestripped;

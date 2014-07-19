@@ -1,12 +1,12 @@
 
---with sattmate_types ; use sattmate_types;
-with Sattmate_Exception;
+--with Types ; use Types;
+with Stacktrace;
 with Sql;
 
 --with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
 with Logging; use Logging;
---with Sattmate_Calendar; use Sattmate_Calendar;
+--with Calendar2; use Calendar2;
 
 
 
@@ -17,8 +17,8 @@ procedure Sql_Ifc_Leak_Finder is
 
  --  Eos          : Boolean := False;
 
- --  start_date   : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
---   stop_date    : Sattmate_Calendar.time_type := Sattmate_Calendar.Time_Type_First;
+ --  start_date   : Calendar2.time_type := Calendar2.Time_Type_First;
+--   stop_date    : Calendar2.time_type := Calendar2.Time_Type_First;
 
 
 --   Sa_Date      : aliased Gnat.Strings.String_Access;
@@ -61,8 +61,8 @@ begin
 --                   "and 1 =2 " &  --impossilble
 --                   "");
 --
---   Start_Date := Sattmate_Calendar.To_Time_Type ("2011-01-01", "00:00:00:000");
---   Stop_Date  := Sattmate_Calendar.To_Time_Type ("2011-03-01", "23:59:59:999");
+--   Start_Date := Calendar2.To_Time_Type ("2011-01-01", "00:00:00:000");
+--   Stop_Date  := Calendar2.To_Time_Type ("2011-03-01", "23:59:59:999");
 --
 --   Sql.Set_Timestamp(Select_all, "START", Start_date);
 --   Sql.Set_Timestamp(Select_all, "STOP",  Stop_date);
@@ -90,6 +90,6 @@ begin
 
 exception
    when E : others =>
-      Sattmate_Exception.Tracebackinfo (E);
+      Stacktrace.Tracebackinfo (E);
 
 end Sql_Ifc_Leak_Finder;

@@ -2,7 +2,7 @@
 --with Text_IO;
 with Ini;
 with Ada.Environment_Variables;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 with Logging ; use Logging;
 
@@ -234,7 +234,7 @@ package body Bot_Config is
               Days : String := Ini.Get_Value(Ini.Get_Section_Name(i),"allowed_days","al");
               Day  : String(1..2) := (others => ' ');
               Index : Integer := 1;
-              use Sattmate_Calendar;
+              use Calendar2;
             begin
               --reset
               for i in Week_Day_Type'range loop

@@ -1,6 +1,6 @@
 
 with Gnatcoll.Json; use Gnatcoll.Json;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Table_Arunners;
 with Table_Amarkets;
@@ -10,7 +10,7 @@ with Table_Aprices;
 with Table_Aevents;
 
 with Token;
-with Sattmate_Calendar;
+with Calendar2;
 
 package RPC is
 
@@ -67,7 +67,7 @@ package RPC is
   
   procedure Get_Value(Container: in     JSON_Value;
                       Field    : in     String;
-                      Target   : in out Sattmate_Calendar.Time_Type;
+                      Target   : in out Calendar2.Time_Type;
                       Found    :    out Boolean);
   
   procedure Bet_Is_Matched(Betid             : in  Integer_8 ; 
@@ -87,8 +87,8 @@ package RPC is
                                 Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type);
 
   procedure Get_Cleared_Bet_Info_List(Bet_Status     : in     Bet_Status_Type;
-                                      Settled_From   : in     Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-                                      Settled_To     : in     Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_Last;
+                                      Settled_From   : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
+                                      Settled_To     : in     Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result :    out Result_Type;
                                       Bet_List       :    out Table_Abets.Abets_List_Pack.List_Type) ;
                                       

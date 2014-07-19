@@ -10,7 +10,7 @@ with Interfaces.C;
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
 
-with Sattmate_Calendar;
+with Calendar2;
 
 package Process_Io.Pipe is
   -- pio utility stuff below
@@ -26,9 +26,9 @@ package Process_Io.Pipe is
       Num_Untreated : Integer                     := 0;
       Num_Fail_Sent : Integer                     := 0;
       Num_Timeout   : Integer                     := 0;
-      Created       : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-      Last_Sent     : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
-      Last_Received : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+      Created       : Calendar2.Time_Type := Calendar2.Time_Type_First;
+      Last_Sent     : Calendar2.Time_Type := Calendar2.Time_Type_First;
+      Last_Received : Calendar2.Time_Type := Calendar2.Time_Type_First;
     end record;
 
 --  for Pio_Status_Record'alignment use 4;

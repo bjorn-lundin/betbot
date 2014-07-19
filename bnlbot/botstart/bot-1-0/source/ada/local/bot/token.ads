@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Sattmate_Calendar;
+with Calendar2;
 
 package Token is
 
@@ -46,7 +46,7 @@ private
   type Token_Type is tagged record
     Token_Is_Set : Boolean          := False;
     The_Token    : Unbounded_String := Null_Unbounded_String;
-    Login_Time   : Sattmate_Calendar.Time_Type;
+    Login_Time   : Calendar2.Time_Type;
     Username     : Unbounded_String := Null_Unbounded_String;
     Password     : Unbounded_String := Null_Unbounded_String; 
     Product_Id   : Unbounded_String := Null_Unbounded_String;

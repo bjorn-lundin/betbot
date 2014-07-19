@@ -1,15 +1,15 @@
 
-with Sattmate_Types ; use Sattmate_Types;
+with Types ; use Types;
 with Bot_Types ; use Bot_Types;
-with Sattmate_Exception;
+with Stacktrace;
 with Sql;
 with Text_Io;
 with Table_Araceprices;
 --with Gnat.Command_Line; use Gnat.Command_Line;
 --with GNAT.Strings;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 
 with Simple_List_Class;
 pragma Elaborate_All(Simple_List_Class);
@@ -89,14 +89,14 @@ begin
           Log("MARKETID: " & H_Data.Marketid);
           
           Text_Io.Create(F, Text_Io.Out_File,
-          General_Routines.Skip_All_Blanks(H_Data.Marketid & '_' & H_Data.Selectionid'Img & ".dat"));
+          Skip_All_Blanks(H_Data.Marketid & '_' & H_Data.Selectionid'Img & ".dat"));
           
           Loop_Runner : loop
             Stm_Select_Eventid_Selectionid_O.Fetch(Eos2);
             exit Loop_Runner when Eos2;
             History := Table_Araceprices.Get(Stm_Select_Eventid_Selectionid_O);           
             
-            Text_IO.Put_Line(F, Sattmate_Calendar.String_Date_Time_ISO(History.Pricets, " ", "") & " | " & 
+            Text_IO.Put_Line(F, Calendar2.String_Date_Time_ISO(History.Pricets, " ", "") & " | " & 
                               History.Marketid & " | " & 
                               History.Selectionid'Img & " | " & 
                               History.Status(1..11) & " | " & 
@@ -117,5 +117,5 @@ begin
 
 exception
    when E: others =>
-      Sattmate_Exception.Tracebackinfo(E);
+      Stacktrace.Tracebackinfo(E);
 end Plot_Race_Prices;

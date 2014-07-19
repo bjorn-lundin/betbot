@@ -1,11 +1,11 @@
 
 with Ada.Directories;
 with Text_Io;
-with Sattmate_Calendar;
+with Calendar2;
 with Ada.Io_Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with  Ada.Strings.Fixed;
-with Sattmate_Exception;
+with Stacktrace;
 
 package body Logging is
 
@@ -42,8 +42,8 @@ package body Logging is
   --9.8-17200 new proc
   procedure Rename_Log_File (Name : in String; Copy : Boolean := False) is
     --------------------------
-    function Timestamp_Format(T : in Sattmate_Calendar.Time_Type) return String is
-      use Sattmate_Calendar;
+    function Timestamp_Format(T : in Calendar2.Time_Type) return String is
+      use Calendar2;
       use Ada.Strings;
       use Ada.Strings.Fixed;
 
@@ -63,7 +63,7 @@ package body Logging is
 
     function Timestamp return String is
     begin
-      return Timestamp_Format(Sattmate_Calendar.Clock);
+      return Timestamp_Format(Calendar2.Clock);
     end Timestamp;     
 
     --------------------------
@@ -99,7 +99,7 @@ package body Logging is
             Text_Io.Put_Line("Problems ren/cpy file '" & Name & "'");            
             Text_Io.Put_Line("to                    '" & New_Name & "'");            
           when E: others => 
-             Sattmate_Exception.Tracebackinfo(E);
+             Stacktrace.Tracebackinfo(E);
         end;
         exit when OK;
  --9.8-18163        delay 0.001; -- wait for new millisecond
@@ -124,7 +124,7 @@ package body Logging is
    end Log;
    -------------------------------------------
    procedure Log (What : in String) is
-     use Sattmate_Calendar;
+     use Calendar2;
      use type Ada.Directories.File_Size;
    begin
       if Quiet then

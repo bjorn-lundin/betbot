@@ -1,7 +1,7 @@
 
-with Sattmate_Exception;
+with Stacktrace;
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Gnat.Strings;
 with Lock ;
 
@@ -70,6 +70,6 @@ exception
   when Lock.Lock_Error => null;
   Trace(Me, "Lock_Error captured" );
   when E: others =>
-    Sattmate_Exception. Tracebackinfo(E);
+    Stacktrace. Tracebackinfo(E);
 end Tester;
 

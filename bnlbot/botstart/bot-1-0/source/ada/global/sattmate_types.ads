@@ -2,12 +2,12 @@
 --
 --	COPYRIGHT	SattControl AB, Malm|
 --
---	FILE NAME	SATTMATE_TYPES.ADA
+--	FILE NAME	Types.ADA
 --
 --	RESPONSIBLE	Henrik Dannberg
 --
 --	DESCRIPTION	This file contains a specification of the package
---			SATTMATE_TYPES. The package contains all basic data
+--			Types. The package contains all basic data
 --			types used by the SattMate system.
 --
 --------------------------------------------------------------------------------
@@ -31,7 +31,7 @@
 --	AUTHOR		Henrik Dannberg	10-JAN-1991
 --	VERIFIED BY	?
 --	DESCRIPTION	The following functions have been moved to package
---			SATTMATE_CALENDAR :
+--			Calendar2 :
 --
 --				INTEGER_4_TIME
 --				INTEGER_4_DATE
@@ -58,7 +58,7 @@
 with Ada.Strings.Unbounded;
 with Ada.Numerics.Generic_Elementary_Functions ;
 with Ada.Text_IO;
-package Sattmate_Types is
+package Types is
 
    type Byte is range 0 .. 255;
    for  Byte'Size use 8;
@@ -198,4 +198,4 @@ package Sattmate_Types is
    function Xor_Check_Sum (X : Byte_Array) return Byte;
 
 
-end Sattmate_Types;
+end Types;

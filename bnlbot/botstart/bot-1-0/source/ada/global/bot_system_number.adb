@@ -49,19 +49,12 @@ package body Bot_System_Number is
     Transaction.Start;
 
     case Sql.Database is
-      when Sql.Oracle =>
-        case System_Number_Type is
-          when Betid =>
-            Sql.Prepare(Get_Number(System_Number_Type),
-                    "select BETID_SEQUENCE.NEXTVAL from DUAL");
-        end case;
       when Sql.PostgreSQL =>
         case System_Number_Type is
           when Betid =>
             Sql.Prepare(Get_Number(System_Number_Type),
                     "select nextval('BET_ID_SERIAL')");
         end case;
-      when others => raise Constraint_Error with "Unsupported database";
     end case;
 
     while not Is_Number_Found and No_Of_Tries < Max_Tries loop

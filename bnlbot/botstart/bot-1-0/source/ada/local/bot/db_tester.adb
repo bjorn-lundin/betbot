@@ -1,7 +1,7 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Bot_Config;
 --with Lock; 
 with Text_io;

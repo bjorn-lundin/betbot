@@ -3,11 +3,11 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 --with Ada.Calendar;
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Sql;
 --with Simple_List_Class;
 --pragma Elaborate_All(Simple_List_Class);
-with Sattmate_Exception;
+with Stacktrace;
 with Lock ;
 with Rpc;
 with Posix;
@@ -20,7 +20,7 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Core_Messages;
 with Bet_Handler;
-with Sattmate_Calendar;
+with Calendar2;
 
 procedure Winners_Fetcher_Json is
   package EV renames Ada.Environment_Variables;
@@ -38,7 +38,7 @@ procedure Winners_Fetcher_Json is
   
 
   Ba_Daemon : aliased Boolean := False;
-  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
   Is_Time_To_Exit : Boolean := False;
 ----------------------------------------------
 
@@ -123,7 +123,7 @@ begin
             end;
           end if;
       end;
-      Now := Sattmate_Calendar.Clock;
+      Now := Calendar2.Clock;
       --restart every day
       Is_Time_To_Exit := Now.Hour = 01 and then 
                          Now.Minute = 02 ;
@@ -142,7 +142,7 @@ exception
   when Lock.Lock_Error =>
     Posix.Do_Exit(0); -- terminate
   when E: others =>
-    Sattmate_Exception. Tracebackinfo(E);
+    Stacktrace. Tracebackinfo(E);
     Logging.Close;
 --    if Sql.Is_Session_Open then
 --      Sql.Close_Session;

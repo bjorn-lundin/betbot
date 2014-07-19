@@ -1,9 +1,9 @@
 
---with Sattmate_Types; use Sattmate_Types;
+--with Types; use Types;
 with Sql;
-with Sattmate_Calendar; use Sattmate_Calendar;
+with Calendar2; use Calendar2;
 with Logging; use Logging;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Table_Abets;
 
 package body Bet is
@@ -18,8 +18,8 @@ package body Bet is
     Profit : Float_8 := 0.0;
   begin
     T.Start;
-      Start_Date := Sattmate_Calendar.Clock;
-      End_Date := Sattmate_Calendar.Clock;
+      Start_Date := Calendar2.Clock;
+      End_Date := Calendar2.Clock;
 
       Start_Date.Hour        := 0;
       Start_Date.Minute      := 0;
@@ -51,7 +51,7 @@ package body Bet is
       end if;
       Select_Profit_Today.Close_Cursor;
     T.Commit;
-    Log(Me & "Profit_Today", Trim(Bet_Name) & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Sattmate_Calendar.String_Date(Start_Date));
+    Log(Me & "Profit_Today", Trim(Bet_Name) & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Calendar2.String_Date(Start_Date));
     return Profit;
   end Profit_Today;
   ------------------------------------------------------------

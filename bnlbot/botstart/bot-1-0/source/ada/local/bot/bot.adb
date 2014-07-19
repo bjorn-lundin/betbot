@@ -1,8 +1,8 @@
-with Sattmate_Types; use Sattmate_Types;
-with Sattmate_Calendar; use Sattmate_Calendar;
-with Sattmate_Exception;
+with Types; use Types;
+with Calendar2; use Calendar2;
+with Stacktrace;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-with General_Routines; use General_Routines;
+--with General_Routines; use General_Routines;
 with Bot_Config;
 with Lock;
 --with Text_io;
@@ -26,7 +26,7 @@ procedure Bot is
   Me       : constant String := "Main";
   use type Bot_Types.Bot_Mode_Type;
   OK : Boolean := False;
-  Now : Sattmate_Calendar.Time_Type := Sattmate_Calendar.Time_Type_First;
+  Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
   
   Is_Time_To_Exit : Boolean := False;
   use type Sql.Transaction_Status_Type;
@@ -112,7 +112,7 @@ begin
           when Bot_Types.Simulation => null;
         end case;
     end;
-    Now := Sattmate_Calendar.Clock;
+    Now := Calendar2.Clock;
     
     --restart every day
     Is_Time_To_Exit := Now.Hour = 01 and then 
@@ -138,7 +138,7 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
 --    Log(Me, "Close Db");
 --    Sql.Close_Session;
     Log(Me, "Closed log and die");
