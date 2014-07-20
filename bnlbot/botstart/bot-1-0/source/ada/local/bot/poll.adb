@@ -61,7 +61,7 @@ procedure Poll is
     Price,Tmp : Table_Aprices.Data_Type;
     Has_Been_In_Play,
     In_Play   : Boolean := False;
-    Best_Runners : array (1..3) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
     Eol,Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
@@ -92,8 +92,8 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low).Bet_Name);
 	
     -- Back_Medium : 
-    Move("DR_HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium).Bet_Name);
---    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
+    Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_Medium).Bet_Name);
+    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High).Bet_Name);
@@ -109,7 +109,7 @@ procedure Poll is
     Bets_Allowed(Back_Low_Marker).Bet_Size := 30.0;
 	
     -- Back_Medium : 
-    Move("MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1", Bets_Allowed(Back_Medium_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_Medium_Marker).Bet_Name);
     Bets_Allowed(Back_Medium_Marker).Bet_Size := 30.0;
 	
     -- Back_High : 
@@ -136,7 +136,7 @@ procedure Poll is
     end loop;
     
     Bets_Allowed(Back_Medium).Is_Allowed_To_Bet := False;
-    Bets_Allowed(Back_Medium_Marker).Is_Allowed_To_Bet := False;   
+--    Bets_Allowed(Back_Medium_Marker).Is_Allowed_To_Bet := False;   
 	
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
@@ -237,7 +237,7 @@ procedure Poll is
       
       -- ok find the runner with lowest backprice:
       Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10000.0;
+      Price.Backprice := 10_000.0;
       Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
@@ -251,7 +251,7 @@ procedure Poll is
 
       -- find #2
       Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10000.0;
+      Price.Backprice := 10_000.0;
       Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
@@ -266,7 +266,7 @@ procedure Poll is
 
       -- find #3
       Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10000.0;
+      Price.Backprice := 10_000.0;
       Price_List.Get_First(Tmp,Eol);
       loop
         exit when Eol;
@@ -279,6 +279,23 @@ procedure Poll is
         Price_List.Get_Next(Tmp,Eol);
       end loop;
       Best_Runners(3) := Price;
+      
+      -- find #4
+      Tmp := Table_Aprices.Empty_Data;
+      Price.Backprice := 10_000.0;
+      Price_List.Get_First(Tmp,Eol);
+      loop
+        exit when Eol;
+        if Tmp.Status(1..6) = "ACTIVE" and then
+           Tmp.Backprice < Price.Backprice and then
+           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(2).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(3).Selectionid then
+          Price := Tmp;
+        end if;
+        Price_List.Get_Next(Tmp,Eol);
+      end loop;
+      Best_Runners(4) := Price;
 
       for i in 1 .. 3 loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
@@ -289,6 +306,9 @@ procedure Poll is
           
           if Best_Runners(1).Backprice <= Float_8(1.10) and then
              Best_Runners(2).Backprice >= Float_8(7.0) and then
+             Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
@@ -337,9 +357,12 @@ procedure Poll is
           end if;
           
             -- Back The leader in PLC market again, but different requirements...
-          if Best_Runners(1).Backprice <= Float_8(1.15) and then
-             Best_Runners(2).Backprice >= Float_8(7.0) and then
-             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+          if Best_Runners(1).Backprice <= Float_8(1.50) and then
+             Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(4).Backprice >= Float_8(20.0) and then
+             Best_Runners(4).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
             declare
               PBB             : Bot_Messages.Place_Back_Bet_Record;
@@ -388,6 +411,9 @@ procedure Poll is
             -- Back The leader in PLC market again, but different requirements...
          
           if Best_Runners(1).Backprice <= Float_8(1.25) and then
+             Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(3).Backprice >= Float_8(12.0) and then
              Best_Runners(3).Layprice  >= Float_8(1.0)  then
             -- Back The leader in PLC market...
@@ -438,6 +464,9 @@ procedure Poll is
             -- Back The leader in PLC market again, but different requirements...
           if not Bets_Allowed(Lay_Low).Has_Betted and then
              Bets_Allowed(Lay_Low).Is_Allowed_To_Bet and then
+             Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+             Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(1).Backprice <= Float_8(1.10) and then
              Best_Runners(2).Backprice >= Float_8(10.0) and then
              Best_Runners(3).Layprice  >= Float_8(1.0) and then
