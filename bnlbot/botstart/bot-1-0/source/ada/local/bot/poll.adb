@@ -113,7 +113,7 @@ procedure Poll is
     Bets_Allowed(Back_Medium_Marker).Bet_Size := 30.0;
 	
     -- Back_High : 
-    Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_2", Bets_Allowed(Back_High_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High_Marker).Bet_Name);
     Bets_Allowed(Back_High_Marker).Bet_Size := 30.0;
 	 
     -- check if ok to bet and set bet size
