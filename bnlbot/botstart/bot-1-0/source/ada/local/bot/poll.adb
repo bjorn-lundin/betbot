@@ -308,8 +308,7 @@ procedure Poll is
              Best_Runners(2).Backprice >= Float_8(7.0) and then
              Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-             Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+             Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
             -- Back The leader in PLC market...
             declare
               PBB             : Bot_Messages.Place_Back_Bet_Record;
@@ -361,8 +360,7 @@ procedure Poll is
              Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-             Best_Runners(4).Backprice >= Float_8(20.0) and then
-             Best_Runners(4).Layprice  >= Float_8(1.0)  then
+             Best_Runners(4).Backprice >= Float_8(20.0) then
             -- Back The leader in PLC market...
             declare
               PBB             : Bot_Messages.Place_Back_Bet_Record;
@@ -414,8 +412,7 @@ procedure Poll is
              Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
              Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-             Best_Runners(3).Backprice >= Float_8(12.0) and then
-             Best_Runners(3).Layprice  >= Float_8(1.0)  then
+             Best_Runners(3).Backprice >= Float_8(12.0)  then
             -- Back The leader in PLC market...
             declare
               PBB             : Bot_Messages.Place_Back_Bet_Record;
