@@ -493,6 +493,11 @@ procedure Poll is
           end;
         end if;
       end if;
+      
+      if Markets(Place).Numwinners < Integer_4(3) then
+        exit Poll_Loop;
+      end if;
+      
     end loop Poll_Loop;
     
     if Is_Data_Collector then
