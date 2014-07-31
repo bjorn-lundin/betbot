@@ -15,7 +15,8 @@
 #}
 
 
-PID_FILE_DIRECTORIES="bnl jmb"
+#PID_FILE_DIRECTORIES="bnl jmb"
+PID_FILE_DIRECTORIES=$(ls $BOT_HOME/..)
 echo""
 echo "----------------  $(date)  --------------------------"
 for USER in $PID_FILE_DIRECTORIES ; do 
