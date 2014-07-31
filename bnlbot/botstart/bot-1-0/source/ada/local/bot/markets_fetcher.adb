@@ -191,11 +191,12 @@ procedure Markets_Fetcher is
   --------------------------------------------------------------------- 
    
 ------------------------------ main start -------------------------------------
-  Is_Time_To_Check_Markets : Boolean ;
-  Market_Found : Boolean;
-  Market_Ids                  : JSON_Array := Empty_Array;
-  Minute_Last_Check : Calendar2.Minute_Type := 0;
-  Now : Calendar2.Time_Type := Calendar2.Clock;
+  Is_Time_To_Check_Markets : Boolean               := True;
+  Market_Found             : Boolean               := True;
+  Market_Ids               : JSON_Array            := Empty_Array;
+  Minute_Last_Check        : Calendar2.Minute_Type := 0;
+  Now                      : Calendar2.Time_Type   := Calendar2.Clock;
+  OK                       : Boolean               := True;
   
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -318,14 +319,21 @@ begin
     end loop;           
     Minute_Last_Check := Now.Minute;
     
-    T.Start;
-    
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
       when 60     => UTC_Time_Start := Now - One_Hour;
       when 120    => UTC_Time_Start := Now - Two_Hours;
       when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
     end case;   
+    
+    --check for stale token - send keepAlive, and re-login if bad
+    Rpc.Keep_Alive(OK);
+    if not OK then
+       Rpc.Login;
+    end if;
+    
+    T.Start;
+    
 
     --Now set that time 1 hour ahead:
 --    UTC_Time_Start := UTC_Time_Start + One_Hour;
