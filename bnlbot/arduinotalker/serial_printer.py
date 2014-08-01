@@ -130,12 +130,7 @@ s = pyscope.pyscope()
 pb = progress_bar(s.screen)
 g = global_obj()
 p = thermal_printer.thermal_printer(serialport='/dev/ttyAMA0')
-c = psycopg2.connect("dbname=bnl \
-                      user=bnl \
-                      host=db.nonodev.com \
-                      password=BettingFotboll1$ \
-                      sslmode=require \
-                      application_name=serial_printer")
+
 cnt = 600
 maxcnt = cnt / 1.0 # amke it a float
 while True:
@@ -152,9 +147,19 @@ while True:
     elif event.type is pygame.NOEVENT:
         if cnt >= maxcnt :
             s.clearScreen()
-            pb.update(0.0)
-            show(c,g,s,p)
-            cnt = 0
+            try:
+                c = psycopg2.connect("dbname=bnl \
+                      user=bnl \
+                      host=db.nonodev.com \
+                      password=BettingFotboll1$ \
+                      sslmode=require \
+                      application_name=serial_printer")
+                pb.update(0.0)
+                show(c,g,s,p)
+                cnt = 0
+                c.close()
+            except psycopg2.OperationalError:
+                s.displayText('Bad Network?' + str(today)[:-7] , 30, 1, (200,200,1), True )
         else :
             progress = cnt / maxcnt
             pb.update(progress)
