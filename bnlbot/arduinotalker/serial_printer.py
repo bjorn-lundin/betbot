@@ -159,7 +159,7 @@ while True:
                 cnt = 0
                 c.close()
             except psycopg2.OperationalError:
-                s.displayText('Bad Network?' + str(today)[:-7] , 30, 1, (200,200,1), True )
+                s.displayText('Bad Network?' , 30, 1, (200,200,1), True )
         else :
             progress = cnt / maxcnt
             pb.update(progress)
@@ -167,6 +167,4 @@ while True:
     pygame.display.update()
     pygame.time.delay(100)
 
-c.close()
-
-
+#c.close()
