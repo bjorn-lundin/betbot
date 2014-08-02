@@ -71,7 +71,7 @@ procedure Poll is
     Betfair_Result : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo : Table_Abalances.Data_Type;
     
-    Is_Data_Collector : Boolean := EV.VALUE("BOT_USER") = "dry" ;
+    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
 
     
     type Bet_Type is (Back_Low, Back_Medium, Back_High, Lay_Low, 
@@ -95,8 +95,8 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1", Bets_Allowed(Back_Low).Bet_Name);
     
     -- Back_Medium : 
-    Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_Medium).Bet_Name);
-    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
+    Move("HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_Medium).Bet_Name);
+--    Bets_Allowed(Back_Medium).Bet_Size := 30.0;
     
     -- Back_High : 
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_High).Bet_Name);
@@ -138,7 +138,7 @@ procedure Poll is
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
     end loop;
     
-    Bets_Allowed(Back_Medium).Is_Allowed_To_Bet := False;
+--    Bets_Allowed(Back_Medium).Is_Allowed_To_Bet := False;
 --    Bets_Allowed(Back_Medium_Marker).Is_Allowed_To_Bet := False;   
     
     Table_Amarkets.Read(Market, Eos);
@@ -313,7 +313,7 @@ procedure Poll is
           
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
            Best_Runners(2).Backprice >= Float_8(7.0) and then
-           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+--           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists (unnecessarry since its <=1.10)
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
@@ -364,7 +364,7 @@ procedure Poll is
         
           -- Back The leader in PLC market again, but different requirements...
         if Best_Runners(1).Backprice <= Float_8(1.50) and then
-           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+--           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists (unnecessarry since its <=1.50)
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(4).Backprice >= Float_8(20.0) then
@@ -416,7 +416,7 @@ procedure Poll is
           -- Back The leader in PLC market again, but different requirements...
         
         if Best_Runners(1).Backprice <= Float_8(1.25) and then
-           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
+--           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists (unnecessarry since its <=1.25)
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice >= Float_8(12.0)  then
@@ -468,8 +468,8 @@ procedure Poll is
           -- Back The leader in PLC market again, but different requirements...
         if not Bets_Allowed(Lay_Low).Has_Betted and then
            Bets_Allowed(Lay_Low).Is_Allowed_To_Bet and then
-           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+--           Best_Runners(1).Backprice < Float_8(10_000.0) and then  -- so it exists (unnecessarry since its <=1.10)
+--           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists (unnecessarry since its <=10.0)
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(1).Backprice <= Float_8(1.10) and then
            Best_Runners(2).Backprice >= Float_8(10.0) and then
