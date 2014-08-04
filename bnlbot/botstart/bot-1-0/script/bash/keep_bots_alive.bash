@@ -75,6 +75,10 @@ function Start_Bot () {
 function Check_Bots_For_User () {
 
   export BOT_USER=$1
+  BOT_WEEK_DAY=$2
+  BOT_HOUR=$3
+  BOT_MINUTE=$4  
+  
   
   if [ $BOT_USER == "dry" ] ; then
     IS_DATA_COLLECTOR="true"
@@ -125,7 +129,9 @@ function Check_Bots_For_User () {
         Start_Bot $BOT_USER $bot bot $bot.ini
       fi
     done
-    BET_PLACER_LIST="bet_placer_10 bet_placer_11 bet_placer_20 bet_placer_21 bet_placer_30 bet_placer_31"
+    BET_PLACER_LIST="bet_placer_10 bet_placer_11 \
+                     bet_placer_20 bet_placer_21 bet_placer_22 bet_placer_23 \
+                     bet_placer_30 bet_placer_31"
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
     done
@@ -137,41 +143,40 @@ function Check_Bots_For_User () {
 #  done
 
   #zip logfiles every hour, on minute 17 in the background
-  MINUTE=$(date +"%M")
-  if [ $MINUTE == "17" ] ; then
+  if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
   
-  
-  HOUR=$(date +"%H")
-  if [ $HOUR == "05" ] ; then
-    if [ $MINUTE == "20" ] ; then
+  if [ $BOT_HOUR == "05" ] ; then
+    if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
     fi
   fi
   
 }
 # start here 
+
+HOUR=$(date +"%H")
+MINUTE=$(date +"%M")
+WEEK_DAY=$(date +"%u")
+       
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
     USER_LIST=$(ls $BOT_START/user)
-    #USER_LIST="bnl jmb"
+    USER_LIST_PLAYERS_ONLY="bnl jmb"
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do
-      Check_Bots_For_User $USR
+      Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
   
-    HOUR=$(date +"%H")
-    MINUTE=$(date +"%M")
-    if [ $HOUR == "07" ] ; then
+    if [ $HOUR == "09" ] ; then
       if [ $MINUTE == "18" ] ; then
-        WEEK_DAY=$(date +"%u")
         SLEEPTIME=1
         for USR in $USER_LIST ; do
-          #Start one every hour in the background
+          #Start one every 20 min in the background
           (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-          (( SLEEPTIME = SLEEPTIME +3600 ))
+          (( SLEEPTIME = SLEEPTIME +1200 ))
         done
       fi
     fi
@@ -180,19 +185,19 @@ case $BOT_MACHINE_ROLE in
       for USR in $USER_LIST ; do
         #Start one every 2 min in the background
         SLEEPTIME=1
-        (sleep $SLEEPTIME && $VACUUMDB --dbname=$USR --analyze --host=$HOST --username=bnl) &
+        (sleep $SLEEPTIME && $VACUUMDB --host=$HOST --username=bnl --dbname=$USR --analyze) &
         (( SLEEPTIME = SLEEPTIME +120 ))
       done
     fi
     
-    if [ $HOUR == "05" ] ; then
-      if [ $MINUTE == "10" ] ; then
-        for USR in $USER_LIST ; do
+    if [ $HOUR == "06" ] ; then
+      if [ $MINUTE == "58" ] ; then
+        for USR in $USER_LIST_PLAYERS_ONLY ; do
           #Start one every 5 min in the background, both with and without system tables
           SLEEPTIME=1
           (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
+          (( SLEEPTIME = SLEEPTIME +10 ))
           (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-          (( SLEEPTIME = SLEEPTIME -10 ))
           (( SLEEPTIME = SLEEPTIME +300 ))
         done
       fi
