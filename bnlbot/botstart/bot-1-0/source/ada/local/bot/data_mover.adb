@@ -21,6 +21,7 @@ procedure Data_Mover is
   My_Lock          : Lock.Lock_Type;
   Do_Move          : array (Tables_Type'range) of Sql.Statement_Type;
   Do_Delete        : array (Tables_Type'range) of Sql.Statement_Type;
+  Do_Delete_Old    : array (Tables_Type'range) of Sql.Statement_Type;
   
   Sa_Par_Bot_User  : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile   : aliased Gnat.Strings.String_Access;
@@ -35,6 +36,9 @@ procedure Data_Mover is
     Num : Integer_4 := 30;
     Rows_Inserted,
     Rows_Deleted : Natural := 0;
+    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
+    
+    
   begin
     Outer_Loop : for Table in Tables_Type'range loop
        Num := 30;
@@ -72,6 +76,28 @@ procedure Data_Mover is
            exit Inner_Loop when Num = 7; -- leave a week              
        end loop Inner_Loop ;
     end loop Outer_Loop;   
+    
+    -- for ordinary users , keep a month only, so the tables does not grow too large
+    if not Is_Data_Collector then
+      Num := 30;
+      T.Start;
+      Delete_Loop : for Table in Tables_Type'range loop
+        Do_Delete_Old(Table).Prepare(
+           "delete from " & Table'Img & "OLD " & 
+           "where IXXLUTS < current_timestamp - interval ':NUM days' " 
+         );
+         Do_Delete_Old(Table).Set("NUM",Num); 
+         begin 
+           Do_Delete_Old(Table).Execute(Rows_Deleted);
+         exception
+           when Sql.No_Such_Row => Rows_Deleted := 0;
+         end ;       
+         Log("Deleted from " &  Table'Img & "OLD :" & Rows_Deleted'Img);      
+      end loop Delete_Loop;
+      T.Commit;
+    end if;
+    
+    
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
