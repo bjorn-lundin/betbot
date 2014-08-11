@@ -252,6 +252,8 @@ if __name__ == '__main__':
           main(g)
       except psycopg2.OperationalError:
           print 'Bad network?'
+      except psycopg2.DatabaseError:
+          print 'Bad database connection?'
 
       time.sleep(60)
 #      for x in range(0, 78):
