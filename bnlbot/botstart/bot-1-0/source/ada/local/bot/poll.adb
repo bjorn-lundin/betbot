@@ -59,6 +59,7 @@ procedure Poll is
     Bet_Size          : Bet_Size_Type := 0.0;
     Is_Allowed_To_Bet : Boolean := False;
     Has_Betted        : Boolean := False;
+    Max_Loss_Per_Day  : Bet_Size_Type := 0.0; 
   end record;  
   
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
@@ -108,7 +109,15 @@ procedure Poll is
       Bets_Allowed(Marker_Bet).Has_Betted := True;
       Did_Bet_2 := True;                
     end if;
-
+    
+    Log("Send_Bet called with " & 
+         " Selectionid=" & Selectionid'Img & 
+         " Main_Bet=" & Main_Bet'Img & 
+         " Marker_Bet=" & Marker_Bet'Img & 
+         " Place_Market_Id= '" & Place_Market_Id & "'" & 
+         " Receiver_Name= '" & Receiver_Name & "'" & 
+         " Receiver_Marker_Name= '" & Receiver_Marker_Name & "'" );
+    
     -- just to save time between logs
     if Did_Bet_1 then
       Log("ping '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
@@ -149,7 +158,9 @@ procedure Poll is
 
     --set values from cfg
     for i in Bets_Allowed'range loop
-      Bets_Allowed(i).Bet_Size := Cfg.Size;
+      Bets_Allowed(i).Bet_Size   := Cfg.Size;
+      Bets_Allowed(i).Has_Betted := False;
+      Bets_Allowed(i).Max_Loss_Per_Day := Bet_Size_Type(Cfg.Max_Loss_Per_Day);
     end loop;
     
     
@@ -179,11 +190,7 @@ procedure Poll is
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
-      Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Cfg.Max_Loss_Per_Day;
-      if not Bets_Allowed(i).Is_Allowed_To_Bet then
-        Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Cfg.Max_Loss_Per_Day));
-      end if;
-    
+
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo. 
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
@@ -194,9 +201,22 @@ procedure Poll is
         end if;  
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
-    end loop;
+
+    
+      if 0.0 < Bets_Allowed(i).Max_Loss_Per_Day and then Bets_Allowed(i).Max_Loss_Per_Day < 5.0 then
+        Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
+      end if; 
+    
+      Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Float_8(Bets_Allowed(i).Max_Loss_Per_Day);
+      Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " max allowed loss set to " & F8_Image(Bets_Allowed(i).Max_Loss_Per_Day));
+      if not Bets_Allowed(i).Is_Allowed_To_Bet then
+        Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Bets_Allowed(i).Max_Loss_Per_Day));
+      end if;
+    
+    end loop;   
     
     Bets_Allowed(Back_3_2_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_3_1).Is_Allowed_To_Bet := False;
     
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
@@ -359,7 +379,7 @@ procedure Poll is
       end loop;
       Best_Runners(4) := Price;
 
-      for i in 1 .. 3 loop
+      for i in Best_Runners'range loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
 
