@@ -50,8 +50,8 @@ procedure Poll is
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
   
-  type Bet_Type is (Back_1_1,        Back_2_1,        Back_3_1,        Back_3_2, --Lay_Low, 
-                    Back_1_1_Marker, Back_2_1_Marker, Back_3_1_Marker, Back_3_2_Marker );
+  type Bet_Type is (Back_1_1,        Back_2_1,        Back_3_1,        Back_3_2,        Back_3_3,
+                    Back_1_1_Marker, Back_2_1_Marker, Back_3_1_Marker, Back_3_2_Marker, Back_3_3_Marker );
                     
        
   type Allowed_Type is record
@@ -170,8 +170,10 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.50_20.0_1",    Bets_Allowed(Back_3_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_2", Bets_Allowed(Back_3_2).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_3", Bets_Allowed(Back_3_3).Bet_Name);
     
     Bets_Allowed(Back_3_2).Bet_Size := 30.0;
+    Bets_Allowed(Back_3_3).Bet_Size := 30.0;
 
      
     --markers
@@ -187,6 +189,8 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_2", Bets_Allowed(Back_3_2_Marker).Bet_Name);
     Bets_Allowed(Back_3_2_Marker).Bet_Size := 30.0;
 
+    Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_3", Bets_Allowed(Back_3_3_Marker).Bet_Name);
+    Bets_Allowed(Back_3_3_Marker).Bet_Size := 30.0;
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -215,8 +219,9 @@ procedure Poll is
     
     end loop;   
     
-    Bets_Allowed(Back_3_2_Marker).Is_Allowed_To_Bet := False;
     Bets_Allowed(Back_3_1).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_3_2_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_3_3_Marker).Is_Allowed_To_Bet := False;
     
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
@@ -443,6 +448,20 @@ procedure Poll is
                     Place_Market_Id      => Markets(Place).Marketid,
                     Receiver_Name        => To_Pio_Name("bet_placer_22"),
                     Receiver_Marker_Name => To_Pio_Name("bet_placer_23"));          
+        end if;
+          
+        -- Back The Third in PLC market ..
+        if Best_Runners(1).Backprice <= Float_8(1.50) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(4).Backprice >= Float_8(20.0) then
+          -- Back The leader in PLC market...
+           Send_Bet(Selectionid          => Best_Runners(3).Selectionid,
+                    Main_Bet             => Back_3_3,
+                    Marker_Bet           => Back_3_3_Marker, 
+                    Place_Market_Id      => Markets(Place).Marketid,
+                    Receiver_Name        => To_Pio_Name("bet_placer_24"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_25"));          
         end if;
           
          -- Back The leader in PLC market again, but different requirements...
