@@ -278,10 +278,14 @@ begin
         when Bot_Messages.Place_Back_Bet_Message    =>
           if Global_Enabled then
             Back_Bet(Bot_Messages.Data(Msg));
+          else  
+            Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
         when Bot_Messages.Place_Lay_Bet_Message    =>
           if Global_Enabled then
             Lay_Bet(Bot_Messages.Data(Msg));
+          else  
+            Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
