@@ -173,8 +173,8 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_3_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_2", Bets_Allowed(Back_3_2).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.50_20.0_3", Bets_Allowed(Back_3_3).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.40_20.0_1", Bets_Allowed(Back_3_2).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.40_30.0_1", Bets_Allowed(Back_3_3).Bet_Name);
 
     Move("DR_HORSES_PLC_BACK_FINISH_1.30_15.0_1", Bets_Allowed(Back_4_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.40_15.0_1", Bets_Allowed(Back_5_1).Bet_Name);
@@ -440,7 +440,7 @@ procedure Poll is
                     Receiver_Name        => To_Pio_Name("bet_placer_30"),
                     Receiver_Marker_Name => To_Pio_Name("bet_placer_31"));
         end if;
-        
+                
         -- Back The leader in PLC market again, but different requirements...
         if Best_Runners(1).Backprice <= Float_8(1.50) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
@@ -456,12 +456,12 @@ procedure Poll is
         end if;
           
         -- Back The second in PLC market ..
-        if Best_Runners(1).Backprice <= Float_8(1.50) and then
+        if Best_Runners(1).Backprice <= Float_8(1.40) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(4).Backprice >= Float_8(20.0) then
 
-           Send_Bet(Selectionid          => Best_Runners(2).Selectionid,
+           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
                     Main_Bet             => Back_3_2,
                     Marker_Bet           => Back_3_2_Marker, 
                     Place_Market_Id      => Markets(Place).Marketid,
@@ -470,12 +470,12 @@ procedure Poll is
         end if;
           
         -- Back The Third in PLC market ..
-        if Best_Runners(1).Backprice <= Float_8(1.50) and then
+        if Best_Runners(1).Backprice <= Float_8(1.40) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(20.0) then
+           Best_Runners(4).Backprice >= Float_8(30.0) then
 
-           Send_Bet(Selectionid          => Best_Runners(3).Selectionid,
+           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
                     Main_Bet             => Back_3_3,
                     Marker_Bet           => Back_3_3_Marker, 
                     Place_Market_Id      => Markets(Place).Marketid,
