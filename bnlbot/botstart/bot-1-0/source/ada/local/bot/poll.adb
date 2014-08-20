@@ -233,6 +233,8 @@ procedure Poll is
     
     end loop;   
     
+    
+    Bets_Allowed(Back_1_1       ).Is_Allowed_To_Bet := False;
     Bets_Allowed(Back_3_1_Marker).Is_Allowed_To_Bet := False;
     Bets_Allowed(Back_3_2_Marker).Is_Allowed_To_Bet := False;
     Bets_Allowed(Back_3_3_Marker).Is_Allowed_To_Bet := False;
