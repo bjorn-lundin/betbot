@@ -82,10 +82,16 @@ class pyscope :
         textpos.centerx = 160
         if line == 1:
              textpos.centery = 50
-             self.screen.blit(text,textpos)
         elif line == 2:
             textpos.centery = 140
-            self.screen.blit(text,textpos)
+        elif line == 3:
+            textpos.centery = 20
+            textpos.centerx = 80
+        elif line == 4:
+            textpos.centery = 20
+            textpos.centerx = 160
+
+        self.screen.blit(text,textpos)
 
 
     def display_profit(self,profit):
@@ -95,3 +101,12 @@ class pyscope :
         self.displayText(str(profit) + "", 200, 2, (150,150,255), False )
         pygame.display.flip()
 #        pygame.display.update()
+
+    def display_exposure(self,exposure):
+        pygame.mouse.set_visible(0)
+        today = datetime.datetime.now()
+        self.displayText('I luften :', 30, 3, (200,200,1), False )
+        self.displayText(str(exposure) + "", 30, 4, (255,0,0), False )
+        pygame.display.flip()
+
+

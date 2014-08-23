@@ -15,7 +15,7 @@ import signal
 
 ############ BNL start ####################
 def signal_handler(signal, frame):
-        print 'You pressed Ctrl+C!\n'
+        print '\nYou pressed Ctrl+C!\nExiting...\n'
         sys.exit(0)
         
 ###################################
@@ -135,12 +135,12 @@ def main(g):
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'HORSES_PLC_BACK_FINISH_1.25_12.0_1',
             'HORSES_PLC_BACK_FINISH_1.50_20.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.50_20.0_2',
             'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.50_20.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.50_20.0_2',
-            'DR_HORSES_WIN_30_35_8_25_LAY_IE']
+            'DR_HORSES_PLC_BACK_FINISH_1.50_20.0_1',
+            'DR_HORSES_PLC_BACK_FINISH_1.40_15.0_1',
+            'DR_HORSES_PLC_BACK_FINISH_1.50_30.0_1']
 
   row0 = {}
   row0['0'] = 0
