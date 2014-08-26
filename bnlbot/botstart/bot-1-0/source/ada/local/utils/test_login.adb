@@ -9,6 +9,8 @@ with Table_Abalances;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
 --with General_Routines; use General_Routines;
+
+with Ada.Strings.Fixed;
 procedure Test_Login is
 
 --   package EV renames Ada.Environment_Variables;
@@ -18,7 +20,29 @@ procedure Test_Login is
   Bet_Size : Bet_Size_Type := 0.0;
   Cfg_Size : Bet_Size_Type := 0.33333;
   Me : String := "Main.";
+  
+  type Bet_Type is (Back_1_1, Back_1_1_Marker,
+                    Back_2_1, Back_2_1_Marker,
+                    Back_3_1, Back_3_1_Marker,
+                    Back_3_2, Back_3_2_Marker,
+                    Back_3_3, Back_3_3_Marker,
+                    Back_4_1, Back_4_1_Marker,
+                    Back_5_1, Back_5_1_Marker,
+                    Back_6_1, Back_6_1_Marker);
+  
+    Bets_Allowed : array (Bet_Type'range) of boolean;
+
 begin
+
+--    for i in Bets_Allowed'range loop
+--      if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
+--        Log("is marker: " & I'Img);
+--      else  
+--        Log("is no marker: " & I'Img);
+--      end if;
+--    end loop;
+--return;
+
   Log("start");
 --  Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 --  Rpc.Init(
