@@ -17,7 +17,6 @@
 
 #exit 0
 
-
 [ -r /var/lock/bot ] && exit 0
 
 export PG_DUMP=pg_dump
@@ -79,7 +78,6 @@ function Check_Bots_For_User () {
   BOT_HOUR=$3
   BOT_MINUTE=$4  
   
-  
   if [ $BOT_USER == "dry" ] ; then
     IS_DATA_COLLECTOR="true"
   else  
@@ -130,8 +128,11 @@ function Check_Bots_For_User () {
       fi
     done
     BET_PLACER_LIST="bet_placer_10 bet_placer_11 \
-                     bet_placer_20 bet_placer_21 bet_placer_22 bet_placer_23 \
-                     bet_placer_30 bet_placer_31"
+                     bet_placer_20 bet_placer_21 \
+                     bet_placer_30 bet_placer_31 \
+                     bet_placer_40 bet_placer_41 \
+                     bet_placer_50 bet_placer_51 \
+                     bet_placer_60 bet_placer_61"
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
     done
