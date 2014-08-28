@@ -182,9 +182,6 @@ procedure Poll is
     Move("DR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1).Bet_Name);
     
     Bets_Allowed(Back_3_1).Bet_Size := 30.0;
-    Bets_Allowed(Back_3_2).Bet_Size := 30.0;
-    Bets_Allowed(Back_3_3).Bet_Size := 30.0;
-
     Bets_Allowed(Back_4_1).Bet_Size := 30.0;
     Bets_Allowed(Back_5_1).Bet_Size := 30.0;
     Bets_Allowed(Back_6_1).Bet_Size := 30.0;
@@ -193,8 +190,6 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_2_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_2", Bets_Allowed(Back_3_2_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_20.0_3", Bets_Allowed(Back_3_3_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.30_15.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.40_15.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);  
@@ -224,9 +219,9 @@ procedure Poll is
     end loop;   
  
     Bets_Allowed(Back_1_1       ).Is_Allowed_To_Bet := False;
-    -- Bets_Allowed(Back_3_1_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_3_1_Marker).Is_Allowed_To_Bet := False;
     -- Bets_Allowed(Back_4_1_Marker).Is_Allowed_To_Bet := False;
-    -- Bets_Allowed(Back_5_1_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_5_1_Marker).Is_Allowed_To_Bet := False;
     -- Bets_Allowed(Back_6_1_Marker).Is_Allowed_To_Bet := False;
     
     Table_Amarkets.Read(Market, Eos);
