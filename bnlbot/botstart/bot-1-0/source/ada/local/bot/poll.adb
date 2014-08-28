@@ -55,7 +55,8 @@ procedure Poll is
                     Back_3_1, Back_3_1_Marker,
                     Back_4_1, Back_4_1_Marker,
                     Back_5_1, Back_5_1_Marker,
-                    Back_6_1, Back_6_1_Marker);
+                    Back_6_1, Back_6_1_Marker,
+                    Back_7_1, Back_7_1_Marker);
        
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -180,6 +181,7 @@ procedure Poll is
     Move("DR_HORSES_PLC_BACK_FINISH_1.30_15.0_1", Bets_Allowed(Back_4_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.40_15.0_1", Bets_Allowed(Back_5_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.15_7.0_1",  Bets_Allowed(Back_7_1).Bet_Name);
     
     Bets_Allowed(Back_3_1).Bet_Size := 30.0;
     Bets_Allowed(Back_4_1).Bet_Size := 30.0;
@@ -193,6 +195,7 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.30_15.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.40_15.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);  
+    Move("MR_HORSES_PLC_BACK_FINISH_1.15_7.0_1",  Bets_Allowed(Back_7_1_Marker).Bet_Name);
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -406,6 +409,20 @@ procedure Poll is
                    Place_Market_Id      => Markets(Place).Marketid,
                    Receiver_Name        => To_Pio_Name("bet_placer_10"),
                    Receiver_Marker_Name => To_Pio_Name("bet_placer_11"));          
+        end if;
+        
+        if Best_Runners(1).Backprice <= Float_8(1.15) and then
+           Best_Runners(2).Backprice >= Float_8(7.0) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          -- Back The leader in PLC market...
+          
+          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
+                   Main_Bet             => Back_7_1,
+                   Marker_Bet           => Back_7_1_Marker, 
+                   Place_Market_Id      => Markets(Place).Marketid,
+                   Receiver_Name        => To_Pio_Name("bet_placer_50"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_51"));          
         end if;
         
         -- Back The leader in PLC market again, but different requirements...        
