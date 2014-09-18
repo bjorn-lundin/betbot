@@ -455,7 +455,7 @@ procedure Poll is
         if Best_Runners(1).Backprice <= Float_8(1.40) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(15.0) then
+           Best_Runners(4).Backprice >= Float_8(30.0) then
 
            Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
                     Main_Bet             => Back_5_1,
