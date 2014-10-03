@@ -12,12 +12,12 @@ with GWindows.Types;
 with Interfaces.C;
 
 --with Text_io;
-with Sattmate_Types;        use Sattmate_Types;
+with Types;        use Types;
 with Rpc;
-with Sattmate_Exception;
+with Stacktrace;
 with Logging; use Logging;
 with Table_Abalances; 
-with Sattmate_Calendar;
+with Calendar2;
 with Ada.Directories;
 with Ada.Command_Line;
 
@@ -110,9 +110,12 @@ procedure Saldo_Check is
        Rpc.Init(
          Username   => "bnlbnl",
          Password   => "@Bf@vinst@1",
+--         Username   => "joakimbirgerson",
+--         Password   => "15_moneyMaker",
          Product_Id => "82",
          Vendor_id  => "0",
          App_Key    => "q0XW4VGRNoHuaszo"
+--         App_Key    => "ZklJqKwXlsJU2IWW"
        );
        Rpc.Login;
      end Start;
@@ -133,7 +136,8 @@ procedure Saldo_Check is
            
            Notify_Data.Set_Tool_Tip ("    Balance:" & Integer(Bal.Balance)'Img & NL & 
                                      "   Exposure:" & Integer(Bal.Exposure)'Img & NL & 
-                                     "Last update:" & Sattmate_Calendar.String_Time);
+                                     "   Saldo   :" & Integer'Image(Integer(abs(Bal.Exposure) + abs(Bal.Balance))) & NL & 
+                                     "Last update:" & Calendar2.String_Time);
                             
            if Last_Bal = Bal then
              Notify_Data.Set_Balloon ("");
@@ -162,7 +166,7 @@ procedure Saldo_Check is
            Log("Update_Task", "Post timeout");
          when E: others => 
            Log("Update_Task", "Task is dying");
-           Sattmate_Exception.Tracebackinfo (E);
+           Stacktrace.Tracebackinfo (E);
            Rpc.Logout;
            exit;
        end;    
@@ -220,6 +224,6 @@ begin
    Log("Main", "After Message_Loop, wait for exit");
    
 exception
-  when E: others => Sattmate_Exception.Tracebackinfo(E);
+  when E: others => Stacktrace.Tracebackinfo(E);
    
 end Saldo_Check;
