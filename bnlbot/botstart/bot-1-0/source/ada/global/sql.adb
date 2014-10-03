@@ -1067,7 +1067,7 @@ package body Sql is
          else
             Put_Line ("");
             Put_Line ("---------------------------------------------------------");
-            Put_Line ("see http://www.postgresql.org/docs/8.3/interactive/errcodes-appendix.html");
+            Put_Line ("see http://www.postgresql.org/docs/9.3/interactive/errcodes-appendix.html");
             Put_Line ("---------------------------------------------------------");
             Print_Errors (To_String (P_Stm.Prepared_Statement), Status);
             Put_Line ("sql ->: '" & To_String (P_Stm.Prepared_Statement) & "'");
