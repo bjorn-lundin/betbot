@@ -17,6 +17,7 @@ int	main() {
   printf("  O_RDWR      : constant Interfaces.C.Int := %d; -- open for reading and writing\n",O_RDWR);
   printf("  O_CREAT     : constant Interfaces.C.Int := %d; -- no file? create it\n",O_CREAT);
   printf("  O_EXCL      : constant Interfaces.C.Int := %d; -- lock file (see below)\n",O_EXCL);
+#ifndef _WIN32  
   printf("  O_NOCTTY    : constant Interfaces.C.Int := %d; -- if tty, don't acquire it\n",O_NOCTTY);
   printf("  O_TRUNC     : constant Interfaces.C.Int := %d; -- file exists? truncate it\n",O_TRUNC);
   printf("  O_APPEND    : constant Interfaces.C.Int := %d; -- file exists? move to end\n",O_APPEND);
@@ -51,7 +52,7 @@ int	main() {
   printf("  SEEK_SET : constant Interfaces.C.Int := %d; -- absolute position\n",SEEK_SET);
   printf("  SEEK_CUR : constant Interfaces.C.Int := %d; -- offset from current position\n",SEEK_CUR);
   printf("  SEEK_END : constant Interfaces.C.Int := %d; -- offset from end of file\n",SEEK_END);  
-  
+#endif  
   printf("end C_Constants;\n");
   return 0;      
 }
