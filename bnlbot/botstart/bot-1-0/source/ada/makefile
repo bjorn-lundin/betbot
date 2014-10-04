@@ -17,9 +17,9 @@ LOG_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/log)
 TARGET_ADA_INFO_SPEC := $(subst \,/, $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads)
 PIPE_DIR_BOT     := $(subst \,/, $(BOT_TARGET)/pipes)
 
-C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
-C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
-C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
+C_CONSTANTS_OUTPUT := $(subst \,/, $(BOT_SOURCE)/ada/global/c_constants.ads)
+C_CONSTANTS_SOURCE := $(subst \,/, $(BOT_SOURCE)/c/c_constants.c)
+C_CONSTANTS_EXE    := $(subst \,/, $(BOT_TARGET)/bin/c_constants)
 
 
 .PHONY : log
@@ -27,9 +27,12 @@ log :
 	$(MAKE) all 2>&1 | tee make.log
 
 
-.PHONY : adabot tables
+.PHONY : adabot tables win
 all: tables adabot
 #/etc/logrotate.d/bnlbot
+
+win: $(C_CONSTANTS_EXE) $(C_CONSTANTS_OUTPUT)
+
 
 
 tables : $(ST)/table_history.ads  $(ST)/table_alinks.ads \

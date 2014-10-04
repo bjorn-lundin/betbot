@@ -22,6 +22,10 @@ project Saldo_Check is
       -- , "-gnatyaAbcefhiklmnprtux");
    end Compiler;
 
+   package Binder is
+      for Default_Switches ("ada") use ("-static");
+   end Binder;
+   
    package Builder is
       for Default_Switches ("ada") use ("-j2");
    end Builder;
