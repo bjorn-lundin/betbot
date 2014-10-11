@@ -1,6 +1,6 @@
 # class def. from http://learn.adafruit.com/pi-video-output-using-pygame/pointing-pygame-to-the-framebuffer
 # blah, blah...
-#import os
+import os
 #import random
 #import time
 #from time import strftime
@@ -57,7 +57,7 @@ class progress_bar():
         BLACK = (0, 0, 0) 
         GRAY = (128,128,128)
     
-        pygame.draw.rect(self.s, GREEN, pygame.Rect(0,0,320,240),1)
+        pygame.draw.rect(self.s, GREEN, pygame.Rect(0,0,pygame.display.Info().current_w,pygame.display.Info().current_h),1)
         pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width*progress, self.height))
         pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width, self. height), 1)
 
@@ -142,14 +142,14 @@ def print_to_printer(p,g):
 
 def show(c,g,s,p):
   #check and perhaps print to screen
-#  findout_result_change(c, g, s)
   findout_result_change(c, g)
   s.display_profit(g.profit)
   findout_exposure(c, g)
   s.display_exposure(g.exposure)
   today = datetime.datetime.now()
 
-  if today > g.time_to_print :
+  if p != 0 :
+    if today > g.time_to_print :
         print_to_printer(p,g)
         #next print time is a day from now
         g.time_to_print = g.time_to_print + datetime.timedelta(days=1)
@@ -164,7 +164,14 @@ signal.signal(signal.SIGINT, signal_handler)
 s = pyscope.pyscope()
 pb = progress_bar(s.screen)
 g = global_obj()
-p = thermal_printer.thermal_printer(serialport='/dev/ttyAMA0')
+disp_no = os.getenv("DISPLAY")
+if disp_no:
+  #print "I'm running under X display = {0}".format(disp_no)
+  p = 0
+else:    
+  p = thermal_printer.thermal_printer(serialport='/dev/ttyAMA0')
+
+
 
 cnt = 600
 maxcnt = cnt / 1.0 # make it a float

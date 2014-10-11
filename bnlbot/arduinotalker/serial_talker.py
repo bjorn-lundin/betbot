@@ -11,7 +11,7 @@ import psycopg2
 import datetime
 #import serial
 import signal
-   
+import subprocess as sp
 
 ############ BNL start ####################
 def signal_handler(signal, frame):
@@ -134,13 +134,16 @@ def main(g):
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'HORSES_PLC_BACK_FINISH_1.25_12.0_1',
-            'HORSES_PLC_BACK_FINISH_1.50_20.0_1',
+            'HORSES_PLC_BACK_FINISH_1.30_15.0_1',
+            'HORSES_PLC_BACK_FINISH_1.30_20.0_1',
+            'HORSES_PLC_BACK_FINISH_1.40_30.0_1',
+            'HORSES_PLC_BACK_FINISH_1.50_30.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
             'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.50_20.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.50_20.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.40_15.0_1',
-            'DR_HORSES_PLC_BACK_FINISH_1.50_30.0_1']
+            'MR_HORSES_PLC_BACK_FINISH_1.30_15.0_1',
+            'MR_HORSES_PLC_BACK_FINISH_1.30_20.0_1',
+            'MR_HORSES_PLC_BACK_FINISH_1.40_30.0_1',
+            'MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1']
 
   row0 = {}
   row0['0'] = 0
@@ -213,6 +216,8 @@ def main(g):
     lcd_row_2 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
     buff += lcd_row_2 + '\r\n'
 
+  #clear screen
+  tmp = sp.call('clear',shell=True)   
   #print to screen  
   print buff[:-2]
       
@@ -246,8 +251,6 @@ if __name__ == '__main__':
   
   
   while True:
-#      print '------------'
-#      g.to_string()
       try:
           main(g)
       except psycopg2.OperationalError:
@@ -255,7 +258,8 @@ if __name__ == '__main__':
       except psycopg2.DatabaseError:
           print 'Bad database connection?'
 
-      time.sleep(60)
-#      for x in range(0, 78):
-#        time.sleep(1)
-#        sys.stdout.write('.')
+#      time.sleep(60)
+      for x in range(1, 60):
+        time.sleep(1)
+        sys.stdout.write('.')
+      sys.stdout.write(' -> updating...')  
