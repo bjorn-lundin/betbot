@@ -23,6 +23,16 @@ class pyscope :
         disp_no = os.getenv("DISPLAY")
         if disp_no:
             print "I'm running under X display = {0}".format(disp_no)
+            size = (340, 240)
+            print "Framebuffer size: %d x %d" % (size[0], size[1])
+            self.screen = pygame.display.set_mode(size, 0)
+            # Clear the screen to start
+            self.screen.fill((0, 0, 0))
+            # Initialise font support
+            pygame.font.init()
+            # Render the screen
+            pygame.display.update()
+
         else:    
             print "I'm NOT running under X display "
             # Check which frame buffer drivers are available
@@ -44,16 +54,15 @@ class pyscope :
             if not found:
                 raise Exception('No suitable video driver found!')
                 
-                
-        size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        print "Framebuffer size: %d x %d" % (size[0], size[1])
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-        # Clear the screen to start
-        self.screen.fill((0, 0, 0))
-        # Initialise font support
-        pygame.font.init()
-        # Render the screen
-        pygame.display.update()
+            size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+            print "Framebuffer size: %d x %d" % (size[0], size[1])
+            self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+            # Clear the screen to start
+            self.screen.fill((0, 0, 0))
+            # Initialise font support
+            pygame.font.init()
+            # Render the screen
+            pygame.display.update()
 
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
