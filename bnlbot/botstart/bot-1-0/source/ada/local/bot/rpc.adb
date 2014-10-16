@@ -11,7 +11,7 @@ with Aws.Response;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
-
+with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
 
 package body RPC is

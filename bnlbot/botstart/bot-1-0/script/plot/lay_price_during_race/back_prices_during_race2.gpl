@@ -11,8 +11,8 @@ set key top left
 
 set title "BACK prices for market " . marketid . " during race with runners from db " . db_name 
 
-set yrange  [0:10]
-set y2range [0:10]
+set yrange  [0:25]
+set y2range [0:25]
 #set y2range [-3000:4000]
 set ytics 1
 set y2tics 1

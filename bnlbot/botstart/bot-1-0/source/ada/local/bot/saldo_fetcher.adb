@@ -21,6 +21,7 @@ with GNAT.Sockets;
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Strings;
 
+with Utils;
 with Calendar2; use Calendar2;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
@@ -83,8 +84,8 @@ procedure Saldo_Fetcher is
       Msg : constant String := 
           "Dagens saldo-rapport " & Cr & Lf &
           "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &
-          "saldo:     " & F8_Image(Saldo.Balance) & Cr & Lf &
-          "exposure:  " & F8_Image(Saldo.Exposure)  & Cr & Lf &
+          "saldo:     " & Utils.F8_Image(Saldo.Balance) & Cr & Lf &
+          "exposure:  " & Utils.F8_Image(Saldo.Exposure)  & Cr & Lf &
           Cr & Lf &
           "Database sizes:" & Cr & Lf &
           "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
@@ -171,7 +172,7 @@ procedure Saldo_Fetcher is
     end if;
     Select_Db_Size.Close_Cursor;
     T.Commit;
-    return Trim(Buff);  
+    return Utils.Trim(Buff);  
   end Get_Db_Size;
      
 ------------------------------ main start -------------------------------------
@@ -248,7 +249,7 @@ begin
     Receive_Loop : loop   
       begin
         Process_Io.Receive(Msg, 5.0);
-        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  => exit Main_Loop;
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??

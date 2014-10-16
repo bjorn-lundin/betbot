@@ -22,7 +22,7 @@ package Bot_Messages is
   for Market_Notification_Record use record
       Market_Id at 0 range 0..8*11 -1;
   end record;
-  for Market_Notification_Record'Size use 8*11;
+  for Market_Notification_Record'Size use 96; --8*11;
 
   ----------------------------------------------------------------
 

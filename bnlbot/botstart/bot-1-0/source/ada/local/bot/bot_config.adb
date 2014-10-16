@@ -8,7 +8,7 @@ with Logging ; use Logging;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-
+with Utils;
 
 package body Bot_Config is
 
@@ -125,6 +125,7 @@ package body Bot_Config is
       declare
         Num_Sections : Natural := Ini.Get_Section_Count;
         Bet_Section : Bet_Section_Type;
+        use Utils;
       begin
         for i in 1 .. Num_Sections loop
           Log("Read","Section: " & Ini.Get_Section_Name(i));
@@ -336,6 +337,7 @@ package body Bot_Config is
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
     Return_String : Unbounded_String := Null_Unbounded_String;
+    use Utils;
   begin
     Return_String := To_Unbounded_String(
        "<Config>" &

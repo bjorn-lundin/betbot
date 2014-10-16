@@ -24,6 +24,8 @@ with Bot_Svn_Info;
 with Rpc;
 with Token;
 
+with Utils; --use Utils;
+
 pragma Elaborate_All(Aws.Headers);
 
 package body Bet_Handler is
@@ -193,10 +195,10 @@ package body Bet_Handler is
 
     Log(Me & "Try_Make_New_Bet", "Market: " & Bet.Bet_Info.Market.Marketid & " " &
                                  "Bet_Type: " &  Bet.Bot_Cfg.Bet_Type'Img & " " &
-                                 "Markettype: " &  Types.Trim(Bet.Bet_Info.Market.Markettype) & " " &
+                                 "Markettype: " &  Utils.Trim(Bet.Bet_Info.Market.Markettype) & " " &
                                  "Animal: " &  Bet.Bot_Cfg.Animal'Img  & " " &
                                  "Country: " &  Bet.Bet_Info.Event.Countrycode & " " &
-                                 "evt-name: " &  Types.Trim(Bet.Bet_Info.Event.Eventname));
+                                 "evt-name: " &  Utils.Trim(Bet.Bet_Info.Event.Eventname));
 
     Bet.Check_Conditions_Fulfilled(Fulfilled);
     if not Fulfilled then
@@ -217,7 +219,7 @@ package body Bet_Handler is
     Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
     Num_Runners : Integer ;
-    
+    use Utils;
   begin
     begin
       Bet_Info := Create(Market_Notification);
@@ -267,7 +269,7 @@ package body Bet_Handler is
 
   function Create (Bet_Info : Bet_Info_Record'Class; Bot_Cfg : Bot_Config.Bet_Section_Type) return Bet_Type is
     Tmp : Bet_Type ;
-    
+    use Utils;
   begin
     Tmp.Bet_Info := Bet_Info_Record(Bet_Info);
     Tmp.Bot_Cfg := Bot_Cfg;
@@ -302,7 +304,7 @@ package body Bet_Handler is
     Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched : Bet_Size_Type := 0.0;
     Bet_Id       : Integer_8 := 0;
-
+    use Utils;
   begin
     Exists := Bet.Exists;
     Todays_Profit := Bet.Profit_Today;
@@ -693,7 +695,7 @@ package body Bet_Handler is
     Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched : Bet_Size_Type := 0.0;
     Bet_Id       : Integer_8 := 0;
-
+    use Utils;
   begin
     Exists := Bet.Exists;
     Todays_Profit := Bet.Profit_Today;
@@ -1049,10 +1051,10 @@ package body Bet_Handler is
 
   procedure Check_Conditions_Fulfilled(Bet : in out Bet_Type; Result : in out Boolean) is
     Num_Runners : Integer := Bet.Bet_Info.Last_Runner;
-    
+    use Utils;
   begin
     Result := True;
-    Log(Me & "Check_Conditions_Fulfilled", "marketid " &  Types.Trim(Bet.Bet_Info.Market.Marketid ));
+    Log(Me & "Check_Conditions_Fulfilled", "marketid " &  Utils.Trim(Bet.Bet_Info.Market.Marketid ));
 
     -- some sanity checks
     case Bet.Bet_Info.Event.Eventtypeid is
@@ -1204,8 +1206,8 @@ package body Bet_Handler is
     case Bot_Config.Config.System_Section.Bot_Mode is 
       when Real =>
         -- check market status --?
-        if Types.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
-          Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & Types.Trim(Bet.Bet_Info.Market.Status) & "'");
+        if Utils.Trim(Bet.Bet_Info.Market.Status) /= "OPEN" then
+          Log(Me & "Check_Conditions_Fulfilled", "Market.Status /= 'OPEN', '" & Utils.Trim(Bet.Bet_Info.Market.Status) & "'");
           Result := False;
           return;
         end if;
@@ -1474,7 +1476,7 @@ package body Bet_Handler is
         Aws.Headers.Set.Add (My_Headers, "Accept", "application/json");
 
         declare
-          Size_String : String := Types.F8_Image(Float_8(Size)); -- 2 decimals only
+          Size_String : String := Utils.F8_Image(Float_8(Size)); -- 2 decimals only
         begin
           Local_Size := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
         end;
@@ -1501,7 +1503,7 @@ package body Bet_Handler is
 
         Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
         Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
-        Instruction.Set_Field (Field_Name => "side",        Field => Types.Trim(Side));
+        Instruction.Set_Field (Field_Name => "side",        Field => Utils.Trim(Side));
         Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
         Instruction.Set_Field (Field_Name => "selectionId", Field => Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
 
@@ -1629,15 +1631,15 @@ package body Bet_Handler is
           if Reply_Place_Orders.Has_Field("customerRef") then
             Move( Params.Get("customerRef"), Customer_Reference);
 
-            if Types.Trim(Customer_Reference) /= String'(Reply_Place_Orders.Get("customerRef")) then
+            if Utils.Trim(Customer_Reference) /= String'(Reply_Place_Orders.Get("customerRef")) then
               Log(Me & "Make_Bet", "expected customerRef '" & Params.Get("customerRef") &
                   "' received customerRef '" & Reply_Place_Orders.Get("customerRef"));
             end if;
           end if;
 
           if Result.Has_Field("marketid") then
-            if Types.Trim(Bet.Bet_Info.Market.Marketid) /= String'(Result.Get("marketid")) then
-              Log(Me & "Make_Bet", "expected marketid '" & Types.Trim(Bet.Bet_Info.Market.Marketid) &
+            if Utils.Trim(Bet.Bet_Info.Market.Marketid) /= String'(Result.Get("marketid")) then
+              Log(Me & "Make_Bet", "expected marketid '" & Utils.Trim(Bet.Bet_Info.Market.Marketid) &
                   "' received marketid '" & Result.Get("marketid"));
             end if;
           end if;
@@ -1732,7 +1734,7 @@ package body Bet_Handler is
 
     end case;
 
-    if Types.Trim(Execution_Report_Status) /= "SUCCESS" then
+    if Utils.Trim(Execution_Report_Status) /= "SUCCESS" then
       Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
@@ -1770,7 +1772,7 @@ package body Bet_Handler is
       T.Start;
         Table_Abets.Insert(Abet);
         Log(Me & "Make_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));
-        if Types.Trim(Execution_Report_Status) = "SUCCESS" then
+        if Utils.Trim(Execution_Report_Status) = "SUCCESS" then
           Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
           Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
           Sql.Execute(Update_Betwon_To_Null);
@@ -1822,12 +1824,12 @@ package body Bet_Handler is
     Local.Pip_Price  := Global_Odds_Table(Local.This_Index);
     Pip := Local;
     if not Silent then
-      Log(Me & "Pip.Init", "Price: " & Types.F8_Image(Price) & " became " &
-                                     Types.F8_Image(Local.Pip_Price) &
+      Log(Me & "Pip.Init", "Price: " & Utils.F8_Image(Price) & " became " &
+                                     Utils.F8_Image(Local.Pip_Price) &
                          " Upper_Index " & Local.Upper_Index'Img &
-                         " Upper_Price " & Types.F8_Image(Global_Odds_Table(Local.Upper_Index))  &
+                         " Upper_Price " & Utils.F8_Image(Global_Odds_Table(Local.Upper_Index))  &
                          " Lower_Index " & Local.Lower_Index'Img &
-                         " Lower_Price " & Types.F8_Image(Global_Odds_Table(Local.Lower_Index))  );
+                         " Lower_Price " & Utils.F8_Image(Global_Odds_Table(Local.Lower_Index))  );
     end if;                     
   end Init;
   --------------------------------
@@ -1852,7 +1854,7 @@ package body Bet_Handler is
 
   -------------------------------------------------
    procedure Check_Bets is
-    
+    use Utils;
     Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
     Bet,Bet_From_List      : Table_Abets.Data_Type;
     T        : Sql.Transaction_Type;

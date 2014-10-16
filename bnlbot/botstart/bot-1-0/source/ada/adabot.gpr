@@ -10,7 +10,9 @@ project Adabot is
    for Exec_Dir use Global.Bot_Target & "/bin"  ;
 
    for Source_Dirs use (AL & "/" & Sub_System,
-                        AL & "/" & "utils");
+                        AL & "/" & "utils",
+                        AL & "/" & "web/repoweb",
+                        AL & "/" & "web");
                         
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    
@@ -18,7 +20,8 @@ project Adabot is
    
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
-   System_Mains := ("bot.adb",
+   System_Mains := ("repo.adb",
+                    "bot.adb",
                     "bot_send.adb",
                     "poll.adb",
                     "poll_and_log",
@@ -28,38 +31,25 @@ project Adabot is
                     "bet_placer.adb",
                     "bet_checker.adb",
                     "football_better.adb",
-                    -- "pio.adb",
+                --    "page_server.adb",
                     "data_mover.adb",                    
                     "check_bot_running.adb"
                     );
                     
-   Stat_Mains   := ("change_10_percent.adb",
-                    "greening_up_1.adb",
-                    "lay_football.adb",
---                    "lay_at_finish.adb",
-                    "lay_during_football.adb",
-                    "print_lay_during_football_odds.adb",
-                    "lay_during_race.adb",
-                    "prices_during_race.adb",
-                    "plot_race_prices.adb",
-                    "plot_race_prices2.adb",
-                    "greening_up_2.adb",
-                    "greening_up_3.adb");
+   Stat_Mains   := ("lay_during_race.adb",
+                  --  "lay_during_race2.adb",
+                  --  "back_during_race2.adb",
+                 --   "prices_during_race.adb",
+                 --   "plot_race_prices.adb",
+                    "plot_race_prices2.adb");
     
    Other_Mains := ("ini_reader.adb",
-                   "back_all_g4.adb",
-                   "prepare_lay_all_g4_for_gnuplot.adb",
-                   "lay_all_g4.adb",
-                   "markets_sender.adb",  
-                   "migrate_g1_g4_football.adb", 
-                   "remove_duplicates_from_history.adb",                   
-                   "remove_duplicates_from_events.adb",                   
-                   "insert_blank_line.adb");
+                   "markets_sender.adb");
                    
     Test_Programs := ("sql_ifc_leak_finder.adb",
-                      "test_list.adb",
-                      "test_list2.adb",
-                      "test_login.adb",
+                   --   "test_list.adb",
+                   --   "test_list2.adb",
+                   --   "test_login.adb",
                       "rpc_tester.adb") ;                
    
    case Bot_Machine_Role is

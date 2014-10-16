@@ -55,6 +55,7 @@ project Global is
                            "global",
                            "global/process_io",
                            "global/gnatcoll",
+                           "global/repotool",
                            "global/tables");
 
       case XML_Sources_Dir is

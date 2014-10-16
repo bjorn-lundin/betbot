@@ -9,6 +9,7 @@ with Table_Abalances;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
 --with General_Routines; use General_Routines;
+with Utils; use Utils;
 
 with Ada.Strings.Fixed;
 procedure Test_Login is
