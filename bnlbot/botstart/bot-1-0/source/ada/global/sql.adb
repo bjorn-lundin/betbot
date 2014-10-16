@@ -39,6 +39,7 @@ with Ada.Characters.Handling;
 with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
 with Ada.Environment_Variables;
+with Utils;
 
 package body Sql is
 
@@ -90,7 +91,7 @@ package body Sql is
    ------------------------------------------------------------
    function Make_Dollar_Variable (Idx : Natural ) return String is
    begin
-      return Types.Skip_All_Blanks (" $" & Natural'Image (Idx));
+      return Utils.Skip_All_Blanks (" $" & Natural'Image (Idx));
    end Make_Dollar_Variable ;
    ------------------------------------------
    
@@ -130,7 +131,7 @@ package body Sql is
       Global_Statement_Index_Counter := Global_Statement_Index_Counter + 1;
       Private_Statement.Index                   := Global_Statement_Index_Counter;
       --    Log("Initialize Private_Statement_Type # " & Natural'Image(Private_Statement.Index));
-      Ada.Strings.Fixed.Move ("S" & Types.Trim (Integer'Image (Private_Statement.Index)), Private_Statement.Statement_Name);
+      Ada.Strings.Fixed.Move ("S" & Utils.Trim (Integer'Image (Private_Statement.Index)), Private_Statement.Statement_Name);
 
       Private_Statement.Cursor_Name     := Private_Statement.Statement_Name;
       Private_Statement.Cursor_Name (1) := 'C';
@@ -248,7 +249,7 @@ package body Sql is
          Start, Stop : Integer := 0;
          Look_For   : String  := Make_Dollar_Variable (Lmi.Index);
       begin
-         Start := Types.Position (Cmd, Look_For);
+         Start := Utils.Position (Cmd, Look_For);
          if Start > Cmd'First - 1 then
             Stop := Start + Look_For'Length ;
             --        Log("Cmd(Cmd'First .. Start-1) " & Cmd(Cmd'First .. Start-1) );
@@ -265,7 +266,7 @@ package body Sql is
                     To_Unbounded_String ("'" & Cmd (Stop .. Cmd'Last));
                when A_String   =>
                   declare
-                     Trimmed_Value : String := Types.Trim (To_String (Lmi.Value));
+                     Trimmed_Value : String := Utils.Trim (To_String (Lmi.Value));
                   begin
                      S := To_Unbounded_String (
                                                Cmd (Cmd'First .. Start - 1) &
@@ -736,7 +737,7 @@ package body Sql is
    procedure Prepare (Private_Statement : in out Private_Statement_Type;
                       Command           : in String) is
       use Ada.Characters.Handling;
-      Stm : String := Types.Trim (To_Lower (Command));
+      Stm : String := Utils.Trim (To_Lower (Command));
    begin
       if not Private_Statement.Is_Prepared then
          Private_Statement.Do_Initialize; -- instead of using Initialize, and get warnings
@@ -1221,12 +1222,12 @@ package body Sql is
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in String) is
-      Local_Value : constant String := Types.Trim(Escape (Global_Connection, Value));
+      Local_Value : constant String := Utils.Trim(Escape (Global_Connection, Value));
    begin
       if Local_Value(Local_Value'first) = ''' and then
          Local_Value(Local_Value'last) = ''' then
         Statement.Private_Statement.Update_Map (Parameter,
-           "'" &  Types.Trim(Local_Value(Local_Value'first+1 .. Local_Value'last-1)) & "'",
+           "'" &  Utils.Trim(Local_Value(Local_Value'first+1 .. Local_Value'last-1)) & "'",
             A_String);
       else
         Statement.Private_Statement.Update_Map (Parameter, Local_Value, A_String);
@@ -1239,7 +1240,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_4) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Integer_4'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Integer_4'Image (Value)), An_Integer);
    end Set;
    
 
@@ -1248,7 +1249,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Integer_8'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Integer_8'Image (Value)), An_Integer);
    end Set;
    
 
@@ -1258,7 +1259,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Float_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Types.Trim (Float'Image (Float (Value))), A_Float);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Float'Image (Float (Value))), A_Float);
    end Set;
    
 
@@ -1278,7 +1279,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Boolean) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Types.Lower_Case (Value'Img), A_String);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Lower_Case (Value'Img), A_String);
    end Set;
    
    -------------------------------------------------------------

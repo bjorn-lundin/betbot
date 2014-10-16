@@ -9,6 +9,7 @@ with Sql;
 --with Gnat.Sockets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
+with Utils; use Utils;
 
 --with Calendar2; use Calendar2;
 --with Gnatcoll.Json; use Gnatcoll.Json;

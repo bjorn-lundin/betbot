@@ -1,7 +1,7 @@
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 --with General_Routines; use General_Routines;
-
+with Utils;
 with Ini;
 
 package body Config is
@@ -25,6 +25,7 @@ package body Config is
   end Create;
   -------------------------------------------------------------  
   function To_String(Cfg : Config_Type) return String is
+    use Utils;
   begin
     return
       "<config>" &
@@ -43,7 +44,7 @@ package body Config is
     Service : constant String := "Country_Is_Ok";
   -- Allowed country ?
   --Countries is a ',' separated list of 2 char abbrevations.
-    Countries : String := Upper_Case(To_String(Cfg.Allowed_Countries));
+    Countries : String := Utils.Upper_Case(To_String(Cfg.Allowed_Countries));
     Cntry : String(1..2) := (others => ' ');
     Index : Integer := 1;
     Found : Boolean := False;

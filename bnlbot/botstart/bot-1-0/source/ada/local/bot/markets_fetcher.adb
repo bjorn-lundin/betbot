@@ -28,7 +28,7 @@ with Process_IO;
 with Bot_Messages;
 with Core_Messages;
 with Bot_Types;
-
+with Utils; 
 with RPC ; 
 
 procedure Markets_Fetcher is
@@ -295,7 +295,7 @@ begin
           raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
         end if;
         
-        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
           when Core_Messages.Exit_Message                  => exit Main_Loop;
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
@@ -478,6 +478,7 @@ begin
     Log(Me, "Market_Found: " & Market_Found'Img);
     if Market_Found then 
       declare
+        use Utils;
         Market   : JSON_Value := Create_Object;
         MNR      : Bot_Messages.Market_Notification_Record;
         Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));

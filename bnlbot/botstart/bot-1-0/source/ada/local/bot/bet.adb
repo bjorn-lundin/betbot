@@ -5,7 +5,7 @@ with Calendar2; use Calendar2;
 with Logging; use Logging;
 --with General_Routines; use General_Routines;
 with Table_Abets;
-
+with Utils;
 package body Bet is
   Me : constant String := "Bet.";
   Select_Exists,
@@ -51,7 +51,7 @@ package body Bet is
       end if;
       Select_Profit_Today.Close_Cursor;
     T.Commit;
-    Log(Me & "Profit_Today", Trim(Bet_Name) & " :" & " HAS earned " & F8_Image(Profit) & " today: " & Calendar2.String_Date(Start_Date));
+    Log(Me & "Profit_Today", Utils.Trim(Bet_Name) & " :" & " HAS earned " & Utils.F8_Image(Profit) & " today: " & Calendar2.String_Date(Start_Date));
     return Profit;
   end Profit_Today;
   ------------------------------------------------------------

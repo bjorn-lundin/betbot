@@ -16,6 +16,7 @@ with Rpc;
 with Gnat.Strings;
 with Calendar2;
 with Types; use Types;
+with Utils;
 
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
@@ -83,7 +84,7 @@ begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
       
-      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
       
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                            => exit Main_Loop;

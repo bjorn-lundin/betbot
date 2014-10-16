@@ -11,7 +11,7 @@ with Logging; use Logging;
 
 with Ada.Strings;       use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-
+with Utils; use Utils;
 
 procedure Prices_During_Race is
   Me : String := "Prices_During_Race";

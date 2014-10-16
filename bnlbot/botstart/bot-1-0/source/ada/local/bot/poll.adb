@@ -28,6 +28,7 @@ with Table_Abalances;
 with Bot_Svn_Info;
 with Bet;
 with Config;
+with Utils; use Utils;
 
 procedure Poll is
   package EV renames Ada.Environment_Variables;
@@ -211,9 +212,9 @@ procedure Poll is
       end if;
 
       Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Float_8(Bets_Allowed(i).Max_Loss_Per_Day);
-      Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " max allowed loss set to " & F8_Image(Bets_Allowed(i).Max_Loss_Per_Day));
+      Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " max allowed loss set to " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       if not Bets_Allowed(i).Is_Allowed_To_Bet then
-        Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Bets_Allowed(i).Max_Loss_Per_Day));
+        Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       end if;
     end loop;
 

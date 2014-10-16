@@ -17,6 +17,7 @@ with Ada.Environment_Variables;
 with Bet_Handler;
 with Bot_Svn_Info;
 with Rpc;
+with Utils;
 
 procedure Bot is
   package EV renames Ada.Environment_Variables;
@@ -81,7 +82,7 @@ begin
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
-      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
       if Sql.Transaction_Status /= Sql.None then
         raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
       end if;

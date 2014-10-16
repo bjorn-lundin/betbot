@@ -27,7 +27,7 @@
 
     <clreqs>
       <definitions>
-        <directory>$BOT_CONFIG/requests</directory>
+        <directory>$BOT_CONFIG/repository/requests</directory>
         <pattern>req_*.xml</pattern>
         <prefix>req</prefix>
       </definitions>
@@ -35,7 +35,7 @@
 
     <terms>
       <definitions>
-        <directory>$BOT_CONFIG/terms</directory>
+        <directory>$BOT_CONFIG/repository/terms</directory>
         <pattern>trm_*.xml</pattern>
         <prefix>trm</prefix>
       </definitions>
@@ -43,7 +43,7 @@
 
     <codes>
       <definitions>
-        <directory>$BOT_CONFIG/codes</directory>
+        <directory>$BOT_CONFIG/repository/codes</directory>
         <pattern>trm_*.xml</pattern>
         <prefix>trm</prefix>
       </definitions>
@@ -51,7 +51,7 @@
 
     <labels>
       <definitions>
-        <directory>$BOT_CONFIG/labels</directory>
+        <directory>$BOT_CONFIG/repository/labels</directory>
         <pattern>lab_*.xml</pattern>
         <prefix>lab</prefix>
       </definitions>
@@ -59,7 +59,7 @@
 
     <views>
       <definitions>
-        <directory>$BOT_CONFIG/views</directory>
+        <directory>$BOT_CONFIG/repository/views</directory>
         <pattern>view_*.xml</pattern>
         <prefix>view</prefix>
       </definitions>
@@ -71,7 +71,7 @@
     </repositoryRoot>
     <bin>
       <definitions>
-        <directory>$$BOT_CONFIG/</directory>
+        <directory>$BOT_CONFIG/</directory>
       </definitions>
     </bin>
     <IDFRoot>

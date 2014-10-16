@@ -26,6 +26,7 @@ with Table_Amarkets;
 with Table_Arunners;
 --with Bet;
 with Bot_System_Number;
+with Utils;
 
 procedure Bet_Placer is
   package EV renames Ada.Environment_Variables;
@@ -87,8 +88,8 @@ procedure Bet_Placer is
     Log("'" & Local_Side & "'");
     Log("'" & Market_Id & "'");
     Log("'" & Selection_Id'Img & "'");
-    Log("'" & F8_Image(Local_Price) & "'");
-    Log("'" & F8_Image(Local_Size) & "'");
+    Log("'" & Utils.F8_Image(Local_Price) & "'");
+    Log("'" & Utils.F8_Image(Local_Size) & "'");
 
 --    if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
 --      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
@@ -158,8 +159,8 @@ procedure Bet_Placer is
       A_Bet.Startts := A_Market.Startts;
       A_Bet.Fullmarketname := A_Market.Marketname;
       Table_Abets.Insert(A_Bet);
-      Log(Me & "Make_Bet", Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
-      if Trim(A_Bet.Exestatus) = "SUCCESS" then
+      Log(Me & "Make_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+      if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
         Sql.Set(Update_Betwon_To_Null,"BETID", A_Bet.Betid);
         Sql.Execute(Update_Betwon_To_Null);
@@ -254,7 +255,7 @@ begin
   Log(Me, "Login betfair done");
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
-  Global_Enabled := Ini.Get_Value(Trim(Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
+  Global_Enabled := Ini.Get_Value(Utils.Trim(Utils.Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
 
   Log(Me, "Start main loop");
 
@@ -267,7 +268,7 @@ begin
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
-      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
       if Sql.Transaction_Status /= Sql.None then
         raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
       end if;

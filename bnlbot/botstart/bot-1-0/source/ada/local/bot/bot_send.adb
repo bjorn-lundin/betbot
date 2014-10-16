@@ -9,7 +9,7 @@ with Core_Messages;
 --with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-
+with Utils;
 procedure Bot_Send is
   Sa_Par_Rec  : aliased Gnat.Strings.String_Access;
   Sa_Par_Msg  : aliased Gnat.Strings.String_Access;
@@ -52,7 +52,7 @@ begin
     end if;
 
     
-    if    Lower_Case(Sa_Par_Msg.all) = "re_read_config" then
+    if    Utils.Lower_Case(Sa_Par_Msg.all) = "re_read_config" then
       declare
         RCR : Core_Messages.Read_Config_Record;
       begin
@@ -62,7 +62,7 @@ begin
         Move(Sa_Par_Rec.all, Receiver.Name);
         Core_Messages.Send(Receiver, RCR);
       end;
-    elsif Lower_Case(Sa_Par_Msg.all) = "exit" then
+    elsif Utils.Lower_Case(Sa_Par_Msg.all) = "exit" then
       declare
         ER : Core_Messages.Exit_Record;
       begin
@@ -72,7 +72,7 @@ begin
         Move(Sa_Par_Rec.all, Receiver.Name);
         Core_Messages.Send(Receiver, ER);
       end;
-    elsif Lower_Case(Sa_Par_Msg.all) = "market_notification" then
+    elsif Utils.Lower_Case(Sa_Par_Msg.all) = "market_notification" then
       declare
         MNR : Bot_Messages.Market_Notification_Record;
       begin
@@ -86,7 +86,7 @@ begin
         Move(Sa_Par_Rec.all, Receiver.Name);
         Bot_Messages.Send(Receiver, MNR);
       end;
-    elsif Lower_Case(Sa_Par_Msg.all) = "place_back_bet" then
+    elsif Utils.Lower_Case(Sa_Par_Msg.all) = "place_back_bet" then
       declare
         PBB : Bot_Messages.Place_Back_Bet_Record;
       begin

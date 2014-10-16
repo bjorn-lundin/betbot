@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Wiz="3" Desc="Saldo" Name="ABALANCES" Tablespace="">
         <Column Name="baldate"          Size="23"  Type="15" AllowNull="0" Description="ts of balance"/>
         <Column Name="balance"          Size="8"   Type="6"  AllowNull="0" Description="balance"/>
@@ -8,4 +8,4 @@
         <Column Name="ixxluts"          Size="23"  Type="15" AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="baldate" type="primary"/>
     </Table>
-</MaAstro>
+</BnlBot>

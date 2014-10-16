@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Wiz="3" Desc="Bets" Name="ABETS" Tablespace="">
         <Column Name="betid"            Size="18"  Type="3"  AllowNull="0" Description="bet id"/>
         <Column Name="marketid"         Size="11"  Type="1"  AllowNull="0" Description="market id"/>
@@ -35,4 +35,4 @@
         <Index Columns="startts" type="index"/>
         <Index Columns="betname" type="index"/>
     </Table>
-</MaAstro>
+</BnlBot>

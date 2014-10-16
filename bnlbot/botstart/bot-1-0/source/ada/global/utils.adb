@@ -1,13 +1,71 @@
 
-
-
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Characters;
-with Ada.Characters.Handling;
+with Ada.Environment_Variables;
+with Ada.Characters.Handling;  use Ada.Characters.Handling;
+--with Text_Io;
 
-package body Types is
+package body Utils is
+  package EV renames Ada.Environment_Variables;
 
+
+  function Expand_File_Path (File_Path : String) return String is
+    Tmp         : String(File_Path'range) := File_Path;
+    Start_Symbol,End_Symbol : Integer         := -1;
+    --------------------------------
+    procedure Check_Unix_Syntax is
+    begin
+      for I in Tmp'range loop
+        if Tmp(I) = '$' then
+          if Start_Symbol = -1 then Start_Symbol := I;  end if;
+        end if;
+        if Start_Symbol /= -1 then
+          if Tmp(I) = '/' then  End_Symbol := I-1; exit; end if;
+        end if;
+      end loop;
+    end Check_Unix_Syntax;
+    --------------------------------
+    function Expand_Symbol(Tmp : String) return String is
+    begin
+      return EV.Value(To_Upper(Tmp(Start_Symbol+1..End_Symbol))); 
+    end Expand_Symbol;
+    --------------------------------
+  begin
+    --Text_Io.Put_Line("arg: '" & File_Path & "'");
+    Check_Unix_Syntax;
+
+    if Start_Symbol /= -1 and End_Symbol /= -1 then
+      if    Start_Symbol /= Tmp'First and End_Symbol /= Tmp'Last then
+        return Tmp(Tmp'First..Start_Symbol-1) & 
+               Expand_Symbol(Tmp(Start_Symbol..End_Symbol)) & 
+               Tmp(End_Symbol+1..Tmp'Last);
+      else
+        if Start_Symbol /= Tmp'First then
+          return Tmp(Tmp'First..Start_Symbol-1) & 
+                 Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
+        else
+          return Expand_Symbol(Tmp(Start_Symbol..End_Symbol)) 
+                 & Tmp(End_Symbol+1..Tmp'Last);
+        end if;
+      end if;
+    else
+      if Start_Symbol /= -1  then
+        End_Symbol := Tmp'Last; 
+        if Start_Symbol /= Tmp'First then
+          return Tmp(Tmp'First..Start_Symbol-1) & 
+                 Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
+        else
+          return Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
+        end if;
+      else
+        return Tmp; 
+      end if; 
+    end if; 
+
+  end Expand_File_Path;
+  
+  --------------------------------------------------------
    -------------------------------------
    function Position (S, Match : String) return Integer is
    begin
@@ -80,4 +138,5 @@ package body Types is
       return Result;
    end Upper_Case;  
    -------------------------------------
-end Types;
+  
+end Utils;

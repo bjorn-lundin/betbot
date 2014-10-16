@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                        Simple_List_Class                                 --
+--                        S Q L                                             --
 --                                                                          --
---                                 S p e c                                  --
+--                       S p e c                                            --
 --                                                                          --
 --  Copyright (c) Björn Lundin 2014                                         --
 --  All rights reserved.                                                    --
