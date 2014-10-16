@@ -27,6 +27,7 @@ export BOT_CONFIG=$BOT_ROOT/config
 export BOT_SCRIPT=$BOT_ROOT/script
 export BOT_SOURCE=$BOT_ROOT/source
 export BOT_DOC=$BOT_ROOT/docbook
+export REPO_ENGINE=$BOT_TARGET/bin/repo
 
 
 #amazon machines starts with 'ip'
