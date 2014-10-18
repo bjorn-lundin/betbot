@@ -151,41 +151,75 @@ procedure Markets_Fetcher is
   -------------------------------------------------------------
   
   procedure Insert_Runners(Market : JSON_Value) is
-    DB_Runner   : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
-    Runner_List : Table_Arunners.Arunners_List_Pack.List_Type := Table_Arunners.Arunners_List_Pack.Create;
+    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
     Service : constant String := "Insert_Runners";
     Eos : Boolean := False;
   begin
     Log(Me & Service, "start"); 
     Rpc.Parse_Runners(Market, Runner_List);
-    while not Table_Arunners.Arunners_List_Pack.Is_Empty(Runner_List) loop         
-       Table_Arunners.Arunners_List_Pack.Remove_From_Head(Runner_List, DB_Runner);
-       Table_Arunners.Read(DB_Runner, Eos);
-       if Eos then
-         Table_Arunners.Insert(DB_Runner);
-       end if;              
+    for DB_Runner of Runner_List loop
+      DB_Runner.Read( Eos);
+      if Eos then
+        DB_Runner.Insert;
+      end if;                  
     end loop;
-    Table_Arunners.Arunners_List_Pack.Release(Runner_List);
     Log(Me & Service, "stop"); 
   end Insert_Runners;
   -------------------------------------------------------------
+--  procedure Insert_Runners(Market : JSON_Value) is
+--    DB_Runner   : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
+--    Runner_List : Table_Arunners.Arunners_List_Pack.List_Type := Table_Arunners.Arunners_List_Pack.Create;
+--    Service : constant String := "Insert_Runners";
+--    Eos : Boolean := False;
+--  begin
+--    Log(Me & Service, "start"); 
+--    Rpc.Parse_Runners(Market, Runner_List);
+--    while not Table_Arunners.Arunners_List_Pack.Is_Empty(Runner_List) loop         
+--       Table_Arunners.Arunners_List_Pack.Remove_From_Head(Runner_List, DB_Runner);
+--       Table_Arunners.Read(DB_Runner, Eos);
+--       if Eos then
+--         Table_Arunners.Insert(DB_Runner);
+--       end if;              
+--    end loop;
+--    Table_Arunners.Arunners_List_Pack.Release(Runner_List);
+--    Log(Me & Service, "stop"); 
+--  end Insert_Runners;
+  -------------------------------------------------------------
+--  procedure Insert_Prices(Market : JSON_Value) is
+--    DB_Runner_Price : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
+--    Eos : Boolean := False;
+--    Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;   
+--    Service : constant String := "Insert_Runners";
+--  begin
+--    Log(Me & Service, "start");     
+--    Rpc.Parse_Prices(Market, Price_List);
+--    while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
+--      Table_Aprices.Aprices_List_Pack.REmove_From_Head(Price_List, DB_Runner_Price);
+--      Log(Me, Table_Aprices.To_String(DB_Runner_Price));
+--      Table_Aprices.Read(DB_Runner_Price, Eos);
+--      if Eos then
+--        Table_Aprices.Insert(DB_Runner_Price);
+--      end if;     
+--    end loop;
+--    Table_Aprices.Aprices_List_Pack.Release(Price_List);
+--    Log(Me & Service, "stop"); 
+--  end Insert_Prices;
+  --------------------------------------------------------------------- 
   procedure Insert_Prices(Market : JSON_Value) is
-    DB_Runner_Price : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
+   -- DB_Runner_Price : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
     Eos : Boolean := False;
-    Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;   
+    Price_List : Table_Aprices.Aprices_List_Pack2.List;   
     Service : constant String := "Insert_Runners";
   begin
     Log(Me & Service, "start");     
     Rpc.Parse_Prices(Market, Price_List);
-    while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
-      Table_Aprices.Aprices_List_Pack.REmove_From_Head(Price_List, DB_Runner_Price);
-      Log(Me, Table_Aprices.To_String(DB_Runner_Price));
-      Table_Aprices.Read(DB_Runner_Price, Eos);
+    for DB_Runner_Price of Price_List loop
+      Log(Me, DB_Runner_Price.To_String);
+      DB_Runner_Price.Read(Eos);
       if Eos then
-        Table_Aprices.Insert(DB_Runner_Price);
+        DB_Runner_Price.Insert;
       end if;     
     end loop;
-    Table_Aprices.Aprices_List_Pack.Release(Price_List);
     Log(Me & Service, "stop"); 
   end Insert_Prices;
   --------------------------------------------------------------------- 
@@ -701,6 +735,11 @@ begin
                     Receiver.Name := (others => ' ');
                     Move("poll", Receiver.Name);
                     Log(Me, "Notifying 'poll' with marketid: '" & MNR.Market_Id & "'");
+                    Bot_Messages.Send(Receiver, MNR);          
+                    
+                    Receiver.Name := (others => ' ');
+                    Move("poll_place", Receiver.Name);
+                    Log(Me, "Notifying 'poll_place' with marketid: '" & MNR.Market_Id & "'");
                     Bot_Messages.Send(Receiver, MNR);                 
                   ------------------------------------------------------------------                
                   when 4339   => 

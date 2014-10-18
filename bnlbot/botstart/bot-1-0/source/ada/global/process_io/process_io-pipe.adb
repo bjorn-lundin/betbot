@@ -274,7 +274,7 @@ package body Process_Io.Pipe is
   end Finalize;
   ------------------------------------------------------
 
-  procedure Fill_Pipe_List(Pipe_List : in out Msg_List_Pack.List_Type) is
+  procedure Fill_Pipe_List(Pipe_List : in out Msg_List_Pack.List) is
     use Ada.Directories;
     Dir_Ent     : Directory_Entry_Type;
     The_Search  : Search_Type;
@@ -292,7 +292,7 @@ package body Process_Io.Pipe is
       Get_Next_Entry(Search          => The_Search,
                      Directory_Entry => Dir_Ent);
       Move(Simple_Name(Dir_Ent),Pipe_Data.Name);
-      Msg_List_Pack.Insert_At_Tail(Pipe_List, Pipe_Data);
+      Pipe_List.Append(Pipe_Data);
     end loop;
     End_Search (Search => The_Search);
   end Fill_Pipe_List;

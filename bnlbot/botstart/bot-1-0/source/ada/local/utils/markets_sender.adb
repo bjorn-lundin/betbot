@@ -1,10 +1,8 @@
---with Text_Io;
 with Stacktrace;
 with Sql;
 with Calendar2;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
---with General_Routines; use General_Routines;
 with Types ; use Types;
 with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
@@ -18,13 +16,11 @@ with Logging; use Logging;
 with Utils; use Utils;
 
 with Ada.Environment_Variables;
---with Ada.Directories;
 with Process_IO;
 with Bot_Messages;
 
 procedure Markets_Sender is
   package EV renames Ada.Environment_Variables;
---  package AD renames Ada.Directories;
 
   Me : constant String := "Main.";
   Ba_Daemon       : aliased Boolean := False;
@@ -41,7 +37,7 @@ procedure Markets_Sender is
   Markets : Sql.Statement_Type;
   Do_Send : Boolean := True;
 ------------------------------ main start -------------------------------------
-  Amarkets_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
+  Amarkets_List : Table_Amarkets.Amarkets_List_Pack2.List;
   Amarket :  Table_Amarkets.Data_Type;
   Aevent :  Table_Aevents.Data_Type;
   Arunner : Table_Arunners.Data_Type;
@@ -131,11 +127,13 @@ begin
   Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);
 --  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);
   T.Commit;
-  Tot := Table_Amarkets.Amarkets_List_Pack.Get_Count(Amarkets_List);
+  Tot := Integer(Amarkets_List.Length);
   Log(Me, "found # markets:" & Tot'Img );
-  while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Amarkets_List) loop
+--  while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Amarkets_List) loop
+--     Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Amarkets_List, Amarket);
+  for m of Amarkets_List loop
+     Amarket := m;
      Cur := Cur +1;
-     Table_Amarkets.Amarkets_List_Pack.Remove_From_Head(Amarkets_List, Amarket);
      Arunner.Marketid := Amarket.Marketid;
      Move("WINNER",Arunner.Status);
      Table_Arunners.Read_One_Marketid_status(Arunner,

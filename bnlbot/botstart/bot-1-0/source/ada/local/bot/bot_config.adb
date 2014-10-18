@@ -2,7 +2,6 @@
 --with Text_IO;
 with Ini;
 with Ada.Environment_Variables;
---with General_Routines; use General_Routines;
 
 with Logging ; use Logging;
 
@@ -302,7 +301,8 @@ package body Bot_Config is
               end if;
             end;
 
-            Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);
+            --Bet_Pack.Insert_At_Tail(Cfg.Bet_Section_List, Bet_Section);
+            Cfg.Bet_Section_List.Append(Bet_Section);
           end if;
           if Bet_Section.Max_Price < Bet_Section.Min_Price then
             raise Bad_Config with "Max < Min: " & To_String(Bet_Section.Bet_Name);
@@ -334,7 +334,7 @@ package body Bot_Config is
   -----------------------------------------------------
 
   function To_String(Cfg : Config_Type) return String is
-    Eol : Boolean := True;
+    --Eol : Boolean := True;
     Bet_Section : Bet_Section_Type;
     Return_String : Unbounded_String := Null_Unbounded_String;
     use Utils;
@@ -363,9 +363,11 @@ package body Bot_Config is
          "</Global>" &
          "<Bets>" );
 
-           Bet_Pack.Get_First(Cfg.Bet_Section_List, Bet_Section,Eol);
-           loop
-             exit when Eol;
+--           Bet_Pack.Get_First(Cfg.Bet_Section_List, Bet_Section,Eol);
+--           loop
+--             exit when Eol;
+           for b of Cfg.Bet_Section_List loop
+             Bet_Section := b;
              Append(Return_String,
              "<Bet>" &
                "<Bet_Name>" & To_String(Bet_Section.Bet_Name) & "</Bet_Name>" &
@@ -396,7 +398,7 @@ package body Bot_Config is
                "<Race_Favorite_Max_Price>" & F8_Image(Float_8(Bet_Section.Race_Favorite_Max_Price)) & "</Race_Favorite_Max_Price>" &
                "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" &
              "</Bet>"  );
-             Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
+--             Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);
            end loop;
          Append(Return_String,
          "</Bets>"  &
@@ -419,7 +421,8 @@ package body Bot_Config is
   procedure Clear(Cfg : in out Config_Type)is
   begin
     Log(Me & "Clear start");
-    Bet_Pack.Remove_All(Cfg.Bet_Section_List);
+--    Bet_Pack.Remove_All(Cfg.Bet_Section_List);
+    Cfg.Bet_Section_List.Clear;
     Cfg := Empty_Config;
     Log(Me & "Clear stop");
   end Clear;

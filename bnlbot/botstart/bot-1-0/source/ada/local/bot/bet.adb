@@ -1,9 +1,7 @@
 
---with Types; use Types;
 with Sql;
 with Calendar2; use Calendar2;
 with Logging; use Logging;
---with General_Routines; use General_Routines;
 with Table_Abets;
 with Utils;
 package body Bet is

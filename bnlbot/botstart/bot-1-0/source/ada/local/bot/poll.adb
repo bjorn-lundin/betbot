@@ -135,19 +135,26 @@ procedure Poll is
 
   -------------------------------------------------------------------------------------------------------------------
 
-  procedure Run(Market_Notification : in     Bot_Messages.Market_Notification_Record) is
+  procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
+    Price_List : Table_Aprices.Aprices_List_Pack2.List;
 
+    function "<" (Left,Right : Table_Aprices.Data_Type) return Boolean is
+    begin
+      return Left.Backprice < Right.Backprice;
+    end "<";
+
+    package Backprice_Sorter is new  Table_Aprices.Aprices_List_Pack2.Generic_Sorting("<");  
+    
     Price_Finish      : Table_Apricesfinish.Data_Type;
-    Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack.List_Type := Table_Apricesfinish.Apricesfinish_List_Pack.Create;
+    Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
 
-    Price,Tmp : Table_Aprices.Data_Type;
+    Price : Table_Aprices.Data_Type;
     Has_Been_In_Play,
     In_Play   : Boolean := False;
     Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
-    Eol,Eos : Boolean := False;
+    Eos : Boolean := False;
     type Market_Type is (Win, Place);
     Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
     Found_Place : Boolean := True;
@@ -276,9 +283,13 @@ procedure Poll is
 
     -- do the poll
     Poll_Loop : loop
+    
+      if Markets(Place).Numwinners < Integer_4(3) then
+        exit Poll_Loop;
+      end if;   
+    
       if Is_Data_Collector then
-        while not Price_List.Is_Empty loop
-         Price_List.Remove_From_Head(Price);
+        for Price of Price_List loop
          Price_Finish := (
             Marketid     => Price.Marketid,
             Selectionid  => Price.Selectionid,
@@ -290,11 +301,12 @@ procedure Poll is
             Ixxlupd      => Price.Ixxlupd,
             Ixxluts      => Price.Ixxluts
          );
-         Price_Finish_List.Insert_At_Tail(Price_Finish);
-        end loop;
+         Price_Finish_List.Append(Price_Finish);
+        end loop;        
       end if;
 
-      Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
+      --Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
+      Price_List.Clear;
       Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
                             Market     => Market,
                             Price_List => Price_List,
@@ -319,68 +331,24 @@ procedure Poll is
       else
         delay 0.05; -- to avoid more than 20 polls/sec
       end if;
+      
+      -- ok find the runner with lowest backprice:     
+      Backprice_Sorter.Sort(Price_List);
 
-      -- ok find the runner with lowest backprice:
-      Tmp := Table_Aprices.Empty_Data;
       Price.Backprice := 10_000.0;
-      Price_List.Get_First(Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice then
-          Price := Tmp;
-        end if;
-        Price_List.Get_Next(Tmp,Eol);
-      end loop;
-      Best_Runners(1) := Price;
-
-      -- find #2
-      Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10_000.0;
-      Price_List.Get_First(Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid then
-          Price := Tmp;
-        end if;
-        Price_List.Get_Next(Tmp,Eol);
-      end loop;
-      Best_Runners(2) := Price;
-
-      -- find #3
-      Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10_000.0;
-      Price_List.Get_First(Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(2).Selectionid then
-          Price := Tmp;
-        end if;
-        Price_List.Get_Next(Tmp,Eol);
-      end loop;
-      Best_Runners(3) := Price;
-
-      -- find #4
-      Tmp := Table_Aprices.Empty_Data;
-      Price.Backprice := 10_000.0;
-      Price_List.Get_First(Tmp,Eol);
-      loop
-        exit when Eol;
-        if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice < Price.Backprice and then
-           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(2).Selectionid and then
-           Tmp.Selectionid /= Best_Runners(3).Selectionid then
-          Price := Tmp;
-        end if;
-        Price_List.Get_Next(Tmp,Eol);
-      end loop;
-      Best_Runners(4) := Price;
+      Best_Runners := (others => Price);
+      
+      declare
+        Idx : Integer := 0;
+      begin
+        for Tmp of Price_List loop
+          if Tmp.Status(1..6) = "ACTIVE" then
+            Idx := Idx +1;
+            exit when Idx > Best_Runners'Last;
+            Best_Runners(Idx) := Tmp;
+          end if;
+        end loop;
+      end ;      
 
       for i in Best_Runners'range loop
         Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
@@ -488,33 +456,25 @@ procedure Poll is
 
       end if;
 
-      if Markets(Place).Numwinners < Integer_4(3) then
-        exit Poll_Loop;
-      end if;
 
     end loop Poll_Loop;
 
     if Is_Data_Collector then
       -- insert all the records now, in pricefinish
-      Log("start insert records into Pricefinish:" & Price_Finish_List.Get_Count'Img);
-      T.Start;
+      Log("start insert records into Pricefinish:" & Price_Finish_List.Length'Img);
       begin
-        while not Price_Finish_List.Is_Empty loop
-          Price_Finish_List.Remove_From_Head(Price_Finish);
-          -- Log("will insert " & Price_Finish.To_String);
-          Price_Finish.Insert;
+        T.Start;
+        for Price_Finish of Price_Finish_List loop
+          Price_Finish.Insert;        
         end loop;
-      T.Commit;
+        T.Commit;
       exception
         when Sql.Duplicate_Index =>
-           Log("Duplicate index " & Price_Finish.To_String);
-           Price_Finish_List.Remove_All;
+           Price_Finish_List.Clear;
            T.Rollback;
       end;
       Log("stop insert record into Pricefinish");
-      Price_Finish_List.Release;
     end if;
-    Price_List.Release;
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;

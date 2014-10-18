@@ -5,13 +5,10 @@ with Stacktrace;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
---with General_Routines; use General_Routines;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Calendar2; use Calendar2;
 with Bot_Messages;
---with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Rpc;
 with Lock ;
 with Posix;
@@ -26,8 +23,7 @@ with Table_Aprices;
 with Bot_Svn_Info;
 with Config;
 
-with Simple_List_Class;
-pragma Elaborate_All(Simple_List_Class);
+with Ada.Containers.Doubly_Linked_Lists;
 
 with Utils;
 procedure Poll_And_Log is
@@ -49,8 +45,8 @@ procedure Poll_And_Log is
 
   Now : Calendar2.Time_Type;
 
-  package Market_Id_Pck is new Simple_list_Class(Market_Id_Type);
-  Market_Id_List : Market_Id_Pck.List_Type := Market_Id_Pck.Create;
+  package Market_Id_Pck is new Ada.Containers.Doubly_Linked_Lists(Market_Id_Type);
+  Market_Id_List : Market_Id_Pck.List;
   
   Ok,
   Is_Time_To_Exit : Boolean := False;
@@ -61,7 +57,7 @@ procedure Poll_And_Log is
   -------------------------------------------------------------
   function Get_Market_Prices(Market_Id : Market_Id_Type) return Return_Value_Type is
     Market    : Table_Amarkets.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
+    Price_List : Table_Aprices.Aprices_List_Pack2.List;
     In_Play   : Boolean := False;
     
   begin
@@ -83,22 +79,19 @@ procedure Poll_And_Log is
 
     declare
       Stat   : Table_Araceprices.Data_Type;
-      Eol    : Boolean := False;
       Tmp    : Table_Aprices.Data_Type;
       T      : Sql.Transaction_Type;
       Status : String (Tmp.Status'range ) := (others => ' ');
     begin
       -- insert into finish table
       T.Start;
-      Table_Aprices.Aprices_List_Pack.Get_First(Price_List,Tmp,Eol);
-      loop
-        exit when Eol;
-        Log("about to insert into Araceprices: " & Table_Aprices.To_String(Tmp));
+        
+        
+      for Tmp of Price_List loop  
+        Log("about to insert into Araceprices: " & Tmp.To_String);
         if  Market.Status(1..9)= "SUSPENDED" then
           Log(Me & "Get_Market_Prices", "SUSPENDED marketid: '" & Market_Id & "'");
         end if;    
-        
-        
         
         if Tmp.Status(1..6) = "ACTIVE" then
           if  Market.Status(1..9)= "SUSPENDED" then
@@ -128,7 +121,6 @@ procedure Poll_And_Log is
             Log("Duplicate_Index on: " & Tmp.To_String);
           end;
         end if;
-        Table_Aprices.Aprices_List_Pack.Get_Next(Price_List,Tmp,Eol);
       end loop;
       T.Commit;
     end;
@@ -148,7 +140,6 @@ procedure Poll_And_Log is
       MNR.Market_Id := Market_Id;
       Bot_Messages.Send(Receiver, MNR);        
     end;
-    Table_Aprices.Aprices_List_Pack.Release(Price_List); 
     return Success;
   end Get_Market_Prices;
   ---------------------------------------------------------------------
@@ -156,40 +147,42 @@ procedure Poll_And_Log is
 ------------------------------ main start -------------------------------------
 
 
-  procedure Do_Poll_All(List : in out Market_Id_Pck.List_Type) is
-    Eol : Boolean := False;
+  procedure Do_Poll_All(List : in out Market_Id_Pck.List) is
     Return_Value : Return_Value_Type;
-    Closed_Market_Id_List : Market_Id_Pck.List_Type := Market_Id_Pck.Create;
-    Market_Id, Market_Id2 : Market_Id_Type := (others => ' ');
-    
+    Closed_Market_Id_List : Market_Id_Pck.List;    
   begin
-    Market_Id_Pck.Get_First(List,Market_Id,Eol);
-    loop
-      exit when Eol;
+  
+    for Market_Id of List loop
       Return_Value := Get_Market_Prices(Market_Id);
       case Return_Value is
         when Success => null;
-        when Wait => null;
-        when Closed => Market_Id_Pck.Insert_At_Tail(Closed_Market_Id_List,Market_Id);
-      end case;      
-      Market_Id_Pck.Get_Next(List,Market_Id,Eol);
+        when Wait    => null;
+        when Closed  => Closed_Market_Id_List.Append(Market_Id);
+      end case;          
     end loop;
     
-    -- remove the closed ones from main list 
-    Loop_Closed_Markets : while not Market_Id_Pck.Is_Empty(Closed_Market_Id_List) loop
-      Market_Id_Pck.Remove_From_Head(Closed_Market_Id_List, Market_Id);
-      Market_Id_Pck.Get_First(List,Market_Id2,Eol);
-      Loop_Remove : loop
-        exit Loop_Remove when Eol;
-        if Market_Id2 = Market_Id then -- found one to delete
-          Market_Id_Pck.Delete(List);
-          Log(Me & "Do_Poll_All", "removed marketid: '" & Market_Id & "' from polling list");
-          exit Loop_Remove;
-        end if;       
-        Market_Id_Pck.Get_Next(List,Market_Id2,Eol);
-      end loop Loop_Remove;
-    end loop Loop_Closed_Markets;
-    Market_Id_Pck.Release(Closed_Market_Id_List);
+    for Market_Id of Closed_Market_Id_List loop
+      declare
+         C    : Market_Id_Pck.Cursor := List.First;
+         Next : Market_Id_Pck.Cursor;
+         use type Market_Id_Pck.Cursor;
+      begin
+         loop
+            exit when C = Market_Id_Pck.No_Element;  
+            declare
+              M_Id : constant Market_Id_Type := Market_Id_Pck.Element(C);
+            begin
+              if M_Id /= Market_Id then
+                 Market_Id_Pck.Next(Position => C);
+              else
+                 Next := Market_Id_Pck.Next(C);
+                 List.Delete(Position => C);
+                 C := Next;
+              end if;
+            end ;
+         end loop;
+      end;
+    end loop;    
   end Do_Poll_All;
 -----------------------------------------------------------------                      
 
@@ -266,7 +259,7 @@ begin
             Market_Notification : Bot_Messages.Market_Notification_Record;
           begin
             Market_Notification := Bot_Messages.Data(Msg);
-            Market_Id_Pck.Insert_At_Tail(Market_Id_List, Market_Notification.Market_Id);
+            Market_Id_List.Append(Market_Notification.Market_Id);
             Do_Poll_All(Market_Id_List);
           end ;
         

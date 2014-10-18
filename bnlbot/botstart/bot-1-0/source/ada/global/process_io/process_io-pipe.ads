@@ -6,9 +6,7 @@
 --------------------------------------------------------------------------------
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Interfaces.C;
---with Ada.Finalization; use Ada.Finalization;
-with Simple_List_Class;
-pragma Elaborate_All(Simple_List_Class);
+with Ada.Containers.Doubly_Linked_Lists;
 
 with Calendar2;
 
@@ -124,9 +122,9 @@ package Process_Io.Pipe is
   procedure Increase_Indent(Delta_Indent : Integer) ;
 
 
-  package Msg_List_Pack is new Simple_List_Class(Process_Io.Process_Type);
+  package Msg_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Process_Io.Process_Type);
   --will fill the supplied list with the names of the pipes on disk for this system
-  procedure Fill_Pipe_List(Pipe_List : in out Msg_List_Pack.List_Type);
+  procedure Fill_Pipe_List(Pipe_List : in out Msg_List_Pack.List);
 
 
 end Process_Io.Pipe;
