@@ -2,20 +2,6 @@
 
 BOT_USER=$1
 
-#while getopts "u:" OPT; do
-##  echo "$OPT - $OPTARG"
-#  case $OPT in
-#    u)  BOT_USER=$OPTARG ;;
-#    *)
-#      echo "$0 -u user" >&2
-#      exit 1
-#      ;;
-#  esac
-#done
-#dialog --msgbox "$OPT - $OPTARG"  7 45
-#
-#
-#[ -z $OPTARG ] && echo "missing user" >&2 
 
 export BOT_USER
 
@@ -40,6 +26,9 @@ case $HOSTNAME in
   new.nonodev.com)    
     export BOT_MACHINE_ROLE=PROD
     ;;
+  prod*)    
+    export BOT_MACHINE_ROLE=PROD
+    ;;
   sebjlun*)
     export BOT_MACHINE_ROLE=SIM
     ;;
@@ -57,6 +46,9 @@ case $HOSTNAME in
     export BOT_MODE=real
     ;;
   new.nonodev.com)    
+    export BOT_MODE=real
+    ;;
+  prod*)    
     export BOT_MODE=real
     ;;
     *)
