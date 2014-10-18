@@ -27,13 +27,13 @@ for USER in $PID_FILE_DIRECTORIES ; do
   echo "    STARTTIME file          PID START      CPU   PROCESS"
   for f in $PID_FILE ; do
     if [ "${f}" != "data_mover" ] ; then
-      PID=$(cut -d'|' -f1  ${DIR}/$f)
-      START=$(cut -d'|' -f2  ${DIR}/$f)
+      PID=$(cut -d'|' -f1  ${DIR}/${f})
+      START=$(cut -d'|' -f2  ${DIR}/${f})
       PS_STUFF=$(ps -eo pid,stime,time | grep $PID | grep -v grep)
       if [ "x${PS_STUFF}" == "x" ] ; then
         PS_STUFF=" !!! seemingly not running ----- "
       fi
-      echo "$START : ${PS_STUFF} : $f"   
+      echo "$START : ${PS_STUFF} : ${f}"   
     fi  
   done
 done
