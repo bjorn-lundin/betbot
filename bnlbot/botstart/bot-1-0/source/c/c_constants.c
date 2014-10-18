@@ -52,6 +52,13 @@ int	main() {
   printf("  SEEK_SET : constant Interfaces.C.Int := %d; -- absolute position\n",SEEK_SET);
   printf("  SEEK_CUR : constant Interfaces.C.Int := %d; -- offset from current position\n",SEEK_CUR);
   printf("  SEEK_END : constant Interfaces.C.Int := %d; -- offset from end of file\n",SEEK_END);  
+  printf("\n  -- for lockf\n");  
+  printf("  F_ULOCK : constant Interfaces.C.Int := %d; --  /usr/include/fcntl.h:188\n",F_ULOCK);  
+  printf("  F_LOCK : constant Interfaces.C.Int := %d;  --  /usr/include/fcntl.h:189\n",F_LOCK);  
+  printf("  F_TLOCK : constant Interfaces.C.Int := %d; --  /usr/include/fcntl.h\n",F_TLOCK);  
+  printf("  F_TEST : constant Interfaces.C.Int := %d;  --  /usr/include/fcntl.h\n",F_TEST);  
+  
+  
 #endif  
   printf("end C_Constants;\n");
   return 0;      
