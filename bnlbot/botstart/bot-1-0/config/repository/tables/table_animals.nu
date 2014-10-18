@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Wiz="3" Desc="Animal stats" Name="ANIMALS" Tablespace="">
         <Column Name="name" Primary="1" Size="50" Type="1" AllowNull="0" Description="animal name"/>
         <Column Name="kind" Primary="0" Size="5" Type="1" AllowNull="0" Description="animal"/>
@@ -14,4 +14,4 @@
         <Column Name="ixxluts" Primary="0" Size="23" Type="15" AllowNull="0" Description="latest update ts"/>
         <Index Columns="name" type="primary"/>
     </Table>
-</MaAstro>
+</BnlBot>

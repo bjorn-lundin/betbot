@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="runners odds at race" Name="ARACEPRICESOLD" Tablespace="" >
         <Column Name="pricets"            Size="23" Type="15" AllowNull="0" Description="timestamp of prices"/>
         <Column Name="marketid"           Size="11" Type="1"  AllowNull="0"  Description="market id"/>
@@ -17,4 +17,4 @@
         <Index Columns="marketid" type="index"/>
         <Index Columns="pricets" type="index"/>
     </Table>
-</MaAstro>
+</BnlBot>

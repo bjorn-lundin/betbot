@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="non runners of market" Name="ANONRUNNERS" Tablespace="" >
         <Column Name="marketid"           Size="11" Type="1"  AllowNull="0" Description="market id"/>
         <Column Name="name"               Size="50" Type="1"  AllowNull="0" Description="name of runner"/>
@@ -8,5 +8,5 @@
         <Index Columns="marketid,name" type="primary"/>
         <Index Columns="marketid" type="index"/>
     </Table>
-</MaAstro>
+</BnlBot>
 

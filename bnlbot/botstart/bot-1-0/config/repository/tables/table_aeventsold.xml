@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
-<MaAstro>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="collected runners " Name="AEVENTSOLD" Tablespace="" >
         <Column Name="eventid"            Size="11" Type="1"  AllowNull="0" Description="event id"/>
         <Column Name="eventname"          Size="50" Type="1"  AllowNull="0" Description="event name"/>
@@ -14,5 +14,5 @@
         <Index Columns="opents" type="index"/>
         <Index Columns="eventtypeid" type="index"/>
     </Table>
-</MaAstro>
+</BnlBot>
 
