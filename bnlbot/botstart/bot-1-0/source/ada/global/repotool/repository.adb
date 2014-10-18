@@ -342,6 +342,7 @@ package body Repository is
         case Data is
           when A_Char        => return "varchar";
           when A_Int         => return "integer";
+          when A_Big_Int     => return "bigint";
           when A_Double      => return "float";
           when A_Boolean     => return "integer";
           when A_Short_Code  => return "integer";
