@@ -10,9 +10,10 @@ project Adabot is
    for Exec_Dir use Global.Bot_Target & "/bin"  ;
 
    for Source_Dirs use (AL & "/" & Sub_System,
-                        AL & "/" & "utils",
-                        AL & "/" & "web/repoweb",
-                        AL & "/" & "web");
+                        AL & "/" & "utils");
+--                        ,
+--                        AL & "/" & "web/repoweb",
+--                        AL & "/" & "web");
                         
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
    

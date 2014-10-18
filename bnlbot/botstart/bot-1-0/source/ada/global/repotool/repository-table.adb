@@ -588,13 +588,13 @@ package body Repository.Table is
           Put_Line("go");
 
         when I.Unique =>
-          Put_Line("create unique index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
+          Put_Line("create unique index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on " & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
           Put_Line(")");
           Put_Line("go");
 
         when I.Index =>
-          Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
+          Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on " & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
           Put_Line(")");
           Put_Line("go");
@@ -662,8 +662,9 @@ package body Repository.Table is
           when others   => null;
         end case;
       end loop;
-      Put_Line(sDDL & ";");
+      Put_Line(sDDL); --last part of sDDL might be a comment. Make sure the ';' is on new line
     end;
+    Put_Line(";");
     Put_Line("");
 
     -- now the primary key
@@ -695,7 +696,7 @@ package body Repository.Table is
     -- loop over all columns again and write like
     --  comment on column BPLOAD.bsortts is 'Sort timestamp'
     for Col of Self.Columns loop
-      Put_Line("comment on column " & Self.Name.Fix_String & " is '" & Col.Description.Fix_String & "';");
+      Put_Line("comment on column " & Self.Name.Fix_String & "." & Col.Name.Fix_String & " is '" & Col.Description.Fix_String & "';");
     end loop;
     Put_Line("commit;");
     Put_Line("");

@@ -3,7 +3,7 @@ with "aws";
 
 project Global is
 
-   Os_Architecture := external ("OS_ARCHITECTURE","lnx_x86");
+   Os_Architecture := external ("OS_ARCHITECTURE","lnx_x64");
    type Target_Type is ("lnx_x86", "lnx_arm", "lnx_x64", "win_x86");
 
    Target_Machine : Target_Type := Os_Architecture;
