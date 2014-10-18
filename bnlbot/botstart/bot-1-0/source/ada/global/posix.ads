@@ -39,44 +39,14 @@ package Posix is
   O_NOFOLLOW : constant Int := Int(C_Constants.O_NOFOLLOW);  -- if sym link, open link itself  
 
    ------------ lock files start --------------
-   type Short_Integer is new Types.Integer_2;
+     
+   function Lockf(Fd : Int; Cmd : Int; Siz : Size_T) return Int;
    
-   type aLock is new Short_Integer;
-   F_RDLCK : constant aLock := aLock(C_Constants.F_RDLCK); -- read lock
-   F_WRLCK : constant aLock := aLock(C_Constants.F_WRLCK); -- write lock
-   F_UNLCK : constant aLock := aLock(C_Constants.F_UNLCK); -- unlock (remove a lock)
-   F_EXLCK : constant aLock := aLock(C_Constants.F_EXLCK); -- exclusive lock
-   F_SHLCK : constant aLock := aLock(C_Constants.F_SHLCK); -- shared lock
+   F_ULOCK : constant Int := Int(C_Constants.F_ULOCK);   
+   F_LOCK  : constant Int := Int(C_Constants.F_LOCK);   
+   F_TLOCK : constant Int := Int(C_Constants.F_TLOCK);   
+   F_TEST  : constant Int := Int(C_Constants.F_TEST);   
    
-   F_DUPFD  : constant Int := Int(C_Constants.F_DUPFD);
-   F_GETFD  : constant Int := Int(C_Constants.F_GETFD);
-   F_SETFD  : constant Int := Int(C_Constants.F_SETFD);
-   F_GETFL  : constant Int := Int(C_Constants.F_GETFL);
-   F_SETFL  : constant Int := Int(C_Constants.F_SETFL);
-   F_GETLK  : constant Int := Int(C_Constants.F_GETLK);
-   F_SETLK  : constant Int := Int(C_Constants.F_SETLK);
-   F_SETLKW : constant Int := Int(C_Constants.F_SETLKW);
-   F_SETOWN : constant Int := Int(C_Constants.F_SETOWN);
-   F_GETOWN : constant Int := Int(C_Constants.F_GETOWN);
-   F_SETSIG : constant Int := Int(C_Constants.F_SETSIG);
-   F_GETSIG : constant Int := Int(C_Constants.F_GETSIG);   
-   
-   type aWhenceMode is new Short_Integer;
-   SEEK_SET : constant aWhenceMode := aWhenceMode(C_Constants.SEEK_SET); -- absolute position
-   SEEK_CUR : constant aWhenceMode := aWhenceMode(C_Constants.SEEK_CUR); -- offset from current position
-   SEEK_END : constant aWhenceMode := aWhenceMode(C_Constants.SEEK_END); -- offset from end of file  
-   
-   type Lockstruct is record
-     L_Type   : Alock;         -- type of lock
-     L_Whence : Short_Integer; -- how to interpret l_start
-     L_Start  : Integer;       -- offset or position
-     L_Len    : Integer;       -- number of bytes to lock (0 for all)
-     L_Pid    : Integer;       -- with GETLK, process ID owning lock
-   end record;  
-   procedure fcntl( result : out int; fd : in Int; operation : in int; lock : in out lockstruct ) ;
-   --return integer
-   pragma import( C, fcntl, "fcntl" );
-   pragma import_valued_procedure( fcntl );   
    --------------- lockfiles stop --------------
 
   function Getpid return Pid_T;
@@ -108,6 +78,7 @@ private
   pragma Import (C, Errno, "__get_errno");   
 --ssize_t write(int fd, const void *buf, size_t count); 
   pragma Import(C, Write, "write");
+  pragma Import(C, Lockf, "lockf");
 end Posix;
 
 
