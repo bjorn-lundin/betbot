@@ -41,8 +41,9 @@ with Ada.Finalization; use Ada.Finalization;
 with Calendar2;
 with Types; use Types;
 
-with Simple_List_Class;
-pragma Elaborate_All (Simple_List_Class);
+--with Simple_List_Class;
+--pragma Elaborate_All (Simple_List_Class);
+with Ada.Containers.Doubly_Linked_Lists;
 
 package Sql is
 
@@ -379,7 +380,7 @@ private
       Parameter_Type : Parameter_Type_Type;
    end record;
 
-   package Map is new Simple_List_Class (Parameter_Map_Type);
+   package Map is new Ada.Containers.Doubly_Linked_Lists (Parameter_Map_Type);
 
    type Statement_Type_Type is (A_Select, An_Insert, A_Delete, An_Update, A_Ddl);
    subtype Name_Type is String (1 .. 11);
@@ -392,7 +393,8 @@ private
       Pg_Prepared_Statement   : Unbounded_String := To_Unbounded_String ("");
       Prepared_Statement      : Unbounded_String := To_Unbounded_String ("");
       Original_Statement      : Unbounded_String := To_Unbounded_String ("");
-      Parameter_Map           : Map.List_Type := Map.Create;
+--      Parameter_Map           : Map.List_Type := Map.Create;
+      Parameter_Map           : Map.List;
       Result                  : Result_Type;
       Dml_Result              : Result_Type;
       Is_Open                 : Boolean := False; --set/unset in open/close check in fetch

@@ -7,7 +7,6 @@ with Aws;
 with Aws.Headers;
 with Aws.Headers.Set;
 with Aws.Response;
---with General_Routines; use General_Routines;
 with Aws.Client;
 with Bot_System_Number;
 with Bot_Svn_Info;
@@ -517,8 +516,211 @@ package body RPC is
     Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Float_8(AVG_Price_Matched)))  ;
   end Bet_Is_Matched;
   -----------------------------------------------------------------
+--  procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
+--                                Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
+----{
+----     "jsonrpc": "2.0",
+----     "method": "SportsAPING/v1.0/listMarketBook",
+----     "params": {
+----          "marketIds": ["1.111572663"]
+----     },
+----     "id": 1
+----}
+--    DB_Runner : Table_Arunners.Data_Type;
+--
+--    Result,
+--    Params,
+----    Status,
+--    Runner,
+--    Json_Reply,
+--    Json_Query          : JSON_Value := Create_Object;
+--
+--    Result_Array,Runners, Market_Ids : JSON_Array := Empty_Array;
+--    Market_Id_Received  : Market_Id_Type := (others => ' ');
+--  begin
+--
+--    Append (Market_Ids, Create(Market_Id));
+--    Params.Set_Field     (Field_Name => "marketIds", Field => Market_Ids);
+--    Json_Query.Set_Field (Field_Name => "params",  Field => Params);
+--    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
+--    Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
+--    Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+--
+--    Get_JSON_Reply (Query => Json_Query,
+--                    Reply => Json_Reply,
+--                    URL   => Token.URL_BETTING);
+--
+--    -- ok, got a valid Json reply, check for errors
+--    if API_Exceptions_Are_Present(Json_Reply) then
+--      return ;
+--    end if;
+--
+--    -- ok, got a valid Json reply, parse it
+----{
+----     "jsonrpc": "2.0",
+----     "result": [{
+----          "marketId": "1.111572663",
+----          "isMarketDataDelayed": false,
+----          "betDelay": 1,
+----          "bspReconciled": true,
+----          "complete": true,
+----          "inplay": true,
+----          "numberOfWinners": 1,
+----          "numberOfRunners": 9,
+----          "numberOfActiveRunners": 0,
+----          "totalMatched": 0.0,
+----          "totalAvailable": 0.0,
+----          "crossMatching": false,
+----          "runnersVoidable": false,
+----          "version": 624435001,
+----          "runners": [{
+----               "selectionId": 5662977,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 5.3,
+----               "removalDate": "2013-10-25T16:19:41.000Z",
+----               "status": "REMOVED"
+----          },
+----          {
+----               "selectionId": 6477571,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 52.5,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 6437577,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 12.4,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 6458897,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 10.6,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 4729721,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 9.6,
+----               "status": "WINNER"
+----          },
+----          {
+----               "selectionId": 6784150,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 4.9,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 3917956,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 6.6,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 6290196,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 2.4,
+----               "status": "LOSER"
+----          },
+----          {
+----               "selectionId": 5119099,
+----               "handicap": 0.0,
+----               "adjustmentFactor": 1.3,
+----               "status": "LOSER"
+----          }],
+----          "status": "CLOSED"
+----     }],
+----     "id": 1
+----}
+--
+--    if Json_Reply.Has_Field("result") then
+--      Result_Array := Json_Reply.Get("result");
+--
+--      Log(Me & "Check_Market_Result", " Length(Result_Array) " &  Length(Result_Array)'Img  );
+--
+--      if Length(Result_Array) > Natural(0) then
+--        Result := Get(Result_Array,1); -- one element in array only
+--      else
+--        Log(Me & "Check_Market_Result", "NO RESULT!! 1 " );
+--        return ;
+--      end if;
+--    else
+--      Log(Me & "Check_Market_Result", "NO RESULT!! 2" );
+--      return ;
+--    end if;
+--
+--
+--    if Result.Has_Field("marketId") then
+--      Market_Id_Received := Result.Get("marketId");
+--      Log(Me & "Check_Market_Result", "got marketId '" & Market_Id_Received & "'");
+--    else
+--      Log(Me & "Check_Market_Result", "NO marketId, return!");
+--      return;
+--    end if;
+--
+--    if Result.Has_Field("status") then
+--      if Result.Get("status") = "CLOSED" or else
+--         Result.Get("status") = "SETTLED" then
+--
+--         Log(Me & "Check_Market_Result", "Market IS settled , treat Market_Id_Received '" & Market_Id_Received & "' " &
+--                                         " Market_Status '" & Result.Get("status") & "'");
+--      else
+--        Log(Me & "Check_Market_Result", "Market IS NOT settled, wait/return Market_Id_Received '" & Market_Id_Received & "' " &
+--                                         " Market_Status '" & Result.Get("status") & "'");
+--        return;  -- market not settled yed
+--      end if;
+--    end if;
+--
+--    if Result.Has_Field("runners") then
+--      Runners := Result.Get("runners");
+--      Log(Me & "Check_Market_Result", "got runners, len: " & Length(Runners)'Img);
+--
+--      if Length(Runners) > Natural(0) then
+--
+--        for i in 1 .. Length(Runners) loop
+--          DB_Runner := Table_Arunners.Empty_Data;
+--
+--          Runner := Get(Runners, i);
+--          Log(Me & "Check_Market_Result", "got Runner" & i'Img);
+--
+--          if Runner.Has_Field("selectionId") then
+--            declare
+--              i : Integer := Runner.Get("selectionId");
+--            begin
+--              DB_Runner.Selectionid := Integer_4(i);
+----              Log(Me & "Check_Market_Result", "selection id" & i'Img);
+--            end;
+--          else
+--            Log(Me & "Check_Market_Result", "no selection id!! Exit loop -  Runner" & i'Img);
+--            exit ;
+--          end if;
+--          DB_Runner.Marketid := Market_Id_Received ;
+--
+--          if Runner.Has_Field("status") then
+--            Move(Runner.Get("status"), DB_Runner.Status);
+--            if Runner.Get("status") = "WINNER" then
+--              Log(Me & "Check_Market_Result", "got a winner " & Table_Arunners.To_String(DB_Runner));
+--            elsif Runner.Get("status") = "REMOVED" then
+--              Log(Me & "Check_Market_Result", "got a non-runner " & Table_Arunners.To_String(DB_Runner));
+--            elsif Runner.Get("status") = "LOSER" then
+--              Log(Me & "Check_Market_Result", "got a loser " & Table_Arunners.To_String(DB_Runner));
+--            else
+--              Log(Me & "Check_Market_Result", "got something else !! " & Table_Arunners.To_String(DB_Runner));
+--            end if;
+--            Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
+--          else
+--            Log(Me & "Check_Market_Result", "runner is missing status, exit");
+--            exit;
+--          end if;
+--        end loop;
+--      end if;
+--    end if;
+--
+--  end Check_Market_Result;
+--  ----------------------------------------------------------------
+--  
   procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
-                                Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
+                                Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) is
 --{
 --     "jsonrpc": "2.0",
 --     "method": "SportsAPING/v1.0/listMarketBook",
@@ -708,7 +910,7 @@ package body RPC is
             else
               Log(Me & "Check_Market_Result", "got something else !! " & Table_Arunners.To_String(DB_Runner));
             end if;
-            Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
+            Runner_List.Append(DB_Runner);
           else
             Log(Me & "Check_Market_Result", "runner is missing status, exit");
             exit;
@@ -926,8 +1128,8 @@ package body RPC is
                                       Settled_From   : in Calendar2.Time_Type := Calendar2.Time_Type_First;
                                       Settled_To     : in Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result : out Result_Type;
-                                      Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
-    pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though
+                                      Bet_List       : out Table_Abets.Abets_List_Pack2.List) is
+--    pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though
 
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
@@ -998,7 +1200,7 @@ package body RPC is
 
              Move(Bet_Status'Img, Local_Bet.Status);
 
-             Table_Abets.Abets_List_Pack.Insert_At_Tail(Bet_List, Local_Bet);
+             Bet_List.Append(Local_Bet);
            end loop;
          else
            Log(Me & "Get_Cleared_Bet_Info_List", "No cleared orders received with status " & Bet_Status'Img);
@@ -1007,6 +1209,91 @@ package body RPC is
     end if;
   end Get_Cleared_Bet_Info_List;
   -----------------------------------
+--  procedure Get_Cleared_Bet_Info_List(Bet_Status     : in Bet_Status_Type;
+--                                      Settled_From   : in Calendar2.Time_Type := Calendar2.Time_Type_First;
+--                                      Settled_To     : in Calendar2.Time_Type := Calendar2.Time_Type_Last;
+--                                      Betfair_Result : out Result_Type;
+--                                      Bet_List       : out Table_Abets.Abets_List_Pack.List_Type) is
+--    pragma Warnings(Off,Bet_List); -- list is manipulated, not pointer though
+--
+--    JSON_Query : JSON_Value := Create_Object;
+--    JSON_Reply : JSON_Value := Create_Object;
+--    --AWS_Reply  : Aws.Response.Data;
+--    Params     : JSON_Value := Create_Object;
+--    Result     : JSON_Value := Create_Object;
+--    Settled_Date_Range : JSON_Value := Create_Object;
+--    Cleared_Orders     : JSON_Array := Empty_Array;
+--    Cleared_Order      : JSON_Value := Create_Object;
+--
+--    Local_Bet          : Table_Abets.Data_Type;
+--    Found              : Boolean := False;
+--
+--  begin
+--    Betfair_Result := Ok;
+--
+--    Settled_Date_Range.Set_Field (Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(Settled_From,"T","Z"));
+--    Settled_Date_Range.Set_Field (Field_Name => "to",   Field => Calendar2.String_Date_Time_ISO(Settled_To,  "T","Z"));
+--
+--    Params.Set_Field (Field_Name => "groupBy", Field => "BET");
+--    Params.Set_Field (Field_Name => "includeItemDescription", Field => False);
+--    Params.Set_Field (Field_Name => "settledDateRange", Field => Settled_Date_Range);
+--    Params.Set_Field (Field_Name => "betStatus",        Field => Bet_Status'Img);
+--    -- params is empty ...
+--    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+--    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+--    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listClearedOrders");
+--    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+--
+--    Get_JSON_Reply(Query => JSON_Query,
+--                   Reply => JSON_Reply,
+--                   URL   => Token.URL_BETTING);
+--
+--    if API_Exceptions_Are_Present(JSON_Reply) then
+--      Betfair_Result := Logged_Out ;
+--      return;
+--    end if;
+--
+--    if JSON_Reply.Has_Field("result") then
+--       Result := JSON_Reply.Get("result");
+--       if Result.Has_Field("clearedOrders") then
+--         Cleared_Orders := Result.Get("clearedOrders");
+--         if Length(Cleared_Orders) > Integer(0) then
+--           for i in 1 .. Length (Cleared_Orders) loop
+--             Log(Me & "Get_Cleared_Bet_Info_List" , " we have cleared order #:" & i'img & " with status: " & Bet_Status'Img);
+--
+--             Cleared_Order := Get(Cleared_Orders, i);
+--             Local_Bet := Table_Abets.Empty_Data;
+--             Get_Value(Container => Cleared_Order,
+--                       Field     => "betId",
+--                       Target    => Local_Bet.Betid,
+--                       Found     => Found);
+--
+--             Get_Value(Container => Cleared_Order,
+--                       Field     => "priceMatched",
+--                       Target    => Local_Bet.Pricematched,
+--                       Found     => Found);
+--
+--             Get_Value(Container => Cleared_Order,
+--                       Field     => "sizeSettled",
+--                       Target    => Local_Bet.Sizematched,
+--                       Found     => Found);
+--
+--             Get_Value(Container => Cleared_Order,
+--                       Field     => "profit",
+--                       Target    => Local_Bet.Profit,
+--                       Found     => Found);
+--
+--             Move(Bet_Status'Img, Local_Bet.Status);
+--
+--             Table_Abets.Abets_List_Pack.Insert_At_Tail(Bet_List, Local_Bet);
+--           end loop;
+--         else
+--           Log(Me & "Get_Cleared_Bet_Info_List", "No cleared orders received with status " & Bet_Status'Img);
+--         end if;
+--       end if;
+--    end if;
+--  end Get_Cleared_Bet_Info_List;
+--  -----------------------------------
 
   procedure Cancel_Bet(Market_Id : in Market_Id_Type;
                        Bet_Id    : in Integer_8) is
@@ -1043,9 +1330,146 @@ package body RPC is
   end  Cancel_Bet;
   -----------------------------------
 
+--  procedure Parse_Prices(J_Market   : in     JSON_Value;
+--                         Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
+--    pragma Warnings(Off,Price_List);
+--    Back,
+--    Lay,
+--    Ex,
+--    Runner            : JSON_Value := Create_Object;
+--    Back_Array,
+--    Lay_Array,
+--    Runner_Prices     : JSON_Array := Empty_Array;
+--    Array_Length      : Natural;
+--    Array_Length_Back : Natural;
+--    Array_Length_Lay  : Natural;
+--    Now               : Calendar2.Time_Type := Calendar2.Clock;
+--    Found             : Boolean := False;
+--    DB_Runner_Price   : Table_Aprices.Data_Type;
+--
+--    --        "runners": [{
+--    --            "handicap": 0.00000E+00,
+--    --            "totalMatched": 0.00000E+00,
+--    --            "selectionId": 7311189,
+--    --            "status": "ACTIVE",
+--    --            "ex": {
+--    --                "tradedVolume": [],
+--    --                "availableToBack": [{
+--    --                    "size": 1.47106E+03,
+--    --                    "price": 1.06000E+00
+--    --                },
+--    --                {
+--    --                    "size": 4.14300E+01,
+--    --                    "price": 1.04000E+00
+--    --                },
+--    --                {
+--    --                    "size": 8.28656E+03,
+--    --                    "price": 1.03000E+00
+--    --                }],
+--    --                "availableToLay": [{
+--    --                    "size": 2.07160E+02,
+--    --                    "price": 4.00000E+01
+--    --                }]
+--    --            }
+--    --        },
+--    --  type Data_Type is record
+--    --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
+--    --      Selectionid :    Integer_4  := 0 ; -- Primary Key
+--    --      Pricets :    Time_Type  := Time_Type_First ; -- Primary Key
+--    --      Status :    String (1..50) := (others => ' ') ; --
+--    --      Totalmatched :    Float_8  := 0.0 ; --
+--    --      Backprice :    Float_8  := 0.0 ; --
+--    --      Layprice :    Float_8  := 0.0 ; --
+--    --      Ixxlupd :    String (1..15) := (others => ' ') ; --
+--    --      Ixxluts :    Time_Type  := Time_Type_First ; --
+--    --  end record;
+--
+--
+--  begin
+--    Runner_Prices := J_Market.Get("runners");
+--    Array_Length  := Length (Runner_Prices);
+--
+--    for J in 1 .. Array_Length loop
+--      DB_Runner_Price := Table_Aprices.Empty_Data;
+--
+--      Runner := Get (Arr   => Runner_Prices, Index => J);
+--
+--      Get_Value(Container => J_Market,
+--                Field     => "marketId",
+--                Target    => DB_Runner_Price.Marketid,
+--                Found     => Found);
+--      if not Found then
+--        raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+--      end if;
+--
+--      Get_Value(Container => Runner,
+--                Field     => "selectionId",
+--                Target    => DB_Runner_Price.Selectionid,
+--                Found     => Found);
+--      if not Found then
+--        raise No_Such_Field with "Object 'Market' - Field 'selectionId'";
+--      end if;
+--
+--      Get_Value(Container => Runner,
+--                Field     => "status",
+--                Target    => DB_Runner_Price.Status,
+--                Found     => Found);
+--      if not Found then
+--        raise No_Such_Field with "Object 'Market' - Field 'status'";
+--      end if;
+--
+--      Get_Value(Container => Runner,
+--                Field     => "totalMatched",
+--                Target    => DB_Runner_Price.Totalmatched,
+--                Found     => Found);
+--
+--      DB_Runner_Price.Pricets := Now;
+--
+--      if Runner.Has_Field("ex") then
+--        Ex := Runner.Get("ex");
+--        if Ex.Has_Field("availableToBack") then
+--          Back_Array := Ex.Get("availableToBack");
+--          Array_Length_Back := Length(Back_Array);
+--          if Array_Length_Back >= 1 then
+--             Back := Get (Arr   => Back_Array, Index => 1);
+--            if Back.Has_Field("price") then
+--              DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
+--            else
+--              raise No_Such_Field with "Object 'Back' - Field 'price'";
+--            end if;
+--          end if;
+--        else
+--          raise No_Such_Field with "Object 'Back' - Field 'availableToBack'";
+--        end if;
+--
+--        if Ex.Has_Field("availableToLay") then
+--          Lay_Array := Ex.Get("availableToLay");
+--          Array_Length_Lay := Length(Lay_Array);
+--          if Array_Length_Lay >= 1 then
+--             Lay := Get (Arr   => Lay_Array, Index => 1);
+--            if Lay.Has_Field("price") then
+--              DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
+--            else
+--              raise No_Such_Field with "Object 'Lay' - Field 'price'";
+--            end if;
+--          end if;
+--        else
+--          raise No_Such_Field with "Object 'Lay' - Field 'availableToLay'";
+--        end if;
+--      else -- no 'ex'
+--        raise No_Such_Field with "Object 'Runner' - Field 'ex'";
+--      end if;
+--
+--      Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Price_List, DB_Runner_Price);
+--      Log(Me & "Parse_Prices", Table_Aprices.To_String(DB_Runner_Price));
+--
+--    end loop;
+--  end Parse_Prices;
+
+  ---------------------------------
+
   procedure Parse_Prices(J_Market   : in     JSON_Value;
-                         Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type ) is
-    pragma Warnings(Off,Price_List);
+                         Price_List : in out Table_Aprices.Aprices_List_Pack2.List ) is
     Back,
     Lay,
     Ex,
@@ -1173,14 +1597,12 @@ package body RPC is
         raise No_Such_Field with "Object 'Runner' - Field 'ex'";
       end if;
 
-      Table_Aprices.Aprices_List_Pack.Insert_At_Tail(Price_List, DB_Runner_Price);
-      Log(Me & "Parse_Prices", Table_Aprices.To_String(DB_Runner_Price));
-
+      Price_List.Append(DB_Runner_Price);
+      Log(Me & "Parse_Prices", DB_Runner_Price.To_String);
     end loop;
   end Parse_Prices;
 
   ---------------------------------
-
 
 
   ---------------------------------
@@ -1260,9 +1682,64 @@ package body RPC is
 
   ---------------------------------
 
+--  procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
+--                              Market    : out Table_Amarkets.Data_Type;
+--                              Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type;
+--                              In_Play   : out Boolean) is
+--    Market_Ids         : JSON_Array := Empty_Array;
+--    JSON_Query         : JSON_Value := Create_Object;
+--    JSON_Reply         : JSON_Value := Create_Object;
+--    JSON_Market        : JSON_Value := Create_Object;
+--    Params             : JSON_Value := Create_Object;
+--    Result             : JSON_Array := Empty_Array;
+--    Price_Projection   : JSON_Value := Create_Object;
+--    Price_Data         : JSON_Array := Empty_Array;
+--
+--  begin
+--    In_Play := False;
+--
+--    Append(Market_Ids, Create(Market_Id));
+--    Append (Price_Data , Create("EX_BEST_OFFERS"));
+--
+--    Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
+--
+--    Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
+--    Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");
+--    Params.Set_Field (Field_Name => "locale",          Field => "sv");
+--    Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids);
+--
+--    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+--    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
+--    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
+--    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+--
+--
+--    Get_JSON_Reply(Query => JSON_Query,
+--                   Reply => JSON_Reply,
+--                   URL   => Token.URL_BETTING);
+--
+--    if RPC.API_Exceptions_Are_Present(JSON_Reply) then
+--      Log(Me & "Get_Market_Prices", "APINGException is present, return");
+--      return;
+--    end if;
+--
+--     --  Iterate the Reply_List_Market_Book object.
+--    if JSON_Reply.Has_Field("result") then
+--      Log(Me, "we have result ");
+--      Result := JSON_Reply.Get("result");
+--      for i in 1 .. Length(Result) loop
+--        JSON_Market := Get(Result, i);
+--        Parse_Market(JSON_Market, Market, In_Play);
+--        if JSON_Market.Has_Field("runners") then
+--          Parse_Prices(JSON_Market, Price_List);
+--        end if;
+--      end loop;
+--    end if;
+--  end Get_Market_Prices;
+  ----------------------------------------------------------------------------------
   procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
                               Market    : out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type;
+                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play   : out Boolean) is
     Market_Ids         : JSON_Array := Empty_Array;
     JSON_Query         : JSON_Value := Create_Object;
@@ -1566,7 +2043,7 @@ package body RPC is
   ------------------------------------------
 
   procedure Parse_Runners(J_Market      : in     JSON_Value ;
-                          Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
+                          Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) is
     Service : constant String := "Parse_Runners";
     DB_Runner : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
     Found   : Boolean := False;
@@ -1695,11 +2172,148 @@ package body RPC is
 
        Log(Me & Service, Table_Arunners.To_String(DB_Runner));
 
-       Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
+       Runner_List.Append(DB_Runner);
 
     end loop;
     Log(Me & Service, "stop");
   end Parse_Runners;
+  ------------------------------------------
+
+--  procedure Parse_Runners(J_Market      : in     JSON_Value ;
+--                          Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) is
+--    Service : constant String := "Parse_Runners";
+--    DB_Runner : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
+--    Found   : Boolean := False;
+----        "runners": [{
+----            "sortPriority": 1,
+----            "handicap": 0.00000E+00,
+----            "selectionId": 6271034,
+----            "runnerName": "1. Russelena Blue"
+----        },
+----  type Data_Type is record
+----      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
+----      Selectionid :    Integer_4  := 0 ; -- Primary Key
+----      Sortprio :    Integer_4  := 0 ; --
+----      Handicap :    Float_8  := 0.0 ; --
+----      Runnername :    String (1..50) := (others => ' ') ; --
+----      Runnernamestripped :    String (1..50) := (others => ' ') ; -- non unique index 3
+----      Runnernamenum :    String (1..2) := (others => ' ') ; --
+----      Ixxlupd :    String (1..15) := (others => ' ') ; --
+----      Ixxluts :    Time_Type  := Time_Type_First ; --
+----  end record;
+--   Runners      : JSON_Array := Empty_Array;
+--   Runner       : JSON_Value := Create_Object;
+--   Array_Length : Natural ;
+--
+--   Runnernamestripped : String := DB_Runner.Runnernamestripped;
+--   Runnernamenum      : String := DB_Runner.Runnernamenum;
+--   Start_Paranthesis,
+--   Stop_Paranthesis : Integer := 0;
+--
+--  begin
+--    Log(Me & Service, "start");
+--    Runners := J_Market.Get("runners");
+--    Array_Length := Length (Runners);
+--
+--    for J in 1 .. Array_Length loop
+--      DB_Runner := Table_Arunners.Empty_Data;
+--       Runner := Get (Arr   => Runners, Index => J);
+--       Log(Me & Service, "  " & Runner.Write);
+--
+--
+--       Get_Value(Container => J_Market,
+--                 Field     => "marketId",
+--                 Target    => DB_Runner.Marketid,
+--                 Found     => Found);
+--
+--       if not Found then
+--         raise No_Such_Field with "Object 'Market' - Field 'marketId'";
+--       end if;
+--
+--       Get_Value(Container => Runner,
+--                 Field     => "sortPriority",
+--                 Target    => DB_Runner.Sortprio,
+--                 Found     => Found);
+--       if not Found then
+--         raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
+--       end if;
+--
+--       Get_Value(Container => Runner,
+--                 Field     => "handicap",
+--                 Target    => DB_Runner.Handicap,
+--                 Found     => Found);
+--       if not Found then
+--         raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
+--       end if;
+--
+--       Get_Value(Container => Runner,
+--                 Field     => "selectionId",
+--                 Target    => DB_Runner.Selectionid,
+--                 Found     => Found);
+--       if not Found then
+--         raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
+--       end if;
+--
+--       Get_Value(Container => Runner,
+--                 Field     => "runnerName",
+--                 Target    => DB_Runner.Runnername,
+--                 Found     => Found);
+--       if not Found then
+--         raise No_Such_Field with "Object 'Runner' - Field 'runnerName'";
+--       end if;
+--
+--       -- fix runner name
+--       Runnernamestripped := (others => ' ');
+--       Runnernamenum := (others => ' ');
+--
+--       case DB_Runner.Runnername(1) is
+--           when '1'..'9' =>
+--              if DB_Runner.Runnername(2) = '.' and then
+--                 DB_Runner.Runnername(3) = ' ' then
+--                Runnernamestripped := DB_Runner.Runnername(4 .. DB_Runner.Runnername'Last) & "   ";
+--                Runnernamenum := DB_Runner.Runnername(1..1) & ' ';
+--              elsif
+--                 DB_Runner.Runnername(3) = '.' and then
+--                 DB_Runner.Runnername(4) = ' ' then
+--                Runnernamestripped := DB_Runner.Runnername(5 .. DB_Runner.Runnername'Last) & "    ";
+--                Runnernamenum := DB_Runner.Runnername(1..2);
+--              else
+--                null;
+--              end if;
+--
+--           when others =>
+--              Runnernamestripped := DB_Runner.Runnername;
+--              Move(Trim(DB_Runner.Sortprio'Img), Runnernamenum);
+--       end case;
+--
+--       Move("NOT_SET_YET", DB_Runner.Status);
+--
+--       Start_Paranthesis := -1;
+--       Stop_Paranthesis  := -1;
+--
+--       for i in Runnernamestripped'range loop
+--         case Runnernamestripped(i) is
+--           when '('    => Start_Paranthesis := i;
+--           when ')'    => Stop_Paranthesis  := i;
+--           when others => null;
+--         end case;
+--       end loop;
+--
+--       if  Start_Paranthesis > Integer(-1) and then
+--           Stop_Paranthesis > Integer(-1) and then
+--           Lower_Case(Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis)) = "(res)" then
+--         Runnernamestripped(Start_Paranthesis .. Stop_Paranthesis) := (others => ' ');
+--       end if;
+--       DB_Runner.Runnernamestripped := Runnernamestripped;
+--       DB_Runner.Runnernamenum      := Runnernamenum;
+--
+--       Log(Me & Service, Table_Arunners.To_String(DB_Runner));
+--
+--       Table_Arunners.Arunners_List_Pack.Insert_At_Tail(Runner_List, DB_Runner);
+--
+--    end loop;
+--    Log(Me & Service, "stop");
+--  end Parse_Runners;
 
   ------------------------------------------
   procedure Parse_Market (J_Market       : in     JSON_Value ;

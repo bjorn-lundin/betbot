@@ -14,7 +14,6 @@ with Calendar2;
 
 package RPC is
 
-
   type Result_Type is (Ok, Timeout, Logged_Out);
   JSON_Exception, POST_Timeout, Invalid_Session, Login_Failed, Bad_Reply: exception;
   
@@ -84,21 +83,23 @@ package RPC is
                                      
                                      
   procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
-                                Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type);
+                                Runner_List : in out Table_Arunners.Arunners_List_Pack2.List);
 
+                                      
   procedure Get_Cleared_Bet_Info_List(Bet_Status     : in     Bet_Status_Type;
                                       Settled_From   : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
                                       Settled_To     : in     Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result :    out Result_Type;
-                                      Bet_List       :    out Table_Abets.Abets_List_Pack.List_Type) ;
+                                      Bet_List       :    out Table_Abets.Abets_List_Pack2.List) ;
                                       
   procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
                        Bet_Id    : in Integer_8);
                                       
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
                               Market     :    out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack.List_Type;
+                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play    :    out Boolean);
+
                               
   procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
                        Market_Id        : in     Market_Id_Type; 
@@ -111,11 +112,11 @@ package RPC is
                        Bet              :    out Table_Abets.Data_Type);
                               
   procedure Parse_Runners(J_Market    : in     JSON_Value ; 
-                          Runner_List : in out Table_Arunners.Arunners_List_Pack.List_Type) ;
-                          
+                          Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) ;
+
   procedure Parse_Prices (J_Market    : in     JSON_Value ; 
-                          Price_List  : in out Table_Aprices.Aprices_List_Pack.List_Type) ;
-                                      
+                          Price_List  : in out Table_Aprices.Aprices_List_Pack2.List) ;
+                          
   procedure Parse_Market (J_Market    : in     JSON_Value ; 
                           DB_Market   : in out Table_Amarkets.Data_Type ;
                           In_Play_Market :    out Boolean) ;

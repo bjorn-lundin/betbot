@@ -2,17 +2,10 @@
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Types; use Types;
 with Bot_Types ; use Bot_Types;
-with Simple_List_Class;
-pragma Elaborate_All(Simple_List_Class);
+with Ada.Containers.Doubly_Linked_Lists;
 with Calendar2;
 
 package Bot_Config is
-
---  type Country_Type is record
---    Country : String (1..2) := (others => ' ');
---  end record;
-
---  package Country_Pack is new Simple_List_Class(Country_Type);
 
   Bad_Config : exception;
 
@@ -56,7 +49,7 @@ package Bot_Config is
     Min_Num_Runners_Better_Ranked  : Integer_4   := 3;
     Race_Favorite_Max_Price        : Bet_Price_Type := 6.0;
   end record;
-  package Bet_Pack is new Simple_List_Class(Bet_Section_Type);
+  package Bet_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Section_Type);
 
   type System_Section_Type is record
     -- BOT_START is set in .bashrc
@@ -93,7 +86,7 @@ package Bot_Config is
      System_Section    : System_Section_Type;
      Global_Section    : Global_Section_Type;
 --     Bet_Section       : Bet_Section_Type;
-     Bet_Section_List  : Bet_Pack.List_Type    := Bet_Pack.Create;
+     Bet_Section_List  : Bet_Pack.List;
      Betfair_Section   : Login_Betfair_Section_Type;
      Database_Section  : Login_Database_Section_Type;
   end record;

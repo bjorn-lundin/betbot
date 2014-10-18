@@ -139,7 +139,8 @@ package body Sql is
 
    procedure Finalize (Private_Statement : in out Private_Statement_Type) is
    begin
-      Map.Release (Private_Statement.Parameter_Map);
+     null;
+     -- Map.Release (Private_Statement.Parameter_Map);
    end Finalize;
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 
@@ -155,7 +156,9 @@ package body Sql is
                          Parameter_Type => Not_Set
                         );
       Log ("Associate : '" & Bind_Varible & " -> " & Natural'Image (Idx));
-      Map.Insert_At_Tail (Private_Statement.Parameter_Map, Local_Map_Item);
+--      Map.Insert_At_Tail (Private_Statement.Parameter_Map, Local_Map_Item);
+     Private_Statement.Parameter_Map.Append(Local_Map_Item);
+      
    end	Associate;
 
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
@@ -164,20 +167,31 @@ package body Sql is
                          Bind_Varible           : in     String;
                          Value                  : in     String;
                          Parameter_Type         : in     Parameter_Type_Type) is
-      Local_Map_Item : Parameter_Map_Type;
-      Found, Eol     : Boolean := False;
+      --Local_Map_Item : Parameter_Map_Type;
+      Found    : Boolean := False;
    begin
-      Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
-      loop
-         exit when Eol;
+      for Local_Map_Item of Private_Statement.Parameter_Map loop
+         -- updates in list, directly
          if To_String (Local_Map_Item.Name) = Bind_Varible then
             Local_Map_Item.Value := To_Unbounded_String (Value);
             Local_Map_Item.Parameter_Type := Parameter_Type;
-            Map.Update (Private_Statement.Parameter_Map, Local_Map_Item);
             Found := True;
          end if;
-         Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
       end loop;
+      
+      
+      
+--      Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
+--      loop
+--         exit when Eol;
+--         if To_String (Local_Map_Item.Name) = Bind_Varible then
+--            Local_Map_Item.Value := To_Unbounded_String (Value);
+--            Local_Map_Item.Parameter_Type := Parameter_Type;
+--            Map.Update (Private_Statement.Parameter_Map, Local_Map_Item);
+--            Found := True;
+--         end if;
+--         Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
+--      end loop;
 
       if not Found then
         raise No_Such_Parameter with Bind_Varible;
@@ -239,9 +253,9 @@ package body Sql is
 
    ------------------------------------------------------------
    procedure Fill_Data_In_Prepared_Statement (Private_Statement : in out Private_Statement_Type) is
-      Local_Map_Item : Parameter_Map_Type;
-      Eol            : Boolean := False;
-      Tmp            : Unbounded_String := Private_Statement.Pg_Prepared_Statement;
+      -- Local_Map_Item : Parameter_Map_Type;
+      -- Eol            : Boolean := False;
+      Tmp : Unbounded_String := Private_Statement.Pg_Prepared_Statement;
       --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
       procedure Replace_Dollar_Place_Holder (S   : in out Unbounded_String;
                                              Lmi : in     Parameter_Map_Type) is
@@ -293,12 +307,18 @@ package body Sql is
       end if;
 
       Log ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
-      Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
-      loop
-        exit when Eol;
+      
+      for Local_Map_Item of Private_Statement.Parameter_Map loop
          Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
-         Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
       end loop;
+      
+--      Map.Get_First (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
+--      loop
+--        exit when Eol;
+--         Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
+--         Map.Get_Next (Private_Statement.Parameter_Map, Local_Map_Item, Eol);
+--      end loop;
+
       Private_Statement.Prepared_Statement := Tmp;
       Log ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
    end Fill_Data_In_Prepared_Statement;
@@ -777,7 +797,7 @@ package body Sql is
          Log ("Prepare - Already prepared Stm: '" & Stm & "'");
       end if;
    end Prepare;
-
+   ------------------------------------------------------------
    procedure Prepare (Statement : in out Statement_Type;
                       Command   : in String) is
    begin
@@ -785,7 +805,6 @@ package body Sql is
       Prepare (Statement.Private_Statement.all, Command);
    end Prepare;
    ------------------------------------------------------------
-
 
    function Determine_Errors (Result : Result_Type; Stm_String : String) return Error_Array_Type is
    -- see http://www.postgresql.org/docs/8.3/interactive/errcodes-appendix.html

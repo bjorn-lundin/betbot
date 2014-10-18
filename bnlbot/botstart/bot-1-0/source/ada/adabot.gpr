@@ -24,6 +24,7 @@ project Adabot is
                     "bot.adb",
                     "bot_send.adb",
                     "poll.adb",
+                    "poll_place.adb",
                     "poll_and_log",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
@@ -37,7 +38,7 @@ project Adabot is
                     );
                     
    Stat_Mains   := ("lay_during_race.adb",
-                  --  "lay_during_race2.adb",
+                    "lay_during_race2.adb",
                   --  "back_during_race2.adb",
                  --   "prices_during_race.adb",
                  --   "plot_race_prices.adb",
@@ -47,10 +48,7 @@ project Adabot is
                    "markets_sender.adb");
                    
     Test_Programs := ("sql_ifc_leak_finder.adb",
-                   --   "test_list.adb",
-                   --   "test_list2.adb",
-                   --   "test_login.adb",
-                      "rpc_tester.adb") ;                
+                      "test_list_sort.adb") ;                
    
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;

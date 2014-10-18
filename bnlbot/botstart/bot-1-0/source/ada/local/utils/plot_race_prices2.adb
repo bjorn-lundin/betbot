@@ -8,16 +8,11 @@ with Table_Apricesfinish;
 with Table_Arunners;
 with Table_Amarkets;
 with Table_Abets;
---with Gnat.Command_Line; use Gnat.Command_Line;
---with GNAT.Strings;
 with Calendar2; use Calendar2;
 with Logging; use Logging;
---with General_Routines; use General_Routines;
 with Utils; use Utils;
 
-with Simple_List_Class;
-pragma Elaborate_All(Simple_List_Class);
-
+with Ada.Containers.Doubly_Linked_Lists;
 procedure Plot_Race_Prices2 is
 
   Winner_Market_Not_Found ,
@@ -30,9 +25,10 @@ procedure Plot_Race_Prices2 is
     Marketid  : Market_Id_Type := (others => ' ');
     Selectionid : Integer_4 := 0;
   end record;     
-                   
-  package H_Pack is new Simple_List_Class(H_Type);       
-  H_List : H_Pack.List_Type := H_Pack.Create;      
+
+  package H_Pack is new Ada.Containers.Doubly_Linked_Lists(H_Type);       
+  
+  H_List : H_Pack.List;      
   H_Data :H_Type;                       
   
   T            : Sql.Transaction_Type;
@@ -80,7 +76,7 @@ begin
         exit when Eos;
         Select_All.Get("MARKETID", H_Data.Marketid);
         Select_All.Get("SELECTIONID", H_Data.Selectionid);
-        H_Pack.Insert_At_Tail(H_List,H_Data);
+        H_List.Append(H_Data);
       end loop;        
       Select_All.Close_Cursor;      
       Stm_Select_Eventid_Selectionid_O.Prepare( "select * " & 
@@ -103,9 +99,9 @@ begin
         "where MARKETID = :MARKETID " & 
         "and BETNAME like 'MR_%' " &
         "order by BETPLACED");
-
-      Loop_All : while not H_Pack.Is_Empty(H_List) loop
-          H_Pack.Remove_From_Head(H_List, H_Data);           
+          
+      Loop_All : for h of H_List loop
+          H_Data := h;
           Stm_Select_Eventid_Selectionid_O.Set("MARKETID", H_Data.Marketid);
           Stm_Select_Eventid_Selectionid_O.Set("SELECTIONID", H_Data.Selectionid);
           Stm_Select_Eventid_Selectionid_O.Open_Cursor;
