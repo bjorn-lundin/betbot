@@ -14,6 +14,7 @@ package Token is
   
 --  URL : constant String := "https://api-ng.betstores.com/betting/betfair/services/beta-api.betfair.com/betting/json-rpc";
  
+  URL_NAVIGATION_DATA : constant String := "https://api.betfair.com/exchange/betting/rest/v1/en/navigation/menu.json";
   
   Not_Valid_Token,
   Login_Failed  : exception;

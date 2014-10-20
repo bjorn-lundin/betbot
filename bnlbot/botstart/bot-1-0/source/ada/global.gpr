@@ -51,6 +51,8 @@ project Global is
                   Bot_Source & "/ada/global/xmlada/schema",
                   Bot_Source & "/ada/global/xmlada/unicode");
 
+                  
+                  
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
