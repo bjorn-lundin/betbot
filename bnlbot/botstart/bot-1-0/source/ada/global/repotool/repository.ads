@@ -14,6 +14,7 @@ with Types;        use Types;
 with Unicode.CES;
 
 with Repository_Types; use Repository_Types;
+pragma Elaborate_All (Repository_Types);
 
 
 package Repository is

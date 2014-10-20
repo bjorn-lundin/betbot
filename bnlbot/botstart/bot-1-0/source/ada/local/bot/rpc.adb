@@ -1,6 +1,5 @@
 
 
-with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 with Aws;
@@ -12,6 +11,8 @@ with Bot_System_Number;
 with Bot_Svn_Info;
 with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
+with Stacktrace;
+
 
 package body RPC is
 
@@ -2102,9 +2103,10 @@ package body RPC is
        end if;
 
        Get_Value(Container => Runner,
-                 Field     => "handicap",
-                 Target    => DB_Runner.Handicap,
-                 Found     => Found);
+               Field     => "handicap",
+               Target    => DB_Runner.Handicap,
+               Found     => Found);
+                 
        if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
        end if;
@@ -2172,8 +2174,13 @@ package body RPC is
 
        Log(Me & Service, Table_Arunners.To_String(DB_Runner));
 
-       Runner_List.Append(DB_Runner);
-
+       begin 
+         Runner_List.Append(DB_Runner);
+       exception
+         when E: others => 
+          Log(Me & Service, "WHAT HAPPENED HERE?");
+          Stacktrace.Tracebackinfo(E);
+       end ; 
     end loop;
     Log(Me & Service, "stop");
   end Parse_Runners;
@@ -2465,5 +2472,33 @@ package body RPC is
     Log(Me & Service, "stop");
 
   end Parse_Market;
+  -----------------------------------------------
+  
+  procedure Get_Navigation_Data(Nav_Data : out Ada.Strings.Unbounded.Unbounded_String) is
+    AWS_Reply    : Aws.Response.Data;
+    HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+  begin
+    Log(Me, "Get_Navigation_Data start");
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (HTTP_Headers, "Accept", "application/json");
+    AWS_Reply := Aws.Client.Get (Url          => Token.URL_NAVIGATION_DATA,
+                                 Headers      => HTTP_Headers,
+                                 Timeouts     => Aws.Client.Timeouts (Each => 1200.0));
+    Log(Me & "Get_Navigation_Data", "Got reply, check it ");
 
+    if String'(Aws.Response.Message_Body(AWS_Reply)) = "Get Timeout" then
+      Log(Me & "Get_Navigation_Data", "Post Timeout -> Give up!");
+      raise POST_Timeout ;
+    end if;
+    Nav_Data := Aws.Response.Message_Body(AWS_Reply); 
+    Log(Me, "Get_Navigation_Data stop");
+  exception
+      when POST_Timeout => raise;
+      when others =>
+         Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
+         Log(Me & "Get_JSON_Reply", "Bad reply " & Aws.Response.Message_Body(AWS_Reply));
+         Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
+         raise Bad_Reply ;
+  end Get_Navigation_Data;
 end RPC;

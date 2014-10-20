@@ -1310,6 +1310,8 @@ package body Repository.Table is
     Put_Line("with Types, Calendar2, Sql;");
     Put_Line("with Table_Utils;  --All tables inherit from here");
     Put_Line("");
+    Put_Line("pragma Elaborate_All(Calendar2);");
+    Put_Line("");
     Code_Debug(" -- stop Print_Withs_Spec");
     Put_Line("");
   end Print_Withs_Spec;

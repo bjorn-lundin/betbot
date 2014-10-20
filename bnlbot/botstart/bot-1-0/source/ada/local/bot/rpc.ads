@@ -1,4 +1,5 @@
-
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Unbounded;
 with Gnatcoll.Json; use Gnatcoll.Json;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
@@ -8,7 +9,6 @@ with Table_Abalances;
 with Table_Abets;
 with Table_Aprices;
 with Table_Aevents;
-
 with Token;
 with Calendar2;
 
@@ -127,6 +127,7 @@ package RPC is
   procedure Get_JSON_Reply (Query : in     JSON_Value;
                             Reply : in out JSON_Value;
                             URL   : in     String) ;
-                         
+       
+  procedure Get_Navigation_Data(Nav_Data : out Ada.Strings.Unbounded.Unbounded_String);  
                          
 end RPC;    
