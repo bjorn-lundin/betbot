@@ -27,7 +27,7 @@ project Adabot is
                     "test_lock.adb",
                     "poll.adb",
                     "poll_place.adb",
-                    "poll_and_log",
+                    "poll_and_log.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
                     "winners_fetcher_json.adb",

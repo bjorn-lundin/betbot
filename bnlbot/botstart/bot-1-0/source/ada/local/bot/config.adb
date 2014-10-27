@@ -1,8 +1,9 @@
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings.Fixed;
 with Logging; use Logging;
---with General_Routines; use General_Routines;
-with Utils;
+with Ada.Characters.Handling;
 with Ini;
+with Utils;
+
 
 package body Config is
   Me : constant String := "Config.";
@@ -21,13 +22,34 @@ package body Config is
      Cfg.Enabled              := Ini.Get_Value("finish","enabled",false); 
      Cfg.Max_Loss_Per_Day     := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0")); 
      Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("finish","countries",""));
+    
+    declare
+      use Ada.Characters.Handling;
+      use Ada.Strings.Fixed;
+      Days : String := Ini.Get_Value("finish","allowed_days","al");
+      use Calendar2;
+      Zero : Natural := 0;
+    begin
+      if To_Lower(Days) /= "al" then
+        for i in Week_Day_Type'range loop
+          Cfg.Allowed_Days(i) := Index(To_Lower(Days), To_Lower(i'Img)(1..2)) > Zero;
+          Log(Me & Service, i'img & " Index(To_Lower(Days), To_Lower(i'Img)(1..2))" &  Index(To_Lower(Days), To_Lower(i'Img(1..2)))'Img );
+
+        end loop;
+      else
+        for i in Week_Day_Type'range loop
+          Cfg.Allowed_Days(i) := Index(To_Lower(Days), "al") > Zero;
+        end loop;
+      end if;      
+    end; 
      return Cfg;
   end Create;
   -------------------------------------------------------------  
   function To_String(Cfg : Config_Type) return String is
     use Utils;
-  begin
-    return
+    use Calendar2;
+    use Ada.Characters.Handling;
+    part1 : String := 
       "<config>" &
         "<size>" & F8_Image(Float_8(Cfg.Size)) & "</size>" &
         "<max_loss_per_day>" & F8_Image(Cfg.Max_Loss_Per_Day) & "</max_loss_per_day>" &
@@ -35,9 +57,21 @@ package body Config is
         "<second_fav_min_price>" & F8_Image(Float_8(Cfg.Second_Fav_Min_Price)) & "</second_fav_min_price>" &
         "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
         "<enabled>" & Cfg.Enabled'Img & "</enabled>" &
-        "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" &
-      "</config>"
-      ;    
+        "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" ;
+    Part3 : String := "</config>";
+    Days : Unbounded_String := Null_Unbounded_String;
+  begin
+
+        Append(Days, "<days>");
+        for i in Week_Day_Type'range loop
+          Append(Days, "<" & To_Lower(i'Img) & ">" & 
+                       To_Lower(Cfg.Allowed_Days(i)'Img) &
+                        "</" & To_Lower(i'Img) & ">" );
+        end loop;
+        Append(Days, "</days>");
+      
+        return Part1 & To_String(Days) & Part3;   
+      
   end To_String;
   -------------------------------------------------------------
   function Country_Is_Ok (Cfg : Config_Type; Country_Code : String) return Boolean is
