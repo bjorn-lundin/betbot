@@ -1,5 +1,3 @@
-
-
 with Ada.Strings;                  use Ada.Strings;             
 with Ada.Strings.Unbounded;        use Ada.Strings.Unbounded;
 with Calendar2;
@@ -40,27 +38,28 @@ package body Stacktrace is
   ------------------------------------------------------------------------------
 
   procedure Tracebackinfo(E : Ada.Exceptions.Exception_Occurrence) is
-    Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
-    Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
-    Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
     Now                     : constant String  := Calendar2.String_Date_And_Time(Milliseconds => True);
-    Command                 : Unbounded_String := Null_Unbounded_String; --9.8-19244
   begin
     Log(".....  Tracebackinfo at: " & Now & " .....");
     Log("Program terminated by an exception propagated out of the main subprogram.");
     Log("Exception raised : ");  
-    Log(Last_Exception_Name);
-    Log("Message : " & Last_Exception_Messsage);
-    Log(Last_Exception_Info);
-    Append(Command, "addr2line" &
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+      Command                 : Unbounded_String := Null_Unbounded_String;
+    begin    
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Append(Command, "addr2line" &
                     " --functions --basenames --exe=" &
                     Ada.Command_Line.Command_Name & " " &
-                    Pure_Hexdump(Last_Exception_Info));               --9.8-19244
+                    Pure_Hexdump(Last_Exception_Info));
  
-    Log( To_String(Command));                   --9.8-19244
-
+      Log( To_String(Command));
+    end ;
   end Tracebackinfo;
   ------------------------------------------------------------------------------
-
 
 end Stacktrace;
