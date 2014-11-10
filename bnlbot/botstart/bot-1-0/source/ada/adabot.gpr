@@ -24,7 +24,7 @@ project Adabot is
    System_Mains := ("repo.adb",
                     "bot.adb",
                     "bot_send.adb",
-                    "test_lock.adb",
+--                    "test_lock.adb",
                     "poll.adb",
                     "poll_place.adb",
                     "poll_and_log.adb",
@@ -35,7 +35,8 @@ project Adabot is
                     "bet_checker.adb",
                     "football_better.adb",
                 --    "page_server.adb",
-                    "data_mover.adb",                    
+                    "data_mover.adb",      
+                --    "test_sequence.adb",
                     "check_bot_running.adb"
                     );
                     

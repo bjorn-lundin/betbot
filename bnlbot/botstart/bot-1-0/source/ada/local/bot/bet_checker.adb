@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+with Ada.Command_Line;
 with Stacktrace;
 with Lock; 
 --with Text_io;
@@ -124,9 +126,19 @@ exception
   when Lock.Lock_Error => 
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Stacktrace.Tracebackinfo(E);
---    Log(Me, "Close Db");
---    Sql.Close_Session;
+  when E: others => 
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+    begin
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Log("addr2line" & " --functions --basenames --exe=" &
+           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+    end ;
+  
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate

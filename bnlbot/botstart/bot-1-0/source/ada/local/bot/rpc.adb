@@ -1923,6 +1923,33 @@ package body RPC is
 --        "id":15
 --}
 
+-- or
+
+--  {
+--      "id": 16,
+--      "jsonrpc": "2.0",
+--      "result": {
+--          "marketId": "1.116221480",
+--          "status": "FAILURE",
+--          "errorCode": "BET_ACTION_ERROR",
+--          "instructionReports": [{
+--              "instruction": {
+--                  "handicap": 0.00000E+00,
+--                  "limitOrder": {
+--                      "size": 1.00000E+01,
+--                      "price": 1.01000E+00,
+--                      "persistenceType": "PERSIST"
+--                  },
+--                  "orderType": "LIMIT",
+--                  "selectionId": 3586050,
+--                  "side": "BACK"
+--              },
+--              "status": "FAILURE",
+--              "errorCode": "INVALID_BET_SIZE"
+--          }]
+--      }
+--  }
+
     -- ok we have a parsable answer with no formal errors.
     -- lets look at it
     declare
@@ -1945,11 +1972,22 @@ package body RPC is
                 Target    => Execution_Report_Status,
                 Found     => Found);
 
+        Log(Me & "Make_Bet.Place_Bet", "Status1 found: " & Found'Img);
+        if Found then 
+          Log(Me & "Make_Bet.Place_Bet", "Execution_Report_Status : '" & Execution_Report_Status & "'");
+        end if;                
+                
+                
       Get_Value(Container => Result,
                 Field     => "errorCode",
                 Target    => Execution_Report_Error_Code,
                 Found     => Found);
 
+        Log(Me & "Make_Bet.Place_Bet", "errorCode1 found: " & Found'Img);
+        if Found then 
+          Log(Me & "Make_Bet.Place_Bet", "Execution_Report_Error_Code : '" & Execution_Report_Error_Code & "'");
+        end if;                
+                
 
       if Result.Has_Field("instructionReports") then
         Instructions := Result.Get("instructionReports");
@@ -1963,16 +2001,27 @@ package body RPC is
                   Target    => Instruction_Report_Status,
                   Found     => Found);
 
+        Log(Me & "Make_Bet.Place_Bet", "Status2 found: " & Found'Img);
+        if Found then 
+          Log(Me & "Make_Bet.Place_Bet", "Instruction_Report_Status : '" & Instruction_Report_Status & "'");
+        end if;                
+                  
         Get_Value(Container => InstructionsItem,
                   Field     => "errorCode",
                   Target    => Instruction_Report_Error_Code,
                   Found     => Found);
+        Log(Me & "Make_Bet.Place_Bet", "errorCode2 found: " & Found'Img);
+        if Found then 
+          Log(Me & "Make_Bet.Place_Bet", "Instruction_Report_Error_Code : '" & Instruction_Report_Error_Code & "'");
+        end if;                
       end if;
 
       Get_Value(Container => InstructionsItem,
                 Field     => "instruction",
                 Target    => Instruction,
                 Found     => Found);
+      Log(Me & "Make_Bet.Place_Bet", "instruction found: " & Found'Img);
+                
       if not Found then
         Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
         raise JSON_Exception with "Betfair reply has no Instruction!";
@@ -1983,10 +2032,15 @@ package body RPC is
                 Target    => Bet_Id,
                 Found     => Found);
 
+      Log(Me & "Make_Bet.Place_Bet", "betId found: " & Found'Img);
+      
       Get_Value(Container => InstructionsItem,
                 Field     => "sizeMatched",
                 Target    => L_Size_Matched,
                 Found     => Found);
+                
+      Log(Me & "Make_Bet.Place_Bet", "sizeMatched found: " & Found'Img);
+                
       if Found then
         Size_Matched := Bet_Size_Type(L_Size_Matched);
       end if;
@@ -2001,16 +2055,21 @@ package body RPC is
                 Field     => "averagePriceMatched",
                 Target    => Average_Price_Matched,
                 Found     => Found);
+                
+      Log(Me & "Make_Bet.Place_Bet", "averagePriceMatched found: " & Found'Img);
+      
       if Found then
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
       end if;
     end ;
 
     if Trim(Execution_Report_Status) /= "SUCCESS" then
+      Log(Me & "Make_Bet", "bad bet, get fake betid");
       Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
 
+    Log(Me & "Make_Bet", "create bet");
     Bet := (
       Betid          => Bet_Id,
       Marketid       => Market_Id,
@@ -2040,6 +2099,7 @@ package body RPC is
       Ixxluts        => Now              --set by insert
     );
 
+    Log(Me & "Make_Bet.Place_Bet", "done");
   end Place_Bet;
   ------------------------------------------
 

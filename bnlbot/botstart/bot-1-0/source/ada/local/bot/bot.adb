@@ -2,7 +2,9 @@ with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
 with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
---with General_Routines; use General_Routines;
+with Ada.Exceptions;
+with Ada.Command_Line;
+
 with Bot_Config;
 with Lock;
 --with Text_io;
@@ -139,9 +141,19 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Stacktrace.Tracebackinfo(E);
---    Log(Me, "Close Db");
---    Sql.Close_Session;
+  when E: others =>
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+    begin
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Log("addr2line" & " --functions --basenames --exe=" &
+           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+    end ;
+
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
