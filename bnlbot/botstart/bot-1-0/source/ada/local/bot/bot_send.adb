@@ -1,3 +1,6 @@
+with Ada.Exceptions;
+with Ada.Command_Line;
+with Logging; use Logging;
 with Types; use Types;
 with Stacktrace;
 with Ada.Strings ; use Ada.Strings;
@@ -114,5 +117,16 @@ begin
     end if;
 
 exception
-  when E: others => Stacktrace.Tracebackinfo(E);
+  when E: others => 
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+    begin
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Log("addr2line" & " --functions --basenames --exe=" &
+           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+    end ;
 end Bot_Send;

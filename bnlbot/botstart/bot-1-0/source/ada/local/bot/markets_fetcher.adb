@@ -1,4 +1,5 @@
---with Text_Io;
+with Ada.Exceptions;
+with Ada.Command_Line;
 with Stacktrace;
 with Types; use Types;
 with Sql;
@@ -780,7 +781,17 @@ exception
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
-    Stacktrace.Tracebackinfo(E);
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+    begin
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Log("addr2line" & " --functions --basenames --exe=" &
+           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+    end ;
     Posix.Do_Exit(0); -- terminate
 end Markets_Fetcher;
 

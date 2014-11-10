@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+with Ada.Command_Line;
 with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
@@ -144,6 +146,7 @@ procedure Bet_Placer is
       );
     else -- real bet  
  
+      Log(Me & "Place_Bet", "call Rpc.Place_Bet");
       Rpc.Place_Bet (Bet_Name         => Bet_Name,
                      Market_Id        => Market_Id,
                      Side             => Side,
@@ -153,19 +156,34 @@ procedure Bet_Placer is
                      Price            => Price,
                      Bet_Persistence  => Persist,
                      Bet              => A_Bet);
+      Log(Me & "Place_Bet", "call Rpc.Place_Bet");
+      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+                     
     end if; -- dry run 
 
+    Log(Me & "Place_Bet", "1");
     T.Start;
+    Log(Me & "Place_Bet", "2");
       A_Bet.Startts := A_Market.Startts;
+    Log(Me & "Place_Bet", "3");
       A_Bet.Fullmarketname := A_Market.Marketname;
+    Log(Me & "Place_Bet", "4");
       Table_Abets.Insert(A_Bet);
-      Log(Me & "Make_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+    Log(Me & "Place_Bet", "5");
+      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+    Log(Me & "Place_Bet", "6");
       if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
+    Log(Me & "Place_Bet", "7");
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+    Log(Me & "Place_Bet", "8");
         Sql.Set(Update_Betwon_To_Null,"BETID", A_Bet.Betid);
+    Log(Me & "Place_Bet", "9");
         Sql.Execute(Update_Betwon_To_Null);
+    Log(Me & "Place_Bet", "10");
       end if;
+    Log(Me & "Place_Bet", "11");
     T.Commit;
+    Log(Me & "Place_Bet", "12");
   end Place_Bet;
   
   -------------------------------------------------------
@@ -325,9 +343,18 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => Stacktrace.Tracebackinfo(E);
---    Log(Me, "Close Db");
---    Sql.Close_Session;
+  when E: others => 
+    declare
+      Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+      Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+      Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+    begin
+      Log(Last_Exception_Name);
+      Log("Message : " & Last_Exception_Messsage);
+      Log(Last_Exception_Info);
+      Log("addr2line" & " --functions --basenames --exe=" &
+           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+    end ;
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
