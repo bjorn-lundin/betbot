@@ -519,12 +519,7 @@ begin
     end;
     
   else
-    declare
-     a : string(1..1);
-    begin
-     a := "WWW";
-    end;
-  
+ 
     Help(C);
     Put_Line(Standard_Error, "");
     Put_Line(Standard_Error, "---------------------------------------------------------------------");
