@@ -5,9 +5,7 @@ with Logging;
 package body Bot_System_Number is
 
   Object : constant String := "Bot_System_Number.";
-
 --------------------------------------------------------------------------------
-
   function Is_Number_Taken(System_Number_Type : in System_Number_Type_Type;
                            Number : in Integer_4) return Boolean is
 
@@ -15,7 +13,7 @@ package body Bot_System_Number is
     Service         : constant string := "Is_Number_Taken";
     Select_Table_Statements  : Sql.Statement_Type;
   begin
-    Logging.Log(Object & Service, "start");
+--    Logging.Log(Object & Service, "start");
     case System_Number_Type is
       when Betid    => Select_Table_Statements.Prepare("select BETID from ABETS where BETID = :NUM");      
       when Sampleid => Select_Table_Statements.Prepare("select SAMPLEID from APRICESFINISH2 where SAMPLEID = :NUM");      
@@ -25,7 +23,7 @@ package body Bot_System_Number is
     Select_Table_Statements.Open_Cursor;
     Select_Table_Statements.Fetch(End_Of_Set);
     Select_Table_Statements.Close_Cursor;
-    Logging.Log( Object & Service, "stop");
+--    Logging.Log( Object & Service, "stop");
     return not End_Of_Set;
   end Is_Number_Taken;
 
@@ -42,7 +40,7 @@ package body Bot_System_Number is
     Transaction     : Sql.Transaction_Type;
     Get_Number      : Sql.Statement_Type;
   begin
-    Logging.Log( Object & Service, "start");
+--    Logging.Log( Object & Service, "start");
     Transaction.Start;
    
     case Sql.Database is
@@ -76,7 +74,7 @@ package body Bot_System_Number is
     end if;
 
     Transaction.Commit;
-    Logging.Log( Object & Service, "stop");
+--    Logging.Log( Object & Service, "stop");
     return Number;
   end New_Number;
 

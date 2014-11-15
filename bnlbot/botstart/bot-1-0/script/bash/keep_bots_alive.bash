@@ -15,7 +15,7 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-#exit 0
+exit 0
 
 [ -r /var/lock/bot ] && exit 0
 
@@ -96,64 +96,64 @@ function Check_Bots_For_User () {
   #all need this one
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
   
-  Start_Bot $BOT_USER poll poll poll.ini
-  
-  if [ $IS_DATA_COLLECTOR == "true" ] ; then
-    Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
-  fi
-  
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-  fi
-  
-  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-  
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    Start_Bot $BOT_USER bet_checker bet_checker
-  fi
-  
-  case $BOT_MACHINE_ROLE in
-    PROD) BOT_LIST="bot" ;;
-    TEST) BOT_LIST="bot" ;;
-    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
-    *)    BOT_LIST="" ;;
-  esac
-  
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    for bot in $BOT_LIST ; do
-      if [ $bot == "bot" ] ; then
-        Start_Bot $BOT_USER $bot bot betfair.ini
-      else
-        Start_Bot $BOT_USER $bot bot $bot.ini
-      fi
-    done
-    BET_PLACER_LIST="bet_placer_10 bet_placer_11 \
-                     bet_placer_20 bet_placer_21 \
-                     bet_placer_30 bet_placer_31 \
-                     bet_placer_40 bet_placer_41 \
-                     bet_placer_50 bet_placer_51 \
-                     bet_placer_60 bet_placer_61 \
-                     bet_placer_70 bet_placer_71"
-    for placer in $BET_PLACER_LIST ; do
-      Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
-    done
-  fi
-  
-#  BET_PLACER_LIST="football_better"
-#  for placer in $BET_PLACER_LIST ; do
-#    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
-#  done
-
-  #zip logfiles every hour, on minute 17 in the background
-  if [ $BOT_MINUTE == "17" ] ; then
-    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
-  fi
-  
-  if [ $BOT_HOUR == "05" ] ; then
-    if [ $BOT_MINUTE == "10" ] ; then
-      Start_Bot $BOT_USER data_mover data_mover
-    fi
-  fi
+#  Start_Bot $BOT_USER poll poll poll.ini
+#  
+#  if [ $IS_DATA_COLLECTOR == "true" ] ; then
+#    Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
+#  fi
+#  
+#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+#    Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
+#  fi
+#  
+#  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+#  
+#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+#    Start_Bot $BOT_USER bet_checker bet_checker
+#  fi
+#  
+#  case $BOT_MACHINE_ROLE in
+#    PROD) BOT_LIST="bot" ;;
+#    TEST) BOT_LIST="bot" ;;
+#    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
+#    *)    BOT_LIST="" ;;
+#  esac
+#  
+#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+#    for bot in $BOT_LIST ; do
+#      if [ $bot == "bot" ] ; then
+#        Start_Bot $BOT_USER $bot bot betfair.ini
+#      else
+#        Start_Bot $BOT_USER $bot bot $bot.ini
+#      fi
+#    done
+#    BET_PLACER_LIST="bet_placer_10 bet_placer_11 \
+#                     bet_placer_20 bet_placer_21 \
+#                     bet_placer_30 bet_placer_31 \
+#                     bet_placer_40 bet_placer_41 \
+#                     bet_placer_50 bet_placer_51 \
+#                     bet_placer_60 bet_placer_61 \
+#                     bet_placer_70 bet_placer_71"
+#    for placer in $BET_PLACER_LIST ; do
+#      Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
+#    done
+#  fi
+#  
+##  BET_PLACER_LIST="football_better"
+##  for placer in $BET_PLACER_LIST ; do
+##    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
+##  done
+#
+#  #zip logfiles every hour, on minute 17 in the background
+#  if [ $BOT_MINUTE == "17" ] ; then
+#    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+#  fi
+#  
+#  if [ $BOT_HOUR == "05" ] ; then
+#    if [ $BOT_MINUTE == "10" ] ; then
+#      Start_Bot $BOT_USER data_mover data_mover
+#    fi
+#  fi
   
 }
 # start here 
@@ -163,47 +163,47 @@ MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
        
 case $BOT_MACHINE_ROLE in
-  PROD)
+  SIM)
     #check the bots, and startup if  necessarry
     USER_LIST=$(ls $BOT_START/user)
-    USER_LIST_PLAYERS_ONLY="bnl jmb"
+    USER_LIST="bnl"
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
   
-    if [ $HOUR == "09" ] ; then
-      if [ $MINUTE == "18" ] ; then
-        SLEEPTIME=1
-        for USR in $USER_LIST ; do
-          #Start one every 20 min in the background
-          (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-          (( SLEEPTIME = SLEEPTIME +1200 ))
-        done
-      fi
-    fi
-    
-    if [ $MINUTE == "40" ] ; then
-      for USR in $USER_LIST ; do
-        #Start one every 2 min in the background
-        SLEEPTIME=1
-        (sleep $SLEEPTIME && $VACUUMDB --host=$HOST --username=bnl --dbname=$USR --analyze) &
-        (( SLEEPTIME = SLEEPTIME +120 ))
-      done
-    fi
-    
-    if [ $HOUR == "06" ] ; then
-      if [ $MINUTE == "58" ] ; then
-        for USR in $USER_LIST_PLAYERS_ONLY ; do
-          #Start one every 5 min in the background, both with and without system tables
-          SLEEPTIME=1
-          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
-          (( SLEEPTIME = SLEEPTIME +10 ))
-          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-          (( SLEEPTIME = SLEEPTIME +300 ))
-        done
-      fi
-    fi  
+#    if [ $HOUR == "09" ] ; then
+#      if [ $MINUTE == "18" ] ; then
+#        SLEEPTIME=1
+#        for USR in $USER_LIST ; do
+#          #Start one every 20 min in the background
+#          (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
+#          (( SLEEPTIME = SLEEPTIME +1200 ))
+#        done
+#      fi
+#    fi
+#    
+#    if [ $MINUTE == "40" ] ; then
+#      for USR in $USER_LIST ; do
+#        #Start one every 2 min in the background
+#        SLEEPTIME=1
+#        (sleep $SLEEPTIME && $VACUUMDB --host=$HOST --username=bnl --dbname=$USR --analyze) &
+#        (( SLEEPTIME = SLEEPTIME +120 ))
+#      done
+#    fi
+#   
+#    if [ $HOUR == "06" ] ; then
+#      if [ $MINUTE == "58" ] ; then
+#        for USR in $USER_LIST_PLAYERS_ONLY ; do
+#          #Start one every 5 min in the background, both with and without system tables
+#          SLEEPTIME=1
+#          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
+#          (( SLEEPTIME = SLEEPTIME +10 ))
+#          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
+#          (( SLEEPTIME = SLEEPTIME +300 ))
+#        done
+#      fi
+#    fi  
   
   ;;
   *) 

@@ -20,6 +20,7 @@ package Repository_Types is
   function "<"( Left, Right : String_Object) return Boolean;
   function "="( Left, Right : String_Object) return Boolean;
   function ">"( Left, Right : String_Object) return Boolean;
+  function Create(What : String) return String_Object;
 
 private 
   type String_Object is tagged record
