@@ -30,6 +30,14 @@ package body Repository_Types is
     return Tmp;
   end Do_Camel_Case;
   -----------------------------------------------------------
+  
+  function Create(What : String) return String_Object is
+    Tmp : String_Object;
+  begin
+    Tmp.Set(What);
+    return Tmp;
+  end Create;
+  
   procedure Set(Self : in out String_Object; What : String) is
   begin
     Self.Value := To_Unbounded_String(What);

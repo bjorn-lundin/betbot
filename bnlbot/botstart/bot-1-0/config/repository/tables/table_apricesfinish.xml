@@ -13,5 +13,7 @@
         <Index Columns="marketid,selectionid,pricets" type="primary"/>
         <Index Columns="backprice" type="index"/>
         <Index Columns="status" type="index"/>
+        <Index Columns="pricets" type="index"/>
+        <Index Columns="marketid" type="index"/>
     </Table>
 </BnlBot>
