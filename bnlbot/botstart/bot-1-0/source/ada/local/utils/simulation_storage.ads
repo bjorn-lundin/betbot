@@ -17,7 +17,7 @@ with Table_Arunners;
 with Repository_Types;
 
 package Simulation_Storage is
-  pragma Warnings(Off);
+--  pragma Warnings(Off);
   package Sample_Map_Pack is new Ada.Containers.Ordered_Maps
         (Key_Type     => Calendar2.Time_Type,
          Element_Type => Table_Apricesfinish.Apricesfinish_List_Pack2.List,
@@ -49,7 +49,7 @@ package Simulation_Storage is
   procedure Fill_Maps(Marketid_Map  : out Marketid_Map_Pack.Map;
                       Winner_Map    : out Winner_Map_Pack.Map; 
                       Win_Place_Map : out Win_Place_Map_Pack.Map) ;
-  pragma Warnings(On);
+--  pragma Warnings(On);
                       
 
   --------------------------------------------------------------------------
@@ -72,13 +72,8 @@ package Simulation_Storage is
     Num_Lost          : Integer_4 := 0;
   end record;
   
-  pragma Warnings(Off);
   package Strategy_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Strategy_Type, "=");
-  pragma Warnings(On);
                       
-
   procedure Load_Strategies(Strategy_List : out Strategy_List_Pack.List);                 
-                      
-
-  
+                       
 end Simulation_Storage;

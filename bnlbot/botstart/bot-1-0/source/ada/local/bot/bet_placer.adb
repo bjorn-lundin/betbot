@@ -3,13 +3,10 @@ with Ada.Command_Line;
 with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
---with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Ada.Strings ; use Ada.Strings;
---with General_Routines; use General_Routines;
 with Bot_Config;
 with Lock;
---with Text_io;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Bot_Messages;
@@ -26,7 +23,6 @@ with Gnat.Strings;
 with Table_Abets;
 with Table_Amarkets;
 with Table_Arunners;
---with Bet;
 with Bot_System_Number;
 with Utils;
 
@@ -36,7 +32,6 @@ procedure Bet_Placer is
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main.";
- -- use type Bot_Types.Bot_Mode_Type;
   OK : Boolean := False;
   Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
 
@@ -50,9 +45,6 @@ procedure Bet_Placer is
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line : Command_Line_Configuration;
-
---  Global_Size : Bet_Size_type := 30.0;
---  Global_Max_Loss_Per_Day : Float_8 := -500.0;
   Global_Enabled : Boolean := False;
 
   ------------------------------------------------------
@@ -92,11 +84,6 @@ procedure Bet_Placer is
     Log("'" & Selection_Id'Img & "'");
     Log("'" & Utils.F8_Image(Local_Price) & "'");
     Log("'" & Utils.F8_Image(Local_Size) & "'");
-
---    if Bet.Profit_Today(Bet_Name) < Global_Max_Loss_Per_Day then
---      Log(Me & "Run", "lost too much today, max loss is " & F8_Image(Global_Max_Loss_Per_Day));
---      return;
---    end if;
 
     A_Market.Marketid := Market_Id;
     Table_Amarkets.Read(A_Market, Eos(Market) );
@@ -157,33 +144,21 @@ procedure Bet_Placer is
                      Bet_Persistence  => Persist,
                      Bet              => A_Bet);
       Log(Me & "Place_Bet", "call Rpc.Place_Bet");
-      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
+      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
                      
     end if; -- dry run 
 
-    Log(Me & "Place_Bet", "1");
     T.Start;
-    Log(Me & "Place_Bet", "2");
       A_Bet.Startts := A_Market.Startts;
-    Log(Me & "Place_Bet", "3");
       A_Bet.Fullmarketname := A_Market.Marketname;
-    Log(Me & "Place_Bet", "4");
-      Table_Abets.Insert(A_Bet);
-    Log(Me & "Place_Bet", "5");
-      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & Table_Abets.To_String(A_Bet));
-    Log(Me & "Place_Bet", "6");
+      A_Bet.Insert;
+      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
       if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
-    Log(Me & "Place_Bet", "7");
         Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-    Log(Me & "Place_Bet", "8");
-        Sql.Set(Update_Betwon_To_Null,"BETID", A_Bet.Betid);
-    Log(Me & "Place_Bet", "9");
-        Sql.Execute(Update_Betwon_To_Null);
-    Log(Me & "Place_Bet", "10");
+        Update_Betwon_To_Null.Set("BETID", A_Bet.Betid);
+        Update_Betwon_To_Null.Execute;
       end if;
-    Log(Me & "Place_Bet", "11");
     T.Commit;
-    Log(Me & "Place_Bet", "12");
   end Place_Bet;
   
   -------------------------------------------------------

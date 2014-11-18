@@ -82,8 +82,8 @@ procedure Back_Hitrate is
   end Sort_Best_Runners;  
   -------------------------------------------------------------------- 
    
-  procedure Treat(Best_Runners  : in     Best_Runners_Type;
-                  Strategy_List : in     Simulation_Storage.Strategy_List_Pack.List;
+  procedure Treat(Best_Runners  : in out Best_Runners_Type;
+                  Strategy_List : in out Simulation_Storage.Strategy_List_Pack.List;
                   Bet_List      : in out Bet_List_Pack.List) is
     use Calendar2;
     Runner_Index, High_Index : Integer := 0;
@@ -98,21 +98,23 @@ procedure Back_Hitrate is
         then
            Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
            Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
-           for i in Best_Runners'range loop
-             Log(Strategy.Betname.Fix_String & " taken with Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
-           end loop;          
+--           for i in Best_Runners'range loop
+--             Log(Strategy.Betname.Fix_String & " taken with Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
+--           end loop;          
            
         end if;   
       else  -- strategy fullfilled, se what odds we get, if matched
         if Best_Runners(1).Pricets >  Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay   
            Strategy.Ts_Of_Fulfill /= Calendar2.Time_Type_First then
+          Runner_Index := Integer(Strategy.Place_Of_Runner);
           -- Strategy.Backprice_Matched := get_price of runner from PLACE market ...
           pragma Compile_Time_Warning(True, "get_price of runner from PLACE market");
           Strategy.Backprice_Matched := 1.01;
+          Best_Runners(Runner_Index).Backprice := 1.01;
+          
           Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
           Strategy.Num_Matched := Strategy.Num_Matched +1;
           
-          Runner_Index := Integer(Strategy.Place_Of_Runner);
           Move(Strategy.Betname.Upper_Case, Bet.Betname);
           Bet.Marketid     := Global_Win_Place_Map(Best_Runners(Runner_Index).Marketid);          
           Bet.Selectionid  := Best_Runners(Runner_Index).Selectionid;
@@ -121,6 +123,7 @@ procedure Back_Hitrate is
           Bet.Sizematched  := Global_Back_Size;
           Bet.Pricematched := Best_Runners(Runner_Index).Backprice;          
           Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;          
+          Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
           Bet_List.Append(Bet);
         end if;  
       end if;
@@ -239,7 +242,7 @@ begin
     end if;
     for Bet of Global_Bet_List loop
       Cur := Cur +1;
-      Log("Correcting bets " & Bet.Betname.Fix_String & " " & Bet.Marketid(1..11) & " " & Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
+      Log("Correcting bets " & Utils.Trim(Bet.Betname) & " " & Bet.Marketid(1..11) & " " & Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
     
       Betwon := False;
       for Winner of Global_Winner_Map(Bet.Marketid(1..11)) loop
@@ -290,7 +293,13 @@ begin
 
 
   for Strategy of Global_Strategy_List loop
-    Log( Strategy.Betname.Fix_String & " " & F8_Image(Strategy.Profit) & Strategy.Num_Matched'Img & Strategy.Num_Wins'Img & Strategy.Num_Lost'Img );
+    Log( Strategy.Betname.Fix_String & " " & 
+             F8_Image(Strategy.Profit) & 
+             Strategy.Num_Matched'Img & 
+             Strategy.Num_Wins'Img & 
+             Strategy.Num_Lost'Img & " " &
+             Utils.F8_Image( Float_8( 100 * Strategy.Num_Wins) / Float_8(Strategy.Num_Matched)) & " %"
+             );
   end loop;
 
 --  Log("used --max_start_price=" & IA_Max_Start_Price'Img &
