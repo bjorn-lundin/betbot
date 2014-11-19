@@ -10,7 +10,7 @@ package body Bot_System_Number is
                            Number : in Integer_4) return Boolean is
 
     End_Of_Set      : Boolean := False;
-    Service         : constant string := "Is_Number_Taken";
+--    Service         : constant string := "Is_Number_Taken";
     Select_Table_Statements  : Sql.Statement_Type;
   begin
 --    Logging.Log(Object & Service, "start");

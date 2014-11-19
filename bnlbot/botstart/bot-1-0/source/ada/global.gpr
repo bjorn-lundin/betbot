@@ -45,15 +45,8 @@ project Global is
 
    for Object_Dir use Bot_Target & "/objects";
    
---   Xml_Source := (Bot_Source & "/ada/global/xmlada/dom",
---                  Bot_Source & "/ada/global/xmlada/sax",
---                  Bot_Source & "/ada/global/xmlada/input_sources",
---                  Bot_Source & "/ada/global/xmlada/schema",
---                  Bot_Source & "/ada/global/xmlada/unicode");
-
    Xml_Source := (Bot_Source & "/ada/global/xmlada_gpl");
-                  
-                  
+                                    
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
@@ -63,15 +56,10 @@ project Global is
 
       case XML_Sources_Dir is
          when "GNAT" =>
-            for Source_Dirs use Common_Source_Dirs & Xml_Source;
---            for Source_Dirs use Common_Source_Dirs;
+            for Source_Dirs use Common_Source_Dirs;
          when "LOCAL" =>
             for Source_Dirs use Common_Source_Dirs & Xml_Source;
       end case;
-
---   Aws_Source := (Smsk & "/utility/aws",
---                  Smsk & "/utility/aws/choises",
---                  Smsk & "/utility/aws/" & Target_Machine);
    
    package Compiler is
       case Target_Machine is
