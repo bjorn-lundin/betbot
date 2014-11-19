@@ -40,6 +40,7 @@ with Unchecked_Deallocation;
 with Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 with Utils;
+with Logging; use Logging;
 
 package body Sql is
 
@@ -71,23 +72,23 @@ package body Sql is
       Global_Indent_Level := Global_Indent_Level + Global_Indent_Step;
    end Increase_Global_Indent;
 
-   procedure Log (What : in String; Level : in Integer := 1) is
-      use Ada.Text_Io;
-      function Indent return String is
-         S : String (1 .. Global_Indent_Level) := (others => ' ');
-      begin
-         return S;
-      end Indent;
-   begin
-      case Global_Debug_Level is
-         when Integer'First .. 0 => null;
-         when 1 .. Integer'Last  =>
-            case Level is
-               when 0 => null;
-               when others => Put_Line (Indent & What);
-            end case;
-      end case;
-   end Log;
+--   procedure Log (What : in String; Level : in Integer := 1) is
+--      use Ada.Text_Io;
+--      function Indent return String is
+--         S : String (1 .. Global_Indent_Level) := (others => ' ');
+--      begin
+--         return S;
+--      end Indent;
+--   begin
+--      case Global_Debug_Level is
+--         when Integer'First .. 0 => null;
+--         when 1 .. Integer'Last  =>
+--            case Level is
+--               when 0 => null;
+--               when others => Log (Indent & What);
+--            end case;
+--      end case;
+--   end Log;
    ------------------------------------------------------------
    function Make_Dollar_Variable (Idx : Natural ) return String is
    begin
@@ -155,7 +156,7 @@ package body Sql is
                          Value          => To_Unbounded_String (""),
                          Parameter_Type => Not_Set
                         );
-      Log ("Associate : '" & Bind_Varible & " -> " & Natural'Image (Idx));
+--      Log ("Associate : '" & Bind_Varible & " -> " & Natural'Image (Idx));
 --      Map.Insert_At_Tail (Private_Statement.Parameter_Map, Local_Map_Item);
      Private_Statement.Parameter_Map.Append(Local_Map_Item);
       
@@ -215,7 +216,7 @@ package body Sql is
       ------------------------------------------
    begin
       --    Private_Statement.PG_Prepared_Statement := To_String("");
-      Log ("Exchange_Binder_Variables-start (Original_Statement) '" & Orig_Stm & "'");
+     -- Log ("Exchange_Binder_Variables-start (Original_Statement) '" & Orig_Stm & "'");
       Command_Loop : for i in Cmd'Range loop
        --allow postgresql's '::' casting by check char before and after this one, 
        -- if not at ends of cmd
@@ -247,7 +248,7 @@ package body Sql is
       end loop Command_Loop;
       Private_Statement.Number_Parameters := Index;
       Private_Statement.Is_Prepared := True;
-      Log ("Exchange_Binder_Variables-stop (PG_Prepared_Statement) '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
+    --  Log ("Exchange_Binder_Variables-stop (PG_Prepared_Statement) '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
 
    end Exchange_Binder_Variables;
 
@@ -294,8 +295,8 @@ package body Sql is
                                               Cmd (Stop .. Cmd'Last));
                when Not_Set   => raise Sequence_Error with Look_For & " is NOT set";
             end case;
-         else
-            Log ("Fill_Data_In_Prepared_Statement.Replace_Dollar_Place_Holder Did not find '" & Look_For & "' in '" & Cmd & "'");
+    --     else
+    --        Log ("Fill_Data_In_Prepared_Statement.Replace_Dollar_Place_Holder Did not find '" & Look_For & "' in '" & Cmd & "'");
          end if;
 
       end Replace_Dollar_Place_Holder;
@@ -306,7 +307,7 @@ package body Sql is
          raise Sequence_Error;
       end if;
 
-      Log ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
+  --    Log ("Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
       
       for Local_Map_Item of Private_Statement.Parameter_Map loop
          Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
@@ -320,7 +321,7 @@ package body Sql is
 --      end loop;
 
       Private_Statement.Prepared_Statement := Tmp;
-      Log ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
+  --    Log ("Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");
    end Fill_Data_In_Prepared_Statement;
 
    ------------------------------------------------------------
@@ -341,9 +342,9 @@ package body Sql is
    begin
       if ((Mystatus /= Command_Ok) and
             (Mystatus /= Tuples_Ok)) then
-         Put_Line (Standard_Error, Myunit);
-         Put_Line (Standard_Error, Error_Message (Global_Connection));
-         Put_Line (Standard_Error, Exec_Status_Type'Image (Mystatus));
+         Log ( Myunit);
+         Log ( Error_Message (Global_Connection));
+         Log ( Exec_Status_Type'Image (Mystatus));
       end if;
    end Print_Errors;
 
@@ -473,8 +474,8 @@ package body Sql is
 
          when Connection_Bad =>
             Global_Connection.Set_Connected (False);
-            Ada.Text_IO.Put_Line ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
-            Ada.Text_IO.Put_Line (Error_Message (Global_Connection));
+            Log ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
+            Log (Error_Message (Global_Connection));
             raise Not_Connected with "Sql.Connect: Not_Connected" ;
       end case;
    end Connect;
@@ -496,8 +497,8 @@ package body Sql is
 
          when Connection_Bad =>
             Global_Connection.Set_Connected (False);
---            Ada.Text_IO.Put_Line ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
-            Ada.Text_IO.Put_Line (Error_Message (Global_Connection));
+--           Log ("Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
+            Log (Error_Message (Global_Connection));
             raise Not_Connected with "Sql.Connect: Not_Connected" ;
       end case;
    end Reconnect;
@@ -607,7 +608,7 @@ package body Sql is
             return;  -- do nothing
       end case;
 
-      Log ("begin");
+  --    Log ("begin");
       Global_Connection.Exec ("begin", Dml_Result);
       Dml_Status := Dml_Result.Result_Status;
       Dml_Result.Clear;
@@ -656,7 +657,7 @@ package body Sql is
             end if;
       end case;
 
-      Log ("commit");
+--Log ("commit");
       Global_Connection.Exec ("commit", Dml_Result);
       Dml_Status := Dml_Result.Result_Status;
       Dml_Result.Clear;
@@ -669,7 +670,7 @@ package body Sql is
       T.Counter := 0;
       Global_Transaction.Counter := 0;
       Global_Transaction.Status := None;
-      Log ("the owner commits");
+  --    Log ("the owner commits");
       Decrease_Global_Indent;
    end Commit;
 
@@ -694,7 +695,7 @@ package body Sql is
                raise Transaction_Error with "not the owner tries to rollback";
             end if;
       end case;
-      Log ("rollback");
+  --    Log ("rollback");
       Global_Connection.Exec ("rollback", Dml_Result);
       Dml_Status := Dml_Result.Result_Status;
       Dml_Result.Clear;
@@ -793,8 +794,8 @@ package body Sql is
          --        end if;
          --      end;
          --      Private_Statement.Is_Prepared := True;
-      else
-         Log ("Prepare - Already prepared Stm: '" & Stm & "'");
+    --  else
+    --     Log ("Prepare - Already prepared Stm: '" & Stm & "'");
       end if;
    end Prepare;
    ------------------------------------------------------------
@@ -814,7 +815,7 @@ package body Sql is
       procedure Print_Diagnostics (Label, Content : String) is
       begin
          if Content'Length > 0 then
-            Ada.Text_IO.Put_Line (Label & ": '" & Content & "'");
+            Log (Label & ": '" & Content & "'");
          end if;
       end Print_Diagnostics;
       -----------------------------------------------------
@@ -853,7 +854,7 @@ package body Sql is
    begin
       --      for i in EA'range loop
       --        if EA(i) then
-      --          Put_Line(To_String(Private_Statement.Prepared_Statement));
+      --          Log(To_String(Private_Statement.Prepared_Statement));
       --          exit;
       --        end if;
       --      end loop;
@@ -874,7 +875,7 @@ package body Sql is
       Private_Statement.Is_Open := True;
       Private_Statement.Fill_Data_In_Prepared_Statement;
 
-      Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
+  --    Log ("SQL.OPEN_CURSOR: " & To_String (Private_Statement.Original_Statement));
 
       Global_Connection.Exec ("savepoint A_SELECT", Savepoint_Result);
       Status := Savepoint_Result.Result_Status;
@@ -891,7 +892,7 @@ package body Sql is
          Dml_Result       : Result_Type;
       begin
          Global_Connection.Exec (Declare_String, Dml_Result);
-         Log ("SQL.OPEN_CURSOR: " & Declare_String);
+    --     Log ("SQL.OPEN_CURSOR: " & Declare_String);
          Status := Dml_Result.Result_Status;
          if Pgerror (Status) then
             Print_Errors ("Open_Cursor", Status);
@@ -959,11 +960,11 @@ package body Sql is
          declare
             Fetch_String : String := "fetch forward" & Private_Statement.Number_To_Fetch'Img & " in " & Private_Statement.Cursor_Name;
          begin
-            Log ("Fetch: " & Fetch_String);
+      --      Log ("Fetch: " & Fetch_String);
             Global_Connection.Exec (Fetch_String, Private_Statement.Result);
          end;
          Dml_Status := Result_Status (Private_Statement.Result);
-         Log ("Fetched from db");
+    --     Log ("Fetched from db");
 
          if Pgerror (Dml_Status) then
             Print_Errors ("Fetch", Dml_Status);
@@ -978,14 +979,14 @@ package body Sql is
          End_Of_Set := (Ntpl = 0);
          Private_Statement.Current_Row := 1;
          Private_Statement.Number_Actually_Fetched := Ntpl;
-         Log ("Number_Actually_Fetched" & Natural'Image (Private_Statement.Number_Actually_Fetched));
+   --      Log ("Number_Actually_Fetched" & Natural'Image (Private_Statement.Number_Actually_Fetched));
       else
          -- just point to the next row in the cached resultset
          Private_Statement.Current_Row := Private_Statement.Current_Row + 1;
          End_Of_Set := False;
-         Log ("Fetched from cached cursor");
+   --      Log ("Fetched from cached cursor");
       end if;
-      Log ("current row is now" & Natural'Image (Private_Statement.Current_Row));
+--    Log ("current row is now" & Natural'Image (Private_Statement.Current_Row));
    end Fetch;
 
    procedure Fetch (Statement  : in Statement_Type;
@@ -1012,7 +1013,7 @@ package body Sql is
          Close_String : String := "close " & Private_Statement.Cursor_Name;
       begin
          Global_Connection.Exec (Close_String, Dml_Result);
-         Log ("Close_This_Cursor -> " & Close_String);
+       --  Log ("Close_This_Cursor -> " & Close_String);
       end;
       Dml_Status := Result_Status (Dml_Result);
       Dml_Result.Clear;
@@ -1022,7 +1023,7 @@ package body Sql is
       end if;
       Private_Statement.Current_Row := 0;
       Private_Statement.Number_Actually_Fetched := 0;
-      Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
+     -- Log ("Close_cursor " & "Marked OK to Close " & Private_Statement.Cursor_Name);
    end Close_Cursor;
 
    procedure Close_Cursor (Statement : in Statement_Type) is
@@ -1085,14 +1086,14 @@ package body Sql is
          elsif Errors (Error_No_Such_Column) then
             raise No_Such_Column;
          else
-            Put_Line ("");
-            Put_Line ("---------------------------------------------------------");
-            Put_Line ("see http://www.postgresql.org/docs/9.3/interactive/errcodes-appendix.html");
-            Put_Line ("---------------------------------------------------------");
+            Log ("");
+            Log ("---------------------------------------------------------");
+            Log ("see http://www.postgresql.org/docs/9.3/interactive/errcodes-appendix.html");
+            Log ("---------------------------------------------------------");
             Print_Errors (To_String (P_Stm.Prepared_Statement), Status);
-            Put_Line ("sql ->: '" & To_String (P_Stm.Prepared_Statement) & "'");
-            Put_Line ("---------------------------------------------------------");
-            Put_Line ("");
+            Log ("sql ->: '" & To_String (P_Stm.Prepared_Statement) & "'");
+            Log ("---------------------------------------------------------");
+            Log ("");
             raise Postgresql_Error;
          end if;
       end Handle_Error;
@@ -1100,12 +1101,12 @@ package body Sql is
    begin
       -- check for open database and prepared Statement too!!
       -- declare/open the cursor and execute the Statement
-      Log ("Execute start");
+     -- Log ("Execute start");
       Check_Is_Connected;
       Check_Transaction_In_Progress;
 
       if Transaction_Status /= Read_Write then
-         Put_Line ("Exceute: current transaction type is: " &
+         Log ("Exceute: current transaction type is: " &
                      Transaction_Status_Type'Image (Transaction_Status));
          raise Sequence_Error;
       end if;
@@ -1114,17 +1115,17 @@ package body Sql is
       -- raise sequence error if not all are bound!
       Private_Statement.Fill_Data_In_Prepared_Statement;
 
-      Log ("Original_Statement    '" & To_String (Private_Statement.Original_Statement));
-      Log ("PG_Prepared_Statement '" & To_String (Private_Statement.Pg_Prepared_Statement));
-      Log ("Prepared_Statement    '" & To_String (Private_Statement.Prepared_Statement));
+     -- Log ("Original_Statement    '" & To_String (Private_Statement.Original_Statement));
+     -- Log ("PG_Prepared_Statement '" & To_String (Private_Statement.Pg_Prepared_Statement));
+     -- Log ("Prepared_Statement    '" & To_String (Private_Statement.Prepared_Statement));
 
-      Log ("Execute will run      '" & To_String (Private_Statement.Prepared_Statement) & "'");
-      Log ("Escaped string is     '" & Escape (Global_Connection, To_String (Private_Statement.Prepared_Statement) & "'"));
+     -- Log ("Execute will run      '" & To_String (Private_Statement.Prepared_Statement) & "'");
+     -- Log ("Escaped string is     '" & Escape (Global_Connection, To_String (Private_Statement.Prepared_Statement) & "'"));
 
       case Private_Statement.Type_Of_Statement is
          when A_Select  => raise Sequence_Error;
          when An_Insert =>
-            Log ("Execute.Insert start");
+          --  Log ("Execute.Insert start");
             No_Of_Affected_Rows := 1;
 
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
@@ -1138,10 +1139,10 @@ package body Sql is
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
 
-            Log ("Execute.Insert end");
+       --     Log ("Execute.Insert end");
 
          when A_Delete  =>
-            Log ("Execute.Delete start");
+      --      Log ("Execute.Delete start");
             No_Of_Affected_Rows := Natural'Last;
 
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
@@ -1159,10 +1160,10 @@ package body Sql is
 
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
 
-            Log ("Execute.Delete end");
+        --    Log ("Execute.Delete end");
 
          when An_Update =>
-            Log ("Execute.Update start");
+         --   Log ("Execute.Update start");
             No_Of_Affected_Rows := Natural'Last;
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
 
@@ -1178,10 +1179,10 @@ package body Sql is
             Private_Statement.Result.Clear;
 
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
-            Log ("Execute.Update end");
+         --   Log ("Execute.Update end");
 
          when A_Ddl     =>
-            Log ("Execute.DDL start");
+          --  Log ("Execute.DDL start");
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
             No_Of_Affected_Rows := Natural'Last;
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
@@ -1192,9 +1193,9 @@ package body Sql is
             end if;
             Private_Statement.Result.Clear;
             Handle_Savepoint (How => Remove, P_Stm => Private_Statement);
-            Log ("Execute.DDL end");
+          --  Log ("Execute.DDL end");
       end case;
-      Log ("Execute end");
+--  Log ("Execute end");
    end Execute;
    -----------------------------------------------------------
    procedure Execute (Statement           : in Statement_Type;
@@ -1339,7 +1340,7 @@ package body Sql is
 
       --    Statement.Private_Statement.Update_Map(Parameter, Local_Time_2, A_Time);
       
---      Ada.Text_Io.Put_Line("Set_Timestamp: '" & Local_Time_1 & "'");
+--      Log("Set_Timestamp: '" & Local_Time_1 & "'");
       Statement.Private_Statement.Update_Map (Parameter, Local_Time_1, A_Timestamp);
    end Set_Timestamp;
    ------------------------------------------------------------
@@ -1392,7 +1393,7 @@ package body Sql is
                                                       Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                                       Field_Index_Type (Parameter));
       begin
-         --      Put_Line("local_String: '" & Local_String & "'");
+         --      Log("local_String: '" & Local_String & "'");
          if Local_String'Length = 0 then
             Value := 0;
          else
@@ -1427,7 +1428,7 @@ package body Sql is
                                                       Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                                       Field_Index_Type (Parameter));
       begin
-         --      Put_Line("local_String: '" & Local_String & "'");
+         --      Log("local_String: '" & Local_String & "'");
          if Local_String'Length = 0 then
             Value := 0;
          else
@@ -1464,7 +1465,7 @@ package body Sql is
                                   Tuple_Index_Type (Statement.Private_Statement.Current_Row),
                                   Field_Index_Type (Parameter));
        begin
---          Ada.Text_Io.Put_Line("Parameter:" & Parameter'Img & " - value '" & Local_String & "'");         
+--          Log("Parameter:" & Parameter'Img & " - value '" & Local_String & "'");         
           if Local_String'Length = 0 then
              Value := (others => ' ');
           else
@@ -1484,7 +1485,7 @@ package body Sql is
                   Value     : out String) is
       Field_Number : Field_Index_Type := Field_Index (Statement.Private_Statement.Result, Parameter);
    begin
---      Ada.Text_Io.Put_Line("Parameter: '" & Parameter & "'");         
+--      Log("Parameter: '" & Parameter & "'");         
       Get (Statement, Positive (Field_Number), Value);
    end Get;
    
