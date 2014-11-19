@@ -1929,6 +1929,11 @@ package body Bet_Handler is
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
     T.Commit;
 
+    for b of Bet_List loop
+      Log(Me & "Check_Bets", "betlist " & B.To_String);
+    end loop;
+
+    
 --    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
 --      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
     Inner : for b of Bet_List  loop
@@ -1956,7 +1961,9 @@ package body Bet_Handler is
             Bet.Profit := 0.0;
             begin
               T.Start;
-              Table_Abets.Update_Withcheck(Bet);
+              Log(Me & "Check_Bets", " 1 " & Bet.To_String);
+              Bet.Update_Withcheck;
+              Log(Me & "Check_Bets", " 2 " & Bet.To_String);
               T.Commit;
             exception
               when Sql.No_Such_Row =>
@@ -2008,7 +2015,9 @@ package body Bet_Handler is
         
         begin
           T.Start;
+              Log(Me & "Check_Bets", " 3 " & Bet.To_String);
           Bet.Update_Withcheck;
+              Log(Me & "Check_Bets", " 4 " & Bet.To_String);
           T.Commit;
         exception
           when Sql.No_Such_Row =>
