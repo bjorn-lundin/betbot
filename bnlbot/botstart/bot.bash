@@ -26,15 +26,15 @@ case $HOSTNAME in
     ;;  
   new.nonodev.com)    
     export BOT_MACHINE_ROLE=PROD
+    export BOT_XML_SOURCE=GNAT
     ;;
   prod*)    
     export BOT_MACHINE_ROLE=PROD
+    export BOT_XML_SOURCE=GNAT
     ;;
   sebjlun*)
     export BOT_MACHINE_ROLE=SIM
-    ;;
-  tova)
-    export BOT_MACHINE_ROLE=TEST
+    export BOT_XML_SOURCE=GNAT
     ;;
   *)  
     export BOT_MACHINE_ROLE=$HOSTNAME
