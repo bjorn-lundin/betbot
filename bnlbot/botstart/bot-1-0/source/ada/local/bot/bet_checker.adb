@@ -124,6 +124,7 @@ begin
 
 exception
   when Lock.Lock_Error => 
+    Log(Me, "Lock_Error - Close log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
   when E: others => 
@@ -139,7 +140,7 @@ exception
            Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
     end ;
   
-    Log(Me, "Closed log and die");
+    Log(Me, "Close log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Bet_Checker;
