@@ -3,7 +3,6 @@ with Ada.Command_Line;
 with Stacktrace;
 with Types; use Types;
 with Sql;
---with General_Routines;
 with Ada.Calendar.Time_Zones;
 with Calendar2; use Calendar2;
 with Gnatcoll.Json; use Gnatcoll.Json;
@@ -48,9 +47,6 @@ procedure Markets_Fetcher is
   Cmd_Line : Command_Line_Configuration;
   Query_List_Market_Catalogue : JSON_Value := Create_Object;
   Query_List_Market_Book      : JSON_Value := Create_Object;
-
---  Answer_List_Market_Catalogue,
---  Answer_List_Market_Book     : Aws.Response.Data;
   
   Reply_List_Market_Catalogue : JSON_Value := Create_Object; 
   Reply_List_Market_Book      : JSON_Value := Create_Object; 
@@ -86,9 +82,6 @@ procedure Markets_Fetcher is
   UTC_Time_Start, UTC_Time_Stop  : Calendar2.Time_Type ;
   
   Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
---  One_Half_Minute : Calendar2.Interval_Type := (0,0,0,30,0);
---  One_Minute      : Calendar2.Interval_Type := (0,0,1,0,0);
---  Five_Minutes      : Calendar2.Interval_Type := (0,0,5,0,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
   T : Sql.Transaction_Type;
@@ -103,11 +96,11 @@ procedure Markets_Fetcher is
   begin
     Log(Me, "Insert_Event start"); 
     Rpc.Parse_Event(Event, Event_Type, DB_Event);    
-    Table_Aevents.Read(DB_Event, Eos);
+    DB_Event.Read(Eos);
     if Eos then
-      Table_Aevents.Insert(DB_Event);
+      DB_Event.Insert;
+      Log(Me, "insert " & DB_Event.To_String); 
     end if;        
-    Log(Me, Table_Aevents.To_String(DB_Event)); 
     Log(Me, "Insert_Event stop"); 
   end Insert_Event;
   ------------------------------------------------------------
@@ -116,13 +109,12 @@ procedure Markets_Fetcher is
     DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
     Eos, In_Play    : Boolean    := False;
   begin
-    Log(Me & Service, "start " & Table_Amarkets.To_String(DB_Market) );     
     Rpc.Parse_Market(Market, DB_Market, In_Play);
-    Table_Amarkets.Read(DB_Market, Eos);
+    DB_Market.Read(Eos);
     if Eos then
-      Table_Amarkets.Insert(DB_Market);
+      DB_Market.Insert;
+      Log(Me & Service, "inserted " & DB_Market.To_String); 
     end if;         
-    Log(Me & Service, "stop " & Table_Amarkets.To_String(DB_Market)); 
   end Insert_Market;
   ----------------------------------------------------------------
   procedure Update_Market(Market : JSON_Value) is
@@ -138,14 +130,14 @@ procedure Markets_Fetcher is
       raise No_Such_Field with "Object 'Market' - Field 'marketId'";
     end if;
     
-    Log(Me & Service, "will update " & Table_Amarkets.To_String(DB_Market)); 
+    Log(Me & Service, "will update " & DB_Market.Marketid); 
     Table_Amarkets.Read(DB_Market, Eos);
     if not Eos then
       Rpc.Parse_Market(Market, DB_Market, In_Play);
       Table_Amarkets.Update_Withcheck(DB_Market);
     end if; 
      
-     Log(Me & Service, Table_Amarkets.To_String(DB_Market)); 
+     Log(Me & Service, DB_Market.To_String); 
     Log(Me & Service, "stop"); 
   end Update_Market;
 
@@ -167,47 +159,8 @@ procedure Markets_Fetcher is
     Log(Me & Service, "stop"); 
   end Insert_Runners;
   -------------------------------------------------------------
---  procedure Insert_Runners(Market : JSON_Value) is
---    DB_Runner   : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
---    Runner_List : Table_Arunners.Arunners_List_Pack.List_Type := Table_Arunners.Arunners_List_Pack.Create;
---    Service : constant String := "Insert_Runners";
---    Eos : Boolean := False;
---  begin
---    Log(Me & Service, "start"); 
---    Rpc.Parse_Runners(Market, Runner_List);
---    while not Table_Arunners.Arunners_List_Pack.Is_Empty(Runner_List) loop         
---       Table_Arunners.Arunners_List_Pack.Remove_From_Head(Runner_List, DB_Runner);
---       Table_Arunners.Read(DB_Runner, Eos);
---       if Eos then
---         Table_Arunners.Insert(DB_Runner);
---       end if;              
---    end loop;
---    Table_Arunners.Arunners_List_Pack.Release(Runner_List);
---    Log(Me & Service, "stop"); 
---  end Insert_Runners;
-  -------------------------------------------------------------
---  procedure Insert_Prices(Market : JSON_Value) is
---    DB_Runner_Price : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
---    Eos : Boolean := False;
---    Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;   
---    Service : constant String := "Insert_Runners";
---  begin
---    Log(Me & Service, "start");     
---    Rpc.Parse_Prices(Market, Price_List);
---    while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
---      Table_Aprices.Aprices_List_Pack.REmove_From_Head(Price_List, DB_Runner_Price);
---      Log(Me, Table_Aprices.To_String(DB_Runner_Price));
---      Table_Aprices.Read(DB_Runner_Price, Eos);
---      if Eos then
---        Table_Aprices.Insert(DB_Runner_Price);
---      end if;     
---    end loop;
---    Table_Aprices.Aprices_List_Pack.Release(Price_List);
---    Log(Me & Service, "stop"); 
---  end Insert_Prices;
-  --------------------------------------------------------------------- 
+
   procedure Insert_Prices(Market : JSON_Value) is
-   -- DB_Runner_Price : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
     Eos : Boolean := False;
     Price_List : Table_Aprices.Aprices_List_Pack2.List;   
     Service : constant String := "Insert_Runners";
@@ -261,7 +214,6 @@ begin
    
   Log(Me, "Login");
 
-    -- Ask a pythonscript to login for us, returning a token
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
@@ -343,7 +295,7 @@ begin
       end;
       Now := Calendar2.Clock;
       Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
-      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);  --??
+      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);
       exit when Is_Time_To_Check_Markets;
       
       --restart every day
@@ -387,7 +339,7 @@ begin
                        
     Params.Set_Field (Field_Name => "filter",           Field => Filter);                     
     Params.Set_Field (Field_Name => "marketProjection", Field => Market_Projection);  
-    Params.Set_Field (Field_Name => "locale",           Field => "en"); -- to get ' the draw instead of 'Oavgjort'               
+    Params.Set_Field (Field_Name => "locale",           Field => "en"); -- to get 'the draw' instead of 'Oavgjort'               
     Params.Set_Field (Field_Name => "sort",             Field => "FIRST_TO_START");
     Params.Set_Field (Field_Name => "maxResults",       Field => "999");
                       
@@ -446,7 +398,6 @@ begin
     begin    
       Market_Ids    := Empty_Array;
       for i in 1 .. Length (Result_List_Market_Catalogue) loop
---        T.Start;
         Market := Get(Result_List_Market_Catalogue, i);
         Has_Id := False;
         if Market.Has_Field("marketId") then
@@ -456,7 +407,6 @@ begin
           One_Market_Id := Empty_Array; --empty it here, to avoid TOO_MUCH_DATA replies
           Append(One_Market_Id, Create(string'(Market.Get("marketId"))));
         end if;          
---      end loop;
       
         if Has_Id then
           Append (Price_Data , Create("EX_BEST_OFFERS"));    
@@ -506,7 +456,6 @@ begin
             end loop;
           end if;    
         end if; --has id          
---        T.Commit;
       end loop; --for loop
     end;
     
