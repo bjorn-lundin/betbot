@@ -1,6 +1,5 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
-with Ada.Exceptions;
 with Stacktrace;
 with Types; use Types;
 with Sql;
@@ -25,7 +24,6 @@ with Ini;
 with Logging; use Logging;
 
 with Ada.Environment_Variables;
-with Ada.Command_Line;
 with Process_IO;
 with Bot_Messages;
 with Core_Messages;
