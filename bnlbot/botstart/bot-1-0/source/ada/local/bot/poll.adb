@@ -202,9 +202,18 @@ procedure Poll is
       if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
         Bets_Allowed(i).Bet_Size := 30.0;
       end if;
-
     end loop;
 
+    Bets_Allowed(Back_2_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_6_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_18_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_17_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_19_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_14_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_15_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_16_1).Bet_Size := 50.0;
+    
+    
     Market.Marketid := Market_Notification.Market_Id;
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
@@ -248,8 +257,7 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.70_50.0_1", Bets_Allowed(Back_14_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.80_50.0_1", Bets_Allowed(Back_15_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_16_1_Marker).Bet_Name);
-    
-
+  
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
@@ -274,34 +282,10 @@ procedure Poll is
       end if;
     end loop;
 
-    for i in Bets_Allowed'range loop
-      -- marker bets are always 30 :-
-      if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
-        Bets_Allowed(i).Bet_Size := 30.0;
-        Bets_Allowed(i).Is_Allowed_To_Bet := False;
-      end if;
-    end loop;
-    Bets_Allowed(Back_1_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_2_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_3_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_6_1_Marker).Is_Allowed_To_Bet := True;
+    Bets_Allowed(Back_4_1_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_5_1_Marker).Is_Allowed_To_Bet := False;
+    Bets_Allowed(Back_7_1_Marker).Is_Allowed_To_Bet := False;
     
-    Bets_Allowed(Back_18_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_17_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_19_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_14_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_15_1_Marker).Is_Allowed_To_Bet := True;
-    Bets_Allowed(Back_16_1_Marker).Is_Allowed_To_Bet := True;
-    
-    Bets_Allowed(Back_2_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_6_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_18_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_17_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_19_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_14_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_15_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_16_1).Bet_Size := 50.0;
-
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then

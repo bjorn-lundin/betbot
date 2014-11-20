@@ -1042,8 +1042,10 @@ package body Repository.Table is
     begin
       Code_Debug(" -- Start Set_All_Columns_But_Pk.Set_Null");
       case Data_Type(Col.Type_Of) is
-        when A_Char .. A_Short_Code | A_Clob => Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
-        when A_Date .. A_Timestamp           => Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
+        when A_Char .. A_Short_Code | A_Clob => 
+          Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
+        when A_Date .. A_Timestamp           => 
+          Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
         when others =>  raise Configuration_Error with "Not supported datatype: " &  Data_Type(Col.Type_Of)'Img;
       end case;
       Code_Debug(" -- Stop  Set_All_Columns_But_Pk.Set_Null");
@@ -1118,18 +1120,24 @@ package body Repository.Table is
           Put_Line("    end if;");
           Set_Non_Null(Col,Stm_Name);
         else
-          case Data_Type(Col.Type_Of) is
-            when A_Char    =>
-              Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
-            when others    => null;
-              Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, Col.Name.Fix_String) & " then");
-          end case;
-          Set_Null(Col,Stm_Name);
-          Put_Line("    else");
-          Set_Non_Null(Col,Stm_Name);
-          Put_Line("    end if;");
+          case Data_Type(Col.Type_Of) is            
+            when A_Boolean    =>
+              -- call boolean cannot be null here
+              Set_Non_Null(Col,Stm_Name);
+            when others =>       
+              case Data_Type(Col.Type_Of) is
+                when A_Char    =>
+                  Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
+                when others    => null;
+                  Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, Col.Name.Fix_String) & " then");
+              end case;
+            Set_Null(Col,Stm_Name);
+            Put_Line("    else");
+            Set_Non_Null(Col,Stm_Name);
+            Put_Line("    end if;");
+          end case;            
         end if;
-
+        
       else --not nullable
 
         if Col.Name.Lower_Case = "ixxlupd" then
@@ -1162,8 +1170,10 @@ package body Repository.Table is
     begin
       Code_Debug(" -- Start Set_All_Columns_Incl_Pk.Set_Null");
       case Data_Type(Col.Type_Of) is
-        when A_Char .. A_Short_Code | A_Clob => Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
-        when A_Date .. A_Timestamp           => Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
+        when A_Char .. A_Double | A_Short_Code | A_Clob => 
+          Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
+        when A_Date .. A_Timestamp           => 
+          Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
         when others =>  raise Configuration_Error with "Not supported datatype: " &  Data_Type(Col.Type_Of)'Img;
       end case;
       Code_Debug(" -- Stop  Set_All_Columns_Incl_Pk.Set_Null");
@@ -1222,7 +1232,7 @@ package body Repository.Table is
       if Col.Nullable then
 
         if Col.Name.Lower_Case = "ixxluda" or else
-          Col.Name.Lower_Case = "ixxluda" then
+          Col.Name.Lower_Case = "ixxluti" then
           Put_Line("    if not Keep_Timestamp then");
           Put_Line("      null; --for tables without Ixxlud* ");
           Put_Line("      Data." & Col.Name.Camel_Case & " := Now;");
@@ -1230,15 +1240,24 @@ package body Repository.Table is
           Set_Non_Null(Col,Stm_Name);
         else
           case Data_Type(Col.Type_Of) is
-            when A_Char    =>
-              Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
-            when others    => null;
-              Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, Col.Name.Fix_String) & " then");
-          end case;
-          Set_Null(Col,Stm_Name);
-          Put_Line("    else");
-          Set_Non_Null(Col,Stm_Name);
-          Put_Line("    end if;");
+            when A_Boolean    =>
+              Put_Line("  -- call  Set_Non_Null start boolean");
+              Set_Non_Null(Col,Stm_Name);
+              Put_Line("  -- call  Set_Non_Null stop boolean");
+            when others =>       
+              Put_Line("  -- call  not boolean");
+            
+              case Data_Type(Col.Type_Of) is
+                when A_Char    =>
+                  Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
+                when others    => null;
+                  Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, Col.Name.Fix_String) & " then");
+              end case;
+              Set_Null(Col,Stm_Name);
+              Put_Line("    else");
+              Set_Non_Null(Col,Stm_Name);
+              Put_Line("    end if;");
+          end case;            
         end if;
 
       else --not nullable
