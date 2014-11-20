@@ -73,7 +73,7 @@ package body Sql is
    ------------------------------------------------------------
    function Make_Dollar_Variable (Idx : Natural ) return String is
    begin
-      return Utils.Skip_All_Blanks (" $" & Natural'Image (Idx));
+      return Utils.Skip_All_Blanks (" $" & Idx'Img);
    end Make_Dollar_Variable ;
    ------------------------------------------
    
@@ -107,13 +107,12 @@ package body Sql is
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 
    -- called by prepare. We dont get elaborate warnings now
-   --   procedure Initialize (Private_Statement : in out Private_Statement_Type) is
    procedure Do_Initialize (Private_Statement : in out Private_Statement_Type) is
    begin
       Global_Statement_Index_Counter := Global_Statement_Index_Counter + 1;
       Private_Statement.Index                   := Global_Statement_Index_Counter;
-      --    Log(Me, "Initialize Private_Statement_Type # " & Natural'Image(Private_Statement.Index));
-      Ada.Strings.Fixed.Move ("S" & Utils.Trim (Integer'Image (Private_Statement.Index)), Private_Statement.Statement_Name);
+      --    Log(Me, "Initialize Private_Statement_Type # " & Private_Statement.Index'Img);
+      Ada.Strings.Fixed.Move ("S" & Utils.Trim (Private_Statement.Index'Img), Private_Statement.Statement_Name);
 
       Private_Statement.Cursor_Name     := Private_Statement.Statement_Name;
       Private_Statement.Cursor_Name (1) := 'C';
@@ -137,7 +136,7 @@ package body Sql is
                          Value          => To_Unbounded_String (""),
                          Parameter_Type => Not_Set
                         );
---      Log(Me, "Associate : '" & Bind_Varible & " -> " & Natural'Image (Idx));
+--      Log(Me, "Associate : '" & Bind_Varible & " -> " & Idx'Img);
      Private_Statement.Parameter_Map.Append(Local_Map_Item);
       
    end	Associate;
@@ -198,7 +197,7 @@ package body Sql is
                      when others => null;
                end case;
             end loop Associate_Loop;
-            --        Log(Me, "Binder_Parameter_Position_Stop :" & Integer'Image(Binder_Parameter_Position_Stop));
+            --        Log(Me, "Binder_Parameter_Position_Stop :" & Binder_Parameter_Position_Stop'Img);
          else
             -- we skip the part replaced by eg $2
             -- ...      and XLOCID = :XLOCID and XLOCSIZ >= :XLOCSIZ turns to
@@ -298,7 +297,7 @@ package body Sql is
             (Mystatus /= Tuples_Ok)) then
          Log(Me,  Myunit);
          Log(Me,  Error_Message (Global_Connection));
-         Log(Me,  Exec_Status_Type'Image (Mystatus));
+         Log(Me, Mystatus'Img);
       end if;
    end Print_Errors;
 
@@ -309,7 +308,7 @@ package body Sql is
    begin
       Failure := ((Local_Status /= Command_Ok) and (Local_Status /= Tuples_Ok));
       if Failure then
-         Log(Me, "PGerror: " & Exec_Status_Type'Image (Local_Status));
+         Log(Me, "PGerror: " & Local_Status'Img);
       end if;
       return Failure;
    end Pgerror;
@@ -716,7 +715,8 @@ package body Sql is
    begin
       if not Private_Statement.Is_Prepared then
          Private_Statement.Do_Initialize; -- instead of using Initialize, and get warnings
-         Log(Me, "Prepare - First time Stm: '" & Stm & "'");
+         Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
+         -- Log(Me, "Prepare - First time Stm: '" & Stm & "'");
          if    Stm (1 .. 6) = "select" then
             Private_Statement.Type_Of_Statement := A_Select;
          elsif Stm (1 .. 6) = "insert" then
@@ -730,7 +730,6 @@ package body Sql is
          end if;
          Private_Statement.Original_Statement := To_Unbounded_String (Command) ;
          Private_Statement.Exchange_Binder_Variables; -- sets Is_Prepared
-         Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
          --      declare
          --        use Interfaces.C, Interfaces.C.Strings;
          --        Types_Array    : Pgada.Thin.Int_Array_Type(1..3) := (0,0,0);
@@ -762,7 +761,7 @@ package body Sql is
    ------------------------------------------------------------
 
    function Determine_Errors (Result : Result_Type; Stm_String : String) return Error_Array_Type is
-   -- see http://www.postgresql.org/docs/8.3/interactive/errcodes-appendix.html
+   -- see http://www.postgresql.org/docs/9.3/interactive/errcodes-appendix.html
       Local_Array : Error_Array_Type := (others => False);
       Sql_State   : String := Error_Sql_State (Result);
       -----------------------------------------------------
@@ -933,14 +932,14 @@ package body Sql is
          End_Of_Set := (Ntpl = 0);
          Private_Statement.Current_Row := 1;
          Private_Statement.Number_Actually_Fetched := Ntpl;
-         -- Log(Me, "Number_Actually_Fetched" & Natural'Image (Private_Statement.Number_Actually_Fetched));
+         -- Log(Me, "Number_Actually_Fetched" & Private_Statement.Number_Actually_Fetched'Img);
       else
          -- just point to the next row in the cached resultset
          Private_Statement.Current_Row := Private_Statement.Current_Row + 1;
          End_Of_Set := False;
          -- Log(Me, "Fetched from cached cursor");
       end if;
-      -- Log(Me, "current row is now" & Natural'Image (Private_Statement.Current_Row));
+      -- Log(Me, "current row is now" &Private_Statement.Current_Row'Img);
    end Fetch;
 
    procedure Fetch (Statement  : in Statement_Type;
@@ -1022,7 +1021,6 @@ package body Sql is
       procedure Handle_Error (P_Stm : in out Private_Statement_Type; Clear_Statement : in Boolean) is
          Errors      : Error_Array_Type  := Determine_Errors (P_Stm);
       begin
-         -- Log(Me, "Handle_Error -> '" & Err_String & "'" );
          if Clear_Statement then
             P_Stm.Result.Clear;
          end if;
@@ -1059,8 +1057,7 @@ package body Sql is
       Check_Transaction_In_Progress;
 
       if Transaction_Status /= Read_Write then
-         Log(Me, "Exceute: current transaction type is: " &
-                     Transaction_Status_Type'Image (Transaction_Status));
+         Log(Me, "Exceute: current transaction type is: " & Transaction_Status'Img);
          raise Sequence_Error;
       end if;
 
@@ -1213,7 +1210,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_4) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Integer_4'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Value'Img), An_Integer);
    end Set;
    
 
@@ -1222,7 +1219,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Integer_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Integer_8'Image (Value)), An_Integer);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Value'Img), An_Integer);
    end Set;
    
 
@@ -1232,7 +1229,7 @@ package body Sql is
                   Parameter : in String;
                   Value     : in Float_8) is
    begin
-      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Float'Image (Float (Value))), A_Float);
+      Statement.Private_Statement.Update_Map (Parameter, Utils.Trim (Value'Img), A_Float);
    end Set;
    
 
@@ -1354,7 +1351,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get;
    
 
@@ -1389,7 +1386,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get;
    
 
@@ -1425,7 +1422,7 @@ package body Sql is
           end if;
        exception
           when Constraint_Error =>
-             raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+             raise No_Such_Column with "No such column: " & Parameter'Img ;
        end;      
    end Get;
    
@@ -1465,7 +1462,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get;
    
 
@@ -1500,7 +1497,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get;
    
 
@@ -1540,7 +1537,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get;
    
    ------------------------------------------------------------
@@ -1573,7 +1570,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get_Date;
    ------------------------------------------------------------
    procedure Get_Date (Statement : in Statement_Type;
@@ -1604,7 +1601,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get_Time;
 
    --------------------------------------------------------------
@@ -1637,7 +1634,7 @@ package body Sql is
       end;
    exception
       when Constraint_Error =>
-         raise No_Such_Column with "No such column: " & Positive'Image (Parameter) ;
+         raise No_Such_Column with "No such column: " & Parameter'Img ;
    end Get_Timestamp;
 
    --------------------------------------------------------------
