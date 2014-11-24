@@ -175,9 +175,9 @@ package Calendar2 is
    function Week_Day_Of (Date : in Time_Type) return Week_Day_Type;
    function Week_Of (Date : in Time_Type) return Week_Type;
    function String_Date_ISO (Date : in Time_Type) return String ;
-   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z") return String ;
+   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z"; Milliseconds : Boolean := True) return String ;
    
-   function To_String(D : Time_Type) return String;
+   function To_String(D : Time_Type; Milliseconds : Boolean := True) return String;
    
    
    function String_Date (Date : in Time_Type) return String;

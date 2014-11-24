@@ -1377,17 +1377,17 @@ package body Calendar2 is
    end To_String;
 
    
-   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z") return String is
+   function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z"; Milliseconds : Boolean := True) return String is
      Da : String := String_Date_ISO (Date);
-     Ti : String := String_Time(Date, Milliseconds => True);
+     Ti : String := String_Time(Date, Milliseconds => Milliseconds);
    begin
      return Da & T & Ti & TZ;
    end String_Date_Time_ISO;
    
    
-   function To_String(D : Time_Type) return String is
+   function To_String(D : Time_Type; Milliseconds : Boolean := True) return String is
    begin
-     return String_Date_Time_ISO(Date => D, T => " " , Tz => "" );
+     return String_Date_Time_ISO(Date => D, T => " " , Tz => "", Milliseconds => Milliseconds );
    end To_String;
 
    function Time_Type_First return Time_Type is

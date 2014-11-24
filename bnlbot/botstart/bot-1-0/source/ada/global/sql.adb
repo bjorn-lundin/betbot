@@ -388,6 +388,12 @@ package body Sql is
                       SSL_Mode   : in String := "require") is
       Local_Status : Connection_Status_Type;      
    begin   
+   
+      if Global_Connection.Get_Connected then
+        Log(Me, "Already connected, disconnect first : db_name,login,: '" & Db_Name & "', '" & Login & "'");
+        return; 
+      end if;
+   
       Global_Connection.Set_Host(Host);
       Global_Connection.Set_Port(Port);
       Global_Connection.Set_Options(Options);
@@ -561,7 +567,6 @@ package body Sql is
             return;  -- do nothing
       end case;
 
-  --    Log(Me, "begin");
       Global_Connection.Exec ("begin", Dml_Result);
       Dml_Status := Dml_Result.Result_Status;
       Dml_Result.Clear;
@@ -715,7 +720,6 @@ package body Sql is
    begin
       if not Private_Statement.Is_Prepared then
          Private_Statement.Do_Initialize; -- instead of using Initialize, and get warnings
-         Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
          -- Log(Me, "Prepare - First time Stm: '" & Stm & "'");
          if    Stm (1 .. 6) = "select" then
             Private_Statement.Type_Of_Statement := A_Select;
@@ -730,6 +734,7 @@ package body Sql is
          end if;
          Private_Statement.Original_Statement := To_Unbounded_String (Command) ;
          Private_Statement.Exchange_Binder_Variables; -- sets Is_Prepared
+         Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
          --      declare
          --        use Interfaces.C, Interfaces.C.Strings;
          --        Types_Array    : Pgada.Thin.Int_Array_Type(1..3) := (0,0,0);
