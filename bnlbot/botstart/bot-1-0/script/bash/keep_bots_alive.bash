@@ -11,11 +11,12 @@
 #cat crontab.tmp | crontab
 #crontab -l
 #rm crontab.tmp
+#echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" | crontab
 
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-exit 0
+#exit 0
 
 [ -r /var/lock/bot ] && exit 0
 
@@ -26,7 +27,7 @@ export REINDEXDB=reindexdb
 export DUMP_DIRECTORY="/data/dbdumps"
 
 TZ='Europe/Stockholm'
-export TZ
+export TZ   
 export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
@@ -65,7 +66,8 @@ function Start_Bot () {
     echo "will run '$BOT_NAME'"
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
     export BOT_NAME
-    $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
+    $BOT_TARGET/bin/$EXE_NAME --user=$BOT_USER $INI_NAME $MODE &
+#    $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
     echo "Started $BOT_NAME for $BOT_USER"
     echo "--------------------------------"
   fi
@@ -96,114 +98,133 @@ function Check_Bots_For_User () {
   #all need this one
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
   
-#  Start_Bot $BOT_USER poll poll poll.ini
-#  
-#  if [ $IS_DATA_COLLECTOR == "true" ] ; then
-#    Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
-#  fi
-#  
-#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-#    Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-#  fi
-#  
-#  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-#  
-#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-#    Start_Bot $BOT_USER bet_checker bet_checker
-#  fi
-#  
-#  case $BOT_MACHINE_ROLE in
-#    PROD) BOT_LIST="bot" ;;
-#    TEST) BOT_LIST="bot" ;;
-#    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
-#    *)    BOT_LIST="" ;;
-#  esac
-#  
-#  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-#    for bot in $BOT_LIST ; do
-#      if [ $bot == "bot" ] ; then
-#        Start_Bot $BOT_USER $bot bot betfair.ini
-#      else
-#        Start_Bot $BOT_USER $bot bot $bot.ini
-#      fi
-#    done
-#    BET_PLACER_LIST="bet_placer_10 bet_placer_11 \
-#                     bet_placer_20 bet_placer_21 \
-#                     bet_placer_30 bet_placer_31 \
-#                     bet_placer_40 bet_placer_41 \
-#                     bet_placer_50 bet_placer_51 \
-#                     bet_placer_60 bet_placer_61 \
-#                     bet_placer_70 bet_placer_71"
-#    for placer in $BET_PLACER_LIST ; do
-#      Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
-#    done
-#  fi
-#  
-##  BET_PLACER_LIST="football_better"
-##  for placer in $BET_PLACER_LIST ; do
-##    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
-##  done
-#
-#  #zip logfiles every hour, on minute 17 in the background
-#  if [ $BOT_MINUTE == "17" ] ; then
-#    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
-#  fi
-#  
-#  if [ $BOT_HOUR == "05" ] ; then
-#    if [ $BOT_MINUTE == "10" ] ; then
-#      Start_Bot $BOT_USER data_mover data_mover
-#    fi
-#  fi
+  Start_Bot $BOT_USER poll poll poll.ini
   
+  if [ $IS_DATA_COLLECTOR == "true" ] ; then
+    Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
+  fi
+  
+  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+    Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
+  fi
+  
+  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+  
+  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+    Start_Bot $BOT_USER bet_checker bet_checker
+  fi
+  
+  case $BOT_MACHINE_ROLE in
+    PROD) BOT_LIST="bot" ;;
+    TEST) BOT_LIST="bot" ;;
+    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
+    *)    BOT_LIST="" ;;
+  esac
+  
+  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+    for bot in $BOT_LIST ; do
+      if [ $bot == "bot" ] ; then
+        Start_Bot $BOT_USER $bot bot betfair.ini
+      else
+        Start_Bot $BOT_USER $bot bot $bot.ini
+      fi
+    done
+    BET_PLACER_LIST="bet_placer_010 bet_placer_011 \
+                     bet_placer_020 bet_placer_021 \
+                     bet_placer_030 bet_placer_031 \
+                     bet_placer_060 bet_placer_061 \
+                     bet_placer_140 bet_placer_141 \
+                     bet_placer_150 bet_placer_151 \
+                     bet_placer_160 bet_placer_161 \
+                     bet_placer_170 bet_placer_171 \
+                     bet_placer_180 bet_placer_181 \
+                     bet_placer_190 bet_placer_191"
+                     
+    for placer in $BET_PLACER_LIST ; do
+      Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
+    done
+  fi
+  
+#  BET_PLACER_LIST="football_better"
+#  for placer in $BET_PLACER_LIST ; do
+#    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
+#  done
+
+  #zip logfiles every hour, on minute 17 in the background
+  if [ $BOT_MINUTE == "17" ] ; then
+    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+  fi
+  
+  if [ $BOT_HOUR == "05" ] ; then
+    if [ $BOT_MINUTE == "10" ] ; then
+      Start_Bot $BOT_USER data_mover data_mover
+    fi
+  fi
+  Start_Bot $BOT_USER poll_place poll_place poll.ini
 }
 # start here 
 
 HOUR=$(date +"%H")
 MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
+DAY=$(date +"%d")
        
 case $BOT_MACHINE_ROLE in
-  SIM)
+  PROD)
     #check the bots, and startup if  necessarry
     USER_LIST=$(ls $BOT_START/user)
-    USER_LIST="bnl"
+    USER_LIST_PLAYERS_ONLY="bnl jmb"
+    
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
   
-#    if [ $HOUR == "09" ] ; then
-#      if [ $MINUTE == "18" ] ; then
-#        SLEEPTIME=1
-#        for USR in $USER_LIST ; do
-#          #Start one every 20 min in the background
-#          (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-#          (( SLEEPTIME = SLEEPTIME +1200 ))
-#        done
-#      fi
-#    fi
-#    
-#    if [ $MINUTE == "40" ] ; then
-#      for USR in $USER_LIST ; do
-#        #Start one every 2 min in the background
-#        SLEEPTIME=1
-#        (sleep $SLEEPTIME && $VACUUMDB --host=$HOST --username=bnl --dbname=$USR --analyze) &
-#        (( SLEEPTIME = SLEEPTIME +120 ))
-#      done
-#    fi
-#   
-#    if [ $HOUR == "06" ] ; then
-#      if [ $MINUTE == "58" ] ; then
-#        for USR in $USER_LIST_PLAYERS_ONLY ; do
-#          #Start one every 5 min in the background, both with and without system tables
-#          SLEEPTIME=1
-#          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
-#          (( SLEEPTIME = SLEEPTIME +10 ))
-#          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-#          (( SLEEPTIME = SLEEPTIME +300 ))
-#        done
-#      fi
-#    fi  
+# until we got data disk    if [ $HOUR == "05" ] ; then
+# until we got data disk      if [ $MINUTE == "10" ] ; then
+# until we got data disk        SLEEPTIME=1
+# until we got data disk        for USR in $USER_LIST ; do
+# until we got data disk          #Start one every 20 min in the background
+# until we got data disk          (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
+# until we got data disk          (( SLEEPTIME = SLEEPTIME +1200 ))
+# until we got data disk        done
+# until we got data disk      fi
+# until we got data disk    fi
+    
+    if [ $DAY == "16" ] ; then
+      if [ $HOUR == "04" ] ; then
+        if [ $MINUTE == "18" ] ; then
+          SLEEPTIME=1
+          for USR in $USER_LIST ; do
+            #Start one every 20 min in the background
+            (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
+            (( SLEEPTIME = SLEEPTIME +1200 ))
+          done
+        fi
+      fi
+    fi
+    
+    if [ $MINUTE == "40" ] ; then
+      for USR in $USER_LIST_PLAYERS_ONLY ; do
+        #Start one every 2 min in the background
+        SLEEPTIME=1
+        (sleep $SLEEPTIME && $VACUUMDB --host=$HOST --username=bnl --dbname=$USR --analyze) &
+        (( SLEEPTIME = SLEEPTIME +120 ))
+      done
+    fi
+    
+    if [ $HOUR == "06" ] ; then
+      if [ $MINUTE == "58" ] ; then
+        for USR in $USER_LIST_PLAYERS_ONLY ; do
+          #Start one every 5 min in the background, both with and without system tables
+          SLEEPTIME=1
+          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
+          (( SLEEPTIME = SLEEPTIME +10 ))
+          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
+          (( SLEEPTIME = SLEEPTIME +300 ))
+        done
+      fi
+    fi  
   
   ;;
   *) 
@@ -223,7 +244,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com joakim@birgerson.com"
 
-DISK_LIST="xvda xvdf"  
+DISK_LIST="8af81777-14a7-448d-99f9-58b712945f73"  
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')

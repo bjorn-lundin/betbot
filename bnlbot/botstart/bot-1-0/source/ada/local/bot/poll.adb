@@ -32,29 +32,28 @@ procedure Poll is
   package EV renames Ada.Environment_Variables;
   use type Rpc.Result_Type;
 
-  Me : constant String := "Poll.";
-  Timeout  : Duration := 120.0;
-  My_Lock  : Lock.Lock_Type;
-  Msg      : Process_Io.Message_Type;
+  Me              : constant String := "Poll.";
+  Timeout         : Duration := 120.0;
+  My_Lock         : Lock.Lock_Type;
+  Msg             : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
-  Cmd_Line : Command_Line_Configuration;
-
-  Now : Calendar2.Time_Type;
+  Cmd_Line        : Command_Line_Configuration;
+  Now             : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  type Bet_Type is (Back_1_1, Back_1_1_Marker,
-                    Back_2_1, Back_2_1_Marker,
-                    Back_3_1, Back_3_1_Marker,
-                    Back_4_1, Back_4_1_Marker,
-                    Back_5_1, Back_5_1_Marker,
-                    Back_6_1, Back_6_1_Marker,
+  type Bet_Type is (Back_1_1,  Back_1_1_Marker,
+                    Back_2_1,  Back_2_1_Marker,
+                    Back_3_1,  Back_3_1_Marker,
+                    Back_4_1,  Back_4_1_Marker,
+                    Back_5_1,  Back_5_1_Marker,
+                    Back_6_1,  Back_6_1_Marker,
                     Back_7_1,  Back_7_1_Marker,
                     Back_8_1,  Back_8_1_Marker,
                     Back_9_1,  Back_9_1_Marker,
@@ -72,8 +71,8 @@ procedure Poll is
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
     Bet_Size          : Bet_Size_Type := 0.0;
-    Is_Allowed_To_Bet : Boolean := False;
-    Has_Betted        : Boolean := False;
+    Is_Allowed_To_Bet : Boolean       := False;
+    Has_Betted        : Boolean       := False;
     Max_Loss_Per_Day  : Bet_Size_Type := 0.0;
   end record;
 
@@ -101,7 +100,7 @@ procedure Poll is
   begin
 
     declare
-    -- only bet on allowed days 
+      -- only bet on allowed days 
       Now : Time_Type := Clock;
       Day : Week_Day_Type := Week_Day_Of(Now);
     begin
@@ -163,32 +162,29 @@ procedure Poll is
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
     Price_List : Table_Aprices.Aprices_List_Pack2.List;
-
+    --------------------------------------------
     function "<" (Left,Right : Table_Aprices.Data_Type) return Boolean is
     begin
       return Left.Backprice < Right.Backprice;
     end "<";
-
+    --------------------------------------------
     package Backprice_Sorter is new  Table_Aprices.Aprices_List_Pack2.Generic_Sorting("<");  
     
     Price_Finish      : Table_Apricesfinish.Data_Type;
     Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
-
-    Price : Table_Aprices.Data_Type;
+    Price             : Table_Aprices.Data_Type;
     Has_Been_In_Play,
-    In_Play   : Boolean := False;
-    Best_Runners : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
-    Eos : Boolean := False;
+    In_Play           : Boolean := False;
+    Best_Runners      : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Eos               : Boolean := False;
     type Market_Type is (Win, Place);
-    Markets : array (Market_Type'range) of Table_Amarkets.Data_Type;
-    Found_Place : Boolean := True;
-    T : Sql.Transaction_Type;
+    Markets           : array (Market_Type'range) of Table_Amarkets.Data_Type;
+    Found_Place       : Boolean := True;
+    T                 : Sql.Transaction_Type;
     Current_Turn_Not_Started_Race : Integer_4 := 0;
-    Betfair_Result : Rpc.Result_Type := Rpc.Result_Type'first;
-    Saldo : Table_Abalances.Data_Type;
-
+    Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
+    Saldo             : Table_Abalances.Data_Type;
     Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
-
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
 
@@ -203,16 +199,15 @@ procedure Poll is
         Bets_Allowed(i).Bet_Size := 30.0;
       end if;
     end loop;
-
-    Bets_Allowed(Back_2_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_6_1).Bet_Size := 50.0;
+    -- override Bet_Size for some bets
+    Bets_Allowed(Back_2_1).Bet_Size  := 50.0;
+    Bets_Allowed(Back_6_1).Bet_Size  := 50.0;
     Bets_Allowed(Back_18_1).Bet_Size := 50.0;
     Bets_Allowed(Back_17_1).Bet_Size := 50.0;
     Bets_Allowed(Back_19_1).Bet_Size := 50.0;
     Bets_Allowed(Back_14_1).Bet_Size := 50.0;
     Bets_Allowed(Back_15_1).Bet_Size := 50.0;
     Bets_Allowed(Back_16_1).Bet_Size := 50.0;
-    
     
     Market.Marketid := Market_Notification.Market_Id;
 
@@ -221,7 +216,7 @@ procedure Poll is
     Move("DR_HORSES_PLC_BACK_FINISH_1.20_30.0_1", Bets_Allowed(Back_3_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.30_30.0_1", Bets_Allowed(Back_4_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.40_30.0_1", Bets_Allowed(Back_5_1).Bet_Name);    
-    Move("DR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.40_40.0_1", Bets_Allowed(Back_12_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.50_40.0_1", Bets_Allowed(Back_11_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.60_40.0_1", Bets_Allowed(Back_7_1).Bet_Name);
@@ -229,12 +224,12 @@ procedure Poll is
     Move("DR_HORSES_PLC_BACK_FINISH_1.80_40.0_1", Bets_Allowed(Back_9_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.90_40.0_1", Bets_Allowed(Back_10_1).Bet_Name);
     Move("DR_HORSES_PLC_BACK_FINISH_1.30_50.0_1", Bets_Allowed(Back_13_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_18_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_17_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_19_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.70_50.0_1", Bets_Allowed(Back_14_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.80_50.0_1", Bets_Allowed(Back_15_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_16_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1",    Bets_Allowed(Back_18_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_17_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_19_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.70_50.0_1",    Bets_Allowed(Back_14_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.80_50.0_1",    Bets_Allowed(Back_15_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_16_1).Bet_Name);
 
     --markers
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
@@ -429,8 +424,8 @@ procedure Poll is
                    Main_Bet             => Back_1_1,
                    Marker_Bet           => Back_1_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_10"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_11"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_010"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_011"));
         end if;
 
     --Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_2_1_Marker).Bet_Name);
@@ -444,8 +439,8 @@ procedure Poll is
                     Main_Bet             => Back_2_1,
                     Marker_Bet           => Back_2_1_Marker,
                     Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_20"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_21"));
+                    Receiver_Name        => To_Pio_Name("bet_placer_020"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_021"));
         end if;
 
     --Move("MR_HORSES_PLC_BACK_FINISH_1.20_30.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
@@ -459,8 +454,8 @@ procedure Poll is
                     Main_Bet             => Back_3_1,
                     Marker_Bet           => Back_3_1_Marker,
                     Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_30"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_31"));
+                    Receiver_Name        => To_Pio_Name("bet_placer_030"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_031"));
         end if;
 
         if Best_Runners(1).Backprice <= Float_8(1.30) and then
@@ -473,8 +468,8 @@ procedure Poll is
                     Main_Bet             => Back_4_1,
                     Marker_Bet           => Back_4_1_Marker,
                     Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_40"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_41"));
+                    Receiver_Name        => To_Pio_Name("bet_placer_040"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_041"));
         end if;
 
         if Best_Runners(1).Backprice <= Float_8(1.40) and then
@@ -487,8 +482,8 @@ procedure Poll is
                     Main_Bet             => Back_5_1,
                     Marker_Bet           => Back_5_1_Marker,
                     Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_50"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_51"));
+                    Receiver_Name        => To_Pio_Name("bet_placer_050"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_051"));
         end if;
 
         if Best_Runners(1).Backprice <= Float_8(1.50) and then
@@ -501,8 +496,8 @@ procedure Poll is
                     Main_Bet             => Back_6_1,
                     Marker_Bet           => Back_6_1_Marker,
                     Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_60"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_61"));
+                    Receiver_Name        => To_Pio_Name("bet_placer_060"),
+                    Receiver_Marker_Name => To_Pio_Name("bet_placer_061"));
         end if;
 
         if Best_Runners(1).Backprice <= Float_8(1.60) and then
@@ -516,8 +511,8 @@ procedure Poll is
                    Main_Bet             => Back_7_1,
                    Marker_Bet           => Back_7_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_70"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_71"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_070"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_071"));
         end if;
 
         if Best_Runners(1).Backprice <= Float_8(1.70) and then
@@ -531,8 +526,8 @@ procedure Poll is
                    Main_Bet             => Back_8_1,
                    Marker_Bet           => Back_8_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_80"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_81"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_080"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_081"));
         end if;
         
         if Best_Runners(1).Backprice <= Float_8(1.80) and then
@@ -546,8 +541,8 @@ procedure Poll is
                    Main_Bet             => Back_9_1,
                    Marker_Bet           => Back_9_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_90"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_91"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_090"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_091"));
         end if;
         
         
