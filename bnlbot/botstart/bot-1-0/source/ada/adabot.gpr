@@ -43,6 +43,7 @@ project Adabot is
    Stat_Mains   := ("lay_during_race.adb",
                     "lay_during_race2.adb",
                     "back_hitrate.adb",
+                    "test_sum_sql.adb",
                   --  "back_during_race2.adb",
                  --   "prices_during_race.adb",
                  --   "plot_race_prices.adb",
