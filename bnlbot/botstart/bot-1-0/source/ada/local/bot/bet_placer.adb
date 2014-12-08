@@ -195,7 +195,7 @@ procedure Bet_Placer is
   begin
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     Outstanding := Integer_4(abs(Saldo.Exposure));
-    Log(Me & "Check_Outstanding_Balance", " " & Saldo.To_String);
+    --Log(Me & "Check_Outstanding_Balance", " " & Saldo.To_String);
   end Check_Outstanding_Balance;
   
   
