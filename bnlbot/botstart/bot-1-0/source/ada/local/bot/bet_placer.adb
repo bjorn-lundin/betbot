@@ -23,12 +23,13 @@ with Gnat.Strings;
 with Table_Abets;
 with Table_Amarkets;
 with Table_Arunners;
+with Table_Abalances;
 with Bot_System_Number;
 with Utils;
 
 procedure Bet_Placer is
   package EV renames Ada.Environment_Variables;
-  Timeout  : Duration := 120.0;
+  Timeout  : Duration := 30.0;
   My_Lock  : Lock.Lock_Type;
   Msg      : Process_Io.Message_Type;
   Me       : constant String := "Main.";
@@ -44,9 +45,11 @@ procedure Bet_Placer is
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
-  Cmd_Line : Command_Line_Configuration;
-  Global_Enabled : Boolean := False;
-
+  Cmd_Line        : Command_Line_Configuration;
+  Global_Enabled         : Boolean   := False;
+  Global_Max_Outstanding       : Integer_4 := 4_000;
+  Global_Currently_Outstanding : Integer_4 := 0;
+  Global_Keep_Alive_Counter           : Integer_4 := 0;  
   ------------------------------------------------------
   
   procedure Place_Bet(Bet_Name     : Bet_Name_Type;
@@ -175,8 +178,8 @@ procedure Bet_Placer is
   end Back_Bet;
 
   ------------------------------------------------------
- procedure Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
- begin 
+  procedure Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
+  begin 
     Place_Bet(Bet_Name     => Place_Lay_Bet.Bet_Name,
               Market_Id    => Place_Lay_Bet.Market_Id,
               Selection_Id => Place_Lay_Bet.Selection_Id,
@@ -186,6 +189,16 @@ procedure Bet_Placer is
   end Lay_Bet;
 
   ------------------------------------------------------
+  procedure Check_Outstanding_Balance(Outstanding : in out Integer_4) is
+    Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
+    Saldo             : Table_Abalances.Data_Type;
+  begin
+    Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
+    Outstanding := Integer_4(abs(Saldo.Exposure));
+    Log(Me & "Check_Outstanding_Balance", " " & Saldo.To_String);
+  end Check_Outstanding_Balance;
+  
+  
 
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
@@ -249,6 +262,8 @@ begin
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
   Global_Enabled := Ini.Get_Value(Utils.Trim(Utils.Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
+  
+  Global_Max_Outstanding := Integer_4(Ini.Get_Value("global","max_outstanding",4000));
 
   Log(Me, "Start main loop");
 
@@ -271,13 +286,21 @@ begin
         -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
         when Bot_Messages.Place_Back_Bet_Message    =>
           if Global_Enabled then
-            Back_Bet(Bot_Messages.Data(Msg));
+            if Global_Currently_Outstanding <= Global_Max_Outstanding then
+              Back_Bet(Bot_Messages.Data(Msg));
+            else  
+              Log(Me, "Too much outstanding bets, max" & Global_Max_Outstanding'Img & " cur" & Global_Currently_Outstanding'Img );
+            end if;
           else  
             Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
         when Bot_Messages.Place_Lay_Bet_Message    =>
           if Global_Enabled then
-            Lay_Bet(Bot_Messages.Data(Msg));
+            if Global_Currently_Outstanding <= Global_Max_Outstanding then
+              Lay_Bet(Bot_Messages.Data(Msg));
+            else  
+              Log(Me, "Too much outstanding bets, max" & Global_Max_Outstanding'Img & " cur" & Global_Currently_Outstanding'Img );
+            end if;
           else  
             Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
@@ -291,10 +314,15 @@ begin
           raise Sql.Transaction_Error with "Uncommited transaction in progress 2 !! BAD!";
         end if;
 
-        Rpc.Keep_Alive(OK);
-        if not OK then
-          Rpc.Login;
-        end if;
+        Check_Outstanding_Balance(Global_Max_Outstanding);
+        Global_Keep_Alive_Counter := Global_Keep_Alive_Counter +1;
+        if Global_Keep_Alive_Counter >= 10 then
+          Rpc.Keep_Alive(OK);
+          Global_Keep_Alive_Counter := 0;
+          if not OK then
+            Rpc.Login;
+          end if;
+        end if;  
     end;
     Now := Calendar2.Clock;
 

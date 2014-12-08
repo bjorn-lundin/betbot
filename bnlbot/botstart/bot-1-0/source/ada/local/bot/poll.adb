@@ -200,9 +200,9 @@ procedure Poll is
       end if;
     end loop;
     -- override Bet_Size for some bets
-    Bets_Allowed(Back_2_1).Bet_Size  := 50.0;
+    Bets_Allowed(Back_2_1).Bet_Size  := 120.0;
     Bets_Allowed(Back_6_1).Bet_Size  := 50.0;
-    Bets_Allowed(Back_18_1).Bet_Size := 50.0;
+    Bets_Allowed(Back_18_1).Bet_Size := 100.0;
     Bets_Allowed(Back_17_1).Bet_Size := 50.0;
     Bets_Allowed(Back_19_1).Bet_Size := 50.0;
     Bets_Allowed(Back_14_1).Bet_Size := 50.0;
