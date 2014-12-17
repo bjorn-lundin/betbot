@@ -54,6 +54,8 @@ procedure Poll is
                     Back_4_1,  Back_4_1_Marker,
                     Back_5_1,  Back_5_1_Marker,
                     Back_6_1,  Back_6_1_Marker,
+                    Back_7_1,  Back_7_1_Marker,
+                    Back_8_1,  Back_8_1_Marker,
                     Lay_1_1,   Lay_1_2);
 
   type Allowed_Type is record
@@ -249,6 +251,8 @@ procedure Poll is
     Bets_Allowed(Back_4_1).Bet_Size :=  50.0;
     Bets_Allowed(Back_5_1).Bet_Size :=  50.0;
     Bets_Allowed(Back_6_1).Bet_Size :=  50.0;
+    Bets_Allowed(Back_7_1).Bet_Size :=  50.0;
+    Bets_Allowed(Back_8_1).Bet_Size :=  50.0;
 
     Bets_Allowed(Lay_1_1).Bet_Size  :=   1.0; -- make sure not accepted
     Bets_Allowed(Lay_1_2).Bet_Size  :=   1.0; -- make sure not accepted
@@ -261,6 +265,8 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_4_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_5_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_7_1).Bet_Name);
+    Move("DR_HORSES_PLC_BACK_FINISH_1.10_30.0_1", Bets_Allowed(Back_8_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_200_1",       Bets_Allowed(Lay_1_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_300_1",       Bets_Allowed(Lay_1_2).Bet_Name);
 
@@ -271,6 +277,8 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1", Bets_Allowed(Back_8_1_Marker).Bet_Name);
   
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -536,6 +544,37 @@ procedure Poll is
                    Receiver_Marker_Name => To_Pio_Name("bet_placer_061"));
         end if;
         
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1
+        if Best_Runners(1).Backprice <= Float_8(1.10) and then
+           Best_Runners(4).Backprice >= Float_8(20.0) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          -- Back The leader in PLC market...
+
+          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
+                   Main_Bet             => Back_7_1,
+                   Marker_Bet           => Back_7_1_Marker,
+                   Place_Market_Id      => Markets(Place).Marketid,
+                   Receiver_Name        => To_Pio_Name("bet_placer_070"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_071"));
+        end if;
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1
+        if Best_Runners(1).Backprice <= Float_8(1.10) and then
+           Best_Runners(4).Backprice >= Float_8(30.0) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          -- Back The leader in PLC market...
+
+          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
+                   Main_Bet             => Back_8_1,
+                   Marker_Bet           => Back_8_1_Marker,
+                   Place_Market_Id      => Markets(Place).Marketid,
+                   Receiver_Name        => To_Pio_Name("bet_placer_080"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_081"));
+        end if;
+
       end if;
       
       -- laybets
@@ -551,7 +590,7 @@ procedure Poll is
           Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
                         Main_Bet             => Lay_1_1,
                         Market_Id            => Markets(Win).Marketid,
-                        Receiver_Name        => To_Pio_Name("bet_placer_070"));
+                        Receiver_Name        => To_Pio_Name("bet_placer_090"));
         end if;
          
         --HORSES_WIN_LAY_FINISH_100_300_1
@@ -564,7 +603,7 @@ procedure Poll is
           Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
                         Main_Bet             => Lay_1_2,
                         Market_Id            => Markets(Win).Marketid,
-                        Receiver_Name        => To_Pio_Name("bet_placer_071"));
+                        Receiver_Name        => To_Pio_Name("bet_placer_091"));
         end if;
          
       end if;        

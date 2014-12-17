@@ -1,4 +1,4 @@
-with Text_Io;
+--with Text_Io;
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
