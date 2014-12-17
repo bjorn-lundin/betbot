@@ -610,7 +610,7 @@ package body Sql is
             if T.Counter /= Global_Transaction.Counter then
                T.Counter := 0;
                -- not the owner, do nothing
-               Log(Me, "not the owner tries to commit");
+               -- Log(Me, "not the owner tries to commit");
                return;
             end if;
       end case;

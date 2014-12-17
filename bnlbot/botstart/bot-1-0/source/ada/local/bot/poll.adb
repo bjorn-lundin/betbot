@@ -54,19 +54,7 @@ procedure Poll is
                     Back_4_1,  Back_4_1_Marker,
                     Back_5_1,  Back_5_1_Marker,
                     Back_6_1,  Back_6_1_Marker,
-                    Back_7_1,  Back_7_1_Marker,
-                    Back_8_1,  Back_8_1_Marker,
-                    Back_9_1,  Back_9_1_Marker,
-                    Back_10_1, Back_10_1_Marker,
-                    Back_11_1, Back_11_1_Marker,
-                    Back_12_1, Back_12_1_Marker,
-                    Back_13_1, Back_13_1_Marker,
-                    Back_14_1, Back_14_1_Marker,
-                    Back_15_1, Back_15_1_Marker,
-                    Back_16_1, Back_16_1_Marker,
-                    Back_17_1, Back_17_1_Marker,
-                    Back_18_1, Back_18_1_Marker,
-                    Back_19_1, Back_19_1_Marker);
+                    Lay_1_1,   Lay_1_2);
 
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -87,6 +75,60 @@ procedure Poll is
   end To_Pio_Name;
 
   --------------------------------------------------------------
+                        
+  procedure Send_Lay_Bet(Selectionid   : Integer_4;
+                         Main_Bet      : Bet_Type;
+                         Market_Id     : Market_Id_Type;
+                         Receiver_Name : Process_Io.Name_Type) is
+
+    PLB             : Bot_Messages.Place_Lay_Bet_Record;
+    Receiver        : Process_Io.Process_Type := ((others => ' '),(others => ' '));
+    Did_Bet : array(1..1) of Boolean := (others => False);
+  begin
+
+    declare
+      -- only bet on allowed days 
+      Now : Time_Type := Clock;
+      Day : Week_Day_Type := Week_Day_Of(Now);
+    begin
+      if not Cfg.Allowed_Days(Day) then
+        Log("No bet layed, bad weekday" );
+        return;
+      end if;
+    end;
+  
+    PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
+    Move(Market_Id, PLB.Market_Id);
+    Move("300.0", PLB.Price); --abs max
+    PLB.Selection_Id := Selectionid;
+
+    if not Bets_Allowed(Main_Bet).Has_Betted and then
+           Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
+      Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PLB.Size);
+      Move(Receiver_Name, Receiver.Name);
+      Bot_Messages.Send(Receiver, PLB);
+      Bets_Allowed(Main_Bet).Has_Betted := True;
+      Did_Bet(1) := True;
+    end if;
+
+
+    if Did_Bet(1) then
+      Log("Send_Lay_Bet called with " &
+         " Selectionid=" & Selectionid'Img &
+         " Main_Bet=" & Main_Bet'Img &
+         " Market_Id= '" & Market_Id & "'" &
+         " Receiver_Name= '" & Receiver_Name & "'");
+    end if;
+
+    -- just to save time between logs
+    if Did_Bet(1) then
+      Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
+    end if;
+
+  end Send_Lay_Bet;
+                        
+  --------------------------------------------------------------
+  
   procedure Send_Bet(Selectionid                         : Integer_4;
                      Main_Bet, Marker_Bet                : Bet_Type;
                      Place_Market_Id                     : Market_Id_Type;
@@ -137,7 +179,7 @@ procedure Poll is
     end if;
 
     if Did_Bet(1) or else Did_Bet(2) then
-    Log("Send_Bet called with " &
+      Log("Send_Bet called with " &
          " Selectionid=" & Selectionid'Img &
          " Main_Bet=" & Main_Bet'Img &
          " Marker_Bet=" & Marker_Bet'Img &
@@ -176,6 +218,8 @@ procedure Poll is
     Has_Been_In_Play,
     In_Play           : Boolean := False;
     Best_Runners      : array (1..4) of Table_Aprices.Data_Type := (others => Table_Aprices.Empty_Data);
+    Worst_Runner      : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
+    
     Eos               : Boolean := False;
     type Market_Type is (Win, Place);
     Markets           : array (Market_Type'range) of Table_Amarkets.Data_Type;
@@ -200,58 +244,33 @@ procedure Poll is
       end if;
     end loop;
     -- override Bet_Size for some bets
-    Bets_Allowed(Back_2_1).Bet_Size  := 120.0;
-    Bets_Allowed(Back_6_1).Bet_Size  := 50.0;
-    Bets_Allowed(Back_18_1).Bet_Size := 100.0;
-    Bets_Allowed(Back_17_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_19_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_14_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_15_1).Bet_Size := 50.0;
-    Bets_Allowed(Back_16_1).Bet_Size := 50.0;
-    
+    Bets_Allowed(Back_2_1).Bet_Size := 200.0;
+    Bets_Allowed(Back_3_1).Bet_Size := 150.0;
+    Bets_Allowed(Back_4_1).Bet_Size :=  50.0;
+    Bets_Allowed(Back_5_1).Bet_Size :=  50.0;
+    Bets_Allowed(Back_6_1).Bet_Size :=  50.0;
+
+    Bets_Allowed(Lay_1_1).Bet_Size  :=   1.0; -- make sure not accepted
+    Bets_Allowed(Lay_1_2).Bet_Size  :=   1.0; -- make sure not accepted
+
     Market.Marketid := Market_Notification.Market_Id;
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.20_30.0_1", Bets_Allowed(Back_3_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.30_30.0_1", Bets_Allowed(Back_4_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.40_30.0_1", Bets_Allowed(Back_5_1).Bet_Name);    
-    Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.40_40.0_1", Bets_Allowed(Back_12_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.50_40.0_1", Bets_Allowed(Back_11_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.60_40.0_1", Bets_Allowed(Back_7_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.70_40.0_1", Bets_Allowed(Back_8_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.80_40.0_1", Bets_Allowed(Back_9_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.90_40.0_1", Bets_Allowed(Back_10_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.30_50.0_1", Bets_Allowed(Back_13_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1",    Bets_Allowed(Back_18_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_17_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_19_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.70_50.0_1",    Bets_Allowed(Back_14_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.80_50.0_1",    Bets_Allowed(Back_15_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_16_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1",    Bets_Allowed(Back_3_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_4_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_5_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_100_200_1",       Bets_Allowed(Lay_1_1).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_100_300_1",       Bets_Allowed(Lay_1_2).Bet_Name);
 
     --markers
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_2_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.20_30.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.30_30.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.40_30.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.60_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-    
-    Move("MR_HORSES_PLC_BACK_FINISH_1.40_40.0_1", Bets_Allowed(Back_12_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_40.0_1", Bets_Allowed(Back_11_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.70_40.0_1", Bets_Allowed(Back_8_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.80_40.0_1", Bets_Allowed(Back_9_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.90_40.0_1", Bets_Allowed(Back_10_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.30_50.0_1", Bets_Allowed(Back_13_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_18_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_17_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_19_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.70_50.0_1", Bets_Allowed(Back_14_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.80_50.0_1", Bets_Allowed(Back_15_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_16_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);
   
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -276,10 +295,6 @@ procedure Poll is
         Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       end if;
     end loop;
-
-    Bets_Allowed(Back_4_1_Marker).Is_Allowed_To_Bet := False;
-    Bets_Allowed(Back_5_1_Marker).Is_Allowed_To_Bet := False;
-    Bets_Allowed(Back_7_1_Marker).Is_Allowed_To_Bet := False;
     
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
@@ -403,17 +418,19 @@ procedure Poll is
         end loop;
       end ;      
 
+      Worst_Runner := Price_List.Last_Element;
       for i in Best_Runners'range loop
-        Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
+        Log("Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
       end loop;
+      Log("Worst_Runner " & Worst_Runner.To_String);
 
       if Best_Runners(1).Backprice >= Float_8(1.0) and then
          not Is_Data_Collector and then
          Found_Place and then
          Markets(Place).Numwinners >= Integer_4(3) then
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
-         
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
            Best_Runners(2).Backprice >= Float_8(7.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
@@ -428,7 +445,8 @@ procedure Poll is
                    Receiver_Marker_Name => To_Pio_Name("bet_placer_011"));
         end if;
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_2_1_Marker).Bet_Name);
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1
         -- Back The leader in PLC market again, but different requirements...
         if Best_Runners(1).Backprice <= Float_8(1.25) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
@@ -442,257 +460,103 @@ procedure Poll is
                     Receiver_Name        => To_Pio_Name("bet_placer_020"),
                     Receiver_Marker_Name => To_Pio_Name("bet_placer_021"));
         end if;
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.20_30.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
-        -- Back The leader in PLC market again, but different requirements...
-        if Best_Runners(1).Backprice <= Float_8(1.20) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(30.0) then
-
-           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                    Main_Bet             => Back_3_1,
-                    Marker_Bet           => Back_3_1_Marker,
-                    Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_030"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_031"));
-        end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.30) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(30.0) then
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.30_30.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
-           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                    Main_Bet             => Back_4_1,
-                    Marker_Bet           => Back_4_1_Marker,
-                    Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_040"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_041"));
-        end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.40) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(30.0) then
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.40_30.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
-           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                    Main_Bet             => Back_5_1,
-                    Marker_Bet           => Back_5_1_Marker,
-                    Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_050"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_051"));
-        end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.50) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(4).Backprice >= Float_8(30.0) then
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);
-           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                    Main_Bet             => Back_6_1,
-                    Marker_Bet           => Back_6_1_Marker,
-                    Place_Market_Id      => Markets(Place).Marketid,
-                    Receiver_Name        => To_Pio_Name("bet_placer_060"),
-                    Receiver_Marker_Name => To_Pio_Name("bet_placer_061"));
-        end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.60) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.60_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_7_1,
-                   Marker_Bet           => Back_7_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_070"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_071"));
-        end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.70) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.70_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_8_1,
-                   Marker_Bet           => Back_8_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_080"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_081"));
-        end if;
         
-        if Best_Runners(1).Backprice <= Float_8(1.80) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.80_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_9_1,
-                   Marker_Bet           => Back_9_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_090"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_091"));
-        end if;
-        
-        
-        if Best_Runners(1).Backprice <= Float_8(1.90) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.90_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_10_1,
-                   Marker_Bet           => Back_10_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_100"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_101"));
-        end if;
-        
-        if Best_Runners(1).Backprice <= Float_8(1.40) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.40_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_12_1,
-                   Marker_Bet           => Back_12_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_120"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_121"));
-      end if;
-
-        if Best_Runners(1).Backprice <= Float_8(1.50) and then
-           Best_Runners(4).Backprice >= Float_8(40.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.50_40.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_11_1,
-                   Marker_Bet           => Back_11_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_110"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_111"));
-        end if;
-        
-        if Best_Runners(1).Backprice <= Float_8(1.30) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.30_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_13_1,
-                   Marker_Bet           => Back_13_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_130"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_131"));
-        end if;
-        
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1
         if Best_Runners(1).Backprice <= Float_8(1.40) and then
            Best_Runners(4).Backprice >= Float_8(50.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_18_1,
-                   Marker_Bet           => Back_18_1_Marker,
+                   Main_Bet             => Back_3_1,
+                   Marker_Bet           => Back_3_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_180"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_181"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_030"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_031"));
         end if;
 
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1
         if Best_Runners(1).Backprice <= Float_8(1.50) and then
            Best_Runners(4).Backprice >= Float_8(50.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_17_1,
-                   Marker_Bet           => Back_17_1_Marker,
+                   Main_Bet             => Back_4_1,
+                   Marker_Bet           => Back_4_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_170"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_171"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_040"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_041"));
         end if;
+        
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1
         if Best_Runners(1).Backprice <= Float_8(1.60) and then
            Best_Runners(4).Backprice >= Float_8(50.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_19_1,
-                   Marker_Bet           => Back_19_1_Marker,
+                   Main_Bet             => Back_5_1,
+                   Marker_Bet           => Back_5_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_190"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_191"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_050"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_051"));
         end if;
-        if Best_Runners(1).Backprice <= Float_8(1.70) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.70_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_14_1,
-                   Marker_Bet           => Back_14_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_140"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_141"));
-        end if;
-        if Best_Runners(1).Backprice <= Float_8(1.80) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.80_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
-          Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_15_1,
-                   Marker_Bet           => Back_15_1_Marker,
-                   Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_150"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_151"));
-        end if;
+        --------------------------------------------------------------- 
+        --MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1
         if Best_Runners(1).Backprice <= Float_8(1.90) and then
            Best_Runners(4).Backprice >= Float_8(50.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
 
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
           Send_Bet(Selectionid          => Best_Runners(1).Selectionid,
-                   Main_Bet             => Back_16_1,
-                   Marker_Bet           => Back_16_1_Marker,
+                   Main_Bet             => Back_6_1,
+                   Marker_Bet           => Back_6_1_Marker,
                    Place_Market_Id      => Markets(Place).Marketid,
-                   Receiver_Name        => To_Pio_Name("bet_placer_160"),
-                   Receiver_Marker_Name => To_Pio_Name("bet_placer_161"));
+                   Receiver_Name        => To_Pio_Name("bet_placer_060"),
+                   Receiver_Marker_Name => To_Pio_Name("bet_placer_061"));
         end if;
         
       end if;
+      
+      -- laybets
+      if Worst_Runner.Backprice >= Float_8(1.0) and then
+         not Is_Data_Collector  then
+        --HORSES_WIN_LAY_FINISH_100_200_1
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(100.0) and then
+           Worst_Runner.Layprice < Float_8(200.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
+                        Main_Bet             => Lay_1_1,
+                        Market_Id            => Markets(Win).Marketid,
+                        Receiver_Name        => To_Pio_Name("bet_placer_070"));
+        end if;
+         
+        --HORSES_WIN_LAY_FINISH_100_300_1
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(100.0) and then
+           Worst_Runner.Layprice < Float_8(300.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
+                        Main_Bet             => Lay_1_2,
+                        Market_Id            => Markets(Win).Marketid,
+                        Receiver_Name        => To_Pio_Name("bet_placer_071"));
+        end if;
+         
+      end if;        
 
       if Markets(Place).Numwinners < Integer_4(3) then
         exit Poll_Loop;

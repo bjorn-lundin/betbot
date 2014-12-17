@@ -335,7 +335,59 @@ package body Simulation_Storage is
                                         Num_Matched       => 0,
                                         Ts_Of_Fulfill   => Calendar2.Time_Type_First)
                                );  
-    declare
+    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_2"), 
+                                        Marketid        => (others => ' '), 
+                                        Leader_At_Max   => 1.10,
+                                        Next_At_Min     => 7.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 2,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Matched       => 0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                               );
+    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_2"), 
+                                        Marketid        => (others => ' '), 
+                                        Leader_At_Max   => 1.25,
+                                        Next_At_Min     => 12.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 2,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Num_Matched       => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                               );  
+    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_3"), 
+                                        Marketid        => (others => ' '), 
+                                        Leader_At_Max   => 1.10,
+                                        Next_At_Min     => 7.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 3,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Matched       => 0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                               );
+    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_3"), 
+                                        Marketid        => (others => ' '), 
+                                        Leader_At_Max   => 1.25,
+                                        Next_At_Min     => 12.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 3,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Num_Matched       => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                               );  
+    declare            --1234567890123456789
       Templ : String := "SIM_PLC_1.90_60.0_1";
     begin    
       for Leader_Int in 1 ..2 loop
