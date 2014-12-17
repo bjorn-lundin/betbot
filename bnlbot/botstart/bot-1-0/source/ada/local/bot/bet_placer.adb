@@ -167,13 +167,10 @@ procedure Bet_Placer is
     
     -- test save bet in JSON on disk
     declare
-      F        : Text_Io.File_Type;
       Filename : String := EV.Value("BOT_HOME") & "/pending/" & Utils.Trim(A_Bet.Betid'Img) & ".json";
     begin 
-      -- create a file using Betid as unique name
-      Text_Io.Create  (File => F, Mode => Text_Io.Out_File, Name => Filename);
-      Text_Io.Put_Line(File => F, Item => A_Bet.To_JSON.Write);
-      Text_Io.Close   (File => F);
+      -- create a file using Betid as unique name, and have it locked during the write, until closed
+      Lock.Write_File(Name => Filename, Content =>  A_Bet.To_JSON.Write);
     
     exception
       when E: others => 
