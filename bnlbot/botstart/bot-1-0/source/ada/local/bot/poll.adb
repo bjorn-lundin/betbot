@@ -429,9 +429,6 @@ procedure Poll is
           Worst_Runner := Tmp;
         end if;  
       end loop;
- 
-     
-      
       
       for i in Best_Runners'range loop
         Log("Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);

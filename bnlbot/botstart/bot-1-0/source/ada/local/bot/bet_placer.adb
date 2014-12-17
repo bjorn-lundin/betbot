@@ -1,10 +1,15 @@
+with Text_Io;
 with Ada.Exceptions;
 with Ada.Command_Line;
+with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+with Ada.Strings ; use Ada.Strings;
+with Ada.Environment_Variables;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
 with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with Ada.Strings ; use Ada.Strings;
 with Bot_Config;
 with Lock;
 with Bot_Types; use Bot_Types;
@@ -14,12 +19,9 @@ with Posix;
 with Logging; use Logging;
 with Process_Io;
 with Core_Messages;
-with Ada.Environment_Variables;
 with Bot_Svn_Info;
 with Rpc;
 with Ini;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
 with Table_Abets;
 with Table_Amarkets;
 with Table_Arunners;
@@ -162,6 +164,33 @@ procedure Bet_Placer is
         Update_Betwon_To_Null.Execute;
       end if;
     T.Commit;
+    
+    -- test save bet in JSON on disk
+    declare
+      F        : Text_Io.File_Type;
+      Filename : String := EV.Value("BOT_HOME") & "/pending/" & Utils.Trim(A_Bet.Betid'Img) & ".json";
+    begin 
+      -- create a file using Betid as unique name
+      Text_Io.Create  (File => F, Mode => Text_Io.Out_File, Name => Filename);
+      Text_Io.Put_Line(File => F, Item => A_Bet.To_JSON.Write);
+      Text_Io.Close   (File => F);
+    
+    exception
+      when E: others => 
+        declare
+          Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+          Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+          Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+        begin
+          Log("in Place_Bet: " & Last_Exception_Name);
+          Log("Message : " & Last_Exception_Messsage);
+          Log(Last_Exception_Info);
+          Log("addr2line" & " --functions --basenames --exe=" &
+               Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+        end ;
+    end;
+    
+    
   end Place_Bet;
   
   -------------------------------------------------------
