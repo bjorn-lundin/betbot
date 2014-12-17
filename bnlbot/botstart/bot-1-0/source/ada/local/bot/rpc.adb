@@ -293,7 +293,7 @@ package body RPC is
                       Field    : in     String;
                       Target   : in out Integer_4;
                       Found    :    out Boolean) is
-   Tmp : Integer := 0 ;
+   Tmp : Long_Long_Integer := 0 ;
  begin
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
@@ -351,7 +351,7 @@ package body RPC is
       Has_Error := True;
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
-        Log(Me, "error.code " & Integer(Integer'(Error.Get("code")))'Img);
+        Log(Me, "error.code " & Integer(Long_Long_Integer'(Error.Get("code")))'Img);
         if Error.Has_Field("data") then
           Data := Error.Get("data");
           if Data.Has_Field("APINGException") then
@@ -889,7 +889,7 @@ package body RPC is
 
           if Runner.Has_Field("selectionId") then
             declare
-              i : Integer := Runner.Get("selectionId");
+              i : Long_Long_Integer := Runner.Get("selectionId");
             begin
               DB_Runner.Selectionid := Integer_4(i);
 --              Log(Me & "Check_Market_Result", "selection id" & i'Img);
@@ -1844,7 +1844,7 @@ package body RPC is
     Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
     Instruction.Set_Field (Field_Name => "side",        Field => Side'Img);
     Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
-    Instruction.Set_Field (Field_Name => "selectionId", Field => Integer(Selection_Id));
+    Instruction.Set_Field (Field_Name => "selectionId", Field => Long_Long_Integer(Selection_Id));
 
     Append (Instructions , Instruction);
 

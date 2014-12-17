@@ -260,7 +260,7 @@ package body GNATCOLL.JSON is
                end loop;
 
                if Part = Int then
-                  return Create (Integer'Value (To_String (Unb)));
+                  return Create (Long_Long_Integer'Value (To_String (Unb)));
                else
                   return Create (Float'Value (To_String (Unb)));
                end if;
@@ -690,7 +690,7 @@ package body GNATCOLL.JSON is
    -- Create --
    ------------
 
-   function Create (Val : Integer) return JSON_Value is
+   function Create (Val : Long_Long_Integer) return JSON_Value is
       Ret : JSON_Value;
    begin
       Ret.Kind      := JSON_Int_Type;
@@ -784,7 +784,7 @@ package body GNATCOLL.JSON is
    procedure Set_Field
      (Val        : JSON_Value;
       Field_Name : UTF8_String;
-      Field      : Integer) is
+      Field      : Long_Long_Integer) is
    begin
       Set_Field (Val, Field_Name, Create (Field));
    end Set_Field;
@@ -845,7 +845,7 @@ package body GNATCOLL.JSON is
    -- Get --
    ---------
 
-   function Get (Val : JSON_Value) return Integer is
+   function Get (Val : JSON_Value) return Long_Long_Integer is
    begin
       return Val.Int_Value;
    end Get;
@@ -922,7 +922,7 @@ package body GNATCOLL.JSON is
    begin
       return Get (Get (Val, Field));
    end Get;
-   function Get (Val : JSON_Value; Field : UTF8_String) return Integer is
+   function Get (Val : JSON_Value; Field : UTF8_String) return Long_Long_Integer is
    begin
       return Get (Get (Val, Field));
    end Get;

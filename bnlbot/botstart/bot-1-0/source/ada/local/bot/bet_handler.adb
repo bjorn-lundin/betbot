@@ -1539,7 +1539,7 @@ package body Bet_Handler is
         Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
         Instruction.Set_Field (Field_Name => "side",        Field => Utils.Trim(Side));
         Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
-        Instruction.Set_Field (Field_Name => "selectionId", Field => Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
+        Instruction.Set_Field (Field_Name => "selectionId", Field => Long_Long_Integer( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Selectionid));
 
         Append (Instructions , Instruction);
 --      will get INVALID_CUSTOMER_REF from betfair if not unique
