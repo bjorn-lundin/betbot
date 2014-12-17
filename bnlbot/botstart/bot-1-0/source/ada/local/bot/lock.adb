@@ -118,6 +118,65 @@ package body Lock is
   end Write_File;
   
   
+  function Read_File(Name : String ) return String is
+    Fd,
+    Result : Posix.Int := Posix.Int'First;
+    use Interfaces.C.Strings;
+  begin
+    declare
+      C_Name : Chars_Ptr := New_String (Name);
+    begin
+      Fd := Posix.Open(C_Name,O_WRONLY , 8#644#); 
+      Free(C_Name);
+    end;    
+      
+    Result := Posix.Lockf(Fd, F_TLOCK, 0); -- test lock, and lock if unlocked, error if already locked
+    if Result = -1 then
+      Log(Me & "Read_File", "Take lock failed, Errno =" & Errno'Img);
+      Result := Posix.Close(Fd); 
+      if Result = -1 then
+        Log(Me & "Read_File", "close failed, Errno =" & Errno'Img);
+      end if;      
+      return "";       
+    end if;
+    -- ok, no-one else has the lock, relase it
+    Result := Posix.Lockf(Fd, F_ULOCK, 0); --unlock
+    if Result = -1 then
+      Log(Me & "Read_File", "Lockf failed in unlock, Errno =" & Errno'Img);
+    end if;      
+   
+    -- ok, no-one else has the lock, close it
+    Result := Posix.Close(Fd); 
+    if Result = -1 then
+      Log(Me & "Read_File", "close failed, Errno =" & Errno'Img);
+    end if;
+    
+    --reopen for read
+    declare
+      C_Name : Chars_Ptr := New_String (Name);
+    begin
+      Fd := Posix.Open(C_Name, O_RDONLY, 8#644#); 
+      Free(C_Name);
+    end;    
+    
+    declare
+      --type Buffer_String_Type is String(1..2_048):
+      --type Buffer_String_Pointer is access all Buffer_String_Type;     
+      Str   : aliased Posix.Buffer_String_Type := (others => ' ') ; 
+      Size  : Posix.Size_t;
+    begin  
+      Size := Posix.Read(Fd, Str'unchecked_access, Str'Length);
+      if Integer(Size) = -1 then
+        Posix.Perror("Posix.Read");
+        Log(Me & "Read_File", "read =" & Errno'Img);
+      end if;
+      Result := Posix.Close(Fd); 
+      if Result = -1 then
+        Log(Me & "Read_File", "close failed, Errno =" & Errno'Img);
+      end if;
+      return Str(1 .. Integer(Size));
+    end;  
+  end Read_File;  
   
   ------------------------------------------------------------------
   

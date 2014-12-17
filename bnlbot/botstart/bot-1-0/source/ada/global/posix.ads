@@ -64,6 +64,11 @@ package Posix is
   function Errno return Int;  
   function Write(Fd : Int; Buf : Interfaces.C.Strings.Chars_Ptr; Count : Size_T) return Size_T;
   
+  subtype Buffer_String_Type is String(1..2_048);
+  type Buffer_String_Pointer is access all Buffer_String_Type;     
+  
+  function Read (Fd : Int; Buf : Buffer_String_Pointer; Count : Size_T) return Size_T;
+  
 private
 
   pragma Import (C, Getpid ,"getpid");
@@ -79,6 +84,10 @@ private
 --ssize_t write(int fd, const void *buf, size_t count); 
   pragma Import(C, Write, "write");
   pragma Import(C, Lockf, "lockf");
+  
+  --ssize_t read(int fd, void *buf, size_t count);
+  pragma Import(C, Read, "read");
+  
 end Posix;
 
 

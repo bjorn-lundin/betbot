@@ -5,6 +5,7 @@ with Ada.Finalization;
 package Lock is
 
   procedure Write_File(Name : String;  Content : String);
+  function Read_File(Name : String ) return String;
 
   type Lock_Type is tagged private;
   Lock_Error : exception;

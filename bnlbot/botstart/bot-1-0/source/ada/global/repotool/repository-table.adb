@@ -3371,7 +3371,7 @@ package body Repository.Table is
     for Col of Self.Columns loop
       case Data_Type(Col.Type_Of) is
         when A_Char =>
-          Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Data." & Utils.Trim(Col.Name.Camel_Case) & ");");
+          Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Utils.Trim(Data." & Col.Name.Camel_Case & "));");
         when A_Int .. A_Long | A_Short_Code =>
           Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Long_Long_Integer(Data." & Col.Name.Camel_Case & "));");
         when A_Boolean =>
