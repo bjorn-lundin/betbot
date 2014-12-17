@@ -66,7 +66,7 @@ package body Lock is
     if A_Lock.Currently_Holding_Lock then
       Result := Posix.Lockf(A_Lock.Fd, F_ULOCK, 0); --unlock
       if Result = -1 then
-        Log(Me & "Finalize", "fcntl failed in unlock/Finalize, Errno =" & Errno'Img);
+        Log(Me & "Finalize", "Lockf failed in unlock/Finalize, Errno =" & Errno'Img);
       end if;      
       Log(Me & "Finalize", "Lock removed");
     end if; 
@@ -74,4 +74,51 @@ package body Lock is
   end Finalize;
   ------------------------------------------------------------------
 
+  
+  procedure Write_File(Name : String;  Content : String) is
+    Fd,
+    Result : Posix.Int := Posix.Int'First;
+    use Interfaces.C.Strings;
+  begin
+    declare
+      C_Name : Chars_Ptr := New_String (Name);
+    begin
+      Fd := Posix.Open(C_name, O_WRONLY + O_CREAT , 8#644#); 
+      Free(C_Name);
+    end;    
+      
+    Result := Posix.Lockf(Fd, F_TLOCK, 0); -- test lock, and lock if unlocked, error if already locked
+    if Result = -1 then
+      Log(Me & "Write_File", "Take lock failed, Errno =" & Errno'Img);
+    end if;
+    
+    declare
+      Str   : String := Content & Ascii.LF;
+      C_Str : Chars_Ptr := New_String (Str);
+      Size  : Posix.Size_t;
+    begin  
+      Size := Posix.Write(Fd, C_Str, Str'Length);
+      Free(C_Str);
+      if Integer(Size) = -1 then
+        Log(Me & "Write_File", "write pid Errno =" & Errno'Img);
+      end if;
+      if Integer(Size) /= Str'length then
+        Log(Me & "Write_File", "Size/str'length =" & Size'Img & "/" & Str'Length'Img);
+      end if;
+      Result := Posix.Lockf(Fd, F_ULOCK, 0); --unlock
+      if Result = -1 then
+        Log(Me & "Write_File", "Lockf failed in unlock, Errno =" & Errno'Img);
+      end if;      
+      Result := Posix.Close(Fd); 
+      if Result = -1 then
+        Log(Me & "Write_File", "close failed, Errno =" & Errno'Img);
+      end if;      
+    end;  
+    
+  end Write_File;
+  
+  
+  
+  ------------------------------------------------------------------
+  
 end Lock;

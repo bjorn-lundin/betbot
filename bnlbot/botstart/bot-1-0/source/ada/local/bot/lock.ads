@@ -3,6 +3,9 @@ with Posix; use Posix;
 
 with Ada.Finalization;
 package Lock is
+
+  procedure Write_File(Name : String;  Content : String);
+
   type Lock_Type is tagged private;
   Lock_Error : exception;
   procedure Take(A_Lock : in out Lock_Type; Name : in String);
