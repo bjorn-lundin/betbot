@@ -3362,9 +3362,7 @@ package body Repository.Table is
     Put_Line("          " & Quote("") & ";");
     Put_Line("  end To_String;");
     Put_Line("");
-
-    
-  --------  
+    --------  
     Put_Line("  function To_JSON(Data : in Table_" & Self.Name.Camel_Case & ".Data_Type) return JSON_Value is");
     Put_Line("    Json_Data : JSON_Value := Create_Object;");
     Put_Line("  begin");
