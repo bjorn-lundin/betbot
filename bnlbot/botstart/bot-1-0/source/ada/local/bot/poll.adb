@@ -405,6 +405,7 @@ procedure Poll is
 
       Price.Backprice := 10_000.0;
       Best_Runners := (others => Price);
+      Worst_Runner.Layprice := 10_000.0;
       
       declare
         Idx : Integer := 0;
@@ -418,7 +419,20 @@ procedure Poll is
         end loop;
       end ;      
 
-      Worst_Runner := Price_List.Last_Element;
+      for Tmp of Price_List loop
+        if Tmp.Status(1..6) = "ACTIVE" and then
+           Tmp.Backprice > Float_8(1.0) and then
+           Tmp.Layprice < Float_8(1_000.0) and then 
+           Tmp.Selectionid /= Best_Runners(1).Selectionid and then
+           Tmp.Selectionid /= Best_Runners(2).Selectionid then
+           
+          Worst_Runner := Tmp;
+        end if;  
+      end loop;
+ 
+     
+      
+      
       for i in Best_Runners'range loop
         Log("Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
       end loop;
@@ -528,7 +542,7 @@ procedure Poll is
       end if;
       
       -- laybets
-      if Worst_Runner.Backprice >= Float_8(1.0) and then
+      if Worst_Runner.Layprice <= Float_8(1000.0) and then
          not Is_Data_Collector  then
         --HORSES_WIN_LAY_FINISH_100_200_1
         if Worst_Runner.Backprice <= Float_8(400.0) and then
