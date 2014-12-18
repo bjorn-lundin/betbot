@@ -24,9 +24,7 @@ with Rpc;
 with Ini;
 with Table_Abets;
 with Table_Amarkets;
-with Table_Arunners;
 with Table_Abalances;
-with Bot_System_Number;
 with Utils;
 
 procedure Bet_Placer is
@@ -37,6 +35,7 @@ procedure Bet_Placer is
   Me       : constant String := "Main.";
   OK : Boolean := False;
   Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
+  Global_Counter : Integer := 0;
 
   Is_Time_To_Exit : Boolean := False;
   use type Sql.Transaction_Status_Type;
@@ -63,9 +62,6 @@ procedure Bet_Placer is
     --T : Sql.Transaction_Type;
     A_Bet : Table_Abets.Data_Type;
     A_Market : Table_Amarkets.Data_Type;
-    A_Runner : Table_Arunners.Data_Type;
-    type Eos_Type is (Market, Runner);
-    Eos : array (Eos_Type'range) of Boolean := (others => False);
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
@@ -98,7 +94,7 @@ procedure Bet_Placer is
     
     if Bet_Name(1..2) = "DR" then
     
-      Bet_Id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet_Id := 0;
       Move( "EXECUTION_COMPLETE", Order_Status);
       Move( "SUCCESS", Execution_Report_Status);
       Move( "SUCCESS", Execution_Report_Error_Code);
@@ -169,8 +165,12 @@ procedure Bet_Placer is
     --T.Commit;
     
     -- test save bet in JSON on disk
+    Global_Counter := Global_Counter +1;
     declare
-      Filename : String := EV.Value("BOT_HOME") & "/pending/" & Utils.Trim(A_Bet.Betid'Img) & ".json";
+      Filename : String := EV.Value("BOT_HOME") & "/pending/" & 
+                        Utils.Trim(Process_io.This_Process.Name) & "_" & 
+                        Utils.Trim(Global_Counter'Img) & "_" & 
+                        Utils.Trim(Posix.Getpid'Img) & ".json";
       NBP : Bot_Messages.New_Bet_Placed_Notification_Record := (Dummy => 0);
     begin 
       -- create a file using Betid as unique name, and have it locked during the write, until closed
