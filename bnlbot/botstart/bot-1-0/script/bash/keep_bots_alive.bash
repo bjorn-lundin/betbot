@@ -67,7 +67,6 @@ function Start_Bot () {
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
     export BOT_NAME
     $BOT_TARGET/bin/$EXE_NAME --user=$BOT_USER $INI_NAME $MODE &
-#    $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
     echo "Started $BOT_NAME for $BOT_USER"
     echo "--------------------------------"
   fi
@@ -103,11 +102,7 @@ function Check_Bots_For_User () {
   if [ $IS_DATA_COLLECTOR == "true" ] ; then
     Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
   fi
-  
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-  fi
-  
+    
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   
   if [ $IS_DATA_COLLECTOR == "false" ] ; then
@@ -145,11 +140,6 @@ function Check_Bots_For_User () {
     done
   fi
   
-#  BET_PLACER_LIST="football_better"
-#  for placer in $BET_PLACER_LIST ; do
-#    Start_Bot $BOT_USER $placer football_better $placer.ini $BOT_MODE
-#  done
-
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
@@ -213,15 +203,18 @@ case $BOT_MACHINE_ROLE in
       done
     fi
     
-    if [ $HOUR == "06" ] ; then
-      if [ $MINUTE == "58" ] ; then
+    if [ $HOUR == "05" ] ; then
+      if [ $MINUTE == "00" ] ; then
         for USR in $USER_LIST_PLAYERS_ONLY ; do
+        
+          Start_Bot $USR saldo_fetcher saldo_fetcher
+        
           #Start one every 5 min in the background, both with and without system tables
           SLEEPTIME=1
           (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
           (( SLEEPTIME = SLEEPTIME +10 ))
           (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-          (( SLEEPTIME = SLEEPTIME +300 ))
+          (( SLEEPTIME = SLEEPTIME +300 ))          
         done
       fi
     fi  
