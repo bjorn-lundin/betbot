@@ -26,6 +26,10 @@ with Calendar2;
 with Types; use Types;
 with Utils;
 
+with Table_Amarkets;
+with Table_Arunners;
+
+
 procedure Bet_Checker is
   package EV renames Ada.Environment_Variables;
   Timeout         : Duration := 25.0; 
@@ -67,6 +71,10 @@ procedure Bet_Checker is
         Filename : String := Full_Name(Dir_Ent);
         Content  : String := Lock.Read_File(Filename);
         Bet      : Table_Abets.Data_Type;
+        A_Market : Table_Amarkets.Data_Type;
+        A_Runner : Table_Arunners.Data_Type;
+        type Eos_Type is (Market, Runner);
+        Eos : array (Eos_Type'range) of Boolean := (others => False);
       begin
         Log(Filename & " has content length" & Content'Length'Img);
         if Content'Length > 0 then
@@ -81,6 +89,17 @@ procedure Bet_Checker is
   
           begin
             T.Start;
+              A_Market.Marketid := Bet.Marketid;
+              Table_Amarkets.Read(A_Market, Eos(Market) );
+              
+              A_Runner.Marketid := Bet.Marketid;
+              A_Runner.Selectionid := Bet.Selectionid;
+              Table_Arunners.Read(A_Runner, Eos(Runner) );   
+              
+              Bet.Startts       := A_Market.Startts;
+              Bet.Fullmarketname:= A_Market.Marketname;
+              Bet.Runnername    := A_Runner.Runnername;
+            
               Bet.Insert;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
               if Utils.Trim(Bet.Exestatus) = "SUCCESS" then
