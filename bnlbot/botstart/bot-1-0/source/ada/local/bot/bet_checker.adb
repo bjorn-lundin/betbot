@@ -1,5 +1,14 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
+with Ada.Environment_Variables;
+with Ada.Directories;
+with Gnatcoll.Json; 
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+with Table_Abets;
+
+with Bot_System_Number;
+
 with Stacktrace;
 with Lock; 
 --with Text_io;
@@ -9,12 +18,10 @@ with Posix;
 with Logging; use Logging;
 with Process_Io;
 with Core_Messages;
-with Ada.Environment_Variables;
+
 with Bet_Handler;
-with Gnat.Command_Line; use Gnat.Command_Line;
 with Ini;
 with Rpc;
-with Gnat.Strings;
 with Calendar2;
 with Types; use Types;
 with Utils;
@@ -24,14 +31,82 @@ procedure Bet_Checker is
   Timeout         : Duration := 25.0; 
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
-  Me              : constant String := "Main";  
+  Me              : constant String := "Main.";  
   Ba_Daemon       : aliased Boolean := False;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Config          : Command_Line_Configuration;
   OK              : Boolean := False;
   Is_Time_To_Exit : Boolean := False;
   Now             : Calendar2.Time_Type := Calendar2.Clock;
+  Update_Betwon_To_Null : Sql.Statement_Type;
+
   
+  --------------------------------------------
+  procedure Treat_Pending_Bets_In_Json_File is
+    Service : String := "Treat_Pending_Bets_In_Json_File";
+    use Gnatcoll.Json;
+    use Ada.Directories;
+    Dir : String := Ada.Environment_Variables.Value("BOT_HOME") & "/pending";
+    Dir_Ent     : Directory_Entry_Type;
+    The_Search  : Search_Type;
+    JSON_Data   : JSON_Value;
+    T : Sql.Transaction_Type;
+  begin
+  
+    Log(Me & Service , "Look for *.json in " & Dir);
+    Start_Search(Search    => The_Search,
+                 Directory => Dir,
+                 Pattern   => "*.json");
+  
+    loop
+      exit when not More_Entries(Search => The_Search);
+      Log("----------------------");
+      Get_Next_Entry(Search          => The_Search,
+                     Directory_Entry => Dir_Ent);
+      declare
+        Filename : String := Full_Name(Dir_Ent);
+        Content  : String := Lock.Read_File(Filename);
+        Bet      : Table_Abets.Data_Type;
+      begin
+        Log(Filename & " has content length" & Content'Length'Img);
+        if Content'Length > 0 then
+          JSON_Data := Read(Content,"");
+  
+          Bet := Table_Abets.From_JSON(JSON_Data);
+          
+          if Bet.Betid = 0 then
+            Log(Me & Service, "bad bet, get fake betid");
+            Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+          end if;
+  
+          begin
+            T.Start;
+              Bet.Insert;
+              Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
+              if Utils.Trim(Bet.Exestatus) = "SUCCESS" then
+                Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+                Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+                Update_Betwon_To_Null.Execute;
+              end if;
+            T.Commit;
+          exception 
+            when Sql.Duplicate_Index => 
+              T.Rollback;
+              Log(Me & Service, "duplicate index " & Bet.To_String);
+          end ;
+          
+          Log(Me & Service, "delete file  index " & Filename);
+          Delete_File(Filename);
+        else
+          Log(Me & Service, Filename & " was locked or empty. Retry next time");        
+        end if;  
+      end; 
+    end loop;
+    End_Search (Search => The_Search);
+  end Treat_Pending_Bets_In_Json_File ;
+
+  ------------------------------------------------------
+
 begin
    Define_Switch
      (Config,
@@ -89,7 +164,10 @@ begin
       
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                            => exit Main_Loop;
+        when Bot_Messages.New_Bet_Placed_Notification_Message =>  
+          Treat_Pending_Bets_In_Json_File;
         when Bot_Messages.New_Winners_Arrived_Notification_Message =>  
+          Treat_Pending_Bets_In_Json_File;
           Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
@@ -101,6 +179,7 @@ begin
           if not OK then
             Rpc.Login;
           end if;
+          Treat_Pending_Bets_In_Json_File;
           Bet_Handler.Check_If_Bet_Accepted;
           Bet_Handler.Check_Bets;
         Log(Me, "Timeout stop");

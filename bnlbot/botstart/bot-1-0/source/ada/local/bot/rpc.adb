@@ -7,7 +7,6 @@ with Aws.Headers;
 with Aws.Headers.Set;
 with Aws.Response;
 with Aws.Client;
-with Bot_System_Number;
 with Bot_Svn_Info;
 with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
@@ -2065,7 +2064,7 @@ package body RPC is
 
     if Trim(Execution_Report_Status) /= "SUCCESS" then
       Log(Me & "Make_Bet", "bad bet, get fake betid");
-      Bet_id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet_id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
 

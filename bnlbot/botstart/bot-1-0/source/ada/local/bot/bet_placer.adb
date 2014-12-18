@@ -41,7 +41,7 @@ procedure Bet_Placer is
   Is_Time_To_Exit : Boolean := False;
   use type Sql.Transaction_Status_Type;
 
-  Update_Betwon_To_Null : Sql.Statement_Type;
+  --Update_Betwon_To_Null : Sql.Statement_Type;
 
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -53,7 +53,6 @@ procedure Bet_Placer is
   Global_Currently_Outstanding : Integer_4 := 0;
   Global_Keep_Alive_Counter           : Integer_4 := 0;  
   ------------------------------------------------------
-  
   procedure Place_Bet(Bet_Name     : Bet_Name_Type;
                       Market_Id    : Market_Id_Type;
                       Selection_Id : Integer_4;
@@ -61,7 +60,7 @@ procedure Bet_Placer is
                       Size         : Bet_Size_Type;
                       Price        : Bet_Price_Type) is
                       
-    T : Sql.Transaction_Type;
+    --T : Sql.Transaction_Type;
     A_Bet : Table_Abets.Data_Type;
     A_Market : Table_Amarkets.Data_Type;
     A_Runner : Table_Arunners.Data_Type;
@@ -153,24 +152,29 @@ procedure Bet_Placer is
                      
     end if; -- dry run 
 
-    T.Start;
+    --T.Start;
       A_Bet.Startts := A_Market.Startts;
       A_Bet.Fullmarketname := A_Market.Marketname;
-      A_Bet.Insert;
-      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
-      if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
-        Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-        Update_Betwon_To_Null.Set("BETID", A_Bet.Betid);
-        Update_Betwon_To_Null.Execute;
-      end if;
-    T.Commit;
+    --  A_Bet.Insert;
+    --  Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
+    --  if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
+    --    Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+    --    Update_Betwon_To_Null.Set("BETID", A_Bet.Betid);
+    --    Update_Betwon_To_Null.Execute;
+    --  end if;
+    --T.Commit;
     
     -- test save bet in JSON on disk
     declare
       Filename : String := EV.Value("BOT_HOME") & "/pending/" & Utils.Trim(A_Bet.Betid'Img) & ".json";
+      NBP : Bot_Messages.New_Bet_Placed_Notification_Record := (Dummy => 0);
     begin 
       -- create a file using Betid as unique name, and have it locked during the write, until closed
       Lock.Write_File(Name => Filename, Content =>  A_Bet.To_JSON.Write);
+ 
+      Log(Me, "Notifying 'bot_checker' about newly placed bet");
+      Bot_Messages.Send(Process_IO.To_Process_Type("bot_checker"), NBP);
+      
     
     exception
       when E: others => 
@@ -266,14 +270,14 @@ begin
 
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
-  Log(Me, "Connect Db");
-  Sql.Connect
-        (Host     => Ini.Get_Value("database","host",""),
-         Port     => Ini.Get_Value("database","port",5432),
-         Db_Name  => Ini.Get_Value("database","name",""),
-         Login    => Ini.Get_Value("database","username",""),
-         Password => Ini.Get_Value("database","password",""));
-  Log(Me, "db Connected");
+--  Log(Me, "Connect Db");
+--  Sql.Connect
+--        (Host     => Ini.Get_Value("database","host",""),
+--         Port     => Ini.Get_Value("database","port",5432),
+--         Db_Name  => Ini.Get_Value("database","name",""),
+--         Login    => Ini.Get_Value("database","username",""),
+--         Password => Ini.Get_Value("database","password",""));
+--  Log(Me, "db Connected");
 
   Log(Me, "Login betfair");
   Rpc.Init(
@@ -303,9 +307,9 @@ begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
-      if Sql.Transaction_Status /= Sql.None then
-        raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
-      end if;
+      --if Sql.Transaction_Status /= Sql.None then
+      --  raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+      --end if;
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
@@ -336,9 +340,9 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
-        if Sql.Transaction_Status /= Sql.None then
-          raise Sql.Transaction_Error with "Uncommited transaction in progress 2 !! BAD!";
-        end if;
+--        if Sql.Transaction_Status /= Sql.None then
+--          raise Sql.Transaction_Error with "Uncommited transaction in progress 2 !! BAD!";
+--        end if;
 
         Check_Outstanding_Balance(Global_Max_Outstanding);
         Global_Keep_Alive_Counter := Global_Keep_Alive_Counter +1;
@@ -361,8 +365,8 @@ begin
   end loop Main_Loop;
 
 
-  Log(Me, "Close Db");
-  Sql.Close_Session;
+--  Log(Me, "Close Db");
+--  Sql.Close_Session;
   Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
   Rpc.Logout;
   Logging.Close;

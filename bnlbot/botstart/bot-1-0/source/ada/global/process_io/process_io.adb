@@ -481,7 +481,25 @@ package body Process_Io is
   pragma obsolescent(Error_Message,"Print error when occurs instead, not later");
   ----------------------------------------------------------
 
+  --function To_Pio_Name(S : String ) return Process_Io.Name_Type is
+  --  P :  Process_Io.Name_Type := (others => ' ');
+  --begin
+  --  Move(S,P);
+  --  return P;
+  --end To_Pio_Name;
+  ------------------------------------------------------------
 
+  
+  function To_Process_Type(S : String ) return Process_Io.Process_Type is
+    P :  Process_Io.Process_Type := ((others => ' '), (others => ' '));
+  begin
+    Move(S,P.Name);
+    return P;
+  end To_Process_Type;
+  ----------------------------------------------------------
+
+    
+  
 --begin
 --  My_Process := Get_Process;
 end Process_Io;
