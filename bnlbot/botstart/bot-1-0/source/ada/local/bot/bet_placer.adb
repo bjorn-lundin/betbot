@@ -7,13 +7,14 @@ with Ada.Environment_Variables;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
+with Table_Abets;
+with Table_Abalances;
 with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
 with Bot_Config;
 with Lock;
 with Bot_Types; use Bot_Types;
-with Sql;
 with Bot_Messages;
 with Posix;
 with Logging; use Logging;
@@ -22,9 +23,6 @@ with Core_Messages;
 with Bot_Svn_Info;
 with Rpc;
 with Ini;
-with Table_Abets;
-with Table_Amarkets;
-with Table_Abalances;
 with Utils;
 
 procedure Bet_Placer is
@@ -38,9 +36,6 @@ procedure Bet_Placer is
   Global_Counter : Integer := 0;
 
   Is_Time_To_Exit : Boolean := False;
-  use type Sql.Transaction_Status_Type;
-
-  --Update_Betwon_To_Null : Sql.Statement_Type;
 
   Sa_Par_Mode     : aliased Gnat.Strings.String_Access;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -59,9 +54,7 @@ procedure Bet_Placer is
                       Size         : Bet_Size_Type;
                       Price        : Bet_Price_Type) is
                       
-    --T : Sql.Transaction_Type;
     A_Bet : Table_Abets.Data_Type;
-    A_Market : Table_Amarkets.Data_Type;
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
@@ -85,13 +78,6 @@ procedure Bet_Placer is
     Log("'" & Utils.F8_Image(Local_Price) & "'");
     Log("'" & Utils.F8_Image(Local_Size) & "'");
 
-    --A_Market.Marketid := Market_Id;
-    --Table_Amarkets.Read(A_Market, Eos(Market) );
-    --
-    --A_Runner.Marketid := Market_Id;
-    --A_Runner.Selectionid := Selection_Id;
-    --Table_Arunners.Read(A_Runner, Eos(Runner) );   
-    
     if Bet_Name(1..2) = "DR" then
     
       Bet_Id := 0;
@@ -121,14 +107,11 @@ procedure Bet_Placer is
         Exeerrcode     => Execution_Report_Error_Code,
         Inststatus     => Instruction_Report_Status,
         Insterrcode    => Instruction_Report_Error_Code,
-      --  Startts        => A_Market.Startts,
         Startts        => Calendar2.Time_Type_First,
         Betplaced      => Now,
         Pricematched   => Float_8(Average_Price_Matched),
         Sizematched    => Float_8(L_Size_Matched),
-       -- Runnername     => A_Runner.Runnername,
         Runnername     => (others => ' '),
-       -- Fullmarketname => A_Market.Marketname,
         Fullmarketname => (others => ' '),
         Svnrevision    => Bot_Svn_Info.Revision,
         Ixxlupd        => (others => ' '), --set by insert
@@ -152,19 +135,7 @@ procedure Bet_Placer is
                      
     end if; -- dry run 
 
-    --T.Start;
-      A_Bet.Startts := A_Market.Startts;
-      A_Bet.Fullmarketname := A_Market.Marketname;
-    --  A_Bet.Insert;
-    --  Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
-    --  if Utils.Trim(A_Bet.Exestatus) = "SUCCESS" then
-    --    Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-    --    Update_Betwon_To_Null.Set("BETID", A_Bet.Betid);
-    --    Update_Betwon_To_Null.Execute;
-    --  end if;
-    --T.Commit;
-    
-    -- test save bet in JSON on disk
+    -- save bet in JSON on disk
     Global_Counter := Global_Counter +1;
     declare
       Filename : String := EV.Value("BOT_HOME") & "/pending/" & 
@@ -177,8 +148,7 @@ procedure Bet_Placer is
       Lock.Write_File(Name => Filename, Content =>  A_Bet.To_JSON.Write);
  
       Log(Me, "Notifying 'bot_checker' about newly placed bet");
-      Bot_Messages.Send(Process_IO.To_Process_Type("bot_checker"), NBP);
-      
+      Bot_Messages.Send(Process_IO.To_Process_Type("bot_checker"), NBP);     
     
     exception
       when E: others => 
@@ -194,8 +164,6 @@ procedure Bet_Placer is
                Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
         end ;
     end;
-    
-    
   end Place_Bet;
   
   -------------------------------------------------------
@@ -208,7 +176,6 @@ procedure Bet_Placer is
               Side         => Back,
               Size         => Bet_Size_Type'Value(Place_Back_Bet.Size),
               Price        => Bet_Price_Type'Value(Place_Back_Bet.Price)) ;
-  
   end Back_Bet;
 
   ------------------------------------------------------
@@ -229,7 +196,6 @@ procedure Bet_Placer is
   begin
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     Outstanding := Integer_4(abs(Saldo.Exposure));
-    --Log(Me & "Check_Outstanding_Balance", " " & Saldo.To_String);
   end Check_Outstanding_Balance;
   
   
@@ -274,15 +240,6 @@ begin
 
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
---  Log(Me, "Connect Db");
---  Sql.Connect
---        (Host     => Ini.Get_Value("database","host",""),
---         Port     => Ini.Get_Value("database","port",5432),
---         Db_Name  => Ini.Get_Value("database","name",""),
---         Login    => Ini.Get_Value("database","username",""),
---         Password => Ini.Get_Value("database","password",""));
---  Log(Me, "db Connected");
-
   Log(Me, "Login betfair");
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
@@ -293,12 +250,9 @@ begin
           );
   Rpc.Login;
   Log(Me, "Login betfair done");
-
   Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
   Global_Enabled := Ini.Get_Value(Utils.Trim(Utils.Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
-  
   Global_Max_Outstanding := Integer_4(Ini.Get_Value("global","max_outstanding",4000));
-
   Log(Me, "Start main loop");
 
   if not Bot_Config.Config.Global_Section.Logging then
@@ -311,9 +265,6 @@ begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
-      --if Sql.Transaction_Status /= Sql.None then
-      --  raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
-      --end if;
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
@@ -344,10 +295,6 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
---        if Sql.Transaction_Status /= Sql.None then
---          raise Sql.Transaction_Error with "Uncommited transaction in progress 2 !! BAD!";
---        end if;
-
         Check_Outstanding_Balance(Global_Max_Outstanding);
         Global_Keep_Alive_Counter := Global_Keep_Alive_Counter +1;
         if Global_Keep_Alive_Counter >= 10 then
@@ -368,9 +315,6 @@ begin
 
   end loop Main_Loop;
 
-
---  Log(Me, "Close Db");
---  Sql.Close_Session;
   Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
   Rpc.Logout;
   Logging.Close;
