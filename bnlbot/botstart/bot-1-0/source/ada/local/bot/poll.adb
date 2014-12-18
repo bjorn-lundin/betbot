@@ -56,7 +56,8 @@ procedure Poll is
                     Back_6_1,  Back_6_1_Marker,
                     Back_7_1,  Back_7_1_Marker,
                     Back_8_1,  Back_8_1_Marker,
-                    Lay_1_1,   Lay_1_2);
+                    Lay_1_1,   Lay_1_2,
+                    Lay_2_1,   Lay_2_2);
 
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -80,6 +81,7 @@ procedure Poll is
                         
   procedure Send_Lay_Bet(Selectionid   : Integer_4;
                          Main_Bet      : Bet_Type;
+                         Max_Price     : Max_Lay_Price_Type;
                          Market_Id     : Market_Id_Type;
                          Receiver_Name : Process_Io.Name_Type) is
 
@@ -101,7 +103,7 @@ procedure Poll is
   
     PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Market_Id, PLB.Market_Id);
-    Move("300.0", PLB.Price); --abs max
+    Move(F8_Image(Float_8(Max_Price)), PLB.Price); --abs max
     PLB.Selection_Id := Selectionid;
 
     if not Bets_Allowed(Main_Bet).Has_Betted and then
@@ -256,6 +258,8 @@ procedure Poll is
 
     Bets_Allowed(Lay_1_1).Bet_Size  :=   1.0; -- make sure not accepted
     Bets_Allowed(Lay_1_2).Bet_Size  :=   1.0; -- make sure not accepted
+    Bets_Allowed(Lay_2_1).Bet_Size  :=   1.0; -- make sure not accepted
+    Bets_Allowed(Lay_2_2).Bet_Size  :=   1.0; -- make sure not accepted
 
     Market.Marketid := Market_Notification.Market_Id;
 
@@ -583,12 +587,13 @@ procedure Poll is
         --HORSES_WIN_LAY_FINISH_100_200_1
         if Worst_Runner.Backprice <= Float_8(400.0) and then
            Worst_Runner.Backprice >= Float_8(100.0) and then
-           Worst_Runner.Layprice < Float_8(200.0) and then 
+           Worst_Runner.Layprice <= Float_8(200.0) and then 
            Worst_Runner.Layprice > Float_8(10.0) then 
           -- lay the loser in WIN market...
 
           Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
                         Main_Bet             => Lay_1_1,
+                        Max_Price            => Max_Lay_Price_Type(200.0),
                         Market_Id            => Markets(Win).Marketid,
                         Receiver_Name        => To_Pio_Name("bet_placer_090"));
         end if;
@@ -596,14 +601,42 @@ procedure Poll is
         --HORSES_WIN_LAY_FINISH_100_300_1
         if Worst_Runner.Backprice <= Float_8(400.0) and then
            Worst_Runner.Backprice >= Float_8(100.0) and then
-           Worst_Runner.Layprice < Float_8(300.0) and then 
+           Worst_Runner.Layprice <= Float_8(300.0) and then 
            Worst_Runner.Layprice > Float_8(10.0) then 
           -- lay the loser in WIN market...
 
           Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
                         Main_Bet             => Lay_1_2,
+                        Max_Price            => Max_Lay_Price_Type(300.0),
                         Market_Id            => Markets(Win).Marketid,
                         Receiver_Name        => To_Pio_Name("bet_placer_091"));
+        end if;
+        
+        --HORSES_WIN_LAY_FINISH_80_150_1
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(80.0) and then
+           Worst_Runner.Layprice <= Float_8(150.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
+                        Main_Bet             => Lay_2_1,
+                        Max_Price            => Max_Lay_Price_Type(150.0),
+                        Market_Id            => Markets(Win).Marketid,
+                        Receiver_Name        => To_Pio_Name("bet_placer_100"));
+        end if;
+        --HORSES_WIN_LAY_FINISH_80_250_1
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(100.0) and then
+           Worst_Runner.Layprice <= Float_8(250.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid           => Worst_Runner.Selectionid,
+                        Main_Bet             => Lay_2_2,
+                        Max_Price            => Max_Lay_Price_Type(250.0),
+                        Market_Id            => Markets(Win).Marketid,
+                        Receiver_Name        => To_Pio_Name("bet_placer_101"));
         end if;
          
       end if;        
