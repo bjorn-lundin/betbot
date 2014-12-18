@@ -89,16 +89,16 @@ procedure Bet_Placer is
     Log("'" & Utils.F8_Image(Local_Price) & "'");
     Log("'" & Utils.F8_Image(Local_Size) & "'");
 
-    A_Market.Marketid := Market_Id;
-    Table_Amarkets.Read(A_Market, Eos(Market) );
-
-    A_Runner.Marketid := Market_Id;
-    A_Runner.Selectionid := Selection_Id;
-    Table_Arunners.Read(A_Runner, Eos(Runner) );   
+    --A_Market.Marketid := Market_Id;
+    --Table_Amarkets.Read(A_Market, Eos(Market) );
+    --
+    --A_Runner.Marketid := Market_Id;
+    --A_Runner.Selectionid := Selection_Id;
+    --Table_Arunners.Read(A_Runner, Eos(Runner) );   
     
     if Bet_Name(1..2) = "DR" then
     
-      Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet_Id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Move( "EXECUTION_COMPLETE", Order_Status);
       Move( "SUCCESS", Execution_Report_Status);
       Move( "SUCCESS", Execution_Report_Error_Code);
@@ -125,12 +125,15 @@ procedure Bet_Placer is
         Exeerrcode     => Execution_Report_Error_Code,
         Inststatus     => Instruction_Report_Status,
         Insterrcode    => Instruction_Report_Error_Code,
-        Startts        => A_Market.Startts,
+      --  Startts        => A_Market.Startts,
+        Startts        => Calendar2.Time_Type_First,
         Betplaced      => Now,
         Pricematched   => Float_8(Average_Price_Matched),
         Sizematched    => Float_8(L_Size_Matched),
-        Runnername     => A_Runner.Runnername,
-        Fullmarketname => A_Market.Marketname,
+       -- Runnername     => A_Runner.Runnername,
+        Runnername     => (others => ' '),
+       -- Fullmarketname => A_Market.Marketname,
+        Fullmarketname => (others => ' '),
         Svnrevision    => Bot_Svn_Info.Revision,
         Ixxlupd        => (others => ' '), --set by insert
         Ixxluts        => Now              --set by insert
@@ -141,7 +144,8 @@ procedure Bet_Placer is
       Rpc.Place_Bet (Bet_Name         => Bet_Name,
                      Market_Id        => Market_Id,
                      Side             => Side,
-                     Runner_Name      => A_Runner.Runnername,
+                 --    Runner_Name      => A_Runner.Runnername,
+                     Runner_Name      => (others => ' '),
                      Selection_Id     => Selection_Id,
                      Size             => Size,
                      Price            => Price,
