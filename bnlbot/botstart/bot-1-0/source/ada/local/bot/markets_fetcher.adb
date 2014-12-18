@@ -465,7 +465,7 @@ begin
         use Utils;
         Market   : JSON_Value := Create_Object;
         MNR      : Bot_Messages.Market_Notification_Record;
-        Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+        --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
         type Eos_Type is (Amarket, Aevent);
         Eos       : array (Eos_Type'range) of Boolean := (others => False);
         Db_Market : Table_Amarkets.Data_Type;
