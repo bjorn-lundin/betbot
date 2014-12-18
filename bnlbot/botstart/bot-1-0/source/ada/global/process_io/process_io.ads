@@ -296,6 +296,9 @@ package PROCESS_IO is
   -- Only for compability reason towards Win32.  Will always return true.
   
   
+  function To_Process_Type(S : String ) return Process_Io.Process_Type ;
+  
+  
 private
 
   type BYTE is range 0..255;

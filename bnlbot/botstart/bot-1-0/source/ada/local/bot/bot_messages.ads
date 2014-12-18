@@ -13,6 +13,8 @@ package Bot_Messages is
   New_Winners_Arrived_Notification_Message : constant Process_io.Identity_Type := 2001;
   Place_Back_Bet_Message : constant Process_io.Identity_Type := 2002;
   Place_Lay_Bet_Message : constant Process_io.Identity_Type := 2003;
+  New_Bet_Placed_Notification_Message : constant Process_io.Identity_Type := 2004;
+  
 
   ----------------------------------------------------------------
   type Market_Notification_Record is record
@@ -156,5 +158,33 @@ package Bot_Messages is
             renames Place_Lay_Bet_Package.Send;
 
   -----------------------------------------------------------------------
+  
+     ----------------------------------------------------------------
+  type New_Bet_Placed_Notification_Record is record
+      Dummy : Integer_4 := 0;
+  end record;
+  for New_Bet_Placed_Notification_Record'alignment use 4;
+  for New_Bet_Placed_Notification_Record use record
+      Dummy at 0 range 0..8*4-1;
+  end record;
+  for New_Bet_Placed_Notification_Record'Size use 8*4;
+
+  ----------------------------------------------------------------
+
+  package New_Bet_Placed_Notification_Package is new Process_Io.Generic_Io
+          (Identity        => New_Winners_Arrived_Notification_Message,
+           Data_Type       => New_Bet_Placed_Notification_Record,
+           Data_Descriptor => (1 => Process_Io.Integer_4_Type));
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  New_Bet_Placed_Notification_Record
+            renames New_Bet_Placed_Notification_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : New_Bet_Placed_Notification_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames New_Bet_Placed_Notification_Package.Send;
+  ---------------------------------------------------------------------------
+
 
 end Bot_Messages;

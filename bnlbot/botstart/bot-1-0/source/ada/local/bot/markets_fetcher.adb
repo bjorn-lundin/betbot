@@ -518,16 +518,12 @@ begin
                     -- if CORRECT_SCORE/HALF_TIME_SCORE/HALF_TIME_FULL_TIME exists, send their market id instead
                     -- if they do not exist, send nothing, wait for the CORRECT_SCORE/HALF_TIME_SCORE to come in by itself
                     if Trim(Upper_Case(DB_Market.Markettype)) = "MATCH_ODDS" then
-                      Receiver.Name := (others => ' ');
-                      Move("bot", Receiver.Name);
                       Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id  & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 
                     -- poll_and_log is always interested in MATCH_ODDS                        
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					
 					  declare
 					    type Sub_Markets_Type is (CORRECT_SCORE,
@@ -545,10 +541,8 @@ begin
                           Sibling_Market_Exists(Db_Event.Eventid, i'Img, Sibling_Id, Exists);
                           if Exists then
                             MNR.Market_Id := Sibling_Id;
-                            Receiver.Name := (others => ' ');
-                            Move("bot", Receiver.Name);
                             Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                            Bot_Messages.Send(Receiver, MNR);
+                            Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                           end if;                
 						end loop;
 					  end ;
@@ -559,10 +553,8 @@ begin
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "CORRECT_SCORE" then
                        Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                        if Exists then
-                         Receiver.Name := (others => ' ');
-                         Move("bot", Receiver.Name);
                          Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                         Bot_Messages.Send(Receiver, MNR);
+                         Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                        end if;                
                     -- if MATCH_ODDS exists,go ahead
                     -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
@@ -570,139 +562,99 @@ begin
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_SCORE" then
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                       end if;
 					  
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_FULL_TIME" then
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                       end if;
 					  
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_05" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 					  end if;	
 
 					elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_15" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                        Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 					  end if;	
 					  
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_25" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 					  end if;	
 					  
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_35" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 					  end if;	
 
 					elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_45" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
 					  end if;	
 					  
                     elsif Trim(Upper_Case(DB_Market.Markettype)) = "BOTH_TEAMS_TO_SCORE" then
-                      Receiver.Name := (others => ' ');
-                      Move("poll_and_log", Receiver.Name);
                       Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
 					  
                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
                       if Exists then
-                        Receiver.Name := (others => ' ');
-                        Move("bot", Receiver.Name);
                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Receiver, MNR);				  
+                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);				  
 					  end if;	
 					  
                     else -- pass on as usual
-                      Receiver.Name := (others => ' ');
-                      Move("bot", Receiver.Name);
                       Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Receiver, MNR);
+                      Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                     end if;                    
                   ------------------------------------------------------------------                
                   when 7      =>
-                    Receiver.Name := (others => ' ');
-                    Move("bot", Receiver.Name);
                     Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Receiver, MNR);
+                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                     
-                    Receiver.Name := (others => ' ');
-                    Move("poll", Receiver.Name);
                     Log(Me, "Notifying 'poll' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Receiver, MNR);          
+                    Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);          
                     
-                    Receiver.Name := (others => ' ');
-                    Move("poll_place", Receiver.Name);
                     Log(Me, "Notifying 'poll_place' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Receiver, MNR);                 
+                    Bot_Messages.Send(Process_IO.To_Process_Type("poll_place"), MNR);                 
                   ------------------------------------------------------------------                
                   when 4339   => 
-                    Receiver.Name := (others => ' ');
-                    Move("bot", Receiver.Name);
                     Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Receiver, MNR);
+                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                   ------------------------------------------------------------------                
                   when others => 
-                    Receiver.Name := (others => ' ');
-                    Move("bot", Receiver.Name);
                     Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Receiver, MNR);
+                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
                   ------------------------------------------------------------------                                  
                 end case;  
                              
