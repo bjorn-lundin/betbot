@@ -127,13 +127,10 @@ function Check_Bots_For_User () {
     BET_PLACER_LIST="bet_placer_010 bet_placer_011 \
                      bet_placer_020 bet_placer_021 \
                      bet_placer_030 bet_placer_031 \
+                     bet_placer_040 bet_placer_041 \
+                     bet_placer_050 bet_placer_051 \
                      bet_placer_060 bet_placer_061 \
-                     bet_placer_140 bet_placer_141 \
-                     bet_placer_150 bet_placer_151 \
-                     bet_placer_160 bet_placer_161 \
-                     bet_placer_170 bet_placer_171 \
-                     bet_placer_180 bet_placer_181 \
-                     bet_placer_190 bet_placer_191"
+                     bet_placer_070 bet_placer_071 "
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -181,7 +178,7 @@ case $BOT_MACHINE_ROLE in
 # until we got data disk      fi
 # until we got data disk    fi
     
-    if [ $DAY == "16" ] ; then
+    if [ $DAY == "18" ] ; then
       if [ $HOUR == "04" ] ; then
         if [ $MINUTE == "18" ] ; then
           SLEEPTIME=1
