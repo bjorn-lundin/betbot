@@ -65,7 +65,7 @@ function Start_Bot () {
     echo "--------------------------------"
     echo "will run '$BOT_NAME'"
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
-    export BOT_NAME
+    export BOT_NAME=$BOT_NAME
     $BOT_TARGET/bin/$EXE_NAME --user=$BOT_USER $INI_NAME $MODE &
     echo "Started $BOT_NAME for $BOT_USER"
     echo "--------------------------------"
