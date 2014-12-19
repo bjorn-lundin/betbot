@@ -26,7 +26,7 @@ all : log
 log :
 	$(MAKE) bot 2>&1 | tee make.log
 
-bot : adabot
+bot : $(REPO_ENGINE) adabot
 
 
 $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)	
@@ -63,4 +63,5 @@ clean:
 	gnatclean -P adabot
 	gnatclean -P global
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE) clean
+	rm $(BOT_TARGET)/bin/*
 
