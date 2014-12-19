@@ -255,8 +255,8 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_4_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_5_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_7_1).Bet_Name);
-    Move("DR_HORSES_PLC_BACK_FINISH_1.10_30.0_1", Bets_Allowed(Back_8_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.10_20.0_1",    Bets_Allowed(Back_7_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.10_30.0_1",    Bets_Allowed(Back_8_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_200_1",       Bets_Allowed(Lay_1_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_300_1",       Bets_Allowed(Lay_1_2).Bet_Name);
 
