@@ -66,7 +66,7 @@ function Start_Bot () {
     echo "will run '$BOT_NAME'"
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
     export BOT_NAME=$BOT_NAME
-    $BOT_TARGET/bin/$EXE_NAME --user=$BOT_USER $INI_NAME $MODE &
+    $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
     echo "Started $BOT_NAME for $BOT_USER"
     echo "--------------------------------"
   fi
@@ -132,8 +132,10 @@ function Check_Bots_For_User () {
                      bet_placer_060 bet_placer_061 \
                      bet_placer_070 bet_placer_071 \
                      bet_placer_080 bet_placer_081 \
-                     bet_placer_090 bet_placer_091 \
-                     bet_placer_100 bet_placer_101 "
+                     bet_placer_101 bet_placer_102 \
+                     bet_placer_103 bet_placer_104 \
+                     bet_placer_105 bet_placer_106 \
+                     bet_placer_107 bet_placer_108"
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -151,6 +153,16 @@ function Check_Bots_For_User () {
     fi
   fi
   Start_Bot $BOT_USER poll_place poll_place poll.ini
+  
+  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+    if [ $BOT_HOUR == "05" ] ; then
+      if [ $BOT_MINUTE == "00" ] ; then
+        Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
+      fi
+    fi
+  fi
+  
+  
 }
 # start here 
 
@@ -207,14 +219,12 @@ case $BOT_MACHINE_ROLE in
       if [ $MINUTE == "00" ] ; then
         for USR in $USER_LIST_PLAYERS_ONLY ; do
         
-          Start_Bot $USR saldo_fetcher saldo_fetcher
-        
-          #Start one every 5 min in the background, both with and without system tables
-          SLEEPTIME=1
-          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
-          (( SLEEPTIME = SLEEPTIME +10 ))
-          (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-          (( SLEEPTIME = SLEEPTIME +300 ))          
+        #Start one every 5 min in the background, both with and without system tables
+        SLEEPTIME=1
+        (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
+        (( SLEEPTIME = SLEEPTIME +10 ))
+        (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
+        (( SLEEPTIME = SLEEPTIME +300 ))          
         done
       fi
     fi  
