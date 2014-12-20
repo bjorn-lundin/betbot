@@ -57,7 +57,9 @@ procedure Poll is
                     Back_7_1,  Back_7_1_Marker,
                     Back_8_1,  Back_8_1_Marker,
                     Lay_1_1,   Lay_1_2,
-                    Lay_2_1,   Lay_2_2);
+                    Lay_2_1,   Lay_2_2,
+                    Lay_3_1,   Lay_3_2,
+                    Lay_4_1,   Lay_4_2);
 
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -221,6 +223,7 @@ procedure Poll is
     Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
+    Market.Marketid := Market_Notification.Market_Id;
 
     --set values from cfg
     for i in Bets_Allowed'range loop
@@ -232,6 +235,9 @@ procedure Poll is
       if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
         Bets_Allowed(i).Bet_Size := 30.0;
       end if;
+      if Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
+        Bets_Allowed(i).Bet_Size := 1.0; -- make sure not accepted
+      end if;
     end loop;
     -- override Bet_Size for some bets
     Bets_Allowed(Back_2_1).Bet_Size := 200.0;
@@ -242,12 +248,6 @@ procedure Poll is
     Bets_Allowed(Back_7_1).Bet_Size :=  50.0;
     Bets_Allowed(Back_8_1).Bet_Size :=  50.0;
 
-    Bets_Allowed(Lay_1_1).Bet_Size  :=   1.0; -- make sure not accepted
-    Bets_Allowed(Lay_1_2).Bet_Size  :=   1.0; -- make sure not accepted
-    Bets_Allowed(Lay_2_1).Bet_Size  :=   1.0; -- make sure not accepted
-    Bets_Allowed(Lay_2_2).Bet_Size  :=   1.0; -- make sure not accepted
-
-    Market.Marketid := Market_Notification.Market_Id;
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
@@ -259,8 +259,12 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_30.0_1",    Bets_Allowed(Back_8_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_200_1",       Bets_Allowed(Lay_1_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_100_300_1",       Bets_Allowed(Lay_1_2).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_80_150_1",       Bets_Allowed(Lay_2_1).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_80_250_1",       Bets_Allowed(Lay_2_2).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_80_150_1",        Bets_Allowed(Lay_2_1).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_80_250_1",        Bets_Allowed(Lay_2_2).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_110_150_1",       Bets_Allowed(Lay_3_1).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_110_250_1",       Bets_Allowed(Lay_3_2).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_110_200_1",       Bets_Allowed(Lay_4_1).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_110_300_1",       Bets_Allowed(Lay_4_2).Bet_Name);
 
     --markers
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
@@ -583,7 +587,7 @@ procedure Poll is
                         Main_Bet    => Lay_1_1,
                         Max_Price   => Max_Lay_Price_Type(200.0),
                         Market_Id   => Markets(Win).Marketid,
-                        Receiver    => Process_Io.To_Process_Type("bet_placer_090"));
+                        Receiver    => Process_Io.To_Process_Type("bet_placer_101"));
         end if;
          
         --HORSES_WIN_LAY_FINISH_100_300_1
@@ -597,7 +601,7 @@ procedure Poll is
                         Main_Bet   => Lay_1_2,
                         Max_Price  => Max_Lay_Price_Type(300.0),
                         Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_091"));
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_102"));
         end if;
         
         --HORSES_WIN_LAY_FINISH_80_150_1
@@ -611,7 +615,7 @@ procedure Poll is
                         Main_Bet   => Lay_2_1,
                         Max_Price  => Max_Lay_Price_Type(150.0),
                         Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_100"));
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_103"));
         end if;
         --HORSES_WIN_LAY_FINISH_80_250_1
         if Worst_Runner.Backprice <= Float_8(400.0) and then
@@ -624,7 +628,59 @@ procedure Poll is
                         Main_Bet   => Lay_2_2,
                         Max_Price  => Max_Lay_Price_Type(250.0),
                         Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_101"));
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_104"));
+        end if;
+        --HORSES_WIN_LAY_FINISH_110_150_1",
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(110.0) and then
+           Worst_Runner.Layprice <= Float_8(150.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
+                        Main_Bet   => Lay_3_1,
+                        Max_Price  => Max_Lay_Price_Type(150.0),
+                        Market_Id  => Markets(Win).Marketid,
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_105"));
+        end if;
+        --    HORSES_WIN_LAY_FINISH_110_250_1      
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(110.0) and then
+           Worst_Runner.Layprice <= Float_8(250.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
+                        Main_Bet   => Lay_3_2,
+                        Max_Price  => Max_Lay_Price_Type(250.0),
+                        Market_Id  => Markets(Win).Marketid,
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_106"));
+        end if;
+        --HORSES_WIN_LAY_FINISH_110_200_1 
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(110.0) and then
+           Worst_Runner.Layprice <= Float_8(200.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
+                        Main_Bet   => Lay_4_1,
+                        Max_Price  => Max_Lay_Price_Type(200.0),
+                        Market_Id  => Markets(Win).Marketid,
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_107"));
+        end if;
+        --HORSES_WIN_LAY_FINISH_110_300_1
+        if Worst_Runner.Backprice <= Float_8(400.0) and then
+           Worst_Runner.Backprice >= Float_8(110.0) and then
+           Worst_Runner.Layprice <= Float_8(300.0) and then 
+           Worst_Runner.Layprice > Float_8(10.0) then 
+          -- lay the loser in WIN market...
+
+          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
+                        Main_Bet   => Lay_4_2,
+                        Max_Price  => Max_Lay_Price_Type(300.0),
+                        Market_Id  => Markets(Win).Marketid,
+                        Receiver   => Process_Io.To_Process_Type("bet_placer_108"));
         end if;
          
       end if;        
