@@ -240,11 +240,11 @@ procedure Poll is
       end if;
     end loop;
     -- override Bet_Size for some bets
-    Bets_Allowed(Back_2_1).Bet_Size := 200.0;
-    Bets_Allowed(Back_3_1).Bet_Size := 150.0;
-    Bets_Allowed(Back_4_1).Bet_Size :=  50.0;
-    Bets_Allowed(Back_5_1).Bet_Size :=  50.0;
-    Bets_Allowed(Back_6_1).Bet_Size :=  50.0;
+    Bets_Allowed(Back_2_1).Bet_Size := 250.0;
+    Bets_Allowed(Back_3_1).Bet_Size := 250.0;
+    Bets_Allowed(Back_4_1).Bet_Size :=   0.0;
+    Bets_Allowed(Back_5_1).Bet_Size :=   0.0;
+    Bets_Allowed(Back_6_1).Bet_Size :=   0.0;
     Bets_Allowed(Back_7_1).Bet_Size :=  50.0;
     Bets_Allowed(Back_8_1).Bet_Size :=  50.0;
 
@@ -493,52 +493,52 @@ procedure Poll is
         end if;
 
         --------------------------------------------------------------- 
-        --MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1
-        if Best_Runners(1).Backprice <= Float_8(1.50) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
-                   Main_Bet        => Back_4_1,
-                   Marker_Bet      => Back_4_1_Marker,
-                   Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_040"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_041"));
-        end if;
+        ----MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1
+        --if Best_Runners(1).Backprice <= Float_8(1.50) and then
+        --   Best_Runners(4).Backprice >= Float_8(50.0) and then
+        --   Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+        --   Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+        --  -- Back The leader in PLC market...
+        --
+        --  Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+        --           Main_Bet        => Back_4_1,
+        --           Marker_Bet      => Back_4_1_Marker,
+        --           Place_Market_Id => Markets(Place).Marketid,
+        --           Receiver        => Process_Io.To_Process_Type("bet_placer_040"),
+        --           Receiver_Marker => Process_Io.To_Process_Type("bet_placer_041"));
+        --end if;
         
         --------------------------------------------------------------- 
-        --MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1
-        if Best_Runners(1).Backprice <= Float_8(1.60) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
-                   Main_Bet        => Back_5_1,
-                   Marker_Bet      => Back_5_1_Marker,
-                   Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_050"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_051"));
-        end if;
+        ----MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1
+        --if Best_Runners(1).Backprice <= Float_8(1.60) and then
+        --   Best_Runners(4).Backprice >= Float_8(50.0) and then
+        --   Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+        --   Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+        --  -- Back The leader in PLC market...
+        --
+        --  Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+        --           Main_Bet        => Back_5_1,
+        --           Marker_Bet      => Back_5_1_Marker,
+        --           Place_Market_Id => Markets(Place).Marketid,
+        --           Receiver        => Process_Io.To_Process_Type("bet_placer_050"),
+        --           Receiver_Marker => Process_Io.To_Process_Type("bet_placer_051"));
+        --end if;
 
         --------------------------------------------------------------- 
-        --MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1
-        if Best_Runners(1).Backprice <= Float_8(1.90) and then
-           Best_Runners(4).Backprice >= Float_8(50.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
-                   Main_Bet        => Back_6_1,
-                   Marker_Bet      => Back_6_1_Marker,
-                   Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_060"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_061"));
-        end if;
+        ----MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1
+        --if Best_Runners(1).Backprice <= Float_8(1.90) and then
+        --   Best_Runners(4).Backprice >= Float_8(50.0) and then
+        --   Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+        --   Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+        --  -- Back The leader in PLC market...
+        --
+        --  Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+        --           Main_Bet        => Back_6_1,
+        --           Marker_Bet      => Back_6_1_Marker,
+        --           Place_Market_Id => Markets(Place).Marketid,
+        --           Receiver        => Process_Io.To_Process_Type("bet_placer_060"),
+        --           Receiver_Marker => Process_Io.To_Process_Type("bet_placer_061"));
+        --end if;
         
         --------------------------------------------------------------- 
         --MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1
@@ -643,7 +643,7 @@ procedure Poll is
                         Market_Id  => Markets(Win).Marketid,
                         Receiver   => Process_Io.To_Process_Type("bet_placer_105"));
         end if;
-        --    HORSES_WIN_LAY_FINISH_110_250_1      
+        --HORSES_WIN_LAY_FINISH_110_250_1      
         if Worst_Runner.Backprice <= Float_8(400.0) and then
            Worst_Runner.Backprice >= Float_8(110.0) and then
            Worst_Runner.Layprice <= Float_8(250.0) and then 
