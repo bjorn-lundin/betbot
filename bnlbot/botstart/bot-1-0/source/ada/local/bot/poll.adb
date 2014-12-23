@@ -59,7 +59,8 @@ procedure Poll is
                     Lay_1_1,   Lay_1_2,
                     Lay_2_1,   Lay_2_2,
                     Lay_3_1,   Lay_3_2,
-                    Lay_4_1,   Lay_4_2);
+                    Lay_4_1,   Lay_4_2,
+                    Lay_5_2,   Lay_5_3, Lay_5_4);
 
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
@@ -569,6 +570,31 @@ procedure Poll is
                    Place_Market_Id => Markets(Place).Marketid,
                    Receiver        => Process_Io.To_Process_Type("bet_placer_080"),
                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_081"));
+          --lay 2,3,4         
+          if Best_Runners(2).Layprice < Float_8(100.0) then        
+            Send_Lay_Bet(Selectionid  => Best_Runners(2).Selectionid,
+                        Main_Bet    => Lay_5_2,
+                        Max_Price   => Max_Lay_Price_Type(Best_Runners(2).Layprice),
+                        Market_Id   => Markets(Win).Marketid,
+                        Receiver    => Process_Io.To_Process_Type("bet_placer_060"));
+          end if;       
+                   
+          if Best_Runners(3).Layprice < Float_8(100.0) then        
+            Send_Lay_Bet(Selectionid  => Best_Runners(3).Selectionid,
+                        Main_Bet    => Lay_5_3,
+                        Max_Price   => Max_Lay_Price_Type(Best_Runners(3).Layprice),
+                        Market_Id   => Markets(Win).Marketid,
+                        Receiver    => Process_Io.To_Process_Type("bet_placer_061"));
+          end if;       
+                        
+          if Best_Runners(4).Layprice < Float_8(100.0) then        
+            Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
+                          Main_Bet    => Lay_5_4,
+                          Max_Price   => Max_Lay_Price_Type(Best_Runners(4).Layprice),
+                          Market_Id   => Markets(Win).Marketid,
+                          Receiver    => Process_Io.To_Process_Type("bet_placer_050"));
+          end if;       
+         
         end if;
 
       end if;
