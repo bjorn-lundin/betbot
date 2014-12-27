@@ -574,7 +574,8 @@ procedure Poll is
                    Receiver        => Process_Io.To_Process_Type("bet_placer_080"),
                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_081"));
           --lay 2,3,4         
-          if Best_Runners(2).Layprice < Float_8(100.0) then        
+          if Best_Runners(2).Layprice < Float_8(50.0) and then        
+             Best_Runners(2).Layprice > Float_8(0.0) then        
             Send_Lay_Bet(Selectionid  => Best_Runners(2).Selectionid,
                         Main_Bet    => Lay_5_2,
                         Max_Price   => Max_Lay_Price_Type(Best_Runners(2).Layprice),
@@ -582,7 +583,8 @@ procedure Poll is
                         Receiver    => Process_Io.To_Process_Type("bet_placer_060"));
           end if;       
                    
-          if Best_Runners(3).Layprice < Float_8(100.0) then        
+          if Best_Runners(3).Layprice < Float_8(60.0) and then        
+             Best_Runners(3).Layprice > Float_8(0.0) then        
             Send_Lay_Bet(Selectionid  => Best_Runners(3).Selectionid,
                         Main_Bet    => Lay_5_3,
                         Max_Price   => Max_Lay_Price_Type(Best_Runners(3).Layprice),
@@ -590,7 +592,8 @@ procedure Poll is
                         Receiver    => Process_Io.To_Process_Type("bet_placer_061"));
           end if;       
                         
-          if Best_Runners(4).Layprice < Float_8(100.0) then        
+          if Best_Runners(4).Layprice < Float_8(70.0) and then        
+             Best_Runners(4).Layprice > Float_8(0.0) then        
             Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
                           Main_Bet    => Lay_5_4,
                           Max_Price   => Max_Lay_Price_Type(Best_Runners(4).Layprice),
