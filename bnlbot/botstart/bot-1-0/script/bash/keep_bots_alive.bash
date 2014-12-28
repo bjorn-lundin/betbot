@@ -112,7 +112,7 @@ function Check_Bots_For_User () {
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
     TEST) BOT_LIST="bot" ;;
-    SIM)  BOT_LIST="horses_win_gb horses_win_ie football football_2" ;;
+    SIM)  BOT_LIST="" ;;
     *)    BOT_LIST="" ;;
   esac
   
@@ -135,7 +135,11 @@ function Check_Bots_For_User () {
                      bet_placer_101 bet_placer_102 \
                      bet_placer_103 bet_placer_104 \
                      bet_placer_105 bet_placer_106 \
-                     bet_placer_107 bet_placer_108"
+                     bet_placer_107 bet_placer_108 \
+                     bet_placer_121 bet_placer_122 \
+                     bet_placer_123 bet_placer_124 \
+                     bet_placer_125 bet_placer_126 \
+                     bet_placer_127 bet_placer_128"                     
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
