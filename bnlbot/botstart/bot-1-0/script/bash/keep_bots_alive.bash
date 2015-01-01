@@ -197,9 +197,9 @@ case $BOT_MACHINE_ROLE in
 # until we got data disk      fi
 # until we got data disk    fi
     
-    if [ $DAY == "18" ] ; then
-      if [ $HOUR == "04" ] ; then
-        if [ $MINUTE == "18" ] ; then
+    if [ $DAY == "01" ] ; then
+      if [ $HOUR == "01" ] ; then
+        if [ $MINUTE == "37" ] ; then
           SLEEPTIME=1
           for USR in $USER_LIST ; do
             #Start one every 20 min in the background
