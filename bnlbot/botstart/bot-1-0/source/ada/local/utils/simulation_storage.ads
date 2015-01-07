@@ -67,6 +67,9 @@ package Simulation_Storage is
     Ts_Of_Fulfill     : Calendar2.Time_Type := Calendar2.Time_Type_First;
     Backprice_Matched : Float_8 := 0.0;
     Profit            : Float_8 := 0.0;
+    Profit_102        : Float_8 := 0.0;
+    Profit_103        : Float_8 := 0.0;
+    Profit_104        : Float_8 := 0.0;
     Num_Matched       : Integer_4 := 0;
     Num_Wins          : Integer_4 := 0;
     Num_Lost          : Integer_4 := 0;
