@@ -1,2 +1,0 @@
-[DEFAULT]
-client_db_url = postgresql://test-db:test-db@localhost:5432/test-db
