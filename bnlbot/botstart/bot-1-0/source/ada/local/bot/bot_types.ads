@@ -38,6 +38,7 @@ package Bot_Types is
    type Favorite_By_Type is new Float_8;
    type Profit_Type is new Float_8;
    type Max_Exposure_Type is new Float_8;
+   type Bet_Size_Portion_Type is new Float_8;
    
    type Bet_Persistence_Type is (Lapse, Persist, Market_On_Close);
    

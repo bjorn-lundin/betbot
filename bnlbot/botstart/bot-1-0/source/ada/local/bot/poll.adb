@@ -1,21 +1,23 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Environment_Variables;
+
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
 with Stacktrace;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
 with Calendar2; use Calendar2;
 with Bot_Messages;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Rpc;
 with Lock ;
 with Posix;
 with Ini;
 with Logging; use Logging;
-with Ada.Environment_Variables;
 with Process_IO;
 with Core_Messages;
 with Table_Amarkets;
@@ -37,6 +39,7 @@ procedure Poll is
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
+  Select_Bet_Size_Portion : Sql.Statement_Type;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
@@ -69,11 +72,51 @@ procedure Poll is
     Is_Allowed_To_Bet : Boolean       := False;
     Has_Betted        : Boolean       := False;
     Max_Loss_Per_Day  : Bet_Size_Type := 0.0;
+    Bet_Size_Portion  : Bet_Size_Portion_Type := 0.0;
   end record;
 
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
 
+  
   --------------------------------------------------------------
+  
+  function Bet_Size_Portion(Bet_Name : Bet_Name_Type) return Bet_Size_Portion_Type is
+    Eos         : Boolean := False;
+    Bet_Portion : Float_8 := 0.0;
+  begin
+    Select_Bet_Size_Portion.Prepare(
+      "select " &
+        "betname, " &
+        "round((sum(profit)/sum(sizematched))::numeric, 3) as profitpersize " &
+      "from " &
+        "abets " &
+      "where " &
+          "betplaced::date >  (select CURRENT_DATE - interval '42 days') " &
+        "and betwon is not null " &
+        "and exestatus = 'SUCCESS'  " & 
+        "and status in ('SETTLED') " &
+        "and betname = :BETNAME " & -- will be set to 'MR_' & Betname
+      "group by " &
+        "betname " &
+      "having  " &
+        "sum(profit) > 0 " &
+        "and max(betplaced)::date >=  '2015-01-01' " &
+      "order by " &
+        "profitpersize desc ");
+    
+    Select_Bet_Size_Portion.Set("BETNAME", "MR_" & Trim(Bet_Name));
+    Select_Bet_Size_Portion.Open_Cursor;  
+    Select_Bet_Size_Portion.Fetch(Eos);  
+    if not Eos then
+      Select_Bet_Size_Portion.Get("profitpersize", Bet_Portion);
+    end if;
+    Select_Bet_Size_Portion.Close_Cursor;  
+    
+    Log("Bet_Size_Portion" , "eos:" & eos'Img & " portion " & F8_image(Bet_Portion,3));   
+    
+    return Bet_Size_Portion_Type(Bet_Portion);    
+  end Bet_Size_Portion;
+  
 
   procedure Send_Lay_Bet(Selectionid   : Integer_4;
                          Main_Bet      : Bet_Type;
@@ -108,7 +151,6 @@ procedure Poll is
       Bets_Allowed(Main_Bet).Has_Betted := True;
       Did_Bet(1) := True;
     end if;
-
 
     if Did_Bet(1) then
       Log("Send_Lay_Bet called with " &
@@ -236,21 +278,15 @@ procedure Poll is
       -- marker bets are always 30 :-
       if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
         Bets_Allowed(i).Bet_Size := 30.0;
-      end if;
-      if Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
+      elsif Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
         Bets_Allowed(i).Bet_Size := 1.0; -- make sure not accepted
+      else
+        Bets_Allowed(i).Bet_Size := 0.0; -- make sure not accepted
       end if;
+      
     end loop;
     -- override Bet_Size for some bets
-    Bets_Allowed(Back_1_1).Bet_Size := 700.0;
-    Bets_Allowed(Back_2_1).Bet_Size := 100.0;
-    Bets_Allowed(Back_3_1).Bet_Size := 750.0;
-    Bets_Allowed(Back_4_1).Bet_Size :=   0.0;
-    Bets_Allowed(Back_5_1).Bet_Size :=   0.0;
-    Bets_Allowed(Back_6_1).Bet_Size :=   0.0;
-    Bets_Allowed(Back_7_1).Bet_Size :=  50.0;
-    Bets_Allowed(Back_8_1).Bet_Size :=  50.0;
-
+    
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
@@ -285,6 +321,51 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1", Bets_Allowed(Back_8_1_Marker).Bet_Name);
 
+    
+    T.Start;
+    declare
+      -- calculate how big portion the MR-bet is of all 5 MR-bets. Use as bet_size factor
+      Total_Bet_Size_Portion : Bet_Size_Portion_Type := 0.0;
+    begin
+      Bets_Allowed(Back_1_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_1).Bet_Name); 
+      Total_Bet_Size_Portion := Bets_Allowed(Back_1_1).Bet_Size_Portion;
+      
+      Bets_Allowed(Back_2_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_2_1).Bet_Name); 
+      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_2_1).Bet_Size_Portion;
+      
+      Bets_Allowed(Back_3_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_3_1).Bet_Name); 
+      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_3_1).Bet_Size_Portion;
+      
+      Bets_Allowed(Back_7_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_7_1).Bet_Name); 
+      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_7_1).Bet_Size_Portion;
+      
+      Bets_Allowed(Back_8_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_8_1).Bet_Name); 
+      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_8_1).Bet_Size_Portion;
+
+      Log("run" ,  " Total_Bet_Size_Portion " & F8_image(Float_8(Total_Bet_Size_Portion),3));
+
+      Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_2_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_3_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      
+      if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
+      
+      Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_2_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_2_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_3_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_3_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
+      
+    end;    
+   
+    T.Commit;
+    
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
@@ -292,11 +373,11 @@ procedure Poll is
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance);
         if Bets_Allowed(i).Bet_Size < 30.0 then
-          Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+          Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
           Bets_Allowed(i).Bet_Size := 30.0;
         end if;
       end if;
-      Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Table_Abalances.To_String(Saldo));
+      Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
 
       if -5.0 < Bets_Allowed(i).Max_Loss_Per_Day and then Bets_Allowed(i).Max_Loss_Per_Day < 0.0 then
         Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
@@ -788,6 +869,16 @@ begin
   Rpc.Login;
   Log(Me, "Login betfair done");
 
+
+  -- for testing only declare
+  -- for testing only  mb :  Bot_Messages.Market_Notification_Record;
+  -- for testing only begin
+  -- for testing only   mb.Market_Id := "1.116998515";
+  -- for testing only   Run(mb);
+  -- for testing only end ;
+  -- for testing only return;
+  
+  
   if Cfg.Enabled then
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
