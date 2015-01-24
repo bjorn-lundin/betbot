@@ -87,11 +87,11 @@ procedure Poll is
     Select_Bet_Size_Portion.Prepare(
       "select " &
         "betname, " &
-        "round((sum(profit)/sum(sizematched))::numeric, 3) as profitpersize " &
+        "round((sum(profit)/sum(sizematched))::numeric, 4) as profitpersize " &
       "from " &
         "abets " &
       "where " &
-          "betplaced::date >  (select CURRENT_DATE - interval '42 days') " &
+          "betplaced::date >  (select CURRENT_DATE - interval '3 days') " &
         "and betwon is not null " &
         "and exestatus = 'SUCCESS'  " & 
         "and status in ('SETTLED') " &
@@ -327,8 +327,8 @@ procedure Poll is
       -- calculate how big portion the MR-bet is of all 5 MR-bets. Use as bet_size factor
       Total_Bet_Size_Portion : Bet_Size_Portion_Type := 0.0;
     begin
-      Bets_Allowed(Back_1_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_1).Bet_Name); 
-      Total_Bet_Size_Portion := Bets_Allowed(Back_1_1).Bet_Size_Portion;
+      -- Bets_Allowed(Back_1_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_1).Bet_Name); 
+      -- Total_Bet_Size_Portion := Bets_Allowed(Back_1_1).Bet_Size_Portion;
       
       Bets_Allowed(Back_2_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_2_1).Bet_Name); 
       Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_2_1).Bet_Size_Portion;
@@ -336,35 +336,39 @@ procedure Poll is
       Bets_Allowed(Back_3_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_3_1).Bet_Name); 
       Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_3_1).Bet_Size_Portion;
       
-      Bets_Allowed(Back_7_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_7_1).Bet_Name); 
-      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_7_1).Bet_Size_Portion;
-      
-      Bets_Allowed(Back_8_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_8_1).Bet_Name); 
-      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_8_1).Bet_Size_Portion;
+      -- Bets_Allowed(Back_7_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_7_1).Bet_Name); 
+      -- Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_7_1).Bet_Size_Portion;
+      -- 
+      -- Bets_Allowed(Back_8_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_8_1).Bet_Name); 
+      -- Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_8_1).Bet_Size_Portion;
 
       Log("run" ,  " Total_Bet_Size_Portion " & F8_image(Float_8(Total_Bet_Size_Portion),3));
 
-      Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
       Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_2_1).Bet_Size_Portion / Total_Bet_Size_Portion);
       Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_3_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
       
-      if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
+      -- if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
       if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
       if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
-      if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
-      if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
+      -- if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
+      -- if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
       
-      Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
+      -- Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_2_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_2_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_3_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_3_1).Bet_Size)));
-      Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
-      Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
+      -- Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
+      -- Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
       
     end;    
    
     T.Commit;
+    
+    Bets_Allowed(Back_1_1).Bet_Size := 500.0;
+    Bets_Allowed(Back_7_1).Bet_Size := 500.0;
+    Bets_Allowed(Back_8_1).Bet_Size := 500.0;
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -389,6 +393,9 @@ procedure Poll is
         Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       end if;
     end loop;
+    
+    -- Bets_Allowed(Back_2_1).Is_Allowed_To_Bet := False;
+    -- Bets_Allowed(Back_3_1).Is_Allowed_To_Bet := False; 
 
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
