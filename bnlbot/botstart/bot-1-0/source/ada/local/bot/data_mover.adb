@@ -80,7 +80,7 @@ procedure Data_Mover is
     
     -- for ordinary users , keep a month only, so the tables does not grow too large
     if not Is_Data_Collector then
-      Num := 30;
+      Num := 30000;
       T.Start;
       Delete_Loop : for Table in Tables_Type'range loop
         Do_Delete_Old(Table).Prepare(
