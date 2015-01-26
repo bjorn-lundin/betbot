@@ -4042,7 +4042,7 @@ package body Repository.Table is
     Put_Line("    pragma Warnings(Off, Tmp_String); -- used only if we have Character fields (ie String(1..1)");
     Put_Line("  begin");
     for Col of Self.Columns loop
-      Put_Line("    Key := Column_Type'Value(" & Col.Name.Camel_Case & "'Img);");
+      Put_Line("    Key := " & Col.Name.Camel_Case & ";");
 
       case Data_Type(Col.Type_Of) is
         when A_Char              =>
