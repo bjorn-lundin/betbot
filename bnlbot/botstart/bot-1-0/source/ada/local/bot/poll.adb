@@ -343,32 +343,40 @@ procedure Poll is
       -- Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_8_1).Bet_Size_Portion;
 
       Log("run" ,  " Total_Bet_Size_Portion " & F8_image(Float_8(Total_Bet_Size_Portion),3));
+      if Total_Bet_Size_Portion > 0.0 then
 
-      -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_2_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_3_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-      -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_2_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_3_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        
+        -- if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
+        if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
+        if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
+        -- if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
+        -- if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
+        
+      else
+        -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type(0.5);
+        Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type(0.5);
+        -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+        -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
       
-      -- if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
-      if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
-      if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
-      -- if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
-      -- if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
-      
+      end if;      
       -- Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_2_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_2_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_3_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_3_1).Bet_Size)));
       -- Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
       -- Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
-      
     end;    
    
     T.Commit;
     
-    Bets_Allowed(Back_1_1).Bet_Size := 500.0;
-    Bets_Allowed(Back_7_1).Bet_Size := 500.0;
-    Bets_Allowed(Back_8_1).Bet_Size := 500.0;
+    Bets_Allowed(Back_1_1).Bet_Size := 250.0;
+    Bets_Allowed(Back_7_1).Bet_Size := 250.0;
+    Bets_Allowed(Back_8_1).Bet_Size := 250.0;
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
