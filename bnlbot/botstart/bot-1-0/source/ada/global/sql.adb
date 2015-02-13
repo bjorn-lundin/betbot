@@ -1420,10 +1420,9 @@ package body Sql is
                                   Field_Index_Type (Parameter));
        begin
           -- Log(Me, "Parameter:" & Parameter'Img & " - value '" & Local_String & "'");         
-          if Local_String'Length = 0 then
-             Value := (others => ' ');
-          else
-             Value (1 .. Local_String'Length) := Local_String;
+          Value := (others => ' ');
+          if Local_String'Length > 0 then
+            Value (1 .. Local_String'Length) := Local_String;
           end if;
        exception
           when Constraint_Error =>

@@ -40,6 +40,7 @@ procedure Poll is
   Msg             : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
   Select_Bet_Size_Portion : Sql.Statement_Type;
+  --Select_Bet_Profit : Sql.Statement_Type;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
@@ -82,39 +83,58 @@ procedure Poll is
   
   function Bet_Size_Portion(Bet_Name : Bet_Name_Type) return Bet_Size_Portion_Type is
     Eos         : Boolean := False;
-    Bet_Portion : Float_8 := 0.0;
+    Bet_Profit  : Float_8 := -1.0;
+    Ratio       : Bet_Size_Portion_Type := 0.0;
+    Idx         : Integer := 0;
+    Ratios      : array (1..6) of Bet_Size_Portion_Type := (1 => 0.35,
+                                                            2 => 0.25,
+                                                            3 => 0.15,
+                                                            4 => 0.09,
+                                                            5 => 0.08,
+                                                            6 => 0.08);
+    Local_Bet_Name : Bet_Name_Type := (others => ' ');
   begin
+    -- profit for MR-bets in order, from last 3 days of SETTLED bets, placed at least sometime within '2015-01-01'  
+    -- bet with most profit will spend more on todays bets
     Select_Bet_Size_Portion.Prepare(
       "select " &
-        "betname, " &
-        "round((sum(profit)/sum(sizematched))::numeric, 4) as profitpersize " &
+        "BETNAME, " &
+        "round((sum(PROFIT))::numeric, 4) as PROFIT " &
       "from " &
-        "abets " &
+        "ABETS " &
       "where " &
-          "betplaced::date >  (select CURRENT_DATE - interval '3 days') " &
-        "and betwon is not null " &
-        "and exestatus = 'SUCCESS'  " & 
-        "and status in ('SETTLED') " &
-        "and betname = :BETNAME " & -- will be set to 'MR_' & Betname
+            "BETPLACED::date > (select CURRENT_DATE - interval '3 days') " &
+        "and BETWON is not null " &
+        "and EXESTATUS = 'SUCCESS'  " & 
+        "and STATUS in ('SETTLED') " &
+        "and BETNAME like 'MR_' " & 
       "group by " &
-        "betname " &
+        "BETNAME " &
       "having  " &
-        "sum(profit) > 0 " &
-        "and max(betplaced)::date >=  '2015-01-01' " &
+        "max(BETPLACED)::date >= '2015-01-01' " &
       "order by " &
-        "profitpersize desc ");
+        "PROFIT desc ");
     
-    Select_Bet_Size_Portion.Set("BETNAME", "MR_" & Trim(Bet_Name));
     Select_Bet_Size_Portion.Open_Cursor;  
-    Select_Bet_Size_Portion.Fetch(Eos);  
-    if not Eos then
-      Select_Bet_Size_Portion.Get("profitpersize", Bet_Portion);
+    loop
+      Select_Bet_Size_Portion.Fetch(Eos);
+      exit when Eos;
+      Idx := Idx +1;
+      Select_Bet_Size_Portion.Get("BETNAME", Local_Bet_Name);
+      Select_Bet_Size_Portion.Get("PROFIT", Bet_Profit);
+      exit when Local_Bet_Name = Local_Bet_Name;
+    end loop;
+    Select_Bet_Size_Portion.Close_Cursor;
+    
+    if Idx < integer(1) or Idx > Integer(6) then
+      Idx := 6;
     end if;
-    Select_Bet_Size_Portion.Close_Cursor;  
     
-    Log("Bet_Size_Portion" , "eos:" & eos'Img & " portion " & F8_image(Bet_Portion,3));   
+    Ratio := Ratios(Idx);
     
-    return Bet_Size_Portion_Type(Bet_Portion);    
+    Log("Bet_Size_Portion" , Trim(Bet_Name) & "eos:" & eos'Img & " profit" & F8_image(Bet_Profit,3) & " -> ratio " & F8_image(Float_8(Ratio),2));   
+    
+    return Ratio;    
   end Bet_Size_Portion;
   
 
@@ -291,7 +311,7 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1",    Bets_Allowed(Back_3_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.50_50.0_1",    Bets_Allowed(Back_4_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_4_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.60_50.0_1",    Bets_Allowed(Back_5_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.90_50.0_1",    Bets_Allowed(Back_6_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.10_20.0_1",    Bets_Allowed(Back_7_1).Bet_Name);
@@ -315,7 +335,7 @@ procedure Poll is
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_2_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_3_1_Marker).Bet_Name);
-    Move("MR_HORSES_PLC_BACK_FINISH_1.50_50.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
+    Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_4_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.60_50.0_1", Bets_Allowed(Back_5_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.90_50.0_1", Bets_Allowed(Back_6_1_Marker).Bet_Name);
     Move("MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_7_1_Marker).Bet_Name);
@@ -324,59 +344,48 @@ procedure Poll is
     
     T.Start;
     declare
-      -- calculate how big portion the MR-bet is of all 5 MR-bets. Use as bet_size factor
-      Total_Bet_Size_Portion : Bet_Size_Portion_Type := 0.0;
+      -- calculate how big portion the MR-bet is of all 6 MR-bets. Use as bet_size factor
     begin
-      -- Bets_Allowed(Back_1_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_1).Bet_Name); 
-      -- Total_Bet_Size_Portion := Bets_Allowed(Back_1_1).Bet_Size_Portion;
-      
+      Bets_Allowed(Back_1_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_1).Bet_Name); 
       Bets_Allowed(Back_2_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_2_1).Bet_Name); 
-      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_2_1).Bet_Size_Portion;
-      
       Bets_Allowed(Back_3_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_3_1).Bet_Name); 
-      Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_3_1).Bet_Size_Portion;
+      Bets_Allowed(Back_4_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_4_1).Bet_Name); 
+      Bets_Allowed(Back_7_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_7_1).Bet_Name); 
+      Bets_Allowed(Back_8_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_8_1).Bet_Name); 
       
-      -- Bets_Allowed(Back_7_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_7_1).Bet_Name); 
-      -- Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_7_1).Bet_Size_Portion;
-      -- 
-      -- Bets_Allowed(Back_8_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_8_1).Bet_Name); 
-      -- Total_Bet_Size_Portion := Total_Bet_Size_Portion + Bets_Allowed(Back_8_1).Bet_Size_Portion;
-
-      Log("run" ,  " Total_Bet_Size_Portion " & F8_image(Float_8(Total_Bet_Size_Portion),3));
-      if Total_Bet_Size_Portion > 0.0 then
-
-        -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_2_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_3_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_1_1).Bet_Size_Portion);
+      Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_2_1).Bet_Size_Portion);
+      Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_3_1).Bet_Size_Portion);
+      Bets_Allowed(Back_4_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_4_1).Bet_Size_Portion);
+      Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_7_1).Bet_Size_Portion);
+      Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type(Bets_Allowed(Back_8_1).Bet_Size_Portion);
         
-        -- if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
-        if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
-        if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
-        -- if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
-        -- if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;
-        
-      else
-        -- Bets_Allowed(Back_1_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_1_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        Bets_Allowed(Back_2_1).Bet_Size := Cfg.Size * Bet_Size_Type(0.5);
-        Bets_Allowed(Back_3_1).Bet_Size := Cfg.Size * Bet_Size_Type(0.5);
-        -- Bets_Allowed(Back_7_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_7_1).Bet_Size_Portion / Total_Bet_Size_Portion);
-        -- Bets_Allowed(Back_8_1).Bet_Size := Cfg.Size * Bet_Size_Type( Bets_Allowed(Back_8_1).Bet_Size_Portion / Total_Bet_Size_Portion);
+      if Bets_Allowed(Back_1_1).Bet_Size < 30.0 then Bets_Allowed(Back_1_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_2_1).Bet_Size < 30.0 then Bets_Allowed(Back_2_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_3_1).Bet_Size < 30.0 then Bets_Allowed(Back_3_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_4_1).Bet_Size < 30.0 then Bets_Allowed(Back_4_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_7_1).Bet_Size < 30.0 then Bets_Allowed(Back_7_1).Bet_Size := 30.0; end if;
+      if Bets_Allowed(Back_8_1).Bet_Size < 30.0 then Bets_Allowed(Back_8_1).Bet_Size := 30.0; end if;     
+
+      --if Bets_Allowed(Back_1_1).Bet_Size > 500.0 then Bets_Allowed(Back_1_1).Bet_Size := 500.0; end if;
+      --if Bets_Allowed(Back_2_1).Bet_Size > 500.0 then Bets_Allowed(Back_2_1).Bet_Size := 500.0; end if;
+      --if Bets_Allowed(Back_3_1).Bet_Size > 500.0 then Bets_Allowed(Back_3_1).Bet_Size := 500.0; end if;
+      --if Bets_Allowed(Back_4_1).Bet_Size > 500.0 then Bets_Allowed(Back_4_1).Bet_Size := 500.0; end if;
+      --if Bets_Allowed(Back_7_1).Bet_Size > 500.0 then Bets_Allowed(Back_7_1).Bet_Size := 500.0; end if;
+      --if Bets_Allowed(Back_8_1).Bet_Size > 500.0 then Bets_Allowed(Back_8_1).Bet_Size := 500.0; end if;     
       
-      end if;      
-      -- Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_1_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_1_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_2_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_2_1).Bet_Size)));
       Log(Me & "Run", Trim(Bets_Allowed(Back_3_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_3_1).Bet_Size)));
-      -- Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
-      -- Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
-    end;    
-   
+      Log(Me & "Run", Trim(Bets_Allowed(Back_4_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_4_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_7_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_7_1).Bet_Size)));
+      Log(Me & "Run", Trim(Bets_Allowed(Back_8_1).Bet_Name) & " Bet_Size set to " & F8_Image(Float_8(Bets_Allowed(Back_8_1).Bet_Size)));
+    end;       
     T.Commit;
     
-    Bets_Allowed(Back_1_1).Bet_Size := 250.0;
-    Bets_Allowed(Back_7_1).Bet_Size := 250.0;
-    Bets_Allowed(Back_8_1).Bet_Size := 250.0;
+    --Bets_Allowed(Back_1_1).Bet_Size := 250.0;
+    --Bets_Allowed(Back_7_1).Bet_Size := 250.0;
+    --Bets_Allowed(Back_8_1).Bet_Size := 250.0;
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -402,9 +411,6 @@ procedure Poll is
       end if;
     end loop;
     
-    -- Bets_Allowed(Back_2_1).Is_Allowed_To_Bet := False;
-    -- Bets_Allowed(Back_3_1).Is_Allowed_To_Bet := False; 
-
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -598,6 +604,23 @@ procedure Poll is
         end if;
 
         ---------------------------------------------------------------
+        --MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1
+        if Best_Runners(1).Backprice <= Float_8(1.50) and then
+           Best_Runners(4).Backprice >= Float_8(30.0) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          -- Back The leader in PLC market...
+
+          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+                   Main_Bet        => Back_4_1,
+                   Marker_Bet      => Back_4_1_Marker,
+                   Place_Market_Id => Markets(Place).Marketid,
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_040"),
+                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_041"));
+        end if;
+
+        ---------------------------------------------------------------
+
 
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1
@@ -614,14 +637,6 @@ procedure Poll is
                    Receiver        => Process_Io.To_Process_Type("bet_placer_070"),
                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_071"));
           --lay 2,3,4
-          if Best_Runners(2).Layprice < Float_8(50.0) and then
-             Best_Runners(2).Layprice > Float_8(0.0) then
-            Send_Lay_Bet(Selectionid  => Best_Runners(2).Selectionid,
-                        Main_Bet    => Lay_5_2,
-                        Max_Price   => Max_Lay_Price_Type(Best_Runners(2).Layprice),
-                        Market_Id   => Markets(Win).Marketid,
-                        Receiver    => Process_Io.To_Process_Type("bet_placer_121"));
-          end if;
 
           if Best_Runners(3).Layprice < Float_8(60.0) and then
              Best_Runners(3).Layprice > Float_8(0.0) then
@@ -657,14 +672,6 @@ procedure Poll is
                    Receiver        => Process_Io.To_Process_Type("bet_placer_080"),
                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_081"));
           --lay 2,3,4
-          if Best_Runners(2).Layprice < Float_8(50.0) and then
-             Best_Runners(2).Layprice > Float_8(0.0) then
-            Send_Lay_Bet(Selectionid  => Best_Runners(2).Selectionid,
-                        Main_Bet    => Lay_6_2,
-                        Max_Price   => Max_Lay_Price_Type(Best_Runners(2).Layprice),
-                        Market_Id   => Markets(Win).Marketid,
-                        Receiver    => Process_Io.To_Process_Type("bet_placer_124"));
-          end if;
 
           if Best_Runners(3).Layprice < Float_8(60.0) and then
              Best_Runners(3).Layprice > Float_8(0.0) then
@@ -690,61 +697,9 @@ procedure Poll is
 
       -- laybets
       if Worst_Runner.Layprice <= Float_8(1000.0) and then
-         not Is_Data_Collector  then
-        --HORSES_WIN_LAY_FINISH_100_200_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(100.0) and then
-           Worst_Runner.Layprice <= Float_8(200.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
+         not Is_Data_Collector then
 
-          Send_Lay_Bet(Selectionid  => Worst_Runner.Selectionid,
-                        Main_Bet    => Lay_1_1,
-                        Max_Price   => Max_Lay_Price_Type(200.0),
-                        Market_Id   => Markets(Win).Marketid,
-                        Receiver    => Process_Io.To_Process_Type("bet_placer_101"));
-        end if;
 
-        --HORSES_WIN_LAY_FINISH_100_300_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(100.0) and then
-           Worst_Runner.Layprice <= Float_8(300.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
-
-          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
-                        Main_Bet   => Lay_1_2,
-                        Max_Price  => Max_Lay_Price_Type(300.0),
-                        Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_102"));
-        end if;
-
-        --HORSES_WIN_LAY_FINISH_80_150_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(80.0) and then
-           Worst_Runner.Layprice <= Float_8(150.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
-
-          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
-                        Main_Bet   => Lay_2_1,
-                        Max_Price  => Max_Lay_Price_Type(150.0),
-                        Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_103"));
-        end if;
-        --HORSES_WIN_LAY_FINISH_80_250_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(100.0) and then
-           Worst_Runner.Layprice <= Float_8(250.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
-
-          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
-                        Main_Bet   => Lay_2_2,
-                        Max_Price  => Max_Lay_Price_Type(250.0),
-                        Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_104"));
-        end if;
         --HORSES_WIN_LAY_FINISH_110_150_1",
         if Worst_Runner.Backprice <= Float_8(400.0) and then
            Worst_Runner.Backprice >= Float_8(110.0) and then
