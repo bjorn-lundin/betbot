@@ -332,7 +332,7 @@ procedure Poll_Place is
       end ;      
 
       for i in Best_Runners'range loop
-        Log("Best_Runners(i) " & i'Img & Table_Aprices.To_String(Best_Runners(i)));
+        Log("Best_Runners(i)" & i'Img & " " & Table_Aprices.To_String(Best_Runners(i)));
       end loop;
 
       if Best_Runners(1).Backprice >= Float_8(1.0) and then

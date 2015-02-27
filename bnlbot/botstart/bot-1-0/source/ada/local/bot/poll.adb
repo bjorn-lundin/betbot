@@ -93,7 +93,11 @@ procedure Poll is
                                                             5 => 0.08,
                                                             6 => 0.08);
     Local_Bet_Name : Bet_Name_Type := (others => ' ');
+    Db_Bet_Name : Bet_Name_Type := (others => ' ');
   begin
+  
+    Move("MR_" & Trim(Bet_Name), Local_Bet_Name);
+  
     -- profit for MR-bets in order, from last 3 days of SETTLED bets, placed at least sometime within '2015-01-01'  
     -- bet with most profit will spend more on todays bets
     Select_Bet_Size_Portion.Prepare(
@@ -103,11 +107,11 @@ procedure Poll is
       "from " &
         "ABETS " &
       "where " &
-            "BETPLACED::date > (select CURRENT_DATE - interval '3 days') " &
+            "BETPLACED::date > (select CURRENT_DATE - interval '4 days') " &
         "and BETWON is not null " &
         "and EXESTATUS = 'SUCCESS'  " & 
         "and STATUS in ('SETTLED') " &
-        "and BETNAME like 'MR_' " & 
+        "and BETNAME like 'MR_%' " & 
       "group by " &
         "BETNAME " &
       "having  " &
@@ -120,19 +124,21 @@ procedure Poll is
       Select_Bet_Size_Portion.Fetch(Eos);
       exit when Eos;
       Idx := Idx +1;
-      Select_Bet_Size_Portion.Get("BETNAME", Local_Bet_Name);
+      Select_Bet_Size_Portion.Get("BETNAME", Db_Bet_Name);
       Select_Bet_Size_Portion.Get("PROFIT", Bet_Profit);
-      exit when Local_Bet_Name = Local_Bet_Name;
+      Log("Bet_Size_Portion.loop" , "Db_Bet_Name=Local_Bet_Name " & Boolean'Image(Trim(Db_Bet_Name) = Trim(Local_Bet_Name)) & 
+           " Db_Bet_Name='" & Trim(Db_Bet_Name) & "' Local_Bet_Name='" & Trim(Local_Bet_Name) & "'" &
+           " Idx: " & Idx'Img & " profit " & F8_image(Bet_Profit) );         
+      exit when Trim(Db_Bet_Name) = Trim(Local_Bet_Name);
     end loop;
     Select_Bet_Size_Portion.Close_Cursor;
     
-    if Idx < integer(1) or Idx > Integer(6) then
+    if Idx < Integer(1) or Idx > Integer(6) then
       Idx := 6;
     end if;
     
-    Ratio := Ratios(Idx);
-    
-    Log("Bet_Size_Portion" , Trim(Bet_Name) & "eos:" & eos'Img & " profit" & F8_image(Bet_Profit,3) & " -> ratio " & F8_image(Float_8(Ratio),2));   
+    Ratio := Ratios(Idx);    
+    Log("Bet_Size_Portion" , Trim(Local_Bet_Name) & " Idx:" & Idx'Img & " profit " & F8_image(Bet_Profit) & " -> ratio " & F8_image(Float_8(Ratio)));   
     
     return Ratio;    
   end Bet_Size_Portion;
@@ -303,10 +309,13 @@ procedure Poll is
       else
         Bets_Allowed(i).Bet_Size := 0.0; -- make sure not accepted
       end if;
-      
     end loop;
     -- override Bet_Size for some bets
     
+    if Cfg.Allow_Lay_During_Race then
+      Bets_Allowed(Lay_6_3).Bet_Size := 30.0; --HORSES_WIN_LAY_FINISH_1.10_20.0_3
+      Bets_Allowed(Lay_6_4).Bet_Size := 30.0; --HORSES_WIN_LAY_FINISH_1.10_20.0_4
+    end if;    
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.25_12.0_1",    Bets_Allowed(Back_2_1).Bet_Name);
@@ -672,12 +681,11 @@ procedure Poll is
                    Receiver        => Process_Io.To_Process_Type("bet_placer_080"),
                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_081"));
           --lay 2,3,4
-
           if Best_Runners(3).Layprice < Float_8(60.0) and then
              Best_Runners(3).Layprice > Float_8(0.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(3).Selectionid,
                         Main_Bet    => Lay_6_3,
-                        Max_Price   => Max_Lay_Price_Type(Best_Runners(3).Layprice),
+                        Max_Price   => Max_Lay_Price_Type(60.0),
                         Market_Id   => Markets(Win).Marketid,
                         Receiver    => Process_Io.To_Process_Type("bet_placer_125"));
           end if;
@@ -686,11 +694,10 @@ procedure Poll is
              Best_Runners(4).Layprice > Float_8(0.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
                           Main_Bet    => Lay_6_4,
-                          Max_Price   => Max_Lay_Price_Type(Best_Runners(4).Layprice),
+                          Max_Price   => Max_Lay_Price_Type(70.0),
                           Market_Id   => Markets(Win).Marketid,
                           Receiver    => Process_Io.To_Process_Type("bet_placer_126"));
           end if;
-
         end if;
 
       end if;

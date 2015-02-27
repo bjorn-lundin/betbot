@@ -16,6 +16,7 @@ package Config is
     Enabled                    : Boolean          := False;
     Allowed_Countries          : Unbounded_String := Null_Unbounded_String;
     Allowed_Days               : Allowed_Days_Array     := (others => False);
+    Allow_Lay_During_Race      : Boolean          := False;
   end record;  
   
   function Create(Filename : String) return Config_Type;
