@@ -22,6 +22,7 @@ package body Config is
      Cfg.Enabled              := Ini.Get_Value("finish","enabled",false); 
      Cfg.Max_Loss_Per_Day     := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0")); 
      Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("finish","countries",""));
+     Cfg.Allow_Lay_During_Race := Ini.Get_Value("finish","allow_lay_during_race",false); 
     
     declare
       use Ada.Characters.Handling;
@@ -57,6 +58,7 @@ package body Config is
         "<second_fav_min_price>" & F8_Image(Float_8(Cfg.Second_Fav_Min_Price)) & "</second_fav_min_price>" &
         "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
         "<enabled>" & Cfg.Enabled'Img & "</enabled>" &
+        "<allow_lay_during_race>" & Cfg.Allow_Lay_During_Race'Img & "</allow_lay_during_race>" &
         "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" ;
     Part3 : String := "</config>";
     Days : Unbounded_String := Null_Unbounded_String;
