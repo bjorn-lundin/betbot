@@ -1,6 +1,5 @@
 #
-#	9.8-17200  07-Aug-2009	    Björn Lundin
-# Original file : Björn Lundin Consafe Logistics
+# 07-Aug-2009	    Björn Lundin
 # script to be called every hour
 # some_log_15_May_2009_22_14_34.cir is produced by a process
 # when the cir file is about to reset. Instead, close
@@ -22,7 +21,7 @@ set Debug 0
 set Compressor {}
 
 # How long to keep them
-set Days_To_Keep_Zip 7
+set Days_To_Keep_Zip 6
 
 # Where to store zipped files. This dir is created if it does not exist
 set Directory_Zipped_Files [file join $::env(BOT_HOME) zipped_logs]
