@@ -124,22 +124,12 @@ function Check_Bots_For_User () {
         Start_Bot $BOT_USER $bot bot $bot.ini
       fi
     done
-    BET_PLACER_LIST="bet_placer_010 bet_placer_011 \
-                     bet_placer_020 bet_placer_021 \
-                     bet_placer_030 bet_placer_031 \
-                     bet_placer_040 bet_placer_041 \
-                     bet_placer_050 bet_placer_051 \
-                     bet_placer_060 bet_placer_061 \
-                     bet_placer_070 bet_placer_071 \
-                     bet_placer_080 bet_placer_081 \
-                     bet_placer_101 bet_placer_102 \
+    BET_PLACER_LIST="bet_placer_101 bet_placer_102 \
                      bet_placer_103 bet_placer_104 \
                      bet_placer_105 bet_placer_106 \
                      bet_placer_107 bet_placer_108 \
-                     bet_placer_121 bet_placer_122 \
-                     bet_placer_123 bet_placer_124 \
-                     bet_placer_125 bet_placer_126 \
-                     bet_placer_127 bet_placer_128"                     
+                     bet_placer_122 bet_placer_123 \
+                     bet_placer_125 bet_placer_126"                     
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -245,7 +235,7 @@ echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
 # check filling degree
 #1 kb blocks
 #90%
-export ALARM_SIZE=95
+export ALARM_SIZE=90
 DAY_FILE=$(date +"%F")
 ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
@@ -268,6 +258,21 @@ for DISK in $DISK_LIST ; do
    fi
   done
 done
+
+#delete old alarmfiles
+
+ALARM_FILES=$(ls /tmp/alarm*  2>/dev/null)
+
+for f in $ALARM_FILES ; do
+  if [ $f != $ALARM_TODAY_FILE ] ; then
+    rm -f $f
+  fi
+done
+  
+
+
+
+
 
 
 
