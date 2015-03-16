@@ -52,16 +52,16 @@ procedure Poll is
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  type Bet_Type is (Back_1_10_7_1,   Back_1_10_7_1_Marker,
-                    Back_1_25_12_1,  Back_1_25_12_1_Marker,
-                    Back_1_40_50_1,  Back_1_40_50_1_Marker,
-                    Back_1_50_30_1,  Back_1_50_30_1_Marker,
-                    Back_1_10_20_1,  Back_1_10_20_1_Marker,
-                    Back_1_10_30_1,  Back_1_10_30_1_Marker,
+  type Bet_Type is (Back_1_10_7_1, 
+                    Back_1_25_12_1,
+                    Back_1_40_50_1,
+                    Back_1_50_30_1,
+                    Back_1_10_20_1,
+                    Back_1_10_30_1,
                     Lay_110_150,     Lay_110_250,   Lay_110_200,   Lay_110_300,
                     Lay_120_150,     Lay_120_200,   Lay_120_250,   Lay_120_300,                   
-                    Lay_1_10_30_2,   Lay_1_10_30_3, Lay_1_10_30_4,
-                    Lay_1_20_30_2,   Lay_1_20_30_3, Lay_1_20_30_4
+                    Lay_1_10_30_3, Lay_1_10_30_4,
+                    Lay_1_10_20_3, Lay_1_10_20_4
                     );
 
   type Allowed_Type is record
@@ -189,14 +189,13 @@ procedure Poll is
 
   --------------------------------------------------------------
 
-  procedure Send_Bet(Selectionid                         : Integer_4;
-                     Main_Bet, Marker_Bet                : Bet_Type;
-                     Place_Market_Id                     : Market_Id_Type;
-                     Receiver, Receiver_Marker           : Process_Io.Process_Type) is
+  procedure Send_Bet(Selectionid     : Integer_4;
+                     Main_Bet        : Bet_Type;
+                     Place_Market_Id : Market_Id_Type;
+                     Receiver        : Process_Io.Process_Type) is
   
     PBB             : Bot_Messages.Place_Back_Bet_Record;
-    --PBB_Marker      : Bot_Messages.Place_Back_Bet_Record;
-    Did_Bet : array(1..2) of Boolean := (others => False);
+    Did_Bet : array(1..1) of Boolean := (others => False);
   begin
   
     declare
@@ -222,26 +221,13 @@ procedure Poll is
       Bets_Allowed(Main_Bet).Has_Betted := True;
       Did_Bet(1) := True;
     end if;
-  
-    -- --marker
-    -- if not Bets_Allowed(Marker_Bet).Has_Betted and then
-    --        Bets_Allowed(Marker_Bet).Is_Allowed_To_Bet then
-    --   PBB_Marker := PBB;
-    --   PBB_Marker.Bet_Name := Bets_Allowed(Marker_Bet).Bet_Name;
-    --   Move(F8_Image(Float_8(Bets_Allowed(Marker_Bet).Bet_Size)), PBB_Marker.Size);
-    --   Bot_Messages.Send(Receiver_Marker, PBB_Marker);
-    --   Bets_Allowed(Marker_Bet).Has_Betted := True;
-    --   Did_Bet(2) := True;
-    -- end if;
-    -- 
-    if Did_Bet(1) or else Did_Bet(2) then
+
+    if Did_Bet(1) then
       Log("Send_Bet called with " &
          " Selectionid=" & Selectionid'Img &
          " Main_Bet=" & Main_Bet'Img &
-         " Marker_Bet=" & Marker_Bet'Img &
          " Place_Market_Id= '" & Place_Market_Id & "'" &
-         " Receiver= '" & Receiver.Name & "'" &
-         " Receiver_Marker= '" & Receiver_Marker.Name & "'" );
+         " Receiver= '" & Receiver.Name & "'" );
     end if;
   
     -- just to save time between logs
@@ -249,9 +235,6 @@ procedure Poll is
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
     end if;
   
-    --if Did_Bet(2) then
-    --  Log("pinged '" &  Trim(Receiver_Marker.Name) & "' with bet '" & Trim(PBB_Marker.Bet_Name) & "' sel.id:" &  PBB_Marker.Selection_Id'Img );
-    --end if;
   end Send_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
@@ -313,38 +296,27 @@ procedure Poll is
     Move("HORSES_WIN_LAY_FINISH_110_250_1",       Bets_Allowed(Lay_110_250).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_110_200_1",       Bets_Allowed(Lay_110_200).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_110_300_1",       Bets_Allowed(Lay_110_300).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_30.0_2",     Bets_Allowed(Lay_1_10_30_2).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_1.10_30.0_3",     Bets_Allowed(Lay_1_10_30_3).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_1.10_30.0_4",     Bets_Allowed(Lay_1_10_30_4).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_2",     Bets_Allowed(Lay_1_20_30_2).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_3",     Bets_Allowed(Lay_1_20_30_3).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_4",     Bets_Allowed(Lay_1_20_30_4).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_3",     Bets_Allowed(Lay_1_10_20_3).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_4",     Bets_Allowed(Lay_1_10_20_4).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_150_1",       Bets_Allowed(Lay_120_150).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_200_1",       Bets_Allowed(Lay_120_200).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_250_1",       Bets_Allowed(Lay_120_250).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_300_1",       Bets_Allowed(Lay_120_300).Bet_Name);
-
-    --markers
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(Back_1_10_7_1_Marker).Bet_Name);
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1", Bets_Allowed(Back_1_25_12_1_Marker).Bet_Name);
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1", Bets_Allowed(Back_1_40_50_1_Marker).Bet_Name);
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(Back_1_50_30_1_Marker).Bet_Name);
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1", Bets_Allowed(Back_1_10_20_1_Marker).Bet_Name);
-    --Move("MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1", Bets_Allowed(Back_1_10_30_1_Marker).Bet_Name);
-
     
-     T.Start;
-     declare
-       -- calculate how big portion the bet is of all 6 bets. Use as bet_size factor
-     begin
-       Bets_Allowed(Back_1_10_7_1) .Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1) .Bet_Name); 
-       Bets_Allowed(Back_1_25_12_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_25_12_1).Bet_Name); 
-       Bets_Allowed(Back_1_40_50_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_40_50_1).Bet_Name); 
-       Bets_Allowed(Back_1_50_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_50_30_1).Bet_Name); 
-       Bets_Allowed(Back_1_10_20_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_20_1).Bet_Name); 
-       Bets_Allowed(Back_1_10_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_30_1).Bet_Name); 
-     end;       
-     T.Commit;
+    T.Start;
+    declare
+      -- calculate how big portion the bet is of all 6 bets. Use as bet_size factor
+    begin
+      Bets_Allowed(Back_1_10_7_1) .Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1) .Bet_Name); 
+      Bets_Allowed(Back_1_25_12_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_25_12_1).Bet_Name); 
+      Bets_Allowed(Back_1_40_50_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_40_50_1).Bet_Name); 
+      Bets_Allowed(Back_1_50_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_50_30_1).Bet_Name); 
+      Bets_Allowed(Back_1_10_20_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_20_1).Bet_Name); 
+      Bets_Allowed(Back_1_10_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_30_1).Bet_Name); 
+    end;       
+    T.Commit;
     
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
@@ -533,10 +505,8 @@ procedure Poll is
     
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_10_7_1,
-                   Marker_Bet      => Back_1_10_7_1_Marker,
                    Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_010"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_011"));
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_010"));
         end if;
     
         ---------------------------------------------------------------
@@ -549,10 +519,8 @@ procedure Poll is
           -- Back The leader in PLC market...
            Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                     Main_Bet        => Back_1_25_12_1,
-                    Marker_Bet      => Back_1_25_12_1_Marker,
                     Place_Market_Id => Markets(Place).Marketid,
-                    Receiver        => Process_Io.To_Process_Type("bet_placer_020"),
-                    Receiver_Marker => Process_Io.To_Process_Type("bet_placer_021"));
+                    Receiver        => Process_Io.To_Process_Type("bet_placer_020"));
         end if;
     
         ---------------------------------------------------------------
@@ -565,10 +533,8 @@ procedure Poll is
     
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_40_50_1,
-                   Marker_Bet      => Back_1_40_50_1_Marker,
                    Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_030"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_031"));
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_030"));
         end if;
     
         ---------------------------------------------------------------
@@ -581,10 +547,8 @@ procedure Poll is
     
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_50_30_1,
-                   Marker_Bet      => Back_1_50_30_1_Marker,
                    Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_040"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_041"));
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_040"));
         end if;
 
         ---------------------------------------------------------------
@@ -600,26 +564,26 @@ procedure Poll is
 
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_10_20_1,
-                   Marker_Bet      => Back_1_10_20_1_Marker,
                    Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_070"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_071"));
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_070"));
           --lay 2,3,4
 
-          if Best_Runners(3).Layprice < Float_8(60.0) and then
-             Best_Runners(3).Layprice > Float_8(0.0) then
+          if Best_Runners(3).Layprice  < Float_8(60.0) and then
+             Best_Runners(3).Layprice  > Float_8(0.0) and then
+             Best_Runners(3).Backprice > Float_8(25.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(3).Selectionid,
-                        Main_Bet    => Lay_1_20_30_3,
-                        Max_Price   => Max_Lay_Price_Type(Best_Runners(3).Layprice),
+                        Main_Bet    => Lay_1_10_20_3,
+                        Max_Price   => Max_Lay_Price_Type(60.0),
                         Market_Id   => Markets(Win).Marketid,
                         Receiver    => Process_Io.To_Process_Type("bet_placer_122"));
           end if;
 
-          if Best_Runners(4).Layprice < Float_8(70.0) and then
-             Best_Runners(4).Layprice > Float_8(0.0) then
+          if Best_Runners(4).Layprice  < Float_8(70.0) and then
+             Best_Runners(4).Layprice  > Float_8(0.0) and then
+             Best_Runners(4).Backprice > Float_8(25.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
-                          Main_Bet    => Lay_1_20_30_4,
-                          Max_Price   => Max_Lay_Price_Type(Best_Runners(4).Layprice),
+                          Main_Bet    => Lay_1_10_20_4,
+                          Max_Price   => Max_Lay_Price_Type(70.0),
                           Market_Id   => Markets(Win).Marketid,
                           Receiver    => Process_Io.To_Process_Type("bet_placer_123"));
           end if;
@@ -629,19 +593,18 @@ procedure Poll is
         --MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
            Best_Runners(4).Backprice >= Float_8(30.0) and then
-           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+           Best_Runners(2).Backprice <  Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice <  Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
 
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_10_30_1,
-                   Marker_Bet      => Back_1_10_30_1_Marker,
                    Place_Market_Id => Markets(Place).Marketid,
-                   Receiver        => Process_Io.To_Process_Type("bet_placer_080"),
-                   Receiver_Marker => Process_Io.To_Process_Type("bet_placer_081"));
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_080"));
           --lay 2,3,4
-          if Best_Runners(3).Layprice < Float_8(60.0) and then
-             Best_Runners(3).Layprice > Float_8(0.0) then
+          if Best_Runners(3).Layprice  < Float_8(60.0) and then
+             Best_Runners(3).Layprice  > Float_8(0.0) and then
+             Best_Runners(3).Backprice > Float_8(25.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(3).Selectionid,
                         Main_Bet    => Lay_1_10_30_3,
                         Max_Price   => Max_Lay_Price_Type(60.0),
@@ -650,7 +613,8 @@ procedure Poll is
           end if;
 
           if Best_Runners(4).Layprice < Float_8(70.0) and then
-             Best_Runners(4).Layprice > Float_8(0.0) then
+             Best_Runners(4).Layprice > Float_8(0.0) and then
+             Best_Runners(4).Backprice > Float_8(25.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
                           Main_Bet    => Lay_1_10_30_4,
                           Max_Price   => Max_Lay_Price_Type(70.0),
