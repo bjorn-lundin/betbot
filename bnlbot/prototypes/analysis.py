@@ -70,7 +70,7 @@ def check_data(cursor):
     raceprice_keys = {}
     for _ in market_ids:
         try:
-            cursor.execute(q3, [_])
+            cursor.execute(q3, _)
             selection_ids = []
             selection_ids.extend(cursor.fetchall())
             if _ not in raceprice_keys:
@@ -89,8 +89,8 @@ def check_data(cursor):
         FROM
             araceprices
         WHERE
-            marketid = %s AND
-            selectionid = %s
+            marketid = %s 
+            AND selectionid = %s
         LIMIT 1;
         '''
     backprice = 0
