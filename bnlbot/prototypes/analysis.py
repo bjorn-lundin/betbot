@@ -43,8 +43,8 @@ def check_data(cursor):
         FROM
             amarkets
         WHERE
-            eventid = %s AND
-            markettype = 'WIN';
+            eventid = %s
+            AND markettype = 'WIN';
         '''
     market_ids = []
     for _ in event_ids:
@@ -87,7 +87,7 @@ def check_data(cursor):
         SELECT
             backprice
         FROM
-            araceprices
+            apricesfinish 
         WHERE
             marketid = %s 
             AND selectionid = %s
@@ -101,7 +101,7 @@ def check_data(cursor):
             # ...together with every selectionid...
             for _2 in raceprice_keys[_]:
                 cursor.execute(q4, [_, _2])
-                # ...see if backprices exists
+                # ...see if backprices exist
                 if (len(cursor.fetchall()) > 0):
                     backprice += 1
                 else:
