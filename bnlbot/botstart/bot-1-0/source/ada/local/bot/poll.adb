@@ -112,7 +112,7 @@ procedure Poll is
          "sum(SIZEMATCHED) > 0 " &  
          "and max(BETPLACED)::date >= '2015-01-01' " &  
        "order by " &
-         "PROFIT desc ");  
+         "PROFITRATIO desc ");  
     Select_Bet_Size_Portion_Back.Open_Cursor;  
     loop
       Select_Bet_Size_Portion_Back.Fetch(Eos);
