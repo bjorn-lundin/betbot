@@ -21,7 +21,7 @@ set Debug 0
 set Compressor {}
 
 # How long to keep them
-set Days_To_Keep_Zip 6
+set Days_To_Keep_Zip 4
 
 # Where to store zipped files. This dir is created if it does not exist
 set Directory_Zipped_Files [file join $::env(BOT_HOME) zipped_logs]

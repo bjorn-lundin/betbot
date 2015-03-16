@@ -124,7 +124,13 @@ function Check_Bots_For_User () {
         Start_Bot $BOT_USER $bot bot $bot.ini
       fi
     done
-    BET_PLACER_LIST="bet_placer_101 bet_placer_102 \
+    BET_PLACER_LIST="bet_placer_010 bet_placer_011 \
+                     bet_placer_020 bet_placer_021 \
+                     bet_placer_030 bet_placer_031 \
+                     bet_placer_040 bet_placer_041 \
+                     bet_placer_070 bet_placer_071 \
+                     bet_placer_080 bet_placer_081 \
+                     bet_placer_101 bet_placer_102 \
                      bet_placer_103 bet_placer_104 \
                      bet_placer_105 bet_placer_106 \
                      bet_placer_107 bet_placer_108 \
