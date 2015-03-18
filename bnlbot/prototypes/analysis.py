@@ -7,15 +7,24 @@ import psycopg2
 from queries import queries
 
 
-def call_db_and_print(cursor, query):
-    print(query[0])
-    print('=' * 80)
-    cursor.execute(query[1])
-    print(cursor.fetchall())
-    print()
+def call_db_and_print(conn, queries):
+
+    try:
+        cur = conn.cursor()
+        for _ in queries:
+            print(_[0])
+            print('=' * 80)
+            cur.execute(_[1])
+            print(cur.fetchall())
+            print()
+    except Exception as e:
+        print(_, e)
+    finally:
+        cur.close()
+        conn.commit()
 
 
-def check_data(cursor):
+def check_data(conn):
     # eventid's with eventtypeid = 7
     q1 = \
         ''' 
@@ -24,15 +33,20 @@ def check_data(cursor):
         FROM
             aevents
         WHERE
-            eventtypeid = 7;
+            eventtypeid = 7
+        AND countrycode in ('GB','IE');
         '''
     event_ids = None
     try:
-        cursor.execute(q1)
-        event_ids = cursor.fetchall()
+        cur = conn.cursor()
+        cur.execute(q1)
+        event_ids = cur.fetchall()
     except Exception as e:
         print('q1', e)
         print('q1', _)
+    finally:
+        cur.close()
+        conn.commit()
     print('q1', len(event_ids))
 
     # marketid's from events above with markettype WIN 
@@ -44,16 +58,21 @@ def check_data(cursor):
             amarkets
         WHERE
             eventid = %s
-            AND markettype = 'WIN';
+        AND markettype = 'WIN'
+        AND betdelay > 0;
         '''
     market_ids = []
-    for _ in event_ids:
-        try:
-            cursor.execute(q2, _)
-            market_ids.extend(cursor.fetchall())
-        except Exception as e:
-            print('q2', e)
-            print('q2', _)
+    try:
+        cur = conn.cursor()
+        for _ in event_ids:
+            cur.execute(q2, _)
+            market_ids.extend(cur.fetchall())
+    except Exception as e:
+        print('q2', e)
+        print('q2', _)
+    finally:
+        cur.close()
+        conn.commit()
     print('q2', len(market_ids))
     
     # Join marketid's from above with selectionid's in dict raceprice_keys 
@@ -68,18 +87,20 @@ def check_data(cursor):
             marketid = %s;
         '''
     raceprice_keys = {}
-    for _ in market_ids:
-        try:
-            cursor.execute(q3, _)
+    try:
+        cur = conn.cursor()
+        for _ in market_ids:
             selection_ids = []
-            selection_ids.extend(cursor.fetchall())
+            cur.execute(q3, _)
+            selection_ids.extend(cur.fetchall())
             if _ not in raceprice_keys:
                 raceprice_keys[_] = selection_ids
-            else:
-                print('Duplicate marketid ->', _)
-        except Exception as e:
-            print('q3', e)
-            print('q3', _)
+    except Exception as e:
+        print('q3', e)
+        print('q3', _)
+    finally:
+        cur.close()
+        conn.commit()
     print('q3', len(raceprice_keys))
 
     q4 = \
@@ -95,30 +116,33 @@ def check_data(cursor):
         '''
     backprice = 0
     no_backprice = 0
-    # For every marketid...
-    for _ in raceprice_keys.keys():
-        try:
+    try:
+        cur = conn.cursor()
+        # For every marketid...
+        for _ in raceprice_keys.keys():
             # ...together with every selectionid...
             for _2 in raceprice_keys[_]:
-                cursor.execute(q4, [_, _2])
+                cur.execute(q4, [_, _2])
                 # ...see if backprices exist
-                if (len(cursor.fetchall()) > 0):
+                row = cur.fetchone()
+                if (row is not None):
                     backprice += 1
                 else:
                     no_backprice += 1
-        except Exception as e:
-            print('q4', e)
-            print('q4', _)
+    except Exception as e:
+        print('q4', e)
+        print('q4', _)
+    finally:
+        cur.close()
+        conn.commit()
     print('q4', 'no_backprice:', no_backprice)
     print('q4', 'backprice:', backprice)
 
 
 if __name__ == "__main__":
     CONN = psycopg2.connect("dbname=dry user=joakim")
-    CUR = CONN.cursor()
-    #for q in queries.QUERIES:
-    #    call_db_and_print(CUR, q)
-    check_data(CUR)
-    CUR.close()
+    call_db_and_print(CONN, queries.QUERIES)
+    #check_data(CONN)
     CONN.close()
     exit(0)
+

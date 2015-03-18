@@ -1,0 +1,18 @@
+﻿select 
+  E.*,
+  M.*,
+  R.*,
+  RP.*
+from
+  AEVENTS E,
+  AMARKETS M,
+  APRICESFINISH RP,
+  ARUNNERS R
+where
+  E.EVENTID = M.EVENTID
+  and M.MARKETID = R.MARKETID
+  and M.MARKETID = RP.MARKETID
+  and R.SELECTIONID = RP.SELECTIONID
+  and E.EVENTTYPEID = 7
+  and M.MARKETTYPE = 'WIN'
+Limit 1 ;

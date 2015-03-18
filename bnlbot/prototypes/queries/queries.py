@@ -16,10 +16,10 @@ Bjorn specifics
 aprices
     Starting odds about 10 seconds before race start
 
-araceprice
+apricefinish
     Winner odds during race
 
-apricefinish
+araceprice
     Place odds during race (and others e.g. football etc.?)
 '''
 
