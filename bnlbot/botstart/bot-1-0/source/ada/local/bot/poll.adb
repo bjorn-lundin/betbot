@@ -291,7 +291,7 @@ procedure Poll is
     Move("HORSES_PLC_BACK_FINISH_1.40_50.0_1",    Bets_Allowed(Back_1_40_50_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_1_50_30_1).Bet_Name);
     Move("HORSES_PLC_BACK_FINISH_1.10_20.0_1",    Bets_Allowed(Back_1_10_20_1).Bet_Name);
-    Move("HORSES_PLC_BACK_FINISH_1.10_20.0_1",    Bets_Allowed(Back_1_10_30_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.10_30.0_1",    Bets_Allowed(Back_1_10_30_1).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_110_150_1",       Bets_Allowed(Lay_110_150).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_110_250_1",       Bets_Allowed(Lay_110_250).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_110_200_1",       Bets_Allowed(Lay_110_200).Bet_Name);
@@ -343,8 +343,7 @@ procedure Poll is
         Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
       end if;
 
-      Bets_Allowed(i).Is_Allowed_To_Bet := Bets_Allowed(i).Is_Allowed_To_Bet and then 
-                                           Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Float_8(Bets_Allowed(i).Max_Loss_Per_Day);
+      Bets_Allowed(i).Is_Allowed_To_Bet := Bet.Profit_Today(Bets_Allowed(i).Bet_Name) >= Float_8(Bets_Allowed(i).Max_Loss_Per_Day);
       Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " max allowed loss set to " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       if not Bets_Allowed(i).Is_Allowed_To_Bet then
         Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
