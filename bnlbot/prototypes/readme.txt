@@ -27,7 +27,7 @@ Activate Python virtual environment
     . ./xyz/bin/activate
 
 Install psycopg2 into virtual environment (latest)
-    pip install --ignore-installed psycopg2
+    pip install --ignore-installed psycopg2 pandas
 
 Postgresql
 ----------
