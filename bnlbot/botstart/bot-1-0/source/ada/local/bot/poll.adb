@@ -52,14 +52,14 @@ procedure Poll is
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  type Bet_Type is (Back_1_10_7_1, 
+  type Bet_Type is (Back_1_10_7_1,
                     Back_1_25_12_1,
                     Back_1_40_50_1,
                     Back_1_50_30_1,
                     Back_1_10_20_1,
                     Back_1_10_30_1,
                     Lay_110_150,     Lay_110_250,   Lay_110_200,   Lay_110_300,
-                    Lay_120_150,     Lay_120_200,   Lay_120_250,   Lay_120_300,                   
+                    Lay_120_150,     Lay_120_200,   Lay_120_250,   Lay_120_300,
                     Lay_1_10_30_3, Lay_1_10_30_4,
                     Lay_1_10_20_3, Lay_1_10_20_4
                     );
@@ -75,9 +75,9 @@ procedure Poll is
 
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
 
-  
+
   --------------------------------------------------------------
-  
+
   function Bet_Size_Portion(Bet_Name : Bet_Name_Type) return Bet_Size_Portion_Type is
     Eos               : Boolean := False;
     Bet_Profit_Ratio  : Float_8 := 0.0;
@@ -88,12 +88,12 @@ procedure Poll is
                                                                   3 => 0.15,
                                                                   4 => 0.10,
                                                                   5 => 0.08,
-                                                                  6 => 0.06,
+                                                                  6 => 0.07,
                                                                   7 => 0.00);
     Db_Bet_Name       : Bet_Name_Type := (others => ' ');
   begin
-  
-    -- profit per risk for bets in order, from last 3 days of SETTLED bets, placed at least sometime within '2015-01-01'  
+
+    -- profit per risk for bets in order, from last 3 days of SETTLED bets, placed at least sometime within '2015-01-01'
     -- bet with most profit per risk will spend more on todays bets
     Select_Bet_Size_Portion_Back.Prepare(
        "select " &
@@ -109,34 +109,34 @@ procedure Poll is
        "group by " &
          "BETNAME " &
        "having " &
-         "sum(SIZEMATCHED) > 0 " &  
-         "and max(BETPLACED)::date >= '2015-01-01' " &  
+         "sum(SIZEMATCHED) > 0 " &
+         "and max(BETPLACED)::date >= '2015-01-01' " &
        "order by " &
-         "PROFITRATIO desc ");  
-    Select_Bet_Size_Portion_Back.Open_Cursor;  
+         "PROFITRATIO desc ");
+    Select_Bet_Size_Portion_Back.Open_Cursor;
     loop
       Select_Bet_Size_Portion_Back.Fetch(Eos);
       exit when Eos;
       Idx := Idx +1;
       Select_Bet_Size_Portion_Back.Get("BETNAME", Db_Bet_Name);
       Select_Bet_Size_Portion_Back.Get("PROFITRATIO", Bet_Profit_Ratio);
-      Log("Bet_Size_Portion.loop" , "Db_Bet_Name=Bet_Name " & Boolean'Image(Trim(Db_Bet_Name) = Trim(Bet_Name)) & 
+      Log("Bet_Size_Portion.loop" , "Db_Bet_Name=Bet_Name " & Boolean'Image(Trim(Db_Bet_Name) = Trim(Bet_Name)) &
            " Db_Bet_Name='" & Trim(Db_Bet_Name) & "' Bet_Name='" & Trim(Bet_Name) & "'" &
-           " Idx: " & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) );         
+           " Idx: " & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) );
       exit when Trim(Db_Bet_Name) = Trim(Bet_Name);
     end loop;
     Select_Bet_Size_Portion_Back.Close_Cursor;
-    
+
     if Idx < Integer(1) or Idx > Integer(6) then
       Idx := 7;
     end if;
-    
-    Ratio := Ratios(Idx);    
-    Log("Bet_Size_Portion" , Trim(Bet_Name) & " Idx:" & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) & " -> ratio " & F8_image(Float_8(Ratio)));   
-    
-    return Ratio;    
+
+    Ratio := Ratios(Idx);
+    Log("Bet_Size_Portion" , Trim(Bet_Name) & " Idx:" & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) & " -> ratio " & F8_image(Float_8(Ratio)));
+
+    return Ratio;
   end Bet_Size_Portion;
-  
+
 
   procedure Send_Lay_Bet(Selectionid   : Integer_4;
                          Main_Bet      : Bet_Type;
@@ -193,11 +193,11 @@ procedure Poll is
                      Main_Bet        : Bet_Type;
                      Place_Market_Id : Market_Id_Type;
                      Receiver        : Process_Io.Process_Type) is
-  
+
     PBB             : Bot_Messages.Place_Back_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
   begin
-  
+
     declare
       -- only bet on allowed days
       Now : Time_Type := Clock;
@@ -208,12 +208,12 @@ procedure Poll is
         return;
       end if;
     end;
-  
+
     PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Place_Market_Id, PBB.Market_Id);
     Move("1.01", PBB.Price);
     PBB.Selection_Id := Selectionid;
-  
+
     if not Bets_Allowed(Main_Bet).Has_Betted and then
            Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
       Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PBB.Size);
@@ -229,12 +229,12 @@ procedure Poll is
          " Place_Market_Id= '" & Place_Market_Id & "'" &
          " Receiver= '" & Receiver.Name & "'" );
     end if;
-  
+
     -- just to save time between logs
     if Did_Bet(1) then
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
     end if;
-  
+
   end Send_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
@@ -304,33 +304,33 @@ procedure Poll is
     Move("HORSES_WIN_LAY_FINISH_120_200_1",       Bets_Allowed(Lay_120_200).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_250_1",       Bets_Allowed(Lay_120_250).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_120_300_1",       Bets_Allowed(Lay_120_300).Bet_Name);
-    
+
     T.Start;
     declare
       -- calculate how big portion the bet is of all 6 bets. Use as bet_size factor
     begin
-      Bets_Allowed(Back_1_10_7_1) .Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1) .Bet_Name); 
-      Bets_Allowed(Back_1_25_12_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_25_12_1).Bet_Name); 
-      Bets_Allowed(Back_1_40_50_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_40_50_1).Bet_Name); 
-      Bets_Allowed(Back_1_50_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_50_30_1).Bet_Name); 
-      Bets_Allowed(Back_1_10_20_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_20_1).Bet_Name); 
-      Bets_Allowed(Back_1_10_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_30_1).Bet_Name); 
-    end;       
+      Bets_Allowed(Back_1_10_7_1) .Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1) .Bet_Name);
+      Bets_Allowed(Back_1_25_12_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_25_12_1).Bet_Name);
+      Bets_Allowed(Back_1_40_50_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_40_50_1).Bet_Name);
+      Bets_Allowed(Back_1_50_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_50_30_1).Bet_Name);
+      Bets_Allowed(Back_1_10_20_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_20_1).Bet_Name);
+      Bets_Allowed(Back_1_10_30_1).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_30_1).Bet_Name);
+    end;
     T.Commit;
-    
+
     -- check if ok to bet and set bet size
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo.
         Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-        
+
         if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
-          if not Is_Data_Collector then 
+          if not Is_Data_Collector then
             Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
             return;
-          end if;  
+          end if;
         end if;
-        
+
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance) * Bet_Size_Type(Bets_Allowed(i).Bet_Size_Portion);
         if Bets_Allowed(i).Bet_Size < 30.0 then
           Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
@@ -349,7 +349,7 @@ procedure Poll is
         Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
       end if;
     end loop;
-    
+
     Table_Amarkets.Read(Market, Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
@@ -501,13 +501,13 @@ procedure Poll is
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
-    
+
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_10_7_1,
                    Place_Market_Id => Markets(Place).Marketid,
                    Receiver        => Process_Io.To_Process_Type("bet_placer_010"));
         end if;
-    
+
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1
         -- Back The leader in PLC market again, but different requirements...
@@ -521,7 +521,7 @@ procedure Poll is
                     Place_Market_Id => Markets(Place).Marketid,
                     Receiver        => Process_Io.To_Process_Type("bet_placer_020"));
         end if;
-    
+
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.40_50.0_1
         if Best_Runners(1).Backprice <= Float_8(1.40) and then
@@ -529,13 +529,13 @@ procedure Poll is
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
-    
+
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_40_50_1,
                    Place_Market_Id => Markets(Place).Marketid,
                    Receiver        => Process_Io.To_Process_Type("bet_placer_030"));
         end if;
-    
+
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1
         if Best_Runners(1).Backprice <= Float_8(1.50) and then
@@ -543,7 +543,7 @@ procedure Poll is
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
           -- Back The leader in PLC market...
-    
+
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
                    Main_Bet        => Back_1_50_30_1,
                    Place_Market_Id => Markets(Place).Marketid,
@@ -680,8 +680,8 @@ procedure Poll is
                         Max_Price  => Max_Lay_Price_Type(300.0),
                         Market_Id  => Markets(Win).Marketid,
                         Receiver   => Process_Io.To_Process_Type("bet_placer_104"));
-        end if;        
-         
+        end if;
+
 
         --HORSES_WIN_LAY_FINISH_110_150_1",
         if Worst_Runner.Backprice <= Float_8(400.0) and then
@@ -830,8 +830,8 @@ begin
   -- for testing only   Run(mb);
   -- for testing only end ;
   -- for testing only return;
-  
-  
+
+
   if Cfg.Enabled then
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
