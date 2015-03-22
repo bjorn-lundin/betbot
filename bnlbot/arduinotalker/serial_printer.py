@@ -76,10 +76,12 @@ def findout_result_change(conn, g):
     cur.execute("select sum(B.PROFIT)  \
                  from ABETS B   \
                  where B.BETWON is not NULL  \
-                 and BETNAME not like 'DR%%'  \
+                 and B.STATUS = 'SETTLED'  \
+                 and B.BETNAME not like 'DR%%'  \
                  and B.BETPLACED >= %s  \
                  and B.BETPLACED <= %s " ,
                  (start, stop))
+    result = 0
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
@@ -103,13 +105,29 @@ def findout_exposure(conn, g):
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
     cur = conn.cursor()
-    cur.execute("select sum(B.SIZE)  \
-                 from ABETS B   \
-                 where B.BETWON is NULL  \
-                 and BETNAME not like 'DR%%'  \
+    #cur.execute("select sum(B.SIZE)  \
+    #             from ABETS B   \
+    #             where B.BETWON is NULL  \
+    #             and BETNAME not like 'DR%%'  \
+    #             and B.BETPLACED >= %s  \
+    #             and B.BETPLACED <= %s " ,
+    #             (start, stop))
+                 
+    cur.execute("select \
+                    case B.SIDE \
+                      when 'LAY'  then sum(B.SIZE) * (avg(PRICE)-1) \
+                      when 'BACK' then sum(B.SIZE) \
+                      else 0.0 \
+                    end \
+                 from ABETS B \
+                 where B.BETWON is NULL \
+                 and BETNAME not like 'DR%%' \
                  and B.BETPLACED >= %s  \
-                 and B.BETPLACED <= %s " ,
-                 (start, stop))
+                 and B.BETPLACED <= %s \
+                 group BY B.SIDE " ,
+                 (start, stop))                
+                 
+    result = 0
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
@@ -119,7 +137,6 @@ def findout_exposure(conn, g):
 
     if result is None:
         result = 0
-
     g.exposure = int(result)
     cur.close()
     conn.commit()
