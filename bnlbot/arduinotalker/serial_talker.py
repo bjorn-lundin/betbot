@@ -215,13 +215,13 @@ def main(g):
   for bet in bets :
     row1 = {}
     # offset days from monday
-    row1['0'] = 0;#get_row(conn, bet,  0)
-    row1['1'] = 0;#get_row(conn, bet, -1)
-    row1['2'] = 0;#get_row(conn, bet, -2)
-    row1['3'] = 0;#get_row(conn, bet, -3)
-    row1['4'] = 0;#get_row(conn, bet, -4)
-    row1['5'] = 0;#get_row(conn, bet, -5)
-    row1['6'] = 0;#get_row(conn, bet, -6)
+    row1['0'] = get_row(conn, bet,  0)
+    row1['1'] = get_row(conn, bet, -1)
+    row1['2'] = get_row(conn, bet, -2)
+    row1['3'] = get_row(conn, bet, -3)
+    row1['4'] = get_row(conn, bet, -4)
+    row1['5'] = get_row(conn, bet, -5)
+    row1['6'] = get_row(conn, bet, -6)
                 
     if len(bet) > 37 :
       row1['typ'] = bet[7:]
@@ -246,12 +246,12 @@ def main(g):
 
   for bet in bets :
     row2 = {}
-    row2['0'] = 0;#get_row_weeks_back(conn, bet,  0)
-    row2['1'] = 0;#get_row_weeks_back(conn, bet, -1)
-    row2['2'] = 0;#get_row_weeks_back(conn, bet, -2)
-    row2['3'] = 0;#get_row_weeks_back(conn, bet, -3)
-    row2['4'] = 0;#get_row_weeks_back(conn, bet, -4)
-    row2['5'] = 0;#get_row_weeks_back(conn, bet, -5)
+    row2['0'] = get_row_weeks_back(conn, bet,  0)
+    row2['1'] = get_row_weeks_back(conn, bet, -1)
+    row2['2'] = get_row_weeks_back(conn, bet, -2)
+    row2['3'] = get_row_weeks_back(conn, bet, -3)
+    row2['4'] = get_row_weeks_back(conn, bet, -4)
+    row2['5'] = get_row_weeks_back(conn, bet, -5)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
     if len(bet) > 37 :
       row2['typ'] = bet[7:]
