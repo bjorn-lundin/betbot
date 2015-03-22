@@ -96,6 +96,51 @@ def get_row(conn, betname, delta_days)  :
     return result
     ################################## end get_row
 
+def print_bet_ratio(conn)  :
+    cur = conn.cursor()
+#                 "and B.BETMODE = 2 " \
+    cur.execute("""
+                select 
+                  BETNAME, 
+                  sum(PROFIT) / sum(SIZEMATCHED) as PROFITRATIO 
+                from 
+                  ABETS 
+                where BETPLACED::date > (select CURRENT_DATE - interval '4 days') 
+                  and BETWON is not null 
+                  and EXESTATUS = 'SUCCESS' 
+                  and STATUS in ('SETTLED') 
+                  and SIDE = 'BACK' 
+                group by 
+                  BETNAME 
+                having 
+                  sum(SIZEMATCHED) > 0 
+                  and max(BETPLACED)::date >= '2015-01-01' 
+                order by 
+                  PROFITRATIO desc 
+                  """
+                  );
+
+    if cur.rowcount >= 1 :
+        rows = cur.fetchall()
+        print ""
+        print "------------------------------------------------------------------------------"
+        print "   bets order based on winnings (sum(PROFIT) / sum(SIZEMATCHED)) 4 days back"
+        print "   35, 25, 15, 10, 8, 7 %"
+        print "------------------------------------------------------------------------------"
+        for row in rows:
+           r={}
+           r['0']=row[0]
+           r['1']=row[1]*100
+          # print row,r
+           print '%(0)37s  %(1).2f' % r
+           #print row[0],row[1]
+
+        print "------------------------------------------------------------------------------"
+    cur.close()
+    conn.commit()
+#end print_bet_ratio
+    
+    
 
 def main(g):
   # return
@@ -133,17 +178,20 @@ def main(g):
                            application_name=serial_talker")
 
     bets = ['HORSES_PLC_BACK_FINISH_1.10_7.0_1',
+            'HORSES_PLC_BACK_FINISH_1.10_20.0_1',
+            'HORSES_PLC_BACK_FINISH_1.10_30.0_1',
             'HORSES_PLC_BACK_FINISH_1.25_12.0_1',
-            'HORSES_PLC_BACK_FINISH_1.30_15.0_1',
-            'HORSES_PLC_BACK_FINISH_1.30_20.0_1',
-            'HORSES_PLC_BACK_FINISH_1.40_30.0_1',
+            'HORSES_PLC_BACK_FINISH_1.40_50.0_1',
             'HORSES_PLC_BACK_FINISH_1.50_30.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.10_7.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.25_12.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.30_15.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.30_20.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.40_30.0_1',
-            'MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1']
+            'HORSES_WIN_LAY_FINISH_1.10_20.0_3',
+            'HORSES_WIN_LAY_FINISH_1.10_20.0_4',            
+            'HORSES_WIN_LAY_FINISH_1.10_30.0_3',
+            'HORSES_WIN_LAY_FINISH_1.10_30.0_4']
+    
+    #bets = ['HORSES_WIN_LAY_FINISH_1.10_20.0_3',
+    #        'HORSES_WIN_LAY_FINISH_1.10_20.0_4',            
+    #        'HORSES_WIN_LAY_FINISH_1.10_30.0_3',
+    #        'HORSES_WIN_LAY_FINISH_1.10_30.0_4']
 
   row0 = {}
   row0['0'] = 0
@@ -162,19 +210,19 @@ def main(g):
   buff += lcd_row_0 + '\r\n'
 #  print lcd_row_0
 
-  buff += '------------------------------------------------------------------------------\r\n'
+  buff += '-------------------------------------------------------------------------------\r\n'
 
   for bet in bets :
     row1 = {}
     # offset days from monday
-    row1['0'] = get_row(conn, bet,  0)
-    row1['1'] = get_row(conn, bet, -1)
-    row1['2'] = get_row(conn, bet, -2)
-    row1['3'] = get_row(conn, bet, -3)
-    row1['4'] = get_row(conn, bet, -4)
-    row1['5'] = get_row(conn, bet, -5)
-    row1['6'] = get_row(conn, bet, -6)
-    #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
+    row1['0'] = 0;#get_row(conn, bet,  0)
+    row1['1'] = 0;#get_row(conn, bet, -1)
+    row1['2'] = 0;#get_row(conn, bet, -2)
+    row1['3'] = 0;#get_row(conn, bet, -3)
+    row1['4'] = 0;#get_row(conn, bet, -4)
+    row1['5'] = 0;#get_row(conn, bet, -5)
+    row1['6'] = 0;#get_row(conn, bet, -6)
+                
     if len(bet) > 37 :
       row1['typ'] = bet[7:]
     else :
@@ -182,7 +230,7 @@ def main(g):
         
     lcd_row_1 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
     buff += lcd_row_1 + '\r\n'
-  buff += '------------------------------------------------------------------------------\r\n'
+  buff += '-------------------------------------------------------------------------------\r\n'
 
   row0['typ'] = 'Typ av bet/result veckor tillbaka'
   row0['0'] = 0
@@ -194,16 +242,16 @@ def main(g):
   row0['6'] = 'Summa'
   lcd_row_0 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
   buff += lcd_row_0 + '\r\n'
-  buff += '------------------------------------------------------------------------------\r\n'
+  buff += '-------------------------------------------------------------------------------\r\n'
 
   for bet in bets :
     row2 = {}
-    row2['0'] = get_row_weeks_back(conn, bet,  0)
-    row2['1'] = get_row_weeks_back(conn, bet, -1)
-    row2['2'] = get_row_weeks_back(conn, bet, -2)
-    row2['3'] = get_row_weeks_back(conn, bet, -3)
-    row2['4'] = get_row_weeks_back(conn, bet, -4)
-    row2['5'] = get_row_weeks_back(conn, bet, -5)
+    row2['0'] = 0;#get_row_weeks_back(conn, bet,  0)
+    row2['1'] = 0;#get_row_weeks_back(conn, bet, -1)
+    row2['2'] = 0;#get_row_weeks_back(conn, bet, -2)
+    row2['3'] = 0;#get_row_weeks_back(conn, bet, -3)
+    row2['4'] = 0;#get_row_weeks_back(conn, bet, -4)
+    row2['5'] = 0;#get_row_weeks_back(conn, bet, -5)
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
     if len(bet) > 37 :
       row2['typ'] = bet[7:]
@@ -216,11 +264,13 @@ def main(g):
     lcd_row_2 = '%(typ)37s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
     buff += lcd_row_2 + '\r\n'
 
+    
+    
   #clear screen
   tmp = sp.call('clear',shell=True)   
   #print to screen  
   print buff[:-2]
-      
+  print_bet_ratio(conn)    
   conn.close()
 #  return source
 
