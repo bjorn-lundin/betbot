@@ -142,7 +142,7 @@ procedure Saldo_Fetcher is
     T : Sql.Transaction_Type;
   begin
     T.Start;
-    Select_Db_Size.Prepare ("SELECT pg_size_pretty(pg_total_relation_size(:DBNAME))" );
+    Select_Db_Size.Prepare ("SELECT pg_size_pretty(pg_database_size(:DBNAME))" );
     Select_Db_Size.Set("DBNAME", Db_Name);
     Select_Db_Size.Open_Cursor;
     Select_Db_Size.Fetch(Eos);

@@ -265,6 +265,7 @@ for DISK in $DISK_LIST ; do
      fi  
    fi
   done
+  df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
 done
 
 #delete old alarmfiles
