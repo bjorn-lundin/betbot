@@ -24,91 +24,40 @@ araceprice
 '''
 
 QUERIES = \
-    [
-        [
-            'Getting all events'
-            ,
-            '''
-            SELECT * FROM aevents LIMIT 1;
-            '''
-        ]
+    {
+        'q1':
+        '''
+SELECT
+    p.marketid,
+    p.pricets,
+    r.runnername,
+    p.selectionid,
+    p.backprice,
+    p.layprice,
+    p.totalmatched
+FROM
+    aevents e,
+    amarkets m,
+    arunners r,
+    apricesfinish p
+WHERE
+    e.eventid = m.eventid              -- joins
+    AND m.marketid = r.marketid        -- joins
+    AND m.marketid = p.marketid        -- joins
+    AND r.selectionid = p.selectionid  -- joins
+    AND r.status IN ('WINNER','LOSER') -- e.g. not 'REMOVED'
+    AND e.eventtypeid = 7              -- horses
+    AND m.markettype = 'WIN'           -- normal win market
+    AND p.pricets::date = '2014-09-02'
+    AND p.marketid = '1.115258242'
+ORDER BY
+    p.pricets, p.selectionid
+        '''
         ,
-        [
-            'Counting events from 2014-09-03'
-            ,
-            '''
-            SELECT COUNT(*) FROM aevents
-            WHERE
-                date(opents) = '2014-09-03';
-            '''
-        ]
-        ,
-        [
-            'Events from 2014-09-03 in GB'
-            ,
-            '''
-            SELECT * FROM aevents
-            WHERE
-                date(opents) = '2014-09-03' AND
-                countrycode = 'GB'
-            LIMIT 1;
-            '''
-        ]
-        ,
-        [
-            'Horse events from 2014-09-03 in GB'
-            ,
-            '''
-            SELECT * FROM aevents
-            WHERE
-                date(opents) = '2014-09-06' AND
-                countrycode = 'GB' AND
-                eventtypeid = 7;
-            '''
-        ]
-        ,
-        [
-            'WIN markets 2014-09-03 for eventid 27259029'
-            ,
-            '''
-            SELECT * FROM amarkets
-            WHERE
-                markettype = 'WIN' AND
-                startts::date = '2014-09-03' AND
-                eventid = '27259029';
-            '''
-        ]
-        ,
-        [
-            'PLACE markets 2014-09-03 for eventid 27259029'
-            ,
-            '''
-            SELECT * FROM amarkets
-            WHERE
-                markettype = 'PLACE' AND
-                startts::date = '2014-09-03' AND
-                eventid = '27259029';
-            '''
-        ]
-        ,
-        [
-            'Runners marketid 1.115273091/2014-09-03/eventid 27259029'
-            ,
-            '''
-            SELECT * FROM arunners
-            WHERE marketid = '1.115273091'
-            '''
-        ]
-        ,
-        [
-            'Win odds marketid 1.115273091/selectionid 8491112'
-            ,
-            '''
-            SELECT * FROM araceprices
-            WHERE
-                marketid = '1.115273091' AND
-                selectionid = 8491112
-            '''
-        ]
-    ]
+        'q2':
+        '''
+SELECT
+    p.pricets
+        '''
+    }
 
