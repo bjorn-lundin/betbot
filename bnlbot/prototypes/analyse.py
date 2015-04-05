@@ -4,7 +4,7 @@ Main prototype module for Betfair analysis
 
 from __future__ import print_function, division, absolute_import
 import psycopg2
-from queries import queries
+import query
 import entity
 
 def diff_ts(ts0, ts1):
@@ -25,8 +25,8 @@ def analyse(conn, q_data, q_name):
 
     try:
         cur = conn.cursor()
-        print(cur.mogrify(queries.QUERIES[q_name], q_data))
-        cur.execute(queries.QUERIES[q_name], q_data)
+        print(cur.mogrify(query.query.named(q_name), q_data))
+        cur.execute(named(q_name), q_data)
         data = cur.fetchall()
     except psycopg2.Error as error:
         print(error)

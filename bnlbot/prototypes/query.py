@@ -114,3 +114,11 @@ ORDER BY
     '''
 }
 
+def named(name):
+    '''
+    Return query by name
+    '''
+    query = None
+    if name in QUERIES:
+        query = QUERIES[name]
+    return query
