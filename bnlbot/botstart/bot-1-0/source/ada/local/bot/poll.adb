@@ -109,7 +109,7 @@ procedure Poll is
          "and BETWON is not null " &
          "and EXESTATUS = 'SUCCESS' " &
          "and STATUS in ('SETTLED') " &
-         "and BETNAME not in (' HORSES_PLC_BACK_FINISH_1.10_30.0_1','HORSES_PLC_BACK_FINISH_1.40_50.0_1') " &
+         "and BETNAME not in ('HORSES_PLC_BACK_FINISH_1.10_30.0_1','HORSES_PLC_BACK_FINISH_1.40_50.0_1') " &
          "and SIDE = 'BACK' " &
        "group by " &
          "BETNAME " &
