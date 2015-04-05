@@ -24,9 +24,9 @@ araceprice
 '''
 
 QUERIES = \
-    {
-        'q1':
-        '''
+{
+    'q1':
+    '''
 SELECT
     p.marketid,
     p.pricets,
@@ -52,12 +52,65 @@ WHERE
     AND p.marketid = '1.115258242'
 ORDER BY
     p.pricets, p.selectionid
-        '''
-        ,
-        'q2':
-        '''
+    '''
+    ,
+    ##############################################################
+    'q-with-marketid':
+    '''
 SELECT
-    p.pricets
-        '''
-    }
+    p.marketid,
+    p.pricets,
+    r.runnername,
+    p.selectionid,
+    p.backprice,
+    p.layprice,
+    p.totalmatched
+FROM
+    aevents e,
+    amarkets m,
+    arunners r,
+    apricesfinish p
+WHERE
+    e.eventid = m.eventid
+    AND m.marketid = r.marketid
+    AND m.marketid = p.marketid
+    AND r.selectionid = p.selectionid
+    AND r.status IN %s
+    AND e.eventtypeid = 7
+    AND m.markettype = %s
+    AND p.pricets::date IN %s
+    AND p.marketid IN %s
+ORDER BY
+    p.pricets, p.selectionid
+    '''
+    ,
+    ##############################################################
+    'q-without-marketid':
+    '''
+SELECT
+    p.marketid,
+    p.pricets,
+    r.runnername,
+    p.selectionid,
+    p.backprice,
+    p.layprice,
+    p.totalmatched
+FROM
+    aevents e,
+    amarkets m,
+    arunners r,
+    apricesfinish p
+WHERE
+    e.eventid = m.eventid
+    AND m.marketid = r.marketid
+    AND m.marketid = p.marketid
+    AND r.selectionid = p.selectionid
+    AND r.status IN %s
+    AND e.eventtypeid = 7
+    AND m.markettype = %s
+    AND p.pricets::date IN %s
+ORDER BY
+    p.pricets, p.selectionid
+    '''
+}
 
