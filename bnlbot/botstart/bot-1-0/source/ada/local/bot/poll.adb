@@ -102,13 +102,14 @@ procedure Poll is
     Select_Bet_Size_Portion_Back.Prepare(
        "select " &
          "BETNAME, " &
-         "sum(PROFIT) / sum(SIZEMATCHED) as PROFITRATIO " &
+         "sum(PROFIT)*100.0 / sum(SIZEMATCHED) as PROFITRATIO " &
        "from " &
          "ABETS " &
        "where BETPLACED::date > (select CURRENT_DATE - interval '4 days') " &
          "and BETWON is not null " &
          "and EXESTATUS = 'SUCCESS' " &
          "and STATUS in ('SETTLED') " &
+         "and BETNAME not in (' HORSES_PLC_BACK_FINISH_1.10_30.0_1','HORSES_PLC_BACK_FINISH_1.40_50.0_1') " &
          "and SIDE = 'BACK' " &
        "group by " &
          "BETNAME " &
