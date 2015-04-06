@@ -256,11 +256,11 @@ begin
 --  Append(Market_Type_Codes , Create("PENALTY_TAKEN"));       -- for football 
 --  Append(Market_Type_Codes , Create("WIN_BOTH_HALVES"));     -- for football 
 --  Append(Market_Type_Codes , Create("WIN_HALF"));            -- for football 
-  Append(Market_Type_Codes , Create("HALF_TIME_FULL_TIME")); -- for football 
-  Append(Market_Type_Codes , Create("OVER_UNDER_05"));       -- for football 
-  Append(Market_Type_Codes , Create("OVER_UNDER_15"));       -- for football 
-  Append(Market_Type_Codes , Create("OVER_UNDER_25"));       -- for football 
-  Append(Market_Type_Codes , Create("OVER_UNDER_35"));       -- for football 
+--  Append(Market_Type_Codes , Create("HALF_TIME_FULL_TIME")); -- for football 
+--  Append(Market_Type_Codes , Create("OVER_UNDER_05"));       -- for football 
+--  Append(Market_Type_Codes , Create("OVER_UNDER_15"));       -- for football 
+--  Append(Market_Type_Codes , Create("OVER_UNDER_25"));       -- for football 
+--  Append(Market_Type_Codes , Create("OVER_UNDER_35"));       -- for football 
 --  Append(Market_Type_Codes , Create("OVER_UNDER_45"));       -- for football 
 --  Append(Market_Type_Codes , Create("BOTH_TEAMS_TO_SCORE")); -- for football 
   
