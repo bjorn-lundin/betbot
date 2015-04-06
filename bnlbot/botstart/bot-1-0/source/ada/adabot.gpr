@@ -56,6 +56,7 @@ project Adabot is
                    
     Test_Programs := ("sql_ifc_leak_finder.adb",
                       "test_lock.adb",
+                      "test_mail_output.adb",
                     --  "test_sequence.adb",
                       "test_list_sort.adb") ;                
    
