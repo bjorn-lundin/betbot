@@ -1,12 +1,11 @@
 '''
 Main prototype module for Betfair analysis
 '''
-
 from __future__ import print_function, division, absolute_import
 import psycopg2
 import query
 import entity
-import time
+
 
 def analyse(conn, q_data, q_name):
     '''
@@ -24,35 +23,27 @@ def analyse(conn, q_data, q_name):
         cur.close()
         conn.commit()
 
-    # Get markets, market starttime and runners for each market
+    # Get markets and runners for each market
 
-    markets = {} # { 'marketid': Market }
-    runners = {} # { selectionid: {'marketid':Runner} }
+    collector = {} # { 'marketid': (Market, [selectionid]) }
     for row in data:
         marketid = row[0]
         selectionid = row[3]
         runnername = row[2]
 
-        if marketid not in markets:
-            markets[marketid] = entity.Market(marketid)
+        if marketid not in collector:
+            collector[marketid] = (entity.Market(marketid), [])
 
-        if selectionid not in runners:
+        if selectionid not in collector[marketid][1]:
+            collector[marketid][1].append(selectionid)
             runner = entity.Runner(selectionid)
             runner.name = runnername
-            runners[selectionid] = {marketid: runner}
+            collector[marketid][0].runners.append(runner)
 
-    for m in markets:
-        nisse = []
-        for r in runners:
-            if m in runners[r].keys():
-                nisse.append(runners[r][m])
-        markets[m].runners = nisse
-        
-    for m in markets:
-        print(markets[m].marketid)
-        for r in markets[m].runners:
-            print(' '*3, r.name)
-
+    for m_id in collector:
+        print(collector[m_id][0].marketid)
+        for runner in collector[m_id][0].runners:
+            print(' '*3, runner.name)
 
 '''
     # Get starttime for each market
