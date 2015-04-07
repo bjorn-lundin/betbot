@@ -6,6 +6,7 @@ from __future__ import print_function, division, absolute_import
 import psycopg2
 import query
 import entity
+import time
 
 def analyse(conn, q_data, q_name):
     '''
@@ -15,7 +16,6 @@ def analyse(conn, q_data, q_name):
 
     try:
         cur = conn.cursor()
-        print(cur.mogrify(query.named(q_name), q_data))
         cur.execute(query.named(q_name), q_data)
         data = cur.fetchall()
     except psycopg2.Error as error:
@@ -24,22 +24,61 @@ def analyse(conn, q_data, q_name):
         cur.close()
         conn.commit()
 
-    u_market = {} # Entity Market as unique key
+    # Get markets, market starttime and runners for each market
+
+    markets = {} # { 'marketid': Market }
+    runners = {} # { selectionid: {'marketid':Runner} }
     for row in data:
-        market = entity.Market(row[0])
-        t_stamp = row[1]
+        marketid = row[0]
+        selectionid = row[3]
+        runnername = row[2]
 
-        if market not in u_market:
-            u_market[market] = []
+        if marketid not in markets:
+            markets[marketid] = entity.Market(marketid)
 
-        if t_stamp not in u_market[market]:
-            u_market[market].append(t_stamp)
-            if len(u_market[market]) > 1:
-                time_diff = u_market[market][-1] - u_market[market][-2]
-                if time_diff.seconds < 1:
-                    market.starttime = u_market[market][-2]
-                    break
+        if selectionid not in runners:
+            runner = entity.Runner(selectionid)
+            runner.name = runnername
+            runners[selectionid] = {marketid: runner}
 
+    for m in markets:
+        nisse = []
+        for r in runners:
+            if m in runners[r].keys():
+                nisse.append(runners[r][m])
+        markets[m].runners = nisse
+        
+    for m in markets:
+        print(markets[m].marketid)
+        for r in markets[m].runners:
+            print(' '*3, r.name)
+
+
+'''
+    # Get starttime for each market
+    last_timestampt = None
+    for row in data:
+        timestamp = row[1]
+
+        if marketid in markets and \
+                markets[marketid][0].starttime is not None:
+            continue
+
+        if timestamp not in u_market[marketid][1]:
+            u_market[marketid][1].append(timestamp)
+            if len(u_market[marketid][1]) > 1:
+                timediff = u_market[marketid][1][-1] - \
+                        u_market[marketid][1][-2]
+                if timediff.seconds < 1:
+                    u_market[marketid][0].starttime = \
+                            u_market[marketid][1][-2]
+
+
+    # Populate entity Runner
+    for row in data:
+
+    # Find winner in each market
+'''
 
 def run_analysis(conn):
     '''
@@ -48,7 +87,7 @@ def run_analysis(conn):
     status = ('WINNER', 'LOSER')
     markettype = 'WIN'
     date = ('2014-09-02',)
-    marketid = ('1.115258242',)
+    marketid = ('1.115258242', '1.115258254', '1.115258199')
     q_name = 'q-with-marketid'
     q_data = (status, markettype, date, marketid)
 
