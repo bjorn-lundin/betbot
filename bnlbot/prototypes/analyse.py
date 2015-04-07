@@ -7,12 +7,11 @@ import query
 import entity
 
 
-def analyse(conn, q_data, q_name):
+def collect_step_1(conn, q_data, q_name):
     '''
-    Main analysis
+    Query DB
     '''
     data = None
-
     try:
         cur = conn.cursor()
         cur.execute(query.named(q_name), q_data)
@@ -22,58 +21,75 @@ def analyse(conn, q_data, q_name):
     finally:
         cur.close()
         conn.commit()
+    return data
 
-    # Get markets and runners for each market
 
-    collector = {} # { 'marketid': (Market, [selectionid]) }
+def collect_step_2(data):
+    '''
+    Collect markets and runners for each market
+    '''
+    collection = {} # { 'marketid': (Market, [selectionid]) }
     for row in data:
         marketid = row[0]
         selectionid = row[3]
         runnername = row[2]
 
-        if marketid not in collector:
-            collector[marketid] = (entity.Market(marketid), [])
+        if marketid not in collection:
+            collection[marketid] = (entity.Market(marketid), [])
 
-        if selectionid not in collector[marketid][1]:
-            collector[marketid][1].append(selectionid)
+        if selectionid not in collection[marketid][1]:
+            collection[marketid][1].append(selectionid)
             runner = entity.Runner(selectionid)
             runner.name = runnername
-            collector[marketid][0].runners.append(runner)
+            collection[marketid][0].runners.append(runner)
 
-    for m_id in collector:
-        print(collector[m_id][0].marketid)
-        for runner in collector[m_id][0].runners:
+    for m_id in collection:
+        print(collection[m_id][0].marketid)
+        for runner in collection[m_id][0].runners:
             print(' '*3, runner.name)
 
-'''
-    # Get starttime for each market
-    last_timestampt = None
-    for row in data:
-        timestamp = row[1]
+    return collection
 
-        if marketid in markets and \
-                markets[marketid][0].starttime is not None:
+
+def collect_step_3(data, collection):
+    '''
+    Collect starttime for each market
+    '''
+    all_ts = {} # { 'marketid': [pricets] }
+    for row in data:
+        marketid = row[0]
+        pricets = row[1]
+
+        if collection[marketid][0].starttime is not None:
             continue
 
-        if timestamp not in u_market[marketid][1]:
-            u_market[marketid][1].append(timestamp)
-            if len(u_market[marketid][1]) > 1:
-                timediff = u_market[marketid][1][-1] - \
-                        u_market[marketid][1][-2]
+        if marketid in all_ts:
+            all_ts[marketid].append(pricets)
+            if len(all_ts[marketid]) > 1:
+                timediff = all_ts[marketid][-1] - all_ts[marketid][-2]
                 if timediff.seconds < 1:
-                    u_market[marketid][0].starttime = \
-                            u_market[marketid][1][-2]
+                    collection[marketid][0].starttime = all_ts[marketid][-2]
+        else:
+            all_ts[marketid] = [pricets]
+    all_ts = None
+
+    for m_id in collection:
+        print(collection[m_id][0].marketid)
+        print(collection[m_id][0].starttime)
+
+    return collection
 
 
-    # Populate entity Runner
-    for row in data:
-
-    # Find winner in each market
-'''
-
-def run_analysis(conn):
+def collect_step_4():
     '''
-    Setting parameters and run analyse
+    Collect winner in each win market
+    '''
+    pass
+
+
+def run_collection(conn):
+    '''
+    Collect parameters
     '''
     status = ('WINNER', 'LOSER')
     markettype = 'WIN'
@@ -86,12 +102,25 @@ def run_analysis(conn):
         q_name = 'q-without-marketid'
         q_data = (status, markettype, date)
 
-    analyse(conn, q_data, q_name)
+    data = collect_step_1(conn, q_data, q_name)
+    collection = collect_step_2(data)
+    collection = collect_step_3(data, collection)
+    collect_step_4()
+
+    return collection
+
+
+def run_analysis():
+    '''
+    Run analysis
+    '''
+    pass
 
 
 if __name__ == "__main__":
     CONN = psycopg2.connect("dbname=dry user=joakim")
-    run_analysis(CONN)
+    COLLECTION = run_collection(CONN)
+    run_analysis()
     CONN.close()
     exit(0)
 
