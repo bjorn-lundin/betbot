@@ -316,10 +316,10 @@ procedure Poll is
     T.Commit;
 
     -- check if ok to bet and set bet size
+    Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo.
-        Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
 
         if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
           if not Is_Data_Collector then
@@ -333,6 +333,8 @@ procedure Poll is
           Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
           Bets_Allowed(i).Bet_Size := 30.0;
         end if;
+      else --split total saldo between strategies
+        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Bets_Allowed(i).Bet_Size_Portion);      
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
 
