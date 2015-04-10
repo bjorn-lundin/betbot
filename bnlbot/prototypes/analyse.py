@@ -53,29 +53,42 @@ def collect_step_2(data):
 
 def collect_step_3(data, collection):
     '''
-    Collect starttime for each market
+    Collect starttime, stoptime, duration and data_from_start
+    for each market
     '''
     all_ts = {} # { 'marketid': [pricets] }
     for row in data:
         marketid = row[0]
         pricets = row[1]
 
-        if collection[marketid][0].starttime is not None:
-            continue
-
         if marketid in all_ts:
             all_ts[marketid].append(pricets)
-            if len(all_ts[marketid]) > 1:
-                timediff = all_ts[marketid][-1] - all_ts[marketid][-2]
-                if timediff.seconds < 1:
-                    collection[marketid][0].starttime = all_ts[marketid][-2]
         else:
             all_ts[marketid] = [pricets]
+            continue
+
+        timediff = all_ts[marketid][-1] - all_ts[marketid][-2]
+            
+        if len(all_ts[marketid]) == 2 and timediff.seconds < 1:
+            collection[marketid][0].data_from_start = False
+
+        if timediff.seconds < 1 and \
+                collection[marketid][0].starttime is None:
+            collection[marketid][0].starttime = all_ts[marketid][-2]
+
+        collection[marketid][0].stoptime = all_ts[marketid][-1]
+        collection[marketid][0].duration = \
+                (collection[marketid][0].stoptime - \
+                collection[marketid][0].starttime).seconds
+
     all_ts = None
 
     for m_id in collection:
         print(collection[m_id][0].marketid)
         print(collection[m_id][0].starttime)
+        print(collection[m_id][0].stoptime)
+        print(collection[m_id][0].duration)
+        print(collection[m_id][0].data_from_start)
 
     return collection
 
@@ -93,8 +106,30 @@ def run_collection(conn):
     '''
     status = ('WINNER', 'LOSER')
     markettype = 'WIN'
-    date = ('2014-09-02',)
-    marketid = ('1.115258242', '1.115258254', '1.115258199')
+    
+    date = ('2014-09-01',)
+    marketid = (
+            '1.115253736', 
+            '1.115253744', 
+            '1.115253163', 
+            '1.115253165', 
+            '1.115253179')
+
+    
+    #date = ('2014-09-02',)
+    #marketid = ('1.115258242', '1.115258254', '1.115258199')
+    
+    #marketid = ()
+
+    # Against bnl/dry
+    #date = ('2015-04-08',)
+    #marketid = (
+    #    '1.118127976',
+    #    '1.118127984',
+    #    '1.118127972',
+    #    '1.118128058',
+    #    '1.118128098')
+
     q_name = 'q-with-marketid'
     q_data = (status, markettype, date, marketid)
 
