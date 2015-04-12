@@ -120,7 +120,7 @@ begin
 --  else
     Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
 --    Ts := (2013,12,30,0,0,0,0);
-    Ts := (2012,1,18,0,0,0,0);
+    Ts := (2014,07,09,0,0,0,0);
     Markets.Set_Timestamp("TS", Ts);
     
 --  end if;
@@ -155,44 +155,44 @@ begin
           if Trim(Amarket.Markettype) = "PLACE" then
             if    Aevent.Countrycode = "US" and then Position(Sa_Par_Countrycodes.all, "US") > 0 then
               Move("horses_plc_us", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "GB" and then Position(Sa_Par_Countrycodes.all, "GB") > 0 then
               Move("horses_plc_gb", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "IE" and then Position(Sa_Par_Countrycodes.all, "IE") > 0 then
               Move("horses_plc_ie", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "ZA" and then Position(Sa_Par_Countrycodes.all, "ZA") > 0 then
               Move("horses_plc_za", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "SG" and then Position(Sa_Par_Countrycodes.all, "SG") > 0 then
               Move("horses_plc_sg", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "FR" and then Position(Sa_Par_Countrycodes.all, "FR") > 0 then
               Move("horses_plc_fr", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             end if;            
 
           elsif Trim(Amarket.Markettype) = "WIN" then     
 
             if    Aevent.Countrycode = "US" and then Position(Sa_Par_Countrycodes.all, "US") > 0 then
               Move("horses_win_us", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "GB" and then Position(Sa_Par_Countrycodes.all, "GB") > 0 then
-              Move("horses_win_gb", Receiver.Name);
+              Move("lay_in_play_gb", Receiver.Name);
               Do_Send := True;
             elsif Aevent.Countrycode = "IE" and then Position(Sa_Par_Countrycodes.all, "IE") > 0 then
-              Move("horses_win_ie", Receiver.Name);
+              Move("lay_in_play_ie", Receiver.Name);
               Do_Send := True;
             elsif Aevent.Countrycode = "ZA" and then Position(Sa_Par_Countrycodes.all, "ZA") > 0 then
               Move("horses_win_za", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "SG" and then Position(Sa_Par_Countrycodes.all, "SG") > 0 then
               Move("horses_win_sg", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             elsif Aevent.Countrycode = "FR" and then Position(Sa_Par_Countrycodes.all, "FR") > 0 then
               Move("horses_win_fr", Receiver.Name);
-              Do_Send := True;
+              Do_Send := False;
             end if;                 
           end if;
         

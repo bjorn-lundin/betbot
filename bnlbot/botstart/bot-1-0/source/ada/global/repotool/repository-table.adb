@@ -2740,7 +2740,7 @@ package body Repository.Table is
           Put_Line("    Data       : Table_" & Table_Name.Camel_Case & ".Data_Type;");
           Put_Line("    Is_Exist   : Boolean := False;");
           Put_Line("    List       : " & Table_Name.Camel_Case & "_List_Pack2.List;");
-          Put_line("  begin");
+          Put_Line("  begin");
 
           declare
             Tmp2 : String_Object;
@@ -2751,10 +2751,10 @@ package body Repository.Table is
             end loop;
             Put_Line("    Read_I" & Utils.Trim(Idx.Sequence_Number'Img) & Tmp2.Camel_Case & "(Data, List, False, 1);");
           end;
-          Put_line("    Is_Exist := not List.Is_Empty;");
-          Put_line("    List.Clear;");
-          Put_line("    return Is_Exist;");
-          Put_line("  end Is_Existing_I" & Utils.Trim(Idx.Sequence_Number'Img) & ";");
+          Put_Line("    Is_Exist := not List.Is_Empty;");
+          Put_Line("    List.Clear;");
+          Put_Line("    return Is_Exist;");
+          Put_Line("  end Is_Existing_I" & Utils.Trim(Idx.Sequence_Number'Img) & ";");
 
           Idx_Column_List_2.Delete_Last;
         end;
@@ -3694,12 +3694,12 @@ package body Repository.Table is
       Put_Line("                           List  : in out " & Table_Name.Camel_Case & "_List_Pack2.List;");
       Put_Line("                           Order : in     Boolean := False;");
       Put_Line("                           Max   : in     Integer_4 := Integer_4'Last) is");
-      Put_line("    use Sql;");
-      Put_line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
-      Put_line("    Transaction : Sql.Transaction_Type;");
-      Put_line("  begin");
-      Put_line("    if Start_Trans then Transaction.Start; end if;");
-      Put_line("    if Order then");
+      Put_Line("    use Sql;");
+      Put_Line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
+      Put_Line("    Transaction : Sql.Transaction_Type;");
+      Put_Line("  begin");
+      Put_Line("    if Start_Trans then Transaction.Start; end if;");
+      Put_Line("    if Order then");
       Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & All_Fields.Camel_Case & "_O");
 
       Index_Sql_Statement(T             => Self,
@@ -3707,12 +3707,12 @@ package body Repository.Table is
                           First_Stm_Row => "select * from " & Table_Name.Upper_Case,
                           Order_By_PK   => True,
                           Field_List    => Idx.Column_List);
-
+                          
       Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx.Column_List );
 
 
-      Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-      Put_line("    else");
+      Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+      Put_Line("    else");
       Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & All_Fields.Camel_Case );
       Index_Sql_Statement(T             => Self,
                           Stm_Name      => Stm.Fix_String,
@@ -3721,9 +3721,9 @@ package body Repository.Table is
                           Field_List    => Idx.Column_List);
 
       Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx.Column_List );
-      Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-      Put_line("    end if;");
-      Put_line("    if Start_Trans then Transaction.Commit; end if;      ");
+      Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+      Put_Line("    end if;");
+      Put_Line("    if Start_Trans then Transaction.Commit; end if;      ");
       Put_Line("  end Read" & All_Fields.Camel_Case & ";");
       Put_Line("-----------------------------------------------");
 
@@ -3752,12 +3752,12 @@ package body Repository.Table is
           Put_Line("                           List  : in out " & Table_Name.Camel_Case & "_List_Pack2.List;");
           Put_Line("                           Order : in     Boolean := False;");
           Put_Line("                           Max   : in     Integer_4 := Integer_4'Last) is");
-          Put_line("    use Sql;");
-          Put_line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
-          Put_line("    Transaction : Sql.Transaction_Type;");
-          Put_line("  begin");
-          Put_line("    if Start_Trans then Transaction.Start; end if;");
-          Put_line("    if Order then");
+          Put_Line("    use Sql;");
+          Put_Line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
+          Put_Line("    Transaction : Sql.Transaction_Type;");
+          Put_Line("  begin");
+          Put_Line("    if Start_Trans then Transaction.Start; end if;");
+          Put_Line("    if Order then");
           Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case & "_O");
 
           Index_Sql_Statement(T             => Self,
@@ -3768,9 +3768,8 @@ package body Repository.Table is
 
           Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx_Column_List_2 );
 
-
-          Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-          Put_line("    else");
+          Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+          Put_Line("    else");
           Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case );
           Index_Sql_Statement(T             => Self,
                               Stm_Name      => Stm.Fix_String,
@@ -3779,9 +3778,9 @@ package body Repository.Table is
                               Field_List    => Idx_Column_List_2);
 
           Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx_Column_List_2 );
-          Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-          Put_line("    end if;");
-          Put_line("    if Start_Trans then Transaction.Commit; end if;      ");
+          Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+          Put_Line("    end if;");
+          Put_Line("    if Start_Trans then Transaction.Commit; end if;      ");
           Put_Line("  end Read_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case & ";");
           Put_Line("");
 
@@ -3829,12 +3828,12 @@ package body Repository.Table is
           Put_Line("                           List  : in out " & Table_Name.Camel_Case & "_List_Pack2.List;");
           Put_Line("                           Order : in     Boolean := False;");
           Put_Line("                           Max   : in     Integer_4 := Integer_4'Last) is");
-          Put_line("    use Sql;");
-          Put_line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
-          Put_line("    Transaction : Sql.Transaction_Type;");
-          Put_line("  begin");
-          Put_line("    if Start_Trans then Transaction.Start; end if;");
-          Put_line("    if Order then");
+          Put_Line("    use Sql;");
+          Put_Line("    Start_Trans : constant Boolean := Sql.Transaction_Status = Sql.None;");
+          Put_Line("    Transaction : Sql.Transaction_Type;");
+          Put_Line("  begin");
+          Put_Line("    if Start_Trans then Transaction.Start; end if;");
+          Put_Line("    if Order then");
           Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case & "_Unique_O");
 
           Index_Sql_Statement(T             => Self,
@@ -3846,8 +3845,8 @@ package body Repository.Table is
           Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx_Column_List_2 );
 
 
-          Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-          Put_line("    else");
+          Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+          Put_Line("    else");
           Stm.Set("Stm_Select_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case & "_Unique" );
           Index_Sql_Statement(T             => Self,
                               Stm_Name      => Stm.Fix_String,
@@ -3856,9 +3855,9 @@ package body Repository.Table is
                               Field_List    => Idx_Column_List_2);
 
           Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx_Column_List_2 );
-          Put_line("      Read_List(" & Stm.Fix_String & ", List, Max);");
-          Put_line("    end if;");
-          Put_line("    if Start_Trans then Transaction.Commit; end if;      ");
+          Put_Line("      Read_List(" & Stm.Fix_String & ", List, Max);");
+          Put_Line("    end if;");
+          Put_Line("    if Start_Trans then Transaction.Commit; end if;      ");
           Put_Line("  end Read_I" & Utils.Trim(Idx.Sequence_Number'Img) & Fields.Camel_Case & ";");
           Put_Line("");
         end loop ;
@@ -3959,7 +3958,8 @@ package body Repository.Table is
                               Stm_Name      => Stm.Fix_String,
                               First_Stm_Row => "select * from " & Table_Name.Upper_Case,
                               Key           => I.Primary,
-                              Turns         => Integer_4(Idx_Column_List_2.Length));
+                              Turns         => Integer_4(Idx_Column_List_2.Length),
+                              Order_By_PK   => True);
 
           Set_Keyed_Sql_Statement(Self      => Self,
                                   Stm_Name  => Stm.Fix_String,
@@ -3973,7 +3973,8 @@ package body Repository.Table is
                               Stm_Name      => Stm.Fix_String,
                               First_Stm_Row => "select * from " & Table_Name.Upper_Case,
                               Key           => I.Primary,
-                              Turns         => Integer_4(Idx_Column_List_2.Length));
+                              Turns         => Integer_4(Idx_Column_List_2.Length),
+                              Order_By_PK   => False);
 
           Set_Keyed_Sql_Statement(Self      => Self,
                                   Stm_Name  => Stm.Fix_String,

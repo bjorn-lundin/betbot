@@ -34,7 +34,7 @@ case $HOSTNAME in
     ;;
   sebjlun*)
     export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
+    export BOT_XML_SOURCE=LOCAL
     ;;
   *)  
     export BOT_MACHINE_ROLE=$HOSTNAME

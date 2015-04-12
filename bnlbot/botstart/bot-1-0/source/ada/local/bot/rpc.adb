@@ -1001,6 +1001,92 @@ package body RPC is
     end if;
   end Get_Cleared_Bet_Info_List;
   -----------------------------------
+  function  Cancel_Bet(Bet : in Table_Abets.Data_Type) return Boolean is
+    JSON_Query   : JSON_Value := Create_Object;
+    JSON_Reply   : JSON_Value := Create_Object;
+    Params       : JSON_Value := Create_Object;
+    Instruction  : JSON_Value := Create_Object;
+    Instructions : JSON_Array := Empty_Array;
+    Result       : JSON_Value := Create_Object;
+    Status       : String(1..50) := (others => ' ');
+    Found        : Boolean    := False;
+  begin
+
+    Instruction.Set_Field (Field_Name => "betId", Field => Trim(Bet.Betid'Img));
+    Append(Instructions, Instruction);
+
+    Params.Set_Field (Field_Name => "marketId", Field => Bet.Marketid);
+    Params.Set_Field (Field_Name => "instructions", Field => Instructions);
+
+    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/cancelOrders");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING);
+
+    if API_Exceptions_Are_Present(JSON_Reply) then
+      return False;
+    end if;
+    
+    --{
+    --    "jsonrpc": "2.0",
+    --    "result": {
+    --        "status": "SUCCESS",
+    --        "marketId": "1.118200318",
+    --        "instructionReports": [{
+    --            "status": "SUCCESS",
+    --            "instruction": {
+    --                "betId": "48818303652"
+    --            },
+    --            "sizeCancelled": 30.0
+    --        }]
+    --    },
+    --    "id": 1
+    --}
+    -- or ---
+    --{
+    --    "jsonrpc": "2.0",
+    --    "result": {
+    --        "status": "FAILURE",
+    --        "errorCode": "BET_ACTION_ERROR",
+    --        "marketId": "1.118200318",
+    --        "instructionReports": [{
+    --            "status": "FAILURE",
+    --            "errorCode": "BET_TAKEN_OR_LAPSED",
+    --            "instruction": {
+    --                "betId": "4881830132"
+    --            }
+    --        }]
+    --    },
+    --    "id": 1
+    --}    
+    
+    Get_Value(Container => JSON_Reply,
+              Field     => "result",
+              Target    => Result,
+              Found     => Found);
+    if not Found then
+      Log(Me & "Cancel_Bet", "NO RESULT!!" );
+      return False;
+    end if;
+    
+    Get_Value(Container => Result,
+              Field     => "status",
+              Target    => Status,
+              Found     => Found);
+    if not Found then
+      Log(Me & "Cancel_Bet", "NO STATUS!!" );
+      return False;  
+    end if;
+    Log(Me & "Cancel_Bet", "status : '" & Trim(Status) & "' returning " & 
+                            Boolean'Image(Trim(Status) = "SUCCESS"));
+    return Trim(Status) = "SUCCESS" ;    
+  end  Cancel_Bet;
+  -----------------------------------
+  
 
   procedure Cancel_Bet(Market_Id : in Market_Id_Type;
                        Bet_Id    : in Integer_8) is
@@ -1033,8 +1119,9 @@ package body RPC is
       Betfair_Result := Logged_Out ;
       return;
     end if;
+    
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
-  end  Cancel_Bet;
+  end Cancel_Bet;
   -----------------------------------
 
   procedure Parse_Prices(J_Market   : in     JSON_Value;
@@ -1563,7 +1650,7 @@ package body RPC is
 
     if Trim(Execution_Report_Status) /= "SUCCESS" then
       Log(Me & "Make_Bet", "bad bet, get fake betid");
-      Bet_id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet_Id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
 
