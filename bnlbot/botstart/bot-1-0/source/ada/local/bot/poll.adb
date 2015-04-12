@@ -267,7 +267,6 @@ procedure Poll is
     Current_Turn_Not_Started_Race : Integer_4 := 0;
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo             : Table_Abalances.Data_Type;
-    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -322,10 +321,8 @@ procedure Poll is
         -- to have the size = a portion of the saldo.
 
         if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
-          if not Is_Data_Collector then
-            Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
-            return;
-          end if;
+           Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
+           return;
         end if;
 
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance) * Bet_Size_Type(Bets_Allowed(i).Bet_Size_Portion);
@@ -409,23 +406,6 @@ procedure Poll is
         exit Poll_Loop;
       end if;
 
-      if Is_Data_Collector then
-        for Price of Price_List loop
-         Price_Finish := (
-            Marketid     => Price.Marketid,
-            Selectionid  => Price.Selectionid,
-            Pricets      => Price.Pricets,
-            Status       => Price.Status,
-            Totalmatched => Price.Totalmatched,
-            Backprice    => Price.Backprice,
-            Layprice     => Price.Layprice,
-            Ixxlupd      => Price.Ixxlupd,
-            Ixxluts      => Price.Ixxluts
-         );
-         Price_Finish_List.Append(Price_Finish);
-        end loop;
-      end if;
-
       --Table_Aprices.Aprices_List_Pack.Remove_All(Price_List);
       Price_List.Clear;
       Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
@@ -489,7 +469,6 @@ procedure Poll is
       Log("Worst_Runner " & Worst_Runner.To_String);
 
       if Best_Runners(1).Backprice >= Float_8(1.0) and then
-         not Is_Data_Collector and then
          Found_Place and then
          Markets(Place).Numwinners >= Integer_4(3) then
 
@@ -574,8 +553,7 @@ procedure Poll is
       end if;
 
       -- laybets
-      if Worst_Runner.Layprice <= Float_8(1000.0) and then
-         not Is_Data_Collector then
+      if Worst_Runner.Layprice <= Float_8(1000.0) then
 
         --HORSES_WIN_LAY_FINISH_110_150_1",
         if Worst_Runner.Backprice <= Float_8(400.0) and then
@@ -749,22 +727,6 @@ procedure Poll is
 
     end loop Poll_Loop;
 
-    if Is_Data_Collector then
-      -- insert all the records now, in pricefinish
-      Log("start insert records into Pricefinish:" & Price_Finish_List.Length'Img);
-      begin
-        T.Start;
-        for Price_Finish of Price_Finish_List loop
-          Price_Finish.Insert;
-        end loop;
-        T.Commit;
-      exception
-        when Sql.Duplicate_Index =>
-           Price_Finish_List.Clear;
-           T.Rollback;
-      end;
-      Log("stop insert record into Pricefinish");
-    end if;
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;

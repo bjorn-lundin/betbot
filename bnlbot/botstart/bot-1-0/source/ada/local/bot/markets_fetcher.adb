@@ -485,8 +485,6 @@ begin
                   when 7      =>
                     Log(Me, "Notifying poll with marketid: '" & MNR.Market_Id & "'");
                     Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);
-                    Log(Me, "Notifying poll_place with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("poll_place"), MNR);
                     if Is_Data_Collector then
                       for i in Pollers'range loop
                         if Pollers(i).Free then
