@@ -23,7 +23,6 @@ with Table_Aevents;
 with Table_Aprices;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
-with Config;
 with Utils; use Utils;
 
 procedure Poll_Market is
@@ -42,7 +41,6 @@ procedure Poll_Market is
   Now             : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
-  Cfg : Config.Config_Type;
   -------------------------------------------------------------
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
@@ -126,7 +124,7 @@ procedure Poll_Market is
       end if;
 
       if not Has_Been_In_Play then
-        if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
+        if Current_Turn_Not_Started_Race >= Integer_4(17) then
            Log(Me & "Make_Bet", "Market took too long time to start, give up");
            exit Poll_Loop;
         else
@@ -195,8 +193,6 @@ begin
 
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
-  Cfg := Config.Create(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
-  Log(Cfg.To_String);
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
@@ -218,10 +214,6 @@ begin
   Rpc.Login;
   Log(Me, "Login betfair done");
 
-  if Cfg.Enabled then
-    Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
-  end if;
-  
 
   Main_Loop : loop
     --notfy markets_fetcher that we are free
@@ -239,14 +231,10 @@ begin
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
         when Bot_Messages.Market_Notification_Message    =>
-          if Cfg.Enabled then
-            --notfy markets_fetcher that we are busy
-            Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-            Bot_Messages.Send(Markets_Fetcher, Data);    
-            Run(Bot_Messages.Data(Msg));
-          else
-            Log(Me, "Poll is not enabled in poll.ini");
-          end if;
+          --notfy markets_fetcher that we are busy
+          Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
+          Bot_Messages.Send(Markets_Fetcher, Data);    
+          Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
