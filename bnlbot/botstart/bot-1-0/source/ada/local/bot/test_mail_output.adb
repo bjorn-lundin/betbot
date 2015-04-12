@@ -1,6 +1,6 @@
 with Ada;
-with Ada.Environment_Variables;
-with Ada.Directories;
+--with Ada.Environment_Variables;
+--with Ada.Directories;
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Characters;
@@ -27,7 +27,7 @@ with Logging; use Logging;
 with Text_io; use Text_io;
 
 procedure Test_Mail_Output is
-  package EV renames Ada.Environment_Variables;
+  --package EV renames Ada.Environment_Variables;
   use type Rpc.Result_Type;
   
   Me : constant String := "Main.";  
@@ -60,7 +60,7 @@ procedure Test_Mail_Output is
 
   procedure Mail(Subject : String) is
      T       : Calendar2.Time_Type := Calendar2.Clock;
-     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
+    -- SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
   begin
     declare
       use Ada.Characters.Latin_1;

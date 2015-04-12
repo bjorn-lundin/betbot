@@ -94,6 +94,8 @@ package RPC is
                                       
   procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
                        Bet_Id    : in Integer_8);
+                       
+  function  Cancel_Bet(Bet : in Table_Abets.Data_Type) return Boolean;
                                       
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
                               Market     :    out Table_Amarkets.Data_Type;

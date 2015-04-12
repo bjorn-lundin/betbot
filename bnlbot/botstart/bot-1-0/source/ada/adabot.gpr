@@ -33,6 +33,7 @@ project Adabot is
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
                     "bet_checker.adb",
+                    "lay_in_play.adb",
                 --    "football_better.adb",
                 --    "page_server.adb",
                     "data_mover.adb",      
@@ -51,6 +52,7 @@ project Adabot is
    Other_Mains := (
                    -- "ini_reader.adb",
                       "knockout.adb",
+                      "check_greenup.adb",                      
                    "markets_sender.adb");
                 --   ,
                 --   "calculate_sampleid.adb");

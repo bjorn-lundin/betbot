@@ -54,7 +54,7 @@ package body Sql is
    
    
    Global_Transaction_Counter_Current : Integer_4 := 0;
-   Global_Transaction_Counter_Max     : Integer_4 := 10_000;
+   Global_Transaction_Counter_Max     : Integer_4 := 100_000;
 
    type Error_Type is (Error_Duplicate_Index, Error_No_Such_Object, Error_No_Such_Column);
    type Error_Array_Type is array (Error_Type'Range) of Boolean;
