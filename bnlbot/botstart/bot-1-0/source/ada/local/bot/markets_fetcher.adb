@@ -6,10 +6,8 @@ with Sql;
 with Ada.Calendar.Time_Zones;
 with Calendar2; use Calendar2;
 with Gnatcoll.Json; use Gnatcoll.Json;
-
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-
 with Token ;
 with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
@@ -21,13 +19,11 @@ with Table_Arunners;
 with Table_Aprices;
 with Ini;
 with Logging; use Logging;
-
 with Ada.Environment_Variables;
 with Process_IO;
 with Bot_Messages;
 with Core_Messages;
-with Bot_Types;
-with Utils; 
+with Utils; use Utils;
 with RPC ; 
 
 
@@ -69,24 +65,33 @@ procedure Markets_Fetcher is
   Market_Betting_Types,
   Exchange_Ids,
   Event_Type_Ids              : JSON_Array := Empty_Array;
-  
   UTC_Offset_Minutes          : Ada.Calendar.Time_Zones.Time_Offset;
-  
-  Matchodds_Exists : Sql.Statement_Type;
-  
 ----------------------------------------------
-  
   Is_Time_To_Exit : Boolean := False;
-  
-  My_Lock  : Lock.Lock_Type;    
-  UTC_Time_Start, UTC_Time_Stop  : Calendar2.Time_Type ;
-  
+  My_Lock         : Lock.Lock_Type;    
+  UTC_Time_Start,
+  UTC_Time_Stop   : Calendar2.Time_Type ;
   Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
-  T : Sql.Transaction_Type;
- 
-  Turns : Integer := 0;
+  T               : Sql.Transaction_Type;
+  Turns           : Integer := 0;
+  
+  type Poll_Process is record
+    Free     : Boolean := True;
+    Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
+  end record;   
+  
+  Pollers : array (1..8) of Poll_Process := (
+    1 => (True, (("poll_market_1  "), (others => ' '))),
+    2 => (True, (("poll_market_2  "), (others => ' '))),
+    3 => (True, (("poll_market_3  "), (others => ' '))),
+    4 => (True, (("poll_market_4  "), (others => ' '))),
+    5 => (True, (("poll_market_5  "), (others => ' '))),
+    6 => (True, (("poll_market_6  "), (others => ' '))),
+    7 => (True, (("poll_market_7  "), (others => ' '))),
+    8 => (True, (("poll_market_8  "), (others => ' ')))
+  );
 ---------------------------------------------------------------  
 
   
@@ -177,6 +182,19 @@ procedure Markets_Fetcher is
     Log(Me & Service, "stop"); 
   end Insert_Prices;
   --------------------------------------------------------------------- 
+    
+  procedure Set_Poller_State(Msg : in Process_Io.Message_Type) is
+    Data : Bot_Messages.Poll_State_Record := Bot_Messages.Data(Msg);
+    use type Process_Io.Name_Type;
+  begin
+    Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
+    for i in Pollers'range loop
+      if Pollers(i).Process.Name = Data.Name then
+        Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        exit;
+      end if;
+    end loop;
+  end Set_Poller_State; 
    
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Markets : Boolean               := True;
@@ -236,34 +254,11 @@ begin
   Append(Exchange_Ids , Create("1"));      -- Not Australia 
   
   Append(Event_Type_Ids , Create("7"));    -- horse
-  Append(Event_Type_Ids , Create("4339")); -- hound
-  Append(Event_Type_Ids , Create("1"));    -- football
 --   none for all countries   
---   Append(Market_Countries , Create("GB"));
---   Append(Market_Countries , Create("US"));
---   Append(Market_Countries , Create("IE"));
-   
-  Append(Market_Betting_Types , Create("ODDS"));
-  
+  Append(Market_Countries , Create("GB"));
+  Append(Market_Countries , Create("IE"));
   Append(Market_Type_Codes , Create("WIN"));                 -- for horses/hounds
   Append(Market_Type_Codes , Create("PLACE"));               -- for horses/hounds
-  Append(Market_Type_Codes , Create("MATCH_ODDS"));          -- for football (to lay the draw)
-  Append(Market_Type_Codes , Create("CORRECT_SCORE"));       -- for football (to lay 0-0)
-  Append(Market_Type_Codes , Create("HALF_TIME_SCORE"));     -- for football (to lay 0-0)
---  Append(Market_Type_Codes , Create("SENDING_OFF"));         -- for football 
---  Append(Market_Type_Codes , Create("HAT_TRICKED_SCORED"));  -- for football
---  Append(Market_Type_Codes , Create("ODD_OR_EVEN"));         -- for football 
---  Append(Market_Type_Codes , Create("PENALTY_TAKEN"));       -- for football 
---  Append(Market_Type_Codes , Create("WIN_BOTH_HALVES"));     -- for football 
---  Append(Market_Type_Codes , Create("WIN_HALF"));            -- for football 
---  Append(Market_Type_Codes , Create("HALF_TIME_FULL_TIME")); -- for football 
---  Append(Market_Type_Codes , Create("OVER_UNDER_05"));       -- for football 
---  Append(Market_Type_Codes , Create("OVER_UNDER_15"));       -- for football 
---  Append(Market_Type_Codes , Create("OVER_UNDER_25"));       -- for football 
---  Append(Market_Type_Codes , Create("OVER_UNDER_35"));       -- for football 
---  Append(Market_Type_Codes , Create("OVER_UNDER_45"));       -- for football 
---  Append(Market_Type_Codes , Create("BOTH_TEAMS_TO_SCORE")); -- for football 
-  
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
   Append(Market_Projection , Create("EVENT"));
@@ -284,7 +279,8 @@ begin
         
         Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
         case Process_Io.Identity(Msg) is
-          when Core_Messages.Exit_Message                  => exit Main_Loop;
+          when Core_Messages.Exit_Message      => exit Main_Loop;
+          when Bot_Messages.Poll_State_Message => Set_Poller_State(Msg);                 
           when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
         end case;  
       exception
@@ -334,7 +330,7 @@ begin
     Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);                
     Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes); 
     Filter.Set_Field (Field_Name => "marketBettingTypes", Field => Market_Betting_Types);    
-    Filter.Set_Field (Field_Name => "inPlayOnly",         Field => False);                     
+    Filter.Set_Field (Field_Name => "inPlayOnly",         Field => True);
     Filter.Set_Field (Field_Name => "marketStartTime",    Field => Market_Start_Time);
                        
     Params.Set_Field (Field_Name => "filter",           Field => Filter);                     
@@ -384,9 +380,6 @@ begin
        end loop;
     end if;  
       -- now get the prices
- 
- 
---bnl start loop? 
     T.Commit;
 
     declare
@@ -414,7 +407,6 @@ begin
           Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
           Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");    
           Params.Set_Field (Field_Name => "locale",          Field => "sv");
---          Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids); -- one market at a time, overflow otherwise
           Params.Set_Field (Field_Name => "marketIds",       Field => One_Market_Id);
           
           Query_List_Market_Book.Set_Field (Field_Name => "params",  Field => Params);
@@ -462,7 +454,6 @@ begin
     Log(Me, "Market_Found: " & Market_Found'Img);
     if Market_Found then 
       declare
-        use Utils;
         Market   : JSON_Value := Create_Object;
         MNR      : Bot_Messages.Market_Notification_Record;
         --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
@@ -470,30 +461,6 @@ begin
         Eos       : array (Eos_Type'range) of Boolean := (others => False);
         Db_Market : Table_Amarkets.Data_Type;
         Db_Event  : Table_Aevents.Data_Type;
-        Exists    : Boolean := False;
-        Sibling_Id :  Bot_Types.Market_Id_Type := (others => ' ');
-        --------------------------------------------------------------------                
-        procedure Sibling_Market_Exists(L_Eventid     : in     String;
-                                        Market_Type   : in     String; 
-                                        L_Sibling_Id  :    out Bot_Types.Market_Id_Type ; 
-                                        L_Exists      :    out Boolean) is
-          L_Eos  : Boolean := True;
-          L_Sibling_Market : Table_Amarkets.Data_Type;
-        begin
-        
-          Matchodds_Exists.Prepare("select * from AMARKETS where EVENTID = :EVENTID and MARKETTYPE = :MARKETTYPE");
-          Matchodds_Exists.Set("EVENTID", L_Eventid);
-          Matchodds_Exists.Set("MARKETTYPE", Market_Type);
-          Matchodds_Exists.Open_Cursor;
-          Matchodds_Exists.Fetch(L_Eos);
-          if not L_Eos then
-            L_Sibling_Market := Table_Amarkets.Get(Matchodds_Exists);
-          end if;
-          Matchodds_Exists.Close_Cursor;
-          
-          L_Exists := not L_Eos;
-          L_Sibling_Id := L_Sibling_Market.Marketid;          
-        end Sibling_Market_Exists;
         --------------------------------------------------------------------                
         
       begin
@@ -501,7 +468,6 @@ begin
           Market := Get(Market_Ids, i);
           MNR.Market_Id := (others => ' ');
           Move(String'(Market.Get),MNR.Market_Id);
-
           --some more detailed dispatching is needed now 
           -- what kind of event is it.  
           T.Start;
@@ -511,159 +477,28 @@ begin
               Db_Event.Eventid := Db_Market.Eventid;
               Table_Aevents.Read(Db_Event, Eos(Aevent));
               if not Eos(Aevent) then
-              
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------                
-                  when 1      => -- check markets for MATCH_ODDS/CORRECT_SCORE/HALF_TIME_SCORE/HALF_TIME_FULL_TIME
-                    -- if CORRECT_SCORE/HALF_TIME_SCORE/HALF_TIME_FULL_TIME exists, send their market id instead
-                    -- if they do not exist, send nothing, wait for the CORRECT_SCORE/HALF_TIME_SCORE to come in by itself
-                    if Trim(Upper_Case(DB_Market.Markettype)) = "MATCH_ODDS" then
-                      Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id  & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-
-                    -- poll_and_log is always interested in MATCH_ODDS                        
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					
-					  declare
-					    type Sub_Markets_Type is (CORRECT_SCORE,
-						                          HALF_TIME_SCORE,
-												  HALF_TIME_FULL_TIME,
-												  OVER_UNDER_05,
-												  OVER_UNDER_15,
-												  OVER_UNDER_25,
-												  OVER_UNDER_35,
-												  OVER_UNDER_45,
-												  BOTH_TEAMS_TO_SCORE);
-                        												  
-					  begin
-					    for i in Sub_Markets_Type'range loop
-                          Sibling_Market_Exists(Db_Event.Eventid, i'Img, Sibling_Id, Exists);
-                          if Exists then
-                            MNR.Market_Id := Sibling_Id;
-                            Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                            Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                          end if;                
-						end loop;
-					  end ;
-					
-                    -- if MATCH_ODDS exists,go ahead
-                    -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
-                    -- it will then send the market ids of CORRECT_SCORE
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "CORRECT_SCORE" then
-                       Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                       if Exists then
-                         Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                         Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                       end if;                
-                    -- if MATCH_ODDS exists,go ahead
-                    -- if it does not exist, send nothing, wait for the MATCH_ODDS to come in by itself
-                    -- it will then send the market ids of HALF_TIME_SCORE
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_SCORE" then
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                      end if;
-					  
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "HALF_TIME_FULL_TIME" then
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                      end if;
-					  
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_05" then
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-					  end if;	
-
-					elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_15" then
-                        Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-					  end if;	
-					  
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_25" then
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-					  end if;	
-					  
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_35" then
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-					  end if;	
-
-					elsif Trim(Upper_Case(DB_Market.Markettype)) = "OVER_UNDER_45" then
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-					  end if;	
-					  
-                    elsif Trim(Upper_Case(DB_Market.Markettype)) = "BOTH_TEAMS_TO_SCORE" then
-                      Log(Me, "Notifying 'poll_and_log' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("poll_and_log"), MNR);
-					  
-                      Sibling_Market_Exists(Db_Event.Eventid, "MATCH_ODDS", Sibling_Id, Exists);
-                      if Exists then
-                        Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);				  
-					  end if;	
-					  
-                    else -- pass on as usual
-                      Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                      Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                    end if;                    
-                  ------------------------------------------------------------------                
                   when 7      =>
-                    Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                    
-                    Log(Me, "Notifying 'poll' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);          
-                    
-                    Log(Me, "Notifying 'poll_place' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("poll_place"), MNR);                 
+                    Log(Me, "Notifying poll with marketid: '" & MNR.Market_Id & "'");
+                    Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);
+                    Log(Me, "Notifying poll_place with marketid: '" & MNR.Market_Id & "'");
+                    Bot_Messages.Send(Process_IO.To_Process_Type("poll_place"), MNR);
+                    for i in Pollers'range loop
+                      if Pollers(i).Free then
+                        Log(Me, "Notifying " & Trim(Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                        Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Pollers(i).Process.Name)), MNR);
+                        Pollers(i).Free := False;
+                        exit;
+                      end if;
+                    end loop;
                   ------------------------------------------------------------------                
-                  when 4339   => 
-                    Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
-                  ------------------------------------------------------------------                
-                  when others => 
-                    Log(Me, "Notifying 'bot' with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("bot"), MNR);
+                  when others => null;
                   ------------------------------------------------------------------                                  
                 end case;  
-                             
               end if;
             end if;              
-          
           T.Commit;
-          
-          
         end loop;
       end;  
     end if;        
