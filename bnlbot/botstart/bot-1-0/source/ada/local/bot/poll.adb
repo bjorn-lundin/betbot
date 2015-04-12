@@ -23,7 +23,6 @@ with Core_Messages;
 with Table_Amarkets;
 with Table_Aevents;
 with Table_Aprices;
-with Table_Apricesfinish;
 with Table_Abalances;
 with Bot_Svn_Info;
 with Bet;
@@ -251,8 +250,6 @@ procedure Poll is
     --------------------------------------------
     package Backprice_Sorter is new  Table_Aprices.Aprices_List_Pack2.Generic_Sorting("<");
 
-    Price_Finish      : Table_Apricesfinish.Data_Type;
-    Price_Finish_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
     Price             : Table_Aprices.Data_Type;
     Has_Been_In_Play,
     In_Play           : Boolean := False;
