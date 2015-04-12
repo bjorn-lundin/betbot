@@ -14,6 +14,7 @@ package Bot_Messages is
   Place_Back_Bet_Message : constant Process_io.Identity_Type := 2002;
   Place_Lay_Bet_Message : constant Process_io.Identity_Type := 2003;
   New_Bet_Placed_Notification_Message : constant Process_io.Identity_Type := 2004;
+  Poll_State_Message : constant Process_io.Identity_Type := 2005;
   
 
   ----------------------------------------------------------------
@@ -187,4 +188,39 @@ package Bot_Messages is
   ---------------------------------------------------------------------------
 
 
+  
+  ----------------------------------------------------------------
+  type Poll_State_Record is record
+      Free : Integer_4 := 0;
+      Name : Process_Io.Name_Type := (others => ' ');
+      Node : Process_Io.Name_Type := (others => ' ');
+  end record;
+  
+  for Poll_State_Record'alignment use 4;
+  for Poll_State_Record use record
+      Free at 0 range 0..8*4-1;
+      Name at 4 range 0..8*15-1;
+      Node at 20 range 0..8*15-1;
+  end record;
+  for Poll_State_Record'Size use 8*36; 
+  
+
+  package Poll_State_Package is new Process_Io.Generic_Io
+          (Identity        => Poll_State_Message,
+           Data_Type       => Poll_State_Record,
+           Data_Descriptor => (1 => Process_Io.Integer_4_Type,
+                               2 => Process_Io.String_Type(15),
+                               3 => Process_Io.String_Type(15)));
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  Poll_State_Record
+            renames Poll_State_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : Poll_State_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames Poll_State_Package.Send;
+  ---------------------------------------------------------------------------
+
+  
 end Bot_Messages;
