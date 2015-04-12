@@ -96,18 +96,9 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
-  
-  Start_Bot $BOT_USER poll poll poll.ini
-  
-  if [ $IS_DATA_COLLECTOR == "true" ] ; then
-    Start_Bot $BOT_USER poll_and_log poll_and_log poll_and_log.ini
-  fi
     
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
   
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    Start_Bot $BOT_USER bet_checker bet_checker
-  fi
   
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
@@ -117,19 +108,19 @@ function Check_Bots_For_User () {
   esac
   
   if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    for bot in $BOT_LIST ; do
-      if [ $bot == "bot" ] ; then
-        Start_Bot $BOT_USER $bot bot betfair.ini
-      else
-        Start_Bot $BOT_USER $bot bot $bot.ini
-      fi
-    done
+  
+    Start_Bot $BOT_USER bet_checker bet_checker
+    Start_Bot $BOT_USER poll poll poll.ini 
+  
+    #for bot in $BOT_LIST ; do
+    #  if [ $bot == "bot" ] ; then
+    #    Start_Bot $BOT_USER $bot bot betfair.ini
+    #  else
+    #    Start_Bot $BOT_USER $bot bot $bot.ini
+    #  fi
+    #done
     BET_PLACER_LIST="bet_placer_010 \
-                     bet_placer_020 \
-                     bet_placer_030 \
-                     bet_placer_040 \
                      bet_placer_070 \
-                     bet_placer_080 \
                      bet_placer_101 bet_placer_102 \
                      bet_placer_103 bet_placer_104 \
                      bet_placer_105 bet_placer_106 \
@@ -142,6 +133,22 @@ function Check_Bots_For_User () {
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
     done
+    
+    if [ $BOT_HOUR == "05" ] ; then
+      if [ $BOT_MINUTE == "00" ] ; then
+        Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
+      fi
+    fi
+    
+  else
+    DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
+                          poll_market_3 poll_market_4 \
+                          poll_market_5 poll_market_6 \
+                          poll_market_7 poll_market_8"      
+    for colletor in $DATA_COLLECTORS_LIST ; do
+      Start_Bot $BOT_USER $colletor poll_market 
+    done
+                          
   fi
   
   #zip logfiles every hour, on minute 17 in the background
@@ -152,15 +159,6 @@ function Check_Bots_For_User () {
   if [ $BOT_HOUR == "05" ] ; then
     if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
-    fi
-  fi
-  Start_Bot $BOT_USER poll_place poll_place poll.ini
-  
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
-    if [ $BOT_HOUR == "05" ] ; then
-      if [ $BOT_MINUTE == "00" ] ; then
-        Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-      fi
     fi
   fi
   
@@ -257,15 +255,14 @@ for DISK in $DISK_LIST ; do
   FS=$( df  | grep $DISK | awk '{print $1}')
   PERCENTAGE=$(tclsh $PCT $USED_SIZE $DISK_SIZE)
   for RECIPENT in $MAIL_LIST ; do
-   if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then
-   
+   if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then 
      if [ ! -r ${ALARM_TODAY_FILE} ] ; then
        df -h | mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)" $RECIPENT
+       df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
        touch ${ALARM_TODAY_FILE}
      fi  
    fi
   done
-  df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
 done
 
 #delete old alarmfiles
