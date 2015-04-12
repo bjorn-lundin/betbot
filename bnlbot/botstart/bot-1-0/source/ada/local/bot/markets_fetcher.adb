@@ -66,7 +66,7 @@ procedure Markets_Fetcher is
   Exchange_Ids,
   Event_Type_Ids              : JSON_Array := Empty_Array;
   UTC_Offset_Minutes          : Ada.Calendar.Time_Zones.Time_Offset;
-----------------------------------------------
+
   Is_Time_To_Exit : Boolean := False;
   My_Lock         : Lock.Lock_Type;    
   UTC_Time_Start,
@@ -76,6 +76,9 @@ procedure Markets_Fetcher is
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
+
+  Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
+
   
   type Poll_Process is record
     Free     : Boolean := True;
@@ -484,14 +487,16 @@ begin
                     Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);
                     Log(Me, "Notifying poll_place with marketid: '" & MNR.Market_Id & "'");
                     Bot_Messages.Send(Process_IO.To_Process_Type("poll_place"), MNR);
-                    for i in Pollers'range loop
-                      if Pollers(i).Free then
-                        Log(Me, "Notifying " & Trim(Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                        Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Pollers(i).Process.Name)), MNR);
-                        Pollers(i).Free := False;
-                        exit;
-                      end if;
-                    end loop;
+                    if Is_Data_Collector then
+                      for i in Pollers'range loop
+                        if Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Pollers(i).Process.Name)), MNR);
+                          Pollers(i).Free := False;
+                          exit;
+                        end if;
+                      end loop;
+                    end if;  
                   ------------------------------------------------------------------                
                   when others => null;
                   ------------------------------------------------------------------                                  
