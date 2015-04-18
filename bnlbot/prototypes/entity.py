@@ -8,9 +8,8 @@ class Market(object):
     '''
     def __init__(self, marketid):
         self.marketid = marketid
-        self.starttime = None
-        self.stoptime = None
-        self.duration = None # seconds
+        self.tstamps = []
+        self.start = -1 # Index in tstamp
         self.data_from_start = True
         self.execution_delay = 1 # seconds
         self.runners = []
