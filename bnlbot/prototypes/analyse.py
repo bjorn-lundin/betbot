@@ -86,14 +86,14 @@ def run_collection(conn, collection):
     markettype = 'WIN'
 
     date = ('2014-09-01',)
-    marketid = (
-        '1.115253736',
-        '1.115253744',
-        '1.115253163',
-        '1.115253165',
-        '1.115253179')
+    #marketid = (
+    #    '1.115253736',
+    #    '1.115253744',
+    #    '1.115253163',
+    #    '1.115253165',
+    #    '1.115253179')
 
-    #marketid = ()
+    marketid = ()
 
     # Against bnl/dry
     #date = ('2015-04-08',)
@@ -122,9 +122,22 @@ def report_collection(collection):
     '''
     Report parts from collection
     '''
+    nbr_markets = len(collection)
+    nbr_from_start = 0
+    nbr_not_from_start = 0
+    not_from_start_markets = []
+
     for marketid in collection:
-        market = collection[marketid][0]
-        print(market.marketid)
+        if collection[marketid][0].data_from_start:
+            nbr_from_start += 1
+        else:
+            nbr_not_from_start += 1
+            not_from_start_markets.append(marketid)
+
+    print(nbr_markets)
+    print(nbr_from_start)
+    print(nbr_not_from_start)
+    print(not_from_start_markets)
 
 
 def run_analysis():
@@ -139,7 +152,7 @@ if __name__ == "__main__":
     COLLECTION = {} # { 'marketid': (Market, [selectionid]) }
     run_collection(CONN, COLLECTION)
     report_collection(COLLECTION)
-    run_analysis(COLLECTION)
+    run_analysis()
     CONN.close()
     exit(0)
 
