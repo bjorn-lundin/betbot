@@ -24,36 +24,19 @@ def collect_step_1(conn, q_data, q_name):
     return data
 
 
-def collect_step_2(data):
+def collect_step_2(data, collection):
     '''
     Collect markets and runners for each market
     '''
-    collection = {} # { 'marketid': (Market, [selectionid]) }
     for row in data:
         marketid = row[0]
-        selectionid = row[3]
-        runnername = row[2]
-
         if marketid not in collection:
             collection[marketid] = (entity.Market(marketid), [])
-
-        if selectionid not in collection[marketid][1]:
-            collection[marketid][1].append(selectionid)
-            runner = entity.Runner(selectionid)
-            runner.name = runnername
-            collection[marketid][0].runners.append(runner)
-
-#    for m_id in collection:
-#        print(collection[m_id][0].marketid)
-#        for runner in collection[m_id][0].runners:
-#            print(' '*3, runner.name)
-
-    return collection
 
 
 def collect_step_3(data, collection):
     '''
-    Collect market timestamps, starttime and data_from_start
+    Collect market timestamps and set starttime and data_from_start
     '''
     for row in data:
         marketid = row[0]
@@ -78,25 +61,26 @@ def collect_step_3(data, collection):
         else:
             market.start = 0
 
-    for marketid in collection:
-        market = collection[marketid][0]
-        print(market.marketid)
-        print(market.data_from_start)
-        print(market.tstamps[market.start])
 
-    return collection
-
-
-def collect_step_4():
+def collect_step_4(data, collection):
     '''
     Collect runners
     '''
-    pass
+    for row in data:
+        marketid = row[0]
+        selectionid = row[3]
+        runnername = row[2]
+
+        if selectionid not in collection[marketid][1]:
+            collection[marketid][1].append(selectionid)
+            runner = entity.Runner(selectionid)
+            runner.name = runnername
+            collection[marketid][0].runners.append(runner)
 
 
 def run_collection(conn):
     '''
-    Collect parameters
+    Collect data
     '''
     status = ('WINNER', 'LOSER')
     markettype = 'WIN'
@@ -132,9 +116,14 @@ def run_collection(conn):
         q_data = (status, markettype, date)
 
     data = collect_step_1(conn, q_data, q_name)
-    collection = collect_step_2(data)
-    collection = collect_step_3(data, collection)
-    collect_step_4()
+    collection = {} # { 'marketid': (Market, [selectionid]) }
+    collect_step_2(data, collection)
+    collect_step_3(data, collection)
+    collect_step_4(data, collection)
+
+    for marketid in collection:
+        market = collection[marketid][0]
+        print(market.marketid)
 
     return collection
 
