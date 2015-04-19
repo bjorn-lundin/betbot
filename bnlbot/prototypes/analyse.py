@@ -78,7 +78,7 @@ def collect_step_4(data, collection):
             collection[marketid][0].runners.append(runner)
 
 
-def run_collection(conn):
+def run_collection(conn, collection):
     '''
     Collect data
     '''
@@ -93,10 +93,6 @@ def run_collection(conn):
         '1.115253165',
         '1.115253179')
 
-
-    #date = ('2014-09-02',)
-    #marketid = ('1.115258242', '1.115258254', '1.115258199')
-
     #marketid = ()
 
     # Against bnl/dry
@@ -108,24 +104,27 @@ def run_collection(conn):
     #    '1.118128058',
     #    '1.118128098')
 
-    q_name = 'q-with-marketid'
-    q_data = (status, markettype, date, marketid)
 
     if len(marketid) == 0:
         q_name = 'q-without-marketid'
         q_data = (status, markettype, date)
+    else:
+        q_name = 'q-with-marketid'
+        q_data = (status, markettype, date, marketid)
 
     data = collect_step_1(conn, q_data, q_name)
-    collection = {} # { 'marketid': (Market, [selectionid]) }
     collect_step_2(data, collection)
     collect_step_3(data, collection)
     collect_step_4(data, collection)
 
+
+def report_collection(collection):
+    '''
+    Report parts from collection
+    '''
     for marketid in collection:
         market = collection[marketid][0]
         print(market.marketid)
-
-    return collection
 
 
 def run_analysis():
@@ -137,8 +136,10 @@ def run_analysis():
 
 if __name__ == "__main__":
     CONN = psycopg2.connect("dbname=dry user=joakim")
-    COLLECTION = run_collection(CONN)
-    run_analysis()
+    COLLECTION = {} # { 'marketid': (Market, [selectionid]) }
+    run_collection(CONN, COLLECTION)
+    report_collection(COLLECTION)
+    run_analysis(COLLECTION)
     CONN.close()
     exit(0)
 
