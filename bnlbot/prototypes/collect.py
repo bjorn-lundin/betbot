@@ -64,7 +64,12 @@ class Collector(object):
 
         for marketid in self.collection:
             market = self.collection[marketid][0]
-            timediff = market.tstamps[1] - market.tstamps[0]
+            
+            if len(market.tstamps) > 1:
+                timediff = market.tstamps[1] - market.tstamps[0]
+            else:
+                market.data_from_start = False
+                continue
 
             if timediff.seconds < 1:
                 market.data_from_start = False
@@ -118,9 +123,17 @@ class Collector(object):
         return self.collection
 
 
-    def run_collection_multiproc(self):
+    def run_collection_map_reduce(self, date):
         '''
-        Collect data multiprocess
+        Collect data in slices
         '''
-        pass
+        status = conf.Q_STATUS
+        markettype = conf.Q_MARKETTYPE
+        self.q_name = 'q-without-marketid'
+        self.q_data = (status, markettype, date)
 
+        self.collect_step_1()
+        self.collect_step_2()
+        self.collect_step_3()
+        self.collect_step_4()
+        return self.collection
