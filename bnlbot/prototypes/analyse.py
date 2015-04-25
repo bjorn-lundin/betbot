@@ -2,6 +2,7 @@
 Main prototype module for Betfair analysis
 '''
 from __future__ import print_function, division, absolute_import
+import config
 import psycopg2
 import query
 import entity
@@ -155,19 +156,7 @@ def main():
     '''
     Main method
     '''
-
-    conn = psycopg2.connect("dbname=dry user=joakim")
-
-    #conn = psycopg2.connect(
-    #    '''
-    #    host=db.nonodev.com
-    #    dbname=dry
-    #    user=bnl
-    #    password=BettingFotboll1$
-    #    sslmode=require
-    #    '''
-    #)
-
+    conn = psycopg2.connect(config.LOCAL_DRY)
     collection = {} # { 'marketid': (Market, [selectionid]) }
     run_collection(conn, collection)
     report_collection(collection)
