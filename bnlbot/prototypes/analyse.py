@@ -2,6 +2,7 @@
 Main prototype module for Betfair analysis
 '''
 from __future__ import print_function, division, absolute_import
+import sys
 import config
 import psycopg2
 import query
@@ -152,10 +153,16 @@ def run_analysis():
     '''
     pass
 
-def main():
+
+def main(argv):
     '''
     Main method
     '''
+
+    if 't' in argv[1]:
+        print('Will be running multi-process when implemented...')
+        exit(1)
+
     conn = psycopg2.connect(config.LOCAL_DRY)
     collection = {} # { 'marketid': (Market, [selectionid]) }
     run_collection(conn, collection)
@@ -165,4 +172,4 @@ def main():
     exit(0)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
