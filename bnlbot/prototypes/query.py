@@ -140,6 +140,36 @@ WHERE
 ORDER BY
     p.pricets, p.selectionid
     '''
+    ,
+    ##############################################################
+    'q-nonodev-dry-views':
+    '''
+SELECT
+    p.marketid,
+    p.pricets,
+    r.runnername,
+    p.selectionid,
+    p.backprice,
+    p.layprice,
+    p.totalmatched
+FROM
+    all_events e, -- Bjorn added view
+    all_markets m, -- Bjorn added view
+    all_runners r, -- Bjorn added view
+    apricesfinish p
+WHERE
+    e.eventid = m.eventid
+    AND m.marketid = r.marketid
+    AND m.marketid = p.marketid
+    AND r.selectionid = p.selectionid
+    AND r.status IN ('WINNER','LOSER')
+    AND e.eventtypeid = 7
+    AND m.markettype = 'WIN'
+    AND p.pricets::date = '2015-04-08'
+    AND p.marketid = '1.118127976'
+ORDER BY
+    p.pricets, p.selectionid
+    '''
 }
 
 def named(name):
