@@ -10,18 +10,26 @@ def report_collection(collection):
     '''
     nbr_markets = len(collection)
     nbr_from_start = 0
-    nbr_not_from_start = 0
     not_from_start_markets = []
+    not_sufficient_ts = []
 
     for marketid in collection:
         if collection[marketid][0].data_from_start:
             nbr_from_start += 1
         else:
-            nbr_not_from_start += 1
             not_from_start_markets.append(marketid)
+            if len(collection[marketid][0].tstamps) < 100:
+                not_sufficient_ts.append(marketid)
 
-    print(nbr_markets)
-    print(nbr_from_start)
-    print(nbr_not_from_start)
+    print('Markets:', nbr_markets)
+    print('TS from start:', nbr_from_start)
+    print('TS not from start:', len(not_from_start_markets))
+    print('Not sufficient TS:', len(not_sufficient_ts))
+
+    print('Markets not having TS from start:')
     for market in not_from_start_markets:
+        print(market)
+
+    print('Markets not having sufficient TS:')
+    for market in not_sufficient_ts:
         print(market)
