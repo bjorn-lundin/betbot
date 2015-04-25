@@ -38,11 +38,17 @@ def collect_step_3(data, collection):
     '''
     Collect market timestamps and set starttime and data_from_start
     '''
+    speed_set = {} # { marketid: set() }, much faster than iterate list
     for row in data:
         marketid = row[0]
         pricets = row[1]
         market = collection[marketid][0]
-        if pricets not in market.tstamps:
+
+        if not marketid in speed_set:
+            speed_set[marketid] = set()
+
+        if pricets not in speed_set[marketid]:
+            speed_set[marketid].add(pricets)
             market.tstamps.append(pricets)
 
     for marketid in collection:
@@ -146,9 +152,13 @@ def run_analysis():
     pass
 
 def main():
-    CONN = psycopg2.connect("dbname=dry user=joakim")
+    '''
+    Main method
+    '''
 
-    #CONN = psycopg2.connect(
+    conn = psycopg2.connect("dbname=dry user=joakim")
+
+    #conn = psycopg2.connect(
     #    '''
     #    host=db.nonodev.com
     #    dbname=dry
@@ -158,12 +168,11 @@ def main():
     #    '''
     #)
 
-
-    COLLECTION = {} # { 'marketid': (Market, [selectionid]) }
-    run_collection(CONN, COLLECTION)
-    report_collection(COLLECTION)
+    collection = {} # { 'marketid': (Market, [selectionid]) }
+    run_collection(conn, collection)
+    report_collection(collection)
     run_analysis()
-    CONN.close()
+    conn.close()
     exit(0)
 
 if __name__ == "__main__":
