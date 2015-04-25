@@ -86,14 +86,13 @@ def run_collection(conn, collection):
     markettype = 'WIN'
 
     date = ('2014-09-01',)
-    #marketid = (
-    #    '1.115253736',
-    #    '1.115253744',
-    #    '1.115253163',
-    #    '1.115253165',
-    #    '1.115253179')
-
-    marketid = ()
+    marketid = (
+        '1.115253736',
+        '1.115253744',
+        '1.115253163',
+        '1.115253165',
+        '1.115253179')
+    #marketid = ()
 
     # Against bnl/dry
     #date = ('2015-04-08',)
@@ -103,7 +102,6 @@ def run_collection(conn, collection):
     #    '1.118127972',
     #    '1.118128058',
     #    '1.118128098')
-
 
     if len(marketid) == 0:
         q_name = 'q-without-marketid'
@@ -137,7 +135,8 @@ def report_collection(collection):
     print(nbr_markets)
     print(nbr_from_start)
     print(nbr_not_from_start)
-    print(not_from_start_markets)
+    for market in not_from_start_markets:
+        print(market)
 
 
 def run_analysis():
@@ -146,9 +145,20 @@ def run_analysis():
     '''
     pass
 
-
-if __name__ == "__main__":
+def main():
     CONN = psycopg2.connect("dbname=dry user=joakim")
+
+    #CONN = psycopg2.connect(
+    #    '''
+    #    host=db.nonodev.com
+    #    dbname=dry
+    #    user=bnl
+    #    password=BettingFotboll1$
+    #    sslmode=require
+    #    '''
+    #)
+
+
     COLLECTION = {} # { 'marketid': (Market, [selectionid]) }
     run_collection(CONN, COLLECTION)
     report_collection(COLLECTION)
@@ -156,3 +166,5 @@ if __name__ == "__main__":
     CONN.close()
     exit(0)
 
+if __name__ == "__main__":
+    main()
