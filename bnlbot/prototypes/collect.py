@@ -1,8 +1,7 @@
 '''
-Main prototype module for Betfair analysis
+Collect module for Betfair analysis
 '''
 from __future__ import print_function, division, absolute_import
-import sys
 import config
 import psycopg2
 import query
@@ -86,7 +85,7 @@ def collect_step_4(data, collection):
             collection[marketid][0].runners.append(runner)
 
 
-def run_collection(conn, collection):
+def run_collection():
     '''
     Collect data
     '''
@@ -126,26 +125,5 @@ def run_collection(conn, collection):
     collect_step_2(data, collection)
     collect_step_3(data, collection)
     collect_step_4(data, collection)
+    return collection
 
-
-def report_collection(collection):
-    '''
-    Report parts from collection
-    '''
-    nbr_markets = len(collection)
-    nbr_from_start = 0
-    nbr_not_from_start = 0
-    not_from_start_markets = []
-
-    for marketid in collection:
-        if collection[marketid][0].data_from_start:
-            nbr_from_start += 1
-        else:
-            nbr_not_from_start += 1
-            not_from_start_markets.append(marketid)
-
-    print(nbr_markets)
-    print(nbr_from_start)
-    print(nbr_not_from_start)
-    for market in not_from_start_markets:
-        print(market)
