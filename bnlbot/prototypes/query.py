@@ -112,6 +112,34 @@ WHERE
 ORDER BY
     p.pricets, p.selectionid
     '''
+    ,
+    ##############################################################
+    'q-all-dates':
+    '''
+SELECT
+    p.marketid,
+    p.pricets,
+    r.runnername,
+    p.selectionid,
+    p.backprice,
+    p.layprice,
+    p.totalmatched
+FROM
+    aevents e,
+    amarkets m,
+    arunners r,
+    apricesfinish p
+WHERE
+    e.eventid = m.eventid
+    AND m.marketid = r.marketid
+    AND m.marketid = p.marketid
+    AND r.selectionid = p.selectionid
+    AND r.status IN %s
+    AND e.eventtypeid = 7
+    AND m.markettype = %s
+ORDER BY
+    p.pricets, p.selectionid
+    '''
 }
 
 def named(name):
