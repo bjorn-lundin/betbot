@@ -17,7 +17,8 @@ def main(argv):
         #collect.run_collection_multiproc(conn, collection)
         exit(1)
     else:
-        collection = collect.run_collection()
+        collector = collect.Collector()
+        collection = collector.run_collection()
         report.report_collection(collection)
     exit(0)
 
