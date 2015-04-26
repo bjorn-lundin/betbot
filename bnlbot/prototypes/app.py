@@ -14,31 +14,34 @@ def main(argv):
     '''
 
 
-    def map_func(dates):
-        collections = []
-        for date in dates:
-            print(date)
-            collector = collect.Collector()
-            collection = collector.run_collection_map_reduce((date,))
-            print(len(collection))
-            collections.append(collection)
-        return collections
+    def map_func(date):
+        '''
+        Map
+        '''
+        print(date)
+        collector = collect.Collector()
+        collection = collector.run_collection_map_reduce((date,))
+        print(len(collection))
+        return collection
 
 
-    def red_func(a, b):
-        a[0].update(b[0])
+    def red_func(list_a, list_b):
+        '''
+        Reduce
+        '''
+        return list_a + list_b
 
 
-    #argv.append('r')
+    argv.append('r')
     if len(argv) == 2:
         if 'r' in argv[1]:
             print('Running map reduce...')
             dates = [] # Split on date
             for date in conf.Q_DATE_MAP_REDUCE:
                 dates.append((date,))
-            collections = map(m_func, dates)
-            reduce(r_func, collections)
-            print(len(collections[0][0]))
+            collections = [map_func(date) for date in dates]
+            res = reduce(red_func, collections)
+            report.report_collection(res)
         elif 'p' in argv[1]:
             print('Running multi process...')
             #collect.run_collection_multiproc(conn, collection)
@@ -54,3 +57,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
+

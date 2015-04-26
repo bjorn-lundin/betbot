@@ -16,7 +16,7 @@ class Collector(object):
         self.q_name = None
         self.data = None
         self.collection = {} # { 'marketid': (Market, [selectionid]) }
-
+        self.markets = [] # Condensed to market objects and returned at end
 
     def collect_step_1(self):
         '''
@@ -42,7 +42,9 @@ class Collector(object):
         for row in self.data:
             marketid = row[0]
             if marketid not in self.collection:
-                self.collection[marketid] = (entity.Market(marketid), [])
+                market = entity.Market(marketid)
+                self.collection[marketid] = (market, [])
+                self.markets.append(market)
 
 
     def collect_step_3(self):
@@ -64,7 +66,7 @@ class Collector(object):
 
         for marketid in self.collection:
             market = self.collection[marketid][0]
-            
+
             if len(market.tstamps) > 1:
                 timediff = market.tstamps[1] - market.tstamps[0]
             else:
@@ -120,7 +122,7 @@ class Collector(object):
         self.collect_step_2()
         self.collect_step_3()
         self.collect_step_4()
-        return self.collection
+        return self.markets
 
 
     def run_collection_map_reduce(self, date):
@@ -136,4 +138,4 @@ class Collector(object):
         self.collect_step_2()
         self.collect_step_3()
         self.collect_step_4()
-        return self.collection
+        return self.markets
