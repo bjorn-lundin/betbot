@@ -2,7 +2,6 @@
 Collect module for Betfair analysis
 '''
 from __future__ import print_function, division, absolute_import
-import conf
 import psycopg2
 import query
 import entity
@@ -12,20 +11,18 @@ class Collector(object):
     A data collector
     '''
     def __init__(self):
-        self.q_data = None
-        self.q_name = None
-        self.data = None
+        self.data = None # The result set from db
         self.collection = {} # { 'marketid': (Market, [selectionid]) }
-        self.markets = [] # Condensed to market objects and returned at end
+        self.markets = [] # Condensed to market objects and returned
 
-    def collect_step_1(self):
+    def collect_step_1(self, db_conn, q_name, q_params):
         '''
         Query DB
         '''
-        conn = psycopg2.connect(conf.LOCAL_DRY)
+        conn = psycopg2.connect(db_conn)
         try:
             cur = conn.cursor()
-            cur.execute(query.named(self.q_name), self.q_data)
+            cur.execute(query.named(q_name), q_params)
             self.data = cur.fetchall()
         except psycopg2.Error as error:
             print(error)
@@ -102,40 +99,30 @@ class Collector(object):
                 self.collection[marketid][0].runners.append(runner)
 
 
-    def run_collection(self):
+    def run_collection(self, db_conn, q_name, q_params):
         '''
         Collect data
         '''
-        status = conf.Q_STATUS
-        markettype = conf.Q_MARKETTYPE
-        date = conf.Q_DATE
-        marketid = conf.Q_MARKETID
-
-        if len(marketid) == 0:
-            self.q_name = 'q-without-marketid'
-            self.q_data = (status, markettype, date)
-        else:
-            self.q_name = 'q-with-marketid'
-            self.q_data = (status, markettype, date, marketid)
-
-        self.collect_step_1()
+        self.collect_step_1(db_conn, q_name, q_params)
         self.collect_step_2()
         self.collect_step_3()
         self.collect_step_4()
         return self.markets
 
 
-    def run_collection_map_reduce(self, date):
-        '''
-        Collect data in slices
-        '''
-        status = conf.Q_STATUS
-        markettype = conf.Q_MARKETTYPE
-        self.q_name = 'q-without-marketid'
-        self.q_data = (status, markettype, date)
+def safe_run_collection_date(db_conn, q_name, q_params_part, date):
+    '''
+    Run collection based on date in separate collector (thread safe)
+    '''
+    q_params = []
+    q_params.extend(q_params_part)
 
-        self.collect_step_1()
-        self.collect_step_2()
-        self.collect_step_3()
-        self.collect_step_4()
-        return self.markets
+    if type(date) != 'tuple':
+        date = (date,)
+
+    q_params.append(date)
+    q_params = tuple(q_params)
+    collector = Collector()
+    markets = collector.run_collection(db_conn, q_name, q_params)
+    return markets
+
