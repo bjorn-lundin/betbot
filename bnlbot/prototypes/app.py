@@ -25,7 +25,7 @@ def main(argv):
         elif 'p' in argv[1]:
             print('Running multiprocess...')
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
-            markets = pool.map(collect.multi_map, conf.Q_DATE_MAP_REDUCE)
+            markets = pool.map(collect.multi_run, conf.Q_DATE_MAP_REDUCE)
         else:
             print('Nope!')
             exit(1)
