@@ -5,6 +5,8 @@ from __future__ import print_function, division, absolute_import
 import psycopg2
 import query
 import entity
+import conf
+
 
 class Collector(object):
     '''
@@ -14,6 +16,7 @@ class Collector(object):
         self.data = None # The result set from db
         self.collection = {} # { 'marketid': (Market, [selectionid]) }
         self.markets = [] # Condensed to market objects and returned
+
 
     def collect_step_1(self, db_conn, q_name, q_params):
         '''
@@ -34,7 +37,7 @@ class Collector(object):
 
     def collect_step_2(self):
         '''
-        Collect markets and runners for each market
+        Collect markets
         '''
         for row in self.data:
             marketid = row[0]
@@ -124,5 +127,14 @@ def safe_run_collection_date(db_conn, q_name, q_params_part, date):
     q_params = tuple(q_params)
     collector = Collector()
     markets = collector.run_collection(db_conn, q_name, q_params)
+    return markets
+
+
+def multi_run(date):
+    '''
+    Multiprocessing...
+    '''
+    markets = safe_run_collection_date(conf.DB, 'q-without-marketid', \
+            conf.Q_PARAMS_MAP_REDUCE, date)
     return markets
 
