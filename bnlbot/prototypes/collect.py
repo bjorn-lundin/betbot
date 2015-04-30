@@ -6,7 +6,7 @@ import psycopg2
 import query
 import entity
 import conf
-
+import clean
 
 class Collector(object):
     '''
@@ -110,6 +110,10 @@ class Collector(object):
         self.collect_step_2()
         self.collect_step_3()
         self.collect_step_4()
+
+        collect_clean = clean.Clean()
+        collect_clean.collect_clean(db_conn, self.markets)
+
         return self.markets
 
 
