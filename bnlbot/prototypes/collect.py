@@ -111,8 +111,8 @@ class Collector(object):
         self.collect_step_3()
         self.collect_step_4()
 
-        collect_clean = clean.Clean()
-        collect_clean.collect_clean(db_conn, self.markets)
+        #collect_clean = clean.Clean()
+        #collect_clean.collect_clean(db_conn, self.markets)
 
         return self.markets
 
