@@ -14,19 +14,16 @@ class Clean(object):
         '''
         Insert temporary "cleaning" data into DB
         '''
-
         ins = 'insert into nisse values (%s)'
-
-
         conn = psycopg2.connect(db_conn)
         for market in markets:
-            print(market)
+            if not market.data_from_start:
+                continue
             try:
                 cur = conn.cursor()
-                #print(cur.mogrify(ins, (market,)))
-                cur.execute(ins, (market,))
+                cur.execute(ins, (market.marketid,))
             except psycopg2.Error as error:
-                print(error)
+                pass
             finally:
                 cur.close()
                 conn.commit()
