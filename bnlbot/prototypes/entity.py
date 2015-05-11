@@ -13,6 +13,7 @@ class Market(object):
         self.data_from_start = True
         self.execution_delay = 1 # seconds
         self.runners = []
+        self.win_winner_id = None # selectionid
 
 
 class Runner(object):
@@ -20,10 +21,9 @@ class Runner(object):
     Entity representing a runner (horse)
     '''
     def __init__(self, selectionid):
-        self.selectionid = selectionid
-        self.timestamp = None
-        self.win_backprice = 0.0
-        self.win_layprice = 0.0
-        self.totalmatched = 0.0
         self.name = None
+        self.selectionid = selectionid
+        self.backprices = []
+        self.layprices = []
+        self.totalmatched = []
 

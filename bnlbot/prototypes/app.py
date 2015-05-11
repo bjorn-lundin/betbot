@@ -15,7 +15,7 @@ def main(argv):
     '''
     argv.append('p')
     markets = []
-    
+
     if len(argv) == 2:
         if 'r' in argv[1]:
             print('Running map reduce...')

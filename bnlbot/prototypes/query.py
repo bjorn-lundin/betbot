@@ -170,6 +170,20 @@ WHERE
 ORDER BY
     p.pricets, p.selectionid
     '''
+    ,
+    ##############################################################
+    'q-get-win-winner':
+    '''
+SELECT
+    marketid,
+    selectionid
+FROM
+    arunners
+WHERE
+    status = 'WINNER'
+    AND marketid IN %s
+    '''
+    ,
 }
 
 def named(name):
