@@ -6,7 +6,6 @@ import psycopg2
 import query
 import entity
 import conf
-#import clean
 
 class Collector(object):
     '''
@@ -64,26 +63,15 @@ class Collector(object):
                 speed_set[marketid].add(pricets)
                 market.tstamps.append(pricets)
 
-        for marketid in self.collection:
-            market = self.collection[marketid][0]
-
-            if len(market.tstamps) > 1:
-                timediff = market.tstamps[1] - market.tstamps[0]
-            else:
-                market.data_from_start = False
-                continue
-
-            if timediff.seconds < 1:
-                market.data_from_start = False
-
-            if market.data_from_start:
-                for i in xrange(0, len(market.tstamps) - 1):
-                    timediff = market.tstamps[i+1] - market.tstamps[i]
-                    if timediff.seconds < 1:
-                        market.start = i
-                        break
-            else:
-                market.start = 0
+        for market in self.markets:
+            for i in range(len(market.tstamps)):
+                if i < 1:
+                    continue
+                prev = i-1
+                timediff = market.tstamps[i] - market.tstamps[prev]
+                if timediff.seconds < 1:
+                    market.start = prev
+                    break
 
 
     def collect_step_4(self):
@@ -149,10 +137,6 @@ class Collector(object):
         self.collect_step_3()
         self.collect_step_4()
         self.collect_step_5(db_conn_str)
-
-        #collect_clean = clean.Clean()
-        #collect_clean.collect_clean(db_conn_str, self.markets)
-
         return self.markets
 
 

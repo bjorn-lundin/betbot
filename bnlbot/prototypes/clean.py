@@ -3,43 +3,32 @@ Collect data used for cleaning up and making DB smaller
 '''
 from __future__ import print_function, division, absolute_import
 import psycopg2
-import conf
 
+CLEAN_MARKETS = []
 
-class Clean(object):
+def collect_clean(db_conn, markets):
     '''
-    Clean object
+    Fill clean_markets and add to nisse
     '''
-    def collect_clean(self, db_conn, markets):
-        '''
-        Insert temporary "cleaning" data into DB
-        '''
-        ins = 'insert into nisse values (%s)'
+    for market in markets:
+        if len(market.tstamps) > 1:
+            timediff = market.tstamps[1] - market.tstamps[0]
+            if timediff.seconds < 1:
+                CLEAN_MARKETS.append(market.marketid)
+        else:
+            CLEAN_MARKETS.append(market.marketid)
+
+    ins = 'insert into nisse values (%s)'
+
+    try:
         conn = psycopg2.connect(db_conn)
-        for market in markets:
-            if not market.data_from_start:
-                continue
-            try:
-                cur = conn.cursor()
-                cur.execute(ins, (market.marketid,))
-            except psycopg2.Error as error:
-                pass
-            finally:
-                cur.close()
-                conn.commit()
+        for market in CLEAN_MARKETS:
+            cur = conn.cursor()
+            cur.execute(ins, (market.marketid,))
+    except psycopg2.Error as error:
+        print(error)
+    finally:
+        cur.close()
+        conn.commit()
         conn.close()
-
-
-def main():
-    '''
-    Main method
-    '''
-    markets = ['mark1', 'mark2', 'mark3']
-    collect_clean = Clean()
-    collect_clean.collect_clean(conf.DB, markets)
-    exit(0)
-
-
-if __name__ == '__main__':
-    main()
 

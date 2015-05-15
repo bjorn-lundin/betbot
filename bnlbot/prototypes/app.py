@@ -7,6 +7,7 @@ import conf
 import collect
 import report
 import multiprocessing
+import clean
 
 
 def main(argv):
@@ -35,6 +36,10 @@ def main(argv):
         collector = collect.Collector()
         markets = collector.run_collection(conf.DB, 'q-with-marketid', \
                 conf.Q_PARAMS_ID)
+
+    if False:
+        print('Preparing data for clean...')
+        clean.collect_clean(conf.DB, markets)
 
     report.report_collection(markets)
     exit(0)
