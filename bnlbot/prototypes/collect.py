@@ -64,6 +64,8 @@ class Collector(object):
                 market.tstamps.append(pricets)
 
         for market in self.markets:
+            if len(market.tstamps) < conf.MIN_NBR_TS_TO_PASS:
+                continue
             for i in range(len(market.tstamps)):
                 if i < 1:
                     continue
