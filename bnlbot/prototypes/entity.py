@@ -10,7 +10,6 @@ class Market(object):
         self.marketid = marketid
         self.tstamps = []
         self.start = -1 # Index in tstamp
-        self.data_from_start = True
         self.execution_delay = 1 # seconds
         self.runners = []
         self.win_winner_id = None # selectionid
