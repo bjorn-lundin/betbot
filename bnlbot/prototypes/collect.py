@@ -6,6 +6,8 @@ import psycopg2
 import query
 import entity
 import conf
+import datetime
+import multiprocessing
 
 class Collector(object):
     '''
@@ -17,10 +19,11 @@ class Collector(object):
         self.markets = [] # Condensed to market objects and returned
 
 
-    def collect_step_1(self, db_conn_str, q_name, q_params):
+    def collect_step_1(self, q_name, q_params):
         '''
         Query DB
         '''
+        db_conn_str = conf.DB
         try:
             conn = psycopg2.connect(db_conn_str)
             cur = conn.cursor()
@@ -105,17 +108,22 @@ class Collector(object):
                         break
 
 
-    def collect_step_5(self, db_conn_str):
+    def collect_step_5(self):
         '''
         Query DB for market winners
         '''
+        marketids = self.collection.keys()
+        if len(marketids) < 1:
+            return
+        db_conn_str = conf.DB
+        q_name = 'q-get-win-winner'
         winners = None
-        markets = (tuple(self.collection.keys()),)
+        marketids = (tuple(marketids),)
 
         try:
             conn = psycopg2.connect(db_conn_str)
             cur = conn.cursor()
-            cur.execute(query.named('q-get-win-winner'), markets)
+            cur.execute(query.named(q_name), marketids)
             winners = cur.fetchall()
         except psycopg2.Error as error:
             print(error)
@@ -130,24 +138,25 @@ class Collector(object):
             self.collection[marketid][0].win_winner_id = selectionid
 
 
-    def run_collection(self, db_conn_str, q_name, q_params):
+    def run_collection(self, q_name, q_params):
         '''
         Collect data
         '''
-        self.collect_step_1(db_conn_str, q_name, q_params)
+        self.collect_step_1(q_name, q_params)
         self.collect_step_2()
         self.collect_step_3()
         self.collect_step_4()
-        self.collect_step_5(db_conn_str)
+        self.collect_step_5()
         return self.markets
 
 
-def safe_run_collection_date(db_conn_str, q_name, q_params_part, date):
+def run_collection_date(date):
     '''
-    Run collection based on date in separate collector (thread safe)
+    Run collection based on dates in separate collectors (thread safe)
     '''
+    q_name = 'q-without-marketid'
     q_params = []
-    q_params.extend(q_params_part)
+    q_params.extend(conf.Q_PARAMS_MAP_REDUCE)
 
     if type(date) != 'tuple':
         date = (date,)
@@ -155,15 +164,45 @@ def safe_run_collection_date(db_conn_str, q_name, q_params_part, date):
     q_params.append(date)
     q_params = tuple(q_params)
     collector = Collector()
-    markets = collector.run_collection(db_conn_str, q_name, q_params)
+    markets = collector.run_collection(q_name, q_params)
     return markets
 
 
-def multi_run(date):
+def run_collection_dates_multiproc():
     '''
-    Multiprocessing...
+    Setup method for multiprocessing
     '''
-    markets = safe_run_collection_date(conf.DB, 'q-without-marketid', \
-            conf.Q_PARAMS_MAP_REDUCE, date)
-    return markets
+    print('Running map reduce in multiprocess mode...')
+    dates = get_date_range(conf.START_DATE_STR, conf.END_DATE_STR)
+    nbr_of_proc = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(nbr_of_proc)
+    markets = pool.map(run_collection_date, dates)
+    return reduce(lambda x, y: x + y, markets)
+
+
+def get_date_range(start_date_str, end_date_str):
+    '''
+    Create range (tuple) of dates based on start and stop date
+    '''
+    date_format = '%Y-%m-%d'
+    try:
+        start_date = \
+            datetime.datetime.strptime(start_date_str, date_format).date()
+        end_date = \
+            datetime.datetime.strptime(end_date_str, date_format).date()
+    except ValueError:
+        return None
+
+    if start_date > end_date:
+        return None
+
+    total_days = (end_date - start_date).days + 1
+    dates = []
+
+    for day_delta in range(total_days):
+        date = start_date + datetime.timedelta(days=day_delta)
+        date = date.strftime(date_format)
+        dates.append(date)
+
+    return tuple(dates)
 
