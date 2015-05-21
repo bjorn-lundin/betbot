@@ -354,6 +354,7 @@ procedure Poll is
         "and MW.STARTTS = MP.STARTTS " &
         "and MW.MARKETID = :WINMARKETID " &
         "and MP.MARKETTYPE = 'PLACE' " &
+        "and MP.NUMWINNERS = 3 " &
         "and MW.MARKETTYPE = 'WIN' " &
         "and MP.STATUS = 'OPEN'" ) ;
 
