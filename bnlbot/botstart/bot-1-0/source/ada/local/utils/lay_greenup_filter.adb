@@ -5,8 +5,6 @@ with Stacktrace;
 with Sql;
 with Table_Apricesfinish;
 with Table_Abets;
---with Gnat.Command_Line; use Gnat.Command_Line;
----with GNAT.Strings;
 with Calendar2;
 with Logging; use Logging;
 
@@ -19,9 +17,9 @@ with Bot_System_Number;
 
 with Simulation_Storage;
 with Ada.Exceptions;
-with  Ada.Command_Line;
+with Ada.Command_Line;
 
-procedure Back_Hitrate is
+procedure Lay_Greenup_Filter is
 
   Global_Marketid_Map  : Simulation_Storage.Marketid_Map_Pack.Map;
   Global_Winner_Map    : Simulation_Storage.Winner_Map_Pack.Map;
@@ -31,20 +29,41 @@ procedure Back_Hitrate is
 
   Global_Bet_List : Bet_List_Pack.List;
 
-  T            : Sql.Transaction_Type;
 
---  Config           : Command_Line_Configuration;
+  --package Filter_Sample_Map_Pack is new Ada.Containers.Ordered_Maps
+  --      (Key_Type     => Integer_4,
+  --       Element_Type => Table_Apricesfinish.Apricesfinish_List_Pack2.List,
+  --       "<"          => "<",
+  --       "="          =>  Table_Apricesfinish.Apricesfinish_List_Pack2."=");
+  --
+  --Global_Filter_Sample_Map : Filter_Sample_Map_Pack.Map;
 
---  IA_Max_Start_Price : aliased Integer := 30;
---  IA_Lay_At_Price    : aliased Integer := 100;
---  IA_Max_Lay_Price   : aliased Integer := 200;
 
+  T : Sql.Transaction_Type;
+
+  use type Ada.Containers.Count_Type;
+  
   Global_Back_Size : Float_8 := 30.0;
   Empty_Market     : constant Market_Id_Type := (others => ' ');
 
   type Best_Runners_Type is array (1..4) of Table_Apricesfinish.Data_Type ;
 
   Global_Strategy_List : Simulation_Storage.Strategy_List_Pack.List;
+
+  Min_Num_Samples : constant Ada.Containers.Count_Type := 500;
+
+  subtype Num_Runners_Type is Integer range 1..36;
+  type Fifo_Type is record
+    Selectionid    : Integer_4 := 0;
+    One_Runner_Sample_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
+    Avg_Lay_Price  : Float_8 := 0.0;   
+    Avg_Back_Price : Float_8 := 0.0;   
+    In_Use         : Boolean := False;
+    Index          : Num_Runners_Type := Num_Runners_Type'first;
+  end record;
+  
+  Fifo : array (Num_Runners_Type'range) of Fifo_Type;
+  
   --------------------------------------------------------------------------
 
   function "<" (Left,Right : Table_Apricesfinish.Data_Type) return Boolean is
@@ -103,7 +122,8 @@ procedure Back_Hitrate is
            --end loop;
         end if;
       else  -- strategy fullfilled, se what odds we get, if matched
-        if Best_Runners(1).Pricets >  Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
+      --  if Best_Runners(1).Pricets >  Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
+        if Best_Runners(1).Pricets >=  Bet.Betplaced + (0,0,0,0,0) and then -- 0 second later at least, time for BF delay
            Strategy.Ts_Of_Fulfill /= Calendar2.Time_Type_First then
           Runner_Index := Integer(Strategy.Place_Of_Runner);
           -- Strategy.Backprice_Matched := get_price of runner from PLACE market ...
@@ -131,34 +151,63 @@ procedure Back_Hitrate is
   --------------------------------------------------------------------------
 
 
+  procedure Filter_List(Sample_List , Avg_Sample_List: in out Table_Apricesfinish.Apricesfinish_List_Pack2.List)  is
+  begin
+  --  Log ("Filter_List : start Sample_List.Length" & Sample_List.Length'Img & " Global_Sample_List.Length" & Global_Sample_List.Length'Img);
+   -- Fifo : array (Num_Runners_Type'range) of Fifo_Type;
+       
+       
+    for s of Sample_List loop
+    -- find my index in the array
+      Num_Run: for i in Num_Runners_Type'range loop
+    
+        if S.Selectionid = Fifo(i).Selectionid then      
+          -- insert elements at bottom and remove from top
+          -- check if list needs trim
+          loop
+            exit when Fifo(i).One_Runner_Sample_List.Length <= Min_Num_Samples;
+            Fifo(i).One_Runner_Sample_List.Delete_First;
+          end loop;  
+          
+          -- append the new value
+          Fifo(i).One_Runner_Sample_List.Append(s);
+
+          if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
+          
+          -- recalculate the avg values
+            declare
+              Backprice,Layprice : Float_8 := 0.0;
+              Sample : Table_Apricesfinish.Data_Type;
+              Cnt : Natural := 0;
+            begin
+              for s2 of Fifo(i).One_Runner_Sample_List loop
+                Backprice := Backprice + S2.Backprice;
+                Layprice := Layprice + S2.Layprice;
+                Sample := S2; -- save some data
+                Cnt := Cnt +1 ;
+              --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
+              end loop;
+              Sample.Backprice := Backprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+              Sample.Layprice := Layprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+              Avg_Sample_List.Append(Sample);
+           --   Log ("Filter_List : avg " & Sample.To_String );
+            end;
+          end if;
+           
+          exit Num_Run;  
+        end if;
+      end loop Num_Run;
+      
+    end loop;
+
+    --Log ("Filter_List : 7" );
+
+  end Filter_List;
+
+  -----------------------------------------------------
 
 
 begin
---  Define_Switch
---    (Config      => Config,
---     Output      => IA_Max_Start_Price'access,
---     Long_Switch => "--max_start_price=",
---     Help        => "starting price (back)(");
---
---  Define_Switch
---    (Config      => Config,
---     Output      => Ia_Lay_At_Price'access,
---     Long_Switch => "--lay_at_price=",
---     Help        => "Lay the runner at this price(Back)");
---
---  Define_Switch
---    (Config      => Config,
---     Output      => IA_Max_Lay_Price'access,
---     Long_Switch => "--max_lay_price=",
---     Help        => "Runner cannot have higer price that this when layed (Lay)");
---
---  Getopt (Config);  -- process the command line
-
---     if Ia_Best_Position = 0 or else
---       Ia_Max_Odds = 0 then
---       Display_Help (Config);
---       return;
---     end if;
 
   Log ("Connect db");
   Sql.Connect
@@ -176,11 +225,6 @@ begin
   Simulation_Storage.Fill_Maps(Marketid_Map  => Global_Marketid_Map,
                                Winner_Map    => Global_Winner_Map,
                                Win_Place_Map => Global_Win_Place_Map);
-                               
-                               
-  Sql.Close_Session;
-  Log ("exit");
-  return;
 
 
   Log("start process");
@@ -190,8 +234,9 @@ begin
     Market_Id_C  : Marketid_Map_Pack.Cursor := Global_Marketid_Map.First;
     Marketid     : Market_Id_Type := (others => ' ');
     Sample_Id_C  : Sample_Map_Pack.Cursor;
-   -- Pricets      : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    --Pricets      : Calendar2.Time_Type := Calendar2.Time_Type_First;
     A_Sample_Map : Sample_Map_Pack.Map;
+    First_Time : Boolean := True;
   begin
     Cnt := Integer(Global_Marketid_Map.Length);
     if Cnt = 0 then
@@ -204,7 +249,18 @@ begin
         Strategy.Marketid := Empty_Market;
         Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First;
       end loop;
+      
+      --reset the fifo for ny race      
+      for i in Num_Runners_Type loop
+        Fifo(i).Selectionid    := 0;
+        Fifo(i).Avg_Lay_Price  := 0.0;   
+        Fifo(i).Avg_Back_Price := 0.0;   
+        Fifo(i).In_Use         := False;
+        Fifo(i).Index          := Num_Runners_Type'first;
+        Fifo(i).One_Runner_Sample_List.Clear;
+      end loop; 
 
+      First_Time := True;
       Marketid := Marketid_Map_Pack.Key(Market_Id_C);
       Cur := Cur +1;
       Log("Marketid " & Marketid & " " & Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
@@ -213,13 +269,30 @@ begin
       Sample_Id_C := A_Sample_Map.First;
 
       while Sample_Map_Pack.Has_Element(Sample_Id_C) loop
-       -- Pricets := Sample_Map_Pack.Key(Sample_Id_C);
-        -- Log("pricts " & Pricets.To_String);
+        --Pricets := Sample_Map_Pack.Key(Sample_Id_C);
+        --Log("pricts " & Pricets.To_String);
         declare
-          Sample_List  : Table_Apricesfinish.Apricesfinish_List_Pack2.List := Sample_Map_Pack.Element(Sample_Id_C);
-          Best_Runners : Best_Runners_Type := (others => Table_Apricesfinish.Empty_Data);
+          Sample_List          : Table_Apricesfinish.Apricesfinish_List_Pack2.List := Sample_Map_Pack.Element(Sample_Id_C);
+          Filtered_Sample_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
+          Best_Runners         : Best_Runners_Type := (others => Table_Apricesfinish.Empty_Data);
         begin
-          Sort_Best_Runners(Best_Runners, Sample_List);
+          if First_Time then
+            declare
+              i : Integer := 0;
+            begin  
+               -- get a free slot in the array
+              for s of Sample_List loop
+                i := i +1;
+                Fifo(i).In_Use := True;
+                Fifo(i).Selectionid := S.Selectionid;           
+                Fifo(i).Index := i;                
+              end loop;
+            end;
+            First_Time := False;
+          end if;
+          
+          Filter_List(Sample_List, Filtered_Sample_List); 
+          Sort_Best_Runners(Best_Runners, Filtered_Sample_List);
           if Best_Runners(4).Backprice < 10_000.0 then
             Treat(Best_Runners, Global_Strategy_List, Global_Bet_List );
           end if;
@@ -228,6 +301,7 @@ begin
       end loop;
 
       Marketid_Map_Pack.Next(Market_Id_C);
+      --return;
     end loop Markets_Loop;
   end;
 
@@ -304,10 +378,7 @@ begin
 
 
   for Strategy of Global_Strategy_List loop
-    if Strategy.Profit      > Float_8(0.0) or else
-       Strategy.Profit_102  > Float_8(0.0) or else
-       Strategy.Profit_103  > Float_8(0.0) or else
-       Strategy.Profit_104  > Float_8(0.0) then
+    if Strategy.Profit      > Float_8(0.0) then
         Log( Strategy.Betname.Fix_String & " " &
                  F8_Image(Strategy.Profit) & " " &
                  F8_Image(Strategy.Profit_102) & " " &
@@ -337,4 +408,4 @@ exception
       Log("addr2line" & " --functions --basenames --exe=" &
            Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
     end ;
-end Back_Hitrate;
+end Lay_Greenup_Filter;

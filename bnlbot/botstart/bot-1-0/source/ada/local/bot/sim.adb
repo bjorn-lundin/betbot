@@ -1,20 +1,25 @@
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Environment_Variables;
+with Ada.Directories;
+with Ada.Streams.Stream_IO;
 with Logging; use Logging;
 
 with Bot_System_Number;
 with Calendar2; use Calendar2;
---with Utils; use Utils;
+with Utils; use Utils;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
-with Table_Apricesfinish;
+--with Table_Apricesfinish;
 with Sql;
-
+with Text_Io;
 
 package body Sim is
 
+  package EV renames Ada.Environment_Variables;
+  package AD renames Ada.Directories;
 
-  Stm_Select_Marketid_Pricets_O : Sql.Statement_Type;
-  Stm_Select_Pricets_O : Sql.Statement_Type;
+  --Stm_Select_Marketid_Pricets_O : Sql.Statement_Type;
+  --Stm_Select_Pricets_O : Sql.Statement_Type;
 
   
   Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
@@ -25,102 +30,215 @@ package body Sim is
   Pricets_List : Pricets_List_Pack.List;
 
 
+  Object : constant String := "Sim.";
+  Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
+
+  use type Ada.Containers.Count_Type;
+  
+  
+  Select_Sampleids_In_One_Market : Sql.Statement_Type;
+  
+  
+  ----------------------------------------------------------
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
                               Market     : in out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play    :    out Boolean) is
-    Eos : Boolean := False;                           
+    Service : constant String := "Get_Market_Prices";
+    --Eos : Boolean := False;                           
     use type Table_Amarkets.Data_Type;
-    Price_During_Race_Data : Table_Apricesfinish.Data_Type;
+    --Price_During_Race_Data : Table_Apricesfinish.Data_Type;
     Price_Data : Table_Aprices.Data_Type;
-    T : Sql.Transaction_Type;
+   -- T : Sql.Transaction_Type;
+    Start,
+    Stop,
     Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
+    
+    
   begin
+   -- Log(Object & Service, "start");
     In_Play := True;
+    -- Log(Object & Service, "Marketid '" & Market_Id & "' Current_Market = Table_Amarkets.Empty_Data " & Boolean'image(Current_Market = Table_Amarkets.Empty_Data));
     -- trigg for a new market
     if Current_Market = Table_Amarkets.Empty_Data then
-      Current_Market := Market;
-      Global_Price_During_Race_List.Clear;
-      Pricets_List.Clear;
-      T.Start;
-      Stm_Select_Pricets_O.Prepare(
-        "select distinct(PRICETS) from APRICESFINISH " &
-        "where MARKETID =:MARKETID " &
-        "order by PRICETS ");
-        
-      Stm_Select_Pricets_O.Set("MARKETID", Market_Id);
-      Stm_Select_Pricets_O.Open_Cursor;
-      loop
-        Stm_Select_Pricets_O.Fetch(Eos);
-        exit when Eos;
-        Stm_Select_Pricets_O.Get(1,Ts);
-        Pricets_List.Append(Ts);
+       --reset the fifo for ny race
+      Log(Object & Service, "clear Fifo");
+      for i in Num_Runners_Type loop
+        Fifo(i).Clear;
       end loop;
-      Stm_Select_Pricets_O.Close_Cursor;
-      T.Commit;
+      Global_Current_Pricets := Calendar2.Time_Type_First ;
+      Pricets_List.Clear;
+      Global_Price_During_Race_List.Clear;
+      Log(Object & Service, "set Current_Market");
+      Current_Market := Market;
+      Log(Object & Service, "start Read_Marketid '" & Market_Id & "'");
+      Sim.Read_Marketid(Marketid => Market_Id, List => Global_Price_During_Race_List) ;
+      Log(Object & Service, "done Read_Marketid '" & Market_Id & "' len" & Global_Price_During_Race_List.Length'Img);
+      -- get a list of unique ts in the race in order
+      for Item of Global_Price_During_Race_List loop
+        if Item.Pricets /= Ts then
+          Pricets_List.Append(Item.Pricets);
+          Ts := Item.Pricets;
+          --set first value for next loop in else below
+          if Global_Current_Pricets = Calendar2.Time_Type_First then
+            Global_Current_Pricets := Item.Pricets ; -- start of this race
+            Start := Item.Pricets;
+          end if;
+        end if;
+        Stop := Item.Pricets;
+      end loop;
+      Log(Object & Service, "len Pricets_List" & Pricets_List.Length'Img & "start/stop " & Start.To_String & "/" & Stop.To_String);
+    else
       if not Pricets_List.Is_Empty then
         Global_Current_Pricets := Pricets_List.First_Element;
-      else
-       Log("Sim.Get_Market_Prices : No pricesdata found");
-       Move("CLOSED",Market.Status);  
-       Current_Market := Table_Amarkets.Empty_Data;
-       return;
-      end if;      
-    else
-      -- find next in list by seraching the list for curr val and return next
-      declare 
-        Use_Next : Boolean := False;
-        Next_Existed : Boolean := False;
-      begin
-        for e of Pricets_List loop
-          if e = Global_Current_Pricets then
-            Use_Next := True;
-          elsif Use_Next then
-            Global_Current_Pricets := e;
-            Next_Existed := True;
-            exit;
-          end if;
-        end loop;
-        if not Next_Existed then
-          Move("CLOSED",Market.Status);  
-          Current_Market := Table_Amarkets.Empty_Data;
-          return;
-        end if;
-      end;
+        Pricets_List.Delete_First;
+      else      
+        Move("CLOSED",Market.Status);  
+        Log(Object & Service, "reset Current_Market");
+        Current_Market := Table_Amarkets.Empty_Data;
+       -- Log(Object & Service, "stop 1");
+        return;
+      end if;
     end if;
-      
-    T.Start;        
-    Stm_Select_Marketid_Pricets_O.Prepare(
-      "select * from APRICESFINISH " &
-      "where MARKETID =:MARKETID " &
-      "and PRICETS =:PRICETS ");      
-    Stm_Select_Marketid_Pricets_O.Set("MARKETID", Market_Id);
-    Stm_Select_Marketid_Pricets_O.Set("PRICETS", Global_Current_Pricets);
-    Stm_Select_Marketid_Pricets_O.Open_Cursor;
-    loop
-      Stm_Select_Marketid_Pricets_O.Fetch(Eos);
-      exit when Eos;
-      Price_During_Race_Data := Table_Apricesfinish.Get(Stm_Select_Marketid_Pricets_O);
-      Price_Data := (
-         Marketid     => Price_During_Race_Data.Marketid,
-         Selectionid  => Price_During_Race_Data.Selectionid,
-         Pricets      => Price_During_Race_Data.Pricets,
-         Status       => Price_During_Race_Data.Status,
-         Totalmatched => Price_During_Race_Data.Totalmatched,
-         Backprice    => Price_During_Race_Data.Backprice,
-         Layprice     => Price_During_Race_Data.Layprice,
-         Ixxlupd      => Price_During_Race_Data.Ixxlupd,
-         Ixxluts      => Price_During_Race_Data.Ixxluts
-      );
-      Price_List.Append(Price_Data);
-    end loop;
-    Stm_Select_Marketid_Pricets_O.Close_Cursor;
-    T.Commit;
+
+    -- optimization :
+    -- 1 remove used entries
+    -- 2 exit when done
+    
+    declare 
+      Have_Been_Inside : Boolean := False;
+    begin 
+      for Race_Data of Global_Price_During_Race_List loop
+       -- Log(Object & Service, "testing for Price_Data " & Global_Current_Pricets.To_String & "---" & Race_Data.To_String );
+        if Race_Data.Pricets = Global_Current_Pricets then
+          Have_Been_Inside := True;
+          Price_Data := (
+             Marketid     => Race_Data.Marketid,
+             Selectionid  => Race_Data.Selectionid,
+             Pricets      => Race_Data.Pricets,
+             Status       => Race_Data.Status,
+             Totalmatched => Race_Data.Totalmatched,
+             Backprice    => Race_Data.Backprice,
+             Layprice     => Race_Data.Layprice,
+             Ixxlupd      => Race_Data.Ixxlupd,
+             Ixxluts      => Race_Data.Ixxluts
+          );
+          Price_List.Append(Price_Data);
+          --Log(Object & Service, "appended Price_Data " & Price_Data.To_String);
+
+        elsif Have_Been_Inside then
+          exit;        
+        end if;  
+      end loop;
+    end;  
     Move("OPEN",Market.Status);    
+        
+  --  Log(Object & Service, "stop 2");
         
   end Get_Market_Prices;
                               
-  
+--
+--  procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
+--                              Market     : in out Table_Amarkets.Data_Type;
+--                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
+--                              In_Play    :    out Boolean) is
+--    Eos : Boolean := False;                           
+--    use type Table_Amarkets.Data_Type;
+--    Price_During_Race_Data : Table_Apricesfinish.Data_Type;
+--    Price_Data : Table_Aprices.Data_Type;
+--    T : Sql.Transaction_Type;
+--    Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
+--  begin
+--    In_Play := True;
+--    -- trigg for a new market
+--    if Current_Market = Table_Amarkets.Empty_Data then
+--       --reset the fifo for ny race
+--      for i in Num_Runners_Type loop
+--        Fifo(i).Clear;
+--      end loop;
+--   
+--      Current_Market := Market;
+--      Global_Price_During_Race_List.Clear;
+--      Pricets_List.Clear;
+--      T.Start;
+--      Stm_Select_Pricets_O.Prepare(
+--        "select distinct(PRICETS) from APRICESFINISH " &
+--        "where MARKETID =:MARKETID " &
+--        "order by PRICETS ");
+--        
+--      Stm_Select_Pricets_O.Set("MARKETID", Market_Id);
+--      Stm_Select_Pricets_O.Open_Cursor;
+--      loop
+--        Stm_Select_Pricets_O.Fetch(Eos);
+--        exit when Eos;
+--        Stm_Select_Pricets_O.Get(1,Ts);
+--        Pricets_List.Append(Ts);
+--      end loop;
+--      Stm_Select_Pricets_O.Close_Cursor;
+--      T.Commit;
+--      if not Pricets_List.Is_Empty then
+--        Global_Current_Pricets := Pricets_List.First_Element;
+--      else
+--       Log("Sim.Get_Market_Prices : No pricesdata found");
+--       Move("CLOSED",Market.Status);  
+--       Current_Market := Table_Amarkets.Empty_Data;
+--       return;
+--      end if;      
+--    else
+--      -- find next in list by searching the list for curr val and return next
+--      declare 
+--        Use_Next : Boolean := False;
+--        Next_Existed : Boolean := False;
+--      begin
+--        for e of Pricets_List loop
+--          if e = Global_Current_Pricets then
+--            Use_Next := True;
+--          elsif Use_Next then
+--            Global_Current_Pricets := e;
+--            Next_Existed := True;
+--            exit;
+--          end if;
+--        end loop;
+--        if not Next_Existed then
+--          Move("CLOSED",Market.Status);  
+--          Current_Market := Table_Amarkets.Empty_Data;
+--          return;
+--        end if;
+--      end;
+--    end if;
+--      
+--    T.Start;        
+--    Stm_Select_Marketid_Pricets_O.Prepare(
+--      "select * from APRICESFINISH " &
+--      "where MARKETID =:MARKETID " &
+--      "and PRICETS =:PRICETS ");      
+--    Stm_Select_Marketid_Pricets_O.Set("MARKETID", Market_Id);
+--    Stm_Select_Marketid_Pricets_O.Set("PRICETS", Global_Current_Pricets);
+--    Stm_Select_Marketid_Pricets_O.Open_Cursor;
+--    loop
+--      Stm_Select_Marketid_Pricets_O.Fetch(Eos);
+--      exit when Eos;
+--      Price_During_Race_Data := Table_Apricesfinish.Get(Stm_Select_Marketid_Pricets_O);
+--      Price_Data := (
+--         Marketid     => Price_During_Race_Data.Marketid,
+--         Selectionid  => Price_During_Race_Data.Selectionid,
+--         Pricets      => Price_During_Race_Data.Pricets,
+--         Status       => Price_During_Race_Data.Status,
+--         Totalmatched => Price_During_Race_Data.Totalmatched,
+--         Backprice    => Price_During_Race_Data.Backprice,
+--         Layprice     => Price_During_Race_Data.Layprice,
+--         Ixxlupd      => Price_During_Race_Data.Ixxlupd,
+--         Ixxluts      => Price_During_Race_Data.Ixxluts
+--      );
+--      Price_List.Append(Price_Data);
+--    end loop;
+--    Stm_Select_Marketid_Pricets_O.Close_Cursor;
+--    T.Commit;
+--    Move("OPEN",Market.Status);    
+--        
+--  end Get_Market_Prices;
+
+--  
                               
   procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
                        Market_Id        : in     Market_Id_Type; 
@@ -184,5 +302,167 @@ package body Sim is
       Ixxluts        => Now              --set by insert
     );
   end Place_Bet;
+  
+  
+
+
+  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List)  is
+  begin
+    --Avg_Price_List := Price_List.Copy;
+    --return;
+    --Log ("Filter_List : start Price_List.Length" & Price_List.Length'Img);
+    for s of Price_List loop
+    -- find my index in the array
+      Num_Run: for i in Num_Runners_Type'range loop
+
+        if S.Selectionid = Fifo(i).Selectionid then
+          -- insert elements at bottom and remove from top
+          -- check if list needs trim
+          loop
+            exit when Fifo(i).One_Runner_Sample_List.Length <= Min_Num_Samples;
+            Fifo(i).One_Runner_Sample_List.Delete_First;
+          end loop;
+          -- append the new value
+          Fifo(i).One_Runner_Sample_List.Append(s);
+          
+          if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
+          -- recalculate the avg values
+            declare
+              Backprice,Layprice : Float_8 := 0.0;
+              Sample : Table_Aprices.Data_Type;
+              Cnt : Natural := 0;
+            begin
+              for s2 of Fifo(i).One_Runner_Sample_List loop
+                Backprice := Backprice + S2.Backprice;
+                Layprice := Layprice + S2.Layprice;
+                Sample := S2; -- save some data
+                Cnt := Cnt +1 ;
+              --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
+              end loop;
+              Sample.Backprice := Backprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+              Sample.Layprice := Layprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+              Avg_Price_List.Append(Sample);
+             -- Log ("Filter_List : avg " & Sample.To_String );
+            end;
+          end if;
+          exit Num_Run;
+        end if;
+      end loop Num_Run;
+    end loop;
+   -- Log ("Filter_List : done" );
+  end Filter_List;
+  -------------------------------
+
+  procedure Clear(F : in out Fifo_Type) is
+  begin
+    F.Selectionid    := 0;
+    F.Avg_Lay_Price  := 0.0;
+    F.Avg_Back_Price := 0.0;
+    F.In_Use         := False;
+    F.Index          := Num_Runners_Type'first;
+    F.One_Runner_Sample_List.Clear;
+  end Clear;
+  
+  
+  procedure Read_Marketid(Marketid : in Market_Id_Type; List : out Table_Apricesfinish.Apricesfinish_List_Pack2.List) is
+    Service : constant String := "Read_Marketid";
+    Apricesfinish_Data : Table_Apricesfinish.Data_Type;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/markets/" & "win_" & Marketid & ".dat";
+    T : Sql.Transaction_Type;
+    Eos : Boolean := False;
+  begin
+  
+    if not AD.Exists(Filename) then
+      Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
+      T.Start;
+      Select_Sampleids_In_One_Market.Prepare(
+        "select * " &
+        "from APRICESFINISH " &
+        "where MARKETID = :MARKETID " &
+        "order by PRICETS" ) ;
+        
+      Select_Sampleids_In_One_Market.Set("MARKETID", Marketid);  
+      Select_Sampleids_In_One_Market.Open_Cursor;
+      loop
+        Select_Sampleids_In_One_Market.Fetch(Eos);
+        exit when Eos;
+        Apricesfinish_Data := Table_Apricesfinish.Get(Select_Sampleids_In_One_Market);
+        List.Append(Apricesfinish_Data);
+      end loop;
+      Select_Sampleids_In_One_Market.Close_Cursor;
+      T.Commit;
+      Log(Object & Service, "Stream to file");
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Table_Apricesfinish.Apricesfinish_List_Pack2.List'Write(Stream, List);
+        Ada.Streams.Stream_IO.Close(File);
+        Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+      Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Table_Apricesfinish.Apricesfinish_List_Pack2.List'Read(Stream, List);
+        Ada.Streams.Stream_IO.Close(File);
+        Log(Object & Service, "Stream read from file " & Filename);
+      end;  
+    end if;    
+  
+  end Read_Marketid;
+  -------------------------------------------------------------------------
+  
+  
+  procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
+                               Is_Average : in Boolean) is
+    F : Text_Io.File_Type;
+    Indicator : String(1..3) := "nor";
+  begin
+    if Is_Average then
+      Indicator := "avg";
+    end if;   
+    -- many runners 1 value only
+    for Runner of Price_List loop
+      declare
+        Filename : String := Skip_All_Blanks(Ev.Value("BOT_SCRIPT") & "/plot/race_price_runner_data/" & 
+                                                      Runner.Marketid & "_" & Runner.Selectionid'Img & "_" & Indicator & ".dat");
+      begin
+        if not AD.Exists(Filename) then
+          Text_Io.Create(F, Text_Io.Out_File,    Filename);   
+        else
+          Text_Io.Open  (F, Text_Io.Append_File, Filename);   
+        end if;
+        Text_IO.Put_Line(F, Runner.Pricets.To_String & " | " & 
+                            Runner.Marketid & " | " & 
+                            Runner.Selectionid'Img & " | " & 
+                            Trim(Runner.Status) & " | " & 
+                            F8_Image(Runner.Backprice) & " | " & 
+                            F8_Image(Runner.Layprice) );    
+        Text_Io.Close(F);
+      end;      
+    
+    end loop;
+  
+  end Create_Runner_Data;
+  
+  
+  
+  
+  
+  
   
 end Sim ;

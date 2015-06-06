@@ -4,7 +4,7 @@ with Text_Io;
 with Calendar2;
 with Ada.Io_Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with  Ada.Strings.Fixed;
+with Ada.Strings.Fixed;
 with Stacktrace;
 
 package body Logging is

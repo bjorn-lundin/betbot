@@ -235,8 +235,8 @@ begin
                   & Cur'Img & "/" & Tot'Img);
           Bot_Messages.Send(Receiver, MNR);
         end if;  
-       end if;        
-     end if;
+      end if;        
+    end if;
   end loop;
 
   Log(Me, "shutting down, close db");

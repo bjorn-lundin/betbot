@@ -344,7 +344,7 @@ package body Repository is
           when A_Char        => return "varchar";
           when A_Int         => return "integer";
           when A_Big_Int     => return "bigint";
-          when A_Double      => return "numeric"; --"float";
+          when A_Double      => return "numeric(15,2)"; --"float";
           when A_Boolean     => return "boolean";
           when A_Short_Code  => return "integer";
           when A_Date        => return "date";
