@@ -90,6 +90,7 @@ package body Simulation_Storage is
       "and MW.STARTTS = MP.STARTTS " &
       "and MW.MARKETID = :WINMARKETID " &
       "and MP.MARKETTYPE = 'PLACE' " &
+      "and MP.NUMWINNERS = 3 " &
       "and MW.MARKETTYPE = 'WIN'" ) ;
 
     ---------------------------------------------------------------
@@ -286,6 +287,35 @@ package body Simulation_Storage is
            Marketid_Map_Pack.Next(C);
          end loop;
       end;
+      Log(Object & Service, "fill map winners of win race");      
+      declare
+        Marketid_Win : Market_Id_Type := (others => ' ');   
+        C : Marketid_Map_Pack.Cursor := Marketid_Map.First;
+        List : Table_Arunners.Arunners_List_Pack2.List;
+      begin
+         while Marketid_Map_Pack.Has_Element(C) loop
+           Marketid_Win := Marketid_Map_Pack.Key(C);
+           begin             
+             Select_Race_Winner_In_One_Market.Set("MARKETID", Marketid_Win) ;
+             List.Clear;
+             Table_Arunners.Read_List(Select_Race_Winner_In_One_Market, List);
+             declare
+               Tmp_List:Table_Arunners.Arunners_List_Pack2.List := List.Copy;
+             begin
+               Winner_Map.Insert(Marketid_Win, Tmp_List);
+               Tmp_List.Clear;
+             exception
+               when Constraint_Error =>
+                 Log("Duplicate Marketid_Win in Winner_map win: '" & Marketid_Win & "'");           
+                 Tmp_List.Clear;
+             end;
+           exception
+             when Constraint_Error =>
+               Log("Constraint_Error for win market: '" & Marketid_Win & "'");           
+           end;
+           Marketid_Map_Pack.Next(C);
+         end loop;
+      end;
       Log(Object & Service, "Stream Winner_Map to file ");
       declare
        File   : Ada.Streams.Stream_IO.File_Type;
@@ -343,122 +373,122 @@ package body Simulation_Storage is
                                         Num_Wins          => 0,
                                         Ts_Of_Fulfill   => Calendar2.Time_Type_First)
                                );
-    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_1"), 
-                                        Marketid        => (others => ' '), 
-                                        Leader_At_Max   => 1.25,
-                                        Next_At_Min     => 12.0,
-                                        Place_Of_Next   => 2,
-                                        Place_Of_Runner => 1,
-                                        Backprice_Matched => 0.0,
-                                        Profit            => 0.0,
-                                        Profit_102        => 0.0,
-                                        Profit_103        => 0.0,
-                                        Profit_104        => 0.0,
-                                        Num_Lost          => 0,
-                                        Num_Wins          => 0,
-                                        Num_Matched       => 0,
-                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-                               );  
-    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_2"), 
-                                        Marketid        => (others => ' '), 
-                                        Leader_At_Max   => 1.10,
-                                        Next_At_Min     => 7.0,
-                                        Place_Of_Next   => 2,
-                                        Place_Of_Runner => 2,
-                                        Backprice_Matched => 0.0,
-                                        Profit            => 0.0,
-                                        Profit_102        => 0.0,
-                                        Profit_103        => 0.0,
-                                        Profit_104        => 0.0,
-                                        Num_Matched       => 0,
-                                        Num_Lost          => 0,
-                                        Num_Wins          => 0,
-                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-                               );
-    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_2"), 
-                                        Marketid        => (others => ' '), 
-                                        Leader_At_Max   => 1.25,
-                                        Next_At_Min     => 12.0,
-                                        Place_Of_Next   => 2,
-                                        Place_Of_Runner => 2,
-                                        Backprice_Matched => 0.0,
-                                        Profit            => 0.0,
-                                        Profit_102        => 0.0,
-                                        Profit_103        => 0.0,
-                                        Profit_104        => 0.0,
-                                        Num_Lost          => 0,
-                                        Num_Wins          => 0,
-                                        Num_Matched       => 0,
-                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-                               );  
-    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_3"), 
-                                        Marketid        => (others => ' '), 
-                                        Leader_At_Max   => 1.10,
-                                        Next_At_Min     => 7.0,
-                                        Place_Of_Next   => 2,
-                                        Place_Of_Runner => 3,
-                                        Backprice_Matched => 0.0,
-                                        Profit            => 0.0,
-                                        Profit_102        => 0.0,
-                                        Profit_103        => 0.0,
-                                        Profit_104        => 0.0,
-                                        Num_Matched       => 0,
-                                        Num_Lost          => 0,
-                                        Num_Wins          => 0,
-                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-                               );
-    Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_3"), 
-                                        Marketid        => (others => ' '), 
-                                        Leader_At_Max   => 1.25,
-                                        Next_At_Min     => 12.0,
-                                        Place_Of_Next   => 2,
-                                        Place_Of_Runner => 3,
-                                        Backprice_Matched => 0.0,
-                                        Profit            => 0.0,
-                                        Profit_102        => 0.0,
-                                        Profit_103        => 0.0,
-                                        Profit_104        => 0.0,
-                                        Num_Lost          => 0,
-                                        Num_Wins          => 0,
-                                        Num_Matched       => 0,
-                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-                               );  
-    declare            --1234567890123456789
-      Templ : String := "SIM_PLC_1.90_60.0_1";
-    begin    
-      for Leader_Int in 1 ..2 loop
-         for Leader_First_Fraction in 0 .. 9 loop 
-            for Next_At_10 in 2 .. 9 loop
-              for Runner_Postion in 1 .. 3 loop
-                Templ(9) := Leader_Int'Img(2);
-                Templ(11) := Leader_First_Fraction'Img(2);
-                Templ(14) := Next_At_10'Img(2);
-                Templ(19) := Runner_Postion'Img(2);
-                Strategy_List.Append(
-                      Strategy_Type'(
-                           Betname         => Repository_Types.Create(Templ), 
-                           Marketid        => (others => ' '), 
-                           Leader_At_Max   => Float_8'Value(Templ(9..12)),
-                           Next_At_Min     => Float_8'Value(Templ(14..17)),
-                           Place_Of_Next   => 4,
-                           Place_Of_Runner => Place_Of_Runner_Type'Value(Templ(19..19)),
-                           Backprice_Matched => 0.0,
-                           Profit            => 0.0,
-                           Profit_102        => 0.0,
-                           Profit_103        => 0.0,
-                           Profit_104        => 0.0,
-                           Num_Matched       => 0,
-                           Num_Lost          => 0,
-                           Num_Wins          => 0,
-                           Ts_Of_Fulfill   => Calendar2.Time_Type_First
-                      )
-                );
-                
-              end loop;          
-            end loop;
-         end loop;
-      end loop;
-    end;
+    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_1"), 
+    --                                    Marketid        => (others => ' '), 
+    --                                    Leader_At_Max   => 1.25,
+    --                                    Next_At_Min     => 12.0,
+    --                                    Place_Of_Next   => 2,
+    --                                    Place_Of_Runner => 1,
+    --                                    Backprice_Matched => 0.0,
+    --                                    Profit            => 0.0,
+    --                                    Profit_102        => 0.0,
+    --                                    Profit_103        => 0.0,
+    --                                    Profit_104        => 0.0,
+    --                                    Num_Lost          => 0,
+    --                                    Num_Wins          => 0,
+    --                                    Num_Matched       => 0,
+    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+    --                           );  
+    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_2"), 
+    --                                    Marketid        => (others => ' '), 
+    --                                    Leader_At_Max   => 1.10,
+    --                                    Next_At_Min     => 7.0,
+    --                                    Place_Of_Next   => 2,
+    --                                    Place_Of_Runner => 2,
+    --                                    Backprice_Matched => 0.0,
+    --                                    Profit            => 0.0,
+    --                                    Profit_102        => 0.0,
+    --                                    Profit_103        => 0.0,
+    --                                    Profit_104        => 0.0,
+    --                                    Num_Matched       => 0,
+    --                                    Num_Lost          => 0,
+    --                                    Num_Wins          => 0,
+    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+    --                           );
+    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_2"), 
+    --                                    Marketid        => (others => ' '), 
+    --                                    Leader_At_Max   => 1.25,
+    --                                    Next_At_Min     => 12.0,
+    --                                    Place_Of_Next   => 2,
+    --                                    Place_Of_Runner => 2,
+    --                                    Backprice_Matched => 0.0,
+    --                                    Profit            => 0.0,
+    --                                    Profit_102        => 0.0,
+    --                                    Profit_103        => 0.0,
+    --                                    Profit_104        => 0.0,
+    --                                    Num_Lost          => 0,
+    --                                    Num_Wins          => 0,
+    --                                    Num_Matched       => 0,
+    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+    --                           );  
+    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_3"), 
+    --                                    Marketid        => (others => ' '), 
+    --                                    Leader_At_Max   => 1.10,
+    --                                    Next_At_Min     => 7.0,
+    --                                    Place_Of_Next   => 2,
+    --                                    Place_Of_Runner => 3,
+    --                                    Backprice_Matched => 0.0,
+    --                                    Profit            => 0.0,
+    --                                    Profit_102        => 0.0,
+    --                                    Profit_103        => 0.0,
+    --                                    Profit_104        => 0.0,
+    --                                    Num_Matched       => 0,
+    --                                    Num_Lost          => 0,
+    --                                    Num_Wins          => 0,
+    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+    --                           );
+    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_3"), 
+    --                                    Marketid        => (others => ' '), 
+    --                                    Leader_At_Max   => 1.25,
+    --                                    Next_At_Min     => 12.0,
+    --                                    Place_Of_Next   => 2,
+    --                                    Place_Of_Runner => 3,
+    --                                    Backprice_Matched => 0.0,
+    --                                    Profit            => 0.0,
+    --                                    Profit_102        => 0.0,
+    --                                    Profit_103        => 0.0,
+    --                                    Profit_104        => 0.0,
+    --                                    Num_Lost          => 0,
+    --                                    Num_Wins          => 0,
+    --                                    Num_Matched       => 0,
+    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+    --                           );  
+    --declare            --1234567890123456789
+    --  Templ : String := "SIM_PLC_1.90_60.0_1";
+    --begin    
+    --  for Leader_Int in 1 ..2 loop
+    --     for Leader_First_Fraction in 0 .. 9 loop 
+    --        for Next_At_10 in 2 .. 9 loop
+    --          for Runner_Postion in 1 .. 3 loop
+    --            Templ(9) := Leader_Int'Img(2);
+    --            Templ(11) := Leader_First_Fraction'Img(2);
+    --            Templ(14) := Next_At_10'Img(2);
+    --            Templ(19) := Runner_Postion'Img(2);
+    --            Strategy_List.Append(
+    --                  Strategy_Type'(
+    --                       Betname         => Repository_Types.Create(Templ), 
+    --                       Marketid        => (others => ' '), 
+    --                       Leader_At_Max   => Float_8'Value(Templ(9..12)),
+    --                       Next_At_Min     => Float_8'Value(Templ(14..17)),
+    --                       Place_Of_Next   => 4,
+    --                       Place_Of_Runner => Place_Of_Runner_Type'Value(Templ(19..19)),
+    --                       Backprice_Matched => 0.0,
+    --                       Profit            => 0.0,
+    --                       Profit_102        => 0.0,
+    --                       Profit_103        => 0.0,
+    --                       Profit_104        => 0.0,
+    --                       Num_Matched       => 0,
+    --                       Num_Lost          => 0,
+    --                       Num_Wins          => 0,
+    --                       Ts_Of_Fulfill   => Calendar2.Time_Type_First
+    --                  )
+    --            );
+    --            
+    --          end loop;          
+    --        end loop;
+    --     end loop;
+    --  end loop;
+    --end;
                                
   end Load_Strategies;
   -------------------------------------------------------------

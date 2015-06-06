@@ -14,11 +14,11 @@ project Adabot is
 --                        ,
 --                        AL & "/" & "web/repoweb",
 --                        AL & "/" & "web");
-                        
+
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
-   
+
    type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM");
-   
+
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
    System_Mains := ("repo.adb",
@@ -37,40 +37,42 @@ project Adabot is
                     "lay_in_play.adb",
                 --    "football_better.adb",
                 --    "page_server.adb",
-                    "data_mover.adb",      
+                    "data_mover.adb",
                     "check_bot_running.adb"
                     );
-                    
+
    Stat_Mains   := ("lay_during_race.adb",
                     "lay_during_race2.adb",
                     "back_hitrate.adb",
-                    "test_sum_sql.adb",
+                    "lay_greenup_filter.adb",
                   --  "back_during_race2.adb",
                  --   "prices_during_race.adb",
                  --   "plot_race_prices.adb",
                     "plot_race_prices2.adb");
-    
-   Other_Mains := (
-                   -- "ini_reader.adb",
-                      "knockout.adb",
-                      "check_greenup.adb",                      
-                   "markets_sender.adb");
-                --   ,
-                --   "calculate_sampleid.adb");
-                   
-    Test_Programs := ("sql_ifc_leak_finder.adb",
-                      "test_lock.adb",
-                      "test_list_sort.adb",
-                      "test_mail_output.adb",
-                    --  "test_sequence.adb",
-                      "test_list_sort.adb") ;                
-   
+
+   Other_Mains :=  (
+                     "check_greenup.adb",
+                     "markets_sender.adb");
+
+         --          -- "ini_reader.adb",
+         --          --   "knockout.adb",
+         --       --   ,
+         --       --   "calculate_sampleid.adb");
+
+    Test_Programs := ();
+                  --    ("sql_ifc_leak_finder.adb",
+                  --    "test_lock.adb",
+                  --    "test_list_sort.adb",
+                  --    "test_mail_output.adb",
+                  --  --  "test_sequence.adb",
+                  --    "test_list_sort.adb") ;
+
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;
       when "TEST"   =>  for Main use System_Mains;
-      when "SIM"    =>  for Main use System_Mains & 
-                                     Stat_Mains & 
-                                     Other_Mains & 
+      when "SIM"    =>  for Main use System_Mains &
+                                     Stat_Mains &
+                                     Other_Mains &
                                      Test_Programs;
    end case;
 

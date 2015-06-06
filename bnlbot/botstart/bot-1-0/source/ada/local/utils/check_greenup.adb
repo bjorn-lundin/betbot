@@ -49,18 +49,21 @@ begin
       
       if    Bet.Side(1..3) = "LAY" then
         if Runner.Status(1..5) = "LOSER" then
-          Stats(Lay_Win).Hits   := Stats(Lay_Win).Hits +1;
-          Stats(Lay_Win).Profit := Stats(Lay_Win).Profit + (Bet.Sizematched * 0.935);
+          Bet.Profit := Bet.Sizematched * 0.935;
           Bet.Betwon := True;
+          Stats(Lay_Win).Hits   := Stats(Lay_Win).Hits +1;
+          Stats(Lay_Win).Profit := Stats(Lay_Win).Profit + Bet.Profit;
           
         elsif Runner.Status(1..7) = "REMOVED" then
           Stats(Lay_Removed).Hits   := Stats(Lay_Removed).Hits +1;
-          Stats(Lay_Removed).Profit := Stats(Lay_Removed).Profit + (Bet.Sizematched * 0.935);
-          Bet.Betwon := True;
+          Stats(Lay_Removed).Profit := 0.0;
+          Bet.Betwon := False;
+          Bet.Profit := 0.0;
           
         elsif Runner.Status(1..6) = "WINNER" then
+          Bet.Profit := - Bet.Sizematched * (Bet.Pricematched -1.0);
           Stats(Lay_Lose).Hits   := Stats(Lay_Lose).Hits +1;
-          Stats(Lay_Lose).Profit := Stats(Lay_Lose).Profit - (Bet.Sizematched *  (Bet.Pricematched -1.0));
+          Stats(Lay_Lose).Profit := Stats(Lay_Lose).Profit + Bet.Profit;
           Bet.Betwon := False;
           
         else
@@ -69,18 +72,21 @@ begin
         end if;
       elsif Bet.Side(1..4) = "BACK" then
         if Runner.Status(1..5) = "LOSER" then
+          Bet.Profit := - Bet.Sizematched ;
           Stats(Back_Lose).Hits   := Stats(Back_Lose).Hits +1;
-          Stats(Back_Lose).Profit := Stats(Back_Lose).Profit - Bet.Sizematched ;
+          Stats(Back_Lose).Profit := Stats(Back_Lose).Profit + Bet.Profit ;
           Bet.Betwon := False;
 
         elsif Runner.Status(1..7) = "REMOVED" then
           Stats(Back_Removed).Hits   := Stats(Back_Removed).Hits +1;
-          Stats(Back_Removed).Profit := Stats(Back_Removed).Profit - Bet.Sizematched ;
+          Stats(Back_Removed).Profit := 0.0;
           Bet.Betwon := False;
+          Bet.Profit := 0.0;
           
         elsif Runner.Status(1..6) = "WINNER" then
+          Bet.Profit := Bet.Sizematched * (Bet.Pricematched -1.0);
           Stats(Back_Win).Hits   := Stats(Back_Win).Hits +1;
-          Stats(Back_Win).Profit := Stats(Back_Win).Profit + (Bet.Sizematched * (Bet.Pricematched -1.0));
+          Stats(Back_Win).Profit := Stats(Back_Win).Profit + Bet.Profit;
           Bet.Betwon := True;
           
         else

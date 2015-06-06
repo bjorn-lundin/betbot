@@ -27,6 +27,7 @@ with Table_Amarkets;
 with Table_Aevents;
 with Table_Aprices;
 with Table_Abalances;
+with Table_Apricesfinish;
 with Bot_Svn_Info;
 with Config;
 with Utils; use Utils;
@@ -55,14 +56,16 @@ procedure Lay_In_Play is
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
-  -------------------------------------------------------------
   Mode : Bot_Mode_Type := Simulation; -- may look at $BOT_MODE
-  
+  use type Ada.Containers.Count_Type;
+    
+  -------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack2.List;
+    Price_List,
+    Tmp_Price_List   : Table_Aprices.Aprices_List_Pack2.List;
     --------------------------------------------
     function "<" (Left,Right : Table_Aprices.Data_Type) return Boolean is
     begin
@@ -89,13 +92,15 @@ procedure Lay_In_Play is
     Bet_List : Bet_List_Pack.List;
     Bet : Bet_Type;
     
-    Lay_Bet_Name  : constant Bet_Name_Type := "HORSES_WIN_120_300_5_1000_GREENUP_LAY                                                               ";
-    Back_Bet_Name : constant Bet_Name_Type := "HORSES_WIN_120_300_5_1000_GREENUP_BACK                                                              ";
+    Lay_Bet_Name  : constant Bet_Name_Type := "HORSES_WIN_200_500_2.0_1000_GREENUP_LAY                                                             ";
+    Back_Bet_Name : constant Bet_Name_Type := "HORSES_WIN_200_500_2.0_1000_GREENUP_BACK                                                            ";
     
     Runner_List : Table_Arunners.Arunners_List_Pack2.List;
     Tmp_Runner  : Table_Arunners.Data_Type;
     Laybet_Is_Placed : Boolean := False;
     
+    
+    First_Time : Boolean := True;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -113,7 +118,7 @@ procedure Lay_In_Play is
 
     Market.Read(Eos);
     if not Eos then
-      if  Market.Markettype(1..3) /= "WIN"  then
+      if Market.Markettype(1..3) /= "WIN"  then
         Log(Me & "Run", "not a WIN market: " &  Market_Notification.Market_Id);
         return;
       else
@@ -129,99 +134,61 @@ procedure Lay_In_Play is
           return;
         end if;
       end if;
+      
+      if Market.Numrunners < Integer_4(6) then
+        Log(Me & "Run", "less than 6 runners");
+        return;
+      end if;
+      
     else
       Log(Me & "Run", "no market found");
       return;
     end if;
     
+    if not Table_Apricesfinish.Is_Existing_I1(Marketid => Market.Marketid) then
+      Log(Me & "Run", "no Apricesfinish found");
+      return;
+    end if;
+
+    Log(Me & "Run", "market found  " & Market.To_String);
+
+    
     Tmp_Runner.Marketid := Market.Marketid;
     Tmp_Runner.Read_I1_Marketid(Runner_List);
-
-    -- do the poll
-    Poll_Loop : loop
-
-      if Market.Numrunners < Integer_4(6) then
-        exit Poll_Loop;
-      end if;
-
-      Price_List.Clear;
-      case Mode is 
-        when Real =>
-          Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
-                                Market     => Market,
-                                Price_List => Price_List,
-                                In_Play    => In_Play);
-        when Simulation =>
-          Sim.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
-                                Market     => Market,
-                                Price_List => Price_List,
-                                In_Play    => In_Play);
-      end case;                      
-
-      exit Poll_Loop when Market.Status(1..4) /= "OPEN";
-
-      if not Has_Been_In_Play then
-        -- toggle the first time we see in-play=true
-        -- makes us insensible to Betfair toggling bug
-        Has_Been_In_Play := In_Play;
-      end if;
-
-      if not Has_Been_In_Play then
-        if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
-           Log(Me & "Make_Bet", "Market took too long time to start, give up");
-           exit Poll_Loop;
-        else
-          Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
-          delay 30.0; -- no need for heavy polling before start of race
+    
+    --lay all runners with backodds 25-50 @ max 60
+    declare
+      Aprices_Data : Table_Aprices.Data_Type;
+      Aprices_List : Table_Aprices.Aprices_List_Pack2.List;
+      Tmp_Arunner_Data : Table_Arunners.Data_Type;
+      Eos : Boolean := False;
+      
+    begin
+      Aprices_Data.Marketid := Market.Marketid;
+      Aprices_Data.Read_I1_Marketid(Aprices_List);
+      
+      for p of Aprices_List loop
+        Log("checking prices: " & " " & p.To_String);
+        Tmp_Arunner_Data.Marketid := P.Marketid;
+        Tmp_Arunner_Data.Selectionid := P.Selectionid;
+        Tmp_Arunner_Data.Read(Eos);
+        if Eos then
+          Move("MISSING",Tmp_Arunner_Data.Status);
         end if;
-      else
-        case Mode is 
-          when Real       => delay 0.05; -- to avoid more than 20 polls/sec
-          when Simulation => null;
-        end case;        
-      end if;
-
-      -- ok sort the runners with HIGHEST backprice first:
-      Backprice_Sorter.Sort(Price_List);
-
-      declare
-        Stale_Data : Boolean := False;
-        Runner_Has_Bet_Already : Boolean := False;
-        DB_Runner : Table_Arunners.Data_Type;
-      begin
-        if not Laybet_Is_Placed then
-          for Runner of Price_List loop        
-            -- check if this runner already has a bet
-            for b of Bet_List loop
-              if b.Lay_Bet.Selectionid = Runner.Selectionid then
-                Runner_Has_Bet_Already := True;
-                exit;
-              end if;               
-            end loop;
-            
-            -- find the db-record for this runner. Contains the runner names
-            for r of Runner_List loop
-              if r.Selectionid = Runner.Selectionid then
-                DB_Runner := r;
-                exit;
-              end if;               
-            end loop;
-            
-            if not Runner_Has_Bet_Already and then
-               Runner.Status(1..6) = "ACTIVE" and then
-               Runner.Backprice <= Float_8(500.0) and then -- proof of real value
-               Runner.Layprice  >= Float_8(100.0) and then -- proof of real value
-               Runner.Layprice  <= Float_8(300.0) and then
-               Runner.Backprice >= Float_8(120.0) then
+            if Tmp_Arunner_Data.Status(1..7) /= "REMOVED" and then
+               p.Backprice >= Float_8(40.0) and then
+               p.Backprice <= Float_8(550.0) and then
+               p.Layprice  <= Float_8(500.0) and then
+               p.Layprice  >= Float_8(200.0) then
                
-               Log("lay_bet " & " " & Runner.To_String);
+               Log("lay_bet " & " " & p.To_String);
                case Mode is 
                  when Real =>
                    Rpc.Place_Bet(Bet_Name         => Lay_Bet_Name,
                                  Market_Id        => Market.Marketid,
                                  Side             => Lay,
-                                 Runner_Name      => DB_Runner.Runnernamestripped,
-                                 Selection_Id     => Runner.Selectionid,
+                                 Runner_Name      => Tmp_Arunner_Data.Runnernamestripped,
+                                 Selection_Id     => p.Selectionid,
                                  Size             => Bet_Size_Type(30.0),
                                  Price            => Bet_Price_Type(200.0),
                                  Bet_Persistence  => Persist,
@@ -230,10 +197,10 @@ procedure Lay_In_Play is
                    Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
                                  Market_Id        => Market.Marketid,
                                  Side             => Lay,
-                                 Runner_Name      => DB_Runner.Runnernamestripped,
-                                 Selection_Id     => Runner.Selectionid,
+                                 Runner_Name      => Tmp_Arunner_Data.Runnernamestripped,
+                                 Selection_Id     => p.Selectionid,
                                  Size             => Bet_Size_Type(30.0),
-                                 Price            => Bet_Price_Type(Runner.Layprice +Float_8(10.0)),
+                                 Price            => Bet_Price_Type(p.Layprice +Float_8(10.0)),
                                  Bet_Persistence  => Persist,
                                  Bet              => Bet.Lay_Bet ) ;
                end case;                      
@@ -245,6 +212,7 @@ procedure Lay_In_Play is
                     Bet.Lay_Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
                   end if;
                   Bet.Lay_Bet.Insert; -- save to db
+                  Log("Lay_Bet inserted " & " " &  Bet.Lay_Bet.To_String);
                 T.Commit;
               exception
                 when Sql.Duplicate_Index =>
@@ -254,85 +222,262 @@ procedure Lay_In_Play is
               
               if Trim(Bet.Lay_Bet.Status) = "EXECUTION_COMPLETE" then
                  Bet_List.Append(Bet);
-                 Stale_Data := True;
-                 exit; -- data is stale now > 1 s old, poll again for other runners to lay
               else
                 case Mode is 
                   when Real =>
                     if Rpc.Cancel_Bet(Bet.Lay_Bet) then
                       -- bet cancelled 
-                      Log("cancelled bet on runner " & " " & Runner.To_String);
+                      Log("cancelled bet on runner " & " " & p.To_String);
                     else
                       -- bet was matched just now
                       Move( "EXECUTION_COMPLETE", Bet.Lay_Bet.Status);
                       Bet_List.Append(Bet);
                     end if;               
-                    Stale_Data := True;
-                    exit; -- data is stale now > 1 s old, poll again for other runners to lay 
                   when Simulation => 
                     raise Bad_Mode with Bet.Lay_Bet.To_String;                
                 end case;                      
               end if;
-            end if;
+            end if;  
+      end loop;
+    end;
+    
+    
+    
+    -- do the poll
+    Log(Me & "Make_Bet", "start poll_loop for market '" & Market.To_String & "'");
+    Poll_Loop : loop
+
+
+      Price_List.Clear;
+      Tmp_Price_List.Clear;
+      case Mode is 
+        when Real =>
+          Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
+                                Market     => Market,
+                                Price_List => Tmp_Price_List,
+                                In_Play    => In_Play);
+        when Simulation =>
+     --   Log(Me & "Make_Bet", " enter Get_Market_Prices Market.Status(1..4) " &  Market.Status(1..4));
+          Sim.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
+                                Market     => Market,
+                                Price_List => Tmp_Price_List,
+                                In_Play    => In_Play);
+       -- Log(Me & "Make_Bet", " exit Get_Market_Prices Market.Status(1..4) " &  Market.Status(1..4));
+      end case;                      
+     -- Log(Me & "Make_Bet", " Market.Status(1..4) " &  Market.Status(1..4));
+      exit Poll_Loop when Market.Status(1..4) /= "OPEN";
+
+      if First_Time then
+        declare
+          i : Integer := 0;
+        begin
+           -- get a free slot in the array
+          for s of Tmp_Price_List loop
+            i := i +1;
+            Sim.Fifo(i).In_Use := True;
+            Sim.Fifo(i).Selectionid := S.Selectionid;
+            Sim.Fifo(i).Index := i;
           end loop;
-        end if; --Laybet_Is_Placed
+        end;
+        First_Time := False;
+      end if;        
+
+      Sim.Filter_List(Tmp_Price_List, Price_List);
+      
+     -- Sim.Create_Runner_Data(Price_List => Tmp_Price_List, Is_Average => False) ;
+     -- Sim.Create_Runner_Data(Price_List => Price_List,     Is_Average => True) ;
+      
+      
+     -- Log(Me & "Make_Bet", "Tmp_Price_List.Length/Price_List.Length " & Tmp_Price_List.Length'img & "/" & Price_List.Length'img);
+      
+      -- price list may be empty efter Filter -- buffering up
+      if Price_List.Length > 0 then
+
         
+        if not Has_Been_In_Play then
+          -- toggle the first time we see in-play=true
+          -- makes us insensible to Betfair toggling bug
+          Has_Been_In_Play := In_Play;
+        end if;
         
-        --check for lay bets in danger of winning 
-        if not Stale_Data then 
-          for b of Bet_List loop
-            for o of Price_List loop
-              if b.Lay_Bet.Selectionid = o.Selectionid and then
-                 o.Backprice > Float_8(1.01) and then
-                 o.Backprice <= Float_8(5.0) and then
-                 b.Back_Bet = Table_Abets.Empty_Data then   -- no previous backbet for this laybet
+        if not Has_Been_In_Play then
+          if Current_Turn_Not_Started_Race >= Cfg.Max_Turns_Not_Started_Race then
+             Log(Me & "Make_Bet", "Market took too long time to start, give up");
+             exit Poll_Loop;
+          else
+            Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
+            delay 30.0; -- no need for heavy polling before start of race
+          end if;
+        else
+          case Mode is 
+            when Real       => delay 0.05; -- to avoid more than 20 polls/sec
+            when Simulation => null;
+          end case;        
+        end if;
+        
+        if Price_List.Length < 8 then
+          exit Poll_Loop;
+        end if;
+        
+        -- ok sort the runners with HIGHEST backprice first:
+        Backprice_Sorter.Sort(Price_List);
+        
+        declare
+          Stale_Data : Boolean := False;
+          Runner_Has_Bet_Already : Boolean := False;
+          DB_Runner : Table_Arunners.Data_Type;
+        begin
+          Laybet_Is_Placed := True; -- make lay bets only at start, not during race
+          if not Laybet_Is_Placed then
+            for Runner of Price_List loop        
+              -- check if this runner already has a bet
+              for b of Bet_List loop
+                if b.Lay_Bet.Selectionid = Runner.Selectionid then
+                  Runner_Has_Bet_Already := True;
+                  exit;
+                end if;               
+              end loop;
+              
+              -- find the db-record for this runner. Contains the runner names
+              for r of Runner_List loop
+                if r.Selectionid = Runner.Selectionid then
+                  DB_Runner := r;
+                  exit;
+                end if;               
+              end loop;
+              
+              if not Runner_Has_Bet_Already and then
+                 Runner.Status(1..6) = "ACTIVE" and then
+                 Runner.Backprice <= Float_8(500.0) and then -- proof of real value
+                 Runner.Layprice  >= Float_8(150.0) and then -- proof of real value
+                 Runner.Layprice  <= Float_8(400.0) and then
+                 Runner.Backprice >= Float_8(150.0) then
+                 
+                 Log("lay_bet " & " " & Runner.To_String);
+                 case Mode is 
+                   when Real =>
+                     Rpc.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                                   Market_Id        => Market.Marketid,
+                                   Side             => Lay,
+                                   Runner_Name      => DB_Runner.Runnernamestripped,
+                                   Selection_Id     => Runner.Selectionid,
+                                   Size             => Bet_Size_Type(30.0),
+                                   Price            => Bet_Price_Type(200.0),
+                                   Bet_Persistence  => Persist,
+                                   Bet              => Bet.Lay_Bet ) ;
+                   when Simulation =>
+                     Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                                   Market_Id        => Market.Marketid,
+                                   Side             => Lay,
+                                   Runner_Name      => DB_Runner.Runnernamestripped,
+                                   Selection_Id     => Runner.Selectionid,
+                                   Size             => Bet_Size_Type(30.0),
+                                   Price            => Bet_Price_Type(Runner.Layprice +Float_8(10.0)),
+                                   Bet_Persistence  => Persist,
+                                   Bet              => Bet.Lay_Bet ) ;
+                 end case;                      
+                 Laybet_Is_Placed := True;
                 
-                Log("safety backbet " & " " & o.To_String);
-                case Mode is 
-                  when Real =>
-                    -- make safety backbet, and updates list
-                    Rpc.Place_Bet(Bet_Name         => Back_Bet_Name,
-                                  Market_Id        => Market.Marketid,
-                                  Side             => Back,
-                                  Runner_Name      => b.Lay_Bet.Runnername,
-                                  Selection_Id     => b.Lay_Bet.Selectionid,
-                                  Size             => Bet_Size_Type(130.0),
-                                  Price            => Bet_Price_Type(1.01), -- we want this badly
-                                  Bet_Persistence  => Persist,
-                                  Bet              => b.Back_Bet ) ;
-                 when Simulation => 
-                    -- make safety backbet, and updates list
-                    Sim.Place_Bet(Bet_Name         => Back_Bet_Name,
-                                  Market_Id        => Market.Marketid,
-                                  Side             => Back,
-                                  Runner_Name      => b.Lay_Bet.Runnername,
-                                  Selection_Id     => b.Lay_Bet.Selectionid,
-                                  Size             => Bet_Size_Type(1000.0),
-                                  Price            => Bet_Price_Type(o.Backprice), -- we want this badly
-                                  Bet_Persistence  => Persist,
-                                  Bet              => b.Back_Bet ) ;
-                end case;                      
-                                          
                 begin
                   T.Start;
-                    if b.Back_Bet.Betid = 0 then
-                      b.Back_Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+                    if Bet.Lay_Bet.Betid = 0 then
+                      Bet.Lay_Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
                     end if;
-                    b.Back_Bet.Insert; -- save to db
+                    Bet.Lay_Bet.Insert; -- save to db
+                    Log("Lay_Bet inserted " & " " &  Bet.Lay_Bet.To_String);
                   T.Commit;
                 exception
                   when Sql.Duplicate_Index =>
                     T.Rollback;
-                    Log("Duplicate_Index on backbet " & " " &  b.Back_Bet.To_String);
+                    Log("Duplicate_Index on laybet " & " " &  Bet.Lay_Bet.To_String);
                 end ;             
                 
+                if Trim(Bet.Lay_Bet.Status) = "EXECUTION_COMPLETE" then
+                   Bet_List.Append(Bet);
+                   Stale_Data := True;
+                   exit; -- data is stale now > 1 s old, poll again for other runners to lay
+                else
+                  case Mode is 
+                    when Real =>
+                      if Rpc.Cancel_Bet(Bet.Lay_Bet) then
+                        -- bet cancelled 
+                        Log("cancelled bet on runner " & " " & Runner.To_String);
+                      else
+                        -- bet was matched just now
+                        Move( "EXECUTION_COMPLETE", Bet.Lay_Bet.Status);
+                        Bet_List.Append(Bet);
+                      end if;               
+                      Stale_Data := True;
+                      exit; -- data is stale now > 1 s old, poll again for other runners to lay 
+                    when Simulation => 
+                      raise Bad_Mode with Bet.Lay_Bet.To_String;                
+                  end case;                      
+                end if;
               end if;
             end loop;
-          end loop;
-        end if;      
-      end ;
+          end if; --Laybet_Is_Placed
+          
+          
+          --check for lay bets in danger of winning 
+          if not Stale_Data then 
+            for b of Bet_List loop
+              for o of Price_List loop
+                if b.Lay_Bet.Selectionid = o.Selectionid and then
+                   o.Backprice > Float_8(1.01) and then
+                   o.Backprice <= Float_8(2.00) and then
+                   b.Back_Bet = Table_Abets.Empty_Data then   -- no previous backbet for this laybet
+                  
+                  Log("safety backbet " & " " & o.To_String);
+                  case Mode is 
+                    when Real =>
+                      -- make safety backbet, and updates list
+                      Rpc.Place_Bet(Bet_Name         => Back_Bet_Name,
+                                    Market_Id        => Market.Marketid,
+                                    Side             => Back,
+                                    Runner_Name      => b.Lay_Bet.Runnername,
+                                    Selection_Id     => b.Lay_Bet.Selectionid,
+                                    Size             => Bet_Size_Type(150.0),
+                                    Price            => Bet_Price_Type(1.01), -- we want this badly
+                                    Bet_Persistence  => Persist,
+                                    Bet              => b.Back_Bet ) ;
+                   when Simulation => 
+                      -- make safety backbet, and updates list
+                      Sim.Place_Bet(Bet_Name         => Back_Bet_Name,
+                                    Market_Id        => Market.Marketid,
+                                    Side             => Back,
+                                    Runner_Name      => b.Lay_Bet.Runnername,
+                                    Selection_Id     => b.Lay_Bet.Selectionid,
+                                    Size             => Bet_Size_Type(1000.0),
+                                    Price            => Bet_Price_Type(o.Backprice), -- we want this badly
+                                    Bet_Persistence  => Persist,
+                                    Bet              => b.Back_Bet ) ;
+                  end case;                      
+                                            
+                  begin
+                    T.Start;
+                      if b.Back_Bet.Betid = 0 then
+                        b.Back_Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+                        Log("Betid was 0, is now" &  b.Back_Bet.Betid'Img);
+                      end if;
+                      Log("will insert Back_Bet" & " " &  b.Back_Bet.To_String);
+                      b.Back_Bet.Insert; -- save to db
+                      Log("Back_Bet inserted " & " " &  b.Back_Bet.To_String);
+                    T.Commit;
+                  exception
+                    when Sql.Duplicate_Index =>
+                      T.Rollback;
+                      Log("Duplicate_Index on backbet " & " " &  b.Back_Bet.To_String);
+                  end ;             
+                  
+                end if;
+              end loop;
+            end loop;
+          end if;      
+        end ;
+      end if ; --len price_list
 
     end loop Poll_Loop;
+    Log(Me & "Make_Bet", "exited poll_loop for market '" & Market.To_String & "'");
 
   end Run;
   ---------------------------------------------------------------------

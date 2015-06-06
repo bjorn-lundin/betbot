@@ -53,10 +53,7 @@ procedure Poll is
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
   type Bet_Type is (Back_1_10_7_1,
                     Lay_160_200,
-                    Lay_170_200,
-                    Lay_180_200,
-                    Lay_1_10_30_4,
-                    Lay_1_10_20_4
+                    Lay_1_10_25_4
                     );
 
   type Allowed_Type is record
@@ -126,7 +123,7 @@ procedure Poll is
 
     return Ratio;
   end Bet_Size_Portion;
-
+  -------------------------------------------------------------------
 
   procedure Send_Lay_Bet(Selectionid   : Integer_4;
                          Main_Bet      : Bet_Type;
@@ -269,16 +266,16 @@ procedure Poll is
       if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
         Bets_Allowed(i).Bet_Size := 2.0;
       elsif Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
-        Bets_Allowed(i).Bet_Size := 2.0; -- make sure not accepted
+        case i is
+          when Lay_1_10_25_4 => Bets_Allowed(i).Bet_Size := 30.0; -- make sure     accepted
+          when others        => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+        end case;
       end if;
     end loop;
 
     Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_30.0_4",     Bets_Allowed(Lay_1_10_30_4).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_1.10_20.0_4",     Bets_Allowed(Lay_1_10_20_4).Bet_Name);
+    Move("HORSES_WIN_LAY_FINISH_1.10_25.0_4",     Bets_Allowed(Lay_1_10_25_4).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_160_200_1",       Bets_Allowed(Lay_160_200).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_170_200_1",       Bets_Allowed(Lay_170_200).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_180_200_1",       Bets_Allowed(Lay_180_200).Bet_Name);
 
     T.Start;
     declare
@@ -304,11 +301,8 @@ procedure Poll is
           Log(Me & "Run", "Bet_Size too small, set to 30.0, was " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
           Bets_Allowed(i).Bet_Size := 30.0;
         end if;
-      else --split total saldo between strategies
-        Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Bets_Allowed(i).Bet_Size_Portion);      
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
-
       if -5.0 < Bets_Allowed(i).Max_Loss_Per_Day and then Bets_Allowed(i).Max_Loss_Per_Day < 0.0 then
         Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
       end if;
@@ -462,17 +456,16 @@ procedure Poll is
         end if;
 
         ---------------------------------------------------------------
-        --MR_HORSES_PLC_BACK_FINISH_1.10_20.0_1
+        --MR_HORSES_PLC_BACK_FINISH_1.10_25.0_1
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
-           Best_Runners(4).Backprice >= Float_8(20.0) and then
+           Best_Runners(4).Backprice >= Float_8(25.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
            Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
 
           if Best_Runners(4).Layprice  < Float_8(70.0) and then
-             Best_Runners(4).Layprice  > Float_8(0.0) and then
-             Best_Runners(4).Backprice > Float_8(25.0) then
+             Best_Runners(4).Layprice  > Float_8(0.0) then
             Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
-                          Main_Bet    => Lay_1_10_20_4,
+                          Main_Bet    => Lay_1_10_25_4,
                           Max_Price   => Max_Lay_Price_Type(70.0),
                           Market_Id   => Markets(Win).Marketid,
                           Receiver    => Process_Io.To_Process_Type("bet_placer_123"));
@@ -480,29 +473,10 @@ procedure Poll is
 
         end if;
         ---------------------------------------------------------------
-        --MR_HORSES_PLC_BACK_FINISH_1.10_30.0_1
-        if Best_Runners(1).Backprice <= Float_8(1.10) and then
-           Best_Runners(4).Backprice >= Float_8(30.0) and then
-           Best_Runners(2).Backprice <  Float_8(10_000.0) and then  -- so it exists
-           Best_Runners(3).Backprice <  Float_8(10_000.0) then  -- so it exists
-
-          if Best_Runners(4).Layprice < Float_8(70.0) and then
-             Best_Runners(4).Layprice > Float_8(0.0) and then
-             Best_Runners(4).Backprice > Float_8(25.0) then
-            Send_Lay_Bet(Selectionid  => Best_Runners(4).Selectionid,
-                          Main_Bet    => Lay_1_10_30_4,
-                          Max_Price   => Max_Lay_Price_Type(70.0),
-                          Market_Id   => Markets(Win).Marketid,
-                          Receiver    => Process_Io.To_Process_Type("bet_placer_126"));
-          end if;
-        end if;
-
       end if;
 
       -- laybets
       if Worst_Runner.Layprice <= Float_8(1000.0) then
-
-        
         --HORSES_WIN_LAY_FINISH_160_200_1
         if Worst_Runner.Backprice <= Float_8(400.0) and then
            Worst_Runner.Backprice >= Float_8(160.0) and then
@@ -516,33 +490,6 @@ procedure Poll is
                         Market_Id  => Markets(Win).Marketid,
                         Receiver   => Process_Io.To_Process_Type("bet_placer_110"));
         end if;
-        --HORSES_WIN_LAY_FINISH_170_200_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(170.0) and then
-           Worst_Runner.Layprice <= Float_8(200.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
-
-          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
-                        Main_Bet   => Lay_170_200,
-                        Max_Price  => Max_Lay_Price_Type(200.0),
-                        Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_111"));
-        end if;
-        --HORSES_WIN_LAY_FINISH_180_200_1
-        if Worst_Runner.Backprice <= Float_8(400.0) and then
-           Worst_Runner.Backprice >= Float_8(180.0) and then
-           Worst_Runner.Layprice <= Float_8(200.0) and then
-           Worst_Runner.Layprice > Float_8(10.0) then
-          -- lay the loser in WIN market...
-
-          Send_Lay_Bet(Selectionid => Worst_Runner.Selectionid,
-                        Main_Bet   => Lay_180_200,
-                        Max_Price  => Max_Lay_Price_Type(200.0),
-                        Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_112"));
-        end if;
-
       end if;
 
       if Markets(Place).Numwinners < Integer_4(3) then
