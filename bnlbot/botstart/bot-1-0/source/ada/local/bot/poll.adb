@@ -267,8 +267,7 @@ procedure Poll is
         Bets_Allowed(i).Bet_Size := 2.0;
       elsif Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
         case i is
-          when Lay_1_10_25_4 => Bets_Allowed(i).Bet_Size := 30.0; -- make sure     accepted
-          when others        => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
         end case;
       end if;
     end loop;
