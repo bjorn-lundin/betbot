@@ -121,7 +121,7 @@ procedure Lay_Greenup_Filter is
            --  Log(Strategy.Betname.Fix_String & " taken with Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
            --end loop;
         end if;
-      else  -- strategy fullfilled, se what odds we get, if matched
+      else  -- strategy fullfilled, see what odds we get, if matched
       --  if Best_Runners(1).Pricets >  Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
         if Best_Runners(1).Pricets >=  Bet.Betplaced + (0,0,0,0,0) and then -- 0 second later at least, time for BF delay
            Strategy.Ts_Of_Fulfill /= Calendar2.Time_Type_First then
@@ -250,7 +250,7 @@ begin
         Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First;
       end loop;
       
-      --reset the fifo for ny race      
+      --reset the fifo for new race      
       for i in Num_Runners_Type loop
         Fifo(i).Selectionid    := 0;
         Fifo(i).Avg_Lay_Price  := 0.0;   
