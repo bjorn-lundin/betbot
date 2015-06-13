@@ -5,6 +5,7 @@ with Table_Amarkets;
 with Table_Aprices;
 with Table_Abets;
 with Table_Apricesfinish;
+with Calendar2;
 
 package Sim is
 
@@ -22,10 +23,11 @@ package Sim is
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
+                       Bet_Placed       : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
                        Bet              :    out Table_Abets.Data_Type);
 
-
-  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List);
+  type Algorithm_Type is (None, Avg);
+  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List; Alg : Algorithm_Type := None);
 
 
   subtype Num_Runners_Type is Integer range 1..36;
@@ -47,7 +49,9 @@ package Sim is
                           List      :    out Table_Apricesfinish.Apricesfinish_List_Pack2.List) ;
 
   procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
-                               Is_Average : in Boolean) ;
+                               Is_Average : in Boolean;
+                               Is_Winner  : in Boolean;
+                               Is_Place   : in Boolean ) ;
 
 
 end Sim ;
