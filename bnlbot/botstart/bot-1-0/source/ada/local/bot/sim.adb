@@ -248,6 +248,7 @@ package body Sim is
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
+                       Bet_Placed       : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
                        Bet              :    out Table_Abets.Data_Type) is
     pragma Unreferenced(Bet_Persistence);        
                        
@@ -262,7 +263,12 @@ package body Sim is
     Side_String   : Bet_Side_String_Type := (others => ' ');
     Market : Table_Amarkets.Data_Type;
     Eos : Boolean := False;
+    Local_Bet_Placed  :  Calendar2.Time_Type := Bet_Placed;
   begin
+    if Local_Bet_Placed = Calendar2.Time_Type_First then 
+      Local_Bet_Placed := Now;
+    end if;
+  
     Move(Side'Img, Side_String);
     Market.Marketid := Market_Id;
     Market.Read(Eos);
@@ -292,7 +298,7 @@ package body Sim is
       Inststatus     => Instruction_Report_Status,
       Insterrcode    => Instruction_Report_Error_Code,
       Startts        => Market.Startts,
-      Betplaced      => Now,
+      Betplaced      => Local_Bet_Placed,
       Pricematched   => Float_8(Price),
       Sizematched    => Float_8(Size),
       Runnername     => Runner_Name,
@@ -306,49 +312,53 @@ package body Sim is
   
 
 
-  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List)  is
+  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List; Alg : Algorithm_Type := None)  is
   begin
-    --Avg_Price_List := Price_List.Copy;
-    --return;
-    --Log ("Filter_List : start Price_List.Length" & Price_List.Length'Img);
-    for s of Price_List loop
-    -- find my index in the array
-      Num_Run: for i in Num_Runners_Type'range loop
-
-        if S.Selectionid = Fifo(i).Selectionid then
-          -- insert elements at bottom and remove from top
-          -- check if list needs trim
-          loop
-            exit when Fifo(i).One_Runner_Sample_List.Length <= Min_Num_Samples;
-            Fifo(i).One_Runner_Sample_List.Delete_First;
-          end loop;
-          -- append the new value
-          Fifo(i).One_Runner_Sample_List.Append(s);
-          
-          if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
-          -- recalculate the avg values
-            declare
-              Backprice,Layprice : Float_8 := 0.0;
-              Sample : Table_Aprices.Data_Type;
-              Cnt : Natural := 0;
-            begin
-              for s2 of Fifo(i).One_Runner_Sample_List loop
-                Backprice := Backprice + S2.Backprice;
-                Layprice := Layprice + S2.Layprice;
-                Sample := S2; -- save some data
-                Cnt := Cnt +1 ;
-              --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
+    case Alg is
+      when None =>
+        Avg_Price_List := Price_List.Copy;
+        return;
+      when Avg =>   
+        --Log ("Filter_List : start Price_List.Length" & Price_List.Length'Img);
+        for s of Price_List loop
+        -- find my index in the array
+          Num_Run: for i in Num_Runners_Type'range loop
+    
+            if S.Selectionid = Fifo(i).Selectionid then
+              -- insert elements at bottom and remove from top
+              -- check if list needs trim
+              loop
+                exit when Fifo(i).One_Runner_Sample_List.Length <= Min_Num_Samples;
+                Fifo(i).One_Runner_Sample_List.Delete_First;
               end loop;
-              Sample.Backprice := Backprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
-              Sample.Layprice := Layprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
-              Avg_Price_List.Append(Sample);
-             -- Log ("Filter_List : avg " & Sample.To_String );
-            end;
-          end if;
-          exit Num_Run;
-        end if;
-      end loop Num_Run;
-    end loop;
+              -- append the new value
+              Fifo(i).One_Runner_Sample_List.Append(s);
+              
+              if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
+              -- recalculate the avg values
+                declare
+                  Backprice,Layprice : Float_8 := 0.0;
+                  Sample : Table_Aprices.Data_Type;
+                  Cnt : Natural := 0;
+                begin
+                  for s2 of Fifo(i).One_Runner_Sample_List loop
+                    Backprice := Backprice + S2.Backprice;
+                    Layprice := Layprice + S2.Layprice;
+                    Sample := S2; -- save some data
+                    Cnt := Cnt +1 ;
+                  --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
+                  end loop;
+                  Sample.Backprice := Backprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+                  Sample.Layprice := Layprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+                  Avg_Price_List.Append(Sample);
+                 -- Log ("Filter_List : avg " & Sample.To_String );
+                end;
+              end if;
+              exit Num_Run;
+            end if;
+          end loop Num_Run;
+        end loop;
+      end case;  
    -- Log ("Filter_List : done" );
   end Filter_List;
   -------------------------------
@@ -428,7 +438,9 @@ package body Sim is
   
   
   procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
-                               Is_Average : in Boolean) is
+                               Is_Average : in Boolean;
+                               Is_Winner  : in Boolean;
+                               Is_Place   : in Boolean ) is
     F : Text_Io.File_Type;
     Indicator : String(1..3) := "nor";
   begin

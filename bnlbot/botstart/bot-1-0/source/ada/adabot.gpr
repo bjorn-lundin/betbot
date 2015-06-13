@@ -43,12 +43,14 @@ project Adabot is
 
    Stat_Mains   := ("lay_during_race.adb",
                     "lay_during_race2.adb",
+                    "lay_in_play_greenup.adb",
                     "back_hitrate.adb",
-                    "lay_greenup_filter.adb",
+                    "lay_greenup_filter.adb"); 
+                    --",
                   --  "back_during_race2.adb",
                  --   "prices_during_race.adb",
                  --   "plot_race_prices.adb",
-                    "plot_race_prices2.adb");
+                --    "plot_race_prices2.adb");
 
    Other_Mains :=  (
                      "check_greenup.adb",
