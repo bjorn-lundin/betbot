@@ -151,8 +151,8 @@ def main(g):
   buff = ""
   conn = psycopg2.connect("dbname=bnl \
                          user=bnl \
-                         host=db.nonodev.com \
-                         password=BettingFotboll1$ \
+                         host=db-new.nonodev.com \
+                         password=ld4BC9Q51FU9CYjC21gp \
                          sslmode=require \
                          application_name=serial_talker")
 
