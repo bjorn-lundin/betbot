@@ -198,11 +198,11 @@ begin
   Log(Me, "Login betfair done");
   Log(Me, "Login in db");
   Sql.Connect
-        (Host     => Ini.Get_Value("database_saldo_fetcher","host",""),
-         Port     => Ini.Get_Value("database_saldo_fetcher","port",5432),
-         Db_Name  => Ini.Get_Value("database_saldo_fetcher","name",""),
-         Login    => Ini.Get_Value("database_saldo_fetcher","username",""),
-         Password => Ini.Get_Value("database_saldo_fetcher","password",""));
+        (Host     => Ini.Get_Value("database","host",""),
+         Port     => Ini.Get_Value("database","port",5432),
+         Db_Name  => Ini.Get_Value("database","name",""),
+         Login    => Ini.Get_Value("database","username",""),
+         Password => Ini.Get_Value("database","password",""));
 
  
   if Global_Enabled then   
