@@ -82,7 +82,7 @@ procedure Saldo_Fetcher is
           "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
           "jmb " & Get_Db_Size("jmb")  & Cr & Lf &
           "dry " & Get_Db_Size("dry")  & Cr & Lf &
-          "ais " & Get_Db_Size("ais")  & Cr & Lf &
+          "ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
           Cr & Lf &          
           "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
@@ -154,6 +154,10 @@ procedure Saldo_Fetcher is
     Select_Db_Size.Close_Cursor;
     T.Commit;
     return Utils.Trim(Buff);  
+    exception
+      when others => 
+      T.Rollback;
+      return Utils.Trim("bad db " & Db_Name);
   end Get_Db_Size;
      
 ------------------------------ main start -------------------------------------
