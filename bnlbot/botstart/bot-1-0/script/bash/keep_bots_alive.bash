@@ -223,7 +223,31 @@ case $BOT_MACHINE_ROLE in
         done
       fi
     fi  
-  
+
+    if [ $MINUTE == "35" ] ; then
+      for USR in $USER_LIST_PLAYERS_ONLY ; do
+        #regenerate the graphs
+        old_pwd=$(pwd)
+        cd $BOT_SCRIPT/plot/gui_plot/
+        #create datafiles
+        $BOT_TARGET/bin/graph_data --lapsed > $BOT_START/user/$USR/gui_related/settled_vs_lapsed.dat 2>/dev/null
+        $BOT_TARGET/bin/graph_data --profit > $BOT_START/user/$USR/gui_related/profit_vs_matched.dat 2>/dev/null
+        #kill old datafiles
+        rm *.dat
+        #put it in wd of gnuplot
+        cp $BOT_START/user/$USR/gui_related/*.dat ./
+        gnuplot -e "data_file='settled_vs_lapsed'" settled_vs_lapsed.gpl
+        gnuplot -e "data_file='profit_vs_matched'" profit_vs_matched.gpl
+        #move to user area and cleanup
+        rm *.dat
+        cp *.png $BOT_START/user/$USR/gui_related/
+        rm *.png
+        cd $old_pwd
+      done
+    fi
+
+
+    
   ;;
   *) 
   #do nothing on non-PROD hosts

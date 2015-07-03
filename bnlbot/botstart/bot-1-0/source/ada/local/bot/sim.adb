@@ -20,6 +20,7 @@ package body Sim is
 
   --Stm_Select_Marketid_Pricets_O : Sql.Statement_Type;
   --Stm_Select_Pricets_O : Sql.Statement_Type;
+  Select_Get_Win_Market : Sql.Statement_Type;
 
   
   Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
@@ -438,20 +439,34 @@ package body Sim is
   
   
   procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
-                               Is_Average : in Boolean;
+                               Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) is
     F : Text_Io.File_Type;
-    Indicator : String(1..3) := "nor";
+    Indicator : String(1..3) := (others => ' ');
+    Placement : String(1..3) := (others => ' ');
   begin
-    if Is_Average then
-      Indicator := "avg";
-    end if;   
+    case Alg is
+      when None => Indicator := "nor";
+      when Avg  => Indicator := "avg";
+    end case;  
     -- many runners 1 value only
+    
+    if Is_Winner then 
+      Placement  := "win";
+    elsif Is_Place then   
+      Placement  := "plc";
+    else   
+      Placement  := "los";
+    end if;
+    
     for Runner of Price_List loop
       declare
         Filename : String := Skip_All_Blanks(Ev.Value("BOT_SCRIPT") & "/plot/race_price_runner_data/" & 
-                                                      Runner.Marketid & "_" & Runner.Selectionid'Img & "_" & Indicator & ".dat");
+                                                      Runner.Marketid & "_" & 
+                                                      Runner.Selectionid'Img & "_" & 
+                                                      Indicator & "_" & 
+                                                      Placement & ".dat");
       begin
         if not AD.Exists(Filename) then
           Text_Io.Create(F, Text_Io.Out_File,    Filename);   
@@ -471,6 +486,86 @@ package body Sim is
   
   end Create_Runner_Data;
   
+
+  function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type is
+    T             : Sql.Transaction_Type;
+    Winner_Market : Table_Amarkets.Data_Type;
+    Eos           : Boolean := False;
+  begin
+    T.Start;
+    Select_Get_Win_Market.Prepare(
+      "select MW.* from AMARKETS MW, AMARKETS MP " &
+      "where MW.EVENTID = MP.EVENTID " &
+      "and MW.STARTTS = MP.STARTTS " &
+      "and MP.MARKETID = :PLACEMARKETID " &
+      "and MP.MARKETTYPE = 'PLACE' " &
+      "and MW.MARKETTYPE = 'WIN' ");
+      
+    Select_Get_Win_Market.Set("PLACEMARKETID",Place_Market_Id);
+    Select_Get_Win_Market.Open_Cursor;
+    Select_Get_Win_Market.Fetch(Eos);
+    if not Eos then
+      Winner_Market := Table_Amarkets.Get(Select_Get_Win_Market);
+    end if;
+    Select_Get_Win_Market.Close_Cursor;
+    
+    T.Commit;
+    Log(Object & "Get_Win_Market", "plc= '" & Place_Market_Id & "' win = '" & Winner_Market.Marketid & "'");
+
+    return Winner_Market;
+  end Get_Win_Market;
+  
+  
+  
+  procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) is
+    F : Text_Io.File_Type;
+    Indicator : String(1..3) := (others => ' ');
+    Odds_Market : Table_Amarkets.Data_Type ;
+  begin
+    case Bet.Betwon is
+      when True  => Indicator := "won";
+      when False => Indicator := "bad";
+    end case;  
+
+
+    
+    Log(Object & "Create_Bet_Data", Bet.To_String);
+    Log(Object & "Create_Bet_Data", "odds= '" & Odds_Market.Marketid & "'");
+    if Position(Bet.Betname, "PLC") > Integer(0) then 
+      Log(Object & "Create_Bet_Data", "was in PLC");
+      Odds_Market := Get_Win_Market(Bet.Marketid);
+    elsif Position(Bet.Betname, "WIN") > Integer(0) then 
+      Log(Object & "Create_Bet_Data", "was in WIN");
+      Odds_Market.Marketid := Bet.Marketid;
+    else
+      Log(Object & "Create_Bet_Data", "was in neither WIN nor PLC");
+      Odds_Market.Marketid := Bet.Marketid;
+    end if;
+    Log(Object & "Create_Bet_Data", "odds= '" & Odds_Market.Marketid & "'");
+    
+    declare
+      Filename : String := Skip_All_Blanks(Ev.Value("BOT_SCRIPT") & "/plot/race_price_runner_data/" & 
+                                                    Odds_Market.Marketid & "_" & 
+                                                    Lower_Case(Bet.Betname) & "_" & 
+                                                    Indicator & ".dat");
+    begin
+      if not AD.Exists(Filename) then
+        Text_Io.Create(F, Text_Io.Out_File,    Filename);   
+      else
+        Text_Io.Open  (F, Text_Io.Out_File, Filename);   
+      end if;
+      Text_IO.Put_Line(F, Bet.Betplaced.To_String & " | " & 
+                          Bet.Marketid & " | " & 
+                          Bet.Selectionid'Img & " | " & 
+                          Bet.Side & " | " & 
+                          F8_Image(Bet.Pricematched) & " | " & 
+                          F8_Image(Bet.Sizematched) & " | " & 
+                          F8_Image(50.0) );    
+      Text_Io.Close(F);
+    end;      
+    
+  
+  end Create_Bet_Data;
   
   
   

@@ -45,7 +45,9 @@ project Adabot is
                     "lay_during_race2.adb",
                     "lay_in_play_greenup.adb",
                     "back_hitrate.adb",
-                    "lay_greenup_filter.adb"); 
+                    "graph_data.adb",
+                    "lay_greenup_filter.adb",
+                    "greenup_lay_first.adb"); 
                     --",
                   --  "back_during_race2.adb",
                  --   "prices_during_race.adb",
@@ -54,6 +56,7 @@ project Adabot is
 
    Other_Mains :=  (
                      "check_greenup.adb",
+                     "create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
          --          -- "ini_reader.adb",

@@ -49,9 +49,12 @@ package Sim is
                           List      :    out Table_Apricesfinish.Apricesfinish_List_Pack2.List) ;
 
   procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
-                               Is_Average : in Boolean;
+                               Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) ;
 
+  procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) ;
+                               
+  function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type ;
 
 end Sim ;
