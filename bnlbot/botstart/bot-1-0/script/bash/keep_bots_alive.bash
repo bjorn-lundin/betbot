@@ -120,15 +120,10 @@ function Check_Bots_For_User () {
     #  fi
     #done
     BET_PLACER_LIST="bet_placer_010 \
-                     bet_placer_070 \
-                     bet_placer_101 bet_placer_102 \
-                     bet_placer_103 bet_placer_104 \
-                     bet_placer_105 bet_placer_106 \
-                     bet_placer_107 bet_placer_108 \
-                     bet_placer_109 bet_placer_110 \
+                     bet_placer_110 \
                      bet_placer_111 bet_placer_112 \
-                     bet_placer_122 bet_placer_123 \
-                     bet_placer_125 bet_placer_126"                     
+                     bet_placer_123 \
+                     bet_placer_126"                     
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
