@@ -71,7 +71,9 @@ package body Utils is
    begin
       if Match'Length > 0 then
          for I in S'First .. S'Last - Match'Length + 1 loop
-            if S (I .. I + Match'Length - 1) = Match then return I; end if;
+            if S (I .. I + Match'Length - 1) = Match then 
+              return I; 
+            end if;
          end loop;
       end if;
       return S'First - 1;
