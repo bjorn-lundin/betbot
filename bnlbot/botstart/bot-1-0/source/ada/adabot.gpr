@@ -38,6 +38,7 @@ project Adabot is
                 --    "football_better.adb",
                 --    "page_server.adb",
                     "data_mover.adb",
+                    "graph_data.adb",
                     "check_bot_running.adb"
                     );
 
@@ -45,7 +46,6 @@ project Adabot is
                     "lay_during_race2.adb",
                     "lay_in_play_greenup.adb",
                     "back_hitrate.adb",
-                    "graph_data.adb",
                     "lay_greenup_filter.adb",
                     "greenup_lay_first.adb"); 
                     --",
