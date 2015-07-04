@@ -2,7 +2,9 @@ with Ada.Exceptions;
 
 with Gnoga.Application.Multi_Connect;
 
+pragma Warnings(Off);
 with Bot_Gui.Controller;
+pragma Warnings(On);
 
 procedure Bot_Gui.Main is
 begin
