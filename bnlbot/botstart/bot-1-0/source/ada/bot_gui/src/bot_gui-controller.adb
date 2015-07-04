@@ -7,20 +7,22 @@ with Sql;
 with Types     ; use Types;
 with Bot_Types ; use Bot_Types;
 with Utils;
+with Ada.Command_Line;
+with Stacktrace;
+with Ada.Exceptions;
+with Logging; use Logging;
 
 package body Bot_Gui.Controller is
 
    DB_Semaphore : aliased Binary_Semaphores.Semaphore_Type;
-   Select_Profit : Sql.Statement_Type;
-   Select_Profit_Tot : Sql.Statement_Type;
-   
+   Select_Weekly_Profit : Sql.Statement_Type;
+   Select_Daily_Profit : Sql.Statement_Type;
    
    task type Updater_Task_Type is
      entry Set_View( View : Bot_Gui.View.Default_View_Access);
    end Updater_Task_Type;   
    
    type Updater_Type_Access is access all Updater_Task_Type;
-   
    
    task body Updater_Task_Type is
      Local_View : Bot_Gui.View.Default_View_Access ;  
@@ -50,29 +52,6 @@ package body Bot_Gui.Controller is
    end On_Click;
    -------------------------------------------
    
-   
-   procedure On_Click_Connect_Db (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
-      View : Bot_Gui.View.Default_View_Access := 
-               Bot_Gui.View.Default_View_Access (Object.Parent);
-   begin
-      View.Label_Text.Put_Line ("Will connect");
-      Sql.Connect (Host     => "db.nonodev.com",
-                   Port     => 5432,
-                   Db_Name  => "bnl",
-                   Login    => "bnl",
-                   Password => "BettingFotboll1$");      
-      View.Label_Text.Put_Line ("Connected");
-   end On_Click_Connect_Db;   
-   -------------------------------------------
-   procedure On_Click_Disconnect_Db (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
-      View : Bot_Gui.View.Default_View_Access := 
-               Bot_Gui.View.Default_View_Access (Object.Parent);
-               
-   begin
-      View.Label_Text.Put_Line ("Will disconnect");
-      Sql.Close_Session;      
-      View.Label_Text.Put_Line ("Disconnected");
-   end On_Click_Disconnect_Db;   
    -------------------------------------------
    procedure On_Click_Run_Query (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
       View : Bot_Gui.View.Default_View_Access := 
@@ -81,55 +60,54 @@ package body Bot_Gui.Controller is
      Eos : Boolean := True;
      Betname   : String (Bet_Name_Type'range) := (others => ' ');
      Sumprofit : Float_8 := 0.0;
-     Count     : Integer_4 := 0;
+     --Count     : Integer_4 := 0;
+     Week      : Integer_4 := 0;
+     Date      : Calendar2.Time_Type := Calendar2.Time_Type_First;
      use Gnoga.Gui.Element.Table;
      Cnt : Integer_4 := 0;
      Control : Binary_Semaphores.Controls.Semaphore_Control(DB_Semaphore'access);
      pragma Warnings(Off,Control);
    begin
+      -- reset old tables
       View.Label_Text.Inner_HTML ("");
-      View.Result_Table.Inner_HTML ("");
-      View.Result_Table.Add_Caption("Today's result @ " & Calendar2.Clock.To_String(Milliseconds => False));
-   
-      View.Label_Text.Put_Line ("Will run query " & Calendar2.Clock.To_String);
-      T.Start;
-      Select_Profit.Prepare(
-        "select " &
-          "BETNAME, " &
-          "sum(PROFIT) as SUMPROFIT, " &
-          "count('a') as CNT " &
-        "from " &
-          "ABETS " &
-        "where BETPLACED::date = (select CURRENT_DATE) " &
---        "where BETPLACED::date = '2014-11-23' " &
-          "and BETWON is not null " &
-          "and EXESTATUS = 'SUCCESS' " & 
-          "and STATUS in ('SETTLED') " &
-        "group by " &
-          "BETNAME " &
-        "order by " &
-          "sum(PROFIT) desc, " &
-          "BETNAME");
-        
-      Select_Profit_Tot.Prepare(   
-        "select " &
-          "sum(PROFIT) as SUMPROFIT, " &
-          "count('a') as CNT " &
-        "from " &
-          "ABETS " &
-        "where BETPLACED::date = (select CURRENT_DATE) " &
---        "where BETPLACED::date = '2014-11-23' " &
-          "and BETWON is not null " &
-          "and EXESTATUS = 'SUCCESS' " & 
-          "and STATUS in ('SETTLED')");
-        
-      Select_Profit.Open_Cursor;  
+      
+      --reset
+      View.Daily_Table.Inner_HTML ("");  
+      View.Daily_Table.Add_Caption("Last week's result @ " & Calendar2.Clock.To_String(Milliseconds => False));
+      View.Daily_Table.Border;
+      
+      declare
+        Row  : Table_Row_Access := new Table_Row_Type;
+        Col1 : Table_Heading_Access := new Table_Heading_Type;
+        Col2 : Table_Heading_Access := new Table_Heading_Type;
+        Col3 : Table_Heading_Access := new Table_Heading_Type;
+      begin
+        Row.Dynamic;
+        Col1.Dynamic;
+        Col2.Dynamic;  
+        Col3.Dynamic;  
+        Row.Create (View.Daily_Table);
+        Col1.Create (Row.all, "Betname");
+        Col2.Create (Row.all, "Sum(Profit)");
+        Col3.Create (Row.all, "Date");
+      end;              
+      T.Start;  
+      Select_Daily_Profit.Prepare(        
+        "select BETNAME, sum(B.PROFIT) as SUMPROFIT, B.STARTTS::date as DATE " &
+        "from ABETS B " &
+        "where B.BETNAME = 'HORSES_PLC_BACK_FINISH_1.10_7.0_1' " &
+        "and B.BETWON is not NULL " &
+        "and B.STARTTS >= (select CURRENT_DATE - interval '6 days') " &
+        "and extract(year from B.STARTTS) = extract(year from (select CURRENT_DATE )) " &
+        "group by BETNAME, B.STARTTS::date " &
+        "order by B.STARTTS::date desc, BETNAME");    
+      Select_Daily_Profit.Open_Cursor;  
       loop
-        Select_Profit.Fetch(Eos);  
+        Select_Daily_Profit.Fetch(Eos);  
         exit when Eos;
-        Select_Profit.Get("BETNAME", Betname);  
-        Select_Profit.Get("SUMPROFIT", Sumprofit);  
-        Select_Profit.Get("CNT", Count);          
+        Select_Daily_Profit.Get("BETNAME", Betname);  
+        Select_Daily_Profit.Get("SUMPROFIT", Sumprofit);  
+        Select_Daily_Profit.Get_Date("DATE", Date);          
         declare
            Row  : Table_Row_Access := new Table_Row_Type;
            Col1 : Table_Column_Access := new Table_Column_Type;
@@ -141,7 +119,7 @@ package body Bot_Gui.Controller is
            Col1.Dynamic;
            Col2.Dynamic;  
            Col3.Dynamic;  
-           Row.Create (View.Result_Table);
+           Row.Create (View.Daily_Table);
            if Cnt mod 2 = Integer_4(0) then
              Row.Background_Color("skyblue");
            end if;
@@ -152,21 +130,51 @@ package body Bot_Gui.Controller is
            else 
              Col2.Background_Color("palegreen");
            end if;
-           Col3.Create (Row.all, Count'Img);
+           Col3.Create (Row.all, Date.String_Date_ISO);
            Col2.Text_Alignment(Gnoga.Gui.Element.Right);
-           Col3.Text_Alignment(Gnoga.Gui.Element.Right);
         end;        
       end loop;  
-      Select_Profit.Close_Cursor;  
+      Select_Daily_Profit.Close_Cursor;  
       
-      Select_Profit_Tot.Open_Cursor;  
+      
+      --reset
+      View.Weekly_Table.Inner_HTML ("");  
+      View.Weekly_Table.Add_Caption("Last 6 week's result @ " & Calendar2.Clock.To_String(Milliseconds => False));
+      View.Weekly_Table.Border;
+      
+      declare
+        Row  : Table_Row_Access := new Table_Row_Type;
+        Col1 : Table_Heading_Access := new Table_Heading_Type;
+        Col2 : Table_Heading_Access := new Table_Heading_Type;
+        Col3 : Table_Heading_Access := new Table_Heading_Type;
+      begin
+        Row.Dynamic;
+        Col1.Dynamic;
+        Col2.Dynamic;  
+        Col3.Dynamic;  
+        Row.Create (View.Weekly_Table);
+        Col1.Create (Row.all, "Betname");
+        Col2.Create (Row.all, "Sum(Profit)");
+        Col3.Create (Row.all, "Week");
+      end;              
+        
+      Select_Weekly_Profit.Prepare(        
+         "select BETNAME, sum(B.PROFIT) as SUMPROFIT, extract(week from B.STARTTS) as WEEK " &
+         "from ABETS B " &
+         "where B.BETNAME = 'HORSES_PLC_BACK_FINISH_1.10_7.0_1' " &
+         "and B.BETWON is not NULL " &
+         "and extract(week from B.STARTTS) >= extract(week from (select CURRENT_DATE - interval '5 weeks')) " &
+         "and extract(year from B.STARTTS) = extract(year from (select CURRENT_DATE )) " &
+         "group by BETNAME, extract(week from B.STARTTS) " &
+         "order by extract(week from B.STARTTS) desc, BETNAME");     
+      Select_Weekly_Profit.Open_Cursor;  
       loop
-        Select_Profit_Tot.Fetch(Eos);  
+        Select_Weekly_Profit.Fetch(Eos);  
         exit when Eos;
-        Select_Profit_Tot.Get("SUMPROFIT", Sumprofit);  
-        Select_Profit_Tot.Get("CNT", Count);          
+        Select_Weekly_Profit.Get("BETNAME", Betname);  
+        Select_Weekly_Profit.Get("SUMPROFIT", Sumprofit);  
+        Select_Weekly_Profit.Get("WEEK", Week);          
         declare
-           use Gnoga.Gui.Element;
            Row  : Table_Row_Access := new Table_Row_Type;
            Col1 : Table_Column_Access := new Table_Column_Type;
            Col2 : Table_Column_Access := new Table_Column_Type;
@@ -177,26 +185,44 @@ package body Bot_Gui.Controller is
            Col1.Dynamic;
            Col2.Dynamic;  
            Col3.Dynamic;  
-           Row.Create (View.Result_Table);
-           Row.Font(Weight => Weight_Bold);
+           Row.Create (View.Weekly_Table);
            if Cnt mod 2 = Integer_4(0) then
              Row.Background_Color("skyblue");
-           end if;           
-           Col1.Create (Row.all, "Grand Total");
+           end if;
+           Col1.Create (Row.all, Utils.Trim(Betname));
            Col2.Create (Row.all, Utils.F8_Image(Sumprofit));
-           Col3.Create (Row.all, Count'Img);
-           
+           if Sumprofit < 0.0 then
+             Col2.Background_Color("red");
+           else 
+             Col2.Background_Color("palegreen");
+           end if;
+           Col3.Create (Row.all, Week'Img);
            Col2.Text_Alignment(Gnoga.Gui.Element.Right);
            Col3.Text_Alignment(Gnoga.Gui.Element.Right);
-           
         end;        
       end loop;  
-      Select_Profit_Tot.Close_Cursor;  
-      View.Result_Table.Border;
+      Select_Weekly_Profit.Close_Cursor;  
+         
         
       T.Commit;
       
+      
       View.Label_Text.Put_Line ("Has run query " & Calendar2.Clock.To_String);
+      View.Label_Text.Put_Line ("start update imgs " & Calendar2.Clock.To_String);
+      View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
+    exception
+        when E: others => 
+          declare
+            Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+            Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+            Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+          begin
+            Log(Last_Exception_Name);
+            Log("Message : " & Last_Exception_Messsage);
+            Log(Last_Exception_Info);
+            Log("addr2line" & " --functions --basenames --exe=" &
+                 Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+          end ;
    end On_Click_Run_Query;   
    -------------------------------------------
    procedure Default
@@ -213,17 +239,14 @@ package body Bot_Gui.Controller is
       View.Dynamic;
       View.Create (Main_Window);
       View.Click_Button.On_Click_Handler (On_Click'access);
-      View.Connect_Db.On_Click_Handler (On_Click_Connect_Db'access);
-      View.Disconnect_DB.On_Click_Handler (On_Click_Disconnect_DB'access);
       View.Run_Query.On_Click_Handler (On_Click_Run_Query'access);
-      
 
       View.Label_Text.Put_Line ("Connect db");
       Sql.Connect (Host     => "db.nonodev.com",
                    Port     => 5432,
                    Db_Name  => "bnl",
                    Login    => "bnl",
-                   Password => "BettingFotboll1$");   
+                   Password => "ld4BC9Q51FU9CYjC21gp");   
       View.Label_Text.Put_Line ("db Connected");
       Updater.Set_View(View); -- will start update
 
