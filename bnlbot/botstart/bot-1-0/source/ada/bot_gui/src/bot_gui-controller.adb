@@ -209,6 +209,11 @@ package body Bot_Gui.Controller is
       
       View.Label_Text.Put_Line ("Has run query " & Calendar2.Clock.To_String);
       View.Label_Text.Put_Line ("start update imgs " & Calendar2.Clock.To_String);
+     -- View.Matched_Image.Remove;
+     -- View.Matched_Image.Create(View.Image_Holder,"https://dl.dropboxusercontent.com/u/26175828/profit_vs_matched.png");
+     -- View.Lapsed_Image.Remove ;
+     -- View.Lapsed_Image.Create(View.Image_Holder,"https://dl.dropboxusercontent.com/u/26175828/settled_vs_lapsed.png");
+      
       View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
     exception
         when E: others => 
