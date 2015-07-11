@@ -8,7 +8,7 @@ set output data_file . '.png'
 set grid
 set key top left
 
-set title "profit vs matched for last 42 days" 
+set title "profit vs matched for last 42 days " . ts
 
 set yrange [-1:5]
 set y2range [-500:10000]
@@ -23,7 +23,7 @@ set timefmt  "%Y-%m-%d %H:%M:%S"
 set format x "%Y-%m-%d"
 
 set xtics rotate by 45 offset 0, -5
-set xlabel "Datum" offset 0,-4
+set xlabel "date" offset 0,-4
 set bmargin 8
 
      
