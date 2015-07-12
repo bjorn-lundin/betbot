@@ -3,7 +3,7 @@
 trap 'echo you hit Ctrl-C, now exiting..; exit' SIGINT SIGQUIT
 
 OLD_PWD=$(pwd)
-cd history/historic_data
+cd  $BOT_ROOT/history/data/untreated
 
 let tot=0
 let cnt=0
@@ -21,9 +21,10 @@ for f in $file_list ; do
 
   file_list_2=$(ls *horse*.csv)
   for f2 in $file_list_2 ; do
-    # no australian races, and no IN_PLAY
-    cat $f2 | grep -v AUS | grep -v IP | grep "TO BE PLACED" > $f2.horses
-    python ../../betfair_historic_data_importer.py --file=$f2.horses
+    # no australian races, 
+#    cat $f2 | grep -v USA | grep -v AUS | grep -v NZL | grep -v SWE | grep -v TUR | grep -v GER | grep -v ITA > $f2.horses
+    cat $f2 | grep GB > $f2.horses
+    python ../../../../../betfair_historic_data_importer.py --file=$f2.horses
     rm $f2 $f2.horses
   done
   mv $f ../treated/
