@@ -21,9 +21,9 @@ procedure Graph_Data is
    
    Ba_Profit       : aliased Boolean := False;
    Ba_Lapsed       : aliased Boolean := False;
+   Ia_Days         : aliased Integer := 42;
 
    gDebug : Boolean := False;
-   Days : Integer_4 := 42;
 
    type Days_Result_Type is record
      Lapsed       : Integer_4 := 0;
@@ -140,9 +140,7 @@ procedure Graph_Data is
      Select_Profit_Date.Close_Cursor;
      Debug("Stop reading dates 1");
    end Day_Statistics_Profit_Vs_Matched;
-   
-   
-
+   ------------------------------------------------------
 begin
 
    Define_Switch
@@ -157,6 +155,12 @@ begin
       Long_Switch => "--lapsed",
       Help        => "lapsed stats");
 
+   Define_Switch
+     (Cmd_Line,
+      Ia_Days'access,
+      Long_Switch => "--days=",
+      Help        => "days of stats");
+      
   Getopt (Cmd_Line);  -- process the command line
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -174,10 +178,10 @@ begin
 
   T.Start;
     if Ba_Lapsed then
-      Day_Statistics_Lapsed_vs_Settled(Days => Days, A_List => Days_Result_List);
+      Day_Statistics_Lapsed_vs_Settled(Days => Integer_4(Ia_Days), A_List => Days_Result_List);
     end if;
     if Ba_Profit then   
-      Day_Statistics_Profit_Vs_Matched(Days => Days, A_List => Profit_Result_List);
+      Day_Statistics_Profit_Vs_Matched(Days => Integer_4(Ia_Days), A_List => Profit_Result_List);
     end if;
   T.Commit;
   Sql.Close_Session;
