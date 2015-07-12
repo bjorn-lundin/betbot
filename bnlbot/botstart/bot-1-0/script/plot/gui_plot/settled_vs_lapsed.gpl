@@ -8,7 +8,7 @@ set output data_file . '.png'
 set grid
 set key top left
 
-set title "settled vs lapsed for last 42 days " . ts 
+set title "settled vs lapsed for last " . days . " days \n" . ts 
 
 set yrange [0:100]
 set y2range [0:30]
@@ -27,7 +27,7 @@ set xlabel "date" offset 0,-4
 set bmargin 8
 
      
-plot data_file . ".dat" using 1:4 with lines axes x1y1 title 'ratio - y1', \
+plot data_file . ".dat" using 1:4 with lines smooth bezier axes x1y1 title 'ratio - y1', \
      data_file . ".dat" using 1:2 with boxes axes x1y2 title 'lapsed - y2', \
      data_file . ".dat" using 1:3 with boxes axes x1y2 title 'settled - y2'
      
