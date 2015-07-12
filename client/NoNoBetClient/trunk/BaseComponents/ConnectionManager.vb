@@ -20,6 +20,7 @@ Public Class ConnectionManager
   Friend WithEvents pnlBottom As System.Windows.Forms.Panel
 
   Private Sub InitializeComponent()
+    Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ConnectionManager))
     Me.pnlBottom = New System.Windows.Forms.Panel()
     Me.btnTables = New System.Windows.Forms.Button()
     Me.btnStart = New System.Windows.Forms.Button()
@@ -143,6 +144,7 @@ Public Class ConnectionManager
     Me.Controls.Add(Me.pnlTop)
     Me.Controls.Add(Me.pnlBottom)
     Me.FormTitle = "Connection Manager"
+    Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
     Me.Name = "ConnectionManager"
     Me.Text = "Connection Manager"
     Me.pnlBottom.ResumeLayout(False)

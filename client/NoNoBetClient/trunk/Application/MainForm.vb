@@ -6,6 +6,7 @@ Public Class MainForm
   Friend WithEvents TableGrid As NoNoBetBaseComponents.BaseGrid
 
   Private Sub InitializeComponent()
+    Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(MainForm))
     Me.TableGrid = New NoNoBetBaseComponents.BaseGrid()
     CType(Me.TableGrid, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
@@ -24,6 +25,7 @@ Public Class MainForm
     '
     Me.ClientSize = New System.Drawing.Size(585, 286)
     Me.Controls.Add(Me.TableGrid)
+    Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
     Me.Name = "MainForm"
     CType(Me.TableGrid, System.ComponentModel.ISupportInitialize).EndInit()
     Me.ResumeLayout(False)
