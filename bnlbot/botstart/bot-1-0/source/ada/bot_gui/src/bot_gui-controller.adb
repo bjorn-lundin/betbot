@@ -163,7 +163,8 @@ package body Bot_Gui.Controller is
 
       Sql.Connect (Host     => "db.nonodev.com",
                    Port     => 5432,
-                   Db_Name  => "bnl",
+                  -- Db_Name  => "bnl",
+                   Db_Name => Utils.Trim(View.User.Value),
                    Login    => "bnl",
                    Password => "ld4BC9Q51FU9CYjC21gp");
    
