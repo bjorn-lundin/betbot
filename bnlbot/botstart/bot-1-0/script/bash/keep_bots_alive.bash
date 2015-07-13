@@ -176,12 +176,14 @@ function Create_Plots () {
   gnuplot \
     -e "data_file='$DF1'" \
     -e "ts='$TS'" \
+    -e "user='$USR'" \
     -e "days='$DAYS'" \
     settled_vs_lapsed.gpl
   DF2="profit_vs_matched_${DAYS}"
   gnuplot \
     -e "data_file='$DF2'" \
     -e "ts='$TS'" \
+    -e "user='$USR'" \
     -e "days='$DAYS'" \
     profit_vs_matched.gpl
   #move to user area and cleanup

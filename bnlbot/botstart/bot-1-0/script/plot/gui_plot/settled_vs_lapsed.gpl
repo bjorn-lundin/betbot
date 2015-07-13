@@ -8,7 +8,7 @@ set output data_file . '.png'
 set grid
 set key top left
 
-set title "settled vs lapsed for last " . days . " days \n" . ts 
+set title "settled vs lapsed for last " . days . " days \n" . user . " : " . ts
 
 set yrange [0:100]
 set y2range [0:30]
