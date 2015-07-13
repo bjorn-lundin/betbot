@@ -54,8 +54,8 @@ package body Sql is
    
    
    Global_Transaction_Counter_Current : Integer_4 := 0;
-   Global_Transaction_Counter_Max     : Integer_4 := 100_000;
-
+   Global_Transaction_Counter_Max     : Integer_4 := 100_000; 
+   
    type Error_Type is (Error_Duplicate_Index, Error_No_Such_Object, Error_No_Such_Column);
    type Error_Array_Type is array (Error_Type'Range) of Boolean;
 
@@ -483,7 +483,7 @@ package body Sql is
          Global_Connection.Set_Connected (False);
          Global_Transaction.Status := None;
       end if;
-      Log(Me, "Session closed");
+    --  Log(Me, "Session closed");
    end Close_Session;
 
    --------------------------------------------------------------
@@ -734,7 +734,7 @@ package body Sql is
          end if;
          Private_Statement.Original_Statement := To_Unbounded_String (Command) ;
          Private_Statement.Exchange_Binder_Variables; -- sets Is_Prepared
-         Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
+         -- Log(Me, "Prepare - PGPrepared_stm: '" & To_String (Private_Statement.Pg_Prepared_Statement) & "'");
          --      declare
          --        use Interfaces.C, Interfaces.C.Strings;
          --        Types_Array    : Pgada.Thin.Int_Array_Type(1..3) := (0,0,0);

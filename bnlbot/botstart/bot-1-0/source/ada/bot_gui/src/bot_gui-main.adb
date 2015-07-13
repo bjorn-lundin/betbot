@@ -2,9 +2,9 @@ with Ada.Exceptions;
 
 with Gnoga.Application.Multi_Connect;
 
-pragma Warnings(Off);
+--pragma Warnings(Off);
 with Bot_Gui.Controller;
-pragma Warnings(On);
+--pragma Warnings(On);
 
 procedure Bot_Gui.Main is
 begin
@@ -13,6 +13,15 @@ begin
      ("<b>Connection to Application has been terminated</b>");
    
    Gnoga.Application.Multi_Connect.Initialize(Port => 9080);
+   
+   -- we arrive her if we call the web server with no path
+   Gnoga.Application.Multi_Connect.On_Connect_Handler
+     ( Bot_Gui.Controller.Default'access, "default");
+     
+--   Gnoga.Application.Multi_Connect.On_Connect_Handler
+--     (Event =>  Bot_Gui.Controller.On_Login'access,
+--      Path  => "dologin");
+   
    
    Gnoga.Application.Multi_Connect.Message_Loop;
 exception

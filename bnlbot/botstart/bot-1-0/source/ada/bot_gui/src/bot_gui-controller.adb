@@ -1,4 +1,4 @@
-with Gnoga.Gui.Base;
+--with Gnoga.Gui.Base;
 with Bot_Gui.View;
 with Gnoga.Gui.Element.Table;
 with Binary_Semaphores.Controls;
@@ -25,6 +25,7 @@ package body Bot_Gui.Controller is
 
    task type Updater_Task_Type is
      entry Set_View( View : Bot_Gui.View.Default_View_Access);
+     entry Start;
    end Updater_Task_Type;
 
    type Updater_Type_Access is access all Updater_Task_Type;
@@ -35,27 +36,32 @@ package body Bot_Gui.Controller is
      accept Set_View( View : Bot_Gui.View.Default_View_Access) do
        Local_View := View;
      end Set_View;
+     
+     -- hang here until started
+     accept Start do
+       null;
+     end Start;
 
      loop
-       exit when Local_View.Quit_Task;
        Local_View.Run_Query.Fire_On_Click;
        delay 15.0;
      end loop;
-     Local_View.Label_Text.Put_Line ("Updater_Task_Type - has quit");
+   exception
+        when E: others =>
+          declare
+            Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+            Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+            Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+          begin
+            Log(Last_Exception_Name);
+            Log("Message : " & Last_Exception_Messsage);
+            Log(Last_Exception_Info);
+            Log("addr2line" & " --functions --basenames --exe=" &
+                 Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));                 
+          end ;
+     
    end Updater_Task_Type;
 
-
-
-   procedure On_Click (Object : in out Gnoga.Gui.Base.Base_Type'Class);
-
-   procedure On_Click (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
-      View : Bot_Gui.View.Default_View_Access :=
-               Bot_Gui.View.Default_View_Access (Object.Parent);
-   begin
-      View.Label_Text.Put_Line ("Do_Stop");
-      View.Quit_Task := True;
-   end On_Click;
-   -------------------------------------------
 
    -------------------------------------------
    procedure On_Click_Run_Query (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
@@ -147,6 +153,20 @@ package body Bot_Gui.Controller is
 
 
    begin
+      Log ("start Bot_Gui.Controller.On_Click_Run_Query");
+      
+      if not View.User_Is_Validated_OK then
+        Log ("Bot_Gui.Controller.On_Click_Run_Query", "user not validated");
+        return;
+      end if;  
+      
+
+      Sql.Connect (Host     => "db.nonodev.com",
+                   Port     => 5432,
+                   Db_Name  => "bnl",
+                   Login    => "bnl",
+                   Password => "ld4BC9Q51FU9CYjC21gp");
+   
       -- reset old tables
       View.Label_Text.Inner_HTML ("");
 
@@ -161,7 +181,6 @@ package body Bot_Gui.Controller is
         "group by BETNAME, B.STARTTS::date " &
         "order by B.STARTTS::date desc, BETNAME");
 
-
       Select_Weekly_Profit.Prepare(
          "select BETNAME, sum(B.PROFIT) as SUMPROFIT, extract(week from B.STARTTS) as WEEK " &
          "from ABETS B " &
@@ -171,7 +190,6 @@ package body Bot_Gui.Controller is
          "and extract(year from B.STARTTS) = extract(year from (select CURRENT_DATE )) " &
          "group by BETNAME, extract(week from B.STARTTS) " &
          "order by extract(week from B.STARTTS) desc, BETNAME");
-
 
       --View.Weekly_Table(Buffer_Two).Inner_HTML("");
       --View.Daily_Table(Buffer_Two).Inner_HTML("");
@@ -204,13 +222,14 @@ package body Bot_Gui.Controller is
 
 
       T.Commit;
+      Sql.Close_Session;
 
       View.Label_Text.Put_Line ("Has run query " & Calendar2.Clock.To_String);
       View.Label_Text.Put_Line ("start update imgs " & Calendar2.Clock.To_String);
-      View.Matched_Image.URL_Source("img/profit_vs_matched_182.png?TS=" &
-        Utils.Trim(Ts.Millisecond'img));
-      View.Lapsed_Image.URL_Source("img/settled_vs_lapsed_182.png?TS=" &
-        Utils.Trim(Ts.Millisecond'img));
+      View.Matched_Image_42.URL_Source("img/" & Utils.Trim(View.User.Value) & "/profit_vs_matched_42.png?TS=" & Utils.Trim(Ts.Millisecond'img));
+      View.Lapsed_Image_42.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_42.png?TS=" & Utils.Trim(Ts.Millisecond'img));
+      View.Matched_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/profit_vs_matched_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
+      View.Lapsed_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
 
       View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
     exception
@@ -225,7 +244,12 @@ package body Bot_Gui.Controller is
             Log(Last_Exception_Info);
             Log("addr2line" & " --functions --basenames --exe=" &
                  Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+                 
+            if Sql.Is_Session_Open then
+              Sql.Close_Session;
+            end if;            
           end ;
+     Log ("stop Bot_Gui.Controller.On_Click_Run_Query");
    end On_Click_Run_Query;
    -------------------------------------------
    procedure Default
@@ -238,26 +262,45 @@ package body Bot_Gui.Controller is
                new Bot_Gui.View.Default_View_Type;
       Updater : Updater_Type_Access := new Updater_Task_Type;
    begin
+     Log ("start Bot_Gui.Controller.Default");
 
-      View.Dynamic;
-      View.Create (Main_Window);
-      View.Click_Button.On_Click_Handler (On_Click'access);
-      View.Run_Query.On_Click_Handler (On_Click_Run_Query'access);
+     View.Dynamic;
+     View.Create (Main_Window);
+     View.Run_Query.On_Click_Handler (On_Click_Run_Query'access);
+     View.Do_Login.On_Click_Handler (On_Submit'access);
+     Updater.Set_View(View); -- will associate task with view
+     Updater.Start; -- start the task loop
 
-      View.Label_Text.Put_Line ("Connect db");
-      Sql.Connect (Host     => "db.nonodev.com",
-                   Port     => 5432,
-                   Db_Name  => "bnl",
-                   Login    => "bnl",
-                   Password => "ld4BC9Q51FU9CYjC21gp");
-      View.Label_Text.Put_Line ("db Connected");
-      Updater.Set_View(View); -- will start update
-
-
+     Log ("stop Bot_Gui.Controller.Default");
    end Default;
 
-begin
-   -- we arrive her if we call the web server with no path
-   Gnoga.Application.Multi_Connect.On_Connect_Handler
-     (Default'access, "default");
+   
+   procedure On_Submit (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
+      View : Bot_Gui.View.Default_View_Access :=
+               Bot_Gui.View.Default_View_Access (Object.Parent);
+     Validate_OK : Boolean := True;
+   begin
+     Log ("start Bot_Gui.Controller.On_Submit");
+
+     View.Label_Text.Put_Line ("start Logging in " & Calendar2.Clock.To_String);
+
+     View.User_Is_Validated_OK := Validate_OK;
+     if Validate_OK then 
+       View.Data_Holder.Visible(True);
+       View.Do_Login.Visible(False);
+       View.Login_Form.Visible(False);
+      -- not visible here !! Updater.Start; -- start the task loop
+       View.Run_Query.Fire_On_Click;
+     end if; 
+
+     Log ("user '" &  View.User.Value & "'");
+     Log ("password '" &  View.Password.Value & "'");
+     Log ("done Logging in " & Calendar2.Clock.To_String);
+
+   
+     Log ("stop Bot_Gui.Controller.On_Submit");
+   end On_Submit;
+   
+
+     
 end Bot_Gui.Controller;
