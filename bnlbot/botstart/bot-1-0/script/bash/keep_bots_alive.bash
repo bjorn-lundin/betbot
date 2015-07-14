@@ -170,6 +170,7 @@ function Create_Plots () {
   #create datafiles
   ${BOT_TARGET}/bin/graph_data --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}.dat 2>/dev/null
   ${BOT_TARGET}/bin/graph_data --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}.dat 2>/dev/null
+  ${BOT_TARGET}/bin/graph_data --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}.dat 2>/dev/null
   #put it in wd of gnuplot
   cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
   DF1="settled_vs_lapsed_${DAYS}"
@@ -186,6 +187,13 @@ function Create_Plots () {
     -e "user='$USR'" \
     -e "days='$DAYS'" \
     profit_vs_matched.gpl
+  DF2="avg_price_${DAYS}"
+  gnuplot \
+    -e "data_file='$DF2'" \
+    -e "ts='$TS'" \
+    -e "user='$USR'" \
+    -e "days='$DAYS'" \
+    avg_price.gpl
   #move to user area and cleanup
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
