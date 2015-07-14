@@ -37,7 +37,6 @@ package body Bot_Gui.Controller is
 
      type Table_Type_Type is (Tbl_Date, Tbl_Week);
 
-
      procedure Draw_Table(Tbl : in out Gnoga.Gui.Element.Table.Table_Type;
                           Stm : in out Sql.Statement_Type;
                           Table_Type : in Table_Type_Type;
@@ -48,10 +47,8 @@ package body Bot_Gui.Controller is
        Date      : Calendar2.Time_Type := Calendar2.Time_Type_First;
        Cnt : Integer_4 := 0;
      begin
-
       Tbl.Add_Caption(Caption);
       Tbl.Border;
-
       declare
         Row  : Table_Row_Access := new Table_Row_Type;
         Col1 : Table_Heading_Access := new Table_Heading_Type;
@@ -109,9 +106,6 @@ package body Bot_Gui.Controller is
       Stm.Close_Cursor;
      end Draw_Table;
      --------------------------------------
-
-
-
    begin
       Log ("start Bot_Gui.Controller.On_Click_Run_Query");
       
@@ -119,7 +113,6 @@ package body Bot_Gui.Controller is
         Log ("Bot_Gui.Controller.On_Click_Run_Query", "user not validated");
         return;
       end if;  
-      
 
       Sql.Connect (Host     => "db.nonodev.com",
                    Port     => 5432,
@@ -189,9 +182,11 @@ package body Bot_Gui.Controller is
       View.Label_Text.Put_Line ("start update imgs " & Calendar2.Clock.To_String);
       View.Matched_Image_42.URL_Source("img/" & Utils.Trim(View.User.Value) & "/profit_vs_matched_42.png?TS=" & Utils.Trim(Ts.Millisecond'img));
       View.Lapsed_Image_42.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_42.png?TS=" & Utils.Trim(Ts.Millisecond'img));
+      View.Avg_Price_42.URL_Source("img/" & Utils.Trim(View.User.Value) & "/avg_price_42.png?TS=" & Utils.Trim(Ts.Millisecond'img));
       View.Matched_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/profit_vs_matched_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
       View.Lapsed_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
-
+      View.Avg_Price_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/avg_price_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
+      
       View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
       Log ("stop Bot_Gui.Controller.On_Click_Run_Query");
     exception

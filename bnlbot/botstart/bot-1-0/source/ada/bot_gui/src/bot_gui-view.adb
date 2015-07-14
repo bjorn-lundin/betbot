@@ -53,8 +53,10 @@ package body Bot_Gui.View is
       View.Image_Holder.Create (View.Data_Holder);
       View.Matched_Image_42.Create(View.Image_Holder,"img/profit_vs_matched_42.png");
       View.Lapsed_Image_42.Create(View.Image_Holder,"img/settled_vs_lapsed_42.png");
+      View.Avg_Price_42.Create(View.Image_Holder,"img/avg_price_42.png");
       View.Matched_Image_182.Create(View.Image_Holder,"img/profit_vs_matched_182.png");
       View.Lapsed_Image_182.Create(View.Image_Holder,"img/settled_vs_lapsed_182.png");
+      View.Avg_Price_182.Create(View.Image_Holder,"img/avg_price_182.png");
       View.Horizontal_Rule;
       View.Label_Text.Create (View);
       Log ("stop Bot_Gui.View.Create");

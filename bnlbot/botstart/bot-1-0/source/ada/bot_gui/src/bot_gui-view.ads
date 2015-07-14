@@ -43,8 +43,10 @@ package Bot_Gui.View is
       Image_Holder  : Gnoga.Gui.Element.Common.DIV_Type;
       Lapsed_Image_42   : Gnoga.Gui.Element.Common.IMG_Type;
       Matched_Image_42  : Gnoga.Gui.Element.Common.IMG_Type;
+      Avg_Price_42      : Gnoga.Gui.Element.Common.IMG_Type;
       Lapsed_Image_182  : Gnoga.Gui.Element.Common.IMG_Type;
       Matched_Image_182 : Gnoga.Gui.Element.Common.IMG_Type;
+      Avg_Price_182     : Gnoga.Gui.Element.Common.IMG_Type;
 
       Click_Button  : Gnoga.Gui.Element.Common.Button_Type;
       Run_Query     : Gnoga.Gui.Element.Common.Button_Type;
