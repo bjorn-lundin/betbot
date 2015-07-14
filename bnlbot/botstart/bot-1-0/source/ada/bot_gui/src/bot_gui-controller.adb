@@ -41,78 +41,113 @@ package body Bot_Gui.Controller is
                           Stm : in out Sql.Statement_Type;
                           Table_Type : in Table_Type_Type;
                           Caption,Hdr1,Hdr2,Hdr3 : in String ) is
-       Betname   : String (Bet_Name_Type'range) := (others => ' ');
-       Sumprofit : Float_8 := 0.0;
-       Week      : Integer_4 := 0;
-       Date      : Calendar2.Time_Type := Calendar2.Time_Type_First;
+       Betname     : String (Bet_Name_Type'range) := (others => ' ');
+       Sumprofit   : Float_8 := 0.0;
+       Week        : Integer_4 := 0;
+       Date        : Calendar2.Time_Type := Calendar2.Time_Type_First;
+       Total_Sum_Weeks : Float_8 := 0.0;
        Cnt : Integer_4 := 0;
      begin
-      Tbl.Add_Caption(Caption);
-      Tbl.Border;
-      declare
-        Row  : Table_Row_Access := new Table_Row_Type;
-        Col1 : Table_Heading_Access := new Table_Heading_Type;
-        Col2 : Table_Heading_Access := new Table_Heading_Type;
-        Col3 : Table_Heading_Access := new Table_Heading_Type;
-      begin
-        Row.Dynamic;
-        Col1.Dynamic;
-        Col2.Dynamic;
-        Col3.Dynamic;
-        Row.Create (Tbl);
-        Col1.Create (Row.all, Hdr1); --betname
-        Col2.Create (Row.all, Hdr2); --sum(profit)
-        Col3.Create (Row.all, Hdr3); --Date/Week
-      end;
-      Stm.Open_Cursor;
-      loop
-        Stm.Fetch(Eos);
-        exit when Eos;
-        Stm.Get("BETNAME", Betname);
-        Stm.Get("SUMPROFIT", Sumprofit);
-        case Table_Type is
-          when Tbl_Date => Stm.Get_Date("DATE", Date);
-          when Tbl_Week => Stm.Get("WEEK", Week);
-        end case;
-        declare
-          Row  : Table_Row_Access := new Table_Row_Type;
-          Col1 : Table_Column_Access := new Table_Column_Type;
-          Col2 : Table_Column_Access := new Table_Column_Type;
-          Col3 : Table_Column_Access := new Table_Column_Type;
-        begin
-          Cnt := Cnt +1;
-          Row.Dynamic;
-          Col1.Dynamic;
-          Col2.Dynamic;
-          Col3.Dynamic;
-          Row.Create (Tbl);
-          if Cnt mod 2 = Integer_4(0) then
-            Row.Background_Color("skyblue");
-          end if;
-          Col1.Create (Row.all, Utils.Trim(Betname));
-          Col2.Create (Row.all, Utils.F8_Image(Sumprofit));
-          if Sumprofit < 0.0 then
-            Col2.Background_Color("red");
-          else
-            Col2.Background_Color("palegreen");
-          end if;
-          case Table_Type is
-            when Tbl_Date => Col3.Create (Row.all, Date.String_Date_ISO);
-            when Tbl_Week => Col3.Create (Row.all, "Week");
-          end case;
-          Col2.Text_Alignment(Gnoga.Gui.Element.Right);
-        end;
-      end loop;
-      Stm.Close_Cursor;
+       Tbl.Add_Caption(Caption);
+       Tbl.Border;
+       declare
+         Row  : Table_Row_Access := new Table_Row_Type;
+         Col1 : Table_Heading_Access := new Table_Heading_Type;
+         Col2 : Table_Heading_Access := new Table_Heading_Type;
+         Col3 : Table_Heading_Access := new Table_Heading_Type;
+       begin
+         Row.Dynamic;
+         Col1.Dynamic;
+         Col2.Dynamic;
+         Col3.Dynamic;
+         Row.Create (Tbl);
+         Col1.Create (Row.all, Hdr1); --betname
+         Col2.Create (Row.all, Hdr2); --sum(profit)
+         Col3.Create (Row.all, Hdr3); --Date/Week
+       end;
+       Stm.Open_Cursor;
+       loop
+         Stm.Fetch(Eos);
+         exit when Eos;
+         Stm.Get("BETNAME", Betname);
+         Stm.Get("SUMPROFIT", Sumprofit);
+         case Table_Type is
+           when Tbl_Date =>
+             Stm.Get_Date("DATE", Date);
+           when Tbl_Week =>
+             Stm.Get("WEEK", Week);
+             Total_Sum_Weeks := Total_Sum_Weeks + Sumprofit;
+         end case;
+         declare
+           Row  : Table_Row_Access := new Table_Row_Type;
+           Col1 : Table_Column_Access := new Table_Column_Type;
+           Col2 : Table_Column_Access := new Table_Column_Type;
+           Col3 : Table_Column_Access := new Table_Column_Type;
+         begin
+           Cnt := Cnt +1;
+           Row.Dynamic;
+           Col1.Dynamic;
+           Col2.Dynamic;
+           Col3.Dynamic;
+           Row.Create (Tbl);
+           if Cnt mod 2 = Integer_4(0) then
+             Row.Background_Color("skyblue");
+           end if;
+           Col1.Create (Row.all, Utils.Trim(Betname));
+           Col2.Create (Row.all, Utils.F8_Image(Sumprofit));
+           if Sumprofit < 0.0 then
+             Col2.Background_Color("red");
+           else
+             Col2.Background_Color("palegreen");
+           end if;
+           case Table_Type is
+             when Tbl_Date => Col3.Create (Row.all, Date.String_Date_ISO);
+             when Tbl_Week => Col3.Create (Row.all, Week'Img);
+           end case;
+           Col2.Text_Alignment(Gnoga.Gui.Element.Right);
+         end;
+       end loop;
+       Stm.Close_Cursor;
+
+       -- add total if weeks
+       case Table_Type is
+         when Tbl_Week =>
+           declare
+             Row  : Table_Row_Access := new Table_Row_Type;
+             Col1 : Table_Column_Access := new Table_Column_Type;
+             Col2 : Table_Column_Access := new Table_Column_Type;
+             Col3 : Table_Column_Access := new Table_Column_Type;
+           begin
+             Cnt := Cnt +1;
+             Row.Dynamic;
+             Col1.Dynamic;
+             Col2.Dynamic;
+             Col3.Dynamic;
+             Row.Create (Tbl);
+             if Cnt mod 2 = Integer_4(0) then
+               Row.Background_Color("skyblue");
+             end if;
+             Col1.Create (Row.all, Utils.Trim(Betname));
+             Col2.Create (Row.all, Utils.F8_Image(Total_Sum_Weeks));
+             if Total_Sum_Weeks < 0.0 then
+               Col2.Background_Color("red");
+             else
+               Col2.Background_Color("palegreen");
+             end if;
+             Col3.Create (Row.all, "Total");
+             Col2.Text_Alignment(Gnoga.Gui.Element.Right);
+           end;
+         when Tbl_Date => null;
+       end case;
      end Draw_Table;
      --------------------------------------
    begin
       Log ("start Bot_Gui.Controller.On_Click_Run_Query");
-      
+
       if not View.User_Is_Validated_OK then
         Log ("Bot_Gui.Controller.On_Click_Run_Query", "user not validated");
         return;
-      end if;  
+      end if;
 
       Sql.Connect (Host     => "db.nonodev.com",
                    Port     => 5432,
@@ -120,7 +155,7 @@ package body Bot_Gui.Controller is
                    Db_Name => Utils.Trim(View.User.Value),
                    Login    => "bnl",
                    Password => "ld4BC9Q51FU9CYjC21gp");
-   
+
       -- reset old tables
       View.Label_Text.Inner_HTML ("");
 
@@ -186,7 +221,7 @@ package body Bot_Gui.Controller is
       View.Matched_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/profit_vs_matched_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
       View.Lapsed_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
       View.Avg_Price_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/avg_price_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
-      
+
       View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
       Log ("stop Bot_Gui.Controller.On_Click_Run_Query");
     exception
@@ -201,10 +236,10 @@ package body Bot_Gui.Controller is
             Log(Last_Exception_Info);
             Log("addr2line" & " --functions --basenames --exe=" &
                  Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
-                 
+
             if Sql.Is_Session_Open then
               Sql.Close_Session;
-            end if;            
+            end if;
           end ;
      Log ("stop exception Bot_Gui.Controller.On_Click_Run_Query");
    end On_Click_Run_Query;
@@ -228,7 +263,7 @@ package body Bot_Gui.Controller is
      Log ("stop Bot_Gui.Controller.Default");
    end Default;
 
-   
+
    procedure On_Submit (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
       View : Bot_Gui.View.Default_View_Access :=
                Bot_Gui.View.Default_View_Access (Object.Parent);
@@ -239,22 +274,22 @@ package body Bot_Gui.Controller is
      View.Label_Text.Put_Line ("start Logging in " & Calendar2.Clock.To_String);
 
      View.User_Is_Validated_OK := Validate_OK;
-     if Validate_OK then 
+     if Validate_OK then
        View.Data_Holder.Visible(True);
        View.Do_Login.Visible(False);
        View.Login_Form.Visible(False);
        View.Updater.Set_Parent(Object); -- will associate task with view
        View.Updater.Start; -- start the task loop
-     end if; 
+     end if;
 
      Log ("user '" &  View.User.Value & "'");
      Log ("password '" &  View.Password.Value & "'");
      Log ("done Logging in " & Calendar2.Clock.To_String);
 
-   
+
      Log ("stop Bot_Gui.Controller.On_Submit");
    end On_Submit;
-   
 
-     
+
+
 end Bot_Gui.Controller;
