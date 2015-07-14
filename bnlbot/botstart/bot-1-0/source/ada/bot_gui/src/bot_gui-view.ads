@@ -5,11 +5,25 @@ with Gnoga.Gui.Element.Table;
 with Gnoga.Gui.Element.Form;
 package Bot_Gui.View is
    
+   
+   task type Updater_Task_Type is
+     pragma Storage_Size(300 * 1024);   
+     entry Set_Parent(Object : in out Gnoga.Gui.Base.Base_Type'Class);
+     entry Start;
+   end Updater_Task_Type;
+      
+   type Updater_Type_Access is access all Updater_Task_Type;
+
+   
    type Double_Buffer_Type is (Buffer_One, Buffer_Two);
    type Table_Array_Type is array (Double_Buffer_Type'range) of Gnoga.Gui.Element.Table.Table_Type;
    type Div_Array_Type   is array (Double_Buffer_Type'range) of Gnoga.Gui.Element.Common.DIV_Type;
 
    type Default_View_Type is new Gnoga.Gui.View.View_Type with record
+   
+      Updater : Updater_Type_Access ; --:= new Updater_Task_Type;
+
+   
       Login_Form : Gnoga.Gui.Element.Form.Form_Type;
       User       : Gnoga.Gui.Element.Form.Text_Type;
       Password   : Gnoga.Gui.Element.Form.Password_Type;
@@ -46,5 +60,6 @@ package Bot_Gui.View is
       Parent  : in out Gnoga.Gui.Base.Base_Type'Class;
       ID      : in     String  := "");
 
+      
 
 end Bot_Gui.View;

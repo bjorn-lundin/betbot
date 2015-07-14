@@ -23,46 +23,6 @@ package body Bot_Gui.Controller is
    Select_Weekly_Profit : Sql.Statement_Type;
    Select_Daily_Profit : Sql.Statement_Type;
 
-   task type Updater_Task_Type is
-     entry Set_View( View : Bot_Gui.View.Default_View_Access);
-     entry Start;
-   end Updater_Task_Type;
-
-   type Updater_Type_Access is access all Updater_Task_Type;
-
-   task body Updater_Task_Type is
-     Local_View : Bot_Gui.View.Default_View_Access ;
-   begin
-     accept Set_View( View : Bot_Gui.View.Default_View_Access) do
-       Local_View := View;
-     end Set_View;
-     
-     -- hang here until started
-     accept Start do
-       null;
-     end Start;
-
-     loop
-       Local_View.Run_Query.Fire_On_Click;
-       delay 15.0;
-     end loop;
-   exception
-        when E: others =>
-          declare
-            Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
-            Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
-            Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
-          begin
-            Log(Last_Exception_Name);
-            Log("Message : " & Last_Exception_Messsage);
-            Log(Last_Exception_Info);
-            Log("addr2line" & " --functions --basenames --exe=" &
-                 Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));                 
-          end ;
-     
-   end Updater_Task_Type;
-
-
    -------------------------------------------
    procedure On_Click_Run_Query (Object : in out Gnoga.Gui.Base.Base_Type'Class) is
       View : Bot_Gui.View.Default_View_Access :=
@@ -233,6 +193,7 @@ package body Bot_Gui.Controller is
       View.Lapsed_Image_182.URL_Source("img/" & Utils.Trim(View.User.Value) & "/settled_vs_lapsed_182.png?TS=" & Utils.Trim(Ts.Millisecond'img));
 
       View.Label_Text.Put_Line ("Has updated imgs " & Calendar2.Clock.To_String);
+      Log ("stop Bot_Gui.Controller.On_Click_Run_Query");
     exception
         when E: others =>
           declare
@@ -250,7 +211,7 @@ package body Bot_Gui.Controller is
               Sql.Close_Session;
             end if;            
           end ;
-     Log ("stop Bot_Gui.Controller.On_Click_Run_Query");
+     Log ("stop exception Bot_Gui.Controller.On_Click_Run_Query");
    end On_Click_Run_Query;
    -------------------------------------------
    procedure Default
@@ -261,7 +222,6 @@ package body Bot_Gui.Controller is
       pragma Unreferenced(Connection);
       View : Bot_Gui.View.Default_View_Access :=
                new Bot_Gui.View.Default_View_Type;
-      Updater : Updater_Type_Access := new Updater_Task_Type;
    begin
      Log ("start Bot_Gui.Controller.Default");
 
@@ -269,8 +229,6 @@ package body Bot_Gui.Controller is
      View.Create (Main_Window);
      View.Run_Query.On_Click_Handler (On_Click_Run_Query'access);
      View.Do_Login.On_Click_Handler (On_Submit'access);
-     Updater.Set_View(View); -- will associate task with view
-     Updater.Start; -- start the task loop
 
      Log ("stop Bot_Gui.Controller.Default");
    end Default;
@@ -290,8 +248,8 @@ package body Bot_Gui.Controller is
        View.Data_Holder.Visible(True);
        View.Do_Login.Visible(False);
        View.Login_Form.Visible(False);
-      -- not visible here !! Updater.Start; -- start the task loop
-       View.Run_Query.Fire_On_Click;
+       View.Updater.Set_Parent(Object); -- will associate task with view
+       View.Updater.Start; -- start the task loop
      end if; 
 
      Log ("user '" &  View.User.Value & "'");
