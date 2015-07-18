@@ -51,7 +51,8 @@ procedure Poll is
   Cfg : Config.Config_Type;
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  type Bet_Type is (Back_1_10_7_1,
+  type Bet_Type is (Back_1_10_7_1_PLC,
+                    Back_1_10_7_1_WIN,
                     Lay_160_200,
                     Lay_1_10_25_4
                     );
@@ -269,10 +270,15 @@ procedure Poll is
         case i is
           when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
         end case;
+      elsif Ada.Strings.Fixed.Index(i'Img, "WIN_BACK") > Natural(0) then
+        case i is
+          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+        end case;
       end if;
     end loop;
 
-    Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1).Bet_Name);
+    Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1_PLC).Bet_Name);
+    Move("HORSES_WIN_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1_WIN).Bet_Name);    
     Move("HORSES_WIN_LAY_FINISH_1.10_25.0_4",     Bets_Allowed(Lay_1_10_25_4).Bet_Name);
     Move("HORSES_WIN_LAY_FINISH_160_200_1",       Bets_Allowed(Lay_160_200).Bet_Name);
 
@@ -280,7 +286,7 @@ procedure Poll is
     declare
       -- calculate how big portion the bet is of all 6 bets. Use as bet_size factor
     begin
-      Bets_Allowed(Back_1_10_7_1) .Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1) .Bet_Name);
+      Bets_Allowed(Back_1_10_7_1_PLC).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1_PLC) .Bet_Name);
     end;
     T.Commit;
 
@@ -449,9 +455,15 @@ procedure Poll is
           -- Back The leader in PLC market...
 
           Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
-                   Main_Bet        => Back_1_10_7_1,
+                   Main_Bet        => Back_1_10_7_1_PLC,
                    Place_Market_Id => Markets(Place).Marketid,
                    Receiver        => Process_Io.To_Process_Type("bet_placer_010"));
+                   
+          -- test         
+          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+                   Main_Bet        => Back_1_10_7_1_WIN,
+                   Place_Market_Id => Markets(Win).Marketid,
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_111"));
         end if;
 
         ---------------------------------------------------------------

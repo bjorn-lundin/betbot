@@ -185,22 +185,22 @@ package body Bot_Gui.Controller is
       View.Weekly_Table(Buffer_One).Inner_HTML("");
       View.Daily_Table(Buffer_One).Inner_HTML("");
 
-      Draw_Table(Tbl => View.Daily_Table(Buffer_One),
-                 Stm => Select_Daily_Profit,
-                 Table_Type => Tbl_Date,
-                 Caption => "Last week's result @ " & Ts.String_Date_And_Time(Milliseconds => False),
-                 Hdr1 => "Betname",
-                 Hdr2 => "Sum(Profit)",
-                 Hdr3 => "Date");
-
-
-      Draw_Table(Tbl => View.Weekly_Table(Buffer_One),
-                 Stm => Select_Weekly_Profit,
-                 Table_Type => Tbl_Week,
-                 Caption => "Last 6 week's result @ " & Ts.String_Date_And_Time(Milliseconds => False),
-                 Hdr1 => "Betname",
-                 Hdr2 => "Sum(Profit)",
-                 Hdr3 => "Week");
+ --     Draw_Table(Tbl => View.Daily_Table(Buffer_One),
+ --                Stm => Select_Daily_Profit,
+ --                Table_Type => Tbl_Date,
+ --                Caption => "Last week's result @ " & Ts.String_Date_And_Time(Milliseconds => False),
+ --                Hdr1 => "Betname",
+ --                Hdr2 => "Sum(Profit)",
+ --                Hdr3 => "Date");
+ --
+ --
+ --     Draw_Table(Tbl => View.Weekly_Table(Buffer_One),
+ --                Stm => Select_Weekly_Profit,
+ --                Table_Type => Tbl_Week,
+ --                Caption => "Last 6 week's result @ " & Ts.String_Date_And_Time(Milliseconds => False),
+ --                Hdr1 => "Betname",
+ --                Hdr2 => "Sum(Profit)",
+ --                Hdr3 => "Week");
 
 
       --View.Daily_Table(Buffer_Two).Place_Inside_Top_Of (View.Weekly_Table(Buffer_One));
