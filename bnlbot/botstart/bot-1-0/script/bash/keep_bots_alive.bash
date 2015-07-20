@@ -120,6 +120,7 @@ function Check_Bots_For_User () {
     #  fi
     #done
     BET_PLACER_LIST="bet_placer_010 \
+                     bet_placer_031 bet_placer_032 bet_placer_033 bet_placer_034 \
                      bet_placer_110 \
                      bet_placer_111 bet_placer_112 \
                      bet_placer_123 \
