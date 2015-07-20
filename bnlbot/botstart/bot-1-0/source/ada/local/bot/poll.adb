@@ -284,11 +284,7 @@ procedure Poll is
         case i is
           when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
         end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "Back_1_05_10_1") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
-        end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "Back_1_10_10_1") > Natural(0) then
+      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_10_10_1") > Natural(0) then
         case i is
           when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
         end case;
