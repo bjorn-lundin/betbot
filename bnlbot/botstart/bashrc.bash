@@ -3,7 +3,10 @@
 # for examples
 
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -25,10 +28,10 @@ shopt -s checkwinsize
 #shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
@@ -76,19 +79,15 @@ if [ -x /usr/bin/dircolors ]; then
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
 
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+    #alias grep='grep --color=auto'
+    #alias fgrep='fgrep --color=auto'
+    #alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+#alias ll='ls -l'
+#alias la='ls -A'
+#alias l='ls -CF'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -102,15 +101,16 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
+  fi
 fi
 
 
-# . betbot_env/bin/activate
-
-
-#export BOT_START=/home/bnl/bnlbot/botstart
+##bnl start
 
 #. $BOT_START/project_settings.bash
 #alias menu='. $BOT_START/project_settings.bash'
@@ -120,92 +120,22 @@ fi
 TZ='Europe/Stockholm'
 export TZ
 
-export MC_ROOT=/usr
-#alias mc='LANG=C . $MC_ROOT/share/mc/bin/mc-wrapper.sh -c'
-#alias mcedit='LANG=C $MC_ROOT/bin/mcedit -c'
-
-
-alias mc='$MC_ROOT/share/mc/bin/mc-wrapper.sh'
-alias mcedit='$MC_ROOT/bin/mcedit -c'
-
 export HOSTNAME=$(hostname)
 
-export OS_ARCHITECTURE=lnx_x86 
-#export ADA_PROJECT_PATH=/usr/local/ada/aws/2.11.0/lib/gnat
-#export ADA_PROJECT_PATH=/usr/local/ada/aws/3.1.0/lib/gnat
-export ADA_PROJECT_PATH=/usr/local/ada/aws/3.1.0w/lib/gnat
+export OS_ARCHITECTURE=lnx_x64
+export ADA_PROJECT_PATH=/usr/local/ada/aws/3.1.0w/lib/gnat:/home/bnl/svn/gnoga-code:/home/bnl/svn/gnoga-code/src
+export PATH=/usr/local/ada/gnat_2014_gpl_x64/bin:$PATH
+
 #LOCAL or GNAT
-export BOT_XML_SOURCE=LOCAL 
+export BOT_START=$HOME/bnlbot/botstart
+. $BOT_START/bot.bash bnl
 
-export BOT_MODE=PROD
-
-#cant be as long as python bots are running
-export BOT_START=$HOME/bnlbot/botstart 
-. $BOT_START/bot.bash bnl 
-
-alias make_table_package='tclsh $BOT_SCRIPT/tcl/make_table_package.tcl' 
-alias make_view='tclsh $BOT_SCRIPT/tcl/make_view.tcl' 
-
-alias stop_bet_checker='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit' 
-alias stop_saldo_fetcher='$BOT_TARGET/bin/bot_send --receiver=saldo_fetcher --message=exit'
-alias stop_bot='$BOT_TARGET/bin/bot_send --receiver=bot --message=exit' 
-alias stop_market_fetcher='$BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit' 
-alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll --message=exit' 
-alias stop_poll_and_log='$BOT_TARGET/bin/bot_send --receiver=poll_and_log --message=exit' 
-alias stop_bet_placer_10='$BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit' 
-alias stop_bet_placer_11='$BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit' 
-alias stop_bet_placer_20='$BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit' 
-alias stop_bet_placer_21='$BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit' 
-alias stop_bet_placer_30='$BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit' 
-alias stop_bet_placer_31='$BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit' 
-alias stop_football_better='$BOT_TARGET/bin/bot_send --receiver=football_better --message=exit' 
-
-alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
-
-alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit'
-
-alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bot --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_and_log --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=football_better --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_10 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_11 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_20 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_21 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_30 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_31 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=saldo_fetcher --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
-
-#USERS=$(ls $BOT_HOME/../)
-USERS="bnl jmb"
+USERS=$(ls $BOT_HOME/../)
 S=""
 for U in $USERS ; do
   S="$S . $BOT_START/bot.bash $U; stop_all_bots ;"
 done
-
+S="$S . $BOT_START/bot.bash bnl"
 alias stop_bot_system=$S
-                     
-#function crp {           
-#  echo " PID  STIME TIME      CMD"
-#  for U in $USERS ; do
-#    echo "---- $U --------------------------------------------------------"
-#    ps -eo pid,stime,time,cmd | grep bot | grep user=$U | grep -v grep
-#  done
-#  echo "----------------------------------------------------------------"
-#  date
-#}
 
-alias crp='$BOT_SCRIPT/bash/crp.bash'
 
-alias chguser='. $BOT_START/bot.bash $1'
-
-alias awspsql='psql --host=db.nonodev.com --dbname=bnl'
