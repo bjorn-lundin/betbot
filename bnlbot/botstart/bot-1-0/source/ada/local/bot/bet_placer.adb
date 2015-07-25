@@ -250,7 +250,7 @@ begin
           );
   Rpc.Login;
   Log(Me, "Login betfair done");
-  Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
+  --Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
   --Global_Enabled := Ini.Get_Value(Utils.Trim(Utils.Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
   Global_Max_Outstanding := Integer_4(Ini.Get_Value("global","max_outstanding",4000));
   Log(Me, "Start main loop");
