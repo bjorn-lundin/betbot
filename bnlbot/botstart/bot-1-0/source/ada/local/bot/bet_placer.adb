@@ -42,8 +42,8 @@ procedure Bet_Placer is
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line        : Command_Line_Configuration;
-  Global_Enabled  : constant Boolean   := True;
-  Global_Max_Outstanding       : Integer_4 := 4_000;
+  Global_Enabled         : constant Boolean   := True;
+  Global_Max_Outstanding : Integer_4 := 4_000;
   Global_Currently_Outstanding : Integer_4 := 0;
   Global_Keep_Alive_Counter           : Integer_4 := 0;  
   ------------------------------------------------------
@@ -252,7 +252,7 @@ begin
   Log(Me, "Login betfair done");
   --Ini.Load(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
   --Global_Enabled := Ini.Get_Value(Utils.Trim(Utils.Lower_Case(EV.Value("BOT_NAME"))),"enabled",False);
-  Global_Max_Outstanding := Integer_4(Ini.Get_Value("global","max_outstanding",4000));
+  --Global_Max_Outstanding := Integer_4(Ini.Get_Value("global","max_outstanding",4000));
   Log(Me, "Start main loop");
 
   if not Bot_Config.Config.Global_Section.Logging then
