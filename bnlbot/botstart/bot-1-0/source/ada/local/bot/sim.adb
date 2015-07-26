@@ -10,7 +10,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
 with Text_Io;
 with Sql;
-
+with Table_Arunners;
 
 package body Sim is
 
@@ -22,11 +22,9 @@ package body Sim is
   
   
   Select_All_Markets,
-  Select_Runners_In_One_Market,
   Select_Race_Winner_In_One_Market,
   Select_Pricets_In_A_Market,
-  Select_Pricets_For_Market,
-  Select_Prices_For_Runner_In_One_Market : Sql.Statement_Type;
+  Select_Pricets_For_Market : Sql.Statement_Type;
 
   Select_Get_Win_Market : Sql.Statement_Type;
 
@@ -146,109 +144,7 @@ package body Sim is
         
   end Get_Market_Prices;
                               
---
---  procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
---                              Market     : in out Table_Amarkets.Data_Type;
---                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
---                              In_Play    :    out Boolean) is
---    Eos : Boolean := False;                           
---    use type Table_Amarkets.Data_Type;
---    Price_During_Race_Data : Table_Apriceshistory.Data_Type;
---    Price_Data : Table_Aprices.Data_Type;
---    T : Sql.Transaction_Type;
---    Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
---  begin
---    In_Play := True;
---    -- trigg for a new market
---    if Current_Market = Table_Amarkets.Empty_Data then
---       --reset the fifo for ny race
---      for i in Num_Runners_Type loop
---        Fifo(i).Clear;
---      end loop;
---   
---      Current_Market := Market;
---      Global_Price_During_Race_List.Clear;
---      Pricets_List.Clear;
---      T.Start;
---      Stm_Select_Pricets_O.Prepare(
---        "select distinct(PRICETS) from Apriceshistory " &
---        "where MARKETID =:MARKETID " &
---        "order by PRICETS ");
---        
---      Stm_Select_Pricets_O.Set("MARKETID", Market_Id);
---      Stm_Select_Pricets_O.Open_Cursor;
---      loop
---        Stm_Select_Pricets_O.Fetch(Eos);
---        exit when Eos;
---        Stm_Select_Pricets_O.Get(1,Ts);
---        Pricets_List.Append(Ts);
---      end loop;
---      Stm_Select_Pricets_O.Close_Cursor;
---      T.Commit;
---      if not Pricets_List.Is_Empty then
---        Global_Current_Pricets := Pricets_List.First_Element;
---      else
---       Log("Sim.Get_Market_Prices : No pricesdata found");
---       Move("CLOSED",Market.Status);  
---       Current_Market := Table_Amarkets.Empty_Data;
---       return;
---      end if;      
---    else
---      -- find next in list by searching the list for curr val and return next
---      declare 
---        Use_Next : Boolean := False;
---        Next_Existed : Boolean := False;
---      begin
---        for e of Pricets_List loop
---          if e = Global_Current_Pricets then
---            Use_Next := True;
---          elsif Use_Next then
---            Global_Current_Pricets := e;
---            Next_Existed := True;
---            exit;
---          end if;
---        end loop;
---        if not Next_Existed then
---          Move("CLOSED",Market.Status);  
---          Current_Market := Table_Amarkets.Empty_Data;
---          return;
---        end if;
---      end;
---    end if;
---      
---    T.Start;        
---    Stm_Select_Marketid_Pricets_O.Prepare(
---      "select * from Apriceshistory " &
---      "where MARKETID =:MARKETID " &
---      "and PRICETS =:PRICETS ");      
---    Stm_Select_Marketid_Pricets_O.Set("MARKETID", Market_Id);
---    Stm_Select_Marketid_Pricets_O.Set("PRICETS", Global_Current_Pricets);
---    Stm_Select_Marketid_Pricets_O.Open_Cursor;
---    loop
---      Stm_Select_Marketid_Pricets_O.Fetch(Eos);
---      exit when Eos;
---      Price_During_Race_Data := Table_Apriceshistory.Get(Stm_Select_Marketid_Pricets_O);
---      Price_Data := (
---         Marketid     => Price_During_Race_Data.Marketid,
---         Selectionid  => Price_During_Race_Data.Selectionid,
---         Pricets      => Price_During_Race_Data.Pricets,
---         Status       => Price_During_Race_Data.Status,
---         Totalmatched => Price_During_Race_Data.Totalmatched,
---         Backprice    => Price_During_Race_Data.Backprice,
---         Layprice     => Price_During_Race_Data.Layprice,
---         Ixxlupd      => Price_During_Race_Data.Ixxlupd,
---         Ixxluts      => Price_During_Race_Data.Ixxluts
---      );
---      Price_List.Append(Price_Data);
---    end loop;
---    Stm_Select_Marketid_Pricets_O.Close_Cursor;
---    T.Commit;
---    Move("OPEN",Market.Status);    
---        
---  end Get_Market_Prices;
-
---  
-                              
+  ----------------------------------------------------------------------                              
   procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
                        Market_Id        : in     Market_Id_Type; 
                        Side             : in     Bet_Side_Type;
@@ -636,73 +532,6 @@ package body Sim is
    
   end Read_All_Markets;
   -------------------------------------------------------------------------
-  procedure Fill_Marketid_Runners_Map(Market_Id_With_Data_List     : in     Market_Id_With_Data_Pack.List;
-                                      Marketid_Runners_Map         :    out Marketid_Runners_Maps.Map) is
-    Eos : Boolean := False;
-    Runner : Table_Arunners.Data_Type;
-    Runners_List : Table_Arunners.Arunners_List_Pack2.List;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_runners_map.dat";
-    T : Sql.Transaction_Type;
-    
-  begin
-    if not AD.Exists(Filename) then
-      T.Start;
-      Select_Runners_In_One_Market.Prepare( 
-        "select * " &
-        "from ARUNNERS " &
-        "where MARKETID = :MARKETID " &
-        "and STATUS <> 'REMOVED' "  &
-        "order by SORTPRIO" ) ;
-
-      for Marketid of Market_Id_With_Data_List loop    
-        Select_Runners_In_One_Market.Set("MARKETID", Marketid) ;
-        Select_Runners_In_One_Market.Open_Cursor;
-        Runners_List.Clear;
-        loop
-          Select_Runners_In_One_Market.Fetch(Eos);
-          exit when Eos;
-          Runner := Table_Arunners.Get(Select_Runners_In_One_Market);       
-          Runners_List.Append(Runner);        
-        end loop;  
-        Select_Runners_In_One_Market.Close_Cursor;
-        Marketid_Runners_Map.Insert(Marketid, Runners_List);      
-      end loop;
-      T.Commit;
-      
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Runners_Maps.Map'Write(Stream, Marketid_Runners_Map);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
-    else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Runners_Maps.Map'Read(Stream, Marketid_Runners_Map);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;      
-    end if;
-    
-  end Fill_Marketid_Runners_Map;
-  
-  -------------------------------------------------------------------------
 
   procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
@@ -769,84 +598,6 @@ package body Sim is
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
   
-  procedure Fill_Racedata_Map(Market_Id_With_Data_List                       : in     Market_Id_With_Data_Pack.List;
-                                      Marketid_Runners_Map                   : in     Marketid_Runners_Maps.Map;
-                                      Racedata_Map                           :    out Market_Id_And_Selectionid_Maps.Map) is
-    Eos             : Boolean := False;
-    Runners_List    : Table_Arunners.Arunners_List_Pack2.List;
-    Key             : Market_Id_And_Selectionid_Type := (others => ' ');
-    Race_Price_Data : Table_Apriceshistory.Data_Type;
-    Raceprice_List  : Raceprice_Pack.List;
-    Cnt             : Integer := 0;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "racedata_map.dat";
-    T : Sql.Transaction_Type;
-  begin
-    if not AD.Exists(Filename) then
-      T.Start;
-      Select_Prices_For_Runner_In_One_Market.Prepare(
-        "select * " &
-        "from APRICESHISTORY " &
-        "where MARKETID = :MARKETID " &
-        "and SELECTIONID = :SELECTIONID " &
-        "order by PRICETS"  ) ;
-      for Marketid of Market_Id_With_Data_List loop    
-        Cnt := Cnt + 1; 
-        Log("marketid '" & Marketid & "' " & Cnt'Img);      
-        Select_Prices_For_Runner_In_One_Market.Set("MARKETID", Marketid) ;
-        Runners_List.Clear;     
-        Runners_List := Marketid_Runners_Map.Element(Marketid);    -- we now have a list of the runners for this market
-        
-        for Runner of Runners_List loop
-          Select_Prices_For_Runner_In_One_Market.Set("SELECTIONID", Runner.Selectionid) ;      
-          Select_Prices_For_Runner_In_One_Market.Open_Cursor;
-          loop
-            Select_Prices_For_Runner_In_One_Market.Fetch(Eos);
-            exit when Eos;
-            Race_Price_Data := Table_Apriceshistory.Get(Select_Prices_For_Runner_In_One_Market);     
-            Raceprice_List.Append(Race_Price_Data);
-          end loop;
-          Select_Prices_For_Runner_In_One_Market.Close_Cursor;
-         -- Key := (others => ' ');
-          Move(Marketid & Race_Price_Data.Selectionid'Img, Key);
-          Racedata_Map.Insert(Key, Raceprice_List);
-          Raceprice_List.Clear;               
-        end loop; --runner_list
-      end loop;  -- market_id_with_data_list
-      T.Commit;
-      
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Market_Id_And_Selectionid_Maps.Map'Write(Stream, Racedata_Map);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
-    else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Market_Id_And_Selectionid_Maps.Map'Read(Stream, Racedata_Map);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;      
-    end if;
-      
-  end Fill_Racedata_Map;
-  ----------------------------------------------------
 
   procedure Fill_Winners_Map(Market_Id_With_Data_List         : in     Market_Id_With_Data_Pack.List;
                              Winners_Map                      :    out Marketid_Winner_Maps.Map ) is
@@ -987,86 +738,4 @@ package body Sim is
     end if;
   end Fill_Marketid_Runners_Pricets_Map;
 
-  -- test3 start
-  procedure Fill_Map(Market_Id_With_Data_List: in     Market_Id_With_Data_Pack.List;
-                     Marketid_Pricets_Map    : in     Marketid_Pricets_Maps.Map;
-                     X                       :    out X_Maps.Map) is
---    Eos       : Boolean := False;
---    Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
---    Apriceshistory_Data    : Table_Apriceshistory.Data_Type;
---    T : Sql.Transaction_Type;
---    Cnt             : Integer := 0;
---    Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
---    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "x.dat";
-  begin
-null;
---    if not AD.Exists(Filename) then
---      T.Start;
---      Select_Pricets_For_Market.Prepare(
---        "select * " &
---        "from APRICESHISTORY " &
---        "where MARKETID = :MARKETID " &
---        "and PRICETS = :PRICETS " &
---        "and STATUS <> 'REMOVED' "  &
---        "order by SELECTIONID"  ) ;
---      for Marketid of Market_Id_With_Data_List loop    
---        Cnt := Cnt + 1; 
---        Log("marketid '" & Marketid & "' " & Cnt'Img);  
---
---        --Marketid_Pricets_Maps(Marketid) is a list of pricets
---        for Pricets of Marketid_Pricets_Map(Marketid) loop
---
---          -- do rest here with marketid and pricets
---          Select_Pricets_For_Market.Set("MARKETID", Marketid) ;
---          Select_Pricets_For_Market.Set("PRICETS", Pricets) ;
---          Select_Pricets_For_Market.Open_Cursor;
---          loop
---            Select_Pricets_For_Market.Fetch(Eos);
---            exit when Eos;
---            Apriceshistory_Data := Table_Apriceshistory.Get(Select_Pricets_For_Market);
---            Apriceshistory_List.Append(Apriceshistory_Data);
---          end loop;
---          Select_Pricets_For_Market.Close_Cursor;
---          --Log("Insert Marketid & _ & Pricets.To_String '" & Marketid & "_" & Pricets.To_String & "'");  
---          Timestamp_To_Apriceshistory_Map.Insert(Pricets.To_String, Apriceshistory_List);
---          Apriceshistory_List.Clear;     
---        end loop;
---        Marketid_Timestamp_To_Apriceshistory_Map.Insert(Marketid, Timestamp_To_Apriceshistory_Map);
---        Timestamp_To_Apriceshistory_Map.Clear;
---      end loop;  -- market_id_with_data_list
---      T.Commit;
---      
---      declare
---        File   : Ada.Streams.Stream_IO.File_Type;
---        Stream : Ada.Streams.Stream_IO.Stream_Access;  
---      begin
---        Ada.Streams.Stream_IO.Create 
---            (File => File,
---             Name => Filename,
---             Mode => Ada.Streams.Stream_IO.Out_File);
---        Stream := Ada.Streams.Stream_IO.Stream (File);
---        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Write(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
---        Ada.Streams.Stream_IO.Close(File);
---      --  Log(Object & Service, "Stream written to file " & Filename);
---      end;
---    else
---      -- read from disk    
---     -- Log(Object & Service, "read from file '" & Filename & "'");
---      declare
---       File   : Ada.Streams.Stream_IO.File_Type;
---       Stream : Ada.Streams.Stream_IO.Stream_Access;  
---      begin
---        Ada.Streams.Stream_IO.Open 
---            (File => File,
---             Name => Filename,
---             Mode => Ada.Streams.Stream_IO.In_File);
---        Stream := Ada.Streams.Stream_IO.Stream (File);
---        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Read(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
---        Ada.Streams.Stream_IO.Close(File);
---    --    Log(Object & Service, "Stream read from file " & Filename);
---      end;      
---    end if;
-  end Fill_Map;  
-  
-  -- test3 stop
 end Sim ;
