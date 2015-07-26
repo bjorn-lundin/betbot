@@ -4,11 +4,9 @@ with Bot_Types; use Bot_Types;
 with Table_Amarkets;
 with Table_Aprices;
 with Table_Abets;
-with Table_Arunners;
 with Table_Apriceshistory;
 with Calendar2;
 with Ada.Containers.Hashed_Maps;
-with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings;
 with Ada.Strings.Hash;
@@ -69,19 +67,6 @@ package Sim is
 
   package Market_Id_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Market_Id_Type);
   procedure Read_All_Markets(List : out Market_Id_With_Data_Pack.List) ;
-
-  -- Marketid_Runners_Map is a map keyed on Market id
-  -- that holds a list of runners in that race
-  package Marketid_Runners_Maps is new Ada.Containers.Hashed_Maps (
-         Market_Id_Type,
-         Table_Arunners.Arunners_List_Pack2.List,
-         Ada.Strings.Hash,
-         "=",
-         Table_Arunners.Arunners_List_Pack2."=");
-
-  procedure Fill_Marketid_Runners_Map(Market_Id_With_Data_List     : in     Market_Id_With_Data_Pack.List;
-                                      Marketid_Runners_Map         :    out Marketid_Runners_Maps.Map);
-
                                       
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
                                       
@@ -95,35 +80,6 @@ package Sim is
   procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map);
 
-  
-  
-  --list of runners/pricets?
-  
-  package Marketid_Runners_Pricets_Maps is new Ada.Containers.Hashed_Maps
-        (Market_Id_Type,
-         Table_Apriceshistory.Apriceshistory_List_Pack2.List,
-         Ada.Strings.Hash,
-         "=",
-         Table_Apriceshistory.Apriceshistory_List_Pack2."=");
-  
-
-
-
-  
-  package Raceprice_Pack is new Ada.Containers.Doubly_Linked_Lists(Table_Apriceshistory.Data_Type, Table_Apriceshistory."="); 
-  subtype Market_Id_And_Selectionid_Type is String (1..20); 
-  package Market_Id_And_Selectionid_Maps is new Ada.Containers.Hashed_Maps
-       (Market_Id_And_Selectionid_Type,
-        Raceprice_Pack.List,
-        Ada.Strings.Hash,
-        "=",
-        Raceprice_Pack."=");  
-
-        
-  procedure Fill_Racedata_Map(Market_Id_With_Data_List                       : in     Market_Id_With_Data_Pack.List;
-                                      Marketid_Runners_Map                   : in     Marketid_Runners_Maps.Map;
-                                      Racedata_Map                           :    out Market_Id_And_Selectionid_Maps.Map);
-        
 
   
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
@@ -142,8 +98,7 @@ package Sim is
 
   -- for timestamp slices start
   
-  --'1.118224639_2015-04-12 16:41:25.500'
-  subtype Key_Type is string(1..23);
+  --'2015-04-12 16:41:25.500'
   subtype Timestamp_String_Key_Type is String(1..23);
   
   package Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps (
@@ -167,33 +122,6 @@ package Sim is
   
   -- for timestamp slices stop
   
-  --- test3 start
-  package Z_Maps is new Ada.Containers.Ordered_Maps (
-         Integer_4,
-         Table_Apriceshistory.Apriceshistory_List_Pack2.List,
-         "=",
-         Table_Apriceshistory.Apriceshistory_List_Pack2."=");
-
-         
- -- subtype Timestamp_String_Key_Type is String(1..23);
-  package Y_Maps is new Ada.Containers.Hashed_Maps (
-         Timestamp_String_Key_Type,
-         Z_Maps.Map,
-         Ada.Strings.Hash,
-         "=",
-         Z_Maps."=");
-
-  package X_Maps is new Ada.Containers.Hashed_Maps (
-         Market_Id_Type,
-         Y_Maps.Map,
-         Ada.Strings.Hash,
-         "=",
-         Y_Maps."=");
-         
-  procedure Fill_Map(Market_Id_With_Data_List: in     Market_Id_With_Data_Pack.List;
-                     Marketid_Pricets_Map    : in     Marketid_Pricets_Maps.Map;
-                     X                       :    out X_Maps.Map) ;
-  -- test3 stop
   
   
 
