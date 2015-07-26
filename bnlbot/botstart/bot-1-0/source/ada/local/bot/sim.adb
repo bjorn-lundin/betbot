@@ -1,4 +1,3 @@
-with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Environment_Variables;
 with Ada.Directories;
 with Ada.Streams.Stream_IO;
@@ -9,9 +8,9 @@ with Calendar2; use Calendar2;
 with Utils; use Utils;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
---with Table_Apricesfinish;
-with Sql;
 with Text_Io;
+with Sql;
+
 
 package body Sim is
 
@@ -20,11 +19,20 @@ package body Sim is
 
   --Stm_Select_Marketid_Pricets_O : Sql.Statement_Type;
   --Stm_Select_Pricets_O : Sql.Statement_Type;
+  
+  
+  Select_All_Markets,
+  Select_Runners_In_One_Market,
+  Select_Race_Winner_In_One_Market,
+  Select_Pricets_In_A_Market,
+  Select_Pricets_For_Market,
+  Select_Prices_For_Runner_In_One_Market : Sql.Statement_Type;
+
   Select_Get_Win_Market : Sql.Statement_Type;
 
   
   Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
-  Global_Price_During_Race_List : Table_Apricesfinish.Apricesfinish_List_Pack2.List;
+  Global_Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
     
   Global_Current_Pricets: Calendar2.Time_Type := Calendar2.Time_Type_First ;
   package Pricets_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type);
@@ -48,7 +56,7 @@ package body Sim is
     Service : constant String := "Get_Market_Prices";
     --Eos : Boolean := False;                           
     use type Table_Amarkets.Data_Type;
-    --Price_During_Race_Data : Table_Apricesfinish.Data_Type;
+    --Price_During_Race_Data : Table_Apriceshistory.Data_Type;
     Price_Data : Table_Aprices.Data_Type;
    -- T : Sql.Transaction_Type;
     Start,
@@ -145,7 +153,7 @@ package body Sim is
 --                              In_Play    :    out Boolean) is
 --    Eos : Boolean := False;                           
 --    use type Table_Amarkets.Data_Type;
---    Price_During_Race_Data : Table_Apricesfinish.Data_Type;
+--    Price_During_Race_Data : Table_Apriceshistory.Data_Type;
 --    Price_Data : Table_Aprices.Data_Type;
 --    T : Sql.Transaction_Type;
 --    Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
@@ -163,7 +171,7 @@ package body Sim is
 --      Pricets_List.Clear;
 --      T.Start;
 --      Stm_Select_Pricets_O.Prepare(
---        "select distinct(PRICETS) from APRICESFINISH " &
+--        "select distinct(PRICETS) from Apriceshistory " &
 --        "where MARKETID =:MARKETID " &
 --        "order by PRICETS ");
 --        
@@ -210,7 +218,7 @@ package body Sim is
 --      
 --    T.Start;        
 --    Stm_Select_Marketid_Pricets_O.Prepare(
---      "select * from APRICESFINISH " &
+--      "select * from Apriceshistory " &
 --      "where MARKETID =:MARKETID " &
 --      "and PRICETS =:PRICETS ");      
 --    Stm_Select_Marketid_Pricets_O.Set("MARKETID", Market_Id);
@@ -219,7 +227,7 @@ package body Sim is
 --    loop
 --      Stm_Select_Marketid_Pricets_O.Fetch(Eos);
 --      exit when Eos;
---      Price_During_Race_Data := Table_Apricesfinish.Get(Stm_Select_Marketid_Pricets_O);
+--      Price_During_Race_Data := Table_Apriceshistory.Get(Stm_Select_Marketid_Pricets_O);
 --      Price_Data := (
 --         Marketid     => Price_During_Race_Data.Marketid,
 --         Selectionid  => Price_During_Race_Data.Selectionid,
@@ -375,20 +383,20 @@ package body Sim is
   end Clear;
   
   
-  procedure Read_Marketid(Marketid : in Market_Id_Type; List : out Table_Apricesfinish.Apricesfinish_List_Pack2.List) is
-    Service : constant String := "Read_Marketid";
-    Apricesfinish_Data : Table_Apricesfinish.Data_Type;
+  procedure Read_Marketid(Marketid : in Market_Id_Type; List : out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+  --  Service : constant String := "Read_Marketid";
+    Apriceshistory_Data : Table_Apriceshistory.Data_Type;
     Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/markets/" & "win_" & Marketid & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
   begin
   
     if not AD.Exists(Filename) then
-      Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
+    --  Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
       T.Start;
       Select_Sampleids_In_One_Market.Prepare(
         "select * " &
-        "from APRICESFINISH " &
+        "from APRICESHISTORY " &
         "where MARKETID = :MARKETID " &
         "order by PRICETS" ) ;
         
@@ -397,12 +405,12 @@ package body Sim is
       loop
         Select_Sampleids_In_One_Market.Fetch(Eos);
         exit when Eos;
-        Apricesfinish_Data := Table_Apricesfinish.Get(Select_Sampleids_In_One_Market);
-        List.Append(Apricesfinish_Data);
+        Apriceshistory_Data := Table_Apriceshistory.Get(Select_Sampleids_In_One_Market);
+        List.Append(Apriceshistory_Data);
       end loop;
       Select_Sampleids_In_One_Market.Close_Cursor;
       T.Commit;
-      Log(Object & Service, "Stream to file");
+    --  Log(Object & Service, "Stream to file");
       declare
         File   : Ada.Streams.Stream_IO.File_Type;
         Stream : Ada.Streams.Stream_IO.Stream_Access;  
@@ -412,13 +420,13 @@ package body Sim is
              Name => Filename,
              Mode => Ada.Streams.Stream_IO.Out_File);
         Stream := Ada.Streams.Stream_IO.Stream (File);
-        Table_Apricesfinish.Apricesfinish_List_Pack2.List'Write(Stream, List);
+        Table_Apriceshistory.Apriceshistory_List_Pack2.List'Write(Stream, List);
         Ada.Streams.Stream_IO.Close(File);
-        Log(Object & Service, "Stream written to file " & Filename);
+      --  Log(Object & Service, "Stream written to file " & Filename);
       end;
     else
       -- read from disk    
-      Log(Object & Service, "read from file '" & Filename & "'");
+     -- Log(Object & Service, "read from file '" & Filename & "'");
       declare
        File   : Ada.Streams.Stream_IO.File_Type;
        Stream : Ada.Streams.Stream_IO.Stream_Access;  
@@ -428,12 +436,12 @@ package body Sim is
              Name => Filename,
              Mode => Ada.Streams.Stream_IO.In_File);
         Stream := Ada.Streams.Stream_IO.Stream (File);
-        Table_Apricesfinish.Apricesfinish_List_Pack2.List'Read(Stream, List);
+        Table_Apriceshistory.Apriceshistory_List_Pack2.List'Read(Stream, List);
         Ada.Streams.Stream_IO.Close(File);
-        Log(Object & Service, "Stream read from file " & Filename);
+    --    Log(Object & Service, "Stream read from file " & Filename);
       end;  
     end if;    
-  
+   
   end Read_Marketid;
   -------------------------------------------------------------------------
   
@@ -508,7 +516,6 @@ package body Sim is
       Winner_Market := Table_Amarkets.Get(Select_Get_Win_Market);
     end if;
     Select_Get_Win_Market.Close_Cursor;
-    
     T.Commit;
     Log(Object & "Get_Win_Market", "plc= '" & Place_Market_Id & "' win = '" & Winner_Market.Marketid & "'");
 
@@ -566,10 +573,500 @@ package body Sim is
     
   
   end Create_Bet_Data;
+  --------------------------------------------------------------------------------------------
+-- start lay_during_race2
   
+  procedure Read_All_Markets(List : out Market_Id_With_Data_Pack.List) is
+  --  Service  : constant String := "Read_All_Markets";
+    T        : Sql.Transaction_Type;
+    Eos      : Boolean := False;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "all_market_ids.dat";
+    Marketid : Market_Id_Type := (others => ' ');
+  begin
   
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_All_Markets.Prepare (
+        "select distinct(M.MARKETID) " &
+        "from APRICESHISTORY RP, AMARKETS M " &
+        "where RP.MARKETID = M.MARKETID " &
+        "and M.MARKETTYPE = 'WIN' " &
+        "order by M.MARKETID");
+      
+      Select_All_Markets.Open_Cursor;
+      loop
+        Select_All_Markets.Fetch(Eos);
+        exit when Eos;
+        Select_All_Markets.Get(1, Marketid);
+        List.Append(Marketid);
+      end loop;
+      Select_All_Markets.Close_Cursor;
+      T.Commit;
+    --  Log(Object & Service, "Stream to file");
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Market_Id_With_Data_Pack.List'Write(Stream, List);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Market_Id_With_Data_Pack.List'Read(Stream, List);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;  
+    end if;    
+   
+  end Read_All_Markets;
+  -------------------------------------------------------------------------
+  procedure Fill_Marketid_Runners_Map(Market_Id_With_Data_List     : in     Market_Id_With_Data_Pack.List;
+                                      Marketid_Runners_Map         :    out Marketid_Runners_Maps.Map) is
+    Eos : Boolean := False;
+    Runner : Table_Arunners.Data_Type;
+    Runners_List : Table_Arunners.Arunners_List_Pack2.List;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_runners_map.dat";
+    T : Sql.Transaction_Type;
+    
+  begin
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_Runners_In_One_Market.Prepare( 
+        "select * " &
+        "from ARUNNERS " &
+        "where MARKETID = :MARKETID " &
+        "and STATUS <> 'REMOVED' "  &
+        "order by SORTPRIO" ) ;
+
+      for Marketid of Market_Id_With_Data_List loop    
+        Select_Runners_In_One_Market.Set("MARKETID", Marketid) ;
+        Select_Runners_In_One_Market.Open_Cursor;
+        Runners_List.Clear;
+        loop
+          Select_Runners_In_One_Market.Fetch(Eos);
+          exit when Eos;
+          Runner := Table_Arunners.Get(Select_Runners_In_One_Market);       
+          Runners_List.Append(Runner);        
+        end loop;  
+        Select_Runners_In_One_Market.Close_Cursor;
+        Marketid_Runners_Map.Insert(Marketid, Runners_List);      
+      end loop;
+      T.Commit;
+      
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Runners_Maps.Map'Write(Stream, Marketid_Runners_Map);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Runners_Maps.Map'Read(Stream, Marketid_Runners_Map);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;      
+    end if;
+    
+  end Fill_Marketid_Runners_Map;
   
+  -------------------------------------------------------------------------
+
+  procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
+                                      Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
+    Eos          : Boolean := False;
+    Pricets_List : Timestamp_Pack.List;
+    Filename     : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_pricets_map.dat";    
+    Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    T : Sql.Transaction_Type;
+  begin
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_Pricets_In_A_Market.Prepare(
+        "select distinct(PRICETS) " &
+        "from APRICESHISTORY " &
+        "where MARKETID = :MARKETID " &
+        "and STATUS <> 'REMOVED' "  &
+        "order by PRICETS"  ) ;  
+      for Marketid of Market_Id_With_Data_List loop    
+        Select_Pricets_In_A_Market.Set("MARKETID", Marketid) ;
+        Select_Pricets_In_A_Market.Open_Cursor;
+        Pricets_List.Clear;
+        loop
+          Select_Pricets_In_A_Market.Fetch(Eos);
+          exit when Eos;
+          Select_Pricets_In_A_Market.Get(1,Ts);       
+          Pricets_List.Append(Ts); 
+        end loop;  
+        Select_Pricets_In_A_Market.Close_Cursor;
+        Marketid_Pricets_Map.Insert(Marketid, Pricets_List);      
+      end loop; 
+      T.Commit;
+      
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Pricets_Maps.Map'Write(Stream, Marketid_Pricets_Map);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Pricets_Maps.Map'Read(Stream, Marketid_Pricets_Map);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;      
+    end if;
+    
+  end Fill_Marketid_Pricets_Map;
+  -------------------------------------------------------------
   
+  procedure Fill_Racedata_Map(Market_Id_With_Data_List                       : in     Market_Id_With_Data_Pack.List;
+                                      Marketid_Runners_Map                   : in     Marketid_Runners_Maps.Map;
+                                      Racedata_Map                           :    out Market_Id_And_Selectionid_Maps.Map) is
+    Eos             : Boolean := False;
+    Runners_List    : Table_Arunners.Arunners_List_Pack2.List;
+    Key             : Market_Id_And_Selectionid_Type := (others => ' ');
+    Race_Price_Data : Table_Apriceshistory.Data_Type;
+    Raceprice_List  : Raceprice_Pack.List;
+    Cnt             : Integer := 0;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "racedata_map.dat";
+    T : Sql.Transaction_Type;
+  begin
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_Prices_For_Runner_In_One_Market.Prepare(
+        "select * " &
+        "from APRICESHISTORY " &
+        "where MARKETID = :MARKETID " &
+        "and SELECTIONID = :SELECTIONID " &
+        "order by PRICETS"  ) ;
+      for Marketid of Market_Id_With_Data_List loop    
+        Cnt := Cnt + 1; 
+        Log("marketid '" & Marketid & "' " & Cnt'Img);      
+        Select_Prices_For_Runner_In_One_Market.Set("MARKETID", Marketid) ;
+        Runners_List.Clear;     
+        Runners_List := Marketid_Runners_Map.Element(Marketid);    -- we now have a list of the runners for this market
+        
+        for Runner of Runners_List loop
+          Select_Prices_For_Runner_In_One_Market.Set("SELECTIONID", Runner.Selectionid) ;      
+          Select_Prices_For_Runner_In_One_Market.Open_Cursor;
+          loop
+            Select_Prices_For_Runner_In_One_Market.Fetch(Eos);
+            exit when Eos;
+            Race_Price_Data := Table_Apriceshistory.Get(Select_Prices_For_Runner_In_One_Market);     
+            Raceprice_List.Append(Race_Price_Data);
+          end loop;
+          Select_Prices_For_Runner_In_One_Market.Close_Cursor;
+         -- Key := (others => ' ');
+          Move(Marketid & Race_Price_Data.Selectionid'Img, Key);
+          Racedata_Map.Insert(Key, Raceprice_List);
+          Raceprice_List.Clear;               
+        end loop; --runner_list
+      end loop;  -- market_id_with_data_list
+      T.Commit;
+      
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Market_Id_And_Selectionid_Maps.Map'Write(Stream, Racedata_Map);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Market_Id_And_Selectionid_Maps.Map'Read(Stream, Racedata_Map);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;      
+    end if;
+      
+  end Fill_Racedata_Map;
+  ----------------------------------------------------
+
+  procedure Fill_Winners_Map(Market_Id_With_Data_List         : in     Market_Id_With_Data_Pack.List;
+                             Winners_Map                      :    out Marketid_Winner_Maps.Map ) is
+    Eos             : Boolean := False;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "winners_map.dat";
+    Runner : Table_Arunners.Data_Type;
+    T : Sql.Transaction_Type;
+  begin
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_Race_Winner_In_One_Market.Prepare(
+        "select * " &
+        "from ARUNNERS " &
+        "where MARKETID = :MARKETID " &
+        "and STATUS = 'WINNER' ") ;
+      for Marketid of Market_Id_With_Data_List loop    
+        Select_Race_Winner_In_One_Market.Set("MARKETID", Marketid) ;
+        Select_Race_Winner_In_One_Market.Open_Cursor;
+        Select_Race_Winner_In_One_Market.Fetch(Eos);
+        if not Eos then
+          Runner := Table_Arunners.Get(Select_Race_Winner_In_One_Market);       
+        end if;  
+        Select_Race_Winner_In_One_Market.Close_Cursor;
+        Winners_Map.Insert(Marketid, Runner.Selectionid);      
+      end loop;  
+      T.Commit;
+      
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Winner_Maps.Map'Write(Stream, Winners_Map);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Winner_Maps.Map'Read(Stream, Winners_Map);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;      
+    end if;
+  end Fill_Winners_Map;  
+  -----------------------------------------
+
+         
+  procedure Fill_Marketid_Runners_Pricets_Map(Market_Id_With_Data_List        : in     Market_Id_With_Data_Pack.List;
+                                              Marketid_Pricets_Map            : in     Marketid_Pricets_Maps.Map;
+                                              Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
+    Eos       : Boolean := False;
+    Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+    Apriceshistory_Data    : Table_Apriceshistory.Data_Type;
+    T : Sql.Transaction_Type;
+    Cnt             : Integer := 0;
+    Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
+    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_timestamp_to_apriceshistory_map.dat";
+  begin
+    if not AD.Exists(Filename) then
+      T.Start;
+      Select_Pricets_For_Market.Prepare(
+        "select * " &
+        "from APRICESHISTORY " &
+        "where MARKETID = :MARKETID " &
+        "and PRICETS = :PRICETS " &
+        "and STATUS <> 'REMOVED' "  &
+        "order by SELECTIONID"  ) ;
+      for Marketid of Market_Id_With_Data_List loop    
+        Cnt := Cnt + 1; 
+        Log("marketid '" & Marketid & "' " & Cnt'Img & "/" & Market_Id_With_Data_List.Length'Img );  
+
+        --Marketid_Pricets_Maps(Marketid) is a list of pricets
+        for Pricets of Marketid_Pricets_Map(Marketid) loop
+
+          -- do rest here with marketid and pricets
+          Select_Pricets_For_Market.Set("MARKETID", Marketid) ;
+          Select_Pricets_For_Market.Set("PRICETS", Pricets) ;
+          Select_Pricets_For_Market.Open_Cursor;
+          loop
+            Select_Pricets_For_Market.Fetch(Eos);
+            exit when Eos;
+            Apriceshistory_Data := Table_Apriceshistory.Get(Select_Pricets_For_Market);
+            Apriceshistory_List.Append(Apriceshistory_Data);
+          end loop;
+          Select_Pricets_For_Market.Close_Cursor;
+          --Log("Insert Marketid & _ & Pricets.To_String '" & Marketid & "_" & Pricets.To_String & "'");  
+          Timestamp_To_Apriceshistory_Map.Insert(Pricets.To_String, Apriceshistory_List);
+          Apriceshistory_List.Clear;     
+        end loop;
+        Marketid_Timestamp_To_Apriceshistory_Map.Insert(Marketid, Timestamp_To_Apriceshistory_Map);
+        Timestamp_To_Apriceshistory_Map.Clear;
+      end loop;  -- market_id_with_data_list
+      T.Commit;
+      
+      declare
+        File   : Ada.Streams.Stream_IO.File_Type;
+        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Create 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.Out_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Write(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
+        Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+      end;
+    else
+      -- read from disk    
+     -- Log(Object & Service, "read from file '" & Filename & "'");
+      declare
+       File   : Ada.Streams.Stream_IO.File_Type;
+       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      begin
+        Ada.Streams.Stream_IO.Open 
+            (File => File,
+             Name => Filename,
+             Mode => Ada.Streams.Stream_IO.In_File);
+        Stream := Ada.Streams.Stream_IO.Stream (File);
+        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Read(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
+        Ada.Streams.Stream_IO.Close(File);
+    --    Log(Object & Service, "Stream read from file " & Filename);
+      end;      
+    end if;
+  end Fill_Marketid_Runners_Pricets_Map;
+
+  -- test3 start
+  procedure Fill_Map(Market_Id_With_Data_List: in     Market_Id_With_Data_Pack.List;
+                     Marketid_Pricets_Map    : in     Marketid_Pricets_Maps.Map;
+                     X                       :    out X_Maps.Map) is
+--    Eos       : Boolean := False;
+--    Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+--    Apriceshistory_Data    : Table_Apriceshistory.Data_Type;
+--    T : Sql.Transaction_Type;
+--    Cnt             : Integer := 0;
+--    Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
+--    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "x.dat";
+  begin
+null;
+--    if not AD.Exists(Filename) then
+--      T.Start;
+--      Select_Pricets_For_Market.Prepare(
+--        "select * " &
+--        "from APRICESHISTORY " &
+--        "where MARKETID = :MARKETID " &
+--        "and PRICETS = :PRICETS " &
+--        "and STATUS <> 'REMOVED' "  &
+--        "order by SELECTIONID"  ) ;
+--      for Marketid of Market_Id_With_Data_List loop    
+--        Cnt := Cnt + 1; 
+--        Log("marketid '" & Marketid & "' " & Cnt'Img);  
+--
+--        --Marketid_Pricets_Maps(Marketid) is a list of pricets
+--        for Pricets of Marketid_Pricets_Map(Marketid) loop
+--
+--          -- do rest here with marketid and pricets
+--          Select_Pricets_For_Market.Set("MARKETID", Marketid) ;
+--          Select_Pricets_For_Market.Set("PRICETS", Pricets) ;
+--          Select_Pricets_For_Market.Open_Cursor;
+--          loop
+--            Select_Pricets_For_Market.Fetch(Eos);
+--            exit when Eos;
+--            Apriceshistory_Data := Table_Apriceshistory.Get(Select_Pricets_For_Market);
+--            Apriceshistory_List.Append(Apriceshistory_Data);
+--          end loop;
+--          Select_Pricets_For_Market.Close_Cursor;
+--          --Log("Insert Marketid & _ & Pricets.To_String '" & Marketid & "_" & Pricets.To_String & "'");  
+--          Timestamp_To_Apriceshistory_Map.Insert(Pricets.To_String, Apriceshistory_List);
+--          Apriceshistory_List.Clear;     
+--        end loop;
+--        Marketid_Timestamp_To_Apriceshistory_Map.Insert(Marketid, Timestamp_To_Apriceshistory_Map);
+--        Timestamp_To_Apriceshistory_Map.Clear;
+--      end loop;  -- market_id_with_data_list
+--      T.Commit;
+--      
+--      declare
+--        File   : Ada.Streams.Stream_IO.File_Type;
+--        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+--      begin
+--        Ada.Streams.Stream_IO.Create 
+--            (File => File,
+--             Name => Filename,
+--             Mode => Ada.Streams.Stream_IO.Out_File);
+--        Stream := Ada.Streams.Stream_IO.Stream (File);
+--        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Write(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
+--        Ada.Streams.Stream_IO.Close(File);
+--      --  Log(Object & Service, "Stream written to file " & Filename);
+--      end;
+--    else
+--      -- read from disk    
+--     -- Log(Object & Service, "read from file '" & Filename & "'");
+--      declare
+--       File   : Ada.Streams.Stream_IO.File_Type;
+--       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+--      begin
+--        Ada.Streams.Stream_IO.Open 
+--            (File => File,
+--             Name => Filename,
+--             Mode => Ada.Streams.Stream_IO.In_File);
+--        Stream := Ada.Streams.Stream_IO.Stream (File);
+--        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Read(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
+--        Ada.Streams.Stream_IO.Close(File);
+--    --    Log(Object & Service, "Stream read from file " & Filename);
+--      end;      
+--    end if;
+  end Fill_Map;  
   
-  
+  -- test3 stop
 end Sim ;

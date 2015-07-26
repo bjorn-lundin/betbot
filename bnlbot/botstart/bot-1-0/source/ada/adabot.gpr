@@ -43,7 +43,8 @@ project Adabot is
                     );
 
    Stat_Mains   := ("lay_during_race.adb",
-                    "lay_during_race2.adb",
+               --     "lay_during_race2.adb",
+                    "lay_during_race3.adb",
                     "lay_in_play_greenup.adb",
                     "back_hitrate.adb",
                     "lay_greenup_filter.adb",

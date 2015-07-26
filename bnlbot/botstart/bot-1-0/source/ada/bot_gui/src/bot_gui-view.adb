@@ -79,7 +79,7 @@ package body Bot_Gui.View is
 
      loop
        L_View.Run_Query.Fire_On_Click;
-       delay 15.0;
+       delay 1.0;
      end loop;
    exception
         when E: others =>
