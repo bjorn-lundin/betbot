@@ -447,7 +447,7 @@ package body Sim is
     Marketid : Market_Id_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
   begin
-  
+    List.Clear;
     if not AD.Exists(Filename) then
       T.Start;
       Select_All_Markets.Prepare (
@@ -484,6 +484,7 @@ package body Sim is
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
   begin
+    Marketid_Pricets_Map.Clear;
     if not AD.Exists(Filename) then
       T.Start;
       Select_Pricets_In_A_Market.Prepare(
@@ -524,6 +525,7 @@ package body Sim is
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
   begin
+    Winners_Map.Clear;
     if not AD.Exists(Filename) then
       T.Start;
       Select_Race_Winner_In_One_Market.Prepare(
@@ -564,6 +566,7 @@ package body Sim is
     
     package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
   begin
+    Marketid_Timestamp_To_Apriceshistory_Map.Clear;
     if not AD.Exists(Filename) then
       T.Start;
       Select_Pricets_For_Market.Prepare(
@@ -602,7 +605,7 @@ package body Sim is
       
       Serializer.Write_To_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
     else
-       Serializer.Read_From_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
+      Serializer.Read_From_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
     end if;
   end Fill_Marketid_Runners_Pricets_Map;
   
