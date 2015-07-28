@@ -285,6 +285,7 @@ package body Sim is
     Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/markets/" & "win_" & Marketid & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
+    package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
   begin
   
     if not AD.Exists(Filename) then
@@ -306,36 +307,10 @@ package body Sim is
       end loop;
       Select_Sampleids_In_One_Market.Close_Cursor;
       T.Commit;
-    --  Log(Object & Service, "Stream to file");
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Table_Apriceshistory.Apriceshistory_List_Pack2.List'Write(Stream, List);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
+      
+      Serializer.Write_To_Disk(List, Filename);
     else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Table_Apriceshistory.Apriceshistory_List_Pack2.List'Read(Stream, List);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;  
+      Serializer.Read_From_Disk(List, Filename);
     end if;    
    
   end Read_Marketid;
@@ -478,6 +453,7 @@ package body Sim is
     Eos      : Boolean := False;
     Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "all_market_ids.dat";
     Marketid : Market_Id_Type := (others => ' ');
+    package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
   begin
   
     if not AD.Exists(Filename) then
@@ -498,36 +474,10 @@ package body Sim is
       end loop;
       Select_All_Markets.Close_Cursor;
       T.Commit;
-    --  Log(Object & Service, "Stream to file");
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Market_Id_With_Data_Pack.List'Write(Stream, List);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
+      
+      Serializer.Write_To_Disk(List, Filename);
     else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Market_Id_With_Data_Pack.List'Read(Stream, List);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;  
+      Serializer.Read_From_Disk(List, Filename);
     end if;    
    
   end Read_All_Markets;
@@ -540,6 +490,7 @@ package body Sim is
     Filename     : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_pricets_map.dat";    
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
     T : Sql.Transaction_Type;
+    package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
   begin
     if not AD.Exists(Filename) then
       T.Start;
@@ -564,35 +515,9 @@ package body Sim is
       end loop; 
       T.Commit;
       
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Pricets_Maps.Map'Write(Stream, Marketid_Pricets_Map);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
+      Serializer.Write_To_Disk(Marketid_Pricets_Map, Filename);
     else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Pricets_Maps.Map'Read(Stream, Marketid_Pricets_Map);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;      
+      Serializer.Read_From_Disk(Marketid_Pricets_Map, Filename);
     end if;
     
   end Fill_Marketid_Pricets_Map;
@@ -605,6 +530,7 @@ package body Sim is
     Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "winners_map.dat";
     Runner : Table_Arunners.Data_Type;
     T : Sql.Transaction_Type;
+    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
   begin
     if not AD.Exists(Filename) then
       T.Start;
@@ -625,35 +551,9 @@ package body Sim is
       end loop;  
       T.Commit;
       
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Winner_Maps.Map'Write(Stream, Winners_Map);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
+      Serializer.Write_To_Disk(Winners_Map, Filename);
     else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Winner_Maps.Map'Read(Stream, Winners_Map);
-        Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;      
+      Serializer.Read_From_Disk(Winners_Map, Filename);
     end if;
   end Fill_Winners_Map;  
   -----------------------------------------
@@ -669,6 +569,8 @@ package body Sim is
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
     Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_timestamp_to_apriceshistory_map.dat";
+    
+    package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
   begin
     if not AD.Exists(Filename) then
       T.Start;
@@ -706,36 +608,51 @@ package body Sim is
       end loop;  -- market_id_with_data_list
       T.Commit;
       
-      declare
-        File   : Ada.Streams.Stream_IO.File_Type;
-        Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      begin
-        Ada.Streams.Stream_IO.Create 
-            (File => File,
-             Name => Filename,
-             Mode => Ada.Streams.Stream_IO.Out_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Write(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
-        Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
-      end;
+      Serializer.Write_To_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
     else
-      -- read from disk    
-     -- Log(Object & Service, "read from file '" & Filename & "'");
-      declare
+       Serializer.Read_From_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
+    end if;
+  end Fill_Marketid_Runners_Pricets_Map;
+  
+  
+  package body Disk_Serializer is
+    --------------------------------------------------------
+    procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
+      File   : Ada.Streams.Stream_IO.File_Type;
+      Stream : Ada.Streams.Stream_IO.Stream_Access;  
+     -- Service : constant String := "Write_To_Disk";
+    begin
+     -- Log(Object & Service, "write to file '" & Filename & "'");
+      Ada.Streams.Stream_IO.Create 
+          (File => File,
+           Name => Filename,
+           Mode => Ada.Streams.Stream_IO.Out_File);
+      Stream := Ada.Streams.Stream_IO.Stream (File);
+      Data_Type'Write(Stream, Container);
+      Ada.Streams.Stream_IO.Close(File);
+      --  Log(Object & Service, "Stream written to file " & Filename);
+    end Write_To_Disk;
+    --------------------------------------------------------
+    procedure Read_From_Disk (Container : in out Data_Type; Filename : in String) is
        File   : Ada.Streams.Stream_IO.File_Type;
        Stream : Ada.Streams.Stream_IO.Stream_Access;  
+     -- Service : constant String := "Read_From_Disk";
       begin
+     -- Log(Object & Service, "read from file '" & Filename & "'");
         Ada.Streams.Stream_IO.Open 
             (File => File,
              Name => Filename,
              Mode => Ada.Streams.Stream_IO.In_File);
         Stream := Ada.Streams.Stream_IO.Stream (File);
-        Marketid_Timestamp_To_Apriceshistory_Maps.Map'Read(Stream, Marketid_Timestamp_To_Apriceshistory_Map);
+        Data_Type'Read(Stream, Container);
         Ada.Streams.Stream_IO.Close(File);
-    --    Log(Object & Service, "Stream read from file " & Filename);
-      end;      
-    end if;
-  end Fill_Marketid_Runners_Pricets_Map;
+     --    Log(Object & Service, "Stream read from file " & Filename);
+      end Read_From_Disk;  
+    --------------------------------------------------------
+  end Disk_Serializer;
+    ----------------------------------------------------------
+  
+  
+  
 
 end Sim ;

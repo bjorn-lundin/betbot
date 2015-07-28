@@ -14,6 +14,15 @@ with Ada.Strings.Hash;
 
 package Sim is
 
+
+  generic
+    type Data_Type is private;
+  package Disk_Serializer is
+    procedure Write_To_Disk (Container : in Data_Type; Filename : in String);
+    procedure Read_From_Disk (Container : in out Data_Type; Filename : in String);
+  end Disk_Serializer;
+
+
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type;
                               Market     : in out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
