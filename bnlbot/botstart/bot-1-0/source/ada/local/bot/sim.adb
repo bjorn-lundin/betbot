@@ -17,17 +17,12 @@ package body Sim is
   package EV renames Ada.Environment_Variables;
   package AD renames Ada.Directories;
 
-  --Stm_Select_Marketid_Pricets_O : Sql.Statement_Type;
-  --Stm_Select_Pricets_O : Sql.Statement_Type;
-  
-  
   Select_All_Markets,
   Select_Race_Winner_In_One_Market,
   Select_Pricets_In_A_Market,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
   Select_Get_Win_Market : Sql.Statement_Type;
-
   
   Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
   Global_Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
@@ -36,15 +31,12 @@ package body Sim is
   package Pricets_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type);
   Pricets_List : Pricets_List_Pack.List;
 
-
   Object : constant String := "Sim.";
   Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
 
   use type Ada.Containers.Count_Type;
   
-  
   Select_Sampleids_In_One_Market : Sql.Statement_Type;
-  
   
   ----------------------------------------------------------
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
@@ -282,7 +274,7 @@ package body Sim is
   procedure Read_Marketid(Marketid : in Market_Id_Type; List : out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
   --  Service : constant String := "Read_Marketid";
     Apriceshistory_Data : Table_Apriceshistory.Data_Type;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/markets/" & "win_" & Marketid & ".dat";
+    Filename : String := "markets/" & "win_" & Marketid & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
@@ -451,7 +443,7 @@ package body Sim is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
     Eos      : Boolean := False;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "all_market_ids.dat";
+    Filename : String := "all_market_ids.dat";
     Marketid : Market_Id_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
   begin
@@ -487,7 +479,7 @@ package body Sim is
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
     Pricets_List : Timestamp_Pack.List;
-    Filename     : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_pricets_map.dat";    
+    Filename     : String := "marketid_pricets_map.dat";    
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
@@ -527,7 +519,7 @@ package body Sim is
   procedure Fill_Winners_Map(Market_Id_With_Data_List         : in     Market_Id_With_Data_Pack.List;
                              Winners_Map                      :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "winners_map.dat";
+    Filename : String := "winners_map.dat";
     Runner : Table_Arunners.Data_Type;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
@@ -568,7 +560,7 @@ package body Sim is
     T : Sql.Transaction_Type;
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
-    Filename : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & "marketid_timestamp_to_apriceshistory_map.dat";
+    Filename : String := "marketid_timestamp_to_apriceshistory_map.dat";
     
     package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
   begin
@@ -614,18 +606,19 @@ package body Sim is
     end if;
   end Fill_Marketid_Runners_Pricets_Map;
   
-  
+  --------------------------------------------------------------------------
   package body Disk_Serializer is
     --------------------------------------------------------
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      File_On_Disk : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Filename;
      -- Service : constant String := "Write_To_Disk";
     begin
      -- Log(Object & Service, "write to file '" & Filename & "'");
       Ada.Streams.Stream_IO.Create 
           (File => File,
-           Name => Filename,
+           Name => File_On_Disk,
            Mode => Ada.Streams.Stream_IO.Out_File);
       Stream := Ada.Streams.Stream_IO.Stream (File);
       Data_Type'Write(Stream, Container);
@@ -634,14 +627,15 @@ package body Sim is
     end Write_To_Disk;
     --------------------------------------------------------
     procedure Read_From_Disk (Container : in out Data_Type; Filename : in String) is
-       File   : Ada.Streams.Stream_IO.File_Type;
-       Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      File   : Ada.Streams.Stream_IO.File_Type;
+      Stream : Ada.Streams.Stream_IO.Stream_Access;  
+      File_On_Disk : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Filename;
      -- Service : constant String := "Read_From_Disk";
       begin
      -- Log(Object & Service, "read from file '" & Filename & "'");
         Ada.Streams.Stream_IO.Open 
             (File => File,
-             Name => Filename,
+             Name => File_On_Disk,
              Mode => Ada.Streams.Stream_IO.In_File);
         Stream := Ada.Streams.Stream_IO.Stream (File);
         Data_Type'Read(Stream, Container);
