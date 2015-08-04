@@ -71,6 +71,7 @@ procedure Markets_Fetcher is
   My_Lock         : Lock.Lock_Type;    
   UTC_Time_Start,
   UTC_Time_Stop   : Calendar2.Time_Type ;
+  Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
   Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
@@ -322,7 +323,8 @@ begin
     
 
     --Now set that time 1 hour ahead:
---    UTC_Time_Start := UTC_Time_Start + One_Hour;
+    -- to get the start of the race, start poll before STARTTS
+    UTC_Time_Start := UTC_Time_Start - Three_Minutes;
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(UTC_Time_Start));

@@ -59,6 +59,8 @@ procedure Poll is
                     Back_1_05_10_1_WIN,
                     Back_1_10_10_1_PLC,
                     Back_1_10_10_1_WIN,
+                    Back_1_50_30_1_PLC,
+                    Back_1_50_30_1_WIN,
                     Lay_160_200,
                     Lay_1_10_25_4
                     );
@@ -278,21 +280,31 @@ procedure Poll is
         end case;
       elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_05_") > Natural(0) then
         case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+          when others => Bets_Allowed(i).Bet_Size := 2.0; 
         end case;
       elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_10_7_1_WIN") > Natural(0) then
         case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+          when others => Bets_Allowed(i).Bet_Size := 2.0; -- make sure not accepted
         end case;
       elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_10_10_1") > Natural(0) then
         case i is
           when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
         end case;
+      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_50_30_1") > Natural(0) then
+        case i is
+          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
+        end case;
       end if;
     end loop;
+
+    Bets_Allowed(Back_1_50_30_1_PLC).Bet_Size := 30.0;
+    Bets_Allowed(Back_1_05_10_1_PLC).Bet_Size := 30.0;
+    Bets_Allowed(Back_1_10_10_1_PLC).Bet_Size := 30.0;
+    Bets_Allowed(Back_1_05_7_1_PLC).Bet_Size := 30.0;
+
     
-    
-    
+    Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_1_50_30_1_PLC).Bet_Name);
+    Move("HORSES_WIN_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_1_50_30_1_WIN).Bet_Name);    
     Move("HORSES_PLC_BACK_FINISH_1.05_10.0_1",    Bets_Allowed(Back_1_05_10_1_PLC).Bet_Name);
     Move("HORSES_WIN_BACK_FINISH_1.05_10.0_1",    Bets_Allowed(Back_1_05_10_1_WIN).Bet_Name);    
     Move("HORSES_PLC_BACK_FINISH_1.10_10.0_1",    Bets_Allowed(Back_1_10_10_1_PLC).Bet_Name);    
@@ -541,6 +553,24 @@ procedure Poll is
                    Main_Bet        => Back_1_05_10_1_WIN,
                    Place_Market_Id => Markets(Win).Marketid,
                    Receiver        => Process_Io.To_Process_Type("bet_placer_034"));
+        end if;
+        ---------------------------------------------------------------
+        --MR_HORSES_PLC_BACK_FINISH_1.50_30.0_1
+        if Best_Runners(1).Backprice <= Float_8(1.50) and then
+           Best_Runners(4).Backprice >= Float_8(30.0) and then
+           Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
+           Best_Runners(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          -- Back The leader in PLC market...
+
+          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+                   Main_Bet        => Back_1_50_30_1_PLC,
+                   Place_Market_Id => Markets(Place).Marketid,
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_125"));
+                   
+          Send_Bet(Selectionid     => Best_Runners(1).Selectionid,
+                   Main_Bet        => Back_1_50_30_1_WIN,
+                   Place_Market_Id => Markets(Win).Marketid,
+                   Receiver        => Process_Io.To_Process_Type("bet_placer_126"));
         end if;
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.10_25.0_1
