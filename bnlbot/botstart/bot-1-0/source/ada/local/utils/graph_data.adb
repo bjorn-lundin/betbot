@@ -1,6 +1,6 @@
-with Gnat.Command_Line; use Gnat.Command_Line;
+    with Gnat.Command_Line; use Gnat.Command_Line;
 with Types;    use Types;
---with Gnat.Strings;
+with Gnat.Strings;
 with Sql;
 with Calendar2; use Calendar2;
 --with Logging;               use Logging;
@@ -19,10 +19,13 @@ procedure Graph_Data is
    Select_Lapsed_Date    : Sql.Statement_Type;
    Select_Profit_Date    : Sql.Statement_Type;
    Select_Avg_Price_Date : Sql.Statement_Type;
+   Select_Equity_Date    : Sql.Statement_Type;
 
+   Sa_Betname      : aliased Gnat.Strings.String_Access;
    Ba_Avg_Price    : aliased Boolean := False;
    Ba_Profit       : aliased Boolean := False;
    Ba_Lapsed       : aliased Boolean := False;
+   Ba_Equity       : aliased Boolean := False;
    Ia_Days         : aliased Integer := 42;
 
    gDebug : Boolean := False;
@@ -45,17 +48,25 @@ procedure Graph_Data is
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
+   
+   type Equity_Result_Type is record
+     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
+     Equity       : Float_8 := 0.0;
+   end record;
+   
+   
    package Days_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Days_Result_Type);
    Days_Result_List   : Days_Result_Pack.List;
-   Days_Result_Record : Days_Result_Type;
 
    package Profit_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Profit_Result_Type);
    Profit_Result_List   : Profit_Result_Pack.List;
-   Profit_Result_Record : Profit_Result_Type;
 
    package Avg_Price_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Avg_Price_Result_Type);
    Avg_Price_Result_List   : Avg_Price_Result_Pack.List;
-   Avg_Price_Result_Record : Avg_Price_Result_Type;
+   
+   package Equity_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Equity_Result_Type);
+   Equity_Result_List   : Equity_Result_Pack.List;
+
    -------------------------------
    procedure Debug (What : String) is
    begin
@@ -75,6 +86,7 @@ procedure Graph_Data is
                  Days   : in     Integer_4;
                  A_List : in out Days_Result_Pack.List) is
      Eos : Boolean := False;
+     Days_Result_Record : Days_Result_Type;
    begin
      Select_Lapsed_Date.Prepare(
        "select count('a'), STARTTS::date " &
@@ -121,6 +133,7 @@ procedure Graph_Data is
                  Days   : in     Integer_4;
                  A_List : in out Profit_Result_Pack.List) is
      Eos : Boolean := False;
+     Profit_Result_Record : Profit_Result_Type;
    begin
      Select_Profit_Date.Prepare(
        "select sum(PROFIT), sum(SIZEMATCHED), STARTTS::date " &
@@ -152,6 +165,7 @@ procedure Graph_Data is
                  Days   : in     Integer_4;
                  A_List : in out Avg_Price_Result_Pack.List) is
      Eos : Boolean := False;
+     Avg_Price_Result_Record : Avg_Price_Result_Type;
    begin
      Select_Avg_Price_Date.Prepare(
        "select BETNAME, avg(B.PRICEMATCHED) as AVGODDS, B.STARTTS::date as DATE " &
@@ -179,9 +193,50 @@ procedure Graph_Data is
    end Avg_Price_For_Settled_Bets;
    ------------------------------------------------------
 
+   --------------------------------------------------------
+   procedure Equity_Data(
+                 Betname : in     String;
+                 A_List  : in out Equity_Result_Pack.List) is
+     Eos : Boolean := False;
+     Equity_Result : Equity_Result_Type;
+     Profit : Float_8 := 0.0;
+   begin
+     Select_Equity_Date.Prepare(
+       "select B.STARTTS, B.PROFIT " & 
+       "from ABETS B, ARUNNERS R " & 
+       "where B.BETNAME = :BETNAME " & 
+       "and B.MARKETID = R.MARKETID " & 
+       "and B.SELECTIONID = R.SELECTIONID " & 
+       "and R.STATUS in ('WINNER','LOSER') " & 
+       "and B.STATUS in ('SETTLED') " & 
+       "order by B.STARTTS");
+     Select_Equity_Date.Set("BETNAME", Betname);
 
+     Select_Equity_Date.Open_Cursor;
+     loop
+       Select_Equity_Date.Fetch(Eos);
+       exit when Eos;
+       Select_Equity_Date.Get("STARTTS",Equity_Result.Ts);
+       Select_Equity_Date.Get("PROFIT",Profit);
+       Equity_Result.Equity := Equity_Result.Equity + Profit;
+       A_List.Append(Equity_Result);
+     end loop;
+     Select_Equity_Date.Close_Cursor;
+   end Equity_Data;
+   ------------------------------------------------------
 
 begin
+   Define_Switch
+     (Cmd_Line,
+      Sa_Betname'access,
+      Long_Switch => "--betname=",
+      Help        => "betname for equity");
+      
+   Define_Switch
+     (Cmd_Line,
+      Ba_Equity'access,
+      Long_Switch => "--equity",
+      Help        => "equity diagram");
 
    Define_Switch
      (Cmd_Line,
@@ -229,6 +284,8 @@ begin
       Day_Statistics_Profit_Vs_Matched(Days => Integer_4(Ia_Days), A_List => Profit_Result_List);
     elsif Ba_Avg_Price then
       Avg_Price_For_Settled_Bets(Days => Integer_4(Ia_Days), A_List => Avg_Price_Result_List);
+    elsif Ba_Equity then
+      Equity_Data(Betname => Sa_Betname.all, A_List => Equity_Result_List);
     end if;
   T.Commit;
   Sql.Close_Session;
@@ -258,6 +315,14 @@ begin
       F8_Image(R.Avg_Price, Aft => 3 )
     ) ;
   end loop;
+
+  for r of Equity_Result_List loop
+    Print(
+      R.Ts.String_Date_ISO & " | " &
+      F8_Image(R.Equity, Aft => 1 )
+    ) ;
+  end loop;
+
 
 
 
