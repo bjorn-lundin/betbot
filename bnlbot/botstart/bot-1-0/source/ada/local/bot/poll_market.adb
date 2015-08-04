@@ -129,7 +129,7 @@ procedure Poll_Market is
            exit Poll_Loop;
         else
           Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
-          delay 30.0; -- no need for heavy polling before start of race
+          delay 5.0; -- no need for heavy polling before start of race
         end if;
       else
         delay 0.05; -- to avoid more than 20 polls/sec
