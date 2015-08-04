@@ -38,7 +38,7 @@ procedure Poll is
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
-  Select_Bet_Size_Portion_Back : Sql.Statement_Type;
+--  Select_Bet_Size_Portion_Back : Sql.Statement_Type;
   --Select_Bet_Profit : Sql.Statement_Type;
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
@@ -49,22 +49,28 @@ procedure Poll is
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
+  use Config;
+
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  type Bet_Type is (Back_1_05_7_1_PLC,
-                    Back_1_05_7_1_WIN,
-                    Back_1_10_7_1_PLC,
-                    Back_1_10_7_1_WIN,
-                    Back_1_05_10_1_PLC,
-                    Back_1_05_10_1_WIN,
-                    Back_1_10_10_1_PLC,
-                    Back_1_10_10_1_WIN,
-                    Back_1_50_30_1_PLC,
-                    Back_1_50_30_1_WIN,
-                    Lay_160_200,
-                    Lay_1_10_25_4
-                    );
-
+  
+--defiend in config.ads
+--  type Bet_Type is (Back_1_05_7_1_PLC,
+--                    Back_1_05_7_1_WIN,
+--                    Back_1_10_7_1_PLC,
+--                    Back_1_10_7_1_WIN,
+--                    Back_1_05_10_1_PLC,
+--                    Back_1_05_10_1_WIN,
+--                    Back_1_10_10_1_PLC,
+--                    Back_1_10_10_1_WIN,
+--                    Back_1_50_30_1_PLC,
+--                    Back_1_50_30_1_WIN,
+--                    Lay_160_200,
+--                    Lay_1_10_25_4
+--                    );
+  --defined there to get cfg-array
+  
+  
   type Allowed_Type is record
     Bet_Name          : Bet_Name_Type := (others => ' ');
     Bet_Size          : Bet_Size_Type := 0.0;
@@ -78,60 +84,81 @@ procedure Poll is
 
 
   --------------------------------------------------------------
-
-  function Bet_Size_Portion(Bet_Name : Bet_Name_Type) return Bet_Size_Portion_Type is
-    Eos               : Boolean := False;
-    Bet_Profit_Ratio  : Float_8 := 0.0;
-    Ratio             : Bet_Size_Portion_Type := 0.0;
-    Idx               : Integer := 0;
-    Ratios            : array (1..2) of Bet_Size_Portion_Type := (1 => 1.0,
-                                                                  2 => 0.5);
-    Db_Bet_Name       : Bet_Name_Type := (others => ' ');
+  
+  procedure Set_Bet_Names is
   begin
-
-    -- profit per risk for bets in order, from last 4 days of SETTLED bets, placed at least sometime within '2015-01-01'
-    -- bet with most profit per risk will spend more on todays bets
-    Select_Bet_Size_Portion_Back.Prepare(
-       "select " &
-         "BETNAME, " &
-         "sum(PROFIT)*100.0 / sum(SIZEMATCHED) as PROFITRATIO " &
-       "from " &
-         "ABETS " &
-       "where BETPLACED::date > (select CURRENT_DATE - interval '4 days') " &
-         "and BETWON is not null " &
-         "and EXESTATUS = 'SUCCESS' " &
-         "and STATUS in ('SETTLED') " &
-         "and SIDE = 'BACK' " &
-       "group by " &
-         "BETNAME " &
-       "having " &
-         "sum(SIZEMATCHED) > 0 " &
-         "and max(BETPLACED)::date >= '2015-01-01' " &
-       "order by " &
-         "PROFITRATIO desc ");
-    Select_Bet_Size_Portion_Back.Open_Cursor;
-    loop
-      Select_Bet_Size_Portion_Back.Fetch(Eos);
-      exit when Eos;
-      Idx := Idx +1;
-      Select_Bet_Size_Portion_Back.Get("BETNAME", Db_Bet_Name);
-      Select_Bet_Size_Portion_Back.Get("PROFITRATIO", Bet_Profit_Ratio);
-      Log("Bet_Size_Portion.loop" , "Db_Bet_Name=Bet_Name " & Boolean'Image(Trim(Db_Bet_Name) = Trim(Bet_Name)) &
-           " Db_Bet_Name='" & Trim(Db_Bet_Name) & "' Bet_Name='" & Trim(Bet_Name) & "'" &
-           " Idx: " & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) );
-      exit when Trim(Db_Bet_Name) = Trim(Bet_Name);
+    for i in Bet_Type'range loop
+      case i is
+        when Back_1_05_7_1_PLC  => Move("HORSES_PLC_BACK_FINISH_1.05_7.0_1",  Bets_Allowed(i).Bet_Name);
+        when Back_1_05_7_1_WIN  => Move("HORSES_WIN_BACK_FINISH_1.05_7.0_1",  Bets_Allowed(i).Bet_Name); 
+        when Back_1_10_7_1_PLC  => Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(i).Bet_Name);  
+        when Back_1_10_7_1_WIN  => Move("HORSES_WIN_BACK_FINISH_1.10_7.0_1",  Bets_Allowed(i).Bet_Name); 
+        when Back_1_05_10_1_PLC => Move("HORSES_PLC_BACK_FINISH_1.05_10.0_1", Bets_Allowed(i).Bet_Name);
+        when Back_1_05_10_1_WIN => Move("HORSES_WIN_BACK_FINISH_1.05_10.0_1", Bets_Allowed(i).Bet_Name);  
+        when Back_1_10_10_1_PLC => Move("HORSES_PLC_BACK_FINISH_1.10_10.0_1", Bets_Allowed(i).Bet_Name);
+        when Back_1_10_10_1_WIN => Move("HORSES_WIN_BACK_FINISH_1.10_10.0_1", Bets_Allowed(i).Bet_Name); 
+        when Back_1_50_30_1_PLC => Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1", Bets_Allowed(i).Bet_Name);
+        when Back_1_50_30_1_WIN => Move("HORSES_WIN_BACK_FINISH_1.50_30.0_1", Bets_Allowed(i).Bet_Name);  
+        when Lay_160_200        => Move("HORSES_WIN_LAY_FINISH_160_200_1",    Bets_Allowed(i).Bet_Name);
+        when Lay_1_10_25_4      => Move("HORSES_WIN_LAY_FINISH_1.10_25.0_4",  Bets_Allowed(i).Bet_Name);
+      end case;
     end loop;
-    Select_Bet_Size_Portion_Back.Close_Cursor;
+  end Set_Bet_Names;
+  ----------------------------------------------------------------------------
 
-    if Idx < Ratios'First or Idx > Ratios'Last-1 then
-      Idx := Ratios'Last;
-    end if;
-
-    Ratio := Ratios(Idx);
-    Log("Bet_Size_Portion" , Trim(Bet_Name) & " Idx:" & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) & " -> ratio " & F8_image(Float_8(Ratio)));
-
-    return Ratio;
-  end Bet_Size_Portion;
+--  function Bet_Size_Portion(Bet_Name : Bet_Name_Type) return Bet_Size_Portion_Type is
+--    Eos               : Boolean := False;
+--    Bet_Profit_Ratio  : Float_8 := 0.0;
+--    Ratio             : Bet_Size_Portion_Type := 0.0;
+--    Idx               : Integer := 0;
+--    Ratios            : array (1..2) of Bet_Size_Portion_Type := (1 => 1.0,
+--                                                                  2 => 0.5);
+--    Db_Bet_Name       : Bet_Name_Type := (others => ' ');
+--  begin
+--
+--    -- profit per risk for bets in order, from last 4 days of SETTLED bets, placed at least sometime within '2015-01-01'
+--    -- bet with most profit per risk will spend more on todays bets
+--    Select_Bet_Size_Portion_Back.Prepare(
+--       "select " &
+--         "BETNAME, " &
+--         "sum(PROFIT)*100.0 / sum(SIZEMATCHED) as PROFITRATIO " &
+--       "from " &
+--         "ABETS " &
+--       "where BETPLACED::date > (select CURRENT_DATE - interval '4 days') " &
+--         "and BETWON is not null " &
+--         "and EXESTATUS = 'SUCCESS' " &
+--         "and STATUS in ('SETTLED') " &
+--         "and SIDE = 'BACK' " &
+--       "group by " &
+--         "BETNAME " &
+--       "having " &
+--         "sum(SIZEMATCHED) > 0 " &
+--         "and max(BETPLACED)::date >= '2015-01-01' " &
+--       "order by " &
+--         "PROFITRATIO desc ");
+--    Select_Bet_Size_Portion_Back.Open_Cursor;
+--    loop
+--      Select_Bet_Size_Portion_Back.Fetch(Eos);
+--      exit when Eos;
+--      Idx := Idx +1;
+--      Select_Bet_Size_Portion_Back.Get("BETNAME", Db_Bet_Name);
+--      Select_Bet_Size_Portion_Back.Get("PROFITRATIO", Bet_Profit_Ratio);
+--      Log("Bet_Size_Portion.loop" , "Db_Bet_Name=Bet_Name " & Boolean'Image(Trim(Db_Bet_Name) = Trim(Bet_Name)) &
+--           " Db_Bet_Name='" & Trim(Db_Bet_Name) & "' Bet_Name='" & Trim(Bet_Name) & "'" &
+--           " Idx: " & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) );
+--      exit when Trim(Db_Bet_Name) = Trim(Bet_Name);
+--    end loop;
+--    Select_Bet_Size_Portion_Back.Close_Cursor;
+--
+--    if Idx < Ratios'First or Idx > Ratios'Last-1 then
+--      Idx := Ratios'Last;
+--    end if;
+--
+--    Ratio := Ratios(Idx);
+--    Log("Bet_Size_Portion" , Trim(Bet_Name) & " Idx:" & Idx'Img & " profit_ratio " & F8_image(Bet_Profit_Ratio) & " -> ratio " & F8_image(Float_8(Ratio)));
+--
+--    return Ratio;
+--  end Bet_Size_Portion;
   -------------------------------------------------------------------
 
   procedure Send_Lay_Bet(Selectionid   : Integer_4;
@@ -154,6 +181,11 @@ procedure Poll is
         return;
       end if;
     end;
+    
+    if not Cfg.Bet(Main_Bet).Enabled then
+      Log("Not enbled bet in poll.ini" );
+      return;
+    end if;
 
     PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Market_Id, PLB.Market_Id);
@@ -204,7 +236,12 @@ procedure Poll is
         return;
       end if;
     end;
-
+    
+    if not Cfg.Bet(Main_Bet).Enabled then
+      Log("Not enbled bet in poll.ini" );
+      return;
+    end if;
+   
     PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Place_Market_Id, PBB.Market_Id);
     Move("1.01", PBB.Price);
@@ -265,65 +302,14 @@ procedure Poll is
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
 
+    Set_Bet_Names;
+    
     --set values from cfg
     for i in Bets_Allowed'range loop
-      Bets_Allowed(i).Bet_Size   := Cfg.Size;
+      Bets_Allowed(i).Bet_Size   := Cfg.Bet(i).Size;
       Bets_Allowed(i).Has_Betted := False;
-      Bets_Allowed(i).Max_Loss_Per_Day := Bet_Size_Type(Cfg.Max_Loss_Per_Day);
-
-      -- marker bets are always 30 :-
-      if Ada.Strings.Fixed.Index(i'Img, "MARKER") > Natural(0) then
-        Bets_Allowed(i).Bet_Size := 2.0;
-      elsif Ada.Strings.Fixed.Index(i'Img, "LAY") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
-        end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_05_") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size := 2.0; 
-        end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_10_7_1_WIN") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size := 2.0; -- make sure not accepted
-        end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_10_10_1") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
-        end case;
-      elsif Ada.Strings.Fixed.Index(i'Img, "BACK_1_50_30_1") > Natural(0) then
-        case i is
-          when others => Bets_Allowed(i).Bet_Size :=  2.0; -- make sure not accepted
-        end case;
-      end if;
+      Bets_Allowed(i).Max_Loss_Per_Day := Bet_Size_Type(Cfg.Bet(i).Max_Loss_Per_Day);
     end loop;
-
-    Bets_Allowed(Back_1_50_30_1_PLC).Bet_Size := 30.0;
-    Bets_Allowed(Back_1_05_10_1_PLC).Bet_Size := 30.0;
-    Bets_Allowed(Back_1_10_10_1_PLC).Bet_Size := 30.0;
-    Bets_Allowed(Back_1_05_7_1_PLC).Bet_Size := 30.0;
-
-    
-    Move("HORSES_PLC_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_1_50_30_1_PLC).Bet_Name);
-    Move("HORSES_WIN_BACK_FINISH_1.50_30.0_1",    Bets_Allowed(Back_1_50_30_1_WIN).Bet_Name);    
-    Move("HORSES_PLC_BACK_FINISH_1.05_10.0_1",    Bets_Allowed(Back_1_05_10_1_PLC).Bet_Name);
-    Move("HORSES_WIN_BACK_FINISH_1.05_10.0_1",    Bets_Allowed(Back_1_05_10_1_WIN).Bet_Name);    
-    Move("HORSES_PLC_BACK_FINISH_1.10_10.0_1",    Bets_Allowed(Back_1_10_10_1_PLC).Bet_Name);    
-    Move("HORSES_WIN_BACK_FINISH_1.10_10.0_1",    Bets_Allowed(Back_1_10_10_1_WIN).Bet_Name);    
-    Move("HORSES_PLC_BACK_FINISH_1.05_7.0_1",     Bets_Allowed(Back_1_05_7_1_PLC).Bet_Name);
-    Move("HORSES_WIN_BACK_FINISH_1.05_7.0_1",     Bets_Allowed(Back_1_05_7_1_WIN).Bet_Name);    
-    Move("HORSES_PLC_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1_PLC).Bet_Name);    
-    Move("HORSES_WIN_BACK_FINISH_1.10_7.0_1",     Bets_Allowed(Back_1_10_7_1_WIN).Bet_Name);    
-    Move("HORSES_WIN_LAY_FINISH_1.10_25.0_4",     Bets_Allowed(Lay_1_10_25_4).Bet_Name);
-    Move("HORSES_WIN_LAY_FINISH_160_200_1",       Bets_Allowed(Lay_160_200).Bet_Name);
-    
-
-    T.Start;
-    declare
-      -- calculate how big portion the bet is of all 6 bets. Use as bet_size factor
-    begin
-      Bets_Allowed(Back_1_10_7_1_PLC).Bet_Size_Portion := Bet_Size_Portion(Bets_Allowed(Back_1_10_7_1_PLC) .Bet_Name);
-    end;
-    T.Commit;
 
     -- check if ok to bet and set bet size
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);

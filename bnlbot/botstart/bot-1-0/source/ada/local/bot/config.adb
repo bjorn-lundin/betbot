@@ -16,18 +16,20 @@ package body Config is
      Log(Me & Service, "read ini file :'" & Filename & "'");
 
      Ini.Load(Filename);
-     Cfg.Size                 := Bet_Size_Type'Value(Ini.Get_Value("finish","size","30.0")); 
-     Cfg.Fav_Max_Price        := Back_Price_Type'Value(Ini.Get_Value("finish","fav_max_price","1.15")); 
-     Cfg.Second_Fav_Min_Price := Back_Price_Type'Value(Ini.Get_Value("finish","2nd_min_price","7.0")); 
-     Cfg.Enabled              := Ini.Get_Value("finish","enabled",false); 
-     Cfg.Max_Loss_Per_Day     := Float_8'Value(Ini.Get_Value("finish","max_loss_per_day","-500.0")); 
-     Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("finish","countries",""));
-     Cfg.Allow_Lay_During_Race := Ini.Get_Value("finish","allow_lay_during_race",false); 
+     Cfg.Enabled              := Ini.Get_Value("global","enabled",false); 
+     Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("global","countries",""));
+     
+     for i in Bet_Type'range loop
+       Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","0.0")); 
+       Cfg.Bet(i).Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value(i'img,"max_loss_per_day","0.0")); 
+       Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",false); 
+     end loop;
+     
     
     declare
       use Ada.Characters.Handling;
       use Ada.Strings.Fixed;
-      Days : String := Ini.Get_Value("finish","allowed_days","al");
+      Days : String := Ini.Get_Value("global","allowed_days","al");
       use Calendar2;
       Zero : Natural := 0;
     begin
@@ -52,16 +54,12 @@ package body Config is
     use Ada.Characters.Handling;
     part1 : String := 
       "<config>" &
-        "<size>" & F8_Image(Float_8(Cfg.Size)) & "</size>" &
-        "<max_loss_per_day>" & F8_Image(Cfg.Max_Loss_Per_Day) & "</max_loss_per_day>" &
-        "<fav_max_price>" & F8_Image(Float_8(Cfg.Fav_Max_Price)) & "</fav_max_price>" &
-        "<second_fav_min_price>" & F8_Image(Float_8(Cfg.Second_Fav_Min_Price)) & "</second_fav_min_price>" &
-        "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
         "<enabled>" & Cfg.Enabled'Img & "</enabled>" &
-        "<allow_lay_during_race>" & Cfg.Allow_Lay_During_Race'Img & "</allow_lay_during_race>" &
+        "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
         "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" ;
     Part3 : String := "</config>";
     Days : Unbounded_String := Null_Unbounded_String;
+    Bets : Unbounded_String := Null_Unbounded_String;
   begin
 
         Append(Days, "<days>");
@@ -71,8 +69,18 @@ package body Config is
                         "</" & To_Lower(i'Img) & ">" );
         end loop;
         Append(Days, "</days>");
+        
+        Append(Bets, "<bets>");
+        for i in Bet_Type'range loop
+          Append(Bets, "<" & To_Lower(i'Img) & ">" & 
+                           "<size>" & F8_Image(Float_8(Cfg.Bet(i).Size)) & "</size>" &
+                           "<max_loss_per_day>" & F8_Image(Cfg.Bet(i).Max_Loss_Per_Day) & "</max_loss_per_day>" &
+                           "<enabled>" & Cfg.Bet(i).Enabled'Img & "</enabled>" &
+                        "</" & To_Lower(i'Img) & ">" );
+        end loop;
+        Append(Bets, "</bets>");
       
-        return Part1 & To_String(Days) & Part3;   
+        return Part1 & To_String(Days) & To_String(Bets) & Part3;   
       
   end To_String;
   -------------------------------------------------------------

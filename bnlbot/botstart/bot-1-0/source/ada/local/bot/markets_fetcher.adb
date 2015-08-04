@@ -324,7 +324,7 @@ begin
 
     --Now set that time 1 hour ahead:
     -- to get the start of the race, start poll before STARTTS
-    UTC_Time_Start := UTC_Time_Start - Three_Minutes;
+    UTC_Time_Start := UTC_Time_Start + Three_Minutes;
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(UTC_Time_Start));
