@@ -74,29 +74,29 @@ procedure Data_Mover is
            T.Commit;
            Log("chunk ready, Moved" & Rows_Inserted'Img & " and deleted" & Rows_Deleted'Img);
            Num := Num -1;
-           exit Inner_Loop when Num = 0; -- leave a week              
+           exit Inner_Loop when Num = 7; -- leave a week              
        end loop Inner_Loop ;
     end loop Outer_Loop;   
     
---    -- for ordinary users , keep a month only, so the tables does not grow too large
---    if not Is_Data_Collector then
---      Num := 30000;
---      T.Start;
---      Delete_Loop : for Table in Tables_Type'range loop
---        Do_Delete_Old(Table).Prepare(
---           "delete from " & Table'Img & "OLD " & 
---           "where IXXLUTS < current_timestamp - interval ':NUM days' " 
---         );
---         Do_Delete_Old(Table).Set("NUM",Num); 
---         begin 
---           Do_Delete_Old(Table).Execute(Rows_Deleted);
---         exception
---           when Sql.No_Such_Row => Rows_Deleted := 0;
---         end ;       
---         Log("Deleted from " &  Table'Img & "OLD :" & Rows_Deleted'Img);      
---      end loop Delete_Loop;
---      T.Commit;
---    end if;
+    -- for ordinary users , keep a month only, so the tables does not grow too large
+    if not Is_Data_Collector then
+      Num := 30000;
+      T.Start;
+      Delete_Loop : for Table in Tables_Type'range loop
+        Do_Delete_Old(Table).Prepare(
+           "delete from " & Table'Img & "OLD " & 
+           "where IXXLUTS < current_timestamp - interval ':NUM days' " 
+         );
+         Do_Delete_Old(Table).Set("NUM",Num); 
+         begin 
+           Do_Delete_Old(Table).Execute(Rows_Deleted);
+         exception
+           when Sql.No_Such_Row => Rows_Deleted := 0;
+         end ;       
+         Log("Deleted from " &  Table'Img & "OLD :" & Rows_Deleted'Img);      
+      end loop Delete_Loop;
+      T.Commit;
+    end if;
     
     
   end Run;

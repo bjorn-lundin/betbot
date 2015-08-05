@@ -2,6 +2,7 @@
 
 with Calendar;
 with Types; use Types;
+with Unchecked_Conversion;
 
 package Calendar2 is
 
@@ -25,8 +26,29 @@ package Calendar2 is
                           Sunday);
 
    subtype Interval_Day_Type is Integer_4 range 0 .. Integer_4'Last;
-   subtype Seconds_Type is Integer_4 range 0 .. Integer_4'Last; --v8.2
+   subtype Seconds_Type is Integer_4 range 0 .. Integer_4'Last;
 
+   
+   
+   type Short_Month_Type is (Jan, Feb, Mar, Apr, May, Jun,
+                             Jul, Aug, Sep, Oct, Nov, Dec);
+     for Short_Month_Type use (Jan => 1, Feb => 2, Mar => 3, Apr =>  4, May =>  5, Jun =>  6,
+                               Jul => 7, Aug => 8, Sep => 9, Oct => 10, Nov => 11, Dec => 12);
+     for Short_Month_Type'Size use Integer_4'Size;
+   function Short_Month is new Unchecked_Conversion(Short_Month_Type, Integer_4);
+   function Short_Month is new Unchecked_Conversion(Integer_4, Short_Month_Type);
+
+     
+   type Long_Month_Type is (January, February, March, April, May, June, 
+                            July, August, September, October, November, December);
+     for Long_Month_Type use (January   => 1, February => 2, March     => 3,  April    => 4, 
+                              May       => 5, June     => 6, July      => 7,  August   => 8, 
+                              September => 9, October  => 10, November => 11, December => 12);
+     for Long_Month_Type'Size use Integer_4'Size;
+   function Long_Month is new Unchecked_Conversion(Short_Month_Type, Integer_4);
+   function Long_Month is new Unchecked_Conversion(Integer_4, Short_Month_Type);
+   
+   
    
    ------------------------ Interval type start --------------------------------
    type Interval_Type is record
