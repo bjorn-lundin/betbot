@@ -165,53 +165,69 @@ function Create_Plots () {
   USR=$1
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
+  
+  STRATEGIES="HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
+              HORSES_PLC_BACK_FINISH_1.10_7.0_1 \
+              HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
+              HORSES_PLC_BACK_FINISH_1.10_10.0_1 \
+              HORSES_PLC_BACK_FINISH_1.50_30.0_1 \
+              HORSES_WIN_BACK_FINISH_1.50_30.0_1"
+  
+  
+  
+  
   #regenerate the graphs
   old_pwd=$(pwd)
   cd ${BOT_SCRIPT}/plot/gui_plot/
-  #create datafiles
-  ${BOT_TARGET}/bin/graph_data --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}.dat 2>/dev/null
-  ${BOT_TARGET}/bin/graph_data --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}.dat 2>/dev/null
-  ${BOT_TARGET}/bin/graph_data --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}.dat 2>/dev/null
-  #put it in wd of gnuplot
-  cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
-  DF1="settled_vs_lapsed_${DAYS}"
-  gnuplot \
-    -e "data_file='$DF1'" \
-    -e "ts='$TS'" \
-    -e "user='$USR'" \
-    -e "days='$DAYS'" \
-    settled_vs_lapsed.gpl
-  DF2="profit_vs_matched_${DAYS}"
-  gnuplot \
-    -e "data_file='$DF2'" \
-    -e "ts='$TS'" \
-    -e "user='$USR'" \
-    -e "days='$DAYS'" \
-    profit_vs_matched.gpl
-  DF2="avg_price_${DAYS}"
-  gnuplot \
-    -e "data_file='$DF2'" \
-    -e "ts='$TS'" \
-    -e "user='$USR'" \
-    -e "days='$DAYS'" \
-    avg_price.gpl
-
+  
+  for S in $STRATEGIES ; do 
+    strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
+    #create datafiles
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
+    #put it in wd of gnuplot
+    cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
+    DF1="settled_vs_lapsed_${DAYS}_${strategy}"
+    gnuplot \
+      -e "data_file='$DF1'" \
+      -e "ts='$TS'" \
+      -e "user='$USR'" \
+      -e "days='$DAYS'" \
+      settled_vs_lapsed.gpl
+    DF2="profit_vs_matched_${DAYS}_${strategy}"
+    gnuplot \
+      -e "data_file='$DF2'" \
+      -e "ts='$TS'" \
+      -e "user='$USR'" \
+      -e "days='$DAYS'" \
+      profit_vs_matched.gpl
+    DF2="avg_price_${DAYS}_${strategy}"
+    gnuplot \
+      -e "data_file='$DF2'" \
+      -e "ts='$TS'" \
+      -e "user='$USR'" \
+      -e "days='$DAYS'" \
+      avg_price.gpl
+  done
+  
   if [ $DAYS == "42" ] ; then
-  
-    STRATEGIES="HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
-                HORSES_PLC_BACK_FINISH_1.10_7.0_1 \
-                HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
-                HORSES_PLC_BACK_FINISH_1.10_10.0_1 \
-                HORSES_PLC_BACK_FINISH_1.50_30.0_1 \
-                HORSES_WIN_BACK_FINISH_1.50_30.0_1"
-  
     FILES=""  
     for S in $STRATEGIES ; do 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
       ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
+      
+      #one plot for each:
+      gnuplot \
+        -e "files='$DATA_FILE'" \
+        -e "ts='$TS'" \
+        -e "target_png='${strategy}.png'" \
+        -e "user='$USR'" \
+        equity.gpl  2>/dev/null
     done  
+      #one plot for all together:
   
     gnuplot \
       -e "files='$FILES'" \
@@ -226,9 +242,6 @@ function Create_Plots () {
   rm *.png
   cd ${old_pwd}
 }
-
-
-
 
 
 # start here 
@@ -296,7 +309,7 @@ case $BOT_MACHINE_ROLE in
       fi
     fi  
 
-    if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
+    if [ $MINUTE == "05" ] || [ $MINUTE == "32" ] || [ $MINUTE == "45" ] ; then
       for USR in $USER_LIST_PLAYERS_ONLY ; do
         Create_Plots $USR 42
         Create_Plots $USR 182

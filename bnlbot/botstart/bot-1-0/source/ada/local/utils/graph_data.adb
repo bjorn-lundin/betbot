@@ -83,20 +83,22 @@ procedure Graph_Data is
    -------------------------------
 
    procedure Day_Statistics_Lapsed_vs_Settled(
-                 Days   : in     Integer_4;
-                 A_List : in out Days_Result_Pack.List) is
+                 Betname : in     String;
+                 Days    : in     Integer_4;
+                 A_List  : in out Days_Result_Pack.List) is
      Eos : Boolean := False;
      Days_Result_Record : Days_Result_Type;
    begin
      Select_Lapsed_Date.Prepare(
        "select count('a'), STARTTS::date " &
        "from ABETS " &
-       "where BETNAME='HORSES_PLC_BACK_FINISH_1.10_7.0_1' " &
+       "where BETNAME = :BETNAME " &
        "and STATUS = :STATUS " &
        "and STARTTS::date > (select CURRENT_DATE - interval ':SOME days') " &
        "group by STARTTS::date " &
        "order by STARTTS::date " );
 
+     Select_Lapsed_Date.Set("BETNAME", Betname);
      Select_Lapsed_Date.Set("STATUS", "SETTLED");
      Select_Lapsed_Date.Set("SOME", Days);
 
@@ -125,25 +127,26 @@ procedure Graph_Data is
        end loop;
      end loop;
      Select_Lapsed_Date.Close_Cursor;
-
    end Day_Statistics_Lapsed_vs_Settled;
 
    --------------------------------------------------------
    procedure Day_Statistics_Profit_Vs_Matched(
-                 Days   : in     Integer_4;
-                 A_List : in out Profit_Result_Pack.List) is
+                 Betname : in     String;
+                 Days    : in     Integer_4;
+                 A_List  : in out Profit_Result_Pack.List) is
      Eos : Boolean := False;
      Profit_Result_Record : Profit_Result_Type;
    begin
      Select_Profit_Date.Prepare(
        "select sum(PROFIT), sum(SIZEMATCHED), STARTTS::date " &
        "from ABETS " &
-       "where BETNAME='HORSES_PLC_BACK_FINISH_1.10_7.0_1' " &
+       "where BETNAME = :BETNAME " &
        "and STATUS = :STATUS " &
        "and STARTTS::date > (select CURRENT_DATE - interval ':SOME days') " &
        "group by STARTTS::date " &
        "order by STARTTS::date " );
 
+     Select_Profit_Date.Set("BETNAME", Betname);
      Select_Profit_Date.Set("STATUS", "SETTLED");
      Select_Profit_Date.Set("SOME", Days);
 
@@ -162,15 +165,16 @@ procedure Graph_Data is
 
    --------------------------------------------------------
    procedure Avg_Price_For_Settled_Bets(
-                 Days   : in     Integer_4;
-                 A_List : in out Avg_Price_Result_Pack.List) is
+                 Betname : in     String;
+                 Days    : in     Integer_4;
+                 A_List  : in out Avg_Price_Result_Pack.List) is
      Eos : Boolean := False;
      Avg_Price_Result_Record : Avg_Price_Result_Type;
    begin
      Select_Avg_Price_Date.Prepare(
        "select BETNAME, avg(B.PRICEMATCHED) as AVGODDS, B.STARTTS::date as DATE " &
        "from ABETS B " &
-       "where B.BETNAME = 'HORSES_PLC_BACK_FINISH_1.10_7.0_1' " &
+       "where B.BETNAME = :BETNAME " &
        "and B.BETWON " &
        "and STATUS = :STATUS " &
        "and B.STARTTS >= (select CURRENT_DATE - interval ':SOME days') " &
@@ -178,6 +182,7 @@ procedure Graph_Data is
        "group by BETNAME, B.STARTTS::date " &
        "order by B.STARTTS::date, BETNAME");
 
+     Select_Avg_Price_Date.Set("BETNAME", Betname);
      Select_Avg_Price_Date.Set("STATUS", "SETTLED");
      Select_Avg_Price_Date.Set("SOME", Days);
 
@@ -275,21 +280,25 @@ begin
          Password => Ini.Get_Value("database","password",""));
   Debug("db Connected");
 
-
-
   T.Start;
     if Ba_Lapsed then
-      Day_Statistics_Lapsed_vs_Settled(Days => Integer_4(Ia_Days), A_List => Days_Result_List);
+      Day_Statistics_Lapsed_vs_Settled(Betname => Sa_Betname.all, 
+                                       Days    => Integer_4(Ia_Days), 
+                                       A_List  => Days_Result_List);
     elsif Ba_Profit then
-      Day_Statistics_Profit_Vs_Matched(Days => Integer_4(Ia_Days), A_List => Profit_Result_List);
+      Day_Statistics_Profit_Vs_Matched(Betname => Sa_Betname.all, 
+                                       Days    => Integer_4(Ia_Days), 
+                                       A_List  => Profit_Result_List);
     elsif Ba_Avg_Price then
-      Avg_Price_For_Settled_Bets(Days => Integer_4(Ia_Days), A_List => Avg_Price_Result_List);
+      Avg_Price_For_Settled_Bets(Betname => Sa_Betname.all, 
+                                 Days    => Integer_4(Ia_Days), 
+                                 A_List  => Avg_Price_Result_List);
     elsif Ba_Equity then
-      Equity_Data(Betname => Sa_Betname.all, A_List => Equity_Result_List);
+      Equity_Data(Betname => Sa_Betname.all, 
+                  A_List  => Equity_Result_List);
     end if;
   T.Commit;
   Sql.Close_Session;
-
 
   for r of Days_Result_List loop
     Print(
@@ -322,10 +331,5 @@ begin
       F8_Image(R.Equity, Aft => 1 )
     ) ;
   end loop;
-
-
-
-
-
 
 end Graph_Data;
