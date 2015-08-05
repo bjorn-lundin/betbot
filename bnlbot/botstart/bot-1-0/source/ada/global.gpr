@@ -58,7 +58,7 @@ project Global is
          when "GNAT" =>
             for Source_Dirs use Common_Source_Dirs;
          when "LOCAL" =>
-            for Source_Dirs use Common_Source_Dirs ; --& Xml_Source;
+            for Source_Dirs use Common_Source_Dirs & Xml_Source;
       end case;
    
    package Compiler is
