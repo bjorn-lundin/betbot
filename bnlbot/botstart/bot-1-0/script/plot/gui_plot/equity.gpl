@@ -8,7 +8,7 @@ set output target_png
 set grid
 set key top left
 
-set title "Equity for all strategies for user \n" . user . " : " . ts 
+set title "Equity for strategies for user \n" . user . " : " . ts 
 
 #set yrange [-3000:4000]
 #set y2range [-3000:4000]
