@@ -203,7 +203,7 @@ procedure Graph_Data is
    begin
      Select_Equity_Date.Prepare(
        "select B.STARTTS, B.PROFIT " & 
-       "from ABETS B, ARUNNERS R " & 
+       "from ABETS B, ALL_RUNNERS R " & 
        "where B.BETNAME = :BETNAME " & 
        "and B.MARKETID = R.MARKETID " & 
        "and B.SELECTIONID = R.SELECTIONID " & 
@@ -318,7 +318,7 @@ begin
 
   for r of Equity_Result_List loop
     Print(
-      R.Ts.String_Date_ISO & " | " &
+      R.Ts.To_String(Milliseconds => False) & " | " &
       F8_Image(R.Equity, Aft => 1 )
     ) ;
   end loop;

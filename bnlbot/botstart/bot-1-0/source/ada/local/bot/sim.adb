@@ -2,7 +2,7 @@ with Ada.Environment_Variables;
 with Ada.Directories;
 with Ada.Streams.Stream_IO;
 with Logging; use Logging;
-
+with Stacktrace;
 with Bot_System_Number;
 with Calendar2; use Calendar2;
 with Utils; use Utils;
@@ -10,7 +10,6 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
 with Text_Io;
 with Sql;
-with Table_Arunners;
 
 package body Sim is
 
@@ -20,9 +19,11 @@ package body Sim is
   Select_All_Markets,
   Select_Race_Winner_In_One_Market,
   Select_Pricets_In_A_Market,
+  Select_All_Win_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
   Select_Get_Win_Market : Sql.Statement_Type;
+  Select_Get_Place_Market : Sql.Statement_Type;
   
   Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
   Global_Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
@@ -38,6 +39,33 @@ package body Sim is
   
   Select_Sampleids_In_One_Market : Sql.Statement_Type;
   
+  ----------------------------------------------------------
+
+  function Is_Race_Winner(Runner               : Table_Arunners.Data_Type; 
+                          Marketid             : Market_Id_Type)
+         return Boolean is
+  begin
+    return Is_Race_Winner(Runner.Selectionid, Marketid);
+  end Is_Race_Winner;  
+         
+  function Is_Race_Winner(Selectionid          : Integer_4; 
+                          Marketid             : Market_Id_Type)
+         return Boolean is
+    Service : constant String := "Is_Race_Winner";
+  begin
+    -- Marketid_Winner_Map.Element((Marketid)) is a list of winning Arunners
+     for R of Winners_Map.Element(Marketid) loop
+       if Selectionid = R.Selectionid then
+         return True;
+       end if;
+     end loop;
+     return False;
+  exception 
+    when Constraint_Error =>
+      Log(Object & Service, "Key not in map '" & Marketid & "'");
+      return False;    
+  end Is_Race_Winner;  
+         
   ----------------------------------------------------------
   procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
                               Market     : in out Table_Amarkets.Data_Type;
@@ -205,9 +233,7 @@ package body Sim is
       Ixxluts        => Now              --set by insert
     );
   end Place_Bet;
-  
-  
-
+  -----------------------------------------------------------------------
 
   procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List; Alg : Algorithm_Type := None)  is
   begin
@@ -280,7 +306,7 @@ package body Sim is
     package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
   begin
   
-    if not AD.Exists(Filename) then
+    if not Serializer.File_Exists(Filename) then
     --  Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
       T.Start;
       Select_Sampleids_In_One_Market.Prepare(
@@ -352,11 +378,9 @@ package body Sim is
                             F8_Image(Runner.Layprice) );    
         Text_Io.Close(F);
       end;      
-    
     end loop;
-  
   end Create_Runner_Data;
-  
+  -----------------------------------------------------------------  
 
   function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type is
     T             : Sql.Transaction_Type;
@@ -384,8 +408,36 @@ package body Sim is
 
     return Winner_Market;
   end Get_Win_Market;
-  
-  
+  -----------------------------------------------------------------  
+
+  function Get_Place_Market(Winner_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type is
+    T            : Sql.Transaction_Type;
+    Place_Market : Table_Amarkets.Data_Type;
+    Eos          : Boolean := False;
+  begin
+    T.Start;
+    Select_Get_Place_Market.Prepare(
+      "select MW.* from AMARKETS MW, AMARKETS MP " &
+      "where MW.EVENTID = MP.EVENTID " &
+      "and MW.STARTTS = MP.STARTTS " &
+      "and MW.MARKETID = :WINMARKETID " &
+      "and MP.NUMWINNERS = 3 " &
+      "and MP.MARKETTYPE = 'PLACE' " &
+      "and MW.MARKETTYPE = 'WIN' ");
+      
+    Select_Get_Place_Market.Set("WINMARKETID",Winner_Market_Id);
+    Select_Get_Place_Market.Open_Cursor;
+    Select_Get_Place_Market.Fetch(Eos);
+    if not Eos then
+      Place_Market := Table_Amarkets.Get(Select_Get_Place_Market);
+    end if;
+    Select_Get_Place_Market.Close_Cursor;
+    T.Commit;
+    --Log(Object & "Get_Place_Market", "plc= '" & Place_Market.Marketid & "' win = '" & Winner_Market_Id & "'");
+
+    return Place_Market;
+  end Get_Place_Market;
+  -----------------------------------------------------------------  
   
   procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) is
     F : Text_Io.File_Type;
@@ -396,8 +448,6 @@ package body Sim is
       when True  => Indicator := "won";
       when False => Indicator := "bad";
     end case;  
-
-
     
     Log(Object & "Create_Bet_Data", Bet.To_String);
     Log(Object & "Create_Bet_Data", "odds= '" & Odds_Market.Marketid & "'");
@@ -439,24 +489,26 @@ package body Sim is
   --------------------------------------------------------------------------------------------
 -- start lay_during_race2
   
-  procedure Read_All_Markets(List : out Market_Id_With_Data_Pack.List) is
+  procedure Read_All_Markets(Month : in     Calendar2.Short_Month_Type;
+                             List  :    out Market_Id_With_Data_Pack.List) is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
-    Eos      : Boolean := False;
-    Filename : String := "all_market_ids.dat";
+    Eos      : Boolean := False;      
+    Filename : String := Lower_Case(Month'Img) & "/all_market_ids.dat";
     Marketid : Market_Id_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
   begin
     List.Clear;
-    if not AD.Exists(Filename) then
+    if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_All_Markets.Prepare (
         "select distinct(M.MARKETID) " &
         "from APRICESHISTORY RP, AMARKETS M " &
         "where RP.MARKETID = M.MARKETID " &
-        "and M.MARKETTYPE = 'WIN' " &
+        "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+        "and EXTRACT(MONTH FROM STARTTS) = :MONTHNUM " &
         "order by M.MARKETID");
-      
+      Select_All_Markets.Set("MONTHNUM", Calendar2.Short_Month(Month));
       Select_All_Markets.Open_Cursor;
       loop
         Select_All_Markets.Fetch(Eos);
@@ -476,16 +528,17 @@ package body Sim is
   -------------------------------------------------------------------------
 
   procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
+                                      Month                      : in     Calendar2.Short_Month_Type;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
     Pricets_List : Timestamp_Pack.List;
-    Filename     : String := "marketid_pricets_map.dat";    
+    Filename     : String := Lower_Case(Month'Img) & "/marketid_pricets_map.dat";    
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
   begin
     Marketid_Pricets_Map.Clear;
-    if not AD.Exists(Filename) then
+    if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Pricets_In_A_Market.Prepare(
         "select distinct(PRICETS) " &
@@ -517,31 +570,36 @@ package body Sim is
   -------------------------------------------------------------
   
 
-  procedure Fill_Winners_Map(Market_Id_With_Data_List         : in     Market_Id_With_Data_Pack.List;
-                             Winners_Map                      :    out Marketid_Winner_Maps.Map ) is
+  procedure Fill_Winners_Map(Market_Id_With_Data_List : in     Market_Id_With_Data_Pack.List;
+                             Month                    : in     Calendar2.Short_Month_Type;
+                             Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := "winners_map.dat";
-    Runner : Table_Arunners.Data_Type;
+    Filename : String := Lower_Case(Month'Img) & "/winners_map.dat";
+    Runner_Data : Table_Arunners.Data_Type;
+    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
   begin
     Winners_Map.Clear;
-    if not AD.Exists(Filename) then
+    if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Race_Winner_In_One_Market.Prepare(
         "select * " &
         "from ARUNNERS " &
         "where MARKETID = :MARKETID " &
         "and STATUS = 'WINNER' ") ;
-      for Marketid of Market_Id_With_Data_List loop    
+      for Marketid of Market_Id_With_Data_List loop 
+        Runner_List.Clear;      
         Select_Race_Winner_In_One_Market.Set("MARKETID", Marketid) ;
         Select_Race_Winner_In_One_Market.Open_Cursor;
-        Select_Race_Winner_In_One_Market.Fetch(Eos);
-        if not Eos then
-          Runner := Table_Arunners.Get(Select_Race_Winner_In_One_Market);       
-        end if;  
+        loop
+          Select_Race_Winner_In_One_Market.Fetch(Eos);
+          exit when Eos;
+          Runner_Data := Table_Arunners.Get(Select_Race_Winner_In_One_Market);
+          Runner_List.Append(Runner_Data);
+        end loop;
         Select_Race_Winner_In_One_Market.Close_Cursor;
-        Winners_Map.Insert(Marketid, Runner.Selectionid);      
+        Winners_Map.Insert(Marketid, Runner_List);      
       end loop;  
       T.Commit;
       
@@ -553,21 +611,23 @@ package body Sim is
   -----------------------------------------
 
          
-  procedure Fill_Marketid_Runners_Pricets_Map(Market_Id_With_Data_List        : in     Market_Id_With_Data_Pack.List;
-                                              Marketid_Pricets_Map            : in     Marketid_Pricets_Maps.Map;
-                                              Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
+  procedure Fill_Marketid_Runners_Pricets_Map(
+                     Market_Id_With_Data_List                 : in     Market_Id_With_Data_Pack.List;
+                     Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
+                     Month                                    : in     Calendar2.Short_Month_Type;
+                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
     Eos       : Boolean := False;
     Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
     Apriceshistory_Data    : Table_Apriceshistory.Data_Type;
     T : Sql.Transaction_Type;
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
-    Filename : String := "marketid_timestamp_to_apriceshistory_map.dat";
+    Filename : String := Lower_Case(Month'Img) & "/marketid_timestamp_to_apriceshistory_map.dat";
     
     package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
   begin
     Marketid_Timestamp_To_Apriceshistory_Map.Clear;
-    if not AD.Exists(Filename) then
+    if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Pricets_For_Market.Prepare(
         "select * " &
@@ -608,17 +668,66 @@ package body Sim is
       Serializer.Read_From_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
     end if;
   end Fill_Marketid_Runners_Pricets_Map;
+  -------------------------------------------------------------------
   
+  procedure Fill_Win_Place_Map(Month         : in     Calendar2.Short_Month_Type;
+                               Win_Place_Map :    out Win_Place_Maps.Map) is
+    T: Sql.Transaction_Type;
+    Eos : Boolean := False;
+    Place_Marketid,
+    Win_Marketid    : Market_Id_Type := (others => ' ');
+    Filename : String := Lower_Case(Month'Img) & "/win_place_map.dat";
+    package Serializer is new Disk_Serializer(Win_Place_Maps.Map);
+  begin
+    Win_Place_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+      T.Start;
+      Select_All_Win_Markets.Prepare (
+        "select distinct(M.MARKETID) " &
+        "from APRICESHISTORY RP, AMARKETS M " &
+        "where RP.MARKETID = M.MARKETID " &
+        "and M.MARKETTYPE = 'WIN' " &
+        "and EXTRACT(MONTH FROM STARTTS) = :MONTHNUM " &
+        "order by M.MARKETID");
+  
+      Select_All_Win_Markets.Set("MONTHNUM", Calendar2.Short_Month(Month)) ;
+      Select_All_Win_Markets.Open_Cursor;
+      loop
+        Select_All_Win_Markets.Fetch(Eos);
+        exit when Eos;
+        Select_All_Win_Markets.Get(1,Win_Marketid);
+        Place_Marketid := Get_Place_Market(Win_Marketid).Marketid;
+        Win_Place_Map.Insert(Win_Marketid,Place_Marketid);
+      end loop;
+      Select_All_Win_Markets.Close_Cursor;
+      T.Commit;
+      Serializer.Write_To_Disk(Win_Place_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Win_Place_Map, Filename);
+    end if;
+  
+  end Fill_Win_Place_Map;
+
   --------------------------------------------------------------------------
   package body Disk_Serializer is
     --------------------------------------------------------
+    Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
+    function File_Exists(Filename : String) return Boolean is
+     -- Service : constant String := "File_Exists";
+      File_On_Disk : String := Path & Filename;
+      Exists : Boolean := AD.Exists(File_On_Disk) ;
+    begin
+    --  Log(Object & Service, "Exists: " & Exists'Img);
+      return Exists;
+    end File_Exists;
+    ---------------------------------------------------------------
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      File_On_Disk : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Filename;
-     -- Service : constant String := "Write_To_Disk";
+      File_On_Disk : String := Path & Filename;
+    --  Service : constant String := "Write_To_Disk";
     begin
-     -- Log(Object & Service, "write to file '" & Filename & "'");
+    --  Log(Object & Service, "write to file '" & Filename & "'");
       Ada.Streams.Stream_IO.Create 
           (File => File,
            Name => File_On_Disk,
@@ -626,30 +735,84 @@ package body Sim is
       Stream := Ada.Streams.Stream_IO.Stream (File);
       Data_Type'Write(Stream, Container);
       Ada.Streams.Stream_IO.Close(File);
-      --  Log(Object & Service, "Stream written to file " & Filename);
+    --  Log(Object & Service, "Stream written to file " & Filename);
     end Write_To_Disk;
     --------------------------------------------------------
     procedure Read_From_Disk (Container : in out Data_Type; Filename : in String) is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;  
-      File_On_Disk : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Filename;
-     -- Service : constant String := "Read_From_Disk";
-      begin
+      File_On_Disk : String := Path & Filename;
+    --  Service : constant String := "Read_From_Disk";
+    begin
      -- Log(Object & Service, "read from file '" & Filename & "'");
-        Ada.Streams.Stream_IO.Open 
-            (File => File,
-             Name => File_On_Disk,
-             Mode => Ada.Streams.Stream_IO.In_File);
-        Stream := Ada.Streams.Stream_IO.Stream (File);
-        Data_Type'Read(Stream, Container);
-        Ada.Streams.Stream_IO.Close(File);
-     --    Log(Object & Service, "Stream read from file " & Filename);
-      end Read_From_Disk;  
+      Ada.Streams.Stream_IO.Open 
+          (File => File,
+           Name => File_On_Disk,
+           Mode => Ada.Streams.Stream_IO.In_File);
+      Stream := Ada.Streams.Stream_IO.Stream (File);
+      Data_Type'Read(Stream, Container);
+      Ada.Streams.Stream_IO.Close(File);
+    --  Log(Object & Service, "Stream read from file " & Filename);
+    end Read_From_Disk;  
     --------------------------------------------------------
   end Disk_Serializer;
     ----------------------------------------------------------
   
+  procedure Fill_Data_Maps(Month : in Calendar2.Short_Month_Type) is
+  begin  
+    Log("fill maps with month " & Month'Img);
+    Log("fill list with all valid marketids ");
+    Read_All_Markets(Month, Market_Id_With_Data_List);
+  
+    Log("fill map with all pricets for a marketid ");
+    Fill_Marketid_Pricets_Map(Market_Id_With_Data_List, Month, Marketid_Pricets_Map);
+  
+    Log("fill map with map of timestamp list for all marketids ");
+    Fill_Marketid_Runners_Pricets_Map(Market_Id_With_Data_List,
+                                          Marketid_Pricets_Map,
+                                          Month,
+                                          Marketid_Timestamp_To_Apriceshistory_Map) ;
+  
+    Log("fill map winners ");
+    Fill_Winners_Map(Market_Id_With_Data_List, Month, Winners_Map );
+    
+    Log("fill map Win/Place markets ");
+    Fill_Win_Place_Map(Month, Win_Place_Map);   
+  end Fill_Data_Maps;
+  ------------------------------------------------------------------  
   
   
+  function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type is
+    Place_Marketid : Market_Id_Type := (others => ' ');
+  begin
+    Place_Marketid := Win_Place_Map(Win_Data.Marketid);
+    --Log("Get_Place_Price '" & Place_Marketid & "'");
+    if Place_Marketid /= Market_Id_Type'(others => ' ') then
+      declare
+        Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map :=
+                      Marketid_Timestamp_To_Apriceshistory_Map(Place_Marketid);
+      begin
+        for Timestamp of Marketid_Pricets_Map(Place_Marketid) loop
+          declare
+            List : Table_Apriceshistory.Apriceshistory_List_Pack2.List :=
+                      Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
+          begin
+            for Data of reverse List loop
+              if Data.Selectionid = Win_Data.Selectionid and then
+                 Data.Pricets <= Win_Data.Pricets then
+                   return Data;
+              end if;     
+            end loop;
+          end;
+        end loop;  
+      end;
+    end if;  
+    return Table_Apriceshistory.Empty_Data;
+  exception
+    when E: Constraint_Error =>  
+      Stacktrace.Tracebackinfo(E);
+      return Table_Apriceshistory.Empty_Data;
+  end Get_Place_Price;
 
+  ------------------------------------------------------------------  
 end Sim ;
