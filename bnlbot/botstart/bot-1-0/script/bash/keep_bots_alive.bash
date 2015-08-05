@@ -124,7 +124,7 @@ function Check_Bots_For_User () {
                      bet_placer_110 \
                      bet_placer_111 bet_placer_112 \
                      bet_placer_123 \
-                     bet_placer_126"                     
+                     bet_placer_125 bet_placer_126"                     
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -195,12 +195,40 @@ function Create_Plots () {
     -e "user='$USR'" \
     -e "days='$DAYS'" \
     avg_price.gpl
+
+  if [ $DAYS == "42" ] ; then
+  
+    STRATEGIES="HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
+                HORSES_PLC_BACK_FINISH_1.10_7.0_1 \
+                HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
+                HORSES_PLC_BACK_FINISH_1.10_10.0_1 \
+                HORSES_PLC_BACK_FINISH_1.50_30.0_1 \
+                HORSES_WIN_BACK_FINISH_1.50_30.0_1"
+  
+    FILES=""  
+    for S in $STRATEGIES ; do 
+      strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
+      DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
+      ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      FILES="${FILES} ${DATA_FILE}"
+    done  
+  
+    gnuplot \
+      -e "files='$FILES'" \
+      -e "ts='$TS'" \
+      -e "target_png='equity.png'" \
+      -e "user='$USR'" \
+      equity.gpl  2>/dev/null
+  fi  
   #move to user area and cleanup
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
   rm *.png
   cd ${old_pwd}
 }
+
+
+
 
 
 # start here 
@@ -268,7 +296,7 @@ case $BOT_MACHINE_ROLE in
       fi
     fi  
 
-    if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] ||  [ $MINUTE == "45" ] ; then
+    if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
       for USR in $USER_LIST_PLAYERS_ONLY ; do
         Create_Plots $USR 42
         Create_Plots $USR 182
