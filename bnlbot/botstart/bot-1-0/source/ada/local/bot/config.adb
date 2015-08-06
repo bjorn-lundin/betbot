@@ -3,6 +3,7 @@ with Logging; use Logging;
 with Ada.Characters.Handling;
 with Ini;
 with Utils;
+with Text_Io;
 
 
 package body Config is
@@ -16,13 +17,13 @@ package body Config is
      Log(Me & Service, "read ini file :'" & Filename & "'");
 
      Ini.Load(Filename);
-     Cfg.Enabled              := Ini.Get_Value("global","enabled",false); 
+     Cfg.Enabled              := Ini.Get_Value("global","enabled",False); 
      Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("global","countries",""));
      
      for i in Bet_Type'range loop
-       Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","0.0")); 
-       Cfg.Bet(i).Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value(i'img,"max_loss_per_day","0.0")); 
-       Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",false); 
+       Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","1.0")); 
+       Cfg.Bet(i).Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value(i'img,"max_loss_per_day","-1.0")); -- -1.0 -> -100% of size
+       Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",True); 
      end loop;
      
     
@@ -127,4 +128,16 @@ package body Config is
     return Found;    
   end Country_Is_Ok;
   -------------------------------------------------------------
+  
+  procedure Print_Strategies is
+  begin
+  
+    for i in Bet_Type'range loop
+      Text_Io.Put(I'Img & " ");
+    end loop;
+  
+  end Print_Strategies;
+  
+
+  
 end Config;

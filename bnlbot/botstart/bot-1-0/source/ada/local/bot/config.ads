@@ -6,16 +6,23 @@ with Calendar2;
 
 package Config is
 
-  type Bet_Type is (Back_1_05_7_1_PLC,
-                    Back_1_05_7_1_WIN,
-                    Back_1_10_7_1_PLC,
-                    Back_1_10_7_1_WIN,
-                    Back_1_05_10_1_PLC,
-                    Back_1_05_10_1_WIN,
-                    Back_1_10_10_1_PLC,
-                    Back_1_10_10_1_WIN,
-                    Back_1_50_30_1_PLC,
-                    Back_1_50_30_1_WIN,
+  type Bet_Type is (
+                    Back_1_10_07_1_2_PLC, Back_1_10_07_1_2_WIN,
+                    Back_1_50_30_1_2_PLC, Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, Back_1_50_30_1_4_WIN,
+                    Back_1_50_20_1_2_PLC, Back_1_50_20_1_4_PLC, Back_1_50_20_1_2_WIN, Back_1_50_20_1_4_WIN,
+                    Back_1_50_10_1_2_PLC, Back_1_50_10_1_4_PLC, Back_1_50_10_1_2_WIN, Back_1_50_10_1_4_WIN,
+                    Back_1_40_30_1_2_PLC, Back_1_40_30_1_4_PLC, Back_1_40_30_1_2_WIN, Back_1_40_30_1_4_WIN,
+                    Back_1_40_20_1_2_PLC, Back_1_40_20_1_4_PLC, Back_1_40_20_1_2_WIN, Back_1_40_20_1_4_WIN,
+                    Back_1_40_10_1_2_PLC, Back_1_40_10_1_4_PLC, Back_1_40_10_1_2_WIN, Back_1_40_10_1_4_WIN,
+                    Back_1_30_30_1_2_PLC, Back_1_30_30_1_4_PLC, Back_1_30_30_1_2_WIN, Back_1_30_30_1_4_WIN,
+                    Back_1_30_20_1_2_PLC, Back_1_30_20_1_4_PLC, Back_1_30_20_1_2_WIN, Back_1_30_20_1_4_WIN,
+                    Back_1_30_10_1_2_PLC, Back_1_30_10_1_4_PLC, Back_1_30_10_1_2_WIN, Back_1_30_10_1_4_WIN,
+                    Back_1_20_30_1_2_PLC, Back_1_20_30_1_4_PLC, Back_1_20_30_1_2_WIN, Back_1_20_30_1_4_WIN,
+                    Back_1_20_20_1_2_PLC, Back_1_20_20_1_4_PLC, Back_1_20_20_1_2_WIN, Back_1_20_20_1_4_WIN,
+                    Back_1_20_10_1_2_PLC, Back_1_20_10_1_4_PLC, Back_1_20_10_1_2_WIN, Back_1_20_10_1_4_WIN,
+                    Back_1_10_30_1_2_PLC, Back_1_10_30_1_4_PLC, Back_1_10_30_1_2_WIN, Back_1_10_30_1_4_WIN,
+                    Back_1_10_20_1_2_PLC, Back_1_10_20_1_4_PLC, Back_1_10_20_1_2_WIN, Back_1_10_20_1_4_WIN,
+                    Back_1_10_10_1_2_PLC, Back_1_10_10_1_4_PLC, Back_1_10_10_1_2_WIN, Back_1_10_10_1_4_WIN,
                     Lay_160_200,
                     Lay_1_10_25_4
                     );
@@ -44,5 +51,7 @@ package Config is
   function Create(Filename : String) return Config_Type;
   function Country_Is_Ok (Cfg : Config_Type; Country_Code : String) return Boolean;
   function To_String(Cfg : Config_Type) return String ;
+  
+  procedure Print_Strategies;
 
 end Config;

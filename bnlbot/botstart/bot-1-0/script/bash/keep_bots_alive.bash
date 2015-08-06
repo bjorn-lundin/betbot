@@ -119,12 +119,19 @@ function Check_Bots_For_User () {
     #    Start_Bot $BOT_USER $bot bot $bot.ini
     #  fi
     #done
-    BET_PLACER_LIST="bet_placer_010 \
-                     bet_placer_031 bet_placer_032 bet_placer_033 bet_placer_034 \
-                     bet_placer_110 \
-                     bet_placer_111 bet_placer_112 \
-                     bet_placer_123 \
-                     bet_placer_125 bet_placer_126"                     
+    BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 bet_placer_004 \
+                     bet_placer_005 bet_placer_006 bet_placer_007 bet_placer_008 bet_placer_009 \
+                     bet_placer_010 bet_placer_011 bet_placer_012 bet_placer_013 bet_placer_014 \
+                     bet_placer_015 bet_placer_016 bet_placer_017 bet_placer_018 bet_placer_019 \
+                     bet_placer_020 bet_placer_021 bet_placer_022 bet_placer_023 bet_placer_024 \
+                     bet_placer_025 bet_placer_026 bet_placer_027 bet_placer_028 bet_placer_029 \
+                     bet_placer_030 bet_placer_031 bet_placer_032 bet_placer_033 bet_placer_034 \
+                     bet_placer_035 bet_placer_036 bet_placer_037 bet_placer_038 bet_placer_039 \
+                     bet_placer_040 bet_placer_041 bet_placer_042 bet_placer_043 bet_placer_044 \
+                     bet_placer_045 bet_placer_046 bet_placer_047 bet_placer_048 bet_placer_049 \
+                     bet_placer_050 bet_placer_051 bet_placer_052 bet_placer_053 bet_placer_054 \
+                     bet_placer_055 bet_placer_056 bet_placer_057 bet_placer_058 bet_placer_059 \
+                     bet_placer_060 bet_placer_061 bet_placer_062 bet_placer_063 bet_placer_064"
                      
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -166,15 +173,7 @@ function Create_Plots () {
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
   
-  STRATEGIES="HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
-              HORSES_PLC_BACK_FINISH_1.10_7.0_1 \
-              HORSES_PLC_BACK_FINISH_1.05_7.0_1 \
-              HORSES_PLC_BACK_FINISH_1.10_10.0_1 \
-              HORSES_PLC_BACK_FINISH_1.50_30.0_1 \
-              HORSES_WIN_BACK_FINISH_1.50_30.0_1"
-  
-  
-  
+  STRATEGIES=$(${BOT_TARGET}/bin/graph_data --print_strategies)
   
   #regenerate the graphs
   old_pwd=$(pwd)
@@ -194,21 +193,21 @@ function Create_Plots () {
       -e "ts='$TS'" \
       -e "user='$USR'" \
       -e "days='$DAYS'" \
-      settled_vs_lapsed.gpl
+      settled_vs_lapsed.gpl 2>/dev/null
     DF2="profit_vs_matched_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
       -e "ts='$TS'" \
       -e "user='$USR'" \
       -e "days='$DAYS'" \
-      profit_vs_matched.gpl
+      profit_vs_matched.gpl 2>/dev/null
     DF2="avg_price_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
       -e "ts='$TS'" \
       -e "user='$USR'" \
       -e "days='$DAYS'" \
-      avg_price.gpl
+      avg_price.gpl 2>/dev/null
   done
   
   if [ $DAYS == "42" ] ; then
