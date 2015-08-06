@@ -50,7 +50,7 @@ procedure Poll is
   Is_Time_To_Exit : Boolean := False;
   Cfg : Config.Config_Type;
   use Config;
-  
+
   type Market_Type is (Win, Place);
   type Best_Runners_Array_Type is array (1..4) of Table_Aprices.Data_Type ;
 
@@ -96,78 +96,78 @@ procedure Poll is
 
 
   --------------------------------------------------------------
-  
+
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Back_1_50_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_001"); 
-      when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_002"); 
-      when Back_1_50_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
+      when Back_1_50_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_001");
+      when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_002");
+      when Back_1_50_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
       when Back_1_50_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_004");
-      when Back_1_50_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005"); 
-      when Back_1_50_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_006"); 
+      when Back_1_50_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_50_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_006");
       when Back_1_50_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_007");
       when Back_1_50_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_008");
-      when Back_1_50_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_009"); 
-      when Back_1_50_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_010"); 
-      when Back_1_50_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_011"); 
+      when Back_1_50_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_009");
+      when Back_1_50_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_50_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_011");
       when Back_1_50_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_40_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_013"); 
-      when Back_1_40_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_014"); 
-      when Back_1_40_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_015"); 
+      when Back_1_40_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_013");
+      when Back_1_40_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_014");
+      when Back_1_40_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_015");
       when Back_1_40_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_40_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_017"); 
-      when Back_1_40_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_018"); 
-      when Back_1_40_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_019"); 
+      when Back_1_40_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_017");
+      when Back_1_40_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_018");
+      when Back_1_40_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_019");
       when Back_1_40_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_020");
-      when Back_1_40_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_021"); 
-      when Back_1_40_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_022"); 
-      when Back_1_40_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_023"); 
+      when Back_1_40_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_021");
+      when Back_1_40_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_022");
+      when Back_1_40_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_023");
       when Back_1_40_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_024");
-      when Back_1_30_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_025"); 
-      when Back_1_30_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_026"); 
-      when Back_1_30_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_027"); 
+      when Back_1_30_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_025");
+      when Back_1_30_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_026");
+      when Back_1_30_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_027");
       when Back_1_30_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_028");
-      when Back_1_30_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_029"); 
-      when Back_1_30_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_030"); 
-      when Back_1_30_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_031"); 
+      when Back_1_30_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_029");
+      when Back_1_30_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_030");
+      when Back_1_30_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_031");
       when Back_1_30_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_032");
-      when Back_1_30_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_033"); 
-      when Back_1_30_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_034"); 
-      when Back_1_30_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_035"); 
+      when Back_1_30_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_033");
+      when Back_1_30_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_034");
+      when Back_1_30_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_035");
       when Back_1_30_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_036");
-      when Back_1_20_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_037"); 
-      when Back_1_20_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_038"); 
-      when Back_1_20_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_039"); 
+      when Back_1_20_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_037");
+      when Back_1_20_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_038");
+      when Back_1_20_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_039");
       when Back_1_20_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_040");
-      when Back_1_20_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_041"); 
-      when Back_1_20_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_042"); 
-      when Back_1_20_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_043"); 
+      when Back_1_20_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_041");
+      when Back_1_20_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_042");
+      when Back_1_20_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_043");
       when Back_1_20_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_044");
-      when Back_1_20_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_045"); 
-      when Back_1_20_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_046"); 
-      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_047"); 
+      when Back_1_20_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_045");
+      when Back_1_20_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_046");
+      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_047");
       when Back_1_20_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_048");
-      when Back_1_10_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_049"); 
-      when Back_1_10_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_050"); 
-      when Back_1_10_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_051"); 
+      when Back_1_10_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_049");
+      when Back_1_10_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_050");
+      when Back_1_10_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_051");
       when Back_1_10_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_052");
-      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_053"); 
-      when Back_1_10_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_054"); 
-      when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_055"); 
+      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_053");
+      when Back_1_10_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_054");
+      when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_055");
       when Back_1_10_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_056");
-      when Back_1_10_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_057"); 
-      when Back_1_10_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_058"); 
-      when Back_1_10_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_059"); 
+      when Back_1_10_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_057");
+      when Back_1_10_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_058");
+      when Back_1_10_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_059");
       when Back_1_10_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_060");
       when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_061");
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_062");
       when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_063");
       when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_065");
-    end case;                                                                   
-  end Get_Bet_Placer;                                                            
+    end case;
+  end Get_Bet_Placer;
 
-  
+
 
   procedure Set_Bet_Names is
   begin
@@ -280,10 +280,6 @@ procedure Poll is
          " Main_Bet=" & Main_Bet'Img &
          " Market_Id= '" & Market_Id & "'" &
          " Receiver= '" & Receiver.Name & "'");
-    end if;
-
-    -- just to save time between logs
-    if Did_Bet(1) then
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
     end if;
 
@@ -336,10 +332,6 @@ procedure Poll is
          " Main_Bet=" & Main_Bet'Img &
          " Place_Market_Id= '" & Place_Market_Id & "'" &
          " Receiver= '" & Receiver.Name & "'" );
-    end if;
-
-    -- just to save time between logs
-    if Did_Bet(1) then
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
     end if;
 
@@ -371,8 +363,44 @@ procedure Poll is
                    Min_Price       => Min_Price);
         end if;
   end Try_To_Make_Back_Bet;
-  
-  
+
+
+  procedure Try_To_Make_Back_Bet(
+      Bettype         : Config.Bet_Type;
+      BR              : Best_Runners_Array_Type;
+      Marketid        : Market_Id_Type;
+      Min_Price       : String := "1.01") is
+
+      Max_Backprice_1 : Float_8;
+      Min_Backprice_n : Float_8;
+      Backed_Place    : Integer;
+      Next_Place      : Integer;
+      Tmp : String (1..5) := (others => ' ');
+      Image : String := Bettype'Img;
+  begin       --1
+   --  12345678901234567890
+   --  Back_1_10_20_1_4_WIN
+    Tmp(1) := Image(6);
+    Tmp(2) := '.';
+    Tmp(3..4) := Image(8..9);
+    Max_Backprice_1 := Float_8'Value(Tmp);
+    
+    Min_Backprice_n := Float_8'Value(Image(11..12));
+    Backed_Place := Integer'Value(Image(14..14));
+    Next_Place := Integer'Value(Image(16..16));
+    
+    if BR(Backed_Place).Backprice <= Max_Backprice_1 and then
+       BR(Next_Place).Backprice >= Min_Backprice_n and then
+       BR(3).Backprice <  Float_8(10_000.0) then  -- so it exists
+      -- Back The leader in PLC market...
+    
+      Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
+               Main_Bet        => Bettype,
+               Place_Market_Id => Marketid,
+               Receiver        => Get_Bet_Placer(Bettype),
+               Min_Price       => Min_Price);
+    end if;
+  end Try_To_Make_Back_Bet;
   -------------------------------------------------------------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -391,7 +419,7 @@ procedure Poll is
     Has_Been_In_Play,
     In_Play           : Boolean := False;
     Best_Runners      : Best_Runners_Array_Type := (others => Table_Aprices.Empty_Data);
-    
+
     Worst_Runner      : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
 
     Eos               : Boolean := False;
@@ -572,667 +600,41 @@ procedure Poll is
 
         ---------------------------------------------------------------
         
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_07_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(7),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
+        
+    -- instead of loads of 
+    --    Try_To_Make_Back_Bet (
+    --          Bettype => Back_1_10_07_1_2_WIN,
+    --          BR => Best_Runners,
+    --          Marketid => Markets(Win).Marketid);
+        for i in Bet_Type'range loop
+          case i is
+            when Lay_160_200        => null; -- treat later
+            when Lay_1_10_25_4      => null; -- treat later
+            when others             => 
+              declare
+                M_Type : Market_Type := Win;
+                Image : String := i'Img;
+
+              begin
               
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_07_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(7),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
+               --  12345678901234567890
+               --  Back_1_10_20_1_4_WIN
+              
+                if Image(18..20) = "PLC" then
+                  M_Type := Place;
+                end if;  
+                
+                Try_To_Make_Back_Bet (
+                      Bettype => i,
+                      BR => Best_Runners,
+                      Marketid => Markets(M_Type).Marketid);
+              end;              
+            
+          end case;
+        end loop;
 
 
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
 
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_30_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_30_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_20_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_20_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_10_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_10_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_30_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_30_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_20_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_20_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.50),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-
---bnl
-
-             Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_30_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_30_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_20_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_20_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_10_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_10_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_30_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_30_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_50_20_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_20_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_40_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.40),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-         
-              
-              
---bnl              
-             Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_30_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_30_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_20_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_20_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_10_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_10_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_30_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_30_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_20_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_20_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_30_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.30),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-                       
-              
---bnl              
-             Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_30_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_30_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_20_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_20_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_10_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_10_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_30_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_30_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_20_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_20_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_20_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.20),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-                       
-              
---bnl              
-
---bnl              
-             Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_30_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_30_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_20_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_20_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_4_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_4_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(4));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_30_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_30_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(30),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_20_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_20_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(20),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_2_PLC,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Place).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-              
-        Try_To_Make_Back_Bet (
-              Bettype         => Back_1_10_10_1_2_WIN,
-              BR              => Best_Runners,
-              WR              => Worst_Runner,
-              Marketid        => Markets(Win).Marketid, 
-              Max_Backprice_1 => Float_8(1.10),
-              Min_Backprice_n => Float_8(10),
-              Backed_Place    => Integer(1),
-              Next_Place      => Integer(2));
-                       
-              
---bnl              
-
-
-              
-              
-              
         ---------------------------------------------------------------
         --MR_HORSES_PLC_BACK_FINISH_1.10_25.0_1
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
