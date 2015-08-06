@@ -148,7 +148,7 @@ procedure Bet_Placer is
       Lock.Write_File(Name => Filename, Content =>  A_Bet.To_JSON.Write);
  
       Log(Me, "Notifying 'bot_checker' about newly placed bet");
-      Bot_Messages.Send(Process_IO.To_Process_Type("bot_checker"), NBP);     
+      Bot_Messages.Send(Process_IO.To_Process_Type("bet_checker"), NBP);     
     
     exception
       when E: others => 

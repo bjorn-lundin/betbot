@@ -11,7 +11,7 @@ with  Ada.Environment_Variables;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 --with Bot_Types;
 with Utils; use Utils;
-
+with Config;
 procedure Graph_Data is
   package EV renames Ada.Environment_Variables;
    Cmd_Line              : Command_Line_Configuration;
@@ -22,6 +22,7 @@ procedure Graph_Data is
    Select_Equity_Date    : Sql.Statement_Type;
 
    Sa_Betname      : aliased Gnat.Strings.String_Access;
+   Ba_Print_Strategies : aliased Boolean := False;
    Ba_Avg_Price    : aliased Boolean := False;
    Ba_Profit       : aliased Boolean := False;
    Ba_Lapsed       : aliased Boolean := False;
@@ -266,8 +267,25 @@ begin
       Ia_Days'access,
       Long_Switch => "--days=",
       Help        => "days of stats");
+      
+   Define_Switch
+     (Cmd_Line,
+      Ba_Print_Strategies'access,
+      Long_Switch => "--print_strategies",
+      Help        => "print strategies");
+      
+      
+      
 
   Getopt (Cmd_Line);  -- process the command line
+  
+  
+  if Ba_Print_Strategies then 
+    Config.Print_Strategies;
+    return;
+  end if;  
+  
+  
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
