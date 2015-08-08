@@ -338,33 +338,7 @@ procedure Poll is
   end Send_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
-  procedure Try_To_Make_Back_Bet(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      WR              : Table_Aprices.Data_Type;
-      Marketid        : Market_Id_Type;
-      Max_Backprice_1 : Float_8;
-      Min_Backprice_n : Float_8;
-      Backed_Place    : Integer;
-      Next_Place      : Integer;
-      Min_Price       : String := "1.01") is
-    pragma Unreferenced(WR);
-  begin
-
-        if BR(Backed_Place).Backprice <= Max_Backprice_1 and then
-           BR(Next_Place).Backprice >= Min_Backprice_n and then
-           BR(3).Backprice <  Float_8(10_000.0) then  -- so it exists
-          -- Back The leader in PLC market...
-
-          Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
-                   Main_Bet        => Bettype,
-                   Place_Market_Id => Marketid,
-                   Receiver        => Get_Bet_Placer(Bettype),
-                   Min_Price       => Min_Price);
-        end if;
-  end Try_To_Make_Back_Bet;
-
-
+ 
   procedure Try_To_Make_Back_Bet(
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
