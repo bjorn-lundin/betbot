@@ -102,11 +102,11 @@ procedure Bet_Checker is
             
               Bet.Insert;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
-              if Utils.Trim(Bet.Exestatus) = "SUCCESS" then
+      --        if Utils.Trim(Bet.Exestatus) = "SUCCESS" then
                 Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
                 Update_Betwon_To_Null.Set("BETID", Bet.Betid);
                 Update_Betwon_To_Null.Execute;
-              end if;
+      --        end if;
             T.Commit;
           exception 
             when Sql.Duplicate_Index => 
