@@ -164,6 +164,8 @@ procedure Poll is
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_062");
       when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_063");
       when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_065");
+      when Back_2_00_01_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_066");
+      when Back_2_00_01_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_067");
     end case;
   end Get_Bet_Placer;
 

@@ -7,6 +7,7 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
+                    Back_2_00_01_1_2_PLC, Back_2_00_01_1_2_WIN,
                     Back_1_10_07_1_2_PLC, Back_1_10_07_1_2_WIN,
                     Back_1_50_30_1_2_PLC, Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, Back_1_50_30_1_4_WIN,
                     Back_1_50_20_1_2_PLC, Back_1_50_20_1_4_PLC, Back_1_50_20_1_2_WIN, Back_1_50_20_1_4_WIN,
