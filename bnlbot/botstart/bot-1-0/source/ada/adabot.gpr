@@ -25,6 +25,7 @@ project Adabot is
                    -- "bot.adb",
                     "bot_send.adb",
                     "poll.adb",
+                    "race_time.adb",
         --            "poll_place.adb",
         --            "poll_and_log.adb",
                     "poll_market.adb",

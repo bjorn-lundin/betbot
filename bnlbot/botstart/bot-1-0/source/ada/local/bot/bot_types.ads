@@ -62,6 +62,7 @@ package Bot_Types is
    subtype Bet_Name_Type        is String(Table_Abets.Empty_Data.Betname'range);
    subtype Bet_Side_String_Type is String(Table_Abets.Empty_Data.Side'range);
    subtype Bet_Timestamp_Image_Type is String(1..23);
+   subtype Venue_Type           is String (1..50);
   
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
    function "+" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
