@@ -7,7 +7,6 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    Back_2_00_01_1_2_PLC, Back_2_00_01_1_2_WIN,
                     Back_1_10_07_1_2_PLC, Back_1_10_07_1_2_WIN,
                     Back_1_50_30_1_2_PLC, Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, Back_1_50_30_1_4_WIN,
                     Back_1_50_20_1_2_PLC, Back_1_50_20_1_4_PLC, Back_1_50_20_1_2_WIN, Back_1_50_20_1_4_WIN,
@@ -34,7 +33,7 @@ package Config is
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
     Max_Loss_Per_Day           : Float_8          := -500.0;
-    Min_Price                  : Float_8          := 1.01;    
+    Min_Price                  : Unbounded_String := Null_Unbounded_String;    
     Enabled                    : Boolean          := False;
   end record;
   

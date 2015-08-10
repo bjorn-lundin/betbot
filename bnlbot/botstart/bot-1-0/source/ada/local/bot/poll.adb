@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
@@ -163,9 +164,9 @@ procedure Poll is
       when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_061");
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_062");
       when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_063");
-      when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_065");
-      when Back_2_00_01_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_066");
-      when Back_2_00_01_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_067");
+      when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_064");
+    --when Back_2_00_01_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_065");
+    --when Back_2_00_01_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_066");
     end case;
   end Get_Bet_Placer;
 
@@ -345,7 +346,7 @@ procedure Poll is
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
       Marketid        : Market_Id_Type;
-      Min_Price       : String := "1.01") is
+      Min_Price       : String ) is
 
       Max_Backprice_1 : Float_8;
       Min_Backprice_n : Float_8;
@@ -601,9 +602,10 @@ procedure Poll is
                 end if;  
                 
                 Try_To_Make_Back_Bet (
-                      Bettype => i,
-                      BR => Best_Runners,
-                      Marketid => Markets(M_Type).Marketid);
+                      Bettype   => i,
+                      BR        => Best_Runners,
+                      Marketid  => Markets(M_Type).Marketid,
+                      Min_Price => To_String(Cfg.Bet(i).Min_Price));
               end;              
             
           end case;
