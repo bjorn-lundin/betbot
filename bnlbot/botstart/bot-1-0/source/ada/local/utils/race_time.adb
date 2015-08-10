@@ -30,6 +30,8 @@ procedure Race_Time is
   -------------------------------
    
   Start_Time_List : Rpc.Calendar2_Pack.List;
+  Arrow_Is_Printed : Boolean := False;
+  Now : Time_Type := Time_Type_First;
   
 begin
 
@@ -47,12 +49,26 @@ begin
 
   Rpc.Get_Starttimes(Start_Time_List);
   Rpc.Logout;
-  
-  for s of Start_Time_List loop
-    Print(
-      S.Starttime.String_Time(Seconds => False) & " | " &
-      S.Venue(1..30)
-    ) ;
-  end loop;
+  loop
+    Arrow_Is_Printed := False;
+    Now := Calendar2.Clock;
+    for s of Start_Time_List loop
+      if not Arrow_Is_Printed and then
+        Now >= S.Starttime then
+           Print(
+             S.Starttime.String_Time(Seconds => False) & " | " &
+             S.Venue(1..30) & " <----"
+           ) ;
+        Arrow_Is_Printed := True;
+      else
+           Print(
+             S.Starttime.String_Time(Seconds => False) & " | " &
+             S.Venue(1..30)
+           ) ;
+      end if;      
+    end loop;
+    Text_Io.New_Line(25);   
+    delay 5.0;
+  end loop;  
 
 end Race_Time;
