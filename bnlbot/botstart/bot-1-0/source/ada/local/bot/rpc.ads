@@ -11,6 +11,7 @@ with Table_Aprices;
 with Table_Aevents;
 with Token;
 with Calendar2;
+with Ada.Containers.Doubly_Linked_Lists;
 
 package RPC is
 
@@ -131,5 +132,14 @@ package RPC is
                             URL   : in     String) ;
        
   procedure Get_Navigation_Data(Nav_Data : out Ada.Strings.Unbounded.Unbounded_String);  
+                         
+  type Start_Data_Record is record
+    Starttime : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    Venue : Venue_Type := (others => ' ');
+  end record;  
+                         
+  package Calendar2_Pack is new Ada.Containers.Doubly_Linked_Lists(Start_Data_Record);
+  
+  procedure Get_Starttimes(List : out Calendar2_Pack.List);
                          
 end RPC;    

@@ -11,7 +11,7 @@ with Bot_Svn_Info;
 with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
 with Stacktrace;
-
+with Ada.Calendar.Time_Zones;
 
 package body RPC is
 
@@ -2008,4 +2008,203 @@ package body RPC is
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
          raise Bad_Reply ;
   end Get_Navigation_Data;
+  
+  --------------------------------
+  
+  procedure Get_Starttimes(List : out Calendar2_Pack.List) is
+    JSON_Query   : JSON_Value := Create_Object;
+    JSON_Reply   : JSON_Value := Create_Object;
+    Result_Array : JSON_Array := Empty_Array;
+    
+    Result       : JSON_Value := Create_Object;
+    Found        : Boolean    := False;
+    
+    
+    Params               : JSON_Value := Create_Object;
+    Filter               : JSON_Value := Create_Object;
+    
+    
+    Event                : JSON_Value := Create_Object;
+    Market_Start_Time    : JSON_Value := Create_Object;
+    Market_Projection,
+    Market_Countries,
+    Market_Type_Codes,
+    Exchange_Ids,
+    Event_Type_Ids       : JSON_Array := Empty_Array;
+  
+    Now  : Calendar2.Time_Type := Calendar2.Clock;
+    From : Calendar2.Time_Type := Now;
+    To   : Calendar2.Time_Type := Now;
+    Starttime : Calendar2.Time_Type := Now;
+    List_Data : Start_Data_Record;
+    
+    One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
+    Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
+    UTC_Offset_Minutes : Ada.Calendar.Time_Zones.Time_Offset;
+    use type  Calendar2.Time_Type;
+    
+    No_Such_UTC_Offset : exception;
+    
+  begin
+     -- Create JSON arrays
+    Append(Exchange_Ids , Create("1"));      -- Not Australia 
+    
+    Append(Event_Type_Ids , Create("7"));    -- horse
+  --   none for all countries   
+    Append(Market_Countries , Create("GB"));
+    Append(Market_Countries , Create("IE"));
+    Append(Market_Type_Codes , Create("WIN"));                 -- for horses/hounds
+    Append(Market_Projection , Create("MARKET_START_TIME"));
+    Append(Market_Projection , Create("EVENT"));
+    
+    From.Hour := 0;
+    From.Minute := 0;
+    From.Second := 0;
+    From.Millisecond := 0;
+    
+    To.Hour := 23;
+    To.Minute := 59;
+    To.Second := 59;
+    To.Millisecond := 999;
+        
+    Market_Start_Time.Set_Field(Field_Name => "from", Field => From.String_Date_Time_ISO);
+    Market_Start_Time.Set_Field(Field_Name => "to",   Field => To.String_Date_Time_ISO);
+   
+    Filter.Set_Field (Field_Name => "exchangeIds",        Field => Exchange_Ids);                    
+    Filter.Set_Field (Field_Name => "eventTypeIds",       Field => Event_Type_Ids);                      
+    Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);                
+    Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes); 
+    Filter.Set_Field (Field_Name => "marketStartTime",    Field => Market_Start_Time);
+                       
+    Params.Set_Field (Field_Name => "filter",           Field => Filter);                     
+    Params.Set_Field (Field_Name => "marketProjection", Field => Market_Projection);  
+    Params.Set_Field (Field_Name => "locale",           Field => "en"); --                
+    Params.Set_Field (Field_Name => "sort",             Field => "FIRST_TO_START");
+    Params.Set_Field (Field_Name => "maxResults",       Field => "999");
+                      
+    JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
+    JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
+    JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketCatalogue");
+    JSON_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
+
+
+    --{
+    --     "jsonrpc": "2.0",
+    --     "method": "SportsAPING/v1.0/listMarketCatalogue",
+    --     "params": {
+    --          "filter": {
+    --               "eventTypeIds": ["7"],
+    --               "marketCountries": ["IE","GB"],
+    --               "marketTypeCodes": ["WIN"],
+    --               "marketStartTime": {
+    --                    "from": "2015-08-10T00:00:00Z",
+    --                    "to": "2015-08-10T21:30:00Z"
+    --               }
+    --          },
+    --          "sort": "FIRST_TO_START",
+    --          "maxResults": "100",
+    --          "marketProjection": ["MARKET_START_TIME","EVENT"]
+    --     },
+    --     "id": 1
+    --} 
+    
+    Get_JSON_Reply(Query => JSON_Query,
+                   Reply => JSON_Reply,
+                   URL   => Token.URL_BETTING);
+
+    if API_Exceptions_Are_Present(JSON_Reply) then
+      return ;
+    end if;
+    
+    --[{
+    --     "jsonrpc": "2.0",
+    --     "result": [{
+    --          "marketId": "1.119947782",
+    --          "marketName": "1m Hcap",
+    --          "marketStartTime": "2015-08-10T14:45:00.000Z",
+    --          "totalMatched": 2220769.95076,
+    --          "event": {
+    --               "id": "27508851",
+    --               "name": "Wolv 10th Aug",
+    --               "countryCode": "GB",
+    --               "timezone": "Europe/London",
+    --               "venue": "Wolverhampton",
+    --               "openDate": "2015-08-10T13:15:00.000Z"
+    --          }
+    --     },
+    --     {
+    --          "marketId": "1.119947756",
+    --          "marketName": "5f Hcap",
+    --          "marketStartTime": "2015-08-10T15:00:00.000Z",
+    --          "totalMatched": 688189.1516000001,
+    --          "event": {
+    --               "id": "27508850",
+    --               "name": "Ayr 10th Aug",
+    --               "countryCode": "GB",
+    --               "timezone": "Europe/London",
+    --               "venue": "Ayr",
+    --               "openDate": "2015-08-10T13:00:00.000Z"
+    --          }
+    --     }],
+    --     "id": 1
+    --}]
+
+    
+    if Json_Reply.Has_Field("result") then
+      Result_Array := Json_Reply.Get("result");
+
+      if Length(Result_Array) > Natural(0) then
+        for i in 1 .. Length(Result_Array) loop
+          Result := Get(Result_Array,i); 
+          
+          Get_Value(Container => Result,
+                    Field     => "marketStartTime",
+                    Target    => Starttime,
+                    Found     => Found);
+          if not Found then
+            Log(Me & "Get_Starttimes", "NO starttime!!" );
+          end if;
+          
+          UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
+          case UTC_Offset_Minutes is
+            when 60     => List_Data.Starttime := Starttime + One_Hour;
+            when 120    => List_Data.Starttime := Starttime + Two_Hours;
+            when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
+          end case;   
+          
+          
+          
+          Get_Value(Container => Result,
+                    Field     => "event",
+                    Target    => Event,
+                    Found     => Found);
+          if not Found then
+            Log(Me & "Get_Starttimes", "NO event!!" );
+          end if;
+          
+          Get_Value(Container => Event,
+                    Field     => "venue",
+                    Target    => List_Data.Venue,
+                    Found     => Found);
+          if not Found then
+            Log(Me & "Get_Starttimes", "NO venue!!" );
+          end if;
+          
+          List.Append(List_Data);
+          
+        end loop;     
+        
+      else
+        Log(Me & "Get_Starttimes", "NO RESULT!! 3 " );
+        return ;
+      end if;
+    else
+      Log(Me & "Get_Starttimes", "NO RESULT!! 4" );
+      return ;
+    end if;
+
+    
+    
+  end Get_Starttimes;
+  
 end RPC;
