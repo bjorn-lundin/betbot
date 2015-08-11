@@ -21,7 +21,7 @@ TABLE_MAKE_FILE := $(BOT_SOURCE)/ada/global/tables/makefile
 
 .PHONY : all adabot log bot race_time
 
-all : log race_time
+all : log 
 
 log :
 	$(MAKE) bot 2>&1 | tee make.log
