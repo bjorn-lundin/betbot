@@ -626,7 +626,7 @@ procedure Poll is
                           Main_Bet    => Lay_1_10_25_4,
                           Max_Price   => Max_Lay_Price_Type(70.0),
                           Market_Id   => Markets(Win).Marketid,
-                          Receiver    => Process_Io.To_Process_Type("bet_placer_123"));
+                          Receiver    => Get_Bet_Placer(Lay_1_10_25_4));
           end if;
 
         end if;
@@ -646,7 +646,7 @@ procedure Poll is
                         Main_Bet   => Lay_160_200,
                         Max_Price  => Max_Lay_Price_Type(200.0),
                         Market_Id  => Markets(Win).Marketid,
-                        Receiver   => Process_Io.To_Process_Type("bet_placer_124"));
+                        Receiver   => Get_Bet_Placer(Lay_160_200));
         end if;
       end if;
 
