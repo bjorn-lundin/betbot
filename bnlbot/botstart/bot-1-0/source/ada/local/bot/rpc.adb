@@ -2011,7 +2011,7 @@ package body RPC is
   
   --------------------------------
   
-  procedure Get_Starttimes(List : out Calendar2_Pack.List) is
+  procedure Get_Starttimes(List : out Table_Astarttimes.Astarttimes_List_Pack2.List) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
     Result_Array : JSON_Array := Empty_Array;
@@ -2036,7 +2036,7 @@ package body RPC is
     From : Calendar2.Time_Type := Now;
     To   : Calendar2.Time_Type := Now;
     Starttime : Calendar2.Time_Type := Now;
-    List_Data : Start_Data_Record;
+    List_Data : Table_Astarttimes.Data_Type;
     
     One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
     Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);

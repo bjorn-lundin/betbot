@@ -42,7 +42,7 @@ with Utils;
 with Logging; use Logging;
 
 package body Sql is
-    Me : constant String := "Sql";
+   Me : constant String := "Sql";
 
    Global_Statement_Index_Counter : Natural := 0;
    Global_Connection              : Connection_Type;  -- the default connection;
@@ -58,6 +58,7 @@ package body Sql is
    
    type Error_Type is (Error_Duplicate_Index, Error_No_Such_Object, Error_No_Such_Column);
    type Error_Array_Type is array (Error_Type'Range) of Boolean;
+
 
    ------------------------------------------------------------
    procedure Decrease_Global_Indent is
@@ -149,18 +150,53 @@ package body Sql is
                          Parameter_Type         : in     Parameter_Type_Type) is
       Found    : Boolean := False;
    begin
-      for Local_Map_Item of Private_Statement.Parameter_Map loop
-         -- updates in list, directly
-         if To_String (Local_Map_Item.Name) = Bind_Varible then
+
+-- gnat 4.6.3 workaround  start
+      
+   -- error: assignment to loop parameter not allowed
+   --   for Local_Map_Item of Private_Statement.Parameter_Map loop
+   --      -- updates in list, directly
+   --      if To_String (Local_Map_Item.Name) = Bind_Varible then
+   --         Local_Map_Item.Value := To_Unbounded_String (Value);
+   --         Local_Map_Item.Parameter_Type := Parameter_Type;
+   --         Found := True;
+   --      end if;
+   --   end loop;
+   
+      declare
+        use Map;      
+        C : Cursor; 
+        
+        Local_Map_Item : Parameter_Map_Type;
+      begin 
+        C := First (Private_Statement.Parameter_Map); 
+        while Has_Element(C) loop -- Print current value 
+
+          if To_String (Element(C).Name) = Bind_Varible then
+          
+            Local_Map_Item :=  Element(C);
+          
             Local_Map_Item.Value := To_Unbounded_String (Value);
             Local_Map_Item.Parameter_Type := Parameter_Type;
+             
+            Replace_Element (Private_Statement.Parameter_Map, C, Local_Map_Item);
+              
             Found := True;
-         end if;
-      end loop;
+          end if;
 
+          Next (C); 
+        end loop; 
+      end; 
+   
+   
+   
+-- gnat 4.6.3 workaround  stop
+   
       if not Found then
         raise No_Such_Parameter with Bind_Varible;
       end if;
+   
+   
    end Update_Map;
    --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 
@@ -263,16 +299,31 @@ package body Sql is
       end Replace_Dollar_Place_Holder;
       --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
    begin
+
+   
       if not Private_Statement.Is_Prepared then
          Log(Me, "Fill_Data_In_Prepared_Statement. Was not prepared: '" & To_String (Tmp) & "'");
          raise Sequence_Error;
       end if;
 
   --    Log(Me, "Fill_Data_In_Prepared_Statement.start: '" & To_String (Tmp) & "'");
-      
-      for Local_Map_Item of Private_Statement.Parameter_Map loop
-         Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
-      end loop;
+
+-- gnat 4.6.3 workaround  start
+--      for Local_Map_Item of Private_Statement.Parameter_Map loop
+--         Replace_Dollar_Place_Holder (Tmp, Local_Map_Item);
+--      end loop;
+
+      declare
+        use Map;      
+        C : Cursor; 
+      begin 
+        C := First (Private_Statement.Parameter_Map); 
+        while Has_Element (C) loop -- Print current value 
+          Replace_Dollar_Place_Holder (Tmp, Element(C));
+          Next (C); 
+        end loop; 
+      end; 
+-- gnat 4.6.3 workaround  stop
 
       Private_Statement.Prepared_Statement := Tmp;
   --    Log(Me, "Fill_Data_In_Prepared_Statement.stop: '" & To_String (Tmp) & "'");

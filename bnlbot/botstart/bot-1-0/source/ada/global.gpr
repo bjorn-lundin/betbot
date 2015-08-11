@@ -45,7 +45,7 @@ project Global is
 
    for Object_Dir use Bot_Target & "/objects";
    
-   Xml_Source := (Bot_Source & "/ada/global/xmlada_gpl");
+   Xml_Source := (Bot_Source & "/ada/global/xmlada");
                                     
    Common_Source_Dirs := ( "local",
                            "global",
