@@ -17,7 +17,7 @@ project Adabot is
 
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
 
-   type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM");
+   type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM", "DISPLAY");
 
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
@@ -56,6 +56,7 @@ project Adabot is
                  --   "plot_race_prices.adb",
                 --    "plot_race_prices2.adb");
 
+   Display_Mains :=  ("race_time.adb");
    Other_Mains :=  (
                      "check_greenup.adb",
                      "create_graph_data_lost_bets.adb",                   
@@ -81,7 +82,8 @@ project Adabot is
                                      Stat_Mains &
                                      Other_Mains &
                                      Test_Programs;
-   end case;
+      when "DISPLAY"    =>  for Main use Display_Mains;
+    end case;
 
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;
