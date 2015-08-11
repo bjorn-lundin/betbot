@@ -9,6 +9,7 @@ with Rpc;
 with Logging; use Logging;
 with Table_Astarttimes;
 with Gnat.Command_Line; use Gnat.Command_Line;
+with Stacktrace;
 
 procedure Race_Time is
 
@@ -53,8 +54,8 @@ procedure Race_Time is
   begin
     T.Start;
     Delete_Racetime.Prepare(
-      "delete from ASTARTTIME " & 
-      "where STARTTS::date <= (select CURRENT_DATE - 1)");
+      "delete from ASTARTTIMES " & 
+      "where STARTTIME::date <= (select CURRENT_DATE - 1)");
     begin
       Delete_Racetime.Execute;
     exception
@@ -140,8 +141,16 @@ begin
       when Mode_Rpc =>
         Rpc.Login;
         Rpc.Get_Starttimes(List => Start_Time_List);
+        Sql.Connect
+            (Host     => Ini.Get_Value("database", "host", ""),
+             Port     => Ini.Get_Value("database", "port", 5432),
+             Db_Name  => Ini.Get_Value("database", "name", ""),
+             Login    => Ini.Get_Value("database", "username", ""),
+             Password =>Ini.Get_Value("database", "password", ""));
         Insert_Starttimes(List => Start_Time_List);
         Rpc.Logout;
+        Sql.Close_Session;
+        exit Days;
       when Mode_Sql =>
         Sql.Connect
             (Host     => Ini.Get_Value("database", "host", ""),
@@ -183,5 +192,7 @@ begin
     end loop Day;
     
   end loop Days;    
-
+exception
+  when E: others =>
+    Stacktrace.Tracebackinfo(E);
 end Race_Time;
