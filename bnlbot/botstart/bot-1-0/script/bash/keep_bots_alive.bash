@@ -27,7 +27,7 @@ export REINDEXDB=reindexdb
 export DUMP_DIRECTORY="/data/dbdumps"
 
 TZ='Europe/Stockholm'
-export TZ   
+export TZ
 export BOT_START=/home/bnl/bnlbot/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
@@ -58,7 +58,7 @@ function Start_Bot () {
   if [ "$MODE" != "" ] ; then
     MODE=" --mode=$MODE"
   fi
-  
+
   $BOT_TARGET/bin/check_bot_running --botname=$BOT_NAME  --debug > /dev/null 2>&1
   RESULT=$?
   if [ $RESULT -eq 0 ] ; then
@@ -77,14 +77,14 @@ function Check_Bots_For_User () {
   export BOT_USER=$1
   BOT_WEEK_DAY=$2
   BOT_HOUR=$3
-  BOT_MINUTE=$4  
-  
+  BOT_MINUTE=$4
+
   if [ $BOT_USER == "dry" ] ; then
     IS_DATA_COLLECTOR="true"
-  else  
+  else
     IS_DATA_COLLECTOR="false"
   fi
-  
+
   . $BOT_START/bot.bash $BOT_USER
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
@@ -96,22 +96,22 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
-    
+
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-  
-  
+
+
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
     TEST) BOT_LIST="bot" ;;
     SIM)  BOT_LIST="" ;;
     *)    BOT_LIST="" ;;
   esac
-  
+
   if [ $IS_DATA_COLLECTOR == "false" ] ; then
-  
+
     Start_Bot $BOT_USER bet_checker bet_checker
-    Start_Bot $BOT_USER poll poll poll.ini 
-  
+    Start_Bot $BOT_USER poll poll poll.ini
+
     #for bot in $BOT_LIST ; do
     #  if [ $bot == "bot" ] ; then
     #    Start_Bot $BOT_USER $bot bot betfair.ini
@@ -131,55 +131,60 @@ function Check_Bots_For_User () {
                      bet_placer_045 bet_placer_046 bet_placer_047 bet_placer_048 bet_placer_049 \
                      bet_placer_050 bet_placer_051 bet_placer_052 bet_placer_053 bet_placer_054 \
                      bet_placer_055 bet_placer_056 bet_placer_057 bet_placer_058 bet_placer_059 \
-                     bet_placer_060 bet_placer_061 bet_placer_062 bet_placer_063 bet_placer_064"
-                     
+                     bet_placer_060 bet_placer_061 bet_placer_062 bet_placer_063 bet_placer_064 \
+                     bet_placer_065 bet_placer_066"
+
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
     done
-    
+
     if [ $BOT_HOUR == "05" ] ; then
       if [ $BOT_MINUTE == "00" ] ; then
         Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
       fi
     fi
-    
+
   else
     DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
                           poll_market_3 poll_market_4 \
                           poll_market_5 poll_market_6 \
-                          poll_market_7 poll_market_8"      
+                          poll_market_7 poll_market_8"
     for colletor in $DATA_COLLECTORS_LIST ; do
-      Start_Bot $BOT_USER $colletor poll_market 
+      Start_Bot $BOT_USER $colletor poll_market
     done
-                          
+
   fi
-  
+
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
-  
+
   if [ $BOT_HOUR == "05" ] ; then
     if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
+      $BOT_TARGET/bin/race_time --rpc
     fi
   fi
-  
-  
+
+
 }
 
 function Create_Plots () {
   USR=$1
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
+
+  . $BOT_START/bot.bash $USR
+
   
   STRATEGIES=$(${BOT_TARGET}/bin/graph_data --print_strategies)
-  
+
   #regenerate the graphs
   old_pwd=$(pwd)
   cd ${BOT_SCRIPT}/plot/gui_plot/
-  
-  for S in $STRATEGIES ; do 
+
+  for S in $STRATEGIES ; do
     strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
     #create datafiles
     ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
@@ -209,15 +214,15 @@ function Create_Plots () {
       -e "days='$DAYS'" \
       avg_price.gpl 2>/dev/null
   done
-  
+
   if [ $DAYS == "42" ] ; then
-    FILES=""  
-    for S in $STRATEGIES ; do 
+    FILES=""
+    for S in $STRATEGIES ; do
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
       ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
-      
+
       #one plot for each:
       gnuplot \
         -e "files='$DATA_FILE'" \
@@ -225,16 +230,16 @@ function Create_Plots () {
         -e "target_png='${strategy}.png'" \
         -e "user='$USR'" \
         equity.gpl  2>/dev/null
-    done  
+    done
       #one plot for all together:
-  
+
     gnuplot \
       -e "files='$FILES'" \
       -e "ts='$TS'" \
       -e "target_png='equity.png'" \
       -e "user='$USR'" \
       equity.gpl  2>/dev/null
-  fi  
+  fi
   #move to user area and cleanup
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
@@ -243,24 +248,24 @@ function Create_Plots () {
 }
 
 
-# start here 
+# start here
 
 HOUR=$(date +"%H")
 MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
 DAY=$(date +"%d")
-       
+
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
     USER_LIST=$(ls $BOT_START/user)
     USER_LIST_PLAYERS_ONLY="bnl jmb"
-    
+
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
-  
+
 # until we got data disk    if [ $HOUR == "05" ] ; then
 # until we got data disk      if [ $MINUTE == "10" ] ; then
 # until we got data disk        SLEEPTIME=1
@@ -271,7 +276,7 @@ case $BOT_MACHINE_ROLE in
 # until we got data disk        done
 # until we got data disk      fi
 # until we got data disk    fi
-    
+
     if [ $DAY == "01" ] ; then
       if [ $HOUR == "01" ] ; then
         if [ $MINUTE == "37" ] ; then
@@ -284,7 +289,7 @@ case $BOT_MACHINE_ROLE in
         fi
       fi
     fi
-    
+
     if [ $MINUTE == "40" ] ; then
       for USR in $USER_LIST_PLAYERS_ONLY ; do
         #Start one every 2 min in the background
@@ -293,30 +298,30 @@ case $BOT_MACHINE_ROLE in
         (( SLEEPTIME = SLEEPTIME +120 ))
       done
     fi
-    
+
     if [ $HOUR == "05" ] ; then
       if [ $MINUTE == "00" ] ; then
         for USR in $USER_LIST_PLAYERS_ONLY ; do
-        
+
         #Start one every 5 min in the background, both with and without system tables
         SLEEPTIME=1
         (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
         (( SLEEPTIME = SLEEPTIME +10 ))
         (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-        (( SLEEPTIME = SLEEPTIME +300 ))          
+        (( SLEEPTIME = SLEEPTIME +300 ))
         done
       fi
-    fi  
+    fi
 
-    if [ $MINUTE == "05" ] || [ $MINUTE == "32" ] || [ $MINUTE == "45" ] ; then
+    if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
       for USR in $USER_LIST_PLAYERS_ONLY ; do
-        Create_Plots $USR 42
+        Create_Plots $USR 42 
         Create_Plots $USR 182
       done
     fi
-    
+
   ;;
-  *) 
+  *)
   #do nothing on non-PROD hosts
   exit 0 ;;
 esac
@@ -333,7 +338,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com joakim@birgerson.com"
 
-DISK_LIST="xvda"  
+DISK_LIST="xvda"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
@@ -341,12 +346,12 @@ for DISK in $DISK_LIST ; do
   FS=$( df  | grep $DISK | awk '{print $1}')
   PERCENTAGE=$(tclsh $PCT $USED_SIZE $DISK_SIZE)
   for RECIPENT in $MAIL_LIST ; do
-   if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then 
+   if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then
      if [ ! -r ${ALARM_TODAY_FILE} ] ; then
        df -h | mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)" $RECIPENT
        df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
        touch ${ALARM_TODAY_FILE}
-     fi  
+     fi
    fi
   done
 done
@@ -360,7 +365,7 @@ for f in $ALARM_FILES ; do
     rm -f $f
   fi
 done
-  
+
 
 
 
