@@ -110,8 +110,12 @@ function Check_Bots_For_User () {
   if [ $IS_DATA_COLLECTOR == "false" ] ; then
 
     Start_Bot $BOT_USER bet_checker bet_checker
-    Start_Bot $BOT_USER poll poll poll.ini
-
+    
+    POLLERS_LIST="poll_1 poll_2 poll_3 poll_4"
+    for poller in $POLLERS_LIST ; do
+      Start_Bot $BOT_USER $poller poll poll.ini
+    done
+    
     #for bot in $BOT_LIST ; do
     #  if [ $bot == "bot" ] ; then
     #    Start_Bot $BOT_USER $bot bot betfair.ini

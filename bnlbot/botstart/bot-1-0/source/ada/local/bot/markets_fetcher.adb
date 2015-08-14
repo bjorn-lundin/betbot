@@ -86,7 +86,7 @@ procedure Markets_Fetcher is
     Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
   end record;   
   
-  Pollers : array (1..8) of Poll_Process := (
+  Data_Pollers : array (1..8) of Poll_Process := (
     1 => (True, (("poll_market_1  "), (others => ' '))),
     2 => (True, (("poll_market_2  "), (others => ' '))),
     3 => (True, (("poll_market_3  "), (others => ' '))),
@@ -95,6 +95,13 @@ procedure Markets_Fetcher is
     6 => (True, (("poll_market_6  "), (others => ' '))),
     7 => (True, (("poll_market_7  "), (others => ' '))),
     8 => (True, (("poll_market_8  "), (others => ' ')))
+  );
+  
+  Race_Pollers : array (1..4) of Poll_Process := (
+    1 => (True, (("poll_1         "), (others => ' '))),
+    2 => (True, (("poll_2         "), (others => ' '))),
+    3 => (True, (("poll_3         "), (others => ' '))),
+    4 => (True, (("poll_4         "), (others => ' ')))
   );
 ---------------------------------------------------------------  
 
@@ -192,10 +199,16 @@ procedure Markets_Fetcher is
     use type Process_Io.Name_Type;
   begin
     Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
-    for i in Pollers'range loop
-      if Pollers(i).Process.Name = Data.Name then
-        Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        exit;
+    for i in Data_Pollers'range loop
+      if Data_Pollers(i).Process.Name = Data.Name then
+        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
+      end if;
+    end loop;
+    for i in Race_Pollers'range loop
+      if Race_Pollers(i).Process.Name = Data.Name then
+        Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
       end if;
     end loop;
   end Set_Poller_State; 
@@ -486,17 +499,24 @@ begin
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------                
                   when 7      =>
-                    Log(Me, "Notifying poll with marketid: '" & MNR.Market_Id & "'");
-                    Bot_Messages.Send(Process_IO.To_Process_Type("poll"), MNR);
                     if Is_Data_Collector then
-                      for i in Pollers'range loop
-                        if Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Pollers(i).Process.Name)), MNR);
-                          Pollers(i).Free := False;
+                      for i in Data_Pollers'range loop
+                        if Data_Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
+                          Data_Pollers(i).Free := False;
                           exit;
                         end if;
                       end loop;
+                    else
+                      for i in Race_Pollers'range loop
+                        if Race_Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
+                          Race_Pollers(i).Free := False;
+                          exit;
+                        end if;
+                      end loop;                    
                     end if;  
                   ------------------------------------------------------------------                
                   when others => null;

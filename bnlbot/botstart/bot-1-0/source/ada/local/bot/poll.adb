@@ -55,6 +55,10 @@ procedure Poll is
   type Market_Type is (Win, Place);
   type Best_Runners_Array_Type is array (1..4) of Table_Aprices.Data_Type ;
 
+  Data : Bot_Messages.Poll_State_Record ;
+  This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
+  Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
+
 
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
@@ -723,6 +727,11 @@ begin
   end if;
 
   Main_Loop : loop
+  
+    --notfy markets_fetcher that we are free
+    Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
+    Bot_Messages.Send(Markets_Fetcher, Data);    
+  
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
@@ -735,6 +744,9 @@ begin
           exit Main_Loop;
         when Bot_Messages.Market_Notification_Message    =>
           if Cfg.Enabled then
+            --notfy markets_fetcher that we are busy
+            Data := (Free => 0, Name => Process_Io.This_Process.Name , Node => Process_Io.This_Process.Node);
+            Bot_Messages.Send(Markets_Fetcher, Data);    
             Run(Bot_Messages.Data(Msg));
           else
             Log(Me, "Poll is not enabled in poll.ini");
