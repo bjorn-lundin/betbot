@@ -695,8 +695,8 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/poll.log");
-
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+  
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Cfg := Config.Create(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
