@@ -40,7 +40,6 @@ procedure Race_Time is
   Start_Time_List : Table_Astarttimes.Astarttimes_List_Pack2.List;
   Arrow_Is_Printed : Boolean := False;
   Now : Time_Type := Time_Type_First;
-  Start : Time_Type := Clock;
   Select_Racetime : Sql.Statement_Type;
   Delete_Racetime : Sql.Statement_Type;
   
@@ -185,8 +184,7 @@ begin
         Text_Io.Put('.');   
         delay 1.0;
       end loop;  
-      if Start.Day /= Now.Day then -- new day, get new list
-        Start := Now;
+      if Now.Hour = 5 and then Now.Minute = 30 then -- new day, get new list after it is written to db
         exit Day;
       end if;        
     end loop Day;
