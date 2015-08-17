@@ -575,18 +575,12 @@ procedure Poll is
       end loop;
       Log("Worst_Runner " & Worst_Runner.To_String);
 
-      if Best_Runners(1).Backprice >= Float_8(1.0) and then
-         Found_Place and then
-         Markets(Place).Numwinners >= Integer_4(3) then
-
-        ---------------------------------------------------------------
-        
-        
-    -- instead of loads of 
-    --    Try_To_Make_Back_Bet (
-    --          Bettype => Back_1_10_07_1_2_WIN,
-    --          BR => Best_Runners,
-    --          Marketid => Markets(Win).Marketid);
+      if Best_Runners(1).Backprice >= Float_8(1.01) then
+        -- instead of loads of 
+        --    Try_To_Make_Back_Bet (
+        --          Bettype => Back_1_10_07_1_2_WIN,
+        --          BR => Best_Runners,
+        --          Marketid => Markets(Win).Marketid);
         for i in Bet_Type'range loop
           case i is
             when Lay_160_200        => null; -- treat later
@@ -595,30 +589,26 @@ procedure Poll is
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
-
+                Do_Try_Bet : Boolean := True;
               begin
-              
                --  12345678901234567890
                --  Back_1_10_20_1_4_WIN
-              
                 if Image(18..20) = "PLC" then
                   M_Type := Place;
+                  Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
                 end if;  
-                
-                Try_To_Make_Back_Bet (
-                      Bettype   => i,
-                      BR        => Best_Runners,
-                      Marketid  => Markets(M_Type).Marketid,
-                      Min_Price => To_String(Cfg.Bet(i).Min_Price));
+                if Do_Try_Bet then
+                  Try_To_Make_Back_Bet (
+                        Bettype   => i,
+                        BR        => Best_Runners,
+                        Marketid  => Markets(M_Type).Marketid,
+                        Min_Price => To_String(Cfg.Bet(i).Min_Price));
+                end if;        
               end;              
-            
           end case;
         end loop;
-
-
-
         ---------------------------------------------------------------
-        --MR_HORSES_PLC_BACK_FINISH_1.10_25.0_1
+        --Lay_1_10_25_4
         if Best_Runners(1).Backprice <= Float_8(1.10) and then
            Best_Runners(4).Backprice >= Float_8(25.0) and then
            Best_Runners(2).Backprice < Float_8(10_000.0) and then  -- so it exists
