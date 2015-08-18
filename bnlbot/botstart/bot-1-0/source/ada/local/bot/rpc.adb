@@ -1389,15 +1389,16 @@ package body RPC is
     end if;
   end Get_Market_Prices;
   ----------------------------------------------------------------------------------
-  procedure Place_Bet (Bet_Name         : in Bet_Name_Type;
-                       Market_Id        : in Market_Id_Type;
-                       Side             : in Bet_Side_Type;
-                       Runner_Name      : in Runner_Name_Type;
-                       Selection_Id     : in Integer_4;
-                       Size             : in Bet_Size_Type;
-                       Price            : in Bet_Price_Type;
-                       Bet_Persistence  : in Bet_Persistence_Type;
-                       Bet              : out Table_Abets.Data_Type ) is
+  procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
+                       Market_Id        : in     Market_Id_Type;
+                       Side             : in     Bet_Side_Type;
+                       Runner_Name      : in     Runner_Name_Type;
+                       Selection_Id     : in     Integer_4;
+                       Size             : in     Bet_Size_Type;
+                       Price            : in     Bet_Price_Type;
+                       Bet_Persistence  : in     Bet_Persistence_Type;
+                       Match_Directly   : in     Integer_4 := 0;
+                       Bet              :    out Table_Abets.Data_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
     Params       : JSON_Value := Create_Object;
@@ -1412,7 +1413,7 @@ package body RPC is
     Order_Status                   : String (1..50)  :=  (others => ' ') ;
     L_Size_Matched,
     Average_Price_Matched          : Float_8 := 0.0;
-    Powerdays                      : Integer_4 := 0;
+    Powerdays                      : Integer_4 := Match_Directly;
 
     Bet_Id : Integer_8 := 0;
     Now : Calendar2.Time_Type := Calendar2.Clock;

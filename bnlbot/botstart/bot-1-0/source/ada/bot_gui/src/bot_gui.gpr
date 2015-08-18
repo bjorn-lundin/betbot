@@ -6,13 +6,15 @@ project bot_gui extends "../../adabot" is
    for Source_Dirs use (".");
    for Object_Dir use "../obj";
    for Exec_Dir use "../bin";
-   for Main use ("bot_gui-main.adb");
+   for Main use (--"bot_gui-main.adb",
+                 "diagram_display.adb",
+                 "hello4.adb");
 
    package Binder is
      for Default_Switches ("ada") use ("-E");
    end Binder;
 
-   package Builder is
-      for Executable ("bot_gui-main.adb") use "bot_gui";
-   end Builder;
+  -- package Builder is
+  --    for Executable ("bot_gui-main.adb") use "bot_gui";
+  -- end Builder;
 end bot_gui;

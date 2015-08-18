@@ -112,6 +112,7 @@ package RPC is
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
+                       Match_Directly   : in     Integer_4 := 0;
                        Bet              :    out Table_Abets.Data_Type);
                               
   procedure Parse_Runners(J_Market    : in     JSON_Value ; 

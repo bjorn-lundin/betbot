@@ -247,7 +247,8 @@ procedure Poll is
                          Main_Bet      : Bet_Type;
                          Max_Price     : Max_Lay_Price_Type;
                          Market_Id     : Market_Id_Type;
-                         Receiver      : Process_Io.Process_Type) is
+                         Receiver      : Process_Io.Process_Type;
+                         Must_Match_Directly : Boolean := False) is
 
     PLB             : Bot_Messages.Place_Lay_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
@@ -268,6 +269,11 @@ procedure Poll is
       return;
     end if;
 
+    case Must_Match_Directly is
+      when False => PLB.Match_Directly := 0;
+      when True  => PLB.Match_Directly := 1;
+    end case;
+        
     PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Market_Id, PLB.Market_Id);
     Move(F8_Image(Float_8(Max_Price)), PLB.Price); --abs max
@@ -298,7 +304,8 @@ procedure Poll is
                      Main_Bet        : Bet_Type;
                      Place_Market_Id : Market_Id_Type;
                      Receiver        : Process_Io.Process_Type;
-                     Min_Price       : String := "1.01") is
+                     Min_Price       : String := "1.01";
+                     Must_Match_Directly : Boolean := False) is
 
     PBB             : Bot_Messages.Place_Back_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
@@ -320,6 +327,11 @@ procedure Poll is
       return;
     end if;
 
+    case Must_Match_Directly is
+      when False => PBB.Match_Directly := 0;
+      when True  => PBB.Match_Directly := 1;
+    end case;
+    
     PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Place_Market_Id, PBB.Market_Id);
     Move(Min_Price, PBB.Price);
