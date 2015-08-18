@@ -79,6 +79,7 @@ package Bot_Messages is
       Selection_Id : Integer_4        := 0;
       Size         : String(1..7)     := (others => ' ');
       Price        : String(1..6)     := (others => ' ');
+      Match_Directly : Integer_4      := 0;
   end record;
 
 --  for Place_Back_Bet_Record'alignment use 4;
@@ -101,7 +102,8 @@ package Bot_Messages is
                                2 => Process_Io.String_Type(11),
                                3 => Process_Io.Integer_4_Type,
                                4 => Process_Io.String_Type(7),
-                               5 => Process_Io.String_Type(6)
+                               5 => Process_Io.String_Type(6),
+                               6 => Process_Io.Integer_4_Type
                               )
            );
   --
@@ -123,6 +125,7 @@ package Bot_Messages is
       Selection_Id : Integer_4        := 0;
       Size         : String(1..7)     := (others => ' ');
       Price        : String(1..6)     := (others => ' ');
+      Match_Directly : Integer_4      := 0;
   end record;
 
 --  for Place_Back_Bet_Record'alignment use 4;
@@ -145,7 +148,8 @@ package Bot_Messages is
                                2 => Process_Io.String_Type(11),
                                3 => Process_Io.Integer_4_Type,
                                4 => Process_Io.String_Type(7),
-                               5 => Process_Io.String_Type(6)
+                               5 => Process_Io.String_Type(6),
+                               6 => Process_Io.Integer_4_Type
                               )
            );
   --

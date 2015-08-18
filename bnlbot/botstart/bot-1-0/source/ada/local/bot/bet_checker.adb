@@ -102,11 +102,9 @@ procedure Bet_Checker is
             
               Bet.Insert;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
-      --        if Utils.Trim(Bet.Exestatus) = "SUCCESS" then
-                Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-                Update_Betwon_To_Null.Set("BETID", Bet.Betid);
-                Update_Betwon_To_Null.Execute;
-      --        end if;
+              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+              Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+              Update_Betwon_To_Null.Execute;
             T.Commit;
           exception 
             when Sql.Duplicate_Index => 
@@ -114,7 +112,21 @@ procedure Bet_Checker is
               Log(Me & Service, "duplicate index " & Bet.To_String);
           end ;
           
-          Log(Me & Service, "delete file  index " & Filename);
+          if Bet.Powerdays > 0 then
+            -- bet must be at least partially matched immidiatly or we try to cancel it
+            if Integer(Bet.Sizematched) = 0 then
+              Log(Me & Service, "try to cancel bet, since Powerdays > 0 and sizematched = 0");
+              declare
+                Cancel_Succeeded : Boolean := False;
+              begin
+                Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet);               
+                Log(Me & Service, "Cancel bet" & Bet.betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+              end; 
+            end if;
+          end if;
+          
+          
+          Log(Me & Service, "delete file index " & Filename);
           Delete_File(Filename);
         else
           Log(Me & Service, Filename & " was locked or empty. Retry next time");        

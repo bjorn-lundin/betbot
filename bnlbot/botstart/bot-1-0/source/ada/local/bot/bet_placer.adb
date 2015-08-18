@@ -52,7 +52,8 @@ procedure Bet_Placer is
                       Selection_Id : Integer_4;
                       Side         : Bet_Side_Type;
                       Size         : Bet_Size_Type;
-                      Price        : Bet_Price_Type) is
+                      Price        : Bet_Price_Type;
+                      Match_Directly : Integer_4) is
                       
     A_Bet : Table_Abets.Data_Type;
 
@@ -93,7 +94,7 @@ procedure Bet_Placer is
         Betid          => Bet_Id,
         Marketid       => Market_Id,
         Betmode        => Bot_Mode(Bot_Types.Simulation),
-        Powerdays      => 0,
+        Powerdays      => Match_Directly,
         Selectionid    => Selection_Id,
         Reference      => (others => '-'),
         Size           => Local_Size,
@@ -129,6 +130,7 @@ procedure Bet_Placer is
                      Size             => Size,
                      Price            => Price,
                      Bet_Persistence  => Persist,
+                     Match_Directly   => Match_Directly,
                      Bet              => A_Bet);
       Log(Me & "Place_Bet", "call Rpc.Place_Bet");
       Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
@@ -175,7 +177,9 @@ procedure Bet_Placer is
               Selection_Id => Place_Back_Bet.Selection_Id,
               Side         => Back,
               Size         => Bet_Size_Type'Value(Place_Back_Bet.Size),
-              Price        => Bet_Price_Type'Value(Place_Back_Bet.Price)) ;
+              Price        => Bet_Price_Type'Value(Place_Back_Bet.Price),
+              Match_Directly => Place_Back_Bet.Match_Directly
+              ) ;
   end Back_Bet;
 
   ------------------------------------------------------
@@ -186,7 +190,8 @@ procedure Bet_Placer is
               Selection_Id => Place_Lay_Bet.Selection_Id,
               Side         => Lay,
               Size         => Bet_Size_Type'Value(Place_Lay_Bet.Size),
-              Price        => Bet_Price_Type'Value(Place_Lay_Bet.Price)) ;
+              Price        => Bet_Price_Type'Value(Place_Lay_Bet.Price),
+              Match_Directly => Place_Lay_Bet.Match_Directly) ;
   end Lay_Bet;
 
   ------------------------------------------------------
