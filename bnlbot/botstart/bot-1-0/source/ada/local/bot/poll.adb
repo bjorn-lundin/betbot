@@ -248,7 +248,7 @@ procedure Poll is
                          Max_Price     : Max_Lay_Price_Type;
                          Market_Id     : Market_Id_Type;
                          Receiver      : Process_Io.Process_Type;
-                         Must_Match_Directly : Boolean := False) is
+                         Match_Directly : Boolean := False) is
 
     PLB             : Bot_Messages.Place_Lay_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
@@ -269,7 +269,7 @@ procedure Poll is
       return;
     end if;
 
-    case Must_Match_Directly is
+    case Match_Directly is
       when False => PLB.Match_Directly := 0;
       when True  => PLB.Match_Directly := 1;
     end case;
@@ -305,7 +305,7 @@ procedure Poll is
                      Place_Market_Id : Market_Id_Type;
                      Receiver        : Process_Io.Process_Type;
                      Min_Price       : String := "1.01";
-                     Must_Match_Directly : Boolean := False) is
+                     Match_Directly : Boolean := False) is
 
     PBB             : Bot_Messages.Place_Back_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
@@ -327,7 +327,7 @@ procedure Poll is
       return;
     end if;
 
-    case Must_Match_Directly is
+    case Match_Directly is
       when False => PBB.Match_Directly := 0;
       when True  => PBB.Match_Directly := 1;
     end case;
@@ -362,7 +362,8 @@ procedure Poll is
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
       Marketid        : Market_Id_Type;
-      Min_Price       : String ) is
+      Min_Price       : String ;
+      Match_Directly : Boolean := False) is
 
       Max_Backprice_1 : Float_8;
       Min_Backprice_n : Float_8;
@@ -391,7 +392,8 @@ procedure Poll is
                Main_Bet        => Bettype,
                Place_Market_Id => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
-               Min_Price       => Min_Price);
+               Min_Price       => Min_Price,
+               Match_Directly => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet;
   -------------------------------------------------------------------------------------------------------------------
@@ -422,6 +424,7 @@ procedure Poll is
     Current_Turn_Not_Started_Race : Integer_4 := 0;
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo             : Table_Abalances.Data_Type;
+    Match_Directly : Boolean := False;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -608,13 +611,17 @@ procedure Poll is
                 if Image(18..20) = "PLC" then
                   M_Type := Place;
                   Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
+                  Match_Directly := False;
+                elsif Image(18..20) = "WIN" then
+                  Match_Directly := True;
                 end if;  
                 if Do_Try_Bet then
                   Try_To_Make_Back_Bet (
                         Bettype   => i,
                         BR        => Best_Runners,
                         Marketid  => Markets(M_Type).Marketid,
-                        Min_Price => To_String(Cfg.Bet(i).Min_Price));
+                        Min_Price => To_String(Cfg.Bet(i).Min_Price),
+                        Match_Directly => Match_Directly);
                 end if;        
               end;              
           end case;
