@@ -359,18 +359,19 @@ procedure Poll is
   -------------------------------------------------------------------------------------------------------------------
  
   procedure Try_To_Make_Back_Bet(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      Marketid        : Market_Id_Type;
-      Min_Price       : String ;
-      Match_Directly : Boolean := False) is
+    Bettype         : Config.Bet_Type;
+    BR              : Best_Runners_Array_Type;
+    Marketid        : Market_Id_Type;
+    Min_Price       : String ;
+    Match_Directly : Boolean := False) is
 
-      Max_Backprice_1 : Float_8;
-      Min_Backprice_n : Float_8;
-      Backed_Place    : Integer;
-      Next_Place      : Integer;
-      Tmp : String (1..5) := (others => ' ');
-      Image : String := Bettype'Img;
+    Max_Backprice_1 : Float_8;
+    Min_Backprice_1 : Float_8;
+    Min_Backprice_n : Float_8;
+    Backed_Place    : Integer;
+    Next_Place      : Integer;
+    Tmp : String (1..5) := (others => ' ');
+    Image : String := Bettype'Img;
   begin       --1
    --  12345678901234567890
    --  Back_1_10_20_1_4_WIN
@@ -383,7 +384,25 @@ procedure Poll is
     Backed_Place := Integer'Value(Image(14..14));
     Next_Place := Integer'Value(Image(16..16));
     
+    case Bettype is
+      when Back_1_50_30_1_2_Win => Min_Backprice_1 := 1.41;
+      when Back_1_50_20_1_2_Win => Min_Backprice_1 := 1.41;
+      when Back_1_50_10_1_2_Win => Min_Backprice_1 := 1.41;
+      when Back_1_40_30_1_2_Win => Min_Backprice_1 := 1.31;
+      when Back_1_40_20_1_2_Win => Min_Backprice_1 := 1.31;
+      when Back_1_40_10_1_2_Win => Min_Backprice_1 := 1.31;
+      when Back_1_30_30_1_2_Win => Min_Backprice_1 := 1.21;
+      when Back_1_30_20_1_2_Win => Min_Backprice_1 := 1.21;
+      when Back_1_30_10_1_2_Win => Min_Backprice_1 := 1.21;
+      when Back_1_20_30_1_2_Win => Min_Backprice_1 := 1.11;
+      when Back_1_20_10_1_2_Win => Min_Backprice_1 := 1.11;
+      when Back_1_20_20_1_2_Win => Min_Backprice_1 := 1.11;
+      when others               => Min_Backprice_1 := 1.01;
+    end case;
+
+    
     if BR(Backed_Place).Backprice <= Max_Backprice_1 and then
+       BR(Backed_Place).Backprice >= Min_Backprice_1 and then
        BR(Next_Place).Backprice >= Min_Backprice_n and then
        BR(3).Backprice <  Float_8(10_000.0) then  -- so it exists
       -- Back The leader in PLC market...
@@ -393,7 +412,7 @@ procedure Poll is
                Place_Market_Id => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
-               Match_Directly => Match_Directly);
+               Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet;
   -------------------------------------------------------------------------------------------------------------------
