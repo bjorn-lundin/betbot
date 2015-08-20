@@ -169,8 +169,6 @@ procedure Poll is
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_062");
       when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_063");
       when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_064");
-    --when Back_2_00_01_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_065");
-    --when Back_2_00_01_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_066");
     end case;
   end Get_Bet_Placer;
 
@@ -385,19 +383,22 @@ procedure Poll is
     Next_Place := Integer'Value(Image(16..16));
     
     case Bettype is
-      when Back_1_50_30_1_2_Win => Min_Backprice_1 := 1.41;
-      when Back_1_50_20_1_2_Win => Min_Backprice_1 := 1.41;
-      when Back_1_50_10_1_2_Win => Min_Backprice_1 := 1.41;
-      when Back_1_40_30_1_2_Win => Min_Backprice_1 := 1.31;
-      when Back_1_40_20_1_2_Win => Min_Backprice_1 := 1.31;
-      when Back_1_40_10_1_2_Win => Min_Backprice_1 := 1.31;
-      when Back_1_30_30_1_2_Win => Min_Backprice_1 := 1.21;
-      when Back_1_30_20_1_2_Win => Min_Backprice_1 := 1.21;
-      when Back_1_30_10_1_2_Win => Min_Backprice_1 := 1.21;
-      when Back_1_20_30_1_2_Win => Min_Backprice_1 := 1.11;
-      when Back_1_20_10_1_2_Win => Min_Backprice_1 := 1.11;
-      when Back_1_20_20_1_2_Win => Min_Backprice_1 := 1.11;
-      when others               => Min_Backprice_1 := 1.01;
+      when Back_1_50_30_1_2_Win | Back_1_50_30_1_2_Plc | Back_1_50_30_1_4_Win | Back_1_50_30_1_4_Plc => Min_Backprice_1 := 1.41;
+      when Back_1_50_20_1_2_Win | Back_1_50_20_1_2_Plc | Back_1_50_20_1_4_Win | Back_1_50_20_1_4_Plc => Min_Backprice_1 := 1.41;
+      when Back_1_50_10_1_2_Win | Back_1_50_10_1_2_Plc | Back_1_50_10_1_4_Win | Back_1_50_10_1_4_Plc => Min_Backprice_1 := 1.41;
+      when Back_1_40_30_1_2_Win | Back_1_40_30_1_2_Plc | Back_1_40_30_1_4_Win | Back_1_40_30_1_4_Plc => Min_Backprice_1 := 1.31;
+      when Back_1_40_20_1_2_Win | Back_1_40_20_1_2_Plc | Back_1_40_20_1_4_Win | Back_1_40_20_1_4_Plc => Min_Backprice_1 := 1.31;
+      when Back_1_40_10_1_2_Win | Back_1_40_10_1_2_Plc | Back_1_40_10_1_4_Win | Back_1_40_10_1_4_Plc => Min_Backprice_1 := 1.31;
+      when Back_1_30_30_1_2_Win | Back_1_30_30_1_2_Plc | Back_1_30_30_1_4_Win | Back_1_30_30_1_4_Plc => Min_Backprice_1 := 1.21;
+      when Back_1_30_20_1_2_Win | Back_1_30_20_1_2_Plc | Back_1_30_20_1_4_Win | Back_1_30_20_1_4_Plc => Min_Backprice_1 := 1.21;
+      when Back_1_30_10_1_2_Win | Back_1_30_10_1_2_Plc | Back_1_30_10_1_4_Win | Back_1_30_10_1_4_Plc => Min_Backprice_1 := 1.21;
+      when Back_1_20_30_1_2_Win | Back_1_20_30_1_2_Plc | Back_1_20_30_1_4_Win | Back_1_20_30_1_4_Plc => Min_Backprice_1 := 1.11;
+      when Back_1_20_10_1_2_Win | Back_1_20_10_1_2_Plc | Back_1_20_20_1_4_Win | Back_1_20_20_1_4_Plc => Min_Backprice_1 := 1.11;
+      when Back_1_20_20_1_2_Win | Back_1_20_20_1_2_Plc | Back_1_20_10_1_4_Win | Back_1_20_10_1_4_Plc => Min_Backprice_1 := 1.11;
+      when Back_1_10_30_1_2_Win | Back_1_10_30_1_2_Plc | Back_1_10_30_1_4_Win | Back_1_10_30_1_4_Plc => Min_Backprice_1 := 1.01;      
+      when Back_1_10_20_1_2_Win | Back_1_10_20_1_2_Plc | Back_1_10_20_1_4_Win | Back_1_10_20_1_4_Plc => Min_Backprice_1 := 1.01;      
+      when Back_1_10_10_1_2_Win | Back_1_10_10_1_2_Plc | Back_1_10_10_1_4_Win | Back_1_10_10_1_4_Plc => Min_Backprice_1 := 1.01;     
+      when others => Min_Backprice_1 := 1.01;
     end case;
 
     
