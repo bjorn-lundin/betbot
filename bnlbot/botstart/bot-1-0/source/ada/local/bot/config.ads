@@ -7,25 +7,22 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    Back_1_10_07_1_2_PLC, Back_1_10_07_1_2_WIN,
-                    Back_1_50_30_1_2_PLC, Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, Back_1_50_30_1_4_WIN,
-                    Back_1_50_20_1_2_PLC, Back_1_50_20_1_4_PLC, Back_1_50_20_1_2_WIN, Back_1_50_20_1_4_WIN,
-                    Back_1_50_10_1_2_PLC, Back_1_50_10_1_4_PLC, Back_1_50_10_1_2_WIN, Back_1_50_10_1_4_WIN,
-                    Back_1_40_30_1_2_PLC, Back_1_40_30_1_4_PLC, Back_1_40_30_1_2_WIN, Back_1_40_30_1_4_WIN,
-                    Back_1_40_20_1_2_PLC, Back_1_40_20_1_4_PLC, Back_1_40_20_1_2_WIN, Back_1_40_20_1_4_WIN,
-                    Back_1_40_10_1_2_PLC, Back_1_40_10_1_4_PLC, Back_1_40_10_1_2_WIN, Back_1_40_10_1_4_WIN,
-                    Back_1_30_30_1_2_PLC, Back_1_30_30_1_4_PLC, Back_1_30_30_1_2_WIN, Back_1_30_30_1_4_WIN,
-                    Back_1_30_20_1_2_PLC, Back_1_30_20_1_4_PLC, Back_1_30_20_1_2_WIN, Back_1_30_20_1_4_WIN,
-                    Back_1_30_10_1_2_PLC, Back_1_30_10_1_4_PLC, Back_1_30_10_1_2_WIN, Back_1_30_10_1_4_WIN,
-                    Back_1_20_30_1_2_PLC, Back_1_20_30_1_4_PLC, Back_1_20_30_1_2_WIN, Back_1_20_30_1_4_WIN,
-                    Back_1_20_20_1_2_PLC, Back_1_20_20_1_4_PLC, Back_1_20_20_1_2_WIN, Back_1_20_20_1_4_WIN,
-                    Back_1_20_10_1_2_PLC, Back_1_20_10_1_4_PLC, Back_1_20_10_1_2_WIN, Back_1_20_10_1_4_WIN,
-                    Back_1_10_30_1_2_PLC, Back_1_10_30_1_4_PLC, Back_1_10_30_1_2_WIN, Back_1_10_30_1_4_WIN,
-                    Back_1_10_20_1_2_PLC, Back_1_10_20_1_4_PLC, Back_1_10_20_1_2_WIN, Back_1_10_20_1_4_WIN,
-                    Back_1_10_10_1_2_PLC, Back_1_10_10_1_4_PLC, Back_1_10_10_1_2_WIN, Back_1_10_10_1_4_WIN,
-                    Lay_160_200,
-                    Lay_1_10_25_4
-                    );
+      Back_1_10_07_1_2_PLC,
+      Back_1_50_30_1_4_PLC,
+      Back_1_50_30_1_2_WIN, 
+      Back_1_50_20_1_2_WIN, 
+      Back_1_50_16_1_2_WIN, Back_1_50_13_1_2_WIN, 
+      Back_1_50_10_1_2_WIN, Back_1_50_07_1_2_WIN, 
+      Back_1_40_16_1_2_WIN, Back_1_40_13_1_2_WIN, 
+      Back_1_40_10_1_2_WIN, Back_1_40_07_1_2_WIN, 
+      Back_1_30_16_1_2_WIN, Back_1_30_13_1_2_WIN, 
+      Back_1_30_10_1_2_WIN, Back_1_30_07_1_2_WIN, 
+      Back_1_20_20_1_2_WIN, 
+      Back_1_20_16_1_2_WIN, Back_1_20_13_1_2_WIN, 
+      Back_1_20_10_1_2_WIN, Back_1_20_07_1_2_WIN, 
+      Lay_160_200,
+      Lay_1_10_25_4 
+  );
 
 
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
