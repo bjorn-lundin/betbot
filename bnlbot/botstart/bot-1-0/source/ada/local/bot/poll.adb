@@ -65,26 +65,18 @@ procedure Poll is
   --Back_1_40_30_1_4_PLC : back leader when leader <=1.4 and 4th >=30
   --Back_1_40_30_1_4_PLC : back leader when leader <=1.4 and 2nd >=30
 
-  --type Bet_Type is (
-  --                  Back_1_10_07_1_2_PLC, Back_1_10_07_1_2_WIN,
-  --                  Back_1_50_30_1_2_PLC, Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, Back_1_50_30_1_4_WIN,
-  --                  Back_1_50_20_1_2_PLC, Back_1_50_20_1_4_PLC, Back_1_50_20_1_2_WIN, Back_1_50_20_1_4_WIN,
-  --                  Back_1_50_10_1_2_PLC, Back_1_50_10_1_4_PLC, Back_1_50_10_1_2_WIN, Back_1_50_10_1_4_WIN,
-  --                  Back_1_40_30_1_2_PLC, Back_1_40_30_1_4_PLC, Back_1_40_30_1_2_WIN, Back_1_40_30_1_4_WIN,
-  --                  Back_1_40_20_1_2_PLC, Back_1_40_20_1_4_PLC, Back_1_40_20_1_2_WIN, Back_1_40_20_1_4_WIN,
-  --                  Back_1_40_10_1_2_PLC, Back_1_40_10_1_4_PLC, Back_1_40_10_1_2_WIN, Back_1_40_10_1_4_WIN,
-  --                  Back_1_30_30_1_2_PLC, Back_1_30_30_1_4_PLC, Back_1_30_30_1_2_WIN, Back_1_30_30_1_4_WIN,
-  --                  Back_1_30_20_1_2_PLC, Back_1_30_20_1_4_PLC, Back_1_30_20_1_2_WIN, Back_1_30_20_1_4_WIN,
-  --                  Back_1_30_10_1_2_PLC, Back_1_30_10_1_4_PLC, Back_1_30_10_1_2_WIN, Back_1_30_10_1_4_WIN,
-  --                  Back_1_20_30_1_2_PLC, Back_1_20_30_1_4_PLC, Back_1_20_30_1_2_WIN, Back_1_20_30_1_4_WIN,
-  --                  Back_1_20_20_1_2_PLC, Back_1_20_20_1_4_PLC, Back_1_20_20_1_2_WIN, Back_1_20_20_1_4_WIN,
-  --                  Back_1_20_10_1_2_PLC, Back_1_20_10_1_4_PLC, Back_1_20_10_1_2_WIN, Back_1_20_10_1_4_WIN,
-  --                  Back_1_10_30_1_2_PLC, Back_1_10_30_1_4_PLC, Back_1_10_30_1_2_WIN, Back_1_10_30_1_4_WIN,
-  --                  Back_1_10_20_1_2_PLC, Back_1_10_20_1_4_PLC, Back_1_10_20_1_2_WIN, Back_1_10_20_1_4_WIN,
-  --                  Back_1_10_10_1_2_PLC, Back_1_10_10_1_4_PLC, Back_1_10_10_1_2_WIN, Back_1_10_10_1_4_WIN,
-  --                  Lay_160_200,
-  --                  Lay_1_10_25_4
-  --                  );
+--  type Bet_Type is (
+--                    Back_1_10_07_1_2_PLC,
+--                                          Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, 
+--                                                                Back_1_50_20_1_2_WIN, 
+--                                                                Back_1_50_10_1_2_WIN, 
+--                                                                Back_1_40_10_1_2_WIN, 
+--                                                                Back_1_30_10_1_2_WIN, 
+--                                                                Back_1_20_20_1_2_WIN, 
+--                                                                Back_1_20_10_1_2_WIN,
+--                    Lay_160_200,
+--                    Lay_1_10_25_4
+--                    );
   --defined there to get cfg-array
 
 
@@ -105,74 +97,33 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Back_1_50_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_001");
-      when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_002");
-      when Back_1_50_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
-      when Back_1_50_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_004");
-      when Back_1_50_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
-      when Back_1_50_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_006");
-      when Back_1_50_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_50_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_008");
-      when Back_1_50_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_009");
-      when Back_1_50_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_010");
-      when Back_1_50_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_011");
-      when Back_1_50_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_40_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_013");
-      when Back_1_40_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_014");
-      when Back_1_40_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_015");
-      when Back_1_40_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_40_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_017");
-      when Back_1_40_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_018");
-      when Back_1_40_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_019");
-      when Back_1_40_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_020");
-      when Back_1_40_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_021");
-      when Back_1_40_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_022");
-      when Back_1_40_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_023");
-      when Back_1_40_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_024");
-      when Back_1_30_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_025");
-      when Back_1_30_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_026");
-      when Back_1_30_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_027");
-      when Back_1_30_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_028");
-      when Back_1_30_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_029");
-      when Back_1_30_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_030");
-      when Back_1_30_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_031");
-      when Back_1_30_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_032");
-      when Back_1_30_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_033");
-      when Back_1_30_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_034");
-      when Back_1_30_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_035");
-      when Back_1_30_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_036");
-      when Back_1_20_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_037");
-      when Back_1_20_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_038");
-      when Back_1_20_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_039");
-      when Back_1_20_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_040");
-      when Back_1_20_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_041");
-      when Back_1_20_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_042");
-      when Back_1_20_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_043");
-      when Back_1_20_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_044");
-      when Back_1_20_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_045");
-      when Back_1_20_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_046");
-      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_047");
-      when Back_1_20_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_048");
-      when Back_1_10_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_049");
-      when Back_1_10_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_050");
-      when Back_1_10_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_051");
-      when Back_1_10_30_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_052");
-      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_053");
-      when Back_1_10_20_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_054");
-      when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_055");
-      when Back_1_10_20_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_056");
-      when Back_1_10_10_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_057");
-      when Back_1_10_10_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_058");
-      when Back_1_10_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_059");
-      when Back_1_10_10_1_4_WIN => return Process_Io.To_Process_Type("bet_placer_060");
-      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_061");
-      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_062");
-      when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_063");
-      when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_064");
+      when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
+      when Back_1_50_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002");
+      when Back_1_50_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
+      when Back_1_50_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004");
+      when Back_1_50_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_50_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_006");
+      when Back_1_50_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_007");
+      when Back_1_40_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_008");
+      when Back_1_40_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_009");
+      when Back_1_40_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_40_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_011");
+      when Back_1_30_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_012");
+      when Back_1_30_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_013");
+      when Back_1_30_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_014");
+      when Back_1_30_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_015");
+      when Back_1_20_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_016");
+      when Back_1_20_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_017");
+      when Back_1_20_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_018");
+      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_019");
+      when Back_1_20_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_020");
+      when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_021");
+      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_022");
+      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_023");
     end case;
   end Get_Bet_Placer;
 
-
+  ----------------------------------------------------------
 
   procedure Set_Bet_Names is
   begin
@@ -383,22 +334,31 @@ procedure Poll is
     Next_Place := Integer'Value(Image(16..16));
     
     case Bettype is
-      when Back_1_50_30_1_2_Win | Back_1_50_30_1_2_Plc | Back_1_50_30_1_4_Win | Back_1_50_30_1_4_Plc => Min_Backprice_1 := 1.41;
-      when Back_1_50_20_1_2_Win | Back_1_50_20_1_2_Plc | Back_1_50_20_1_4_Win | Back_1_50_20_1_4_Plc => Min_Backprice_1 := 1.41;
-      when Back_1_50_10_1_2_Win | Back_1_50_10_1_2_Plc | Back_1_50_10_1_4_Win | Back_1_50_10_1_4_Plc => Min_Backprice_1 := 1.41;
-      when Back_1_40_30_1_2_Win | Back_1_40_30_1_2_Plc | Back_1_40_30_1_4_Win | Back_1_40_30_1_4_Plc => Min_Backprice_1 := 1.31;
-      when Back_1_40_20_1_2_Win | Back_1_40_20_1_2_Plc | Back_1_40_20_1_4_Win | Back_1_40_20_1_4_Plc => Min_Backprice_1 := 1.31;
-      when Back_1_40_10_1_2_Win | Back_1_40_10_1_2_Plc | Back_1_40_10_1_4_Win | Back_1_40_10_1_4_Plc => Min_Backprice_1 := 1.31;
-      when Back_1_30_30_1_2_Win | Back_1_30_30_1_2_Plc | Back_1_30_30_1_4_Win | Back_1_30_30_1_4_Plc => Min_Backprice_1 := 1.21;
-      when Back_1_30_20_1_2_Win | Back_1_30_20_1_2_Plc | Back_1_30_20_1_4_Win | Back_1_30_20_1_4_Plc => Min_Backprice_1 := 1.21;
-      when Back_1_30_10_1_2_Win | Back_1_30_10_1_2_Plc | Back_1_30_10_1_4_Win | Back_1_30_10_1_4_Plc => Min_Backprice_1 := 1.21;
-      when Back_1_20_30_1_2_Win | Back_1_20_30_1_2_Plc | Back_1_20_30_1_4_Win | Back_1_20_30_1_4_Plc => Min_Backprice_1 := 1.11;
-      when Back_1_20_10_1_2_Win | Back_1_20_10_1_2_Plc | Back_1_20_20_1_4_Win | Back_1_20_20_1_4_Plc => Min_Backprice_1 := 1.11;
-      when Back_1_20_20_1_2_Win | Back_1_20_20_1_2_Plc | Back_1_20_10_1_4_Win | Back_1_20_10_1_4_Plc => Min_Backprice_1 := 1.11;
-      when Back_1_10_30_1_2_Win | Back_1_10_30_1_2_Plc | Back_1_10_30_1_4_Win | Back_1_10_30_1_4_Plc => Min_Backprice_1 := 1.01;      
-      when Back_1_10_20_1_2_Win | Back_1_10_20_1_2_Plc | Back_1_10_20_1_4_Win | Back_1_10_20_1_4_Plc => Min_Backprice_1 := 1.01;      
-      when Back_1_10_10_1_2_Win | Back_1_10_10_1_2_Plc | Back_1_10_10_1_4_Win | Back_1_10_10_1_4_Plc => Min_Backprice_1 := 1.01;     
-      when others => Min_Backprice_1 := 1.01;
+      when Back_1_50_30_1_4_PLC |
+           Back_1_50_30_1_2_WIN |            
+           Back_1_50_20_1_2_WIN |
+           Back_1_50_16_1_2_WIN |
+           Back_1_50_13_1_2_WIN |
+           Back_1_50_10_1_2_WIN | 
+           Back_1_50_07_1_2_WIN => Min_Backprice_1 := 1.41;
+           
+      when Back_1_40_16_1_2_WIN | 
+           Back_1_40_13_1_2_WIN | 
+           Back_1_40_10_1_2_WIN | 
+           Back_1_40_07_1_2_WIN => Min_Backprice_1 := 1.31;
+           
+      when Back_1_30_16_1_2_WIN |
+           Back_1_30_13_1_2_WIN |
+           Back_1_30_10_1_2_WIN | 
+           Back_1_30_07_1_2_WIN => Min_Backprice_1 := 1.21;
+           
+      when Back_1_20_20_1_2_WIN | 
+           Back_1_20_16_1_2_WIN | 
+           Back_1_20_13_1_2_WIN | 
+           Back_1_20_10_1_2_WIN | 
+           Back_1_20_07_1_2_WIN => Min_Backprice_1 := 1.11;
+           
+      when others               => Min_Backprice_1 := 1.01;
     end case;
 
     
