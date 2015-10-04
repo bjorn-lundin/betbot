@@ -70,18 +70,20 @@ package Sim is
                                Is_Place   : in Boolean ) ;
 
   procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) ;
-                               
+
   function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type ;
 
   -- for lay_during_race2 start
-  
+
 
   package Market_Id_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Market_Id_Type);
-  procedure Read_All_Markets(Month : in     Calendar2.Short_Month_Type;   
+
+
+  procedure Read_All_Markets(Month : in     Calendar2.Short_Month_Type;
                              List  :    out Market_Id_With_Data_Pack.List) ;
-                                      
+
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
-                                      
+
   package Marketid_Pricets_Maps is new Ada.Containers.Hashed_Maps
         (Market_Id_Type,
          Timestamp_Pack.List,
@@ -94,7 +96,7 @@ package Sim is
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map);
 
 
-  
+
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Market_Id_Type,
          Table_Arunners.Arunners_List_Pack2.List,
@@ -106,7 +108,7 @@ package Sim is
                              Month                    : in     Calendar2.Short_Month_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
-         
+
   -- for lay_during_race2 stop
   package Win_Place_Maps is new Ada.Containers.Hashed_Maps (
          Market_Id_Type,
@@ -119,17 +121,17 @@ package Sim is
 
 
   -- for timestamp slices start
-  
+
   --'2015-04-12 16:41:25.500'
   subtype Timestamp_String_Key_Type is String(1..23);
-  
+
   package Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps (
          Timestamp_String_Key_Type,
          Table_Apriceshistory.Apriceshistory_List_Pack2.List,
          Ada.Strings.Hash,
          "=",
          Table_Apriceshistory.Apriceshistory_List_Pack2."=");
-         
+
   package Marketid_Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps
         (Market_Id_Type,
          Timestamp_To_Apriceshistory_Maps.Map,
@@ -137,26 +139,26 @@ package Sim is
          "=",
          Timestamp_To_Apriceshistory_Maps."=");
 
-         
+
   procedure Fill_Marketid_Runners_Pricets_Map(
                      Market_Id_With_Data_List                 : in     Market_Id_With_Data_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
                      Month                                    : in     Calendar2.Short_Month_Type;
                      Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) ;
-  
+
   -- for timestamp slices stop
-  
-  
-  function Is_Race_Winner(Runner               : Table_Arunners.Data_Type; 
+
+
+  function Is_Race_Winner(Runner               : Table_Arunners.Data_Type;
                           Marketid             : Market_Id_Type) return Boolean;
-         
-  function Is_Race_Winner(Selectionid          : Integer_4; 
+
+  function Is_Race_Winner(Selectionid          : Integer_4;
                           Marketid             : Market_Id_Type) return Boolean;
 
   procedure Fill_Data_Maps(Month : in Calendar2.Short_Month_Type) ;
-  
+
   function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type;
-  
+
 
   Market_Id_With_Data_List                 : Sim.Market_Id_With_Data_Pack.List;
   Marketid_Timestamp_To_Apriceshistory_Map : Sim.Marketid_Timestamp_To_Apriceshistory_Maps.Map;
@@ -164,5 +166,5 @@ package Sim is
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
 
-         
+
 end Sim ;
