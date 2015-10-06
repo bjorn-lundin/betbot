@@ -51,7 +51,7 @@ def load_into_db(datadir=None):
                     track.atg_id = track_atg_id
                     track.code = unicode(racedayinfo.track.code)
                     track.domestic_text = unicode(racedayinfo.track.domesticText)
-                    track.english_text = str(racedayinfo.track.englishText)
+                    track.english_text = unicode(racedayinfo.track.englishText)
                     db.create(track)
                 raceday_date = util.strings_to_date(
                     racedayinfo.raceDayDate.year,
@@ -71,12 +71,12 @@ def load_into_db(datadir=None):
                             virt_track_id = int(multipletrackpoolsetup.trackKey.trackId)
                         if virt_bet_types is None:
                             virt_bet_types = set()
-                        bettype_name_code = str(multipletrackpoolsetup.betType.code)
+                        bettype_name_code = unicode(multipletrackpoolsetup.betType.code)
                         bettype_entity = db.Bettype.read(bettype_name_code)
                         if bettype_entity is None:
                             bettype_entity = db.Bettype()
                             bettype_entity.name_code = bettype_name_code
-                            bettype_entity.name_domestic_text = str(multipletrackpoolsetup.betType.domesticText)
+                            bettype_entity.name_domestic_text = unicode(multipletrackpoolsetup.betType.domesticText)
                             db.create(bettype_entity)
                         virt_bet_types.add(bettype_entity)
                 raceday = db.Raceday.read(
@@ -85,9 +85,9 @@ def load_into_db(datadir=None):
                     virt_track_id=virt_track_id)
                 if raceday is None:
                     raceday = db.Raceday()
-                    raceday.country_code = str(racedayinfo.country.code)
+                    raceday.country_code = unicode(racedayinfo.country.code)
                     raceday.country_domestic_text = unicode(racedayinfo.country.domesticText)
-                    raceday.country_english_text = str(racedayinfo.country.englishText)
+                    raceday.country_english_text = unicode(racedayinfo.country.englishText)
                     first_race_date = util.strings_to_date(
                         racedayinfo.firstRacePostTime.date.year,
                         racedayinfo.firstRacePostTime.date.month,
@@ -112,9 +112,9 @@ def load_into_db(datadir=None):
                     raceday.international = bool(racedayinfo.international)
                     raceday.international_betting = bool(racedayinfo.internationalBetting)
                     raceday.meeting_number = int(racedayinfo.meetingNumber)
-                    raceday.meetingtype_code = str(racedayinfo.meetingType.code)
-                    raceday.meetingtype_domestic_text = str(racedayinfo.meetingType.domesticText)
-                    raceday.meetingtype_english_text = str(racedayinfo.meetingType.englishText)
+                    raceday.meetingtype_code = unicode(racedayinfo.meetingType.code)
+                    raceday.meetingtype_domestic_text = unicode(racedayinfo.meetingType.domesticText)
+                    raceday.meetingtype_english_text = unicode(racedayinfo.meetingType.englishText)
                     raceday.racecard_available = bool(racedayinfo.raceCardAvailable)
                     raceday.raceday_date = raceday_date
                     raceday.trot = bool(racedayinfo.trot)
@@ -162,12 +162,12 @@ def load_into_db(datadir=None):
                                 tenth=raceinfo.postTimeUTC.tenth
                             )
                             race.race_nr = race_nr
-                            race.race_type_code = str(raceinfo.raceType.code)
-                            race.race_type_domestic_text = str(raceinfo.raceType.domesticText)
-                            race.race_type_english_text = str(raceinfo.raceType.englishText)
+                            race.race_type_code = unicode(raceinfo.raceType.code)
+                            race.race_type_domestic_text = unicode(raceinfo.raceType.domesticText)
+                            race.race_type_english_text = unicode(raceinfo.raceType.englishText)
                             race.track_surface_code = unicode(raceinfo.trackSurface.code)
                             race.track_surface_domestic_text = unicode(raceinfo.trackSurface.domesticText)
-                            race.track_surface_english_text = str(raceinfo.trackSurface.englishText)
+                            race.track_surface_english_text = unicode(raceinfo.trackSurface.englishText)
                             race.raceday_id = raceday.id
 #                             for bettype in races_and_bettypes[race_nr]:
 #                                 if isinstance(bettype, db.BettypeChild):
@@ -217,12 +217,12 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
     for bettype in racedayinfo.betTypes.getchildren():
         # TODO: Create static list to avoid this check 
         # every time?
-        bettype_name_code = str(bettype.name.code)
+        bettype_name_code = unicode(bettype.name.code)
         bettype_entity = db.Bettype.read(bettype_name_code)
         if bettype_entity is None:
             bettype_entity = db.Bettype()
             bettype_entity.name_code = bettype_name_code
-            bettype_entity.name_domestic_text = str(bettype.name.domesticText)
+            bettype_entity.name_domestic_text = unicode(bettype.name.domesticText)
             db.create(bettype_entity)
 #         try:
 #             nbr_of_legs = bettype_nbr_of_legs_index[bettype.name.code]
@@ -246,7 +246,7 @@ def get_races_and_bettypes(racedayinfo=None, filename=None):
         # All combo bets need bettype sub-parts like V75-1 and DD-2
 #         if nbr_of_legs > 0:
 #             for leg_nbr in range(nbr_of_legs):
-#                 bettype_child_name = bettype.name.code + '-' + str(leg_nbr+1)
+#                 bettype_child_name = bettype.name.code + '-' + unicode(leg_nbr+1)
 #                 bettype_child_entity = \
 #                     db.BettypeChild.read(name_code_child=bettype_child_name)
 #                 if bettype_child_entity is None:
@@ -270,6 +270,7 @@ def print_all_data(datadir=None):
     print(data_filelist)
     for filepath in data_filelist:
         filename = util.get_filename_from_path(filepath)
+        print(filename)
         xml_string = util.get_cleaned_xml_string(filepath=filepath)
         
         # Convenience flag when developing
@@ -283,12 +284,12 @@ def print_all_data(datadir=None):
         
         root = util.xml_string_to_object(xml_string=xml_string)
         racedaycalendar = root.Body.fetchRaceDayCalendarResponse.result
-        print(racedaycalendar.fromdate.date)
-        print(racedaycalendar.fromdate.month)
-        print(racedaycalendar.fromdate.year)
-        print(racedaycalendar.todate.date)
-        print(racedaycalendar.todate.month)
-        print(racedaycalendar.todate.year)
+        print(unicode(racedaycalendar.fromdate.date))
+        print(unicode(racedaycalendar.fromdate.month))
+        print(unicode(racedaycalendar.fromdate.year))
+        print(unicode(racedaycalendar.todate.date))
+        print(unicode(racedaycalendar.todate.month))
+        print(unicode(racedaycalendar.todate.year))
         
         # Parameter added in AIS 9
         # racedaycalendar.multipleTrackPoolSetups
@@ -298,55 +299,55 @@ def print_all_data(datadir=None):
             racedaycalendar.multipleTrackPoolSetups = None
         if racedaycalendar.multipleTrackPoolSetups is not None:
             for multipletrackpoolsetup in racedaycalendar.multipleTrackPoolSetups.getchildren():
-                print(multipletrackpoolsetup.betType.code)
-                print(multipletrackpoolsetup.betType.domesticText)
-                print(multipletrackpoolsetup.betType.englishText)
+                print(unicode(multipletrackpoolsetup.betType.code))
+                print(unicode(multipletrackpoolsetup.betType.domesticText))
+                print(unicode(multipletrackpoolsetup.betType.englishText))
                 for trackdata in multipletrackpoolsetup.hostTrack.getchildren():
-                    print(trackdata.track.code)
-                    print(trackdata.track.domesticText)
-                    print(trackdata.track.englishText)
-                    print(trackdata.trackKey.trackId)
+                    print(unicode(trackdata.track.code))
+                    print(unicode(trackdata.track.domesticText))
+                    print(unicode(trackdata.track.englishText))
+                    print(unicode(trackdata.trackKey.trackId))
                 for leginfo in multipletrackpoolsetup.legInfo.getchildren():
-                    print(leginfo.hostTrack.track.code)
-                    print(leginfo.hostTrack.track.domesticText)
-                    print(leginfo.hostTrack.track.englishText)
-                    print(leginfo.hostTrack.trackKey.trackId)
-                    print(leginfo.legNr)
-                    print(leginfo.raceNr)
-                    print(leginfo.trot)
-                    print(multipletrackpoolsetup.multipleTrackName)
-                    print(multipletrackpoolsetup.multipleTrackNameEnglish)
-                    print(multipletrackpoolsetup.raceDayDate.year)
-                    print(multipletrackpoolsetup.raceDayDate.month)
-                    print(multipletrackpoolsetup.raceDayDate.date)
-                    print(multipletrackpoolsetup.track.code)
-                    print(multipletrackpoolsetup.track.domesticText)
-                    print(multipletrackpoolsetup.track.englishText)
-                    print(multipletrackpoolsetup.trackKey.trackId)
+                    print(unicode(leginfo.hostTrack.track.code))
+                    print(unicode(leginfo.hostTrack.track.domesticText))
+                    print(unicode(leginfo.hostTrack.track.englishText))
+                    print(unicode(leginfo.hostTrack.trackKey.trackId))
+                    print(unicode(leginfo.legNr))
+                    print(unicode(leginfo.raceNr))
+                    print(unicode(leginfo.trot))
+                    print(unicode(multipletrackpoolsetup.multipleTrackName))
+                    print(unicode(multipletrackpoolsetup.multipleTrackNameEnglish))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.year))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.month))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.date))
+                    print(unicode(multipletrackpoolsetup.track.code))
+                    print(unicode(multipletrackpoolsetup.track.domesticText))
+                    print(unicode(multipletrackpoolsetup.track.englishText))
+                    print(unicode(multipletrackpoolsetup.trackKey.trackId))
         for racedayinfo in racedaycalendar.raceDayInfos.getchildren():
-            print(racedayinfo.country.code)
-            print(racedayinfo.firstRacePostTime.date.date)
-            print(racedayinfo.firstRacePostTime.date.month)
-            print(racedayinfo.firstRacePostTime.date.year)
-            print(racedayinfo.firstRacePostTime.time.hour)
-            print(racedayinfo.firstRacePostTime.time.minute)
-            print(racedayinfo.firstRacePostTime.time.second)
-            print(racedayinfo.firstRacePostTime.time.tenth)
-            print(racedayinfo.firstRacePostTimeUTC.date.date)
-            print(racedayinfo.firstRacePostTimeUTC.date.month)
-            print(racedayinfo.firstRacePostTimeUTC.date.year)
-            print(racedayinfo.firstRacePostTimeUTC.time.hour)
-            print(racedayinfo.firstRacePostTimeUTC.time.minute)
-            print(racedayinfo.firstRacePostTimeUTC.time.second)
-            print(racedayinfo.firstRacePostTimeUTC.time.tenth)
-            print(racedayinfo.includesFinalRace)
-            print(racedayinfo.international)
-            print(racedayinfo.internationalBetting)
-            print(racedayinfo.itspEventCode)
-            print(racedayinfo.meetingNumber)
-            print(racedayinfo.meetingType.code)
-            print(racedayinfo.meetingType.domesticText)
-            print(racedayinfo.meetingType.englishText)
+            print(unicode(racedayinfo.country.code))
+            print(unicode(racedayinfo.firstRacePostTime.date.date))
+            print(unicode(racedayinfo.firstRacePostTime.date.month))
+            print(unicode(racedayinfo.firstRacePostTime.date.year))
+            print(unicode(racedayinfo.firstRacePostTime.time.hour))
+            print(unicode(racedayinfo.firstRacePostTime.time.minute))
+            print(unicode(racedayinfo.firstRacePostTime.time.second))
+            print(unicode(racedayinfo.firstRacePostTime.time.tenth))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.date.date))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.date.month))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.date.year))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.time.hour))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.time.minute))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.time.second))
+            print(unicode(racedayinfo.firstRacePostTimeUTC.time.tenth))
+            print(unicode(racedayinfo.includesFinalRace))
+            print(unicode(racedayinfo.international))
+            print(unicode(racedayinfo.internationalBetting))
+            print(unicode(racedayinfo.itspEventCode))
+            print(unicode(racedayinfo.meetingNumber))
+            print(unicode(racedayinfo.meetingType.code))
+            print(unicode(racedayinfo.meetingType.domesticText))
+            print(unicode(racedayinfo.meetingType.englishText))
             # Parameter added in AIS 9
             # racedayinfo.multipleTrackPoolSetups
             try:
@@ -355,89 +356,89 @@ def print_all_data(datadir=None):
                 racedayinfo.multipleTrackPoolSetups = None
             if racedayinfo.multipleTrackPoolSetups is not None:
                 for multipletrackpoolsetup in racedayinfo.multipleTrackPoolSetups.getchildren():
-                    print(multipletrackpoolsetup.betType.code)
-                    print(multipletrackpoolsetup.betType.domesticText)
-                    print(multipletrackpoolsetup.betType.englishText)
+                    print(unicode(multipletrackpoolsetup.betType.code))
+                    print(unicode(multipletrackpoolsetup.betType.domesticText))
+                    print(unicode(multipletrackpoolsetup.betType.englishText))
                     for trackdata in multipletrackpoolsetup.hostTrack.getchildren():
-                        print(trackdata.track.code)
-                        print(trackdata.track.domesticText)
-                        print(trackdata.track.englishText)
-                        print(trackdata.trackKey.trackId)
+                        print(unicode(trackdata.track.code))
+                        print(unicode(trackdata.track.domesticText))
+                        print(unicode(trackdata.track.englishText))
+                        print(unicode(trackdata.trackKey.trackId))
                     for leginfo in multipletrackpoolsetup.legInfo.getchildren():
-                        print(leginfo.hostTrack.track.code)
-                        print(leginfo.hostTrack.track.domesticText)
-                        print(leginfo.hostTrack.track.englishText)
-                        print(leginfo.hostTrack.trackKey.trackId)
-                        print(leginfo.legNr)
-                        print(leginfo.raceNr)
-                        print(leginfo.trot)
-                    print(multipletrackpoolsetup.multipleTrackName)
-                    print(multipletrackpoolsetup.multipleTrackNameEnglish)
-                    print(multipletrackpoolsetup.raceDayDate.year)
-                    print(multipletrackpoolsetup.raceDayDate.month)
-                    print(multipletrackpoolsetup.raceDayDate.date)
-                    print(multipletrackpoolsetup.track.code)
-                    print(multipletrackpoolsetup.track.domesticText)
-                    print(multipletrackpoolsetup.track.englishText)
-                    print(multipletrackpoolsetup.trackKey.trackId)
-            print(racedayinfo.raceCardAvailable)
-            print(racedayinfo.raceDayDate.date)
-            print(racedayinfo.raceDayDate.month)
-            print(racedayinfo.raceDayDate.year)
-            print(racedayinfo.track.code)
-            print(racedayinfo.track.domesticText)
-            print(racedayinfo.track.englishText)
-            print(racedayinfo.trackKey.trackId)
-            print(racedayinfo.trot)
+                        print(unicode(leginfo.hostTrack.track.code))
+                        print(unicode(leginfo.hostTrack.track.domesticText))
+                        print(unicode(leginfo.hostTrack.track.englishText))
+                        print(unicode(leginfo.hostTrack.trackKey.trackId))
+                        print(unicode(leginfo.legNr))
+                        print(unicode(leginfo.raceNr))
+                        print(unicode(leginfo.trot))
+                    print(unicode(multipletrackpoolsetup.multipleTrackName))
+                    print(unicode(multipletrackpoolsetup.multipleTrackNameEnglish))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.year))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.month))
+                    print(unicode(multipletrackpoolsetup.raceDayDate.date))
+                    print(unicode(multipletrackpoolsetup.track.code))
+                    print(unicode(multipletrackpoolsetup.track.domesticText))
+                    print(unicode(multipletrackpoolsetup.track.englishText))
+                    print(unicode(multipletrackpoolsetup.trackKey.trackId))
+            print(unicode(racedayinfo.raceCardAvailable))
+            print(unicode(racedayinfo.raceDayDate.date))
+            print(unicode(racedayinfo.raceDayDate.month))
+            print(unicode(racedayinfo.raceDayDate.year))
+            print(unicode(racedayinfo.track.code))
+            print(unicode(racedayinfo.track.domesticText))
+            print(unicode(racedayinfo.track.englishText))
+            print(unicode(racedayinfo.trackKey.trackId))
+            print(unicode(racedayinfo.trot))
             # Parameter added in AIS 9
             # racedayinfo.canceled
             try:
                 racedayinfo.canceled
             except AttributeError:
                 racedayinfo.canceled = False
-            print(racedayinfo.canceled)
+            print(unicode(racedayinfo.canceled))
             for bettype in racedayinfo.betTypes.getchildren():
-                print(bettype.hasResult)
-                print(bettype.name.code)
-                print(bettype.name.domesticText)
-                print(bettype.name.englishText)
-                print(bettype.national)
+                print(unicode(bettype.hasResult))
+                print(unicode(bettype.name.code))
+                print(unicode(bettype.name.domesticText))
+                print(unicode(bettype.name.englishText))
+                print(unicode(bettype.national))
                 for race_nr in bettype.races.getchildren():
-                    print(race_nr)
+                    print(unicode(race_nr))
             for raceinfo in racedayinfo.raceInfos.getchildren():
                 for bettype_code in raceinfo.betTypeCodes.getchildren():
-                    print(bettype_code)
-                print(raceinfo.hasResult)
-                print(raceinfo.postTime.hour)
-                print(raceinfo.postTime.minute)
-                print(raceinfo.postTime.second)
-                print(raceinfo.postTime.tenth)
-                print(raceinfo.postTimeUTC.hour)
-                print(raceinfo.postTimeUTC.minute)
-                print(raceinfo.postTimeUTC.second)
-                print(raceinfo.postTimeUTC.tenth)
-                print(raceinfo.raceNr)
-                print(raceinfo.raceType.code)
-                print(raceinfo.raceType.domesticText)
-                print(raceinfo.raceType.englishText)
-                print(raceinfo.trackSurface.code)
-                print(raceinfo.trackSurface.domesticText)
-                print(raceinfo.trackSurface.englishText)
+                    print(unicode(bettype_code))
+                print(unicode(raceinfo.hasResult))
+                print(unicode(raceinfo.postTime.hour))
+                print(unicode(raceinfo.postTime.minute))
+                print(unicode(raceinfo.postTime.second))
+                print(unicode(raceinfo.postTime.tenth))
+                print(unicode(raceinfo.postTimeUTC.hour))
+                print(unicode(raceinfo.postTimeUTC.minute))
+                print(unicode(raceinfo.postTimeUTC.second))
+                print(unicode(raceinfo.postTimeUTC.tenth))
+                print(unicode(raceinfo.raceNr))
+                print(unicode(raceinfo.raceType.code))
+                print(unicode(raceinfo.raceType.domesticText))
+                print(unicode(raceinfo.raceType.englishText))
+                print(unicode(raceinfo.trackSurface.code))
+                print(unicode(raceinfo.trackSurface.domesticText))
+                print(unicode(raceinfo.trackSurface.englishText))
                 # Parameter added in AIS 9
                 # raceinfo.canceled
                 try:
                     raceinfo.canceled
                 except AttributeError:
                     raceinfo.canceled = False
-                print(raceinfo.canceled)
+                print(unicode(raceinfo.canceled))
             # Parameter added in AIS 9
             # racedayinfo.sportSystemId
             try:
                 racedayinfo.sportSystemId
             except AttributeError:
                 racedayinfo.sportSystemId = None
-            print(racedayinfo.sportSystemId)
+            print(unicode(racedayinfo.sportSystemId))
 
 if __name__ == "__main__":
-    print_all_data('/home/sejoabi/data/ais/test_data')
+    print_all_data('/home/joakim/projects/ais/latest_dl_error_data')
     
