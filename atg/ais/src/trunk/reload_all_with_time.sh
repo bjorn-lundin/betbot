@@ -1,6 +1,6 @@
 #!/bin/sh
-AIS_VIRT_ENV="/home/sejoabi/workspace/py_virt_envs/ais_py_env"
-AIS_HOME="/home/sejoabi/workspace/ais/trunk"
+AIS_VIRT_ENV="/home/joakim/ais/py_env"
+AIS_HOME="/home/joakim/ais/app"
 AIS_APP="$AIS_HOME/app.py"
 
 export VIRTUAL_ENV=$AIS_VIRT_ENV
@@ -13,9 +13,9 @@ load_eod_raceday
 load_eod_racingcard
 load_eod_vppoolinfo
 load_eod_vpresult
-load_eod_ddpoolinfo
-load_eod_ddresult
 "
+#load_eod_ddpoolinfo
+#load_eod_ddresult
 
 for command in $commands
 do
