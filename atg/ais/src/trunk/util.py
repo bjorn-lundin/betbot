@@ -96,28 +96,7 @@ def read_file(filepath=None, encoding=None):
                  ' (file does not exist)')
     return result
 
-def generate_file_name(datadir=None, ais_service=None,
-                       date=None, track=None,
-                       ais_version=None, ais_type=None):
-    '''
-    Generate a dict containing path, filename and 
-    filepath (path + filename)
-    '''
-    result = {'filename':'', 'path':''}
-    result['path'] = os.path.normpath(datadir)
-    result['filename'] = ais_service
-    result['filename'] += '_'
-    result['filename'] += date_to_string(date)
-    result['filename'] += '_'
-    result['filename'] += str(track)
-    result['filename'] += '_'
-    result['filename'] += ais_version
-    result['filename'] += '_'
-    result['filename'] += ais_type
-    result['filename'] += '.xml'
-    return result
-
-def generate_file_name_2(ais_service=None, date=None, track_id=None,
+def generate_file_name(ais_service=None, date=None, track_id=None,
                          ais_version=None, ais_type=None):
     '''
     Generate a string representing filename
