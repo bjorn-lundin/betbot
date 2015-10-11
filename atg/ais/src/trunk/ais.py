@@ -26,7 +26,7 @@ def call_ais_service(params=None, date=None, track_id=None):
              + ' with date={0}, track={1}'
              .format(date, track_id))
     result = None
-    filename, filename_re = util.generate_file_name_2(
+    filename, filename_re = util.generate_file_name(
         ais_service=ais_service,
         date=date,
         track_id=track_id,
