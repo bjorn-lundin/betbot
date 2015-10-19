@@ -98,31 +98,23 @@ procedure Poll is
   begin
     case Bettype is
       when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
-      when Back_1_50_30_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002");
-      when Back_1_50_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
-      when Back_1_50_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004");
-      when Back_1_50_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_005");
-      when Back_1_50_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_006");
-      when Back_1_50_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_40_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_008");
-      when Back_1_40_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_009");
-      when Back_1_40_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_010");
-      when Back_1_40_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_011");
-      when Back_1_30_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_30_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_013");
-      when Back_1_30_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_014");
-      when Back_1_30_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_015");
-      when Back_1_20_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_20_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_017");
-      when Back_1_20_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_018");
-      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_019");
-      when Back_1_20_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_020");
-      when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_021");
-      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_022");
-      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_023");
+      when Back_1_20_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002");
+      when Back_1_20_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
+      when Back_1_20_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004");
+      when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_005"); 
+      when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_006"); 
+      when Back_1_10_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_007"); 
+      when Back_1_10_10_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_008"); 
+      when Back_1_10_07_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_009"); 
+      when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_010");
+      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_011");
+      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_012");
     end case;
   end Get_Bet_Placer;
 
+  
+  
+  
   ----------------------------------------------------------
 
   procedure Set_Bet_Names is
@@ -334,29 +326,39 @@ procedure Poll is
     Next_Place := Integer'Value(Image(16..16));
     
     case Bettype is
-      when Back_1_50_30_1_4_PLC |
-           Back_1_50_30_1_2_WIN |            
-           Back_1_50_20_1_2_WIN |
-           Back_1_50_16_1_2_WIN |
-           Back_1_50_13_1_2_WIN |
-           Back_1_50_10_1_2_WIN | 
-           Back_1_50_07_1_2_WIN => Min_Backprice_1 := 1.41;
+      when Back_1_50_30_1_4_PLC 
+          -- Back_1_50_30_1_2_WIN |           
+          -- Back_1_50_20_1_2_WIN |
+          -- Back_1_50_16_1_2_WIN |
+          -- Back_1_50_13_1_2_WIN |
+          -- Back_1_50_10_1_2_WIN | 
+          -- Back_1_50_07_1_2_WIN
+                                 => Min_Backprice_1 := 1.41;
            
-      when Back_1_40_16_1_2_WIN | 
-           Back_1_40_13_1_2_WIN | 
-           Back_1_40_10_1_2_WIN | 
-           Back_1_40_07_1_2_WIN => Min_Backprice_1 := 1.31;
+     -- when Back_1_40_16_1_2_WIN | 
+     --      Back_1_40_13_1_2_WIN | 
+     --      Back_1_40_10_1_2_WIN | 
+     --      Back_1_40_07_1_2_WIN => Min_Backprice_1 := 1.31;
+     --      
+     -- when Back_1_30_16_1_2_WIN |
+     --      Back_1_30_13_1_2_WIN |
+     --      Back_1_30_10_1_2_WIN | 
+     --      Back_1_30_07_1_2_WIN => Min_Backprice_1 := 1.21;
            
-      when Back_1_30_16_1_2_WIN |
-           Back_1_30_13_1_2_WIN |
-           Back_1_30_10_1_2_WIN | 
-           Back_1_30_07_1_2_WIN => Min_Backprice_1 := 1.21;
-           
-      when Back_1_20_20_1_2_WIN | 
-           Back_1_20_16_1_2_WIN | 
+      when-- Back_1_20_20_1_2_WIN | 
+          -- Back_1_20_16_1_2_WIN | 
            Back_1_20_13_1_2_WIN | 
-           Back_1_20_10_1_2_WIN | 
-           Back_1_20_07_1_2_WIN => Min_Backprice_1 := 1.11;
+           Back_1_20_10_1_2_WIN 
+          -- Back_1_20_07_1_2_WIN
+                                 => Min_Backprice_1 := 1.11;
+                                 
+      when Back_1_10_20_1_2_WIN | 
+           Back_1_10_16_1_2_WIN |
+           Back_1_10_13_1_2_WIN |
+           Back_1_10_10_1_2_WIN |
+           Back_1_10_07_1_2_WIN => Min_Backprice_1 := 1.04;
+                                 
+                                 
            
       when others               => Min_Backprice_1 := 1.01;
     end case;
