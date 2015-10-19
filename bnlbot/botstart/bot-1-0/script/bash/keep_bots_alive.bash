@@ -99,7 +99,6 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
 
-
   case $BOT_MACHINE_ROLE in
     PROD) BOT_LIST="bot" ;;
     TEST) BOT_LIST="bot" ;;
@@ -123,26 +122,16 @@ function Check_Bots_For_User () {
     #    Start_Bot $BOT_USER $bot bot $bot.ini
     #  fi
     #done
-    BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 bet_placer_004 \
-                     bet_placer_005 bet_placer_006 bet_placer_007 bet_placer_008 bet_placer_009 \
-                     bet_placer_010 bet_placer_011 bet_placer_012 bet_placer_013 bet_placer_014 \
-                     bet_placer_015 bet_placer_016 bet_placer_017 bet_placer_018 bet_placer_019 \
-                     bet_placer_020 bet_placer_021 bet_placer_022 bet_placer_023 bet_placer_024 \
-                     bet_placer_025 bet_placer_026 bet_placer_027 bet_placer_028 bet_placer_029 \
-                     bet_placer_030 bet_placer_031 bet_placer_032 bet_placer_033 bet_placer_034 \
-                     bet_placer_035 bet_placer_036 bet_placer_037 bet_placer_038 bet_placer_039 \
-                     bet_placer_040 bet_placer_041 bet_placer_042 bet_placer_043 bet_placer_044 \
-                     bet_placer_045 bet_placer_046 bet_placer_047 bet_placer_048 bet_placer_049 \
-                     bet_placer_050 bet_placer_051 bet_placer_052 bet_placer_053 bet_placer_054 \
-                     bet_placer_055 bet_placer_056 bet_placer_057 bet_placer_058 bet_placer_059 \
-                     bet_placer_060 bet_placer_061 bet_placer_062 bet_placer_063 bet_placer_064 \
-                     bet_placer_065 bet_placer_066"
+    BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
+                     bet_placer_004 bet_placer_005 bet_placer_006 \
+                     bet_placer_007 bet_placer_008 bet_placer_009 \
+                     bet_placer_010 bet_placer_011 bet_placer_012"
 
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
     done
 
-    if [ $BOT_HOUR == "05" ] ; then
+    if [ $BOT_HOUR == "23" ] ; then
       if [ $BOT_MINUTE == "00" ] ; then
         Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
       fi
@@ -153,8 +142,8 @@ function Check_Bots_For_User () {
                           poll_market_3 poll_market_4 \
                           poll_market_5 poll_market_6 \
                           poll_market_7 poll_market_8"
-    for colletor in $DATA_COLLECTORS_LIST ; do
-      Start_Bot $BOT_USER $colletor poll_market
+    for collector in $DATA_COLLECTORS_LIST ; do
+      Start_Bot $BOT_USER $collector poll_market
     done
 
   fi
@@ -189,7 +178,17 @@ function Create_Plots () {
   cd ${BOT_SCRIPT}/plot/gui_plot/
 
   for S in $STRATEGIES ; do
-    strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
+  
+      ST=$S
+      if [ $ST == "LAY_160_200" ] ; then
+        ST="HORSES_WIN_LAY_FINISH_160_200_1" 
+      fi  
+      
+      if [ $ST == "LAY_1_10_25_4" ] ; then
+        ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4" 
+      fi  
+  
+    strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
     #create datafiles
     ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
     ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
@@ -222,7 +221,17 @@ function Create_Plots () {
   if [ $DAYS == "42" ] ; then
     FILES=""
     for S in $STRATEGIES ; do
-      strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
+     
+      ST=$S
+      if [ $ST == "LAY_160_200" ] ; then
+        ST="HORSES_WIN_LAY_FINISH_160_200_1" 
+      fi  
+      
+      if [ $ST == "LAY_1_10_25_4" ] ; then
+        ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4" 
+      fi  
+    
+      strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
       ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
