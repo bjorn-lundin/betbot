@@ -19,13 +19,20 @@ TERMS := $(BOT_CONFIG)/repository/terms/trm_*.xml
 XSDS := $(BOT_CONFIG)/repository/*.xsd
 TABLE_MAKE_FILE := $(BOT_SOURCE)/ada/global/tables/makefile
 
+ifeq ($(BOT_MACHINE_ROLE),DISPLAY)
+	THE_TARGET := race_time
+else
+	THE_TARGET := bot 
+endif
+
+
 .PHONY : all adabot log bot race_time
 
 all : log 
 
 log :
-	$(MAKE) bot 2>&1 | tee make.log
-    
+	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
+
 race_time : $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT)
 	gnatmake -p -P adabot race_time
 
