@@ -36,6 +36,14 @@ case $HOSTNAME in
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=LOCAL
     ;;
+  tova*)
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=LOCAL
+    ;;
+  raspberrypi*)  
+    export BOT_MACHINE_ROLE=DISPLAY
+    export BOT_XML_SOURCE=LOCAL
+    ;;    
   *)  
     export BOT_MACHINE_ROLE=$HOSTNAME
     ;;
