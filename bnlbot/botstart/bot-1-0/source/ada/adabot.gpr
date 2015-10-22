@@ -26,8 +26,6 @@ project Adabot is
                     "bot_send.adb",
                     "poll.adb",
                     "race_time.adb",
-        --            "poll_place.adb",
-        --            "poll_and_log.adb",
                     "poll_market.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
@@ -35,46 +33,25 @@ project Adabot is
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
                     "bet_checker.adb",
-                    "lay_in_play.adb",
-                --    "football_better.adb",
-                --    "page_server.adb",
                     "data_mover.adb",
                     "graph_data.adb",
                     "check_bot_running.adb"
                     );
 
    Stat_Mains   := ("lay_during_race.adb",
-               --     "lay_during_race2.adb",
                     "lay_during_race3.adb",
                     "lay_during_race_and_back_later.adb",
-                    "lay_in_play_greenup.adb",
-                    "back_hitrate.adb",
-                    "lay_greenup_filter.adb",
+                    --"lay_in_play_greenup.adb",
+                    --"back_hitrate.adb",
+                    --"lay_greenup_filter.adb",
                     "greenup_lay_first.adb"); 
-                    --",
-                  --  "back_during_race2.adb",
-                 --   "prices_during_race.adb",
-                 --   "plot_race_prices.adb",
-                --    "plot_race_prices2.adb");
 
    Display_Mains :=  ("race_time.adb");
-   Other_Mains :=  (
-                     "check_greenup.adb",
-                     "create_graph_data_lost_bets.adb",                   
+   Other_Mains :=  ( "check_greenup.adb",
+                     --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
-         --          -- "ini_reader.adb",
-         --          --   "knockout.adb",
-         --       --   ,
-         --       --   "calculate_sampleid.adb");
-
     Test_Programs := ();
-                  --    ("sql_ifc_leak_finder.adb",
-                  --    "test_lock.adb",
-                  --    "test_list_sort.adb",
-                  --    "test_mail_output.adb",
-                  --  --  "test_sequence.adb",
-                  --    "test_list_sort.adb") ;
 
    case Bot_Machine_Role is
       when "PROD"   =>  for Main use System_Mains;
