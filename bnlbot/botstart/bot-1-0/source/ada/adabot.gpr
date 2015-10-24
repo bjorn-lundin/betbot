@@ -17,7 +17,7 @@ project Adabot is
 
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
 
-   type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM", "DISPLAY");
+   type Bot_Machine_Role_Type is ("PROD", "TEST", "SIM", "DISPLAY", "LONGPOLL");
 
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
@@ -54,13 +54,14 @@ project Adabot is
     Test_Programs := ();
 
    case Bot_Machine_Role is
-      when "PROD"   =>  for Main use System_Mains;
-      when "TEST"   =>  for Main use System_Mains;
-      when "SIM"    =>  for Main use System_Mains &
-                                     Stat_Mains &
-                                     Other_Mains &
-                                     Test_Programs;
+      when "PROD"       =>  for Main use System_Mains;
+      when "TEST"       =>  for Main use System_Mains;
+      when "SIM"        =>  for Main use System_Mains &
+                                         Stat_Mains &
+                                         Other_Mains &
+                                         Test_Programs;
       when "DISPLAY"    =>  for Main use Display_Mains;
+      when "LONGPOLL"   =>  for Main use System_Mains;
     end case;
 
    package Compiler renames Global.Compiler;
