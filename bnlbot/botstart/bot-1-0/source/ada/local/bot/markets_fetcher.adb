@@ -25,7 +25,6 @@ with Bot_Messages;
 with Core_Messages;
 with Utils; use Utils;
 with RPC ; 
-with text_io; use text_io;
 
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
