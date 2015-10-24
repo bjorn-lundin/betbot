@@ -337,7 +337,7 @@ begin
     if Is_Long_Poll then
       UTC_Time_Start := UTC_Time_Start + Two_Days;
     else   
-      UTC_Time_Start := UTC_Time_Start + Three_Minutes
+      UTC_Time_Start := UTC_Time_Start + Three_Minutes;
     end if; 
  
     T.Start;
