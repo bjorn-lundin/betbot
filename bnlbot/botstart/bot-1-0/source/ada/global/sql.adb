@@ -467,27 +467,28 @@ package body Sql is
         else
           Global_Connection.Login(Conn_Info => Login_String & " application_name=no_name");
         end if;        
+
+        Local_Status := Status (Global_Connection);
+        case Local_Status is
+           when Connection_Ok =>
+              Global_Connection.Set_Connected (True);
+              Set_Transaction_Isolation_Level (Read_Commited, Session);
+              --      declare
+              --        Enc : String := Global_Connection.Database_Encoding;
+              begin
+                 Global_Connection.Set_Encoding (Latin_1);
+                 Global_Connection.Set_Client_Encoding ("LATIN1");
+                 --          if Enc = "UTF8" then
+              end;
+  
+           when Connection_Bad =>
+              Global_Connection.Set_Connected (False);
+              Log(Me, "Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
+              Log(Me, "Connect : Login_String ->: '" & Login_String &"'");
+              Log(Me, Error_Message (Global_Connection));
+              raise Not_Connected with "Sql.Connect: Not_Connected" ;
+        end case;
       end;
-
-      Local_Status := Status (Global_Connection);
-      case Local_Status is
-         when Connection_Ok =>
-            Global_Connection.Set_Connected (True);
-            Set_Transaction_Isolation_Level (Read_Commited, Session);
-            --      declare
-            --        Enc : String := Global_Connection.Database_Encoding;
-            begin
-               Global_Connection.Set_Encoding (Latin_1);
-               Global_Connection.Set_Client_Encoding ("LATIN1");
-               --          if Enc = "UTF8" then
-            end;
-
-         when Connection_Bad =>
-            Global_Connection.Set_Connected (False);
-            Log(Me, "Connect : db_name,login,password ->: '" & Db_Name & "', '" & Login & "', '" & Password & "'");
-            Log(Me, Error_Message (Global_Connection));
-            raise Not_Connected with "Sql.Connect: Not_Connected" ;
-      end case;
    end Connect;
    --------------------------------------------------------------
    procedure Reconnect is

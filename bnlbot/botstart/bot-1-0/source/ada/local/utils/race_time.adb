@@ -92,6 +92,9 @@ procedure Race_Time is
   end Get_Starttimes;
   ------------------------------------------
   use type Text_Io.Count;
+  type String_Ptr is access String;
+  Db_Service : String_Ptr := null;
+  
 begin
 
   Define_Switch
@@ -119,18 +122,23 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
    
 --  Log(Me, "Login betfair");
+  if Ev.Value("BOT_MACHINE_ROLE") = "DISPLAY" then
+    Db_Service := new String'("database_race_time");
+  else
+    Db_Service := new String'("database");
+  end if;  
 
-    case Mode is
-      when Mode_Rpc =>
-        Rpc.Init(
-            Username   => Ini.Get_Value("betfair","username",""),
-            Password   => Ini.Get_Value("betfair","password",""),
-            Product_Id => Ini.Get_Value("betfair","product_id",""),
-            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
-            App_Key    => Ini.Get_Value("betfair","appkey","")
-        );
-      when Mode_Sql => null;
-    end case;
+  case Mode is
+    when Mode_Rpc =>
+      Rpc.Init(
+          Username   => Ini.Get_Value("betfair","username",""),
+          Password   => Ini.Get_Value("betfair","password",""),
+          Product_Id => Ini.Get_Value("betfair","product_id",""),
+          Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+          App_Key    => Ini.Get_Value("betfair","appkey","")
+      );
+    when Mode_Sql => null;
+  end case;
  
   
   Days : loop        
@@ -152,11 +160,11 @@ begin
         exit Days;
       when Mode_Sql =>
         Sql.Connect
-            (Host     => Ini.Get_Value("database", "host", ""),
-             Port     => Ini.Get_Value("database", "port", 5432),
-             Db_Name  => Ini.Get_Value("database", "name", ""),
-             Login    => Ini.Get_Value("database", "username", ""),
-             Password =>Ini.Get_Value("database", "password", ""));
+            (Host     => Ini.Get_Value(Db_Service.all, "host", ""),
+             Port     => Ini.Get_Value(Db_Service.all, "port", 5432),
+             Db_Name  => Ini.Get_Value(Db_Service.all, "name", ""),
+             Login    => Ini.Get_Value(Db_Service.all, "username", ""),
+             Password => Ini.Get_Value(Db_Service.all, "password", ""));
         Get_Starttimes(List => Start_Time_List);
         Sql.Close_Session;
     end case;
