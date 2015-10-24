@@ -25,7 +25,7 @@ with Bot_Messages;
 with Core_Messages;
 with Utils; use Utils;
 with RPC ; 
-
+with text_io; use text_io;
 
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -75,10 +75,12 @@ procedure Markets_Fetcher is
   Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
+  Two_Days        : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
 
   Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
+  Is_Long_Poll      : Boolean := EV.Value("BOT_MACHINE_ROLE") = "LONGPOLL" ;
 
   
   type Poll_Process is record
@@ -332,12 +334,16 @@ begin
        Rpc.Login;
     end if;
     
+    if Is_Long_Poll then
+      UTC_Time_Start := UTC_Time_Start + Two_Days;
+    else   
+      UTC_Time_Start := UTC_Time_Start + Three_Minutes
+    end if; 
+ 
     T.Start;
-    
 
     --Now set that time 1 hour ahead:
     -- to get the start of the race, start poll before STARTTS
-    UTC_Time_Start := UTC_Time_Start + Three_Minutes;
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
     
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(UTC_Time_Start));
