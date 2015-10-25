@@ -125,7 +125,11 @@ function Check_Bots_For_User () {
     BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
                      bet_placer_004 bet_placer_005 bet_placer_006 \
                      bet_placer_007 bet_placer_008 bet_placer_009 \
-                     bet_placer_010 bet_placer_011 bet_placer_012"
+                     bet_placer_010 bet_placer_011 bet_placer_012 \
+                     bet_placer_013 bet_placer_014 bet_placer_015 \
+                     bet_placer_016 bet_placer_017 bet_placer_018 \
+                     bet_placer_019 bet_placer_020 bet_placer_021 \
+                     bet_placer_022 "
 
     for placer in $BET_PLACER_LIST ; do
       Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -153,7 +157,7 @@ function Check_Bots_For_User () {
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 
-  if [ $BOT_HOUR == "05" ] ; then
+  if [ $BOT_HOUR == "13" ] ; then
     if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
       $BOT_TARGET/bin/race_time --rpc
@@ -179,20 +183,19 @@ function Create_Plots () {
 
   for S in $STRATEGIES ; do
   
-      ST=$S
-      if [ $ST == "LAY_160_200" ] ; then
+      if [ $S == "LAY_160_200" ] ; then
         ST="HORSES_WIN_LAY_FINISH_160_200_1" 
-      fi  
-      
-      if [ $ST == "LAY_1_10_25_4" ] ; then
+      elif [ $S == "LAY_1_10_25_4" ] ; then
         ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4" 
+      else  
+        ST=$S
       fi  
   
     strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
     #create datafiles
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${ST} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${ST} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${ST} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
     #put it in wd of gnuplot
     cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
     DF1="settled_vs_lapsed_${DAYS}_${strategy}"
@@ -222,18 +225,17 @@ function Create_Plots () {
     FILES=""
     for S in $STRATEGIES ; do
      
-      ST=$S
-      if [ $ST == "LAY_160_200" ] ; then
+      if [ $S == "LAY_160_200" ] ; then
         ST="HORSES_WIN_LAY_FINISH_160_200_1" 
-      fi  
-      
-      if [ $ST == "LAY_1_10_25_4" ] ; then
+      elif [ $S == "LAY_1_10_25_4" ] ; then
         ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4" 
+      else  
+        ST=$S
       fi  
     
       strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --equity  --betname=${ST}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -279,29 +281,18 @@ case $BOT_MACHINE_ROLE in
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
 
-# until we got data disk    if [ $HOUR == "05" ] ; then
-# until we got data disk      if [ $MINUTE == "10" ] ; then
-# until we got data disk        SLEEPTIME=1
-# until we got data disk        for USR in $USER_LIST ; do
-# until we got data disk          #Start one every 20 min in the background
-# until we got data disk          (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-# until we got data disk          (( SLEEPTIME = SLEEPTIME +1200 ))
-# until we got data disk        done
-# until we got data disk      fi
-# until we got data disk    fi
-
-    if [ $DAY == "01" ] ; then
-      if [ $HOUR == "01" ] ; then
-        if [ $MINUTE == "37" ] ; then
-          SLEEPTIME=1
-          for USR in $USER_LIST ; do
-            #Start one every 20 min in the background
-            (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-            (( SLEEPTIME = SLEEPTIME +1200 ))
-          done
-        fi
-      fi
-    fi
+    #if [ $DAY == "1" ] ; then
+    #  if [ $HOUR == "13" ] ; then
+    #    if [ $MINUTE == "12" ] ; then
+    #      SLEEPTIME=1
+    #      for USR in $USER_LIST ; do
+    #        #Start one every 20 min in the background
+    #        (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
+    #        (( SLEEPTIME = SLEEPTIME +1200 ))
+    #      done
+    #    fi
+    #  fi
+    #fi
 
     if [ $MINUTE == "40" ] ; then
       for USR in $USER_LIST_PLAYERS_ONLY ; do
@@ -312,8 +303,8 @@ case $BOT_MACHINE_ROLE in
       done
     fi
 
-    if [ $HOUR == "05" ] ; then
-      if [ $MINUTE == "00" ] ; then
+    if [ $HOUR == "13" ] ; then
+      if [ $MINUTE == "20" ] ; then
         for USR in $USER_LIST_PLAYERS_ONLY ; do
 
         #Start one every 5 min in the background, both with and without system tables
