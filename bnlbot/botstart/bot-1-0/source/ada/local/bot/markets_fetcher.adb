@@ -338,8 +338,8 @@ begin
       UTC_Time_Stop  := UTC_Time_Start + Three_Days;
       UTC_Time_Start := UTC_Time_Start + One_Day;
     else   
-      UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
-      UTC_Time_Start := UTC_Time_Start - Three_Minutes;
+      UTC_Time_Stop  := UTC_Time_Start + Three_Minutes + Eleven_Seconds; 
+      UTC_Time_Start := UTC_Time_Start + Three_Minutes;
     end if; 
  
     T.Start;
