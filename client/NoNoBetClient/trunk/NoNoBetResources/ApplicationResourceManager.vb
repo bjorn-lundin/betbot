@@ -1,8 +1,12 @@
 ﻿Imports NoNoBetDbInterface
 Imports NoNoBetConfig
 Imports System.Windows.Forms
+Imports System.Xml
+Imports System.Reflection
 
 Public Class ApplicationResourceManager
+
+  Public Const MenuHandlersConfigFileName As String = "MenuHandlersConfig.xml"
 
   Private _DbConnection As DbConnection
   Private _Translator As Translator
@@ -266,6 +270,64 @@ Public Class ApplicationResourceManager
     Else
       Return String.Empty
     End If
+  End Function
+
+  ''' <summary>
+  ''' Load MenuHandler specified by name
+  ''' </summary>
+  ''' <param name="name">Name of MenuHandler</param>
+  ''' <returns></returns>
+  ''' <remarks></remarks>
+  Public Shared Function LoadMenuHandler(name As String) As Object
+    Dim configFileName As String = IO.Path.Combine(Application.StartupPath, MenuHandlersConfigFileName)
+
+    If IO.File.Exists(configFileName) Then
+      Dim fullFileName As String
+      Dim menuHandlersNodeList As XmlNodeList = Nothing
+      Dim node As XmlNode = Nothing
+      Dim xmlDoc As XmlDocument = New XmlDocument
+
+      'Load the XML document
+      xmlDoc.Load(configFileName)
+      'Select the /menuhandlers/menuhandler node list in XML document
+      menuHandlersNodeList = xmlDoc.SelectNodes("/menuhandlers/menuhandler")
+
+      'Loop all MenuHandler nodes
+      For i As Integer = 0 To menuHandlersNodeList.Count - 1
+        Dim fileName As String = String.Empty
+        Dim className As String = String.Empty
+        Dim handlerName As String = String.Empty
+
+        node = menuHandlersNodeList.Item(i)
+
+        If (node IsNot Nothing) Then
+          Dim a As Assembly
+          Dim t As Type
+          Dim o As Object
+
+          'Get the name of MenuHandler
+          handlerName = node.Attributes.GetNamedItem("name").Value
+
+          'Any name specified?
+          If (Not String.IsNullOrEmpty(handlerName)) Then
+            'Is this the requested MenuHandler?
+            If (handlerName = name) Then
+              fileName = node.Attributes.GetNamedItem("file").Value
+              className = node.Attributes.GetNamedItem("class").Value
+              fullFileName = IO.Path.Combine(Application.StartupPath, fileName)
+              'Load the MenuHandler from DLL
+              a = Assembly.LoadFile(fullFileName)
+              t = a.GetType(IO.Path.GetFileNameWithoutExtension(fileName) + "." + className)
+              'Create an instance of the MenuHandler
+              o = Activator.CreateInstance(t)
+              Return o
+            End If
+          End If
+        End If
+      Next
+
+    End If
+    Return Nothing
   End Function
 
   Public Sub New()
