@@ -119,10 +119,16 @@ Public Class BaseGrid
   ''' <param name="sql"></param>
   ''' <remarks></remarks>
   Public Sub ExecuteSql(resourceMan As ApplicationResourceManager, ByVal sql As String)
+    ApplicationResourceManager.LogFile(MethodBase.GetCurrentMethod.DeclaringType.FullName, MethodBase.GetCurrentMethod.Name, "sql=" + sql)
+
     Cursor = Cursors.WaitCursor
     _ResourceManager = resourceMan
     _Sql = sql
-    _MenuHandler.ResourceManager = resourceMan
+
+    If (_MenuHandler IsNot Nothing) Then
+      _MenuHandler.ResourceManager = resourceMan
+    End If
+
     'Me.Clear()
     Me.AutoGenerateColumns = True
     MyBase.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
