@@ -25,7 +25,7 @@ Public Class StartUp
     Dim workingDir As String = GetCurrentDirectory()
     Dim currDirectoryInfo As DirectoryInfo = New DirectoryInfo(GetCurrentDirectory())
     workingDir = currDirectoryInfo.Parent.FullName
-
+    NoNoBetResources.ApplicationResourceManager.SetLoggingOn()
     'Create and start a new Connection Manager
     'Wait for StartApplication event before starting application
     _ConMan = New ConnectionManager

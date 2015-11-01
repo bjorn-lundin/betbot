@@ -10,6 +10,7 @@ Public Class ApplicationResourceManager
 
   Private _DbConnection As DbConnection
   Private _Translator As Translator
+  Private Shared _LogFile As IO.StreamWriter = Nothing
 
   Public Property DbConnection As DbConnection
     Get
@@ -329,6 +330,39 @@ Public Class ApplicationResourceManager
     End If
     Return Nothing
   End Function
+
+  Private Const DefaultLogFileName As String = "NoNoBetClient"
+
+  Private Shared Sub CreateLogFile(appName As String)
+    If (_LogFile Is Nothing) Then
+      Dim lFileName As String = IO.Path.Combine(Application.StartupPath, appName + ".log")
+      _LogFile = New IO.StreamWriter(lFileName)
+      LogFile(MethodBase.GetCurrentMethod.DeclaringType.FullName, MethodBase.GetCurrentMethod.Name, "Log file created")
+    End If
+  End Sub
+
+  Public Shared Sub SetLoggingOn(appName As String)
+    CreateLogFile(appName)
+  End Sub
+
+  Public Shared Sub SetLoggingOn()
+    CreateLogFile(DefaultLogFileName)
+  End Sub
+
+  Public Shared Sub SetLoggingOff()
+    If (_LogFile IsNot Nothing) Then
+      _LogFile.Close()
+      _LogFile.Dispose()
+      _LogFile = Nothing
+    End If
+  End Sub
+
+  Public Shared Sub LogFile(moduleName As String, functionName As String, logText As String)
+    If (_LogFile IsNot Nothing) Then
+      _LogFile.WriteLine(Now.ToString("yy-MM-dd hh:mm:ss") + " " + moduleName + "." + functionName + ": " + logText)
+      _LogFile.Flush()
+    End If
+  End Sub
 
   Public Sub New()
   End Sub
