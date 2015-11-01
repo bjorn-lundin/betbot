@@ -10,6 +10,10 @@ Public Class StartUp
   Public Shared Function Main() As Integer
     'Create and start a new Connection Manager
     'Wait for StartApplication event before starting application
+
+    '=== To start logging, uncomment next line ===
+    'ApplicationResourceManager.SetLoggingOn("BnlClient")
+    '=============================================
     _ConMan = New ConnectionManager
     _ConMan.FormTitle = "Connection Manager"
     _ConMan.StartForm(True)
