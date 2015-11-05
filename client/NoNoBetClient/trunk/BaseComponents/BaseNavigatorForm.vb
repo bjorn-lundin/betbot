@@ -195,11 +195,19 @@ Public Class BaseNavigatorForm
   ''' <param name="e"></param>
   ''' <remarks></remarks>
   Private Sub Navigator_NodeChange(sender As Object, e As BaseTree.NodeChangeEventArgs) Handles Navigator.NodeChange
+    Dim o As IOverviewComponent = GetFocusedOverviewComponent()
 
+    If (o IsNot Nothing) Then
+      o.NodeChangeHandler(0, e.KeyObject)
+    End If
   End Sub
 
   Private Sub HandleOverviewRowChange(rowObject As DataGridViewRow)
+    Dim d As IDetailComponent = GetFocusedDetailComponent()
 
+    If (d IsNot Nothing) Then
+      d.RowChangeHandler(rowObject)
+    End If
   End Sub
 
   Private Sub HandleDetailRowChange(rowObject As DataGridViewRow)
@@ -221,4 +229,27 @@ Public Class BaseNavigatorForm
     HandleDetailRowChange(e.RowObject)
   End Sub
 
+  Private Function GetFocusedDetailComponent() As IDetailComponent
+    Dim selectedTabPage As TabPage = tabControlOverview.SelectedTab
+
+    For Each ctrl As Control In selectedTabPage.Controls
+      If (TypeOf ctrl Is IDetailComponent) Then
+        Return CType(ctrl, IDetailComponent)
+      End If
+    Next
+
+    Return Nothing
+  End Function
+
+  Private Function GetFocusedOverviewComponent() As IOverviewComponent
+    Dim selectedTabPage As TabPage = tabControlOverview.SelectedTab
+
+    For Each ctrl As Control In selectedTabPage.Controls
+      If (TypeOf ctrl Is IOverviewComponent) Then
+        Return CType(ctrl, IOverviewComponent)
+      End If
+    Next
+
+    Return Nothing
+  End Function
 End Class
