@@ -86,6 +86,9 @@
     <Compile Include="BaseGridForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="BaseNavigatorForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="BaseTree.vb">
       <SubType>Component</SubType>
     </Compile>
@@ -127,6 +130,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="BaseGridForm.resx">
       <DependentUpon>BaseGridForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BaseNavigatorForm.resx">
+      <DependentUpon>BaseNavigatorForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ConnectionManager.resx">
       <DependentUpon>ConnectionManager.vb</DependentUpon>

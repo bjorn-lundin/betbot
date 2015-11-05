@@ -35,7 +35,7 @@ Public Class BaseTree
     MyBase.New()
   End Sub
 
-  Public Event NodeChange(sender As Object, e As System.Windows.Forms.TreeViewEventArgs)
+  Public Event NodeChange(sender As Object, e As NodeChangeEventArgs)
 
   Private Sub BaseTree_AfterSelect(sender As Object, e As System.Windows.Forms.TreeViewEventArgs) Handles Me.AfterSelect
     Dim e1 As NodeChangeEventArgs = New NodeChangeEventArgs(e)
