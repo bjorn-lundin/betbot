@@ -2,14 +2,14 @@
 
 Public Class BaseNavigatorForm
   Inherits BaseForm
-  Friend WithEvents tabPageDetail1 As System.Windows.Forms.TabPage
-  Friend WithEvents containerMain As System.Windows.Forms.SplitContainer
-  Friend WithEvents tabControlDetail As System.Windows.Forms.TabControl
-  Friend WithEvents tabPageOverview1 As System.Windows.Forms.TabPage
-  Friend WithEvents tabControlOverview As System.Windows.Forms.TabControl
-  Friend WithEvents containerTabs As System.Windows.Forms.SplitContainer
-  Friend WithEvents Navigator As NoNoBetBaseComponents.BaseTree
-  Friend WithEvents containerNavigator As System.Windows.Forms.SplitContainer
+  Public WithEvents tabPageDetail1 As System.Windows.Forms.TabPage
+  Public WithEvents containerMain As System.Windows.Forms.SplitContainer
+  Public WithEvents tabControlDetail As System.Windows.Forms.TabControl
+  Public WithEvents tabPageOverview1 As System.Windows.Forms.TabPage
+  Public WithEvents tabControlOverview As System.Windows.Forms.TabControl
+  Public WithEvents containerTabs As System.Windows.Forms.SplitContainer
+  Public WithEvents Navigator As NoNoBetBaseComponents.BaseTree
+  Public WithEvents containerNavigator As System.Windows.Forms.SplitContainer
 
   Private Sub InitializeComponent()
     Me.containerNavigator = New System.Windows.Forms.SplitContainer()
@@ -46,8 +46,8 @@ Public Class BaseNavigatorForm
     '
     Me.containerNavigator.Panel1.Controls.Add(Me.Navigator)
     Me.containerNavigator.Size = New System.Drawing.Size(163, 393)
-    Me.containerNavigator.SplitterDistance = 309
-    Me.containerNavigator.SplitterWidth = 8
+    Me.containerNavigator.SplitterDistance = 317
+    Me.containerNavigator.SplitterWidth = 10
     Me.containerNavigator.TabIndex = 0
     '
     'Navigator
@@ -55,7 +55,7 @@ Public Class BaseNavigatorForm
     Me.Navigator.Dock = System.Windows.Forms.DockStyle.Fill
     Me.Navigator.Location = New System.Drawing.Point(0, 0)
     Me.Navigator.Name = "Navigator"
-    Me.Navigator.Size = New System.Drawing.Size(163, 309)
+    Me.Navigator.Size = New System.Drawing.Size(163, 317)
     Me.Navigator.TabIndex = 0
     '
     'containerTabs
@@ -198,7 +198,7 @@ Public Class BaseNavigatorForm
     Dim o As IOverviewComponent = GetFocusedOverviewComponent()
 
     If (o IsNot Nothing) Then
-      o.NodeChangeHandler(0, e.KeyObject)
+      o.NodeChangeHandler(e.Node.Level, e.KeyObject)
     End If
   End Sub
 

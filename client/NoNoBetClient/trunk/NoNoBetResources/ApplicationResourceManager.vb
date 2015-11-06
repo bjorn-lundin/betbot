@@ -63,6 +63,10 @@ Public Class ApplicationResourceManager
     End If
   End Function
 
+  Public Shared Function ConvertToDate(value As Object) As DateTime
+    Return Convert.ToDateTime(value)
+  End Function
+
   ''' <summary>
   ''' Get cell value as String
   ''' </summary>
@@ -116,6 +120,20 @@ Public Class ApplicationResourceManager
       Return Convert.ToDouble(0)
     Else
       Return ConvertToDouble(cell.Value)
+    End If
+  End Function
+
+  ''' <summary>
+  ''' Get cell values as DateTime
+  ''' </summary>
+  ''' <param name="cell">Grid cell object</param>
+  ''' <returns>Value as DateTime</returns>
+  ''' <remarks></remarks>
+  Public Shared Function GetCellDateValue(ByVal cell As DataGridViewCell) As DateTime
+    If IsDBNull(cell.Value) Then
+      Return ConvertToDate(Nothing)
+    Else
+      Return ConvertToDate(cell.Value)
     End If
   End Function
 
@@ -270,6 +288,36 @@ Public Class ApplicationResourceManager
       Return GetCellStringValue(row.Cells(colIndex))
     Else
       Return String.Empty
+    End If
+  End Function
+
+  ''' <summary>
+  ''' Get column value as DateTime
+  ''' </summary>
+  ''' <param name="row">Grid row object</param>
+  ''' <param name="colName">Column name</param>
+  ''' <returns></returns>
+  ''' <remarks></remarks>
+  Public Shared Function GetRowColumnDateValue(ByVal row As DataGridViewRow, ByVal colName As String) As DateTime
+    If (row IsNot Nothing) Then
+      Return GetCellDateValue(row.Cells(colName))
+    Else
+      Return ConvertToDate(Nothing)
+    End If
+  End Function
+
+  ''' <summary>
+  ''' Get column value as DateTime
+  ''' </summary>
+  ''' <param name="row">Grid row object</param>
+  ''' <param name="colIndex">Column index</param>
+  ''' <returns></returns>
+  ''' <remarks></remarks>
+  Public Shared Function GetRowColumnDateValue(ByVal row As DataGridViewRow, ByVal colIndex As Integer) As DateTime
+    If (row IsNot Nothing) Then
+      Return GetCellDateValue(row.Cells(colIndex))
+    Else
+      Return ConvertToDate(Nothing)
     End If
   End Function
 
