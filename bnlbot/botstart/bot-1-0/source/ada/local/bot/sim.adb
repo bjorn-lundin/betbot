@@ -490,13 +490,13 @@ package body Sim is
   end Create_Bet_Data;
   --------------------------------------------------------------------------------------------
 -- start lay_during_race2
-
-  procedure Read_All_Markets(Month : in     Calendar2.Short_Month_Type;
+  -------------------------------------------------------------------------
+  procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
                              List  :    out Market_Id_With_Data_Pack.List) is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
     Eos      : Boolean := False;
-    Filename : String := Lower_Case(Month'Img) & "/all_market_ids.dat";
+    Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Market_Id_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
   begin
@@ -508,10 +508,10 @@ package body Sim is
             "from APRICESHISTORY RP, AMARKETS M " &
             "where RP.MARKETID = M.MARKETID " &
             "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-            "and EXTRACT(MONTH FROM STARTTS) = :MONTHNUM " &
+            "and STARTTS::date = :DATE " &
             "order by M.MARKETID");
 
-      Select_All_Markets.Set("MONTHNUM", Calendar2.Short_Month(Month));
+      Select_All_Markets.Set("DATE", Date.String_Date_ISO );
       Select_All_Markets.Open_Cursor;
       loop
         Select_All_Markets.Fetch(Eos);
@@ -525,16 +525,15 @@ package body Sim is
     else
       Serializer.Read_From_Disk(List, Filename);
     end if;
-
   end Read_All_Markets;
   -------------------------------------------------------------------------
 
   procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
-                                      Month                      : in     Calendar2.Short_Month_Type;
+                                      Date                       : in     Calendar2.Time_Type;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
     Pricets_List : Timestamp_Pack.List;
-    Filename     : String := Lower_Case(Month'Img) & "/marketid_pricets_map.dat";
+    Filename     : String := Date.String_Date_ISO & "/marketid_pricets_map.dat";
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
@@ -571,12 +570,11 @@ package body Sim is
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
 
-
   procedure Fill_Winners_Map(Market_Id_With_Data_List : in     Market_Id_With_Data_Pack.List;
-                             Month                    : in     Calendar2.Short_Month_Type;
+                             Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := Lower_Case(Month'Img) & "/winners_map.dat";
+    Filename : String := Date.String_Date_ISO & "/winners_map.dat";
     Runner_Data : Table_Arunners.Data_Type;
     Runner_List : Table_Arunners.Arunners_List_Pack2.List;
     T : Sql.Transaction_Type;
@@ -612,11 +610,10 @@ package body Sim is
   end Fill_Winners_Map;
   -----------------------------------------
 
-
   procedure Fill_Marketid_Runners_Pricets_Map(
                      Market_Id_With_Data_List                 : in     Market_Id_With_Data_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
-                     Month                                    : in     Calendar2.Short_Month_Type;
+                     Date                                     : in     Calendar2.Time_Type;
                      Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
     Eos       : Boolean := False;
     Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
@@ -624,7 +621,7 @@ package body Sim is
     T : Sql.Transaction_Type;
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
-    Filename : String := Lower_Case(Month'Img) & "/marketid_timestamp_to_apriceshistory_map.dat";
+    Filename : String := Date.String_Date_ISO & "/marketid_timestamp_to_apriceshistory_map.dat";
 
     package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
   begin
@@ -672,13 +669,14 @@ package body Sim is
   end Fill_Marketid_Runners_Pricets_Map;
   -------------------------------------------------------------------
 
-  procedure Fill_Win_Place_Map(Month         : in     Calendar2.Short_Month_Type;
+
+  procedure Fill_Win_Place_Map(Date         : in     Calendar2.Time_Type;
                                Win_Place_Map :    out Win_Place_Maps.Map) is
     T: Sql.Transaction_Type;
     Eos : Boolean := False;
     Place_Marketid,
     Win_Marketid    : Market_Id_Type := (others => ' ');
-    Filename : String := Lower_Case(Month'Img) & "/win_place_map.dat";
+    Filename : String := Date.String_Date_ISO & "/win_place_map.dat";
     package Serializer is new Disk_Serializer(Win_Place_Maps.Map);
   begin
     Win_Place_Map.Clear;
@@ -689,10 +687,10 @@ package body Sim is
         "from APRICESHISTORY RP, AMARKETS M " &
         "where RP.MARKETID = M.MARKETID " &
         "and M.MARKETTYPE = 'WIN' " &
-        "and EXTRACT(MONTH FROM STARTTS) = :MONTHNUM " &
+        "and STARTTS::date = :DATE " &
         "order by M.MARKETID");
 
-      Select_All_Win_Markets.Set("MONTHNUM", Calendar2.Short_Month(Month)) ;
+      Select_All_Win_Markets.Set("DATE", Date.String_Date_ISO) ;
       Select_All_Win_Markets.Open_Cursor;
       loop
         Select_All_Win_Markets.Fetch(Eos);
@@ -709,18 +707,23 @@ package body Sim is
     end if;
 
   end Fill_Win_Place_Map;
+  -------------------------------------------------------------------
 
-  --------------------------------------------------------------------------
   package body Disk_Serializer is
     --------------------------------------------------------
     Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
     function File_Exists(Filename : String) return Boolean is
      -- Service : constant String := "File_Exists";
       File_On_Disk : String := Path & Filename;
-      Exists : Boolean := AD.Exists(File_On_Disk) ;
+      File_Exists  : Boolean := AD.Exists(File_On_Disk) ;
+      Dir          : String := Ad.Containing_Directory(File_On_Disk);
+      Dir_Exists   : Boolean := AD.Exists(Dir) ;
     begin
+      if not Dir_Exists then
+        Ad.Create_Directory(Dir);
+      end if;    
     --  Log(Object & Service, "Exists: " & Exists'Img);
-      return Exists;
+      return File_Exists;
     end File_Exists;
     ---------------------------------------------------------------
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
@@ -758,28 +761,28 @@ package body Sim is
     end Read_From_Disk;
     --------------------------------------------------------
   end Disk_Serializer;
-    ----------------------------------------------------------
+  ----------------------------------------------------------
 
-  procedure Fill_Data_Maps(Month : in Calendar2.Short_Month_Type) is
+  procedure Fill_Data_Maps(Date : in Calendar2.Time_Type) is
   begin
-    Log("fill maps with month " & Month'Img);
+    Log("fill maps with Date " & Date.String_Date_ISO);
     Log("fill list with all valid marketids" );
-    Read_All_Markets(Month, Market_Id_With_Data_List);
+    Read_All_Markets(Date, Market_Id_With_Data_List);
 
     Log("fill map with all pricets for a marketid ");
-    Fill_Marketid_Pricets_Map(Market_Id_With_Data_List, Month, Marketid_Pricets_Map);
+    Fill_Marketid_Pricets_Map(Market_Id_With_Data_List, Date, Marketid_Pricets_Map);
 
     Log("fill map with map of timestamp list for all marketids ");
     Fill_Marketid_Runners_Pricets_Map(Market_Id_With_Data_List,
                                           Marketid_Pricets_Map,
-                                          Month,
+                                          Date,
                                           Marketid_Timestamp_To_Apriceshistory_Map) ;
 
     Log("fill map winners ");
-    Fill_Winners_Map(Market_Id_With_Data_List, Month, Winners_Map );
+    Fill_Winners_Map(Market_Id_With_Data_List, Date, Winners_Map );
 
     Log("fill map Win/Place markets ");
-    Fill_Win_Place_Map(Month, Win_Place_Map);
+    Fill_Win_Place_Map(Date, Win_Place_Map);
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 

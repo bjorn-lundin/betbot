@@ -40,16 +40,12 @@ project Adabot is
                     );
 
    Stat_Mains   := ("lay_during_race.adb",
-                    "lay_during_race3.adb",
-                    "lay_during_race_and_back_later.adb",
-                    --"lay_in_play_greenup.adb",
-                    --"back_hitrate.adb",
-                    --"lay_greenup_filter.adb",
+                    "simulate.adb",
+                    "create_cache.adb",
                     "greenup_lay_first.adb"); 
 
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "check_greenup.adb",
-                     --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
     Test_Programs := ();
