@@ -7,27 +7,55 @@ Imports NoNoBetResources.ApplicationResourceManager
 Public Class BaseTree
   Inherits TreeView
 
-  Public Class NodeChangeEventArgs
-    Inherits TreeViewEventArgs
+  Public Class NodeChangeObj
+    Private _NodeLevel As Integer
+    Private _KeyObject As Object
 
-    Private _KeyObject As Object = Nothing
+    Public Sub New(nodeLevel As Integer)
+      _NodeLevel = nodeLevel
+      _KeyObject = Nothing
+    End Sub
 
-    Public Property KeyObject As Object
+    Public Sub New(nodeLevel As Integer, keyObject As Object)
+      _NodeLevel = nodeLevel
+      _KeyObject = keyObject
+    End Sub
+
+    Public ReadOnly Property NodeLevel As Integer
+      Get
+        Return _NodeLevel
+      End Get
+    End Property
+
+    Public ReadOnly Property KeyObject As Object
       Get
         Return _KeyObject
       End Get
-      Set(value As Object)
-        _KeyObject = value
-      End Set
+    End Property
+  End Class
+
+  Public Class NodeChangeEventArgs
+    Inherits EventArgs
+
+    Private _NodeChangeObject As NodeChangeObj
+    Private _Node As TreeNode
+
+    Public ReadOnly Property Node As TreeNode
+      Get
+        Return _Node
+      End Get
     End Property
 
-    Public Sub New(e As TreeViewEventArgs)
-      MyBase.New(e.Node, e.Action)
-    End Sub
+    Public ReadOnly Property NodeChangeObject As NodeChangeObj
+      Get
+        Return _NodeChangeObject
+      End Get
+    End Property
 
-    Public Sub New(e As TreeViewEventArgs, keyObject As Object)
-      MyBase.New(e.Node, e.Action)
-      _KeyObject = keyObject
+    Public Sub New(node As TreeNode, nodeChangeObject As NodeChangeObj)
+      MyBase.New()
+      _Node = node
+      _NodeChangeObject = nodeChangeObject
     End Sub
   End Class
 
@@ -36,10 +64,19 @@ Public Class BaseTree
   End Sub
 
   Public Event NodeChange(sender As Object, e As NodeChangeEventArgs)
+  Public Event NodeExpand(sender As Object, e As NodeChangeEventArgs)
+
+  Private Sub BaseTree_AfterExpand(sender As Object, e As System.Windows.Forms.TreeViewEventArgs) Handles Me.AfterExpand
+
+  End Sub
 
   Private Sub BaseTree_AfterSelect(sender As Object, e As System.Windows.Forms.TreeViewEventArgs) Handles Me.AfterSelect
-    Dim e1 As NodeChangeEventArgs = New NodeChangeEventArgs(e)
-    e1.KeyObject = e.Node.Tag
+    Dim e1 As NodeChangeEventArgs = New NodeChangeEventArgs(e.Node, New NodeChangeObj(e.Node.Level, e.Node.Tag))
     RaiseEvent NodeChange(Me, e1)
+  End Sub
+
+  Private Sub BaseTree_BeforeExpand(sender As Object, e As System.Windows.Forms.TreeViewCancelEventArgs) Handles Me.BeforeExpand
+    Dim e1 As NodeChangeEventArgs = New NodeChangeEventArgs(e.Node, New NodeChangeObj(e.Node.Level, e.Node.Tag))
+    RaiseEvent NodeExpand(Me, e1)
   End Sub
 End Class
