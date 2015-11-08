@@ -17,6 +17,10 @@ Public Class BaseGridMenuHandler
   End Property
 
   Public Overridable Function MenuCreate(menuName As String) As System.Windows.Forms.ContextMenuStrip Implements NoNoBetResources.IMenuHandler.MenuCreate
+    If (String.IsNullOrWhiteSpace(menuName)) Then
+      Return Nothing
+    End If
+
     Dim m As ContextMenuStrip = MyBase.CreateMenu(menuName)
 
     Select Case menuName

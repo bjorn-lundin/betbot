@@ -1,4 +1,6 @@
 ﻿Imports System.Windows.Forms
+Imports NoNoBetBaseComponents
+Imports NoNoBetBaseComponents.BaseTree
 
 Public Class BaseNavigatorForm
   Inherits BaseForm
@@ -45,8 +47,8 @@ Public Class BaseNavigatorForm
     'containerNavigator.Panel1
     '
     Me.containerNavigator.Panel1.Controls.Add(Me.Navigator)
-    Me.containerNavigator.Size = New System.Drawing.Size(163, 393)
-    Me.containerNavigator.SplitterDistance = 317
+    Me.containerNavigator.Size = New System.Drawing.Size(163, 452)
+    Me.containerNavigator.SplitterDistance = 365
     Me.containerNavigator.SplitterWidth = 10
     Me.containerNavigator.TabIndex = 0
     '
@@ -55,7 +57,7 @@ Public Class BaseNavigatorForm
     Me.Navigator.Dock = System.Windows.Forms.DockStyle.Fill
     Me.Navigator.Location = New System.Drawing.Point(0, 0)
     Me.Navigator.Name = "Navigator"
-    Me.Navigator.Size = New System.Drawing.Size(163, 317)
+    Me.Navigator.Size = New System.Drawing.Size(163, 365)
     Me.Navigator.TabIndex = 0
     '
     'containerTabs
@@ -72,8 +74,8 @@ Public Class BaseNavigatorForm
     'containerTabs.Panel2
     '
     Me.containerTabs.Panel2.Controls.Add(Me.tabControlDetail)
-    Me.containerTabs.Size = New System.Drawing.Size(533, 393)
-    Me.containerTabs.SplitterDistance = 220
+    Me.containerTabs.Size = New System.Drawing.Size(533, 452)
+    Me.containerTabs.SplitterDistance = 253
     Me.containerTabs.SplitterWidth = 8
     Me.containerTabs.TabIndex = 1
     '
@@ -84,7 +86,7 @@ Public Class BaseNavigatorForm
     Me.tabControlOverview.Location = New System.Drawing.Point(0, 0)
     Me.tabControlOverview.Name = "tabControlOverview"
     Me.tabControlOverview.SelectedIndex = 0
-    Me.tabControlOverview.Size = New System.Drawing.Size(533, 220)
+    Me.tabControlOverview.Size = New System.Drawing.Size(533, 253)
     Me.tabControlOverview.TabIndex = 0
     '
     'tabPageOverview1
@@ -92,7 +94,7 @@ Public Class BaseNavigatorForm
     Me.tabPageOverview1.Location = New System.Drawing.Point(4, 22)
     Me.tabPageOverview1.Name = "tabPageOverview1"
     Me.tabPageOverview1.Padding = New System.Windows.Forms.Padding(3)
-    Me.tabPageOverview1.Size = New System.Drawing.Size(525, 194)
+    Me.tabPageOverview1.Size = New System.Drawing.Size(525, 227)
     Me.tabPageOverview1.TabIndex = 0
     Me.tabPageOverview1.Text = "tabPageOverview1"
     Me.tabPageOverview1.UseVisualStyleBackColor = True
@@ -104,7 +106,7 @@ Public Class BaseNavigatorForm
     Me.tabControlDetail.Location = New System.Drawing.Point(0, 0)
     Me.tabControlDetail.Name = "tabControlDetail"
     Me.tabControlDetail.SelectedIndex = 0
-    Me.tabControlDetail.Size = New System.Drawing.Size(533, 165)
+    Me.tabControlDetail.Size = New System.Drawing.Size(533, 191)
     Me.tabControlDetail.TabIndex = 0
     '
     'tabPageDetail1
@@ -112,7 +114,7 @@ Public Class BaseNavigatorForm
     Me.tabPageDetail1.Location = New System.Drawing.Point(4, 22)
     Me.tabPageDetail1.Name = "tabPageDetail1"
     Me.tabPageDetail1.Padding = New System.Windows.Forms.Padding(3)
-    Me.tabPageDetail1.Size = New System.Drawing.Size(525, 139)
+    Me.tabPageDetail1.Size = New System.Drawing.Size(525, 165)
     Me.tabPageDetail1.TabIndex = 0
     Me.tabPageDetail1.Text = "tabPageDetail1"
     Me.tabPageDetail1.UseVisualStyleBackColor = True
@@ -130,14 +132,14 @@ Public Class BaseNavigatorForm
     'containerMain.Panel2
     '
     Me.containerMain.Panel2.Controls.Add(Me.containerTabs)
-    Me.containerMain.Size = New System.Drawing.Size(704, 393)
+    Me.containerMain.Size = New System.Drawing.Size(704, 452)
     Me.containerMain.SplitterDistance = 163
     Me.containerMain.SplitterWidth = 8
     Me.containerMain.TabIndex = 2
     '
     'BaseNavigatorForm
     '
-    Me.ClientSize = New System.Drawing.Size(704, 393)
+    Me.ClientSize = New System.Drawing.Size(704, 452)
     Me.Controls.Add(Me.containerMain)
     Me.Name = "BaseNavigatorForm"
     Me.containerNavigator.Panel1.ResumeLayout(False)
@@ -157,6 +159,7 @@ Public Class BaseNavigatorForm
 
   End Sub
 
+  Private _CurrentNodeChangeObject As NodeChangeObj
   Private _CurrOverviewRowChangeObject As DataGridViewRow
   Private _CurrDetailRowChangeObject As DataGridViewRow
 
@@ -185,6 +188,9 @@ Public Class BaseNavigatorForm
     End Sub
   End Class
 
+  Public Event NavigatorNodeChange(sender As Object, e As NodeChangeEventArgs)
+  Public Event NavigatorNodeExpand(sender As Object, e As NodeChangeEventArgs)
+
   Public Event OverviewRowChange(sender As Object, e As RowChangeEventArgs)
   Public Event DetailRowChange(sender As Object, e As RowChangeEventArgs)
 
@@ -197,13 +203,20 @@ Public Class BaseNavigatorForm
   Private Sub Navigator_NodeChange(sender As Object, e As BaseTree.NodeChangeEventArgs) Handles Navigator.NodeChange
     Dim o As IOverviewComponent = GetFocusedOverviewComponent()
 
+    _CurrentNodeChangeObject = e.NodeChangeObject
+
     If (o IsNot Nothing) Then
-      o.NodeChangeHandler(e.Node.Level, e.KeyObject)
+      o.NodeChangeHandler(e.NodeChangeObject.NodeLevel, e.NodeChangeObject.KeyObject)
     End If
+
+    RaiseEvent NavigatorNodeChange(Navigator, e)
   End Sub
+
 
   Private Sub HandleOverviewRowChange(rowObject As DataGridViewRow)
     Dim d As IDetailComponent = GetFocusedDetailComponent()
+
+    _CurrOverviewRowChangeObject = rowObject
 
     If (d IsNot Nothing) Then
       d.RowChangeHandler(rowObject)
@@ -211,7 +224,7 @@ Public Class BaseNavigatorForm
   End Sub
 
   Private Sub HandleDetailRowChange(rowObject As DataGridViewRow)
-
+    _CurrDetailRowChangeObject = rowObject
   End Sub
 
   Public Function GetCurrentOverviewRowChangeObject() As DataGridViewRow
@@ -229,27 +242,47 @@ Public Class BaseNavigatorForm
     HandleDetailRowChange(e.RowObject)
   End Sub
 
+  Private Function GetTabPageDetailComponent(tabPage As TabPage) As IDetailComponent
+    If (tabPage IsNot Nothing) Then
+      For Each ctrl As Control In tabPage.Controls
+        If (TypeOf ctrl Is IDetailComponent) Then
+          Return CType(ctrl, IDetailComponent)
+        End If
+      Next
+    End If
+    Return Nothing
+  End Function
+
+
   Private Function GetFocusedDetailComponent() As IDetailComponent
-    Dim selectedTabPage As TabPage = tabControlOverview.SelectedTab
+    Return GetTabPageDetailComponent(tabControlDetail.SelectedTab)
+  End Function
 
-    For Each ctrl As Control In selectedTabPage.Controls
-      If (TypeOf ctrl Is IDetailComponent) Then
-        Return CType(ctrl, IDetailComponent)
-      End If
-    Next
-
+  Private Function GetTabPageOverviewComponent(tabPage As TabPage) As IOverviewComponent
+    If (tabPage IsNot Nothing) Then
+      For Each ctrl As Control In tabPage.Controls
+        If (TypeOf ctrl Is IOverviewComponent) Then
+          Return CType(ctrl, IOverviewComponent)
+        End If
+      Next
+    End If
     Return Nothing
   End Function
 
   Private Function GetFocusedOverviewComponent() As IOverviewComponent
-    Dim selectedTabPage As TabPage = tabControlOverview.SelectedTab
-
-    For Each ctrl As Control In selectedTabPage.Controls
-      If (TypeOf ctrl Is IOverviewComponent) Then
-        Return CType(ctrl, IOverviewComponent)
-      End If
-    Next
-
-    Return Nothing
+    Return GetTabPageOverviewComponent(tabControlOverview.SelectedTab)
   End Function
+
+  Private Sub tabControlOverview_Selected(sender As Object, e As System.Windows.Forms.TabControlEventArgs) Handles tabControlOverview.Selected
+    Dim o As IOverviewComponent = GetTabPageOverviewComponent(e.TabPage)
+
+    If (o IsNot Nothing) Then
+      o.NodeChangeHandler(_CurrentNodeChangeObject.NodeLevel, _CurrentNodeChangeObject.KeyObject)
+    End If
+
+  End Sub
+
+  Private Sub Navigator_NodeExpand(sender As Object, e As BaseTree.NodeChangeEventArgs) Handles Navigator.NodeExpand
+    RaiseEvent NavigatorNodeExpand(Navigator, e)
+  End Sub
 End Class

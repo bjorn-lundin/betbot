@@ -255,9 +255,11 @@ Public Class BaseGrid
   Private Sub BaseGrid_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseClick
     If (e.Button = MouseButtons.Right) Then
       If (_Menu Is Nothing) Then
-        _Menu = _MenuHandler.MenuCreate(_Id)
-        If (_Menu IsNot Nothing) Then
-          InitMenu(_Menu)
+        If (Not String.IsNullOrWhiteSpace(_Id)) Then
+          _Menu = _MenuHandler.MenuCreate(_Id)
+          If (_Menu IsNot Nothing) Then
+            InitMenu(_Menu)
+          End If
         End If
       End If
 
