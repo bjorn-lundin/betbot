@@ -79,7 +79,7 @@ package Sim is
   package Market_Id_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Market_Id_Type);
 
 
-  procedure Read_All_Markets(Month : in     Calendar2.Short_Month_Type;
+  procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
                              List  :    out Market_Id_With_Data_Pack.List) ;
 
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
@@ -92,7 +92,7 @@ package Sim is
          Timestamp_Pack."=");
 
   procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
-                                      Month                      : in     Calendar2.Short_Month_Type;
+                                      Date                       : in     Calendar2.Time_Type;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map);
 
 
@@ -105,7 +105,7 @@ package Sim is
          Table_Arunners.Arunners_List_Pack2."=");
 
   procedure Fill_Winners_Map(Market_Id_With_Data_List : in     Market_Id_With_Data_Pack.List;
-                             Month                    : in     Calendar2.Short_Month_Type;
+                             Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
 
@@ -116,7 +116,7 @@ package Sim is
          Ada.Strings.Hash,
          "=",
          "=");
-  procedure Fill_Win_Place_Map(Month         : in     Calendar2.Short_Month_Type;
+  procedure Fill_Win_Place_Map(Date          : in     Calendar2.Time_Type;
                                Win_Place_Map :    out Win_Place_Maps.Map);
 
 
@@ -143,7 +143,7 @@ package Sim is
   procedure Fill_Marketid_Runners_Pricets_Map(
                      Market_Id_With_Data_List                 : in     Market_Id_With_Data_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
-                     Month                                    : in     Calendar2.Short_Month_Type;
+                     Date                                     : in     Calendar2.Time_Type;
                      Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) ;
 
   -- for timestamp slices stop
@@ -155,7 +155,7 @@ package Sim is
   function Is_Race_Winner(Selectionid          : Integer_4;
                           Marketid             : Market_Id_Type) return Boolean;
 
-  procedure Fill_Data_Maps(Month : in Calendar2.Short_Month_Type) ;
+  procedure Fill_Data_Maps(Date  : in Calendar2.Time_Type) ;
 
   function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type;
 
