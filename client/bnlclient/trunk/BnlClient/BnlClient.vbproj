@@ -112,6 +112,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\NavKey.vb" />
     <Compile Include="Forms\PriceHisOv.vb">
       <SubType>Component</SubType>
     </Compile>
