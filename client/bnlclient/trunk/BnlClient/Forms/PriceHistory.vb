@@ -3,6 +3,7 @@ Imports NoNoBetResources.ApplicationResourceManager
 Imports NoNoBetBaseComponents
 Imports NoNoBetDbInterface
 Imports Npgsql
+Imports BnlClient
 
 
 Public Class PriceHistory
@@ -139,11 +140,18 @@ Public Class PriceHistory
 
   End Sub
 
-  Public Sub New(rManager As ApplicationResourceManager)
+  Public Sub New()
     MyBase.New()
     InitializeComponent()
+  End Sub
+
+  Public Sub New(rManager As ApplicationResourceManager)
+    MyBase.New()
     MyBase.ResourceManager = rManager
-    Me.ovPriceHis.ResourceManager = rManager
+    InitializeComponent()
+    If (Not Me.DesignMode) Then
+      Me.ovPriceHis.ResourceManager = rManager
+    End If
   End Sub
 
   Private Function BuildLevel0Sql() As String
@@ -300,8 +308,10 @@ Public Class PriceHistory
   End Sub
 
   Private Sub PriceHistory_Load(sender As Object, e As System.EventArgs) Handles Me.Load
-    FillNavigator()
-    _IsLoaded = True
+    If (Not Me.DesignMode) Then
+      FillNavigator()
+      _IsLoaded = True
+    End If
   End Sub
 
 End Class
