@@ -157,6 +157,7 @@ Public Class PriceHistory
       sql += "WHERE (markettype = 'PLACE')"
     End If
 
+    sql += " ORDER BY startts"
     Return sql
   End Function
 
@@ -184,11 +185,12 @@ Public Class PriceHistory
       sql += "WHERE startts = " + DateToDbString(d) + " AND " + whereClause
     End If
 
+    sql += " ORDER BY marketid"
     Return sql
   End Function
 
   Private Function BuildLevel2Sql(marketId As String) As String
-    Dim sql As String = "SELECT selectionid,marketid FROM arunners WHERE marketid = '" + marketId + "'"
+    Dim sql As String = "SELECT marketid,selectionid,runnername,sortprio,status FROM arunners WHERE marketid = '" + marketId + "' ORDER BY sortprio"
 
     Return sql
   End Function
@@ -223,10 +225,12 @@ Public Class PriceHistory
 
     While dbReader.Read
       Dim selectionId As Integer = ConvertToInteger(dbReader.Item("selectionid"))
-      'Dim marketid As String = ConvertToString(dbReader.Item("marketid"'))
+      Dim runnerName As String = ConvertToString(dbReader.Item("runnername"))
+      Dim sortPrio As Integer = ConvertToInteger(dbReader.Item("sortprio"))
+      Dim status As String = ConvertToString(dbReader.Item("status"))
 
-      Dim n As TreeNode = New TreeNode(selectionId.ToString)
-      n.Tag = New NavKeyLevel2(2, parentKey.StartTime, parentKey.MarketTypePlaceOption, parentKey.MarketTypeWinOption, parentKey.MarketId, parentKey.MarketType, selectionId)
+      Dim n As TreeNode = New TreeNode(sortPrio.ToString + " - " + selectionId.ToString + " - " + runnerName + " - " + status)
+      n.Tag = New NavKeyLevel2(2, parentKey.StartTime, parentKey.MarketTypePlaceOption, parentKey.MarketTypeWinOption, parentKey.MarketId, parentKey.MarketType, selectionId, runnerName)
       parentNode.Nodes.Add(n)
     End While
   End Sub

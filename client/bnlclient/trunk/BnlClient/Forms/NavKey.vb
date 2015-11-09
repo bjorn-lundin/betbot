@@ -76,6 +76,7 @@ Public Class NavKeyLevel2
   Inherits NavKeyLevel1
 
   Private _SelectionId As Integer
+  Private _RunnerName As String
 
   Public ReadOnly Property SelectionId As Integer
     Get
@@ -83,8 +84,15 @@ Public Class NavKeyLevel2
     End Get
   End Property
 
-  Public Sub New(level As Integer, startTime As DateTime, marketTypePlaceOption As Boolean, marketTypeWinOption As Boolean, marketId As String, marketType As String, selectionId As Integer)
+  Public ReadOnly Property RunnerName As String
+    Get
+      Return _RunnerName
+    End Get
+  End Property
+
+  Public Sub New(level As Integer, startTime As DateTime, marketTypePlaceOption As Boolean, marketTypeWinOption As Boolean, marketId As String, marketType As String, selectionId As Integer, runnerName As String)
     MyBase.New(level, startTime, marketTypePlaceOption, marketTypeWinOption, marketId, marketType)
     _SelectionId = selectionId
+    _RunnerName = runnerName
   End Sub
 End Class
