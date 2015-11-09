@@ -1,16 +1,12 @@
 ﻿Imports NoNoBetResources
 Imports NoNoBetBaseComponents
 
-Public MustInherit Class BaseOverviewGrid
+Public Class BaseOverviewGrid
   Inherits BaseGrid
   Implements IBaseComponent
   Implements IOverviewComponent
 
   Private _ResourceManager As ApplicationResourceManager
-
-  Public Sub New()
-    MyBase.New()
-  End Sub
 
   Public Property ResourceManager As ApplicationResourceManager Implements IBaseComponent.ResourceManager
     Get
@@ -21,6 +17,8 @@ Public MustInherit Class BaseOverviewGrid
     End Set
   End Property
 
-  Public MustOverride Sub NodeChangeHandler(nodeLevel As Integer, keyObject As Object) Implements IOverviewComponent.NodeChangeHandler
+  Public Overridable Sub NodeChangeHandler(nodeLevel As Integer, keyObject As Object) Implements IOverviewComponent.NodeChangeHandler
+
+  End Sub
 
 End Class
