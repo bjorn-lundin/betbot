@@ -20,7 +20,7 @@ Public Class BaseForm
     End Set
   End Property
 
-  Public Property ResourceManager As ApplicationResourceManager Implements IBaseComponent.ResourceManager
+  Public Overridable Property ResourceManager As ApplicationResourceManager Implements IBaseComponent.ResourceManager
     Get
       Return _ResourceManager
     End Get
