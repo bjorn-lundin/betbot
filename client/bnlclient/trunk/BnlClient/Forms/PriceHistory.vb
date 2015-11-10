@@ -11,14 +11,14 @@ Public Class PriceHistory
 
   Friend WithEvents chkPlace As System.Windows.Forms.CheckBox
   Friend WithEvents chkWin As System.Windows.Forms.CheckBox
-  Friend WithEvents ovPriceHis As BnlClient.PriceHisOv
+  Public WithEvents PriceHisOv1 As BnlClient.PriceHisOv
 
   Private _IsLoaded As Boolean = False
 
   Private Sub InitializeComponent()
     Me.chkWin = New System.Windows.Forms.CheckBox()
     Me.chkPlace = New System.Windows.Forms.CheckBox()
-    Me.ovPriceHis = New BnlClient.PriceHisOv()
+    Me.PriceHisOv1 = New BnlClient.PriceHisOv()
     CType(Me.containerMain, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.containerMain.Panel1.SuspendLayout()
     Me.containerMain.Panel2.SuspendLayout()
@@ -34,59 +34,56 @@ Public Class PriceHistory
     Me.containerNavigator.Panel1.SuspendLayout()
     Me.containerNavigator.Panel2.SuspendLayout()
     Me.containerNavigator.SuspendLayout()
-    CType(Me.ovPriceHis, System.ComponentModel.ISupportInitialize).BeginInit()
+    CType(Me.PriceHisOv1, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
     '
     'tabPageDetail1
     '
-    Me.tabPageDetail1.Size = New System.Drawing.Size(373, 231)
+    Me.tabPageDetail1.Size = New System.Drawing.Size(688, 97)
     '
     'containerMain
     '
-    Me.containerMain.Size = New System.Drawing.Size(704, 645)
-    Me.containerMain.SplitterDistance = 315
+    Me.containerMain.Size = New System.Drawing.Size(1041, 668)
+    Me.containerMain.SplitterDistance = 337
     '
     'tabControlDetail
     '
-    Me.tabControlDetail.Size = New System.Drawing.Size(381, 257)
+    Me.tabControlDetail.Size = New System.Drawing.Size(696, 123)
     '
     'tabPageOverview1
     '
-    Me.tabPageOverview1.Controls.Add(Me.ovPriceHis)
-    Me.tabPageOverview1.Size = New System.Drawing.Size(373, 354)
+    Me.tabPageOverview1.Controls.Add(Me.PriceHisOv1)
+    Me.tabPageOverview1.Size = New System.Drawing.Size(688, 511)
     '
     'tabControlOverview
     '
-    Me.tabControlOverview.Size = New System.Drawing.Size(381, 380)
+    Me.tabControlOverview.Size = New System.Drawing.Size(696, 537)
     '
     'containerTabs
     '
-    Me.containerTabs.Size = New System.Drawing.Size(381, 645)
-    Me.containerTabs.SplitterDistance = 380
+    Me.containerTabs.Size = New System.Drawing.Size(696, 668)
+    Me.containerTabs.SplitterDistance = 537
     '
     'Navigator
     '
     Me.Navigator.LineColor = System.Drawing.Color.Black
-    Me.Navigator.Size = New System.Drawing.Size(315, 578)
+    Me.Navigator.Size = New System.Drawing.Size(337, 600)
     '
     'containerNavigator
     '
-    Me.containerNavigator.FixedPanel = System.Windows.Forms.FixedPanel.Panel2
-    Me.containerNavigator.IsSplitterFixed = True
     '
     'containerNavigator.Panel2
     '
     Me.containerNavigator.Panel2.Controls.Add(Me.chkPlace)
     Me.containerNavigator.Panel2.Controls.Add(Me.chkWin)
-    Me.containerNavigator.Size = New System.Drawing.Size(315, 645)
-    Me.containerNavigator.SplitterDistance = 578
+    Me.containerNavigator.Size = New System.Drawing.Size(337, 668)
+    Me.containerNavigator.SplitterDistance = 600
     Me.containerNavigator.SplitterWidth = 8
     '
     'chkWin
     '
-    Me.chkWin.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
     Me.chkWin.AutoSize = True
-    Me.chkWin.Location = New System.Drawing.Point(13, 11)
+    Me.chkWin.Location = New System.Drawing.Point(12, 14)
     Me.chkWin.Name = "chkWin"
     Me.chkWin.Size = New System.Drawing.Size(45, 17)
     Me.chkWin.TabIndex = 0
@@ -95,29 +92,28 @@ Public Class PriceHistory
     '
     'chkPlace
     '
-    Me.chkPlace.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
     Me.chkPlace.AutoSize = True
-    Me.chkPlace.Location = New System.Drawing.Point(13, 34)
+    Me.chkPlace.Location = New System.Drawing.Point(12, 37)
     Me.chkPlace.Name = "chkPlace"
     Me.chkPlace.Size = New System.Drawing.Size(53, 17)
     Me.chkPlace.TabIndex = 1
     Me.chkPlace.Text = "Place"
     Me.chkPlace.UseVisualStyleBackColor = True
     '
-    'ovPriceHis
+    'PriceHisOv1
     '
-    Me.ovPriceHis.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-    Me.ovPriceHis.Dock = System.Windows.Forms.DockStyle.Fill
-    Me.ovPriceHis.Id = Nothing
-    Me.ovPriceHis.Location = New System.Drawing.Point(3, 3)
-    Me.ovPriceHis.Name = "ovPriceHis"
-    Me.ovPriceHis.ResourceManager = Nothing
-    Me.ovPriceHis.Size = New System.Drawing.Size(367, 348)
-    Me.ovPriceHis.TabIndex = 0
+    Me.PriceHisOv1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+    Me.PriceHisOv1.Dock = System.Windows.Forms.DockStyle.Fill
+    Me.PriceHisOv1.Id = Nothing
+    Me.PriceHisOv1.Location = New System.Drawing.Point(3, 3)
+    Me.PriceHisOv1.Name = "PriceHisOv1"
+    Me.PriceHisOv1.ResourceManager = Nothing
+    Me.PriceHisOv1.Size = New System.Drawing.Size(682, 505)
+    Me.PriceHisOv1.TabIndex = 0
     '
     'PriceHistory
     '
-    Me.ClientSize = New System.Drawing.Size(704, 645)
+    Me.ClientSize = New System.Drawing.Size(1041, 668)
     Me.Name = "PriceHistory"
     Me.containerMain.Panel1.ResumeLayout(False)
     Me.containerMain.Panel2.ResumeLayout(False)
@@ -135,7 +131,7 @@ Public Class PriceHistory
     Me.containerNavigator.Panel2.PerformLayout()
     CType(Me.containerNavigator, System.ComponentModel.ISupportInitialize).EndInit()
     Me.containerNavigator.ResumeLayout(False)
-    CType(Me.ovPriceHis, System.ComponentModel.ISupportInitialize).EndInit()
+    CType(Me.PriceHisOv1, System.ComponentModel.ISupportInitialize).EndInit()
     Me.ResumeLayout(False)
 
   End Sub
@@ -145,14 +141,15 @@ Public Class PriceHistory
     InitializeComponent()
   End Sub
 
-  Public Sub New(rManager As ApplicationResourceManager)
-    MyBase.New()
-    MyBase.ResourceManager = rManager
-    InitializeComponent()
-    If (Not Me.DesignMode) Then
-      Me.ovPriceHis.ResourceManager = rManager
-    End If
-  End Sub
+  Public Overrides Property ResourceManager As NoNoBetResources.ApplicationResourceManager
+    Get
+      Return MyBase.ResourceManager
+    End Get
+    Set(value As NoNoBetResources.ApplicationResourceManager)
+      MyBase.ResourceManager = value
+      PriceHisOv1.ResourceManager = value
+    End Set
+  End Property
 
   Private Function BuildLevel0Sql() As String
     Dim sql As String = "SELECT distinct startts FROM amarkets "
@@ -247,11 +244,11 @@ Public Class PriceHistory
     node.Nodes.Add(New TreeNode("?"))
   End Sub
 
-  Private Function DateToDbString(d As DateTime) As String
-    Return "'" + DateToDbFormat(d) + "'"
+  Public Shared Function DateToDbString(d As DateTime) As String
+    Return NoNoBetDbInterface.DbConnection.SqlBuildValueString(DateToDbFormat(d))
   End Function
 
-  Private Function DateToDbFormat(d As DateTime) As String
+  Public Shared Function DateToDbFormat(d As DateTime) As String
     Return d.ToString("yyyy-MM-dd HH:mm")
   End Function
 
@@ -289,6 +286,10 @@ Public Class PriceHistory
   End Sub
 
   Private Sub PriceHistory_NavigatorNodeExpand(sender As Object, e As NoNoBetBaseComponents.BaseTree.NodeChangeEventArgs) Handles Me.NavigatorNodeExpand
+    If (Not _IsLoaded) Then
+      Return
+    End If
+
     Select Case e.NodeChangeObject.NodeLevel
       Case 0
         If (TypeOf e.NodeChangeObject.KeyObject Is NavKeyLevel0) Then

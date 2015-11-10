@@ -24,10 +24,9 @@ Public Class StartUp
   Private Shared Sub _ConMan_StartApplication(sender As Object, e As NoNoBetBaseComponents.ConnectionManager.StartApplicationEventArgs) Handles _ConMan.StartApplication
     'Do something
     If (e.ResourceManager IsNot Nothing) Then
-      Dim priceHis As PriceHistory = New PriceHistory(e.ResourceManager)
-
+      Dim priceHis As PriceHistory = New PriceHistory
+      priceHis.ResourceManager = e.ResourceManager
       priceHis.StartForm(False)
-
     End If
   End Sub
 End Class
