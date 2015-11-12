@@ -12,13 +12,20 @@ Public Class PriceHistory
   Friend WithEvents chkPlace As System.Windows.Forms.CheckBox
   Friend WithEvents chkWin As System.Windows.Forms.CheckBox
   Public WithEvents PriceHisOv1 As BnlClient.PriceHisOv
+  Friend WithEvents tabPageOverview2 As System.Windows.Forms.TabPage
+  Friend WithEvents PriceHisOvChartCtrl As BnlClient.PriceHisOvChart
 
   Private _IsLoaded As Boolean = False
 
   Private Sub InitializeComponent()
+    Dim ChartArea1 As System.Windows.Forms.DataVisualization.Charting.ChartArea = New System.Windows.Forms.DataVisualization.Charting.ChartArea()
+    Dim Legend1 As System.Windows.Forms.DataVisualization.Charting.Legend = New System.Windows.Forms.DataVisualization.Charting.Legend()
+    Dim Series1 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
     Me.chkWin = New System.Windows.Forms.CheckBox()
     Me.chkPlace = New System.Windows.Forms.CheckBox()
     Me.PriceHisOv1 = New BnlClient.PriceHisOv()
+    Me.tabPageOverview2 = New System.Windows.Forms.TabPage()
+    Me.PriceHisOvChartCtrl = New BnlClient.PriceHisOvChart()
     CType(Me.containerMain, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.containerMain.Panel1.SuspendLayout()
     Me.containerMain.Panel2.SuspendLayout()
@@ -35,11 +42,13 @@ Public Class PriceHistory
     Me.containerNavigator.Panel2.SuspendLayout()
     Me.containerNavigator.SuspendLayout()
     CType(Me.PriceHisOv1, System.ComponentModel.ISupportInitialize).BeginInit()
+    Me.tabPageOverview2.SuspendLayout()
+    CType(Me.PriceHisOvChartCtrl, System.ComponentModel.ISupportInitialize).BeginInit()
     Me.SuspendLayout()
     '
     'tabPageDetail1
     '
-    Me.tabPageDetail1.Size = New System.Drawing.Size(688, 97)
+    Me.tabPageDetail1.Size = New System.Drawing.Size(688, 15)
     '
     'containerMain
     '
@@ -48,26 +57,29 @@ Public Class PriceHistory
     '
     'tabControlDetail
     '
-    Me.tabControlDetail.Size = New System.Drawing.Size(696, 123)
+    Me.tabControlDetail.Size = New System.Drawing.Size(696, 41)
     '
     'tabPageOverview1
     '
     Me.tabPageOverview1.Controls.Add(Me.PriceHisOv1)
-    Me.tabPageOverview1.Size = New System.Drawing.Size(688, 511)
+    Me.tabPageOverview1.Size = New System.Drawing.Size(688, 593)
     '
     'tabControlOverview
     '
-    Me.tabControlOverview.Size = New System.Drawing.Size(696, 537)
+    Me.tabControlOverview.Controls.Add(Me.tabPageOverview2)
+    Me.tabControlOverview.Size = New System.Drawing.Size(696, 619)
+    Me.tabControlOverview.Controls.SetChildIndex(Me.tabPageOverview2, 0)
+    Me.tabControlOverview.Controls.SetChildIndex(Me.tabPageOverview1, 0)
     '
     'containerTabs
     '
     Me.containerTabs.Size = New System.Drawing.Size(696, 668)
-    Me.containerTabs.SplitterDistance = 537
+    Me.containerTabs.SplitterDistance = 619
     '
     'Navigator
     '
     Me.Navigator.LineColor = System.Drawing.Color.Black
-    Me.Navigator.Size = New System.Drawing.Size(337, 600)
+    Me.Navigator.Size = New System.Drawing.Size(337, 616)
     '
     'containerNavigator
     '
@@ -77,7 +89,7 @@ Public Class PriceHistory
     Me.containerNavigator.Panel2.Controls.Add(Me.chkPlace)
     Me.containerNavigator.Panel2.Controls.Add(Me.chkWin)
     Me.containerNavigator.Size = New System.Drawing.Size(337, 668)
-    Me.containerNavigator.SplitterDistance = 600
+    Me.containerNavigator.SplitterDistance = 616
     Me.containerNavigator.SplitterWidth = 8
     '
     'chkWin
@@ -108,8 +120,36 @@ Public Class PriceHistory
     Me.PriceHisOv1.Location = New System.Drawing.Point(3, 3)
     Me.PriceHisOv1.Name = "PriceHisOv1"
     Me.PriceHisOv1.ResourceManager = Nothing
-    Me.PriceHisOv1.Size = New System.Drawing.Size(682, 505)
+    Me.PriceHisOv1.Size = New System.Drawing.Size(682, 587)
     Me.PriceHisOv1.TabIndex = 0
+    '
+    'tabPageOverview2
+    '
+    Me.tabPageOverview2.Controls.Add(Me.PriceHisOvChartCtrl)
+    Me.tabPageOverview2.Location = New System.Drawing.Point(4, 22)
+    Me.tabPageOverview2.Name = "tabPageOverview2"
+    Me.tabPageOverview2.Size = New System.Drawing.Size(461, 227)
+    Me.tabPageOverview2.TabIndex = 1
+    Me.tabPageOverview2.Text = "tabPageOverview2"
+    Me.tabPageOverview2.UseVisualStyleBackColor = True
+    '
+    'PriceHisOvChartCtrl
+    '
+    ChartArea1.Name = "ChartArea1"
+    Me.PriceHisOvChartCtrl.ChartAreas.Add(ChartArea1)
+    Me.PriceHisOvChartCtrl.Dock = System.Windows.Forms.DockStyle.Fill
+    Legend1.Name = "Legend1"
+    Me.PriceHisOvChartCtrl.Legends.Add(Legend1)
+    Me.PriceHisOvChartCtrl.Location = New System.Drawing.Point(0, 0)
+    Me.PriceHisOvChartCtrl.Name = "PriceHisOvChartCtrl"
+    Me.PriceHisOvChartCtrl.ResourceManager = Nothing
+    Series1.ChartArea = "ChartArea1"
+    Series1.Legend = "Legend1"
+    Series1.Name = "Series1"
+    Me.PriceHisOvChartCtrl.Series.Add(Series1)
+    Me.PriceHisOvChartCtrl.Size = New System.Drawing.Size(461, 227)
+    Me.PriceHisOvChartCtrl.TabIndex = 0
+    Me.PriceHisOvChartCtrl.Text = "PriceHisOvChartCtrl"
     '
     'PriceHistory
     '
@@ -132,6 +172,8 @@ Public Class PriceHistory
     CType(Me.containerNavigator, System.ComponentModel.ISupportInitialize).EndInit()
     Me.containerNavigator.ResumeLayout(False)
     CType(Me.PriceHisOv1, System.ComponentModel.ISupportInitialize).EndInit()
+    Me.tabPageOverview2.ResumeLayout(False)
+    CType(Me.PriceHisOvChartCtrl, System.ComponentModel.ISupportInitialize).EndInit()
     Me.ResumeLayout(False)
 
   End Sub
@@ -148,6 +190,7 @@ Public Class PriceHistory
     Set(value As NoNoBetResources.ApplicationResourceManager)
       MyBase.ResourceManager = value
       PriceHisOv1.ResourceManager = value
+      PriceHisOvChartCtrl.ResourceManager = value
     End Set
   End Property
 

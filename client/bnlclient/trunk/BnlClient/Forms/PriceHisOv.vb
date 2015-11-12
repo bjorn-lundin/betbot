@@ -8,24 +8,40 @@ Public Class PriceHisOv
     MyBase.New()
   End Sub
 
-  Private Const PriceHistorySelectClause As String = "SELECT pricets,selectionid,backprice FROM apriceshistory "
-  Private Const PriceHistoryGroupByClause As String = " GROUP BY pricets,selectionid,backprice "
-  Private Const PriceHistoryOrderByClause As String = " ORDER BY pricets,selectionid,backprice "
+  Private Const PriceHistorySelectClause As String = "SELECT selectionid,pricets,backprice FROM apriceshistory "
+  Private Const PriceHistoryGroupByClause As String = " GROUP BY selectionid,pricets,backprice "
+  Private Const PriceHistoryOrderByClause As String = " ORDER BY selectionid,pricets,backprice "
+
+  Public Shared Function BuildLevel2Sql(marketId As String, selectionId As Integer) As String
+    Dim sql As String = PriceHistorySelectClause
+    sql += " WHERE marketid = " + DbConnection.SqlBuildValueString(marketId) +
+           " AND selectionid = " + selectionId.ToString +
+           PriceHistoryGroupByClause +
+           PriceHistoryOrderByClause
+    Return sql
+  End Function
+
+  Public Shared Function BuildLevel1Sql(marketId As String) As String
+    Dim sql As String = PriceHistorySelectClause
+    sql += " WHERE marketid = " + DbConnection.SqlBuildValueString(marketId) +
+           PriceHistoryGroupByClause +
+           PriceHistoryOrderByClause
+    Return sql
+  End Function
 
   Public Overrides Sub NodeChangeHandler(nodeLevel As Integer, keyObject As Object)
-    Dim sql As String = PriceHistorySelectClause
+    Dim sql As String
 
     If (TypeOf keyObject Is NavKeyLevel2) Then
-      sql += " WHERE marketid = " + DbConnection.SqlBuildValueString(CType(keyObject, NavKeyLevel2).MarketId.ToString) +
-             " AND selectionid = " + CType(keyObject, NavKeyLevel2).SelectionId.ToString
-      sql += PriceHistoryGroupByClause + PriceHistoryOrderByClause
+      Dim key As NavKeyLevel2 = CType(keyObject, NavKeyLevel2)
+      sql = BuildLevel2Sql(key.MarketId, key.SelectionId)
     ElseIf (TypeOf keyObject Is NavKeyLevel1) Then
-      sql += " WHERE marketid = " + DbConnection.SqlBuildValueString(CType(keyObject, NavKeyLevel1).MarketId.ToString)
-      sql += PriceHistoryGroupByClause + PriceHistoryOrderByClause
+      Dim key As NavKeyLevel1 = CType(keyObject, NavKeyLevel1)
+      sql = BuildLevel1Sql(key.MarketId)
     ElseIf (TypeOf keyObject Is NavKeyLevel0) Then
-      sql += " WHERE null = null "
+      sql = PriceHistorySelectClause + " WHERE null = null "
     Else
-      sql += " WHERE null = null "
+      sql = PriceHistorySelectClause + " WHERE null = null "
     End If
 
     MyBase.ExecuteSql(MyBase.ResourceManager, sql)
