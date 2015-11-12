@@ -410,8 +410,8 @@ package body Repository is
           when A_Int     |
                A_Big_Int |
                A_Long    |
-               A_Boolean |
                A_Short_Code  => return "default 1";
+          when A_Boolean     => return "default False"; 
           when others        => return "";
         end case;
     end case;
