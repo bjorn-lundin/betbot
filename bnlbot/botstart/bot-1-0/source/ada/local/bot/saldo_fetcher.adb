@@ -81,6 +81,7 @@ procedure Saldo_Fetcher is
           "Database sizes:" & Cr & Lf &
           "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
           "jmb " & Get_Db_Size("jmb")  & Cr & Lf &
+          "msm " & Get_Db_Size("msm")  & Cr & Lf &
           "dry " & Get_Db_Size("dry")  & Cr & Lf &
           "ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
           Cr & Lf &          
@@ -88,8 +89,9 @@ procedure Saldo_Fetcher is
           "sent from: " & GNAT.Sockets.Host_Name ;
           
       Receivers : constant SMTP.Recipients :=  (
-                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com") ,
-                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
+                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
+                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com"),
+                  SMTP.E_Mail("Mats Mårtensson", "mats.g.martensson@gmail.com")
                 ); 
     begin     
       SMTP.Client.Send(Server  => SMTP_Server,
