@@ -10,9 +10,28 @@ Public Class PriceHisOvChart
   Private _IsInitiated As Boolean = False
 
   Public Sub New()
-    MyBase.new()
+    MyBase.New()
   End Sub
 
+  Public Event ChartDrawn(sender As Object, e As System.EventArgs)
+
+  Public Property MaxYaxis As Double
+    Get
+      Return MyBase.ChartAreas(0).AxisY.Maximum
+    End Get
+    Set(value As Double)
+      MyBase.ChartAreas(0).AxisY.Maximum = value
+    End Set
+  End Property
+
+  Public Property MinYaxis As Double
+    Get
+      Return MyBase.ChartAreas(0).AxisY.Minimum
+    End Get
+    Set(value As Double)
+      MyBase.ChartAreas(0).AxisY.Minimum = value
+    End Set
+  End Property
 
   Public Overrides Sub NodeChangeHandler(nodeLevel As Integer, keyObject As Object)
     Dim sql As String
@@ -73,13 +92,19 @@ Public Class PriceHisOvChart
   End Sub
 
   Private Sub BuildLevel2Chart(sql As String, marketId As String)
+    MyBase.BeginInit()
     MyBase.Series.Clear()
     BuildChart(sql, marketId)
+    MyBase.EndInit()
+    RaiseEvent ChartDrawn(Me, New System.EventArgs)
   End Sub
 
   Private Sub BuildLevel1Chart(sql As String, marketId As String)
+    MyBase.BeginInit()
     MyBase.Series.Clear()
     BuildChart(sql, marketId)
+    MyBase.EndInit()
+    RaiseEvent ChartDrawn(Me, New System.EventArgs)
   End Sub
 
   Private Sub InitChart()
