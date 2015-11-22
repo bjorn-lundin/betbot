@@ -77,6 +77,9 @@ procedure Bot_Web_Server is
     Start      : Calendar2.Time_Type := Calendar2.Clock;
     Service    : constant String := "Do_Service";
     Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
+    
+    Application_JSON : constant String := "application/json"; 
+    
   begin
     Logging.Log(Service, "Method : " & Method & " Mode : " & Mode & " Action : " & Action );
     Logging.Log(Service, "Param0 : " & AWS.Parameters.Get(Params,"param0") &
@@ -99,25 +102,25 @@ procedure Bot_Web_Server is
         Username   : constant String := AWS.Parameters.Get(Params,"param0");  
       begin
         AWS.Session.Set (Session_ID, "username", Username);
-        Response := Aws.Response.Build (AWS.MIME.Application_JSON, 
+        Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Operator_Login(Username => Username,
                                                                      Password => AWS.Parameters.Get(Params,"param1"),
                                                                      Context  => Mode));
       end ;                                                               
     elsif Mode="logout" then
-      Response := Aws.Response.Build (AWS.MIME.Application_JSON, 
+      Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Operator_Logout(Username =>  AWS.Session.Get(Session_ID, "username"),
                                                                       Context  => Mode)); 
     elsif Mode="todays_bets" then
-      Response := Aws.Response.Build (AWS.MIME.Application_JSON, 
+      Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
                                                                    Context  => Mode)); 
     elsif Mode="yesterdays_bets" then
-      Response := Aws.Response.Build (AWS.MIME.Application_JSON, 
+      Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
                                                                    Context  => Mode)); 
     elsif Mode="thisweeks_bets" then
-      Response := Aws.Response.Build (AWS.MIME.Application_JSON, 
+      Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
                                                                    Context  => Mode)); 
     else
