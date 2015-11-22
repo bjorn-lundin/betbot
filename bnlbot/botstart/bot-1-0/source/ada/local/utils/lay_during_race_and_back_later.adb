@@ -199,8 +199,8 @@ procedure Lay_During_Race_And_Back_Later is
 
 begin
 
---  for Month in Calendar2.Short_Month_Type'range loop
-  for Month in Aug .. Sep loop
+  for Month in Calendar2.Short_Month_Type'range loop
+--  for Month in Aug .. Sep loop
     Log ("Connect db");
     Sql.Connect
       (Host     => "localhost",

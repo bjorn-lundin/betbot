@@ -1,0 +1,269 @@
+/* http://design-seeds.com/index.php/home/entry/rustic-winter */
+/* General tage */
+body {
+background-color:#e8d5c5;
+color:#13213b;
+font-family:"Palatino Linotype", Arial, Helvetica,Copperplate, Verdana;
+margin-left:auto;
+margin-right:auto;
+margin-top:2px;
+text-align:left;
+overflow-x:hidden;
+overflow-y:hidden;
+font-size:1em;
+width:100%;
+padding:0;
+}
+
+#loginPage {
+width:100%;
+margin-left:auto;
+margin-right:auto;
+border-radius:1em;
+text-align:Center;
+padding:1em;
+}
+
+h1 {
+margin-top:0;
+font-size:1.1em;
+}
+
+form select {
+font-family:"Palatino Linotype";
+width:200px;
+font-size:1.1em;
+}
+
+#loginForm input[type="text"],#loginForm input[type="password"],#artparameters input[type="text"] {
+width:200px;
+font-size:1.1em;
+}
+
+#loginForm table {
+margin-top:1em;
+margin-left:auto;
+margin-right:auto;
+border:3px solid #a34e52;
+background-color:#FFF;
+font-size:1.2em;
+box-shadow:0 0 1em rgba(0,0,0,0.5);
+-moz-box-shadow:0 0 1em rgba(0,0,0,0.5);
+-webkit-box-shadow:0 0 1em rgba(0,0,0,0.5);
+padding:1em;
+}
+
+input[type="submit"],input[type="button"] {
+margin-top:.8em;
+margin-bottom:.1em;
+width:100px;
+border:outset 1px #a34e52;
+background:#FFF;
+color:#13213b;
+font-family:"Palatino Linotype";
+font-size:1em;
+cursor:pointer;
+font-weight:700;
+padding:4px;
+}
+
+li input[type="button"] {
+color:#FFF;
+background-color:#66363a;
+width:98%;
+font-size:1.5em;
+text-align:left;
+border-radius:0;
+padding:15px 6px;
+}
+
+.mainform {
+width:100%;
+}
+
+.header {
+position:relative;
+float:left;
+width:100%;
+}
+
+.artbody {
+position:relative;
+float:left;
+width:100%;
+margin-top:.1em;
+margin-bottom:.1em;
+padding-top:.1em;
+padding-bottom:.1em;
+border-top:1px solid #a34e52;
+}
+
+.header select {
+width:200px;
+font-size:1.2em;
+}
+
+.header label,.artbody label {
+font-size:1.2em;
+margin-right:.3em;
+}
+
+.footer {
+position:absolute;
+top:90%;
+left:1%;
+width:98%;
+border-top:1px solid #a34e52;
+margin-top:3px;
+}
+
+.bigfooter {
+position:absolute;
+top:81%;
+left:1%;
+width:98%;
+border-top:1px solid #a34e52;
+margin-top:3px;
+}
+
+.maintable {
+margin-top:.5em;
+border:1px solid #a34e52;
+background-color:#FFF;
+border-radius:.5em;
+width:98%;
+margin-left:auto;
+margin-right:auto;
+padding:.3em;
+}
+
+.maintable input[type="button"] {
+width:60px;
+border-radius:.2em;
+margin-top:0;
+margin-bottom:0;
+margin-left:20px;
+}
+
+#lblnoofass {
+margin-left:1em;
+}
+
+#menu {
+margin-left:.5em;
+}
+
+#menu ul {
+margin-top:1em;
+padding-left:2px;
+padding-right:2px;
+}
+
+#menu li,#menu li.pressed {
+list-style:none;
+padding:0 2px;
+}
+
+input[type="submit"].discrete {
+border:none;
+width:1px;
+background-color:transparent;
+}
+
+#ltver {
+width:150px;
+}
+
+.focused {
+background-color:#e8d5c5;
+color:#13213b;
+}
+
+.loaded {
+font-weight:700;
+color:#006400;
+}
+
+input[type="button"][value="V"],input[type="button"][value="^"],input[type="button"][value="+"],input[type="button"][value="-"] {
+width:60px;
+font-size:1.2em;
+border-radius:.2em;
+margin-right:20px;
+margin-top:.2em;
+margin-bottom:.2em;
+}
+
+td,th {
+font-weight:700;
+text-align:left;
+white-space:nowrap;
+padding:4px;
+}
+
+th {
+background-color:#a34e52;
+color:#FFF;
+font-size:1em;
+}
+
+td.num {
+text-align:right;
+}
+
+.scanfield {
+font-size:1.5em;
+margin-left:.5em;
+width:300px;
+border:1px solid #a34e52;
+}
+
+.hide {
+display:none;
+z-index:-1;
+}
+
+input[type="text"] {
+font-family:"Palatino Linotype";
+}
+
+input[type="text"]:not(.scanfield) {
+font-size:1.2em;
+width:100px;
+}
+
+.messageshown {
+position:absolute;
+left:45%;
+top:40%;
+text-align:center;
+width:300px;
+display:block;
+color:#8B0000;
+border:solid 3px #8B0000;
+border-radius:.5em;
+background-color:#FFF;
+font-weight:700;
+z-index:3;
+margin:.5em auto .2em;
+padding:10px;
+}
+
+.progress {
+height:40px;
+position:absolute;
+left:45%;
+top:40%;
+font-size:1.5em;
+background-color:#FFF;
+border:3px solid #a34e52;
+border-radius:1em;
+display:block;
+z-index:2;
+margin:auto;
+padding:25px 50px;
+}
+
+.rightadjustedbtn,.rightadjusted {
+position:relative;
+float:right;
+}
