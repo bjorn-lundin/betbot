@@ -6,14 +6,13 @@ project Adabot is
    Sub_System := "bot";
 
    AL    := Global.Abr & "/local";
+   BAWS    := Global.Abr & "/bot_ws";
 
    for Exec_Dir use Global.Bot_Target & "/bin"  ;
 
    for Source_Dirs use (AL & "/" & Sub_System,
-                        AL & "/" & "utils");
---                        ,
---                        AL & "/" & "web/repoweb",
---                        AL & "/" & "web");
+                        AL & "/" & "utils",
+                        BAWS);
 
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
 
@@ -36,6 +35,7 @@ project Adabot is
                     "bet_checker.adb",
                     "data_mover.adb",
                     "graph_data.adb",
+                    "bot_web_server.adb",
                     "check_bot_running.adb"
                     );
 
@@ -46,6 +46,8 @@ project Adabot is
 
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "check_greenup.adb",
+                    "test_date.adb",
+                     --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
     Test_Programs := ();

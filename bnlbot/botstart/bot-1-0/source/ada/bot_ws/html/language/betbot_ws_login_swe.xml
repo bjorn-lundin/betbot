@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<TranslatedTexts>
+  <TranslatedText Id='lblUser' Text='Användare:'/>
+  <TranslatedText Id='lblPassword' Text='Lösenord:'/>
+  <TranslatedText Id='lblMobileType' Text='Mobiltyp:'/>
+  <TranslatedText Id='lblLockMode' Text='Låsmod:'/>
+  <TranslatedText Id='lblStylesheet' Text='Stil:'/>
+  <TranslatedText Id='btnLogin' Text='Logga in'/>
+  <TranslatedText Id='progmessage' Text='Vänta...'/>
+
+</TranslatedTexts>
+

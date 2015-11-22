@@ -26,7 +26,7 @@ else
 endif
 
 
-.PHONY : all adabot log bot race_time
+.PHONY : all adabot log bot race_time ws
 
 all : log 
 
@@ -34,17 +34,21 @@ log :
 	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
 
 race_time : $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT)
-	gnatmake -p -P adabot race_time
+	gprbuild -p -P adabot race_time
 
-bot : $(REPO_ENGINE) adabot
+bot : adabot
 
+ws : 
+	gprbuild -p -P adabot bot_web_server
+    
+repo: $(REPO_ENGINE)   
 
 $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)	
 	$(REPO_ENGINE) --table_makefile > $(TABLE_MAKE_FILE)
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE)
 
 $(REPO_ENGINE) :
-	gnatmake -p -P adabot repo
+	gprbuild -p -P adabot repo
     
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
@@ -61,7 +65,7 @@ $(TARGET_ADA_INFO_SPEC):
 
 adabot : $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
-	gnatmake -p -P adabot
+	gprbuild -p -P adabot
 
 $(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)

@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <title>BetBot</title>
+    <link rel="stylesheet" type="text/css" href="/css/betbot.css" title='Bluegrey'/> 
+<!--
+    <link rel="alternate stylesheet" type="text/css" href="/css/betbot2.css" title='Brown'/>
+    <link rel="alternate stylesheet" type="text/css" href="/css/betbot3.css" title='Pink'/>
+-->
+    <link rel="apple-touch-icon" href="img/sattstore2.png" />
+    <link rel="apple-touch-icon-precomposed" href="img/sattstore2.png" />
+    <link rel="apple-touch-startup-image" href="img/sattstorestartup.png" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, user-scalable=yes">  <!-- allow zooming -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />  <!-- ??? fullscreen mode ??? -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <script src="/js/jquery-1.11.2.min.js"></script>
+    <script src="/js/betbot_common.js"></script>
+    <script src="/js/betbot.js"></script>
+  </head>
+  <body>  
+
+  <div id='login' class='mainform'>
+      <div id='loginPage'>
+      <h1>BetBot <span id='host1'>&nbsp;</span></h1>
+      <form id='loginForm' onsubmit="return Login()">
+        <table>
+        <tr><td><label id='lblUser' for='selUser'>Anv&auml;ndare:</label></td>
+            <td>
+            <input type="radio" id="selUserbnl" name="selUser" value="bnl" checked>Björn<br>
+            <input type="radio" id="selUserjmb" name="selUser" value="jmb">Joakim<br>
+            <input type="radio" id="selUsermsm" name="selUser" value="msm">Mats<br>
+            
+<!--            
+            <select id='selUser'>
+                  <option value="bnl">bnl</option>
+                  <option value="jmb">jmb</option>
+                  <option value="msm">msm</option>
+                </select>
+-->                
+            </td>
+          </tr>
+        <tr><td>&nbsp;</td><td><input type="submit"  id='btnLogin' value="Login" /> </td></tr> 
+        </table>
+      </form>
+      </div>
+    </div>
+
+    
+    <div id='reportTodaysBetPage' class='mainform'>
+      <h1>Dagens spel</h1> 
+      <input type="button" id='btn1Menu' value="Meny" onclick="switchTo('menu', false)"/>         
+      
+      <div id='reportTodaysBetTotal' class='mainform'>
+      </div>
+      <div id='reportTodaysBetTable' class='mainform'>
+      </div>
+    </div>
+    
+    <div id='reportYesterdaysBetPage' class='mainform'>
+      <h1>Gårdagens spel</h1> 
+      <input type="button" id='btn1Menu' value="Meny" onclick="switchTo('menu', false)"/>         
+      <div id='reportYesterdaysBetTotal' class='mainform'>
+      </div>      
+      <div id='reportYesterdaysBetTable' class='mainform'>
+      </div>
+    </div>
+        
+    <div id='reportThisWeeksBetPage' class='mainform'>
+      <h1>Denna veckas spel</h1> 
+      <input type="button" id='btn3Menu' value="Meny" onclick="switchTo('menu', false)"/>         
+      <div id='reportThisWeeksBetTotal' class='mainform'>
+      </div>
+      <div id='reportThisWeeksBetTable' class='mainform'>
+      </div>
+    </div>
+    
+    <div id='menu' class='mainform'>
+      <h1>BetBot meny</h1> 
+      <ul>
+        <li id='selectReportToday'><input type='button' id='menuReportToday' Value='Idag'onclick='doReportToday()'></li>
+        <li id='selectReportYesterday'><input type='button' id='menuReportYesterday' Value='Igår' onclick='doReportYesterday()'></li>
+        <li id='selectReportThisWeek'><input type='button' id='menuReportThisWeek' Value='Denna vecka' onclick='doReportThisWeek()'></li>
+      </ul>
+    </div>
+
+
+  	<div id='loading' class='hide'><span id="progmessage">V&auml;nta...</span></div>  <!-- for loading message -->
+  	<div id='message' class='hide'><span id='msgtext'>&nbsp;</span>                   <!-- for error/info/warning message -->
+      <br><input type='button' id='closemessage' value='Close' onclick='closeMessage()'>
+    </div>  <!-- for error/info/warning message -->
+
+    <div id='holder' class='hide'>
+    <span id='wrongcheckfigure'>Wrong verification</span>
+    <span id='noassignments'>No assignment</span>
+    <span id='assalreadyloaded'>Assignment already loaded</span>
+    <span id='assloadednoswitch'>Assignment loaded, can't switch</span>
+    <span id='assloaded'>Assignment loaded</span>
+
+    </div>  <!-- holder -->
+    
+  </body>
+</html>
