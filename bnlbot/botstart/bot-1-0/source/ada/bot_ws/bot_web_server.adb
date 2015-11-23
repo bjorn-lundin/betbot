@@ -308,8 +308,8 @@ begin
   AWS.Config.Set.Log_File_Directory      (O => Config, Value => Ev.Value("BOT_HOME") );
   AWS.Config.Set.Reuse_Address           (O => Config, Value => True);   
   AWS.Config.Set.WWW_Root                (O => Config, Value => Ev.Value("BOT_SOURCE") & "/ada/bot_ws/html");
-  AWS.Config.Set.Security                (O => Config, Value => True); 
-  AWS.Config.Set.Certificate             (O => Config, Filename => EV.Value("BOT_CONFIG") & "/sslcert/cert.pem");
+--  AWS.Config.Set.Security                (O => Config, Value => True); 
+--  AWS.Config.Set.Certificate             (O => Config, Filename => EV.Value("BOT_CONFIG") & "/sslcert/cert.pem");
   
   
   Logging.Log(Me, "WWW_Root: " & AWS.Config.WWW_Root(O => Config));
