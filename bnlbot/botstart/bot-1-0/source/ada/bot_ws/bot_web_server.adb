@@ -140,8 +140,20 @@ procedure Bot_Web_Server is
   end Put;
    --------------------------------------
   function Post (Request : in AWS.Status.Data) return AWS.Response.Data is
+     Params     : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
+     Username   : constant String := AWS.Parameters.Get(Params,"username");  
+     Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
+     Service    : constant String := "Post";
+     Application_JSON : constant String := "application/json"; 
+     Response   : AWS.Response.Data;
    begin
-    return Do_Service(Request, "Post");
+     Logging.Log(Service, "Username: '" & Username & "'" );
+     AWS.Session.Set (Session_ID, "username", Username);
+     Response := Aws.Response.Build (Application_JSON, 
+                                   Bot_Ws_Services.Operator_Login(Username => Username,
+                                                                  Password => "",
+                                                                  Context  => "login"));
+    return Response;
   end Post;
    --------------------------------------
   function Get (Request : in AWS.Status.Data) return AWS.Response.Data is
@@ -226,22 +238,18 @@ procedure Bot_Web_Server is
      use type AWS.Status.Request_Method;
 
      Answer : AWS.Response.Data;
-     URI    : constant String := AWS.Status.URI(Request);
-     pragma Warnings(Off, URI);
+     URI    : constant String                    := AWS.Status.URI(Request);
+     Req    : constant AWS.Status.Request_Method := AWS.Status.Method(Request);
   begin
       Semaphore.Lock;      
-      
-      if AWS.Status.Method (Request) = AWS.Status.GET then
-        Answer := Get (Request);
-      elsif AWS.Status.Method (Request) = AWS.Status.POST then
-        Answer := Post (Request);
-      elsif AWS.Status.Method (Request) = AWS.Status.HEAD then
-        Answer := Head (Request);
-      elsif AWS.Status.Method (Request) = AWS.Status.PUT then
-        Answer := Put (Request);
-      else
-        Answer := Unknown (Request);
-      end if;
+      Logging.Log("Service", Req'Img & " " & URI);
+      case Req is
+        when AWS.Status.GET  =>  Answer := Get (Request);
+        when AWS.Status.POST =>  Answer := Post (Request);
+        when AWS.Status.HEAD =>  Answer := Head (Request);
+        when AWS.Status.PUT  =>  Answer := Put (Request);
+        when others          =>  Answer := Unknown (Request);
+      end case;
       Semaphore.Release;
       return Answer;
   exception
@@ -289,7 +297,7 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+  Logging.Open(EV.Value("BOT_TARGET") & "/log/" & EV.Value("BOT_NAME") & ".log");
   
   Logging.Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
