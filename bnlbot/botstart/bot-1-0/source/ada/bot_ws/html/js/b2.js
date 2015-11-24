@@ -11,25 +11,27 @@ $(document).on('pageinit', '#login', function(){
                 // Send data to server through the Ajax call
                 // action is functionality we want to call and outputJSON is our data
                     $.ajax({url: 'login',
-                        data: {action : 'login', formData : $('#loginform').serialize()},
+                        data: $('#loginform').serialize(),
                         type: 'post',                   
                         async: 'true',
                         dataType: 'json',
                         beforeSend: function() {
                             // This callback function will trigger before data is sent
                             console.log("beforeSend");
+                            $.mobile.loading( "show" );
                         },
                         complete: function() {
                             // This callback function will trigger on data sent/received complete
                             console.log("complete");
+                            $.mobile.loading( "hide" );
                         },
                         success: function (result) {
                             console.log("success");
                             if(result.result == "OK") {
-                                console.log("success OK");
-                                $.mobile.changePage("#menu");                         
+                               console.log("success OK");
+                               $.mobile.changePage("#menu");                         
                             } else {
-                                console.log("success NOT OK");
+                               console.log("success NOT OK");
                             }
                         },
                         error: function (request,error) {
