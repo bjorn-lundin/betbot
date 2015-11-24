@@ -95,6 +95,12 @@ function Check_Bots_For_User () {
   #INI_NAME=$4
   #MODE=$5
   #all need this one
+  
+
+  if [ $BOT_USER == "bnl" ] ; then
+    Start_Bot $BOT_USER bot_ws bot_web_server
+  fi 
+  
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
 
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
@@ -149,7 +155,7 @@ function Check_Bots_For_User () {
     for collector in $DATA_COLLECTORS_LIST ; do
       Start_Bot $BOT_USER $collector poll_market
     done
-
+    
   fi
 
   #zip logfiles every hour, on minute 17 in the background
@@ -274,7 +280,7 @@ case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
     USER_LIST=$(ls $BOT_START/user)
-    USER_LIST_PLAYERS_ONLY="bnl jmb"
+    USER_LIST_PLAYERS_ONLY="bnl jmb msm"
 
     HOST=db.nonodev.com
     for USR in $USER_LIST ; do

@@ -132,6 +132,7 @@ proc Traverse_Directories {f} {
 	    }
         
     } elseif {[file isfile $f]} {
+        Dbg "found $f"
         set Is_Log_File_Cir [regexp {([0-9]){2}_([A-Za-z]){3}_([0-9]){4}_([0-9]){2}_([0-9]){2}_([0-9]){2}_([0-9]){3}.cir} \
 	                         $f all    day        month         year       hour       minute     second    millsecond]
         set Is_Log_File_Log_Type_I [regexp {([0-9]){8}_([0-9]){9}.log} \
@@ -173,6 +174,7 @@ proc Traverse_Directories {f} {
             }
         #1952    
         } elseif  {$Is_Log_File_Log_Type_III} { 
+             Dbg " is type III found $f"
              #this is an aws log file, do not zip/move the one with current date 
             set Modified [file mtime $f]
             set Timediff [expr [clock seconds] - $Modified ]
@@ -207,6 +209,7 @@ proc Traverse_Directories {f} {
 set ::Compressor [Find_Zip_Utility]
 set This_Pwd [pwd]
 Traverse_Directories $::env(BOT_HOME)
+Traverse_Directories $::env(BOT_TARGET)
 cd $This_Pwd
 #Dbg "Stop"
 
