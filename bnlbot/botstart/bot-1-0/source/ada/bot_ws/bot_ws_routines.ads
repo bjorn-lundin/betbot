@@ -8,23 +8,14 @@
 --
 --	DESCRIPTION	Global Mobile WebServer routines
 --
--------------------------------------------------------------------------------
---Version     Author    Date      Description
+
 --------------------------------------------------------------------------------
---            AEA       11-Jan-13  Original version
---------------------------------------------------------------------------------
-with Sattmate_Types; use Sattmate_Types;
+with Types; use Types;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Unicode;
 with Unicode.CES;
 
 package Mobile_Ws_Routines is
-
-  -- Get the directory for the exexutable file
-  function Get_ExeDirectory return String;
-
-  -- Get the directory delimiter
-  function Get_Delimiter return Character;
 
   -- Move an unbounded string to a string of fixed length
   function Move_Unbounded(Us : in Unbounded_String; Length : in positive) return String;
@@ -51,11 +42,5 @@ package Mobile_Ws_Routines is
 
   --Converts an unbounded string to lowercase
   function To_Lower(Us : in Unbounded_String) return Unbounded_String;
-
-  function Get_File_Name(URI : in String) return String;
-
-  function Get_File_Type(URI : in String) return String;
-
-  function Format_Hour(H : in Integer_4) return String;
 
 end Mobile_Ws_Routines;

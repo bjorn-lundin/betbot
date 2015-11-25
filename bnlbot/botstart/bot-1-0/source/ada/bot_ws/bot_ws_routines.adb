@@ -1,55 +1,14 @@
 ------------------------------------------------------------------------------
 --
---	COPYRIGHT	Consafe Logistics AB
---
---	FILE NAME	Mobile_Ws_ROUTINES.ADB
---
---	RESPONSIBLE	Ann-Charlotte Andersson
---
---	DESCRIPTION	Global Mobile WebServer routines
---
--------------------------------------------------------------------------------
---Version     Author    Date      Description
---------------------------------------------------------------------------------
---            AEA       11-Dec-13 Original version
---------------------------------------------------------------------------------
-with System_Services;
+
 with Ada.Directories;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
 with Ada.Characters.Handling;
 with Unicode.Encodings;
-with General_Routines;
-with Mobile_Ws_Config;
 
 package body Mobile_Ws_Routines is
-
-  --============================================================================
-  -- Get the directory for the exexutable file
-  --============================================================================
-  function Get_ExeDirectory return String is
-    S : constant String := Ada.Directories.Containing_Directory(System_Services.Get_Executable_File_Name);
-  begin
-    if (S(S'Last) = Get_Delimiter) then
-      return S(S'First..S'Last -1);
-    else
-      return S;
-    end if;
-  end Get_ExeDirectory;
-
-  --============================================================================
-  -- Get the directory delimiter
-  --============================================================================
-  function Get_Delimiter return Character is
-    use System_Services;
-  begin
-    if System_Services.Operating_System = System_services.Win32 then
-      return '\';
-    else
-      return '/';
-    end if;
-  end Get_Delimiter;
 
   --============================================================================
   -- Move an unbounded string to a fixed of specified length
@@ -67,7 +26,7 @@ package body Mobile_Ws_Routines is
   --============================================================================
   function Move_Unbounded(Us : in Unbounded_String) return integer_4 is
   begin
-  if Ada.Strings.Fixed.Trim(To_String(Us), Ada.Strings.Left) = "" then
+    if Ada.Strings.Fixed.Trim(To_String(Us), Ada.Strings.Left) = "" then
       return 0;
     else
       return integer_4'value(To_String(Us));
@@ -123,43 +82,12 @@ package body Mobile_Ws_Routines is
   begin
     return To_Unbounded_String(To_Lower(To_String(Us)));
   end To_Lower;
-  --============================================================================
-  -- Get the full filename from an URI
-  --============================================================================
-  function Get_File_Name(URI : in String) return String is
-  begin
-    return System_Services.Fix_Path(Mobile_Ws_Config.Get_Docroot & '\' & URI);
-  end Get_File_Name;
 
   --============================================================================
   -- Get the filetype from an URI
   --============================================================================
-  function Get_File_Type(URI : in String) return String is
-    use Ada.Characters.Handling;
-    POS : Integer := General_Routines.Position(URI, ".");
-  begin
-    if (POS > URI'First-1) then
-      declare
-        File_Type : constant string := URI(POS+1..URI'Last);
-      begin
-        return To_Lower(File_Type);
-      end;
-    end if;
-    return "";
-  end Get_File_Type;
+ 
 
-  --============================================================================
-  -- Format a hour value to a two-character string
-  --============================================================================
-  function Format_Hour(H : in Integer_4) return String is
-    S : String := Ada.Strings.Fixed.Trim(Integer_4'Image(H), Ada.Strings.Left);
-  begin
-    if H<10 then
-      return '0'& S;
-    else
-      return S;
-    end if;
-  end Format_Hour;
   --============================================================================
   -- Convert a string value to ISOLATIN
   --============================================================================
