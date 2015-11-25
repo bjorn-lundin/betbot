@@ -71,7 +71,7 @@ procedure Bot_Web_Server is
     use Calendar2;
 
     Params     : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
-    Mode       : constant String := AWS.Parameters.Get(Params,"mode");
+    Context    : constant String := AWS.Parameters.Get(Params,"context");
     Action     : constant String := AWS.Parameters.Get(Params,"action");
     Response   : AWS.Response.Data;
     Start      : Calendar2.Time_Type := Calendar2.Clock;
@@ -81,11 +81,11 @@ procedure Bot_Web_Server is
     Application_JSON : constant String := "application/json"; 
     
   begin
-    Logging.Log(Service, "Method : " & Method & " Mode : " & Mode & " Action : " & Action );
+    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Action : " & Action );
     Logging.Log(Service, "Param0 : " & AWS.Parameters.Get(Params,"param0") &
                          " Param1 : " & AWS.Parameters.Get(Params,"param1") &
                          " Param2 : " & AWS.Parameters.Get(Params,"param2"));
-    if Mode /= "login" then                    
+    if Context /= "login" then                    
       Sql.Connect
         (Host     => Ini.Get_Value("database", "host", ""),
          Port     => Ini.Get_Value("database", "port", 5432),
@@ -94,7 +94,7 @@ procedure Bot_Web_Server is
          Password =>Ini.Get_Value("database", "password", ""));
     end if;                     
                          
-    if Mode="login" then
+    if Context="login" then
       -- here we get the username for the first time. 
       -- it is in param0
       -- set it in session variable
@@ -105,28 +105,32 @@ procedure Bot_Web_Server is
         Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Operator_Login(Username => Username,
                                                                      Password => AWS.Parameters.Get(Params,"param1"),
-                                                                     Context  => Mode));
+                                                                     Context  => Context));
       end ;                                                               
-    elsif Mode="logout" then
+    elsif Context="logout" then
       Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Operator_Logout(Username =>  AWS.Session.Get(Session_ID, "username"),
-                                                                      Context  => Mode)); 
-    elsif Mode="todays_bets" then
+                                                                      Context  => Context)); 
+    elsif Context="todays_bets" then
       Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
-                                                                   Context  => Mode)); 
-    elsif Mode="yesterdays_bets" then
+                                                                   Context  => Context)); 
+    elsif Context="yesterdays_bets" then
       Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
-                                                                   Context  => Mode)); 
-    elsif Mode="thisweeks_bets" then
+                                                                   Context  => Context)); 
+    elsif Context="thisweeks_bets" then
       Response := Aws.Response.Build (Application_JSON, 
                                       Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
-                                                                   Context  => Mode)); 
+                                                                   Context  => Context)); 
+    elsif Context="lastweeks_bets" then
+      Response := Aws.Response.Build (Application_JSON, 
+                                      Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                                                   Context  => Context)); 
     else
       Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
     end if;
-    Logging.Log(Service, " Mode : " & Mode & " Action : " & Action & 
+    Logging.Log(Service, " Context : " & Context & " Action : " & Action & 
                                         " Time consumed " &  
                                         String_Interval(Calendar2.Clock - Start, Days => False));
     Sql.Close_Session;
@@ -161,15 +165,15 @@ procedure Bot_Web_Server is
       use type Ada.Directories.File_Kind;
       URI    : constant String := AWS.Status.URI(Request);
       Params : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
-      Mode   : constant String := AWS.Parameters.Get(Params,"mode");
+      Context: constant String := AWS.Parameters.Get(Params,"context");
       Action : constant String := AWS.Parameters.Get(Params,"action");
   begin
-    Logging.Log("Get", "Method : Get" & " Mode : " & Mode & " Action: " & Action & " URI:" & URI);
-    if (Mode = "" and URI /= "") then
+    Logging.Log("Get", "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
+    if (Context = "" and URI /= "") then
       if (URI = "/") then
-        Logging.Log("Get", "Returning file : betbot.html");
+        Logging.Log("Get", "Returning file : betbottest.html");
         return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
-                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
+                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbottest.html");
       else
         declare
           Filename     : constant String := URI (2 .. URI'Last);

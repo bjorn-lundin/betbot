@@ -1,0 +1,10 @@
+
+
+th {
+   border-bottom: 1px solid #d6d6d6;
+}
+
+
+tr:nth-child(odd) {
+    background: #d0e4fe;
+}

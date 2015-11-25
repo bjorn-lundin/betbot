@@ -1,6 +1,4 @@
-
-
---------------------------------------------------------------------------------
+with Types; use Types;
 --with Ada.Exceptions;
 with Sql;
 with Calendar2;
@@ -169,8 +167,38 @@ package body Bot_Ws_Services is
             Start:= Start - (6,0,0,0,0);
         end case ;
       end;       
+    elsif Context = "lastweeks_bets" then
+      declare
+        Dow : Week_Day_Type := Week_Day_Of (Start) ;
+      begin
+        case Dow is
+          when Monday => 
+            Stop := Stop  + (6+7,0,0,0,0);
+          when Tuesday => 
+            Start:= Start - (1+7,0,0,0,0);
+            Stop := Stop  + (5+7,0,0,0,0);
+          when Wednesday => 
+            Start:= Start - (2+7,0,0,0,0);
+            Stop := Stop  + (4+7,0,0,0,0);
+          when Thursday => 
+            Start:= Start - (3+7,0,0,0,0);
+            Stop := Stop  + (3+7,0,0,0,0);
+          when Friday => 
+            Start:= Start - (4+7,0,0,0,0);
+            Stop := Stop  + (2+7,0,0,0,0);
+          when Saturday => 
+            Start:= Start - (5+7,0,0,0,0);
+            Stop := Stop  + (1+7,0,0,0,0);
+          when Sunday => 
+            Start:= Start - (6+7,0,0,0,0);
+        end case ;
+      end;       
     else 
-      raise Constraint_Error with "bad context '" & Context & "'"; 
+      JSON_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
+      JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+      JSON_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
+      Log(Object & Service, "Return " & JSON_Reply.Write);
+      return JSON_Reply.Write;
     end if;
     
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
@@ -193,11 +221,11 @@ package body Bot_Ws_Services is
       begin   
         Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(B.Betname));
         Bet.Set_Field (Field_Name => "marketid",     Field => B.Marketid);
-        Bet.Set_Field (Field_Name => "betwon",       Field => B.Betwon);
+        Bet.Set_Field (Field_Name => "won",          Field => B.Betwon);
         Bet.Set_Field (Field_Name => "profit",       Field => Float(B.Profit));
         Bet.Set_Field (Field_Name => "betplaced",    Field => B.Betplaced.String_Date_And_Time(Milliseconds => True));
-        Bet.Set_Field (Field_Name => "pricematched", Field => Float(B.Pricematched));
-        Bet.Set_Field (Field_Name => "sizematched",  Field => Float(B.Sizematched));
+        Bet.Set_Field (Field_Name => "pm",           Field => Float(B.Pricematched));
+        Bet.Set_Field (Field_Name => "sm",           Field => Float(B.Sizematched));
         Append(Bets, Bet);
       end ;  
     end loop;

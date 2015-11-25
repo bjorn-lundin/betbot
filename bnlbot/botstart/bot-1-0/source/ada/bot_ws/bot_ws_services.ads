@@ -1,6 +1,4 @@
 ------------------------------------------------------------------------------
---with AWS.Session;
-with Types; use Types;
 
 package Bot_Ws_Services is
 

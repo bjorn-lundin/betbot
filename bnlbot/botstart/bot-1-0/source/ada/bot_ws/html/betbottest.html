@@ -1,51 +1,74 @@
 <!doctype html>
-<html lang="sv">
-<head>
-  <title>Multipage example</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-  <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-  <script src="/js/b2.js"></script>
-  
-</head>
-<body>
-  <div data-role="page" id="login">
-    <div data-role="header">
-      <h1>Login</h1>
+<html lang='sv'>
+  <head>
+    <title>Bot mobile web</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <link rel='stylesheet' href='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css' />
+    <link rel="stylesheet" type="text/css" href="/css/local_fixes.css" title='local_fixes'/> 
+    <script src='//code.jquery.com/jquery-1.10.2.min.js'></script>
+    <script src='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js'></script>
+    <script src='/js/b2.js'></script>
+    
+  </head>
+  <body>
+      <!-- dialog for login -->    
+    <div data-role='page' id='login' data-dialog='true'>
+      <div data-role='header'>
+        <h1>Login</h1>
+      </div>
+      <div data-role='main' class='ui-content'>
+        <form id='loginform' data-ajax='false'>
+          <fieldset data-role='controlgroup'>
+            <legend>Välj användare</legend>
+              <label for='bnl'>Björn</label>
+              <input type='radio' name='username' id='bnl' value='bnl' checked>
+              <label for='jmb'>Joakim</label>
+              <input type='radio' name='username' id='jmb' value='jmb'>
+              <label for='msm'>Mats</label>
+              <input type='radio' name='username' id='msm' value='msm'>
+          </fieldset>
+          <input type='button' data-theme='b' name='submit' id='submit' value='Logga in'>
+        </form>
+      </div>
+      <div data-role='footer'>
+        <h2>Björntjänst Betting</h2>
+      </div>
     </div>
-    <div role="main" class="ui-content">
-      <form id='loginform' data-ajax="false">
-        <fieldset data-role="controlgroup">
-          <legend>Välj användare</legend>
-            <label for="bnl">Björn</label>
-            <input type="radio" name="username" id="bnl" value="bnl" checked>
-            <label for="jmb">Joakim</label>
-            <input type="radio" name="username" id="jmb" value="jmb">
-            <label for="msm">Mats</label>
-            <input type="radio" name="username" id="msm" value="msm">
-        </fieldset>
-        <input type="button" data-theme="b" name="submit" id="submit" value="Logga in">
-      </form> 
-    </div>
-    <div data-role="footer">
-      <h1>Footer Text</h1>
-    </div>  
-  </div>
   
-  
-  
-  <div data-role="page" id="menu">
-    <div data-role="header">
-      <h1>Page 2</h1>
+    <!-- page for manu -->    
+    <div data-role='page' id='menu'>
+      <div data-role='header'>
+        <h1>Meny</h1>
+        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt användare</a>
+      </div>
+      <div data-role='main' class='ui-content'>
+        <ul data-role='listview' data-inset='true'>
+          <li><a href='#viewer' id='todays'>Dagens spel</a></li>
+          <li><a href='#viewer' id='yesterday'>Gårdagens spel</a></li>
+          <li><a href='#viewer' id='thisweek'>Denna veckas spel</a></li>
+          <li><a href='#viewer' id='lastweek'>Förra veckans spel</a></li>
+        </ul>
+      </div>
+      <div data-role='footer'>
+        <h1>Björntjänst Betting</h1>
+      </div>
     </div>
-    <div role="main" class="ui-content">
-      <a href="#login" data-rel="back" data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline">Login</a>
-    </div>
-  <div data-role="footer">
-    <h1>Footer Text</h1>
-  </div>
-</div> 
 
-</body>
+    <!-- page for resultset -->    
+    <div data-role='page' id='viewer'>
+      <div data-role='header'>
+        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt användare</a>
+        <h1>Resultat</h1>
+        <a href='#menu' class='ui-btn ui-corner-all ui-shadow ui-icon-home ui-btn-icon-left'>Meny</a>
+      </div>
+      <div data-role='main' class='ui-content' id='viewer_content'>
+       <!-- total and result-table will be placed here -->
+      </div>
+      <div data-role='footer'>
+        <h1>Björntjänst Betting</h1>
+      </div>
+    </div>
+
+    
+  </body>
 </html>
