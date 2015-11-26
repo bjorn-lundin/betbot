@@ -274,12 +274,14 @@ Public Class BaseNavigatorForm
   End Function
 
   Private Sub tabControlOverview_Selected(sender As Object, e As System.Windows.Forms.TabControlEventArgs) Handles tabControlOverview.Selected
-    Dim o As IOverviewComponent = GetTabPageOverviewComponent(e.TabPage)
+    If (Not Me.DesignMode) Then
+      Dim o As IOverviewComponent = GetTabPageOverviewComponent(e.TabPage)
 
-    If (o IsNot Nothing) Then
-      o.NodeChangeHandler(_CurrentNodeChangeObject.NodeLevel, _CurrentNodeChangeObject.KeyObject)
+      If (o IsNot Nothing) Then
+        o.NodeChangeHandler(_CurrentNodeChangeObject.NodeLevel, _CurrentNodeChangeObject.KeyObject)
+      End If
+
     End If
-
   End Sub
 
   Private Sub Navigator_NodeExpand(sender As Object, e As BaseTree.NodeChangeEventArgs) Handles Navigator.NodeExpand

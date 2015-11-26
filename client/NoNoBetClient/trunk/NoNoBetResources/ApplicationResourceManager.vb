@@ -30,6 +30,13 @@ Public Class ApplicationResourceManager
     End Set
   End Property
 
+  Public Shared Function ConvertToInteger(value As String) As Integer
+    If (String.IsNullOrWhiteSpace(value)) Then
+      Return 0
+    Else
+      Return Convert.ToInt32(value)
+    End If
+  End Function
 
   Public Shared Function ConvertToInteger(value As Object) As Integer
     If (value Is Nothing) Then
@@ -47,11 +54,27 @@ Public Class ApplicationResourceManager
     End If
   End Function
 
+  Public Shared Function ConvertToDecimal(value As String) As Decimal
+    If (String.IsNullOrWhiteSpace(value)) Then
+      Return Decimal.Zero
+    Else
+      Return Convert.ToDecimal(value)
+    End If
+  End Function
+
   Public Shared Function ConvertToDecimal(value As Object) As Decimal
     If (value Is Nothing) Then
       Return Decimal.Zero
     Else
       Return Convert.ToDecimal(value)
+    End If
+  End Function
+
+  Public Shared Function ConvertToDouble(value As String) As Double
+    If (String.IsNullOrWhiteSpace(value)) Then
+      Return 0.0
+    Else
+      Return Convert.ToDouble(value)
     End If
   End Function
 
