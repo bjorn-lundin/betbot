@@ -15,6 +15,12 @@ package Config is
       Back_1_10_20_1_2_WIN, 
       Back_1_10_16_1_2_WIN, 
       Back_1_10_13_1_2_WIN, 
+      Back_1_10_30_1_2_PLC, 
+      Back_1_10_26_1_2_PLC, 
+      Back_1_10_23_1_2_PLC, 
+      Back_1_10_20_1_2_PLC, 
+      Back_1_10_16_1_2_PLC, 
+      Back_1_10_13_1_2_PLC, 
       Lay_160_200,
       Lay_1_10_25_4 
   );

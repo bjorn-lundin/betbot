@@ -107,6 +107,12 @@ procedure Poll is
       when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_008");
       when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_009");
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_10_30_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_011"); 
+      when Back_1_10_26_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_012"); 
+      when Back_1_10_23_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_013"); 
+      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_014"); 
+      when Back_1_10_16_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_015"); 
+      when Back_1_10_13_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_016"); 
     end case;
   end Get_Bet_Placer;
 
@@ -301,6 +307,7 @@ procedure Poll is
     Bettype         : Config.Bet_Type;
     BR              : Best_Runners_Array_Type;
     Marketid        : Market_Id_Type;
+    Place_Marketid  : Market_Id_Type;
     Min_Price       : String ;
     Match_Directly : Boolean := False) is
 
@@ -311,6 +318,8 @@ procedure Poll is
     Next_Place      : Integer;
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
+    
+    Do_Place_Bet : Boolean := False;
   begin       --1
    --  12345678901234567890
    --  Back_1_10_20_1_4_WIN
@@ -322,6 +331,11 @@ procedure Poll is
     Min_Backprice_n := Float_8'Value(Image(11..12));
     Backed_Place := Integer'Value(Image(14..14));
     Next_Place := Integer'Value(Image(16..16));
+    
+    if Image(18..20) = "WIN" then
+      Do_Place_Bet := True;
+    end if;
+    
     
     case Bettype is
       when Back_1_50_30_1_4_PLC => Min_Backprice_1 := 1.41;
@@ -346,6 +360,21 @@ procedure Poll is
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
                Match_Directly  => Match_Directly);
+               
+      -- for each WIN bet, make a place bet too         
+      if Do_Place_Bet then
+        declare
+          Place_Bet_Type : Config.Bet_Type := Config.Bet_Type'Value(Image(1..17) & "PLC");
+        begin
+          Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
+                   Main_Bet        => Place_Bet_Type,
+                   Place_Market_Id => Place_Marketid,
+                   Receiver        => Get_Bet_Placer(Place_Bet_Type),
+                   Min_Price       => "1.01",
+                   Match_Directly  => Match_Directly);
+        end;
+      end if;
+               
     end if;
   end Try_To_Make_Back_Bet;
   -------------------------------------------------------------------------------------------------------------------
@@ -370,7 +399,8 @@ procedure Poll is
     Worst_Runner      : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
 
     Eos               : Boolean := False;
-    Markets           : array (Market_Type'range) of Table_Amarkets.Data_Type;
+    type Markets_Array_Type is array (Market_Type'range) of Table_Amarkets.Data_Type; 
+    Markets           : Markets_Array_Type;
     Found_Place       : Boolean := True;
     T                 : Sql.Transaction_Type;
     Current_Turn_Not_Started_Race : Integer_4 := 0;
@@ -569,11 +599,12 @@ procedure Poll is
                 end if;  
                 if Do_Try_Bet then
                   Try_To_Make_Back_Bet (
-                        Bettype   => i,
-                        BR        => Best_Runners,
-                        Marketid  => Markets(M_Type).Marketid,
-                        Min_Price => To_String(Cfg.Bet(i).Min_Price),
-                        Match_Directly => Match_Directly);
+                        Bettype         => i,
+                        BR              => Best_Runners,
+                        Marketid        => Markets(M_Type).Marketid,
+                        Place_Marketid  => Markets(Place).Marketid,
+                        Min_Price       => To_String(Cfg.Bet(i).Min_Price),
+                        Match_Directly  => Match_Directly);
                 end if;        
               end;              
           end case;
