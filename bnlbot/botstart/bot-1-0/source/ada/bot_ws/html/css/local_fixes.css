@@ -5,6 +5,6 @@ th {
 }
 
 
-tr:nth-child(odd) {
+tr:nth-child(even) {
     background: #d0e4fe;
 }
