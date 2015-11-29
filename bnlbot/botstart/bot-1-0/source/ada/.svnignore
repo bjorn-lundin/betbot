@@ -1,0 +1,11 @@
+*.sql
+tables
+bot_svn_info.ads
+obsolete
+c_constants.ads
+xmlada_gpl
+make.log
+svn.info
+
+
+
