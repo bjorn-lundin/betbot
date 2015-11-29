@@ -4,6 +4,8 @@ with Ada.Strings.Fixed;
 with Ada.Characters;
 with Ada.Environment_Variables;
 with Ada.Characters.Handling;  use Ada.Characters.Handling;
+with Unicode.Encodings;
+
 --with Text_Io;
 
 package body Utils is
@@ -140,5 +142,35 @@ package body Utils is
       return Result;
    end Upper_Case;  
    -------------------------------------
-  
+   
+
+  -- Convert a string value to ISOLATIN
+  --============================================================================
+  function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is
+    use Unicode.Encodings;
+  begin
+    return  Convert(Str  => Str,
+                    From => Get_By_Name("utf-8"),
+                    To   => Get_By_Name("iso-8859-15"));
+  exception
+    when Unicode.CES.Invalid_Encoding => return Str;
+  end To_Iso_Latin_15;
+
+  --============================================================================
+  -- Convert a string value to UTF8
+  --============================================================================
+  function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String is
+    use Unicode.Encodings;
+  begin
+    return  Convert(Str  => Str,
+                    From => Get_By_Name("iso-8859-15"),
+                    To => Get_By_Name("utf-8"));
+  exception
+    when Unicode.CES.Invalid_Encoding => return Str;
+  end To_Utf8;
+
+   
 end Utils;
+
+
+
