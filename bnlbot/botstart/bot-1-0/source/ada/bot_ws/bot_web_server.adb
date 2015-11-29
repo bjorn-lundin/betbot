@@ -31,7 +31,7 @@ with Ini;
 with Lock;
 with Posix;
 with Bot_Svn_Info;
-
+with Binary_Semaphores;
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
 
@@ -45,26 +45,7 @@ procedure Bot_Web_Server is
   My_Lock         : Lock.Lock_Type;
   
    --===========================================================================
-  protected Semaphore is
-    entry Lock;
-    procedure Release;
-  private
-    Busy : Boolean := False;
-  end Semaphore;
-  --===========================================================================
-
-  --===========================================================================
-  protected body Semaphore is
-    entry Lock when not Busy is
-    begin
-      Busy := True;
-    end Lock;
-    procedure Release is
-    begin
-      Busy := False;
-    end Release; 
-  end Semaphore;
-  --===========================================================================
+   Semaphore : Binary_Semaphores.Semaphore_Type;
 
   function Do_Service(Request : in AWS.Status.Data;
                       Method  : in String) return AWS.Response.Data is
@@ -72,67 +53,52 @@ procedure Bot_Web_Server is
 
     Params     : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
     Context    : constant String := AWS.Parameters.Get(Params,"context");
-    Action     : constant String := AWS.Parameters.Get(Params,"action");
     Response   : AWS.Response.Data;
     Start      : Calendar2.Time_Type := Calendar2.Clock;
     Service    : constant String := "Do_Service";
     Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
-    
+    Username   : constant String := AWS.Session.Get(Session_ID, "username");
     Application_JSON : constant String := "application/json"; 
     
   begin
-    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Action : " & Action );
+    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : " & Username );
     Logging.Log(Service, "Param0 : " & AWS.Parameters.Get(Params,"param0") &
                          " Param1 : " & AWS.Parameters.Get(Params,"param1") &
                          " Param2 : " & AWS.Parameters.Get(Params,"param2"));
-    if Context /= "login" then                    
-      Sql.Connect
-        (Host     => Ini.Get_Value("database", "host", ""),
-         Port     => Ini.Get_Value("database", "port", 5432),
-         Db_Name  =>  AWS.Session.Get(Session_ID, "username"), -- bnl/jmb/msm
-         Login    => Ini.Get_Value("database", "username", ""), -- always bnl
-         Password =>Ini.Get_Value("database", "password", ""));
-    end if;                     
+    Sql.Connect
+      (Host     => Ini.Get_Value("database", "host", ""),
+       Port     => Ini.Get_Value("database", "port", 5432),
+       Db_Name  => Username,                                  -- bnl/jmb/msm
+       Login    => Ini.Get_Value("database", "username", ""), -- always bnl
+       Password => Ini.Get_Value("database", "password", ""));
                          
-    if Context="login" then
-      -- here we get the username for the first time. 
-      -- it is in param0
-      -- set it in session variable
-      declare 
-        Username   : constant String := AWS.Parameters.Get(Params,"param0");  
-      begin
-        AWS.Session.Set (Session_ID, "username", Username);
-        Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Operator_Login(Username => Username,
-                                                                     Password => AWS.Parameters.Get(Params,"param1"),
-                                                                     Context  => Context));
-      end ;                                                               
-    elsif Context="logout" then
+    if Context="logout" then
       Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Operator_Logout(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                      Bot_Ws_Services.Operator_Logout(Username =>  Username,
                                                                       Context  => Context)); 
     elsif Context="todays_bets" then
       Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context)); 
     elsif Context="yesterdays_bets" then
       Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context)); 
     elsif Context="thisweeks_bets" then
       Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context)); 
     elsif Context="lastweeks_bets" then
       Response := Aws.Response.Build (Application_JSON, 
-                                      Bot_Ws_Services.Settled_Bets(Username =>  AWS.Session.Get(Session_ID, "username"),
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context)); 
     else
       Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
     end if;
-    Logging.Log(Service, " Context : " & Context & " Action : " & Action & 
-                                        " Time consumed " &  
-                                        String_Interval(Calendar2.Clock - Start, Days => False));
+    Logging.Log(Service, " Context : " & Context & 
+                         " Username : " & Username &
+                         " Time consumed " & String_Interval(Calendar2.Clock - Start, Days => False));
+    
     Sql.Close_Session;
                                         
     return Response;
@@ -171,9 +137,9 @@ procedure Bot_Web_Server is
     Logging.Log("Get", "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
     if (Context = "" and URI /= "") then
       if (URI = "/") then
-        Logging.Log("Get", "Returning file : betbottest.html");
+        Logging.Log("Get", "Returning file : betbot.html");
         return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
-                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbottest.html");
+                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
       else
         declare
           Filename     : constant String := URI (2 .. URI'Last);
@@ -213,7 +179,7 @@ procedure Bot_Web_Server is
   begin            
     loop           
       delay 2.0;
-      Semaphore.Lock;
+      Semaphore.Seize;
       begin
         Process_Io.Receive( Message, Time_Out => 0.1);
         case Process_Io.Identity (Message) is
@@ -245,7 +211,7 @@ procedure Bot_Web_Server is
      URI    : constant String                    := AWS.Status.URI(Request);
      Req    : constant AWS.Status.Request_Method := AWS.Status.Method(Request);
   begin
-      Semaphore.Lock;      
+      Semaphore.Seize;      
       Logging.Log("Service", Req'Img & " " & URI);
       case Req is
         when AWS.Status.GET  =>  Answer := Get (Request);
