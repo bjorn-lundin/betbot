@@ -8,7 +8,8 @@ pragma Warnings(On);
 with Ada.Environment_Variables;
 
 with Stacktrace;
-with Repository_Types;
+--with Repository_Types;
+with Types ; use Types;
 with Repository;
 with Repository.Presentation;
 with Repository.Code_Item;
@@ -23,7 +24,6 @@ with Text_Io; use Text_Io;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Types ; use Types;
 
 procedure Repo is
   use Repository;
@@ -375,7 +375,7 @@ begin
     
   elsif Sa_Par_C_Sharp_Class.all /= "" then    
     declare
-      Clq : Repository_Types.String_Object;
+      Clq : Types.String_Object;
     begin
       Clq.Set(Sa_Par_C_Sharp_Class.all);
       C.Make_C_Sharp_Class(Clq);
@@ -495,7 +495,7 @@ begin
     
   elsif Sa_Path_Info.all /= "" then
     declare
-      Typ : Repository_Types.String_Object;
+      Typ : Types.String_Object;
       Did_Print : Boolean := False;
     begin
       Typ.Set(Sa_Path_Info.all);

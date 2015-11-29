@@ -7,7 +7,7 @@ with Ada.Exceptions;
 with Ada.Io_Exceptions;
 with Gnat.String_Split;
 with Ada.Characters.Latin_1 ;
---with Unicode.CES;
+
 with Unicode.Encodings;
 
 with Sax;
