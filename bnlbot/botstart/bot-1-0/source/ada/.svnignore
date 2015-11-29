@@ -1,6 +1,6 @@
 *.sql
-tables_*.adb
-tables_*.ads
+table_*.adb
+table_*.ads
 bot_svn_info.ads
 obsolete
 c_constants.ads
