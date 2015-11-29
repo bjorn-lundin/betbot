@@ -4,18 +4,12 @@ pragma Warnings(Off);
 with Ada.Strings;           use Ada.Strings;
 with Ada.Strings.Fixed;     use Ada.Strings.Fixed;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-
 with Ada.Containers.Doubly_Linked_Lists; 
-
 pragma Warnings(On);
+
 with Unchecked_Conversion;
-
-with Types;        use Types;
 with Unicode.CES;
-
-with Repository_Types; use Repository_Types;
-pragma Elaborate_All (Repository_Types);
-
+with Types; use Types;
 
 package Repository is
   Configuration_Error,
