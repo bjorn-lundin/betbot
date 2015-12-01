@@ -115,7 +115,7 @@ $(document).ready(function(){
                   
                   //fill the table
                   var table = $.makeTable(reply.datatable);
-                  $(table).appendTo("#viewer_content");  
+                  $('#viewer_content').html(table).trigger('create')
                   
                   
                } else {
