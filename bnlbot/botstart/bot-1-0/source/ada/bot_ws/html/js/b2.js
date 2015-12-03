@@ -14,7 +14,14 @@ $.makeTable = function (mydata) {
     $.each(mydata, function (index, value) {
         var TableRow = "<tr>";
         $.each(value, function (key, val) {
-            TableRow += "<td>" + val + "</td>";
+            console.log("key: " + key + " val: " + val);
+            if (typeof val == "string" && key == "betname") {
+              TableRow += "<td>" + val.slice(0,18) + "</td>";
+            } else if (typeof val == "string" && key == "betplaced") {
+              TableRow += "<td>" + val.slice(12,24) + "</td>";
+            } else {            
+              TableRow += "<td>" + val + "</td>";
+            }
         });
         TableRow += "</tr>";
         $(table).append( TableRow);
@@ -110,8 +117,7 @@ $(document).ready(function(){
                   console.log("success OK");
                   
                   $('#viewer_content').empty();
-                  $('#viewer_content').append("<p id='total'></p>");
-                  $('#total' ).text( "Totalt: " + reply.total + " kr" );
+                  $('#total').text("Resultat:"+ reply.total + " kr" );
                   
                   //fill the table
                   var table = $.makeTable(reply.datatable);
