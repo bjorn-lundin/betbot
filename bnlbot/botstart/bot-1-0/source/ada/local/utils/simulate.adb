@@ -28,15 +28,20 @@ procedure Simulate is
       Back_1_10_10_1_2_WIN, 
       Back_1_10_07_1_2_WIN, 
       Lay_160_200, 
-      Lay_200_400,
-      Lay_05_And_Below,
-      Lay_10_And_Below,
-      Lay_15_And_Below,
-      Lay_20_And_Below,
-      Lay_25_And_Below,
-      Lay_30_And_Below,
-      Lay_35_And_Below,
-      Lay_40_And_Below
+      Lay_200_300, --,
+      Lay_300_400, --,
+      Lay_200_400, --,
+      Lay_400_500, --,
+      Lay_500_600, --,
+      Lay_600_700 
+    --  Lay_05_And_Below,
+    --  Lay_10_And_Below,
+    --  Lay_15_And_Below,
+    --  Lay_20_And_Below,
+    --  Lay_25_And_Below,
+    --  Lay_30_And_Below,
+    --  Lay_35_And_Below,
+    --  Lay_40_And_Below
       );
 
 
@@ -135,14 +140,15 @@ procedure Simulate is
 
     for R of List loop 
        -- laybets
-       Global_Bets_Allowed(Lay_160_200).Has_Betted := False; 
-       for b of Global_Laybet_for_This_Market_List loop
-         if B.Bet.Selectionid = R.Selectionid and then
-            B.Bet.Betname(1..11) = "Lay_160_200" then
-              Global_Bets_Allowed(Lay_160_200).Has_Betted := True; 
-         end if;
-       end loop;
+     --  Global_Bets_Allowed(Lay_160_200).Has_Betted := False; 
+     --  for b of Global_Laybet_for_This_Market_List loop
+     --    if B.Bet.Selectionid = R.Selectionid and then
+     --       B.Bet.Betname(1..11) = "Lay_160_200" then
+     --         Global_Bets_Allowed(Lay_160_200).Has_Betted := True; 
+     --    end if;
+     --  end loop;
        
+      
        
        if not Global_Bets_Allowed(Lay_160_200).Has_Betted then
          if R.Backprice >= Float_8(160)and then
@@ -162,9 +168,9 @@ procedure Simulate is
                  Bet          => Bet,
                  Price_Finish => Best_Runners(1)));
                  
-           Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-                 Bet          => Bet,
-                 Price_Finish => Best_Runners(1)));
+        --   Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
+        --         Bet          => Bet,
+        --         Price_Finish => Best_Runners(1)));
                  
                  
            Global_Bets_Allowed(Lay_160_200).Has_Betted := True;
@@ -172,13 +178,61 @@ procedure Simulate is
          end if;       
        end if;     
        
-       Global_Bets_Allowed(Lay_200_400).Has_Betted := False; 
-       for b of Global_Laybet_for_This_Market_List loop
-         if B.Bet.Selectionid = R.Selectionid and then
-            B.Bet.Betname(1..11) = "Lay_200_400" then
-              Global_Bets_Allowed(Lay_200_400).Has_Betted := True; 
-         end if;
-       end loop;
+     --  Global_Bets_Allowed(Lay_200_400).Has_Betted := False; 
+     --  for b of Global_Laybet_for_This_Market_List loop
+     --    if B.Bet.Selectionid = R.Selectionid and then
+     --       B.Bet.Betname(1..11) = "Lay_200_400" then
+     --         Global_Bets_Allowed(Lay_200_400).Has_Betted := True; 
+     --    end if;
+     --  end loop;
+       if not Global_Bets_Allowed(Lay_200_300).Has_Betted then
+         if R.Backprice >= Float_8(200)and then
+            R.Layprice  >= Float_8(50) and then
+            R.Backprice <= Float_8(800) and then
+            R.Layprice  <= Float_8(300) then
+
+           Bet.Marketid    := R.Marketid;
+           Bet.Selectionid := R.Selectionid;
+           Bet.Size        := Global_Lay_Size;
+           Bet.Side        := "LAY ";
+           Bet.Price       := R.Layprice;
+           Bet.Betplaced   := R.Pricets;
+           Bet.Status(1) := 'U';
+           Move("Lay_200_300",Bet.Betname);
+           Bet_List.Append(Bet_List_Record'(
+                 Bet          => Bet,
+                 Price_Finish => Best_Runners(1)));
+      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
+      --           Bet          => Bet,
+      --           Price_Finish => Best_Runners(1)));
+           Global_Bets_Allowed(Lay_200_300).Has_Betted := True;
+           Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
+         end if;       
+       end if;    
+       if not Global_Bets_Allowed(Lay_300_400).Has_Betted then
+         if R.Backprice >= Float_8(300)and then
+            R.Layprice  >= Float_8(50) and then
+            R.Backprice <= Float_8(800) and then
+            R.Layprice  <= Float_8(400) then
+
+           Bet.Marketid    := R.Marketid;
+           Bet.Selectionid := R.Selectionid;
+           Bet.Size        := Global_Lay_Size;
+           Bet.Side        := "LAY ";
+           Bet.Price       := R.Layprice;
+           Bet.Betplaced   := R.Pricets;
+           Bet.Status(1) := 'U';
+           Move("Lay_300_400",Bet.Betname);
+           Bet_List.Append(Bet_List_Record'(
+                 Bet          => Bet,
+                 Price_Finish => Best_Runners(1)));
+      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
+      --           Bet          => Bet,
+      --           Price_Finish => Best_Runners(1)));
+           Global_Bets_Allowed(Lay_300_400).Has_Betted := True;
+           Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
+         end if;       
+       end if;           
               
        if not Global_Bets_Allowed(Lay_200_400).Has_Betted then
          if R.Backprice >= Float_8(200)and then
@@ -197,274 +251,88 @@ procedure Simulate is
            Bet_List.Append(Bet_List_Record'(
                  Bet          => Bet,
                  Price_Finish => Best_Runners(1)));
-           Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-                 Bet          => Bet,
-                 Price_Finish => Best_Runners(1)));
+      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
+      --           Bet          => Bet,
+      --           Price_Finish => Best_Runners(1)));
            Global_Bets_Allowed(Lay_200_400).Has_Betted := True;
            Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
          end if;       
        end if;    
 
-      -- Global_Bets_Allowed(Lay_05_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_05_And_Below" then
-      --        Global_Bets_Allowed(Lay_05_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;
-      -- 
-      -- if not Global_Bets_Allowed(Lay_05_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(5) and then
-      --      R.Layprice  <= Float_8(5) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_05_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
+       if not Global_Bets_Allowed(Lay_400_500).Has_Betted then
+         if R.Backprice >= Float_8(400)and then
+            R.Layprice  >= Float_8(50) and then
+            R.Backprice <= Float_8(900) and then
+            R.Layprice  <= Float_8(500) then
+
+           Bet.Marketid    := R.Marketid;
+           Bet.Selectionid := R.Selectionid;
+           Bet.Size        := Global_Lay_Size;
+           Bet.Side        := "LAY ";
+           Bet.Price       := R.Layprice;
+           Bet.Betplaced   := R.Pricets;
+           Bet.Status(1) := 'U';
+           Move("Lay_400_500",Bet.Betname);
+           Bet_List.Append(Bet_List_Record'(
+                 Bet          => Bet,
+                 Price_Finish => Best_Runners(1)));
       --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
       --           Bet          => Bet,
       --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_05_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      --
-      -- Global_Bets_Allowed(Lay_10_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_10_And_Below" then
-      --        Global_Bets_Allowed(Lay_10_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;
-      -- 
-      -- if not Global_Bets_Allowed(Lay_10_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(10) and then
-      --      R.Layprice  <= Float_8(10) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_10_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
+           Global_Bets_Allowed(Lay_400_500).Has_Betted := True;
+           Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
+         end if;       
+       end if;    
+
+       if not Global_Bets_Allowed(Lay_500_600).Has_Betted then
+         if R.Backprice >= Float_8(500)and then
+            R.Layprice  >= Float_8(50) and then
+            R.Backprice <= Float_8(900) and then
+            R.Layprice  <= Float_8(600) then
+
+           Bet.Marketid    := R.Marketid;
+           Bet.Selectionid := R.Selectionid;
+           Bet.Size        := Global_Lay_Size;
+           Bet.Side        := "LAY ";
+           Bet.Price       := R.Layprice;
+           Bet.Betplaced   := R.Pricets;
+           Bet.Status(1) := 'U';
+           Move("Lay_500_600",Bet.Betname);
+           Bet_List.Append(Bet_List_Record'(
+                 Bet          => Bet,
+                 Price_Finish => Best_Runners(1)));
       --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
       --           Bet          => Bet,
       --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_10_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      -- Global_Bets_Allowed(Lay_15_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_15_And_Below" then
-      --        Global_Bets_Allowed(Lay_15_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;       
-      -- if not Global_Bets_Allowed(Lay_15_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(15) and then
-      --      R.Layprice  <= Float_8(15) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_15_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
+           Global_Bets_Allowed(Lay_500_600).Has_Betted := True;
+           Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
+         end if;       
+       end if;    
+       if not Global_Bets_Allowed(Lay_600_700).Has_Betted then
+         if R.Backprice >= Float_8(600)and then
+            R.Layprice  >= Float_8(50) and then
+            R.Backprice <= Float_8(900) and then
+            R.Layprice  <= Float_8(700) then
+
+           Bet.Marketid    := R.Marketid;
+           Bet.Selectionid := R.Selectionid;
+           Bet.Size        := Global_Lay_Size;
+           Bet.Side        := "LAY ";
+           Bet.Price       := R.Layprice;
+           Bet.Betplaced   := R.Pricets;
+           Bet.Status(1) := 'U';
+           Move("Lay_600_700",Bet.Betname);
+           Bet_List.Append(Bet_List_Record'(
+                 Bet          => Bet,
+                 Price_Finish => Best_Runners(1)));
       --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
       --           Bet          => Bet,
       --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_15_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      -- 
-      -- Global_Bets_Allowed(Lay_20_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_20_And_Below" then
-      --        Global_Bets_Allowed(Lay_20_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;
-      -- 
-      -- if not Global_Bets_Allowed(Lay_20_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(20) and then
-      --      R.Layprice  <= Float_8(20) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_20_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_20_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      -- Global_Bets_Allowed(Lay_25_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_25_And_Below" then
-      --        Global_Bets_Allowed(Lay_25_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;       
-      -- if not Global_Bets_Allowed(Lay_25_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(25) and then
-      --      R.Layprice  <= Float_8(25) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_25_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_25_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      -- Global_Bets_Allowed(Lay_30_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_30_And_Below" then
-      --        Global_Bets_Allowed(Lay_30_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;       
-      -- if not Global_Bets_Allowed(Lay_30_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(30) and then
-      --      R.Layprice  <= Float_8(30) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_30_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_30_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;  
-      -- 
-      -- Global_Bets_Allowed(Lay_35_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_35_And_Below" then
-      --        Global_Bets_Allowed(Lay_35_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;       
-      -- if not Global_Bets_Allowed(Lay_35_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(35) and then
-      --      R.Layprice  <= Float_8(35) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_35_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_35_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;    
-      --
-      -- Global_Bets_Allowed(Lay_40_And_Below).Has_Betted := False; 
-      -- for b of Global_Laybet_for_This_Market_List loop
-      --   if B.Bet.Selectionid = R.Selectionid and then
-      --      B.Bet.Betname(1..16) = "Lay_40_And_Below" then
-      --        Global_Bets_Allowed(Lay_40_And_Below).Has_Betted := True; 
-      --   end if;
-      -- end loop;       
-      -- if not Global_Bets_Allowed(Lay_40_And_Below).Has_Betted then
-      --   if R.Backprice >= Float_8(1)and then
-      --      R.Layprice  >= Float_8(1) and then
-      --      R.Backprice <= Float_8(40) and then
-      --      R.Layprice  <= Float_8(40) then
-      --
-      --     Bet.Marketid    := R.Marketid;
-      --     Bet.Selectionid := R.Selectionid;
-      --     Bet.Size        := Global_Lay_Size;
-      --     Bet.Side        := "LAY ";
-      --     Bet.Price       := R.Layprice;
-      --     Bet.Betplaced   := R.Pricets;
-      --     Bet.Status(1) := 'U';
-      --     Move("Lay_40_And_Below",Bet.Betname);
-      --     Bet_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Laybet_for_This_Market_List.Append(Bet_List_Record'(
-      --           Bet          => Bet,
-      --           Price_Finish => Best_Runners(1)));
-      --     Global_Bets_Allowed(Lay_40_And_Below).Has_Betted := True;
-      --     Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
-      --   end if;       
-      -- end if;           
+           Global_Bets_Allowed(Lay_600_700).Has_Betted := True;
+           Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String);         
+         end if;       
+       end if;    
+       
     end loop;     
      
      
@@ -491,8 +359,9 @@ procedure Simulate is
     
     if not Global_Bets_Allowed(Back_1_10_30_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(30.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(30.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -513,8 +382,9 @@ procedure Simulate is
     
     if not Global_Bets_Allowed(Back_1_10_26_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(26.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(26.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -536,8 +406,9 @@ procedure Simulate is
    
     if not Global_Bets_Allowed(Back_1_10_23_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(23.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(23.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -558,8 +429,9 @@ procedure Simulate is
     
     if not Global_Bets_Allowed(Back_1_10_20_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(20.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(20.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -579,8 +451,9 @@ procedure Simulate is
     end if; 
     if not Global_Bets_Allowed(Back_1_10_16_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(16.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(16.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -600,8 +473,9 @@ procedure Simulate is
     end if; 
     if not Global_Bets_Allowed(Back_1_10_13_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(13.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(13.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -621,8 +495,9 @@ procedure Simulate is
     end if; 
     if not Global_Bets_Allowed(Back_1_10_10_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(10.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(10.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -642,8 +517,9 @@ procedure Simulate is
     end if; 
     if not Global_Bets_Allowed(Back_1_10_07_1_2_WIN).Has_Betted then
       if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice > Float_8(1.0) and then
-         Best_Runners(2).Backprice >= Float_8(07.0) then
+         Best_Runners(1).Backprice >= Float_8(1.04) and then
+         Best_Runners(2).Backprice >= Float_8(07.0) and then
+         Best_Runners(3).Backprice <  Float_8(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -670,7 +546,7 @@ procedure Simulate is
   use type Ada.Containers.Count_Type;
   
   Date_Start   : Calendar2.Time_Type := (2015,04,01,00,00,00,000);
-  Date_Stop    : Calendar2.Time_Type := (2016,01,01,00,00,00,000);
+  Date_Stop    : Calendar2.Time_Type := (2015,11,01,00,00,00,000);
   Current_Date : Calendar2.Time_Type := Date_Start - (1,0,0,0,0); -- 1 day
 
 begin
@@ -759,7 +635,7 @@ begin
             when 'M'  => -- matched
                 -- did it win ?
                 if Sim.Is_Race_Winner(Bet_Record.Bet.Selectionid, Bet_Record.Bet.Marketid) then
-                  Profit(Lay) := -(Bet_Record.Bet.Price - 1.0) * Global_Lay_Size ;
+                  Profit(Lay) := -(Bet_Record.Bet.Pricematched - 1.0) * Global_Lay_Size ;
                   Losers(Lay) := Losers(Lay) +1;
                   Sum_Losers(Lay) := Sum_Losers(Lay) + Profit(Lay);
                   Log("bad Laybet: " & Bet_Record.Price_Finish.To_String);
@@ -784,7 +660,7 @@ begin
             when 'M'  => -- matched
               -- did it win ?
               if Sim.Is_Race_Winner(Bet_Record.Bet.Selectionid, Bet_Record.Bet.Marketid) then
-                Profit(Back) := (Bet_Record.Bet.Price - 1.0) * Global_Back_Size * 0.935;
+                Profit(Back) := (Bet_Record.Bet.Pricematched - 1.0) * Global_Back_Size * 0.935;
                 Winners(Back) := Winners(Back)+1;
                 Sum_Winners(Back) := Sum_Winners(Back) + Profit(Back);
                 Bet_Record.Bet.Betwon := True;

@@ -35,12 +35,14 @@ project Adabot is
                     "bet_checker.adb",
                     "data_mover.adb",
                     "graph_data.adb",
+                    "poll_bounds.adb",
                     "bot_web_server.adb",
                     "check_bot_running.adb"
                     );
 
    Stat_Mains   := ("lay_during_race.adb",
                     "simulate.adb",
+                    "win_ratio.adb",
                     "create_cache.adb",
                     "greenup_lay_first.adb"); 
 
