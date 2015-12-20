@@ -112,46 +112,33 @@ function Check_Bots_For_User () {
     *)    BOT_LIST="" ;;
   esac
 
-  if [ $IS_DATA_COLLECTOR == "false" ] ; then
+  Start_Bot $BOT_USER bet_checker bet_checker
+  
+  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4"
+  for poller in $POLLERS_LIST ; do
+    Start_Bot $BOT_USER $poller poll poll.ini
+  done
+  
+  #for bot in $BOT_LIST ; do
+  #  if [ $bot == "bot" ] ; then
+  #    Start_Bot $BOT_USER $bot bot betfair.ini
+  #  else
+  #    Start_Bot $BOT_USER $bot bot $bot.ini
+  #  fi
+  #done
+  BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
+                   bet_placer_004 bet_placer_005 bet_placer_006 \
+                   bet_placer_007 bet_placer_008 bet_placer_009 \
+                   bet_placer_010 "
 
-    Start_Bot $BOT_USER bet_checker bet_checker
-    
-    POLLERS_LIST="poll_1 poll_2 poll_3 poll_4"
-    for poller in $POLLERS_LIST ; do
-      Start_Bot $BOT_USER $poller poll poll.ini
-    done
-    
-    #for bot in $BOT_LIST ; do
-    #  if [ $bot == "bot" ] ; then
-    #    Start_Bot $BOT_USER $bot bot betfair.ini
-    #  else
-    #    Start_Bot $BOT_USER $bot bot $bot.ini
-    #  fi
-    #done
-    BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                     bet_placer_004 bet_placer_005 bet_placer_006 \
-                     bet_placer_007 bet_placer_008 bet_placer_009 \
-                     bet_placer_010 "
+  for placer in $BET_PLACER_LIST ; do
+    Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
+  done
 
-    for placer in $BET_PLACER_LIST ; do
-      Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
-    done
-
-    if [ $BOT_HOUR == "23" ] ; then
-      if [ $BOT_MINUTE == "00" ] ; then
-        Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
-      fi
+  if [ $BOT_HOUR == "23" ] ; then
+    if [ $BOT_MINUTE == "00" ] ; then
+      Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
     fi
-
-  else
-    DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
-                          poll_market_3 poll_market_4 \
-                          poll_market_5 poll_market_6 \
-                          poll_market_7 poll_market_8"
-    for collector in $DATA_COLLECTORS_LIST ; do
-      Start_Bot $BOT_USER $collector poll_market
-    done
-    
   fi
 
   #zip logfiles every hour, on minute 17 in the background
@@ -166,8 +153,78 @@ function Check_Bots_For_User () {
     fi
   fi
 
+}
+
+
+##
+function Check_System_Bots_For_User () {
+
+  export BOT_USER=$1
+  BOT_WEEK_DAY=$2
+  BOT_HOUR=$3
+  BOT_MINUTE=$4
+
+  if [ $BOT_USER == "dry" ] ; then
+    IS_DATA_COLLECTOR="true"
+    IS_TESTER="false"
+  else
+    IS_DATA_COLLECTOR="false"
+    IS_TESTER="true"
+  fi
+
+  . $BOT_START/bot.bash $BOT_USER
+  #No login file -> give up
+  [ ! -r $BOT_HOME/login.ini ] && return 0
+
+  #BOT_USER=$1
+  #BOT_NAME=$2
+  #EXE_NAME=$3
+  #INI_NAME=$4
+  #MODE=$5
+  #all need this one 
+
+  Start_Bot $BOT_USER markets_fetcher markets_fetcher
+
+  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+  
+  Start_Bot $BOT_USER bet_checker bet_checker
+
+
+  if [ $IS_DATA_COLLECTOR == "true" ] ; then
+    DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
+                          poll_market_3 poll_market_4 \
+                          poll_market_5 poll_market_6 \
+                          poll_market_7 poll_market_8"
+                          
+    for collector in $DATA_COLLECTORS_LIST ; do
+      Start_Bot $BOT_USER $collector poll_market
+    done
+  fi
+  
+  
+  if [ $IS_TESTER == "true" ] ; then    
+    POLLERS_LIST="poll_1_bounds poll_2_bounds poll_3_bounds poll_4_bounds"
+    
+    for poller in $POLLERS_LIST ; do
+      Start_Bot $BOT_USER $poller poll_bounds poll_bounds.ini
+    done
+  fi
+  
+  #zip logfiles every hour, on minute 17 in the background
+  if [ $BOT_MINUTE == "17" ] ; then
+    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+  fi
+
+  if [ $BOT_HOUR == "13" ] ; then
+    if [ $BOT_MINUTE == "10" ] ; then
+      Start_Bot $BOT_USER data_mover data_mover
+      $BOT_TARGET/bin/race_time --rpc
+    fi
+  fi
 
 }
+
+##
 
 function Create_Plots () {
   USR=$1
@@ -275,14 +332,22 @@ DAY=$(date +"%d")
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
-    USER_LIST=$(ls $BOT_START/user)
+   # USER_LIST=$(ls $BOT_START/user)
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
 
     HOST=db.nonodev.com
-    for USR in $USER_LIST ; do
+    for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
+    
+    SYSTEM_USER_LIST="ael dry"
+    for USR in $SYSTEM_USER_LIST ; do
+      Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
+    done
 
+    
+    
+    
     #if [ $DAY == "1" ] ; then
     #  if [ $HOUR == "13" ] ; then
     #    if [ $MINUTE == "12" ] ; then
@@ -319,12 +384,12 @@ case $BOT_MACHINE_ROLE in
       fi
     fi
 
-    if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
-      for USR in $USER_LIST_PLAYERS_ONLY ; do
-        Create_Plots $USR 42 
-        Create_Plots $USR 182
-      done
-    fi
+   # if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
+   #   for USR in $USER_LIST_PLAYERS_ONLY ; do
+   #     Create_Plots $USR 42 
+   #     Create_Plots $USR 182
+   #   done
+   # fi
 
   ;;
   *)

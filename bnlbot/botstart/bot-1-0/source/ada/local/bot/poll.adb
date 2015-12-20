@@ -97,11 +97,11 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
-      when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002"); 
-      when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
-      when Back_1_10_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004"); 
-      when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
+    --  when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
+    --  when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002"); 
+    --  when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
+    --  when Back_1_10_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004"); 
+    --  when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
       when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_006");
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_007");
       when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_008"); 
@@ -313,7 +313,7 @@ procedure Poll is
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
     
-    Do_Place_Bet : Boolean := False;
+  --  Do_Place_Bet : Boolean := False;
   begin       --1
    --  12345678901234567890
    --  Back_1_10_20_1_4_WIN
@@ -326,16 +326,16 @@ procedure Poll is
     Backed_Place := Integer'Value(Image(14..14));
     Next_Place := Integer'Value(Image(16..16));
     
-    if Image(18..20) = "WIN" then
-      Do_Place_Bet := True;
-    end if;
+  --  if Image(18..20) = "WIN" then
+  --    Do_Place_Bet := True;
+  --  end if;
     
     
     case Bettype is
-      when Back_1_50_30_1_4_PLC => Min_Backprice_1 := 1.41;
-      when Back_1_10_20_1_2_WIN | 
-           Back_1_10_16_1_2_WIN |
-           Back_1_10_13_1_2_WIN => Min_Backprice_1 := 1.04;
+   --   when Back_1_50_30_1_4_PLC => Min_Backprice_1 := 1.41;
+   --   when Back_1_10_20_1_2_WIN | 
+   --        Back_1_10_16_1_2_WIN |
+   --        Back_1_10_13_1_2_WIN => Min_Backprice_1 := 1.04;
       when others               => Min_Backprice_1 := 1.01;
     end case;
     
@@ -353,18 +353,18 @@ procedure Poll is
                Match_Directly  => Match_Directly);
                
       -- for each WIN bet, make a place bet too         
-      if Do_Place_Bet then
-        declare
-          Place_Bet_Type : Config.Bet_Type := Config.Bet_Type'Value(Image(1..17) & "PLC");
-        begin
-          Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
-                   Main_Bet        => Place_Bet_Type,
-                   Place_Market_Id => Place_Marketid,
-                   Receiver        => Get_Bet_Placer(Place_Bet_Type),
-                   Min_Price       => "1.01",
-                   Match_Directly  => Match_Directly);
-        end;
-      end if;
+    --  if Do_Place_Bet then
+    --    declare
+    --      Place_Bet_Type : Config.Bet_Type := Config.Bet_Type'Value(Image(1..17) & "PLC");
+    --    begin
+    --      Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
+    --               Main_Bet        => Place_Bet_Type,
+    --               Place_Market_Id => Place_Marketid,
+    --               Receiver        => Get_Bet_Placer(Place_Bet_Type),
+    --               Min_Price       => "1.02",
+    --               Match_Directly  => Match_Directly);
+    --    end;
+    --  end if;
                
     end if;
   end Try_To_Make_Back_Bet;
@@ -417,7 +417,8 @@ procedure Poll is
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo.
 
-        if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
+--        if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
+        if abs(Saldo.Exposure) > Float_8(5_000.0) then
            Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
            return;
         end if;
