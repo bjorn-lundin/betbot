@@ -47,8 +47,8 @@ project Adabot is
                     "greenup_lay_first.adb"); 
 
    Display_Mains :=  ("race_time.adb");
-   Other_Mains :=  ( "check_greenup.adb",
-                    "test_date.adb",
+   Other_Mains :=  (
+                     "check_greenup.adb",
                      --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
