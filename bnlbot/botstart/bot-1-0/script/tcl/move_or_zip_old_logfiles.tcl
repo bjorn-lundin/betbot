@@ -21,7 +21,7 @@ set Debug 0
 set Compressor {}
 
 # How long to keep them
-set Days_To_Keep_Zip 2
+set Days_To_Keep_Zip 8
 
 # Where to store zipped files. This dir is created if it does not exist
 set Directory_Zipped_Files [file join $::env(BOT_HOME) zipped_logs]
@@ -63,9 +63,16 @@ proc Get_Time {} {
 
 #-----------------------------------------------------
 proc Move_Zipped_Logfiles {f} {
+    if {[string match -nocase *zipped_logs [string tolower [pwd]]]} {
+        Dbg "we are in zipped_logs, return -> [pwd]"
+        return 0
+    }
     if {[string equal [string tolower [pwd]] [string tolower $::Directory_Zipped_Files]]} {
         return 0
     }
+    
+   string match -nocase pattern string    
+    
     if {! [file exists $::Directory_Zipped_Files] } {
       if {[catch { file mkdir $::Directory_Zipped_Files} Result]} {
         # Ok create Directory_Zipped_Files failed, log and return?
@@ -79,8 +86,12 @@ proc Move_Zipped_Logfiles {f} {
       # Ok rename failed, try copy/delete
         Dbg $Result
         catch { file delete [file join $::Directory_Zipped_Files $f]}
+        Dbg "deleted [file join $::Directory_Zipped_Files $f]"
+        
         catch { file copy $f $::Directory_Zipped_Files}
+        Dbg "copied $f to  [file join $::Directory_Zipped_Files]"
         catch { file delete $f}
+        Dbg "deleted  $f"
         Dbg "tried copy/deleted $f to $::Directory_Zipped_Files"
         return 1
     } else {

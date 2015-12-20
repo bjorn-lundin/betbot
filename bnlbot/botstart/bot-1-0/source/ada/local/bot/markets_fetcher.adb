@@ -81,6 +81,10 @@ procedure Markets_Fetcher is
 
   Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "dry" ;
   Is_Long_Poll      : Boolean := EV.Value("BOT_MACHINE_ROLE") = "LONGPOLL" ;
+  Is_Tester         : Boolean := EV.Value("BOT_USER") = "ael" ;
+  
+  Is_Better         : Boolean := (not Is_Data_Collector) and (not Is_Tester);
+  
 
   
   type Poll_Process is record
@@ -104,6 +108,12 @@ procedure Markets_Fetcher is
     2 => (True, (("poll_2         "), (others => ' '))),
     3 => (True, (("poll_3         "), (others => ' '))),
     4 => (True, (("poll_4         "), (others => ' ')))
+  );
+  Test_Pollers : array (1..4) of Poll_Process := (
+    1 => (True, (("poll_1_bounds  "), (others => ' '))),
+    2 => (True, (("poll_2_bounds  "), (others => ' '))),
+    3 => (True, (("poll_3_bounds  "), (others => ' '))),
+    4 => (True, (("poll_4_bounds  "), (others => ' ')))
   );
 ---------------------------------------------------------------  
 
@@ -210,6 +220,13 @@ procedure Markets_Fetcher is
     for i in Race_Pollers'range loop
       if Race_Pollers(i).Process.Name = Data.Name then
         Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
+      end if;
+    end loop;
+    
+    for i in Test_Pollers'range loop
+      if Test_Pollers(i).Process.Name = Data.Name then
+        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
         return;
       end if;
     end loop;
@@ -516,7 +533,8 @@ begin
                           exit;
                         end if;
                       end loop;
-                    else
+                      
+                    elsif Is_Better then
                       for i in Race_Pollers'range loop
                         if Race_Pollers(i).Free then
                           Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
@@ -524,8 +542,19 @@ begin
                           Race_Pollers(i).Free := False;
                           exit;
                         end if;
+                      end loop; 
+                      
+                    elsif Is_Tester then
+                      for i in Test_Pollers'range loop
+                        if Test_Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Test_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Test_Pollers(i).Process.Name)), MNR);
+                          Test_Pollers(i).Free := False;
+                          exit;
+                        end if;
                       end loop;                    
-                    end if;  
+                    end if;
+               
                   ------------------------------------------------------------------                
                   when others => null;
                   ------------------------------------------------------------------                                  
