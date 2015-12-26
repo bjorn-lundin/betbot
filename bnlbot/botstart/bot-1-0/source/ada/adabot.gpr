@@ -42,6 +42,7 @@ project Adabot is
 
    Stat_Mains   := ("lay_during_race.adb",
                     "simulate.adb",
+                    "stat_maker.adb",
                     "win_ratio.adb",
                     "create_cache.adb",
                     "greenup_lay_first.adb"); 
