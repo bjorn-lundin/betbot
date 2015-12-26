@@ -1,0 +1,15 @@
+set datafile commentschars '#'
+set datafile separator '|'
+
+set terminal pngcairo size 2000,1125 background '#ffffff'
+#set terminal pngcairo size 1024,768 background '#ffffff'
+set output target_png
+
+set title "Horses " . desc . " market type " . type
+
+set grid
+set key off
+ 
+plot source_dat using 1:2:9 with image, \
+     source_dat using 1:2:(strcol(9)) with labels
+
