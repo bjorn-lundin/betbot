@@ -110,10 +110,10 @@ procedure Markets_Fetcher is
     4 => (True, (("poll_4         "), (others => ' ')))
   );
   Test_Pollers : array (1..4) of Poll_Process := (
-    1 => (True, (("poll_1_bounds  "), (others => ' '))),
-    2 => (True, (("poll_2_bounds  "), (others => ' '))),
-    3 => (True, (("poll_3_bounds  "), (others => ' '))),
-    4 => (True, (("poll_4_bounds  "), (others => ' ')))
+    1 => (True, (("poll_bounds_1  "), (others => ' '))),
+    2 => (True, (("poll_bounds_2  "), (others => ' '))),
+    3 => (True, (("poll_bounds_3  "), (others => ' '))),
+    4 => (True, (("poll_bounds_4  "), (others => ' ')))
   );
 ---------------------------------------------------------------  
 
