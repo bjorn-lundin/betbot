@@ -102,11 +102,11 @@ procedure Poll is
     --  when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
     --  when Back_1_10_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004"); 
     --  when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
-      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_006");
-      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_008"); 
-      when Back_1_10_16_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_009"); 
-      when Back_1_10_13_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_010"); 
+      when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_001");
+      when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_002");
+      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_003"); 
+      when Back_1_10_16_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_004"); 
+      when Back_1_10_13_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005"); 
     end case;
   end Get_Bet_Placer;
 
@@ -301,34 +301,28 @@ procedure Poll is
     Bettype         : Config.Bet_Type;
     BR              : Best_Runners_Array_Type;
     Marketid        : Market_Id_Type;
-    Place_Marketid  : Market_Id_Type;
+  --  Place_Marketid  : Market_Id_Type;
     Min_Price       : String ;
     Match_Directly : Boolean := False) is
 
     Max_Backprice_1 : Float_8;
     Min_Backprice_1 : Float_8;
     Min_Backprice_n : Float_8;
-    Backed_Place    : Integer;
-    Next_Place      : Integer;
+    Backed_Num    : Integer;
+    Next_Num      : Integer;
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
-    
-  --  Do_Place_Bet : Boolean := False;
-  begin       --1
-   --  12345678901234567890
-   --  Back_1_10_20_1_4_WIN
+  begin          --1         2 
+      --  12345678901234567890
+      --  Back_1_10_20_1_4_WIN
     Tmp(1) := Image(6);
     Tmp(2) := '.';
     Tmp(3..4) := Image(8..9);
     Max_Backprice_1 := Float_8'Value(Tmp);
     
     Min_Backprice_n := Float_8'Value(Image(11..12));
-    Backed_Place := Integer'Value(Image(14..14));
-    Next_Place := Integer'Value(Image(16..16));
-    
-  --  if Image(18..20) = "WIN" then
-  --    Do_Place_Bet := True;
-  --  end if;
+    Backed_Num := Integer'Value(Image(14..14));
+    Next_Num := Integer'Value(Image(16..16));
     
     
     case Bettype is
@@ -339,33 +333,18 @@ procedure Poll is
       when others               => Min_Backprice_1 := 1.01;
     end case;
     
-    if BR(Backed_Place).Backprice <= Max_Backprice_1 and then
-       BR(Backed_Place).Backprice >= Min_Backprice_1 and then
-       BR(Next_Place).Backprice >= Min_Backprice_n and then
+    if BR(Backed_Num).Backprice <= Max_Backprice_1 and then
+       BR(Backed_Num).Backprice >= Min_Backprice_1 and then
+       BR(Next_Num).Backprice >= Min_Backprice_n and then
        BR(3).Backprice <  Float_8(10_000.0) then  -- so it exists
       -- Back The leader in PLC market...
     
-      Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
+      Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
                Main_Bet        => Bettype,
                Place_Market_Id => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
-               Match_Directly  => Match_Directly);
-               
-      -- for each WIN bet, make a place bet too         
-    --  if Do_Place_Bet then
-    --    declare
-    --      Place_Bet_Type : Config.Bet_Type := Config.Bet_Type'Value(Image(1..17) & "PLC");
-    --    begin
-    --      Send_Bet(Selectionid     => BR(Backed_Place).Selectionid,
-    --               Main_Bet        => Place_Bet_Type,
-    --               Place_Market_Id => Place_Marketid,
-    --               Receiver        => Get_Bet_Placer(Place_Bet_Type),
-    --               Min_Price       => "1.02",
-    --               Match_Directly  => Match_Directly);
-    --    end;
-    --  end if;
-               
+               Match_Directly  => Match_Directly);               
     end if;
   end Try_To_Make_Back_Bet;
   -------------------------------------------------------------------------------------------------------------------
@@ -413,15 +392,18 @@ procedure Poll is
 
     -- check if ok to bet and set bet size
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
+    
+    if abs(Saldo.Exposure) > Float_8(5_000.0) then
+       Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
+       return;
+    end if;
+    
+    
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo.
 
 --        if abs(Saldo.Exposure) > 0.3 * Saldo.Balance then
-        if abs(Saldo.Exposure) > Float_8(5_000.0) then
-           Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
-           return;
-        end if;
 
         Bets_Allowed(i).Bet_Size := Bets_Allowed(i).Bet_Size * Bet_Size_Type(Saldo.Balance) * Bet_Size_Type(Bets_Allowed(i).Bet_Size_Portion);
         if Bets_Allowed(i).Bet_Size < 30.0 then
@@ -509,7 +491,7 @@ procedure Poll is
                             Price_List => Price_List,
                             In_Play    => In_Play);
 
-      exit Poll_Loop when Market.Status(1..4) /= "OPEN";
+      exit Poll_Loop when Market.Status(1..4) /= "OPEN" and then Has_Been_In_Play;
 
       if not Has_Been_In_Play then
         -- toggle the first time we see in-play=true
@@ -594,7 +576,7 @@ procedure Poll is
                         Bettype         => i,
                         BR              => Best_Runners,
                         Marketid        => Markets(M_Type).Marketid,
-                        Place_Marketid  => Markets(Place).Marketid,
+                     --   Place_Marketid  => Markets(Place).Marketid,
                         Min_Price       => To_String(Cfg.Bet(i).Min_Price),
                         Match_Directly  => Match_Directly);
                 end if;        

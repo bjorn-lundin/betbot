@@ -30,6 +30,7 @@ with Table_Abets;
 --with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
+with Bot_System_Number;
 
 procedure Poll_Bounds is
   package EV renames Ada.Environment_Variables;
@@ -57,6 +58,9 @@ procedure Poll_Bounds is
   Data : Bot_Messages.Poll_State_Record ;
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
+  
+  
+  Update_Betwon_To_Null : Sql.Statement_Type;
 
   -------------------------------------------------------------
   type Bet_Type is (
@@ -239,10 +243,9 @@ procedure Poll_Bounds is
     ) is
 
     Bet : Table_Abets.Data_Type;
-  begin       --1
-   --  12345678901234567890
-   --  Back_1_10_20_1_4_WIN
+  begin
     for i in Bet_Type'range loop
+      --          1         2         3
       -- 123456789012345678901234567890    
       -- Back_1_46_1_50_11_13_1_2_WIN, 
 
@@ -260,8 +263,8 @@ procedure Poll_Bounds is
           Max_1 := Float_8'Value(Betname(11) & "." & Betname(13..14));
           Min_2 := Float_8'Value(Betname(16..17));
           Max_2 := Float_8'Value(Betname(19..20));
-          Backed_Place := Integer'Value(Betname(32..32));
-          Next_Place := Integer'Value(Betname(34..34));
+          Backed_Place := Integer'Value(Betname(22..22));
+          Next_Place := Integer'Value(Betname(24..24));
           
           if Best_Runners(Backed_Place).Backprice >= Min_1 and then
              Best_Runners(Backed_Place).Backprice <= Max_1 and then
@@ -280,6 +283,11 @@ procedure Poll_Bounds is
              Bet.Sizematched := Float_8(Bets_Allowed(i).Bet_Size);
              Bet.Pricematched:= Best_Runners(Backed_Place).Backprice;
              Bet.Betplaced   := Best_Runners(Backed_Place).Pricets;
+             Bet.Reference(1) := '.';
+             Bet.Inststatus(1) := '.';
+             Bet.Insterrcode(1) := '.';
+             Bet.Runnername(1) := '.';
+             Bet.Fullmarketname(1) := '.';
              Bet.Status(1) := 'U';
              Move(Betname, Bet.Betname);
              Bet_List.Append(Bet_List_Record'(
@@ -289,29 +297,29 @@ procedure Poll_Bounds is
              );
              
              
-             begin
-               Bet := Table_Abets.Empty_Data;
-              -- also bet on place
-               Bet.Marketid    := Plc_Marketid;
-               Bet.Selectionid := Best_Runners(Backed_Place).Selectionid;
-               Bet.Side        := "BACK";
-               Bet.Size        := Float_8(Bets_Allowed(i).Bet_Size);
-               Bet.Price       := Best_Runners(Backed_Place).Backprice;
-               Bet.Sizematched := Float_8(Bets_Allowed(i).Bet_Size);
-               Bet.Pricematched:= Best_Runners(Backed_Place).Backprice;
-               Bet.Betplaced   := Best_Runners(Backed_Place).Pricets;
-               Bet.Status(1) := 'M';
-               Betname(26..28) := "PLC";
-               Move(Betname, Bet.Betname);
-               Bet_List.Append(Bet_List_Record'(
-                    Bet          => Bet,
-                    Price_Finish => Best_Runners(Backed_Place),
-                    Price_Finish2 => Best_Runners(Next_Place))
-               );             
-             exception
-               when others => 
-                 Log("no place market for " & Best_Runners(Backed_Place).Marketid); 
-             end ;
+             -- also bet on place
+             Bet := Table_Abets.Empty_Data;
+             Bet.Marketid    := Plc_Marketid;
+             Bet.Selectionid := Best_Runners(Backed_Place).Selectionid;
+             Bet.Side        := "BACK";
+             Bet.Size        := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Price       := Best_Runners(Backed_Place).Backprice;
+             Bet.Sizematched := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Pricematched:= Best_Runners(Backed_Place).Backprice;
+             Bet.Betplaced   := Best_Runners(Backed_Place).Pricets;
+             Bet.Reference(1) := '.';
+             Bet.Inststatus(1) := '.';
+             Bet.Insterrcode(1) := '.';
+             Bet.Runnername(1) := '.';
+             Bet.Fullmarketname(1) := '.';
+             Bet.Status(1) := 'U';
+             Betname(26..28) := "PLC";
+             Move(Betname, Bet.Betname);
+             Bet_List.Append(Bet_List_Record'(
+                  Bet          => Bet,
+                  Price_Finish => Best_Runners(Backed_Place),
+                  Price_Finish2 => Best_Runners(Next_Place))
+             );             
              Log("bet list len : " & Bet_List.Length'Img & " " & Bet.To_String); 
              Bets_Allowed(i).Has_Betted := True;                
              
@@ -430,7 +438,7 @@ procedure Poll_Bounds is
                             Price_List => Price_List,
                             In_Play    => In_Play);
 
-      exit Poll_Loop when Market.Status(1..4) /= "OPEN";
+      exit Poll_Loop when Market.Status(1..4) /= "OPEN" and then Has_Been_In_Play;
 
       if not Has_Been_In_Play then
         -- toggle the first time we see in-play=true
@@ -439,7 +447,7 @@ procedure Poll_Bounds is
       end if;
 
       if not Has_Been_In_Play then
-        if Current_Turn_Not_Started_Race >= 17 then
+        if Current_Turn_Not_Started_Race >= 120 then  -- 120*5-> 10 min
            Log(Me & "Make_Bet", "Market took too long time to start, give up");
            exit Poll_Loop;
         else
@@ -500,14 +508,20 @@ procedure Poll_Bounds is
 
     begin
       T.Start;
+      Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+      
       for b of Global_Bet_List loop
+        b.Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+        Log("inserting " &  b.Bet.To_String);
         b.Bet.Insert;
+        Update_Betwon_To_Null.Set("BETID", b.Bet.Betid);
+        Update_Betwon_To_Null.Execute;
       end loop;    
       T.Commit;
-    exception 
-      when others =>
-        T.Rollback;
-        Log("exception, rolling back");
+--    exception 
+--      when others =>
+--        T.Rollback;
+--        Log("exception, rolling back");
     end;
 
     
