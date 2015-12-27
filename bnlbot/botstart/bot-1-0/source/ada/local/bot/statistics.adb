@@ -46,22 +46,28 @@ package body Statistics is
                          Market : in Market_Type) is
     use Text_Io;
     use Utils;
+    -- 123456789012345
     -- A_1_01_1_05,
     -- A_01_07,
 
   begin
     -- first/second/cnt/
-    Put_Line(First'Img(8)  & "." & First'Img(10..11) & "|" &
-             Second'Img(6..7) & "|" &
-             Second'Img(6..7) & "|" &
-             F8_Image(Self.Needed_Hitrate) & "|" &
-             Self.Cnt'Img & "|" &
-             Self.Cnt_Won'Img & "|" &
-             Self.Cnt_Matched'Img & "|" &
-             F8_Image(Self.Hitrate) & "|" &
-             F8_Image(Self.Hitrate_Times_Count) & "|" &
+    Put_Line(First'Img(3)  & "." & First'Img(5..6) & "_" & First'Img(8)  & "." & First'Img(10..11) & "|" &
+             Second'Img(3..4) & "_" & Second'Img(6..7) & "|" &
+    --Put_Line(First'Img(8)  & "." & First'Img(10..11) & "|" &
+    --         Second'Img(6..7) & "|" &
+--             F8_Image(Self.Needed_Hitrate) & "|" &
+--             Self.Cnt'Img & "|" &
+--             Self.Cnt_Won'Img & "|" &
+--             Self.Cnt_Matched'Img & "|" &
+--             F8_Image(Self.Hitrate) & "|" &
+--             F8_Image(Self.Hitrate_Times_Count) & "|" &
              F8_Image((Self.Hitrate - Self.Needed_Hitrate)*Float_8(Self.Cnt))
     );
+--    if Second = Second_Odds_Range_Type'last then
+--      New_Line;    
+--    end if;
+    
   end Print_Result;
   ------------------------------------------------------------
 
