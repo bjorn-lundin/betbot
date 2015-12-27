@@ -6,6 +6,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 with Text_io;
 
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
+
 with Stacktrace;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
@@ -28,9 +32,25 @@ procedure  Stat_Maker is
   
   FO: Statistics.First_Odds_Range_Type;
   SO: Statistics.Second_Odds_Range_Type;
-  MT: Statistics.Market_Type;
+  GMT,MT: Statistics.Market_Type;
+
+  Cmd_Line           : Command_Line_Configuration;
+  Sa_Par_Market_Type : aliased Gnat.Strings.String_Access;
+
   
 begin
+
+   Define_Switch
+    (Cmd_Line,
+     Sa_Par_Market_Type'access,
+     Long_Switch => "--market_type=",
+     Help        => "win or plc");
+
+  Getopt (Cmd_Line);  -- process the command line
+
+  GMT := Statistics.Market_Type'Value(Sa_Par_Market_Type.all);
+     
+     
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Sql.Connect
@@ -55,10 +75,7 @@ begin
          
   for fi in Statistics.First_Odds_Range_Type'range loop
     for sn in Statistics.Second_Odds_Range_Type'range loop
-     -- for m in Statistics.Market_Type'range loop
-        MT := Statistics.Plc;
-        Statistics.Print_Result( S(Fi, Sn, MT),Fi, Sn, MT);
-    --  end loop;    
+      Statistics.Print_Result( S(Fi, Sn, GMT),Fi, Sn, GMT);
     end loop;  
   end loop;  
          
