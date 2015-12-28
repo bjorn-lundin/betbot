@@ -5,7 +5,7 @@ set terminal pngcairo size 2000,1125 background '#ffffff'
 #set terminal pngcairo size 1024,768 background '#ffffff'
 set output target_png
 
-set title "Horses GB/IE  - profit (skr) and matched hitrate for market type " . type
+set title "Horses GB/IE  - profit (skr) for size=30 skr and matched hitrate for market type " . type
 set cblabel "skr" 
 #set grid
 set key off
