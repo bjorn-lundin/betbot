@@ -5,7 +5,8 @@ set terminal pngcairo size 2000,1125 background '#ffffff'
 #set terminal pngcairo size 1024,768 background '#ffffff'
 set output target_png
 
-set title "Horses GB/IE  - profit (skr) for size=30 skr and matched hitrate for market type " . type
+set title "Horses GB/IE - " . desc . " for size=30 skr and matched hitrate for market type " . type  
+
 set cblabel "skr" 
 #set grid
 set key off
@@ -60,7 +61,7 @@ set xtics rotate by 45 offset -2,-1 (\
 "" 20) 
 
 plot source_dat using 1:2:3 with image, \
-     source_dat using 1:2:(strcol(3)) with labels offset 0,1
+     source_dat using 1:2:(strcol(3)) with labels offset 0,1.5
   
 
 #set hidden3d

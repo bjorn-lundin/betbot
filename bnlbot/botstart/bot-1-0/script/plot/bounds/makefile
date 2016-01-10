@@ -1,52 +1,53 @@
-###############################################################################
-#                                                                             #
-#                                Make File                                    #
-#                                                                             #
-###############################################################################
-
-UNAME := $(shell uname)
 
 
+.PHONY : all png update_only
 
 all  : png
 
-dat : $(DATS)
+png: heatmap_win_all.png heatmap_plc_all.png heatmap_win_50.png heatmap_plc_50.png
 
-
-
-test:
-	@echo "---------------------"
-	@echo $(BET_NAMES)
-	@echo "---------------------"
-	@echo $(PNGS)
-	@echo "---------------------"
-	@echo $(DATS)
-	@echo "---------------------"
-
-.PHONY : png update_only
-png: heatmap_win.png heatmap_plc.png
-
-heatmap_win.png : heatmap_win.dat heatmap_bounds.gpl
+heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
 	gnuplot -e "type='Win'" \
 	        -e "desc='profit skr'" \
-	        -e "target_png='heatmap_win.png'" \
-            -e "source_dat='heatmap_win.dat'" heatmap_bounds.gpl
-heatmap_win.dat : $(BOT_TARGET)/bin/stat_maker
-	$(BOT_TARGET)/bin/stat_maker --market_type=win > heatmap_win.dat
+	        -e "target_png='heatmap_win_all.png'" \
+            -e "source_dat='heatmap_win_all.dat'" heatmap_bounds.gpl
 
-heatmap_plc.png : heatmap_plc.dat heatmap_bounds.gpl
+heatmap_win_all.dat : $(BOT_TARGET)/bin/stat_maker 
+	$(BOT_TARGET)/bin/stat_maker --market_type=win  > heatmap_win_all.dat
+
+heatmap_plc_all.png : heatmap_plc_all.dat heatmap_bounds.gpl
 	gnuplot -e "type='Place'" \
 	        -e "desc='profit skr'" \
-	        -e "target_png='heatmap_plc.png'" \
-            -e "source_dat='heatmap_plc.dat'" heatmap_bounds.gpl
+	        -e "target_png='heatmap_plc_all.png'" \
+            -e "source_dat='heatmap_plc_all.dat'" heatmap_bounds.gpl
 
-heatmap_plc.dat : $(BOT_TARGET)/bin/stat_maker
-	$(BOT_TARGET)/bin/stat_maker --market_type=plc > heatmap_plc.dat
+heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker 
+	$(BOT_TARGET)/bin/stat_maker --market_type=plc > heatmap_plc_all.dat
 
+heatmap_win_50.png : heatmap_win_50.dat heatmap_bounds.gpl
+	gnuplot -e "type='Win'" \
+	        -e "desc='profit skr (+50)'" \
+	        -e "target_png='heatmap_win_50.png'" \
+            -e "source_dat='heatmap_win_50.dat'" heatmap_bounds.gpl
+            
+heatmap_win_50.dat : $(BOT_TARGET)/bin/stat_maker 
+	$(BOT_TARGET)/bin/stat_maker --market_type=win --lower_limit=50 > heatmap_win_50.dat
 
+heatmap_plc_50.png : heatmap_plc_50.dat heatmap_bounds.gpl
+	gnuplot -e "type='Place'" \
+	        -e "desc='profit skr (+50)'" \
+	        -e "target_png='heatmap_plc_50.png'" \
+            -e "source_dat='heatmap_plc_50.dat'" heatmap_bounds.gpl
 
+heatmap_plc_50.dat : $(BOT_TARGET)/bin/stat_maker
+	$(BOT_TARGET)/bin/stat_maker --market_type=plc --lower_limit=50 > heatmap_plc_50.dat
+
+    
+    
+    
 update_only :
 	$(BOT_TARGET)/bin/stat_maker --update_only
+    
 
 
 
