@@ -43,6 +43,8 @@ procedure  Stat_Maker is
   Cmd_Line           : Command_Line_Configuration;
   Sa_Par_Market_Type : aliased Gnat.Strings.String_Access;
   Ba_Par_Update_Only : aliased Boolean := False;
+  Ba_Par_Quiet       : aliased Boolean := False;
+  
 
   Select_Untreated_Bets : Sql.Statement_Type;
   Select_Prices_From_Dry : Sql.Statement_Type;
@@ -64,8 +66,18 @@ begin
      Long_Switch => "--update_only",
      Help        => "update database and exit");
 
+   Define_Switch
+    (Cmd_Line,
+     Ba_Par_Quiet'access,
+     Long_Switch => "--quiet",
+     Help        => "no logging at all");
+     
   Getopt (Cmd_Line);  -- process the command line
 
+  if Ba_Par_Quiet then
+    Logging.Set_Quiet(True);
+  end if;  
+  
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
   if Ba_Par_Update_Only then

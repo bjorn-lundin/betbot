@@ -430,7 +430,7 @@ procedure Poll_Bounds is
              Bet.Insterrcode(1) := '.';
              Bet.Runnername(1) := '.';
              Bet.Fullmarketname(1) := '.';
-             Bet.Status(1) := 'U';
+             Bet.Status(1) := '-';
              Move(Betname, Bet.Betname);
              Bet_List.Append(Bet_List_Record'(
                   Bet          => Bet,
@@ -454,7 +454,7 @@ procedure Poll_Bounds is
              Bet.Insterrcode(1) := '.';
              Bet.Runnername(1) := '.';
              Bet.Fullmarketname(1) := '.';
-             Bet.Status(1) := 'U';
+             Bet.Status(1) := '-';
              Betname(26..28) := "PLC";
              Move(Betname, Bet.Betname);
              Bet_List.Append(Bet_List_Record'(
