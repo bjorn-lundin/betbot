@@ -79,12 +79,6 @@ function Check_Bots_For_User () {
   BOT_HOUR=$3
   BOT_MINUTE=$4
 
-  if [ $BOT_USER == "dry" ] ; then
-    IS_DATA_COLLECTOR="true"
-  else
-    IS_DATA_COLLECTOR="false"
-  fi
-
   . $BOT_START/bot.bash $BOT_USER
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
@@ -96,21 +90,16 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
   
-
-  if [ $BOT_USER == "bnl" ] ; then
-    Start_Bot $BOT_USER bot_ws bot_web_server
-  fi 
-  
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
 
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
 
-  case $BOT_MACHINE_ROLE in
-    PROD) BOT_LIST="bot" ;;
-    TEST) BOT_LIST="bot" ;;
-    SIM)  BOT_LIST="" ;;
-    *)    BOT_LIST="" ;;
-  esac
+#  case $BOT_MACHINE_ROLE in
+#    PROD) BOT_LIST="bot" ;;
+#    TEST) BOT_LIST="bot" ;;
+#    SIM)  BOT_LIST="" ;;
+#    *)    BOT_LIST="" ;;
+#  esac
 
   Start_Bot $BOT_USER bet_checker bet_checker
   
@@ -127,9 +116,10 @@ function Check_Bots_For_User () {
   #  fi
   #done
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 \
-                   bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 "
+                   bet_placer_004 bet_placer_005 "
+                   #bet_placer_006 \
+                   #bet_placer_007 bet_placer_008 bet_placer_009 \
+                   #bet_placer_010 "
 
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -167,7 +157,8 @@ function Check_System_Bots_For_User () {
   if [ $BOT_USER == "dry" ] ; then
     IS_DATA_COLLECTOR="true"
     IS_TESTER="false"
-  else
+  fi  
+  if [ $BOT_USER == "ael" ] ; then
     IS_DATA_COLLECTOR="false"
     IS_TESTER="true"
   fi
@@ -189,7 +180,6 @@ function Check_System_Bots_For_User () {
   
   Start_Bot $BOT_USER bet_checker bet_checker
 
-
   if [ $IS_DATA_COLLECTOR == "true" ] ; then
     DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
                           poll_market_3 poll_market_4 \
@@ -199,11 +189,12 @@ function Check_System_Bots_For_User () {
     for collector in $DATA_COLLECTORS_LIST ; do
       Start_Bot $BOT_USER $collector poll_market
     done
+    
+    Start_Bot $BOT_USER bot_ws bot_web_server    
   fi
   
-  
   if [ $IS_TESTER == "true" ] ; then    
-    POLLERS_LIST="poll_1_bounds poll_2_bounds poll_3_bounds poll_4_bounds"
+    POLLERS_LIST="poll_bounds_1 poll_bounds_2 poll_bounds_3 poll_bounds_4"
     
     for poller in $POLLERS_LIST ; do
       Start_Bot $BOT_USER $poller poll_bounds poll_bounds.ini
@@ -218,10 +209,25 @@ function Check_System_Bots_For_User () {
   if [ $BOT_HOUR == "13" ] ; then
     if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
-      $BOT_TARGET/bin/race_time --rpc
     fi
   fi
-
+  
+  if [ $IS_TESTER == "true" ] ; then
+    case $BOT_MINUTE in
+        00) $BOT_TARGET/bin/stat_maker --update_only ;;
+        05) $BOT_TARGET/bin/stat_maker --update_only ;;
+        10) $BOT_TARGET/bin/stat_maker --update_only ;;
+        15) $BOT_TARGET/bin/stat_maker --update_only ;;
+        50) $BOT_TARGET/bin/stat_maker --update_only ;;
+        25) $BOT_TARGET/bin/stat_maker --update_only ;;
+        50) $BOT_TARGET/bin/stat_maker --update_only ;;
+        35) $BOT_TARGET/bin/stat_maker --update_only ;;
+        50) $BOT_TARGET/bin/stat_maker --update_only ;;
+        45) $BOT_TARGET/bin/stat_maker --update_only ;;
+        50) $BOT_TARGET/bin/stat_maker --update_only ;;
+        55) $BOT_TARGET/bin/stat_maker --update_only ;;
+    esac
+  fi  
 }
 
 ##
@@ -334,19 +340,17 @@ case $BOT_MACHINE_ROLE in
     #check the bots, and startup if  necessarry
    # USER_LIST=$(ls $BOT_START/user)
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
+    SYSTEM_USER_LIST="ael dry"
 
     HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
     
-    SYSTEM_USER_LIST="ael dry"
     for USR in $SYSTEM_USER_LIST ; do
       Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
 
-    
-    
     
     #if [ $DAY == "1" ] ; then
     #  if [ $HOUR == "13" ] ; then
