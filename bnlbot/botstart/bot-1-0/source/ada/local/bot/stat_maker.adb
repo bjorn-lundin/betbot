@@ -13,7 +13,7 @@ with Logging; use Logging;
 
 with Stacktrace;
 with Types; use Types;
---with Bot_Types; use Bot_Types;
+with Bot_Types;-- use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
 with Ini;
@@ -28,7 +28,6 @@ procedure  Stat_Maker is
   package CLI renames Ada.Command_Line;
 
   s : Statistics.Stats_Array_Type;
-
   T : Sql.Transaction_Type;
 
   Bet_List  : Table_Abets.Abets_List_Pack2.List;
@@ -39,15 +38,22 @@ procedure  Stat_Maker is
   FO: Statistics.First_Odds_Range_Type;
   SO: Statistics.Second_Odds_Range_Type;
   GMT,MT: Statistics.Market_Type;
+  
+  use type Statistics.Market_Type;
 
   Cmd_Line           : Command_Line_Configuration;
   Sa_Par_Market_Type : aliased Gnat.Strings.String_Access;
   Ba_Par_Update_Only : aliased Boolean := False;
   Ba_Par_Quiet       : aliased Boolean := False;
+  Ia_Par_Lower_Limit : aliased Integer := 0;
+  Lower_Limit        : Float_8 := -999_999_999.0;
   
 
-  Select_Untreated_Bets : Sql.Statement_Type;
-  Select_Prices_From_Dry : Sql.Statement_Type;
+  Select_Untreated_Bets              : Sql.Statement_Type;
+  Select_Prices_From_Dry             : Sql.Statement_Type;
+  Select_Betnames                    : Sql.Statement_Type;
+  Select_Betnames_With_Higher_Profit : Sql.Statement_Type;
+  Select_Markets_Of_Correct_MT       : Sql.Statement_Type;
 
   Cnt : Natural := 0;
   Me : constant String := "Stat_Maker.Main";
@@ -72,8 +78,19 @@ begin
      Long_Switch => "--quiet",
      Help        => "no logging at all");
      
+   Define_Switch
+    (Cmd_Line,
+     Ia_Par_Lower_Limit'access,
+     Long_Switch => "--lower_limit=",
+     Help        => "won at least this amount");
+     
+     
   Getopt (Cmd_Line);  -- process the command line
-
+  
+  if Ia_Par_Lower_Limit /= 0 then
+    Lower_Limit := Float_8(Ia_Par_Lower_Limit);
+  end if; 
+  
   if Ba_Par_Quiet then
     Logging.Set_Quiet(True);
   end if;  
@@ -207,8 +224,59 @@ begin
          Password => Ini.Get_Value("stats", "password", ""));
 
   T.Start;
-  Log(Me, "read all bets");
-  Table_Abets.Read_All(Bet_List);
+  Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
+  
+  if Ia_Par_Lower_Limit = 0 then
+    Select_Markets_Of_Correct_MT.Prepare(
+      "select B.* from ABETS B, ALL_MARKETS M " &
+      "where B.MARKETID = M.MARKETID " &
+      "and MARKETTYPE= :MARKETTYPE"
+    );
+    if GMT = Statistics.Win then
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "WIN");
+    else  
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "PLACE");
+    end if;
+    Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
+  else   
+    declare
+      Betname    : Bot_Types.Bet_Name_Type := (others => ' ');
+      End_Of_Set : Boolean := False;
+    begin
+      Select_Betnames_With_Higher_Profit.Prepare(
+        "select B.BETNAME, sum(B.PROFIT) " &
+        "from ABETS B, ALL_MARKETS M " &
+        "where B.MARKETID = M.MARKETID " &
+        "and M.MARKETTYPE= :MARKETTYPE " &
+        "group by B.BETNAME " &
+        "having sum(B.PROFIT) > :PROFIT " &
+        "order by B.BETNAME");
+    
+      if GMT = Statistics.Win then
+        Select_Betnames_With_Higher_Profit.Set("MARKETTYPE", "WIN");
+      else  
+        Select_Betnames_With_Higher_Profit.Set("MARKETTYPE", "PLACE");
+      end if;
+      
+      Select_Betnames_With_Higher_Profit.Set("PROFIT", Lower_Limit);
+      
+      Select_Betnames.Prepare(
+        "select * from ABETS " &
+        "where BETNAME= :BETNAME");
+        
+      Select_Betnames_With_Higher_Profit.Open_Cursor;
+      loop
+        Select_Betnames_With_Higher_Profit.Fetch(End_Of_Set);
+        exit when End_Of_Set;
+        Select_Betnames_With_Higher_Profit.Get("BETNAME",Betname);
+        Select_Betnames.Set("BETNAME",Betname); 
+        Table_Abets.Read_List(Select_Betnames, Bet_List);
+      end loop;  
+      Select_Betnames_With_Higher_Profit.Close_Cursor;
+    end;    
+  end if;
+  
+  
   T.Commit;
   Sql.Close_Session;
   Log(Me, "logged out");
