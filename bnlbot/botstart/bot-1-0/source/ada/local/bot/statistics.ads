@@ -3,7 +3,8 @@
 
 with Types; use Types; 
 with Table_Abets;
-
+with Ada.Containers.Doubly_Linked_Lists;
+  
 
 package Statistics is
 
@@ -32,7 +33,9 @@ package Statistics is
     A_1_96_2_00
   );
   type Second_Odds_Range_Type is (
-    A_01_07,
+--    A_01_07,
+    A_01_04,
+    A_05_07,
     A_08_10,
     A_11_13,
     A_14_17,
@@ -48,16 +51,26 @@ package Statistics is
   type Market_Type is (Win,Plc);
   type Result_Type_Type is (Count, Hitrate, Hitrate_Times_Count);
   
+  package Float_8_Pack is new Ada.Containers.Doubly_Linked_Lists(Float_8);
+  
+  type Part_Type is record
+    Cnt        : Natural := 0 ;
+    Won        : Natural := 0 ;
+    Hitrate    : Float_8 := 0.0;     
+    Odds_List  : Float_8_Pack.List;
+    Avg_Odds   : Float_8 := 0.0; 
+  end record;
+  
+  
   type Stats_Type is tagged record
-    Cnt                 : Natural := 0 ;
-    Cnt_Won             : Natural:= 0 ;
-    Cnt_Matched         : Natural:= 0 ;
-    Hitrate             : Float_8 := 0.0; 
-    Needed_Hitrate      : Float_8 := 0.0; 
-    Hitrate_Times_Count : Float_8 := 0.0; 
+    Every               : Part_Type;
+    Matched             : Part_Type;
+    Needed_Hitrate      : Float_8 := 0.0;
+    Profit              : Float_8 := 0.0; 
   end record;  
   
   procedure Treat(Self : in out Stats_Type; Bet : Table_Abets.Data_Type);
+  procedure Calculate_Avg_Odds(Self : in out Stats_Type) ;
   procedure Print_Result(Self   : in out Stats_Type;
                          First  : in First_Odds_Range_Type;
                          Second : in Second_Odds_Range_Type;

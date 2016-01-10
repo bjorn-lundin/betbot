@@ -4,12 +4,19 @@ with Utils;
 
 package body Statistics is
 
---    Cnt                 : Natural := 0 ;
---    Cnt_Won             : Natural:= 0 ;
---    Cnt_Matched         : Natural:= 0 ;
---    Hitrate             : Float_8 := 0.0;
---    Needed_Hitrate      : Float_8 := 0.0;
---    Hitrate_Times_Count : Float_8 := 0.0;
+ --  type Part_Type is record
+ --    Cnt     : Natural := 0 ;
+ --    Won     : Natural := 0 ;
+ --    Hitrate : Float_8 := 0.0;     
+ --  end record;
+ --    
+ --  type Stats_Type is tagged record
+ --    Every               : Part_Type;
+ --    Matched             : Part_Type;
+ --    Needed_Hitrate      : Float_8 := 0.0; 
+ --    Odds                : Float_8 := 0.0; 
+ --    Profit              : Float_8 := 0.0; 
+ --  end record;  
 
 
   Commission : constant Float_8 := 0.065;
@@ -20,25 +27,53 @@ package body Statistics is
     return 1.0/(O - (O-1.0)* Commission) ;
   end Needed_Hitrate;
   ------------------------------------------------------------
-  procedure Treat(Self : in out Stats_Type; Bet : Table_Abets.Data_Type) is
-
+  procedure Calculate_Avg_Odds(Self : in out Stats_Type) is
+    Tmp : Float_8 := 0.0;
   begin
-
-    Self.Needed_Hitrate := Needed_Hitrate(Bet.Pricematched);
-
-    Self.Cnt := Self.Cnt +1;
-
+    for o of Self.Every.Odds_List loop
+      Tmp := Tmp + o;
+    end loop;
+    Self.Every.Avg_Odds := Tmp / Float_8(Self.Every.Odds_List.Length);
+  
+    Tmp := 0.0;
+    for o of Self.Matched.Odds_List loop
+      Tmp := Tmp + o;
+    end loop;
+    Self.Matched.Avg_Odds := Tmp / Float_8(Self.Matched.Odds_List.Length);
+    
+    Self.Needed_Hitrate := Needed_Hitrate(Self.Matched.Avg_Odds);
+  end Calculate_Avg_Odds;
+  
+  ------------------------------------------------------------
+  procedure Treat(Self : in out Stats_Type; Bet : Table_Abets.Data_Type) is
+  begin  
+    Self.Every.Cnt := Self.Every.Cnt +1;
     if Bet.Betwon then
-      Self.Cnt_Won := Self.Cnt_Won +1;
+      Self.Every.Won := Self.Every.Won +1;
+    end if;
+
+    Self.Every.Odds_List.Append(Bet.Pricematched);
+    
+    if Self.Every.Cnt > 0 then
+      Self.Every.Hitrate := Float_8(Self.Every.Won) / Float_8(Self.Every.Cnt);
     end if;
 
     if Bet.Status(1) = 'M' then
-      Self.Cnt_Matched := Self.Cnt_Matched +1;
+       Self.Matched.Cnt := Self.Matched.Cnt +1;
+      if Bet.Betwon then
+        Self.Matched.Won := Self.Matched.Won +1;
+      end if;
+      if Self.Matched.Cnt > 0 then
+        Self.Matched.Hitrate := Float_8(Self.Matched.Won) / Float_8(Self.Matched.Cnt);
+      end if;
+      
+      Self.Profit := Self.Profit + Bet.Profit;
+      Self.Matched.Odds_List.Append(Bet.Pricematched);
     end if;
-
-    Self.Hitrate := Float_8(Self.Cnt_Won)/Float_8(Self.Cnt);
-    Self.Hitrate_Times_Count := Self.Hitrate * Float_8(Self.Cnt);
   end Treat;
+  
+  
+  
   ------------------------------------------------------------
   procedure Print_Result(Self   : in out Stats_Type;
                          First  : in First_Odds_Range_Type;
@@ -52,21 +87,29 @@ package body Statistics is
 
   begin
     -- first/second/cnt/
-    Put_Line(First'Img(3)  & "." & First'Img(5..6) & "_" & First'Img(8)  & "." & First'Img(10..11) & "|" &
-             Second'Img(3..4) & "_" & Second'Img(6..7) & "|" &
+--    Put_Line(First'Img(3)  & "." & First'Img(5..6) & "_" & First'Img(8)  & "." & First'Img(10..11) & "|" &
+--             Second'Img(3..4) & "_" & Second'Img(6..7) & "|" &
     --Put_Line(First'Img(8)  & "." & First'Img(10..11) & "|" &
     --         Second'Img(6..7) & "|" &
+    Put_Line(First_Odds_Range_Type'Pos(First)'Img & "|" &
+             Second_Odds_Range_Type'Pos(Second)'Img & "|" &
 --             F8_Image(Self.Needed_Hitrate) & "|" &
 --             Self.Cnt'Img & "|" &
 --             Self.Cnt_Won'Img & "|" &
 --             Self.Cnt_Matched'Img & "|" &
 --             F8_Image(Self.Hitrate) & "|" &
 --             F8_Image(Self.Hitrate_Times_Count) & "|" &
-             F8_Image((Self.Hitrate - Self.Needed_Hitrate)*Float_8(Self.Cnt))
+--             F8_Image((Self.Hitrate - Self.Needed_Hitrate)*Float_8(Self.Cnt)* Self.Odds )
+             F8_Image(Self.Profit) & ":-\n" & 
+             Trim(Self.Matched.Won'Img) & "/" & Trim(Self.Matched.Cnt'Img) & "\n" & 
+--             "A" & F8_Image(100.0 * Self.Matched.Hitrate,1) & "%\n" &
+--             "N" & F8_Image(100.0 * Self.Needed_Hitrate,1)  & "%"
+             "D" & F8_Image(100.0 * (Self.Matched.Hitrate-Self.Needed_Hitrate),1) & "%\n" &
+             "A" & F8_Image(Self.Matched.Avg_Odds)
     );
---    if Second = Second_Odds_Range_Type'last then
---      New_Line;    
---    end if;
+    if Second = Second_Odds_Range_Type'last then
+      New_Line;    
+    end if;
     
   end Print_Result;
   ------------------------------------------------------------
