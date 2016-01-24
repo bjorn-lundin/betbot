@@ -10,6 +10,7 @@ with Logging; use Logging;
 with Table_Astarttimes;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Stacktrace;
+with Ada.Containers;
 
 procedure Race_Time is
 
@@ -94,6 +95,8 @@ procedure Race_Time is
   use type Text_Io.Count;
   type String_Ptr is access String;
   Db_Service : String_Ptr := null;
+  
+  use type Ada.Containers.Count_Type;
   
 begin
 
@@ -192,12 +195,12 @@ begin
         Text_Io.Put('.');   
         delay 1.0;
       end loop;  
-      if Now.Hour = 5 and then Now.Minute = 30 then -- new day, get new list after it is written to db
-        exit Day;
-      end if;        
-    end loop Day;
-    
-  end loop Days;    
+      -- new day, get new list after it is written to db
+      exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else 
+                     Start_Time_List.Length = 0 ;
+    end loop Day;    
+  end loop Days; 
+  
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
