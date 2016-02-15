@@ -38,7 +38,7 @@ procedure  Stat_Maker is
   FO: Statistics.First_Odds_Range_Type;
   SO: Statistics.Second_Odds_Range_Type;
   GMT,MT: Statistics.Market_Type;
-  
+
   use type Statistics.Market_Type;
 
   Cmd_Line           : Command_Line_Configuration;
@@ -46,8 +46,9 @@ procedure  Stat_Maker is
   Ba_Par_Update_Only : aliased Boolean := False;
   Ba_Par_Quiet       : aliased Boolean := False;
   Ia_Par_Lower_Limit : aliased Integer := 0;
+  Ia_Par_Week        : aliased Integer := 0;
   Lower_Limit        : Float_8 := -999_999_999.0;
-  
+
 
   Select_Untreated_Bets              : Sql.Statement_Type;
   Select_Prices_From_Dry             : Sql.Statement_Type;
@@ -77,24 +78,30 @@ begin
      Ba_Par_Quiet'access,
      Long_Switch => "--quiet",
      Help        => "no logging at all");
-     
+
    Define_Switch
     (Cmd_Line,
      Ia_Par_Lower_Limit'access,
      Long_Switch => "--lower_limit=",
      Help        => "won at least this amount");
      
-     
+   Define_Switch
+    (Cmd_Line,
+     Ia_Par_Week'access,
+     Long_Switch => "--week=",
+     Help        => "week num 2016");
+
+
   Getopt (Cmd_Line);  -- process the command line
-  
+
   if Ia_Par_Lower_Limit /= 0 then
     Lower_Limit := Float_8(Ia_Par_Lower_Limit);
-  end if; 
-  
+  end if;
+
   if Ba_Par_Quiet then
     Logging.Set_Quiet(True);
-  end if;  
-  
+  end if;
+
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
   if Ba_Par_Update_Only then
@@ -105,7 +112,7 @@ begin
          Db_Name  => Ini.Get_Value("stats", "name", ""),
          Login    => Ini.Get_Value("stats", "username", ""),
          Password => Ini.Get_Value("stats", "password", ""));
-    
+
     T.Start;
     Select_Untreated_Bets.Prepare("select * from ABETS where STATUS = '-'");
     Table_Abets.Read_List(Select_Untreated_Bets, Bet_List);
@@ -113,8 +120,8 @@ begin
     T.Commit;
     Sql.Close_Session;
     Log(Me, "logged out ael");
-  
-  
+
+
     if Bet_List.Length > 0 then
       -- update with info from dry
       Sql.Connect
@@ -140,34 +147,34 @@ begin
             "and PRICETS >= :ONESECAFTER " &
             "and PRICETS <= :TWOSECSAFTER " &
             "order by PRICETS ");
-  
+
           Select_Prices_From_Dry.Set("MARKETID", B.Marketid);
           Select_Prices_From_Dry.Set("SELECTIONID", B.Selectionid);
           Select_Prices_From_Dry.Set("ONESECAFTER", B.Betplaced + (0,0,0,1,0));
           Select_Prices_From_Dry.Set("TWOSECSAFTER", B.Betplaced + (0,0,0,2,0));
           Select_Prices_From_Dry.Open_Cursor;
-          Select_Prices_From_Dry.Fetch(Eos);
-          if not Eos then
-            Tmp_Price := Table_Apriceshistory.Get(Select_Prices_From_Dry);
-            if Ada.Strings.Fixed.Index(B.Betname, "WIN") > Natural(0) then
-              if Tmp_Price.Backprice >= B.Price then
-                B.Status(1) := 'M';
-                B.Pricematched := Tmp_Price.Backprice;
-              else
-                B.Status(1) := 'U';
+          B.Status(1) := 'U';
+          loop
+            Select_Prices_From_Dry.Fetch(Eos);
+            exit when Eos;
+              Tmp_Price := Table_Apriceshistory.Get(Select_Prices_From_Dry);
+              if Ada.Strings.Fixed.Index(B.Betname, "WIN") > Natural(0) then
+                if Tmp_Price.Backprice >= B.Price then
+                  B.Status(1) := 'M';
+                  B.Pricematched := Tmp_Price.Backprice;
+                -- B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+                  exit;
+                end if;
+              elsif Ada.Strings.Fixed.Index(B.Betname, "PLC") > Natural(0) then
+                if Tmp_Price.Backprice >= 1.02 then
+                  B.Status(1) := 'M';
+                  B.Pricematched := Tmp_Price.Backprice;
+                --  B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+                  exit;
+                end if;
               end if;
-            elsif Ada.Strings.Fixed.Index(B.Betname, "PLC") > Natural(0) then
-              if Tmp_Price.Backprice >= 1.02 then
-                B.Status(1) := 'M';
-                B.Pricematched := Tmp_Price.Backprice;
-              else
-                B.Status(1) := 'U';
-              end if;
-            end if;
-          else
-            B.Status(1) := 'U';
-          end if;
-  
+          end loop ;
+
           case B.Status(1) is
             when 'M' =>
               if B.Betwon then
@@ -184,7 +191,7 @@ begin
       T.Commit;
       Sql.Close_Session;
       Log(Me, "logged out dry");
-  
+
       Log(Me, "Login ael");
       Sql.Connect
           (Host     => Ini.Get_Value("stats", "host", ""),
@@ -192,7 +199,7 @@ begin
            Db_Name  => Ini.Get_Value("stats", "name", ""),
            Login    => Ini.Get_Value("stats", "username", ""),
            Password => Ini.Get_Value("stats", "password", ""));
-  
+
       T.Start;
       Cnt := 0;
       for b of Bet_List loop
@@ -205,10 +212,10 @@ begin
       T.Commit;
       Sql.Close_Session;
       Log(Me, "logged out ael and exit");
-      CLI.Set_Exit_Status(CLI.Success);
-    else  
-      CLI.Set_Exit_Status(CLI.Failure);
-    end if; -- bet_list.length > 0 
+     -- CLI.Set_Exit_Status(CLI.Success);
+   -- else
+     -- CLI.Set_Exit_Status(CLI.Failure);
+    end if; -- bet_list.length > 0
     return;
   end if ; --update only
 
@@ -224,21 +231,38 @@ begin
          Password => Ini.Get_Value("stats", "password", ""));
 
   T.Start;
-  Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
-  
+
   if Ia_Par_Lower_Limit = 0 then
+    Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
-      "and MARKETTYPE= :MARKETTYPE"
+      "and M.MARKETTYPE= :MARKETTYPE "
     );
     if GMT = Statistics.Win then
       Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "WIN");
-    else  
+    else
       Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "PLACE");
     end if;
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
-  else   
+    
+  elsif Ia_Par_Week > 0 then
+    Log(Me, "read all bets for week" & Ia_Par_Week'Img);
+    Select_Markets_Of_Correct_MT.Prepare(
+      "select B.* from ABETS B, ALL_MARKETS M " &
+      "where B.MARKETID = M.MARKETID " &
+      "and M.MARKETTYPE= :MARKETTYPE " &
+      "and extract(week from M.STARTTS) = :WEEK "
+    );
+    Select_Markets_Of_Correct_MT.Set("WEEK", Integer_4(Ia_Par_Week));
+    if GMT = Statistics.Win then
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "WIN");
+    else
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "PLACE");
+    end if;
+    Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
+      
+  else
     declare
       Betname    : Bot_Types.Bet_Name_Type := (others => ' ');
       End_Of_Set : Boolean := False;
@@ -251,32 +275,32 @@ begin
         "group by B.BETNAME " &
         "having sum(B.PROFIT) > :PROFIT " &
         "order by B.BETNAME");
-    
+
       if GMT = Statistics.Win then
         Select_Betnames_With_Higher_Profit.Set("MARKETTYPE", "WIN");
-      else  
+      else
         Select_Betnames_With_Higher_Profit.Set("MARKETTYPE", "PLACE");
       end if;
-      
+
       Select_Betnames_With_Higher_Profit.Set("PROFIT", Lower_Limit);
-      
+
       Select_Betnames.Prepare(
         "select * from ABETS " &
         "where BETNAME= :BETNAME");
-        
+
       Select_Betnames_With_Higher_Profit.Open_Cursor;
       loop
         Select_Betnames_With_Higher_Profit.Fetch(End_Of_Set);
         exit when End_Of_Set;
         Select_Betnames_With_Higher_Profit.Get("BETNAME",Betname);
-        Select_Betnames.Set("BETNAME",Betname); 
+        Select_Betnames.Set("BETNAME",Betname);
         Table_Abets.Read_List(Select_Betnames, Bet_List);
-      end loop;  
+      end loop;
       Select_Betnames_With_Higher_Profit.Close_Cursor;
-    end;    
+    end;
   end if;
-  
-  
+
+
   T.Commit;
   Sql.Close_Session;
   Log(Me, "logged out");
@@ -290,7 +314,7 @@ begin
 
   for fi in Statistics.First_Odds_Range_Type'range loop
     for sn in Statistics.Second_Odds_Range_Type'range loop
-       S(Fi,Sn,GMT).Calculate_Avg_Odds;    
+       S(Fi,Sn,GMT).Calculate_Avg_Odds;
       Statistics.Print_Result( S(Fi, Sn, GMT),Fi, Sn, GMT);
     end loop;
   end loop;

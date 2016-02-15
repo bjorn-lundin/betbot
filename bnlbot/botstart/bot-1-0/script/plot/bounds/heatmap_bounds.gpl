@@ -16,9 +16,7 @@ set xlabel "price interval leading horse"
 
 set xrange [-1:20]
 set yrange [-1:12]
-#set xtics 1
-#set ytics 1
- 
+
 set ytics (\
 "" -1,\
 "01-04" 0,\
@@ -59,6 +57,26 @@ set xtics rotate by 45 offset -2,-1 (\
 "1.91-1.95" 18,\
 "1.96-2.00" 19,\
 "" 20) 
+
+
+set cbrange [-700:200]
+
+#set palette maxcolors 9
+#set palette defined ( 0 '#000090',\
+#                      1 '#000fff',\
+#                      2 '#0090ff',\
+#                      3 '#0fffee',\
+#                      4 '#90ff70',\
+#                      5 '#ffee00',\
+#                      6 '#ff7000',\
+#                      7 '#ee0000',\
+#                      8 '#7f0000')
+#
+#set palette defined ( \
+#-1500 "dark-green", -1100 "green", \
+#-700 "yellow", -300 "dark-yellow", \
+#100 "red", 500 "dark-red" )
+
 
 plot source_dat using 1:2:3 with image, \
      source_dat using 1:2:(strcol(3)) with labels offset 0,1.5

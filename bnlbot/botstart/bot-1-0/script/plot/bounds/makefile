@@ -1,52 +1,77 @@
-
+MF := marker_file
 
 .PHONY : all png update_only
 
 all  : png
 
-png: heatmap_win_all.png heatmap_plc_all.png heatmap_win_50.png heatmap_plc_50.png
+png: heatmap_plc_week_01.png_plc heatmap_win_week_01.png_win \
+     heatmap_plc_week_02.png_plc heatmap_win_week_02.png_win \
+     heatmap_plc_week_03.png_plc heatmap_win_week_03.png_win \
+     heatmap_plc_week_04.png_plc heatmap_win_week_04.png_win \
+     heatmap_plc_week_05.png_plc heatmap_win_week_05.png_win \
+     heatmap_plc_week_06.png_plc heatmap_win_week_06.png_win \
+     heatmap_plc_week_07.png_plc heatmap_win_week_07.png_win 
+     
+#png: heatmap_win_all.png heatmap_plc_all.png heatmap_win_50.png heatmap_plc_50.png \
+#     heatmap_win_week_01.png heatmap_plc_week_01.png \
+#     heatmap_win_week_02.png heatmap_plc_week_02.png \
+#     heatmap_win_week_03.png heatmap_plc_week_03.png
 
-heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
-	gnuplot -e "type='Win'" \
-	        -e "desc='profit skr'" \
-	        -e "target_png='heatmap_win_all.png'" \
-            -e "source_dat='heatmap_win_all.dat'" heatmap_bounds.gpl
+#heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
+#	gnuplot -e "type='Win'" \
+#	        -e "desc='profit skr'" \
+#	        -e "target_png='heatmap_win_all.png'" \
+#            -e "source_dat='heatmap_win_all.dat'" heatmap_bounds.gpl
+#
+#heatmap_win_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
+#	$(BOT_TARGET)/bin/stat_maker --market_type=win  > heatmap_win_all.dat
+#
+#heatmap_plc_all.png : heatmap_plc_all.dat heatmap_bounds.gpl
+#	gnuplot -e "type='Place'" \
+#	        -e "desc='profit skr'" \
+#	        -e "target_png='heatmap_plc_all.png'" \
+#            -e "source_dat='heatmap_plc_all.dat'" heatmap_bounds.gpl
+#
+#heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
+#	$(BOT_TARGET)/bin/stat_maker --market_type=plc > heatmap_plc_all.dat
+#
 
-heatmap_win_all.dat : $(BOT_TARGET)/bin/stat_maker 
-	$(BOT_TARGET)/bin/stat_maker --market_type=win  > heatmap_win_all.dat
 
-heatmap_plc_all.png : heatmap_plc_all.dat heatmap_bounds.gpl
+#weeknum is $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1)
+
+%.png_plc : %.dat_plc
 	gnuplot -e "type='Place'" \
-	        -e "desc='profit skr'" \
-	        -e "target_png='heatmap_plc_all.png'" \
-            -e "source_dat='heatmap_plc_all.dat'" heatmap_bounds.gpl
+	        -e "desc='week $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) plc'" \
+	        -e "target_png='$*.png'" \
+            -e "source_dat='$*.dat'" heatmap_bounds.gpl
 
-heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker 
-	$(BOT_TARGET)/bin/stat_maker --market_type=plc > heatmap_plc_all.dat
 
-heatmap_win_50.png : heatmap_win_50.dat heatmap_bounds.gpl
-	gnuplot -e "type='Win'" \
-	        -e "desc='profit skr (+50)'" \
-	        -e "target_png='heatmap_win_50.png'" \
-            -e "source_dat='heatmap_win_50.dat'" heatmap_bounds.gpl
-            
-heatmap_win_50.dat : $(BOT_TARGET)/bin/stat_maker 
-	$(BOT_TARGET)/bin/stat_maker --market_type=win --lower_limit=50 > heatmap_win_50.dat
+%.dat_plc : $(BOT_TARGET)/bin/stat_maker $(MF)
+	$(BOT_TARGET)/bin/stat_maker \
+	  --market_type=plc\
+	  --week=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
+	 --lower_limit=-1 > $*.dat
 
-heatmap_plc_50.png : heatmap_plc_50.dat heatmap_bounds.gpl
-	gnuplot -e "type='Place'" \
-	        -e "desc='profit skr (+50)'" \
-	        -e "target_png='heatmap_plc_50.png'" \
-            -e "source_dat='heatmap_plc_50.dat'" heatmap_bounds.gpl
 
-heatmap_plc_50.dat : $(BOT_TARGET)/bin/stat_maker
-	$(BOT_TARGET)/bin/stat_maker --market_type=plc --lower_limit=50 > heatmap_plc_50.dat
+%.png_win : %.dat_win
+	gnuplot -e "type='win'" \
+	        -e "desc='week $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) win'" \
+	        -e "target_png='$*.png'" \
+            -e "source_dat='$*.dat'" heatmap_bounds.gpl
 
-    
-    
+%.dat_win : $(BOT_TARGET)/bin/stat_maker $(MF)
+	$(BOT_TARGET)/bin/stat_maker \
+	  --market_type=win\
+	  --week=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
+	 --lower_limit=-1 > $*.dat
+
+
+
+
     
 update_only :
 	$(BOT_TARGET)/bin/stat_maker --update_only
+	touch $(MF)
     
 
 
