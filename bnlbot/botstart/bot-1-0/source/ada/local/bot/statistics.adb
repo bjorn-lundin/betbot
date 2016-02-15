@@ -149,6 +149,42 @@ package body Statistics is
   end Get_Market_Type;
   ------------------------------------------------------------
 
+  
+  function Get_Avg_Odds(Betname : String) return Float_8 is
+    First, Second  : Float_8 := 0.0;
+  begin --      1         2
+    -- 1234567890123456789012345678
+    -- BACK_1_01_1_05_11_13_1_2_WIN
+    First  := Float_8'Value( Betname( 6.. 6) & "." & Betname( 8.. 9));
+    Second := Float_8'Value( Betname(11..11) & "." & Betname(13..14));
+    
+    if Betname(26..28) = "WIN" then
+      return (First + Second) / 2.0;
+    elsif Betname(26..28) = "PLC" then
+      if    First >= 2.0 then
+        return 1.10;
+      elsif First >= 1.8 then
+        return 1.08;
+      elsif First >= 1.6 then
+        return 1.06;
+      elsif First >= 1.4 then
+        return 1.04;
+      elsif First >= 1.2 then
+        return 1.02;
+      else
+        return 1.01;
+      end if;
+    else
+      raise Constraint_Error with "bad name not PLC/WIN";
+    end if;
+  exception
+    when Constraint_Error =>
+     Text_io.Put_Line (Betname);
+     raise;
+  end Get_Avg_Odds;
+  
+  ------------------------------------------------------------
+  
 end Statistics;
 
 

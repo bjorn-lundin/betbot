@@ -87,7 +87,8 @@ package Statistics is
   function Get_Market_Type(Betname : String) return Market_Type;
      
   
- 
+   function Get_Avg_Odds(Betname : String) return Float_8 ;
+
   
 
 end Statistics;
