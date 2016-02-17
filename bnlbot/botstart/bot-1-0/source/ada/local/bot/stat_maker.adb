@@ -25,7 +25,7 @@ with Ada.Containers;
 
 procedure  Stat_Maker is
   package EV renames Ada.Environment_Variables;
-  package CLI renames Ada.Command_Line;
+ -- package CLI renames Ada.Command_Line;
 
   s : Statistics.Stats_Array_Type;
   T : Sql.Transaction_Type;
@@ -139,42 +139,50 @@ begin
           Log(Me, F8_Image(Float_8(cnt)*100.0/Float_8(Bet_List.Length)) & '%');
         end if;
         if B.Status(1) = '-' then
-          Select_Prices_From_Dry.Prepare(
-            "select * " &
-            "from APRICESHISTORY " &
-            "where MARKETID = :MARKETID " &
-            "and SELECTIONID = :SELECTIONID " &
-            "and PRICETS >= :ONESECAFTER " &
-            "and PRICETS <= :TWOSECSAFTER " &
-            "order by PRICETS ");
-
-          Select_Prices_From_Dry.Set("MARKETID", B.Marketid);
-          Select_Prices_From_Dry.Set("SELECTIONID", B.Selectionid);
-          Select_Prices_From_Dry.Set("ONESECAFTER", B.Betplaced + (0,0,0,1,0));
-          Select_Prices_From_Dry.Set("TWOSECSAFTER", B.Betplaced + (0,0,0,2,0));
-          Select_Prices_From_Dry.Open_Cursor;
+        --  Select_Prices_From_Dry.Prepare(
+        --    "select * " &
+        --    "from APRICESHISTORY " &
+        --    "where MARKETID = :MARKETID " &
+        --    "and SELECTIONID = :SELECTIONID " &
+        --    "and PRICETS >= :ONESECAFTER " &
+        --    "and PRICETS <= :TWOSECSAFTER " &
+        --    "order by PRICETS ");
+        --
+        --  Select_Prices_From_Dry.Set("MARKETID", B.Marketid);
+        --  Select_Prices_From_Dry.Set("SELECTIONID", B.Selectionid);
+        --  Select_Prices_From_Dry.Set("ONESECAFTER", B.Betplaced + (0,0,0,1,0));
+        --  Select_Prices_From_Dry.Set("TWOSECSAFTER", B.Betplaced + (0,0,0,2,0));
+        --  Select_Prices_From_Dry.Open_Cursor;
+        --  B.Status(1) := 'U';
+        --  loop
+        --    Select_Prices_From_Dry.Fetch(Eos);
+        --    exit when Eos;
+        --      Tmp_Price := Table_Apriceshistory.Get(Select_Prices_From_Dry);
+        --      if Ada.Strings.Fixed.Index(B.Betname, "WIN") > Natural(0) then
+        --        if Tmp_Price.Backprice >= B.Price then
+        --          B.Status(1) := 'M';
+        --          B.Pricematched := Tmp_Price.Backprice;
+        --        -- B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+        --          exit;
+        --        end if;
+        --      elsif Ada.Strings.Fixed.Index(B.Betname, "PLC") > Natural(0) then
+        --        if Tmp_Price.Backprice >= 1.02 then
+        --          B.Status(1) := 'M';
+        --          B.Pricematched := Tmp_Price.Backprice;
+        --        --  B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+        --          exit;
+        --        end if;
+        --      end if;
+        --  end loop ;
           B.Status(1) := 'U';
-          loop
-            Select_Prices_From_Dry.Fetch(Eos);
-            exit when Eos;
-              Tmp_Price := Table_Apriceshistory.Get(Select_Prices_From_Dry);
-              if Ada.Strings.Fixed.Index(B.Betname, "WIN") > Natural(0) then
-                if Tmp_Price.Backprice >= B.Price then
-                  B.Status(1) := 'M';
-                  B.Pricematched := Tmp_Price.Backprice;
-                -- B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
-                  exit;
-                end if;
-              elsif Ada.Strings.Fixed.Index(B.Betname, "PLC") > Natural(0) then
-                if Tmp_Price.Backprice >= 1.02 then
-                  B.Status(1) := 'M';
-                  B.Pricematched := Tmp_Price.Backprice;
-                --  B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
-                  exit;
-                end if;
-              end if;
-          end loop ;
-
+          if Ada.Strings.Fixed.Index(B.Betname, "WIN") > Natural(0) then
+              B.Status(1) := 'M';
+              B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+          elsif Ada.Strings.Fixed.Index(B.Betname, "PLC") > Natural(0) then
+              B.Status(1) := 'M';
+              B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);
+          end if;
+        
           case B.Status(1) is
             when 'M' =>
               if B.Betwon then
@@ -185,7 +193,7 @@ begin
             when others =>
                 B.Profit := 0.0;
           end case;
-          Select_Prices_From_Dry.Close_Cursor;
+      --    Select_Prices_From_Dry.Close_Cursor;
         end if;
       end loop;
       T.Commit;

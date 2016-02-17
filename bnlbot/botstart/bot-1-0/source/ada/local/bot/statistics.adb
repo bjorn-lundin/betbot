@@ -172,7 +172,7 @@ package body Statistics is
       elsif First >= 1.2 then
         return 1.02;
       else
-        return 1.01;
+        return 1.02;
       end if;
     else
       raise Constraint_Error with "bad name not PLC/WIN";
