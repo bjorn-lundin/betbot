@@ -1918,12 +1918,12 @@ package body Bet_Handler is
     T.Start;
     -- check the dry run bets
     Select_Dry_Run_Bets.Prepare(
-      "select B.* from ABETS B, ALL_MARKETS M " &
+      "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " &
       "and B.BETWON is null " & -- will be not null if updated
-      "and B.BETID < 1000000000 " & 
+--      "and B.BETID < 1000000000 " & -- ALL BETS
       "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
-      "and exists (select 'a' from ALL_RUNNERS R where R.MARKETID = B.MARKETID and R.STATUS = 'WINNER')" ); -- must have had time to check ...  
+      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
     Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
     T.Commit;
 
