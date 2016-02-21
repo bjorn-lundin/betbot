@@ -143,64 +143,68 @@ begin
     when Mode_Sql => null;
   end case;
  
-  
-  Days : loop        
-    Start_Time_List.Clear;
+  begin
+    Days : loop        
+      Start_Time_List.Clear;
+      
+      case Mode is
+        when Mode_Rpc =>
+          Rpc.Login;
+          Rpc.Get_Starttimes(List => Start_Time_List);
+          Sql.Connect
+              (Host     => Ini.Get_Value("database", "host", ""),
+               Port     => Ini.Get_Value("database", "port", 5432),
+               Db_Name  => Ini.Get_Value("database", "name", ""),
+               Login    => Ini.Get_Value("database", "username", ""),
+               Password =>Ini.Get_Value("database", "password", ""));
+          Insert_Starttimes(List => Start_Time_List);
+          Rpc.Logout;
+          Sql.Close_Session;
+          exit Days;
+        when Mode_Sql =>
+          Sql.Connect
+              (Host     => Ini.Get_Value(Db_Service.all, "host", ""),
+               Port     => Ini.Get_Value(Db_Service.all, "port", 5432),
+               Db_Name  => Ini.Get_Value(Db_Service.all, "name", ""),
+               Login    => Ini.Get_Value(Db_Service.all, "username", ""),
+               Password => Ini.Get_Value(Db_Service.all, "password", ""));
+          Get_Starttimes(List => Start_Time_List);
+          Sql.Close_Session;
+      end case;
     
-    case Mode is
-      when Mode_Rpc =>
-        Rpc.Login;
-        Rpc.Get_Starttimes(List => Start_Time_List);
-        Sql.Connect
-            (Host     => Ini.Get_Value("database", "host", ""),
-             Port     => Ini.Get_Value("database", "port", 5432),
-             Db_Name  => Ini.Get_Value("database", "name", ""),
-             Login    => Ini.Get_Value("database", "username", ""),
-             Password =>Ini.Get_Value("database", "password", ""));
-        Insert_Starttimes(List => Start_Time_List);
-        Rpc.Logout;
-        Sql.Close_Session;
-        exit Days;
-      when Mode_Sql =>
-        Sql.Connect
-            (Host     => Ini.Get_Value(Db_Service.all, "host", ""),
-             Port     => Ini.Get_Value(Db_Service.all, "port", 5432),
-             Db_Name  => Ini.Get_Value(Db_Service.all, "name", ""),
-             Login    => Ini.Get_Value(Db_Service.all, "username", ""),
-             Password => Ini.Get_Value(Db_Service.all, "password", ""));
-        Get_Starttimes(List => Start_Time_List);
-        Sql.Close_Session;
-    end case;
-
-    Day : loop
-      Arrow_Is_Printed := False;
-      Now := Calendar2.Clock;
-      Text_Io.New_Line(Text_Io.Count(Start_Time_List.Length) +1);   
-      for S of Start_Time_List loop
-        if not Arrow_Is_Printed and then
-          Now <= S.Starttime then
-             Print(
-               S.Starttime.String_Time(Seconds => False) & " | " &
-               S.Venue(1..15) & " <----"
-             ) ;
-          Arrow_Is_Printed := True;
-        else
-             Print(
-               S.Starttime.String_Time(Seconds => False) & " | " &
-               S.Venue(1..15)
-             ) ;
-        end if;      
-      end loop;
-      for i in 1 .. 30 loop
-        Text_Io.Put('.');   
-        delay 1.0;
-      end loop;  
-      -- new day, get new list after it is written to db
-      exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else 
-                     Start_Time_List.Length = 0 ;
-    end loop Day;    
-  end loop Days; 
-  
+      Day : loop
+        Arrow_Is_Printed := False;
+        Now := Calendar2.Clock;
+        Text_Io.New_Line(Text_Io.Count(Start_Time_List.Length) +1);   
+        for S of Start_Time_List loop
+          if not Arrow_Is_Printed and then
+            Now <= S.Starttime then
+               Print(
+                 S.Starttime.String_Time(Seconds => False) & " | " &
+                 S.Venue(1..15) & " <----"
+               ) ;
+            Arrow_Is_Printed := True;
+          else
+               Print(
+                 S.Starttime.String_Time(Seconds => False) & " | " &
+                 S.Venue(1..15)
+               ) ;
+          end if;      
+        end loop;
+        for i in 1 .. 30 loop
+          Text_Io.Put('.');   
+          delay 1.0;
+        end loop;  
+        -- new day, get new list after it is written to db
+        exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else 
+                       Start_Time_List.Length = 0 ;
+      end loop Day;    
+    end loop Days; 
+  exception
+    when Sql.Not_Connected =>
+      Text_Io.Put_Line("Sql.Not_Connected, wait for 120 s");   
+      delay 120.0;
+  end;  
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
