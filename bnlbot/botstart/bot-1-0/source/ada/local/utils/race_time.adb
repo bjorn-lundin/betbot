@@ -143,8 +143,8 @@ begin
     when Mode_Sql => null;
   end case;
  
-  begin
-    Days : loop        
+  Days : loop        
+    begin
       Start_Time_List.Clear;
       
       case Mode is
@@ -199,12 +199,12 @@ begin
         exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else 
                        Start_Time_List.Length = 0 ;
       end loop Day;    
-    end loop Days; 
-  exception
-    when Sql.Not_Connected =>
-      Text_Io.Put_Line("Sql.Not_Connected, wait for 120 s");   
-      delay 120.0;
-  end;  
+    exception
+      when Sql.Not_Connected =>
+        Text_Io.Put_Line("Sql.Not_Connected, wait for 120 s");   
+        delay 120.0;
+    end;  
+  end loop Days; 
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
