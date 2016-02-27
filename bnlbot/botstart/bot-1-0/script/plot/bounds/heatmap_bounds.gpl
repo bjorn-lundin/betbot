@@ -59,7 +59,10 @@ set xtics rotate by 45 offset -2,-1 (\
 "" 20) 
 
 
-set cbrange [-700:200]
+#set cbrange [0:300]
+
+set cbrange  [range_low:range_high]
+
 
 #set palette maxcolors 9
 #set palette defined ( 0 '#000090',\
