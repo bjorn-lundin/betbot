@@ -13,6 +13,7 @@
  $BOT_TARGET/bin/repo --postgresql=astarttimes   >> tbl.sql
 
 echo ""                                       >> tbl.sql
+echo "begin;"                                 >> tbl.sql
 echo "CREATE SEQUENCE bet_id_serial "         >> tbl.sql
 echo "  INCREMENT 1"                          >> tbl.sql
 echo "  MINVALUE 1"                           >> tbl.sql
@@ -119,5 +120,6 @@ echo "    arunnersold.runnernamenum,        " >> tbl.sql
 echo "    arunnersold.ixxlupd,              " >> tbl.sql
 echo "    arunnersold.ixxluts               " >> tbl.sql
 echo "   FROM arunnersold;                  " >> tbl.sql
+echo "commit;                               " >> tbl.sql
 echo "                                      " >> tbl.sql
    

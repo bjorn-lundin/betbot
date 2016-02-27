@@ -25,7 +25,8 @@ with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
 
-procedure Long_Poll_Market is
+
+procedure Long_Poll_GH_Market is
   package EV renames Ada.Environment_Variables;
   use type Rpc.Result_Type;
 
@@ -42,7 +43,8 @@ procedure Long_Poll_Market is
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Select_Open_Markets : Sql.Statement_Type; 
-  
+  Process : Process_Io.Process_Type     := Process_Io.This_Process;
+
   -------------------------------------------------------------
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
@@ -105,6 +107,7 @@ procedure Long_Poll_Market is
           Ixxlupd      => Price.Ixxlupd,
           Ixxluts      => Now
         );
+        Priceshistory_Data.Ixxlupd := Process.Name;
         Priceshistory_Data.Insert(Keep_Timestamp => True);
       end loop;
       T.Commit;
@@ -267,5 +270,5 @@ exception
     Log(Me, "Closed log and die");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-end Long_Poll_Market;
+end Long_Poll_GH_Market;
 
