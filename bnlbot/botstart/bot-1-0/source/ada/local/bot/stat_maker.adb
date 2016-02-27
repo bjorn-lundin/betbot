@@ -25,7 +25,6 @@ with Ada.Containers;
 
 procedure  Stat_Maker is
   package EV renames Ada.Environment_Variables;
- -- package CLI renames Ada.Command_Line;
 
   s : Statistics.Stats_Array_Type;
   T : Sql.Transaction_Type;
@@ -33,7 +32,6 @@ procedure  Stat_Maker is
   Bet_List  : Table_Abets.Abets_List_Pack2.List;
   Tmp_Price : Table_Apriceshistory.Data_Type;
   Eos       : Boolean := False;
-
 
   FO: Statistics.First_Odds_Range_Type;
   SO: Statistics.Second_Odds_Range_Type;
@@ -47,6 +45,7 @@ procedure  Stat_Maker is
   Ba_Par_Quiet       : aliased Boolean := False;
   Ia_Par_Lower_Limit : aliased Integer := 0;
   Ia_Par_Week        : aliased Integer := 0;
+  Ia_Par_Month       : aliased Integer := 0;
   Lower_Limit        : Float_8 := -999_999_999.0;
 
 
@@ -59,8 +58,13 @@ procedure  Stat_Maker is
   Cnt : Natural := 0;
   Me : constant String := "Stat_Maker.Main";
   use type Ada.Containers.Count_Type;
-begin
 
+  subtype Week_Type is Integer_4 range 0 .. 53;
+  Week  : Week_Type  := 0;
+  subtype Month_Type is Integer_4 range 0 .. 12;
+  Month : Month_Type := 0;
+  
+begin
    Define_Switch
     (Cmd_Line,
      Sa_Par_Market_Type'access,
@@ -91,6 +95,11 @@ begin
      Long_Switch => "--week=",
      Help        => "week num 2016");
 
+   Define_Switch
+    (Cmd_Line,
+     Ia_Par_Month'access,
+     Long_Switch => "--month=",
+     Help        => "month (numerical)");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -100,7 +109,7 @@ begin
 
   if Ba_Par_Quiet then
     Logging.Set_Quiet(True);
-  end if;
+  end if;  
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
@@ -240,6 +249,9 @@ begin
 
   T.Start;
 
+  Week  := Week_Type(Ia_Par_Week);
+  Month := Month_Type(Ia_Par_Month);
+
   if Ia_Par_Lower_Limit = 0 then
     Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
     Select_Markets_Of_Correct_MT.Prepare(
@@ -254,7 +266,7 @@ begin
     end if;
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
     
-  elsif Ia_Par_Week > 0 then
+  elsif Week > 0 then
     Log(Me, "read all bets for week" & Ia_Par_Week'Img);
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
@@ -262,7 +274,23 @@ begin
       "and M.MARKETTYPE= :MARKETTYPE " &
       "and extract(week from M.STARTTS) = :WEEK "
     );
-    Select_Markets_Of_Correct_MT.Set("WEEK", Integer_4(Ia_Par_Week));
+    Select_Markets_Of_Correct_MT.Set("WEEK", Week);
+    if GMT = Statistics.Win then
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "WIN");
+    else
+      Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "PLACE");
+    end if;
+    Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
+    
+  elsif Month > 0 then
+    Log(Me, "read all bets for month" & Month'Img);
+    Select_Markets_Of_Correct_MT.Prepare(
+      "select B.* from ABETS B, ALL_MARKETS M " &
+      "where B.MARKETID = M.MARKETID " &
+      "and M.MARKETTYPE= :MARKETTYPE " &
+      "and extract(month from M.STARTTS) = :MONTH "
+    );
+    Select_Markets_Of_Correct_MT.Set("MONTH", Month);
     if GMT = Statistics.Win then
       Select_Markets_Of_Correct_MT.Set("MARKETTYPE", "WIN");
     else
@@ -317,6 +345,7 @@ begin
     FO := Statistics.Get_First_Odds_Range(B.Betname);
     SO := Statistics.Get_Second_Odds_Range(B.Betname);
     MT:= Statistics.Get_Market_Type(B.Betname);
+    B.Pricematched := Statistics.Get_Avg_Odds(B.Betname);    
     S(FO,SO,MT).Treat(B);
   end loop;
 

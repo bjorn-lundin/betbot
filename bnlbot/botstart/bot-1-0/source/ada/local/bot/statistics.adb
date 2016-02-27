@@ -67,7 +67,7 @@ package body Statistics is
         Self.Matched.Hitrate := Float_8(Self.Matched.Won) / Float_8(Self.Matched.Cnt);
       end if;
       
-      Self.Profit := Self.Profit + Bet.Profit;
+      Self.Profit := Self.Profit + Bet.Profit * (1.0 - Commission);
       Self.Matched.Odds_List.Append(Bet.Pricematched);
     end if;
   end Treat;
@@ -163,12 +163,20 @@ package body Statistics is
     elsif Betname(26..28) = "PLC" then
       if    First >= 2.0 then
         return 1.10;
+      elsif First >= 1.9 then
+        return 1.09;
       elsif First >= 1.8 then
         return 1.08;
+      elsif First >= 1.7 then
+        return 1.07;
       elsif First >= 1.6 then
         return 1.06;
+      elsif First >= 1.5 then
+        return 1.05;
       elsif First >= 1.4 then
         return 1.04;
+      elsif First >= 1.3 then
+        return 1.03;
       elsif First >= 1.2 then
         return 1.02;
       else
