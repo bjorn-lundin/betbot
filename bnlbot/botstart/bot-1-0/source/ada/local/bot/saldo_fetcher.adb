@@ -83,6 +83,8 @@ procedure Saldo_Fetcher is
           "jmb " & Get_Db_Size("jmb")  & Cr & Lf &
           "msm " & Get_Db_Size("msm")  & Cr & Lf &
           "dry " & Get_Db_Size("dry")  & Cr & Lf &
+          "ael " & Get_Db_Size("ael")  & Cr & Lf &
+          "ghd " & Get_Db_Size("ghd")  & Cr & Lf &
           "ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
           Cr & Lf &          
           "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &

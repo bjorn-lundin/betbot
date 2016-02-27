@@ -70,12 +70,12 @@ procedure Markets_Fetcher_Greyhounds is
   My_Lock         : Lock.Lock_Type;    
   UTC_Time_Start,
   UTC_Time_Stop   : Calendar2.Time_Type ;
-  Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
-  Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
+ -- Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
+ -- Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
   Three_Days      : Calendar2.Interval_Type := (3,0,0,0,0);
-  One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
+ -- One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
 
@@ -234,7 +234,7 @@ procedure Markets_Fetcher_Greyhounds is
   Is_Time_To_Check_Markets : Boolean               := True;
   Market_Found             : Boolean               := True;
   Market_Ids               : JSON_Array            := Empty_Array;
-  Minute_Last_Check        : Calendar2.Minute_Type := 0;
+ -- Minute_Last_Check        : Calendar2.Minute_Type := 0;
   Now                      : Calendar2.Time_Type   := Calendar2.Clock;
   OK                       : Boolean               := True;
   
@@ -335,7 +335,7 @@ begin
     
       exit Main_Loop when Is_Time_To_Exit;
     end loop;           
-    Minute_Last_Check := Now.Minute;
+    --Minute_Last_Check := Now.Minute;
     
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
@@ -347,11 +347,11 @@ begin
     --check for stale token - send keepAlive, and re-login if bad
     Rpc.Keep_Alive(OK);
     if not OK then
-       Rpc.Login;
+      Rpc.Login;
     end if;
     
     UTC_Time_Stop  := UTC_Time_Start + Three_Days;
-    UTC_Time_Start := UTC_Time_Start ;
+   -- UTC_Time_Start := UTC_Time_Start ;
  
     T.Start;
     
