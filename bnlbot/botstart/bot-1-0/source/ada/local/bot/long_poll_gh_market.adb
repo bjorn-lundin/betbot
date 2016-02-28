@@ -54,6 +54,7 @@ procedure Long_Poll_GH_Market is
   Process : Process_Io.Process_Type     := Process_Io.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("gh_mark_fetcher"),(others => ' '));
   type Best_Runners_Array_Type is array (1..6) of Table_Aprices.Data_Type ;
+  Update_Betwon_To_Null : Sql.Statement_Type;
 
   -------------------------------------------------------------
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -161,7 +162,11 @@ procedure Long_Poll_GH_Market is
                       Bet_Persistence  => Persist,
                       Bet_Placed       => Best_Runners(1).Pricets,
                       Bet              => Bet ) ;
-        Bet.Insert;              
+        Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+        Log("inserting " &  Bet.To_String);
+        Bet.Insert;
+        Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+        Update_Betwon_To_Null.Execute; 
       end if;
 
       
