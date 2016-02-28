@@ -161,6 +161,7 @@ procedure Long_Poll_GH_Market is
                       Bet_Persistence  => Persist,
                       Bet_Placed       => Best_Runners(1).Pricets,
                       Bet              => Bet ) ;
+        Bet.Insert;              
       end if;
 
       
