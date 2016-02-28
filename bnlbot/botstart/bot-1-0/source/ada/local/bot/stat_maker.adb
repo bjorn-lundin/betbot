@@ -239,7 +239,7 @@ begin
   GMT := Statistics.Market_Type'Value(Sa_Par_Market_Type.all);
 
   Bet_List.Clear;
-  Log(Me, "Login ael");
+  --Log(Me, "Login ael");
   Sql.Connect
         (Host     => Ini.Get_Value("stats", "host", ""),
          Port     => Ini.Get_Value("stats", "port", 5432),
@@ -253,7 +253,7 @@ begin
   Month := Month_Type(Ia_Par_Month);
 
   if Ia_Par_Lower_Limit = 0 then
-    Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
+   -- Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
@@ -267,7 +267,7 @@ begin
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
     
   elsif Week > 0 then
-    Log(Me, "read all bets for week" & Ia_Par_Week'Img);
+   -- Log(Me, "read all bets for week" & Ia_Par_Week'Img);
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
@@ -283,7 +283,7 @@ begin
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
     
   elsif Month > 0 then
-    Log(Me, "read all bets for month" & Month'Img);
+   -- Log(Me, "read all bets for month" & Month'Img);
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
@@ -339,7 +339,7 @@ begin
 
   T.Commit;
   Sql.Close_Session;
-  Log(Me, "logged out");
+--  Log(Me, "logged out");
 
   for b of Bet_List loop
     FO := Statistics.Get_First_Odds_Range(B.Betname);
@@ -356,7 +356,7 @@ begin
     end loop;
   end loop;
 
-  Log(Me, "Done");
+ -- Log(Me, "Done");
 
 
 exception
