@@ -50,7 +50,9 @@ procedure Long_Poll_GH_Market is
   Ok,
   Is_Time_To_Exit : Boolean := False;
   --Select_Open_Markets : Sql.Statement_Type; 
+  Data : Bot_Messages.Poll_State_Record ;
   Process : Process_Io.Process_Type     := Process_Io.This_Process;
+  Markets_Fetcher : Process_Io.Process_Type := (("gh_mark_fetcher"),(others => ' '));
   type Best_Runners_Array_Type is array (1..6) of Table_Aprices.Data_Type ;
 
   -------------------------------------------------------------
@@ -269,9 +271,9 @@ begin
 
 
   Main_Loop : loop
---    --notfy markets_fetcher that we are free
---      Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
---      Bot_Messages.Send(Markets_Fetcher, Data);    
+    --notfy markets_fetcher that we are free
+      Data := (Free => 1, Name => Process.Name , Node => Process.Node);
+      Bot_Messages.Send(Markets_Fetcher, Data);    
   
     begin
       Log(Me, "Start receive");
@@ -284,9 +286,9 @@ begin
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
         when Bot_Messages.Market_Notification_Message    =>
-          ----notfy markets_fetcher that we are busy
-          --Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-          --Bot_Messages.Send(Markets_Fetcher, Data);    
+          --notfy markets_fetcher that we are busy
+          Data := (Free => 0, Name => Process.Name , Node => Process.Node);
+          Bot_Messages.Send(Markets_Fetcher, Data);    
           Run(Bot_Messages.Data(Msg));
           --null;
         when others =>
