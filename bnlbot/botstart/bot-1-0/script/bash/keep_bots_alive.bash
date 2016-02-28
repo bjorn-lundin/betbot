@@ -136,7 +136,7 @@ function Check_Bots_For_User () {
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 
-  if [ $BOT_HOUR == "13" ] ; then
+  if [ $BOT_HOUR == "12" ] ; then
     if [ $BOT_MINUTE == "10" ] ; then
       Start_Bot $BOT_USER data_mover data_mover
       $BOT_TARGET/bin/race_time --rpc
@@ -201,7 +201,7 @@ function Check_System_Bots_For_User () {
     ghd)
        Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-       Start_Bot $BOT_USER long_poll long_poll_gh_market
+       Start_Bot $BOT_USER gh_poll_1 long_poll_gh_market
        Start_Bot $BOT_USER bet_checker bet_checker    
     ;;
   esac     

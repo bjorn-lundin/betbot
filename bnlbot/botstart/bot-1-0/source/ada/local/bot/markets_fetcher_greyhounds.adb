@@ -71,18 +71,16 @@ procedure Markets_Fetcher_Greyhounds is
   UTC_Time_Start,
   UTC_Time_Stop   : Calendar2.Time_Type ;
  -- Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
- -- Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
+  Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
+  One_Minute      : Calendar2.Interval_Type := (0,0,1,0,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
-  Three_Days      : Calendar2.Interval_Type := (3,0,0,0,0);
+ -- Three_Days      : Calendar2.Interval_Type := (3,0,0,0,0);
  -- One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
 
   Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "ghd" ;
---  Is_Tester         : Boolean := EV.Value("BOT_USER") = "ael" ;
---  Is_Better         : Boolean := (not Is_Data_Collector) and (not Is_Tester);
-  
 
   
   type Poll_Process is record
@@ -90,29 +88,26 @@ procedure Markets_Fetcher_Greyhounds is
     Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
   end record;   
   
-  Data_Pollers : array (1..8) of Poll_Process := (
-    1 => (True, (("poll_market_1  "), (others => ' '))),
-    2 => (True, (("poll_market_2  "), (others => ' '))),
-    3 => (True, (("poll_market_3  "), (others => ' '))),
-    4 => (True, (("poll_market_4  "), (others => ' '))),
-    5 => (True, (("poll_market_5  "), (others => ' '))),
-    6 => (True, (("poll_market_6  "), (others => ' '))),
-    7 => (True, (("poll_market_7  "), (others => ' '))),
-    8 => (True, (("poll_market_8  "), (others => ' ')))
-  );
+--  Data_Pollers : array (1..8) of Poll_Process := (
+--    1 => (True, (("poll_market_1  "), (others => ' '))),
+--    2 => (True, (("poll_market_2  "), (others => ' '))),
+--    3 => (True, (("poll_market_3  "), (others => ' '))),
+--    4 => (True, (("poll_market_4  "), (others => ' '))),
+--    5 => (True, (("poll_market_5  "), (others => ' '))),
+--    6 => (True, (("poll_market_6  "), (others => ' '))),
+--    7 => (True, (("poll_market_7  "), (others => ' '))),
+--    8 => (True, (("poll_market_8  "), (others => ' ')))
+--  );
   
-  Race_Pollers : array (1..4) of Poll_Process := (
-    1 => (True, (("poll_1         "), (others => ' '))),
-    2 => (True, (("poll_2         "), (others => ' '))),
-    3 => (True, (("poll_3         "), (others => ' '))),
-    4 => (True, (("poll_4         "), (others => ' ')))
+  Race_Pollers : array (1..1) of Poll_Process := (
+    1 => (True, (("gh_poll_1      "), (others => ' ')))
   );
-  Test_Pollers : array (1..4) of Poll_Process := (
-    1 => (True, (("poll_bounds_1  "), (others => ' '))),
-    2 => (True, (("poll_bounds_2  "), (others => ' '))),
-    3 => (True, (("poll_bounds_3  "), (others => ' '))),
-    4 => (True, (("poll_bounds_4  "), (others => ' ')))
-  );
+--  Test_Pollers : array (1..4) of Poll_Process := (
+--    1 => (True, (("poll_bounds_1  "), (others => ' '))),
+--    2 => (True, (("poll_bounds_2  "), (others => ' '))),
+--    3 => (True, (("poll_bounds_3  "), (others => ' '))),
+--    4 => (True, (("poll_bounds_4  "), (others => ' ')))
+--  );
 ---------------------------------------------------------------  
 
   
@@ -157,10 +152,10 @@ procedure Markets_Fetcher_Greyhounds is
     end if;
     
     Log(Me & Service, "will update " & DB_Market.Marketid); 
-    Table_Amarkets.Read(DB_Market, Eos);
+    DB_Market.Read(Eos);
     if not Eos then
       Rpc.Parse_Market(Market, DB_Market, In_Play);
-      Table_Amarkets.Update_Withcheck(DB_Market);
+      DB_Market.Update_Withcheck;
     end if; 
      
      Log(Me & Service, DB_Market.To_String); 
@@ -209,12 +204,12 @@ procedure Markets_Fetcher_Greyhounds is
     use type Process_Io.Name_Type;
   begin
     Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
-    for i in Data_Pollers'range loop
-      if Data_Pollers(i).Process.Name = Data.Name then
-        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        return;
-      end if;
-    end loop;
+--    for i in Data_Pollers'range loop
+--      if Data_Pollers(i).Process.Name = Data.Name then
+--        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+--        return;
+--      end if;
+--    end loop;
     for i in Race_Pollers'range loop
       if Race_Pollers(i).Process.Name = Data.Name then
         Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
@@ -222,19 +217,19 @@ procedure Markets_Fetcher_Greyhounds is
       end if;
     end loop;
     
-    for i in Test_Pollers'range loop
-      if Test_Pollers(i).Process.Name = Data.Name then
-        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        return;
-      end if;
-    end loop;
+--    for i in Test_Pollers'range loop
+--      if Test_Pollers(i).Process.Name = Data.Name then
+--        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+--        return;
+--      end if;
+--    end loop;
   end Set_Poller_State; 
    
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Markets : Boolean               := True;
   Market_Found             : Boolean               := True;
   Market_Ids               : JSON_Array            := Empty_Array;
- -- Minute_Last_Check        : Calendar2.Minute_Type := 0;
+  Minute_Last_Check        : Calendar2.Minute_Type := 0;
   Now                      : Calendar2.Time_Type   := Calendar2.Clock;
   OK                       : Boolean               := True;
   
@@ -290,9 +285,9 @@ begin
   Append(Event_Type_Ids , Create("4339"));    -- greyhounds
 --   none for all countries   
   Append(Market_Countries , Create("GB"));
-  Append(Market_Countries , Create("IE"));
+  --Append(Market_Countries , Create("IE"));
   Append(Market_Type_Codes , Create("WIN"));                 -- for horses/hounds
-  Append(Market_Type_Codes , Create("PLACE"));               -- for horses/hounds
+--  Append(Market_Type_Codes , Create("PLACE"));               -- for horses/hounds
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));
   Append(Market_Projection , Create("RUNNER_DESCRIPTION"));
   Append(Market_Projection , Create("EVENT"));
@@ -324,7 +319,7 @@ begin
           end if;
       end;
       Now := Calendar2.Clock;
-      Is_Time_To_Check_Markets := 10 <= Now.Second and Now.Second <= 20 ;
+      Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
         
       Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);
       exit when Is_Time_To_Check_Markets;
@@ -335,7 +330,7 @@ begin
     
       exit Main_Loop when Is_Time_To_Exit;
     end loop;           
-    --Minute_Last_Check := Now.Minute;
+    Minute_Last_Check := Now.Minute;
     
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
@@ -350,8 +345,9 @@ begin
       Rpc.Login;
     end if;
     
-    UTC_Time_Stop  := UTC_Time_Start + Three_Days;
-   -- UTC_Time_Start := UTC_Time_Start ;
+    UTC_Time_Stop  := UTC_Time_Start + One_Minute + Eleven_Seconds; 
+    UTC_Time_Start := UTC_Time_Start + One_Minute;
+ 
  
     T.Start;
     
@@ -519,24 +515,24 @@ begin
                   ------------------------------------------------------------------                
                   when 4339      => -- greyhounds
                     if Is_Data_Collector then
-                      for i in Data_Pollers'range loop
-                        if Data_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
-                          Data_Pollers(i).Free := False;
-                          exit;
-                        end if;
-                      end loop;
-                      
-                    --elsif Is_Better then
-                    --  for i in Race_Pollers'range loop
-                    --    if Race_Pollers(i).Free then
-                    --      Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                    --      Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
-                    --      Race_Pollers(i).Free := False;
+                    --  for i in Data_Pollers'range loop
+                    --    if Data_Pollers(i).Free then
+                    --      Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                    --      Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
+                    --      Data_Pollers(i).Free := False;
                     --      exit;
                     --    end if;
-                    --  end loop; 
+                    --  end loop;
+                      
+                    --elsif Is_Better then
+                      for i in Race_Pollers'range loop
+                        if Race_Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
+                          Race_Pollers(i).Free := False;
+                          exit;
+                        end if;
+                      end loop; 
                     --  
                     --elsif Is_Tester then
                     --  for i in Test_Pollers'range loop
