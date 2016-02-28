@@ -94,6 +94,9 @@ procedure Long_Poll_GH_Market is
                           
     begin
       T.Start;
+      
+      -- do betting here
+      
       Now := Calendar2.Clock;
       for Price of Price_List loop
         Priceshistory_Data := (
@@ -219,8 +222,8 @@ begin
           ----notfy markets_fetcher that we are busy
           --Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
           --Bot_Messages.Send(Markets_Fetcher, Data);    
-          --Run(Bot_Messages.Data(Msg));
-          null;
+          Run(Bot_Messages.Data(Msg));
+          --null;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -231,7 +234,7 @@ begin
         if not OK then
           Rpc.Login;
         end if;
-        Collect_Data;         
+       -- Collect_Data;         
     end;
     Now := Calendar2.Clock;
 
