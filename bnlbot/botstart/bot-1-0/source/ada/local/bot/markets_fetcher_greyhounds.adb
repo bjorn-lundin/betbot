@@ -511,6 +511,8 @@ begin
               Db_Event.Eventid := Db_Market.Eventid;
               Table_Aevents.Read(Db_Event, Eos(Aevent));
               if not Eos(Aevent) then
+                Log(Me, "DB_Event.Eventtypeid: " & DB_Event.Eventtypeid'Img);
+              
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------                
                   when 4339      => -- greyhounds
@@ -526,6 +528,7 @@ begin
                       
                     --elsif Is_Better then
                       for i in Race_Pollers'range loop
+                        Log(Me, "Race_Pollers(i).Free: " & Race_Pollers(i).Free'Img);
                         if Race_Pollers(i).Free then
                           Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
                           Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
