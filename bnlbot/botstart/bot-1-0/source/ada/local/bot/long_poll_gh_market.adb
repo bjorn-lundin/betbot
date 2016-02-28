@@ -1,6 +1,9 @@
+
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
+with Ada.Strings;       use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -22,8 +25,12 @@ with Table_Amarkets;
 with Table_Aevents;
 with Table_Aprices;
 with Table_Apriceshistory;
+with Table_Arunners;
+with Table_Abets;
 with Bot_Svn_Info;
 with Utils; use Utils;
+with Sim;
+
 
 
 procedure Long_Poll_GH_Market is
@@ -42,8 +49,9 @@ procedure Long_Poll_GH_Market is
   Now             : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
-  Select_Open_Markets : Sql.Statement_Type; 
+  --Select_Open_Markets : Sql.Statement_Type; 
   Process : Process_Io.Process_Type     := Process_Io.This_Process;
+  type Best_Runners_Array_Type is array (1..6) of Table_Aprices.Data_Type ;
 
   -------------------------------------------------------------
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -51,12 +59,23 @@ procedure Long_Poll_GH_Market is
     Event     : Table_Aevents.Data_Type;
     Price_List : Table_Aprices.Aprices_List_Pack2.List;
     --------------------------------------------
+    function "<" (Left,Right : Table_Aprices.Data_Type) return Boolean is
+    begin
+      return Left.Backprice < Right.Backprice;
+    end "<";
+    --------------------------------------------
+    Price             : Table_Aprices.Data_Type;
+    package Backprice_Sorter is new  Table_Aprices.Aprices_List_Pack2.Generic_Sorting("<");
+    Best_Runners      : Best_Runners_Array_Type := (others => Table_Aprices.Empty_Data);
 
     Priceshistory_Data : Table_Apriceshistory.Data_Type;
     In_Play           : Boolean := False;
 
     Eos               : Boolean := False;
     T                 : Sql.Transaction_Type;
+    
+    Lay_Bet_Name : Bot_Types.Bet_Name_Type := (others => ' ');
+    
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -92,10 +111,56 @@ procedure Long_Poll_GH_Market is
                           Price_List => Price_List,
                           In_Play    => In_Play);
                           
+    declare
+      Bet : Table_Abets.Data_Type;
+      Runner_Data : Table_Arunners.Data_Type;
+      Eos : Boolean := False;
     begin
       T.Start;
+      -- ok find the runner with lowest backprice:
+      Backprice_Sorter.Sort(Price_List);
+
+      Price.Backprice := 10_000.0;
+      Best_Runners := (others => Price);
+
+      declare
+        Idx : Integer := 0;
+      begin
+        for Tmp of Price_List loop
+          if Tmp.Status(1..6) = "ACTIVE" then
+            Idx := Idx +1;
+            exit when Idx > Best_Runners'Last;
+            Best_Runners(Idx) := Tmp;
+          end if;
+        end loop;
+      end ;
+
+      for i in Best_Runners'range loop
+        Log("Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
+      end loop;
+
+      if Float_8(1.01) <= Best_Runners(1).Layprice and then Best_Runners(1).Layprice <= Float_8(3.5) then
       
-      -- do betting here
+        Runner_Data.Marketid := Best_Runners(1).Marketid;
+        Runner_Data.Selectionid := Best_Runners(1).Selectionid;
+        Runner_Data.Read(Eos);
+        if Eos then
+          Move("MISSING",Runner_Data.Runnernamestripped);
+        end if;
+      
+        Move ("LAY_FAVORITE_1_01_3_50",Lay_Bet_Name);
+        Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                      Market_Id        => Market.Marketid,
+                      Side             => Lay,
+                      Runner_Name      => Runner_Data.Runnernamestripped,
+                      Selection_Id     => Best_Runners(1).Selectionid,
+                      Size             => Bet_Size_Type(40.0),
+                      Price            => Bet_Price_Type(Best_Runners(1).Layprice),
+                      Bet_Persistence  => Persist,
+                      Bet_Placed       => Best_Runners(1).Pricets,
+                      Bet              => Bet ) ;
+      end if;
+
       
       Now := Calendar2.Clock;
       for Price of Price_List loop
@@ -125,22 +190,22 @@ procedure Long_Poll_GH_Market is
   use type Sql.Transaction_Status_Type;
   
     
-  procedure Collect_Data is
-    Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
-    T : Sql.Transaction_Type;
-    Market_Notification : Bot_Messages.Market_Notification_Record;
-  begin
-    T.Start;
-    Select_Open_Markets.Prepare(
-      "select * from AMARKETS where STATUS = 'OPEN'");
-    Table_Amarkets.Read_List(Select_Open_Markets, Market_List);
-    T.Commit;
-
-    for m of Market_List loop
-      Market_Notification.Market_Id := m.Marketid;
-      Run(Market_Notification);
-    end loop;  
-  end Collect_Data;
+  --procedure Collect_Data is
+  --  Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
+  --  T : Sql.Transaction_Type;
+  --  Market_Notification : Bot_Messages.Market_Notification_Record;
+  --begin
+  --  T.Start;
+  --  Select_Open_Markets.Prepare(
+  --    "select * from AMARKETS where STATUS = 'OPEN'");
+  --  Table_Amarkets.Read_List(Select_Open_Markets, Market_List);
+  --  T.Commit;
+  --
+  --  for m of Market_List loop
+  --    Market_Notification.Market_Id := m.Marketid;
+  --    Run(Market_Notification);
+  --  end loop;  
+  --end Collect_Data;
   
   
 ------------------------------ main start -------------------------------------
