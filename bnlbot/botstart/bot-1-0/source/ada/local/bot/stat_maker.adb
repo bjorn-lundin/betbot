@@ -114,7 +114,7 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
   if Ba_Par_Update_Only then
-    Log(Me, "Login ael");
+  --  Log(Me, "Login ael");
     Sql.Connect
         (Host     => Ini.Get_Value("stats", "host", ""),
          Port     => Ini.Get_Value("stats", "port", 5432),
@@ -125,10 +125,10 @@ begin
     T.Start;
     Select_Untreated_Bets.Prepare("select * from ABETS where STATUS = '-'");
     Table_Abets.Read_List(Select_Untreated_Bets, Bet_List);
-    Log(Me, "Num bets to update" & Bet_List.Length'Img);
+   -- Log(Me, "Num bets to update" & Bet_List.Length'Img);
     T.Commit;
     Sql.Close_Session;
-    Log(Me, "logged out ael");
+  --  Log(Me, "logged out ael");
 
 
     if Bet_List.Length > 0 then
@@ -253,7 +253,7 @@ begin
   Month := Month_Type(Ia_Par_Month);
 
   if Ia_Par_Lower_Limit = 0 then
-   -- Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
+    Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
@@ -267,7 +267,7 @@ begin
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
     
   elsif Week > 0 then
-   -- Log(Me, "read all bets for week" & Ia_Par_Week'Img);
+    Log(Me, "read all bets for week" & Ia_Par_Week'Img);
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
@@ -283,7 +283,7 @@ begin
     Table_Abets.Read_List(Select_Markets_Of_Correct_MT, Bet_List);
     
   elsif Month > 0 then
-   -- Log(Me, "read all bets for month" & Month'Img);
+    Log(Me, "read all bets for month" & Month'Img);
     Select_Markets_Of_Correct_MT.Prepare(
       "select B.* from ABETS B, ALL_MARKETS M " &
       "where B.MARKETID = M.MARKETID " &
