@@ -203,6 +203,10 @@ function Check_System_Bots_For_User () {
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
        Start_Bot $BOT_USER gh_poll_1 long_poll_gh_market
        Start_Bot $BOT_USER bet_checker bet_checker    
+       DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
+       for collector in $DATA_COLLECTORS_LIST ; do
+         Start_Bot $BOT_USER $collector poll_gh_market
+       done
     ;;
   esac     
 
