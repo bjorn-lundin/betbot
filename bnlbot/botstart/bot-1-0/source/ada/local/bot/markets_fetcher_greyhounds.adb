@@ -88,16 +88,16 @@ procedure Markets_Fetcher_Greyhounds is
     Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
   end record;   
   
---  Data_Pollers : array (1..8) of Poll_Process := (
---    1 => (True, (("poll_market_1  "), (others => ' '))),
---    2 => (True, (("poll_market_2  "), (others => ' '))),
---    3 => (True, (("poll_market_3  "), (others => ' '))),
+  Data_Pollers : array (1..3) of Poll_Process := (
+    1 => (True, (("poll_market_1  "), (others => ' '))),
+    2 => (True, (("poll_market_2  "), (others => ' '))),
+    3 => (True, (("poll_market_3  "), (others => ' ')))
 --    4 => (True, (("poll_market_4  "), (others => ' '))),
 --    5 => (True, (("poll_market_5  "), (others => ' '))),
 --    6 => (True, (("poll_market_6  "), (others => ' '))),
 --    7 => (True, (("poll_market_7  "), (others => ' '))),
 --    8 => (True, (("poll_market_8  "), (others => ' ')))
---  );
+  );
   
   Race_Pollers : array (1..1) of Poll_Process := (
     1 => (True, (("gh_poll_1      "), (others => ' ')))
@@ -517,14 +517,15 @@ begin
                   ------------------------------------------------------------------                
                   when 4339      => -- greyhounds
                     if Is_Data_Collector then
-                    --  for i in Data_Pollers'range loop
-                    --    if Data_Pollers(i).Free then
-                    --      Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                    --      Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
-                    --      Data_Pollers(i).Free := False;
-                    --      exit;
-                    --    end if;
-                    --  end loop;
+                      for i in Data_Pollers'range loop
+                        Log(Me, "Data_Pollers(i).Free: " & Data_Pollers(i).Free'Img);
+                        if Data_Pollers(i).Free then
+                          Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
+                          Data_Pollers(i).Free := False;
+                          exit;
+                        end if;
+                      end loop;
                       
                     --elsif Is_Better then
                       for i in Race_Pollers'range loop
