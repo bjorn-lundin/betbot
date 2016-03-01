@@ -26,6 +26,7 @@ project Adabot is
                     "poll.adb",
                     "race_time.adb",
                     "poll_market.adb",
+                    "poll_gh_market.adb",
                     "long_poll_market.adb",
                     "long_poll_gh_market.adb",
                     "markets_fetcher.adb",
