@@ -117,23 +117,25 @@ procedure Poll_GH_Market is
 
       exit Poll_Loop when Market.Status(1..4) /= "OPEN";
 
-      if not Has_Been_In_Play then
-        -- toggle the first time we see in-play=true
-        -- makes us insensible to Betfair toggling bug
-        Has_Been_In_Play := In_Play;
-      end if;
-
-      if not Has_Been_In_Play then
-        if Current_Turn_Not_Started_Race >= Integer_4(100) then
-           Log(Me & "Make_Bet", "Market took too long time to start, give up");
-           exit Poll_Loop;
-        else
-          Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
-          delay 5.0; -- no need for heavy polling before start of race
-        end if;
-      else
-        delay 0.05; -- to avoid more than 20 polls/sec
-      end if;
+      delay 0.05;
+      
+    --  if not Has_Been_In_Play then
+    --    -- toggle the first time we see in-play=true
+    --    -- makes us insensible to Betfair toggling bug
+    --    Has_Been_In_Play := In_Play;
+    --  end if;
+    --
+    --  if not Has_Been_In_Play then
+    --    if Current_Turn_Not_Started_Race >= Integer_4(100) then
+    --       Log(Me & "Make_Bet", "Market took too long time to start, give up");
+    --       exit Poll_Loop;
+    --    else
+    --      Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
+    --      delay 5.0; -- no need for heavy polling before start of race
+    --    end if;
+    --  else
+    --    delay 0.05; -- to avoid more than 20 polls/sec
+    --  end if;
 
     end loop Poll_Loop;
 
@@ -216,7 +218,7 @@ begin
 
 
   Main_Loop : loop
-    --notfy markets_fetcher that we are free
+    --notify markets_fetcher that we are free
       Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
       Bot_Messages.Send(Markets_Fetcher, Data);    
   

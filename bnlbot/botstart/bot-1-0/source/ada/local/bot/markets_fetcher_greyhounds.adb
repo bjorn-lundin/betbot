@@ -102,12 +102,12 @@ procedure Markets_Fetcher_Greyhounds is
   Race_Pollers : array (1..1) of Poll_Process := (
     1 => (True, (("gh_poll_1      "), (others => ' ')))
   );
---  Test_Pollers : array (1..4) of Poll_Process := (
---    1 => (True, (("poll_bounds_1  "), (others => ' '))),
---    2 => (True, (("poll_bounds_2  "), (others => ' '))),
---    3 => (True, (("poll_bounds_3  "), (others => ' '))),
---    4 => (True, (("poll_bounds_4  "), (others => ' ')))
---  );
+  Test_Pollers : array (1..4) of Poll_Process := (
+    1 => (True, (("poll_bounds_1  "), (others => ' '))),
+    2 => (True, (("poll_bounds_2  "), (others => ' '))),
+    3 => (True, (("poll_bounds_3  "), (others => ' '))),
+    4 => (True, (("poll_bounds_4  "), (others => ' ')))
+  );
 ---------------------------------------------------------------  
 
   
@@ -204,12 +204,12 @@ procedure Markets_Fetcher_Greyhounds is
     use type Process_Io.Name_Type;
   begin
     Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
---    for i in Data_Pollers'range loop
---      if Data_Pollers(i).Process.Name = Data.Name then
---        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
---        return;
---      end if;
---    end loop;
+    for i in Data_Pollers'range loop
+      if Data_Pollers(i).Process.Name = Data.Name then
+        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
+      end if;
+    end loop;
     for i in Race_Pollers'range loop
       if Race_Pollers(i).Process.Name = Data.Name then
         Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
@@ -217,12 +217,12 @@ procedure Markets_Fetcher_Greyhounds is
       end if;
     end loop;
     
---    for i in Test_Pollers'range loop
---      if Test_Pollers(i).Process.Name = Data.Name then
---        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
---        return;
---      end if;
---    end loop;
+    for i in Test_Pollers'range loop
+      if Test_Pollers(i).Process.Name = Data.Name then
+        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
+      end if;
+    end loop;
   end Set_Poller_State; 
    
 ------------------------------ main start -------------------------------------

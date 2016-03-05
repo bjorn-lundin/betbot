@@ -142,13 +142,36 @@ procedure Long_Poll_GH_Market is
         Log("Best_Runners(i)" & i'Img & " " & Best_Runners(i).To_String);
       end loop;
 
-      if Float_8(1.01) <= Best_Runners(1).Layprice and then Best_Runners(1).Layprice <= Float_8(3.5) then
-      
+      if Float_8(1.01) <= Best_Runners(1).Layprice and then Best_Runners(1).Layprice <= Float_8(3.5) then     
         Runner_Data.Marketid := Best_Runners(1).Marketid;
         Runner_Data.Selectionid := Best_Runners(1).Selectionid;
         Runner_Data.Read(Eos);
         if not Eos then      
           Move ("LAY_FAVORITE_1_01_3_50",Lay_Bet_Name);
+          Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                        Market_Id        => Market.Marketid,
+                        Side             => Lay,
+                        Runner_Name      => Runner_Data.Runnernamestripped,
+                        Selection_Id     => Best_Runners(1).Selectionid,
+                        Size             => Bet_Size_Type(40.0),
+                        Price            => Bet_Price_Type(Best_Runners(1).Layprice),
+                        Bet_Persistence  => Persist,
+                        Bet_Placed       => Best_Runners(1).Pricets,
+                        Bet              => Bet ) ;
+          Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+          Log("inserting " &  Bet.To_String);
+          Bet.Insert;
+          Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+          Update_Betwon_To_Null.Execute; 
+        end if;
+      end if;
+      
+      if Float_8(1.01) <= Best_Runners(1).Layprice and then Best_Runners(1).Layprice <= Float_8(2.9) then
+        Runner_Data.Marketid := Best_Runners(1).Marketid;
+        Runner_Data.Selectionid := Best_Runners(1).Selectionid;
+        Runner_Data.Read(Eos);
+        if not Eos then      
+          Move ("LAY_FAVORITE_1_01_2_90",Lay_Bet_Name);
           Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
                         Market_Id        => Market.Marketid,
                         Side             => Lay,
@@ -173,8 +196,34 @@ procedure Long_Poll_GH_Market is
           Runner_Data.Marketid := Best_Runners(i).Marketid;
           Runner_Data.Selectionid := Best_Runners(i).Selectionid;
           Runner_Data.Read(Eos);
-          if Eos then      
+          if not Eos then      
             Move ("LAY_ALL_BUT_FAVORITE_1_01_3_50",Lay_Bet_Name);
+            Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                          Market_Id        => Market.Marketid,
+                          Side             => Lay,
+                          Runner_Name      => Runner_Data.Runnernamestripped,
+                          Selection_Id     => Best_Runners(i).Selectionid,
+                          Size             => Bet_Size_Type(40.0),
+                          Price            => Bet_Price_Type(Best_Runners(i).Layprice),
+                          Bet_Persistence  => Persist,
+                          Bet_Placed       => Best_Runners(i).Pricets,
+                          Bet              => Bet ) ;
+            Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+            Log("inserting " &  Bet.To_String);
+            Bet.Insert;
+            Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+            Update_Betwon_To_Null.Execute; 
+          end if;
+        end loop;
+      end if;
+      -- lay all but favorite if favorite's backprice < 2.9
+      if Float_8(1.01) <= Best_Runners(1).Backprice and then Best_Runners(1).Backprice <= Float_8(2.9) then     
+        for i in Best_Runners'first +1 .. Best_Runners'last loop
+          Runner_Data.Marketid := Best_Runners(i).Marketid;
+          Runner_Data.Selectionid := Best_Runners(i).Selectionid;
+          Runner_Data.Read(Eos);
+          if not Eos then      
+            Move ("LAY_ALL_BUT_FAVORITE_1_01_2_90",Lay_Bet_Name);
             Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
                           Market_Id        => Market.Marketid,
                           Side             => Lay,
@@ -200,26 +249,50 @@ procedure Long_Poll_GH_Market is
           Runner_Data.Marketid := Best_Runners(i).Marketid;
           Runner_Data.Selectionid := Best_Runners(i).Selectionid;
           Runner_Data.Read(Eos);
-          if Eos then
-            Move("MISSING",Runner_Data.Runnernamestripped);
+          if not Eos then        
+            Move ("LAY_ALL_1_01_3_50",Lay_Bet_Name);
+            Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                          Market_Id        => Market.Marketid,
+                          Side             => Lay,
+                          Runner_Name      => Runner_Data.Runnernamestripped,
+                          Selection_Id     => Best_Runners(i).Selectionid,
+                          Size             => Bet_Size_Type(40.0),
+                          Price            => Bet_Price_Type(Best_Runners(i).Layprice),
+                          Bet_Persistence  => Persist,
+                          Bet_Placed       => Best_Runners(i).Pricets,
+                          Bet              => Bet ) ;
+            Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+            Log("inserting " &  Bet.To_String);
+            Bet.Insert;
+            Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+            Update_Betwon_To_Null.Execute; 
           end if;
-        
-          Move ("LAY_ALL_1_01_3_50",Lay_Bet_Name);
-          Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
-                        Market_Id        => Market.Marketid,
-                        Side             => Lay,
-                        Runner_Name      => Runner_Data.Runnernamestripped,
-                        Selection_Id     => Best_Runners(i).Selectionid,
-                        Size             => Bet_Size_Type(40.0),
-                        Price            => Bet_Price_Type(Best_Runners(i).Layprice),
-                        Bet_Persistence  => Persist,
-                        Bet_Placed       => Best_Runners(i).Pricets,
-                        Bet              => Bet ) ;
-          Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-          Log("inserting " &  Bet.To_String);
-          Bet.Insert;
-          Update_Betwon_To_Null.Set("BETID", Bet.Betid);
-          Update_Betwon_To_Null.Execute; 
+        end loop;
+      end if;
+      -- lay all if favorite's backprice < 2.9
+      if Float_8(1.01) <= Best_Runners(1).Backprice and then Best_Runners(1).Backprice <= Float_8(2.9) then     
+        for i in Best_Runners'first .. Best_Runners'last loop
+          Runner_Data.Marketid := Best_Runners(i).Marketid;
+          Runner_Data.Selectionid := Best_Runners(i).Selectionid;
+          Runner_Data.Read(Eos);
+          if not Eos then        
+            Move ("LAY_ALL_1_01_2_90",Lay_Bet_Name);
+            Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                          Market_Id        => Market.Marketid,
+                          Side             => Lay,
+                          Runner_Name      => Runner_Data.Runnernamestripped,
+                          Selection_Id     => Best_Runners(i).Selectionid,
+                          Size             => Bet_Size_Type(40.0),
+                          Price            => Bet_Price_Type(Best_Runners(i).Layprice),
+                          Bet_Persistence  => Persist,
+                          Bet_Placed       => Best_Runners(i).Pricets,
+                          Bet              => Bet ) ;
+            Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+            Log("inserting " &  Bet.To_String);
+            Bet.Insert;
+            Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+            Update_Betwon_To_Null.Execute; 
+          end if;
         end loop;
       end if;
      
