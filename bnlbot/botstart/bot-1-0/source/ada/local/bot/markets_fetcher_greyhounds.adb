@@ -99,9 +99,17 @@ procedure Markets_Fetcher_Greyhounds is
 --    8 => (True, (("poll_market_8  "), (others => ' ')))
   );
   
-  Race_Pollers : array (1..1) of Poll_Process := (
-    1 => (True, (("gh_poll_1      "), (others => ' ')))
+  Race_Pollers_1 : array (1..3) of Poll_Process := (
+    1 => (True, (("play_market_1  "), (others => ' '))),
+    2 => (True, (("play_market_2  "), (others => ' '))),
+    3 => (True, (("play_market_3  "), (others => ' ')))
   );
+  Race_Pollers_2 : array (1..3) of Poll_Process := (
+    1 => (True, (("gh_poll_1      "), (others => ' '))),
+    2 => (True, (("gh_poll_2      "), (others => ' '))),
+    3 => (True, (("gh_poll_3      "), (others => ' ')))
+  );
+  
   Test_Pollers : array (1..4) of Poll_Process := (
     1 => (True, (("poll_bounds_1  "), (others => ' '))),
     2 => (True, (("poll_bounds_2  "), (others => ' '))),
@@ -210,9 +218,15 @@ procedure Markets_Fetcher_Greyhounds is
         return;
       end if;
     end loop;
-    for i in Race_Pollers'range loop
-      if Race_Pollers(i).Process.Name = Data.Name then
-        Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+    for i in Race_Pollers_1'range loop
+      if Race_Pollers_1(i).Process.Name = Data.Name then
+        Race_Pollers_1(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
+        return;
+      end if;
+    end loop;
+    for i in Race_Pollers_2'range loop
+      if Race_Pollers_2(i).Process.Name = Data.Name then
+        Race_Pollers_2(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
         return;
       end if;
     end loop;
@@ -528,12 +542,22 @@ begin
                       end loop;
                       
                     --elsif Is_Better then
-                      for i in Race_Pollers'range loop
-                        Log(Me, "Race_Pollers(i).Free: " & Race_Pollers(i).Free'Img);
-                        if Race_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
-                          Race_Pollers(i).Free := False;
+                      for i in Race_Pollers_1'range loop
+                        Log(Me, "Race_Pollers_1(i).Free: " & Race_Pollers_1(i).Free'Img);
+                        if Race_Pollers_1(i).Free then
+                          Log(Me, "Notifying " & Trim(Race_Pollers_1(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_1(i).Process.Name)), MNR);
+                          Race_Pollers_1(i).Free := False;
+                          exit;
+                        end if;
+                      end loop; 
+                      
+                      for i in Race_Pollers_2'range loop
+                        Log(Me, "Race_Pollers_2(i).Free: " & Race_Pollers_2(i).Free'Img);
+                        if Race_Pollers_2(i).Free then
+                          Log(Me, "Notifying " & Trim(Race_Pollers_2(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_2(i).Process.Name)), MNR);
+                          Race_Pollers_2(i).Free := False;
                           exit;
                         end if;
                       end loop; 

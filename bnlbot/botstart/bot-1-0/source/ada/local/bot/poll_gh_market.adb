@@ -1,6 +1,8 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
+with Ada.Strings ; use Ada.Strings;
+with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -20,10 +22,13 @@ with Process_IO;
 with Core_Messages;
 with Table_Amarkets;
 with Table_Aevents;
+with Table_Arunners;
 with Table_Aprices;
+with Table_Abets;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
+with Sim;
 
 procedure Poll_GH_Market is
   package EV renames Ada.Environment_Variables;
@@ -45,7 +50,8 @@ procedure Poll_GH_Market is
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("gh_mark_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
-  
+  Update_Betwon_To_Null : Sql.Statement_Type;
+
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Table_Amarkets.Data_Type;
@@ -55,13 +61,18 @@ procedure Poll_GH_Market is
 
     Priceshistory_Data : Table_Apriceshistory.Data_Type;
     Priceshistory_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-    Has_Been_In_Play,
+    --  Has_Been_In_Play,
     In_Play           : Boolean := False;
 
     Eos               : Boolean := False;
     T                 : Sql.Transaction_Type;
-    Current_Turn_Not_Started_Race : Integer_4 := 0;
-    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "ghd" ;
+    --  Current_Turn_Not_Started_Race : Integer_4 := 0;
+    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "ghd" and then EV.Value("BOT_NAME")(1..12) = "poll_market_";
+
+    type Bet_Types is (D4_2, D3_7, D2_8);
+    Has_Placed : array (Bet_Types'range) of Boolean := (others => False);
+    Lay_Stake  : constant Bet_Size_Type := 30.0;
+
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -97,7 +108,94 @@ procedure Poll_GH_Market is
                             Market     => Market,
                             Price_List => Price_List,
                             In_Play    => In_Play);
-                            
+
+      if not Is_Data_Collector then
+        --place bet and exit
+        declare
+          Betname : Bet_Name_Type := (others => ' ');
+          Runner  : Table_Arunners.Data_Type;
+          Eos     : Boolean := False;
+          Laybet  : Table_Abets.Data_Type;
+        begin
+          T.Start;
+          Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+          for Price of Price_List loop
+            Runner.Marketid := Price.Marketid;
+            Runner.Selectionid := Price.Selectionid;
+            Runner.Read(Eos);
+            Laybet := Table_Abets.Empty_Data;
+            if not Has_Placed(D4_2) and then
+               Price.Layprice > Float_8(1.0) and then
+               Price.Layprice <= Float_8(4.2) then
+               Move("LAY_DOGS_MAX_4.2", Betname);
+               Sim.Place_Bet(Bet_Name         => Betname,
+                             Market_Id        => Market.Marketid,
+                             Side             => Lay,
+                             Runner_Name      => Runner.Runnernamestripped,
+                             Selection_Id     => Price.Selectionid,
+                             Size             => Lay_Stake,
+                             Price            => Bet_Price_Type(Price.Layprice),
+                             Bet_Persistence  => Persist,
+                             Bet_Placed       => Price.Pricets,
+                             Bet              => Laybet ) ;
+               Log("insert Bet " & Laybet.To_String );
+               Laybet.Insert;
+             --  Has_Placed(D4_2) := True;
+               Update_Betwon_To_Null.Set("BETID", Laybet.Betid);
+               Update_Betwon_To_Null.Execute; 
+               
+            end if;
+            if not Has_Placed(D3_7) and then
+               Price.Layprice > Float_8(1.0) and then
+               Price.Layprice <= Float_8(3.7) then
+               Move("LAY_DOGS_MAX_3.7", Betname);
+               Sim.Place_Bet(Bet_Name         => Betname,
+                             Market_Id        => Market.Marketid,
+                             Side             => Lay,
+                             Runner_Name      => Runner.Runnernamestripped,
+                             Selection_Id     => Price.Selectionid,
+                             Size             => Lay_Stake,
+                             Price            => Bet_Price_Type(Price.Layprice),
+                             Bet_Persistence  => Persist,
+                             Bet_Placed       => Price.Pricets,
+                             Bet              => Laybet ) ;
+               Log("insert Bet " & Laybet.To_String );
+               Laybet.Insert;
+               Update_Betwon_To_Null.Set("BETID", Laybet.Betid);
+               Update_Betwon_To_Null.Execute; 
+             --  Has_Placed(D3_7) := True;
+            end if;
+            if not Has_Placed(D2_8) and then
+               Price.Layprice > Float_8(1.0) and then
+               Price.Layprice <= Float_8(2.8) then
+               Move("LAY_DOGS_MAX_2.8", Betname);
+               Sim.Place_Bet(Bet_Name         => Betname,
+                             Market_Id        => Market.Marketid,
+                             Side             => Lay,
+                             Runner_Name      => Runner.Runnernamestripped,
+                             Selection_Id     => Price.Selectionid,
+                             Size             => Lay_Stake,
+                             Price            => Bet_Price_Type(Price.Layprice),
+                             Bet_Persistence  => Persist,
+                             Bet_Placed       => Price.Pricets,
+                             Bet              => Laybet ) ;
+               Log("insert Bet " & Laybet.To_String );
+               Laybet.Insert;
+               Update_Betwon_To_Null.Set("BETID", Laybet.Betid);
+               Update_Betwon_To_Null.Execute; 
+            --   Has_Placed(D2_8) := True;
+            end if;
+          end loop;
+          T.Commit;
+        exception
+          when Sql.Duplicate_Index =>
+             T.Rollback;
+             Log("Duplicate_Index on Bet " & Laybet.To_String );
+        end;
+        return;
+      end if;
+
+
       if Is_Data_Collector then
         for Price of Price_List loop
          Priceshistory_Data := (
@@ -118,42 +216,23 @@ procedure Poll_GH_Market is
       exit Poll_Loop when Market.Status(1..4) /= "OPEN";
 
       delay 0.05;
-      
-    --  if not Has_Been_In_Play then
-    --    -- toggle the first time we see in-play=true
-    --    -- makes us insensible to Betfair toggling bug
-    --    Has_Been_In_Play := In_Play;
-    --  end if;
-    --
-    --  if not Has_Been_In_Play then
-    --    if Current_Turn_Not_Started_Race >= Integer_4(100) then
-    --       Log(Me & "Make_Bet", "Market took too long time to start, give up");
-    --       exit Poll_Loop;
-    --    else
-    --      Current_Turn_Not_Started_Race := Current_Turn_Not_Started_Race +1;
-    --      delay 5.0; -- no need for heavy polling before start of race
-    --    end if;
-    --  else
-    --    delay 0.05; -- to avoid more than 20 polls/sec
-    --  end if;
 
     end loop Poll_Loop;
 
     if Is_Data_Collector then
       -- insert all the records now, in Priceshistory
       Log("start insert records into Priceshistory:" & Priceshistory_List.Length'Img);
-      begin
-        T.Start;
-        for Priceshistory_Data of Priceshistory_List loop
+      for Priceshistory_Data of Priceshistory_List loop
+        begin
+          T.Start;  -- try save as many in the list as possible
           Priceshistory_Data.Insert;
-        end loop;
-        T.Commit;
-      exception
-        when Sql.Duplicate_Index =>
-           Priceshistory_List.Clear;
-           T.Rollback;
-           Log("Duplicate_Index on Priceshistory " & Priceshistory_Data.To_String );
-      end;
+          T.Commit;
+        exception
+          when Sql.Duplicate_Index =>
+             T.Rollback;
+             Log("Duplicate_Index on Priceshistory " & Priceshistory_Data.To_String );
+        end;
+      end loop;
       Log("stop insert record into Priceshistory");
     end if;
   end Run;
@@ -220,8 +299,8 @@ begin
   Main_Loop : loop
     --notify markets_fetcher that we are free
       Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
-      Bot_Messages.Send(Markets_Fetcher, Data);    
-  
+      Bot_Messages.Send(Markets_Fetcher, Data);
+
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
@@ -235,7 +314,7 @@ begin
         when Bot_Messages.Market_Notification_Message    =>
           --notfy markets_fetcher that we are busy
           Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-          Bot_Messages.Send(Markets_Fetcher, Data);    
+          Bot_Messages.Send(Markets_Fetcher, Data);
           Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
