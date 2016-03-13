@@ -7,6 +7,7 @@ all  : png
 png: heatmap_win_all.png                heatmap_plc_all.png         \
      heatmap_plc_month_01.png_month_plc heatmap_win_month_01.png_month_win \
      heatmap_plc_month_02.png_month_plc heatmap_win_month_02.png_month_win \
+     heatmap_plc_month_03.png_month_plc heatmap_win_month_03.png_month_win \
      heatmap_plc_week_01.png_week_plc   heatmap_win_week_01.png_week_win \
      heatmap_plc_week_02.png_week_plc   heatmap_win_week_02.png_week_win \
      heatmap_plc_week_03.png_week_plc   heatmap_win_week_03.png_week_win \
@@ -15,6 +16,8 @@ png: heatmap_win_all.png                heatmap_plc_all.png         \
      heatmap_plc_week_06.png_week_plc   heatmap_win_week_06.png_week_win \
      heatmap_plc_week_07.png_week_plc   heatmap_win_week_07.png_week_win \
      heatmap_plc_week_08.png_week_plc   heatmap_win_week_08.png_week_win \
+     heatmap_plc_week_09.png_week_plc   heatmap_win_week_09.png_week_win \
+     heatmap_plc_week_10.png_week_plc   heatmap_win_week_10.png_week_win \
      
 
 heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
