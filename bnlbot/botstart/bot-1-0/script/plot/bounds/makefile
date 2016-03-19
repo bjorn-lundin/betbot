@@ -18,6 +18,7 @@ png: heatmap_win_all.png                heatmap_plc_all.png         \
      heatmap_plc_week_08.png_week_plc   heatmap_win_week_08.png_week_win \
      heatmap_plc_week_09.png_week_plc   heatmap_win_week_09.png_week_win \
      heatmap_plc_week_10.png_week_plc   heatmap_win_week_10.png_week_win \
+     heatmap_plc_week_11.png_week_plc   heatmap_win_week_11.png_week_win \
      
 
 heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
