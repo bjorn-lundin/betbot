@@ -1,7 +1,7 @@
 program todays_profit;
 
 uses SDL2, SDL2_ttf, Progressbar, rendered_text,sysutils,
-  sql, pqconnection,sqldb,math;
+  sql, pqconnection,sqldb,math,db;
 
 var
 PQConn : TPQConnection;
@@ -16,8 +16,9 @@ Pb : TProgressBar;
 i : integer;
 
 sdlEvent: PSDL_Event;
-Do_Continue: boolean = True;
-In_The_Air, The_Profit : Double;
+Do_Continue : Boolean = True;
+In_The_Air  : Double = 0.0;
+The_Profit  : Double = 0.0;
 
 procedure Init;
   //--------------------
@@ -72,31 +73,24 @@ end;
 function Exposed : Double;
 var
   sSql : String;
-  First,Last : Tdatetime;
 begin
-  // dates are floats,  DAYS.SECONDS
-  First := Floor(Now);
-  Last  := First +1.0;
   Result := 0.0;
-
   sSql := 'select ';
-  sSql += '  case B.SIDE ';
-  sSql += '    when ''LAY''  then sum(B.SIZE) * (avg(PRICE)-1) ';
-  sSql += '    when ''BACK'' then sum(B.SIZE) ';
-  sSql += '    else 0.0 ';
-  sSql += '  end as exposed ';
+  sSql += ' case B.SIDE ';
+  sSql += '  when ''LAY''  then sum(B.SIZE) * (avg(PRICE)-1) ';
+  sSql += '  when ''BACK'' then sum(B.SIZE) ';
+  sSql += '  else 0.0 ';
+  sSql += ' end as exposed ';
   sSql += 'from ABETS B ';
   sSql += 'where B.BETWON is NULL ';
   sSql += 'and B.EXESTATUS = ''SUCCESS'' ';
-  sSql += 'and B.BETPLACED >= :FIRST ';
-  sSql += 'and B.BETPLACED < :LAST ';
-  sSql += 'group BY B.SIDE ';
+  sSql += 'and B.BETPLACED::date = (select current_date) ';
+  sSql += 'group by B.SIDE ';
+  writeln(sSql);
+  
   Get_Exposed.SQL.Text := sSql;
   T.StartTransaction;
   Get_Exposed.Prepare;
-  Get_Exposed.Params.ParamByName('FIRST').AsDate := First;
-  Get_Exposed.Params.ParamByName('LAST').AsDate  := Last;
-
   Get_Exposed.Open;
   if not Get_Exposed.Eof then Result := Get_Exposed.FieldByName('exposed').AsFloat;
   Get_Exposed.Close;
@@ -106,27 +100,17 @@ end;
 function Profit : Double;
 var
   sSql : String;
-  First,Last : Tdatetime;
 begin
-  // dates are floats,  DAYS.SECONDS
-  First := Floor(Now);
-  Last  := First +1.0;
   Result := 0.0;
-
   sSql := 'select sum(B.PROFIT) as sm ';
   sSql += 'from ABETS B ';
   sSql += 'where B.BETWON is not NULL ';
   sSql += 'and B.STATUS = ''SETTLED'' ';
   sSql += 'and B.EXESTATUS = ''SUCCESS'' ';
-  sSql += 'and B.BETPLACED >= :FIRST ';
-  sSql += 'and B.BETPLACED <= :LAST ';
-
+  sSql += 'and B.BETPLACED::date = (select current_date) ';
   Get_Profit.SQL.Text := sSql;
   T.StartTransaction;
   Get_Profit.Prepare;
-  Get_Profit.Params.ParamByName('FIRST').AsDate := First;
-  Get_Profit.Params.ParamByName('LAST').AsDate  := Last;
-
   Get_Profit.Open;
   if not Get_Profit.Eof then Result := Get_Profit.FieldByName('sm').AsFloat;
   Get_Profit.Close;
@@ -138,8 +122,15 @@ procedure Do_It;
 begin
   SDL_SetRenderDrawColor( sdlRenderer, 0, 0, 0, 0 );
   SDL_RenderClear( sdlRenderer );
+  writeln('1');
   In_The_Air := Exposed;
+  writeln('2');
   The_Profit := Profit;
+  writeln('3');
+  writeln('ith', In_The_Air);
+  writeln('pr', The_Profit);
+  
+  
   RT_Profit.Update(IntToStr(round(The_Profit)));
   RT_In_The_Air.Update('In the air: ' + IntToStr(round(In_The_Air)));
 end;
