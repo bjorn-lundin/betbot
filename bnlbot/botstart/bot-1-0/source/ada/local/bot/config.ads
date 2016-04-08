@@ -7,20 +7,29 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
+      Back_1_36_1_40_01_04_1_2_PLC_1_10,
+      Back_1_36_1_40_05_07_1_2_PLC_1_10,
+      Back_1_41_1_45_01_04_1_2_PLC_1_10,
+      Back_1_41_1_45_05_07_1_2_PLC_1_10,
+      Back_1_46_1_50_01_04_1_2_PLC_1_10,
+      Back_1_46_1_50_05_07_1_2_PLC_1_10,
+      Back_1_51_1_55_01_04_1_2_PLC_1_10,
+      Back_1_56_1_60_01_04_1_2_PLC_1_10,
+      Back_1_61_1_65_01_04_1_2_PLC_1_10,
       Back_1_10_07_1_2_PLC_1_01,
-      Back_1_10_10_1_2_PLC_1_01, 
-      Back_1_10_13_1_2_PLC_1_01, 
-      Back_1_10_16_1_2_PLC_1_01, 
+      Back_1_10_10_1_2_PLC_1_01,
+      Back_1_10_13_1_2_PLC_1_01,
+      Back_1_10_16_1_2_PLC_1_01,
       Back_1_10_07_1_2_PLC_1_02,
-      Back_1_10_10_1_2_PLC_1_02, 
-      Back_1_10_13_1_2_PLC_1_02, 
-      Back_1_10_16_1_2_PLC_1_02, 
-      Back_1_10_07_1_2_WIN_1_05, 
-      Back_1_10_10_1_2_WIN_1_05, 
-      Back_1_10_13_1_2_WIN_1_05, 
-      Back_1_10_16_1_2_WIN_1_05, 
+      Back_1_10_10_1_2_PLC_1_02,
+      Back_1_10_13_1_2_PLC_1_02,
+      Back_1_10_16_1_2_PLC_1_02,
+      Back_1_10_07_1_2_WIN_1_05,
+      Back_1_10_10_1_2_WIN_1_05,
+      Back_1_10_13_1_2_WIN_1_05,
+      Back_1_10_16_1_2_WIN_1_05,
       Lay_160_200,
-      Lay_1_10_25_4 
+      Lay_1_10_25_4
   );
 
 
@@ -29,12 +38,12 @@ package Config is
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
     Max_Loss_Per_Day           : Float_8          := -500.0;
-    Min_Price                  : Unbounded_String := Null_Unbounded_String;    
+    Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
   end record;
-  
+
   type Bet_Config_Array_Type is array(Bet_Type'range) of Bet_Config_Type;
-  
+
   type Config_Type is tagged record
     --Size                       : Bet_Size_Type    := 30.0;
     --Max_Loss_Per_Day           : Float_8          := -500.0;
@@ -43,12 +52,12 @@ package Config is
     Allowed_Countries          : Unbounded_String := Null_Unbounded_String;
     Allowed_Days               : Allowed_Days_Array     := (others => False);
     Bet                        : Bet_Config_Array_Type;
-  end record;  
-  
+  end record;
+
   function Create(Filename : String) return Config_Type;
   function Country_Is_Ok (Cfg : Config_Type; Country_Code : String) return Boolean;
   function To_String(Cfg : Config_Type) return String ;
-  
+
   procedure Print_Strategies;
 
 end Config;
