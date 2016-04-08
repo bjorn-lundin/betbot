@@ -7,14 +7,18 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-   --   Back_1_10_07_1_2_PLC,
-   --   Back_1_50_30_1_4_PLC,
-   --   Back_1_10_20_1_2_WIN, 
-   --   Back_1_10_16_1_2_WIN, 
-   --   Back_1_10_13_1_2_WIN, 
-      Back_1_10_20_1_2_PLC, 
-      Back_1_10_16_1_2_PLC, 
-      Back_1_10_13_1_2_PLC, 
+      Back_1_10_07_1_2_PLC_1_01,
+      Back_1_10_10_1_2_PLC_1_01, 
+      Back_1_10_13_1_2_PLC_1_01, 
+      Back_1_10_16_1_2_PLC_1_01, 
+      Back_1_10_07_1_2_PLC_1_02,
+      Back_1_10_10_1_2_PLC_1_02, 
+      Back_1_10_13_1_2_PLC_1_02, 
+      Back_1_10_16_1_2_PLC_1_02, 
+      Back_1_10_07_1_2_WIN_1_05, 
+      Back_1_10_10_1_2_WIN_1_05, 
+      Back_1_10_13_1_2_WIN_1_05, 
+      Back_1_10_16_1_2_WIN_1_05, 
       Lay_160_200,
       Lay_1_10_25_4 
   );
