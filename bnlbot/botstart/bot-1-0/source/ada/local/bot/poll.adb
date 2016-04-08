@@ -352,7 +352,7 @@ procedure Poll is
   end Try_To_Make_Back_Bet;
   
 
-  procedure  Try_To_Make_Back_Bet_4_Bounds;(
+  procedure  Try_To_Make_Back_Bet_4_Bounds(
     Bettype         : Config.Bet_Type;
     BR              : Best_Runners_Array_Type;
     Marketid        : Market_Id_Type;
