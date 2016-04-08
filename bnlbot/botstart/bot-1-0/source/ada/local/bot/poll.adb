@@ -2,7 +2,7 @@ with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+--with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
@@ -62,22 +62,8 @@ procedure Poll is
 
   -------------------------------------------------------------
   -- type-of-bet_bet-number_placement-in-race-at-time-of-bet
-  --Back_1_40_30_1_4_PLC : back leader when leader <=1.4 and 4th >=30
-  --Back_1_40_30_1_4_PLC : back leader when leader <=1.4 and 2nd >=30
-
---  type Bet_Type is (
---                    Back_1_10_07_1_2_PLC,
---                                          Back_1_50_30_1_4_PLC, Back_1_50_30_1_2_WIN, 
---                                                                Back_1_50_20_1_2_WIN, 
---                                                                Back_1_50_10_1_2_WIN, 
---                                                                Back_1_40_10_1_2_WIN, 
---                                                                Back_1_30_10_1_2_WIN, 
---                                                                Back_1_20_20_1_2_WIN, 
---                                                                Back_1_20_10_1_2_WIN,
---                    Lay_160_200,
---                    Lay_1_10_25_4
---                    );
-  --defined there to get cfg-array
+  --Back_1_40_30_1_4_PLC_1_01 : back leader when leader <=1.4 and 4th >=30 min price= 1.01
+  --Back_1_40_30_1_4_PLC_1_02 : back leader when leader <=1.4 and 2nd >=30 min price= 1.02
 
 
   type Allowed_Type is record
@@ -86,7 +72,7 @@ procedure Poll is
     Is_Allowed_To_Bet : Boolean       := False;
     Has_Betted        : Boolean       := False;
     Max_Loss_Per_Day  : Bet_Size_Type := 0.0;
-    Bet_Size_Portion  : Bet_Size_Portion_Type := 0.0;
+    Bet_Size_Portion  : Bet_Size_Portion_Type := 1.0;
   end record;
 
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
@@ -100,13 +86,20 @@ procedure Poll is
     --  when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
     --  when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002"); 
     --  when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
-    --  when Back_1_10_13_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_004"); 
-    --  when Back_1_10_07_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005");
       when Lay_160_200          => return Process_Io.To_Process_Type("bet_placer_001");
       when Lay_1_10_25_4        => return Process_Io.To_Process_Type("bet_placer_002");
-      when Back_1_10_20_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_003"); 
-      when Back_1_10_16_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_004"); 
-      when Back_1_10_13_1_2_PLC => return Process_Io.To_Process_Type("bet_placer_005"); 
+      when Back_1_10_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
+      when Back_1_10_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_004"); 
+      when Back_1_10_13_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_005"); 
+      when Back_1_10_16_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_006"); 
+      when Back_1_10_07_1_2_PLC_1_02 => return Process_Io.To_Process_Type("bet_placer_007");
+      when Back_1_10_10_1_2_PLC_1_02 => return Process_Io.To_Process_Type("bet_placer_008"); 
+      when Back_1_10_13_1_2_PLC_1_02 => return Process_Io.To_Process_Type("bet_placer_009"); 
+      when Back_1_10_16_1_2_PLC_1_02 => return Process_Io.To_Process_Type("bet_placer_010"); 
+      when Back_1_10_07_1_2_WIN_1_05 => return Process_Io.To_Process_Type("bet_placer_011"); 
+      when Back_1_10_10_1_2_WIN_1_05 => return Process_Io.To_Process_Type("bet_placer_012"); 
+      when Back_1_10_13_1_2_WIN_1_05 => return Process_Io.To_Process_Type("bet_placer_013"); 
+      when Back_1_10_16_1_2_WIN_1_05 => return Process_Io.To_Process_Type("bet_placer_014"); 
     end case;
   end Get_Bet_Placer;
 
@@ -302,7 +295,7 @@ procedure Poll is
     BR              : Best_Runners_Array_Type;
     Marketid        : Market_Id_Type;
   --  Place_Marketid  : Market_Id_Type;
-    Min_Price       : String ;
+ --   Min_Price       : String ;
     Match_Directly : Boolean := False) is
 
     Max_Backprice_1 : Float_8;
@@ -312,9 +305,11 @@ procedure Poll is
     Next_Num      : Integer;
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
+    Min_Price       : String(1..4) := (others => '.');    
+    
   begin          --1         2 
-      --  12345678901234567890
-      --  Back_1_10_20_1_4_WIN
+      --  1234567890123456789012345
+      --  Back_1_10_20_1_4_WIN_1_02
     Tmp(1) := Image(6);
     Tmp(2) := '.';
     Tmp(3..4) := Image(8..9);
@@ -324,6 +319,8 @@ procedure Poll is
     Backed_Num := Integer'Value(Image(14..14));
     Next_Num := Integer'Value(Image(16..16));
     
+    Min_Price(1)    := Image(22);
+    Min_Price(3..4) := Image(24..25);
     
     case Bettype is
    --   when Back_1_50_30_1_4_PLC => Min_Backprice_1 := 1.41;
@@ -577,7 +574,7 @@ procedure Poll is
                         BR              => Best_Runners,
                         Marketid        => Markets(M_Type).Marketid,
                      --   Place_Marketid  => Markets(Place).Marketid,
-                        Min_Price       => To_String(Cfg.Bet(i).Min_Price),
+                    --    Min_Price       => To_String(Cfg.Bet(i).Min_Price),
                         Match_Directly  => Match_Directly);
                 end if;        
               end;              

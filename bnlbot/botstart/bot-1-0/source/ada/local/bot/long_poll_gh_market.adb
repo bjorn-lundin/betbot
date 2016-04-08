@@ -105,6 +105,40 @@ procedure Long_Poll_GH_Market is
       end if;
     end Lay_The_Bet;
     --------------------------------------------
+    procedure Lay_The_Bet_Between(Name          : in    String ;
+                          BR            : in    Best_Runners_Array_Type;
+                          Min_Lay_Price : in    Float_8;
+                          Max_Lay_Price : in    Float_8) is
+      Runner_Data : Table_Arunners.Data_Type;
+      Eos : Boolean := False;
+      Lay_Bet_Name : Bot_Types.Bet_Name_Type := (others => ' ');
+      Bet : Table_Abets.Data_Type;
+    begin
+     if Min_Lay_Price <= BR(1).Layprice and then BR(1).Layprice <= Max_Lay_Price then
+        Runner_Data.Marketid := BR(1).Marketid;
+        Runner_Data.Selectionid := BR(1).Selectionid;
+        Runner_Data.Read(Eos);
+        if not Eos then
+          Move (Name,Lay_Bet_Name);
+          Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                        Market_Id        => Market.Marketid,
+                        Side             => Lay,
+                        Runner_Name      => Runner_Data.Runnernamestripped,
+                        Selection_Id     => BR(1).Selectionid,
+                        Size             => Bet_Size_Type(40.0),
+                        Price            => Bet_Price_Type(BR(1).Layprice),
+                        Bet_Persistence  => Persist,
+                        Bet_Placed       => BR(1).Pricets,
+                        Bet              => Bet ) ;
+          Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+          Log("inserting " &  Bet.To_String);
+          Bet.Insert;
+          Update_Betwon_To_Null.Set("BETID", Bet.Betid);
+          Update_Betwon_To_Null.Execute;
+        end if;
+      end if;
+    end Lay_The_Bet_Between;
+    --------------------------------------------
 
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
@@ -189,6 +223,35 @@ procedure Long_Poll_GH_Market is
                   BR            => Best_Runners,
                   Max_Lay_Price => 20.0);
 
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_6_00_8_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  =>  6.0,
+                  Max_Lay_Price  =>  8.0);
+                  
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_6_00_10_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  =>  6.0,
+                  Max_Lay_Price  => 10.0);
+                  
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_6_00_12_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  =>  6.0,
+                  Max_Lay_Price  => 12.0);
+                  
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_8_00_10_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  =>  8.0,
+                  Max_Lay_Price  => 10.0);
+                  
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_8_00_12_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  =>  8.0,
+                  Max_Lay_Price  => 12.0);
+                  
+      Lay_The_Bet_Between(Name   => "LAY_BETWEEN_10_00_12_00",
+                  BR             => Best_Runners,
+                  Min_Lay_Price  => 10.0,
+                  Max_Lay_Price  => 12.0);
 
       T.Commit;
     end;
