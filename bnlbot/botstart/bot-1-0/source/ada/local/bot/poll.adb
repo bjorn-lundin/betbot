@@ -84,22 +84,22 @@ procedure Poll is
   begin
     case Bettype is
     --  when Back_1_50_30_1_4_PLC => return Process_Io.To_Process_Type("bet_placer_001");
-    --  when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002"); 
-    --  when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003"); 
+    --  when Back_1_10_20_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_002");
+    --  when Back_1_10_16_1_2_WIN => return Process_Io.To_Process_Type("bet_placer_003");
       when Lay_160_200                       => return Process_Io.To_Process_Type("bet_placer_001");
       when Lay_1_10_25_4                     => return Process_Io.To_Process_Type("bet_placer_002");
       when Back_1_10_07_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_003");
-      when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_004"); 
-      when Back_1_10_13_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005"); 
-      when Back_1_10_16_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_006"); 
+      when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_004");
+      when Back_1_10_13_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_10_16_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_006");
       when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_008"); 
-      when Back_1_10_13_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_009"); 
-      when Back_1_10_16_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_010"); 
-      when Back_1_10_07_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_011"); 
-      when Back_1_10_10_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_012"); 
-      when Back_1_10_13_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_013"); 
-      when Back_1_10_16_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_014"); 
+      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_008");
+      when Back_1_10_13_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_009");
+      when Back_1_10_16_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_10_07_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_011");
+      when Back_1_10_10_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_012");
+      when Back_1_10_13_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_013");
+      when Back_1_10_16_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_014");
       when Back_1_36_1_40_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_015");
       when Back_1_36_1_40_05_07_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_016");
       when Back_1_41_1_45_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_017");
@@ -109,6 +109,14 @@ procedure Poll is
       when Back_1_51_1_55_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_021");
       when Back_1_56_1_60_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_022");
       when Back_1_61_1_65_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_023");
+      when Back_1_66_1_70_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_024");
+      when Back_1_71_1_75_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_025");
+      when Back_1_76_1_80_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_026");
+      when Back_1_96_2_00_01_04_1_2_PLC_1_20 => return Process_IO.To_Process_Type("bet_placer_027");
+      when Back_1_11_1_15_05_07_1_2_WIN_1_10 => return Process_IO.To_Process_Type("bet_placer_028");
+      when Back_1_11_1_15_08_10_1_2_WIN_1_10 => return Process_IO.To_Process_Type("bet_placer_029");
+      when Back_1_01_1_05_14_17_1_2_WIN_1_05 => return Process_IO.To_Process_Type("bet_placer_030");
+      when Back_1_11_1_15_05_07_1_2_WIN_1_15 => return Process_IO.To_Process_Type("bet_placer_031");
     end case;
   end Get_Bet_Placer;
 
@@ -211,7 +219,7 @@ procedure Poll is
       when False => PLB.Match_Directly := 0;
       when True  => PLB.Match_Directly := 1;
     end case;
-        
+
     PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Market_Id, PLB.Market_Id);
     Move(F8_Image(Float_8(Max_Price)), PLB.Price); --abs max
@@ -269,7 +277,7 @@ procedure Poll is
       when False => PBB.Match_Directly := 0;
       when True  => PBB.Match_Directly := 1;
     end case;
-    
+
     PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Place_Market_Id, PBB.Market_Id);
     Move(Min_Price, PBB.Price);
@@ -295,7 +303,7 @@ procedure Poll is
   end Send_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
- 
+
   procedure Try_To_Make_Back_Bet(
     Bettype         : Config.Bet_Type;
     BR              : Best_Runners_Array_Type;
@@ -311,46 +319,46 @@ procedure Poll is
     Next_Num      : Integer;
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
-    Min_Price       : String(1..4) := (others => '.');    
-    
-  begin          --1         2 
+    Min_Price       : String(1..4) := (others => '.');
+
+  begin          --1         2
       --  1234567890123456789012345
       --  Back_1_10_20_1_4_WIN_1_02
     Tmp(1) := Image(6);
     Tmp(2) := '.';
     Tmp(3..4) := Image(8..9);
     Max_Backprice_1 := Float_8'Value(Tmp);
-    
+
     Min_Backprice_n := Float_8'Value(Image(11..12));
     Backed_Num := Integer'Value(Image(14..14));
     Next_Num := Integer'Value(Image(16..16));
-    
+
     Min_Price(1)    := Image(22);
     Min_Price(3..4) := Image(24..25);
-    
+
     case Bettype is
    --   when Back_1_50_30_1_4_PLC => Min_Backprice_1 := 1.41;
-   --   when Back_1_10_20_1_2_WIN | 
+   --   when Back_1_10_20_1_2_WIN |
    --        Back_1_10_16_1_2_WIN |
    --        Back_1_10_13_1_2_WIN => Min_Backprice_1 := 1.04;
       when others               => Min_Backprice_1 := 1.01;
     end case;
-    
+
     if BR(Backed_Num).Backprice <= Max_Backprice_1 and then
        BR(Backed_Num).Backprice >= Min_Backprice_1 and then
        BR(Next_Num).Backprice >= Min_Backprice_n and then
        BR(3).Backprice <  Float_8(10_000.0) then  -- so it exists
       -- Back The leader in PLC market...
-    
+
       Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
                Main_Bet        => Bettype,
                Place_Market_Id => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
-               Match_Directly  => Match_Directly);               
+               Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet;
-  
+
 
   procedure  Try_To_Make_Back_Bet_4_Bounds(
     Bettype         : Config.Bet_Type;
@@ -366,52 +374,52 @@ procedure Poll is
     Next_Num      : Integer;
     Tmp : String (1..5) := (others => ' ');
     Image : String := Bettype'Img;
-    Min_Price       : String(1..4) := (others => '.');    
-    
-  begin          --1         2         3 
+    Min_Price       : String(1..4) := (others => '.');
+
+  begin          --1         2         3
       --  123456789012345678901234567890123456789
       --  BACK_1_36_1_40_01_04_1_2_PLC_1_10
-      
+
     Tmp(1) := Image(6);
     Tmp(2) := '.';
     Tmp(3..4) := Image(8..9);
     Min_Backprice_1 := Float_8'Value(Tmp);
-    
-    
+
+
     Tmp(1) := Image(11);
     Tmp(2) := '.';
     Tmp(3..4) := Image(13..14);
     Max_Backprice_1 := Float_8'Value(Tmp);
-    
-    
+
+
     Min_Backprice_n := Float_8'Value(Image(16..17));
     Max_Backprice_n := Float_8'Value(Image(19..20));
-    
+
     Backed_Num := Integer'Value(Image(22..22));
     Next_Num := Integer'Value(Image(24..24));
-    
+
     Min_Price(1)    := Image(30);
     Min_Price(3..4) := Image(32..33);
-    
-    
+
+
     if BR(Backed_Num).Backprice <= Max_Backprice_1 and then
        BR(Backed_Num).Backprice >= Min_Backprice_1 and then
        BR(Next_Num).Backprice >= Min_Backprice_n and then
        BR(Next_Num).Backprice <= Max_Backprice_n and then
        BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
       -- Back The leader in PLC market...
-    
+
       Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
                Main_Bet        => Bettype,
                Place_Market_Id => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
-               Match_Directly  => Match_Directly);               
+               Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet_4_Bounds;
-  
-    
-  
+
+
+
   -------------------------------------------------------------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -434,7 +442,7 @@ procedure Poll is
     Worst_Runner      : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
 
     Eos               : Boolean := False;
-    type Markets_Array_Type is array (Market_Type'range) of Table_Amarkets.Data_Type; 
+    type Markets_Array_Type is array (Market_Type'range) of Table_Amarkets.Data_Type;
     Markets           : Markets_Array_Type;
     Found_Place       : Boolean := True;
     T                 : Sql.Transaction_Type;
@@ -457,13 +465,13 @@ procedure Poll is
 
     -- check if ok to bet and set bet size
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
-    
+
     if abs(Saldo.Exposure) > Float_8(5_000.0) then
        Log(Me & "Run", "Too much exposure - > 30% - skip this race " & Saldo.To_String);
        return;
     end if;
-    
-    
+
+
     for i in Bets_Allowed'range loop
       if 0.0 < Bets_Allowed(i).Bet_Size and then Bets_Allowed(i).Bet_Size < 1.0 then
         -- to have the size = a portion of the saldo.
@@ -612,7 +620,7 @@ procedure Poll is
       Log("Worst_Runner " & Worst_Runner.To_String);
 
       if Best_Runners(1).Backprice >= Float_8(1.01) then
-        -- instead of loads of 
+        -- instead of loads of
         --    Try_To_Make_Back_Bet (
         --          Bettype => Back_1_10_07_1_2_WIN,
         --          BR => Best_Runners,
@@ -622,7 +630,7 @@ procedure Poll is
             when Lay_160_200        => null; -- treat later
             when Lay_1_10_25_4      => null; -- treat later
             when Back_1_10_07_1_2_PLC_1_01 ..
-                 Back_1_10_16_1_2_WIN_1_05   => 
+                 Back_1_10_16_1_2_WIN_1_05   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
@@ -636,7 +644,7 @@ procedure Poll is
                   Match_Directly := False;
                 elsif Image(18..20) = "WIN" then
                   Match_Directly := True;
-                end if;  
+                end if;
                 if Do_Try_Bet then
                   Try_To_Make_Back_Bet (
                         Bettype         => i,
@@ -645,16 +653,16 @@ procedure Poll is
                      --   Place_Marketid  => Markets(Place).Marketid,
                     --    Min_Price       => To_String(Cfg.Bet(i).Min_Price),
                         Match_Directly  => Match_Directly);
-                end if;        
-              end;      
+                end if;
+              end;
             when Back_1_36_1_40_01_04_1_2_PLC_1_10 ..
-                 Back_1_61_1_65_01_04_1_2_PLC_1_10   => 
+                 Back_1_11_1_15_05_07_1_2_Win_1_15   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
                 Do_Try_Bet : Boolean := True;
               begin
-               --           1         2         3  
+               --           1         2         3
                --  123456789012345678901234567890123456789
                --  Back_1_61_1_65_01_04_1_2_PLC_1_10
                 if Image(26..28) = "PLC" then
@@ -663,16 +671,16 @@ procedure Poll is
                   Match_Directly := False;
                 elsif Image(26..28) = "WIN" then
                   Match_Directly := True;
-                end if;  
+                end if;
                 if Do_Try_Bet then
                   Try_To_Make_Back_Bet_4_Bounds (
                         Bettype         => i,
                         BR              => Best_Runners,
                         Marketid        => Markets(M_Type).Marketid,
                         Match_Directly  => Match_Directly);
-                end if;        
-              end;      
-              
+                end if;
+              end;
+
           end case;
         end loop;
         ---------------------------------------------------------------
@@ -754,7 +762,7 @@ begin
   My_Lock.Take(EV.Value("BOT_NAME"));
 
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
-  
+
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Cfg := Config.Create(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
@@ -785,11 +793,11 @@ begin
   end if;
 
   Main_Loop : loop
-  
+
     --notfy markets_fetcher that we are free
     Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
-    Bot_Messages.Send(Markets_Fetcher, Data);    
-  
+    Bot_Messages.Send(Markets_Fetcher, Data);
+
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
@@ -804,7 +812,7 @@ begin
           if Cfg.Enabled then
             --notfy markets_fetcher that we are busy
             Data := (Free => 0, Name => Process_Io.This_Process.Name , Node => Process_Io.This_Process.Node);
-            Bot_Messages.Send(Markets_Fetcher, Data);    
+            Bot_Messages.Send(Markets_Fetcher, Data);
             Run(Bot_Messages.Data(Msg));
           else
             Log(Me, "Poll is not enabled in poll.ini");
