@@ -22,7 +22,7 @@ AIS_RACEDAY_EXCLUDE = {
     '2013-12-30':[17],
     '2014-08-14':[49],
     '2016-03-20':[17],
-    '2016-04-09':[77],
+    '2016-04-09':[77]
 }
 AIS_S3_HOST = 's3-eu-west-1.amazonaws.com'
 AIS_EOD_DOWNLOAD_DELAY = 1 # E.g. 0.1 equals 100 ms, 2 equals 2 seconds
