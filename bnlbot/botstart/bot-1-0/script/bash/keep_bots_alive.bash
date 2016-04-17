@@ -116,11 +116,17 @@ function Check_Bots_For_User () {
   #  fi
   #done
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 "
-                   #bet_placer_006 \
-                   #bet_placer_007 bet_placer_008 bet_placer_009 \
-                   #bet_placer_010 "
-
+                   bet_placer_004 bet_placer_005 bet_placer_006 \
+                   bet_placer_007 bet_placer_008 bet_placer_009 \
+                   bet_placer_010 bet_placer_011 bet_placer_012 \
+                   bet_placer_013 bet_placer_014 bet_placer_015 \
+                   bet_placer_016 bet_placer_017 bet_placer_018 \
+                   bet_placer_019 bet_placer_020 bet_placer_021 \
+                   bet_placer_022 bet_placer_023 bet_placer_024 \
+                   bet_placer_025 bet_placer_026 bet_placer_027 \
+                   bet_placer_028 bet_placer_029 bet_placer_030 \
+                   bet_placer_031"
+                   
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
@@ -206,18 +212,32 @@ function Check_System_Bots_For_User () {
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_gh_market
        done
-       PLAYERS_LIST="play_market_1 play_market_2 play_market_3 "
-       for player in $PLAYERS_LIST ; do
-         Start_Bot $BOT_USER $player poll_gh_market
-       done
+
        PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
        for player in $PLAYERS_LIST2 ; do
          Start_Bot $BOT_USER $player long_poll_gh_market
-       done
-       
-       
-       
+       done       
     ;;
+    
+    soc)
+       Start_Bot $BOT_USER markets_fetcher markets_fetcher_soccer
+       Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+       Start_Bot $BOT_USER bet_checker bet_checker    
+       DATA_COLLECTORS_LIST="poll_market_s01 poll_market_s02 poll_market_s03 poll_market_s04 \
+                             poll_market_s05 poll_market_s06 poll_market_s07 poll_market_s08 \
+                             poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12"
+                             
+       for collector in $DATA_COLLECTORS_LIST ; do
+         Start_Bot $BOT_USER $collector poll_soccer
+       done
+
+       #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
+       #for player in $PLAYERS_LIST2 ; do
+       #  Start_Bot $BOT_USER $player long_poll_gh_market
+       #done       
+    ;;
+    
+    
   esac     
 
   #zip logfiles every hour, on minute 17 in the background
@@ -359,8 +379,9 @@ case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessarry
    # USER_LIST=$(ls $BOT_START/user)
-    USER_LIST_PLAYERS_ONLY="bnl jmb msm"
-    SYSTEM_USER_LIST="ael dry ghd"
+   # USER_LIST_PLAYERS_ONLY="bnl jmb msm"
+    USER_LIST_PLAYERS_ONLY="bnl"
+    SYSTEM_USER_LIST="ael dry ghd soc"
 
     HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
