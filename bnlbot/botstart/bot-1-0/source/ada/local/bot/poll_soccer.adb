@@ -129,7 +129,7 @@ procedure Poll_Soccer is
         end;       
       end if;
 
-      exit Poll_Loop when Market.Status(1..4) /= "OPEN";
+      exit Poll_Loop when Market.Status(1..6) = "CLOSED";
 
       if not Has_Been_In_Play then
         -- toggle the first time we see in-play=true

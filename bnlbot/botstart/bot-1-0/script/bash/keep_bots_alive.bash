@@ -225,7 +225,9 @@ function Check_System_Bots_For_User () {
        Start_Bot $BOT_USER bet_checker bet_checker    
        DATA_COLLECTORS_LIST="poll_market_s01 poll_market_s02 poll_market_s03 poll_market_s04 \
                              poll_market_s05 poll_market_s06 poll_market_s07 poll_market_s08 \
-                             poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12"
+                             poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12 \
+                             poll_market_s13 poll_market_s14 poll_market_s15 poll_market_s16 \
+                             poll_market_s17 poll_market_s18 poll_market_s19 poll_market_s20"
                              
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_soccer
