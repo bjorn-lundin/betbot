@@ -205,7 +205,6 @@ package body RPC is
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
          raise Bad_Reply ;
   end Get_JSON_Reply;
-
   ------------------------------------------------------------------------------
 
   procedure Get_Value(Container: in     JSON_Value;
@@ -1982,7 +1981,7 @@ package body RPC is
   end Parse_Market;
   -----------------------------------------------
   
-  procedure Get_Navigation_Data(Nav_Data : out Ada.Strings.Unbounded.Unbounded_String) is
+  procedure Get_Navigation_Data( Menu : in out JSON_Value) is
     AWS_Reply    : Aws.Response.Data;
     HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
   begin
@@ -1996,19 +1995,21 @@ package body RPC is
     Log(Me & "Get_Navigation_Data", "Got reply, check it ");
 
     if String'(Aws.Response.Message_Body(AWS_Reply)) = "Get Timeout" then
-      Log(Me & "Get_Navigation_Data", "Post Timeout -> Give up!");
-      raise POST_Timeout ;
+      Log(Me & "Get_Navigation_Data", "Get Timeout -> Give up!");
+      raise GET_Timeout ;
     end if;
-    Nav_Data := Aws.Response.Message_Body(AWS_Reply); 
+    Menu := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                  Filename => "");
     Log(Me, "Get_Navigation_Data stop");
   exception
       when POST_Timeout => raise;
       when others =>
-         Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
-         Log(Me & "Get_JSON_Reply", "Bad reply " & Aws.Response.Message_Body(AWS_Reply));
-         Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
+         Log(Me & "Get_Navigation_Data", "***********************  Bad reply start *********************************");
+         Log(Me & "Get_Navigation_Data", "Bad reply " & Aws.Response.Message_Body(AWS_Reply));
+         Log(Me & "Get_Navigation_Data", "***********************  Bad reply stop  ********" );
          raise Bad_Reply ;
   end Get_Navigation_Data;
+
   
   --------------------------------
   

@@ -16,7 +16,7 @@ with Table_Astarttimes;
 package RPC is
 
   type Result_Type is (Ok, Timeout, Logged_Out);
-  JSON_Exception, POST_Timeout, Invalid_Session, Login_Failed, Bad_Reply: exception;
+  JSON_Exception, POST_Timeout, GET_Timeout, Invalid_Session, Login_Failed, Bad_Reply: exception;
   
   procedure Login;
   procedure Logout;
@@ -131,8 +131,9 @@ package RPC is
   procedure Get_JSON_Reply (Query : in     JSON_Value;
                             Reply : in out JSON_Value;
                             URL   : in     String) ;
+
        
-  procedure Get_Navigation_Data(Nav_Data : out Ada.Strings.Unbounded.Unbounded_String);  
+  procedure Get_Navigation_Data(Menu : in out JSON_Value);  
                          
  
   
