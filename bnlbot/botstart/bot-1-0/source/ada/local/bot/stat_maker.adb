@@ -255,7 +255,7 @@ begin
   if Ia_Par_Lower_Limit = 0 then
     Log(Me, "read all bets with higher profit than " & F8_Image(Lower_Limit));
     Select_Markets_Of_Correct_MT.Prepare(
-      "select B.* from ABETS B, ALL_MARKETS M " &
+      "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " &
       "and M.MARKETTYPE= :MARKETTYPE "
     );
@@ -269,7 +269,7 @@ begin
   elsif Week > 0 then
     Log(Me, "read all bets for week" & Ia_Par_Week'Img);
     Select_Markets_Of_Correct_MT.Prepare(
-      "select B.* from ABETS B, ALL_MARKETS M " &
+      "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " &
       "and M.MARKETTYPE= :MARKETTYPE " &
       "and extract(week from M.STARTTS) = :WEEK "
@@ -285,7 +285,7 @@ begin
   elsif Month > 0 then
     Log(Me, "read all bets for month" & Month'Img);
     Select_Markets_Of_Correct_MT.Prepare(
-      "select B.* from ABETS B, ALL_MARKETS M " &
+      "select B.* from ABETS B, AMARKETS M " &
       "where B.MARKETID = M.MARKETID " &
       "and M.MARKETTYPE= :MARKETTYPE " &
       "and extract(month from M.STARTTS) = :MONTH "
@@ -305,7 +305,7 @@ begin
     begin
       Select_Betnames_With_Higher_Profit.Prepare(
         "select B.BETNAME, sum(B.PROFIT) " &
-        "from ABETS B, ALL_MARKETS M " &
+        "from ABETS B, AMARKETS M " &
         "where B.MARKETID = M.MARKETID " &
         "and M.MARKETTYPE= :MARKETTYPE " &
         "group by B.BETNAME " &

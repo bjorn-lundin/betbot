@@ -57,6 +57,7 @@ project Adabot is
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  (
                      "check_greenup.adb",
+                     "menu_parser.adb",
                      --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
