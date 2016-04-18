@@ -1,21 +1,23 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
+with Ada.Direct_IO ;
+with Ada.Directories;
+with Ada.Environment_Variables;
 --with Ada.Strings; use Ada.Strings;
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Text_io;
-with Ada.Direct_IO ;
-
-with Ada.Directories;
-
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Logging; use Logging;
-
 with Gnatcoll.JSON ;use Gnatcoll.JSON;
 
+with Text_io;
+with Logging; use Logging;
 with Stacktrace;
+with Ini;
+with Rpc;
 
-procedure  Menu_Parser is
+procedure Menu_Parser is
+  package EV renames Ada.Environment_Variables;
+  use type Rpc.Result_Type;
   Cmd_Line           : Command_Line_Configuration;
   Sa_Input_File      : aliased Gnat.Strings.String_Access;
   Me : constant String := "Menu_Parser.Main";
@@ -41,15 +43,30 @@ procedure  Menu_Parser is
 
   
 begin
-   Define_Switch
-    (Cmd_Line,
-     Sa_Input_File'access,
-     Long_Switch => "--file=",
-     Help        => "input json file");
+ --  Define_Switch
+ --   (Cmd_Line,
+ --    Sa_Input_File'access,
+ --    Long_Switch => "--file=",
+ --    Help        => "input json file");
 
-   Getopt (Cmd_Line);  -- process the command line
-   Menu := Read (Strm     => Load_File(Sa_Input_File.all),
-                 Filename => "debug.out");
+ --  Getopt (Cmd_Line);  -- process the command line
+ --  Menu := Read (Strm     => Load_File(Sa_Input_File.all),
+ --                Filename => "debug.out");
+
+   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
+
+   Rpc.Init(
+            Username   => Ini.Get_Value("betfair","username",""),
+            Password   => Ini.Get_Value("betfair","password",""),
+            Product_Id => Ini.Get_Value("betfair","product_id",""),
+            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+            App_Key    => Ini.Get_Value("betfair","appkey","")
+          );
+   Rpc.Login;
+   Log(Me, "Login betfair done");
+
+   Rpc.Get_Navigation_Data(Menu);
+                 
 
    Log("0 type:" & Menu.Get("type") & " name:" & Menu.Get("name"));
    if Menu.Has_Field("children") then
@@ -143,6 +160,7 @@ begin
      end loop;
    end if;
 
+   Rpc.Logout;
                  
 --   Log(Me,Menu.Write); 
 exception
