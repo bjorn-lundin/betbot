@@ -3,13 +3,15 @@ with Ada.Command_Line;
 --with Ada.Direct_IO ;
 --with Ada.Directories;
 with Ada.Environment_Variables;
---with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Text_io;
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
+--with Gnat.Strings;
 with Gnatcoll.JSON ;use Gnatcoll.JSON;
 
+--with Types; use Types;
+with Table_Aokmarkets;
 with Sql;
 with Lock ;
 with Posix;
@@ -40,17 +42,18 @@ procedure Menu_Parser is
   Me                 : constant String := "Menu_Parser.Main";
   My_Lock            : Lock.Lock_Type;
   Cmd_Line           : Command_Line_Configuration;
-  Sa_Input_File      : aliased Gnat.Strings.String_Access;
+  -- Sa_Input_File      : aliased Gnat.Strings.String_Access;
   Menu               : Json_Value;
   Children           : array (1..7) of JSON_Array := (others => Empty_Array);
   Ba_Daemon          : aliased Boolean := False;
+  T                  : Sql.Transaction_Type;
 
 begin
-  Define_Switch
-   (Cmd_Line,
-    Sa_Input_File'access,
-    Long_Switch => "--file=",
-    Help        => "input json file");
+  --Define_Switch
+  -- (Cmd_Line,
+  --  Sa_Input_File'access,
+  --  Long_Switch => "--file=",
+  --  Help        => "input json file");
     
   Define_Switch
     (Cmd_Line,
@@ -62,6 +65,10 @@ begin
   Getopt (Cmd_Line);  -- process the command line
   --Menu := Read (Strm     => Load_File(Sa_Input_File.all),
   --              Filename => "debug.out");
+
+  if not Ev.Exists("BOT_NAME") then
+     Ev.Set("BOT_NAME","menu_parser");
+  end if;
  
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Logging.Open(EV.Value("BOT_HOME") & "/log/menu_parser.log");
@@ -71,11 +78,7 @@ begin
    --must take lock AFTER becoming a daemon ... 
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));    
-  
- 
- 
-  
- 
+   
   Rpc.Init(
            Username   => Ini.Get_Value("betfair","username",""),
            Password   => Ini.Get_Value("betfair","password",""),
@@ -144,16 +147,22 @@ begin
                       for l in 1 .. Length(Children(4)) loop
                         declare
                           Child4 : Json_Value := Get(Children(4),l);
+                          Name   : String     := Child4.Get("name");
                         begin
-                          if Child4.Has_Field("children") and then Child4.Get("type") = "GROUP" and then Child4.Get("name")(1..8) = "Fixtures" then
-                            Log("                4 type:" & Child4.Get("type") & " name:" & Child4.Get("name"));
+                          if Child4.Has_Field("children") and then
+                             Child4.Get("type") = "GROUP" and then
+                             Name'length >= 8 and then
+                             Name(1..8) = "Fixtures" then
+                            Log("                4 type:" & Child4.Get("type") & " name:" & Name);
                             Children(5) := Child4.Get("children");
                             for m in 1 .. Length(Children(5)) loop
                               declare
-                                Child5 : Json_Value := Get(Children(5),m);
+                                Child5    : Json_Value := Get(Children(5),m);
+                                Ok_Market : Table_Aokmarkets.Data_Type;
                               begin
                                 if Child5.Has_Field("children") then
                                   Log("                    5 type:" & Child5.Get("type") & " name:" & Child5.Get("name"));
+                                  Move(Child5.Get("id"),Ok_Market.Eventid); -- eventid
                                   Children(6) := Child5.Get("children");
                                   for n in 1 .. Length(Children(6)) loop
                                     declare
@@ -167,6 +176,23 @@ begin
                                         Log("                        6 id:" & Child6.Get("id") & " name:" & Child6.Get("name"));
                                         -- do stuff here
                                         --insert into new table
+                                        Move(Child6.Get("id"),Ok_Market.Marketid);
+                                        Move(Child6.Get("marketType"),Ok_Market.Markettype);
+                                        declare
+                                          Eos : Boolean := False;
+                                        begin 
+                                          T.Start;
+                                          Ok_Market.Read(Eos);
+                                          if Eos then
+                                            Log(Me,"will insert" & Ok_Market.To_String);
+                                            Ok_Market.Insert;
+                                            Log(Me,"did  insert" & Ok_Market.To_String);
+                                          end if;
+                                          T.Commit;
+                                        exception
+                                          when Sql.Duplicate_Index =>
+                                            T.Rollback;
+                                        end;    
                                       end if;
                                     end;
                                   end loop;
