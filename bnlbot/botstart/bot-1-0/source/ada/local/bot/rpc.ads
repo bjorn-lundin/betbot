@@ -1,5 +1,3 @@
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded;
 with Gnatcoll.Json; use Gnatcoll.Json;
 with Types; use Types;
 with Bot_Types; use Bot_Types;

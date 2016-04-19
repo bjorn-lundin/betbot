@@ -7,7 +7,7 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Text_io;
 with Gnat.Command_Line; use Gnat.Command_Line;
---with Gnat.Strings;
+with Gnat.Strings;
 with Gnatcoll.JSON ;use Gnatcoll.JSON;
 
 --with Types; use Types;
@@ -42,7 +42,7 @@ procedure Menu_Parser is
   Me                 : constant String := "Menu_Parser.Main";
   My_Lock            : Lock.Lock_Type;
   Cmd_Line           : Command_Line_Configuration;
-  -- Sa_Input_File      : aliased Gnat.Strings.String_Access;
+  Sa_Par_Bot_User    : aliased Gnat.Strings.String_Access;
   Menu               : Json_Value;
   Children           : array (1..7) of JSON_Array := (others => Empty_Array);
   Ba_Daemon          : aliased Boolean := False;
@@ -54,6 +54,11 @@ begin
   --  Sa_Input_File'access,
   --  Long_Switch => "--file=",
   --  Help        => "input json file");
+   Define_Switch
+    (Cmd_Line,
+     Sa_Par_Bot_User'access,
+     Long_Switch => "--user=",
+     Help        => "user of bot");
     
   Define_Switch
     (Cmd_Line,
