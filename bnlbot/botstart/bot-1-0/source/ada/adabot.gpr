@@ -43,6 +43,7 @@ project Adabot is
                     "stat_maker.adb",
                     "poll_bounds.adb",
                     "bot_web_server.adb",
+                    "menu_parser.adb",
                     "check_bot_running.adb"
                     );
 
@@ -57,7 +58,6 @@ project Adabot is
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  (
                      "check_greenup.adb",
-                     "menu_parser.adb",
                      --"create_graph_data_lost_bets.adb",                   
                      "markets_sender.adb");
 
