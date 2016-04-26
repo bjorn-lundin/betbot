@@ -136,7 +136,7 @@ procedure Poll_Soccer is
         -- makes us insensible to Betfair toggling bug
         Has_Been_In_Play := In_Play;
       end if;
-      delay 5.0; -- 1/5 Hz is all we need
+      delay 1.0; -- 1 Hz is all we need
     end loop Poll_Loop;
   end Run;
   ---------------------------------------------------------------------
