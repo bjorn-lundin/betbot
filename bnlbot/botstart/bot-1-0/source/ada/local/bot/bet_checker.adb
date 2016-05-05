@@ -113,7 +113,7 @@ procedure Bet_Checker is
           end ;
           
           if Bet.Powerdays > 0 then
-            -- bet must be at least partially matched immidiatly or we try to cancel it
+            -- bet must be at least partially matched immediately or we try to cancel it
             if Integer(Bet.Sizematched) = 0 then
               Log(Me & Service, "try to cancel bet, since Powerdays > 0 and sizematched = 0");
               declare
