@@ -1,8 +1,6 @@
 #!/bin/bash
 
 BOT_USER=$1
-
-
 export BOT_USER
 
 #BOT_START is set in .bashrc
@@ -16,27 +14,19 @@ export BOT_DOC=$BOT_ROOT/docbook
 export BOT_HISTORY=$BOT_ROOT/history
 export REPO_ENGINE=$BOT_TARGET/bin/repo
 
-
 #amazon machines starts with 'ip'
 
 HOSTNAME=$(hostname)
 case $HOSTNAME in
   ip*)
     export BOT_MACHINE_ROLE=PROD
-    ;;  
-  new.nonodev.com)    
-    export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=GNAT
-    ;;
+    ;;  
   prod*)    
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=GNAT
     ;;
   sebjlun*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=LOCAL
-    ;;
-  tova*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=LOCAL
     ;;
@@ -52,9 +42,6 @@ esac
 
 case $HOSTNAME in
   ip*) 
-    export BOT_MODE=real
-    ;;
-  new.nonodev.com)    
     export BOT_MODE=real
     ;;
   prod*)    

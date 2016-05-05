@@ -233,6 +233,8 @@ function Check_System_Bots_For_User () {
          Start_Bot $BOT_USER $collector poll_soccer
        done
 
+       Start_Bot $BOT_USER menu_parser menu_parser
+       
        #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
        #for player in $PLAYERS_LIST2 ; do
        #  Start_Bot $BOT_USER $player long_poll_gh_market
@@ -253,23 +255,23 @@ function Check_System_Bots_For_User () {
   #  fi
   #fi
 
-  if [ $IS_TESTER == "true" ] ; then
-    case $BOT_MINUTE in
-        00) $BOT_TARGET/bin/stat_maker --update_only ;;
-        05) $BOT_TARGET/bin/stat_maker --update_only ;;
-        10) $BOT_TARGET/bin/stat_maker --update_only ;;
-        15) $BOT_TARGET/bin/stat_maker --update_only ;;
-        50) $BOT_TARGET/bin/stat_maker --update_only ;;
-        25) $BOT_TARGET/bin/stat_maker --update_only ;;
-        50) $BOT_TARGET/bin/stat_maker --update_only ;;
-        35) $BOT_TARGET/bin/stat_maker --update_only ;;
-        50) $BOT_TARGET/bin/stat_maker --update_only ;;
-        45) $BOT_TARGET/bin/stat_maker --update_only ;;
-        50) $BOT_TARGET/bin/stat_maker --update_only ;;
-        55) $BOT_TARGET/bin/stat_maker --update_only ;;
-    esac
-  #  A=NULL
-  fi
+  #if [ $IS_TESTER == "true" ] ; then
+  #  case $BOT_MINUTE in
+  #      00) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      05) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      10) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      15) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      25) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      35) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      45) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #      55) $BOT_TARGET/bin/stat_maker --update_only ;;
+  #  esac
+  ##  A=NULL
+  #fi
 }
 
 ##
@@ -379,7 +381,7 @@ DAY=$(date +"%d")
 
 case $BOT_MACHINE_ROLE in
   PROD)
-    #check the bots, and startup if  necessarry
+    #check the bots, and startup if  necessary
    # USER_LIST=$(ls $BOT_START/user)
    # USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     USER_LIST_PLAYERS_ONLY="bnl"
