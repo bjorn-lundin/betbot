@@ -43,9 +43,9 @@ procedure Bet_Placer is
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line        : Command_Line_Configuration;
   Global_Enabled         : constant Boolean   := True;
-  Global_Max_Outstanding : Integer_4 := 4_000;
+  Global_Max_Outstanding : constant Integer_4 := 4_000;
   Global_Currently_Outstanding : Integer_4 := 0;
-  Global_Keep_Alive_Counter           : Integer_4 := 0;  
+  Global_Keep_Alive_Counter           : Integer_4 := 0;
   ------------------------------------------------------
   procedure Place_Bet(Bet_Name     : Bet_Name_Type;
                       Market_Id    : Market_Id_Type;
@@ -54,7 +54,7 @@ procedure Bet_Placer is
                       Size         : Bet_Size_Type;
                       Price        : Bet_Price_Type;
                       Match_Directly : Integer_4) is
-                      
+
     A_Bet : Table_Abets.Data_Type;
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
@@ -66,12 +66,12 @@ procedure Bet_Placer is
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
     Local_Price : Float_8 := Float_8(Price);
-    Local_Size  : Float_8 := Float_8(Size); 
+    Local_Size  : Float_8 := Float_8(Size);
     Local_Side  : String (1..4) := (others => ' ');
-    
+
   begin
     Move(Side'img, Local_Side);
-  
+
     Log("'" & Bet_Name & "'");
     Log("'" & Local_Side & "'");
     Log("'" & Market_Id & "'");
@@ -80,7 +80,7 @@ procedure Bet_Placer is
     Log("'" & Utils.F8_Image(Local_Size) & "'");
 
     if Bet_Name(1..2) = "DR" then
-    
+
       Bet_Id := 0;
       Move( "EXECUTION_COMPLETE", Order_Status);
       Move( "SUCCESS", Execution_Report_Status);
@@ -89,7 +89,7 @@ procedure Bet_Placer is
       Move( "SUCCESS", Instruction_Report_Error_Code);
       Average_Price_Matched := Float(Local_Price);
       L_Size_Matched := Float(Local_Size);
-      
+
       A_Bet := (
         Betid          => Bet_Id,
         Marketid       => Market_Id,
@@ -118,13 +118,12 @@ procedure Bet_Placer is
         Ixxlupd        => (others => ' '), --set by insert
         Ixxluts        => Now              --set by insert
       );
-    else -- real bet  
- 
+    else -- real bet
+
       Log(Me & "Place_Bet", "call Rpc.Place_Bet");
       Rpc.Place_Bet (Bet_Name         => Bet_Name,
                      Market_Id        => Market_Id,
                      Side             => Side,
-                 --    Runner_Name      => A_Runner.Runnername,
                      Runner_Name      => (others => ' '),
                      Selection_Id     => Selection_Id,
                      Size             => Size,
@@ -134,26 +133,26 @@ procedure Bet_Placer is
                      Bet              => A_Bet);
       Log(Me & "Place_Bet", "call Rpc.Place_Bet");
       Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
-                     
-    end if; -- dry run 
+
+    end if; -- dry run
 
     -- save bet in JSON on disk
     Global_Counter := Global_Counter +1;
     declare
-      Filename : String := EV.Value("BOT_HOME") & "/pending/" & 
-                        Utils.Trim(Process_io.This_Process.Name) & "_" & 
-                        Utils.Trim(Global_Counter'Img) & "_" & 
+      Filename : String := EV.Value("BOT_HOME") & "/pending/" &
+                        Utils.Trim(Process_io.This_Process.Name) & "_" &
+                        Utils.Trim(Global_Counter'Img) & "_" &
                         Utils.Trim(Posix.Getpid'Img) & ".json";
       NBP : Bot_Messages.New_Bet_Placed_Notification_Record := (Dummy => 0);
-    begin 
+    begin
       -- create a file using Betid as unique name, and have it locked during the write, until closed
       Lock.Write_File(Name => Filename, Content =>  A_Bet.To_JSON.Write);
- 
+
       Log(Me, "Notifying 'bot_checker' about newly placed bet");
-      Bot_Messages.Send(Process_IO.To_Process_Type("bet_checker"), NBP);     
-    
+      Bot_Messages.Send(Process_IO.To_Process_Type("bet_checker"), NBP);
+
     exception
-      when E: others => 
+      when E: others =>
         declare
           Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
           Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
@@ -167,9 +166,9 @@ procedure Bet_Placer is
         end ;
     end;
   end Place_Bet;
-  
+
   -------------------------------------------------------
-  
+
   procedure Back_Bet(Place_Back_Bet : Bot_Messages.Place_Back_Bet_Record) is
   begin
     Place_Bet(Bet_Name     => Place_Back_Bet.Bet_Name,
@@ -184,7 +183,7 @@ procedure Bet_Placer is
 
   ------------------------------------------------------
   procedure Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
-  begin 
+  begin
     Place_Bet(Bet_Name     => Place_Lay_Bet.Bet_Name,
               Market_Id    => Place_Lay_Bet.Market_Id,
               Selection_Id => Place_Lay_Bet.Selection_Id,
@@ -202,8 +201,8 @@ procedure Bet_Placer is
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     Outstanding := Integer_4(abs(Saldo.Exposure));
   end Check_Outstanding_Balance;
-  
-  
+
+
 
 begin
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
@@ -278,20 +277,20 @@ begin
           if Global_Enabled then
             if Global_Currently_Outstanding <= Global_Max_Outstanding then
               Back_Bet(Bot_Messages.Data(Msg));
-            else  
+            else
               Log(Me, "Too much outstanding bets, max" & Global_Max_Outstanding'Img & " cur" & Global_Currently_Outstanding'Img );
             end if;
-          else  
+          else
             Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
         when Bot_Messages.Place_Lay_Bet_Message    =>
           if Global_Enabled then
             if Global_Currently_Outstanding <= Global_Max_Outstanding then
               Lay_Bet(Bot_Messages.Data(Msg));
-            else  
+            else
               Log(Me, "Too much outstanding bets, max" & Global_Max_Outstanding'Img & " cur" & Global_Currently_Outstanding'Img );
             end if;
-          else  
+          else
             Log(Me, "I am not enabled in bet_placer.ini!");
           end if;
         when others =>
@@ -300,7 +299,7 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
-        Check_Outstanding_Balance(Global_Max_Outstanding);
+        Check_Outstanding_Balance(Global_Currently_Outstanding);
         Global_Keep_Alive_Counter := Global_Keep_Alive_Counter +1;
         if Global_Keep_Alive_Counter >= 10 then
           Rpc.Keep_Alive(OK);
@@ -308,7 +307,7 @@ begin
           if not OK then
             Rpc.Login;
           end if;
-        end if;  
+        end if;
     end;
     Now := Calendar2.Clock;
 
@@ -329,7 +328,7 @@ exception
     Log(Me, "lock error, exit");
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
-  when E: others => 
+  when E: others =>
     declare
       Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
       Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);

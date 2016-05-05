@@ -52,7 +52,7 @@ procedure Menu_Parser is
   Children           : array (1..7) of JSON_Array := (others => Empty_Array);
   Ba_Daemon          : aliased Boolean := False;
   Delete_Old_Records : Sql.Statement_Type;
-  Timeout            : Duration := 120.0;
+  Timeout            : Duration := 1.0; -- changed in main loop
   Ok,
   Is_Time_To_Exit : Boolean := False;
   Now             : Calendar2.Time_Type;
@@ -90,6 +90,7 @@ procedure Menu_Parser is
               declare
                 Child2 : Json_Value := Get(Children(2),j);
               begin
+                Log(" DEBUG2 2 type:" & Child2.Get("type") & " name:" & Child2.Get("name"));
                 if Child2.Has_Field("children") and then Child2.Get("type") = "GROUP" and then
                    (--Child2.Get("name") = "Argentinian Soccer" or
                     Child2.Get("name") = "Belgian Soccer" or
@@ -99,6 +100,7 @@ procedure Menu_Parser is
                     Child2.Get("name") = "English Soccer" or
                     Child2.Get("name") = "German Soccer" or
                     Child2.Get("name") = "Italian Soccer" or
+                    Child2.Get("name") = "French Soccer" or --?
                     Child2.Get("name") = "Portuguese Soccer" or
                     Child2.Get("name") = "Spanish Soccer" or
                     Child2.Get("name") = "Swedish Soccer" ) then
@@ -109,6 +111,7 @@ procedure Menu_Parser is
                     declare
                       Child3 : Json_Value := Get(Children(3),k);
                     begin
+                      --Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                       if Child3.Has_Field("children") and then Child3.Get("type") = "EVENT" and then
                          (Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
                           Child3.Get("name") = "Danish Superliga" or        -- danmark
@@ -116,6 +119,7 @@ procedure Menu_Parser is
                           Child3.Get("name") = "Barclays Premier League" or -- england
                           Child3.Get("name") = "Bundesliga 1" or            -- tyskland
                           Child3.Get("name") = "Serie A" or                 -- italien
+                          Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
                           Child3.Get("name") = "Primeira Liga" or           -- portugal
                           Child3.Get("name") = "Allsvenskan" or             -- sverige
                           Child3.Get("name") = "Primera Division" ) then    -- spanien
@@ -238,7 +242,7 @@ begin
         Password => Ini.Get_Value("database","password",""));
 
   Delete_Old_Markets;
-
+  Timeout := 1.0;
   Main_Loop : loop
     begin
       Log(Me, "Start receive");
@@ -255,6 +259,7 @@ begin
       end case;
     exception
       when Process_Io.Timeout =>
+        Timeout := 250.0;
         Rpc.Keep_Alive(OK);
         if not OK then
           Rpc.Login;
