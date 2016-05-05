@@ -23,6 +23,19 @@ alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_126 --
 
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
                      
+alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
+
 
 alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=bot --message=exit && \
