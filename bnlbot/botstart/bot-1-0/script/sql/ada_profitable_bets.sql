@@ -2,7 +2,9 @@
   count('a'),
   round(avg(profit)::numeric, 2) as avgprofit,
   round(sum(profit)::numeric, 2) as sumprofit,
-  round(avg(price)::numeric, 2) as avgprice,
+  round(avg(pricematched)::numeric, 3) as avgpricem,
+  round(avg(sizematched)::numeric,0) as avgsizem,
+  round((sum(profit)*100/sum(sizematched))::numeric,2) as winratio_pct,
   min(betplaced)::date as mindate,
   max(betplaced)::date as maxdate,
   max(betplaced)::date - min(betplaced)::date  + 1 as days, 
@@ -11,15 +13,13 @@
   betname
 from
   abets
-where
-  betplaced::date > (select CURRENT_DATE - interval '42 days')
-  and STATUS = 'EXECUTION_COMPLETE'
+where STATUS = 'SETTLED'
   and betwon is not null
-  and betname like '%HO%'
-  and betmode =2
 group by
   betname
-having sum(profit) > 0
+having sum(profit) > -1000
+and max(betplaced) > '2016-01-01 00:00:00' 
+and count('a') > 10
 order by
   sum(profit) desc,
   betname

@@ -8,11 +8,11 @@
 from
   abets
 where
-  betplaced::date > (select CURRENT_DATE - interval '42 days')
-  and STATUS = 'EXECUTION_COMPLETE'
-  and betwon is not null
-  and betmode =2
- and betname like '%HO%'
+--  betplaced::date > (select CURRENT_DATE - interval '42 days')
+  --and STATUS = 'EXECUTION_COMPLETE'
+  --and 
+  betwon is not null
+ 
 group by
   betplaced::date,
   betname
