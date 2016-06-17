@@ -420,6 +420,7 @@ begin
          Market := Get(Result_List_Market_Catalogue, i);
 
          if Market.Has_Field("marketId") then
+           -- menuparser adds those markets that are ok wrp country/league into AOKMARKETS
            Move(Market.Get("marketId"),Okmarket.Marketid);
            Okmarket.Read(Eos_Okmarket);
            Market_Is_Ok := not Eos_Okmarket;
@@ -429,6 +430,8 @@ begin
              if not Event.Has_Field("id") then
                Log(Me, "we no event:" & i'img & " event:" & Event.Write );
              end if;
+           else
+             Log(Me, "Market:'" & Okmarket.Marketid & "' was NOT found in AOKMARKETS - skipping" );
            end if;
          end if;
 
