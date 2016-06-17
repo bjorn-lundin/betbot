@@ -95,15 +95,15 @@ procedure Menu_Parser is
                    (--Child2.Get("name") = "Argentinian Soccer" or
                     Child2.Get("name") = "Belgian Soccer" or
                    -- Child2.Get("name") = "Brazilian Soccer" or
-                    Child2.Get("name") = "Danish Soccer" or
+                   -- Child2.Get("name") = "Danish Soccer" or
                     Child2.Get("name") = "Dutch Soccer" or
                     Child2.Get("name") = "English Soccer" or
                     Child2.Get("name") = "German Soccer" or
                     Child2.Get("name") = "Italian Soccer" or
                     Child2.Get("name") = "French Soccer" or --?
                     Child2.Get("name") = "Portuguese Soccer" or
-                    Child2.Get("name") = "Spanish Soccer" or
-                    Child2.Get("name") = "Swedish Soccer" ) then
+                    Child2.Get("name") = "Spanish Soccer" ) then
+                 --   Child2.Get("name") = "Swedish Soccer" ) then
 
                   Log("        2 type:" & Child2.Get("type") & " name:" & Child2.Get("name"));
                   Children(3) := Child2.Get("children");
@@ -114,14 +114,14 @@ procedure Menu_Parser is
                       --Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                       if Child3.Has_Field("children") and then Child3.Get("type") = "EVENT" and then
                          (Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
-                          Child3.Get("name") = "Danish Superliga" or        -- danmark
+                       --   Child3.Get("name") = "Danish Superliga" or        -- danmark
                           Child3.Get("name") = "Eredivisie" or              -- holland
                           Child3.Get("name") = "Barclays Premier League" or -- england
                           Child3.Get("name") = "Bundesliga 1" or            -- tyskland
                           Child3.Get("name") = "Serie A" or                 -- italien
                           Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
                           Child3.Get("name") = "Primeira Liga" or           -- portugal
-                          Child3.Get("name") = "Allsvenskan" or             -- sverige
+                         -- Child3.Get("name") = "Allsvenskan" or             -- sverige
                           Child3.Get("name") = "Primera Division" ) then    -- spanien
                         Log("            3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                         Children(4) := Child3.Get("children");

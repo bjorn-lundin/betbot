@@ -14,13 +14,13 @@ with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Strings;
 
 with AWS;
-with AWS.SMTP; 
+with AWS.SMTP;
 with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
 
 with Stacktrace;
---with Types; use Types;
+with Types; use Types;
 with Sql;
 
 with Utils;
@@ -41,8 +41,8 @@ with Logging; use Logging;
 procedure Saldo_Fetcher is
   package EV renames Ada.Environment_Variables;
   use type Rpc.Result_Type;
-  
-  Me : constant String := "Main.";  
+
+  Me : constant String := "Main.";
 
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Ba_Daemon       : aliased Boolean := False;
@@ -54,29 +54,34 @@ procedure Saldo_Fetcher is
   function Get_Db_Size(Db_Name : String ) return String ; -- forward declaration only
 
 
-  procedure Mail_Saldo(Saldo : Table_Abalances.Data_Type) is
+  procedure Mail_Saldo(Saldo, Old : Table_Abalances.Data_Type) is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      Subject : constant String             := "BetBot Saldo Report";
      use AWS;
-     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
-     Status : SMTP.Status; 
+     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
+     Status : SMTP.Status;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
       Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", 
+                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
                                               "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
                                    Port       => 2465,
                                    Secure     => True,
-                                   Credential => Auth'Unchecked_Access);                                  
+                                   Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
-      Msg : constant String := 
+      Msg : constant String :=
           "Dagens saldo-rapport " & Cr & Lf &
           "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &
           "saldo:     " & Utils.F8_Image(Saldo.Balance) & Cr & Lf &
           "exposure:  " & Utils.F8_Image(Saldo.Exposure)  & Cr & Lf &
+          Cr & Lf &
+          "saldo igår:     " & Utils.F8_Image(Old.Balance) & Cr & Lf &
+          "exposure igår:  " & Utils.F8_Image(Old.Exposure)  & Cr & Lf &
+          Cr & Lf &
+          "vinst idag: " & Utils.F8_Image(Saldo.Balance - Old.Balance) & 
           Cr & Lf &
           "Database sizes:" & Cr & Lf &
           "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
@@ -86,56 +91,71 @@ procedure Saldo_Fetcher is
           "ael " & Get_Db_Size("ael")  & Cr & Lf &
           "ghd " & Get_Db_Size("ghd")  & Cr & Lf &
           "ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
-          Cr & Lf &          
+          Cr & Lf &
           "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
-          
+
       Receivers : constant SMTP.Recipients :=  (
                   SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
                   SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com"),
                   SMTP.E_Mail("Mats Mårtensson", "mats.g.martensson@gmail.com")
-                ); 
-    begin     
+                );
+    begin
       SMTP.Client.Send(Server  => SMTP_Server,
                        From    => SMTP.E_Mail ("Nonobet Betbot", "betbot@nonobet.com"),
                        To      => Receivers,
                        Subject => Subject,
                        Message => Msg,
                        Status  => Status);
-    end;                   
+    end;
     if not SMTP.Is_Ok (Status) then
       Log (Me & "Mail_Saldo", "Can't send message: " & SMTP.Status_Message (Status));
-    end if;                  
+    end if;
   end Mail_Saldo;
 
----------------------------------  
-  
+---------------------------------
+
   procedure Insert_Saldo(S : in out Table_Abalances.Data_Type) is
   begin
-    Log(Me, "Insert_Saldo start"); 
-    Log(Me, Table_Abalances.To_String(S)); 
-    Table_Abalances.Insert(S);  
-    Log(Me, "Insert_Saldo stop"); 
+    Log(Me, "Insert_Saldo start");
+    Log(Me, Table_Abalances.To_String(S));
+    Table_Abalances.Insert(S);
+    Log(Me, "Insert_Saldo stop");
   end Insert_Saldo;
 
+  function Get_Old_Saldo return Table_Abalances.Data_Type is
+    Stm : Sql.Statement_Type;
+    Eos : Boolean := False;
+    Old_Bal : Table_Abalances.Data_Type ;
+  begin
+    Stm.Prepare("select * from ABALANCES where BALDATE::date = (select current_date -2)");
+    Stm.Fetch(Eos);
+    if not Eos then
+      Old_Bal := Table_Abalances.Get(Stm);
+    end if;
+    return Old_Bal;
+  end Get_Old_Saldo;
+
   ---------------------------------------------------------------------
-  
+
   procedure Balance( Betfair_Result : in out Rpc.Result_Type ; Saldo : out Table_Abalances.Data_Type) is
     T : Sql.Transaction_Type;
     Now : Calendar2.Time_Type := Calendar2.Clock;
+    Old_Saldo : Table_Abalances.Data_Type ;
   begin
 
-    Rpc.Get_Balance(Betfair_Result,Saldo);           
-         
-    if Betfair_Result = Rpc.Ok then    
-      Saldo.Baldate := Now;  
+    Rpc.Get_Balance(Betfair_Result,Saldo);
+
+    if Betfair_Result = Rpc.Ok then
+      Saldo.Baldate := Now;
       T.Start;
       Insert_Saldo(Saldo);
+      Old_Saldo := Get_Old_Saldo;
       T.Commit;
-      Mail_Saldo(Saldo);
-    end if;  
-  end Balance;    
-     
+      Mail_Saldo(Saldo, Old_Saldo);
+    end if;
+  end Balance;
+
   -----------------------------------------------------------
   function Get_Db_Size(Db_Name : String ) return String is
     Buff           : String(1..100) := (others => ' ');
@@ -153,32 +173,32 @@ procedure Saldo_Fetcher is
     if not Eos then
       Select_Db_Size.Get(1, Buff);
     else
-      Move("No such db: " & Db_Name, Buff);    
+      Move("No such db: " & Db_Name, Buff);
     end if;
     Select_Db_Size.Close_Cursor;
     T.Commit;
-    return Utils.Trim(Buff);  
+    return Utils.Trim(Buff);
     exception
-      when others => 
+      when others =>
       T.Rollback;
       return Utils.Trim("bad db " & Db_Name);
   end Get_Db_Size;
-     
+
 ------------------------------ main start -------------------------------------
   Saldo : Table_Abalances.Data_Type;
   Global_Enabled : Boolean := True;
 begin
-  Ini.Load(Ev.Value("BOT_HOME") & "/login.ini"); 
+  Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
   Global_Enabled := Ini.Get_Value("email","enabled",True);
- 
+
   Logging.Open(EV.Value("BOT_HOME") & "/log/saldo_fetcher.log");
-  
+
   Define_Switch
    (Cmd_Line,
     Sa_Par_Bot_User'access,
     Long_Switch => "--user=",
     Help        => "user of bot");
-    
+
   Define_Switch
      (Cmd_Line,
       Ba_Daemon'access,
@@ -186,23 +206,23 @@ begin
       Long_Switch => "--daemon",
       Help        => "become daemon at startup");
   Getopt (Cmd_Line);  -- process the command line
-     
+
   if Ba_Daemon then
      Posix.Daemonize;
   end if;
-   --must take lock AFTER becoming a daemon ... 
+   --must take lock AFTER becoming a daemon ...
    --The parent pid dies, and would release the lock...
-  My_Lock.Take(EV.Value("BOT_NAME"));    
-   
+  My_Lock.Take(EV.Value("BOT_NAME"));
+
   Log(Me, "Login betfair");
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
-            Product_Id => Ini.Get_Value("betfair","product_id",""),  
+            Product_Id => Ini.Get_Value("betfair","product_id",""),
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
-          );    
-  Rpc.Login; 
+          );
+  Rpc.Login;
   Log(Me, "Login betfair done");
   Log(Me, "Login in db");
   Sql.Connect
@@ -212,32 +232,32 @@ begin
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
 
- 
-  if Global_Enabled then   
+
+  if Global_Enabled then
     Ask : loop
       Balance(Betfair_Result, Saldo );
       Log(Me, "Ask_Balance result : " & Betfair_Result 'Img);
       case Betfair_Result is
         when Rpc.Ok => exit Ask ;
-        when Rpc.Logged_Out => 
+        when Rpc.Logged_Out =>
           delay 2.0;
           Log(Me, "Logged_Out, will log in again");  --??
-          Rpc.Login;    
+          Rpc.Login;
         when Rpc.Timeout =>  delay 5.0;
-      end case;           
+      end case;
     end loop Ask;
-  else  
+  else
     Log(Me, "sending mails not enabled in [email] section of login.ini");
-  end if;  
+  end if;
 
   Log(Me, "Logoff from db");
   Sql.Close_Session;
   Rpc.Logout;
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
- 
+
 exception
-  when Lock.Lock_Error => 
+  when Lock.Lock_Error =>
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
