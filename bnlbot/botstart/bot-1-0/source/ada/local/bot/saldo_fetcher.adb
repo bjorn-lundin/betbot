@@ -78,10 +78,11 @@ procedure Saldo_Fetcher is
           "saldo:     " & Utils.F8_Image(Saldo.Balance) & Cr & Lf &
           "exposure:  " & Utils.F8_Image(Saldo.Exposure)  & Cr & Lf &
           Cr & Lf &
-          "saldo igår:     " & Utils.F8_Image(Old.Balance) & Cr & Lf &
-          "exposure igår:  " & Utils.F8_Image(Old.Exposure)  & Cr & Lf &
+          "saldo igar:     " & Utils.F8_Image(Old.Balance) & Cr & Lf &
+          "exposure igar:  " & Utils.F8_Image(Old.Exposure)  & Cr & Lf &
           Cr & Lf &
           "vinst idag: " & Utils.F8_Image(Saldo.Balance - Old.Balance) & 
+          Cr & Lf &
           Cr & Lf &
           "Database sizes:" & Cr & Lf &
           "bnl " & Get_Db_Size("bnl")  & Cr & Lf &
@@ -90,7 +91,7 @@ procedure Saldo_Fetcher is
           "dry " & Get_Db_Size("dry")  & Cr & Lf &
           "ael " & Get_Db_Size("ael")  & Cr & Lf &
           "ghd " & Get_Db_Size("ghd")  & Cr & Lf &
-          "ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
+          --"ais-prod " & Get_Db_Size("ais-prod")  & Cr & Lf &
           Cr & Lf &
           "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
@@ -128,11 +129,13 @@ procedure Saldo_Fetcher is
     Eos : Boolean := False;
     Old_Bal : Table_Abalances.Data_Type ;
   begin
-    Stm.Prepare("select * from ABALANCES where BALDATE::date = (select current_date -2)");
+    Stm.Prepare("select * from ABALANCES where BALDATE::date = (select current_date -1)");
+    Stm.Open_Cursor;
     Stm.Fetch(Eos);
     if not Eos then
       Old_Bal := Table_Abalances.Get(Stm);
     end if;
+    Stm.Close_Cursor;
     return Old_Bal;
   end Get_Old_Saldo;
 
@@ -236,7 +239,7 @@ begin
   if Global_Enabled then
     Ask : loop
       Balance(Betfair_Result, Saldo );
-      Log(Me, "Ask_Balance result : " & Betfair_Result 'Img);
+      Log(Me, "Ask_Balance result : " & Betfair_Result'Img);
       case Betfair_Result is
         when Rpc.Ok => exit Ask ;
         when Rpc.Logged_Out =>
