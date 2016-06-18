@@ -73,13 +73,13 @@ def findout_result_change(conn, g):
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
     cur = conn.cursor()
-    cur.execute("select sum(B.PROFIT)  \
-                 from ABETS B   \
-                 where B.BETWON is not NULL  \
-                 and B.STATUS = 'SETTLED'  \
-                 and B.BETNAME not like 'DR%%'  \
-                 and B.BETPLACED >= %s  \
-                 and B.BETPLACED <= %s " ,
+    cur.execute("""select sum(B.PROFIT)  
+                 from ABETS B   
+                 where B.BETWON is not NULL  
+                 and B.STATUS = 'SETTLED'  
+                 and B.EXESTATUS = 'SUCCESS' 
+                 and B.BETPLACED >= %s  
+                 and B.BETPLACED <= %s """ ,
                  (start, stop))
     result = 0
     if cur.rowcount >= 1 :
@@ -113,18 +113,18 @@ def findout_exposure(conn, g):
     #             and B.BETPLACED <= %s " ,
     #             (start, stop))
                  
-    cur.execute("select \
-                    case B.SIDE \
-                      when 'LAY'  then sum(B.SIZE) * (avg(PRICE)-1) \
-                      when 'BACK' then sum(B.SIZE) \
-                      else 0.0 \
-                    end \
-                 from ABETS B \
-                 where B.BETWON is NULL \
-                 and BETNAME not like 'DR%%' \
-                 and B.BETPLACED >= %s  \
-                 and B.BETPLACED <= %s \
-                 group BY B.SIDE " ,
+    cur.execute("""select \
+                    case B.SIDE 
+                      when 'LAY'  then sum(B.SIZE) * (avg(PRICE)-1) 
+                      when 'BACK' then sum(B.SIZE) 
+                      else 0.0 
+                    end 
+                 from ABETS B 
+                 where B.BETWON is NULL 
+                 and B.EXESTATUS = 'SUCCESS' 
+                 and B.BETPLACED >= %s  
+                 and B.BETPLACED <= %s 
+                 group BY B.SIDE """ ,
                  (start, stop))                
                  
     result = 0
@@ -209,7 +209,7 @@ while True:
             try:
                 c = psycopg2.connect("dbname=bnl \
                       user=bnl \
-                      host=db.nonodev.com \
+                      host=prod.nonodev.com \
                       password=ld4BC9Q51FU9CYjC21gp \
                       sslmode=require \
                       application_name=serial_printer")
@@ -218,7 +218,7 @@ while True:
                 cnt = 0
                 c.close()
             except psycopg2.OperationalError:
-                s.displayText('Bad Network?' , 30, 1, (200,200,1), True )
+                s.displayText('Db not started or bad Network?' , 30, 1, (200,200,1), True )
         else :
             progress = cnt / maxcnt
             pb.update(progress)
