@@ -116,17 +116,8 @@ function Check_Bots_For_User () {
   #  fi
   #done
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 \
-                   bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 bet_placer_011 bet_placer_012 \
-                   bet_placer_013 bet_placer_014 bet_placer_015 \
-                   bet_placer_016 bet_placer_017 bet_placer_018 \
-                   bet_placer_019 bet_placer_020 bet_placer_021 \
-                   bet_placer_022 bet_placer_023 bet_placer_024 \
-                   bet_placer_025 bet_placer_026 bet_placer_027 \
-                   bet_placer_028 bet_placer_029 bet_placer_030 \
-                   bet_placer_031"
-                   
+                   bet_placer_004 bet_placer_005 bet_placer_006 "
+
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
@@ -169,24 +160,24 @@ function Check_System_Bots_For_User () {
   #EXE_NAME=$3
   #INI_NAME=$4
   #MODE=$5
-  
+
   IS_TESTER="false"
-  
+
   case $BOT_USER in
-    dry) 
+    dry)
        Start_Bot $BOT_USER markets_fetcher markets_fetcher
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
        Start_Bot $BOT_USER bet_checker bet_checker
-     
+
        DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
                              poll_market_3 poll_market_4 \
                              poll_market_5 poll_market_6 \
                              poll_market_7 poll_market_8"
-   
+
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_market
        done
-   
+
        Start_Bot $BOT_USER bot_ws bot_web_server
     ;;
 
@@ -194,20 +185,20 @@ function Check_System_Bots_For_User () {
       Start_Bot $BOT_USER markets_fetcher markets_fetcher
       Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
       Start_Bot $BOT_USER bet_checker bet_checker
-      
+
       POLLERS_LIST="poll_bounds_1 poll_bounds_2 poll_bounds_3 poll_bounds_4"
-  
+
       for poller in $POLLERS_LIST ; do
         Start_Bot $BOT_USER $poller poll_bounds poll_bounds.ini
       done
       IS_TESTER="true"
 
     ;;
-    
+
     ghd)
        Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-       Start_Bot $BOT_USER bet_checker bet_checker    
+       Start_Bot $BOT_USER bet_checker bet_checker
        DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_gh_market
@@ -216,33 +207,33 @@ function Check_System_Bots_For_User () {
        PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
        for player in $PLAYERS_LIST2 ; do
          Start_Bot $BOT_USER $player long_poll_gh_market
-       done       
+       done
     ;;
-    
+
     soc)
        Start_Bot $BOT_USER markets_fetcher markets_fetcher_soccer
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-       Start_Bot $BOT_USER bet_checker bet_checker    
+       Start_Bot $BOT_USER bet_checker bet_checker
        DATA_COLLECTORS_LIST="poll_market_s01 poll_market_s02 poll_market_s03 poll_market_s04 \
                              poll_market_s05 poll_market_s06 poll_market_s07 poll_market_s08 \
                              poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12 \
                              poll_market_s13 poll_market_s14 poll_market_s15 poll_market_s16 \
                              poll_market_s17 poll_market_s18 poll_market_s19 poll_market_s20"
-                             
+
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_soccer
        done
 
        Start_Bot $BOT_USER menu_parser menu_parser
-       
+
        #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
        #for player in $PLAYERS_LIST2 ; do
        #  Start_Bot $BOT_USER $player long_poll_gh_market
-       #done       
+       #done
     ;;
-    
-    
-  esac     
+
+
+  esac
 
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
@@ -371,6 +362,44 @@ function Create_Plots () {
   cd ${old_pwd}
 }
 
+function create_dump () {
+
+  #WD=/data/db_dumps/script
+  DATE=$(date +"%d")
+  YEAR=$(date +"%Y")
+  MONTH=$(date +"%m")
+  TARGET_DIR=/data/db_dumps/${YEAR}/${MONTH}/${DATE}
+
+  [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
+
+  export PATH=/usr/bin:$PATH
+
+  DB_LIST="ael bnl dry ghd jmb msm soc"
+  TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets"
+
+  for DBNAME in ${DB_LIST} ; do
+    for TABLE in ${TABLE_LIST} ; do
+      pg_dump --schema-only --dbname=${DBNAME} --table=${TABLE} > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}_schema.dmp
+      pg_dump --data-only  --dbname=${DBNAME} --column-inserts --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.dmp.gz
+      R=$?
+      if [ $R -eq 0 ] ; then
+        case ${TABLE} in
+          abets)  echo "null" > /dev/null ;;
+              *)  psql --no-psqlrc --dbname=${DBNAME} --command="truncate table ${TABLE}" ;;
+        esac
+      fi
+    done
+  done
+
+  #DB_LIST="${DB_LIST} ${DBNAME}"
+  #
+  for DBNAME in ${DB_LIST} ; do
+    vacuumdb --dbname=${DBNAME} --analyze
+  # # reindexdb --dbname=${DBNAME} --system
+  # # reindexdb --dbname=${DBNAME}
+  done
+
+}
 
 # start here
 
@@ -382,9 +411,7 @@ DAY=$(date +"%d")
 case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessary
-   # USER_LIST=$(ls $BOT_START/user)
-   # USER_LIST_PLAYERS_ONLY="bnl jmb msm"
-    USER_LIST_PLAYERS_ONLY="bnl"
+    USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     SYSTEM_USER_LIST="ael dry ghd soc"
 
     HOST=db.nonodev.com
@@ -396,8 +423,12 @@ case $BOT_MACHINE_ROLE in
       Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
 
-    # vacuum is done from db.nonodev.com instaed
-    
+    if [ $HOUR == "00" ] ; then
+      if [ $MINUTE == "01" ] ; then
+          create_dump
+      fi
+    fi
+
     #if [ $DAY == "1" ] ; then
     #  if [ $HOUR == "13" ] ; then
     #    if [ $MINUTE == "12" ] ; then
@@ -451,7 +482,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com joakim@birgerson.com"
 
-DISK_LIST="xvda"
+DISK_LIST="xvda xvdf"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')

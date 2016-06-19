@@ -15,7 +15,7 @@
 #}
 
 
-PID_FILE_DIRECTORIES="bnl ael dry ghd soc"
+PID_FILE_DIRECTORIES="ael dry ghd soc jmb msm bnl"
 #PID_FILE_DIRECTORIES=$(ls $BOT_HOME/..)
 echo""
 echo "----------------  $(date)  --------------------------"
