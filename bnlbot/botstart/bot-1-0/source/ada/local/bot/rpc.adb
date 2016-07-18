@@ -1353,6 +1353,8 @@ package body RPC is
     Append (Price_Data , Create("EX_BEST_OFFERS"));
 
     Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
+    Price_Projection.Set_Field (Field_Name => "virtualise", Field => True); -- bnl 2016-07-18
+
 
     Params.Set_Field (Field_Name => "priceProjection", Field => Price_Projection);
     Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");
