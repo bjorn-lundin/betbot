@@ -193,6 +193,9 @@ procedure Menu_Parser is
         end;
       end loop;
     end if;
+  exception
+    when Rpc.Bad_Reply => 
+      Log("Parse_Menu", "caught Rpc.Bad_Reply");
   end Parse_Menu;
   -----------------------------------------------------------------------
 begin
