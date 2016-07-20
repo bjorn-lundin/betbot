@@ -6,9 +6,7 @@ with Gnatcoll.Json;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Table_Abets;
-
 with Bot_System_Number;
-
 with Stacktrace;
 with Lock; 
 --with Text_io;
@@ -44,19 +42,17 @@ procedure Bet_Checker is
   Now             : Calendar2.Time_Type := Calendar2.Clock;
   Update_Betwon_To_Null : Sql.Statement_Type;
 
-  
   --------------------------------------------
   procedure Treat_Pending_Bets_In_Json_File is
     Service : String := "Treat_Pending_Bets_In_Json_File";
     use Gnatcoll.Json;
     use Ada.Directories;
-    Dir : String := Ada.Environment_Variables.Value("BOT_HOME") & "/pending";
+    Dir : String := EV.Value("BOT_HOME") & "/pending";
     Dir_Ent     : Directory_Entry_Type;
     The_Search  : Search_Type;
     JSON_Data   : JSON_Value;
     T : Sql.Transaction_Type;
   begin
-  
     Log(Me & Service , "Look for *.json in " & Dir);
     Start_Search(Search    => The_Search,
                  Directory => Dir,
@@ -90,11 +86,11 @@ procedure Bet_Checker is
           begin
             T.Start;
               A_Market.Marketid := Bet.Marketid;
-              Table_Amarkets.Read(A_Market, Eos(Market) );
+              A_Market.Read(Eos(Market) );
               
               A_Runner.Marketid := Bet.Marketid;
               A_Runner.Selectionid := Bet.Selectionid;
-              Table_Arunners.Read(A_Runner, Eos(Runner) );   
+              A_Runner.Read(Eos(Runner) );   
               
               Bet.Startts       := A_Market.Startts;
               Bet.Fullmarketname:= A_Market.Marketname;
@@ -123,8 +119,7 @@ procedure Bet_Checker is
                 Log(Me & Service, "Cancel bet" & Bet.betid'Img & " succeeded: " & Cancel_Succeeded'Img);
               end; 
             end if;
-          end if;
-          
+          end if;         
           
           Log(Me & Service, "delete file index " & Filename);
           Delete_File(Filename);
@@ -139,7 +134,7 @@ procedure Bet_Checker is
   ------------------------------------------------------
 
 begin
-   Define_Switch
+  Define_Switch
      (Config,
       Sa_Par_Bot_User'access,
       Long_Switch => "--user=",

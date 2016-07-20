@@ -90,10 +90,10 @@ procedure Poll is
       when Lay_1_10_25_4                     => return Process_Io.To_Process_Type("bet_placer_002");
       when Back_1_10_07_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_003");
       when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_004");
+      when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_006");
     --  when Back_1_10_13_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005");
     --  when Back_1_10_16_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_006");
-    --  when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007");
-    --  when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_008");
     --  when Back_1_10_13_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_009");
     --  when Back_1_10_16_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_010");
     --  when Back_1_10_07_1_2_WIN_1_05         => return Process_Io.To_Process_Type("bet_placer_011");
@@ -112,8 +112,8 @@ procedure Poll is
     --  when Back_1_66_1_70_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_024");
     --  when Back_1_66_1_70_05_07_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_025");
     --  when Back_1_71_1_75_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_026");
-    --  when Back_1_76_1_80_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_027");
-    --  when Back_1_11_1_15_05_07_1_2_WIN_1_10 => return Process_IO.To_Process_Type("bet_placer_028");
+      when Back_1_76_1_80_01_04_1_2_PLC_1_10 => return Process_IO.To_Process_Type("bet_placer_007");
+      when Back_1_96_2_00_01_04_1_2_PLC_1_20 => return Process_IO.To_Process_Type("bet_placer_008");
     --  when Back_1_11_1_15_08_10_1_2_WIN_1_10 => return Process_IO.To_Process_Type("bet_placer_029");
     --  when Back_1_01_1_05_14_17_1_2_WIN_1_05 => return Process_IO.To_Process_Type("bet_placer_030");
     --  when Back_1_11_1_15_05_07_1_2_WIN_1_15 => return Process_IO.To_Process_Type("bet_placer_031");
@@ -360,63 +360,63 @@ procedure Poll is
   end Try_To_Make_Back_Bet;
 
 
-  --procedure  Try_To_Make_Back_Bet_4_Bounds(
-  --  Bettype         : Config.Bet_Type;
-  --  BR              : Best_Runners_Array_Type;
-  --  Marketid        : Market_Id_Type;
-  --  Match_Directly : Boolean := False) is
-  --
-  --  Max_Backprice_1 : Float_8;
-  --  Min_Backprice_1 : Float_8;
-  --  Min_Backprice_n : Float_8;
-  --  Max_Backprice_n : Float_8;
-  --  Backed_Num    : Integer;
-  --  Next_Num      : Integer;
-  --  Tmp : String (1..5) := (others => ' ');
-  --  Image : String := Bettype'Img;
-  --  Min_Price       : String(1..4) := (others => '.');
-  --
-  --begin          --1         2         3
-  --    --  123456789012345678901234567890123456789
-  --    --  BACK_1_36_1_40_01_04_1_2_PLC_1_10
-  --
-  --  Tmp(1) := Image(6);
-  --  Tmp(2) := '.';
-  --  Tmp(3..4) := Image(8..9);
-  --  Min_Backprice_1 := Float_8'Value(Tmp);
-  --
-  --
-  --  Tmp(1) := Image(11);
-  --  Tmp(2) := '.';
-  --  Tmp(3..4) := Image(13..14);
-  --  Max_Backprice_1 := Float_8'Value(Tmp);
-  --
-  --
-  --  Min_Backprice_n := Float_8'Value(Image(16..17));
-  --  Max_Backprice_n := Float_8'Value(Image(19..20));
-  --
-  --  Backed_Num := Integer'Value(Image(22..22));
-  --  Next_Num := Integer'Value(Image(24..24));
-  --
-  --  Min_Price(1)    := Image(30);
-  --  Min_Price(3..4) := Image(32..33);
-  --
-  --
-  --  if BR(Backed_Num).Backprice <= Max_Backprice_1 and then
-  --     BR(Backed_Num).Backprice >= Min_Backprice_1 and then
-  --     BR(Next_Num).Backprice >= Min_Backprice_n and then
-  --     BR(Next_Num).Backprice <= Max_Backprice_n and then
-  --     BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
-  --    -- Back The leader in PLC market...
-  --
-  --    Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
-  --             Main_Bet        => Bettype,
-  --             Place_Market_Id => Marketid,
-  --             Receiver        => Get_Bet_Placer(Bettype),
-  --             Min_Price       => Min_Price,
-  --             Match_Directly  => Match_Directly);
-  --  end if;
-  --end Try_To_Make_Back_Bet_4_Bounds;
+  procedure  Try_To_Make_Back_Bet_4_Bounds(
+    Bettype         : Config.Bet_Type;
+    BR              : Best_Runners_Array_Type;
+    Marketid        : Market_Id_Type;
+    Match_Directly : Boolean := False) is
+
+    Max_Backprice_1 : Float_8;
+    Min_Backprice_1 : Float_8;
+    Min_Backprice_n : Float_8;
+    Max_Backprice_n : Float_8;
+    Backed_Num    : Integer;
+    Next_Num      : Integer;
+    Tmp : String (1..5) := (others => ' ');
+    Image : String := Bettype'Img;
+    Min_Price       : String(1..4) := (others => '.');
+
+  begin          --1         2         3
+      --  123456789012345678901234567890123456789
+      --  BACK_1_36_1_40_01_04_1_2_PLC_1_10
+
+    Tmp(1) := Image(6);
+    Tmp(2) := '.';
+    Tmp(3..4) := Image(8..9);
+    Min_Backprice_1 := Float_8'Value(Tmp);
+
+
+    Tmp(1) := Image(11);
+    Tmp(2) := '.';
+    Tmp(3..4) := Image(13..14);
+    Max_Backprice_1 := Float_8'Value(Tmp);
+
+
+    Min_Backprice_n := Float_8'Value(Image(16..17));
+    Max_Backprice_n := Float_8'Value(Image(19..20));
+
+    Backed_Num := Integer'Value(Image(22..22));
+    Next_Num := Integer'Value(Image(24..24));
+
+    Min_Price(1)    := Image(30);
+    Min_Price(3..4) := Image(32..33);
+
+
+    if BR(Backed_Num).Backprice <= Max_Backprice_1 and then
+       BR(Backed_Num).Backprice >= Min_Backprice_1 and then
+       BR(Next_Num).Backprice >= Min_Backprice_n and then
+       BR(Next_Num).Backprice <= Max_Backprice_n and then
+       BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
+      -- Back The leader in PLC market...
+
+      Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
+               Main_Bet        => Bettype,
+               Place_Market_Id => Marketid,
+               Receiver        => Get_Bet_Placer(Bettype),
+               Min_Price       => Min_Price,
+               Match_Directly  => Match_Directly);
+    end if;
+  end Try_To_Make_Back_Bet_4_Bounds;
 
 
 
@@ -630,7 +630,7 @@ procedure Poll is
             when Lay_160_200        => null; -- treat later
             when Lay_1_10_25_4      => null; -- treat later
             when Back_1_10_07_1_2_PLC_1_01 ..
-                 Back_1_10_10_1_2_PLC_1_01   =>
+                 Back_1_10_10_1_2_PLC_1_02   =>
                  --Back_1_10_16_1_2_WIN_1_05   =>
               declare
                 M_Type : Market_Type := Win;
@@ -642,7 +642,8 @@ procedure Poll is
                 if Image(18..20) = "PLC" then
                   M_Type := Place;
                   Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
-                  Match_Directly := False;
+                  --Match_Directly := False;
+                  Match_Directly := True;
                 elsif Image(18..20) = "WIN" then
                   Match_Directly := True;
                 end if;
@@ -656,31 +657,32 @@ procedure Poll is
                         Match_Directly  => Match_Directly);
                 end if;
               end;
-           -- when Back_1_36_1_40_01_04_1_2_PLC_1_10 ..
-           --      Back_1_11_1_15_05_07_1_2_Win_1_15   =>
-           --   declare
-           --     M_Type : Market_Type := Win;
-           --     Image : String := i'Img;
-           --     Do_Try_Bet : Boolean := True;
-           --   begin
-           --    --           1         2         3
-           --    --  123456789012345678901234567890123456789
-           --    --  Back_1_61_1_65_01_04_1_2_PLC_1_10
-           --     if Image(26..28) = "PLC" then
-           --       M_Type := Place;
-           --       Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
-           --       Match_Directly := False;
-           --     elsif Image(26..28) = "WIN" then
-           --       Match_Directly := True;
-           --     end if;
-           --     if Do_Try_Bet then
-           --       Try_To_Make_Back_Bet_4_Bounds (
-           --             Bettype         => i,
-           --             BR              => Best_Runners,
-           --             Marketid        => Markets(M_Type).Marketid,
-           --             Match_Directly  => Match_Directly);
-           --     end if;
-           --   end;
+            when Back_1_76_1_80_01_04_1_2_PLC_1_10 ..
+                 Back_1_96_2_00_01_04_1_2_PLC_1_20   =>
+              declare
+                M_Type : Market_Type := Win;
+                Image : String := i'Img;
+                Do_Try_Bet : Boolean := True;
+              begin
+               --           1         2         3
+               --  123456789012345678901234567890123456789
+               --  Back_1_61_1_65_01_04_1_2_PLC_1_10
+                if Image(26..28) = "PLC" then
+                  M_Type := Place;
+                  Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
+                  --Match_Directly := False;
+                  Match_Directly := True;
+                elsif Image(26..28) = "WIN" then
+                  Match_Directly := True;
+                end if;
+                if Do_Try_Bet then
+                  Try_To_Make_Back_Bet_4_Bounds (
+                        Bettype         => i,
+                        BR              => Best_Runners,
+                        Marketid        => Markets(M_Type).Marketid,
+                        Match_Directly  => Match_Directly);
+                end if;
+              end;
 
           end case;
         end loop;
