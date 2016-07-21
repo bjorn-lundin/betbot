@@ -2,6 +2,8 @@
   sum(cnt),
   sum(sum_profit) vinst,
   round(avg(pm),3)::numeric avg_odds,
+  max(mx) mx,
+  min(mn) mn,
   fi,
   si
 from (
@@ -11,6 +13,8 @@ from (
 select 
   count('a') cnt,
   betwon,
+  max(betplaced) as mx,
+  min(betplaced) as mn,
    round((case betwon
      when true then  sum(profit)* 0.935
      when false then sum(profit) 
@@ -25,7 +29,6 @@ and betname like '%PLC%'
 and status = 'SUCCESS'
 group by si,fi,betwon
 order by si,fi,betwon
-
 ) tmp
 group by si,fi
 order by -- si,fi
