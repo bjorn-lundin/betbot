@@ -33,7 +33,7 @@ where pcs.marketid = mcs.marketid
 and e.eventid = mcs.eventid
 and mcs.markettype = 'CORRECT_SCORE'
 and pcs.selectionid = 1 
---and pcs.backprice > 15 -- 0-0
+and pcs.backprice >= 15 -- 0-0
 -- the_draw
 and e.eventid = mmo3.eventid
 and pmo3.marketid = mmo3.marketid
@@ -42,7 +42,7 @@ and rmo3.selectionid = pmo3.selectionid
 and mmo3.markettype = 'MATCH_ODDS'
 and pmo3.selectionid = rmo3.selectionid
 and rmo3.runnernamenum = '3'   -- the_draw 
-and pmo3.layprice < 6   -- the_draw 
+and pmo3.layprice <= 6   -- the_draw 
 -- away team
 and e.eventid = mmo2.eventid
 and pmo2.marketid = mmo2.marketid
@@ -51,7 +51,7 @@ and rmo2.selectionid = pmo2.selectionid
 and mmo2.markettype = 'MATCH_ODDS'
 and pmo2.selectionid = rmo2.selectionid
 and rmo2.runnernamenum = '2'   --away
-and pmo2.backprice > 4   -- away underdogs
+and pmo2.backprice >= 6  -- away underdogs
 -- home team
 and e.eventid = mmo1.eventid
 and pmo1.marketid = mmo1.marketid
@@ -60,7 +60,9 @@ and rmo1.selectionid = pmo1.selectionid
 and mmo1.markettype = 'MATCH_ODDS'
 and pmo1.selectionid = rmo1.selectionid
 and rmo1.runnernamenum = '1'   --home
-and pmo1.backprice < 2   -- home favs
---
+and pmo1.backprice <= 2   -- home favs
+---- no previous bets on CORRECT_SCORE nor on MATCH_ODDS
+and not exists (select 'x' from abets where abets.marketid = mcs.marketid)
+and not exists (select 'x' from abets where abets.marketid = mmo1.marketid)
 order by mcs.startts, e.eventname;
 
