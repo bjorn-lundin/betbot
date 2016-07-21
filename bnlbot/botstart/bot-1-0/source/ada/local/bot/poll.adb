@@ -106,6 +106,7 @@ procedure Poll is
       when Back_1_61_1_65_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_016");
       when Back_1_76_1_80_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_017");
       when Back_1_96_2_00_01_04_1_2_PLC_1_20 => return Process_Io.To_Process_Type("bet_placer_018");
+      when Back_1_31_1_35_05_07_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_019");
     end case;
   end Get_Bet_Placer;
 
