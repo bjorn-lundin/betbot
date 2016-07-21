@@ -87,19 +87,19 @@ procedure Poll is
       when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_002");
       when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_003");
       when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_004");      
-      when Back_1_31_1_35_05_07_1_2_WIN_1_20 => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_06_1_10_27_30_1_2_WIN_1_20 => return Process_Io.To_Process_Type("bet_placer_005");
       when Back_1_41_1_45_08_10_1_2_WIN_1_30 => return Process_Io.To_Process_Type("bet_placer_006");
       when Back_1_96_2_00_08_10_1_2_WIN_1_70 => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_21_1_25_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_008");
-      when Back_1_26_1_30_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_009");
-      when Back_1_31_1_35_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_010");
-      when Back_1_36_1_40_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_011");
-      when Back_1_41_1_45_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_46_1_50_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_013");
-      when Back_1_51_1_55_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_014");
-      when Back_1_56_1_60_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_015");
-      when Back_1_61_1_65_01_04_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_31_1_35_05_07_1_2_PLC_1_10 => return Process_Io.To_Process_Type("bet_placer_017");
+      when Back_1_01_1_05_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_008");
+      when Back_1_11_1_15_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_009");
+      when Back_1_11_1_15_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_11_1_15_11_13_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
+      when Back_1_16_1_20_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_012");
+      when Back_1_16_1_20_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_013");
+      when Back_1_21_1_25_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_014");
+      when Back_1_26_1_30_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_015");
+      when Back_1_26_1_30_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_016");
+      when Back_1_26_1_30_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_017");
     end case;
   end Get_Bet_Placer;
 
@@ -568,8 +568,8 @@ procedure Poll is
                         Match_Directly  => Match_Directly);
                 end if;
               end;
-            when Back_1_31_1_35_05_07_1_2_WIN_1_20 ..
-                 Back_1_61_1_65_01_04_1_2_PLC_1_10   =>
+            when Back_1_06_1_10_27_30_1_2_WIN_1_20 ..
+                 Back_1_26_1_30_08_10_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
