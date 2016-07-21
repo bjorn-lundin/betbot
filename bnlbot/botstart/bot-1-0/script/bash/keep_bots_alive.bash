@@ -116,7 +116,11 @@ function Check_Bots_For_User () {
   #  fi
   #done
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 "
+                   bet_placer_004 bet_placer_005 bet_placer_006 \
+                   bet_placer_007 bet_placer_008 bet_placer_009 \
+                   bet_placer_010 bet_placer_011 bet_placer_012 \
+                   bet_placer_013 bet_placer_014 bet_placer_015 \
+                   bet_placer_016 bet_placer_017 bet_placer_018"
 
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -195,20 +199,20 @@ function Check_System_Bots_For_User () {
 
     ;;
 
-    ghd)
-       Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
-       Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-       Start_Bot $BOT_USER bet_checker bet_checker
-       DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
-       for collector in $DATA_COLLECTORS_LIST ; do
-         Start_Bot $BOT_USER $collector poll_gh_market
-       done
-
-       PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
-       for player in $PLAYERS_LIST2 ; do
-         Start_Bot $BOT_USER $player long_poll_gh_market
-       done
-    ;;
+    #ghd)
+    #   Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
+    #   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+    #   Start_Bot $BOT_USER bet_checker bet_checker
+    #   DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
+    #   for collector in $DATA_COLLECTORS_LIST ; do
+    #     Start_Bot $BOT_USER $collector poll_gh_market
+    #   done
+    #
+    #   PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
+    #   for player in $PLAYERS_LIST2 ; do
+    #     Start_Bot $BOT_USER $player long_poll_gh_market
+    #   done
+    #;;
 
     soc)
        Start_Bot $BOT_USER markets_fetcher markets_fetcher_soccer
