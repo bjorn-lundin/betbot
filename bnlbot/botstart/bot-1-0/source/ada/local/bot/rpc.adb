@@ -1083,7 +1083,7 @@ package body RPC is
     Log(Me & "Cancel_Bet", "status : '" & Trim(Status) & "' returning " & 
                             Boolean'Image(Trim(Status) = "SUCCESS"));
     return Trim(Status) = "SUCCESS" ;    
-  end  Cancel_Bet;
+  end Cancel_Bet;
   -----------------------------------
   
 
