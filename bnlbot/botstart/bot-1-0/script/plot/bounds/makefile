@@ -4,7 +4,7 @@ MF := marker_file
 
 all  : png
 
-# lost data for jan + feb 2016:-(
+
 #     heatmap_plc_month_01.png_month_plc heatmap_win_month_01.png_month_win \
 #     heatmap_plc_month_02.png_month_plc heatmap_win_month_02.png_month_win \
 #     heatmap_plc_week_01.png_week_plc   heatmap_win_week_01.png_week_win \
@@ -17,10 +17,12 @@ all  : png
 #     heatmap_plc_week_08.png_week_plc   heatmap_win_week_08.png_week_win \
 #     heatmap_plc_week_09.png_week_plc   heatmap_win_week_09.png_week_win \
 
-
 png: heatmap_win_all.png                heatmap_plc_all.png         \
      heatmap_plc_month_03.png_month_plc heatmap_win_month_03.png_month_win \
      heatmap_plc_month_04.png_month_plc heatmap_win_month_04.png_month_win \
+     heatmap_plc_month_05.png_month_plc heatmap_win_month_05.png_month_win \
+     heatmap_plc_month_06.png_month_plc heatmap_win_month_06.png_month_win \
+     heatmap_plc_month_07.png_month_plc heatmap_win_month_07.png_month_win \
      heatmap_plc_week_10.png_week_plc   heatmap_win_week_10.png_week_win \
      heatmap_plc_week_11.png_week_plc   heatmap_win_week_11.png_week_win \
      heatmap_plc_week_12.png_week_plc   heatmap_win_week_12.png_week_win \
@@ -28,30 +30,44 @@ png: heatmap_win_all.png                heatmap_plc_all.png         \
      heatmap_plc_week_14.png_week_plc   heatmap_win_week_14.png_week_win \
      heatmap_plc_week_15.png_week_plc   heatmap_win_week_15.png_week_win \
      heatmap_plc_week_16.png_week_plc   heatmap_win_week_16.png_week_win \
+     heatmap_plc_week_17.png_week_plc   heatmap_win_week_17.png_week_win \
+     heatmap_plc_week_18.png_week_plc   heatmap_win_week_18.png_week_win \
+     heatmap_plc_week_19.png_week_plc   heatmap_win_week_19.png_week_win \
+     heatmap_plc_week_20.png_week_plc   heatmap_win_week_20.png_week_win \
+     heatmap_plc_week_21.png_week_plc   heatmap_win_week_21.png_week_win \
+     heatmap_plc_week_22.png_week_plc   heatmap_win_week_22.png_week_win \
+     heatmap_plc_week_23.png_week_plc   heatmap_win_week_23.png_week_win \
+     heatmap_plc_week_24.png_week_plc   heatmap_win_week_24.png_week_win \
+     heatmap_plc_week_25.png_week_plc   heatmap_win_week_25.png_week_win \
+     heatmap_plc_week_26.png_week_plc   heatmap_win_week_26.png_week_win \
+     heatmap_plc_week_27.png_week_plc   heatmap_win_week_27.png_week_win \
+     heatmap_plc_week_28.png_week_plc   heatmap_win_week_28.png_week_win \
+     heatmap_plc_week_29.png_week_plc   heatmap_win_week_29.png_week_win \
+     
 
 heatmap_win_all.png : heatmap_win_all.dat heatmap_bounds.gpl
 	gnuplot -e "type='Win'" \
-	        -e "range_low=-100" \
-	        -e "range_high=10000" \
+	        -e "range_low=-2500" \
+	        -e "range_high=500" \
 	        -e "desc='profit skr'" \
 	        -e "target_png='heatmap_win_all.png'" \
             -e "source_dat='heatmap_win_all.dat'" heatmap_bounds.gpl
-	rm heatmap_win_all.dat
+#	rm heatmap_win_all.dat
 
 heatmap_win_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
-	$(BOT_TARGET)/bin/stat_maker --market_type=win  > heatmap_win_all.dat
+	$(BOT_TARGET)/bin/stat_maker --market_type=WIN  > heatmap_win_all.dat
 
 heatmap_plc_all.png : heatmap_plc_all.dat heatmap_bounds.gpl
 	gnuplot -e "type='Place'" \
-	        -e "range_low=-100" \
-	        -e "range_high=10000" \
+	        -e "range_low=-2500" \
+	        -e "range_high=500" \
 	        -e "desc='profit skr'" \
 	        -e "target_png='heatmap_plc_all.png'" \
             -e "source_dat='heatmap_plc_all.dat'" heatmap_bounds.gpl
-	rm heatmap_plc_all.dat
+#	rm heatmap_plc_all.dat
 
 heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
-	$(BOT_TARGET)/bin/stat_maker --market_type=plc > heatmap_plc_all.dat
+	$(BOT_TARGET)/bin/stat_maker --market_type=PLC > heatmap_plc_all.dat
 
 
 
@@ -59,8 +75,8 @@ heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
 
 %.png_week_plc : %.dat_week_plc
 	gnuplot -e "type='Place'" \
-	        -e "range_low=-100" \
-	        -e "range_high=4000" \
+	        -e "range_low=-500" \
+	        -e "range_high=200" \
 	        -e "desc='week $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) plc'" \
 	        -e "target_png='$*.png'" \
             -e "source_dat='$*.dat'" heatmap_bounds.gpl
@@ -68,34 +84,32 @@ heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
 
 %.dat_week_plc : $(BOT_TARGET)/bin/stat_maker $(MF)
 	$(BOT_TARGET)/bin/stat_maker \
-	  --market_type=plc\
+	  --market_type=PLC\
 	  --week=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
-	  --month=0 \
-      --lower_limit=-1 > $*.dat
+	  --month=0 > $*.dat
 
 
 %.png_week_win : %.dat_week_win
 	gnuplot -e "type='win'" \
-	        -e "range_low=-100" \
-	        -e "range_high=4000" \
+	        -e "range_low=-500" \
+	        -e "range_high=200" \
 	        -e "desc='week $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) win'" \
 	        -e "target_png='$*.png'" \
             -e "source_dat='$*.dat'" heatmap_bounds.gpl
 
 %.dat_week_win : $(BOT_TARGET)/bin/stat_maker $(MF)
 	$(BOT_TARGET)/bin/stat_maker \
-	  --market_type=win\
+	  --market_type=WIN\
 	  --week=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
-	  --month=0 \
-      --lower_limit=-1 > $*.dat
+	  --month=0 > $*.dat
 
 
 #month is in $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1)
 
 %.png_month_plc : %.dat_month_plc
 	gnuplot -e "type='Place'" \
-	        -e "range_low=-100" \
-	        -e "range_high=8000" \
+	        -e "range_low=-500" \
+	        -e "range_high=500" \
 	        -e "desc='month $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) plc'" \
 	        -e "target_png='$*.png'" \
             -e "source_dat='$*.dat'" heatmap_bounds.gpl
@@ -103,32 +117,30 @@ heatmap_plc_all.dat : $(BOT_TARGET)/bin/stat_maker $(MF)
 
 %.dat_month_plc : $(BOT_TARGET)/bin/stat_maker $(MF)
 	$(BOT_TARGET)/bin/stat_maker \
-	  --market_type=plc \
+	  --market_type=PLC \
 	  --week=0 \
-	  --month=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
-	 --lower_limit=-1 > $*.dat
+	  --month=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) > $*.dat
 
 
 %.png_month_win : %.dat_month_win
 	gnuplot -e "type='win'" \
-	        -e "range_low=-100" \
-	        -e "range_high=8000" \
+	        -e "range_low=-500" \
+	        -e "range_high=500" \
 	        -e "desc='month $(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) win'" \
 	        -e "target_png='$*.png'" \
             -e "source_dat='$*.dat'" heatmap_bounds.gpl
 
 %.dat_month_win : $(BOT_TARGET)/bin/stat_maker $(MF)
 	$(BOT_TARGET)/bin/stat_maker \
-	  --market_type=win\
+	  --market_type=WIN\
 	  --week=0 \
-	  --month=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) \
-	 --lower_limit=-1 > $*.dat
+	  --month=$(shell echo $(shell echo $* | cut -d'_' -f4) | cut -d'.' -f1) > $*.dat
 
 
 
     
 update_only :
-	$(BOT_TARGET)/bin/stat_maker --update_only
+#	$(BOT_TARGET)/bin/stat_maker --update_only
 	touch $(MF)
     
 
