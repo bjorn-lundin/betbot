@@ -1,10 +1,10 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
---with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
+with Ada.Containers;
 --with Ada.Containers.Doubly_Linked_Lists;
-
 --with Bot_System_Number;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
@@ -14,11 +14,11 @@ with Stacktrace;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
---with Calendar2; use Calendar2;
+with Calendar2; use Calendar2;
 --with Bot_Messages;
 with Rpc;
 with Lock ;
-with Posix;
+--with Posix;
 with Ini;
 with Logging; use Logging;
 --with Process_IO;
@@ -31,8 +31,9 @@ with Table_Apriceshistory;
 with Bot_Svn_Info;
 --with Config;
 --with Utils; use Utils;
---with Table_Abets;
+with Table_Abets;
 with Table_Arunners;
+with Tics;
 
 with Sim;
 --with Simulation_Storage;
@@ -42,98 +43,199 @@ procedure Greenup_Lay_First is
 --  Bad_Mode : exception;
   package EV renames Ada.Environment_Variables;
   use type Rpc.Result_Type;
+  use type Ada.Containers.Count_Type;
 
   Me              : constant String := "Greenup_Lay_First.";
 
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Cmd_Line        : Command_Line_Configuration;
   -------------------------------------------------------------
+  type Bet_Type is record
+    Laybet  : Table_Abets.Data_Type := Table_Abets.Empty_Data;
+    Backbet : Table_Abets.Data_Type := Table_Abets.Empty_Data;
+  end record;
+  use type Table_Abets.Data_Type;
+--  package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
+--  Bet_List : Bet_List_Pack.List;
+  subtype Delta_Tics_Type is Integer range 1 .. 50;
+--  Bet_List : array (Delta_Tics_Type'range) of Bet_List_Pack.List;
 
-  procedure Run(Price_Data : in Table_Aprices.Data_Type) is
+  Back_Stake  : constant Bet_Size_Type := 30.0;
+  Lay_Stake   : constant Bet_Size_Type := 40.0;
+
+  subtype Max_Layprice_Type is Integer_4 range 120 .. 140;
+  subtype Min_Layprice_Type is Integer_4 range  60 .. 100;
+
+  -----------------------------------------------------------------
+  procedure Check_Bet ( R : in Table_Arunners.Data_Type;
+                        B : in out Table_Abets.Data_Type) is
+  begin
+    if R.Status(1..7) = "REMOVED" then
+      return;
+    end if;
+    if B.Side(1..4) = "BACK" then
+        if R.Status(1..6) = "WINNER" then
+          B.Betwon := True;
+          B.Profit := Float_8(Back_Stake) * (B.Price - 1.0);
+        elsif R.Status(1..5) = "LOSER" then
+          B.Betwon := False;
+          B.Profit := Float_8(-Back_Stake);
+        elsif R.Status(1..7) = "REMOVED" then
+          B.Status(1) := 'R';
+          B.Betwon := True;
+        end if;
+    elsif B.Side(1..3) = "LAY" then
+        if R.Status(1..6) = "WINNER" then
+          B.Betwon := False;
+          B.Profit := Float_8(-Lay_Stake) * (B.Price - 1.0);
+        elsif R.Status(1..5) = "LOSER" then
+          B.Profit := Float_8(Lay_Stake);
+          B.Betwon := True;
+        elsif R.Status(1..7) = "REMOVED" then
+          B.Status(1) := 'R';
+          B.Betwon := True;
+        end if;
+    end if;
+    B.Insert;
+  end Check_Bet;
+
+  -----------------------------------------------------------------
+
+  procedure Run(Price_Data : in Table_Aprices.Data_Type;
+                Delta_Tics : in Integer;
+                Min_Layprice : in Min_Layprice_Type;
+                Max_Layprice : in Max_Layprice_Type ) is
+
     Market    : Table_Amarkets.Data_Type;
     Event     : Table_Aevents.Data_Type;
     Eos               : Boolean := False;
     Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-    type Greenup_Result_Type is (None, Ok, Fail_Runner_Won, Fail_Runner_Lost );
-    Greenup_Result : Greenup_Result_Type := Greenup_Result_Type'first;
+--    type Greenup_Result_Type is (None, Ok, Fail_Runner_Won, Fail_Runner_Lost );
+--    Greenup_Result : Greenup_Result_Type := Greenup_Result_Type'first;
     Runner : Table_Arunners.Data_Type;
-    Bad_Data : exception;
-    
-    Backprice : Float_8 := Price_Data.Layprice + Float_8(10.0);
+ --   Bad_Data : exception;
+    Tic_Lay : Integer := 0;
+    Bet : Bet_Type;
+    Lay_Bet_Name  : constant Bet_Name_Type := "1_HOUNDS_WIN_GREEN_UP_LAY                                                                           ";
+    Back_Bet_Name : constant Bet_Name_Type := "1_HOUNDS_WIN_GREEN_UP_BACK                                                                          ";
   begin
    -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market.Marketid := Price_Data.Marketid;
-    Market.Read(Eos);
-    
-    if not Eos then
-      if Market.Markettype(1..3) /= "WIN"  then
-        Log(Me & "Run", "not a WIN market: " &  Price_Data.Marketid);
-        return;
-      else
-        Event.Eventid := Market.Eventid;
-        Event.Read(Eos);
-        if not Eos then
-          if Event.Eventtypeid /= Integer_4(7) then
-            Log(Me & "Run", "not a HORSE market: " &  Price_Data.Marketid);
-            return;
-          end if;
-        else
-          Log(Me & "Run", "no event found");
-          return;
-        end if;
-      end if;
-      
-      if Market.Numrunners < Integer_4(6) then
-        Log(Me & "Run", "less than 6 runners");
-        return;
-      end if;
-      
-    else
-      Log(Me & "Run", "no market found");
-      return;
-    end if;
-    
+   -- Market.Read(Eos);
+   --
+   -- if not Eos then
+   --   if Market.Markettype(1..3) /= "WIN"  then
+   --     Log(Me & "Run", "not a WIN market: " &  Price_Data.Marketid);
+   --     return;
+   --   else
+   --     Event.Eventid := Market.Eventid;
+   --     Event.Read(Eos);
+   --     if not Eos then
+   --       if Event.Eventtypeid /= Integer_4(4339) then
+   --         Log(Me & "Run", "not a GH market: " &  Price_Data.Marketid);
+   --         return;
+   --       end if;
+   --     else
+   --       Log(Me & "Run", "no event found");
+   --       return;
+   --     end if;
+   --   end if;
+   --
+   --   --if Market.Numrunners < Integer_4(6) then
+   --   --  Log(Me & "Run", "less than 6 runners");
+   --   --  return;
+   --   --end if;
+   --
+   -- else
+   --   Log(Me & "Run", "no market found");
+   --   return;
+   -- end if;
+
     if not Table_Apriceshistory.Is_Existing_I1(Marketid => Market.Marketid) then
       Log(Me & "Run", "no Apriceshistory found");
       return;
     end if;
 
-    Log(Me & "Run", "market found  " & Market.To_String);
-    Sim.Read_Marketid(Marketid =>  Market.Marketid, List => Price_During_Race_List) ;
-    Greenup_Result := None;
-    
-    for Race_Data of Price_During_Race_List loop
-      if Price_Data.Selectionid =  Race_Data.Selectionid then
-        if Race_Data.Backprice >= Backprice then
-          Greenup_Result := Ok;
-          exit;
-        end if;
-      end if;    
-    end loop ;
-    
-    case Greenup_Result is
-      when OK => null;
-      when others =>
-        Runner.Marketid := Price_Data.Marketid;
-        Runner.Selectionid := Price_Data.Selectionid;
-        Runner.Read(Eos);
-        if not Eos then
-          if Runner.Status(1..6) = "WINNER" then
-             Greenup_Result := Fail_Runner_Won;
-          elsif Runner.Status(1..5) = "LOSER" then
-             Greenup_Result := Fail_Runner_Lost;
+    --Log(Me & "Run", "market found  " & Market.To_String);
+    Sim.Read_Marketid_Selectionid(Marketid    =>  Market.Marketid,  
+                                  Selectionid => Price_Data.Selectionid, 
+                                  List        => Price_During_Race_List) ;
+    --Greenup_Result := None;
+
+    Runner.Marketid := Price_Data.Marketid;
+    Runner.Selectionid := Price_Data.Selectionid;
+    Runner.Read(Eos);
+
+    if Price_During_Race_List.Length > 400 then
+      if Eos then
+       Log(Me & "Run", "no runner found found  " & Runner.To_String);
+      end if;
+
+      Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+                    Market_Id        => Market.Marketid,
+                    Side             => Lay,
+                    Runner_Name      => Runner.Runnernamestripped,
+                    Selection_Id     => Price_Data.Selectionid,
+                    Size             => Lay_Stake,
+                    Price            => Bet_Price_Type(Price_Data.Layprice),
+                    Bet_Persistence  => Persist,
+                    Bet_Placed       => Price_Data.Pricets,
+                    Bet              => Bet.Laybet ) ;
+      Bet.Laybet.Status(1) := 'M';
+      Move(Max_Layprice'Img & '/' & Trim(Min_Layprice'Img,Both), Bet.Laybet.Reference);
+      Bet.Laybet.Betmode := Integer_4(Delta_Tics);
+      Check_Bet(Runner, Bet.Laybet);
+
+      for Race_Data of Price_During_Race_List loop
+        if Price_Data.Backprice > Float_8(0.0) and then Price_Data.Layprice > Float_8(0.0) then   -- must be valid
+          if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
+            if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
+              Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
+              if Race_Data.Backprice >= Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) then -- and backprice is 1 tic higher that laid price
+               -- Greenup_Result := Ok;
+
+                Sim.Place_Bet(Bet_Name         => Back_Bet_Name,
+                              Market_Id        => Market.Marketid,
+                              Side             => Back,
+                              Runner_Name      => Runner.Runnernamestripped,
+                              Selection_Id     => Price_Data.Selectionid,
+                              Size             => Back_Stake,
+                              Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics)),
+                              Bet_Persistence  => Persist,
+                              Bet_Placed       => Race_Data.Pricets,
+                              Bet              => Bet.Backbet ) ;
+                Bet.Backbet.Status(1) := 'M';
+                Move(Max_Layprice'Img & '/' & Trim(Min_Layprice'Img,Both), Bet.Backbet.Reference);
+                Bet.Backbet.Betmode := Integer_4(Delta_Tics);
+                Check_Bet(Runner, Bet.Backbet);
+                exit;
+              end if;
+            end if;
           end if;
-        else
-          raise Bad_Data with Runner.To_String;
         end if;
-    end case;     
-    Log(Me & " Result " & Greenup_Result'Img , Price_Data.To_String);
-      
+      end loop ;
+--      Bet_List(Delta_Tics).Append(Bet);
+      --Bet_List.Append(Bet);
+--      declare
+--        T : Sql.Transaction_Type;
+--      begin
+--        T.Start;
+--        Log(Me & "insert laybet " & Bet.Laybet.To_String);
+--        Bet.Laybet.Insert;
+--        if Bet.Backbet.Betid > 0 then
+--          Log(Me & "insert backbet " & Bet.Backbet.To_String);
+--          Bet.Backbet.Insert;
+--        end if;
+--        T.Commit;
+--      end;
+
+    else
+      Log(Me & "not enough data for runner" & Price_During_Race_List.Length'Img, Price_Data.To_String);
+    end if;
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
 ------------------------------ main start -------------------------------------
-
 begin
 
    Define_Switch
@@ -150,51 +252,90 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
-        (Host     => Ini.Get_Value("database", "host", ""),
-         Port     => Ini.Get_Value("database", "port", 5432),
-         Db_Name  => Ini.Get_Value("database", "name", ""),
-         Login    => Ini.Get_Value("database", "username", ""),
-         Password =>Ini.Get_Value("database", "password", ""));
+        (Host     => Ini.Get_Value("database_ghd", "host", ""),
+         Port     => Ini.Get_Value("database_ghd", "port", 5432),
+         Db_Name  => Ini.Get_Value("database_ghd", "name", ""),
+         Login    => Ini.Get_Value("database_ghd", "username", ""),
+         Password =>Ini.Get_Value("database_ghd", "password", ""));
   Log(Me, "db Connected");
-  
+
+
   declare
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
     Price_List  : Table_Aprices.Aprices_List_Pack2.List;
-  begin
+  begin  
     T.Start;
     Stm.Prepare(
-       "select P.* " &
-       "from APRICES P, AMARKETS M, AEVENTS E " &
-       "where P.LAYPRICE between 15.0 and 25.0 " &
-       "and E.EVENTID=M.EVENTID " &
-       "and M.MARKETTYPE = 'WIN' " &
-       "and E.COUNTRYCODE in ('GB','IE') " &
-       "and P.MARKETID = M.MARKETID " &
-       "and E.EVENTTYPEID = 7 " &
-       "and M.STARTTS::date > '2014-08-01' " &
-       "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
-       
-    Table_Aprices.Read_List(Stm, Price_List); 
+     "select P.* " &
+     "from APRICES P, AMARKETS M, AEVENTS E " &
+     "where E.EVENTID=M.EVENTID " &
+     "and M.MARKETTYPE = 'WIN' " &
+     "and E.COUNTRYCODE in ('GB','IE') " &
+     "and P.MARKETID = M.MARKETID " &
+     "and E.EVENTTYPEID = 4339 " &
+   --  "and P.LAYPRICE <= :MAX_LAYPRICE " &
+   --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
+     "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
+    Table_Aprices.Read_List(Stm, Price_List);
     T.Commit;
-       
-    for Price of Price_List loop
-      Log(Me & "Run", "Treat market: " & Price.To_String );
-      Run(Price);
+
+    for Max_Layprice in Max_Layprice_Type'range loop
+      for Min_Layprice in Min_Layprice_Type'range loop
+        declare
+          Layprice_High : Float_8 := Float_8(Max_Layprice)/10.0;
+          Layprice_Low  : Float_8 := Float_8(Min_Layprice)/10.0;
+        begin
+          T.Start;
+          for Price of Price_List loop
+            if Price.Layprice <= Layprice_High and then
+               Price.Layprice >= Layprice_Low then
+              Log(Me & "Run", "Treat market:" & Min_Layprice'Img & " " & Max_Layprice'Img & " " & Price.To_String );
+              for Dt in Delta_Tics_Type'range loop
+                Run(Price, Dt, Min_Layprice, Max_Layprice);
+              end loop;
+            end if; 
+          end loop;  
+          T.Commit;
+        end;
+      end loop;
     end loop;
-           
-  end;           
+  end;
+  --declare
+  --  Profit : array (Bet_Side_Type'range) of Float_8 := (others => 0.0);
+  --  Count  : array (Bet_Side_Type'range) of Natural := (others => 0);
+  --begin
+  --  for Bet of Bet_List loop
+  --    if Bet.Laybet.Status(1) ='M' then
+  --      Profit(Lay) := Profit(Lay) + Bet.Laybet.Profit;
+  --      Count(Lay) :=  Count(Lay)  + 1;
+  --    end if;
+  --    if Bet.Backbet.Status(1) ='M' then
+  --      Profit(Back) := Profit(Back) + Bet.Backbet.Profit;
+  --      Count(Back) := Count(Back) + 1;
+  --    end if;
+  --  end loop;
+  --
+  --  Log("Result",  Max_Layprice'Img & " Profit(Lay)"  & Integer(Profit(Lay))'Img);
+  --  Log("Result",  Max_Layprice'Img & " Profit(Lay)"  & Integer(Profit(Lay))'Img);
+  --  Log("Result",  Max_Layprice'Img & " Profit(Lay)"  & Integer(Profit(Lay))'Img);
+  --  Log("Result",  Max_Layprice'Img & " Profit(Back)" & Integer(Profit(Back))'Img);
+  --  Log("Result",  Max_Layprice'Img & " Count(Lay)"  & Count(Lay)'Img);
+  --  Log("Result",  Max_Layprice'Img & " Count(Back)" & Count(Back)'Img);
+  --  Log("Result",  Max_Layprice'Img & " Profit total" & Integer(Profit(Back) + Profit(Lay))'Img);
+  --end ;
+
 
   Log(Me, "Close Db");
   Sql.Close_Session;
   Logging.Close;
-  Posix.Do_Exit(0); -- terminate
+  --Posix.Do_Exit(0); -- terminate
 
 exception
   when Lock.Lock_Error =>
     Log(Me, "lock error, exit");
     Logging.Close;
-    Posix.Do_Exit(0); -- terminate
+   -- Posix.Do_Exit(0); -- terminate
   when E: others =>
     declare
       Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
@@ -210,6 +351,6 @@ exception
 
     Log(Me, "Closed log and die");
     Logging.Close;
-    Posix.Do_Exit(0); -- terminate
+   -- Posix.Do_Exit(0); -- terminate
 end Greenup_Lay_First;
 

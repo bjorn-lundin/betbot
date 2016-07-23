@@ -40,6 +40,7 @@ package body Sim is
   use type Ada.Containers.Count_Type;
 
   Select_Sampleids_In_One_Market : Sql.Statement_Type;
+  Select_Sampleids_In_One_Market_2 : Sql.Statement_Type;
 
   ----------------------------------------------------------
 
@@ -55,6 +56,8 @@ package body Sim is
          return Boolean is
     Service : constant String := "Is_Race_Winner";
   begin
+     Log("Is_Race_Winner" & Selectionid'Img & " " & Marketid );
+
     -- Marketid_Winner_Map.Element((Marketid)) is a list of winning Arunners
      for R of Winners_Map.Element(Marketid) loop
        if Selectionid = R.Selectionid then
@@ -337,6 +340,47 @@ package body Sim is
   -------------------------------------------------------------------------
 
 
+  procedure Read_Marketid_Selectionid(Marketid    : in     Market_Id_Type; 
+                                      Selectionid : in     Integer_4; 
+                                      List        :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+  --  Service : constant String := "Read_Marketid";
+    Apriceshistory_Data : Table_Apriceshistory.Data_Type;
+    Filename : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
+    T : Sql.Transaction_Type;
+    Eos : Boolean := False;
+    package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
+  begin
+
+    if not Serializer.File_Exists(Filename) then
+    --  Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
+      T.Start;
+      Select_Sampleids_In_One_Market_2.Prepare(
+        "select * " &
+        "from APRICESHISTORY " &
+        "where MARKETID = :MARKETID " &
+        "and SELECTIONID = :SELECTIONID " &
+        "order by PRICETS" ) ;
+
+      Select_Sampleids_In_One_Market_2.Set("MARKETID", Marketid);
+      Select_Sampleids_In_One_Market_2.Set("SELECTIONID", Selectionid);
+      
+      Select_Sampleids_In_One_Market_2.Open_Cursor;
+      loop
+        Select_Sampleids_In_One_Market_2.Fetch(Eos);
+        exit when Eos;
+        Apriceshistory_Data := Table_Apriceshistory.Get(Select_Sampleids_In_One_Market_2);
+        List.Append(Apriceshistory_Data);
+      end loop;
+      Select_Sampleids_In_One_Market_2.Close_Cursor;
+      T.Commit;
+      Serializer.Write_To_Disk(List, Filename);
+    else
+      Serializer.Read_From_Disk(List, Filename);
+    end if;
+
+  end Read_Marketid_Selectionid;
+  -------------------------------------------------------------------------
+
   procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
                                Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
@@ -492,21 +536,24 @@ package body Sim is
 -- start lay_during_race2
   -------------------------------------------------------------------------
   procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
-                             List  :    out Market_Id_With_Data_Pack.List) is
+                             List  :    out Market_With_Data_Pack.List) is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
-    Eos      : Boolean := False;
+    Eos,Eos2 : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Market_Id_Type := (others => ' ');
-    package Serializer is new Disk_Serializer(Market_Id_With_Data_Pack.List);
+    package Serializer is new Disk_Serializer(Market_With_Data_Pack.List);
+    Market : Table_Amarkets.Data_Type;
+    
+    
   begin
     List.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_All_Markets.Prepare (
             "select distinct(M.MARKETID) " &
-            "from APRICESHISTORY RP, AMARKETS M " &
-            "where RP.MARKETID = M.MARKETID " &
+            "from APRICESHISTORY H, AMARKETS M " &
+            "where H.MARKETID = M.MARKETID " &
             "and M.MARKETTYPE in ('PLACE', 'WIN') " &
             "and STARTTS::date = :DATE " &
             "order by M.MARKETID");
@@ -517,7 +564,9 @@ package body Sim is
         Select_All_Markets.Fetch(Eos);
         exit when Eos;
         Select_All_Markets.Get(1, Marketid);
-        List.Append(Marketid);
+        Market.Marketid := Marketid;
+        Market.Read(Eos2); -- must exist, just read id
+        List.Append(Market);
       end loop;
       Select_All_Markets.Close_Cursor;
       T.Commit;
@@ -528,7 +577,7 @@ package body Sim is
   end Read_All_Markets;
   -------------------------------------------------------------------------
 
-  procedure Fill_Marketid_Pricets_Map(Market_Id_With_Data_List   : in     Market_Id_With_Data_Pack.List;
+  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Market_With_Data_Pack.List;
                                       Date                       : in     Calendar2.Time_Type;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
@@ -547,8 +596,8 @@ package body Sim is
         "where MARKETID = :MARKETID " &
         "and STATUS <> 'REMOVED' "  &
         "order by PRICETS"  ) ;
-      for Marketid of Market_Id_With_Data_List loop
-        Select_Pricets_In_A_Market.Set("MARKETID", Marketid) ;
+      for Market of Market_With_Data_List loop
+        Select_Pricets_In_A_Market.Set("MARKETID", Market.Marketid) ;
         Select_Pricets_In_A_Market.Open_Cursor;
         Pricets_List.Clear;
         loop
@@ -558,7 +607,7 @@ package body Sim is
           Pricets_List.Append(Ts);
         end loop;
         Select_Pricets_In_A_Market.Close_Cursor;
-        Marketid_Pricets_Map.Insert(Marketid, Pricets_List);
+        Marketid_Pricets_Map.Insert(Market.Marketid, Pricets_List);
       end loop;
       T.Commit;
 
@@ -570,7 +619,46 @@ package body Sim is
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
 
-  procedure Fill_Winners_Map(Market_Id_With_Data_List : in     Market_Id_With_Data_Pack.List;
+  procedure Fill_Winners_Map(Market_List : in     Table_Amarkets.Amarkets_List_Pack2.List;
+                             Winners_Map :    out Marketid_Winner_Maps.Map ) is
+    Eos             : Boolean := False;
+    Filename : String := "all_winners_map.dat";
+    Runner_Data : Table_Arunners.Data_Type;
+    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
+    T : Sql.Transaction_Type;
+    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
+  begin
+    Winners_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+      T.Start;
+      Select_Race_Winner_In_One_Market.Prepare(
+        "select * " &
+        "from ARUNNERS " &
+        "where MARKETID = :MARKETID " &
+        "and STATUS = 'WINNER' ") ;
+      for Market of Market_List loop
+        Runner_List.Clear;
+        Select_Race_Winner_In_One_Market.Set("MARKETID", Market.Marketid) ;
+        Select_Race_Winner_In_One_Market.Open_Cursor;
+        loop
+          Select_Race_Winner_In_One_Market.Fetch(Eos);
+          exit when Eos;
+          Runner_Data := Table_Arunners.Get(Select_Race_Winner_In_One_Market);
+          Runner_List.Append(Runner_Data);
+        end loop;
+        Select_Race_Winner_In_One_Market.Close_Cursor;
+        Winners_Map.Insert(Market.Marketid, Runner_List);
+      end loop;
+      T.Commit;
+      Serializer.Write_To_Disk(Winners_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Winners_Map, Filename);
+    end if;
+  end Fill_Winners_Map;
+  
+  -------------------------------------------------------------
+  
+  procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
@@ -588,9 +676,9 @@ package body Sim is
         "from ARUNNERS " &
         "where MARKETID = :MARKETID " &
         "and STATUS = 'WINNER' ") ;
-      for Marketid of Market_Id_With_Data_List loop
+      for Market of Market_With_Data_List loop
         Runner_List.Clear;
-        Select_Race_Winner_In_One_Market.Set("MARKETID", Marketid) ;
+        Select_Race_Winner_In_One_Market.Set("MARKETID", Market.Marketid) ;
         Select_Race_Winner_In_One_Market.Open_Cursor;
         loop
           Select_Race_Winner_In_One_Market.Fetch(Eos);
@@ -599,7 +687,7 @@ package body Sim is
           Runner_List.Append(Runner_Data);
         end loop;
         Select_Race_Winner_In_One_Market.Close_Cursor;
-        Winners_Map.Insert(Marketid, Runner_List);
+        Winners_Map.Insert(Market.Marketid, Runner_List);
       end loop;
       T.Commit;
 
@@ -611,7 +699,7 @@ package body Sim is
   -----------------------------------------
 
   procedure Fill_Marketid_Runners_Pricets_Map(
-                     Market_Id_With_Data_List                 : in     Market_Id_With_Data_Pack.List;
+                     Market_With_Data_List                    : in     Market_With_Data_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
                      Date                                     : in     Calendar2.Time_Type;
                      Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
@@ -635,15 +723,13 @@ package body Sim is
         "and PRICETS = :PRICETS " &
         "and STATUS <> 'REMOVED' "  &
         "order by SELECTIONID"  ) ;
-      for Marketid of Market_Id_With_Data_List loop
+      for Market of Market_With_Data_List loop
         Cnt := Cnt + 1;
-        Log("marketid '" & Marketid & "' " & Cnt'Img & "/" & Market_Id_With_Data_List.Length'Img );
-
+        Log("marketid '" & Market.Marketid & "' " & Cnt'Img & "/" & Market_With_Data_List.Length'Img );
         --Marketid_Pricets_Maps(Marketid) is a list of pricets
-        for Pricets of Marketid_Pricets_Map(Marketid) loop
-
+        for Pricets of Marketid_Pricets_Map(Market.Marketid) loop
           -- do rest here with marketid and pricets
-          Select_Pricets_For_Market.Set("MARKETID", Marketid) ;
+          Select_Pricets_For_Market.Set("MARKETID", Market.Marketid) ;
           Select_Pricets_For_Market.Set("PRICETS", Pricets) ;
           Select_Pricets_For_Market.Open_Cursor;
           loop
@@ -653,13 +739,13 @@ package body Sim is
             Apriceshistory_List.Append(Apriceshistory_Data);
           end loop;
           Select_Pricets_For_Market.Close_Cursor;
-          --Log("Insert Marketid & _ & Pricets.To_String '" & Marketid & "_" & Pricets.To_String & "'");
+          --Log("Insert Market.Marketid & _ & Pricets.To_String '" & Market.Marketid & "_" & Pricets.To_String & "'");
           Timestamp_To_Apriceshistory_Map.Insert(Pricets.To_String, Apriceshistory_List);
           Apriceshistory_List.Clear;
         end loop;
-        Marketid_Timestamp_To_Apriceshistory_Map.Insert(Marketid, Timestamp_To_Apriceshistory_Map);
+        Marketid_Timestamp_To_Apriceshistory_Map.Insert(Market.Marketid, Timestamp_To_Apriceshistory_Map);
         Timestamp_To_Apriceshistory_Map.Clear;
-      end loop;  -- market_id_with_data_list
+      end loop;  -- Market_With_Data_List
       T.Commit;
 
       Serializer.Write_To_Disk(Marketid_Timestamp_To_Apriceshistory_Map, Filename);
@@ -767,22 +853,27 @@ package body Sim is
   begin
     Log("fill maps with Date " & Date.String_Date_ISO);
     Log("fill list with all valid marketids" );
-    Read_All_Markets(Date, Market_Id_With_Data_List);
+    Read_All_Markets(Date, Market_With_Data_List);
+    Log("Found:" & Market_With_Data_List.Length'Img );
 
     Log("fill map with all pricets for a marketid ");
-    Fill_Marketid_Pricets_Map(Market_Id_With_Data_List, Date, Marketid_Pricets_Map);
+    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Marketid_Pricets_Map);
+    Log("Found:" & Marketid_Pricets_Map.Length'Img );
 
     Log("fill map with map of timestamp list for all marketids ");
-    Fill_Marketid_Runners_Pricets_Map(Market_Id_With_Data_List,
+    Fill_Marketid_Runners_Pricets_Map(Market_With_Data_List,
                                           Marketid_Pricets_Map,
                                           Date,
                                           Marketid_Timestamp_To_Apriceshistory_Map) ;
+    Log("Found:" & Marketid_Timestamp_To_Apriceshistory_Map.Length'Img );
 
     Log("fill map winners ");
-    Fill_Winners_Map(Market_Id_With_Data_List, Date, Winners_Map );
+    Fill_Winners_Map(Market_With_Data_List, Date, Winners_Map );
+    Log("Found:" & Winners_Map.Length'Img );
 
     Log("fill map Win/Place markets ");
     Fill_Win_Place_Map(Date, Win_Place_Map);
+    Log("Found:" & Win_Place_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 

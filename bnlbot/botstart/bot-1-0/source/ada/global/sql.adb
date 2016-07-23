@@ -40,7 +40,7 @@ with Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 with Utils;
 with Logging; use Logging;
-
+--with text_io;
 package body Sql is
    Me : constant String := "Sql";
 
@@ -1134,6 +1134,8 @@ package body Sql is
          when An_Insert =>
           --  Log(Me, "Execute.Insert start");
             No_Of_Affected_Rows := 1;
+            
+           -- text_io.put_line(To_String (Private_Statement.Prepared_Statement));
 
             Handle_Savepoint (How => Insert, P_Stm => Private_Statement);
             Global_Connection.Exec (To_String (Private_Statement.Prepared_Statement),
