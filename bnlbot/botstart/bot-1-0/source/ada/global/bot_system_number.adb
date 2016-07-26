@@ -13,18 +13,18 @@ package body Bot_System_Number is
                            Number : in Integer_4) return Boolean is
 
     End_Of_Set      : Boolean := False;
---    Service         : constant string := "Is_Number_Taken";
+  --  Service         : constant string := "Is_Number_Taken";
   begin
---    Logging.Log(Object & Service, "start");
+  --  Logging.Log(Object & Service, "start");
     case System_Number_Type is
-      when Betid    => Select_Table_Statements.Prepare("select BETID from ABETS where BETID = :NUM");      
+      when Betid => Select_Table_Statements.Prepare("select BETID from ABETS where BETID = :NUM");      
     end case;
     
     Select_Table_Statements.Set("NUM", Number);
     Select_Table_Statements.Open_Cursor;
     Select_Table_Statements.Fetch(End_Of_Set);
     Select_Table_Statements.Close_Cursor;
---    Logging.Log( Object & Service, "stop");
+  --  Logging.Log( Object & Service, "stop");
     return not End_Of_Set;
   end Is_Number_Taken;
 
@@ -34,7 +34,7 @@ package body Bot_System_Number is
     No_More_System_Numbers : exception;
     End_Of_Set      : Boolean := False;
     Is_Number_Found : Boolean := False;
-    Max_Tries       : constant Integer_4 := 99_999;
+    Max_Tries       : constant Integer_4 := 10_000_000;
     No_Of_Tries     : Integer_4 := 0;
     Number          : Integer_4 := 0;
     Service         : constant string := "New_Number";
