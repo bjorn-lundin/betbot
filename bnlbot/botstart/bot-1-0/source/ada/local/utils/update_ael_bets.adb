@@ -40,6 +40,7 @@ procedure Update_Ael_Bets is
 
   T : Sql.Transaction_Type;
   Select_Pm     : Sql.Statement_Type;
+  Select_Bets   : Sql.Statement_Type; 
   Rows_Affected : Natural := 0;
   Me            : constant String := "Update_Ael_Bets.";
   Comission     : constant Float_8 := 6.5 / 100.0;
@@ -100,7 +101,7 @@ begin
     EV.Set("BOT_NAME","update_ael_bets");
   end if;
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+  --Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
@@ -113,14 +114,19 @@ begin
          Password => Ini.Get_Value("stats", "password", ""));
   Log(Me, "db Connected");
 
+  Select_Bets.Prepare(
+      "select * " &
+      "from ABETS  " &
+      "where (STATUS like ' %') or (STATUS like '-%') " &
+      "order by BETPLACED"
+    );
   Select_Pm.Prepare(
       "select * " &
       "from APRICESHISTORY  " &
       "where MARKETID = :MARKETID " &
       "and SELECTIONID = :SELECTIONID " &
       "and PRICETS between :BETPLACED1 and :BETPLACED2 " &
-      "order by PRICETS " &
-      "limit 1 "
+      "order by PRICETS "
     );
 
   T.Start;
@@ -129,17 +135,20 @@ begin
       type Eos_Type is (AHistory, ARunner);
       Eos      : array (Eos_Type'range) of Boolean := (others => True);
       Bet_List : Table_Abets.Abets_List_Pack2.List;
-      Rows_Deleted : Natural := 0;
       Runner : Table_Arunners.Data_Type;
+      Cnt    : Natural := 0;
+      Was_Matched : Boolean := False;
     begin
-      Log(Me & ".Main" , "read_all start");
-      Table_Abets.Read_All(Bet_List);
-      Log(Me & ".Main" , "read_all done");
+      Log(Me & "Main" , "read_all start");
+      Table_Abets.Read_List(Select_Bets, Bet_List);
+      Log(Me & "Main" , "read_all done");
       Rows_Affected := 0;
 
       for Bet of Bet_List loop
-        if Natural(Bet_List.Length) mod 1000 = 0 then
-           Log(Me & ".Select_Pm" , "treat:" & Rows_Affected'Img);
+      --if not already treated no status
+        Cnt := Cnt +1;
+        if Cnt rem 100 = 0 then
+           Log(Me & "Select_Pm" , "treat: " & Bet.To_String);
         end if;
         -- check lost/won
         Runner.Marketid := Bet.Marketid;
@@ -151,27 +160,47 @@ begin
         Select_Pm.Set("MARKETID",Bet.Marketid);
         Select_Pm.Set("SELECTIONID",Bet.Selectionid);
         Select_Pm.Set("BETPLACED1",Bet.Betplaced + (0,0,0,1,0));    --1.0 s
-        Select_Pm.Set("BETPLACED2",Bet.Betplaced + (0,0,0,1,300));  --1.3 s
-        -- look 1 to 1.3 secs after bet is placed
+        Select_Pm.Set("BETPLACED2",Bet.Betplaced + (0,9,0,1,500));  --9h1.5 s
+        -- look 1 after bet is placed until finish
+        Was_Matched := False;
         Select_Pm.Open_Cursor;
-        Select_Pm.Fetch(Eos(Ahistory));
-        if not Eos(Ahistory) then
+        loop
+          Select_Pm.Fetch(Eos(Ahistory));
+          exit when Eos(Ahistory);
           Ph_Data := Table_Apriceshistory.Get(Select_Pm);
-          Bet.Pricematched := Ph_Data.Backprice;
-          Move("SUCCESS",Bet.Status);
-          Rows_Affected := Rows_Affected +1;
-        else
-          Log(Me & ".Select_Pm" , "EOS: " & Bet.To_String );
-          Bet.Pricematched := 0.0;
-          Move("LAPSED",Bet.Status);
-        end if;
+          if Bet.Side(1..4) = "BACK" then
+            if Ph_Data.Backprice >= Bet.Price and then
+               Ph_Data.Backprice <= Float_8(1000.0) then
+              Bet.Pricematched := Ph_Data.Backprice;
+              Rows_Affected := Rows_Affected +1;
+              Was_Matched := True;
+              exit;
+            end if;
+          elsif Bet.Side(1..3) = "LAY" then
+            if Ph_Data.Layprice <= Bet.Price and then
+               Ph_Data.Layprice >= Float_8(1.01) then
+              Bet.Pricematched := Ph_Data.Layprice;
+              Rows_Affected := Rows_Affected +1;
+              Was_Matched := True;
+              exit;
+            end if;
+          end if;
+        end loop;
         Select_Pm.Close_Cursor;
+
+        if Was_Matched then
+          Move("SUCCESS",Bet.Status);
+        else
+          Move("LAPSED",Bet.Status);
+          Bet.Pricematched := 0.0;
+          Bet.Sizematched := 0.0;
+        end if;
+
         -- calculate profit
         Check_Bet_Profit(B=> Bet);
         Bet.Update_Withcheck;
       end loop;
-      Log(Me & ".Select_Pm" , "Rows_Affected:" & Rows_Affected'Img);
-      Log(Me & ".Select_Pm" , "Rows_Deleted:" & Rows_Deleted'Img);
+      Log(Me & "Select_Pm" , "Rows_Affected:" & Rows_Affected'Img);
     end ;
   T.Commit;
 
