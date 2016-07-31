@@ -38,6 +38,7 @@ project Adabot is
                     "bet_checker.adb",
                     "data_mover.adb",
                     "graph_data.adb",
+                    "graph_data_ael.adb",
                     "stat_maker.adb",
                     "poll_bounds.adb",
                     "bot_web_server.adb",
