@@ -7,8 +7,8 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 --with Ada.Containers.Doubly_Linked_Lists;
 
---with Gnat.Command_Line; use Gnat.Command_Line;
---with Gnat.Strings;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
 
 with Stacktrace;
 with Types; use Types;
@@ -23,7 +23,7 @@ with Ini;
 with Logging; use Logging;
 --with Process_IO;
 --with Core_Messages;
---with Table_Amarkets;
+with Table_Amarkets;
 --with Table_Aevents;
 --with Table_Aprices;
 --with Table_Abalances;
@@ -31,19 +31,23 @@ with Table_Arunners;
 with Table_Abets;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
---with Utils; use Utils;
+with Utils; use Utils;
 --with Bot_System_Number;
 
 
 procedure Update_Ael_Bets is
   package EV renames Ada.Environment_Variables;
 
-  T : Sql.Transaction_Type;
-  Select_Pm     : Sql.Statement_Type;
-  Select_Bets   : Sql.Statement_Type; 
-  Rows_Affected : Natural := 0;
-  Me            : constant String := "Update_Ael_Bets.";
-  Comission     : constant Float_8 := 6.5 / 100.0;
+  T                 : Sql.Transaction_Type;
+  Select_Pm         : Sql.Statement_Type;
+  Select_Bets_All   : Sql.Statement_Type;
+  Select_Bets_Month : Sql.Statement_Type;
+  Rows_Affected     : Natural := 0;
+  Me                : constant String := "Update_Ael_Bets.";
+  Comission         : constant Float_8 := 6.5 / 100.0;
+  Cmd_Line          : Command_Line_Configuration;
+  SA_Month          : aliased Gnat.Strings.String_Access;
+
   -------------------------------------------------------------
 
   procedure Check_Bet_Won ( R : in     Table_Arunners.Data_Type;
@@ -52,6 +56,7 @@ procedure Update_Ael_Bets is
     if R.Status(1..7) = "REMOVED" then
       return;
     end if;
+    B.Runnername := R.Runnernamestripped;    
     if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
@@ -114,10 +119,28 @@ begin
          Password => Ini.Get_Value("stats", "password", ""));
   Log(Me, "db Connected");
 
-  Select_Bets.Prepare(
+
+  Define_Switch
+     (Cmd_Line,
+      SA_Month'access,
+      Long_Switch => "--month=",
+      Help        => "Numeric - 1 .. 12");
+
+  Getopt (Cmd_Line);  -- process the command line
+
+
+
+  Select_Bets_All.Prepare(
       "select * " &
-      "from ABETS  " &
-      "where (STATUS like ' %') or (STATUS like '-%') " &
+      "from ABETS " &
+      "where ((STATUS = '') or (STATUS like '-%')) " &
+      "order by BETPLACED"
+    );
+  Select_Bets_Month.Prepare(
+      "select * " &
+      "from ABETS " &
+      "where ((STATUS = '') or (STATUS like '-%')) " &
+      "and extract(month from BETPLACED) = :MONTH " &
       "order by BETPLACED"
     );
   Select_Pm.Prepare(
@@ -128,8 +151,7 @@ begin
       "and PRICETS between :BETPLACED1 and :BETPLACED2 " &
       "order by PRICETS "
     );
-
-  T.Start;
+    T.Start;
     declare
       Ph_Data  : Table_Apriceshistory.Data_Type;
       type Eos_Type is (AHistory, ARunner);
@@ -139,16 +161,26 @@ begin
       Cnt    : Natural := 0;
       Was_Matched : Boolean := False;
     begin
-      Log(Me & "Main" , "read_all start");
-      Table_Abets.Read_List(Select_Bets, Bet_List);
-      Log(Me & "Main" , "read_all done");
+
+      if SA_Month.all /= "" then
+        Log(Me & "Main" , "start read Month '" & SA_Month.all & "'");
+        Select_Bets_Month.Set("MONTH", Integer_4'Value(SA_Month.all));
+        Table_Abets.Read_List(Select_Bets_Month, Bet_List);
+      else
+        Log(Me & "Main" , "start read all");
+        Table_Abets.Read_List(Select_Bets_All, Bet_List);
+      end if;
+      Log(Me & "Main" , "read_all done, #bets:" & Bet_List.Length'Img);
       Rows_Affected := 0;
 
       for Bet of Bet_List loop
       --if not already treated no status
         Cnt := Cnt +1;
-        if Cnt rem 100 = 0 then
-           Log(Me & "Select_Pm" , "treat: " & Bet.To_String);
+        if Cnt rem 10_000 = 0 then
+          T.Commit;
+          Log(Me & "Select_Pm" , "treat: " & Bet.To_String);
+          Log(Me & "Select_Pm" , "treated: " & F8_Image(100.0 * Float_8(Cnt)/Float_8(Bet_List.Length)) & " %");
+          T.Start;
         end if;
         -- check lost/won
         Runner.Marketid := Bet.Marketid;
@@ -198,11 +230,29 @@ begin
 
         -- calculate profit
         Check_Bet_Profit(B=> Bet);
-        Bet.Update_Withcheck;
+        declare
+          Market : Table_Amarkets.Data_Type;
+          Eos    : Boolean := False;
+        begin 
+          if Bet.Startts = Time_Type_First then
+            Market.Marketid := Bet.Marketid;
+            Market.Read(Eos);
+            if not Eos then
+              Bet.Startts := Market.Startts;
+              Bet.Fullmarketname := Market.Marketname;
+            end if;
+          end if;
+          Bet.Update_Withcheck;
+        exception
+          when  Sql.No_Such_Row =>
+            Log(Me & "No_Such_Row", Bet.To_String);
+            T.Rollback;
+            raise;
+        end;    
       end loop;
-      Log(Me & "Select_Pm" , "Rows_Affected:" & Rows_Affected'Img);
+      T.Commit;
+      Log(Me & "Select_Pm" , "Done - Rows_Affected:" & Rows_Affected'Img);
     end ;
-  T.Commit;
 
 
 exception

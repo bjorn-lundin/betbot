@@ -76,32 +76,33 @@ procedure Poll is
   end record;
 
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
-
-
   --------------------------------------------------------------
-
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Back_1_10_07_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_001");
-      when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_002");
-      when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_003");
-      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_004");      
-      when Back_1_01_1_05_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_005");
-      when Back_1_01_1_05_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_006");
-      when Back_1_06_1_10_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_007");
-      when Back_1_06_1_10_14_17_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_008");
-      when Back_1_11_1_15_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_009");
-      when Back_1_11_1_15_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_010");
-      when Back_1_11_1_15_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
-      when Back_1_11_1_15_11_13_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_16_1_20_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_013");
-      when Back_1_16_1_20_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_014");
-      when Back_1_16_1_20_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_015");
-      when Back_1_21_1_25_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_21_1_25_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_017");
-      when Back_1_26_1_30_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_018");
-      when Back_1_26_1_30_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_019");
+      when Lay_2_3_10_WIN_4_2                => return Process_Io.To_Process_Type("bet_placer_001");
+      when Lay_1_8_10_WIN_4_10               => return Process_Io.To_Process_Type("bet_placer_002");
+      when Lay_1_3_05_WIN_2_0                => return Process_Io.To_Process_Type("bet_placer_003");
+      when Back_1_10_07_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_004");
+      when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005");
+      when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_006");
+      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007"); 
+      when Back_1_96_2_00_08_10_1_2_WIN_1_50 => return Process_Io.To_Process_Type("bet_placer_008");     
+      when Back_1_01_1_05_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_009");
+      when Back_1_01_1_05_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_010");
+      when Back_1_06_1_10_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
+      when Back_1_06_1_10_14_17_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_012");
+      when Back_1_11_1_15_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_013");
+      when Back_1_11_1_15_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_014");
+      when Back_1_11_1_15_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_015");
+      when Back_1_11_1_15_11_13_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_016");
+      when Back_1_16_1_20_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_017");
+      when Back_1_16_1_20_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_018");
+      when Back_1_16_1_20_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_019");
+      when Back_1_21_1_25_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_020");
+      when Back_1_21_1_25_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_021");
+      when Back_1_26_1_30_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_022");
+      when Back_1_26_1_30_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_023");
     end case;
   end Get_Bet_Placer;
   ----------------------------------------------------------
@@ -117,11 +118,11 @@ procedure Poll is
   ----------------------------------------------------------------------------
 
 
-  procedure Send_Lay_Bet(Selectionid   : Integer_4;
-                         Main_Bet      : Bet_Type;
-                         Max_Price     : Max_Lay_Price_Type;
-                         Market_Id     : Market_Id_Type;
-                         Receiver      : Process_Io.Process_Type;
+  procedure Send_Lay_Bet(Selectionid    : Integer_4;
+                         Main_Bet       : Bet_Type;
+                         Max_Price      : Max_Lay_Price_Type;
+                         Marketid       : Market_Id_Type;
+                         Receiver       : Process_Io.Process_Type;
                          Match_Directly : Boolean := False) is
 
     PLB             : Bot_Messages.Place_Lay_Bet_Record;
@@ -149,7 +150,7 @@ procedure Poll is
     end case;
 
     PLB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
-    Move(Market_Id, PLB.Market_Id);
+    Move(Marketid, PLB.Market_Id);
     Move(F8_Image(Float_8(Max_Price)), PLB.Price); --abs max
     PLB.Selection_Id := Selectionid;
 
@@ -165,21 +166,20 @@ procedure Poll is
       Log("Send_Lay_Bet called with " &
          " Selectionid=" & Selectionid'Img &
          " Main_Bet=" & Main_Bet'Img &
-         " Market_Id= '" & Market_Id & "'" &
+         " Marketid= '" & Marketid & "'" &
          " Receiver= '" & Receiver.Name & "'");
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PLB.Bet_Name) & "' sel.id:" &  PLB.Selection_Id'Img );
     end if;
 
   end Send_Lay_Bet;
-  pragma Unreferenced(Send_Lay_Bet);
   --------------------------------------------------------------
 
   procedure Send_Bet(Selectionid     : Integer_4;
                      Main_Bet        : Bet_Type;
-                     Place_Market_Id : Market_Id_Type;
+                     Marketid        : Market_Id_Type;
                      Receiver        : Process_Io.Process_Type;
                      Min_Price       : String := "1.01";
-                     Match_Directly : Boolean := False) is
+                     Match_Directly  : Boolean := False) is
 
     PBB             : Bot_Messages.Place_Back_Bet_Record;
     Did_Bet : array(1..1) of Boolean := (others => False);
@@ -207,7 +207,7 @@ procedure Poll is
     end case;
 
     PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
-    Move(Place_Market_Id, PBB.Market_Id);
+    Move(Marketid, PBB.Market_Id);
     Move(Min_Price, PBB.Price);
     PBB.Selection_Id := Selectionid;
 
@@ -223,7 +223,7 @@ procedure Poll is
       Log("Send_Bet called with " &
          " Selectionid=" & Selectionid'Img &
          " Main_Bet=" & Main_Bet'Img &
-         " Place_Market_Id= '" & Place_Market_Id & "'" &
+         " Marketid= '" & Marketid & "'" &
          " Receiver= '" & Receiver.Name & "'" );
       Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
     end if;
@@ -277,7 +277,7 @@ procedure Poll is
 
       Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
                Main_Bet        => Bettype,
-               Place_Market_Id => Marketid,
+               Marketid        => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
                Match_Directly  => Match_Directly);
@@ -285,7 +285,7 @@ procedure Poll is
   end Try_To_Make_Back_Bet;
 
   ------------------------------------------------------
-  procedure  Try_To_Make_Back_Bet_4_Bounds(
+  procedure Try_To_Make_Back_Bet_4_Bounds(
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
       Marketid        : Market_Id_Type;
@@ -332,12 +332,65 @@ procedure Poll is
 
       Send_Bet(Selectionid     => BR(Backed_Num).Selectionid,
                Main_Bet        => Bettype,
-               Place_Market_Id => Marketid,
+               Marketid        => Marketid,
                Receiver        => Get_Bet_Placer(Bettype),
                Min_Price       => Min_Price,
                Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet_4_Bounds;
+
+  -------------------------------------------------------------------------------------------------------------------
+  procedure Try_To_Make_Lay_Bet(
+      Bettype         : Config.Bet_Type;
+      BR              : Best_Runners_Array_Type;
+      Marketid        : Market_Id_Type;
+      Match_Directly : Boolean := False) is
+
+    Max_Backprice_1       : Float_8;
+    Max_Layprice_n        : Max_Lay_Price_Type;
+    Additional_Layprice_n : Max_Lay_Price_Type;
+    Layed_Num             : Integer;
+    Tmp : String (1..3) := (others => ' ');
+    Image : String := Bettype'Img;
+  begin          --1         2         3
+      --  123456789012345678901234567890123456789
+      --  Lay_2_3_10_WIN_4_2
+      --  Lay_1_8_10_WIN_4_10,
+
+    Tmp(1) := Image(5);
+    Tmp(2) := '.';
+    Tmp(3) := Image(7);
+    Max_Backprice_1 := Float_8'Value(Tmp);
+    
+    Tmp := (others => ' ');
+    Tmp(1..2) := Image(9..10);
+    Max_Layprice_n := Max_Lay_Price_Type'Value(Tmp);
+
+    Tmp := (others => ' ');
+    Tmp(1) := Image(16);
+    Layed_Num := Integer'Value(Tmp);
+    
+    Tmp := (others => ' ');
+    case Image'length is 
+      when 18     => Tmp(1)    := Image(18);
+      when 19     => Tmp(1..2) := Image(18..19);
+      when others => Tmp(1)    := '0';      
+    end case;
+    Additional_Layprice_n :=  Max_Lay_Price_Type'Value(Tmp);
+
+    if BR(1).Backprice <= Max_Backprice_1 and then
+       BR(1).Backprice >= Float_8(1.01) and then
+       BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
+      -- lay n in WIN market...
+
+      Send_Lay_Bet(Selectionid     => BR(Layed_Num).Selectionid,
+                   Main_Bet        => Bettype,
+                   Marketid        => Marketid,
+                   Receiver        => Get_Bet_Placer(Bettype),
+                   Max_Price       => Max_Layprice_n + Additional_Layprice_n,
+                   Match_Directly  => Match_Directly);
+    end if;
+  end Try_To_Make_Lay_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
 
@@ -542,6 +595,32 @@ procedure Poll is
           case i is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
+
+            when Lay_2_3_10_WIN_4_2 ..
+                 Lay_1_3_05_WIN_2_0   =>
+              declare
+                M_Type     : Market_Type := Win;
+                Image      : String      := i'Img;
+                Do_Try_Bet : Boolean     := True;
+              begin
+               --  12345678901234567890
+               --  Back_1_10_20_1_4_WIN
+                if Image(12..14) = "PLC" then
+                  M_Type := Place;
+                  Do_Try_Bet := Found_Place and then Markets(Place).Numwinners >= Integer_4(3) ;
+                  Match_Directly := True;
+                elsif Image(18..20) = "WIN" then
+                  Match_Directly := True;
+                end if;
+                if Do_Try_Bet then
+                  Try_To_Make_Lay_Bet (
+                        Bettype         => i,
+                        BR              => Best_Runners,
+                        Marketid        => Markets(M_Type).Marketid,
+                        Match_Directly  => Match_Directly);
+                end if;
+              end;
+      
             when Back_1_10_07_1_2_PLC_1_01 ..
                  Back_1_10_10_1_2_PLC_1_02   =>
               declare
@@ -564,12 +643,10 @@ procedure Poll is
                         Bettype         => i,
                         BR              => Best_Runners,
                         Marketid        => Markets(M_Type).Marketid,
-                     --   Place_Marketid  => Markets(Place).Marketid,
-                    --    Min_Price       => To_String(Cfg.Bet(i).Min_Price),
                         Match_Directly  => Match_Directly);
                 end if;
               end;
-            when Back_1_01_1_05_01_04_1_2_PLC_1_01 ..
+            when Back_1_96_2_00_08_10_1_2_WIN_1_50 ..
                  Back_1_26_1_30_08_10_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
