@@ -78,30 +78,14 @@ procedure Poll is
   Bets_Allowed : array (Bet_Type'range) of Allowed_Type;
   --------------------------------------------------------------
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
+    Num : Integer := Config.Bet_Type'Pos(Bettype) +1;
   begin
-    case Bettype is
-      when Lay_2_30_10_WIN_4_02              => return Process_Io.To_Process_Type("bet_placer_001");
-      when Lay_1_80_10_WIN_4_10              => return Process_Io.To_Process_Type("bet_placer_002");
-      when Lay_1_30_05_WIN_2_00              => return Process_Io.To_Process_Type("bet_placer_003");
-      when Back_1_10_07_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_004");
-      when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005");
-      when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_006");
-      when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007"); 
-      when Back_1_96_2_00_08_10_1_2_WIN_1_70 => return Process_Io.To_Process_Type("bet_placer_008");     
-      when Back_1_06_1_10_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
-      when Back_1_06_1_10_14_17_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_012");
-      when Back_1_11_1_15_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_013");
-      when Back_1_11_1_15_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_014");
-      when Back_1_11_1_15_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_015");
-      when Back_1_11_1_15_11_13_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_016");
-      when Back_1_16_1_20_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_017");
-      when Back_1_16_1_20_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_018");
-      when Back_1_16_1_20_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_019");
-      when Back_1_21_1_25_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_020");
-      when Back_1_21_1_25_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_021");
-      when Back_1_26_1_30_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_022");
-      when Back_1_26_1_30_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_023");
-    end case;
+    case Num is
+      when 1 ..9     => return Process_Io.To_Process_Type("bet_placer_00" & Trim(Num'Img, Both));
+      when 10 ..99   => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Num'Img, Both));
+      when 100 ..999 => return Process_Io.To_Process_Type("bet_placer_"   & Trim(Num'Img, Both));
+      when others    => raise Constraint_Error with "To many processes" & Num'Img;
+    end case;    
   end Get_Bet_Placer;
   ----------------------------------------------------------
 
@@ -109,7 +93,7 @@ procedure Poll is
   begin
     for i in Bet_Type'range loop
       case i is
-        when others             => Move(I'Img, Bets_Allowed(i).Bet_Name);
+        when others => Move(I'Img, Bets_Allowed(i).Bet_Name);
       end case;
     end loop;
   end Set_Bet_Names;
