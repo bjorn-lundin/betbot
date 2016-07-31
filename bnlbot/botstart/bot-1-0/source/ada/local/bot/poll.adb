@@ -87,7 +87,7 @@ procedure Poll is
       when Back_1_10_10_1_2_PLC_1_01         => return Process_Io.To_Process_Type("bet_placer_005");
       when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_006");
       when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007"); 
-      when Back_1_96_2_00_08_10_1_2_WIN_1_50 => return Process_Io.To_Process_Type("bet_placer_008");     
+      when Back_1_96_2_00_08_10_1_2_WIN_1_70 => return Process_Io.To_Process_Type("bet_placer_008");     
       when Back_1_01_1_05_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_009");
       when Back_1_01_1_05_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_010");
       when Back_1_06_1_10_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
@@ -646,7 +646,7 @@ procedure Poll is
                         Match_Directly  => Match_Directly);
                 end if;
               end;
-            when Back_1_96_2_00_08_10_1_2_WIN_1_50 ..
+            when Back_1_96_2_00_08_10_1_2_WIN_1_70 ..
                  Back_1_26_1_30_08_10_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
