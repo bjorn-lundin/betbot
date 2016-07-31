@@ -88,8 +88,6 @@ procedure Poll is
       when Back_1_10_07_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_006");
       when Back_1_10_10_1_2_PLC_1_02         => return Process_Io.To_Process_Type("bet_placer_007"); 
       when Back_1_96_2_00_08_10_1_2_WIN_1_70 => return Process_Io.To_Process_Type("bet_placer_008");     
-      when Back_1_01_1_05_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_009");
-      when Back_1_01_1_05_08_10_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_010");
       when Back_1_06_1_10_05_07_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_011");
       when Back_1_06_1_10_14_17_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_012");
       when Back_1_11_1_15_01_04_1_2_PLC_1_01 => return Process_Io.To_Process_Type("bet_placer_013");
