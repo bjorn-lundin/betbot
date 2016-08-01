@@ -228,7 +228,7 @@ package body Ini is
 
   procedure Parse (Current_Section: in out Section_Pointer_Type;
                    S              :        String) is
-  begin  
+  begin
     for I in S'Range loop
       if (S(I) = '=') then
         if (I = S'Last) then
@@ -324,15 +324,14 @@ package body Ini is
         Text_Io.Get_Line (File, Line, Last);
 --        Text_Io.Put_Line("'" & Line(1..Last) & "' " & Last'Img );
         Comment := False;
-        if Last >= 1 then    
-          if Line(1) = '#' then 
+        if Last >= 1 then
+          if Line(1) = '#' then
             Comment := True;
-          end if;  
-          if Line(1) = ';' then 
-            return;
-          end if;  
+          elsif Line(1) = ';' then
+            Comment := True;
+          end if;
         end if;
-        if not Comment then        
+        if not Comment then
           Parse (Current_Section, Collapse(Line(1..Last)));
         end if;
       end loop;
