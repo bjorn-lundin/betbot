@@ -167,22 +167,12 @@ def main(g):
 
   bets = ['BACK_1_10_07_1_2_PLC_1_01',
           'BACK_1_10_10_1_2_PLC_1_01',
-          'BACK_1_10_07_1_2_PLC_1_02',
-          'BACK_1_10_10_1_2_PLC_1_02',
           'BACK_1_06_1_10_05_07_1_2_PLC_1_01',
-          'BACK_1_06_1_10_14_17_1_2_PLC_1_01',
           'BACK_1_11_1_15_01_04_1_2_PLC_1_01',
           'BACK_1_11_1_15_05_07_1_2_PLC_1_01',
           'BACK_1_11_1_15_08_10_1_2_PLC_1_01',
-          'BACK_1_11_1_15_11_13_1_2_PLC_1_01',
-          'BACK_1_16_1_20_01_04_1_2_PLC_1_01',
-          'BACK_1_16_1_20_05_07_1_2_PLC_1_01',
-          'BACK_1_16_1_20_08_10_1_2_PLC_1_01',
           'BACK_1_96_2_00_08_10_1_2_WIN_1_70',
-          'LAY_1_30_05_WIN_2_00',
-          'LAY_1_80_10_WIN_4_10',
-          'LAY_2_30_10_WIN_4_02',
-          'LAY_2_90_20_WIN_8_00']
+          'LAY_1_80_10_WIN_4_10']
 
   row0 = {}
   row0['0'] = 0
@@ -262,26 +252,26 @@ def main(g):
   row0['5'] = 365
   row0['6'] = 900
   lcd_row_0 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
-#  buff += '-------------------------------------------------------------------\r\n'
-#  buff += lcd_row_0 + '\r\n'
-#  buff += '-------------------------------------------------------------------\r\n'
-#
-#  for bet in bets :
-#    row3 = {}
-#    row3['0'] = get_bet_ratio(conn, bet, row0['0'])
-#    row3['1'] = get_bet_ratio(conn, bet, row0['1'])
-#    row3['2'] = get_bet_ratio(conn, bet, row0['2'])
-#    row3['3'] = get_bet_ratio(conn, bet, row0['3'])
-#    row3['4'] = get_bet_ratio(conn, bet, row0['4'])
-#    row3['5'] = get_bet_ratio(conn, bet, row0['5'])
-#    row3['6'] = get_bet_ratio(conn, bet, row0['6'])
-#    if len(bet) > 33 :
-#      row1['typ'] = bet[:32].strip()
-#    else :
-#      row3['typ'] = bet
-#
-#    lcd_row_3 = '%(typ)33s%(0)6.2f%(1)6.2f%(2)6.2f%(3)6.2f%(4)6.2f%(5)6.2f%(6)6.2f' % row3
-#    buff += lcd_row_3 + '\r\n'
+  buff += '-------------------------------------------------------------------\r\n'
+  buff += lcd_row_0 + '\r\n'
+  buff += '-------------------------------------------------------------------\r\n'
+
+  for bet in bets :
+    row3 = {}
+    row3['0'] = get_bet_ratio(conn, bet, row0['0'])
+    row3['1'] = get_bet_ratio(conn, bet, row0['1'])
+    row3['2'] = get_bet_ratio(conn, bet, row0['2'])
+    row3['3'] = get_bet_ratio(conn, bet, row0['3'])
+    row3['4'] = get_bet_ratio(conn, bet, row0['4'])
+    row3['5'] = get_bet_ratio(conn, bet, row0['5'])
+    row3['6'] = get_bet_ratio(conn, bet, row0['6'])
+    if len(bet) > 33 :
+      row1['typ'] = bet[:32].strip()
+    else :
+      row3['typ'] = bet
+
+    lcd_row_3 = '%(typ)33s%(0)6.2f%(1)6.2f%(2)6.2f%(3)6.2f%(4)6.2f%(5)6.2f%(6)6.2f' % row3
+    buff += lcd_row_3 + '\r\n'
 
 
   #clear screen
