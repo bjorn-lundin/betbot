@@ -3,8 +3,19 @@
   round(avg(profit)::numeric, 2) as avgprofit,
   round(sum(profit)::numeric, 2) as sumprofit,
   round(avg(pricematched)::numeric, 3) as avgpricem,
-  round(avg(sizematched)::numeric,0) as avgsizem,
-  round((sum(profit)*100/sum(sizematched))::numeric,2) as interest_rate_pct,
+--  round(avg(sizematched)::numeric,0) as avgsizem,
+  round((case SIDE 
+     when 'BACK' then avg(sizematched)
+     when 'LAY'  then avg(sizematched) * (avg(pricematched)-1)
+     else 0.0
+  end)::numeric,0) as avgsizem,
+
+ -- round((sum(profit)*100/sum(sizematched))::numeric,2) as interest_rate_pct,
+  round((case SIDE 
+     when 'BACK' then sum(profit)*100/sum(sizematched) 
+     when 'LAY'  then sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
+     else 0.0
+  end)::numeric,2) as interest_rate_pct,
   min(betplaced)::date as mindate,
   max(betplaced)::date as maxdate,
   max(betplaced)::date - min(betplaced)::date  + 1 as days, 
@@ -16,10 +27,10 @@ from
 where STATUS = 'SETTLED'
   and betwon is not null
 group by
-  betname
+  betname,side
 having sum(profit) > -0
 and max(betplaced) > '2016-01-01 00:00:00' 
-and count('a') > 10
+and count('a') >= 10
 order by
   sum(profit) desc,
   betname
