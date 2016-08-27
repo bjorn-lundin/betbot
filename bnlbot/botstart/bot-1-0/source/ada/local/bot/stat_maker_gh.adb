@@ -265,7 +265,7 @@ begin
       
   else
     declare
-      Betname    : Bot_Types.Bet_Name_Type := (others => ' ');
+      Betname    : Bot_Types.Betname_Type := (others => ' ');
       End_Of_Set : Boolean := False;
     begin
       Select_Betnames_With_Higher_Profit.Prepare(

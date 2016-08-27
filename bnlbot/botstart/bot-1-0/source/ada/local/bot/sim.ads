@@ -25,16 +25,16 @@ package Sim is
   end Disk_Serializer;
 
 
-  procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type;
+  procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
                               Market     : in out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play    :    out Boolean);
 
 
-  procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
-                       Market_Id        : in     Market_Id_Type;
+  procedure Place_Bet (Bet_Name         : in     Betname_Type;
+                       Market_Id        : in     Marketid_Type;
                        Side             : in     Bet_Side_Type;
-                       Runner_Name      : in     Runner_Name_Type;
+                       Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;
@@ -60,10 +60,10 @@ package Sim is
   Fifo : array (Num_Runners_Type'range) of Fifo_Type;
 
 
-  procedure Read_Marketid(Marketid : in     Market_Id_Type;
+  procedure Read_Marketid(Marketid : in     Marketid_Type;
                           List     :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) ;
                           
-  procedure Read_Marketid_Selectionid(Marketid    : in     Market_Id_Type; 
+  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
                                       Selectionid : in     Integer_4 ; 
                                       List        :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) ;
                           
@@ -75,12 +75,12 @@ package Sim is
 
   procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) ;
 
-  function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type ;
+  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type ;
 
   -- for lay_during_race2 start
 
 
-  --package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Market_Id_Type);
+  --package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Marketid_Type);
   package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Table_Amarkets.Data_Type, Table_Amarkets."=");
   
   procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
@@ -89,7 +89,7 @@ package Sim is
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
 
   package Marketid_Pricets_Maps is new Ada.Containers.Hashed_Maps
-        (Market_Id_Type,
+        (Marketid_Type,
          Timestamp_Pack.List,
          Ada.Strings.Hash,
          "=",
@@ -102,7 +102,7 @@ package Sim is
 
 
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
-        (Market_Id_Type,
+        (Marketid_Type,
          Table_Arunners.Arunners_List_Pack2.List,
          Ada.Strings.Hash,
          "=",
@@ -118,8 +118,8 @@ package Sim is
 
   -- for lay_during_race2 stop
   package Win_Place_Maps is new Ada.Containers.Hashed_Maps (
-         Market_Id_Type,
-         Market_Id_Type,
+         Marketid_Type,
+         Marketid_Type,
          Ada.Strings.Hash,
          "=",
          "=");
@@ -140,7 +140,7 @@ package Sim is
          Table_Apriceshistory.Apriceshistory_List_Pack2."=");
 
   package Marketid_Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps
-        (Market_Id_Type,
+        (Marketid_Type,
          Timestamp_To_Apriceshistory_Maps.Map,
          Ada.Strings.Hash,
          "=",
@@ -157,10 +157,10 @@ package Sim is
 
 
   function Is_Race_Winner(Runner               : Table_Arunners.Data_Type;
-                          Marketid             : Market_Id_Type) return Boolean;
+                          Marketid             : Marketid_Type) return Boolean;
 
   function Is_Race_Winner(Selectionid          : Integer_4;
-                          Marketid             : Market_Id_Type) return Boolean;
+                          Marketid             : Marketid_Type) return Boolean;
 
   procedure Fill_Data_Maps(Date  : in Calendar2.Time_Type) ;
 

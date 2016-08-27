@@ -81,7 +81,7 @@ package RPC is
                         Saldo          : out Table_Abalances.Data_Type) ;
                                      
                                      
-  procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
+  procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
                                 Runner_List : in out Table_Arunners.Arunners_List_Pack2.List);
 
                                       
@@ -91,21 +91,21 @@ package RPC is
                                       Betfair_Result :    out Result_Type;
                                       Bet_List       :    out Table_Abets.Abets_List_Pack2.List) ;
                                       
-  procedure Cancel_Bet(Market_Id : in Market_Id_Type; 
+  procedure Cancel_Bet(Market_Id : in Marketid_Type; 
                        Bet_Id    : in Integer_8);
                        
   function  Cancel_Bet(Bet : in Table_Abets.Data_Type) return Boolean;
                                       
-  procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type; 
+  procedure Get_Market_Prices(Market_Id  : in     Marketid_Type; 
                               Market     :    out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play    :    out Boolean);
 
                               
-  procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
-                       Market_Id        : in     Market_Id_Type; 
+  procedure Place_Bet (Bet_Name         : in     Betname_Type;
+                       Market_Id        : in     Marketid_Type; 
                        Side             : in     Bet_Side_Type;
-                       Runner_Name      : in     Runner_Name_Type;
+                       Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;

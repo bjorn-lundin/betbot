@@ -28,7 +28,9 @@ package Bot_Types is
    type Max_Daily_Loss_Type is new Float_8;
    type Max_Lay_Price_Type is new Float_8;
    type Min_Lay_Price_Type is new Float_8;
-   type Back_Price_Type is new Float_8;
+   type Price_Type is new Float_8;
+   subtype Lay_Price_Type is Price_Type;
+   subtype Back_Price_Type is Price_Type;
    type Delta_Price_Type is new Float_8;
    type Bet_Size_Type is new Float_8;
    type Bet_Price_Type is new Float_8;
@@ -55,11 +57,11 @@ package Bot_Types is
       
    type Green_Up_Mode_Type is (None, Lay_First_Then_Back, Back_First_Then_Lay);
    
-   subtype Market_Id_Type       is String(Table_Amarkets.Empty_Data.Marketid'range);
-   subtype Event_Name_Type      is String(Table_AEvents.Empty_Data.Eventname'range);
-   subtype Runner_Name_Type     is String(Table_Arunners.Empty_Data.Runnername'range);
+   subtype Marketid_Type       is String(Table_Amarkets.Empty_Data.Marketid'range);
+   subtype Eventname_Type      is String(Table_AEvents.Empty_Data.Eventname'range);
+   subtype Runnername_Type     is String(Table_Arunners.Empty_Data.Runnername'range);
    subtype Status_Type          is String(Table_Arunners.Empty_Data.Status'range);
-   subtype Bet_Name_Type        is String(Table_Abets.Empty_Data.Betname'range);
+   subtype Betname_Type        is String(Table_Abets.Empty_Data.Betname'range);
    subtype Bet_Side_String_Type is String(Table_Abets.Empty_Data.Side'range);
    subtype Bet_Timestamp_Image_Type is String(1..23);
    subtype Venue_Type           is String (1..50);
@@ -75,7 +77,7 @@ package Bot_Types is
    function "<=" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean;
    function "<=" (Left : Float_8 ; Right : Max_Lay_Price_Type) return Boolean ;
    
-   function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8;
+   function "*" (Left : Bet_Size_Type ; Right : Price_Type) return Float_8;
    
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Profit_Type) return Boolean ;
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;
@@ -92,4 +94,12 @@ package Bot_Types is
    function "/" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
 
    function ">" (Left : Float_8 ; Right : Max_Exposure_Type) return Boolean ; 
+   
+   function "/" (Left : Bet_Size_Type ; Right : Float_8) return Bet_Size_Type;
+
+
+ --  function "*" (Left : Bet_Size_Type ; Right : Lay_Price_Type) return Float_8;
+   function "/" (Left : Float_8 ; Right : Back_Price_Type) return Bet_Size_Type ;
+   
+   
 end Bot_Types;

@@ -47,8 +47,8 @@ procedure Bet_Placer is
   Global_Currently_Outstanding : Integer_4 := 0;
   Global_Keep_Alive_Counter           : Integer_4 := 0;
   ------------------------------------------------------
-  procedure Place_Bet(Bet_Name     : Bet_Name_Type;
-                      Market_Id    : Market_Id_Type;
+  procedure Place_Bet(Bet_Name     : Betname_Type;
+                      Market_Id    : Marketid_Type;
                       Selection_Id : Integer_4;
                       Side         : Bet_Side_Type;
                       Size         : Bet_Size_Type;

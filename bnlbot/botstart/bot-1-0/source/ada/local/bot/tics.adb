@@ -1,6 +1,6 @@
 
 package body Tics is
-
+  Commission : constant Float_8 := 0.065;
   Global_Odds_Table : array(1 .. 350) of Float_8 := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
                1.10,   1.11,   1.12,   1.13,   1.14,   1.15,   1.16,   1.17,   1.18,   1.19,
@@ -53,11 +53,49 @@ package body Tics is
 ------------------------------------------
   function Get_Tic_Price(I : Integer) return Float_8 is
   begin
-    if i <   1 then return Global_Odds_Table(  1); end if;
-    if i > 350 then return Global_Odds_Table(350); end if;  
+    if i < Integer(  1) then return Global_Odds_Table(  1); end if;
+    if i > Integer(350) then return Global_Odds_Table(350); end if;  
     return Global_Odds_Table(I);
   end Get_Tic_Price;
 ------------------------------------------
+  
+  -- get most of at backed greenup,
+  -- ie if not back is winning, just cover the losses  
+  function Get_Zero_Size(Backprice : Back_Price_Type;
+                         Backsize  : Bet_Size_Type;
+                         Layprice  : Lay_Price_Type) return Bet_Size_Type is
+  begin                     
+    -- if backbet is winning we win  
+    --  + (Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) *  (1-Commission)
+  
+    -- if laybet is winning we win  
+    --  (- Backsize + Laysize) * (1-Commission)
+    -- laybet just cover the cost of the bets, so sum = 0
+  
+    return Backsize;
+    
+  end Get_Zero_Size;
+  --------------------------------------------
+  
+  function Get_Green_Size(Layprice   : Lay_Price_Type;
+                          Laysize    : Bet_Size_Type;
+                          Backprice  : Back_Price_Type) return Bet_Size_Type is
+  begin                        
+    -- if backbet is winning we win  
+    --  + (Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) *  (1-Commission)
+  
+    -- if laybet is winning we win  
+    --  (- Backsize + Laysize) * (1-Commission)
+    -- laybet just cover the cost of the bets, so sum = 0
+
+   --(Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) =  (- Backsize + Laysize)
+
+
+    
+    
+    return Bet_Size_Type(Laysize*Layprice/Backprice) ;
+    
+  end Get_Green_Size;
   
 end Tics;
 

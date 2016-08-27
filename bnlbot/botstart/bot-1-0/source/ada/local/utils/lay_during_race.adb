@@ -24,7 +24,7 @@ procedure Lay_During_Race is
 --    Bad_Input : exception;
 
    type H_Type is record
-     Marketid    : Market_Id_Type := (others => ' ');
+     Marketid    : Marketid_Type := (others => ' ');
      Selectionid : Integer_4 := 0;
    end record;
 
