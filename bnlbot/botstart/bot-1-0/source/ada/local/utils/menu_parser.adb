@@ -111,12 +111,13 @@ procedure Menu_Parser is
                     declare
                       Child3 : Json_Value := Get(Children(3),k);
                     begin
-                      --Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
+                      Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                       if Child3.Has_Field("children") and then Child3.Get("type") = "EVENT" and then
                          (Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
                        --   Child3.Get("name") = "Danish Superliga" or        -- danmark
-                          Child3.Get("name") = "Eredivisie" or              -- holland
+                          Child3.Get("name") = "Dutch Eredivisie" or              -- holland
                           Child3.Get("name") = "Barclays Premier League" or -- england
+                          Child3.Get("name") = "English Premier League" or -- england
                           Child3.Get("name") = "Bundesliga 1" or            -- tyskland
                           Child3.Get("name") = "Serie A" or                 -- italien
                           Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike

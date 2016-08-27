@@ -53,7 +53,7 @@ procedure Poll is
   use Config;
 
   type Market_Type is (Win, Place);
-  type Best_Runners_Array_Type is array (1..4) of Table_Aprices.Data_Type ;
+  type Best_Runners_Array_Type is array (1..16) of Table_Aprices.Data_Type ;
 
   Data : Bot_Messages.Poll_State_Record ;
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
@@ -356,6 +356,7 @@ procedure Poll is
 
     if BR(1).Backprice <= Max_Backprice_1 and then
        BR(1).Backprice >= Float_8(1.01) and then
+       BR(Layed_Num).Backprice < Float_8(10_000.0)  and then  -- so it exists
        BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
       -- lay n in WIN market...
 
@@ -571,7 +572,7 @@ procedure Poll is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
 
-            when Lay_2_30_10_WIN_4_02 ..
+            when Lay_2_90_20_WIN_8_00 ..
                  Lay_1_30_05_WIN_2_00   =>
               declare
                 M_Type     : Market_Type := Win;
@@ -622,7 +623,7 @@ procedure Poll is
                 end if;
               end;
             when Back_1_96_2_00_08_10_1_2_WIN_1_70 ..
-                 Back_1_26_1_30_08_10_1_2_PLC_1_01   =>
+                 Back_1_36_1_40_05_07_1_2_PLC_1_10   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
