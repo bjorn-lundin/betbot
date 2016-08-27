@@ -45,14 +45,14 @@ package body Sim is
   ----------------------------------------------------------
 
   function Is_Race_Winner(Runner               : Table_Arunners.Data_Type;
-                          Marketid             : Market_Id_Type)
+                          Marketid             : Marketid_Type)
          return Boolean is
   begin
     return Is_Race_Winner(Runner.Selectionid, Marketid);
   end Is_Race_Winner;
 
   function Is_Race_Winner(Selectionid          : Integer_4;
-                          Marketid             : Market_Id_Type)
+                          Marketid             : Marketid_Type)
          return Boolean is
     Service : constant String := "Is_Race_Winner";
   begin
@@ -72,7 +72,7 @@ package body Sim is
   end Is_Race_Winner;
 
   ----------------------------------------------------------
-  procedure Get_Market_Prices(Market_Id  : in     Market_Id_Type;
+  procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
                               Market     : in out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play    :    out Boolean) is
@@ -170,10 +170,10 @@ package body Sim is
   end Get_Market_Prices;
 
   ----------------------------------------------------------------------
-  procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
-                       Market_Id        : in     Market_Id_Type;
+  procedure Place_Bet (Bet_Name         : in     Betname_Type;
+                       Market_Id        : in     Marketid_Type;
                        Side             : in     Bet_Side_Type;
-                       Runner_Name      : in     Runner_Name_Type;
+                       Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;
@@ -302,7 +302,7 @@ package body Sim is
   end Clear;
 
 
-  procedure Read_Marketid(Marketid : in Market_Id_Type; List : out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+  procedure Read_Marketid(Marketid : in Marketid_Type; List : out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
   --  Service : constant String := "Read_Marketid";
     Apriceshistory_Data : Table_Apriceshistory.Data_Type;
     Filename : String := "markets/" & "win_" & Marketid & ".dat";
@@ -340,7 +340,7 @@ package body Sim is
   -------------------------------------------------------------------------
 
 
-  procedure Read_Marketid_Selectionid(Marketid    : in     Market_Id_Type; 
+  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
                                       Selectionid : in     Integer_4; 
                                       List        :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
   --  Service : constant String := "Read_Marketid";
@@ -428,7 +428,7 @@ package body Sim is
   end Create_Runner_Data;
   -----------------------------------------------------------------
 
-  function Get_Win_Market(Place_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type is
+  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type is
     T             : Sql.Transaction_Type;
     Winner_Market : Table_Amarkets.Data_Type;
     Eos           : Boolean := False;
@@ -456,7 +456,7 @@ package body Sim is
   end Get_Win_Market;
   -----------------------------------------------------------------
 
-  function Get_Place_Market(Winner_Market_Id : Market_Id_Type) return Table_Amarkets.Data_Type is
+  function Get_Place_Market(Winner_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type is
     T            : Sql.Transaction_Type;
     Place_Market : Table_Amarkets.Data_Type;
     Eos          : Boolean := False;
@@ -541,7 +541,7 @@ package body Sim is
     T        : Sql.Transaction_Type;
     Eos,Eos2 : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
-    Marketid : Market_Id_Type := (others => ' ');
+    Marketid : Marketid_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_With_Data_Pack.List);
     Market : Table_Amarkets.Data_Type;
     
@@ -761,7 +761,7 @@ package body Sim is
     T: Sql.Transaction_Type;
     Eos : Boolean := False;
     Place_Marketid,
-    Win_Marketid    : Market_Id_Type := (others => ' ');
+    Win_Marketid    : Marketid_Type := (others => ' ');
     Filename : String := Date.String_Date_ISO & "/win_place_map.dat";
     package Serializer is new Disk_Serializer(Win_Place_Maps.Map);
   begin
@@ -879,11 +879,11 @@ package body Sim is
 
 
   function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type is
-    Place_Marketid : Market_Id_Type := (others => ' ');
+    Place_Marketid : Marketid_Type := (others => ' ');
   begin
     Place_Marketid := Win_Place_Map(Win_Data.Marketid);
     --Log("Get_Place_Price '" & Place_Marketid & "'");
-    if Place_Marketid /= Market_Id_Type'(others => ' ') then
+    if Place_Marketid /= Marketid_Type'(others => ' ') then
       declare
         Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map :=
                       Marketid_Timestamp_To_Apriceshistory_Map(Place_Marketid);

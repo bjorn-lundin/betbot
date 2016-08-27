@@ -57,7 +57,7 @@ package body Bot_Types is
      return Left <= Float_8(Right);
    end "<=";
    ---------------------------------------------
-   function "*" (Left : Bet_Size_Type ; Right : Back_Price_Type) return Float_8 is
+   function "*" (Left : Bet_Size_Type ; Right : Price_Type) return Float_8 is
    begin
      return Float_8(Left) * Float_8(Right);
    end "*";
@@ -122,6 +122,23 @@ package body Bot_Types is
      return Left > Float_8(Right);
    end ">";
    ---------------------------------------------
+   function "/" (Left : Bet_Size_Type ; Right : Float_8) return Bet_Size_Type is
+   begin
+     return Left / Bet_Size_Type(Right);
+   end "/";   
+   ---------------------------------------------
    
+   
+  -- function "*" (Left : Bet_Size_Type ; Right : Lay_Price_Type) return Float_8 is
+  -- begin
+  --   return Float_8(Left) * Float_8(Right);
+  -- end "*";
+   
+   ---------------------------------------------
+   function "/" (Left : Float_8 ; Right : Back_Price_Type) return Bet_Size_Type is
+   begin
+     return Bet_Size_Type(Left) / Bet_Size_Type(Right);
+   end "/";   
+   ---------------------------------------------
    
 end Bot_Types;

@@ -47,7 +47,7 @@ procedure Check_for_Greenup_Win2 is
   Find_Plc_Market     : Sql.Statement_Type;
   
   Me                  : constant String := "Check_for_Greenup_Win2.";
-  Global_Bet_Name     : Bet_Name_Type := (others => ' ');
+  Global_Bet_Name     : Betname_Type := (others => ' ');
   Global_Max_Layprice : Float_8 := 0.0;
   Global_Max_Backprice: Float_8 := 0.0;
   Cmd_Line            : Command_Line_Configuration;
@@ -83,7 +83,7 @@ procedure Check_for_Greenup_Win2 is
                     Pl : Positive) is
     Bet : Table_Abets.Data_Type;
     Now : Calendar2.Time_Type := Calendar2.Clock;
-    Bet_Name     : Bet_Name_Type := Global_Bet_Name;
+    Bet_Name     : Betname_Type := Global_Bet_Name;
     Backprice : Float_8 := 0.0;     
     
   begin

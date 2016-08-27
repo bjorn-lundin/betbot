@@ -67,7 +67,7 @@ procedure Poll is
 
 
   type Allowed_Type is record
-    Bet_Name          : Bet_Name_Type := (others => ' ');
+    Bet_Name          : Betname_Type := (others => ' ');
     Bet_Size          : Bet_Size_Type := 0.0;
     Is_Allowed_To_Bet : Boolean       := False;
     Has_Betted        : Boolean       := False;
@@ -103,7 +103,7 @@ procedure Poll is
   procedure Send_Lay_Bet(Selectionid    : Integer_4;
                          Main_Bet       : Bet_Type;
                          Max_Price      : Max_Lay_Price_Type;
-                         Marketid       : Market_Id_Type;
+                         Marketid       : Marketid_Type;
                          Match_Directly : Boolean := False) is
 
     PLB             : Bot_Messages.Place_Lay_Bet_Record;
@@ -158,7 +158,7 @@ procedure Poll is
 
   procedure Send_Bet(Selectionid     : Integer_4;
                      Main_Bet        : Bet_Type;
-                     Marketid        : Market_Id_Type;
+                     Marketid        : Marketid_Type;
                      Min_Price       : String := "1.01";
                      Match_Directly  : Boolean := False) is
 
@@ -217,7 +217,7 @@ procedure Poll is
   procedure Try_To_Make_Back_Bet(
     Bettype         : Config.Bet_Type;
     BR              : Best_Runners_Array_Type;
-    Marketid        : Market_Id_Type;
+    Marketid        : Marketid_Type;
     Match_Directly : Boolean := False) is
     Max_Backprice_1 : Float_8;
     Min_Backprice_1 : Float_8;
@@ -269,7 +269,7 @@ procedure Poll is
   procedure Try_To_Make_Back_Bet_4_Bounds(
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
-      Marketid        : Market_Id_Type;
+      Marketid        : Marketid_Type;
       Match_Directly : Boolean := False) is
 
     Max_Backprice_1 : Float_8;
@@ -323,7 +323,7 @@ procedure Poll is
   procedure Try_To_Make_Lay_Bet(
       Bettype         : Config.Bet_Type;
       BR              : Best_Runners_Array_Type;
-      Marketid        : Market_Id_Type;
+      Marketid        : Marketid_Type;
       Match_Directly : Boolean := False) is
 
     Max_Backprice_1       : Float_8;

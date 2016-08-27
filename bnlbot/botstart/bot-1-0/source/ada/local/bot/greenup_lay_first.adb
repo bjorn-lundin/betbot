@@ -116,8 +116,8 @@ procedure Greenup_Lay_First is
  --   Bad_Data : exception;
     Tic_Lay : Integer := 0;
     Bet : Bet_Type;
-    Lay_Bet_Name  : constant Bet_Name_Type := "1_HOUNDS_WIN_GREEN_UP_LAY                                                                           ";
-    Back_Bet_Name : constant Bet_Name_Type := "1_HOUNDS_WIN_GREEN_UP_BACK                                                                          ";
+    Lay_Bet_Name  : constant Betname_Type := "1_HOUNDS_WIN_GREEN_UP_LAY                                                                           ";
+    Back_Bet_Name : constant Betname_Type := "1_HOUNDS_WIN_GREEN_UP_BACK                                                                          ";
   begin
    -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market.Marketid := Price_Data.Marketid;

@@ -329,7 +329,7 @@ procedure Poll_Bounds is
   -------------------------------------------------------------
 
   type Allowed_Type is record
-    Bet_Name          : Bet_Name_Type := (others => ' ');
+    Bet_Name          : Betname_Type := (others => ' ');
     Bet_Size          : Bet_Size_Type := 0.0;
  --   Is_Allowed_To_Bet : Boolean       := False;
     Has_Betted        : Boolean       := False;
@@ -377,8 +377,8 @@ procedure Poll_Bounds is
   procedure Try_To_Make_Back_Bet(
    -- Bettype         : in     Bet_Type;
     Best_Runners    : in     Best_Runners_Array_Type;
-    Win_Marketid    : in     Market_Id_Type;
-    Plc_Marketid    : in     Market_Id_Type;
+    Win_Marketid    : in     Marketid_Type;
+    Plc_Marketid    : in     Marketid_Type;
   --  Min_Price       : in     String ;
     Bet_List        : in out Bet_List_Pack.List
     --Match_Directly :  in     Boolean := False

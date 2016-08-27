@@ -513,7 +513,7 @@ package body RPC is
     Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Float_8(AVG_Price_Matched)))  ;
   end Bet_Is_Matched;
   -----------------------------------------------------------------
-  procedure Check_Market_Result(Market_Id   : in     Market_Id_Type;
+  procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
                                 Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) is
 --{
 --     "jsonrpc": "2.0",
@@ -533,7 +533,7 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
 
     Result_Array,Runners, Market_Ids : JSON_Array := Empty_Array;
-    Market_Id_Received  : Market_Id_Type := (others => ' ');
+    Market_Id_Received  : Marketid_Type := (others => ' ');
   begin
 
     Append (Market_Ids, Create(Market_Id));
@@ -733,7 +733,7 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
 
     Result_Array, Market_Ids : JSON_Array := Empty_Array;
-    Market_Id_Received  : Market_Id_Type := (others => ' ');
+    Market_Id_Received  : Marketid_Type := (others => ' ');
   begin
     Is_Changed := False;
 
@@ -1087,7 +1087,7 @@ package body RPC is
   -----------------------------------
   
 
-  procedure Cancel_Bet(Market_Id : in Market_Id_Type;
+  procedure Cancel_Bet(Market_Id : in Marketid_Type;
                        Bet_Id    : in Integer_8) is
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
@@ -1333,7 +1333,7 @@ package body RPC is
   end Parse_Event;
 
   ----------------------------------------------------------------------------------
-  procedure Get_Market_Prices(Market_Id : in Market_Id_Type;
+  procedure Get_Market_Prices(Market_Id : in Marketid_Type;
                               Market    : out Table_Amarkets.Data_Type;
                               Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
                               In_Play   : out Boolean) is
@@ -1390,10 +1390,10 @@ package body RPC is
     end if;
   end Get_Market_Prices;
   ----------------------------------------------------------------------------------
-  procedure Place_Bet (Bet_Name         : in     Bet_Name_Type;
-                       Market_Id        : in     Market_Id_Type;
+  procedure Place_Bet (Bet_Name         : in     Betname_Type;
+                       Market_Id        : in     Marketid_Type;
                        Side             : in     Bet_Side_Type;
-                       Runner_Name      : in     Runner_Name_Type;
+                       Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
                        Price            : in     Bet_Price_Type;

@@ -19,7 +19,7 @@ package Bot_Messages is
 
   ----------------------------------------------------------------
   type Market_Notification_Record is record
-      Market_Id : Market_Id_Type := (others => ' ');
+      Market_Id : Marketid_Type := (others => ' ');
   end record;
   for Market_Notification_Record'alignment use 4;
   for Market_Notification_Record use record
@@ -32,7 +32,7 @@ package Bot_Messages is
   package Market_Notification_Package is new Process_Io.Generic_Io
           (Identity        => Market_Notification_Message,
            Data_Type       => Market_Notification_Record,
-           Data_Descriptor => (1 => Process_Io.String_Type(Market_Id_Type'length)));
+           Data_Descriptor => (1 => Process_Io.String_Type(Marketid_Type'length)));
   --
   function  Data   (Message: Process_Io.Message_Type)
             return  Market_Notification_Record
@@ -74,8 +74,8 @@ package Bot_Messages is
 
   ----------------------------------------------------------------
   type Place_Back_Bet_Record is record
-      Bet_Name     : Bet_Name_Type    := (others => ' ');
-      Market_Id    : Market_Id_Type   := (others => ' ');
+      Bet_Name     : Betname_Type    := (others => ' ');
+      Market_Id    : Marketid_Type   := (others => ' ');
       Selection_Id : Integer_4        := 0;
       Size         : String(1..7)     := (others => ' ');
       Price        : String(1..6)     := (others => ' ');
@@ -120,8 +120,8 @@ package Bot_Messages is
 
   ----------------------------------------------------------------
   type Place_Lay_Bet_Record is record
-      Bet_Name     : Bet_Name_Type    := (others => ' ');
-      Market_Id    : Market_Id_Type   := (others => ' ');
+      Bet_Name     : Betname_Type    := (others => ' ');
+      Market_Id    : Marketid_Type   := (others => ' ');
       Selection_Id : Integer_4        := 0;
       Size         : String(1..7)     := (others => ' ');
       Price        : String(1..6)     := (others => ' ');
