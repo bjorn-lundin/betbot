@@ -72,16 +72,18 @@ procedure Saldo_Fetcher is
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
+      Today     : Float_8 := Saldo.Balance + abs(Saldo.Exposure);
+      Yesterday : Float_8 := Old.Balance + abs(Old.Exposure);
       Msg : constant String :=
           "Dagens saldo-rapport " & Cr & Lf &
           "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &
           "saldo:     " & Utils.F8_Image(Saldo.Balance) & Cr & Lf &
-          "exposure:  " & Utils.F8_Image(Saldo.Exposure)  & Cr & Lf &
+          "exposure:  " & Utils.F8_Image(abs(Saldo.Exposure))  & Cr & Lf &
           Cr & Lf &
           "saldo igar:     " & Utils.F8_Image(Old.Balance) & Cr & Lf &
-          "exposure igar:  " & Utils.F8_Image(Old.Exposure)  & Cr & Lf &
+          "exposure igar:  " & Utils.F8_Image(abs(Old.Exposure))  & Cr & Lf &
           Cr & Lf &
-          "vinst idag: " & Utils.F8_Image(Saldo.Balance - Old.Balance) & 
+          "vinst idag: " & Utils.F8_Image(Today - Yesterday) & 
           Cr & Lf &
           Cr & Lf &
           "Database sizes:" & Cr & Lf &
