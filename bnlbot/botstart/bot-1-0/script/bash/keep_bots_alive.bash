@@ -120,7 +120,9 @@ function Check_Bots_For_User () {
                    bet_placer_007 bet_placer_008 bet_placer_009 \
                    bet_placer_010 bet_placer_011 bet_placer_012 \
                    bet_placer_013 bet_placer_014 bet_placer_015 \
-                   bet_placer_016 bet_placer_017"
+                   bet_placer_016 bet_placer_017 bet_placer_018 \
+                   bet_placer_019 bet_placer_020 bet_placer_021 \
+                   bet_placer_022 bet_placer_023"
 
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -416,7 +418,8 @@ case $BOT_MACHINE_ROLE in
   PROD)
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
-    SYSTEM_USER_LIST="ael dry ghd soc"
+    SYSTEM_USER_LIST="ael dry"
+#   "ghd soc"
 
     HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
