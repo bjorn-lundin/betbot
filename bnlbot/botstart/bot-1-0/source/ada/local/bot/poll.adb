@@ -573,7 +573,7 @@ procedure Poll is
             --when Lay_1_10_25_4      => null; -- treat later
 
             when Lay_2_90_20_WIN_8_00 ..
-                 Lay_1_30_05_WIN_2_00   =>
+                 Lay_1_80_20_WIN_4_15   =>
               declare
                 M_Type     : Market_Type := Win;
                 Image      : String      := i'Img;
@@ -623,7 +623,7 @@ procedure Poll is
                 end if;
               end;
             when Back_1_96_2_00_08_10_1_2_WIN_1_70 ..
-                 Back_1_36_1_40_05_07_1_2_PLC_1_10   =>
+                 Back_1_11_1_15_11_13_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;

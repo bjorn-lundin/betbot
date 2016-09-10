@@ -15,7 +15,7 @@
 #}
 
 
-PID_FILE_DIRECTORIES="ael dry soc jmb msm bnl"
+PID_FILE_DIRECTORIES="soc ael dry jmb msm bnl"
 #PID_FILE_DIRECTORIES=$(ls $BOT_HOME/..)
 echo""
 echo "----------------  $(date)  --------------------------"
@@ -32,7 +32,8 @@ for USER in $PID_FILE_DIRECTORIES ; do
       *) 
           PID=$(cut -d'|' -f1  ${DIR}/${f})
           START=$(cut -d'|' -f2  ${DIR}/${f})
-          PS_STUFF=$(ps -eo pid,stime,time | grep $PID | grep -v grep)
+          # use grep "$PID " to separate pid 1234 from 12345
+          PS_STUFF=$(ps -eo pid,stime,time | grep "$PID " | grep -v grep)
           if [ "x${PS_STUFF}" == "x" ] ; then
             PS_STUFF=" !!! seemingly not running ----- "
           fi
