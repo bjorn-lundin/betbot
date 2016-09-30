@@ -208,18 +208,12 @@ procedure Graph_Data_Ael is
      Profit : Float_8 := 0.0;
    begin
      Select_Equity_Date.Prepare(
-      -- "select B.STARTTS, B.PROFIT " & 
-      -- "from ABETS B, ARUNNERS R " & 
-      -- "where B.BETNAME = :BETNAME " & 
-      -- "and B.MARKETID = R.MARKETID " & 
-      -- "and B.SELECTIONID = R.SELECTIONID " & 
-      -- "and R.STATUS in ('WINNER','LOSER') " & 
-      -- "and B.STATUS in ('SETTLED','SUCCESS') " & 
-      -- "order by B.STARTTS");
        "select B.STARTTS, B.PROFIT " & 
        "from ABETS B " & 
-       "where B.BETNAME = :BETNAME " & 
-       "and B.STATUS in ('SETTLED','SUCCESS') " & 
+       "where true " & 
+--       "and B.BETNAME in ('LAY_1.7_10_WIN_6_20','LAY_1.8_15_WIN_7_15','LAY_1.4_10_WIN_5_20') " & 
+       "and B.BETNAME = :BETNAME " & 
+       "and B.STATUS in ('SETTLED','SUCCESS','MATCHED') " & 
        "order by B.STARTTS");
      Select_Equity_Date.Set("BETNAME", Betname);
 

@@ -31,9 +31,8 @@ package Bet is
   
   
   function Empty_Data return Bet_Type;
-  --package List_Pack renames Table_Abets.Abets_List_Pack2;
-
   package List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
+  function Is_Existing_I7(Betname : in String) return Boolean renames Table_Abets.Is_Existing_I7;
 
 end Bet;

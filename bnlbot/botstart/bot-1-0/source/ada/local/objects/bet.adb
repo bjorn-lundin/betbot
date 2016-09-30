@@ -70,8 +70,7 @@ package body Bet is
     T.Start;
       Select_Exists.Prepare(
          "select * " &
-         "from " &
-           "ABETS " &
+         "from ABETS " &
          "where MARKETID = :MARKETID " &
          "and BETNAME = :BETNAME ");
 
@@ -122,6 +121,9 @@ package body Bet is
     end if;
 
     if The_Runner.Status(1..7) = "REMOVED" then
+       Self.Status(1..7) := "REMOVED";
+       Self.Betwon := True;
+       Self.Profit := 0.0;
       return;
     end if;
 
@@ -131,9 +133,6 @@ package body Bet is
           Self.Betwon := True;
         elsif The_Runner.Status(1..5) = "LOSER" then
           Self.Betwon := False;
-        elsif The_Runner.Status(1..7) = "REMOVED" then
-          Self.Status(1) := 'R';
-          Self.Betwon := True;
         end if;
 
         if Self.Betwon then
@@ -146,9 +145,6 @@ package body Bet is
         if The_Runner.Status(1..6) = "WINNER" then
           Self.Betwon := False;
         elsif The_Runner.Status(1..5) = "LOSER" then
-          Self.Betwon := True;
-        elsif The_Runner.Status(1..7) = "REMOVED" then
-          Self.Status(1) := 'R';
           Self.Betwon := True;
         end if;
 
@@ -171,7 +167,7 @@ package body Bet is
     end if;    
   end Match_Directly;
   ------------------------
-  function  Match_Directly(Self : in out Bet_Type) return Boolean is
+  function Match_Directly(Self : in out Bet_Type) return Boolean is
   begin
     return Self.Powerdays /= Integer_4(0);
   end Match_Directly;
@@ -232,38 +228,44 @@ package body Bet is
         "APRICESHISTORY " &
         "where MARKETID = :MARKETID " &
         "and SELECTIONID = :SELECTIONID " &
-        "and PRICETS >= :PRICETS " &
+        "and PRICETS >= :PRICETS1 " &
+        "and PRICETS <= :PRICETS2 " &
         "order by PRICETS"
     );
 
     Select_Ph.Set("MARKETID", Self.Marketid);
     Select_Ph.Set("SELECTIONID", Self.Selectionid);
-    Select_Ph.Set("PRICETS", Self.Betplaced + (0,0,0,1,0)); -- 1 s
+    Select_Ph.Set("PRICETS1", Self.Betplaced + (0,0,0,1,0)); -- 1 s
+    if Self.Match_Directly then
+      Select_Ph.Set("PRICETS2", Self.Betplaced + (0,0,0,2,0)); -- data 1s..2s from betplaced
+    else -- get the whole race, assume shorter than 9 days
+      Select_Ph.Set("PRICETS2", Self.Betplaced + (9,0,0,0,0)); -- data 1s .. 9 days from betplaced
+    end if;
     Price_History.Read_List(Select_Ph,List);
 
     for PH of List loop
       if Self.Side(1..4) = "BACK" then
-        if PH.Backprice >= Self.Price then -- Match ok
+        if PH.Backprice >= Self.Price and then -- Match ok
+           PH.Backprice <= Float_8(1000.0) then -- Match ok
            Self.Pricematched := PH.Backprice;
            Self.Status(1..7) := "MATCHED";
         end if;
       elsif Self.Side(1..3) = "LAY" then
-        if PH.Layprice <= Self.Price then -- Match ok
+        if PH.Layprice <= Self.Price and then -- Match ok
+           PH.Layprice >= Float_8(1.01) then
            Self.Pricematched := PH.Layprice;
            Self.Status(1..7) := "MATCHED";
         end if;
       end if;
-      exit when Self.Powerdays = Integer_4(0) or else -- match directly
-                Self.Pricematched > Float_8(0.0);     -- matched
+      exit when Self.Match_Directly or else -- match directly
+                Self.Pricematched >= Float_8(1.01);     -- matched
     end loop;
     if Self.Status(1) /= 'M' then
        Self.Status(1..7) := "LAPSED ";
        Self.Pricematched := Float_8(0.0);
        Self.Profit := 0.0;
     end if;
-
   end Check_Matched;
   ----------------------------------
-
 
 end Bet;
