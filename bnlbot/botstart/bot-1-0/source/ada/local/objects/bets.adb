@@ -1,17 +1,17 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
-with Sql;
+--with Sql;
 with Calendar2; use Calendar2;
 
 with Logging; use Logging;
 with Utils;
 with Bot_System_Number;
 with Bot_Svn_Info;
-with Price_History;
+with Price_Histories;
 
 
-package body Bet is
+package body Bets is
   Me : constant String := "Bet.";
   Select_Exists,
   Select_Profit_Today : Sql.Statement_Type;
@@ -104,7 +104,7 @@ package body Bet is
   end Clear;
   ----------------------------------------
   procedure Check_Outcome(Self : in out Bet_Type) is
-    The_Runner : Runner.Runner_Type;
+    The_Runner : Runners.Runner_Type;
     Eos : Boolean := False;
   begin
     if Self.Pricematched < 0.5 then
@@ -179,8 +179,8 @@ package body Bet is
                   Size : Bet_Size_Type;
                   Price : Price_Type;
                   Placed : Calendar2.Time_Type;
-                  The_Runner : Runner.Runner_Type;
-                  The_Market : Market.Market_Type) return Bet_Type is
+                  The_Runner : Runners.Runner_Type;
+                  The_Market : Markets.Market_Type) return Bet_Type is
 
     Now        : Calendar2.Time_Type      := Calendar2.Clock;
     Self : Bet_Type;
@@ -220,7 +220,7 @@ package body Bet is
   end Create;
   -------------------------
   procedure Check_Matched(Self : in out Bet_Type) is
-    List : Price_History.List_Pack.List;
+    List : Price_Histories.List_Pack.List;
   begin
     Select_Ph.Prepare(
         "select * " &
@@ -241,7 +241,7 @@ package body Bet is
     else -- get the whole race, assume shorter than 9 days
       Select_Ph.Set("PRICETS2", Self.Betplaced + (9,0,0,0,0)); -- data 1s .. 9 days from betplaced
     end if;
-    Price_History.Read_List(Select_Ph,List);
+    Price_Histories.Read_List(Select_Ph,List);
 
     for PH of List loop
       if Self.Side(1..4) = "BACK" then
@@ -267,5 +267,48 @@ package body Bet is
     end if;
   end Check_Matched;
   ----------------------------------
+  
+  procedure Read_List(Stm  : in     Sql.Statement_Type;
+                      List : in out List_Pack.List;
+                      Max  : in     Integer_4 := Integer_4'Last) is
+    AB_List :Table_Abets.Abets_List_Pack2.List;
+    B : Bet_Type;
+  begin
+    Table_Abets.Read_List(Stm,AB_List,Max);  
+    for i of AB_List loop
+      B := (
+            Betid                   => I.Betid,
+            Marketid                => I.Marketid,
+            Betmode                 => I.Betmode,
+            Powerdays               => I.Powerdays,
+            Selectionid             => I.Selectionid,
+            Reference               => I.Reference,
+            Size                    => I.Size,
+            Price                   => I.Price,
+            Side                    => I.Side,
+            Betname                 => I.Betname,
+            Betwon                  => I.Betwon,
+            Profit                  => I.Profit,
+            Status                  => I.Status,
+            Exestatus               => I.Exestatus,
+            Exeerrcode              => I.Exeerrcode,
+            Inststatus              => I.Inststatus,
+            Insterrcode             => I.Insterrcode,
+            Startts                 => I.Startts,
+            Betplaced               => I.Betplaced,
+            Pricematched            => I.Pricematched,
+            Sizematched             => I.Sizematched,
+            Runnername              => I.Runnername,
+            Fullmarketname          => I.Fullmarketname,
+            Svnrevision             => I.Svnrevision,
+            Ixxlupd                 => I.Ixxlupd,
+            Ixxluts                 => I.Ixxluts           
+           );
+      List.Append(B);
+    end loop;
+  end Read_List;  
+  ----------------------------------------
 
-end Bet;
+  
+
+end Bets;

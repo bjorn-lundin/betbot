@@ -1,4 +1,4 @@
-package body Price_History is
+package body Price_Histories is
 
   function Empty_Data return Price_History_Type is
     ED : Price_History_Type;
@@ -31,4 +31,4 @@ package body Price_History is
     end loop;
   end Read_List;  
   ----------------------------------------
-end Price_History;
+end Price_Histories;

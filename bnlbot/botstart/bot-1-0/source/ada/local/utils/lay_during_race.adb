@@ -39,7 +39,7 @@ procedure Lay_During_Race is
    Eos2,
    Eos3      : Boolean := False;
 
-   Market : Table_Amarkets.Data_Type;
+   Market : Markets.Market_Type;
 
    Config           : Command_Line_Configuration;
 

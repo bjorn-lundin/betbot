@@ -120,7 +120,7 @@ procedure Markets_Fetcher_Greyhounds is
 
   
   procedure Insert_Event(Event, Event_Type : JSON_Value) is
-    DB_Event : Table_Aevents.Data_Type := Table_Aevents.Empty_Data;
+    DB_Event : Table_AEvents.Event_Type := Table_Aevents.Empty_Data;
     Eos : Boolean := False;
   begin
     Log(Me, "Insert_Event start"); 
@@ -135,7 +135,7 @@ procedure Markets_Fetcher_Greyhounds is
   ------------------------------------------------------------
   procedure Insert_Market(Market : JSON_Value) is
     Service : constant String := "Insert_Market";
-    DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
+    DB_Market : Markets.Market_Type := Table_Amarkets.Empty_Data;
     Eos, In_Play    : Boolean    := False;
   begin
     Rpc.Parse_Market(Market, DB_Market, In_Play);
@@ -148,7 +148,7 @@ procedure Markets_Fetcher_Greyhounds is
   ----------------------------------------------------------------
   procedure Update_Market(Market : JSON_Value) is
     Service : constant String := "Update_Market";
-    DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
+    DB_Market : Markets.Market_Type := Table_Amarkets.Empty_Data;
     Eos, In_Play : Boolean := False;
   begin
     Log(Me & Service, "start"); 
@@ -507,8 +507,8 @@ begin
         --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
         type Eos_Type is (Amarket, Aevent);
         Eos       : array (Eos_Type'range) of Boolean := (others => False);
-        Db_Market : Table_Amarkets.Data_Type;
-        Db_Event  : Table_Aevents.Data_Type;
+        Db_Market : Markets.Market_Type;
+        Db_Event  : Table_AEvents.Event_Type;
         --------------------------------------------------------------------                
         
       begin

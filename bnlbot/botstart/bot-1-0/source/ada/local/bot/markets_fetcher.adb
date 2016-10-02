@@ -13,10 +13,10 @@ with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Posix;
-with Table_Aevents;
-with Table_Amarkets;
-with Table_Arunners;
-with Table_Aprices;
+with Events;
+with Markets;
+with Runners;
+with Prices;
 with Ini;
 with Logging; use Logging;
 with Ada.Environment_Variables;
@@ -119,7 +119,7 @@ procedure Markets_Fetcher is
 
   
   procedure Insert_Event(Event, Event_Type : JSON_Value) is
-    DB_Event : Table_Aevents.Data_Type := Table_Aevents.Empty_Data;
+    DB_Event : Events.Event_Type := Events.Empty_Data;
     Eos : Boolean := False;
   begin
     Log(Me, "Insert_Event start"); 
@@ -134,7 +134,7 @@ procedure Markets_Fetcher is
   ------------------------------------------------------------
   procedure Insert_Market(Market : JSON_Value) is
     Service : constant String := "Insert_Market";
-    DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
+    DB_Market : Markets.Market_Type := Markets.Empty_Data;
     Eos, In_Play    : Boolean    := False;
   begin
     Rpc.Parse_Market(Market, DB_Market, In_Play);
@@ -147,7 +147,7 @@ procedure Markets_Fetcher is
   ----------------------------------------------------------------
   procedure Update_Market(Market : JSON_Value) is
     Service : constant String := "Update_Market";
-    DB_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
+    DB_Market : Markets.Market_Type := Markets.Empty_Data;
     Eos, In_Play : Boolean := False;
   begin
     Log(Me & Service, "start"); 
@@ -159,10 +159,10 @@ procedure Markets_Fetcher is
     end if;
     
     Log(Me & Service, "will update " & DB_Market.Marketid); 
-    Table_Amarkets.Read(DB_Market, Eos);
+    DB_Market.Read(Eos);
     if not Eos then
       Rpc.Parse_Market(Market, DB_Market, In_Play);
-      Table_Amarkets.Update_Withcheck(DB_Market);
+      DB_Market.Update_Withcheck;
     end if; 
      
      Log(Me & Service, DB_Market.To_String); 
@@ -172,7 +172,7 @@ procedure Markets_Fetcher is
   -------------------------------------------------------------
   
   procedure Insert_Runners(Market : JSON_Value) is
-    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
+    Runner_List : Runners.List_Pack.List;
     Service : constant String := "Insert_Runners";
     Eos : Boolean := False;
   begin
@@ -190,7 +190,7 @@ procedure Markets_Fetcher is
 
   procedure Insert_Prices(Market : JSON_Value) is
     Eos : Boolean := False;
-    Price_List : Table_Aprices.Aprices_List_Pack2.List;   
+    Price_List : Prices.List_Pack.List;   
     Service : constant String := "Insert_Runners";
   begin
     Log(Me & Service, "start");     
@@ -503,8 +503,8 @@ begin
         --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
         type Eos_Type is (Amarket, Aevent);
         Eos       : array (Eos_Type'range) of Boolean := (others => False);
-        Db_Market : Table_Amarkets.Data_Type;
-        Db_Event  : Table_Aevents.Data_Type;
+        Db_Market : Markets.Market_Type;
+        Db_Event  : Events.Event_Type;
         --------------------------------------------------------------------                
         
       begin
@@ -516,10 +516,10 @@ begin
           -- what kind of event is it.  
           T.Start;
             Db_Market.Marketid := MNR.Market_Id;
-            Table_Amarkets.Read(DB_Market, Eos(Amarket));
+            DB_Market.Read(Eos(Amarket));
             if not Eos(Amarket) then
               Db_Event.Eventid := Db_Market.Eventid;
-              Table_Aevents.Read(Db_Event, Eos(Aevent));
+              Db_Event.Read( Eos(Aevent));
               if not Eos(Aevent) then
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------                
@@ -593,4 +593,3 @@ exception
     end ;
     Posix.Do_Exit(0); -- terminate
 end Markets_Fetcher;
-

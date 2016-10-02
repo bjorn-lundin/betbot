@@ -22,12 +22,10 @@ with Ini;
 with Logging; use Logging;
 with Process_IO;
 with Core_Messages;
-with Table_Amarkets;
-with Table_Aevents;
-with Table_Aprices;
---with Table_Abalances;
+with Markets;
+with Events;
+with Prices;
 with Table_Abets;
---with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
 with Bot_System_Number;
@@ -53,7 +51,7 @@ procedure Poll_Bounds is
   Is_Time_To_Exit : Boolean := False;
 
   type Market_Type is (Win, Place);
-  type Best_Runners_Array_Type is array (1..4) of Table_Aprices.Data_Type ;
+  type Best_Runners_Array_Type is array (1..4) of Prices.Price_Type ;
 
   Data : Bot_Messages.Poll_State_Record ;
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
@@ -346,8 +344,8 @@ procedure Poll_Bounds is
   
   type Bet_List_Record is record
     Bet           : Table_Abets.Data_Type;
-    Price_Finish  : Table_Aprices.Data_Type;
-    Price_Finish2 : Table_Aprices.Data_Type;
+    Price_Finish  : Prices.Price_Type;
+    Price_Finish2 : Prices.Price_Type;
   end record;
 
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_List_Record);
@@ -474,26 +472,26 @@ procedure Poll_Bounds is
   -------------------------------------------------------------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack2.List;
+    Market    : Markets.Market_Type;
+    Event     : Events.Event_Type;
+    Price_List : Prices.List_Pack.List;
     --------------------------------------------
-    function "<" (Left,Right : Table_Aprices.Data_Type) return Boolean is
+    function "<" (Left,Right : Prices.Price_Type) return Boolean is
     begin
       return Left.Backprice < Right.Backprice;
     end "<";
     --------------------------------------------
-    package Backprice_Sorter is new  Table_Aprices.Aprices_List_Pack2.Generic_Sorting("<");
+    package Backprice_Sorter is new Prices.List_Pack.Generic_Sorting("<");
 
-    Price             : Table_Aprices.Data_Type;
+    Price             : Prices.Price_Type;
     Has_Been_In_Play,
     In_Play           : Boolean := False;
-    Best_Runners      : Best_Runners_Array_Type := (others => Table_Aprices.Empty_Data);
+    Best_Runners      : Best_Runners_Array_Type := (others => Prices.Empty_Data);
 
-    Worst_Runner      : Table_Aprices.Data_Type := Table_Aprices.Empty_Data;
+    Worst_Runner      : Prices.Price_Type := Prices.Empty_Data;
 
     Eos               : Boolean := False;
-    Markets           : array (Market_Type'range) of Table_Amarkets.Data_Type;
+    Market_Array      : array (Market_Type'range) of Markets.Market_Type;
     Found_Place       : Boolean := True;
     T                 : Sql.Transaction_Type;
     Current_Turn_Not_Started_Race : Integer_4 := 0;
@@ -512,14 +510,14 @@ procedure Poll_Bounds is
 
     Global_Bet_List.Clear;    
 
-    Table_Amarkets.Read(Market, Eos);
+    Market.Read(Eos);
     if not Eos then
       if  Market.Markettype(1..3) /= "WIN"  then
         Log(Me & "Run", "not a WIN market: " &  Market_Notification.Market_Id);
         return;
       else
         Event.Eventid := Market.Eventid;
-        Table_Aevents.Read(Event, Eos);
+        Events.Read(Event, Eos);
         if not Eos then
           if Event.Eventtypeid /= Integer_4(7) then
             Log(Me & "Run", "not a HORSE market: " &  Market_Notification.Market_Id);
@@ -537,7 +535,7 @@ procedure Poll_Bounds is
       Log(Me & "Run", "no market found");
       return;
     end if;
-    Markets(Win):= Market;
+    Market_Array(Win):= Market;
 
     T.Start;
       Find_Plc_Market.Prepare(
@@ -550,12 +548,12 @@ procedure Poll_Bounds is
         "and MW.MARKETTYPE = 'WIN' " &
         "and MP.STATUS = 'OPEN'" ) ;
 
-      Find_Plc_Market.Set("WINMARKETID", Markets(Win).Marketid);
+      Find_Plc_Market.Set("WINMARKETID", Market_Array(Win).Marketid);
       Find_Plc_Market.Open_Cursor;
       Find_Plc_Market.Fetch(Eos);
       if not Eos then
-        Markets(Place) := Table_Amarkets.Get(Find_Plc_Market);
-        if Markets(Win).Startts /= Markets(Place).Startts then
+        Market_Array(Place) := Markets.Get(Find_Plc_Market);
+        if Market_Array(Win).Startts /= Market_Array(Place).Startts then
            Log(Me & "Make_Bet", "Wrong PLACE market found, give up");
            Found_Place := False;
         end if;
@@ -569,7 +567,7 @@ procedure Poll_Bounds is
     -- do the poll
     Poll_Loop : loop
 
-      if Markets(Place).Numwinners < Integer_4(3) then
+      if Market_Array(Place).Numwinners < Integer_4(3) then
         exit Poll_Loop;
       end if;
 
@@ -636,11 +634,11 @@ procedure Poll_Bounds is
       Log("Worst_Runner " & Worst_Runner.To_String);
 
       if Best_Runners(1).Backprice >= Float_8(1.01) then
-        if Found_Place and then Markets(Place).Numwinners >= Integer_4(3) then
+        if Found_Place and then Market_Array(Place).Numwinners >= Integer_4(3) then
           Try_To_Make_Back_Bet (
                 Best_Runners => Best_Runners,
-                Win_Marketid  => Markets(Win).Marketid,
-                Plc_Marketid  => Markets(Place).Marketid,
+                Win_Marketid  => Market_Array(Win).Marketid,
+                Plc_Marketid  => Market_Array(Place).Marketid,
                 Bet_List  => Global_Bet_List);
         else        
           exit Poll_Loop;
@@ -807,4 +805,3 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Poll_Bounds;
-

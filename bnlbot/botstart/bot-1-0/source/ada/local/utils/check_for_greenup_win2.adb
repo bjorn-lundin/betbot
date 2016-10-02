@@ -59,10 +59,10 @@ procedure Check_for_Greenup_Win2 is
   Ts_List             : Ts_List_Pack.List;
 
   -----------------------------------------------------
- -- procedure Place_Market(M     : in     Table_Amarkets.Data_Type; 
- --                        P     : in out Table_Amarkets.Data_Type;
+ -- procedure Place_Market(M     : in     Markets.Market_Type; 
+ --                        P     : in out Markets.Market_Type;
  --                        Found : in out Boolean) is
- --   P : Table_Amarkets.Data_Type ;
+ --   P : Markets.Market_Type ;
  -- begin
  --   Find_Plc_Market.Set("WINMARKETID", M.Marketid);
  --   Find_Plc_Market.Open_Cursor;
@@ -77,7 +77,7 @@ procedure Check_for_Greenup_Win2 is
  -- end Place_Market;  
   
   ---------------------------------------------------
-  procedure Add_Bet(M : Table_Amarkets.Data_Type;
+  procedure Add_Bet(M : Markets.Market_Type;
                     R : Table_Arunners.Data_Type;
                     P : Table_Apriceshistory.Data_Type;
                     Pl : Positive) is

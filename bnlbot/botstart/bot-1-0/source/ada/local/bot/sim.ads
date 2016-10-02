@@ -1,11 +1,11 @@
 
 with Types; use Types;
 with Bot_Types; use Bot_Types;
-with Table_Amarkets;
-with Table_Aprices;
-with Table_Abets;
-with Table_Apriceshistory;
-with Table_Arunners;
+with Markets;
+with Prices;
+with Bets;
+with Price_Histories;
+with Runners;
 with Calendar2;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Doubly_Linked_Lists;
@@ -26,8 +26,8 @@ package Sim is
 
 
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
-                              Market     : in out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
+                              Market     : in out Markets.Market_Type;
+                              Price_List : in out Prices.List_Pack.List;
                               In_Play    :    out Boolean);
 
 
@@ -40,16 +40,16 @@ package Sim is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Bet_Placed       : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
-                       Bet              :    out Table_Abets.Data_Type);
+                       Bet              :    out Bets.Bet_Type);
 
   type Algorithm_Type is (None, Avg);
-  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List; Alg : Algorithm_Type := None);
+  procedure Filter_List(Price_List, Avg_Price_List : in out Prices.List_Pack.List; Alg : Algorithm_Type := None);
 
 
   subtype Num_Runners_Type is Integer range 1..36;
   type Fifo_Type is tagged record
     Selectionid    : Integer_4 := 0;
-    One_Runner_Sample_List : Table_Aprices.Aprices_List_Pack2.List;
+    One_Runner_Sample_List : Prices.List_Pack.List;
     Avg_Lay_Price  : Float_8 := 0.0;
     Avg_Back_Price : Float_8 := 0.0;
     In_Use         : Boolean := False;
@@ -61,27 +61,27 @@ package Sim is
 
 
   procedure Read_Marketid(Marketid : in     Marketid_Type;
-                          List     :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) ;
+                          List     :    out Price_Histories.List_Pack.List) ;
                           
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
                                       Selectionid : in     Integer_4 ; 
-                                      List        :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) ;
+                                      List        :    out Price_Histories.List_Pack.List) ;
                           
 
-  procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
+  procedure Create_Runner_Data(Price_List : in Prices.List_Pack.List;
                                Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) ;
 
-  procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) ;
+  procedure Create_Bet_Data(Bet : in Bets.Bet_Type ) ;
 
-  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type ;
+  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Markets.Market_Type ;
 
   -- for lay_during_race2 start
 
 
   --package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Marketid_Type);
-  package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Table_Amarkets.Data_Type, Table_Amarkets."=");
+  package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Markets.Market_Type, Markets."=");
   
   procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
                              List  :    out Market_With_Data_Pack.List) ;
@@ -103,16 +103,16 @@ package Sim is
 
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
-         Table_Arunners.Arunners_List_Pack2.List,
+         RUnners.List_Pack.List,
          Ada.Strings.Hash,
          "=",
-         Table_Arunners.Arunners_List_Pack2."=");
+         RUnners.List_Pack."=");
 
   procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
-  procedure Fill_Winners_Map(Market_List : in     Table_Amarkets.Amarkets_List_Pack2.List;
+  procedure Fill_Winners_Map(Market_List : in     Markets.List_Pack.List;
                              Winners_Map :    out Marketid_Winner_Maps.Map );
                              
 
@@ -134,10 +134,10 @@ package Sim is
 
   package Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps (
          Timestamp_String_Key_Type,
-         Table_Apriceshistory.Apriceshistory_List_Pack2.List,
+         Price_Histories.List_Pack.List,
          Ada.Strings.Hash,
          "=",
-         Table_Apriceshistory.Apriceshistory_List_Pack2."=");
+         Price_Histories.List_Pack."=");
 
   package Marketid_Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
@@ -156,7 +156,7 @@ package Sim is
   -- for timestamp slices stop
 
 
-  function Is_Race_Winner(Runner               : Table_Arunners.Data_Type;
+  function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type) return Boolean;
 
   function Is_Race_Winner(Selectionid          : Integer_4;
@@ -164,10 +164,10 @@ package Sim is
 
   procedure Fill_Data_Maps(Date  : in Calendar2.Time_Type) ;
 
-  function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type;
+  function Get_Place_Price(Win_Data : Price_Histories.Price_History_Type) return Price_Histories.Price_History_Type;
 
 
-  Market_With_Data_List                 : Sim.Market_With_Data_Pack.List;
+  Market_With_Data_List                    : Sim.Market_With_Data_Pack.List;
   Marketid_Timestamp_To_Apriceshistory_Map : Sim.Marketid_Timestamp_To_Apriceshistory_Maps.Map;
   Marketid_Pricets_Map                     : Sim.Marketid_Pricets_Maps.Map;
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;

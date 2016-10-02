@@ -1,6 +1,5 @@
 
 package body Tics is
-  Commission : constant Float_8 := 0.065;
   Global_Odds_Table : array(1 .. 350) of Float_8 := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
                1.10,   1.11,   1.12,   1.13,   1.14,   1.15,   1.16,   1.17,   1.18,   1.19,
@@ -64,6 +63,7 @@ package body Tics is
   function Get_Zero_Size(Backprice : Back_Price_Type;
                          Backsize  : Bet_Size_Type;
                          Layprice  : Lay_Price_Type) return Bet_Size_Type is
+                         pragma Unreferenced (Backprice, Layprice);
   begin                     
     -- if backbet is winning we win  
     --  + (Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) *  (1-Commission)
@@ -93,11 +93,8 @@ package body Tics is
 
     
     
-    return Bet_Size_Type(Laysize*Layprice/Backprice) ;
+    return Laysize*Layprice/Backprice ;
     
   end Get_Green_Size;
   
 end Tics;
-
-  
-  

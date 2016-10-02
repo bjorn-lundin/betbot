@@ -12,8 +12,8 @@ with Types ; use Types;
 --with Bot_Types ; use Bot_Types;
 with Stacktrace;
 with Sql;
-with Table_Apriceshistory;
-with Table_Abets;
+with Price_Histories;
+with Bets;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
 with Bot_System_Number;
@@ -27,10 +27,10 @@ procedure Back_During_Race_And_Lay_Later is
 
 
   type Bet_Type is record
-    Backbet           : Table_Abets.Data_Type;
-    Laybet            : Table_Abets.Data_Type;
-    --Price_Finish_Back : Table_Apriceshistory.Data_Type;
-    --Price_Finish_Lay  : Table_Apriceshistory.Data_Type;
+    Backbet           : Bets.Bet_Type;
+    Laybet            : Bets.Bet_Type;
+    --Price_Finish_Back : Price_Histories.Price_History_Type;
+    --Price_Finish_Lay  : Price_Histories.Price_History_Type;
   end record;
 
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
@@ -61,23 +61,23 @@ procedure Back_During_Race_And_Lay_Later is
   type Side_Type is (Lay,Back);
 
 --  Old_Market_Of_Sample,
---  Current_Market_Of_Sample : Table_Apriceshistory.Data_Type;
+--  Current_Market_Of_Sample : Price_Histories.Price_History_Type;
 
-  function "<" (Left,Right : Table_Apriceshistory.Data_Type) return Boolean is
+  function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
   begin
     return Left.Backprice < Right.Backprice;
   end "<";
   --------------------------------------------
-  package Backprice_Sorter is new  Table_Apriceshistory.Apriceshistory_List_Pack2.Generic_Sorting("<");
+  package Backprice_Sorter is new  Price_Histories.List_Pack.Generic_Sorting("<");
 
-  type Best_Runners_Array_Type is array (1..4) of Table_Apriceshistory.Data_Type ;
-  Best_Runners      : Best_Runners_Array_Type := (others => Table_Apriceshistory.Empty_Data);
+  type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type ;
+  Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
 
 
   --------------------------------------------------------------------------
   procedure Check_Lay_Bet_Matched(Bet      : in out Bet_Type ;
                                   Bet_List : in out Bet_List_Pack.List;
-                                  List     : in     Table_Apriceshistory.Apriceshistory_List_Pack2.List ) is
+                                  List     : in     Price_Histories.List_Pack.List ) is
   begin
     for R of List loop
       if Bet.Laybet.Selectionid = R.Selectionid and then
@@ -105,7 +105,7 @@ procedure Back_During_Race_And_Lay_Later is
   --------------------------------------------
   procedure Check_Back_Bet_Matched(Bet        : in out Bet_Type ;
                                    Bet_List   : in out Bet_List_Pack.List;
-                                   List       : in     Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+                                   List       : in     Price_Histories.List_Pack.List) is
   begin
     for R of List loop
       if Bet.Backbet.Selectionid = R.Selectionid and then
@@ -192,7 +192,7 @@ procedure Back_During_Race_And_Lay_Later is
 
   Enough_Runners : Boolean := False;
   use type Ada.Containers.Count_Type;
-  Price : Table_Apriceshistory.Data_Type;
+  Price : Price_Histories.Price_History_Type;
 
   Day : Time_Type := (2016,03,19,00,00,00,000);
   End_Date : Time_Type := Clock;
@@ -242,7 +242,7 @@ begin
             Loop_Timestamp : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               --Log("Treat marketid '" & Market.Marketid & "' pricets " & Timestamp.To_String);
               declare
-                List : Table_Apriceshistory.Apriceshistory_List_Pack2.List :=
+                List : Price_Histories.List_Pack.List :=
                           Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
               begin
                 if First then

@@ -8,8 +8,8 @@ with Lock ;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Posix;
-with Table_Amarkets;
-with Table_Aevents;
+with Markets;
+with Events;
 with Table_Arunners;
 with Ini;
 with Logging; use Logging;
@@ -34,12 +34,12 @@ procedure Markets_Sender is
   Config : Command_Line_Configuration;
   My_Lock  : Lock.Lock_Type;
   T : Sql.Transaction_Type;
-  Markets : Sql.Statement_Type;
+  The_Markets : Sql.Statement_Type;
   Do_Send : Boolean := True;
 ------------------------------ main start -------------------------------------
-  Amarkets_List : Table_Amarkets.Amarkets_List_Pack2.List;
-  Amarket :  Table_Amarkets.Data_Type;
-  Aevent :  Table_Aevents.Data_Type;
+  Amarkets_List : Markets.List_Pack.List;
+  Amarket :  Markets.Market_Type;
+  Aevent :  Events.Event_Type;
   Arunner : Table_Arunners.Data_Type;
   MNR      : Bot_Messages.Market_Notification_Record;
   Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
@@ -118,13 +118,13 @@ begin
 --    Markets.Prepare("select * from AMARKETS where MARKETID >= :MARKETID order by STARTTS");
 --    Markets.Set("MARKETID", Sa_Par_Marketid.all);
 --  else
-    Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
+    The_Markets.Prepare("select * from AMARKETS where STARTTS > :TS order by STARTTS ");
 --    Ts := (2013,12,30,0,0,0,0);
     Ts := (2014,07,09,0,0,0,0);
-    Markets.Set_Timestamp("TS", Ts);
+    The_Markets.Set_Timestamp("TS", Ts);
     
 --  end if;
-  Table_Amarkets.Read_List(Stm => Markets, List  => Amarkets_List);
+  Markets.Read_List(Stm => The_Markets, List  => Amarkets_List);
 --  Table_Amarkets.Read_All(List  => Amarkets_List, Order=> True);
   T.Commit;
   Tot := Integer(Amarkets_List.Length);
@@ -147,7 +147,7 @@ begin
        Move("bot", Receiver.Name);
        
        Aevent.Eventid := Amarket.Eventid;
-       Table_Aevents.Read(Aevent,Eos(Event));
+       Events.Read(Aevent,Eos(Event));
        Do_Send := False;
        if not Eos(Event) then
         if Aevent.Eventtypeid = 7 and then Ba_Horse then       -- horse
@@ -253,4 +253,3 @@ exception
     Stacktrace.Tracebackinfo(E);
     Posix.Do_Exit(0); -- terminate
 end Markets_Sender;
-

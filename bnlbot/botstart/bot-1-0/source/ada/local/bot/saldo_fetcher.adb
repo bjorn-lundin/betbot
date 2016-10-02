@@ -30,7 +30,7 @@ with Gnatcoll.Json; use Gnatcoll.Json;
 with Rpc;
 with Lock ;
 with Posix;
-with Table_Abalances;
+with Balances;
 with Ini;
 with Logging; use Logging;
 
@@ -54,7 +54,7 @@ procedure Saldo_Fetcher is
   function Get_Db_Size(Db_Name : String ) return String ; -- forward declaration only
 
 
-  procedure Mail_Saldo(Saldo, Old : Table_Abalances.Data_Type) is
+  procedure Mail_Saldo(Saldo, Old : Balances.Balance_Type) is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      Subject : constant String             := "BetBot Saldo Report";
      use AWS;
@@ -118,24 +118,24 @@ procedure Saldo_Fetcher is
 
 ---------------------------------
 
-  procedure Insert_Saldo(S : in out Table_Abalances.Data_Type) is
+  procedure Insert_Saldo(S : in out Balances.Balance_Type) is
   begin
     Log(Me, "Insert_Saldo start");
-    Log(Me, Table_Abalances.To_String(S));
-    Table_Abalances.Insert(S);
+    Log(Me, S.To_String);
+    S.Insert;
     Log(Me, "Insert_Saldo stop");
   end Insert_Saldo;
 
-  function Get_Old_Saldo return Table_Abalances.Data_Type is
+  function Get_Old_Saldo return Balances.Balance_Type is
     Stm : Sql.Statement_Type;
     Eos : Boolean := False;
-    Old_Bal : Table_Abalances.Data_Type ;
+    Old_Bal : Balances.Balance_Type ;
   begin
     Stm.Prepare("select * from ABALANCES where BALDATE::date = (select current_date -1)");
     Stm.Open_Cursor;
     Stm.Fetch(Eos);
     if not Eos then
-      Old_Bal := Table_Abalances.Get(Stm);
+      Old_Bal := Balances.Get(Stm);
     end if;
     Stm.Close_Cursor;
     return Old_Bal;
@@ -143,10 +143,10 @@ procedure Saldo_Fetcher is
 
   ---------------------------------------------------------------------
 
-  procedure Balance( Betfair_Result : in out Rpc.Result_Type ; Saldo : out Table_Abalances.Data_Type) is
+  procedure Balance( Betfair_Result : in out Rpc.Result_Type ; Saldo : out Balances.Balance_Type) is
     T : Sql.Transaction_Type;
     Now : Calendar2.Time_Type := Calendar2.Clock;
-    Old_Saldo : Table_Abalances.Data_Type ;
+    Old_Saldo : Balances.Balance_Type ;
   begin
 
     Rpc.Get_Balance(Betfair_Result,Saldo);
@@ -190,7 +190,7 @@ procedure Saldo_Fetcher is
   end Get_Db_Size;
 
 ------------------------------ main start -------------------------------------
-  Saldo : Table_Abalances.Data_Type;
+  Saldo : Balances.Balance_Type;
   Global_Enabled : Boolean := True;
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -279,4 +279,3 @@ exception
     end ;
     Posix.Do_Exit(0); -- terminate
 end Saldo_Fetcher;
-

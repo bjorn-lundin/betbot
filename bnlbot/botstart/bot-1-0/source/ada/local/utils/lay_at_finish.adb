@@ -50,7 +50,7 @@ procedure Lay_At_Finish is
    Eos,
    Eos2             : Boolean := False;
 
-   Market           : Table_Amarkets.Data_Type;
+   Market           : Markets.Market_Type;
 
    Config           : Command_Line_Configuration;
 

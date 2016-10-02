@@ -7,9 +7,6 @@
 
 with Process_IO; 
 pragma Elaborate(Process_IO);
---with Calendar2;
---with Core_Definition;      use Core_Definition;
---with Types; use Types;
 with Process_Io.Pipe;
 
 package Process_Io_Messages is
@@ -61,4 +58,3 @@ package Process_Io_Messages is
   --------------------------------------------------------------------  
 
 end Process_Io_Messages;
-

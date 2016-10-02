@@ -110,7 +110,30 @@ package body Types is
     Self.Set(To_String(Self.Value)); -- needs to update cache. DO NOT USE Fix_String, it trims ... 
   end Delete_Last_Char;
 
+  -----------------------------------------------------------
+  procedure Put_Line(Self : in out String_Object; 
+                     How  : in How_Type := Fix; 
+                     File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output) is                     
+  begin
+    case How is
+      when Fix   => Ada.Text_Io.Put_Line(File,Self.Fix_String);
+      when Upper => Ada.Text_Io.Put_Line(File,Self.Upper_Case);
+      when Lower => Ada.Text_Io.Put_Line(File,Self.Lower_Case);
+      when Camel => Ada.Text_Io.Put_Line(File,Self.Camel_Case);
+    end case;  
+  end Put_Line;
+  -----------------------------------------------------------
+  procedure Put(Self : in out String_Object; 
+                How  : in How_Type := Fix;
+                File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output) is
+  begin
+    case How is
+      when Fix   => Ada.Text_Io.Put(File,Self.Fix_String);
+      when Upper => Ada.Text_Io.Put(File,Self.Upper_Case);
+      when Lower => Ada.Text_Io.Put(File,Self.Lower_Case);
+      when Camel => Ada.Text_Io.Put(File,Self.Camel_Case);
+    end case;  
+  end Put;
+  -----------------------------------------------------------
  
 end Types;
-
-

@@ -1,5 +1,4 @@
 with Ada.Strings; use Ada.Strings;
---with Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 with Aws;
@@ -514,7 +513,7 @@ package body RPC is
   end Bet_Is_Matched;
   -----------------------------------------------------------------
   procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
-                                Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) is
+                                Runner_List : in out Runners.List_Pack.List) is
 --{
 --     "jsonrpc": "2.0",
 --     "method": "SportsAPING/v1.0/listMarketBook",
@@ -523,16 +522,16 @@ package body RPC is
 --     },
 --     "id": 1
 --}
-    DB_Runner : Table_Arunners.Data_Type;
+    DB_Runner : Runners.Runner_Type;
 
     Result,
     Params,
 --    Status,
-    Runner,
+    Json_Runner,
     Json_Reply,
     Json_Query          : JSON_Value := Create_Object;
 
-    Result_Array,Runners, Market_Ids : JSON_Array := Empty_Array;
+    Result_Array,Json_Runners_Array, Market_Ids : JSON_Array := Empty_Array;
     Market_Id_Received  : Marketid_Type := (others => ' ');
   begin
 
@@ -669,20 +668,20 @@ package body RPC is
     end if;
 
     if Result.Has_Field("runners") then
-      Runners := Result.Get("runners");
-      Log(Me & "Check_Market_Result", "got runners, len: " & Length(Runners)'Img);
+      Json_Runners_Array := Result.Get("runners");
+      Log(Me & "Check_Market_Result", "got runners, len: " & Length(Json_Runners_Array)'Img);
 
-      if Length(Runners) > Natural(0) then
+      if Length(Json_Runners_Array) > Natural(0) then
 
-        for i in 1 .. Length(Runners) loop
-          DB_Runner := Table_Arunners.Empty_Data;
+        for i in 1 .. Length(Json_Runners_Array) loop
+          DB_Runner := Runners.Empty_Data;
 
-          Runner := Get(Runners, i);
+          Json_Runner := Get(Json_Runners_Array, i);
           Log(Me & "Check_Market_Result", "got Runner" & i'Img);
 
-          if Runner.Has_Field("selectionId") then
+          if Json_Runner.Has_Field("selectionId") then
             declare
-              i : Long_Long_Integer := Runner.Get("selectionId");
+              i : Long_Long_Integer := Json_Runner.Get("selectionId");
             begin
               DB_Runner.Selectionid := Integer_4(i);
             end;
@@ -692,13 +691,13 @@ package body RPC is
           end if;
           DB_Runner.Marketid := Market_Id_Received ;
 
-          if Runner.Has_Field("status") then
-            Move(Runner.Get("status"), DB_Runner.Status);
-            if Runner.Get("status") = "WINNER" then
+          if Json_Runner.Has_Field("status") then
+            Move(Json_Runner.Get("status"), DB_Runner.Status);
+            if Json_Runner.Get("status") = "WINNER" then
               Log(Me & "Check_Market_Result", "got a winner " & DB_Runner.To_String);
-            elsif Runner.Get("status") = "REMOVED" then
+            elsif Json_Runner.Get("status") = "REMOVED" then
               Log(Me & "Check_Market_Result", "got a non-runner " & DB_Runner.To_String);
-            elsif Runner.Get("status") = "LOSER" then
+            elsif Json_Runner.Get("status") = "LOSER" then
               Log(Me & "Check_Market_Result", "got a loser " & DB_Runner.To_String);
             else
               Log(Me & "Check_Market_Result", "got something else !! " & DB_Runner.To_String);
@@ -715,7 +714,7 @@ package body RPC is
   end Check_Market_Result;
   ----------------------------------------------------------------
 
-  procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
+  procedure Market_Status_Is_Changed(Market     : in out Markets.Market_Type;
                                      Is_Changed :    out Boolean) is
 --{
 --     "jsonrpc": "2.0",
@@ -870,7 +869,7 @@ package body RPC is
     end if;
   end Market_Status_Is_Changed;
   ---------------------------------------
-  procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Table_Abalances.Data_Type) is
+  procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Balances.Balance_Type) is
     Query_Get_Account_Funds           : JSON_Value := Create_Object;
     Reply_Get_Account_Funds           : JSON_Value := Create_Object;
     Params                            : JSON_Value := Create_Object;
@@ -921,7 +920,7 @@ package body RPC is
                                       Settled_From   : in Calendar2.Time_Type := Calendar2.Time_Type_First;
                                       Settled_To     : in Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result : out Result_Type;
-                                      Bet_List       : out Table_Abets.Abets_List_Pack2.List) is
+                                      Bet_List       : out Bets.List_Pack.List) is
 
     JSON_Query : JSON_Value := Create_Object;
     JSON_Reply : JSON_Value := Create_Object;
@@ -931,7 +930,7 @@ package body RPC is
     Cleared_Orders     : JSON_Array := Empty_Array;
     Cleared_Order      : JSON_Value := Create_Object;
 
-    Local_Bet          : Table_Abets.Data_Type;
+    Local_Bet          : Bets.Bet_Type;
     Found              : Boolean := False;
 
   begin
@@ -968,7 +967,7 @@ package body RPC is
              Log(Me & "Get_Cleared_Bet_Info_List" , " we have cleared order #:" & i'img & " with status: " & Bet_Status'Img);
 
              Cleared_Order := Get(Cleared_Orders, i);
-             Local_Bet := Table_Abets.Empty_Data;
+             Local_Bet := Bets.Empty_Data;
              Get_Value(Container => Cleared_Order,
                        Field     => "betId",
                        Target    => Local_Bet.Betid,
@@ -1000,7 +999,7 @@ package body RPC is
     end if;
   end Get_Cleared_Bet_Info_List;
   -----------------------------------
-  function  Cancel_Bet(Bet : in Table_Abets.Data_Type) return Boolean is
+  function  Cancel_Bet(Bet : in Bets.Bet_Type) return Boolean is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
     Params       : JSON_Value := Create_Object;
@@ -1124,7 +1123,7 @@ package body RPC is
   -----------------------------------
 
   procedure Parse_Prices(J_Market   : in     JSON_Value;
-                         Price_List : in out Table_Aprices.Aprices_List_Pack2.List ) is
+                         Price_List : in out Prices.List_Pack.List ) is
     Back,
     Lay,
     Ex,
@@ -1137,7 +1136,7 @@ package body RPC is
     Array_Length_Lay  : Natural;
     Now               : Calendar2.Time_Type := Calendar2.Clock;
     Found             : Boolean := False;
-    DB_Runner_Price   : Table_Aprices.Data_Type;
+    DB_Runner_Price   : Prices.Price_Type;
 
     --        "runners": [{
     --            "handicap": 0.00000E+00,
@@ -1182,7 +1181,7 @@ package body RPC is
     Array_Length  := Length (Runner_Prices);
 
     for J in 1 .. Array_Length loop
-      DB_Runner_Price := Table_Aprices.Empty_Data;
+      DB_Runner_Price := Prices.Empty_Data;
 
       Runner := Get (Arr   => Runner_Prices, Index => J);
 
@@ -1260,7 +1259,7 @@ package body RPC is
   ---------------------------------
 
   procedure Parse_Event (J_Event, J_Event_Type : in     JSON_Value ;
-                         DB_Event              : in out Table_Aevents.Data_Type) is
+                         DB_Event              : in out Events.Event_Type) is
     Service : constant String := "Parse_Event";
    -- event:{"id":"27026778",
    --         "name":"Monm 22nd Jun",
@@ -1334,8 +1333,8 @@ package body RPC is
 
   ----------------------------------------------------------------------------------
   procedure Get_Market_Prices(Market_Id : in Marketid_Type;
-                              Market    : out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
+                              Market    : out Markets.Market_Type;
+                              Price_List : in out Prices.List_Pack.List;
                               In_Play   : out Boolean) is
     Market_Ids         : JSON_Array := Empty_Array;
     JSON_Query         : JSON_Value := Create_Object;
@@ -1399,7 +1398,7 @@ package body RPC is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
-                       Bet              :    out Table_Abets.Data_Type ) is
+                       Bet              :    out Bets.Bet_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
     Params       : JSON_Value := Create_Object;
@@ -1691,9 +1690,9 @@ package body RPC is
   ------------------------------------------
 
   procedure Parse_Runners(J_Market      : in     JSON_Value ;
-                          Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) is
+                          Runner_List : in out Runners.List_Pack.List) is
     Service : constant String := "Parse_Runners";
-    DB_Runner : Table_Arunners.Data_Type := Table_Arunners.Empty_Data;
+    DB_Runner : Runners.Runner_Type := Runners.Empty_Data;
     Found   : Boolean := False;
 --        "runners": [{
 --            "sortPriority": 1,
@@ -1712,8 +1711,8 @@ package body RPC is
 --      Ixxlupd :    String (1..15) := (others => ' ') ; --
 --      Ixxluts :    Time_Type  := Time_Type_First ; --
 --  end record;
-   Runners      : JSON_Array := Empty_Array;
-   Runner       : JSON_Value := Create_Object;
+   Json_Runners_Array : JSON_Array := Empty_Array;
+   Json_Runner        : JSON_Value := Create_Object;
    Array_Length : Natural ;
 
    Runnernamestripped : String := DB_Runner.Runnernamestripped;
@@ -1723,13 +1722,13 @@ package body RPC is
 
   begin
     Log(Me & Service, "start");
-    Runners := J_Market.Get("runners");
-    Array_Length := Length (Runners);
+    Json_Runners_Array := J_Market.Get("runners");
+    Array_Length := Length (Json_Runners_Array);
 
     for J in 1 .. Array_Length loop
-      DB_Runner := Table_Arunners.Empty_Data;
-       Runner := Get (Arr   => Runners, Index => J);
-       Log(Me & Service, "  " & Runner.Write);
+       DB_Runner := Runners.Empty_Data;
+       Json_Runner := Get (Arr   => Json_Runners_Array, Index => J);
+       Log(Me & Service, "  " & Json_Runner.Write);
 
 
        Get_Value(Container => J_Market,
@@ -1741,7 +1740,7 @@ package body RPC is
          raise No_Such_Field with "Object 'Market' - Field 'marketId'";
        end if;
 
-       Get_Value(Container => Runner,
+       Get_Value(Container => Json_Runner,
                  Field     => "sortPriority",
                  Target    => DB_Runner.Sortprio,
                  Found     => Found);
@@ -1749,7 +1748,7 @@ package body RPC is
          raise No_Such_Field with "Object 'Runner' - Field 'sortPriority'";
        end if;
 
-       Get_Value(Container => Runner,
+       Get_Value(Container => Json_Runner,
                Field     => "handicap",
                Target    => DB_Runner.Handicap,
                Found     => Found);
@@ -1758,7 +1757,7 @@ package body RPC is
          raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
        end if;
 
-       Get_Value(Container => Runner,
+       Get_Value(Container => Json_Runner,
                  Field     => "selectionId",
                  Target    => DB_Runner.Selectionid,
                  Found     => Found);
@@ -1766,7 +1765,7 @@ package body RPC is
          raise No_Such_Field with "Object 'Runner' - Field 'selectionId'";
        end if;
 
-       Get_Value(Container => Runner,
+       Get_Value(Container => Json_Runner,
                  Field     => "runnerName",
                  Target    => DB_Runner.Runnername,
                  Found     => Found);
@@ -1834,7 +1833,7 @@ package body RPC is
 
   ------------------------------------------
   procedure Parse_Market (J_Market       : in     JSON_Value ;
-                          DB_Market      : in out Table_Amarkets.Data_Type ;
+                          DB_Market      : in out Markets.Market_Type ;
                           In_Play_Market :    out Boolean) is
     Service : constant String := "Parse_Market";
     Eos,Found    : Boolean    := False;
@@ -1898,7 +1897,7 @@ package body RPC is
               Target    =>  DB_Market.Marketid,
               Found     => Found);
     if Found then
-      Table_Amarkets.Read(Db_Market, Eos);
+      Db_Market.Read(Eos);
     end if;
 
     Get_Value(Container => J_Market,

@@ -61,8 +61,8 @@ procedure Create_Graph_Data_Lost_Bets is
   -------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
+    Market    : Markets.Market_Type;
+    Event     : Table_AEvents.Event_Type;
     Price_List  : Table_Aprices.Aprices_List_Pack2.List;
     --------------------------------------------
     
@@ -285,7 +285,7 @@ begin
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
     Eos : Boolean := False;
-    Place_Market,Win_Market : Table_Amarkets.Data_Type;
+    Place_Market,Win_Market : Markets.Market_Type;
   begin
     T.Start;
     Stm.Prepare(

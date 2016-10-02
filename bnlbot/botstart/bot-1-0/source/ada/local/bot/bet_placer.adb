@@ -7,8 +7,8 @@ with Ada.Environment_Variables;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
-with Table_Abets;
-with Table_Abalances;
+with Bets;
+with Balances;
 with Types; use Types;
 with Calendar2; use Calendar2;
 with Stacktrace;
@@ -55,7 +55,7 @@ procedure Bet_Placer is
                       Price        : Bet_Price_Type;
                       Match_Directly : Integer_4) is
 
-    A_Bet : Table_Abets.Data_Type;
+    A_Bet : Bets.Bet_Type;
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
     Execution_Report_Error_Code    : String (1..50)  :=  (others => ' ') ;
@@ -196,7 +196,7 @@ procedure Bet_Placer is
   ------------------------------------------------------
   procedure Check_Outstanding_Balance(Outstanding : in out Integer_4) is
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
-    Saldo             : Table_Abalances.Data_Type;
+    Saldo             : Balances.Balance_Type;
   begin
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     Outstanding := Integer_4(abs(Saldo.Exposure));

@@ -62,8 +62,8 @@ procedure Lay_In_Play is
   -------------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
+    Market    : Markets.Market_Type;
+    Event     : Table_AEvents.Event_Type;
     Price_List,
     Tmp_Price_List   : Table_Aprices.Aprices_List_Pack2.List;
     --------------------------------------------

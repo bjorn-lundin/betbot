@@ -7,7 +7,7 @@ with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Gnatcoll.Json;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Table_Abets;
+with Bets;
 with Bot_System_Number;
 with Stacktrace;
 with Lock;
@@ -26,7 +26,7 @@ with Calendar2;
 with Types; use Types;
 with Utils;
 
-with Table_Amarkets;
+with Markets;
 with Table_Arunners;
 
 
@@ -68,8 +68,8 @@ procedure Bet_Checker is
       declare
         Filename : String := Full_Name(Dir_Ent);
         Content  : String := Lock.Read_File(Filename);
-        Bet      : Table_Abets.Data_Type;
-        A_Market : Table_Amarkets.Data_Type;
+        Bet      : Bets.Bet_Type;
+        A_Market : Markets.Market_Type;
         A_Runner : Table_Arunners.Data_Type;
         type Eos_Type is (Market, Runner, Abets);
         Eos : array (Eos_Type'range) of Boolean := (others => False);
@@ -78,7 +78,7 @@ procedure Bet_Checker is
         if Content'Length > 0 then
           JSON_Data := Read(Content,"");
 
-          Bet := Table_Abets.From_JSON(JSON_Data);
+          Bet := Bets.From_JSON(JSON_Data);
 
           if Bet.Betid = 0 then
             Log(Me & Service, "bad bet, get fake betid");
