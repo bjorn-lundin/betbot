@@ -1,8 +1,6 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
-with Ada.Strings ; use Ada.Strings;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -20,15 +18,13 @@ with Ini;
 with Logging; use Logging;
 with Process_IO;
 with Core_Messages;
-with Table_Amarkets;
-with Table_Aevents;
-with Table_Arunners;
-with Table_Aprices;
-with Table_Abets;
+with Markets;
+
+with Events;
+with Prices;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
-with Sim;
 
 procedure Poll_GH_Market is
   package EV renames Ada.Environment_Variables;
@@ -50,13 +46,12 @@ procedure Poll_GH_Market is
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("gh_mark_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
-  Update_Betwon_To_Null : Sql.Statement_Type;
 
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack2.List;
+    Market    : Markets.Market_Type;
+    Event     : Events.Event_Type;
+    Price_List : Prices.List_Pack.List;
     --------------------------------------------
 
     Priceshistory_Data : Table_Apriceshistory.Data_Type;
@@ -69,9 +64,7 @@ procedure Poll_GH_Market is
     --  Current_Turn_Not_Started_Race : Integer_4 := 0;
     Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "ghd" and then EV.Value("BOT_NAME")(1..12) = "poll_market_";
 
-    type Bet_Types is (D4_2, D3_7, D2_8);
-    Has_Placed : array (Bet_Types'range) of Boolean := (others => False);
-    Lay_Stake  : constant Bet_Size_Type := 30.0;
+
 
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
@@ -277,4 +270,3 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Poll_GH_Market;
-

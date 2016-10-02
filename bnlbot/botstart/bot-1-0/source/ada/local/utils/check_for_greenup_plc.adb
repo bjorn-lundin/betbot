@@ -23,7 +23,7 @@ with Ini;
 with Logging; use Logging;
 --with Process_IO;
 --with Core_Messages;
-with Table_Amarkets;
+with Markets;
 --with Table_Aevents;
 --with Table_Aprices;
 --with Table_Abalances;
@@ -61,10 +61,10 @@ procedure Check_For_Greenup_Plc is
   Ts_List             : Ts_List_Pack.List;
 
   -----------------------------------------------------
- -- procedure Place_Market(M     : in     Table_Amarkets.Data_Type;
- --                        P     : in out Table_Amarkets.Data_Type;
+ -- procedure Place_Market(M     : in     Markets.Market_Type;
+ --                        P     : in out Markets.Market_Type;
  --                        Found : in out Boolean) is
- --   P : Table_Amarkets.Data_Type ;
+ --   P : Markets.Market_Type ;
  -- begin
  --   Find_Plc_Market.Set("WINMARKETID", M.Marketid);
  --   Find_Plc_Market.Open_Cursor;
@@ -79,7 +79,7 @@ procedure Check_For_Greenup_Plc is
  -- end Place_Market;
 
   ---------------------------------------------------
-  procedure Add_Bet(M : Table_Amarkets.Data_Type;
+  procedure Add_Bet(M : Markets.Market_Type;
                     R : Table_Arunners.Data_Type;
                     P : Table_Apriceshistory.Data_Type) is
     Bet : Table_Abets.Data_Type;
@@ -297,11 +297,11 @@ begin
   T.Start;
     declare
       Ph_List     : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-      Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
+      Market_List : Markets.List_Pack.List;
       Cnt    : Natural := 0;
     begin
       Log(Me & "Main" , "read start");
-      Table_Amarkets.Read_List(Select_Markets, Market_List);
+      Markets.Read_List(Select_Markets, Market_List);
       Log(Me & "Main" , "read done");
 
       Market_Loop : for Market of Market_List loop
@@ -371,8 +371,3 @@ exception
     Posix.Do_Exit(0); -- terminate
 
 end Check_For_Greenup_Plc;
-
-
-
-
-

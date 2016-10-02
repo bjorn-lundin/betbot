@@ -1,12 +1,12 @@
 with Gnatcoll.Json; use Gnatcoll.Json;
 with Types; use Types;
 with Bot_Types; use Bot_Types;
-with Table_Arunners;
-with Table_Amarkets;
-with Table_Abalances;
-with Table_Abets;
-with Table_Aprices;
-with Table_Aevents;
+with Runners;
+with Markets;
+with Balances;
+with Bets;
+with Prices;
+with Events;
 with Token;
 with Calendar2;
 with Table_Astarttimes;
@@ -74,31 +74,31 @@ package RPC is
                            AVG_Price_Matched : out Bet_Price_Type;
                            Size_Matched      : out Bet_Size_Type) ;
   
-  procedure Market_Status_Is_Changed(Market     : in out Table_Amarkets.Data_Type;
+  procedure Market_Status_Is_Changed(Market     : in out Markets.Market_Type;
                                      Is_Changed :    out Boolean);
 
   procedure Get_Balance(Betfair_Result : out Result_Type ;
-                        Saldo          : out Table_Abalances.Data_Type) ;
+                        Saldo          : out Balances.Balance_Type) ;
                                      
                                      
   procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
-                                Runner_List : in out Table_Arunners.Arunners_List_Pack2.List);
+                                Runner_List : in out Runners.List_Pack.List);
 
                                       
   procedure Get_Cleared_Bet_Info_List(Bet_Status     : in     Bet_Status_Type;
                                       Settled_From   : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
                                       Settled_To     : in     Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result :    out Result_Type;
-                                      Bet_List       :    out Table_Abets.Abets_List_Pack2.List) ;
+                                      Bet_List       :    out Bets.List_Pack.List) ;
                                       
   procedure Cancel_Bet(Market_Id : in Marketid_Type; 
                        Bet_Id    : in Integer_8);
                        
-  function  Cancel_Bet(Bet : in Table_Abets.Data_Type) return Boolean;
+  function  Cancel_Bet(Bet : in Bets.Bet_Type) return Boolean;
                                       
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type; 
-                              Market     :    out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
+                              Market     :    out Markets.Market_Type;
+                              Price_List : in out Prices.List_Pack.List;
                               In_Play    :    out Boolean);
 
                               
@@ -111,20 +111,20 @@ package RPC is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
-                       Bet              :    out Table_Abets.Data_Type);
+                       Bet              :    out Bets.Bet_Type);
                               
   procedure Parse_Runners(J_Market    : in     JSON_Value ; 
-                          Runner_List : in out Table_Arunners.Arunners_List_Pack2.List) ;
+                          Runner_List : in out Runners.List_Pack.List) ;
 
   procedure Parse_Prices (J_Market    : in     JSON_Value ; 
-                          Price_List  : in out Table_Aprices.Aprices_List_Pack2.List) ;
+                          Price_List  : in out Prices.List_Pack.List) ;
                           
   procedure Parse_Market (J_Market    : in     JSON_Value ; 
-                          DB_Market   : in out Table_Amarkets.Data_Type ;
+                          DB_Market   : in out Markets.Market_Type ;
                           In_Play_Market :    out Boolean) ;
   
   procedure Parse_Event (J_Event, J_Event_Type : in     JSON_Value ; 
-                         DB_Event              : in out Table_Aevents.Data_Type) ;
+                         DB_Event              : in out Events.Event_Type) ;
                          
   procedure Get_JSON_Reply (Query : in     JSON_Value;
                             Reply : in out JSON_Value;
@@ -137,4 +137,4 @@ package RPC is
   
   procedure Get_Starttimes(List : out Table_Astarttimes.Astarttimes_List_Pack2.List);
                          
-end RPC;    
+end RPC;

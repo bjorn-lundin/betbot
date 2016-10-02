@@ -1,8 +1,6 @@
 
 with Ada.Exceptions;
 with Ada.Command_Line;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Environment_Variables;
 with Ada.Containers.Doubly_Linked_Lists;
@@ -18,7 +16,7 @@ with Calendar2; use Calendar2;
 with Posix;
 with Ini;
 with Logging; use Logging;
-with Table_Amarkets;
+with Markets;
 --with Table_Aevents;
 --with Table_Aprices;
 --with Table_Abalances;
@@ -28,7 +26,6 @@ with Table_Apriceshistory;
 with Bot_Svn_Info;
 --with Utils; use Utils;
 with Bot_System_Number;
-with Tics;
 
 
 procedure Check_for_Lay_Win is
@@ -45,8 +42,6 @@ procedure Check_for_Lay_Win is
 
   Me                  : constant String := "Check_for_Lay_Win.";
   Global_Bet_Name     : Betname_Type := (others => ' ');
-  Global_Max_Price : Float_8 := 0.0;
-  Global_Min_Price : Float_8 := 0.0;
   Global_Laysize   : Bet_Size_Type := 30.0;
 
   --Global_Max_Backprice: Float_8 := 0.0;
@@ -81,7 +76,7 @@ procedure Check_for_Lay_Win is
 
   ---------------------------------------------------
 
-  procedure Place_Lay(M : Table_Amarkets.Data_Type;
+  procedure Place_Lay(M : Markets.Market_Type;
                       R : Table_Arunners.Data_Type;
                       P : Table_Apriceshistory.Data_Type) is
     Bet : Table_Abets.Data_Type;
@@ -229,11 +224,12 @@ procedure Check_for_Lay_Win is
   procedure Try_To_Make_Lay_Bet(
       Bettype         : Bets_Type;
       BR              : Best_Runners_Array_Type;
-      Market          : Table_Amarkets.Data_Type) is
+      Market          : Markets.Market_Type) is
 
     Max_Backprice_1       : Float_8;
     Max_Layprice_n        : Max_Lay_Price_Type;
     Additional_Layprice_n : Max_Lay_Price_Type;
+    pragma Unreferenced (Additional_Layprice_n);
     Layed_Num             : Integer;
     Tmp    : String (1..4) := (others => ' ');
     Image  : String := Bettype'Img;
@@ -421,17 +417,20 @@ begin
 
     declare
       Ph_List     : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-      Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
+      Market_List : Markets.List_Pack.List;
       Cnt         : Natural := 0;
       type Has_Type is (Back,Lay,Stoploss);
+      pragma Unreferenced (Back, Lay, Stoploss);
       subtype Max_Runners_Type is Integer_4 range 1 .. 50;
       Placed  : array (Max_Runners_Type'range, Has_Type'range) of Boolean := (others => (others => False));
+      pragma Unreferenced (Placed);
       Matched : array (Max_Runners_Type'range, Has_Type'range) of Boolean := (others => (others => False));
+      pragma Unreferenced (Matched);
 
     begin
       T.Start;
       Log(Me & "Main" , "read start");
-      Table_Amarkets.Read_List(Select_Markets, Market_List);
+      Markets.Read_List(Select_Markets, Market_List);
       Log(Me & "Main" , "read done");
       T.Commit;
 
@@ -463,8 +462,6 @@ begin
           declare
             Idx : Integer := 0;
             Best_Runners : Best_Runners_Array_Type := (others => Table_Apriceshistory.Empty_Data);
-            Runner       : Table_Arunners.Data_Type;
-            Eos          : Boolean := False;
           begin
             Ph_Loop : for Ph of Ph_List loop
               Idx := Idx +1;
@@ -508,8 +505,3 @@ exception
     Posix.Do_Exit(0); -- terminate
 
 end Check_for_Lay_Win;
-
-
-
-
-

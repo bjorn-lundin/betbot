@@ -18,10 +18,10 @@ with Calendar2; use Calendar2;
 with Posix;
 with Ini;
 with Logging; use Logging;
-with Market;
-with Runner;
-with Bet;
-with Price_History;
+with Markets;
+with Runners;
+with Bets;
+with Price_Histories;
 with Bot_Svn_Info;
 --with Utils; use Utils;
 
@@ -156,22 +156,22 @@ begin
       "order by PRICETS"
   );
 
-  if Bet.Is_Existing_I7(Betname => Global_Betname) then
+  if Bets.Is_Existing_I7(Betname => Global_Betname) then
     Log(Me & "Main" , "bet '" & Global_Betname & "' already exists. Exiting");
     return;
   end if;
 
   
   declare
-    Ph_List     : Price_History.List_Pack.List;
-    Market_List : Market.List_Pack.List;
+    Ph_List     : Price_Histories.List_Pack.List;
+    Market_List : Markets.List_Pack.List;
     Cnt         : Natural := 0;
     --type Has_Type is (Lay);
     subtype Max_Runners_Type is Integer range 1 .. 50;
   begin
     T.Start;
     Log(Me & "Main" , "read start");
-    Market.Read_List(Select_Markets, Market_List);
+    Markets.Read_List(Select_Markets, Market_List);
     Log(Me & "Main" , "read done");
     T.Commit;
   
@@ -189,15 +189,15 @@ begin
         Ph_List.Clear;
         Select_Cand.Set("MARKETID",The_Market.Marketid);
         Select_Cand.Set("PRICETS",Ts);
-        Price_History.Read_List(Select_Cand, Ph_List);
+        Price_Histories.Read_List(Select_Cand, Ph_List);
   
         declare
           Idx : Integer := 0;
-          type Best_Runners_Array_Type is array (Max_Runners_Type'range) of Price_History.Price_History_Type ;
-          Best_Runners : Best_Runners_Array_Type := (others => Price_History.Empty_Data);
-          The_Runner   : Runner.Runner_Type;
+          type Best_Runners_Array_Type is array (Max_Runners_Type'range) of Price_Histories.Price_History_Type ;
+          Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+          The_Runner   : Runners.Runner_Type;
           Eos          : Boolean := False;
-          The_Bet      : Bet.Bet_Type;
+          The_Bet      : Bets.Bet_Type;
         begin
           Ph_Loop : for Ph of Ph_List loop
             Idx := Idx +1;
@@ -206,7 +206,7 @@ begin
           end loop Ph_Loop;
           -- Best_Runners is sorted lowest backprice to highest, max 20 entries
 
-          The_Runner := Runner.Empty_Data;
+          The_Runner := Runners.Empty_Data;
           The_Runner.Marketid    := Best_Runners(IA_Runners_Place).Marketid;
           The_Runner.Selectionid := Best_Runners(IA_Runners_Place).Selectionid;
           The_Runner.Read(Eos);
@@ -220,7 +220,7 @@ begin
              Best_Runners(IA_Runners_Place).Backprice >= Global_Max_Price and then
              Best_Runners(IA_Runners_Place).Layprice  >= Global_Max_Price then
   
-              The_Bet := Bet.Create(Side       => Lay,
+              The_Bet := Bets.Create(Side       => Lay,
                                     Name       => Global_Betname,
                                     Size       => Global_Laysize,
                                     Price      => Price_Type(Global_Max_Price + Float_8(IA_Addon_Odds)),  
@@ -262,8 +262,3 @@ exception
     Posix.Do_Exit(0); -- terminate
 
 end Check_Lay;
-
-
-
-
-

@@ -1,5 +1,5 @@
 
-package body Runner is
+package body Runners is
 
   function Empty_Data return Runner_Type is
     ED : Runner_Type;
@@ -8,4 +8,4 @@ package body Runner is
   end Empty_Data;
 
   
-end Runner;
+end Runners;

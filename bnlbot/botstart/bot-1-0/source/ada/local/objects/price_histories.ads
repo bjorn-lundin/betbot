@@ -3,7 +3,7 @@ with Sql;
 with Ada.Containers.Doubly_Linked_Lists;
 with Types; use Types;
 --with Bot_Types; use Bot_Types;
-package Price_History is
+package Price_Histories is
   type Price_History_Type is new Table_Apriceshistory.Data_Type with null record;
   function Empty_Data return Price_History_Type ;
 
@@ -13,4 +13,4 @@ package Price_History is
                       Max  : in     Integer_4 := Integer_4'Last) ;
   
   
-end Price_History;
+end Price_Histories;

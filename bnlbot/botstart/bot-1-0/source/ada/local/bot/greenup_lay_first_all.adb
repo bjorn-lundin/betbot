@@ -110,8 +110,8 @@ procedure Greenup_Lay_First_All is
                 Min_Layprice : in Min_Layprice_Type;
                 Max_Layprice : in Max_Layprice_Type ) is
 
-    Market    : Table_Amarkets.Data_Type;
-    --Event     : Table_Aevents.Data_Type;
+    Market    : Markets.Market_Type;
+    --Event     : Table_AEvents.Event_Type;
     Eos               : Boolean := False;
     Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
     Runner : Table_Arunners.Data_Type;

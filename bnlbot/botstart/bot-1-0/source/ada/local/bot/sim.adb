@@ -27,8 +27,8 @@ package body Sim is
   Select_Get_Win_Market : Sql.Statement_Type;
   Select_Get_Place_Market : Sql.Statement_Type;
 
-  Current_Market : Table_Amarkets.Data_Type := Table_Amarkets.Empty_Data;
-  Global_Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+  Current_Market : Markets.Market_Type := Markets.Empty_Data;
+  Global_Price_During_Race_List : Price_Histories.List_Pack.List;
 
   Global_Current_Pricets: Calendar2.Time_Type := Calendar2.Time_Type_First ;
   package Pricets_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type);
@@ -44,7 +44,7 @@ package body Sim is
 
   ----------------------------------------------------------
 
-  function Is_Race_Winner(Runner               : Table_Arunners.Data_Type;
+  function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type)
          return Boolean is
   begin
@@ -73,26 +73,24 @@ package body Sim is
 
   ----------------------------------------------------------
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
-                              Market     : in out Table_Amarkets.Data_Type;
-                              Price_List : in out Table_Aprices.Aprices_List_Pack2.List;
+                              Market     : in out Markets.Market_Type;
+                              Price_List : in out Prices.List_Pack.List;
                               In_Play    :    out Boolean) is
     Service : constant String := "Get_Market_Prices";
     --Eos : Boolean := False;
-    use type Table_Amarkets.Data_Type;
-    --Price_During_Race_Data : Table_Apriceshistory.Data_Type;
-    Price_Data : Table_Aprices.Data_Type;
+    use type Markets.Market_Type;
+    --Price_During_Race_Data : Price_Histories.Price_History_Type;
+    Price_Data : Prices.Price_Type;
    -- T : Sql.Transaction_Type;
     Start,
     Stop,
     Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
-
-
   begin
    -- Log(Object & Service, "start");
     In_Play := True;
     -- Log(Object & Service, "Marketid '" & Market_Id & "' Current_Market = Table_Amarkets.Empty_Data " & Boolean'image(Current_Market = Table_Amarkets.Empty_Data));
     -- trigg for a new market
-    if Current_Market = Table_Amarkets.Empty_Data then
+    if Current_Market = Markets.Empty_Data then
        --reset the fifo for ny race
       Log(Object & Service, "clear Fifo");
       for i in Num_Runners_Type loop
@@ -127,7 +125,7 @@ package body Sim is
       else
         Move("CLOSED",Market.Status);
         Log(Object & Service, "reset Current_Market");
-        Current_Market := Table_Amarkets.Empty_Data;
+        Current_Market := Markets.Empty_Data;
        -- Log(Object & Service, "stop 1");
         return;
       end if;
@@ -179,7 +177,7 @@ package body Sim is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Bet_Placed       : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
-                       Bet              :    out Table_Abets.Data_Type) is
+                       Bet              :    out Bets.Bet_Type) is
     pragma Unreferenced(Bet_Persistence);
 
     Execution_Report_Status        : String (1..50)  :=  (others => ' ') ;
@@ -191,7 +189,7 @@ package body Sim is
     Bet_Id : Integer_8 := 0;
     Now : Calendar2.Time_Type := Calendar2.Clock;
     Side_String   : Bet_Side_String_Type := (others => ' ');
-    Market : Table_Amarkets.Data_Type;
+    Market : Markets.Market_Type;
     Eos : Boolean := False;
     Local_Bet_Placed  :  Calendar2.Time_Type := Bet_Placed;
   begin
@@ -240,7 +238,7 @@ package body Sim is
   end Place_Bet;
   -----------------------------------------------------------------------
 
-  procedure Filter_List(Price_List, Avg_Price_List : in out Table_Aprices.Aprices_List_Pack2.List; Alg : Algorithm_Type := None)  is
+  procedure Filter_List(Price_List, Avg_Price_List : in out Prices.List_Pack.List; Alg : Algorithm_Type := None)  is
   begin
     case Alg is
       when None =>
@@ -266,7 +264,7 @@ package body Sim is
               -- recalculate the avg values
                 declare
                   Backprice,Layprice : Float_8 := 0.0;
-                  Sample : Table_Aprices.Data_Type;
+                  Sample : Prices.Price_Type;
                   Cnt : Natural := 0;
                 begin
                   for s2 of Fifo(i).One_Runner_Sample_List loop
@@ -302,13 +300,13 @@ package body Sim is
   end Clear;
 
 
-  procedure Read_Marketid(Marketid : in Marketid_Type; List : out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+  procedure Read_Marketid(Marketid : in Marketid_Type; List : out Price_Histories.List_Pack.List) is
   --  Service : constant String := "Read_Marketid";
-    Apriceshistory_Data : Table_Apriceshistory.Data_Type;
+    Prices_History_Data : Price_Histories.Price_History_Type;
     Filename : String := "markets/" & "win_" & Marketid & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
-    package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
+    package Serializer is new Disk_Serializer(Price_Histories.List_Pack.List);
   begin
 
     if not Serializer.File_Exists(Filename) then
@@ -325,8 +323,8 @@ package body Sim is
       loop
         Select_Sampleids_In_One_Market.Fetch(Eos);
         exit when Eos;
-        Apriceshistory_Data := Table_Apriceshistory.Get(Select_Sampleids_In_One_Market);
-        List.Append(Apriceshistory_Data);
+        Prices_History_Data := Price_Histories.Get(Select_Sampleids_In_One_Market);
+        List.Append(Prices_History_Data);
       end loop;
       Select_Sampleids_In_One_Market.Close_Cursor;
       T.Commit;
@@ -342,13 +340,13 @@ package body Sim is
 
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
                                       Selectionid : in     Integer_4; 
-                                      List        :    out Table_Apriceshistory.Apriceshistory_List_Pack2.List) is
+                                      List        :    out Price_Histories.List_Pack.List) is
   --  Service : constant String := "Read_Marketid";
-    Apriceshistory_Data : Table_Apriceshistory.Data_Type;
+    Price_History_Data : Price_Histories.Price_History_Type;
     Filename : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
-    package Serializer is new Disk_Serializer(Table_Apriceshistory.Apriceshistory_List_Pack2.List);
+    package Serializer is new Disk_Serializer(Price_Histories.List_Pack.List);
   begin
 
     if not Serializer.File_Exists(Filename) then
@@ -368,8 +366,8 @@ package body Sim is
       loop
         Select_Sampleids_In_One_Market_2.Fetch(Eos);
         exit when Eos;
-        Apriceshistory_Data := Table_Apriceshistory.Get(Select_Sampleids_In_One_Market_2);
-        List.Append(Apriceshistory_Data);
+        Price_History_Data := Price_Histories.Get(Select_Sampleids_In_One_Market_2);
+        List.Append(Price_History_Data);
       end loop;
       Select_Sampleids_In_One_Market_2.Close_Cursor;
       T.Commit;
@@ -381,7 +379,7 @@ package body Sim is
   end Read_Marketid_Selectionid;
   -------------------------------------------------------------------------
 
-  procedure Create_Runner_Data(Price_List : in Table_Aprices.Aprices_List_Pack2.List;
+  procedure Create_Runner_Data(Price_List : in Prices.List_Pack.List;
                                Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) is
@@ -428,9 +426,9 @@ package body Sim is
   end Create_Runner_Data;
   -----------------------------------------------------------------
 
-  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type is
+  function Get_Win_Market(Place_Market_Id : Marketid_Type) return Markets.Market_Type is
     T             : Sql.Transaction_Type;
-    Winner_Market : Table_Amarkets.Data_Type;
+    Winner_Market : Markets.Market_Type;
     Eos           : Boolean := False;
   begin
     T.Start;
@@ -446,7 +444,7 @@ package body Sim is
     Select_Get_Win_Market.Open_Cursor;
     Select_Get_Win_Market.Fetch(Eos);
     if not Eos then
-      Winner_Market := Table_Amarkets.Get(Select_Get_Win_Market);
+      Winner_Market := Markets.Get(Select_Get_Win_Market);
     end if;
     Select_Get_Win_Market.Close_Cursor;
     T.Commit;
@@ -456,9 +454,9 @@ package body Sim is
   end Get_Win_Market;
   -----------------------------------------------------------------
 
-  function Get_Place_Market(Winner_Market_Id : Marketid_Type) return Table_Amarkets.Data_Type is
+  function Get_Place_Market(Winner_Market_Id : Marketid_Type) return Markets.Market_Type is
     T            : Sql.Transaction_Type;
-    Place_Market : Table_Amarkets.Data_Type;
+    Place_Market : Markets.Market_Type;
     Eos          : Boolean := False;
   begin
     T.Start;
@@ -475,7 +473,7 @@ package body Sim is
     Select_Get_Place_Market.Open_Cursor;
     Select_Get_Place_Market.Fetch(Eos);
     if not Eos then
-      Place_Market := Table_Amarkets.Get(Select_Get_Place_Market);
+      Place_Market := Markets.Get(Select_Get_Place_Market);
     end if;
     Select_Get_Place_Market.Close_Cursor;
     T.Commit;
@@ -485,10 +483,10 @@ package body Sim is
   end Get_Place_Market;
   -----------------------------------------------------------------
 
-  procedure Create_Bet_Data(Bet : in Table_Abets.Data_Type ) is
+  procedure Create_Bet_Data(Bet : in Bets.Bet_Type) is
     F : Text_Io.File_Type;
     Indicator : String(1..3) := (others => ' ');
-    Odds_Market : Table_Amarkets.Data_Type ;
+    Odds_Market : Markets.Market_Type ;
   begin
     case Bet.Betwon is
       when True  => Indicator := "won";
@@ -543,7 +541,7 @@ package body Sim is
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Marketid_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_With_Data_Pack.List);
-    Market : Table_Amarkets.Data_Type;
+    Market : Markets.Market_Type;
     
     
   begin
@@ -554,6 +552,7 @@ package body Sim is
             "select distinct(M.MARKETID) " &
             "from APRICESHISTORY H, AMARKETS M " &
             "where H.MARKETID = M.MARKETID " &
+          --  "and M.MARKETTYPE in ('WIN') " &
             "and M.MARKETTYPE in ('PLACE', 'WIN') " &
             "and STARTTS::date = :DATE " &
             "order by M.MARKETID");
@@ -619,12 +618,12 @@ package body Sim is
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
 
-  procedure Fill_Winners_Map(Market_List : in     Table_Amarkets.Amarkets_List_Pack2.List;
+  procedure Fill_Winners_Map(Market_List : in     Markets.List_Pack.List;
                              Winners_Map :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
     Filename : String := "all_winners_map.dat";
-    Runner_Data : Table_Arunners.Data_Type;
-    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
+    Runner_Data : Runners.Runner_Type;
+    Runner_List : Runners.List_Pack.List;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
   begin
@@ -643,7 +642,7 @@ package body Sim is
         loop
           Select_Race_Winner_In_One_Market.Fetch(Eos);
           exit when Eos;
-          Runner_Data := Table_Arunners.Get(Select_Race_Winner_In_One_Market);
+          Runner_Data := Runners.Get(Select_Race_Winner_In_One_Market);
           Runner_List.Append(Runner_Data);
         end loop;
         Select_Race_Winner_In_One_Market.Close_Cursor;
@@ -663,8 +662,8 @@ package body Sim is
                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/winners_map.dat";
-    Runner_Data : Table_Arunners.Data_Type;
-    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
+    Runner_Data : Runners.Runner_Type;
+    Runner_List : Runners.List_Pack.List;
     T : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
   begin
@@ -683,7 +682,7 @@ package body Sim is
         loop
           Select_Race_Winner_In_One_Market.Fetch(Eos);
           exit when Eos;
-          Runner_Data := Table_Arunners.Get(Select_Race_Winner_In_One_Market);
+          Runner_Data := Runners.Get(Select_Race_Winner_In_One_Market);
           Runner_List.Append(Runner_Data);
         end loop;
         Select_Race_Winner_In_One_Market.Close_Cursor;
@@ -704,8 +703,8 @@ package body Sim is
                      Date                                     : in     Calendar2.Time_Type;
                      Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
     Eos       : Boolean := False;
-    Apriceshistory_List    : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-    Apriceshistory_Data    : Table_Apriceshistory.Data_Type;
+    Apriceshistory_List    : Price_Histories.List_Pack.List;
+    Price_History_Data    : Price_Histories.Price_History_Type;
     T : Sql.Transaction_Type;
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
@@ -735,8 +734,8 @@ package body Sim is
           loop
             Select_Pricets_For_Market.Fetch(Eos);
             exit when Eos;
-            Apriceshistory_Data := Table_Apriceshistory.Get(Select_Pricets_For_Market);
-            Apriceshistory_List.Append(Apriceshistory_Data);
+            Price_History_Data := Price_Histories.Get(Select_Pricets_For_Market);
+            Apriceshistory_List.Append(Price_History_Data);
           end loop;
           Select_Pricets_For_Market.Close_Cursor;
           --Log("Insert Market.Marketid & _ & Pricets.To_String '" & Market.Marketid & "_" & Pricets.To_String & "'");
@@ -878,7 +877,7 @@ package body Sim is
   ------------------------------------------------------------------
 
 
-  function Get_Place_Price(Win_Data : Table_Apriceshistory.Data_Type) return Table_Apriceshistory.Data_Type is
+  function Get_Place_Price(Win_Data : Price_Histories.Price_History_Type) return Price_Histories.Price_History_Type is
     Place_Marketid : Marketid_Type := (others => ' ');
   begin
     Place_Marketid := Win_Place_Map(Win_Data.Marketid);
@@ -890,7 +889,7 @@ package body Sim is
       begin
         for Timestamp of Marketid_Pricets_Map(Place_Marketid) loop
           declare
-            List : Table_Apriceshistory.Apriceshistory_List_Pack2.List :=
+            List : Price_Histories.List_Pack.List :=
                       Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
           begin
             for Data of reverse List loop
@@ -903,11 +902,11 @@ package body Sim is
         end loop;
       end;
     end if;
-    return Table_Apriceshistory.Empty_Data;
+    return Price_Histories.Empty_Data;
   exception
     when E: Constraint_Error =>
       Stacktrace.Tracebackinfo(E);
-      return Table_Apriceshistory.Empty_Data;
+      return Price_Histories.Empty_Data;
   end Get_Place_Price;
 
   ------------------------------------------------------------------

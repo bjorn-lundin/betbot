@@ -18,9 +18,9 @@ with Ini;
 with Logging; use Logging;
 with Process_IO;
 with Core_Messages;
-with Table_Amarkets;
-with Table_Aevents;
-with Table_Aprices;
+with Markets;
+with Events;
+with Prices;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
@@ -48,9 +48,9 @@ procedure Poll_Soccer is
   
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
-    Price_List : Table_Aprices.Aprices_List_Pack2.List;
+    Market    : Markets.Market_Type;
+    Event     : Events.Event_Type;
+    Price_List : Prices.List_Pack.List;
     --------------------------------------------
 
     Priceshistory_Data : Table_Apriceshistory.Data_Type;
@@ -267,4 +267,3 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Poll_Soccer;
-

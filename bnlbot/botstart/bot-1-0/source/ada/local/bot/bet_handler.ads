@@ -3,10 +3,10 @@ with Types; use Types;
 with Bot_Types ; use Bot_Types;
 
 with Bot_Messages;
-with Table_Aevents;
-with Table_Amarkets;
-with Table_Aprices;
-with Table_Arunners;
+with Events;
+with Markets;
+with Prices;
+with Runners;
 with Bot_Config;
 
 package Bet_Handler is
@@ -24,14 +24,14 @@ package Bet_Handler is
 private
 
   type Runners_Record_Type is record
-    Runner : Table_Arunners.Data_Type;
-    Price  : Table_Aprices.Data_Type;
+    Runner : Runners.Runner_Type;
+    Price  : Prices.Price_Type;
   end record;
   type Runners_Array_Type is array(1 .. 50) of Runners_Record_Type;
   
   type Bet_Info_Record is new Ada.Finalization.Controlled with record
-    Event        : Table_Aevents.Data_Type;    
-    Market       : Table_Amarkets.Data_Type;    
+    Event        : Events.Event_Type;    
+    Market       : Markets.Market_Type;    
     Runner_Array : Runners_Array_Type;
     Last_Runner  : Integer := 0;
     Used_Index   : Integer := 0;    
@@ -87,5 +87,3 @@ private
   function Previous_Price(Pip : Pip_Type) return Float_8;
   
 end Bet_Handler;
-
-

@@ -37,6 +37,13 @@ package Types is
   procedure Append(Self : in out String_Object; What : String);
   function Camel_Case(Self : String_Object) return String ;
   procedure Delete_Last_Char(Self : in out String_Object);
+  type How_Type is (Fix,Upper,Lower,Camel);
+  procedure Put_Line(Self : in out String_Object; 
+                     How  : in How_Type := Fix; 
+                     File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output);
+  procedure Put(Self : in out String_Object; 
+                How  : in How_Type := Fix;
+                File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output);
   
   function "<"( Left, Right : String_Object) return Boolean;
   function "="( Left, Right : String_Object) return Boolean;

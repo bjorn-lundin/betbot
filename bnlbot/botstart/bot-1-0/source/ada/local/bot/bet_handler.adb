@@ -8,8 +8,8 @@ with Gnatcoll.Json; use Gnatcoll.Json;
 --with Bot_Types; use  Bot_Types;
 with Bot_Config; use Bot_Config;
 with Bot_System_Number;
-with Table_Abets;
-with Table_Abalances;
+with Bets;
+with Balances;
 with Sql;
 with Calendar2;
 
@@ -97,11 +97,11 @@ package body Bet_Handler is
     T.Start;
 
     Bet_Info.Market.Marketid := Market_Notification.Market_Id;
-    Table_Amarkets.Read(Bet_Info.Market, Eos(A_Market));
+    Bet_Info.Market.Read(Eos(A_Market));
 
     if not Eos(A_Market) then
       Bet_Info.Event.Eventid := Bet_Info.Market.Eventid;
-      Table_Aevents.Read(Bet_Info.Event, Eos(A_Event));
+      Events.Read(Bet_Info.Event, Eos(A_Event));
     else
       T.Rollback;
       raise No_Data with "Market missing: '" & Market_Notification.Market_Id & "'";
@@ -123,8 +123,8 @@ package body Bet_Handler is
       Select_Prices.Fetch(Eos(A_Price));
       exit when Eos(A_Price);
       Max_Idx := Max_Idx +1;
-      Bet_Info.Runner_Array(Max_Idx).Price := Table_Aprices.Get(Select_Prices);
-      Log(Me & "Create", Table_Aprices.To_String(Bet_Info.Runner_Array(Max_Idx).Price));
+      Bet_Info.Runner_Array(Max_Idx).Price := Prices.Get(Select_Prices);
+      Log(Me & "Create", Bet_Info.Runner_Array(Max_Idx).Price.To_String);
     end loop;
     Select_Prices.Close_Cursor;
     Bet_Info.Last_Runner := Max_Idx;
@@ -143,7 +143,7 @@ package body Bet_Handler is
       Select_Runners.Open_Cursor;
       Select_Runners.Fetch(Eos(A_Runner));
       if not Eos(A_Runner) then
-        Bet_Info.Runner_Array(i).Runner := Table_Arunners.Get(Select_Runners);
+        Bet_Info.Runner_Array(i).Runner := Runners.Get(Select_Runners);
       else
         Select_Runners.Close_Cursor;
         T.Rollback;
@@ -349,7 +349,7 @@ package body Bet_Handler is
         when Real =>
           declare
             Betfair_Result : Rpc.Result_Type ;
-            Saldo          : Table_Abalances.Data_Type;
+            Saldo          : Balances.Balance_Type;
             Expected_Exposure_This_Bet : Float_8 := 0.0;
             use type Rpc.Result_Type;
             
@@ -718,7 +718,7 @@ package body Bet_Handler is
         when Real =>
           declare
             Betfair_Result : Rpc.Result_Type ;
-            Saldo          : Table_Abalances.Data_Type;
+            Saldo          : Balances.Balance_Type;
             Expected_Exposure_This_Bet : Float_8 := 0.0;
             use type Rpc.Result_Type;
             
@@ -757,11 +757,11 @@ package body Bet_Handler is
             Match_Odds_Exists              : Boolean := False;
             Sum        : Integer := 0;
             
-            Market_Data : Table_Amarkets.Data_Type;
+            Market_Data : Markets.Market_Type;
 --            Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
-            Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
+            Market_List : Markets.List_Pack.List;
             type Price_Type is (Home,Draw,Away);
-            Price : array (Price_Type'range) of Table_Aprices.Data_Type;
+            Price : array (Price_Type'range) of Prices.Price_Type;
           begin
             case Bet.Bot_Cfg.Bet_Type is
               when Back    => 
@@ -862,6 +862,7 @@ package body Bet_Handler is
                         Market_Data.Eventid := Bet.Bet_Info.Event.Eventid;
                         --Table_Amarkets.Read_Eventid(Data => Market_Data, List => Market_List);            
                         Market_Data.Read_Eventid(List => Market_List);
+                        
                         --Log(Me & Service, "Read eventid done, items: " & Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'img);
                         Log(Me & Service, "Read eventid done, items: " & Market_List.Length'img);
                         -- get the match_odds market for this event                        
@@ -888,17 +889,16 @@ package body Bet_Handler is
                         end if;
                         
                         declare
-                          Runner : Table_Arunners.Data_Type;
-                          Tmp_Price : Table_Aprices.Data_Type;
+                          Runner : Runners.Runner_Type;
+                          Tmp_Price : Prices.Price_Type;
                           Eos_Runner : Boolean := False;
-                         -- Price_List : Table_Aprices.Aprices_List_Pack.List_Type := Table_Aprices.Aprices_List_Pack.Create;
-                          Price_List : Table_Aprices.Aprices_List_Pack2.List;
+                          Price_List : Prices.List_Pack.List;
                           Fetched : array(Price_Type'range) of Boolean := (others => False);
                         begin
                         -- Always 3 runners, Home,draw,away in MATCH_ODDS - get them
                           Tmp_Price.Marketid := Market_Data.Marketid;
                           --Table_Aprices.Read_I1_Marketid(Tmp_Price, Price_List);
-                          Tmp_Price.Read_I1_Marketid(Price_List);
+                          Prices.Read_I1_Marketid(Tmp_Price,Price_List);
                           
 --                          while not Table_Aprices.Aprices_List_Pack.Is_Empty(Price_List) loop
 --                            Table_Aprices.Aprices_List_Pack.Remove_From_Head(Price_List, Tmp_Price);
@@ -931,7 +931,7 @@ package body Bet_Handler is
                             -- The draw 
                             Runner.Marketid := Tmp_Price.Marketid;
                             Runner.Selectionid := Tmp_Price.Selectionid;
-                            Table_Arunners.Read(Runner, Eos_Runner);
+                            Runner.Read(Eos_Runner);
                             -- The only known is runnername 'The Draw', so use that one only for test.                    
                             if not Eos_Runner then
                               if Lower_Case(Skip_all_Blanks(Runner.Runnername)) = "thedraw" then
@@ -1355,7 +1355,7 @@ package body Bet_Handler is
   function Exists(Bet : Bet_Type) return Boolean is
     T    : Sql.Transaction_Type;
     Eos  : Boolean := False;
-    Abet : Table_Abets.Data_Type;
+    Abet : Bets.Bet_Type;
   begin
     T.Start;
       Select_Exists.Prepare(
@@ -1375,8 +1375,8 @@ package body Bet_Handler is
       Select_Exists.Open_Cursor;
       Select_Exists.Fetch( Eos);
       if not Eos then
-        Abet := Table_Abets.Get(Select_Exists);
-        Log(Me & "Exists", "Bet does already exist " & Table_Abets.To_String(Abet));
+        Abet := Bets.Get(Select_Exists);
+        Log(Me & "Exists", "Bet does already exist " & Abet.To_String);
       else
         null;
 --        Log(Me & "Exists", "Bet does not exist");
@@ -1424,7 +1424,7 @@ package body Bet_Handler is
 
     A_Token : Token.Token_Type := Rpc.Get_Token;
 
-    Abet : Table_Abets.Data_Type;
+    Abet : Bets.Bet_Type;
     Local_Price : Float_8 := Float_8(Price);
 
     Side                           : String (1..4)   :=  (others => ' ') ;
@@ -1804,8 +1804,8 @@ package body Bet_Handler is
 
     begin
       T.Start;
-        Table_Abets.Insert(Abet);
-        Log(Me & "Make_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Table_Abets.To_String(Abet));
+        Abet.Insert;
+        Log(Me & "Make_Bet", To_String(Bet.Bot_Cfg.Bet_Name) & " inserted bet: " & Abet.To_String);
         if Utils.Trim(Execution_Report_Status) = "SUCCESS" then
           Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
           Sql.Set(Update_Betwon_To_Null,"BETID", Abet.Betid);
@@ -1815,7 +1815,7 @@ package body Bet_Handler is
     exception
       when Sql.Duplicate_Index =>
         T.Rollback;
-        Log(Me & "Make_Bet", "Duplicate_Index: " & Table_Abets.To_String(Abet));
+        Log(Me & "Make_Bet", "Duplicate_Index: " & Abet.To_String);
     end ;
   end Make_Bet;
 
@@ -1890,12 +1890,12 @@ package body Bet_Handler is
    procedure Check_Bets is
     use Utils;
     --Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
-    Bet_List : Table_Abets.Abets_List_Pack2.List;
-    Bet,Bet_From_List      : Table_Abets.Data_Type;
+    Bet_List : Bets.List_Pack.List;
+    Bet,Bet_From_List      : Bets.Bet_Type;
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
     Side       : Bet_Type_Type;
-    Runner     : Table_Arunners.Data_Type;
+    Runner     : Runners.Runner_Type;
     type Eos_Type is (Arunner ,
                       Abets);
     Eos        : array (Eos_Type'range) of Boolean := (others => False);
@@ -1924,7 +1924,7 @@ package body Bet_Handler is
 --      "and B.BETID < 1000000000 " & -- ALL BETS
       "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
       "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
-    Table_Abets.Read_List(Select_Dry_Run_Bets, Bet_List);
+    Bets.Read_List(Select_Dry_Run_Bets, Bet_List);
     T.Commit;
 
     for b of Bet_List loop
@@ -2062,9 +2062,9 @@ package body Bet_Handler is
       for b of Bet_List loop
         Bet_From_List := b;
         -- Call Betfair here ! Profit & Loss
-        Bet := Table_Abets.Empty_Data;
+        Bet := Bets.Empty_Data;
         Bet.Betid := Bet_From_List.Betid;
-        Table_Abets.Read(Bet,Eos(Abets));
+        Bet.Read(Eos(Abets));
         Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " Eos(Abets) = " & Eos(Abets)'Img);
         if not Eos(Abets) then
           Bet.Pricematched := Bet_From_List.Pricematched;
@@ -2090,31 +2090,29 @@ package body Bet_Handler is
           if Do_Update then          
             begin
               T.Start;
-              Table_Abets.Update_Withcheck(Bet);
+              Bet.Update_Withcheck;
               T.Commit;
               Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " updated status to " &  Bet.Status);
             exception
               when Sql.No_Such_Row =>
                  T.Rollback; -- let the other one do the update
-                 Log(Me & "Check_Bets", "No_Such_Row!! " & Table_Abets.To_String(Bet));
+                 Log(Me & "Check_Bets", "No_Such_Row!! " & Bet.To_String);
             end ;
           end if;              
         else
-          Log(Me & "Check_Bets", "EOS!! " & Table_Abets.To_String(Bet));
+          Log(Me & "Check_Bets", "EOS!! " & Bet.To_String);
         end if;
       end loop;
       
     end if;
-    --Table_Abets.Abets_List_Pack.Release(Bet_List);
     Log(Me & "Check_Bets", "stop");
   end Check_Bets;
   ------------------------------------------------------------------------------
 
   procedure Check_If_Bet_Accepted is
     T : Sql.Transaction_Type;
---    Bet_List : Table_Abets.Abets_List_Pack.List_Type := Table_Abets.Abets_List_Pack.Create;
-    Bet_List : Table_Abets.Abets_List_Pack2.List;
-    Bet      : Table_Abets.Data_Type;
+    Bet_List : Bets.List_Pack.List;
+    Bet      : Bets.Bet_Type;
     Avg_Price_Matched : Bet_Price_Type := 0.0;
     Is_Matched,
     Is_Removed        : Boolean        := False;
@@ -2132,14 +2130,11 @@ package body Bet_Handler is
 --      "and B.IXXLUPD = :BOTNAME " & --only fix my bets, so no rollbacks ...
       "and B.STATUS = 'EXECUTABLE' "); --only not acctepted bets ...
 
---    Select_Executable_Bets.Set("BOTNAME", Process_IO.This_Process.Name);
-    Table_Abets.Read_List(Select_Executable_Bets, Bet_List);
+    Bets.Read_List(Select_Executable_Bets, Bet_List);
 
---    while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
---      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
     for b of Bet_List loop
       Bet := b;
-      Log(Me & "Check_If_Bet_Accepted", "Check bet " & Table_Abets.To_String(Bet));
+      Log(Me & "Check_If_Bet_Accepted", "Check bet " & Bet.To_String);
 
       RPC.Bet_Is_Matched(Bet.Betid, Is_Removed, Is_Matched, Avg_Price_Matched, Size_Matched);
 
@@ -2171,9 +2166,8 @@ package body Bet_Handler is
 
   procedure Check_Market_Status is
     T : Sql.Transaction_Type;
---    Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
-    Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
-    Market      : Table_Amarkets.Data_Type;
+    Market_List : Markets.List_Pack.List;
+    Market      : Markets.Market_Type;
     Is_Changed  : Boolean        := False;
 
   begin
@@ -2187,7 +2181,7 @@ package body Bet_Handler is
             Select_Ongoing_Markets.Prepare(
               "select M.* from AMARKETS M " &
               "where M.STATUS <> 'CLOSED' order by M.STARTTS");
-            Table_Amarkets.Read_List(Select_Ongoing_Markets, Market_List);
+            Markets.Read_List(Select_Ongoing_Markets, Market_List);
          
 --            while not Table_Amarkets.Amarkets_List_Pack.Is_Empty(Market_List) loop
 --              Log(Me & "Check_Market_Status", Table_Amarkets.Amarkets_List_Pack.Get_Count(Market_List)'Img &
@@ -2224,9 +2218,9 @@ package body Bet_Handler is
 
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) is
     T : Sql.Transaction_Type;
-    Db_Runner : Table_Arunners.Data_Type;
-    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
-    Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
+    Db_Runner : Runners.Runner_Type;
+    Runner_List : Runners.List_Pack.List;
+    Market_List : Markets.List_Pack.List;
     type Eos_Type is ( Arunners);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
   begin
@@ -2242,7 +2236,7 @@ package body Bet_Handler is
           "and R.STATUS in ('', 'NOT_SET_YET') ) " &
       "order by STARTTS" );
 
-      Table_Amarkets.Read_List(Select_Unsettled_Markets, Market_List);
+      Markets.Read_List(Select_Unsettled_Markets, Market_List);
 
       Market_Loop : for Market of Market_List loop
 
@@ -2254,11 +2248,11 @@ package body Bet_Handler is
 
           Db_Runner.Read( Eos(Arunners));
           if Eos(Arunners) then
-            Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Table_Arunners.To_String(Db_Runner));
+            Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Db_Runner.To_String);
           else
             Db_Runner.Status := List_Runner.Status;
             if Db_Runner.Status(1..2) = "WI" then
-              Log (Me & "Check_Unsettled_Markets", "Got winner : " & Table_Arunners.To_String(Db_Runner));
+              Log (Me & "Check_Unsettled_Markets", "Got winner : " & Db_Runner.To_String);
               Inserted_Winner := True;
             end if;
             Db_Runner.Update_Withcheck;

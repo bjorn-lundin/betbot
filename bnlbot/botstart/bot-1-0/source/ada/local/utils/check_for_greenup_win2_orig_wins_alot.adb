@@ -44,7 +44,7 @@ procedure Check_for_Greenup_Win2 is
   Select_Selectionids : Sql.Statement_Type;
   Me            : constant String := "Check_for_Greenup_Win2.";
 
-  procedure Add_Bet(M : Table_Amarkets.Data_Type;
+  procedure Add_Bet(M : Markets.Market_Type;
                     R : Table_Arunners.Data_Type;
                     P : Table_Apriceshistory.Data_Type) is
     Bet : Table_Abets.Data_Type;

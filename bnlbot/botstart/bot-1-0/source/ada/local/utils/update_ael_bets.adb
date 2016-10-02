@@ -23,7 +23,7 @@ with Ini;
 with Logging; use Logging;
 --with Process_IO;
 --with Core_Messages;
-with Table_Amarkets;
+with Markets;
 --with Table_Aevents;
 --with Table_Aprices;
 --with Table_Abalances;
@@ -231,7 +231,7 @@ begin
         -- calculate profit
         Check_Bet_Profit(B=> Bet);
         declare
-          Market : Table_Amarkets.Data_Type;
+          Market : Markets.Market_Type;
           Eos    : Boolean := False;
         begin 
           if Bet.Startts = Time_Type_First then
@@ -278,8 +278,3 @@ exception
     Posix.Do_Exit(0); -- terminate
 
 end Update_Ael_Bets;
-
-
-
-
-

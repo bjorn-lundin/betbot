@@ -4,9 +4,6 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 with Ada.Containers;
---with Ada.Containers.Doubly_Linked_Lists;
---with Bot_System_Number;
-
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
@@ -15,28 +12,20 @@ with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
---with Bot_Messages;
 with Rpc;
 with Lock ;
---with Posix;
 with Ini;
 with Logging; use Logging;
---with Process_IO;
---with Core_Messages;
-with Table_Amarkets;
-with Table_Aevents;
-with Table_Aprices;
---with Table_Abalances;
-with Table_Apriceshistory;
+with Markets;
+with Table_Apriceshistory; -- Needed for not Oo Routines
+with Prices;
+with Price_Histories;
 with Bot_Svn_Info;
---with Config;
---with Utils; use Utils;
-with Table_Abets;
-with Table_Arunners;
+with Bets;
+with Runners;
 with Tics;
 
 with Sim;
---with Simulation_Storage;
 
 procedure Greenup_Lay_First is
 
@@ -50,11 +39,11 @@ procedure Greenup_Lay_First is
   Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
   Cmd_Line        : Command_Line_Configuration;
   -------------------------------------------------------------
-  type Bet_Type is record
-    Laybet  : Table_Abets.Data_Type := Table_Abets.Empty_Data;
-    Backbet : Table_Abets.Data_Type := Table_Abets.Empty_Data;
+  type Bet_Record is record
+    Laybet  : Bets.Bet_Type := Bets.Empty_Data;
+    Backbet : Bets.Bet_Type := Bets.Empty_Data;
   end record;
-  use type Table_Abets.Data_Type;
+  use type Bets.Bet_Type;
 --  package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 --  Bet_List : Bet_List_Pack.List;
   subtype Delta_Tics_Type is Integer range 1 .. 50;
@@ -67,8 +56,8 @@ procedure Greenup_Lay_First is
   subtype Min_Layprice_Type is Integer_4 range  60 .. 100;
 
   -----------------------------------------------------------------
-  procedure Check_Bet ( R : in Table_Arunners.Data_Type;
-                        B : in out Table_Abets.Data_Type) is
+  procedure Check_Bet ( R : in Runners.Runner_Type;
+                        B : in out Bets.Bet_Type) is
   begin
     if R.Status(1..7) = "REMOVED" then
       return;
@@ -101,21 +90,20 @@ procedure Greenup_Lay_First is
 
   -----------------------------------------------------------------
 
-  procedure Run(Price_Data : in Table_Aprices.Data_Type;
+  procedure Run(Price_Data : in Prices.Price_Type;
                 Delta_Tics : in Integer;
                 Min_Layprice : in Min_Layprice_Type;
                 Max_Layprice : in Max_Layprice_Type ) is
 
-    Market    : Table_Amarkets.Data_Type;
-    Event     : Table_Aevents.Data_Type;
+    Market    : Markets.Market_Type;
     Eos               : Boolean := False;
-    Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+    Price_During_Race_List : Price_Histories.List_Pack.List;
 --    type Greenup_Result_Type is (None, Ok, Fail_Runner_Won, Fail_Runner_Lost );
 --    Greenup_Result : Greenup_Result_Type := Greenup_Result_Type'first;
-    Runner : Table_Arunners.Data_Type;
+    Runner : Runners.Runner_Type;
  --   Bad_Data : exception;
     Tic_Lay : Integer := 0;
-    Bet : Bet_Type;
+    Bet : Bet_Record;
     Lay_Bet_Name  : constant Betname_Type := "1_HOUNDS_WIN_GREEN_UP_LAY                                                                           ";
     Back_Bet_Name : constant Betname_Type := "1_HOUNDS_WIN_GREEN_UP_BACK                                                                          ";
   begin
@@ -263,7 +251,7 @@ begin
   declare
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
-    Price_List  : Table_Aprices.Aprices_List_Pack2.List;
+    Price_List  : Prices.List_Pack.List;
   begin  
     T.Start;
     Stm.Prepare(
@@ -277,7 +265,7 @@ begin
    --  "and P.LAYPRICE <= :MAX_LAYPRICE " &
    --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
      "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
-    Table_Aprices.Read_List(Stm, Price_List);
+    Prices.Read_List(Stm, Price_List);
     T.Commit;
 
     for Max_Layprice in Max_Layprice_Type'range loop
@@ -353,4 +341,3 @@ exception
     Logging.Close;
    -- Posix.Do_Exit(0); -- terminate
 end Greenup_Lay_First;
-

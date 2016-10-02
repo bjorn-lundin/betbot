@@ -80,6 +80,7 @@ package body Statistics is
                          First  : in First_Odds_Range_Type;
                          Second : in Second_Odds_Range_Type;
                          Market : in Market_Type) is
+                         pragma Unreferenced (Market);
     use Text_Io;
     use Utils;
     -- 123456789012345
@@ -197,9 +198,3 @@ package body Statistics is
   ------------------------------------------------------------
   
 end Statistics;
-
-
-
-
-
-
