@@ -10,7 +10,7 @@ package Bets is
   function Profit_Today(Bet_Name : Betname_Type) return Float_8 ;
   function Exists(Bet_Name : Betname_Type; Market_Id : Marketid_Type) return Boolean;
 
-  Commission : constant Float_8 := 6.5/100.0;
+  Commission : constant Float_8 := 0.0; --6.5/100.0;
 
   type Bet_Type is new Table_Abets.Data_Type with null record;
   
@@ -19,8 +19,8 @@ package Bets is
                   Size : Bet_Size_Type;
                   Price : Price_Type;
                   Placed : Calendar2.Time_Type;
-                  The_Runner : Runners.Runner_Type;
-                  The_Market : Markets.Market_Type) return Bet_Type;
+                  Runner : Runners.Runner_Type;
+                  Market : Markets.Market_Type) return Bet_Type;
 
   procedure Check_Matched(Self : in out Bet_Type);
   procedure Check_Outcome(Self : in out Bet_Type);

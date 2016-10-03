@@ -179,8 +179,8 @@ package body Bets is
                   Size : Bet_Size_Type;
                   Price : Price_Type;
                   Placed : Calendar2.Time_Type;
-                  The_Runner : Runners.Runner_Type;
-                  The_Market : Markets.Market_Type) return Bet_Type is
+                  Runner : Runners.Runner_Type;
+                  Market : Markets.Market_Type) return Bet_Type is
 
     Now        : Calendar2.Time_Type      := Calendar2.Clock;
     Self : Bet_Type;
@@ -190,10 +190,10 @@ package body Bets is
     Move (Side'Img,Local_Side);
     Self := (
         Betid          => Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid)),
-        Marketid       => The_Market.Marketid,
+        Marketid       => Market.Marketid,
         Betmode        => Bot_Mode(Simulation),
         Powerdays      => 0,
-        Selectionid    => The_Runner.Selectionid,
+        Selectionid    => Runner.Selectionid,
         Reference      => (others => '-'),
         Size           => Float_8(Size),
         Price          => Float_8(Price),
@@ -206,12 +206,12 @@ package body Bets is
         Exeerrcode     => (others => ' '),
         Inststatus     => (others => ' '),
         Insterrcode    => (others => ' '),
-        Startts        => The_Market.Startts,
+        Startts        => Market.Startts,
         Betplaced      => Placed,
         Pricematched   => Float_8(0.0),
         Sizematched    => Float_8(Size),
-        Runnername     => The_Runner.Runnernamestripped,
-        Fullmarketname => The_Market.Marketname,
+        Runnername     => Runner.Runnernamestripped,
+        Fullmarketname => Market.Marketname,
         Svnrevision    => Bot_Svn_Info.Revision,
         Ixxlupd        => (others => ' '), --set by insert
         Ixxluts        => Now              --set by insert
@@ -258,7 +258,7 @@ package body Bets is
         end if;
       end if;
       exit when Self.Match_Directly or else -- match directly
-                Self.Pricematched >= Float_8(1.01);     -- matched
+                Self.Status(1..7) = "MATCHED";     -- matched
     end loop;
     if Self.Status(1) /= 'M' then
        Self.Status(1..7) := "LAPSED ";

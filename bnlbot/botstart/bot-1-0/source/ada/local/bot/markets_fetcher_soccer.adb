@@ -5,7 +5,7 @@ with Types; use Types;
 with Sql;
 with Ada.Calendar.Time_Zones;
 with Calendar2; use Calendar2;
-with Gnatcoll.Json; use Gnatcoll.Json;
+with Json; use Json;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Token ;
@@ -71,11 +71,8 @@ procedure Markets_Fetcher_Soccer is
   My_Lock         : Lock.Lock_Type;
   UTC_Time_Start,
   UTC_Time_Stop   : Calendar2.Time_Type ;
-  Thirty_Minutes   : Calendar2.Interval_Type := (0,0,30,0,0);
-  Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
-  Three_Days      : Calendar2.Interval_Type := (3,0,0,0,0);
   One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
@@ -84,13 +81,6 @@ procedure Markets_Fetcher_Soccer is
   Market_Is_Ok : Boolean := False;
   Okmarket : Table_Aokmarkets.Data_Type;
    
-  
-  Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "soc" ;
-  Is_Long_Poll      : Boolean := False; --EV.Value("BOT_MACHINE_ROLE") = "LONGPOLL" ;
-  Is_Tester         : Boolean := False; --EV.Value("BOT_USER") = "ael" ;
-
-  Is_Better         : Boolean := (not Is_Data_Collector) and (not Is_Tester);
-
   type Poll_Process is record
     Free     : Boolean := True;
     Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
@@ -117,18 +107,6 @@ procedure Markets_Fetcher_Soccer is
    18 => (True, (("poll_market_s18"), (others => ' '))),
    19 => (True, (("poll_market_s19"), (others => ' '))),
    20 => (True, (("poll_market_s20"), (others => ' ')))
-  );
-  Race_Pollers : array (1..4) of Poll_Process := (
-    1 => (True, (("poll_1         "), (others => ' '))),
-    2 => (True, (("poll_2         "), (others => ' '))),
-    3 => (True, (("poll_3         "), (others => ' '))),
-    4 => (True, (("poll_4         "), (others => ' ')))
-  );
-  Test_Pollers : array (1..4) of Poll_Process := (
-    1 => (True, (("poll_bounds_1  "), (others => ' '))),
-    2 => (True, (("poll_bounds_2  "), (others => ' '))),
-    3 => (True, (("poll_bounds_3  "), (others => ' '))),
-    4 => (True, (("poll_bounds_4  "), (others => ' ')))
   );
 ---------------------------------------------------------------
 
@@ -231,25 +209,13 @@ procedure Markets_Fetcher_Soccer is
         return;
       end if;
     end loop;
-    for i in Race_Pollers'range loop
-      if Race_Pollers(i).Process.Name = Data.Name then
-        Race_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        return;
-      end if;
-    end loop;
-
-    for i in Test_Pollers'range loop
-      if Test_Pollers(i).Process.Name = Data.Name then
-        Test_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        return;
-      end if;
-    end loop;
   end Set_Poller_State;
 
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Markets : Boolean               := True;
   Market_Ids               : JSON_Array            := Empty_Array;
-  Minute_Last_Check        : Calendar2.Minute_Type := 0;
+  Minute_Last_Check        : Calendar2.Minute_Type ;
+  pragma Unreferenced (Minute_Last_Check);
   Now                      : Calendar2.Time_Type   := Calendar2.Clock;
   OK                       : Boolean               := True;
 
@@ -307,13 +273,11 @@ begin
   Append(Market_Countries  , Create("GB"));
   Append(Market_Countries  , Create("ES"));
   Append(Market_Countries  , Create("IT"));
-  Append(Market_Countries  , Create("AR"));
-  Append(Market_Countries  , Create("BR"));
   Append(Market_Countries  , Create("PT"));
   Append(Market_Countries  , Create("FR"));
   Append(Market_Countries  , Create("NL"));
   Append(Market_Countries  , Create("DE"));
-  Append(Market_Countries  , Create("SE"));
+ -- Append(Market_Countries  , Create("SE"));
   Append(Market_Countries  , Create("BE"));
   Append(Market_Type_Codes , Create("MATCH_ODDS"));
   Append(Market_Type_Codes , Create("CORRECT_SCORE"));
@@ -329,7 +293,7 @@ begin
 
     loop
       begin
-        Process_Io.Receive(Msg, 5.0);
+        Process_Io.Receive(Msg, 60.0);
         if Sql.Transaction_Status /= Sql.None then
           raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
         end if;
@@ -346,16 +310,18 @@ begin
             raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
           end if;
       end;
-      Now := Calendar2.Clock;
-      Is_Time_To_Check_Markets := Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
-      Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);
-      exit when Is_Time_To_Check_Markets;
-
       --restart every day
       Is_Time_To_Exit := Now.Hour = 01 and then
                        Now.Minute = 02 ;
 
       exit Main_Loop when Is_Time_To_Exit;
+      
+--        Now := Calendar2.Clock;
+--        Is_Time_To_Check_Markets := True;
+--        --Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
+--        Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);
+      exit when Is_Time_To_Check_Markets;
+      exit;
     end loop;
     Minute_Last_Check := Now.Minute;
 
@@ -372,13 +338,7 @@ begin
        Rpc.Login;
     end if;
 
-    if Is_Long_Poll then
-      UTC_Time_Stop  := UTC_Time_Start + Three_Days;
-      UTC_Time_Start := UTC_Time_Start + One_Day;
-    else
-      UTC_Time_Stop  := UTC_Time_Start + Thirty_Minutes + Eleven_Seconds;
-      UTC_Time_Start := UTC_Time_Start + Thirty_Minutes;
-    end if;
+    UTC_Time_Stop  := UTC_Time_Start + One_Day;
 
     T.Start;
 
@@ -428,7 +388,7 @@ begin
              Insert_Market(Market);
              Event := Market.Get("event");
              if not Event.Has_Field("id") then
-               Log(Me, "we no event:" & i'img & " event:" & Event.Write );
+               Log(Me, "we have no event:" & i'img & " event:" & Event.Write );               
              end if;
            else
              Log(Me, "Market:'" & Okmarket.Marketid & "' was NOT found in AOKMARKETS - skipping" );
@@ -461,7 +421,7 @@ begin
          Has_Id                      : Boolean  := False;
          One_Market_Id               : JSON_Array := Empty_Array;
       begin
-        Market_Ids    := Empty_Array;
+        Market_Ids := Empty_Array;
       
         Log(Me, "Found" & Length (Result_List_Market_Catalogue)'Img & " markets");
       
@@ -557,37 +517,14 @@ begin
                 case DB_Event.Eventtypeid is
                   ------------------------------------------------------------------
                   when 1      =>
-                    if Is_Data_Collector then
-                      for i in Data_Pollers'range loop
-                        if Data_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
-                          Data_Pollers(i).Free := False;
-                          exit;
-                        end if;
-                      end loop;
-
-                    elsif Is_Better then
-                      for i in Race_Pollers'range loop
-                        if Race_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Race_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers(i).Process.Name)), MNR);
-                          Race_Pollers(i).Free := False;
-                          exit;
-                        end if;
-                      end loop;
-
-                    elsif Is_Tester then
-                      for i in Test_Pollers'range loop
-                        if Test_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Test_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Test_Pollers(i).Process.Name)), MNR);
-                          Test_Pollers(i).Free := False;
-                          exit;
-                        end if;
-                      end loop;
-                    end if;
-
+                    for I in Data_Pollers'Range loop
+                      if Data_Pollers(I).Free then
+                        Log(Me, "Notifying " & Trim(Data_Pollers(I).Process.Name) & " with marketid: '" & Mnr.Market_Id & "'");
+                        Bot_Messages.Send(Process_Io.To_Process_Type(Trim(Data_Pollers(I).Process.Name)), Mnr);
+                        Data_Pollers(I).Free := False;
+                        exit;
+                      end if;
+                    end loop;
                   ------------------------------------------------------------------
                   when others => null;
                   ------------------------------------------------------------------
