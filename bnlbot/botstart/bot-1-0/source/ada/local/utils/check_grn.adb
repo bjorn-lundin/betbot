@@ -94,10 +94,10 @@ begin
  -- Global_Max_Price := Float_8'Value(SA_Max_Price.all);
  -- Global_Min_Price := Float_8'Value(SA_Min_Price.all);
   
-  case IA_Runners_Place is
-    when 1 .. 50 => null;
-    when others => raise Bad_Runners_Place with IA_Runners_Place'Img;
-  end case;  
+ -- case IA_Runners_Place is
+ --   when 1 .. 50 => null;
+ --   when others => raise Bad_Runners_Place with IA_Runners_Place'Img;
+ -- end case;  
   
  
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
