@@ -196,7 +196,8 @@ begin
             Bet(Lay).Check_Outcome;
             Bet(Lay).Update_Withcheck;
             
-            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice) / (Price.Layprice + Float_8(1.0)));  
+            --Backsize * Layprice = Laysize * Layprice -1
+            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice - Float_8(1.0)) / (Price.Layprice ));  
             Bet(Back) := Bets.Create(Side   => Back,
                                      Name   => Global_Betname,
                                      Size   => Backsize,
