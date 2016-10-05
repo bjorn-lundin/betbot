@@ -44,7 +44,7 @@ procedure Check_Grn is
   IA_Runners_Place : aliased Integer := 0;
   IA_Addon_Odds    : aliased Integer := 0;
   
-  Bad_Runners_Place : exception;
+ -- Bad_Runners_Place : exception;
 
 
   ---------------------------------------------------
@@ -196,7 +196,7 @@ begin
             Bet(Lay).Check_Outcome;
             Bet(Lay).Update_Withcheck;
             
-            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice - Float_8(1.0)) / (Price.Layprice + Float_8(1.0)));  
+            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice) / (Price.Layprice + Float_8(1.0)));  
             Bet(Back) := Bets.Create(Side   => Back,
                                      Name   => Global_Betname,
                                      Size   => Backsize,
