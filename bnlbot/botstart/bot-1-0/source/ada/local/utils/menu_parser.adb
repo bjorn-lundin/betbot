@@ -1,7 +1,5 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
---with Ada.Direct_IO ;
---with Ada.Directories;
 with Ada.Environment_Variables;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
@@ -263,12 +261,15 @@ begin
       end case;
     exception
       when Process_Io.Timeout =>
-        Timeout := 250.0;
+        Now := Calendar2.Clock;
+        Timeout := 3600.0;
         Rpc.Keep_Alive(OK);
         if not OK then
           Rpc.Login;
         end if;
-        Parse_Menu;
+        if Now.Hour <= 13 then -- not when horses are racing
+          Parse_Menu;
+        end if;
     end;
     Now := Calendar2.Clock;
 
@@ -297,4 +298,3 @@ exception
     end ;
 
 end Menu_Parser;
-
