@@ -183,7 +183,7 @@ procedure Markets_Fetcher_Soccer is
   procedure Insert_Prices(Market : JSON_Value) is
     Eos : Boolean := False;
     Price_List : Prices.List_Pack.List;
-    Service : constant String := "Insert_Runners";
+    Service : constant String := "Insert_Prices";
   begin
     Log(Me & Service, "start");
     Rpc.Parse_Prices(Market, Price_List);
