@@ -73,7 +73,7 @@ procedure Markets_Fetcher_Soccer is
   UTC_Time_Stop   : Calendar2.Time_Type ;
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
-  One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
+  --One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
 
@@ -338,7 +338,7 @@ begin
        Rpc.Login;
     end if;
 
-    UTC_Time_Stop  := UTC_Time_Start + One_Day;
+    UTC_Time_Stop  := UTC_Time_Start + One_Hour;
 
     T.Start;
 
@@ -489,52 +489,52 @@ begin
     end if;
     
     Log(Me, "Market_Is_Ok: " & Market_Is_Ok'Img);
-    if Market_Is_Ok then
-      declare
-        Market   : JSON_Value := Create_Object;
-        MNR      : Bot_Messages.Market_Notification_Record;
-        --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
-        type Eos_Type is (Amarket, Aevent);
-        Eos       : array (Eos_Type'range) of Boolean := (others => False);
-        Db_Market : Markets.Market_Type;
-        Db_Event  : Events.Event_Type;
-        --------------------------------------------------------------------
-
-      begin
-        for i in 1 .. Length (Market_Ids) loop
-          Market := Get(Market_Ids, i);
-          MNR.Market_Id := (others => ' ');
-          Move(String'(Market.Get),MNR.Market_Id);
-          --some more detailed dispatching is needed now
-          -- what kind of event is it.
-          T.Start;
-            Db_Market.Marketid := MNR.Market_Id;
-            DB_Market.Read(Eos(Amarket));
-            if not Eos(Amarket) then
-              Db_Event.Eventid := Db_Market.Eventid;
-              Db_Event.Read(Eos(Aevent));
-              if not Eos(Aevent) then
-                case DB_Event.Eventtypeid is
-                  ------------------------------------------------------------------
-                  when 1      =>
-                    for I in Data_Pollers'Range loop
-                      if Data_Pollers(I).Free then
-                        Log(Me, "Notifying " & Trim(Data_Pollers(I).Process.Name) & " with marketid: '" & Mnr.Market_Id & "'");
-                        Bot_Messages.Send(Process_Io.To_Process_Type(Trim(Data_Pollers(I).Process.Name)), Mnr);
-                        Data_Pollers(I).Free := False;
-                        exit;
-                      end if;
-                    end loop;
-                  ------------------------------------------------------------------
-                  when others => null;
-                  ------------------------------------------------------------------
-                end case;
-              end if;
-            end if;
-          T.Commit;
-        end loop;
-      end;
-    end if;
+--      if Market_Is_Ok then
+--        declare
+--          Market   : JSON_Value := Create_Object;
+--          MNR      : Bot_Messages.Market_Notification_Record;
+--          --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+--          type Eos_Type is (Amarket, Aevent);
+--          Eos       : array (Eos_Type'range) of Boolean := (others => False);
+--          Db_Market : Markets.Market_Type;
+--          Db_Event  : Events.Event_Type;
+--          --------------------------------------------------------------------
+--  
+--        begin
+--          for i in 1 .. Length (Market_Ids) loop
+--            Market := Get(Market_Ids, i);
+--            MNR.Market_Id := (others => ' ');
+--            Move(String'(Market.Get),MNR.Market_Id);
+--            --some more detailed dispatching is needed now
+--            -- what kind of event is it.
+--            T.Start;
+--              Db_Market.Marketid := MNR.Market_Id;
+--              DB_Market.Read(Eos(Amarket));
+--              if not Eos(Amarket) then
+--                Db_Event.Eventid := Db_Market.Eventid;
+--                Db_Event.Read(Eos(Aevent));
+--                if not Eos(Aevent) then
+--                  case DB_Event.Eventtypeid is
+--                    ------------------------------------------------------------------
+--                    when 1      =>
+--                      for I in Data_Pollers'Range loop
+--                        if Data_Pollers(I).Free then
+--                          Log(Me, "Notifying " & Trim(Data_Pollers(I).Process.Name) & " with marketid: '" & Mnr.Market_Id & "'");
+--                          Bot_Messages.Send(Process_Io.To_Process_Type(Trim(Data_Pollers(I).Process.Name)), Mnr);
+--                          Data_Pollers(I).Free := False;
+--                          exit;
+--                        end if;
+--                      end loop;
+--                    ------------------------------------------------------------------
+--                    when others => null;
+--                    ------------------------------------------------------------------
+--                  end case;
+--                end if;
+--              end if;
+--            T.Commit;
+--          end loop;
+--        end;
+--      end if;
   end loop Main_Loop;
 
   Log(Me, "shutting down, close db");

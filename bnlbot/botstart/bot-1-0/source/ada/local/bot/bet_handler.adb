@@ -404,7 +404,7 @@ package body Bet_Handler is
 
                       case Bot_Config.Config.System_Section.Bot_Mode is
                         when Real =>
-                          Bet.Make_Bet(A_Bet_Type    => Back,
+                          Bet.Make_Bet(Bet_Side    => Back,
                                        Price         => Back_Price, 
                                        Size          => Back_Size,
                                        Price_Matched => Price_Matched, 
@@ -423,7 +423,7 @@ package body Bet_Handler is
                                        "Lay_Size: " & F8_Image(Float_8(Lay_Size)));
 
                           if Price_Matched > 0.0 then
-                            Bet.Make_Bet(A_Bet_Type    => Lay,
+                            Bet.Make_Bet(Bet_Side      => Lay,
                                          Price         => Lay_Price, 
                                          Size          => Lay_Size,
                                          Price_Matched => Price_Matched, 
@@ -499,7 +499,7 @@ package body Bet_Handler is
           
                                 case Bot_Config.Config.System_Section.Bot_Mode is
                                   when Real =>
-                                    Bet.Make_Bet(A_Bet_Type    => Lay,
+                                    Bet.Make_Bet(Bet_Side      => Lay,
                                                  Price         => Lay_Price,
                                                  Size          => Lay_Size,
                                                  Price_Matched => Price_Matched,
@@ -530,7 +530,7 @@ package body Bet_Handler is
                                              "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                              "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
           
-                                      Bet.Make_Bet(A_Bet_Type    => Back,
+                                      Bet.Make_Bet(Bet_Side      => Back,
                                                    Price         => Back_Price,
                                                    Size          => Back_Size,
                                                    Price_Matched => Price_Matched,
@@ -556,7 +556,7 @@ package body Bet_Handler is
     
                           case Bot_Config.Config.System_Section.Bot_Mode is
                             when Real =>
-                              Bet.Make_Bet(A_Bet_Type    => Lay,
+                              Bet.Make_Bet(Bet_Side      => Lay,
                                            Price         => Lay_Price,
                                            Size          => Lay_Size,
                                            Price_Matched => Price_Matched,
@@ -590,7 +590,7 @@ package body Bet_Handler is
                                        "Lay_Size: " & F8_Image(Float_8(Lay_Size)) & " " &
                                        "Size_Matched: " & F8_Image(Float_8(Size_Matched)));
     
-                                Bet.Make_Bet(A_Bet_Type    => Back,
+                                Bet.Make_Bet(Bet_Side    => Back,
                                              Price         => Back_Price,
                                              Size          => Back_Size,
                                              Price_Matched => Price_Matched,
@@ -622,7 +622,7 @@ package body Bet_Handler is
                           Pip_Back.Init(Float_8(Back_Price));
                           Back_Price := Bet_Price_Type(Pip_Back.Previous_Price);  -- make sure we get the Back-bet
     
-                          Bet.Make_Bet(A_Bet_Type    => Back,
+                          Bet.Make_Bet(Bet_Side      => Back,
                                        Price         => Back_Price,
                                        Size          => Back_Size,
                                        Price_Matched => Price_Matched, 
@@ -647,7 +647,7 @@ package body Bet_Handler is
                               Pip_Lay.Init(Float_8(Lay_Price));
                               Lay_Price := Bet_Price_Type(Pip_Lay.Next_Price);  -- make sure we get the Lay-bet
         
-                              Bet.Make_Bet(A_Bet_Type    => Lay,
+                              Bet.Make_Bet(Bet_Side    => Lay,
                                            Price         => Lay_Price,
                                            Size          => Lay_Size,
                                            Price_Matched => Price_Matched,
@@ -657,7 +657,6 @@ package body Bet_Handler is
                           when others => raise Bad_Data with "not supported eventtype:" & Bet.Bet_Info.Event.Eventtypeid'Img;
                         end case;  
                       end;
-                    when Greenup => raise Suicide with "Bet_Side Greenup and None does not match";
                 end case;
               end case;
             else
@@ -814,7 +813,7 @@ package body Bet_Handler is
                           Pip_Back.Init(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice);
                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice := Pip_Back.Previous_Price;  -- make 'sure' we get the Lay-bet
     
-                          Bet.Make_Bet(A_Bet_Type    => Back,
+                          Bet.Make_Bet(Bet_Side    => Back,
                                        Price         => Bet_Price_Type(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Backprice),
                                        Size          => Back_Size,
                                        Price_Matched => Price_Matched,
@@ -837,7 +836,6 @@ package body Bet_Handler is
                 end case;
               
               
-              when Greenup => raise Suicide with "Bet_Side Greenup and football not implemented";
               when Lay     =>
 
                 case Bet.Bet_Info.Event.Eventtypeid is
@@ -1027,7 +1025,7 @@ package body Bet_Handler is
                           Pip_Lay.Init(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice);
                           Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice := Pip_Lay.Next_Price;  -- make 'sure' we get the Lay-bet
     
-                          Bet.Make_Bet(A_Bet_Type    => Lay,
+                          Bet.Make_Bet(Bet_Side      => Lay,
                                        Price         => Bet_Price_Type(Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index ).Price.Layprice),
                                        Size          => Lay_Size,
                                        Price_Matched => Price_Matched,
@@ -1415,7 +1413,7 @@ package body Bet_Handler is
   ---------------------------------------------------------------
 
   procedure Make_Bet(Bet           : in out Bet_Type;
-                     A_Bet_Type    : in     Bet_Type_Type;
+                     Bet_Side      : in     Bet_Side_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
                      Price_Matched :    out Bet_Price_Type;
@@ -1489,10 +1487,9 @@ package body Bet_Handler is
 --      Ixxluts :    Time_Type  := Time_Type_First ; --
 --  end record;
 
-    case A_Bet_Type is
+    case Bet_Side is
       when Back    => Move("BACK", Side);
       when Lay     => Move("LAY", Side);   
-      when Greenup => raise Suicide with "bad data GREENUP";      
     end case;
 
     Move( To_String(Bet.Bot_Cfg.Bet_Name), Bet_Name);
@@ -1515,7 +1512,7 @@ package body Bet_Handler is
           Local_Size := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
         end;
 
-        case A_Bet_Type is
+        case Bet_Side is
           when Back =>
             case Bet.Bot_Cfg.Green_Up_Mode is
               when Back_First_Then_Lay => Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet.Bot_Cfg.Back_First_Bet_Persistance'Img);
@@ -1532,7 +1529,6 @@ package body Bet_Handler is
             end case;
             Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
             Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
-          when Greenup => raise Suicide with "bad data GREENUP";      
         end case;
 
         Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
@@ -1549,10 +1545,9 @@ package body Bet_Handler is
         Params.Set_Field (Field_Name => "marketId",     Field => Bet.Bet_Info.Market.Marketid);
 
         Query_Place_Orders.Set_Field (Field_Name => "params", Field => Params);
-        case A_Bet_Type is
+        case Bet_Side is
           when Back    => Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
           when Lay     => Query_Place_Orders.Set_Field (Field_Name => "id", Field => 15);          -- what to put here?
-          when Greenup => raise Suicide with "bad data GREENUP";      
         end case;
 --        pragma Compile_time_warning(True, "id to keep pair together?");
         Query_Place_Orders.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
@@ -1752,7 +1747,7 @@ package body Bet_Handler is
         Move( "SUCCESS", Execution_Report_Error_Code);
         Move( "SUCCESS", Instruction_Report_Status);
         Move( "SUCCESS", Instruction_Report_Error_Code);
-        case A_Bet_Type is
+        case Bet_Side is
           when Back =>
             Average_Price_Matched := Float(Local_Price);
             L_Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
@@ -1760,9 +1755,7 @@ package body Bet_Handler is
           when Lay =>
             Average_Price_Matched := Float(Local_Price);
             L_Size_Matched := Float(Bet.Bot_Cfg.Bet_Size);
-            Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);
-          when Greenup => raise Suicide with "bad data GREENUP";      
-            
+            Move( Bet.Bet_Info.Runner_Array(Bet.Bet_Info.Used_Index).Runner.Runnernamestripped, Runner_Name);            
         end case;
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
 
@@ -1894,7 +1887,7 @@ package body Bet_Handler is
     Bet,Bet_From_List      : Bets.Bet_Type;
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
-    Side       : Bet_Type_Type;
+    Side       : Bet_Side_Type;
     Runner     : Runners.Runner_Type;
     type Eos_Type is (Arunner ,
                       Abets);
@@ -1932,8 +1925,6 @@ package body Bet_Handler is
     end loop;
 
     
---    Inner : while not Table_Abets.Abets_List_Pack.Is_Empty(Bet_List) loop
---      Table_Abets.Abets_List_Pack.Remove_From_Head(Bet_List, Bet);
     Inner : for b of Bet_List  loop
       Bet := b;
       Illegal_Data := False;
@@ -1986,7 +1977,6 @@ package body Bet_Handler is
         case Side is
           when Back    => Bet_Won := Selection_In_Winners;
           when Lay     => Bet_Won := not Selection_In_Winners;
-          when Greenup => raise Suicide with "bad data GREENUP";            
         end case;
 
         if Bet_Won then
@@ -1994,13 +1984,11 @@ package body Bet_Handler is
                            -- so it won't do to calculate per bet. leave that to the sql-script summarising
             when Back    => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
             when Lay     => Profit := 1.0 * Bet.Sizematched;
-            when Greenup => raise Suicide with "bad data GREENUP";            
           end case;
         else -- lost :-(
           case Side is
             when Back    => Profit := - Bet.Sizematched;
             when Lay     => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
-            when Greenup => raise Suicide with "bad data GREENUP";            
           end case;
         end if;
 
