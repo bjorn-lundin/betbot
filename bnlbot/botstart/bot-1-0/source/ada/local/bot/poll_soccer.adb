@@ -76,7 +76,7 @@ procedure Poll_Soccer is
                                Ixxlupd      => Price.Ixxlupd,
                                Ixxluts      => Price.Ixxluts
                               );
-        Price.Update_Withcheck;                      
+        Price.Update;                      
         Price_History_List.Append(Price_History_Data);
       end loop;
       Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
