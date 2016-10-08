@@ -310,6 +310,7 @@ begin
             raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
           end if;
       end;
+      Now := Calendar2.Clock;
       --restart every day
       Is_Time_To_Exit := Now.Hour = 01 and then
                        Now.Minute = 02 ;
