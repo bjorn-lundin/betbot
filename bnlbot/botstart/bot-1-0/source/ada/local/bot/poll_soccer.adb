@@ -19,9 +19,8 @@ with Logging; use Logging;
 with Process_IO;
 with Core_Messages;
 with Markets;
-with Events;
 with Prices;
-with Table_Apriceshistory;
+with Price_Histories;
 with Bot_Svn_Info;
 with Utils; use Utils;
 
@@ -30,7 +29,7 @@ procedure Poll_Soccer is
   use type Rpc.Result_Type;
 
   Me              : constant String := "Poll_Market.";
-  Timeout         : Duration := 120.0;
+  Timeout         : Duration := 42.0;
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
 
@@ -41,108 +40,83 @@ procedure Poll_Soccer is
   Now             : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
-  -------------------------------------------------------------
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
-  
-
-  procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
-    Market    : Markets.Market_Type;
-    Event     : Events.Event_Type;
+  Select_Markets : Sql.Statement_Type;
+  -------------------------------------------------------------
+  procedure Run(Market : in out Markets.Market_Type) is
     Price_List : Prices.List_Pack.List;
-    --------------------------------------------
-
-    Priceshistory_Data : Table_Apriceshistory.Data_Type;
-    Priceshistory_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-    Has_Been_In_Play,
-    In_Play           : Boolean := False;
-
-    Eos               : Boolean := False;
+    Price_History_List : Price_Histories.List_Pack.List;
+    Price_History_Data : Price_Histories.Price_History_Type;    
     T                 : Sql.Transaction_Type;
-    --Current_Turn_Not_Started_Race : Integer_4 := 0;
-    Is_Data_Collector : Boolean := EV.Value("BOT_USER") = "soc" ;
+    In_Play : Boolean := False;
+    pragma Warnings(Off, In_Play);
   begin
-    Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
-    Market.Marketid := Market_Notification.Market_Id;
-
-    Market.Read(Eos);
-    if not Eos then
-      if Market.Markettype(1..10) = "MATCH_ODDS" or
-         Market.Markettype(1..13) = "CORRECT_SCORE"  then
-        Event.Eventid := Market.Eventid;
-        Event.Read(Eos);
-        if not Eos then
-          if Event.Eventtypeid /= Integer_4(1) then
-            Log(Me & "Run", "not a SOC market: " &  Market_Notification.Market_Id);
-            return;
-          end if;
-        else
-          Log(Me & "Run", "no event found");
-          return;
-        end if;
-      else
-        Log(Me & "Run", "not a MATCH_ODDS nor CORRECT_SCORE market, was a '" & Market.Markettype(1..15) & "' " & Market_Notification.Market_Id);
-        return;
-      end if;
-    else
-      Log(Me & "Run", "no market found");
-      return;
-    end if;
+    Log(Me & "Run", "Treat market: " &  Market.To_String);
 
     -- do the poll
-    Poll_Loop : loop
-      Price_List.Clear;
-      Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
-                            Market     => Market,
-                            Price_List => Price_List,
-                            In_Play    => In_Play);
+    --Price_List.Clear;
+    Rpc.Get_Market_Prices(Market_Id  => Market.Marketid,
+                          Market     => Market,
+                          Price_List => Price_List,
+                          In_Play    => In_Play);
                             
-      if Is_Data_Collector then
-        Priceshistory_List.Clear; --we do insert after every poll here
-        for Price of Price_List loop
-          Priceshistory_Data := (
-            Marketid     => Price.Marketid,
-            Selectionid  => Price.Selectionid,
-            Pricets      => Price.Pricets,
-            Status       => Price.Status,
-            Totalmatched => Price.Totalmatched,
-            Backprice    => Price.Backprice,
-            Layprice     => Price.Layprice,
-            Ixxlupd      => Price.Ixxlupd,
-            Ixxluts      => Price.Ixxluts
-          );
-          Priceshistory_List.Append(Priceshistory_Data);
-        end loop;
-        Log("insert records into Priceshistory:" & Priceshistory_List.Length'Img);
-        begin
-          T.Start;
-          for Priceshistory_Data of Priceshistory_List loop
-            Priceshistory_Data.Insert;
-          end loop;
-          T.Commit;
-        exception
-          when Sql.Duplicate_Index =>
-             Priceshistory_List.Clear;
-             T.Rollback;
-             Log("Duplicate_Index on Priceshistory " & Priceshistory_Data.To_String );
-        end;       
-      end if;
+    --Priceshistory_List.Clear; --we do insert after every poll here
+    for Price of Price_List loop
+      Price_History_Data := (
+         Marketid     => Price.Marketid,
+         Selectionid  => Price.Selectionid,
+         Pricets      => Price.Pricets,
+         Status       => Price.Status,
+         Totalmatched => Price.Totalmatched,
+         Backprice    => Price.Backprice,
+         Layprice     => Price.Layprice,
+         Ixxlupd      => Price.Ixxlupd,
+         Ixxluts      => Price.Ixxluts
+      );
+      Price_History_List.Append(Price_History_Data);
+    end loop;
+    Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
+    begin
+      T.Start;
+      for Phd of Price_History_List loop
+        Phd.Insert;
+      end loop;
+      T.Commit;
+    exception
+      when Sql.Duplicate_Index =>
+        Price_History_List.Clear;
+        T.Rollback;
+        Log("Duplicate_Index on Priceshistory " );
+    end;       
 
-      exit Poll_Loop when Market.Status(1..6) = "CLOSED";
-
-      if not Has_Been_In_Play then
-        -- toggle the first time we see in-play=true
-        -- makes us insensible to Betfair toggling bug
-        Has_Been_In_Play := In_Play;
-      end if;
-      delay 1.0; -- 1 Hz is all we need
-    end loop Poll_Loop;
   end Run;
   ---------------------------------------------------------------------
+  procedure Find_Markets is
+    Market_List : Markets.List_Pack.List;
+    T           : Sql.Transaction_Type;
+  begin 
+    T.Start;
+      Select_Markets.Prepare(
+        "select * from AMARKETS M, AEVENTS E " &
+        "where M.EVENTID = E.EVENTID " &
+        "and M.MARKETTYPE in ('CORRECT_SCORE','MATCH_ODDS') " &
+        "and M.STATUS = 'OPEN' " &
+        "and E.EVENTTYPEID = 1 " & --soccer
+        "order by M.STARTTS,M.MARKETID ");
+      Markets.Read_List(Select_Markets,Market_List);
+    T.Commit;
+  
+    for Market of Market_List loop
+      Run(Market => Market);
+    end loop;  
+  
+  end Find_Markets;
+  -----------------------------------------------------
+  
   use type Sql.Transaction_Status_Type;
------------------------------- main start -------------------------------------
-
+  ------------------------------ main start ---------------
 begin
 
    Define_Switch
@@ -214,11 +188,11 @@ begin
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
-        when Bot_Messages.Market_Notification_Message    =>
-          --notfy markets_fetcher that we are busy
-          Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-          Bot_Messages.Send(Markets_Fetcher, Data);    
-          Run(Bot_Messages.Data(Msg));
+        --when Bot_Messages.Market_Notification_Message    =>
+        --  --notfy markets_fetcher that we are busy
+        --  Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
+        --  Bot_Messages.Send(Markets_Fetcher, Data);    
+        --  Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -228,12 +202,13 @@ begin
         if not OK then
           Rpc.Login;
         end if;
+        Find_Markets;       
     end;
     Now := Calendar2.Clock;
 
     --restart every day
     Is_Time_To_Exit := Now.Hour = 01 and then
-                     ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
+                     ( Now.Minute = 00 or Now.Minute = 01);
 
     exit Main_Loop when Is_Time_To_Exit;
 
