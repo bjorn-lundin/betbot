@@ -29,7 +29,6 @@ procedure Poll_Soccer is
   use type Rpc.Result_Type;
 
   Me              : constant String := "Poll_Market.";
-  Timeout         : Duration := 42.0;
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
 
@@ -46,7 +45,7 @@ procedure Poll_Soccer is
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
   procedure Run(Market : in out Markets.Market_Type) is
-    Price_List : Prices.List_Pack.List;
+    Price_List         : Prices.List_Pack.List;
     Price_History_List : Price_Histories.List_Pack.List;
     Price_History_Data : Price_Histories.Price_History_Type;    
     T                 : Sql.Transaction_Type;
@@ -63,32 +62,35 @@ procedure Poll_Soccer is
                           In_Play    => In_Play);
                             
     --Priceshistory_List.Clear; --we do insert after every poll here
-    for Price of Price_List loop
-      Price_History_Data := (
-         Marketid     => Price.Marketid,
-         Selectionid  => Price.Selectionid,
-         Pricets      => Price.Pricets,
-         Status       => Price.Status,
-         Totalmatched => Price.Totalmatched,
-         Backprice    => Price.Backprice,
-         Layprice     => Price.Layprice,
-         Ixxlupd      => Price.Ixxlupd,
-         Ixxluts      => Price.Ixxluts
-      );
-      Price_History_List.Append(Price_History_Data);
-    end loop;
-    Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
     begin
       T.Start;
+      for Price of Price_List loop
+        Price_History_Data := (
+                               Marketid     => Price.Marketid,
+                               Selectionid  => Price.Selectionid,
+                               Pricets      => Price.Pricets,
+                               Status       => Price.Status,
+                               Totalmatched => Price.Totalmatched,
+                               Backprice    => Price.Backprice,
+                               Layprice     => Price.Layprice,
+                               Ixxlupd      => Price.Ixxlupd,
+                               Ixxluts      => Price.Ixxluts
+                              );
+        Price.Update_Withcheck;                      
+        Price_History_List.Append(Price_History_Data);
+      end loop;
+      Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
       for Phd of Price_History_List loop
         Phd.Insert;
       end loop;
       T.Commit;
     exception
       when Sql.Duplicate_Index =>
-        Price_History_List.Clear;
         T.Rollback;
         Log("Duplicate_Index on Priceshistory " );
+      when Sql.No_Such_Row =>
+        T.Rollback;
+        Log("No_Such_Row on Prices ");
     end;       
 
   end Run;
@@ -116,6 +118,8 @@ procedure Poll_Soccer is
   -----------------------------------------------------
   
   use type Sql.Transaction_Status_Type;
+  Timeout         : Duration := 1.0;
+  
   ------------------------------ main start ---------------
 begin
 
@@ -198,6 +202,7 @@ begin
       end case;
     exception
       when Process_Io.Timeout =>
+        Timeout := 42.0;
         Rpc.Keep_Alive(OK);
         if not OK then
           Rpc.Login;
