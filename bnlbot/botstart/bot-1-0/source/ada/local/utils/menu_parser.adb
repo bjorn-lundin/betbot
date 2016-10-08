@@ -262,12 +262,14 @@ begin
     exception
       when Process_Io.Timeout =>
         Now := Calendar2.Clock;
-        Timeout := 3600.0;
+        Timeout := 3_600.0;
         Rpc.Keep_Alive(OK);
         if not OK then
           Rpc.Login;
         end if;
-        if Now.Hour <= 13 then -- not when horses are racing
+        -- 3 times / 24 hours  not when horses are racing
+        if Now.Hour >= 11 and then 
+           Now.Hour <= 13 then 
           Parse_Menu;
         end if;
     end;

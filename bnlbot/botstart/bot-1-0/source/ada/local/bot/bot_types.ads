@@ -21,8 +21,6 @@ package Bot_Types is
                             Penalty_Taken,
                             Sending_Off);
    type Bet_Side_Type is (Back, Lay);
-   type Bet_Type_Type is (Greenup, Back, Lay); 
-   
    type Animal_Type is (Horse, Hound, Human);
    type Max_Daily_Profit_Type is new Float_8;
    type Max_Daily_Loss_Type is new Float_8;

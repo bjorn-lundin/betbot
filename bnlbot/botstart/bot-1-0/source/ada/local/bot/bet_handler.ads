@@ -60,7 +60,7 @@ private
   function Enabled(Bet : Bet_Type) return Boolean;
 
   procedure Make_Bet(Bet           : in out Bet_Type;
-                     A_Bet_Type    : in     Bet_Type_Type;
+                     Bet_Side      : in     Bet_Side_Type;
                      Price         : in     Bet_Price_Type;
                      Size          : in     Bet_Size_Type;
                      Price_Matched :    out Bet_Price_Type;
