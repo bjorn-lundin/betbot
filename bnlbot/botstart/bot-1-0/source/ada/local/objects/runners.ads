@@ -10,11 +10,8 @@ package Runners is
 
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Runner_Type);
   
-  
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) ;
-  
-  
-  
+
 end Runners;

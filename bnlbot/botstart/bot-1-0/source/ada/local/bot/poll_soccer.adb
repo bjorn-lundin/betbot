@@ -39,8 +39,6 @@ procedure Poll_Soccer is
   Ok              : Boolean := False;
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
-  
-  
   procedure Back_The_Leader(Price_History_List : Price_Histories.Lists.List) is
   begin
     null;
@@ -50,8 +48,7 @@ procedure Poll_Soccer is
   begin
     null;
   end Lay_The_Draw;
-  
-  
+  -------------------------------------------------------------
   procedure Run(Market : in out Markets.Market_Type) is
     Price_List         : Prices.Lists.List;
     Price_History_List : Price_Histories.Lists.List;
@@ -61,7 +58,6 @@ procedure Poll_Soccer is
     pragma Warnings(Off, In_Play);
   begin
     Log(Me & "Run", "Treat market: " &  Market.To_String);
-
     -- do the poll
     --Price_List.Clear;
     Rpc.Get_Market_Prices(Market_Id  => Market.Marketid,
@@ -104,7 +100,6 @@ procedure Poll_Soccer is
         T.Rollback;
         Log("No_Such_Row on Prices ");
     end;       
-
   end Run;
   ---------------------------------------------------------------------
   procedure Find_Markets is
@@ -134,7 +129,6 @@ procedure Poll_Soccer is
   
   ------------------------------ main start ---------------
 begin
-
    Define_Switch
     (Cmd_Line,
      Sa_Par_Bot_User'access,
@@ -176,7 +170,6 @@ begin
          Login    => Ini.Get_Value("database", "username", ""),
          Password =>Ini.Get_Value("database", "password", ""));
   Log(Me, "db Connected");
-    -- Ask a pythonscript to login for us, returning a token
   Log(Me, "Login betfair");
   Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
@@ -187,7 +180,6 @@ begin
           );
   Rpc.Login;
   Log(Me, "Login betfair done");
-
 
   Main_Loop : loop
   
