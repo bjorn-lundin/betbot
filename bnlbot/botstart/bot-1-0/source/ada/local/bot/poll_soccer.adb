@@ -10,7 +10,6 @@ with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
-with Bot_Messages;
 with Rpc;
 with Lock ;
 with Posix;
@@ -37,16 +36,25 @@ procedure Poll_Soccer is
   Ba_Daemon       : aliased Boolean := False;
   Cmd_Line        : Command_Line_Configuration;
   Now             : Calendar2.Time_Type;
-  Ok,
-  Is_Time_To_Exit : Boolean := False;
-  This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
-  Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
-  Data : Bot_Messages.Poll_State_Record ;
+  Ok              : Boolean := False;
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
+  
+  
+  procedure Back_The_Leader(Price_History_List : Price_Histories.Lists.List) is
+  begin
+    null;
+  end Back_The_Leader;
+  -------------------------------------------------------------
+  procedure Lay_The_Draw(Price_History_List : Price_Histories.Lists.List) is
+  begin
+    null;
+  end Lay_The_Draw;
+  
+  
   procedure Run(Market : in out Markets.Market_Type) is
-    Price_List         : Prices.List_Pack.List;
-    Price_History_List : Price_Histories.List_Pack.List;
+    Price_List         : Prices.Lists.List;
+    Price_History_List : Price_Histories.Lists.List;
     Price_History_Data : Price_Histories.Price_History_Type;    
     T                 : Sql.Transaction_Type;
     In_Play : Boolean := False;
@@ -84,6 +92,10 @@ procedure Poll_Soccer is
         Phd.Insert;
       end loop;
       T.Commit;
+      
+      Back_The_Leader(Price_History_List);
+      Lay_The_Draw(Price_History_List);
+      
     exception
       when Sql.Duplicate_Index =>
         T.Rollback;
@@ -96,7 +108,7 @@ procedure Poll_Soccer is
   end Run;
   ---------------------------------------------------------------------
   procedure Find_Markets is
-    Market_List : Markets.List_Pack.List;
+    Market_List : Markets.Lists.List;
     T           : Sql.Transaction_Type;
   begin 
     T.Start;
@@ -178,9 +190,6 @@ begin
 
 
   Main_Loop : loop
-    --notfy markets_fetcher that we are free
-      Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
-      Bot_Messages.Send(Markets_Fetcher, Data);    
   
     begin
       Log(Me, "Start receive");
@@ -192,11 +201,6 @@ begin
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
-        --when Bot_Messages.Market_Notification_Message    =>
-        --  --notfy markets_fetcher that we are busy
-        --  Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-        --  Bot_Messages.Send(Markets_Fetcher, Data);    
-        --  Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
@@ -212,10 +216,7 @@ begin
     Now := Calendar2.Clock;
 
     --restart every day
-    Is_Time_To_Exit := Now.Hour = 01 and then
-                     ( Now.Minute = 00 or Now.Minute = 01);
-
-    exit Main_Loop when Is_Time_To_Exit;
+    exit Main_Loop when Now.Hour = 01 and then Now.Minute <= 02;
 
   end loop Main_Loop;
 

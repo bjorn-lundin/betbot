@@ -21,7 +21,6 @@ with Ini;
 with Logging; use Logging;
 with Ada.Environment_Variables;
 with Process_IO;
-with Bot_Messages;
 with Core_Messages;
 with Utils; use Utils;
 with Table_Aokmarkets;
@@ -80,35 +79,7 @@ procedure Markets_Fetcher_Soccer is
   Eos_Okmarket,
   Market_Is_Ok : Boolean := False;
   Okmarket : Table_Aokmarkets.Data_Type;
-   
-  type Poll_Process is record
-    Free     : Boolean := True;
-    Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
-  end record;
-
-  Data_Pollers : array (1..20) of Poll_Process := (
-    1 => (True, (("poll_market_s01"), (others => ' '))),
-    2 => (True, (("poll_market_s02"), (others => ' '))),
-    3 => (True, (("poll_market_s03"), (others => ' '))),
-    4 => (True, (("poll_market_s04"), (others => ' '))),
-    5 => (True, (("poll_market_s05"), (others => ' '))),
-    6 => (True, (("poll_market_s06"), (others => ' '))),
-    7 => (True, (("poll_market_s07"), (others => ' '))),
-    8 => (True, (("poll_market_s08"), (others => ' '))),
-    9 => (True, (("poll_market_s09"), (others => ' '))),
-   10 => (True, (("poll_market_s10"), (others => ' '))),
-   11 => (True, (("poll_market_s11"), (others => ' '))),
-   12 => (True, (("poll_market_s12"), (others => ' '))),
-   13 => (True, (("poll_market_s13"), (others => ' '))),
-   14 => (True, (("poll_market_s14"), (others => ' '))),
-   15 => (True, (("poll_market_s15"), (others => ' '))),
-   16 => (True, (("poll_market_s16"), (others => ' '))),
-   17 => (True, (("poll_market_s17"), (others => ' '))),
-   18 => (True, (("poll_market_s18"), (others => ' '))),
-   19 => (True, (("poll_market_s19"), (others => ' '))),
-   20 => (True, (("poll_market_s20"), (others => ' ')))
-  );
----------------------------------------------------------------
+  -----------------------------------------------
 
   procedure Insert_Event(Event, Event_Type : JSON_Value) is
     DB_Event : Events.Event_Type := Events.Empty_Data;
@@ -164,7 +135,7 @@ procedure Markets_Fetcher_Soccer is
   -------------------------------------------------------------
 
   procedure Insert_Runners(Market : JSON_Value) is
-    Runner_List : Runners.List_Pack.List;
+    Runner_List : Runners.Lists.List;
     Service : constant String := "Insert_Runners";
     Eos : Boolean := False;
   begin
@@ -182,7 +153,7 @@ procedure Markets_Fetcher_Soccer is
 
   procedure Insert_Prices(Market : JSON_Value) is
     Eos : Boolean := False;
-    Price_List : Prices.List_Pack.List;
+    Price_List : Prices.Lists.List;
     Service : constant String := "Insert_Prices";
   begin
     Log(Me & Service, "start");
@@ -198,21 +169,7 @@ procedure Markets_Fetcher_Soccer is
   end Insert_Prices;
   ---------------------------------------------------------------------
 
-  procedure Set_Poller_State(Msg : in Process_Io.Message_Type) is
-    Data : Bot_Messages.Poll_State_Record := Bot_Messages.Data(Msg);
-    use type Process_Io.Name_Type;
-  begin
-    Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
-    for i in Data_Pollers'range loop
-      if Data_Pollers(i).Process.Name = Data.Name then
-        Data_Pollers(i).Free := Data.Free = 1; --1 is used as free - 0 as not free
-        return;
-      end if;
-    end loop;
-  end Set_Poller_State;
-
 ------------------------------ main start -------------------------------------
-  Is_Time_To_Check_Markets : Boolean               := True;
   Market_Ids               : JSON_Array            := Empty_Array;
   Minute_Last_Check        : Calendar2.Minute_Type ;
   pragma Unreferenced (Minute_Last_Check);
@@ -291,39 +248,41 @@ begin
     Turns := Turns + 1;
     Log(Me, "Turns:" & Turns'Img);
 
-    loop
-      begin
-        Process_Io.Receive(Msg, 60.0);
+    declare
+      Timeout : Duration := 10.0;
+    begin
+      Now := Calendar2.Clock;
+      case Now.Hour is
+        when  0 .. 12 => Timeout := 60.0;
+        when 13 .. 23 => Timeout := 10.0;
+      end case;
+      Process_Io.Receive(Msg, Timeout);
+      if Sql.Transaction_Status /= Sql.None then
+        raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+      end if;
+
+      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
+      
+      case Process_Io.Identity(Msg) is
+        when Core_Messages.Exit_Message => 
+          exit Main_Loop;
+        when others => 
+          Log(Me, "Unhandled message identity: " & 
+                   Process_Io.Identity(Msg)'Img);  --??
+      end case;
+    exception
+      when Process_Io.Timeout =>
         if Sql.Transaction_Status /= Sql.None then
           raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
         end if;
+    end;
+    Now := Calendar2.Clock;
+    --restart every day
+    Is_Time_To_Exit := Now.Hour = 01 and then
+      Now.Minute <= 02 ;
 
-        Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
-        case Process_Io.Identity(Msg) is
-          when Core_Messages.Exit_Message      => exit Main_Loop;
-          when Bot_Messages.Poll_State_Message => Set_Poller_State(Msg);
-          when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
-        end case;
-      exception
-          when Process_io.Timeout =>
-          if Sql.Transaction_Status /= Sql.None then
-            raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
-          end if;
-      end;
-      Now := Calendar2.Clock;
-      --restart every day
-      Is_Time_To_Exit := Now.Hour = 01 and then
-                       Now.Minute = 02 ;
-
-      exit Main_Loop when Is_Time_To_Exit;
+    exit Main_Loop when Is_Time_To_Exit;
       
---        Now := Calendar2.Clock;
---        Is_Time_To_Check_Markets := True;
---        --Now.Second >= 50 and then Minute_Last_Check /= Now.Minute;
---        Log(Me, "Is_Time_To_Check_Markets: " & Is_Time_To_Check_Markets'Img);
-      exit when Is_Time_To_Check_Markets;
-      exit;
-    end loop;
     Minute_Last_Check := Now.Minute;
 
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;

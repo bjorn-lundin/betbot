@@ -141,8 +141,8 @@ begin
 
   
   declare
-    Runner_List     : Runners.List_Pack.List;
-    Market_List : Markets.List_Pack.List;
+    Runner_List     : Runners.Lists.List;
+    Market_List : Markets.Lists.List;
     Cnt         : Natural := 0;
     --type Has_Type is (Lay);
 --    subtype Max_Runners_Type is Integer range 1 .. 50;

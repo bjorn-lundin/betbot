@@ -82,7 +82,7 @@ package RPC is
                                      
                                      
   procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
-                                Runner_List : in out Runners.List_Pack.List);
+                                Runner_List : in out Runners.Lists.List);
 
                                       
   procedure Get_Cleared_Bet_Info_List(Bet_Status     : in     Bet_Status_Type;
@@ -98,7 +98,7 @@ package RPC is
                                       
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type; 
                               Market     :    out Markets.Market_Type;
-                              Price_List : in out Prices.List_Pack.List;
+                              Price_List : in out Prices.Lists.List;
                               In_Play    :    out Boolean);
 
                               
@@ -114,10 +114,10 @@ package RPC is
                        Bet              :    out Bets.Bet_Type);
                               
   procedure Parse_Runners(J_Market    : in     JSON_Value ; 
-                          Runner_List : in out Runners.List_Pack.List) ;
+                          Runner_List : in out Runners.Lists.List) ;
 
   procedure Parse_Prices (J_Market    : in     JSON_Value ; 
-                          Price_List  : in out Prices.List_Pack.List) ;
+                          Price_List  : in out Prices.Lists.List) ;
                           
   procedure Parse_Market (J_Market    : in     JSON_Value ; 
                           DB_Market   : in out Markets.Market_Type ;

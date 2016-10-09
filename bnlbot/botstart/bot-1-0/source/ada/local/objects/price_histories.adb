@@ -9,7 +9,7 @@ package body Price_Histories is
   ----------------------------------------
 
   procedure Read_List(Stm  : in     Sql.Statement_Type;
-                      List : in out List_Pack.List;
+                      List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
     PH_List :Table_Apriceshistory.Apriceshistory_List_Pack2.List;
     PH : Price_History_Type;

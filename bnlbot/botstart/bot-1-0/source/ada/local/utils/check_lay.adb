@@ -163,8 +163,8 @@ begin
 
   
   declare
-    Ph_List     : Price_Histories.List_Pack.List;
-    Market_List : Markets.List_Pack.List;
+    Ph_List     : Price_Histories.Lists.List;
+    Market_List : Markets.Lists.List;
     Cnt         : Natural := 0;
     --type Has_Type is (Lay);
     subtype Max_Runners_Type is Integer range 1 .. 50;

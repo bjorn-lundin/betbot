@@ -97,7 +97,7 @@ procedure Greenup_Lay_First is
 
     Market    : Markets.Market_Type;
     Eos               : Boolean := False;
-    Price_During_Race_List : Price_Histories.List_Pack.List;
+    Price_During_Race_List : Price_Histories.Lists.List;
 --    type Greenup_Result_Type is (None, Ok, Fail_Runner_Won, Fail_Runner_Lost );
 --    Greenup_Result : Greenup_Result_Type := Greenup_Result_Type'first;
     Runner : Runners.Runner_Type;
@@ -251,7 +251,7 @@ begin
   declare
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
-    Price_List  : Prices.List_Pack.List;
+    Price_List  : Prices.Lists.List;
   begin  
     T.Start;
     Stm.Prepare(

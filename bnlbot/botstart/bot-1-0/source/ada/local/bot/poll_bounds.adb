@@ -474,14 +474,14 @@ procedure Poll_Bounds is
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Markets.Market_Type;
     Event     : Events.Event_Type;
-    Price_List : Prices.List_Pack.List;
+    Price_List : Prices.Lists.List;
     --------------------------------------------
     function "<" (Left,Right : Prices.Price_Type) return Boolean is
     begin
       return Left.Backprice < Right.Backprice;
     end "<";
     --------------------------------------------
-    package Backprice_Sorter is new Prices.List_Pack.Generic_Sorting("<");
+    package Backprice_Sorter is new Prices.Lists.Generic_Sorting("<");
 
     Price             : Prices.Price_Type;
     Has_Been_In_Play,

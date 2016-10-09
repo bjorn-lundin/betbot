@@ -172,7 +172,7 @@ procedure Markets_Fetcher is
   -------------------------------------------------------------
   
   procedure Insert_Runners(Market : JSON_Value) is
-    Runner_List : Runners.List_Pack.List;
+    Runner_List : Runners.Lists.List;
     Service : constant String := "Insert_Runners";
     Eos : Boolean := False;
   begin
@@ -190,7 +190,7 @@ procedure Markets_Fetcher is
 
   procedure Insert_Prices(Market : JSON_Value) is
     Eos : Boolean := False;
-    Price_List : Prices.List_Pack.List;   
+    Price_List : Prices.Lists.List;   
     Service : constant String := "Insert_Runners";
   begin
     Log(Me & Service, "start");     
