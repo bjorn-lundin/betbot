@@ -758,7 +758,7 @@ package body Bet_Handler is
             
             Market_Data : Markets.Market_Type;
 --            Market_List : Table_Amarkets.Amarkets_List_Pack.List_Type := Table_Amarkets.Amarkets_List_Pack.Create;
-            Market_List : Markets.List_Pack.List;
+            Market_List : Markets.Lists.List;
             type Price_Type is (Home,Draw,Away);
             Price : array (Price_Type'range) of Prices.Price_Type;
           begin
@@ -890,7 +890,7 @@ package body Bet_Handler is
                           Runner : Runners.Runner_Type;
                           Tmp_Price : Prices.Price_Type;
                           Eos_Runner : Boolean := False;
-                          Price_List : Prices.List_Pack.List;
+                          Price_List : Prices.Lists.List;
                           Fetched : array(Price_Type'range) of Boolean := (others => False);
                         begin
                         -- Always 3 runners, Home,draw,away in MATCH_ODDS - get them
@@ -2154,7 +2154,7 @@ package body Bet_Handler is
 
   procedure Check_Market_Status is
     T : Sql.Transaction_Type;
-    Market_List : Markets.List_Pack.List;
+    Market_List : Markets.Lists.List;
     Market      : Markets.Market_Type;
     Is_Changed  : Boolean        := False;
 
@@ -2207,8 +2207,8 @@ package body Bet_Handler is
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) is
     T : Sql.Transaction_Type;
     Db_Runner : Runners.Runner_Type;
-    Runner_List : Runners.List_Pack.List;
-    Market_List : Markets.List_Pack.List;
+    Runner_List : Runners.Lists.List;
+    Market_List : Markets.Lists.List;
     type Eos_Type is ( Arunners);
     Eos : array (Eos_Type'range) of Boolean := (others => False);
   begin

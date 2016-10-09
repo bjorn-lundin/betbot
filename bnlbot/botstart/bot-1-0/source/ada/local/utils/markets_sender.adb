@@ -37,7 +37,7 @@ procedure Markets_Sender is
   The_Markets : Sql.Statement_Type;
   Do_Send : Boolean := True;
 ------------------------------ main start -------------------------------------
-  Amarkets_List : Markets.List_Pack.List;
+  Amarkets_List : Markets.Lists.List;
   Amarket :  Markets.Market_Type;
   Aevent :  Events.Event_Type;
   Arunner : Table_Arunners.Data_Type;

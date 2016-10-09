@@ -220,7 +220,7 @@ package body Bets is
   end Create;
   -------------------------
   procedure Check_Matched(Self : in out Bet_Type) is
-    List : Price_Histories.List_Pack.List;
+    List : Price_Histories.Lists.List;
   begin
     Select_Ph.Prepare(
         "select * " &

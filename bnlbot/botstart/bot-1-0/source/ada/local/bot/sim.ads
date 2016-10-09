@@ -27,7 +27,7 @@ package Sim is
 
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
                               Market     : in out Markets.Market_Type;
-                              Price_List : in out Prices.List_Pack.List;
+                              Price_List : in out Prices.Lists.List;
                               In_Play    :    out Boolean);
 
 
@@ -43,13 +43,13 @@ package Sim is
                        Bet              :    out Bets.Bet_Type);
 
   type Algorithm_Type is (None, Avg);
-  procedure Filter_List(Price_List, Avg_Price_List : in out Prices.List_Pack.List; Alg : Algorithm_Type := None);
+  procedure Filter_List(Price_List, Avg_Price_List : in out Prices.Lists.List; Alg : Algorithm_Type := None);
 
 
   subtype Num_Runners_Type is Integer range 1..36;
   type Fifo_Type is tagged record
     Selectionid    : Integer_4 := 0;
-    One_Runner_Sample_List : Prices.List_Pack.List;
+    One_Runner_Sample_List : Prices.Lists.List;
     Avg_Lay_Price  : Float_8 := 0.0;
     Avg_Back_Price : Float_8 := 0.0;
     In_Use         : Boolean := False;
@@ -61,14 +61,14 @@ package Sim is
 
 
   procedure Read_Marketid(Marketid : in     Marketid_Type;
-                          List     :    out Price_Histories.List_Pack.List) ;
+                          List     :    out Price_Histories.Lists.List) ;
                           
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
                                       Selectionid : in     Integer_4 ; 
-                                      List        :    out Price_Histories.List_Pack.List) ;
+                                      List        :    out Price_Histories.Lists.List) ;
                           
 
-  procedure Create_Runner_Data(Price_List : in Prices.List_Pack.List;
+  procedure Create_Runner_Data(Price_List : in Prices.Lists.List;
                                Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) ;
@@ -103,16 +103,16 @@ package Sim is
 
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
-         RUnners.List_Pack.List,
+         RUnners.Lists.List,
          Ada.Strings.Hash,
          "=",
-         RUnners.List_Pack."=");
+         RUnners.Lists."=");
 
   procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
-  procedure Fill_Winners_Map(Market_List : in     Markets.List_Pack.List;
+  procedure Fill_Winners_Map(Market_List : in     Markets.Lists.List;
                              Winners_Map :    out Marketid_Winner_Maps.Map );
                              
 
@@ -134,10 +134,10 @@ package Sim is
 
   package Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps (
          Timestamp_String_Key_Type,
-         Price_Histories.List_Pack.List,
+         Price_Histories.Lists.List,
          Ada.Strings.Hash,
          "=",
-         Price_Histories.List_Pack."=");
+         Price_Histories.Lists."=");
 
   package Marketid_Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,

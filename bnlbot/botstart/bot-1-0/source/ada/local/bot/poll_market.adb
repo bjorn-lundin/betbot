@@ -50,7 +50,7 @@ procedure Poll_Market is
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Markets.Market_Type;
     Event     : Events.Event_Type;
-    Price_List : Prices.List_Pack.List;
+    Price_List : Prices.Lists.List;
     --------------------------------------------
 
     Priceshistory_Data : Table_Apriceshistory.Data_Type;

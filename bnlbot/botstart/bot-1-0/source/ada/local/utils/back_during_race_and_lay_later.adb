@@ -68,7 +68,7 @@ procedure Back_During_Race_And_Lay_Later is
     return Left.Backprice < Right.Backprice;
   end "<";
   --------------------------------------------
-  package Backprice_Sorter is new  Price_Histories.List_Pack.Generic_Sorting("<");
+  package Backprice_Sorter is new  Price_Histories.Lists.Generic_Sorting("<");
 
   type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type ;
   Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
@@ -77,7 +77,7 @@ procedure Back_During_Race_And_Lay_Later is
   --------------------------------------------------------------------------
   procedure Check_Lay_Bet_Matched(Bet      : in out Bet_Type ;
                                   Bet_List : in out Bet_List_Pack.List;
-                                  List     : in     Price_Histories.List_Pack.List ) is
+                                  List     : in     Price_Histories.Lists.List ) is
   begin
     for R of List loop
       if Bet.Laybet.Selectionid = R.Selectionid and then
@@ -105,7 +105,7 @@ procedure Back_During_Race_And_Lay_Later is
   --------------------------------------------
   procedure Check_Back_Bet_Matched(Bet        : in out Bet_Type ;
                                    Bet_List   : in out Bet_List_Pack.List;
-                                   List       : in     Price_Histories.List_Pack.List) is
+                                   List       : in     Price_Histories.Lists.List) is
   begin
     for R of List loop
       if Bet.Backbet.Selectionid = R.Selectionid and then
@@ -242,7 +242,7 @@ begin
             Loop_Timestamp : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               --Log("Treat marketid '" & Market.Marketid & "' pricets " & Timestamp.To_String);
               declare
-                List : Price_Histories.List_Pack.List :=
+                List : Price_Histories.Lists.List :=
                           Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
               begin
                 if First then

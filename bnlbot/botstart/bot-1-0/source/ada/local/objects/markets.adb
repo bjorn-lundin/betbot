@@ -9,7 +9,7 @@ package body Markets is
   ----------------------------------------
   
   procedure Read_List(Stm  : in     Sql.Statement_Type;
-                      List : in out List_Pack.List;
+                      List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
     AM_List :Table_Amarkets.Amarkets_List_Pack2.List;
     M : Market_Type;
@@ -39,7 +39,7 @@ package body Markets is
 
 
   procedure Read_Eventid(  Data  : in out Market_Type'Class;
-                           List  : in out List_Pack.List;
+                           List  : in out Lists.List;
                            Order : in     Boolean := False;
                            Max   : in     Integer_4 := Integer_4'Last) is
 
