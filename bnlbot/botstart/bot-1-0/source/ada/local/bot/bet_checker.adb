@@ -42,7 +42,6 @@ procedure Bet_Checker is
   OK              : Boolean := False;
   Is_Time_To_Exit : Boolean := False;
   Now             : Calendar2.Time_Type := Calendar2.Clock;
-  Update_Betwon_To_Null : Sql.Statement_Type;
 
   --------------------------------------------
   procedure Treat_Pending_Bets_In_Json_File is
@@ -69,9 +68,9 @@ procedure Bet_Checker is
         Filename : String := Full_Name(Dir_Ent);
         Content  : String := Lock.Read_File(Filename);
         Bet      : Bets.Bet_Type;
-        A_Market : Markets.Market_Type;
-        A_Runner : Table_Arunners.Data_Type;
-        type Eos_Type is (Market, Runner, Abets);
+        Market : Markets.Market_Type;
+        Runner : Table_Arunners.Data_Type;
+        type Eos_Type is (Amarkets , Arunners, Abets);
         Eos : array (Eos_Type'range) of Boolean := (others => False);
       begin
         Log(Filename & " has content length" & Content'Length'Img);
@@ -87,22 +86,20 @@ procedure Bet_Checker is
 
           begin
             T.Start;
-              A_Market.Marketid := Bet.Marketid;
-              A_Market.Read(Eos(Market) );
+              Market.Marketid := Bet.Marketid;
+              Market.Read(Eos(Amarkets) );
 
-              A_Runner.Marketid := Bet.Marketid;
-              A_Runner.Selectionid := Bet.Selectionid;
-              A_Runner.Read(Eos(Runner) );
+              Runner.Marketid := Bet.Marketid;
+              Runner.Selectionid := Bet.Selectionid;
+              Runner.Read(Eos(Arunners) );
 
-              Bet.Startts       := A_Market.Startts;
-              Bet.Fullmarketname:= A_Market.Marketname;
-              Bet.Runnername    := A_Runner.Runnername;
+              Bet.Startts       := Market.Startts;
+              Bet.Fullmarketname:= Market.Marketname;
+              Bet.Runnername    := Runner.Runnername;
 
               Bet.Insert;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
-              Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-              Update_Betwon_To_Null.Set("BETID", Bet.Betid);
-              Update_Betwon_To_Null.Execute;
+              Bet.Nullify_Betwon;
             T.Commit;
           exception
             when Sql.Duplicate_Index =>

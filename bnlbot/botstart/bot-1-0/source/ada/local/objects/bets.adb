@@ -13,6 +13,7 @@ with Price_Histories;
 
 package body Bets is
   Me : constant String := "Bet.";
+  Update_Betwon_To_Null,
   Select_Exists,
   Select_Profit_Today : Sql.Statement_Type;
   Select_Ph           : Sql.Statement_Type;
@@ -224,8 +225,7 @@ package body Bets is
   begin
     Select_Ph.Prepare(
         "select * " &
-        "from " &
-        "APRICESHISTORY " &
+        "from APRICESHISTORY " &
         "where MARKETID = :MARKETID " &
         "and SELECTIONID = :SELECTIONID " &
         "and PRICETS >= :PRICETS1 " &
@@ -308,7 +308,13 @@ package body Bets is
     end loop;
   end Read_List;  
   ----------------------------------------
-
-  
+  procedure Nullify_Betwon(Self : in out Bet_Type) is
+  begin
+    Log(Me & "Nullify_Betwon", Self.To_String);
+    Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+    Update_Betwon_To_Null.Set("BETID", Self.Betid);
+    Update_Betwon_To_Null.Execute;
+  end Nullify_Betwon;
+  ----------------------------------------
 
 end Bets;

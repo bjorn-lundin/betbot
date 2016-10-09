@@ -28,7 +28,7 @@ package Bets is
 
   procedure Match_Directly(Self : in out Bet_Type; Value : Boolean );
   function  Match_Directly(Self : in out Bet_Type) return Boolean;
-  
+  procedure Nullify_Betwon(Self : in out Bet_Type);  
   
   function Empty_Data return Bet_Type;
   package List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
