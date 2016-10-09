@@ -32,15 +32,10 @@ procedure Winners_Fetcher_Json is
   Msg      : Process_Io.Message_Type;
   Long_Timeout  : Duration := 47.0;
   Timeout  : Duration := 1.0;
-  
-
   Ba_Daemon : aliased Boolean := False;
   Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
-  Is_Time_To_Exit : Boolean := False;
-----------------------------------------------
-
+  ----------------------------------------------
   use type Sql.Transaction_Status_Type;
-  
 begin
    Define_Switch
      (Cmd_Line,
@@ -73,14 +68,14 @@ begin
     );
     Rpc.Login;
     
---    Log (Me, "connect db");
+    Log (Me, "connect db");
     Sql.Connect
         (Host     => Ini.Get_Value("database","host",""),
          Port     => Ini.Get_Value("database","port",5432),
          Db_Name  => Ini.Get_Value("database","name",""),
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
---    Log (Me, "connected to db");
+    Log (Me, "connected to db");
       
     Main_Loop : loop
       begin
@@ -93,14 +88,14 @@ begin
           when Core_Messages.Exit_Message                  =>
             exit Main_Loop;
           when others =>
-            Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
+            Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);
         end case;
       exception
         when Process_Io.Timeout =>
           if Sql.Transaction_Status /= Sql.None then
             raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
           end if;
-          Timeout := Long_Timeout; -- first time fast ...
+          Timeout := Long_Timeout; -- only first time fast ...
           Log(Me, "Timeout");
           Rpc.Keep_Alive(OK);
           if not OK then
@@ -122,17 +117,12 @@ begin
       end;
       Now := Calendar2.Clock;
       --restart every day
-      Is_Time_To_Exit := Now.Hour = 01 and then 
-                         Now.Minute = 02 ;
-      
-      exit Main_Loop when Is_Time_To_Exit;
+      exit Main_Loop when Now.Hour = 01 and then Now.Minute <= 02;
       
     end loop Main_Loop;
 
     Sql.Close_Session;
-    Log (Me, "db closed, Is_Time_To_Exit " & Is_Time_To_Exit'Img);
     Rpc.Logout;
-
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 exception
@@ -153,4 +143,3 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Winners_Fetcher_Json;
-
