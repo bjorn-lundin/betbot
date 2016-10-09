@@ -670,15 +670,12 @@ package body RPC is
     if Result.Has_Field("runners") then
       Json_Runners_Array := Result.Get("runners");
       Log(Me & "Check_Market_Result", "got runners, len: " & Length(Json_Runners_Array)'Img);
-
       if Length(Json_Runners_Array) > Natural(0) then
-
         for i in 1 .. Length(Json_Runners_Array) loop
           DB_Runner := Runners.Empty_Data;
-
           Json_Runner := Get(Json_Runners_Array, i);
           Log(Me & "Check_Market_Result", "got Runner" & i'Img);
-
+          
           if Json_Runner.Has_Field("selectionId") then
             declare
               i : Long_Long_Integer := Json_Runner.Get("selectionId");
@@ -724,13 +721,10 @@ package body RPC is
 --     },
 --     "id": 1
 --}
-
     Result,
     Params,
---    Status,
     Json_Reply,
     Json_Query          : JSON_Value := Create_Object;
-
     Result_Array, Market_Ids : JSON_Array := Empty_Array;
     Market_Id_Received  : Marketid_Type := (others => ' ');
   begin
@@ -750,7 +744,6 @@ package body RPC is
     -- ok, got a valid Json reply, check for errors
     if API_Exceptions_Are_Present(Json_Reply) then
       raise JSON_Exception with "Bad rpc in Rpc.Market_Status_Is_Changed";
---      return ;
     end if;
 
     -- ok, got a valid Json reply, parse it
@@ -854,14 +847,11 @@ package body RPC is
     end if;
 
     if Result.Has_Field("status") then
-
       Is_Changed := Result.Get("status")(1..3) /= Market.Status(1..3);
-
       if Is_Changed then
         Market.Status := (others => ' ');
         Move( Result.Get("status"), Market.Status);
       end if;
-
       Log(Me & "Market_Status_Is_Changed", "Status changed for market '" & Market_Id_Received & "' " &
                                           Is_Changed'img & " status " & Market.Status);
     else
@@ -876,7 +866,6 @@ package body RPC is
     Result                            : JSON_Value := Create_Object;
   begin
      Betfair_Result := Ok;
-
     -- params is empty ...
     Query_Get_Account_Funds.Set_Field (Field_Name => "params",  Field => Params);
     Query_Get_Account_Funds.Set_Field (Field_Name => "id",      Field => 15);          -- ???
