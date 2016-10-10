@@ -20,6 +20,8 @@ package Markets is
                       Max  : in     Integer_4 := Integer_4'Last);
 
 
+  procedure Check_Market_Status ;
+  procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) ;
 
 
 
