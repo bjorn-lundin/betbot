@@ -112,7 +112,6 @@ package body Markets is
 
         Runner_Loop : for List_Runner of Runner_List loop
           Db_Runner := List_Runner;
-
           Db_Runner.Read( Eos(Arunners));
           if Eos(Arunners) then
             Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Db_Runner.To_String);
@@ -127,7 +126,7 @@ package body Markets is
 
         end loop Runner_Loop;
       end loop Market_Loop;
-    Sql.Commit (T);
+    T.Commit;
     Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets stop");
   exception
     when Sql.Duplicate_Index =>

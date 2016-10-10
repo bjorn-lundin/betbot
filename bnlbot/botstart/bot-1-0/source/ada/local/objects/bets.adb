@@ -1,7 +1,7 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
---with Sql;
+with Process_Io;
 with Calendar2; use Calendar2;
 
 with Logging; use Logging;
@@ -315,7 +315,16 @@ package body Bets is
   procedure Nullify_Betwon(Self : in out Bet_Type) is
   begin
     Log(Me & "Nullify_Betwon", Self.To_String);
-    Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
+    Update_Betwon_To_Null.Prepare(
+      "update ABETS set BETWON = null, IXXLUPD=:UPDATER, IXXLUTS= :IXXLUTS " &
+      "where BETID = :BETID " &
+      "and IXXLUPD = :OLDIXXLUPD " &
+      "and IXXLUTS = :OLDIXXLUTS "
+      );
+    Update_Betwon_To_Null.Set("UPDATER", Process_Io.This_Process.Name);  
+    Update_Betwon_To_Null.Set_Timestamp("IXXLUTS", Calendar2.Clock);  
+    Update_Betwon_To_Null.Set("OLDUPDATER", Self.Ixxlupd);  
+    Update_Betwon_To_Null.Set_Timestamp("OLDIXXLUTS", Self.Ixxluts);  
     Update_Betwon_To_Null.Set("BETID", Self.Betid);
     Update_Betwon_To_Null.Execute;
   end Nullify_Betwon;
@@ -568,9 +577,7 @@ package body Bets is
         end if;
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Bet.To_String);
         Bet.Update_Withcheck;
-        Update_Betwon_To_Null.Prepare("update ABETS set BETWON = null where BETID = :BETID");
-        Update_Betwon_To_Null.Set("BETID", Bet.Betid);
-        Update_Betwon_To_Null.Execute;
+        Bet.Nullify_Betwon;
       end if;
     end loop;
     T.Commit;

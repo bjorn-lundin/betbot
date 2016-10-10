@@ -136,8 +136,7 @@ procedure Bet_Checker is
               end;
             end if;
           end if;
-
-          Log(Me & Service, "delete file index " & Filename);
+          Log(Me & Service, "delete file " & Filename);
           Delete_File(Filename);
         else
           Log(Me & Service, Filename & " was locked or empty. Retry next time");
