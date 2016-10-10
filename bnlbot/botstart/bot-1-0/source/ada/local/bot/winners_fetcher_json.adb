@@ -16,7 +16,7 @@ with Ini;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Core_Messages;
-with Bet_Handler;
+with Markets;
 with Calendar2;
 
 procedure Winners_Fetcher_Json is
@@ -101,8 +101,8 @@ begin
           if not OK then
             Rpc.Login;
           end if;
-          Bet_Handler.Check_Market_Status;                          -- updates markets status
-          Bet_Handler.Check_Unsettled_Markets(Has_Inserted_Winner); -- updates runner status
+          Markets.Check_Market_Status;                          -- updates markets status
+          Markets.Check_Unsettled_Markets(Has_Inserted_Winner); -- updates runner status
           
           if Has_Inserted_Winner then
             declare

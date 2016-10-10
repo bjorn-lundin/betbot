@@ -171,8 +171,6 @@ procedure Markets_Fetcher_Soccer is
 
 ------------------------------ main start -------------------------------------
   Market_Ids               : JSON_Array            := Empty_Array;
-  Minute_Last_Check        : Calendar2.Minute_Type ;
-  pragma Unreferenced (Minute_Last_Check);
   Now                      : Calendar2.Time_Type   := Calendar2.Clock;
   OK                       : Boolean               := True;
 
@@ -283,8 +281,6 @@ begin
 
     exit Main_Loop when Is_Time_To_Exit;
       
-    Minute_Last_Check := Now.Minute;
-
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
       when 60     => UTC_Time_Start := Now - One_Hour;
