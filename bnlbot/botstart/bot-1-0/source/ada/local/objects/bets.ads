@@ -37,6 +37,8 @@ package Bets is
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out List_Pack.List;
                       Max  : in     Integer_4 := Integer_4'Last) ;
+  procedure Check_Bets;
+  procedure Check_If_Bet_Accepted;
   
 
 end Bets;

@@ -19,7 +19,6 @@ with Logging; use Logging;
 with Process_Io;
 with Core_Messages;
 
-with Bet_Handler;
 with Ini;
 with Rpc;
 with Calendar2;
@@ -196,7 +195,7 @@ begin
   Rpc.Login;
   Log(Me, "Login betfair done");
 
-  Bet_Handler.Check_Bets;
+  Bets.Check_Bets;
   Log(Me, "Start main loop");
   Main_Loop : loop
     begin
@@ -211,8 +210,8 @@ begin
           Treat_Pending_Bets_In_Json_File;
         when Bot_Messages.New_Winners_Arrived_Notification_Message =>
           Treat_Pending_Bets_In_Json_File;
-          Bet_Handler.Check_If_Bet_Accepted;
-          Bet_Handler.Check_Bets;
+          Bets.Check_If_Bet_Accepted;
+          Bets.Check_Bets;
         when others => Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
@@ -223,8 +222,8 @@ begin
             Rpc.Login;
           end if;
           Treat_Pending_Bets_In_Json_File;
-          Bet_Handler.Check_If_Bet_Accepted;
-          Bet_Handler.Check_Bets;
+          Bets.Check_If_Bet_Accepted;
+          Bets.Check_Bets;
         Log(Me, "Timeout stop");
     end;
 
