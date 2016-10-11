@@ -323,7 +323,7 @@ package body Bets is
       );
     Update_Betwon_To_Null.Set("UPDATER", Process_Io.This_Process.Name);  
     Update_Betwon_To_Null.Set_Timestamp("IXXLUTS", Calendar2.Clock);  
-    Update_Betwon_To_Null.Set("OLDUPDATER", Self.Ixxlupd);  
+    Update_Betwon_To_Null.Set("OLDIXXLUPD", Self.Ixxlupd);  
     Update_Betwon_To_Null.Set_Timestamp("OLDIXXLUTS", Self.Ixxluts);  
     Update_Betwon_To_Null.Set("BETID", Self.Betid);
     Update_Betwon_To_Null.Execute;
