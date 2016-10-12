@@ -340,8 +340,8 @@ begin
            Move(Market.Get("marketId"),Okmarket.Marketid);
            Okmarket.Read(Eos_Okmarket);
            Market_Is_Ok := not Eos_Okmarket;
-           pragma Compile_Time_Warning(True,"OKmarket is overidden - always true");
-           Market_Is_Ok := True;
+           --pragma Compile_Time_Warning(True,"OKmarket is overidden - always true");
+           --Market_Is_Ok := True;
            
            if Market_Is_Ok then
              Insert_Market(Market);

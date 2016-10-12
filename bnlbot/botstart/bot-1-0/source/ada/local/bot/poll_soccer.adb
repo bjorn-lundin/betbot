@@ -1,6 +1,8 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -22,6 +24,7 @@ with Prices;
 with Price_Histories;
 with Bot_Svn_Info;
 with Utils; use Utils;
+with Bets;
 
 procedure Poll_Soccer is
   package EV renames Ada.Environment_Variables;
@@ -37,18 +40,158 @@ procedure Poll_Soccer is
   Cmd_Line        : Command_Line_Configuration;
   Now             : Calendar2.Time_Type;
   Ok              : Boolean := False;
+  Select_Games_To_Back,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
-  procedure Back_The_Leader(Price_History_List : Price_Histories.Lists.List) is
+  procedure Back_The_Leader(Market : Markets.Market_Type; Price_History_List : Price_Histories.Lists.List) is
+    Service : constant String := "Back_The_Leader";
+    T : Sql.Transaction_Type;
+    Eos         : Boolean       := False;
+    Selectionid : Integer_4     := 0;
+    Betname     : Betname_Type  := (others => ' ');
+    Runnername  : Runnername_Type  := (others => ' ');
+    Size        : Bet_Size_Type := 30.0;
+    Price       : Bet_Price_Type := 0.0;
+    Match_Directly : Integer_4 := 1;
+    Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
   begin
-    null;
+    Move("BACK_LEADER_SOCCER",Betname);
+    T.Start;
+    Select_Games_To_Back.Prepare(
+    "select " &
+      "e.eventid, " & 
+      "e.eventname, " & 
+      "e.countrycode, " & 
+      "mmo3.marketid, " &
+      "mmo3.markettype, " &
+      "mmo3.totalmatched, " &
+      "rmo1.selectionid homesel, " &
+      "rmo1.runnername homename, " &
+      "pmo1.backprice homeback, " &
+      "pmo1.layprice homelay, " &
+      "rmo3.selectionid drawsel, " &
+      "rmo3.runnername drawname, " &
+      "pmo3.backprice drawback, " &
+      "pmo3.layprice drawlay," &
+      "rmo2.selectionid awaysel, " &
+      "rmo2.runnername awayname, " &
+      "pmo2.backprice awayback, " &
+      "pmo2.layprice awaydraw " &
+    "from amarkets mmo3, " &  --market3 match_odds 
+         "arunners rmo3, " &  --runner3 match odds
+         "aprices pmo3, " &   --prices3 match odds
+         "amarkets mmo2, " &  --market2 match_odds
+         "arunners rmo2, " &  --runner2 match odds 
+         "aprices pmo2, " &   --prices2 match odds
+         "amarkets mmo1, " &  --market1 match_odds
+         "arunners rmo1, " &  --runner1 match odds
+         "aprices pmo1, " &   --prices1 match odds
+         "aevents e " &       --events
+    "where 1=1 " &
+    "and mmo3.marketid = :MARKETID" &
+    --enough money on game
+    "and mmo3.totalmatched > 700000 " &
+    "and mmo3.status = 'OPEN' " &
+    "and mmo3.betdelay > 0 " & --in play
+    -- the_draw
+    "and e.eventid = mmo3.eventid " &
+    "and pmo3.marketid = mmo3.marketid " &
+    "and rmo3.marketid = pmo3.marketid " &
+    "and rmo3.selectionid = pmo3.selectionid " &
+    "and mmo3.markettype = 'MATCH_ODDS' " &
+    "and pmo3.selectionid = rmo3.selectionid " &
+    "and rmo3.runnernamenum = '3' " &   -- the_draw 
+    "and pmo3.backprice >= 5 " &   -- the_draw 
+    -- away team
+    "and e.eventid = mmo2.eventid " &
+    "and pmo2.marketid = mmo2.marketid " &
+    "and rmo2.marketid = pmo2.marketid " &
+    "and rmo2.selectionid = pmo2.selectionid " &
+    "and mmo2.markettype = 'MATCH_ODDS' " &
+    "and pmo2.selectionid = rmo2.selectionid " &
+    "and rmo2.runnernamenum = '2' " &   --away
+    "and pmo2.backprice >= 10 " &  -- away underdogs
+    -- home team
+    "and e.eventid = mmo1.eventid " &
+    "and pmo1.marketid = mmo1.marketid " &
+    "and rmo1.marketid = pmo1.marketid " &
+    "and rmo1.selectionid = pmo1.selectionid " &
+    "and mmo1.markettype = 'MATCH_ODDS' " &
+    "and pmo1.selectionid = rmo1.selectionid " &
+    "and rmo1.runnernamenum = '1' " &   --home
+    "and pmo1.backprice <= 1.30 " &   -- home favs
+    "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
+    ---- no previous bets on MATCH_ODDS
+    "and not exists (select 'x' from abets where abets.marketid = mmo1.marketid) " &
+    --TODO Fix so we ignore if bets (both lay and) are fully matched sdo we can do many bets 
+    --one one game when we already hace greened up
+    "order by mmo1.startts, e.eventname");
+
+    Select_Games_To_Back.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back.Open_Cursor;
+    loop
+      Select_Games_To_Back.Fetch(Eos);
+      exit when Eos;
+      Select_Games_To_Back.Get("homesel",Selectionid);
+      Select_Games_To_Back.Get("homename",Runnername);
+      for P of Price_History_List loop 
+        if P.Selectionid = Selectionid then
+          Price := Bet_Price_Type(P.Backprice);
+          exit;
+        end if;
+      end loop;  
+      
+      Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
+      Rpc.Place_Bet (Bet_Name         => Betname,
+                     Market_Id        => Market.Marketid,
+                     Side             => Back,
+                     Runner_Name      => Runnername,
+                     Selection_Id     => Selectionid,
+                     Size             => Size,
+                     Price            => Price,
+                     Bet_Persistence  => Persist,
+                     Match_Directly   => Match_Directly,
+                     Bet              => Bet(Back));
+      Bet(Back).Insert;
+      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted bet: " & Bet(Back).To_String);
+      
+      if Integer(Bet(Back).Sizematched) = 0 then
+        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
+        declare
+          Cancel_Succeeded : Boolean := False;
+        begin
+          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
+          Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+          if Cancel_Succeeded then
+            Move("CANCELLED", Bet(Back).Status);
+            Bet(Back).Update_Withcheck;
+          end if;
+        end;
+      else
+        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
+        Rpc.Place_Bet (Bet_Name         => Betname,
+                       Market_Id        => Market.Marketid,
+                       Side             => Lay,
+                       Runner_Name      => Runnername,
+                       Selection_Id     => Selectionid,
+                       Size             => Size,
+                       Price            => Price - Bet_Price_Type(0.05),
+                       Bet_Persistence  => Persist,
+                       Match_Directly   => Match_Directly,
+                       Bet              => Bet(Lay));
+        Bet(Lay).Insert;
+        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted bet: " & Bet(Lay).To_String);
+      end if;
+    end loop;   
+    Select_Games_To_Back.Close_Cursor;
+    T.Commit;
   end Back_The_Leader;
   -------------------------------------------------------------
   procedure Lay_The_Draw(Price_History_List : Price_Histories.Lists.List) is
   begin
     null;
   end Lay_The_Draw;
-  -------------------------------------------------------------
+  ------------------------------------------------------------- (both lay and)
   procedure Run(Market : in out Markets.Market_Type) is
     Price_List         : Prices.Lists.List;
     Price_History_List : Price_Histories.Lists.List;
@@ -89,7 +232,7 @@ procedure Poll_Soccer is
       end loop;
       T.Commit;
       
-      Back_The_Leader(Price_History_List);
+      Back_The_Leader(Market, Price_History_List);
       Lay_The_Draw(Price_History_List);
       
     exception
