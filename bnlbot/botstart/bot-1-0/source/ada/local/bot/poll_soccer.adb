@@ -233,8 +233,11 @@ procedure Poll_Soccer is
       end loop;
       T.Commit;
       
+      Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
       Back_The_Leader(Market, Price_History_List);
+      Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
       Lay_The_Draw(Price_History_List);
+      Log(Me & "done strategeies Market '" & Market.Marketid & "'");
       
     exception
       when Sql.Duplicate_Index =>
@@ -261,6 +264,7 @@ procedure Poll_Soccer is
       Markets.Read_List(Select_Markets,Market_List);
     T.Commit;
   
+    Log("Find_Markets", "Num markets Found" & Market_List.Length'Img );
     for Market of Market_List loop
       Run(Market => Market);
     end loop;  
