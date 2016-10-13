@@ -29,14 +29,21 @@ package Bets is
   procedure Match_Directly(Self : in out Bet_Type; Value : Boolean );
   function  Match_Directly(Self : in out Bet_Type) return Boolean;
   procedure Nullify_Betwon(Self : in out Bet_Type);  
+  function  Is_Matched(Self : in out Bet_Type) return Boolean;
   
   function Empty_Data return Bet_Type;
-  package List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
+  package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
   function Is_Existing_I7(Betname : in String) return Boolean renames Table_Abets.Is_Existing_I7;
   procedure Read_List(Stm  : in     Sql.Statement_Type;
-                      List : in out List_Pack.List;
+                      List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) ;
+  
+  procedure Read_Marketid( Data  : in out Bet_Type'class;
+                           List  : in out Lists.List;
+                           Order : in     Boolean := False;
+                           Max   : in     Integer_4 := Integer_4'Last);                   
+                      
   procedure Check_Bets;
   procedure Check_If_Bet_Accepted;
   

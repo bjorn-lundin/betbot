@@ -273,7 +273,7 @@ package body Bets is
   ----------------------------------
   
   procedure Read_List(Stm  : in     Sql.Statement_Type;
-                      List : in out List_Pack.List;
+                      List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
     AB_List :Table_Abets.Abets_List_Pack2.List;
     B : Bet_Type;
@@ -331,7 +331,7 @@ package body Bets is
   ----------------------------------------
    procedure Check_Bets is
     use Utils;
-    Bet_List : Bets.List_Pack.List;
+    Bet_List : Bets.Lists.List;
     Bet,Bet_From_List      : Bets.Bet_Type;
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
@@ -538,7 +538,7 @@ package body Bets is
   ------------------------------------------------------------------------------
   procedure Check_If_Bet_Accepted is
     T                 : Sql.Transaction_Type;
-    Bet_List          : Bets.List_Pack.List;
+    Bet_List          : Bets.Lists.List;
     Bet               : Bets.Bet_Type;
     Avg_Price_Matched : Bet_Price_Type := 0.0;
     Is_Matched,
@@ -582,8 +582,65 @@ package body Bets is
     end loop;
     T.Commit;
     Log(Me & "Check_If_Bet_Accepted", "stop");
-
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
+  function Is_Matched(Self : in out Bet_Type) return Boolean is
+    Is_Removed        : Boolean := False; 
+    Is_Matched        : Boolean := False; 
+    AVG_Price_Matched : Bet_Price_Type := 0.0;
+    Size_Matched      : Bet_Size_Type := 0.0;
+  begin    
+    Rpc.Bet_Is_Matched(Betid             => Self.Betid, 
+                       Is_Removed        => Is_Removed, 
+                       Is_Matched        => Is_Matched, 
+                       Avg_Price_Matched => Avg_Price_Matched,
+                       Size_Matched      => Size_Matched) ;
+    return Is_Matched; 
+  end Is_Matched;
+  -------------------------------------------------------------
 
+  procedure Read_Marketid( Data  : in out Bet_Type'class;
+                           List  : in out Lists.List;
+                           Order : in     Boolean := False;
+                           Max   : in     Integer_4 := Integer_4'Last) is                    
+
+    Old_List : Table_Abets.Abets_List_Pack2.List; 
+    New_Data : Bet_Type;
+  begin
+    Table_Abets.Read_Marketid(Data, Old_List, Order, Max);  
+    for i of Old_List loop
+      New_Data := (
+        Betid          => i.Betid,      
+        Marketid       => i.Marketid,
+        Betmode        => i.Betmode,
+        Powerdays      => i.Powerdays,
+        Selectionid    => i.Selectionid,
+        Reference      => i.Reference,
+        Size           => i.Size,
+        Price          => i.Price,
+        Side           => i.Side,
+        Betname        => i.Betname,
+        Betwon         => i.Betwon,
+        Profit         => i.Profit,
+        Status         => i.Status,
+        Exestatus      => i.Exestatus,
+        Exeerrcode     => i.Exeerrcode,
+        Inststatus     => i.Inststatus,
+        Insterrcode    => i.Insterrcode,
+        Startts        => i.Startts,
+        Betplaced      => i.Betplaced,
+        Pricematched   => i.Pricematched,
+        Sizematched    => i.Sizematched,
+        Runnername     => i.Runnername,
+        Fullmarketname => i.Fullmarketname,
+        Svnrevision    => i.Svnrevision,
+        Ixxlupd        => i.Ixxlupd,
+        Ixxluts        => i.Ixxluts
+      );
+      List.Append(New_Data);
+    end loop;
+  end Read_Marketid;  
+  ----------------------------------------
+  
+  
 end Bets;
