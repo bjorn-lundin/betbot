@@ -44,8 +44,8 @@ procedure Poll_Soccer is
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
   procedure Back_The_Leader(Market : Markets.Market_Type; Price_History_List : Price_Histories.Lists.List) is
-    Service : constant String := "Back_The_Leader";
-    T : Sql.Transaction_Type;
+    Service     : constant String := "Back_The_Leader";
+    T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
     Selectionid : Integer_4     := 0;
     Betname     : Betname_Type  := (others => ' ');
@@ -124,7 +124,7 @@ procedure Poll_Soccer is
     "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
     ---- no previous bets on MATCH_ODDS
     "and not exists (select 'x' from abets where abets.marketid = mmo1.marketid) " &
-    --TODO Fix so we ignore if bets (both lay and) are fully matched sdo we can do many bets 
+    --TODO Fix so we ignore if bets (both lay and) are fully matched so we can do many bets 
     --one one game when we already hace greened up
     "order by mmo1.startts, e.eventname");
 
@@ -154,7 +154,7 @@ procedure Poll_Soccer is
                      Match_Directly   => Match_Directly,
                      Bet              => Bet(Back));
       Bet(Back).Insert;
-      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted bet: " & Bet(Back).To_String);
+      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       
       if Integer(Bet(Back).Sizematched) = 0 then
         Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
@@ -181,7 +181,7 @@ procedure Poll_Soccer is
                        Match_Directly   => Match_Directly,
                        Bet              => Bet(Lay));
         Bet(Lay).Insert;
-        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted bet: " & Bet(Lay).To_String);
+        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end loop;   
     Select_Games_To_Back.Close_Cursor;
@@ -192,7 +192,37 @@ procedure Poll_Soccer is
   begin
     null;
   end Lay_The_Draw;
-  ------------------------------------------------------------- (both lay and)
+  -------------------------------------------------------
+  -- (both lay and back)
+  function All_Bets_In_Market_Are_Matched(Market : Markets.Market_Type) return Boolean is
+    Bet_List : Bets.Lists.List;
+    Bet : Bets.Bet_Type;
+    T : Sql.Transaction_Type;
+    All_Are_Matched : Boolean := True;
+  begin
+    Bet.Marketid := Market.Marketid;
+    Log("Check if all bets are matched in market " & Market.To_String);
+    
+    T.Start;
+      Bets.Read_Marketid(Bet,Bet_List);    
+      for B of Bet_List loop
+        if not B.Is_Matched and then 
+          B.Status(1..9) /= "CANCELLED" then
+          All_Are_Matched := False;
+          Log("Not matched " & B.To_String);
+          exit;
+        end if;  
+      end loop;
+    T.Commit;
+    Log("All are matched " & All_Are_Matched'Img);
+    return All_Are_Matched;
+  exception
+    when Sql.No_Such_Row =>
+      T.Rollback;
+      Log("Sql.No_Such_Row when updating bets in " & Market.To_String); 
+      return False;
+  end All_Bets_In_Market_Are_Matched;
+  ------------------------------------------------------------
   procedure Run(Market : in out Markets.Market_Type) is
     Price_List         : Prices.Lists.List;
     Price_History_List : Price_Histories.Lists.List;
@@ -233,8 +263,10 @@ procedure Poll_Soccer is
       end loop;
       T.Commit;
       
-      Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
-      Back_The_Leader(Market, Price_History_List);
+      if All_Bets_In_Market_Are_Matched(Market) then      
+        Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
+        Back_The_Leader(Market, Price_History_List);
+      end if;
       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
       Lay_The_Draw(Price_History_List);
       Log(Me & "done strategeies Market '" & Market.Marketid & "'");

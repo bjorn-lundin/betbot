@@ -7,11 +7,8 @@ with Logging; use Logging;
 package body Markets is
   Me : constant String := "Markets.";
 
-
   Select_Unsettled_Markets,
   Select_Ongoing_Markets : Sql.Statement_Type;
-
-
 
   function Empty_Data return Market_Type is
     ED : Market_Type;
@@ -24,12 +21,12 @@ package body Markets is
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
-    AM_List :Table_Amarkets.Amarkets_List_Pack2.List;
-    M : Market_Type;
+    Old_List :Table_Amarkets.Amarkets_List_Pack2.List;
+    New_Data : Market_Type;
   begin
-    Table_Amarkets.Read_List(Stm,AM_List,Max);  
-    for i of AM_List loop
-      M := (
+    Table_Amarkets.Read_List(Stm,Old_List,Max);  
+    for i of Old_List loop
+      New_Data := (
         Marketid         => i.Marketid,
         Marketname       => i.Marketname,
         Startts          => i.Startts,
@@ -45,7 +42,7 @@ package body Markets is
         Ixxlupd          => i.Ixxlupd,
         Ixxluts          => i.Ixxluts           
       );
-      List.Append(M);
+      List.Append(New_Data);
     end loop;
   end Read_List;  
   ----------------------------------------
@@ -56,14 +53,13 @@ package body Markets is
                            Order : in     Boolean := False;
                            Max   : in     Integer_4 := Integer_4'Last) is
 
-    AM_List :Table_Amarkets.Amarkets_List_Pack2.List;
-    Am_Data : Market_Type;
-    M : Market_Type;
+    Old_List :Table_Amarkets.Amarkets_List_Pack2.List;
+    New_Data : Market_Type;
   begin
-    Am_Data.Eventid := Data.Eventid;
-    Table_Amarkets.Read_Eventid(Am_Data, AM_List, Order, Max);  
-    for i of AM_List loop
-      M := (
+    New_Data.Eventid := Data.Eventid;
+    Table_Amarkets.Read_Eventid(Data, Old_List, Order, Max);  
+    for i of Old_List loop
+      New_Data := (
         Marketid         => i.Marketid,
         Marketname       => i.Marketname,
         Startts          => i.Startts,
@@ -79,7 +75,7 @@ package body Markets is
         Ixxlupd          => i.Ixxlupd,
         Ixxluts          => i.Ixxluts           
       );
-      List.Append(M);
+      List.Append(New_Data);
     end loop;
   end Read_Eventid;  
   ----------------------------------------

@@ -10,12 +10,12 @@ package body Runners is
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
-    R_List :Table_Arunners.Arunners_List_Pack2.List;
-    R : Runner_Type;
+    Old_List :Table_Arunners.Arunners_List_Pack2.List;
+    New_Data : Runner_Type;
   begin
-    Table_Arunners.Read_List(Stm, R_List, Max);  
-    for i of R_List loop
-      R := (
+    Table_Arunners.Read_List(Stm, Old_List, Max);  
+    for i of Old_List loop
+      New_Data := (
           Marketid           => i.Marketid,
           Selectionid        => i.Selectionid,
           Sortprio           => I.Sortprio,  
@@ -27,7 +27,7 @@ package body Runners is
           Ixxlupd            => i.Ixxlupd,
           Ixxluts            => i.Ixxluts
       );             
-      List.Append(R);
+      List.Append(New_Data);
     end loop;
   end Read_List;  
   ----------------------------------------

@@ -89,7 +89,7 @@ package RPC is
                                       Settled_From   : in     Calendar2.Time_Type := Calendar2.Time_Type_First;
                                       Settled_To     : in     Calendar2.Time_Type := Calendar2.Time_Type_Last;
                                       Betfair_Result :    out Result_Type;
-                                      Bet_List       :    out Bets.List_Pack.List) ;
+                                      Bet_List       :    out Bets.Lists.List) ;
                                       
   procedure Cancel_Bet(Market_Id : in Marketid_Type; 
                        Bet_Id    : in Integer_8);
