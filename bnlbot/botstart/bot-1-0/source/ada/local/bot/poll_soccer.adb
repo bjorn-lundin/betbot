@@ -50,10 +50,11 @@ procedure Poll_Soccer is
     Selectionid : Integer_4     := 0;
     Betname     : Betname_Type  := (others => ' ');
     Runnername  : Runnername_Type  := (others => ' ');
-    Size        : Bet_Size_Type := 30.0;
+    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type := (others => 30.0);
     Price       : Bet_Price_Type := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    
   begin
     Move("BACK_LEADER_SOCCER",Betname);
     T.Start;
@@ -148,7 +149,7 @@ procedure Poll_Soccer is
                      Side             => Back,
                      Runner_Name      => Runnername,
                      Selection_Id     => Selectionid,
-                     Size             => Size,
+                     Size             => Size(Back),
                      Price            => Price,
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
@@ -169,13 +170,17 @@ procedure Poll_Soccer is
           end if;
         end;
       else
+      --Backsize * Backprice = Laysize * Layprice
+      --Laysize = Backsize * Backprice/Layprice
+        Size(Lay) := Size(Back) * Price / (Price - Bet_Price_Type(0.05));
+      
         Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
         Rpc.Place_Bet (Bet_Name         => Betname,
                        Market_Id        => Market.Marketid,
                        Side             => Lay,
                        Runner_Name      => Runnername,
                        Selection_Id     => Selectionid,
-                       Size             => Size,
+                       Size             => Size(Lay),
                        Price            => Price - Bet_Price_Type(0.05),
                        Bet_Persistence  => Persist,
                        Match_Directly   => Match_Directly,
