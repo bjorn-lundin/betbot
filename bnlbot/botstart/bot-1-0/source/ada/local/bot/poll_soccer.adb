@@ -43,7 +43,7 @@ procedure Poll_Soccer is
   Select_Games_To_Back,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
-  procedure Back_The_Leader(Market : Markets.Market_Type; Price_History_List : Price_Histories.Lists.List) is
+  procedure Back_The_Leader(Market : Markets.Market_Type) is
     Service     : constant String := "Back_The_Leader";
     T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
@@ -52,6 +52,7 @@ procedure Poll_Soccer is
     Runnername  : Runnername_Type  := (others => ' ');
     Size        : array(Bet_Side_Type'Range) of Bet_Size_Type := (others => 30.0);
     Price       : Bet_Price_Type := 0.0;
+    Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
     
@@ -135,17 +136,12 @@ procedure Poll_Soccer is
 
     Select_Games_To_Back.Set("MARKETID",Market.Marketid);
     Select_Games_To_Back.Open_Cursor;
-    loop
-      Select_Games_To_Back.Fetch(Eos);
-      exit when Eos;
+    Select_Games_To_Back.Fetch(Eos);
+    if not Eos then
       Select_Games_To_Back.Get("homesel",Selectionid);
       Select_Games_To_Back.Get("homename",Runnername);
-      for P of Price_History_List loop 
-        if P.Selectionid = Selectionid then
-          Price := Bet_Price_Type(P.Backprice);
-          exit;
-        end if;
-      end loop;  
+      Select_Games_To_Back.Get("homeback",Price_8);
+      Price := Bet_Price_Type(Price_8);
       
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
@@ -192,7 +188,7 @@ procedure Poll_Soccer is
         Bet(Lay).Insert;
         Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
-    end loop;   
+    end if;   
     Select_Games_To_Back.Close_Cursor;
     T.Commit;
   end Back_The_Leader;
@@ -274,7 +270,7 @@ procedure Poll_Soccer is
       
       if All_Bets_In_Market_Are_Matched(Market) then      
         Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
-        Back_The_Leader(Market, Price_History_List);
+        Back_The_Leader(Market);
       end if;
       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
       Lay_The_Draw(Price_History_List);
