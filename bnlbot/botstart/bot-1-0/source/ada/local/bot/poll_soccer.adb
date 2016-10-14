@@ -40,6 +40,7 @@ procedure Poll_Soccer is
   Cmd_Line        : Command_Line_Configuration;
   Now             : Calendar2.Time_Type;
   Ok              : Boolean := False;
+  Select_Games_To_Lay_The_Draw,
   Select_Games_To_Back,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
@@ -50,8 +51,8 @@ procedure Poll_Soccer is
     Selectionid : Integer_4     := 0;
     Betname     : Betname_Type  := (others => ' ');
     Runnername  : Runnername_Type  := (others => ' ');
-    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type := (others => 30.0);
-    Price       : Bet_Price_Type := 0.0;
+    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
+    Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
     Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
@@ -92,7 +93,7 @@ procedure Poll_Soccer is
     "where 1=1 " &
     "and mmo3.marketid = :MARKETID" &
     --enough money on game
-    "and mmo3.totalmatched > 700000 " &
+    "and mmo3.totalmatched > 10_0000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
     -- the_draw
@@ -141,7 +142,7 @@ procedure Poll_Soccer is
       Select_Games_To_Back.Get("homesel",Selectionid);
       Select_Games_To_Back.Get("homename",Runnername);
       Select_Games_To_Back.Get("homeback",Price_8);
-      Price := Bet_Price_Type(Price_8);
+      Price(Back) := Bet_Price_Type(Price_8);
       
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
@@ -150,7 +151,7 @@ procedure Poll_Soccer is
                      Runner_Name      => Runnername,
                      Selection_Id     => Selectionid,
                      Size             => Size(Back),
-                     Price            => Price,
+                     Price            => Price(Back),
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
                      Bet              => Bet(Back));
@@ -172,7 +173,8 @@ procedure Poll_Soccer is
       else
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
-        Size(Lay) := Size(Back) * Price / (Price - Bet_Price_Type(0.05));
+        Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
+        Size(Lay) := Size(Back) * Price(Back) / Price(Lay);
       
         Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
         Rpc.Place_Bet (Bet_Name         => Betname,
@@ -181,7 +183,7 @@ procedure Poll_Soccer is
                        Runner_Name      => Runnername,
                        Selection_Id     => Selectionid,
                        Size             => Size(Lay),
-                       Price            => Price - Bet_Price_Type(0.05),
+                       Price            => Price(Lay),
                        Bet_Persistence  => Persist,
                        Match_Directly   => Match_Directly,
                        Bet              => Bet(Lay));
@@ -193,9 +195,166 @@ procedure Poll_Soccer is
     T.Commit;
   end Back_The_Leader;
   -------------------------------------------------------------
-  procedure Lay_The_Draw(Price_History_List : Price_Histories.Lists.List) is
+  procedure Lay_The_Draw(Market : Markets.Market_Type) is
+    Service     : constant String := "Lay_The_Draw";
+    T           : Sql.Transaction_Type;
+    Eos         : Boolean       := False;
+    Selectionid : Integer_4     := 0;
+    Betname     : Betname_Type  := (others => ' ');
+    Runnername  : Runnername_Type  := (others => ' ');
+    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 50.0);
+    Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
+    Price_8     : Float_8 := 0.0;
+    Match_Directly : Integer_4 := 1;
+    Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    
   begin
-    null;
+    Move("LAY_THE_DRAW",Betname);
+    T.Start;
+    Select_Games_To_Lay_The_Draw.Prepare(
+      "select " &
+        "e.eventid, " & 
+        "e.eventname, " & 
+        "e.countrycode, " & 
+        "mcs.startts, " &
+        "mcs.marketid, " &
+        "mcs.markettype, " &
+        "pcs.backprice, " &
+        "mmo3.marketid, " &
+        "mmo3.markettype, " &
+        "rmo1.runnername, " &
+        "pmo1.backprice, " &
+        "pmo1.layprice, " &
+        "rmo3.selectionid drawsel, " &
+        "rmo3.runnername drawname, " &
+        "pmo3.backprice drawback, " &
+        "pmo3.layprice drawlay, " &
+        "rmo2.runnername, " &
+        "pmo2.backprice, " &
+        "pmo2.layprice " &
+      "from aprices pcs, " & 
+           "amarkets mcs, " &
+           "amarkets mmo3, " & 
+           "arunners rmo3, " & 
+           "aprices pmo3, " & 
+           "amarkets mmo2, " & 
+           "arunners rmo2, " & 
+           "aprices pmo2, " & 
+           "amarkets mmo1, " & 
+           "arunners rmo1, " & 
+           "aprices pmo1, " & 
+           "aevents e " &
+      "where 1=1 " &
+      "and mcs.marketid = :MARKETID" &
+      -- enough money on game
+      "and mmo3.totalmatched > 10_0000 " &
+      "and mmo3.status = 'OPEN' " &
+      "and mmo3.betdelay = 0 " &  --not in play
+      -- probability for goals
+      "and pcs.marketid = mcs.marketid " &
+      "and e.eventid = mcs.eventid " &
+      "and mcs.markettype = 'CORRECT_SCORE' " &
+      "and pcs.selectionid = 1 " & 
+      "and pcs.backprice >= 15 " & -- 0-0
+      "and pcs.backprice < 1000 " & -- 0-0
+      -- the_draw
+      "and e.eventid = mmo3.eventid " &
+      "and pmo3.marketid = mmo3.marketid " &
+      "and rmo3.marketid = pmo3.marketid " &
+      "and rmo3.selectionid = pmo3.selectionid " &
+      "and mmo3.markettype = 'MATCH_ODDS' " &
+      "and pmo3.selectionid = rmo3.selectionid " &
+      "and rmo3.runnernamenum = '3' " &   -- the_draw 
+      "and pmo3.layprice <= 7 " &   -- the_draw 
+      -- away team
+      "and e.eventid = mmo2.eventid " &
+      "and pmo2.marketid = mmo2.marketid " &
+      "and rmo2.marketid = pmo2.marketid " &
+      "and rmo2.selectionid = pmo2.selectionid " &
+      "and mmo2.markettype = 'MATCH_ODDS' " &
+      "and pmo2.selectionid = rmo2.selectionid " &
+      "and rmo2.runnernamenum = '2' " &   --away
+      "and pmo2.backprice >= 8 " &  -- away underdogs
+      -- home team
+      "and e.eventid = mmo1.eventid " &
+      "and pmo1.marketid = mmo1.marketid " &
+      "and rmo1.marketid = pmo1.marketid " &
+      "and rmo1.selectionid = pmo1.selectionid " &
+      "and mmo1.markettype = 'MATCH_ODDS' " &
+      "and pmo1.selectionid = rmo1.selectionid " &
+      "and rmo1.runnernamenum = '1' " &   --home
+      "and pmo1.backprice <= 1.5 " &   -- home favs
+      ---- no previous bets on CORRECT_SCORE nor on MATCH_ODDS
+      "and not exists ( " & 
+          "select 'x' from abets " &
+          "where abets.marketid in (mcs.marketid,mmo1.marketid) " &
+          "and abets.betname = 'LAY_THE_DRAW') " &
+      "order by mcs.startts, e.eventname"
+    );     
+
+    Select_Games_To_Lay_The_Draw.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Lay_The_Draw.Open_Cursor;
+    Select_Games_To_Lay_The_Draw.Fetch(Eos);
+    if not Eos then
+      Select_Games_To_Lay_The_Draw.Get("drawsel",Selectionid);
+      Select_Games_To_Lay_The_Draw.Get("drawname",Runnername);
+      Select_Games_To_Lay_The_Draw.Get("drawback",Price_8);
+      Price(Back) := Bet_Price_Type(Price_8);
+      Select_Games_To_Lay_The_Draw.Get("drawlay",Price_8);
+      Price(Lay) := Bet_Price_Type(Price_8);
+      
+      Log(Me & "Place_Bet", "call Rpc.Place_Bet (lay)");
+      Rpc.Place_Bet (Bet_Name         => Betname,
+                     Market_Id        => Market.Marketid,
+                     Side             => Lay,
+                     Runner_Name      => Runnername,
+                     Selection_Id     => Selectionid,
+                     Size             => Size(Lay),
+                     Price            => Price(Lay),
+                     Bet_Persistence  => Persist,
+                     Match_Directly   => Match_Directly,
+                     Bet              => Bet(Lay));
+      Bet(Lay).Insert;
+      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
+      
+      if Integer(Bet(Lay).Sizematched) = 0 then
+        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
+        declare
+          Cancel_Succeeded : Boolean := False;
+        begin
+          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Lay));
+          Log(Me & Service, "Cancel bet" & Bet(Lay).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+          if Cancel_Succeeded then
+            Move("CANCELLED", Bet(Lay).Status);
+            Bet(Lay).Update_Withcheck;
+          end if;
+        end;
+      else
+        --Backsize * Backprice = Laysize * Layprice
+        --Laysize = Backsize * Backprice/Layprice
+        Price(Back) := Price(Lay) * 1.5;
+        Size(Back) := Size(Lay) * Price(Lay) / Price(Back);
+        if Size(Back) < 30.0 then
+          Size(Back) := 30.0;
+        end if;  
+      
+        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
+        Rpc.Place_Bet (Bet_Name         => Betname,
+                       Market_Id        => Market.Marketid,
+                       Side             => Back,
+                       Runner_Name      => Runnername,
+                       Selection_Id     => Selectionid,
+                       Size             => Size(Back),
+                       Price            => Price(Back),
+                       Bet_Persistence  => Persist,
+                       Match_Directly   => Match_Directly,
+                       Bet              => Bet(Back));
+        Bet(Back).Insert;
+        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
+      end if;
+    end if;   
+    Select_Games_To_Lay_The_Draw.Close_Cursor;
+    T.Commit;
   end Lay_The_Draw;
   -------------------------------------------------------
   -- (both lay and back)
@@ -273,7 +432,7 @@ procedure Poll_Soccer is
         Back_The_Leader(Market);
       end if;
       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-      Lay_The_Draw(Price_History_List);
+      Lay_The_Draw(Market);
       Log(Me & "done strategeies Market '" & Market.Marketid & "'");
       
     exception
