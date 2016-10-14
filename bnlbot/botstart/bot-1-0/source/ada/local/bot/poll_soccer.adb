@@ -91,9 +91,9 @@ procedure Poll_Soccer is
          "aprices pmo1, " &   --prices1 match odds
          "aevents e " &       --events
     "where 1=1 " &
-    "and mmo3.marketid = :MARKETID" &
+    "and mmo3.marketid = :MARKETID " &
     --enough money on game
-    "and mmo3.totalmatched > 10_0000 " &
+    "and mmo3.totalmatched > 100000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
     -- the_draw
@@ -245,9 +245,9 @@ procedure Poll_Soccer is
            "aprices pmo1, " & 
            "aevents e " &
       "where 1=1 " &
-      "and mcs.marketid = :MARKETID" &
+      "and mcs.marketid = :MARKETID " &
       -- enough money on game
-      "and mmo3.totalmatched > 10_0000 " &
+      "and mmo3.totalmatched > 100000 " &
       "and mmo3.status = 'OPEN' " &
       "and mmo3.betdelay = 0 " &  --not in play
       -- probability for goals
@@ -418,7 +418,23 @@ procedure Poll_Soccer is
                                Ixxlupd      => Price.Ixxlupd,
                                Ixxluts      => Price.Ixxluts
                               );
-        Price.Update;                      
+        declare
+          Tmp : Prices.Price_Type;         
+          Eos : Boolean := False;
+        begin 
+          Tmp := Price;
+          Tmp.Read(Eos);
+          if not Eos then          
+            Price.Update;   
+          else
+            Price.Insert;
+          end if;             
+        exception
+          when Sql.No_Such_Row =>
+            Log("No_Such_Row on Prices (1)");
+          when Sql.Duplicate_Index =>
+            Log("Duplicate_Index on Prices (1)");
+        end;       
         Price_History_List.Append(Price_History_Data);
       end loop;
       Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
@@ -438,10 +454,10 @@ procedure Poll_Soccer is
     exception
       when Sql.Duplicate_Index =>
         T.Rollback;
-        Log("Duplicate_Index on Priceshistory " );
+        Log("Duplicate_Index on Priceshistory (2)" );
       when Sql.No_Such_Row =>
         T.Rollback;
-        Log("No_Such_Row on Prices ");
+        Log("No_Such_Row on Prices (2)");
     end;       
   end Run;
   ---------------------------------------------------------------------
