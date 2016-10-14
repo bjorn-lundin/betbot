@@ -589,12 +589,38 @@ package body Bets is
     Is_Matched        : Boolean := False; 
     AVG_Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched      : Bet_Size_Type := 0.0;
+    Is_Updated        : Boolean := False;
+    
   begin    
     Rpc.Bet_Is_Matched(Betid             => Self.Betid, 
                        Is_Removed        => Is_Removed, 
                        Is_Matched        => Is_Matched, 
                        Avg_Price_Matched => Avg_Price_Matched,
                        Size_Matched      => Size_Matched) ;
+                       
+    if Is_Matched and then 
+      Self.Status(1..18) /= "EXECUTION_COMPLETE" then -- dont update if already matched
+      if Is_Removed then
+        Move("EXECUTABLE_NO_MATCH", Self.Status); 
+        Is_Updated := True;
+      else
+        if abs(Self.Pricematched - Float_8(Avg_Price_Matched)) < 0.0001 then      
+          Self.Pricematched := Float_8(Avg_Price_Matched);
+          Is_Updated := True;        
+        end if;
+        if abs(Self.Sizematched - Float_8(Size_Matched)) < 0.0001 then      
+          Move("EXECUTION_COMPLETE", Self.Status);
+          Self.Sizematched := Float_8(Size_Matched);
+          Is_Updated := True;        
+        end if;
+      end if;
+      if Is_Updated then
+        Log(Me & "Is_Matched", "update bet " & Self.To_String);
+        Self.Update_Withcheck;
+        Self.Nullify_Betwon;
+      end if;
+    end if;                       
+                       
     return Is_Matched; 
   end Is_Matched;
   -------------------------------------------------------------
