@@ -123,10 +123,14 @@ procedure Poll_Soccer is
     "and pmo1.backprice <= 1.30 " &   -- home favs
     "and pmo1.backprice >= 1.06 " &   -- so we can subtract 0.05 and stil be on legal odds
     "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
-    ---- no previous bets on MATCH_ODDS
-    "and not exists (select 'x' from abets where abets.marketid = mmo1.marketid) " &
+    ---- no previous bets on MATCH_ODDS (works against)
+    "and not exists ( " &
+           "select 'x' from abets " &
+           "where abets.marketid = mmo1.marketid " &
+           "and abets.sizematched < abets.size " & -- not fully matched
+           "and abets.betname = 'BACK_LEADER_SOCCER') " &
     --TODO Fix so we ignore if bets (both lay and) are fully matched so we can do many bets 
-    --one one game when we already hace greened up
+    --one one game when we already have greened up
     "order by mmo1.startts, e.eventname");
 
     Select_Games_To_Back.Set("MARKETID",Market.Marketid);
