@@ -434,6 +434,7 @@ procedure Poll_Soccer is
     Bet : Bets.Bet_Type;
     T : Sql.Transaction_Type;
     All_Are_Matched : Boolean := True;
+    Matched : Boolean := True;
   begin
     Bet.Marketid := Market.Marketid;
     Log("Check if all bets are matched in market " & Market.To_String);
@@ -441,12 +442,15 @@ procedure Poll_Soccer is
     T.Start;
       Bets.Read_Marketid(Bet,Bet_List);    
       for B of Bet_List loop
-        if not B.Is_Matched and then 
-          B.Status(1..9) /= "CANCELLED" then
-          All_Are_Matched := False;
-          Log("Not matched " & B.To_String);
-          exit;
-        end if;  
+        if B.Status(1..18) = "EXECUTION_COMPLETE" then 
+          Log("Matched " & B.To_String);
+        elsif B.Status(1..9) = "CANCELLED" then 
+          Log("Cancelled " & B.To_String);
+        else
+          Matched := B.Is_Matched;
+          Log("newly Matched" & Matched'Img & " " & B.To_String);
+        end if;
+        All_Are_Matched := All_Are_Matched and Matched;
       end loop;
     T.Commit;
     Log("All are matched " & All_Are_Matched'Img);
