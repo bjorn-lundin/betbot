@@ -281,7 +281,7 @@ procedure Poll_Soccer is
            "aprices pmo1, " & 
            "aevents e " &
       "where 1=1 " &
-      "and mcs.marketid = :MARKETID " &
+      "and mmo3.marketid = :MARKETID " &
       -- enough money on game
       "and mmo3.totalmatched > 100000 " &
       "and mmo3.status = 'OPEN' " &
