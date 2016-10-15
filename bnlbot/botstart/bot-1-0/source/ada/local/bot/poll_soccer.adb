@@ -105,7 +105,7 @@ procedure Poll_Soccer is
     "and mmo3.markettype = 'MATCH_ODDS' " &
     "and pmo3.selectionid = rmo3.selectionid " &
     "and rmo3.runnernamenum = '3' " &   -- the_draw 
-    "and pmo3.backprice >= 5 " &   -- the_draw 
+    "and pmo3.backprice >= 4 " &   -- the_draw 
     -- away team
     "and e.eventid = mmo2.eventid " &
     "and pmo2.marketid = mmo2.marketid " &
@@ -123,7 +123,7 @@ procedure Poll_Soccer is
     "and mmo1.markettype = 'MATCH_ODDS' " &
     "and pmo1.selectionid = rmo1.selectionid " &
     "and rmo1.runnernamenum = '1' " &   --home
-    "and pmo1.backprice <= 1.30 " &   -- home favs
+    "and pmo1.backprice <= 1.35 " &   -- home favs
     "and pmo1.backprice >= 1.06 " &   -- so we can subtract 0.05 and stil be on legal odds
     "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
     ---- no previous bets on MATCH_ODDS (works against)
