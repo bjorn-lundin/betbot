@@ -25,6 +25,7 @@ with Price_Histories;
 with Bot_Svn_Info;
 with Utils; use Utils;
 with Bets;
+with Runners;
 
 procedure Poll_Soccer is
   package EV renames Ada.Environment_Variables;
@@ -155,7 +156,29 @@ procedure Poll_Soccer is
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
                      Bet              => Bet(Back));
+                     
+      if Bet(Back).Exestatus(1..7)= "FAILURE" then
+        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Me & "Place_Bet", Bet(Back).To_String);
+        T.Commit;
+        return;
+      end if;
+                     
+      declare
+        Runner : Runners.Runner_Type;
+        Eos2 : Boolean := False;
+      begin   
+        Runner.Marketid := Market.Marketid;
+        Runner.Selectionid := Selectionid;
+        Runner.Read(Eos2);      
+        Bet(Back).Startts       := Market.Startts;
+        Bet(Back).Fullmarketname:= Market.Marketname;
+        Bet(Back).Runnername    := Runner.Runnername;
+      end;
+      
       Bet(Back).Insert;
+      Bet(Back).Nullify_Betwon;
+
       Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       
       if Integer(Bet(Back).Sizematched) = 0 then
@@ -187,7 +210,20 @@ procedure Poll_Soccer is
                        Bet_Persistence  => Persist,
                        Match_Directly   => Match_Directly,
                        Bet              => Bet(Lay));
+        declare
+          Runner : Runners.Runner_Type;
+          Eos2   : Boolean := False;
+        begin   
+          Runner.Marketid := Market.Marketid;
+          Runner.Selectionid := Selectionid;
+          Runner.Read(Eos2);      
+          Bet(Lay).Startts       := Market.Startts;
+          Bet(Lay).Fullmarketname:= Market.Marketname;
+          Bet(Lay).Runnername    := Runner.Runnername;
+        end;    
+        
         Bet(Lay).Insert;
+        Bet(Lay).Nullify_Betwon;
         Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
@@ -217,7 +253,7 @@ procedure Poll_Soccer is
         "e.eventname, " & 
         "e.countrycode, " & 
         "mcs.startts, " &
-        "mcs.marketid, " &
+        "mcs.marketid, " &        
         "mcs.markettype, " &
         "pcs.backprice, " &
         "mmo3.marketid, " &
@@ -314,7 +350,28 @@ procedure Poll_Soccer is
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
                      Bet              => Bet(Lay));
+
+      if Bet(Lay).Exestatus(1..7)= "FAILURE" then
+        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Me & "Place_Bet", Bet(Lay).To_String);
+        T.Commit;
+        return;
+      end if;
+
+      declare
+        Runner : Runners.Runner_Type;
+        Eos2   : Boolean := False;
+      begin   
+        Runner.Marketid := Market.Marketid;
+        Runner.Selectionid := Selectionid;
+        Runner.Read(Eos2);      
+        Bet(Lay).Startts       := Market.Startts;
+        Bet(Lay).Fullmarketname:= Market.Marketname;
+        Bet(Lay).Runnername    := Runner.Runnername;
+      end;                       
+                     
       Bet(Lay).Insert;
+      Bet(Lay).Nullify_Betwon;
       Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       
       if Integer(Bet(Lay).Sizematched) = 0 then
@@ -348,8 +405,22 @@ procedure Poll_Soccer is
                        Price            => Price(Back),
                        Bet_Persistence  => Persist,
                        Match_Directly   => Match_Directly,
-                       Bet              => Bet(Back));
+                       Bet              => Bet(Back));                     
+                       
+        declare
+          Runner : Runners.Runner_Type;
+          Eos2   : Boolean := False;
+        begin   
+          Runner.Marketid := Market.Marketid;
+          Runner.Selectionid := Selectionid;
+          Runner.Read(Eos2);      
+          Bet(Back).Startts       := Market.Startts;
+          Bet(Back).Fullmarketname:= Market.Marketname;
+          Bet(Back).Runnername    := Runner.Runnername;
+        end;                      
+      
         Bet(Back).Insert;
+        Bet(Back).Nullify_Betwon;
         Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
       end if;
     end if;   
