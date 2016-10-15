@@ -11,6 +11,7 @@ with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
 with Stacktrace;
 with Ada.Calendar.Time_Zones;
+with Bot_System_Number;
 
 package body RPC is
 
@@ -1640,7 +1641,7 @@ package body RPC is
 
     if Trim(Execution_Report_Status) /= "SUCCESS" then
       Log(Me & "Make_Bet", "bad bet, get fake betid");
-      Bet_Id := 0; --Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
     end if;
 
