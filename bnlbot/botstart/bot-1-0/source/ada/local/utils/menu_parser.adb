@@ -119,6 +119,7 @@ procedure Menu_Parser is
                           Child3.Get("name") = "Bundesliga 1" or            -- tyskland
                           Child3.Get("name") = "Serie A" or                 -- italien
                           Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
+                          Child3.Get("name") = "French Ligue 1" or          --frankrike igen
                           Child3.Get("name") = "Primeira Liga" or           -- portugal
                          -- Child3.Get("name") = "Allsvenskan" or             -- sverige
                           Child3.Get("name") = "Primera Division" ) then    -- spanien
@@ -268,10 +269,10 @@ begin
           Rpc.Login;
         end if;
         -- 3 times / 24 hours  not when horses are racing
-        if Now.Hour >= 11 and then 
-           Now.Hour <= 13 then 
+    --    if Now.Hour >= 11 and then 
+    --       Now.Hour <= 13 then 
           Parse_Menu;
-        end if;
+   --     end if;
     end;
     Now := Calendar2.Clock;
 
