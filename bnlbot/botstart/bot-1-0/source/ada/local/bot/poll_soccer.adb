@@ -125,8 +125,8 @@ procedure Poll_Soccer is
     "and mmo1.markettype = 'MATCH_ODDS' " &
     "and pmo1.selectionid = rmo1.selectionid " &
     "and rmo1.runnernamenum = '1' " &   --home
-    "and pmo1.backprice <= 1.35 " &   -- home favs
-    "and pmo1.backprice >= 1.06 " &   -- so we can subtract 0.05 and stil be on legal odds   
+    "and pmo1.backprice <= 1.50 " &   -- home favs
+    "and pmo1.backprice >= 1.16 " &   -- so we can subtract 0.05 and stil be on legal odds   
     "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
     ---- no previous UNMATCHED bets on MATCH_ODDS
     "and not exists ( " &
@@ -307,8 +307,8 @@ procedure Poll_Soccer is
     "and mmo2.markettype = 'MATCH_ODDS' " &
     "and pmo2.selectionid = rmo2.selectionid " &
     "and rmo2.runnernamenum = '2' " &   --away
-    "and pmo2.backprice <= 1.35 " &  -- away leader
-    "and pmo2.backprice >= 1.06 " &  -- away leader
+    "and pmo2.backprice <= 1.5 " &  -- away leader
+    "and pmo2.backprice >= 1.15 " &  -- away leader
     "and abs(pmo2.layprice - pmo2.backprice) <= 0.02  " &-- say 1.10/1.12
     -- home team
     "and e.eventid = mmo1.eventid " &
