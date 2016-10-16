@@ -728,9 +728,10 @@ package body RPC is
     Json_Query          : JSON_Value := Create_Object;
     Result_Array, Market_Ids : JSON_Array := Empty_Array;
     Market_Id_Received  : Marketid_Type := (others => ' ');
+    type Is_Changed_Type is (Status, Betdelay);
+    Is_Changed_Array : array (Is_Changed_Type'Range) of Boolean := (others => False);
   begin
     Is_Changed := False;
-
     Append (Market_Ids, Create(Market.Marketid));
     Params.Set_Field     (Field_Name => "marketIds", Field => Market_Ids);
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
@@ -848,16 +849,36 @@ package body RPC is
     end if;
 
     if Result.Has_Field("status") then
-      Is_Changed := Result.Get("status")(1..3) /= Market.Status(1..3);
-      if Is_Changed then
+      Is_Changed_Array(Status) := Result.Get("status")(1..3) /= Market.Status(1..3);
+      if Is_Changed_Array(Status) then
         Market.Status := (others => ' ');
         Move( Result.Get("status"), Market.Status);
       end if;
-      Log(Me & "Market_Status_Is_Changed", "Status changed for market '" & Market_Id_Received & "' " &
-                                          Is_Changed'img & " status " & Market.Status);
+      Log(Me & "Market_Status_Is_Changed", 
+                  "Status changed for market '" & Market_Id_Received & "' " &
+                   Is_Changed_Array(Status)'img & " status " & Market.Status);
     else
       Log(Me & "Market_Status_Is_Changed", "No status field found!!!");
     end if;
+    
+    if Result.Has_Field("betDelay") then
+      Is_Changed_Array(Betdelay) :=  Result.Get("betDelay") /= Long_Long_Integer(Market.Betdelay);
+      if Is_Changed_Array(Betdelay) then
+        declare
+          Bet_Delay : Long_Long_Integer := Result.Get("betDelay");
+        begin
+          Market.Betdelay := Integer_4(Bet_Delay);
+        end;
+      end if;
+      Log(Me & "Market_Status_Is_Changed", 
+                    "Bet delay changed for market '" & Market_Id_Received & "' " &
+                     Is_Changed_Array(Betdelay)'img & " Betdelay " & Market.Betdelay'Img);
+    else
+      Log(Me & "Market_Status_Is_Changed", "No betDelay field found!!!");
+    end if;
+        
+    Is_Changed := Is_Changed_Array(Status) or Is_Changed_Array(Betdelay);
+    
   end Market_Status_Is_Changed;
   ---------------------------------------
   procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Balances.Balance_Type) is
