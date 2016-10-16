@@ -499,7 +499,7 @@ procedure Poll_Soccer is
       "and mmo3.markettype = 'MATCH_ODDS' " &
       "and pmo3.selectionid = rmo3.selectionid " &
       "and rmo3.runnernamenum = '3' " &   -- the_draw 
-      "and pmo3.layprice <= 7 " &   -- the_draw 
+      "and pmo3.layprice <= 7.0 " &   -- the_draw 
       -- away team
       "and e.eventid = mmo2.eventid " &
       "and pmo2.marketid = mmo2.marketid " &
@@ -508,7 +508,7 @@ procedure Poll_Soccer is
       "and mmo2.markettype = 'MATCH_ODDS' " &
       "and pmo2.selectionid = rmo2.selectionid " &
       "and rmo2.runnernamenum = '2' " &   --away
-      "and pmo2.backprice >= 8 " &  -- away underdogs
+      "and pmo2.backprice >= 10.0 " &  -- away underdogs
       -- home team
       "and e.eventid = mmo1.eventid " &
       "and pmo1.marketid = mmo1.marketid " &
@@ -518,7 +518,7 @@ procedure Poll_Soccer is
    
       "and pmo1.selectionid = rmo1.selectionid " &
       "and rmo1.runnernamenum = '1' " &   --home
-      "and pmo1.backprice <= 1.5 " &   -- home favs
+      "and pmo1.backprice <= 1.50 " &   -- home favs
       ---- no previous bets on CORRECT_SCORE nor on MATCH_ODDS
       "and not exists ( " & 
           "select 'x' from abets " &
@@ -588,7 +588,7 @@ procedure Poll_Soccer is
       else
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
-        Price(Back) := Price(Lay) * 1.5;
+        Price(Back) := Price(Lay) * 1.2;
         
         --check price is valid - put it back and forth through tics
         declare 
@@ -726,12 +726,13 @@ procedure Poll_Soccer is
       T.Commit;
       
       if All_Bets_In_Market_Are_Matched(Market) then      
-        Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
+        Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
         Back_The_Leader_Home(Market);
+        Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
         Back_The_Leader_Away(Market);
       end if;
-      -- Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-      -- Lay_The_Draw(Market);
+       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
+       Lay_The_Draw(Market);
       Log(Me & "done strategies Market '" & Market.Marketid & "'");
       
     exception
