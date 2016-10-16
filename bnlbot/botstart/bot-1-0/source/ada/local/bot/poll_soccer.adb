@@ -46,8 +46,8 @@ procedure Poll_Soccer is
   Select_Games_To_Back,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
-  procedure Back_The_Leader(Market : Markets.Market_Type) is --; Leader : Team_Type
-    Service     : constant String := "Back_The_Leader";
+  procedure Back_The_Leader_Home(Market : Markets.Market_Type) is 
+    Service     : constant String := "Back_The_Leader_Home";
     T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
     Selectionid : Integer_4     := 0;
@@ -60,7 +60,7 @@ procedure Poll_Soccer is
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
     
   begin
-    Move("BACK_LEADER_SOCCER",Betname);
+    Move("BACK_LEADER_HOME_SOCCER",Betname);
     T.Start;
     Select_Games_To_Back.Prepare(
     "select " &
@@ -116,7 +116,6 @@ procedure Poll_Soccer is
     "and pmo2.selectionid = rmo2.selectionid " &
     "and rmo2.runnernamenum = '2' " &   --away
     "and pmo2.backprice >= 10 " &  -- away underdogs
-    --"and pmo2.backprice between :AWAYODDSMIN and  :AWAYODDSMAX " &  -- away underdogs
     -- home team
     "and e.eventid = mmo1.eventid " &
     "and pmo1.marketid = mmo1.marketid " &
@@ -126,16 +125,14 @@ procedure Poll_Soccer is
     "and pmo1.selectionid = rmo1.selectionid " &
     "and rmo1.runnernamenum = '1' " &   --home
     "and pmo1.backprice <= 1.35 " &   -- home favs
-    "and pmo1.backprice >= 1.06 " &   -- so we can subtract 0.05 and stil be on legal odds
+    "and pmo1.backprice >= 1.06 " &   -- so we can subtract 0.05 and stil be on legal odds   
     "and abs(pmo1.layprice - pmo1.backprice) <= 0.02  " &-- say 1.10/1.12
-    ---- no previous bets on MATCH_ODDS (works against)
+    ---- no previous UNMATCHED bets on MATCH_ODDS
     "and not exists ( " &
            "select 'x' from abets " &
            "where abets.marketid = mmo1.marketid " &
            "and abets.sizematched < abets.size " & -- not fully matched
-           "and abets.betname = 'BACK_LEADER_SOCCER') " &
-    --TODO Fix so we ignore if bets (both lay and) are fully matched so we can do many bets 
-    --one one game when we already have greened up
+           "and abets.betname = 'BACK_LEADER_HOME_SOCCER') " &
     "order by mmo1.startts, e.eventname");
 
     Select_Games_To_Back.Set("MARKETID",Market.Marketid);
@@ -238,7 +235,198 @@ procedure Poll_Soccer is
     end if;   
     Select_Games_To_Back.Close_Cursor;
     T.Commit;
-  end Back_The_Leader;
+  end Back_The_Leader_Home;
+  -------------------------------------------------------------
+  procedure Back_The_Leader_Away(Market : Markets.Market_Type) is 
+    Service     : constant String := "Back_The_Leader_Away";
+    T           : Sql.Transaction_Type;
+    Eos         : Boolean       := False;
+    Selectionid : Integer_4     := 0;
+    Betname     : Betname_Type  := (others => ' ');
+    Runnername  : Runnername_Type  := (others => ' ');
+    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
+    Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
+    Price_8     : Float_8 := 0.0;
+    Match_Directly : Integer_4 := 1;
+    Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    
+  begin
+    Move("BACK_LEADER_AWAY_SOCCER",Betname);
+    T.Start;
+    Select_Games_To_Back.Prepare(
+    "select " &
+      "e.eventid, " & 
+      "e.eventname, " & 
+      "e.countrycode, " & 
+      "mmo3.marketid, " &
+      "mmo3.markettype, " &
+      "mmo3.totalmatched, " &
+      "rmo1.selectionid homesel, " &
+      "rmo1.runnername homename, " &
+      "pmo1.backprice homeback, " &
+      "pmo1.layprice homelay, " &
+      "rmo3.selectionid drawsel, " &
+      "rmo3.runnername drawname, " &
+      "pmo3.backprice drawback, " &
+      "pmo3.layprice drawlay," &
+      "rmo2.selectionid awaysel, " &
+      "rmo2.runnername awayname, " &
+      "pmo2.backprice awayback, " &
+      "pmo2.layprice awaydraw " &
+    "from amarkets mmo3, " &  --market3 match_odds 
+         "arunners rmo3, " &  --runner3 match odds
+         "aprices pmo3, " &   --prices3 match odds
+         "amarkets mmo2, " &  --market2 match_odds
+         "arunners rmo2, " &  --runner2 match odds 
+         "aprices pmo2, " &   --prices2 match odds
+         "amarkets mmo1, " &  --market1 match_odds
+         "arunners rmo1, " &  --runner1 match odds
+         "aprices pmo1, " &   --prices1 match odds
+         "aevents e " &       --events
+    "where 1=1 " &
+    "and mmo3.marketid = :MARKETID " &
+    --enough money on game
+    "and mmo3.totalmatched > 100000 " &
+    "and mmo3.status = 'OPEN' " &
+    "and mmo3.betdelay > 0 " & --in play
+    -- the_draw
+    "and e.eventid = mmo3.eventid " &
+    "and pmo3.marketid = mmo3.marketid " &
+    "and rmo3.marketid = pmo3.marketid " &
+    "and rmo3.selectionid = pmo3.selectionid " &
+    "and mmo3.markettype = 'MATCH_ODDS' " &
+    "and pmo3.selectionid = rmo3.selectionid " &
+    "and rmo3.runnernamenum = '3' " &   -- the_draw 
+    "and pmo3.backprice >= 4 " &   -- the_draw 
+    -- away team
+    "and e.eventid = mmo2.eventid " &
+    "and pmo2.marketid = mmo2.marketid " &
+    "and rmo2.marketid = pmo2.marketid " &
+    "and rmo2.selectionid = pmo2.selectionid " &
+    "and mmo2.markettype = 'MATCH_ODDS' " &
+    "and pmo2.selectionid = rmo2.selectionid " &
+    "and rmo2.runnernamenum = '2' " &   --away
+    "and pmo2.backprice <= 1.35 " &  -- away leader
+    "and pmo2.backprice >= 1.06 " &  -- away leader
+    "and abs(pmo2.layprice - pmo2.backprice) <= 0.02  " &-- say 1.10/1.12
+    -- home team
+    "and e.eventid = mmo1.eventid " &
+    "and pmo1.marketid = mmo1.marketid " &
+    "and rmo1.marketid = pmo1.marketid " &
+    "and rmo1.selectionid = pmo1.selectionid " &
+    "and mmo1.markettype = 'MATCH_ODDS' " &
+    "and pmo1.selectionid = rmo1.selectionid " &
+    "and rmo1.runnernamenum = '1' " &   --home
+    "and pmo1.backprice >= 10 " &   -- home losers
+    ---- no previous UNMATCHED bets on MATCH_ODDS
+    "and not exists ( " &
+           "select 'x' from abets " &
+           "where abets.marketid = mmo1.marketid " &
+           "and abets.sizematched < abets.size " & -- not fully matched
+           "and abets.betname = 'BACK_LEADER_AWAY_SOCCER') " &
+    "order by mmo1.startts, e.eventname");
+
+    Select_Games_To_Back.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back.Open_Cursor;
+    Select_Games_To_Back.Fetch(Eos);
+    if not Eos then
+      Select_Games_To_Back.Get("awaysel",Selectionid);
+      Select_Games_To_Back.Get("awayname",Runnername);
+      Select_Games_To_Back.Get("awayback",Price_8);
+      Price(Back) := Bet_Price_Type(Price_8);
+      
+      Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
+      Rpc.Place_Bet (Bet_Name         => Betname,
+                     Market_Id        => Market.Marketid,
+                     Side             => Back,
+                     Runner_Name      => Runnername,
+                     Selection_Id     => Selectionid,
+                     Size             => Size(Back),
+                     Price            => Price(Back),
+                     Bet_Persistence  => Persist,
+                     Match_Directly   => Match_Directly,
+                     Bet              => Bet(Back));
+                     
+      if Bet(Back).Exestatus(1..7)= "FAILURE" then
+        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Me & "Place_Bet", Bet(Back).To_String);
+        T.Commit;
+        return;
+      end if;
+                     
+      declare
+        Runner : Runners.Runner_Type;
+        Eos2 : Boolean := False;
+      begin   
+        Runner.Marketid := Market.Marketid;
+        Runner.Selectionid := Selectionid;
+        Runner.Read(Eos2);      
+        Bet(Back).Startts       := Market.Startts;
+        Bet(Back).Fullmarketname:= Market.Marketname;
+        Bet(Back).Runnername    := Runner.Runnername;
+      end;
+      
+      Bet(Back).Insert;
+      Bet(Back).Nullify_Betwon;
+
+      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
+      
+      if Integer(Bet(Back).Sizematched) = 0 then
+        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
+        declare
+          Cancel_Succeeded : Boolean := False;
+        begin
+          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
+          Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+          if Cancel_Succeeded then
+            Move("CANCELLED", Bet(Back).Status);
+            Bet(Back).Update_Withcheck;
+          end if;
+        end;
+      else
+      --Backsize * Backprice = Laysize * Layprice
+      --Laysize = Backsize * Backprice/Layprice
+        Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
+        --check price is valid - put it back and forth through tics
+        declare 
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Lay)));
+        begin
+          Price(Lay) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
+        end;  
+        
+        Size(Lay) := Size(Back) * Price(Back) / Price(Lay);
+      
+        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
+        Rpc.Place_Bet (Bet_Name         => Betname,
+                       Market_Id        => Market.Marketid,
+                       Side             => Lay,
+                       Runner_Name      => Runnername,
+                       Selection_Id     => Selectionid,
+                       Size             => Size(Lay),
+                       Price            => Price(Lay),
+                       Bet_Persistence  => Persist,
+                       Match_Directly   => Match_Directly,
+                       Bet              => Bet(Lay));
+        declare
+          Runner : Runners.Runner_Type;
+          Eos2   : Boolean := False;
+        begin   
+          Runner.Marketid := Market.Marketid;
+          Runner.Selectionid := Selectionid;
+          Runner.Read(Eos2);      
+          Bet(Lay).Startts       := Market.Startts;
+          Bet(Lay).Fullmarketname:= Market.Marketname;
+          Bet(Lay).Runnername    := Runner.Runnername;
+        end;    
+        
+        Bet(Lay).Insert;
+        Bet(Lay).Nullify_Betwon;
+        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
+      end if;
+    end if;   
+    Select_Games_To_Back.Close_Cursor;
+    T.Commit;
+  end Back_The_Leader_Away;
   -------------------------------------------------------------
   procedure Lay_The_Draw(Market : Markets.Market_Type) is
     Service     : constant String := "Lay_The_Draw";
@@ -538,7 +726,8 @@ procedure Poll_Soccer is
       
       if All_Bets_In_Market_Are_Matched(Market) then      
         Log(Me & "Back_The_Leader start Market '" & Market.Marketid & "'");
-        Back_The_Leader(Market);
+        Back_The_Leader_Home(Market);
+        Back_The_Leader_Away(Market);
       end if;
       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
       if Market.Marketid /= "1.127351971" then  --Inter v Cagliari
