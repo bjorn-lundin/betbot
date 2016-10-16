@@ -730,11 +730,9 @@ procedure Poll_Soccer is
         Back_The_Leader_Home(Market);
         Back_The_Leader_Away(Market);
       end if;
-      Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-      if Market.Marketid /= "1.127351971" then  --Inter v Cagliari
-        Lay_The_Draw(Market);
-      end if;
-      Log(Me & "done strategeies Market '" & Market.Marketid & "'");
+      -- Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
+      -- Lay_The_Draw(Market);
+      Log(Me & "done strategies Market '" & Market.Marketid & "'");
       
     exception
       when Sql.Duplicate_Index =>
