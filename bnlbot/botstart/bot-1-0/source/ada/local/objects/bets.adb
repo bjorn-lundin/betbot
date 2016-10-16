@@ -607,6 +607,7 @@ package body Bets is
                        Size_Matched      => Size_Matched) ;
 
     Log(Me & "Is_Matched", "Betid=" & Self.Betid'Img &
+         " Is_Matched=" & Is_Matched'Img &
          " Is_Removed=" & Is_Removed'Img &
          " Avg_Price_Matched=" & F8_Image(Float_8(Avg_Price_Matched)) &
          " Size_Matched=" & F8_Image(Float_8(Size_Matched)));
