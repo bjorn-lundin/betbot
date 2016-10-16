@@ -597,6 +597,7 @@ package body Bets is
     AVG_Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched      : Bet_Size_Type := 0.0;
     Is_Updated        : Boolean := False;
+    use Utils;
 
   begin
     Rpc.Bet_Is_Matched(Betid             => Self.Betid,
@@ -604,6 +605,11 @@ package body Bets is
                        Is_Matched        => Is_Matched,
                        Avg_Price_Matched => Avg_Price_Matched,
                        Size_Matched      => Size_Matched) ;
+
+    Log(Me & "Is_Matched", "Betid=" & Self.Betid'Img &
+         " Is_Removed=" & Is_Removed'Img &
+         " Avg_Price_Matched=" & F8_Image(Float_8(Avg_Price_Matched)) &
+         " Size_Matched=" & F8_Image(Float_8(Size_Matched)));
 
     if Is_Matched and then
       Self.Status(1..18) /= "EXECUTION_COMPLETE" then -- dont update if already matched
