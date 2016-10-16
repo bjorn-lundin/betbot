@@ -615,7 +615,8 @@ package body Bets is
     if Is_Matched and then
       Self.Status(1..18) /= "EXECUTION_COMPLETE" then -- dont update if already matched
       if Is_Removed then
-        Move("EXECUTABLE_NO_MATCH", Self.Status);
+       -- Move("EXECUTABLE_NO_MATCH", Self.Status);
+        Move("EXECUTION_COMPLETE", Self.Status);
         Is_Updated := True;
       else
         if abs(Self.Pricematched - Float_8(Avg_Price_Matched)) < 0.0001 then
