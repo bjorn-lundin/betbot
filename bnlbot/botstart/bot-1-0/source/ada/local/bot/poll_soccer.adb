@@ -43,7 +43,8 @@ procedure Poll_Soccer is
   Now             : Calendar2.Time_Type;
   Ok              : Boolean := False;
   Select_Games_To_Lay_The_Draw,
-  Select_Games_To_Back,
+  Select_Games_To_Back_Home,
+  Select_Games_To_Back_Away,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
   procedure Back_The_Leader_Home(Market : Markets.Market_Type) is 
@@ -62,7 +63,7 @@ procedure Poll_Soccer is
   begin
     Move("BACK_LEADER_HOME_SOCCER",Betname);
     T.Start;
-    Select_Games_To_Back.Prepare(
+    Select_Games_To_Back_Home.Prepare(
     "select " &
       "e.eventid, " & 
       "e.eventname, " & 
@@ -135,13 +136,13 @@ procedure Poll_Soccer is
            "and abets.betname = 'BACK_LEADER_HOME_SOCCER') " &
     "order by mmo1.startts, e.eventname");
 
-    Select_Games_To_Back.Set("MARKETID",Market.Marketid);
-    Select_Games_To_Back.Open_Cursor;
-    Select_Games_To_Back.Fetch(Eos);
+    Select_Games_To_Back_Home.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back_Home.Open_Cursor;
+    Select_Games_To_Back_Home.Fetch(Eos);
     if not Eos then
-      Select_Games_To_Back.Get("homesel",Selectionid);
-      Select_Games_To_Back.Get("homename",Runnername);
-      Select_Games_To_Back.Get("homeback",Price_8);
+      Select_Games_To_Back_Home.Get("homesel",Selectionid);
+      Select_Games_To_Back_Home.Get("homename",Runnername);
+      Select_Games_To_Back_Home.Get("homeback",Price_8);
       Price(Back) := Bet_Price_Type(Price_8);
       
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
@@ -233,7 +234,7 @@ procedure Poll_Soccer is
         Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
-    Select_Games_To_Back.Close_Cursor;
+    Select_Games_To_Back_Home.Close_Cursor;
     T.Commit;
   end Back_The_Leader_Home;
   -------------------------------------------------------------
@@ -253,7 +254,7 @@ procedure Poll_Soccer is
   begin
     Move("BACK_LEADER_AWAY_SOCCER",Betname);
     T.Start;
-    Select_Games_To_Back.Prepare(
+    Select_Games_To_Back_Away.Prepare(
     "select " &
       "e.eventid, " & 
       "e.eventname, " & 
@@ -326,13 +327,13 @@ procedure Poll_Soccer is
            "and abets.betname = 'BACK_LEADER_AWAY_SOCCER') " &
     "order by mmo1.startts, e.eventname");
 
-    Select_Games_To_Back.Set("MARKETID",Market.Marketid);
-    Select_Games_To_Back.Open_Cursor;
-    Select_Games_To_Back.Fetch(Eos);
+    Select_Games_To_Back_Away.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back_Away.Open_Cursor;
+    Select_Games_To_Back_Away.Fetch(Eos);
     if not Eos then
-      Select_Games_To_Back.Get("awaysel",Selectionid);
-      Select_Games_To_Back.Get("awayname",Runnername);
-      Select_Games_To_Back.Get("awayback",Price_8);
+      Select_Games_To_Back_Away.Get("awaysel",Selectionid);
+      Select_Games_To_Back_Away.Get("awayname",Runnername);
+      Select_Games_To_Back_Away.Get("awayback",Price_8);
       Price(Back) := Bet_Price_Type(Price_8);
       
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
@@ -424,7 +425,7 @@ procedure Poll_Soccer is
         Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
-    Select_Games_To_Back.Close_Cursor;
+    Select_Games_To_Back_Away.Close_Cursor;
     T.Commit;
   end Back_The_Leader_Away;
   -------------------------------------------------------------
