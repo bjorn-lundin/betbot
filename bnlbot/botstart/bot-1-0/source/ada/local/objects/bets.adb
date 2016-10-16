@@ -619,12 +619,9 @@ package body Bets is
         Move("EXECUTION_COMPLETE", Self.Status);
         Is_Updated := True;
       else
-        if abs(Self.Pricematched - Float_8(Avg_Price_Matched)) < 0.001 then
-          Self.Pricematched := Float_8(Avg_Price_Matched);
-          Is_Updated := True;
-        end if;
         if abs(Self.Size - Float_8(Size_Matched)) < 0.001 then
           Move("EXECUTION_COMPLETE", Self.Status);
+          Self.Pricematched := Float_8(Avg_Price_Matched);
           Self.Sizematched := Float_8(Size_Matched);
           Is_Updated := True;
         end if;
