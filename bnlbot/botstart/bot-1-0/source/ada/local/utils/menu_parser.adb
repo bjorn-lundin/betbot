@@ -93,15 +93,15 @@ procedure Menu_Parser is
                    (--Child2.Get("name") = "Argentinian Soccer" or
                     Child2.Get("name") = "Belgian Soccer" or
                    -- Child2.Get("name") = "Brazilian Soccer" or
-                   -- Child2.Get("name") = "Danish Soccer" or
+                    Child2.Get("name") = "Danish Soccer" or
                     Child2.Get("name") = "Dutch Soccer" or
                     Child2.Get("name") = "English Soccer" or
                     Child2.Get("name") = "German Soccer" or
                     Child2.Get("name") = "Italian Soccer" or
                     Child2.Get("name") = "French Soccer" or --?
                     Child2.Get("name") = "Portuguese Soccer" or
-                    Child2.Get("name") = "Spanish Soccer" ) then
-                 --   Child2.Get("name") = "Swedish Soccer" ) then
+                    Child2.Get("name") = "Spanish Soccer"  or
+                    Child2.Get("name") = "Swedish Soccer" ) then
 
                   Log("        2 type:" & Child2.Get("type") & " name:" & Child2.Get("name"));
                   Children(3) := Child2.Get("children");
@@ -112,7 +112,7 @@ procedure Menu_Parser is
                       Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                       if Child3.Has_Field("children") and then Child3.Get("type") = "EVENT" and then
                          (Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
-                       --   Child3.Get("name") = "Danish Superliga" or        -- danmark
+                          Child3.Get("name") = "Danish Superliga" or        -- danmark
                           Child3.Get("name") = "Dutch Eredivisie" or              -- holland
                           Child3.Get("name") = "Barclays Premier League" or -- england
                           Child3.Get("name") = "English Premier League" or -- england
@@ -121,7 +121,7 @@ procedure Menu_Parser is
                           Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
                           Child3.Get("name") = "French Ligue 1" or          --frankrike igen
                           Child3.Get("name") = "Primeira Liga" or           -- portugal
-                         -- Child3.Get("name") = "Allsvenskan" or             -- sverige
+                          Child3.Get("name") = "Allsvenskan" or             -- sverige
                           Child3.Get("name") = "Primera Division" ) then    -- spanien
                         Log("            3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                         Children(4) := Child3.Get("children");
@@ -194,7 +194,7 @@ procedure Menu_Parser is
       end loop;
     end if;
   exception
-    when Rpc.Bad_Reply => 
+    when Rpc.Bad_Reply =>
       Log("Parse_Menu", "caught Rpc.Bad_Reply");
   end Parse_Menu;
   -----------------------------------------------------------------------
@@ -269,8 +269,8 @@ begin
           Rpc.Login;
         end if;
         -- 3 times / 24 hours  not when horses are racing
-    --    if Now.Hour >= 11 and then 
-    --       Now.Hour <= 13 then 
+    --    if Now.Hour >= 11 and then
+    --       Now.Hour <= 13 then
           Parse_Menu;
    --     end if;
     end;
