@@ -201,7 +201,7 @@ procedure Poll_Soccer is
         Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
         --check price is valid - put it back and forth through tics
         declare 
-          Tic : Integer := Tics.Get_Tic_Index(Float_8(Price(Lay)));
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Lay)));
         begin
           Price(Lay) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
         end;  
@@ -403,7 +403,7 @@ procedure Poll_Soccer is
         
         --check price is valid - put it back and forth through tics
         declare 
-          Tic : Integer := Tics.Get_Tic_Index(Float_8(Price(Back)));
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Back)));
         begin
           Price(Back) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
         end;  
@@ -541,7 +541,9 @@ procedure Poll_Soccer is
         Back_The_Leader(Market);
       end if;
       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-      Lay_The_Draw(Market);
+      if Market.Marketid /= "1.127351971" then  --Inter v Cagliari
+        Lay_The_Draw(Market);
+      end if;
       Log(Me & "done strategeies Market '" & Market.Marketid & "'");
       
     exception
