@@ -37,8 +37,8 @@ package body Tics is
              800.00, 810.00, 820.00, 830.00, 840.00, 850.00, 860.00, 870.00, 880.00, 890.00,
              900.00, 910.00, 920.00, 930.00, 940.00, 950.00, 960.00, 970.00, 980.00, 990.00,
             1000.00);
-  
-  
+
+
 ------------------------------------------
   function Get_Tic_Index(Price : Float_8) return Integer is
   begin
@@ -53,48 +53,61 @@ package body Tics is
   function Get_Tic_Price(I : Integer) return Float_8 is
   begin
     if i < Integer(  1) then return Global_Odds_Table(  1); end if;
-    if i > Integer(350) then return Global_Odds_Table(350); end if;  
+    if i > Integer(350) then return Global_Odds_Table(350); end if;
     return Global_Odds_Table(I);
   end Get_Tic_Price;
 ------------------------------------------
-  
+
   -- get most of at backed greenup,
-  -- ie if not back is winning, just cover the losses  
+  -- ie if not back is winning, just cover the losses
   function Get_Zero_Size(Backprice : Back_Price_Type;
                          Backsize  : Bet_Size_Type;
                          Layprice  : Lay_Price_Type) return Bet_Size_Type is
                          pragma Unreferenced (Backprice, Layprice);
-  begin                     
-    -- if backbet is winning we win  
+  begin
+    -- if backbet is winning we win
     --  + (Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) *  (1-Commission)
-  
-    -- if laybet is winning we win  
+
+    -- if laybet is winning we win
     --  (- Backsize + Laysize) * (1-Commission)
     -- laybet just cover the cost of the bets, so sum = 0
-  
+
     return Backsize;
-    
+
   end Get_Zero_Size;
   --------------------------------------------
-  
+
   function Get_Green_Size(Layprice   : Lay_Price_Type;
                           Laysize    : Bet_Size_Type;
                           Backprice  : Back_Price_Type) return Bet_Size_Type is
-  begin                        
-    -- if backbet is winning we win  
+  begin
+    -- if backbet is winning we win
     --  + (Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) *  (1-Commission)
-  
-    -- if laybet is winning we win  
+
+    -- if laybet is winning we win
     --  (- Backsize + Laysize) * (1-Commission)
     -- laybet just cover the cost of the bets, so sum = 0
 
    --(Backsize * (Backprice-1) *  - (Laysize * (Layprice -1)) ) =  (- Backsize + Laysize)
 
 
-    
-    
+
+
     return Laysize*Layprice/Backprice ;
-    
+
   end Get_Green_Size;
-  
+  -------------------------------------------------------
+
+  function Get_Nearest_Higher_Tic_Index(Price : Float_8) return Integer is
+  begin
+    for i in Global_Odds_Table'range loop
+      if Global_Odds_Table(i) >= Price then
+        return i;
+      end if;
+    end loop;
+    raise Bad_odds with Price'Img;
+  end Get_Nearest_Higher_Tic_Index;
+------------------------------------------
+
+
 end Tics;
