@@ -26,6 +26,7 @@ with Bot_Svn_Info;
 with Utils; use Utils;
 with Bets;
 with Runners;
+with Tics;
 
 procedure Poll_Soccer is
   package EV renames Ada.Environment_Variables;
@@ -45,7 +46,7 @@ procedure Poll_Soccer is
   Select_Games_To_Back,
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
-  procedure Back_The_Leader(Market : Markets.Market_Type) is
+  procedure Back_The_Leader(Market : Markets.Market_Type) is --; Leader : Team_Type
     Service     : constant String := "Back_The_Leader";
     T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
@@ -115,6 +116,7 @@ procedure Poll_Soccer is
     "and pmo2.selectionid = rmo2.selectionid " &
     "and rmo2.runnernamenum = '2' " &   --away
     "and pmo2.backprice >= 10 " &  -- away underdogs
+    --"and pmo2.backprice between :AWAYODDSMIN and  :AWAYODDSMAX " &  -- away underdogs
     -- home team
     "and e.eventid = mmo1.eventid " &
     "and pmo1.marketid = mmo1.marketid " &
@@ -197,6 +199,13 @@ procedure Poll_Soccer is
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
         Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
+        --check price is valid - put it back and forth through tics
+        declare 
+          Tic : Integer := Tics.Get_Tic_Index(Float_8(Price(Lay)));
+        begin
+          Price(Lay) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
+        end;  
+        
         Size(Lay) := Size(Back) * Price(Back) / Price(Lay);
       
         Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
@@ -317,6 +326,7 @@ procedure Poll_Soccer is
       "and rmo1.marketid = pmo1.marketid " &
       "and rmo1.selectionid = pmo1.selectionid " &
       "and mmo1.markettype = 'MATCH_ODDS' " &
+   
       "and pmo1.selectionid = rmo1.selectionid " &
       "and rmo1.runnernamenum = '1' " &   --home
       "and pmo1.backprice <= 1.5 " &   -- home favs
@@ -390,11 +400,19 @@ procedure Poll_Soccer is
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
         Price(Back) := Price(Lay) * 1.5;
+        
+        --check price is valid - put it back and forth through tics
+        declare 
+          Tic : Integer := Tics.Get_Tic_Index(Float_8(Price(Back)));
+        begin
+          Price(Back) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
+        end;  
+        
         Size(Back) := Size(Lay) * Price(Lay) / Price(Back);
         if Size(Back) < 30.0 then
           Size(Back) := 30.0;
-        end if;  
-      
+        end if;          
+        
         Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
         Rpc.Place_Bet (Bet_Name         => Betname,
                        Market_Id        => Market.Marketid,
