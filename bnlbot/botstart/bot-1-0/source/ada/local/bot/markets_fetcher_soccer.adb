@@ -232,7 +232,8 @@ begin
   Append(Market_Countries  , Create("FR"));
   Append(Market_Countries  , Create("NL"));
   Append(Market_Countries  , Create("DE"));
- -- Append(Market_Countries  , Create("SE"));
+  Append(Market_Countries  , Create("SE"));
+  Append(Market_Countries  , Create("DK"));
   Append(Market_Countries  , Create("BE"));
   Append(Market_Type_Codes , Create("MATCH_ODDS"));
   Append(Market_Type_Codes , Create("CORRECT_SCORE"));
@@ -260,12 +261,12 @@ begin
       end if;
 
       Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
-      
+
       case Process_Io.Identity(Msg) is
-        when Core_Messages.Exit_Message => 
+        when Core_Messages.Exit_Message =>
           exit Main_Loop;
-        when others => 
-          Log(Me, "Unhandled message identity: " & 
+        when others =>
+          Log(Me, "Unhandled message identity: " &
                    Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
@@ -280,7 +281,7 @@ begin
       Now.Minute <= 02 ;
 
     exit Main_Loop when Is_Time_To_Exit;
-      
+
     UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
     case UTC_Offset_Minutes is
       when 60     => UTC_Time_Start := Now - One_Hour;
@@ -342,12 +343,12 @@ begin
            Market_Is_Ok := not Eos_Okmarket;
            --pragma Compile_Time_Warning(True,"OKmarket is overidden - always true");
            --Market_Is_Ok := True;
-           
+
            if Market_Is_Ok then
              Insert_Market(Market);
              Event := Market.Get("event");
              if not Event.Has_Field("id") then
-               Log(Me, "we have no event:" & i'img & " event:" & Event.Write );               
+               Log(Me, "we have no event:" & i'img & " event:" & Event.Write );
              end if;
            else
              Log(Me, "Market:'" & Okmarket.Marketid & "' was NOT found in AOKMARKETS - skipping" );
@@ -361,17 +362,17 @@ begin
            else
               Log(Me, "we no eventType:" & i'img & " eventType:" & Event_Type.Write );
            end if;
-  
+
            if Market.Has_Field("runners") then
               Insert_Runners(Market);
            end if;
-         end if;  
+         end if;
        end loop;
     end if;
       -- now get the prices
     T.Commit;
 
-    
+
     if Market_Is_Ok then
       declare
          Params                      : JSON_Value := Create_Object;
@@ -381,9 +382,9 @@ begin
          One_Market_Id               : JSON_Array := Empty_Array;
       begin
         Market_Ids := Empty_Array;
-      
+
         Log(Me, "Found" & Length (Result_List_Market_Catalogue)'Img & " markets");
-      
+
         for i in 1 .. Length (Result_List_Market_Catalogue) loop
           Log(Me, "process market" & i'img & " of" & Length (Result_List_Market_Catalogue)'Img & " markets");
           Market := Get(Result_List_Market_Catalogue, i);
@@ -395,7 +396,7 @@ begin
             One_Market_Id := Empty_Array; --empty it here, to avoid TOO_MUCH_DATA replies
             Append(One_Market_Id, Create(string'(Market.Get("marketId"))));
           end if;
-      
+
           if Has_Id then
             Append (Price_Data , Create("EX_BEST_OFFERS"));
             Price_Projection.Set_Field (Field_Name => "priceData", Field => Price_Data);
@@ -403,16 +404,16 @@ begin
             Params.Set_Field (Field_Name => "currencyCode",    Field => "SEK");
             Params.Set_Field (Field_Name => "locale",          Field => "sv");
             Params.Set_Field (Field_Name => "marketIds",       Field => One_Market_Id);
-      
+
             Query_List_Market_Book.Set_Field (Field_Name => "params",  Field => Params);
             Query_List_Market_Book.Set_Field (Field_Name => "id",      Field => 15);   --?
             Query_List_Market_Book.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
             Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
-      
+
             Rpc.Get_JSON_Reply(Query => Query_List_Market_Book,
                                Reply => Reply_List_Market_Book,
                                URL   => Token.URL_BETTING);
-      
+
                --  Iterate the Reply_List_Market_Book object.
             if Reply_List_Market_Book.Has_Field("result") then
               Log(Me, "we have result ");
@@ -420,9 +421,9 @@ begin
               for i in 1 .. Length (Result_List_Market_Book) loop
                 Log(Me, "we have result #:" & i'img);
                 Market := Get(Result_List_Market_Book, i);
-      
+
                 if Market.Has_Field("marketId") then
-      
+
                   Trf_Loop : loop
                     begin
                       T.Start;
@@ -446,7 +447,7 @@ begin
         end loop; --for loop
       end;
     end if;
-    
+
     Log(Me, "Market_Is_Ok: " & Market_Is_Ok'Img);
 --      if Market_Is_Ok then
 --        declare
@@ -458,7 +459,7 @@ begin
 --          Db_Market : Markets.Market_Type;
 --          Db_Event  : Events.Event_Type;
 --          --------------------------------------------------------------------
---  
+--
 --        begin
 --          for i in 1 .. Length (Market_Ids) loop
 --            Market := Get(Market_Ids, i);
