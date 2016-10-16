@@ -13,7 +13,7 @@ with Rpc;
 
 package body Bets is
   Me : constant String := "Bet.";
-  
+
   Select_Executable_Bets,
   Select_Dry_Run_Bets,
   Select_Real_Bets,
@@ -162,21 +162,21 @@ package body Bets is
   end Check_Outcome;
 
   ------------------------
-  
+
   procedure Match_Directly(Self : in out Bet_Type; Value : Boolean ) is
   begin
     if Value then
       Self.Powerdays := Integer_4(1);
     else
       Self.Powerdays := Integer_4(0);
-    end if;    
+    end if;
   end Match_Directly;
   ------------------------
   function Match_Directly(Self : in out Bet_Type) return Boolean is
   begin
     return Self.Powerdays /= Integer_4(0);
   end Match_Directly;
-  
+
   ------------------------
 
   function Create(Name : Betname_Type;
@@ -271,14 +271,14 @@ package body Bets is
     end if;
   end Check_Matched;
   ----------------------------------
-  
+
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
     AB_List :Table_Abets.Abets_List_Pack2.List;
     B : Bet_Type;
   begin
-    Table_Abets.Read_List(Stm,AB_List,Max);  
+    Table_Abets.Read_List(Stm,AB_List,Max);
     for i of AB_List loop
       B := (
             Betid                   => I.Betid,
@@ -306,11 +306,11 @@ package body Bets is
             Fullmarketname          => I.Fullmarketname,
             Svnrevision             => I.Svnrevision,
             Ixxlupd                 => I.Ixxlupd,
-            Ixxluts                 => I.Ixxluts           
+            Ixxluts                 => I.Ixxluts
            );
       List.Append(B);
     end loop;
-  end Read_List;  
+  end Read_List;
   ----------------------------------------
   procedure Nullify_Betwon(Self : in out Bet_Type) is
   begin
@@ -321,10 +321,10 @@ package body Bets is
       "and IXXLUPD = :OLDIXXLUPD " &
       "and IXXLUTS = :OLDIXXLUTS "
       );
-    Update_Betwon_To_Null.Set("UPDATER", Process_Io.This_Process.Name);  
-    Update_Betwon_To_Null.Set_Timestamp("IXXLUTS", Calendar2.Clock);  
-    Update_Betwon_To_Null.Set("OLDIXXLUPD", Self.Ixxlupd);  
-    Update_Betwon_To_Null.Set_Timestamp("OLDIXXLUTS", Self.Ixxluts);  
+    Update_Betwon_To_Null.Set("UPDATER", Process_Io.This_Process.Name);
+    Update_Betwon_To_Null.Set_Timestamp("IXXLUTS", Calendar2.Clock);
+    Update_Betwon_To_Null.Set("OLDIXXLUPD", Self.Ixxlupd);
+    Update_Betwon_To_Null.Set_Timestamp("OLDIXXLUTS", Self.Ixxluts);
     Update_Betwon_To_Null.Set("BETID", Self.Betid);
     Update_Betwon_To_Null.Execute;
   end Nullify_Betwon;
@@ -335,6 +335,7 @@ package body Bets is
     Bet,Bet_From_List      : Bets.Bet_Type;
     T        : Sql.Transaction_Type;
     Illegal_Data : Boolean := False;
+    Illegal_Data2 : Boolean := False;
     Side       : Bet_Side_Type;
     Runner     : Runners.Runner_Type;
     type Eos_Type is (Arunner ,
@@ -350,10 +351,10 @@ package body Bets is
     Do_Update : Boolean := True;
   begin
     Log(Me & "Check_Bets", "start");
-    
-    -- update ARUNNERS.STATUS with real result...    
+
+    -- update ARUNNERS.STATUS with real result...
     -- is done by Winners_Fetcher_Json
-    --Get result, set status=PRELIMINARY for real bets   
+    --Get result, set status=PRELIMINARY for real bets
 
     T.Start;
     -- check the dry run bets
@@ -363,14 +364,14 @@ package body Bets is
       "and B.BETWON is null " & -- will be not null if updated
 --      "and B.BETID < 1000000000 " & -- ALL BETS
       "and M.STATUS in ('SUSPENDED','SETTLED','CLOSED') " & -- does 'SETTLED' exist?
-      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...  
+      "and exists (select 'a' from ARUNNERS where ARUNNERS.MARKETID = B.MARKETID and ARUNNERS.STATUS = 'WINNER')" ); -- must have had time to check ...
     Bets.Read_List(Select_Dry_Run_Bets, Bet_List);
     T.Commit;
 
     for b of Bet_List loop
       Log(Me & "Check_Bets", "betlist " & B.To_String);
     end loop;
-    
+
     Inner : for b of Bet_List  loop
       Bet := b;
       Illegal_Data := False;
@@ -413,49 +414,55 @@ package body Bets is
             Selection_In_Winners := False;
           else
             Log(Me & "Check_Bets", "unknown runner status, exit '" & Runner.Status & "'");
-            exit Inner;
+            Illegal_Data2 := True;
           end if;
         else
-            Log(Me & "Check_Bets", "runner not found ?? " & Runner.To_String);
-            exit Inner;
+          Log(Me & "Check_Bets", "runner not found ?? " & Runner.To_String);
+          Illegal_Data2 := True;
         end if;
 
-        case Side is
-          when Back    => Bet_Won := Selection_In_Winners;
-          when Lay     => Bet_Won := not Selection_In_Winners;
-        end case;
-
-        if Bet_Won then
-          case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
-                           -- so it won't do to calculate per bet. leave that to the sql-script summarising
-            when Back    => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
-            when Lay     => Profit := 1.0 * Bet.Sizematched;
-          end case;
-        else -- lost :-(
+        if not Illegal_Data2 then
           case Side is
-            when Back    => Profit := - Bet.Sizematched;
-            when Lay     => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
+            when Back    => Bet_Won := Selection_In_Winners;
+            when Lay     => Bet_Won := not Selection_In_Winners;
           end case;
-        end if;
 
-        Bet.Betwon := Bet_Won;
-        Bet.Profit := Profit;
-        if Bet.Betid > 1_000_000_000 then -- a real bet
-          Bet.Status := (others => ' ');
-          Move("PRELIMINARY", Bet.Status);            
-        end if;
-        
-        begin
-          T.Start;
-              Log(Me & "Check_Bets", " 3 " & Bet.To_String);
-          Bet.Update_Withcheck;
-              Log(Me & "Check_Bets", " 4 " & Bet.To_String);
-          T.Commit;
-        exception
-          when Sql.No_Such_Row =>
-             T.Rollback; -- let the other one do the update
-             exit Inner;
-        end ;
+          if Bet_Won then
+            case Side is     -- Betfair takes 5% provision on winnings, but 5% per market,
+                -- so it won't do to calculate per bet. leave that to the sql-script summarising
+              when Back    => Profit := 1.0 * Bet.Sizematched * (Bet.Pricematched - 1.0);
+              when Lay     => Profit := 1.0 * Bet.Sizematched;
+            end case;
+          else -- lost :-(
+            case Side is
+              when Back    => Profit := - Bet.Sizematched;
+              when Lay     => Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
+            end case;
+          end if;
+
+          Bet.Betwon := Bet_Won;
+          Bet.Profit := Profit;
+          if Bet.Betid > 1_000_000_000 then -- a real bet
+            Bet.Status := (others => ' ');
+            Move("PRELIMINARY", Bet.Status);
+          end if;
+
+          begin
+            T.Start;
+            Log(Me & "Check_Bets", " 3 " & Bet.To_String);
+            Bet.Update_Withcheck;
+            Log(Me & "Check_Bets", " 4 " & Bet.To_String);
+            T.Commit;
+          exception
+            when Sql.No_Such_Row =>
+              T.Rollback; -- let the other one do the update
+              exit Inner;
+          end ;
+        else
+          Log(Me & "Check_Bets", "Illegal_Data2 !!");
+        end if; --Illegal data2
+      else
+        Log(Me & "Check_Bets", "Illegal_Data !!");
       end if; -- Illegal data
     end loop Inner;
 
@@ -477,7 +484,7 @@ package body Bets is
     if Start_Ts = Calendar2.Time_Type_First then
       Eos(Abets) := True;
     end if;
-    
+
     if not Eos(Abets) then
       for i in Cleared_Bet_Status_Type'range loop
         Rpc.Get_Cleared_Bet_Info_List(Bet_Status     => i,
@@ -501,21 +508,21 @@ package body Bets is
           Bet.Status       := Bet_From_List.Status;
           Bet.Betwon       := Bet.Profit >= 0.0;
           Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " status = " & Bet.Status);
-  
+
           Do_Update := Bet.Status(1..6) /= "VOIDED";
           if not Do_Update then
             Do_Update := Bet.Status(1..9) /= "CANCELLED";
-          end if;          
+          end if;
           if not Do_Update then
             Do_Update := Bet.Status(1..6) /= "LAPSED";
-          end if;          
+          end if;
           if not Do_Update then
             Do_Update := Bet.Status(1..7) /= "SETTLED";
-          end if;          
-  
+          end if;
+
           Log(Me & "Check_Bets", "Betid" & Bet.Betid'Img & " Do_Update = " & Do_Update'Img);
-  
-          if Do_Update then          
+
+          if Do_Update then
             begin
               T.Start;
               Bet.Update_Withcheck;
@@ -526,12 +533,12 @@ package body Bets is
                  T.Rollback; -- let the other one do the update
                  Log(Me & "Check_Bets", "No_Such_Row!! " & Bet.To_String);
             end ;
-          end if;              
+          end if;
         else
           Log(Me & "Check_Bets", "EOS!! " & Bet.To_String);
         end if;
       end loop;
-      
+
     end if;
     Log(Me & "Check_Bets", "stop");
   end Check_Bets;
@@ -585,33 +592,33 @@ package body Bets is
   end Check_If_Bet_Accepted;
  ---------------------------------------------------------------------------------
   function Is_Matched(Self : in out Bet_Type) return Boolean is
-    Is_Removed        : Boolean := False; 
-    Is_Matched        : Boolean := False; 
+    Is_Removed        : Boolean := False;
+    Is_Matched        : Boolean := False;
     AVG_Price_Matched : Bet_Price_Type := 0.0;
     Size_Matched      : Bet_Size_Type := 0.0;
     Is_Updated        : Boolean := False;
-    
-  begin    
-    Rpc.Bet_Is_Matched(Betid             => Self.Betid, 
-                       Is_Removed        => Is_Removed, 
-                       Is_Matched        => Is_Matched, 
+
+  begin
+    Rpc.Bet_Is_Matched(Betid             => Self.Betid,
+                       Is_Removed        => Is_Removed,
+                       Is_Matched        => Is_Matched,
                        Avg_Price_Matched => Avg_Price_Matched,
                        Size_Matched      => Size_Matched) ;
-                       
-    if Is_Matched and then 
+
+    if Is_Matched and then
       Self.Status(1..18) /= "EXECUTION_COMPLETE" then -- dont update if already matched
       if Is_Removed then
-        Move("EXECUTABLE_NO_MATCH", Self.Status); 
+        Move("EXECUTABLE_NO_MATCH", Self.Status);
         Is_Updated := True;
       else
-        if abs(Self.Pricematched - Float_8(Avg_Price_Matched)) < 0.0001 then      
+        if abs(Self.Pricematched - Float_8(Avg_Price_Matched)) < 0.0001 then
           Self.Pricematched := Float_8(Avg_Price_Matched);
-          Is_Updated := True;        
+          Is_Updated := True;
         end if;
-        if abs(Self.Sizematched - Float_8(Size_Matched)) < 0.0001 then      
+        if abs(Self.Sizematched - Float_8(Size_Matched)) < 0.0001 then
           Move("EXECUTION_COMPLETE", Self.Status);
           Self.Sizematched := Float_8(Size_Matched);
-          Is_Updated := True;        
+          Is_Updated := True;
         end if;
       end if;
       if Is_Updated then
@@ -619,24 +626,24 @@ package body Bets is
         Self.Update_Withcheck;
         Self.Nullify_Betwon;
       end if;
-    end if;                       
-                       
-    return Is_Matched; 
+    end if;
+
+    return Is_Matched;
   end Is_Matched;
   -------------------------------------------------------------
 
   procedure Read_Marketid( Data  : in out Bet_Type'class;
                            List  : in out Lists.List;
                            Order : in     Boolean := False;
-                           Max   : in     Integer_4 := Integer_4'Last) is                    
+                           Max   : in     Integer_4 := Integer_4'Last) is
 
-    Old_List : Table_Abets.Abets_List_Pack2.List; 
+    Old_List : Table_Abets.Abets_List_Pack2.List;
     New_Data : Bet_Type;
   begin
-    Table_Abets.Read_Marketid(Data, Old_List, Order, Max);  
+    Table_Abets.Read_Marketid(Data, Old_List, Order, Max);
     for i of Old_List loop
       New_Data := (
-        Betid          => i.Betid,      
+        Betid          => i.Betid,
         Marketid       => i.Marketid,
         Betmode        => i.Betmode,
         Powerdays      => i.Powerdays,
@@ -665,8 +672,8 @@ package body Bets is
       );
       List.Append(New_Data);
     end loop;
-  end Read_Marketid;  
+  end Read_Marketid;
   ----------------------------------------
-  
-  
+
+
 end Bets;
