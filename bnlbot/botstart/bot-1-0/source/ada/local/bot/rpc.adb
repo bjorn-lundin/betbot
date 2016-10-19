@@ -2012,6 +2012,7 @@ package body RPC is
     end if;
     Menu := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
                   Filename => "");
+    ---Log(Me, Menu.Write );
     Log(Me, "Get_Navigation_Data stop");
   exception
       when POST_Timeout => raise;
