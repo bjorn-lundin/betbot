@@ -87,42 +87,76 @@ procedure Menu_Parser is
             for j in 1 .. Length(Children(2)) loop
               declare
                 Child2 : Json_Value := Get(Children(2),j);
+                UEFA : Boolean := False;
               begin
                 Log(" DEBUG2 2 type:" & Child2.Get("type") & " name:" & Child2.Get("name"));
-                if Child2.Has_Field("children") and then Child2.Get("type") = "GROUP" and then
-                   (--Child2.Get("name") = "Argentinian Soccer" or
-                    Child2.Get("name") = "Belgian Soccer" or
-                   -- Child2.Get("name") = "Brazilian Soccer" or
-                    Child2.Get("name") = "Danish Soccer" or
-                    Child2.Get("name") = "Dutch Soccer" or
-                    Child2.Get("name") = "English Soccer" or
-                    Child2.Get("name") = "German Soccer" or
-                    Child2.Get("name") = "Italian Soccer" or
-                    Child2.Get("name") = "French Soccer" or --?
-                    Child2.Get("name") = "Portuguese Soccer" or
-                    Child2.Get("name") = "Spanish Soccer"  or
-                    Child2.Get("name") = "Swedish Soccer" ) then
-
+                if Child2.Has_Field("children") and
+                       (
+                         (
+                             Child2.Get("type") = "GROUP" and
+                             ( Child2.Get("name") = "Belgian Soccer" or
+                               Child2.Get("name") = "Danish Soccer" or
+                               Child2.Get("name") = "Dutch Soccer" or
+                               Child2.Get("name") = "English Soccer" or
+                               Child2.Get("name") = "German Soccer" or
+                               Child2.Get("name") = "Italian Soccer" or
+                               Child2.Get("name") = "French Soccer" or --?
+                               Child2.Get("name") = "Portuguese Soccer" or
+                               Child2.Get("name") = "Spanish Soccer"  or
+                               Child2.Get("name") = "Swedish Soccer" )
+                         )
+                   or
+                        (
+                          Child2.Get("type") = "EVENT" and
+                          Child2.Get("name") = "UEFA Champions League"
+                        )
+                      )  then
+                  UEFA := Child2.Get("name") = "UEFA Champions League"; 
                   Log("        2 type:" & Child2.Get("type") & " name:" & Child2.Get("name"));
                   Children(3) := Child2.Get("children");
                   for k in 1 .. Length(Children(3)) loop
                     declare
                       Child3 : Json_Value := Get(Children(3),k);
+
+                      B : array (1..5) of Boolean := (others => False);
                     begin
                       Log("   DEBUG3  3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
-                      if Child3.Has_Field("children") and then Child3.Get("type") = "EVENT" and then
-                         (Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
-                          Child3.Get("name") = "Danish Superliga" or        -- danmark
-                          Child3.Get("name") = "Dutch Eredivisie" or              -- holland
-                          Child3.Get("name") = "Barclays Premier League" or -- england
-                          Child3.Get("name") = "English Premier League" or -- england
-                          Child3.Get("name") = "Bundesliga 1" or            -- tyskland
-                          Child3.Get("name") = "Serie A" or                 -- italien
-                          Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
-                          Child3.Get("name") = "French Ligue 1" or          --frankrike igen
-                          Child3.Get("name") = "Primeira Liga" or           -- portugal
-                          Child3.Get("name") = "Allsvenskan" or             -- sverige
-                          Child3.Get("name") = "Primera Division" ) then    -- spanien
+---
+                      if Child3.Has_Field("children") then
+                        B(1) := True;
+                        B(2) := Child3.Get("type") = "EVENT";
+                        B(3) := (
+                                  Child3.Get("name") = "Belgian Jupiler League" or  -- belgien
+                                  Child3.Get("name") = "Danish Superliga" or        -- danmark
+                                  Child3.Get("name") = "Dutch Eredivisie" or              -- holland
+                                  Child3.Get("name") = "Barclays Premier League" or -- england
+                                  Child3.Get("name") = "English Premier League" or -- england
+                                  Child3.Get("name") = "Bundesliga 1" or            -- tyskland
+                                  Child3.Get("name") = "Serie A" or                 -- italien
+                                  Child3.Get("name") = "Ligue 1 Orange" or          -- frankrike
+                                  Child3.Get("name") = "French Ligue 1" or          --frankrike igen
+                                  Child3.Get("name") = "Primeira Liga" or           -- portugal
+                                  Child3.Get("name") = "Allsvenskan" or             -- sverige
+                                  Child3.Get("name") = "Primera Division"      -- spanien
+                               );
+                        --B(4) := Child3.Get("type") = "EVENT";
+                        B(4) := Child3.Get("type") = "GROUP";
+                        declare
+                          S : String := Child3.Get("name");
+                        begin  
+                         -- B(5) := (S'length > 5 and then S(1..5) = "Group");
+                          B(5) := (S'length >= 8 and then S(1..8) = "Fixtures");
+                        end; 
+                      end if;
+---
+                      if B(1) and then
+                         (
+                           (B(2) and B(3))
+                               or
+                           (B(4) and B(5))
+                         ) 
+                            then
+
                         Log("            3 type:" & Child3.Get("type") & " name:" & Child3.Get("name"));
                         Children(4) := Child3.Get("children");
                         for l in 1 .. Length(Children(4)) loop
@@ -130,18 +164,68 @@ procedure Menu_Parser is
                             Child4 : Json_Value := Get(Children(4),l);
                             Name   : String     := Child4.Get("name");
                           begin
-                            if Child4.Has_Field("children") and then
-                               Child4.Get("type") = "GROUP" and then
-                               Name'length >= 8 and then
-                               Name(1..8) = "Fixtures" then
-                              Log("                4 type:" & Child4.Get("type") & " name:" & Name);
+                            --if Child4.Has_Field("children")  then
+                            --  Log("                4 type:" & Child4.Get("type") & " name:" & Name);
+                            --                            
+                            --   --UEFA is EVENT here
+                            if Child4.Has_Field("children") and
+                               (
+                                 (
+                                    Child4.Get("type") = "GROUP" and then
+                                    Name'length >= 8 and then
+                                    Name(1..8) = "Fixtures"
+                                 )
+                               or else
+                                 (
+                                   UEFA and then
+                                   Child4.Get("type") = "EVENT"                               
+                                 )
+                               )
+                            then                               
+                              --Log("                4 type:" & Child4.Get("type") & " name:" & Name);
                               Children(5) := Child4.Get("children");
+                              Log("                4 type:" & Child4.Get("type") & " name:" & Name & "len children" & Length(Children(5))'Img);
                               for m in 1 .. Length(Children(5)) loop
                                 declare
                                   Child5    : Json_Value := Get(Children(5),m);
                                   Ok_Market : Table_Aokmarkets.Data_Type;
                                 begin
-                                  if Child5.Has_Field("children") then
+                                  if Uefa then -- 1 level higher :-(
+                                
+                                  Log("                    5.5 type:" & Child5.Get("type") & " name:" & Child5.Get("name") & " has child " & Child5.Has_Field("children")'img);
+                                  Log("                    5.5 id:" & Child5.Get("id") & 
+                                                                 " exch:" & Child5.Get("exchangeId") & 
+                                                                 " marketType" & Child5.Get("marketType"));
+                                    begin
+                                        --Log("                        6 type:" & Child6.Get("type") & " name:" & Child6.Get("name"));
+                                      if Child5.Get("type") = "MARKET" and then
+                                         Child5.Get("exchangeId") = "1" and then
+                                         (Child5.Get("marketType") = "MATCH_ODDS" or
+                                          Child5.Get("marketType") = "CORRECT_SCORE" ) then
+                                        Log("                        5.5 id:" & Child5.Get("id") & " name:" & Child5.Get("name"));
+                                        -- do stuff here
+                                        --insert into new table
+                                        Move(Child5.Get("id"),Ok_Market.Marketid);
+                                        Move(Child5.Get("marketType"),Ok_Market.Markettype);
+                                        declare
+                                          Eos : Boolean := False;
+                                        begin
+                                          T.Start;
+                                          Ok_Market.Read(Eos);
+                                          if Eos then
+                                            Log(Me,"will insert" & Ok_Market.To_String);
+                                            Ok_Market.Insert;
+                                            Log(Me,"did  insert" & Ok_Market.To_String);
+                                          end if;
+                                          T.Commit;
+                                        exception
+                                          when Sql.Duplicate_Index =>
+                                            T.Rollback;
+                                        end;
+                                      end if;
+                                    end;
+                                  
+                                  elsif Child5.Has_Field("children") then
                                     Log("                    5 type:" & Child5.Get("type") & " name:" & Child5.Get("name"));
                                     Move(Child5.Get("id"),Ok_Market.Eventid); -- eventid
                                     Children(6) := Child5.Get("children");
@@ -268,17 +352,11 @@ begin
         if not OK then
           Rpc.Login;
         end if;
-        -- 3 times / 24 hours  not when horses are racing
-    --    if Now.Hour >= 11 and then
-    --       Now.Hour <= 13 then
-          Parse_Menu;
-   --     end if;
+        Parse_Menu;
     end;
     Now := Calendar2.Clock;
-
     --restart every day
-    Is_Time_To_Exit := Now.Hour = 01 and then
-                     ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
+    Is_Time_To_Exit := Now.Hour <= 2 ; -- timeout = 3600 s min
 
     exit Main_Loop when Is_Time_To_Exit;
   end loop Main_Loop;
