@@ -671,6 +671,7 @@ procedure Poll_Soccer is
     Select_Games_To_Lay_The_Draw.Close_Cursor;
     T.Commit;
   end Lay_The_Draw;
+  pragma Unreferenced (Lay_The_Draw);
   -------------------------------------------------------
   -- (both lay and back)
   function All_Bets_In_Market_Are_Matched(Market : Markets.Market_Type) return Boolean is
@@ -778,8 +779,8 @@ procedure Poll_Soccer is
         Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4, 
                                      Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20); 
       end if;
-       Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-       Lay_The_Draw(Market);
+      --Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
+      --Lay_The_Draw(Market);
       Log(Me & "done strategies Market '" & Market.Marketid & "'");
       
     exception
