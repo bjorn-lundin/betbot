@@ -48,17 +48,19 @@ procedure Poll_Soccer is
   Select_Markets : Sql.Statement_Type;
   -------------------------------------------------------------
   procedure Back_The_Leader_Home(Market : Markets.Market_Type) is 
-    Service     : constant String := "Back_The_Leader_Home";
-    T           : Sql.Transaction_Type;
-    Eos         : Boolean       := False;
-    Selectionid : Integer_4     := 0;
-    Betname     : Betname_Type  := (others => ' ');
-    Runnername  : Runnername_Type  := (others => ' ');
-    Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
-    Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
-    Price_8     : Float_8 := 0.0;
-    Match_Directly : Integer_4 := 1;
-    Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    Service          : constant String                              := "Back_The_Leader_Home";
+    T                : Sql.Transaction_Type;
+    Eos              : Boolean                                      := False;
+    Selectionid      : Integer_4                                    := 0;
+    Betname          : Betname_Type                                 := (others => ' ');
+    Runnername       : Runnername_Type                              := (others => ' ');
+    Size             : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
+    Price            : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
+    Price_8          : Float_8                                      := 0.0;
+    Match_Directly   : Integer_4                                    := 1;
+    Bet              : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    Cancel_Succeeded : Boolean                                      := True;
+    Bet_Matched      : Boolean                                      := False;
     
   begin
     Move("BACK_LEADER_HOME_SOCCER",Betname);
@@ -180,19 +182,18 @@ procedure Poll_Soccer is
       Bet(Back).Nullify_Betwon;
 
       Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
-      
-      if Integer(Bet(Back).Sizematched) = 0 then
+      Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
+      if not Bet_Matched then
         Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        declare
-          Cancel_Succeeded : Boolean := False;
-        begin
-          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
-          Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-          if Cancel_Succeeded then
-            Move("CANCELLED", Bet(Back).Status);
-            Bet(Back).Update_Withcheck;
-          end if;
-        end;
+        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
+        Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+        if Cancel_Succeeded then
+          Move("CANCELLED", Bet(Back).Status);
+          Bet(Back).Update_Withcheck;
+        else  
+          -- check matched again
+          Bet_Matched := Bet(Back).Is_Matched;
+        end if;
       else
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
@@ -250,6 +251,8 @@ procedure Poll_Soccer is
     Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    Cancel_Succeeded : Boolean                                      := True;
+    Bet_Matched      : Boolean                                      := False;
     
   begin
     Move("BACK_LEADER_AWAY_SOCCER",Betname);
@@ -372,21 +375,21 @@ procedure Poll_Soccer is
 
       Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       
-      if Integer(Bet(Back).Sizematched) = 0 then
+      Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
+      if not Bet_Matched then
         Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        declare
-          Cancel_Succeeded : Boolean := False;
-        begin
-          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
-          Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-          if Cancel_Succeeded then
-            Move("CANCELLED", Bet(Back).Status);
-            Bet(Back).Update_Withcheck;
-          end if;
-        end;
+        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
+        Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+        if Cancel_Succeeded then
+          Move("CANCELLED", Bet(Back).Status);
+          Bet(Back).Update_Withcheck;
+        else
+          -- check matched again
+          Bet_Matched := Bet(Back).Is_Matched;
+        end if;
       else
-      --Backsize * Backprice = Laysize * Layprice
-      --Laysize = Backsize * Backprice/Layprice
+        --Backsize * Backprice = Laysize * Layprice
+        --Laysize = Backsize * Backprice/Layprice
         Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
         --check price is valid - put it back and forth through tics
         declare 
@@ -441,6 +444,8 @@ procedure Poll_Soccer is
     Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
+    Cancel_Succeeded : Boolean                                      := True;
+    Bet_Matched      : Boolean                                      := False;
     
   begin
     Move("LAY_THE_DRAW",Betname);
@@ -573,18 +578,19 @@ procedure Poll_Soccer is
       Bet(Lay).Nullify_Betwon;
       Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       
-      if Integer(Bet(Lay).Sizematched) = 0 then
+      Bet_Matched := Integer(Bet(Lay).Sizematched) > Integer(0) ;
+      if not Bet_Matched then
         Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        declare
-          Cancel_Succeeded : Boolean := False;
-        begin
-          Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Lay));
-          Log(Me & Service, "Cancel bet" & Bet(Lay).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-          if Cancel_Succeeded then
-            Move("CANCELLED", Bet(Lay).Status);
-            Bet(Lay).Update_Withcheck;
-          end if;
-        end;
+        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Lay));
+        Log(Me & Service, "Cancel bet" & Bet(Lay).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+        if Cancel_Succeeded then
+          Move("CANCELLED", Bet(Lay).Status);
+          Bet(Lay).Update_Withcheck;
+        else
+          -- check matched again
+          Bet_Matched := Bet(Lay).Is_Matched;
+        end if;
+        
       else
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
