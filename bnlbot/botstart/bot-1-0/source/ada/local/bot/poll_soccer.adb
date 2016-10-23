@@ -144,7 +144,7 @@ procedure Poll_Soccer is
            "select 'x' from abets " &
            "where abets.marketid = mmo1.marketid " &
            "and abets.sizematched < abets.size " & -- not fully matched
-           "and abets.betname = :BETNAME " & -- 'BACK_LEADER_HOME_SOCCER') " &
+           "and abets.betname = :BETNAME ) " & -- 'BACK_LEADER_HOME_SOCCER') " &
     "order by mmo1.startts, e.eventname");
 
     Select_Games_To_Back_Home.Set("LEADER_MAX",Leader_Max);
@@ -352,7 +352,7 @@ procedure Poll_Soccer is
            "select 'x' from abets " &
            "where abets.marketid = mmo1.marketid " &
            "and abets.sizematched < abets.size " & -- not fully matched
-           "and abets.betname = :BETNAME " & -- 'BACK_LEADER_AWAY_SOCCER') " &
+           "and abets.betname = :BETNAME ) " & -- 'BACK_LEADER_AWAY_SOCCER') " &
     "order by mmo1.startts, e.eventname");
 
     Select_Games_To_Back_Away.Set("LEADER_MAX",Leader_Max);
