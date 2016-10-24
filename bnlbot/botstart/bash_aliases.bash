@@ -59,8 +59,33 @@ alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_6 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_7 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_8 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=menu_parser --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s01 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s02 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s03 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s04 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s05 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s06 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s07 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s08 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s09 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s10 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s11 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s12 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s13 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s14 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s15 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s16 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s17 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s18 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s19 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s20 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
-                     
+                  
 
                      
 
