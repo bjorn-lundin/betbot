@@ -1409,6 +1409,7 @@ package body RPC is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
+                       Fill_Or_Kill     : in     Boolean := False; 
                        Bet              :    out Bets.Bet_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
@@ -1447,12 +1448,18 @@ package body RPC is
     Limit_Order.Set_Field (Field_Name => "persistenceType", Field => Bet_Persistence'Img);
     Limit_Order.Set_Field (Field_Name => "price", Field => Float(Local_Price));
     Limit_Order.Set_Field (Field_Name => "size", Field => Float(Local_Size));
-
+    --,"minFillSize":5.0,"timeInForce":"FILL_OR_KILL"
+    if Fill_Or_Kill then
+      Limit_Order.Set_Field (Field_Name => "timeInForce", Field => "FILL_OR_KILL");
+      Limit_Order.Set_Field (Field_Name => "minFillSize", Field => Float(Local_Size));      
+    end if;
     Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
     Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
     Instruction.Set_Field (Field_Name => "side",        Field => Side'Img);
     Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
     Instruction.Set_Field (Field_Name => "selectionId", Field => Long_Long_Integer(Selection_Id));
+
+
 
     Append (Instructions , Instruction);
 

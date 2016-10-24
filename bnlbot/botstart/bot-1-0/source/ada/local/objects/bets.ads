@@ -13,7 +13,7 @@ package Bets is
   Commission : constant Float_8 := 0.0; --6.5/100.0;
 
   type Bet_Type is new Table_Abets.Data_Type with null record;
-  
+
   function Create(Name : Betname_Type;
                   Side : Bet_Side_Type;
                   Size : Bet_Size_Type;
@@ -28,9 +28,13 @@ package Bets is
 
   procedure Match_Directly(Self : in out Bet_Type; Value : Boolean );
   function  Match_Directly(Self : in out Bet_Type) return Boolean;
-  procedure Nullify_Betwon(Self : in out Bet_Type);  
+  procedure Nullify_Betwon(Self : in out Bet_Type);
   function  Is_Matched(Self : in out Bet_Type) return Boolean;
-  
+
+  overriding procedure Update_Withcheck(Self : in out Bet_Type; Keep_Timestamp : Boolean := False);
+  overriding procedure Insert(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False);
+
+
   function Empty_Data return Bet_Type;
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
@@ -38,14 +42,14 @@ package Bets is
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) ;
-  
+
   procedure Read_Marketid( Data  : in out Bet_Type'class;
                            List  : in out Lists.List;
                            Order : in     Boolean := False;
-                           Max   : in     Integer_4 := Integer_4'Last);                   
-                      
+                           Max   : in     Integer_4 := Integer_4'Last);
+
   procedure Check_Bets;
   procedure Check_If_Bet_Accepted;
-  
+
 
 end Bets;

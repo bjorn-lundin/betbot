@@ -98,7 +98,6 @@ procedure Bet_Checker is
 
               Bet.Insert;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
-              Bet.Nullify_Betwon;
             T.Commit;
           exception
             when Sql.Duplicate_Index =>

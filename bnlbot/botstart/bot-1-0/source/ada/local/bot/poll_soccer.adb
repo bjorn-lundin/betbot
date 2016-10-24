@@ -64,7 +64,6 @@ procedure Poll_Soccer is
     Price_8          : Float_8                                      := 0.0;
     Match_Directly   : Integer_4                                    := 1;
     Bet              : array(Bet_Side_Type'Range) of Bets.Bet_Type;
-    Cancel_Succeeded : Boolean                                      := True;
     Bet_Matched      : Boolean                                      := False;
     
   begin
@@ -170,11 +169,12 @@ procedure Poll_Soccer is
                      Price            => Price(Back),
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
+                     Fill_Or_Kill     => True,
                      Bet              => Bet(Back));
                      
       if Bet(Back).Exestatus(1..7)= "FAILURE" then
-        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
-        Log(Me & "Place_Bet", Bet(Back).To_String);
+        Log(Service & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Back).To_String);
         T.Commit;
         return;
       end if;
@@ -192,21 +192,14 @@ procedure Poll_Soccer is
       end;
       
       Bet(Back).Insert;
-      Bet(Back).Nullify_Betwon;
 
-      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
+      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
       if not Bet_Matched then
-        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
-        Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-        if Cancel_Succeeded then
-          Move("CANCELLED", Bet(Back).Status);
-          Bet(Back).Update_Withcheck;
-        else  
-          -- check matched again
-          Bet_Matched := Bet(Back).Is_Matched;
-        end if;
+        Log(Service & "Place_Bet", "Not filled ok, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Back).To_String);
+        T.Commit;
+        return;        
       else
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
@@ -222,7 +215,7 @@ procedure Poll_Soccer is
         
         Size(Lay) := Size(Back) * Price(Back) / Price(Lay);
       
-        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
+        Log(Service & "Place_Bet", "call Rpc.Place_Bet (Lay)");
         Rpc.Place_Bet (Bet_Name         => Betname,
                        Market_Id        => Market.Marketid,
                        Side             => Lay,
@@ -246,12 +239,18 @@ procedure Poll_Soccer is
         end;    
         
         Bet(Lay).Insert;
-        Bet(Lay).Nullify_Betwon;
-        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
     Select_Games_To_Back_Home.Close_Cursor;
     T.Commit;
+  exception
+    when Sql.No_Such_Row =>
+      Log(Service& " No_Such_Row");
+      T.Rollback;
+    when Sql.Duplicate_Index =>
+      Log(Service & " Duplicate_Index");
+      T.Rollback;
   end Back_The_Leader_Home;
   -------------------------------------------------------------
 --  procedure Back_The_Leader_Away(Market : Markets.Market_Type) is 
@@ -271,7 +270,6 @@ procedure Poll_Soccer is
     Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
-    Cancel_Succeeded : Boolean                                      := True;
     Bet_Matched      : Boolean                                      := False;
     
   begin
@@ -368,7 +366,7 @@ procedure Poll_Soccer is
       Select_Games_To_Back_Away.Get("awayback",Price_8);
       Price(Back) := Bet_Price_Type(Price_8);
       
-      Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
+      Log(Service & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
                      Market_Id        => Market.Marketid,
                      Side             => Back,
@@ -378,11 +376,12 @@ procedure Poll_Soccer is
                      Price            => Price(Back),
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
+                     Fill_Or_Kill     => True,
                      Bet              => Bet(Back));
                      
       if Bet(Back).Exestatus(1..7)= "FAILURE" then
-        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
-        Log(Me & "Place_Bet", Bet(Back).To_String);
+        Log(Service & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Back).To_String);
         T.Commit;
         return;
       end if;
@@ -400,22 +399,15 @@ procedure Poll_Soccer is
       end;
       
       Bet(Back).Insert;
-      Bet(Back).Nullify_Betwon;
 
-      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
+      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       
       Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
       if not Bet_Matched then
-        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Back));
-        Log(Me & Service, "Cancel bet" & Bet(Back).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-        if Cancel_Succeeded then
-          Move("CANCELLED", Bet(Back).Status);
-          Bet(Back).Update_Withcheck;
-        else
-          -- check matched again
-          Bet_Matched := Bet(Back).Is_Matched;
-        end if;
+        Log(Service & "Place_Bet", "Not filled ok, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Back).To_String);
+        T.Commit;
+        return;        
       else
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
@@ -431,7 +423,7 @@ procedure Poll_Soccer is
         
         Size(Lay) := Size(Back) * Price(Back) / Price(Lay);
       
-        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Lay)");
+        Log(Service & "Place_Bet", "call Rpc.Place_Bet (Lay)");
         Rpc.Place_Bet (Bet_Name         => Betname,
                        Market_Id        => Market.Marketid,
                        Side             => Lay,
@@ -455,12 +447,18 @@ procedure Poll_Soccer is
         end;    
         
         Bet(Lay).Insert;
-        Bet(Lay).Nullify_Betwon;
-        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
     Select_Games_To_Back_Away.Close_Cursor;
     T.Commit;
+  exception
+    when Sql.No_Such_Row =>
+      Log(Service & "No_Such_Row");
+      T.Rollback;
+    when Sql.Duplicate_Index =>
+      Log(Service & "Duplicate_Index");
+      T.Rollback;
   end Back_The_Leader_Away;
   -------------------------------------------------------------
   procedure Lay_The_Draw(Market : Markets.Market_Type) is
@@ -475,7 +473,6 @@ procedure Poll_Soccer is
     Price_8     : Float_8 := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
-    Cancel_Succeeded : Boolean                                      := True;
     Bet_Matched      : Boolean                                      := False;
     
   begin
@@ -574,7 +571,7 @@ procedure Poll_Soccer is
       Select_Games_To_Lay_The_Draw.Get("drawlay",Price_8);
       Price(Lay) := Bet_Price_Type(Price_8);
       
-      Log(Me & "Place_Bet", "call Rpc.Place_Bet (lay)");
+      Log(Service & "Place_Bet", "call Rpc.Place_Bet (lay)");
       Rpc.Place_Bet (Bet_Name         => Betname,
                      Market_Id        => Market.Marketid,
                      Side             => Lay,
@@ -587,8 +584,8 @@ procedure Poll_Soccer is
                      Bet              => Bet(Lay));
 
       if Bet(Lay).Exestatus(1..7)= "FAILURE" then
-        Log(Me & "Place_Bet", "FAILURE, wait for next turn");
-        Log(Me & "Place_Bet", Bet(Lay).To_String);
+        Log(Service & "Place_Bet", "FAILURE, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Lay).To_String);
         T.Commit;
         return;
       end if;
@@ -606,22 +603,14 @@ procedure Poll_Soccer is
       end;                       
                      
       Bet(Lay).Insert;
-      Bet(Lay).Nullify_Betwon;
-      Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
+      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       
       Bet_Matched := Integer(Bet(Lay).Sizematched) > Integer(0) ;
       if not Bet_Matched then
-        Log(Me & Service, "try to cancel bet, since not matched, sizematched = 0");
-        Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet(Lay));
-        Log(Me & Service, "Cancel bet" & Bet(Lay).Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
-        if Cancel_Succeeded then
-          Move("CANCELLED", Bet(Lay).Status);
-          Bet(Lay).Update_Withcheck;
-        else
-          -- check matched again
-          Bet_Matched := Bet(Lay).Is_Matched;
-        end if;
-        
+        Log(Service & "Place_Bet", "Not filled ok, wait for next turn");
+        Log(Service & "Place_Bet", Bet(Lay).To_String);
+        T.Commit;
+        return;                
       else
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
@@ -639,7 +628,7 @@ procedure Poll_Soccer is
           Size(Back) := 30.0;
         end if;          
         
-        Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
+        Log(Service & "Place_Bet", "call Rpc.Place_Bet (Back)");
         Rpc.Place_Bet (Bet_Name         => Betname,
                        Market_Id        => Market.Marketid,
                        Side             => Back,
@@ -664,12 +653,18 @@ procedure Poll_Soccer is
         end;                      
       
         Bet(Back).Insert;
-        Bet(Back).Nullify_Betwon;
-        Log(Me & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
       end if;
     end if;   
     Select_Games_To_Lay_The_Draw.Close_Cursor;
     T.Commit;
+  exception
+    when Sql.No_Such_Row =>
+      Log(Service & " No_Such_Row");
+      T.Rollback;
+    when Sql.Duplicate_Index =>
+      Log(Service & " Duplicate_Index");
+      T.Rollback;
   end Lay_The_Draw;
   pragma Unreferenced (Lay_The_Draw);
   -------------------------------------------------------
@@ -752,45 +747,53 @@ procedure Poll_Soccer is
         exception
           when Sql.No_Such_Row =>
             Log("No_Such_Row on Prices (1)");
+            raise;
           when Sql.Duplicate_Index =>
             Log("Duplicate_Index on Prices (1)");
+            raise;
         end;       
         Price_History_List.Append(Price_History_Data);
       end loop;
       Log("insert records into Priceshistory:" & Price_History_List.Length'Img);
       for Phd of Price_History_List loop
-        Phd.Insert;
+        begin
+          Phd.Insert;
+        exception
+          when Sql.Duplicate_Index =>
+            Log("Duplicate_Index on Priceshistory (2)" );
+            raise;
+        end;
       end loop;
       T.Commit;
+    exception
+      when Sql.No_Such_Row =>
+        Log("No_Such_Row on Prices (1)");
+        T.Rollback;
+      when Sql.Duplicate_Index =>
+        Log("Duplicate_Index on Prices (1)");
+        T.Rollback;
+    end;       
       
-      if All_Bets_In_Market_Are_Matched(Market) then      
-        Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
-       -- Back_The_Leader_Home(Market);
-        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16, 
-                                     Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05); 
-        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4, 
-                                     Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20); 
+    if All_Bets_In_Market_Are_Matched(Market) then      
+      Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
+      -- Back_The_Leader_Home(Market);
+      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16, 
+                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05); 
+      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4, 
+                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20); 
 
         
-        Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
-       -- Back_The_Leader_Away(Market);
-        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16, 
-                                     Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05); 
-        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4, 
-                                     Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20); 
-      end if;
-      --Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
-      --Lay_The_Draw(Market);
-      Log(Me & "done strategies Market '" & Market.Marketid & "'");
-      
-    exception
-      when Sql.Duplicate_Index =>
-        T.Rollback;
-        Log("Duplicate_Index on Priceshistory (2)" );
-      when Sql.No_Such_Row =>
-        T.Rollback;
-        Log("No_Such_Row on Prices (2)");
-    end;       
+      Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
+      -- Back_The_Leader_Away(Market);
+      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16, 
+                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05); 
+      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4, 
+                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20); 
+    end if;
+    --Log(Me & "Lay_The_Draw start Market '" & Market.Marketid & "'");
+    --Lay_The_Draw(Market);
+    Log(Me & "done strategies Market '" & Market.Marketid & "'");
+    
   end Run;
   ---------------------------------------------------------------------
   procedure Find_Markets is
