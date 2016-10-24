@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "x$1" == "x" ] ; then
+  echo "FAIL : no user passed as argumet!"
+  return 1
+fi
+
 BOT_USER=$1
 export BOT_USER
 
