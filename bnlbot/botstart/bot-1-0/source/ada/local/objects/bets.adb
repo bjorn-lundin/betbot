@@ -22,6 +22,19 @@ package body Bets is
   Select_Profit_Today,
   Select_Ph           : Sql.Statement_Type;
 
+  --
+  overriding procedure Update_Withcheck(Self : in out Bet_Type; Keep_Timestamp : Boolean := False) is
+  begin
+    Table_Abets.Data_Type(Self).Update_Withcheck(Keep_Timestamp);
+    Self.Nullify_Betwon;
+  end Update_Withcheck;
+  --------------------------------------------------------
+  overriding procedure Insert(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False) is
+  begin
+    Table_Abets.Data_Type(Self).Insert(Keep_Timestamp);
+    Self.Nullify_Betwon;
+  end Insert;
+
   ------------------------------------------------------------
   function Profit_Today(Bet_Name : Betname_Type) return Float_8 is
     T : Sql.Transaction_Type;
