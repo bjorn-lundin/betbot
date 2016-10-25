@@ -23,17 +23,17 @@ package body Bets is
   Select_Ph           : Sql.Statement_Type;
 
   --
-  overriding procedure Update_Withcheck(Self : in out Bet_Type; Keep_Timestamp : Boolean := False) is
+  procedure Update_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : Boolean := False) is
   begin
     Table_Abets.Data_Type(Self).Update_Withcheck(Keep_Timestamp);
     Self.Nullify_Betwon;
-  end Update_Withcheck;
+  end Update_And_Nullify_Betwon;
   --------------------------------------------------------
-  overriding procedure Insert(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False) is
+  procedure Insert_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False) is
   begin
     Table_Abets.Data_Type(Self).Insert(Keep_Timestamp);
     Self.Nullify_Betwon;
-  end Insert;
+  end Insert_And_Nullify_Betwon;
 
   ------------------------------------------------------------
   function Profit_Today(Bet_Name : Betname_Type) return Float_8 is

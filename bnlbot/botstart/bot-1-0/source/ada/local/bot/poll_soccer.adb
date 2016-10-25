@@ -191,7 +191,7 @@ procedure Poll_Soccer is
         Bet(Back).Runnername    := Runner.Runnername;
       end;
       
-      Bet(Back).Insert;
+      Bet(Back).Insert_And_Nullify_Betwon;
 
       Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
@@ -238,7 +238,7 @@ procedure Poll_Soccer is
           Bet(Lay).Runnername    := Runner.Runnername;
         end;    
         
-        Bet(Lay).Insert;
+        Bet(Lay).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
@@ -398,7 +398,7 @@ procedure Poll_Soccer is
         Bet(Back).Runnername    := Runner.Runnername;
       end;
       
-      Bet(Back).Insert;
+      Bet(Back).Insert_And_Nullify_Betwon;
 
       Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       
@@ -446,7 +446,7 @@ procedure Poll_Soccer is
           Bet(Lay).Runnername    := Runner.Runnername;
         end;    
         
-        Bet(Lay).Insert;
+        Bet(Lay).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
     end if;   
@@ -602,7 +602,7 @@ procedure Poll_Soccer is
         Bet(Lay).Runnername    := Runner.Runnername;
       end;                       
                      
-      Bet(Lay).Insert;
+      Bet(Lay).Insert_And_Nullify_Betwon;
       Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       
       Bet_Matched := Integer(Bet(Lay).Sizematched) > Integer(0) ;
@@ -652,7 +652,7 @@ procedure Poll_Soccer is
           Bet(Back).Runnername    := Runner.Runnername;
         end;                      
       
-        Bet(Back).Insert;
+        Bet(Back).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
       end if;
     end if;   
