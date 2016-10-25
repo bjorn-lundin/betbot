@@ -96,7 +96,7 @@ procedure Bet_Checker is
               Bet.Fullmarketname:= Market.Marketname;
               Bet.Runnername    := Runner.Runnername;
 
-              Bet.Insert;
+              Bet.Insert_And_Nullify_Betwon;
               Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
             T.Commit;
           exception

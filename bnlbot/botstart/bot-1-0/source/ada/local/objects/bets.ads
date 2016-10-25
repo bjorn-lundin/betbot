@@ -31,9 +31,8 @@ package Bets is
   procedure Nullify_Betwon(Self : in out Bet_Type);
   function  Is_Matched(Self : in out Bet_Type) return Boolean;
 
-  overriding procedure Update_Withcheck(Self : in out Bet_Type; Keep_Timestamp : Boolean := False);
-  overriding procedure Insert(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False);
-
+  procedure Update_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : Boolean := False);
+  procedure Insert_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False);
 
   function Empty_Data return Bet_Type;
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);

@@ -1,13 +1,13 @@
-with Ada.Containers.Doubly_Linked_Lists;
-with Ada.Strings;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings;
+--with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
+with Ada.Containers;
 --with Text_Io;
 --with Gnat.Command_Line; use Gnat.Command_Line;
 ---with GNAT.Strings;
 
 with Sim;
-with Utils; use Utils;
+--with Utils; use Utils;
 with Types ; use Types;
 --with Bot_Types ; use Bot_Types;
 with Stacktrace;
@@ -16,10 +16,10 @@ with Price_Histories;
 with Bets;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
-with Bot_System_Number;
+--with Bot_System_Number;
 
 
-procedure Back_During_Race_And_Lay_Later is
+procedure Loop_Template is
 
   package EV renames Ada.Environment_Variables;
 
@@ -37,18 +37,25 @@ procedure Back_During_Race_And_Lay_Later is
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
   --Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
-  Global_Min_Backprice1     : constant Float_8 := 1.31;
-  Global_Max_Backprice1     : constant Float_8 := 1.36;
-  Global_Min_Backprice2     : constant Float_8 := 2.5;
-  Global_Max_Backprice2     : constant Float_8 := 10.0;
-  Global_Lay_At_Backprice   : constant Float_8 := 1.25;
-  Global_Lay_Size           : constant Float_8 := 110.0;
-  Global_Back_Size          : constant Float_8 := 100.0;
+--    Global_Min_Backprice1     : constant Float_8 := 1.31;
+--    Global_Max_Backprice1     : constant Float_8 := 1.36;
+--    Global_Min_Backprice2     : constant Float_8 := 2.5;
+--    Global_Max_Backprice2     : constant Float_8 := 10.0;
+--    Global_Lay_At_Backprice   : constant Float_8 := 1.25;
+--    Global_Lay_Size           : constant Float_8 := 110.0;
+--    Global_Back_Size          : constant Float_8 := 100.0;
 
   Start : Calendar2.Time_Type := Calendar2.Clock;
 
+  function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
+  begin
+    return Left.Backprice < Right.Backprice;
+  end "<";
+  --------------------------------------------
+  package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
 
-
+  type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type ;
+  Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
 
   --------------------------------------------
 
@@ -81,7 +88,7 @@ begin
     declare
       Cnt : Integer := 0;
       Is_Win : Boolean := True;
-      Bet : Bets.Bet_Type;
+    --  Bet : Bets.Bet_Type;
     begin
       Log("num markets " & Day.To_String & " " & Sim.Market_With_Data_List.Length'Img);
 
@@ -95,7 +102,7 @@ begin
           declare
             Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Apriceshistory_Maps.Map :=
                           Sim.Marketid_Timestamp_To_Apriceshistory_Map(Market.Marketid);
-            Bet_Placed : Boolean := False;
+         --   Bet_Placed : Boolean := False;
             First : Boolean := True;
           begin
             Loop_Timestamp : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
@@ -136,7 +143,7 @@ begin
                 --do something here
 
               end;
-              exit Loop_Market when Bet.Backbet.Status(1) = 'M' and then Bet.Laybet.Status(1) = 'M';
+              exit Loop_Market when False;
             end loop Loop_Timestamp; --  Timestamp
           end;
         end if; -- Is_Win
@@ -188,4 +195,4 @@ begin
   exception
    when E: others =>
       Stacktrace.Tracebackinfo(E);
-end Back_During_Race_And_Lay_Later;
+end Loop_Template ;
