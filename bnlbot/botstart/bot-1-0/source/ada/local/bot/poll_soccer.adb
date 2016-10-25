@@ -157,6 +157,7 @@ procedure Poll_Soccer is
       Select_Games_To_Back_Home.Get("homesel",Selectionid);
       Select_Games_To_Back_Home.Get("homename",Runnername);
       Select_Games_To_Back_Home.Get("homeback",Price_8);
+      Select_Games_To_Back_Home.Close_Cursor;
       Price(Back) := Bet_Price_Type(Price_8);
       
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
@@ -241,8 +242,9 @@ procedure Poll_Soccer is
         Bet(Lay).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
+    else
+      Select_Games_To_Back_Home.Close_Cursor;  
     end if;   
-    Select_Games_To_Back_Home.Close_Cursor;
     T.Commit;
   exception
     when Sql.No_Such_Row =>
@@ -364,6 +366,7 @@ procedure Poll_Soccer is
       Select_Games_To_Back_Away.Get("awaysel",Selectionid);
       Select_Games_To_Back_Away.Get("awayname",Runnername);
       Select_Games_To_Back_Away.Get("awayback",Price_8);
+      Select_Games_To_Back_Away.Close_Cursor;
       Price(Back) := Bet_Price_Type(Price_8);
       
       Log(Service & "Place_Bet", "call Rpc.Place_Bet (Back)");
@@ -449,8 +452,9 @@ procedure Poll_Soccer is
         Bet(Lay).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       end if;
+    else  
+      Select_Games_To_Back_Away.Close_Cursor;
     end if;   
-    Select_Games_To_Back_Away.Close_Cursor;
     T.Commit;
   exception
     when Sql.No_Such_Row =>
@@ -570,6 +574,7 @@ procedure Poll_Soccer is
       Price(Back) := Bet_Price_Type(Price_8);
       Select_Games_To_Lay_The_Draw.Get("drawlay",Price_8);
       Price(Lay) := Bet_Price_Type(Price_8);
+      Select_Games_To_Lay_The_Draw.Close_Cursor;
       
       Log(Service & "Place_Bet", "call Rpc.Place_Bet (lay)");
       Rpc.Place_Bet (Bet_Name         => Betname,
@@ -655,8 +660,9 @@ procedure Poll_Soccer is
         Bet(Back).Insert_And_Nullify_Betwon;
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted Back bet: " & Bet(Back).To_String);
       end if;
+    else  
+      Select_Games_To_Lay_The_Draw.Close_Cursor;
     end if;   
-    Select_Games_To_Lay_The_Draw.Close_Cursor;
     T.Commit;
   exception
     when Sql.No_Such_Row =>
