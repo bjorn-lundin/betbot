@@ -192,9 +192,6 @@ procedure Poll_Soccer is
         Bet(Back).Runnername    := Runner.Runnername;
       end;
       
-      Bet(Back).Insert_And_Nullify_Betwon;
-
-      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
       if not Bet_Matched then
         Log(Service & "Place_Bet", "Not filled ok, wait for next turn");
@@ -202,6 +199,8 @@ procedure Poll_Soccer is
         T.Commit;
         return;        
       else
+        Bet(Back).Insert_And_Nullify_Betwon;
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
         Price(Lay):= Price(Back) - Bet_Price_Type(Delay_Lay_Bet);
@@ -400,11 +399,7 @@ procedure Poll_Soccer is
         Bet(Back).Fullmarketname:= Market.Marketname;
         Bet(Back).Runnername    := Runner.Runnername;
       end;
-      
-      Bet(Back).Insert_And_Nullify_Betwon;
-
-      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
-      
+            
       Bet_Matched := Integer(Bet(Back).Sizematched) > Integer(0) ;
       if not Bet_Matched then
         Log(Service & "Place_Bet", "Not filled ok, wait for next turn");
@@ -412,6 +407,8 @@ procedure Poll_Soccer is
         T.Commit;
         return;        
       else
+        Bet(Back).Insert_And_Nullify_Betwon;
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
         Price(Lay):= Price(Back) - Bet_Price_Type(Delay_Lay_Bet);
@@ -607,8 +604,6 @@ procedure Poll_Soccer is
         Bet(Lay).Runnername    := Runner.Runnername;
       end;                       
                      
-      Bet(Lay).Insert_And_Nullify_Betwon;
-      Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
       
       Bet_Matched := Integer(Bet(Lay).Sizematched) > Integer(0) ;
       if not Bet_Matched then
@@ -617,6 +612,8 @@ procedure Poll_Soccer is
         T.Commit;
         return;                
       else
+        Bet(Lay).Insert_And_Nullify_Betwon;
+        Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
         Price(Back) := Price(Lay) * 1.2;
