@@ -62,13 +62,14 @@ procedure Football_Live_Feed is
 
   procedure Delete_From_Unknown is
     T: Sql.Transaction_Type;
+    Rows : Natural := 0;
   begin
     T.Start;
       Delete_Unknown.Prepare (
         "delete from AUNKNOWNS where exists (" &
            "select 'x' from AALIASES where AALIASES.TEAMNAME=AUNKNOWNS.TEAMNAME)"
       );
-      Delete_Unknown.Execute;
+      Delete_Unknown.Execute(Rows);
     T.Commit;
   end Delete_From_Unknown;
   --------------------------------------------
