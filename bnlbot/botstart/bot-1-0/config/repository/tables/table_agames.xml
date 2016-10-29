@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Table Wiz="3" Desc="Games" Name="AGAMES" Tablespace="">
+        <Column Name="eventid"   AllowNull="0" Description="event id"/>
+        <Column Name="homeid"    AllowNull="0" Description="Home team id"/>
+        <Column Name="awayid"    AllowNull="0" Description="Away team  id"/>
+        <Column Name="homescore" AllowNull="0" Description="Home score"/>
+        <Column Name="awayscore" AllowNull="0" Description="Away score"/>
+        <Column Name="ixxlupd"   AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"   AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="eventid" type="primary"/>
+    </Table>
+</BnlBot>

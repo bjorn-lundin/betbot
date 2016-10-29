@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="runners odds at race" Name="ARACEPRICESOLD" Tablespace="" >
-        <Column Name="pricets"            Size="23" Type="15" AllowNull="0" Description="timestamp of prices"/>
-        <Column Name="marketid"           Size="11" Type="1"  AllowNull="0"  Description="market id"/>
-        <Column Name="selectionid"        Size="9"  Type="2"  AllowNull="0"  Description="selection_id"/>
-        <Column Name="status"             Size="50" Type="1"  AllowNull="0" Description="status"/>
-        <Column Name="backprice"          Size="8"  Type="6"  AllowNull="0"  Description="back_price"/>
-        <Column Name="layprice"           Size="8"  Type="6"  AllowNull="0"  Description="lay_price"/>
-        <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
-        <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Column Name="pricets"     AllowNull="0" Description="timestamp of prices"/>
+        <Column Name="marketid"    AllowNull="0"  Description="market id"/>
+        <Column Name="selectionid" AllowNull="0"  Description="selection_id"/>
+        <Column Name="status"      AllowNull="0" Description="status"/>
+        <Column Name="backprice"   AllowNull="0"  Description="back_price"/>
+        <Column Name="layprice"    AllowNull="0"  Description="lay_price"/>
+        <Column Name="ixxlupd"     AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"     AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="pricets,marketid,selectionid" type="primary"/>
         <Index Columns="selectionid" type="index"/>
         <Index Columns="backprice" type="index"/>

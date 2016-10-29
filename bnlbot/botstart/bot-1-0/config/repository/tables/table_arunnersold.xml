@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="collected runners " Name="ARUNNERSOLD" Tablespace="" >
-        <Column Name="marketid"           Size="11" Type="1"  AllowNull="0" Description="market id"/>
-        <Column Name="selectionid"        Size="9"  Type="2"  AllowNull="0" Description="selection_id"/>
-        <Column Name="sortprio"           Size="9"  Type="2"  AllowNull="0" Description="sortprio"/>
-        <Column Name="status"             Size="50" Type="1"  AllowNull="0" Description="status"/>
-        <Column Name="handicap"           Size="8"  Type="6"  AllowNull="0" Description="handicap"/>
-        <Column Name="runnername"         Size="50" Type="1"  AllowNull="0" Description="runner_name"/>
-        <Column Name="runnernamestripped" Size="50" Type="1"  AllowNull="1" Description="runner_name without startnum"/>
-        <Column Name="runnernamenum"      Size="2"  Type="1"  AllowNull="1" Description="startnum in runner name"/>
-        <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
-        <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Column Name="marketid"           AllowNull="0" Description="market id"/>
+        <Column Name="selectionid"        AllowNull="0" Description="selection_id"/>
+        <Column Name="sortprio"           AllowNull="0" Description="sortprio"/>
+        <Column Name="status"             AllowNull="0" Description="status"/>
+        <Column Name="handicap"           AllowNull="0" Description="handicap"/>
+        <Column Name="runnername"         AllowNull="0" Description="runner_name"/>
+        <Column Name="runnernamestripped" AllowNull="1" Description="runner_name without startnum"/>
+        <Column Name="runnernamenum"      AllowNull="1" Description="startnum in runner name"/>
+        <Column Name="ixxlupd"            AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"            AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="marketid,selectionid" type="primary"/>
         <Index Columns="runnernamestripped" type="index"/>
         <Index Columns="marketid,status" type="index"/>
