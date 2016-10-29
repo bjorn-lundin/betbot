@@ -314,7 +314,7 @@ begin
     Posix.Daemonize;
   end if;
 
-  if EV.Value("BOT_NAME") = "" then
+  if not EV.Exists("BOT_NAME") then
     Ev.Set(Name => "BOT_NAME",Value => "live_feed");
   end if;
 
