@@ -1,29 +1,56 @@
+with Ada.Environment_Variables;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Exceptions;
+with Ada.Command_Line;
+
+with Gnat; use Gnat;
+with Gnat.Awk;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+with Gnat.Os_Lib;
+
+with Logging; use Logging;
+with Stacktrace;
+with Calendar2;
+with Ini;
+with Sql;
+with Lock;
+with Posix;
+with Utils; use Utils;
+with Process_Io;
+with Core_Messages;
+with Types;
 
 with Games;
 with Aliases;
 with Unknowns;
 
-with Gnat; use Gnat;
-with Gnat.Awk;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Exceptions;
-with Logging; use Logging;
-with Ada.Command_Line;
-with Stacktrace;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Calendar2;
-with Gnat.Os_Lib;
-
-
 
 procedure Football_Live_Feed is
+
+  package Ev renames Ada.Environment_Variables;
 
   Global_Filename : String := "/home/bnl/tmp/score2.dat";
   Global_Url : String := "http://www.goalserve.com/updaters/soccerupdate.aspx?ts=" & Calendar2.Clock.To_String;
 
+  Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
+  Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
+  Ba_Daemon       : aliased Boolean := False;
+  Cmd_Line        : Command_Line_Configuration;
+
+  Me              : constant String := "Poll_Market.";
+  My_Lock         : Lock.Lock_Type;
+  Msg             : Process_Io.Message_Type;
+
   Debug : Boolean := False;
+  Now             : Calendar2.Time_Type;
+  Is_Time_To_Exit : Boolean := False;
+
+
+  ---------------------------------------------
   procedure D(What : String) is
   begin
     if Debug then
@@ -42,7 +69,7 @@ procedure Football_Live_Feed is
     Arg_List(3) := new String'("--hiddenlinks=ignore");
     Arg_List(4) := new String'("--notitle");
     Arg_List(5) := new String'("--nolist");
-    Arg_List(6) := new String'(Global_Url);
+    Arg_List(6) := new String'(Url);
 
     Gnat.Os_Lib.Spawn(Program_Name => "/usr/bin/lynx",
                       Args         => Arg_List,
@@ -72,7 +99,6 @@ procedure Football_Live_Feed is
     Game           : Games.Game_Type;
     Alias          : Aliases.Alias_Type;
     Unknown        : Unknowns.Unknown_Type;
-    Eos            : Boolean := False;
     Highlight_Seen : Boolean := False;
 
   begin
@@ -220,20 +246,27 @@ procedure Football_Live_Feed is
           if Cc /= "  " then
             declare
               Unknown_Present : Boolean := True;
+              T : Sql.Transaction_Type;
+              Eos1,Eos2 : Boolean := False;
             begin
+              T.Start;
               -- check to se if both teams are known
               for H in Team_Field_Type'Range loop
                 Move(To_String(Teamnames(H)), Alias.Teamname);
-                Eos := True;
-                --Alias.Read_Teamname(Eos);
-                if not Eos then
+                Eos1 := True;
+                Alias.Read_Teamname(Eos1);
+                if not Eos1 then
                   null;
                 else
                   Unknown_Present := True;
                   Unknown.Countrycode := Cc;
                   Unknown.Teamname := Alias.Teamname;
+                  Unknown.Read(Eos2);
                   Put_Line(Unknown.To_String);
-                  --Unknown.Insert;
+                  if Eos2 then
+                    Put_Line(Unknown.To_String);
+                    Unknown.Insert;
+                  end if;
                 end if;
               end loop;
 
@@ -241,25 +274,108 @@ procedure Football_Live_Feed is
               --  Game
               --
               --end if;
+              T.Commit;
 
             end;
           end if;
         end if;
       end if;
     end loop;
-
     Awk.Close (Score);
-
   end Parse_File;
+  -------------------------------------
 
-
+  use type Sql.Transaction_Status_Type;
+  use type Types.Integer_2;
 
 begin
 
-  Retrieve(Url => Global_Url, Filename => Global_Filename);
-  Parse_File(Filename => Global_Filename);
+   Define_Switch
+    (Cmd_Line,
+     Sa_Par_Bot_User'access,
+     Long_Switch => "--user=",
+     Help        => "user of bot");
+
+   Define_Switch
+     (Cmd_Line,
+      Ba_Daemon'access,
+      Long_Switch => "--daemon",
+      Help        => "become daemon at startup");
+
+   Define_Switch
+     (Cmd_Line,
+      Sa_Par_Inifile'access,
+      Long_Switch => "--inifile=",
+      Help        => "use alternative inifile");
+
+  Getopt (Cmd_Line);  -- process the command line
+
+  if Ba_Daemon then
+    Posix.Daemonize;
+  end if;
+
+  if EV.Value("BOT_NAME") = "" then
+    Ev.Set(Name => "BOT_NAME",Value => "live_feed");
+  end if;
+
+   --must take lock AFTER becoming a daemon ...
+   --The parent pid dies, and would release the lock...
+  My_Lock.Take(EV.Value("BOT_NAME"));
+
+  --Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+
+
+  Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
+  Log(Me, "Connect Db");
+  Sql.Connect
+        (Host     => Ini.Get_Value("database", "host", ""),
+         Port     => Ini.Get_Value("database", "port", 5432),
+         Db_Name  => Ini.Get_Value("database", "name", ""),
+         Login    => Ini.Get_Value("database", "username", ""),
+         Password =>Ini.Get_Value("database", "password", ""));
+  Log(Me, "db Connected");
+
+
+  Main_Loop : loop
+
+    begin
+      Log(Me, "Start receive");
+      Process_Io.Receive(Msg, 10.0);
+      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Trim(Process_Io.Sender(Msg).Name));
+      if Sql.Transaction_Status /= Sql.None then
+        raise Sql.Transaction_Error with "Uncommited transaction in progress !! BAD!";
+      end if;
+      case Process_Io.Identity(Msg) is
+        when Core_Messages.Exit_Message                  =>
+          exit Main_Loop;
+        when others =>
+          Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
+      end case;
+    exception
+      when Process_Io.Timeout =>
+         Retrieve(Url => Global_Url, Filename => Global_Filename);
+         Parse_File(Filename => Global_Filename);
+    end;
+    Now := Calendar2.Clock;
+
+    --restart every day
+    Is_Time_To_Exit := Now.Hour = 01 and then
+                     ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
+
+    exit Main_Loop when Is_Time_To_Exit;
+
+  end loop Main_Loop;
+
+  Log(Me, "Close Db");
+  Sql.Close_Session;
+  Logging.Close;
+  Posix.Do_Exit(0); -- terminate
 
 exception
+  when Lock.Lock_Error =>
+    Log(Me, "lock error, exit");
+    Logging.Close;
+    Posix.Do_Exit(0); -- terminate
   when E: others =>
     declare
       Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
@@ -272,6 +388,10 @@ exception
       Log("addr2line" & " --functions --basenames --exe=" &
            Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
     end ;
+
+    Log(Me, "Closed log and die");
+    Logging.Close;
+    Posix.Do_Exit(0); -- terminate
 
 
 end Football_Live_Feed;
