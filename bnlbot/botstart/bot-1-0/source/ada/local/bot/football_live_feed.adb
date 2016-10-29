@@ -262,7 +262,6 @@ procedure Football_Live_Feed is
                   Unknown.Countrycode := Cc;
                   Unknown.Teamname := Alias.Teamname;
                   Unknown.Read(Eos2);
-                  Put_Line(Unknown.To_String);
                   if Eos2 then
                     Put_Line(Unknown.To_String);
                     Unknown.Insert;
