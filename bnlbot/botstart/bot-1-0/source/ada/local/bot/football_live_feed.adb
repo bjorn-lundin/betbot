@@ -65,8 +65,8 @@ procedure Football_Live_Feed is
   begin
     T.Start;
       Delete_Unknown.Prepare (
-        "delete from AUNKNOWN where exists (" &
-           "select 'x' from AALIASES where AALIASES.TEAMNAME=AUNKNOWN.TEAMNAME)"
+        "delete from AUNKNOWNS where exists (" &
+           "select 'x' from AALIASES where AALIASES.TEAMNAME=AUNKNOWNS.TEAMNAME)"
       );
       Delete_Unknown.Execute;
     T.Commit;
