@@ -50,6 +50,7 @@ procedure Football_Live_Feed is
   Is_Time_To_Exit : Boolean := False;
 
 
+  Delete_Unknown : Sql.Statement_Type;
   ---------------------------------------------
   procedure D(What : String) is
   begin
@@ -58,6 +59,19 @@ procedure Football_Live_Feed is
     end if;
   end D;
 
+
+  procedure Delete_From_Unknown is
+    T: Sql.Transaction_Type;
+  begin
+    T.Start;
+      Delete_Unknown.Prepare (
+        "delete from AUNKNOWN where exists (" &
+           "select 'x' from AALIASES where AALIASES.TEAMNAME=AUNKNOWN.TEAMNAME)"
+      );
+      Delete_Unknown.Execute;
+    T.Commit;
+  end Delete_From_Unknown;
+  --------------------------------------------
 
   procedure Retrieve(Url,Filename : String) is
     Arg_List : Gnat.Os_Lib.Argument_List(1..6);
@@ -352,6 +366,7 @@ begin
       end case;
     exception
       when Process_Io.Timeout =>
+         Delete_From_Unknown;
          Retrieve(Url => Global_Url, Filename => Global_Filename);
          Parse_File(Filename => Global_Filename);
     end;
