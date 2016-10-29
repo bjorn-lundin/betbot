@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="collected runners " Name="AMARKETS" Tablespace="" >
-        <Column Name="marketid"           Size="11" Type="1"  AllowNull="0" Description="market id"/>
-        <Column Name="marketname"         Size="50" Type="1"  AllowNull="0" Description="market name"/>
-        <Column Name="startts"            Size="23" Type="15" AllowNull="0" Description="timestamp start"/>
-        <Column Name="eventid"            Size="11" Type="1"  AllowNull="0" Description="event id"/>
-        <Column Name="markettype"         Size="25" Type="1"  AllowNull="0" Description="WINNER/PLACE"/>
-        <Column Name="status"             Size="50" Type="1"  AllowNull="0" Description="status"/>
-        <Column Name="betdelay"           Size="9"  Type="2"  AllowNull="0" Description="betdelay"/>
-        <Column Name="numwinners"         Size="9"  Type="2"  AllowNull="0" Description="num winners"/>
-        <Column Name="numrunners"         Size="9"  Type="2"  AllowNull="0" Description="num runners"/>
-        <Column Name="numactiverunners"   Size="9"  Type="2"  AllowNull="0" Description="num active runners"/>
-        <Column Name="totalmatched"       Size="9"  Type="6"  AllowNull="0" Description="tot matched"/>
-        <Column Name="totalavailable"     Size="9"  Type="6"  AllowNull="0" Description="tot available"/>
-        <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
-        <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Column Name="marketid"         AllowNull="0" Description="market id"/>
+        <Column Name="marketname"       AllowNull="0" Description="market name"/>
+        <Column Name="startts"          AllowNull="0" Description="timestamp start"/>
+        <Column Name="eventid"          AllowNull="0" Description="event id"/>
+        <Column Name="markettype"       AllowNull="0" Description="WINNER/PLACE"/>
+        <Column Name="status"           AllowNull="0" Description="status"/>
+        <Column Name="betdelay"         AllowNull="0" Description="betdelay"/>
+        <Column Name="numwinners"       AllowNull="0" Description="num winners"/>
+        <Column Name="numrunners"       AllowNull="0" Description="num runners"/>
+        <Column Name="numactiverunners" AllowNull="0" Description="num active runners"/>
+        <Column Name="totalmatched"     AllowNull="0" Description="tot matched"/>
+        <Column Name="totalavailable"   AllowNull="0" Description="tot available"/>
+        <Column Name="ixxlupd"          AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"          AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="marketid" type="primary"/>
         <Index Columns="eventid" type="index"/>
         <Index Columns="markettype" type="index"/>

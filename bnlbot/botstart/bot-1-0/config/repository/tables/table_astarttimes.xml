@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="Starttimes" Name="ASTARTTIMES" Tablespace="" >
-        <Column Name="starttime"          Size="23" Type="15" AllowNull="0" Description="start of race"/>
-        <Column Name="venue"              Size="1" Type="30"  AllowNull="0" Description="Venue name"/>
+        <Column Name="starttime"  AllowNull="0" Description="start of race"/>
+        <Column Name="venue"      AllowNull="0" Description="Venue name"/>
         <Index Columns="starttime,venue" type="primary"/>
     </Table>
 </BnlBot>

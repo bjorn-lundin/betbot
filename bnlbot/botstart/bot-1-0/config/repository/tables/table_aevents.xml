@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Table Desc="collected runners " Name="AEVENTS" Tablespace="" >
-        <Column Name="eventid"            Size="11" Type="1"  AllowNull="0" Description="event id"/>
-        <Column Name="eventname"          Size="50" Type="1"  AllowNull="0" Description="event name"/>
-        <Column Name="countrycode"        Size="2"  Type="1"  AllowNull="0" Description="code of cntry"/>
-        <Column Name="timezone"           Size="50" Type="1"  AllowNull="0" Description="timezone"/>
-        <Column Name="opents"             Size="23" Type="15" AllowNull="0" Description="timestamp open"/>
-        <Column Name="eventtypeid"        Size="9"  Type="2"  AllowNull="0" Description="event type id (7,4339)"/>
-        <Column Name="ixxlupd"            Size="15" Type="1"  AllowNull="0" Description="Latest updater"/>
-        <Column Name="ixxluts"            Size="23" Type="15" AllowNull="0" Description="Latest update timestamp"/>
+        <Column Name="eventid"     AllowNull="0" Description="event id"/>
+        <Column Name="eventname"   AllowNull="0" Description="event name"/>
+        <Column Name="countrycode" AllowNull="0" Description="code of contry"/>
+        <Column Name="timezone"    AllowNull="0" Description="timezone"/>
+        <Column Name="opents"      AllowNull="0" Description="timestamp open"/>
+        <Column Name="eventtypeid" AllowNull="0" Description="event type id (7,4339)"/>
+        <Column Name="ixxlupd"     AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"     AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="eventid" type="primary"/>
         <Index Columns="countrycode" type="index"/>
         <Index Columns="opents" type="index"/>
