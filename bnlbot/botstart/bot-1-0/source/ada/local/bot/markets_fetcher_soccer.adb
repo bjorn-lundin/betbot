@@ -153,10 +153,18 @@ procedure Markets_Fetcher_Soccer is
       Alias.Teamname := Db_Runner.Runnername;
       Alias.Read_Teamname(Eos);
       if Eos then
-        Log(Me & Service, "runner not in alias" & Db_Runner.To_String);
-        Unknown.Teamname := Db_Runner.Runnername;
-        Unknown.Countrycode:= "XX";
-        Unknown.Insert;
+        if (Db_Runner.Selectionid < 20) or
+           (Db_Runner.Selectionid = 9063254) or
+           (Db_Runner.Selectionid = 9063255) or
+           (Db_Runner.Selectionid = 9063256) then
+
+          null;
+        else
+          Log(Me & Service, "runner not in alias " & Db_Runner.To_String);
+          Unknown.Teamname := Db_Runner.Runnername;
+          Unknown.Countrycode:= "XX";
+          Unknown.Insert;
+        end if;
       end if;
     end loop;
     Log(Me & Service, "stop");
