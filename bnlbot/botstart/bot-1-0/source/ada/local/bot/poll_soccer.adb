@@ -108,7 +108,7 @@ procedure Poll_Soccer is
     "where 1=1 " &
     "and mmo3.marketid = :MARKETID " &
     --enough money on game
-    "and mmo3.totalmatched > 100000 " &
+    "and mmo3.totalmatched > 50000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
     -- home team has the lead
@@ -320,7 +320,7 @@ procedure Poll_Soccer is
     "where 1=1 " &
     "and mmo3.marketid = :MARKETID " &
     --enough money on game
-    "and mmo3.totalmatched > 100000 " &
+    "and mmo3.totalmatched > 50000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
     -- away team has the lead
@@ -524,7 +524,7 @@ procedure Poll_Soccer is
       "where 1=1 " &
       "and mmo3.marketid = :MARKETID " &
       -- enough money on game
-      "and mmo3.totalmatched > 100000 " &
+      "and mmo3.totalmatched > 50000 " &
       "and mmo3.status = 'OPEN' " &
       "and mmo3.betdelay = 0 " &  --not in play
       -- probability for goals
