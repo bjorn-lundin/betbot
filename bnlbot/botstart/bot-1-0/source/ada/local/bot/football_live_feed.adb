@@ -405,7 +405,7 @@ begin
    --The parent pid dies, and would release the lock...
   My_Lock.Take(EV.Value("BOT_NAME"));
 
-  --Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
 
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
