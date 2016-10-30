@@ -7,6 +7,7 @@ with Table_Amarkets;
 with Table_Arunners;
 with Table_Abets;
 with Table_Aevents;
+with Table_Ateams;
 
 package Bot_Types is
 
@@ -57,10 +58,12 @@ package Bot_Types is
    type Green_Up_Mode_Type is (None, Lay_First_Then_Back, Back_First_Then_Lay);
 
    subtype Marketid_Type       is String(Table_Amarkets.Empty_Data.Marketid'range);
+   subtype Eventid_Type        is String(Table_Aevents.Empty_Data.Eventid'range);
    subtype Eventname_Type      is String(Table_Aevents.Empty_Data.Eventname'range);
    subtype Runnername_Type     is String(Table_Arunners.Empty_Data.Runnername'range);
    subtype Status_Type          is String(Table_Arunners.Empty_Data.Status'range);
    subtype Betname_Type        is String(Table_Abets.Empty_Data.Betname'range);
+   subtype Teamname_Type        is String(Table_Ateams.Empty_Data.Teamname'range);
    subtype Bet_Side_String_Type is String(Table_Abets.Empty_Data.Side'range);
    subtype Bet_Timestamp_Image_Type is String(1..23);
    subtype Venue_Type           is String (1..50);

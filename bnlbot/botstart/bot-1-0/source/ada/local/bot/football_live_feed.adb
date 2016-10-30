@@ -23,10 +23,12 @@ with Utils; use Utils;
 with Process_Io;
 with Core_Messages;
 with Types;
+with Bot_Types;
 
 with Games;
 with Aliases;
 with Unknowns;
+with Events;
 
 
 procedure Football_Live_Feed is
@@ -49,7 +51,7 @@ procedure Football_Live_Feed is
   Now             : Calendar2.Time_Type;
   Is_Time_To_Exit : Boolean := False;
 
-
+  Select_Event   : Sql.Statement_Type;
   Delete_Unknown : Sql.Statement_Type;
   ---------------------------------------------
   procedure D(What : String) is
@@ -58,6 +60,44 @@ procedure Football_Live_Feed is
       Put_Line(What);
     end if;
   end D;
+
+  function Find_Eventid(Teamname,Countrycode : String) return Bot_Types.Eventid_Type is
+    Local_Event : Events.Event_Type;
+    T           : Sql.Transaction_Type;
+    Now         : Calendar2.Time_Type := Calendar2.Clock;
+    Eos         : Boolean := False;
+  begin
+    Now.Hour := 1; -- make sure we get time early in the day
+    T.Start;
+    Select_Event.Prepare(
+                         --"select e.eventid, m.marketid,m.markettype, r.* " &
+                         "select E.* " &
+                           "from ARUNNERS R, AMARKETS M, AEVENTS E " &
+                           "where R.MARKETID = M.MARKETID " &
+                           "and M.EVENTID = E.EVENTID " &
+                           "and M.MARKETTYPE = 'MATCH_ODDS' " &
+                           "and E.COUNTRYCODE = :COUNTRYCODE " &
+                           "and R.RUNNERNAME = :TEAMNAME " &
+                           "and M.STARTTS >= :THISMORNING"
+                        );
+
+    Select_Event.Set("TEAMNAME",Teamname);
+    Select_Event.Set_Timestamp("THISMORNING",Now);
+    Select_Event.Set("COUNTRYCODE",Countrycode);
+    Select_Event.Open_Cursor;
+    Select_Event.Fetch(Eos);
+    if not Eos then
+      Local_Event := Events.Get(Select_Event);
+    end if;
+    Select_Event.Close_Cursor;
+
+    T.Commit;
+
+    Log("Find_Eventid", "Eos" & Eos'Img & " returning '" & Local_Event.Eventid & "'");
+
+    return Local_Event.Eventid;
+  end Find_Eventid;
+
 
 
   procedure Delete_From_Unknown is
@@ -71,6 +111,7 @@ procedure Football_Live_Feed is
       );
       Delete_Unknown.Execute(Rows);
     T.Commit;
+    Log("Delete_From_Unknown", "deleted" & Rows'Img);
   end Delete_From_Unknown;
   --------------------------------------------
 
@@ -108,7 +149,7 @@ procedure Football_Live_Feed is
     Score_Field : Awk.Count := 0;
     type Team_Field_Type is (Home,Away);
     Teamnames : array(Team_Field_Type'Range) of Unbounded_String;
-    Scores : array(Team_Field_Type'Range) of Integer;
+    Scores : array(Team_Field_Type'Range) of Types.integer_4;
     Cc : String(1..2) := "  ";
 
     Game           : Games.Game_Type;
@@ -226,13 +267,13 @@ procedure Football_Live_Feed is
                   if F(Left_Bracket+1 ..  Dash-1) = "?" then
                     Scores(Home) := 0;
                   else
-                    Scores(Home) := Integer'Value(F(Left_Bracket+1 .. Dash-1));
+                    Scores(Home) := Types.Integer_4'Value(F(Left_Bracket+1 .. Dash-1));
                   end if;
 
                   if F(Dash+1 ..  Right_Bracket-1) = "?" then
                     Scores(Away) := 0;
                   else
-                    Scores(Away) := Integer'Value(F(Dash+1 ..  Right_Bracket-1));
+                    Scores(Away) := Types.Integer_4'Value(F(Dash+1 ..  Right_Bracket-1));
                   end if;
                 end if;
               end loop;
@@ -260,36 +301,57 @@ procedure Football_Live_Feed is
 
           if Cc /= "  " then
             declare
-              Unknown_Present : Boolean := True;
               T : Sql.Transaction_Type;
-              Eos1,Eos2 : Boolean := False;
+              type Eos_Type is (Aaliases,Agames,Aunknowns);
+              Eos      : array (Eos_Type'Range) of Boolean := (others => False);
+              Eventid  : array (Team_Field_Type'Range) of Bot_Types.Eventid_Type := (others => (others => ' '));
+              use type Types.Integer_4;
             begin
               T.Start;
               -- check to se if both teams are known
               for H in Team_Field_Type'Range loop
                 Move(To_String(Teamnames(H)), Alias.Teamname);
-                Eos1 := True;
-                Alias.Read_Teamname(Eos1);
-                if not Eos1 then
-                  null;
+                Alias.Read_Teamname(Eos(Aaliases));
+                if not Eos(Aaliases) then
+                  case H is
+                    when Home =>
+                      Game.Homeid := Alias.Teamid;
+                      Game.Homescore := Scores(Home);
+                      Eventid(Home) := Find_Eventid(To_String(Teamnames(Home)),Cc);
+                    when Away =>
+                      Game.Awayid := Alias.Teamid;
+                      Game.Awayscore := Scores(Away);
+                      Eventid(Away) := Find_Eventid(To_String(teamnames(Away)),Cc);
+                  end case;
+
+                  if Eventid(Home) /= Events.Empty_Data.Eventid and then Eventid(Home) = Eventid(Away) then
+                    --found Event :-)
+                    Game.Eventid := Eventid(Home);
+                    Game.Read(Eos(Agames));
+                    if not Eos(Agames) then
+                      if Game.Homescore /= Scores(Home) or else
+                         Game.AwayScore /= Scores(Away) then
+
+                          Game.Homescore := Scores(Home);
+                          Game.AwayScore := Scores(Away);
+                          Game.Update_Withcheck;
+                      end if;
+                    else
+                      Game.Insert;
+                    end if;
+                  end if;
                 else
-                  Unknown_Present := True;
                   Unknown.Countrycode := Cc;
                   Unknown.Teamname := Alias.Teamname;
-                  Unknown.Read(Eos2);
-                  if Eos2 then
+                  Unknown.Read(Eos(Aunknowns));
+                  if Eos(Aunknowns) then
                     Put_Line(Unknown.To_String);
                     Unknown.Insert;
                   end if;
                 end if;
               end loop;
 
-              --if not Unknown_Present then
-              --  Game
-              --
-              --end if;
               T.Commit;
-
             end;
           end if;
         end if;
