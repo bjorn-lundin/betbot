@@ -215,8 +215,12 @@ procedure Football_Live_Feed is
           Cc :="ES";
           Highlight_Seen := False;
         elsif Awk.Field(2) = "Sweden" and then Awk.Field(4) = "Allsvenskan" then
-          Cc :="SE";
-          Highlight_Seen := False;
+          if Awk.Number_Of_Fields(Session => Score) >= 5 and then Awk.Field(5) = "Women" then
+            null;
+          else
+            Cc :="SE";
+            Highlight_Seen := False;
+          end if;
 
         elsif Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "Highlights!" then
           Highlight_Seen := True;
