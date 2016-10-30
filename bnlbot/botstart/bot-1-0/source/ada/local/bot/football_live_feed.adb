@@ -70,16 +70,17 @@ procedure Football_Live_Feed is
     Now.Hour := 1; -- make sure we get time early in the day
     T.Start;
     Select_Event.Prepare(
-                         --"select e.eventid, m.marketid,m.markettype, r.* " &
-      "select E.* " &
-      "from ARUNNERS R, AMARKETS M, AEVENTS E " &
-      "where R.MARKETID = M.MARKETID " &
-      "and M.EVENTID = E.EVENTID " &
-      "and M.MARKETTYPE = 'MATCH_ODDS' " &
-      "and E.COUNTRYCODE = :COUNTRYCODE " &
-      "and R.RUNNERNAME = :TEAMNAME " &
-      "and M.STARTTS >= :THISMORNING"
-    );
+       "select E.* " &
+       "from ARUNNERS R, AMARKETS M, AEVENTS E " &
+       "where R.MARKETID = M.MARKETID " &
+       "and M.EVENTID = E.EVENTID " &
+       "and M.MARKETTYPE = 'MATCH_ODDS' " &
+       "and E.COUNTRYCODE = :COUNTRYCODE " &
+       "and R.RUNNERNAME in ( " &
+         "select TEAMNAME from AALIASES where TEAMID in ( " &
+             "select TEAMID from AALIASES where TEAMNAME = :TEAMNAME)) " &
+       "and M.STARTTS >= :THISMORNING"
+     );
 
     Select_Event.Set("TEAMNAME",Teamname);
     Select_Event.Set_Timestamp("THISMORNING",Now);
