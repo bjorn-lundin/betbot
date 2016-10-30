@@ -71,15 +71,15 @@ procedure Football_Live_Feed is
     T.Start;
     Select_Event.Prepare(
                          --"select e.eventid, m.marketid,m.markettype, r.* " &
-                         "select E.* " &
-                           "from ARUNNERS R, AMARKETS M, AEVENTS E " &
-                           "where R.MARKETID = M.MARKETID " &
-                           "and M.EVENTID = E.EVENTID " &
-                           "and M.MARKETTYPE = 'MATCH_ODDS' " &
-                           "and E.COUNTRYCODE = :COUNTRYCODE " &
-                           "and R.RUNNERNAME = :TEAMNAME " &
-                           "and M.STARTTS >= :THISMORNING"
-                        );
+      "select E.* " &
+      "from ARUNNERS R, AMARKETS M, AEVENTS E " &
+      "where R.MARKETID = M.MARKETID " &
+      "and M.EVENTID = E.EVENTID " &
+      "and M.MARKETTYPE = 'MATCH_ODDS' " &
+      "and E.COUNTRYCODE = :COUNTRYCODE " &
+      "and R.RUNNERNAME = :TEAMNAME " &
+      "and M.STARTTS >= :THISMORNING"
+    );
 
     Select_Event.Set("TEAMNAME",Teamname);
     Select_Event.Set_Timestamp("THISMORNING",Now);
@@ -93,7 +93,10 @@ procedure Football_Live_Feed is
 
     T.Commit;
 
-    Log("Find_Eventid", "Eos" & Eos'Img & " returning '" & Local_Event.Eventid & "'");
+    Log("Find_Eventid","name: '" & Teamname &
+                       "' CC '" & Countrycode &
+                       "' Eos " & Eos'Img &
+                       " returning '" & Local_Event.Eventid & "'");
 
     return Local_Event.Eventid;
   end Find_Eventid;
