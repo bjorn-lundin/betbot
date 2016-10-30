@@ -25,6 +25,8 @@ with Core_Messages;
 with Utils; use Utils;
 with Table_Aokmarkets;
 with RPC ;
+with Aliases;
+with Unknowns;
 
 procedure Markets_Fetcher_Soccer is
   package EV renames Ada.Environment_Variables;
@@ -138,6 +140,8 @@ procedure Markets_Fetcher_Soccer is
     Runner_List : Runners.Lists.List;
     Service : constant String := "Insert_Runners";
     Eos : Boolean := False;
+    Alias : Aliases.Alias_Type;
+    Unknown : Unknowns.Unknown_Type;
   begin
     Log(Me & Service, "start");
     Rpc.Parse_Runners(Market, Runner_List);
@@ -145,6 +149,14 @@ procedure Markets_Fetcher_Soccer is
       DB_Runner.Read( Eos);
       if Eos then
         DB_Runner.Insert;
+      end if;
+      Alias.Teamname := Db_Runner.Runnername;
+      Alias.Read_Teamname(Eos);
+      if Eos then
+        Log(Me & Service, "runner not in alias" & Db_Runner.To_String);
+        Unknown.Teamname := Db_Runner.Runnername;
+        Unknown.Countrycode:= "XX";
+        Unknown.Insert;
       end if;
     end loop;
     Log(Me & Service, "stop");
