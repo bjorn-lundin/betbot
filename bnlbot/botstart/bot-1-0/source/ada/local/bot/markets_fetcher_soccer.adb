@@ -153,10 +153,11 @@ procedure Markets_Fetcher_Soccer is
       Alias.Teamname := Db_Runner.Runnername;
       Alias.Read_Teamname(Eos);
       if Eos then
-        if (Db_Runner.Selectionid < 20) or
-           (Db_Runner.Selectionid = 9063254) or
-           (Db_Runner.Selectionid = 9063255) or
-           (Db_Runner.Selectionid = 9063256) then
+        if (Db_Runner.Selectionid < 20) or         -- 0-0, 1-0 ..
+           (Db_Runner.Selectionid = 58805) or      --the draw
+           (Db_Runner.Selectionid = 9063254) or    --Any Other Home Win
+           (Db_Runner.Selectionid = 9063255) or    --Any Other Away Win
+           (Db_Runner.Selectionid = 9063256) then  -- Any Other Draw
 
           null;
         else
