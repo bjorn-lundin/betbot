@@ -353,7 +353,7 @@ procedure Football_Live_Feed is
                   Unknown.Teamname := Alias.Teamname;
                   Unknown.Read(Eos(Aunknowns));
                   if Eos(Aunknowns) then
-                    Put_Line(Unknown.To_String);
+                    Put_Line("new unknown found :" & Unknown.To_String);
                     Unknown.Insert;
                   end if;
                 end if;
