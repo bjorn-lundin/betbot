@@ -102,6 +102,7 @@ procedure Poll_Soccer is
          "amarkets mmo1, " &  --market1 match_odds
          "arunners rmo1, " &  --runner1 match odds
          "aprices pmo1, " &   --prices1 match odds
+         "agames g, " &       --games
          "aevents e " &       --events
     "where 1=1 " &
     "and mmo3.marketid = :MARKETID " &
@@ -109,6 +110,9 @@ procedure Poll_Soccer is
     "and mmo3.totalmatched > 100000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
+    -- home team has the lead
+    "and e.eventid = g.eventid " &
+    "and g.homescore > g.awayscore " &    
     -- the_draw
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
@@ -310,6 +314,7 @@ procedure Poll_Soccer is
          "amarkets mmo1, " &  --market1 match_odds
          "arunners rmo1, " &  --runner1 match odds
          "aprices pmo1, " &   --prices1 match odds
+         "agames g, " &       --games
          "aevents e " &       --events
     "where 1=1 " &
     "and mmo3.marketid = :MARKETID " &
@@ -317,6 +322,9 @@ procedure Poll_Soccer is
     "and mmo3.totalmatched > 100000 " &
     "and mmo3.status = 'OPEN' " &
     "and mmo3.betdelay > 0 " & --in play
+    -- away team has the lead
+    "and e.eventid = g.eventid " &
+    "and g.homescore < g.awayscore " &        
     -- the_draw   
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
