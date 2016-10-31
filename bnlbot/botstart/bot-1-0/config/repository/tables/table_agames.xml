@@ -6,6 +6,7 @@
         <Column Name="awayid"    AllowNull="0" Description="Away team  id"/>
         <Column Name="homescore" AllowNull="0" Description="Home score"/>
         <Column Name="awayscore" AllowNull="0" Description="Away score"/>
+        <Column Name="minute"    AllowNull="0" Description="minute in game"/>
         <Column Name="ixxlupd"   AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"   AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="eventid" type="primary"/>
