@@ -249,6 +249,42 @@ procedure Football_Live_Feed is
             end;
           end loop;
 
+         declare
+           Ftime : String := Awk.Field(2);
+           Is_numeric : Boolean := True;
+           use type Types.Integer_4;
+         begin
+           for I in Ftime'range loop
+              case Ftime(I) is
+                when ':' =>  -- eg 14:50 -- match start
+                  Game.Minute := -1;
+                  Is_Numeric  := False;
+                  exit;
+                when 'E' =>  -- eg ET - Extra Time
+                  Game.Minute := -2;
+                  Is_Numeric  := False;
+                  exit;
+                when 'F' =>  -- eg FT - Full Time
+                  Game.Minute := -3;
+                  Is_Numeric  := False;
+                  exit;
+                when 'H' =>  -- eg HT - Half Time
+                  Game.Minute := 45;
+                  Is_Numeric  := False;
+                  exit;
+                when '0' .. '9' => null;
+                when others =>
+                  Is_Numeric  := False;
+                  exit;
+              end case;
+           end loop;
+           if Is_Numeric then
+             Game.Minute := Types.Integer_4'Value(Ftime);
+           end if;
+         end;
+
+
+
           if Football_Fields(2) >  Football_Fields(1) then
             D("-------------------");
             D( Awk.Field (0));
@@ -318,6 +354,7 @@ procedure Football_Live_Feed is
               Eos      : array (Eos_Type'Range) of Boolean := (others => False);
               Eventid  : array (Team_Field_Type'Range) of Bot_Types.Eventid_Type := (others => (others => ' '));
               use type Types.Integer_4;
+              Minute : Types.Integer_4 := Game.Minute;
             begin
               T.Start;
               -- check to se if both teams are known
@@ -342,10 +379,12 @@ procedure Football_Live_Feed is
                     Game.Read(Eos(Agames));
                     if not Eos(Agames) then
                       if Game.Homescore /= Scores(Home) or else
-                         Game.AwayScore /= Scores(Away) then
+                         Game.AwayScore /= Scores(Away) or else
+                         Game.Minute /= Minute then
 
                           Game.Homescore := Scores(Home);
                           Game.AwayScore := Scores(Away);
+                          Game.Minute    := Minute;
                           Game.Update_Withcheck;
                       end if;
                     else
