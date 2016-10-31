@@ -787,7 +787,8 @@ procedure Poll_Soccer is
     end;
 
     if Global_Allowed_To_Bet then
-      if All_Bets_In_Market_Are_Matched(Market) then
+      -- All_Bets_In_Market_Are_Matched is in SQL
+     -- if All_Bets_In_Market_Are_Matched(Market) then
         Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
         -- Back_The_Leader_Home(Market);
         Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
@@ -802,7 +803,7 @@ procedure Poll_Soccer is
                              Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
         Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
                              Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
-      end if;
+    --  end if;
     else
       Log(Me & "Not ALLOWED to bet");
     end if;
