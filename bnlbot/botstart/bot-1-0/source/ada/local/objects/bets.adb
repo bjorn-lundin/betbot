@@ -641,8 +641,7 @@ package body Bets is
       end if;
       if Is_Updated then
         Log(Me & "Is_Matched", "update bet " & Self.To_String);
-        Self.Update_Withcheck;
-        Self.Nullify_Betwon;
+        Self.Update_And_Nullify_Betwon;
       end if;
     end if;
 

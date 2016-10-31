@@ -721,6 +721,9 @@ procedure Poll_Soccer is
     T                 : Sql.Transaction_Type;
     In_Play : Boolean := False;
     pragma Warnings(Off, In_Play);
+    Dummy : Boolean := False;
+    pragma Warnings(Off, Dummy);
+    
   begin
     Log(Me & "Run", "Treat market: " &  Market.To_String);
     -- do the poll
@@ -788,22 +791,21 @@ procedure Poll_Soccer is
 
     if Global_Allowed_To_Bet then
       -- All_Bets_In_Market_Are_Matched is in SQL
-     -- if All_Bets_In_Market_Are_Matched(Market) then
-        Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
-        -- Back_The_Leader_Home(Market);
-        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                             Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
-        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                             Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
+      Dummy := All_Bets_In_Market_Are_Matched(Market); --Check and Update Bet if matched
+      Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
+      -- Back_The_Leader_Home(Market);
+      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
+                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
+      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
+                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
 
 
-        Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
-        -- Back_The_Leader_Away(Market);
-        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                             Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
-        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                             Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
-    --  end if;
+      Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
+      -- Back_The_Leader_Away(Market);
+      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16,
+                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
+      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
+                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
     else
       Log(Me & "Not ALLOWED to bet");
     end if;
