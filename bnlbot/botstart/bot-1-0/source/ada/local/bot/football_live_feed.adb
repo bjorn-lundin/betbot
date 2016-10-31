@@ -192,8 +192,12 @@ procedure Football_Live_Feed is
           Cc :="DK";
           Highlight_Seen := False;
         elsif Awk.Field(2) = "England" and then Awk.Field(4) = "Premier" and then Awk.Field(5) = "League" then
-          Cc :="GB";
-          Highlight_Seen := False;
+          if Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "2" then
+            null;
+          else
+            Cc :="GB";
+            Highlight_Seen := False;
+          end if;
         elsif Awk.Field(2) = "France" and then Awk.Field(4) = "Ligue" and then Awk.Field(5) = "1" then
           Cc :="FR";
           Highlight_Seen := False;
