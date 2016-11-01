@@ -256,6 +256,11 @@ begin
   Append(Market_Countries  , Create("SE"));
   Append(Market_Countries  , Create("DK"));
   Append(Market_Countries  , Create("BE"));
+  Append(Market_Countries  , Create("BG")); --champions league
+  Append(Market_Countries  , Create("CH")); --champions league
+  Append(Market_Countries  , Create("TR")); --champions league
+
+
   Append(Market_Type_Codes , Create("MATCH_ODDS"));
   Append(Market_Type_Codes , Create("CORRECT_SCORE"));
   Append(Market_Projection , Create("MARKET_DESCRIPTION"));

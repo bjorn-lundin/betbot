@@ -198,6 +198,9 @@ procedure Football_Live_Feed is
             Cc :="GB";
             Highlight_Seen := False;
           end if;
+        elsif Awk.Field(2) = "Europe" and then Awk.Field(4) = "Champions" and then Awk.Field(5) = "League" then
+            Cc :="EU";
+            Highlight_Seen := False;
         elsif Awk.Field(2) = "France" and then Awk.Field(4) = "Ligue" and then Awk.Field(5) = "1" then
           Cc :="FR";
           Highlight_Seen := False;
