@@ -80,7 +80,7 @@ procedure Markets_Fetcher_Soccer is
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
 
-  Eos_Okmarket,
+  --Eos_Okmarket,
   Market_Is_Ok : Boolean := False;
   Okmarket : Table_Aokmarkets.Data_Type;
   -----------------------------------------------
@@ -165,8 +165,11 @@ procedure Markets_Fetcher_Soccer is
         else
           Log(Me & Service, "runner not in alias " & Db_Runner.To_String);
           Unknown.Teamname := Db_Runner.Runnername;
-          Unknown.Countrycode:= "XX";
-          Unknown.Insert;
+          Unknown.Read(Eos);
+          if Eos then
+            Unknown.Countrycode:= "XX";
+            Unknown.Insert;
+          end if;
         end if;
       end if;
     end loop;
@@ -379,10 +382,10 @@ begin
          if Market.Has_Field("marketId") then
            -- menuparser adds those markets that are ok wrp country/league into AOKMARKETS
            Move(Market.Get("marketId"),Okmarket.Marketid);
-           Okmarket.Read(Eos_Okmarket);
-           Market_Is_Ok := not Eos_Okmarket;
+          -- Okmarket.Read(Eos_Okmarket);
+          -- Market_Is_Ok := not Eos_Okmarket;
            --pragma Compile_Time_Warning(True,"OKmarket is overidden - always true");
-           --Market_Is_Ok := True;
+           Market_Is_Ok := True;
 
            if Market_Is_Ok then
              Insert_Market(Market);
