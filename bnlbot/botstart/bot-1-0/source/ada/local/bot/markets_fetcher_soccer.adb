@@ -61,7 +61,8 @@ procedure Markets_Fetcher_Soccer is
 
   Market_Start_Time           : JSON_Value := Create_Object;
   Market_Projection,
-  Market_Countries,
+  --Market_Countries,
+  Competion_Ids,
   Market_Type_Codes,
   Market_Betting_Types,
   Exchange_Ids,
@@ -246,19 +247,29 @@ begin
 
   Append(Event_Type_Ids , Create("1"));    -- soccer
 --   none for all countries
-  Append(Market_Countries  , Create("GB"));
-  Append(Market_Countries  , Create("ES"));
-  Append(Market_Countries  , Create("IT"));
-  Append(Market_Countries  , Create("PT"));
-  Append(Market_Countries  , Create("FR"));
-  Append(Market_Countries  , Create("NL"));
-  Append(Market_Countries  , Create("DE"));
-  Append(Market_Countries  , Create("SE"));
-  Append(Market_Countries  , Create("DK"));
-  Append(Market_Countries  , Create("BE"));
-  Append(Market_Countries  , Create("BG")); --champions league
-  Append(Market_Countries  , Create("CH")); --champions league
-  Append(Market_Countries  , Create("TR")); --champions league
+--    Append(Market_Countries  , Create("GB"));
+--    Append(Market_Countries  , Create("ES"));
+--    Append(Market_Countries  , Create("IT"));
+--    Append(Market_Countries  , Create("PT"));
+--    Append(Market_Countries  , Create("FR"));
+--    Append(Market_Countries  , Create("NL"));
+--    Append(Market_Countries  , Create("DE"));
+--    Append(Market_Countries  , Create("SE"));
+--    Append(Market_Countries  , Create("DK"));
+--    Append(Market_Countries  , Create("BE"));
+
+
+  Append(Competion_Ids , Create("228"));    --Champions league
+  Append(Competion_Ids , Create("31"));     --English Premier League
+  Append(Competion_Ids , Create("129"));    --Swedish Allsvenskan
+  Append(Competion_Ids , Create("23"));     --Danish Superliga
+  Append(Competion_Ids , Create("59"));     --German Bundesliga 1
+  Append(Competion_Ids , Create("89979"));  --Belgian Jupiler League
+  Append(Competion_Ids , Create("9404054"));--Dutch Eredivisie
+  Append(Competion_Ids , Create("81"));     --Italian Serie A
+  Append(Competion_Ids , Create("55"));     --French Ligue 1
+  Append(Competion_Ids , Create("117"));    --Spanish  Primera Division
+  Append(Competion_Ids , Create("99"));     --Portoguise Primeira Liga
 
 
   Append(Market_Type_Codes , Create("MATCH_ODDS"));
@@ -330,7 +341,8 @@ begin
 
     Filter.Set_Field (Field_Name => "exchangeIds",        Field => Exchange_Ids);
     Filter.Set_Field (Field_Name => "eventTypeIds",       Field => Event_Type_Ids);
-    Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);
+    Filter.Set_Field (Field_Name => "competionIds",       Field => Competion_Ids);
+ --   Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);
     Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes);
     Filter.Set_Field (Field_Name => "marketBettingTypes", Field => Market_Betting_Types);
 --    Filter.Set_Field (Field_Name => "inPlayOnly",         Field => False);
