@@ -75,7 +75,8 @@ procedure Football_Live_Feed is
        "where R.MARKETID = M.MARKETID " &
        "and M.EVENTID = E.EVENTID " &
        "and M.MARKETTYPE = 'MATCH_ODDS' " &
-       "and E.COUNTRYCODE = :COUNTRYCODE " &
+       "and E.COUNTRYCODE >= :COUNTRYCODE1 " &
+       "and E.COUNTRYCODE <= :COUNTRYCODE2 " &
        "and R.RUNNERNAME in ( " &
          "select TEAMNAME from AALIASES where TEAMID in ( " &
              "select TEAMID from AALIASES where TEAMNAME = :TEAMNAME)) " &
@@ -84,7 +85,13 @@ procedure Football_Live_Feed is
 
     Select_Event.Set("TEAMNAME",Teamname);
     Select_Event.Set_Timestamp("THISMORNING",Now);
-    Select_Event.Set("COUNTRYCODE",Countrycode);
+    if Countrycode = "EU" then 
+      Select_Event.Set("COUNTRYCODE1","AA");
+      Select_Event.Set("COUNTRYCODE2","ZZ");
+    else
+      Select_Event.Set("COUNTRYCODE1",Countrycode);
+      Select_Event.Set("COUNTRYCODE2",Countrycode);
+    end if;
     Select_Event.Open_Cursor;
     Select_Event.Fetch(Eos);
     if not Eos then

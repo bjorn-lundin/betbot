@@ -336,8 +336,8 @@ begin
        Rpc.Login;
     end if;
 
---    UTC_Time_Stop  := UTC_Time_Start + One_Hour;
-    UTC_Time_Stop  := UTC_Time_Start + Twelve_Hours;
+    UTC_Time_Stop  := UTC_Time_Start + One_Hour;
+--    UTC_Time_Stop  := UTC_Time_Start + Twelve_Hours;
 
     T.Start;
 
