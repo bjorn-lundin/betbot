@@ -75,6 +75,7 @@ procedure Markets_Fetcher_Soccer is
   UTC_Time_Stop   : Calendar2.Time_Type ;
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
+  Twelve_Hours    : Calendar2.Interval_Type := (0,12,0,0,0);
   --One_Day         : Calendar2.Interval_Type := (1,0,0,0,0);
   T               : Sql.Transaction_Type;
   Turns           : Integer := 0;
@@ -332,7 +333,8 @@ begin
        Rpc.Login;
     end if;
 
-    UTC_Time_Stop  := UTC_Time_Start + One_Hour;
+--    UTC_Time_Stop  := UTC_Time_Start + One_Hour;
+    UTC_Time_Stop  := UTC_Time_Start + Twelve_Hours;
 
     T.Start;
 

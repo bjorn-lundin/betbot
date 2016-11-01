@@ -825,6 +825,7 @@ procedure Poll_Soccer is
         "where M.EVENTID = E.EVENTID " &
         "and M.MARKETTYPE in ('CORRECT_SCORE','MATCH_ODDS') " &
         "and M.STATUS = 'OPEN' " &
+        "and M.BETDELAY > 0 " & -- inplay
         "and E.EVENTTYPEID = 1 " & --soccer
         "order by M.STARTTS,M.MARKETID ");
       Markets.Read_List(Select_Markets,Market_List);
