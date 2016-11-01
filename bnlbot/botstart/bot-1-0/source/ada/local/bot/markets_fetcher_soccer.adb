@@ -429,6 +429,10 @@ begin
         Log(Me, "Found" & Length (Result_List_Market_Catalogue)'Img & " markets");
 
         for i in 1 .. Length (Result_List_Market_Catalogue) loop
+           Params           := Create_Object;
+           Price_Data       := Empty_Array;
+           Price_Projection := Create_Object;
+           One_Market_Id    := Empty_Array;
           Log(Me, "process market" & i'img & " of" & Length (Result_List_Market_Catalogue)'Img & " markets");
           Market := Get(Result_List_Market_Catalogue, i);
           Has_Id := False;
