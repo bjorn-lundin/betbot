@@ -15,7 +15,20 @@
 #}
 
 
-PID_FILE_DIRECTORIES="soc ael dry jmb msm bnl"
+
+arg1=$1
+
+if [ "$arg1" == "" ] ; then
+  #no arg, use $BOT_USER
+  arg1=$BOT_USER
+fi
+
+if [ "$arg1" == "all" ] ; then
+  PID_FILE_DIRECTORIES="soc ael dry jmb msm bnl"
+else
+  PID_FILE_DIRECTORIES=$arg1
+fi  
+
 #PID_FILE_DIRECTORIES=$(ls $BOT_HOME/..)
 echo""
 echo "----------------  $(date)  --------------------------"

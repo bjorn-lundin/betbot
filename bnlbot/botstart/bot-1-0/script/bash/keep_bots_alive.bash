@@ -226,6 +226,7 @@ function Check_System_Bots_For_User () {
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
        Start_Bot $BOT_USER bet_checker bet_checker
        Start_Bot $BOT_USER poll_soccer poll_soccer
+       Start_Bot $BOT_USER live_feed football_live_feed
        #DATA_COLLECTORS_LIST="poll_market_s01 poll_market_s02 poll_market_s03 poll_market_s04 \
        #                      poll_market_s05 poll_market_s06 poll_market_s07 poll_market_s08 \
        #                      poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12 \
@@ -236,7 +237,7 @@ function Check_System_Bots_For_User () {
        #  Start_Bot $BOT_USER $collector poll_soccer
        #done
 
-       Start_Bot $BOT_USER menu_parser menu_parser
+      # Start_Bot $BOT_USER menu_parser menu_parser
 
        #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
        #for player in $PLAYERS_LIST2 ; do
