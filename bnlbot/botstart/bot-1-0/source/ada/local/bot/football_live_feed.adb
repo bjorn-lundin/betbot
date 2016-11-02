@@ -85,7 +85,7 @@ procedure Football_Live_Feed is
 
     Select_Event.Set("TEAMNAME",Teamname);
     Select_Event.Set_Timestamp("THISMORNING",Now);
-    if Countrycode = "EU" then 
+    if Countrycode = "EU" then
       Select_Event.Set("COUNTRYCODE1","AA");
       Select_Event.Set("COUNTRYCODE2","ZZ");
     else
@@ -201,6 +201,8 @@ procedure Football_Live_Feed is
         elsif Awk.Field(2) = "England" and then Awk.Field(4) = "Premier" and then Awk.Field(5) = "League" then
           if Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "2" then
             null;
+          elsif Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "International" then
+            null;
           else
             Cc :="GB";
             Highlight_Seen := False;
@@ -212,8 +214,12 @@ procedure Football_Live_Feed is
           Cc :="FR";
           Highlight_Seen := False;
         elsif Awk.Field(2) = "Germany" and then Awk.Field(4) = "Bundesliga" then
-          Cc :="DE";
-          Highlight_Seen := False;
+          if Awk.Number_Of_Fields(Session => Score) >= 5 and then Awk.Field(5) = "Women" then
+            null;
+          else
+            Cc :="DE";
+            Highlight_Seen := False;
+          end if;
         elsif Awk.Field(2) = "Italy" and then Awk.Field(4) = "Serie" and then Awk.Field(5) = "A" then
           Cc :="IT";
           Highlight_Seen := False;
