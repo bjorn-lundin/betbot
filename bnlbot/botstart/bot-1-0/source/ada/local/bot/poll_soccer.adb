@@ -49,10 +49,11 @@ procedure Poll_Soccer is
   Global_Allowed_To_Bet : Boolean := True;
   -------------------------------------------------------------
   procedure Back_The_Leader_Home(Market : Markets.Market_Type;
+                                 Min_Match_Minute : Integer_4;
                                  Leader_Max,
                                  Leader_Min,
                                  Max_Delta_Back_Lay,
-                                 Delay_Lay_Bet : Float_8) is
+                                 Delta_Lay_Bet : Float_8) is
 --  procedure Back_The_Leader_Home(Market : Markets.Market_Type) is
     Service          : constant String                              := "Back_The_Leader_Home";
     T                : Sql.Transaction_Type;
@@ -72,7 +73,8 @@ procedure Poll_Soccer is
          Trim(F8_Image(Leader_Max)) & "_" &
          Trim(F8_Image(Leader_Min)) & "_" &
          Trim(F8_Image(Max_Delta_Back_Lay)) & "_" &
-         Trim(F8_Image(Delay_Lay_Bet)),Betname);
+         Trim(F8_Image(Delta_Lay_Bet)) & "_" &
+         Trim(Min_Match_Minute'Img),Betname);
     T.Start;
     Select_Games_To_Back_Home.Prepare(
     "select " &
@@ -114,6 +116,8 @@ procedure Poll_Soccer is
     -- home team has the lead
     "and e.eventid = g.eventid " &
     "and g.homescore > g.awayscore " &    
+    -- and the games has passed minute
+    "and g.minute > :MINUTE " &    
     -- the_draw
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
@@ -156,6 +160,7 @@ procedure Poll_Soccer is
     Select_Games_To_Back_Home.Set("MAX_DELTA_BACK_LAY",Max_Delta_Back_Lay);
     Select_Games_To_Back_Home.Set("BETNAME",Betname);
     Select_Games_To_Back_Home.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back_Home.Set("MINUTE",Min_Match_Minute);
     Select_Games_To_Back_Home.Open_Cursor;
     Select_Games_To_Back_Home.Fetch(Eos);
     if not Eos then
@@ -208,10 +213,17 @@ procedure Poll_Soccer is
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
       --Backsize * Backprice = Laysize * Layprice
       --Laysize = Backsize * Backprice/Layprice
-        Price(Lay):= Price(Back) - Bet_Price_Type(Delay_Lay_Bet);
+        Price(Lay):= Price(Back) - Bet_Price_Type(Delta_Lay_Bet);
        -- Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
+       
+        if Delta_Lay_Bet < 0.0 then
+          -- place no lay bet at all
+          Log(Service & "Place_Bet", "Negative Delta_Lay_Bet - skip Laybet");
+          T.Commit;
+          return;
+        end if;
 
-        --check price is valid - put it back and forthDelay_Lay_Bet through tics
+        --check price is valid - put it back and forthDelta_Lay_Bet through tics
         declare
           Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Lay)));
         begin
@@ -261,10 +273,11 @@ procedure Poll_Soccer is
   -------------------------------------------------------------
 --  procedure Back_The_Leader_Away(Market : Markets.Market_Type) is
   procedure Back_The_Leader_Away(Market : Markets.Market_Type;
+                                 Min_Match_Minute : Integer_4;
                                  Leader_Max,
                                  Leader_Min,
                                  Max_Delta_Back_Lay,
-                                 Delay_Lay_Bet : Float_8) is
+                                 Delta_Lay_Bet : Float_8) is
     Service     : constant String := "Back_The_Leader_Away";
     T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
@@ -283,7 +296,8 @@ procedure Poll_Soccer is
          Trim(F8_Image(Leader_Max)) & "_" &
          Trim(F8_Image(Leader_Min)) & "_" &
          Trim(F8_Image(Max_Delta_Back_Lay)) & "_" &
-         Trim(F8_Image(Delay_Lay_Bet)),Betname);
+         Trim(F8_Image(Delta_Lay_Bet)) & "_" &
+         Trim(Min_Match_Minute'Img),Betname);
 
     T.Start;
     Select_Games_To_Back_Away.Prepare(
@@ -326,6 +340,8 @@ procedure Poll_Soccer is
     -- away team has the lead
     "and e.eventid = g.eventid " &
     "and g.homescore < g.awayscore " &        
+    -- and the games has passed minute
+    "and g.minute > :MINUTE " &    
     -- the_draw   
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
@@ -368,6 +384,7 @@ procedure Poll_Soccer is
     Select_Games_To_Back_Away.Set("MAX_DELTA_BACK_LAY",Max_Delta_Back_Lay);
     Select_Games_To_Back_Away.Set("BETNAME",Betname);
     Select_Games_To_Back_Away.Set("MARKETID",Market.Marketid);
+    Select_Games_To_Back_Away.Set("MINUTE",Min_Match_Minute);
     Select_Games_To_Back_Away.Open_Cursor;
     Select_Games_To_Back_Away.Fetch(Eos);
     if not Eos then
@@ -420,8 +437,16 @@ procedure Poll_Soccer is
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted back bet: " & Bet(Back).To_String);
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
-        Price(Lay):= Price(Back) - Bet_Price_Type(Delay_Lay_Bet);
+        Price(Lay):= Price(Back) - Bet_Price_Type(Delta_Lay_Bet);
         --Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
+
+        if Delta_Lay_Bet < 0.0 then
+          -- place no lay bet at all
+          Log(Service & "Place_Bet", "Negative Delta_Lay_Bet - skip Laybet");
+          T.Commit;
+          return;
+        end if;
+
 
         --check price is valid - put it back and forth through tics
         declare
@@ -795,17 +820,27 @@ procedure Poll_Soccer is
       Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
       -- Back_The_Leader_Home(Market);
       Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
+                           Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
+                           Min_Match_Minute => 0);
       Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
+                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
+                           Min_Match_Minute => 0);
+      Back_The_Leader_Home(Market, Leader_Max => 1.15, Leader_Min => 1.05,
+                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
+                           Min_Match_Minute => 85);
 
 
       Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
       -- Back_The_Leader_Away(Market);
       Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                           Max_Delta_Back_Lay => 0.02, Delay_Lay_Bet => 0.05);
+                           Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
+                           Min_Match_Minute => 0);
       Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                           Max_Delta_Back_Lay => 0.05, Delay_Lay_Bet => 0.20);
+                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
+                           Min_Match_Minute => 0);
+      Back_The_Leader_Away(Market, Leader_Max => 1.15, Leader_Min => 1.05,
+                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
+                           Min_Match_Minute => 85);
     else
       Log(Me & "Not ALLOWED to bet");
     end if;
