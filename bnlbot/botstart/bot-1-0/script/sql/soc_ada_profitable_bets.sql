@@ -1,4 +1,17 @@
-﻿select
+﻿select 
+  sum(count),
+  round(avg(avgprofit)::numeric, 2) as avgprofit,
+  sum(sumprofit)as sumprofit,
+  round(avg(avgpricem)::numeric, 2) as avgpricem,
+  round(avg(avgsizem)::numeric, 2) as avgsizem,
+  round(avg(interest_rate_pct)::numeric, 2) as interest_rate_pct,
+  min(mindate),
+  max(maxdate),
+  max(days) as days,
+  max(betsperday) as betsperday ,
+  sum(profitperday) profitperday,
+  betname from (
+select
   count('a'),
   round(avg(profit)::numeric, 2) as avgprofit,
   round(sum(profit)::numeric, 2) as sumprofit,
@@ -13,7 +26,7 @@
  -- round((sum(profit)*100/sum(sizematched))::numeric,2) as interest_rate_pct,
   round((case SIDE 
      when 'BACK' then sum(profit)*100/sum(sizematched) 
-     when 'LAY'  then sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
+     when 'LAY'  then 0.0 --sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
      else 0.0
   end)::numeric,2) as interest_rate_pct,
   min(betplaced)::date as mindate,
@@ -28,11 +41,13 @@ where STATUS in ('MATCHED','SETTLED')
   and betwon is not null
 group by
   betname,side
-having sum(profit) > -0
-and max(betplaced) > '2016-01-01 00:00:00' 
-and count('a') >= 10
+having max(betplaced) > '2016-01-01 00:00:00' 
+and count('a') >= 0
 order by
   sum(profit) desc,
   betname
-  ;
+) tmp
 
+group by betname
+order by sumprofit desc
+--having sum(profit) > -0
