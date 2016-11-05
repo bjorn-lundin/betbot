@@ -42,12 +42,30 @@ procedure Poll_Soccer is
   Cmd_Line        : Command_Line_Configuration;
   Now             : Calendar2.Time_Type;
   Ok              : Boolean := False;
+  Select_Matched_Bet,
   Select_Games_To_Lay_The_Draw,
   Select_Games_To_Back_Home,
   Select_Games_To_Back_Away,
   Select_Markets : Sql.Statement_Type;
   Global_Allowed_To_Bet : Boolean := True;
   -------------------------------------------------------------
+  function Matched_Bet_Exists(Betname : Betname_Type; Marketid : Marketid_Type) return Boolean is
+    Eos : Boolean := False;
+  begin
+     Select_Matched_Bet.Prepare(
+           "select 'x' from abets " &
+           "where abets.marketid = :MARKETID " &
+           "and abets.status = 'EXECUTION_COMPLETE' " & --  matched
+           "and abets.betname = :BETNAME "); -- 'BACK_LEADER_AWAY_SOCCER') " &
+     Select_Matched_Bet.Set("MARKETID", Marketid);
+     Select_Matched_Bet.Set("BETNAME", Betname);
+     Select_Matched_Bet.Open_Cursor;
+     Select_Matched_Bet.Fetch(Eos);
+     Select_Matched_Bet.Close_Cursor;
+     return not Eos;
+  end Matched_Bet_Exists;
+  
+  
   procedure Back_The_Leader_Home(Market : Markets.Market_Type;
                                  Min_Match_Minute : Integer_4;
                                  Leader_Max,
@@ -170,6 +188,15 @@ procedure Poll_Soccer is
       Select_Games_To_Back_Home.Close_Cursor;
       Price(Back) := Bet_Price_Type(Price_8);
 
+      if Delta_Lay_Bet < 0.0 then
+        if Matched_Bet_Exists(Betname => Betname, Marketid => Market.Marketid) then
+          -- only one bet on this market
+          Log(Service & "Place_Bet", "Already a matched bet on this market - skipping " & Market.Marketid);
+          T.Commit;
+          return;
+        end if;
+      end if;
+      
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
                      Market_Id        => Market.Marketid,
@@ -393,6 +420,15 @@ procedure Poll_Soccer is
       Select_Games_To_Back_Away.Get("awayback",Price_8);
       Select_Games_To_Back_Away.Close_Cursor;
       Price(Back) := Bet_Price_Type(Price_8);
+
+      if Delta_Lay_Bet < 0.0 then
+        if Matched_Bet_Exists(Betname => Betname, Marketid => Market.Marketid) then
+          -- only one bet on this market
+          Log(Service & "Place_Bet", "Already a matched bet on this market - skipping " & Market.Marketid);
+          T.Commit;
+          return;
+        end if;
+      end if;
 
       Log(Service & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
