@@ -201,7 +201,7 @@ procedure Football_Live_Feed is
         elsif Awk.Field(2) = "England" and then Awk.Field(4) = "Premier" and then Awk.Field(5) = "League" then
           if Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "2" then
             null;
-          elsif Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) = "International" then
+          elsif Awk.Number_Of_Fields(Session => Score) >= 6 and then Awk.Field(6) /= "" then
             null;
           else
             Cc :="GB";
