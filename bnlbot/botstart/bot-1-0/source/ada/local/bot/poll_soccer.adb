@@ -855,25 +855,24 @@ procedure Poll_Soccer is
       Dummy := All_Bets_In_Market_Are_Matched(Market); --Check and Update Bet if matched
       Log(Me & "Back_The_Leader_Home start Market '" & Market.Marketid & "'");
       -- Back_The_Leader_Home(Market);
-      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                           Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
-                           Min_Match_Minute => 0);
-      Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
-                           Min_Match_Minute => 0);
+--        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.16,
+--                             Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
+--                             Min_Match_Minute => 0);
+--        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
+--                             Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
+--                             Min_Match_Minute => 0);
       Back_The_Leader_Home(Market, Leader_Max => 1.15, Leader_Min => 1.05,
                            Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
                            Min_Match_Minute => 85);
 
-
       Log(Me & "Back_The_Leader_Away start Market '" & Market.Marketid & "'");
       -- Back_The_Leader_Away(Market);
-      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16,
-                           Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
-                           Min_Match_Minute => 0);
-      Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
-                           Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
-                           Min_Match_Minute => 0);
+--        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.16,
+--                             Max_Delta_Back_Lay => 0.02, Delta_Lay_Bet => 0.05,
+--                             Min_Match_Minute => 0);
+--        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
+--                             Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
+--                             Min_Match_Minute => 0);
       Back_The_Leader_Away(Market, Leader_Max => 1.15, Leader_Min => 1.05,
                            Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
                            Min_Match_Minute => 85);
