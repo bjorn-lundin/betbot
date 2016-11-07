@@ -163,7 +163,7 @@ procedure Poll_Soccer is
     "and pmo1.selectionid = rmo1.selectionid " &
     "and rmo1.runnernamenum = '1' " &   --home
     "and pmo1.backprice <= :LEADER_MAX " & --1.50 " &  -- home favs
-    "and pmo1.backprice >= :LEADER_MIN " & --1.16 " &  -- so we can subtract 0.05 and stil be on legal odds
+    "and pmo1.backprice >= :LEADER_MIN " & --1.16 " &  -- so we can subtract 0.05 and still be on legal odds
     "and abs(pmo1.layprice - pmo1.backprice) <= :MAX_DELTA_BACK_LAY " & -- 0.02 " & -- say 1.10/1.12
     ---- no previous UNMATCHED bets on MATCH_ODDS
     "and not exists ( " &
@@ -861,7 +861,7 @@ procedure Poll_Soccer is
 --        Back_The_Leader_Home(Market, Leader_Max => 1.5, Leader_Min => 1.4,
 --                             Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
 --                             Min_Match_Minute => 0);
-      Back_The_Leader_Home(Market, Leader_Max => 1.15, Leader_Min => 1.05,
+      Back_The_Leader_Home(Market, Leader_Max => 1.30, Leader_Min => 1.05,
                            Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
                            Min_Match_Minute => 85);
 
@@ -873,7 +873,7 @@ procedure Poll_Soccer is
 --        Back_The_Leader_Away(Market, Leader_Max => 1.5, Leader_Min => 1.4,
 --                             Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => 0.20,
 --                             Min_Match_Minute => 0);
-      Back_The_Leader_Away(Market, Leader_Max => 1.15, Leader_Min => 1.05,
+      Back_The_Leader_Away(Market, Leader_Max => 1.30, Leader_Min => 1.05,
                            Max_Delta_Back_Lay => 0.05, Delta_Lay_Bet => -1.0, -- no laybet
                            Min_Match_Minute => 85);
     else
