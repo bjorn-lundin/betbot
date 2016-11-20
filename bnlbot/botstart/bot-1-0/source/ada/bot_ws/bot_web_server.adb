@@ -128,6 +128,10 @@ procedure Bot_Web_Server is
       Response := Aws.Response.Build (Application_JSON,
                                       Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context));
+    elsif Context="todays_total" then
+      Response := Aws.Response.Build (Application_JSON,
+                                      Bot_Ws_Services.Todays_Total(Username => Username,
+                                                                  Context  => Context));
     else
       Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
     end if;
@@ -334,6 +338,3 @@ exception
     AWS.Server.Log.Stop      (Web_Server => WS);
     AWS.Server.Log.Stop_Error(Web_Server => WS);
 end Bot_Web_Server;
-
-
-
