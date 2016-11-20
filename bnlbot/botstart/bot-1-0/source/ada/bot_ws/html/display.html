@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+    <head>
+        <title>Display Betbot</title>
+        <script
+			  src="https://code.jquery.com/jquery-3.1.1.js"
+			  integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA="
+			  crossorigin="anonymous"></script>        
+        <script type="text/javascript" src="js/display.js"></script>
+    </head>
+    <body>
+        <form id='loginform' data-ajax='false'>
+          <fieldset data-role='controlgroup'>
+            <legend>Välj användare</legend>
+              <label for='bnl'>Björn</label>
+              <input type='radio' name='username' id='bnl' value='bnl' checked>
+              <label for='jmb'>Joakim</label>
+              <input type='radio' name='username' id='jmb' value='jmb'>
+              <label for='msm'>Mats</label>
+              <input type='radio' name='username' id='msm' value='msm'>
+          </fieldset>
+          <input type='button' data-theme='b' name='submit' id='submit' value='Logga in'>
+        </form>
+        
+        
+        <div id='todays_total'>
+          <p>From server</p>
+        </div>
+        
+        
+    </body>
+</html>
