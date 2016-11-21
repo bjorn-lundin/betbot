@@ -17,5 +17,7 @@ package Bot_Ws_Services is
   function Todays_Total   (Username  : in String;
                            Context   : in String) return String;
 
+  function Weeks          (Username  : in String;
+                           Context   : in String) return String ;
 
 end Bot_Ws_Services;
