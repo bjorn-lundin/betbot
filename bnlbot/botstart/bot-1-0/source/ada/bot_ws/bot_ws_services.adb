@@ -357,6 +357,8 @@ package body Bot_Ws_Services is
       end case ;
     end;
 
+    Log(Object & Service, "Start '" & Start.To_String & "' Stop" & Stop.To_String);
+
     T.Start;
     Prepare_Bets;
     Select_Sum_Bets_Named.Set("START", Start);
@@ -387,11 +389,12 @@ package body Bot_Ws_Services is
     Weeks           : JSON_Array := Empty_Array;
     use Calendar2;
     Betname : Betname_Type := (others => ' ');
+    subtype Num_Weeks_Type is Integer_4 range 0 .. 6;
   begin
 
     Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
 
-    for W in 0 .. 6 loop
+    for W in Num_Weeks_Type'range loop
       declare
         Result : Json_Value := Create_Object;
         Week   : Json_Value := Create_Object;
@@ -399,13 +402,15 @@ package body Bot_Ws_Services is
         Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
         Result := Weekly_Total(Username  => Username,
                                Betname   => Betname,
-                               Weeks_Ago => Integer_4(W));
+                               Weeks_Ago => W);
 
         Week.Set_Field (Field_Name => "week", Field => Result);
        -- Append(Weeks,Week);
         Append(Weeks,Result);
       end;
+    end loop;
 
+    for W in Num_Weeks_Type'range loop
       declare
         Result : Json_Value := Create_Object;
         Week   : Json_Value := Create_Object;
@@ -413,7 +418,7 @@ package body Bot_Ws_Services is
         Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
         Result := Weekly_Total(Username  => Username,
                                Betname   => Betname,
-                               Weeks_Ago => Integer_4(W));
+                               Weeks_Ago => W);
 
         Week.Set_Field (Field_Name => "week", Field => Result);
         --Append(Weeks,Week);
