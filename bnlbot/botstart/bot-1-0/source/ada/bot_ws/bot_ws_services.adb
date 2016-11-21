@@ -336,24 +336,26 @@ package body Bot_Ws_Services is
     begin
       case Dow is
         when Monday =>
-          Stop := Stop  + (6+Weeks_Ago*7,0,0,0,0);
+          Start:= Start - (0+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (6+Weeks_Ago*7,0,0,0,0);
         when Tuesday =>
           Start:= Start - (1+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (5+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (5+Weeks_Ago*7,0,0,0,0);
         when Wednesday =>
           Start:= Start - (2+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (4+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (4+Weeks_Ago*7,0,0,0,0);
         when Thursday =>
           Start:= Start - (3+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (3+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (3+Weeks_Ago*7,0,0,0,0);
         when Friday =>
           Start:= Start - (4+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (2+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (2+Weeks_Ago*7,0,0,0,0);
         when Saturday =>
           Start:= Start - (5+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (1+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (1+Weeks_Ago*7,0,0,0,0);
         when Sunday =>
           Start:= Start - (6+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  - (0+Weeks_Ago*7,0,0,0,0);
       end case ;
     end;
 
