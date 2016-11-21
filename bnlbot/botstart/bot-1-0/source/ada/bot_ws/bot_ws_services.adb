@@ -385,8 +385,6 @@ package body Bot_Ws_Services is
     Service         : constant String := "Weeks";
     JSON_Reply      : JSON_Value := Create_Object;
     Weeks           : JSON_Array := Empty_Array;
-    Week            : JSON_Value := Create_Object;
-    Result          : JSON_Value := Create_Object;
     use Calendar2;
     Betname : Betname_Type := (others => ' ');
   begin
@@ -394,21 +392,31 @@ package body Bot_Ws_Services is
     Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
 
     for W in 0 .. 6 loop
-      Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
-      Result := Weekly_Total(Username  => Username,
-                             Betname   => Betname,
-                             Weeks_Ago => Integer_4(W));
+      declare
+        Result : Json_Value := Create_Object;
+        Week   : Json_Value := Create_Object;
+      begin
+        Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
+        Result := Weekly_Total(Username  => Username,
+                               Betname   => Betname,
+                               Weeks_Ago => Integer_4(W));
 
-      Week.Set_Field (Field_Name => "week", Field => Result);
-      Append(Weeks,Week);
+        Week.Set_Field (Field_Name => "week", Field => Result);
+        Append(Weeks,Week);
+      end;
 
-      Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
-      Result := Weekly_Total(Username  => Username,
-                             Betname   => Betname,
-                             Weeks_Ago => Integer_4(W));
+      declare
+        Result : Json_Value := Create_Object;
+        Week   : Json_Value := Create_Object;
+      begin
+        Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
+        Result := Weekly_Total(Username  => Username,
+                               Betname   => Betname,
+                               Weeks_Ago => Integer_4(W));
 
-      Week.Set_Field (Field_Name => "week", Field => Result);
-      Append(Weeks,Week);
+        Week.Set_Field (Field_Name => "week", Field => Result);
+        Append(Weeks,Week);
+      end;
     end loop;
 
     JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
