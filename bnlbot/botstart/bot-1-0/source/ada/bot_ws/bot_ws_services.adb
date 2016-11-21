@@ -326,10 +326,6 @@ package body Bot_Ws_Services is
     Start.Second      := 0;
     Start.Millisecond := 0;
 
-    Stop.Hour        := 23;
-    Stop.Minute      := 59;
-    Stop.Second      := 59;
-    Stop.Millisecond := 0;
 
     declare
       Dow : Week_Day_Type := Week_Day_Of (Start) ;
@@ -337,26 +333,24 @@ package body Bot_Ws_Services is
       case Dow is
         when Monday =>
           Start:= Start - (0+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (6+Weeks_Ago*7,0,0,0,0);
         when Tuesday =>
           Start:= Start - (1+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (5+Weeks_Ago*7,0,0,0,0);
         when Wednesday =>
           Start:= Start - (2+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (4+Weeks_Ago*7,0,0,0,0);
         when Thursday =>
           Start:= Start - (3+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (3+Weeks_Ago*7,0,0,0,0);
         when Friday =>
           Start:= Start - (4+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (2+Weeks_Ago*7,0,0,0,0);
         when Saturday =>
           Start:= Start - (5+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (1+Weeks_Ago*7,0,0,0,0);
         when Sunday =>
           Start:= Start - (6+Weeks_Ago*7,0,0,0,0);
-          Stop := Stop  + (0+Weeks_Ago*7,0,0,0,0);
       end case ;
+      Stop := Start  + (6,0,0,0,0);
+      Stop.Hour        := 23;
+      Stop.Minute      := 59;
+      Stop.Second      := 59;
+      Stop.Millisecond := 0;
     end;
 
     Log(Object & Service, "Start '" & Start.To_String & "' Stop" & Stop.To_String);
