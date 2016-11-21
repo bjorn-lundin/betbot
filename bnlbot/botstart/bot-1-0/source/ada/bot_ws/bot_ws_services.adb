@@ -370,7 +370,9 @@ package body Bot_Ws_Services is
       Select_Sum_Bets_Named.Get(1,Total_Profit);
     end if;
     Select_Sum_Bets_Named.Close_Cursor;
-    JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+    Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+    Json_Reply.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
+    Json_Reply.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(Weeks_Ago'Img));
 
     T.Commit;
     Log(Object & Service, "Return " & JSON_Reply.Write);
@@ -395,18 +397,16 @@ package body Bot_Ws_Services is
       Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
       Result := Weekly_Total(Username  => Username,
                              Betname   => Betname,
-                             Weeks_Ago => Integer_4(W)) ;
+                             Weeks_Ago => Integer_4(W));
 
-      Week.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(w'Img));
       Week.Set_Field (Field_Name => "week", Field => Result);
       Append(Weeks,Week);
 
       Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
       Result := Weekly_Total(Username  => Username,
                              Betname   => Betname,
-                             Weeks_Ago => Integer_4(W)) ;
+                             Weeks_Ago => Integer_4(W));
 
-      Week.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(w'Img));
       Week.Set_Field (Field_Name => "week", Field => Result);
       Append(Weeks,Week);
     end loop;
