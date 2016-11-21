@@ -402,7 +402,8 @@ package body Bot_Ws_Services is
                                Weeks_Ago => Integer_4(W));
 
         Week.Set_Field (Field_Name => "week", Field => Result);
-        Append(Weeks,Week);
+       -- Append(Weeks,Week);
+        Append(Weeks,Result);
       end;
 
       declare
@@ -415,7 +416,8 @@ package body Bot_Ws_Services is
                                Weeks_Ago => Integer_4(W));
 
         Week.Set_Field (Field_Name => "week", Field => Result);
-        Append(Weeks,Week);
+        --Append(Weeks,Week);
+        Append(Weeks,Result);
       end;
     end loop;
 
