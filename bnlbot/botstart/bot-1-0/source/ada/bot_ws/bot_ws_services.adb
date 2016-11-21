@@ -1,9 +1,11 @@
 with Types; use Types;
+with Bot_Types; use Bot_Types;
 --with Ada.Exceptions;
 with Sql;
 with Calendar2;
+with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
---with Ada.Strings.Fixed;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Characters.Handling;
 with Utils;
 with Logging; use Logging;
@@ -18,6 +20,7 @@ package body Bot_Ws_Services is
 
   Select_Bets : Sql.Statement_Type;
   Select_Sum_Bets : Sql.Statement_Type;
+  Select_Sum_Bets_Named : Sql.Statement_Type;
 
   ------------------------------------------------------------------
 
@@ -101,6 +104,14 @@ package body Bot_Ws_Services is
       "from ABETS " &
       "where STARTTS >= :START " &
       "and STARTTS <= :STOP " &
+      "and STATUS = 'SETTLED'"
+    );
+    Select_Sum_Bets_Named.Prepare(
+      "select sum(PROFIT) " &
+      "from ABETS " &
+      "where STARTTS >= :START " &
+      "and STARTTS <= :STOP " &
+      "and BETNAME = :BETNAME " &
       "and STATUS = 'SETTLED'"
     );
   end Prepare_Bets;
@@ -295,6 +306,118 @@ package body Bot_Ws_Services is
 
   end Todays_Total;
 ----------------------------------------------------------------
+  function Weekly_Total(Username  : in String;
+                      Betname   : in Betname_Type;
+                      Weeks_Ago : in Integer_4) return JSON_Value is
+    Service         : constant String := "Weekly_Total";
+    T               : Sql.Transaction_Type;
+    End_Of_Set      : Boolean := False;
+    Start           : Calendar2.Time_Type := Calendar2.Clock;
+    Stop            : Calendar2.Time_Type := Start;
+    JSON_Reply      : JSON_Value := Create_Object;
+    Total_Profit    : Float_8    := 0.0;
+    use Calendar2;
+  begin
 
+    Log(Object & Service, "User '" & Username & "' Weeks_Ago" & Weeks_Ago'Img);
+
+    Start.Hour        := 0;
+    Start.Minute      := 0;
+    Start.Second      := 0;
+    Start.Millisecond := 0;
+
+    Stop.Hour        := 23;
+    Stop.Minute      := 59;
+    Stop.Second      := 59;
+    Stop.Millisecond := 0;
+
+    declare
+      Dow : Week_Day_Type := Week_Day_Of (Start) ;
+    begin
+      case Dow is
+        when Monday =>
+          Stop := Stop  + (6+Weeks_Ago*7,0,0,0,0);
+        when Tuesday =>
+          Start:= Start - (1+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  + (5+Weeks_Ago*7,0,0,0,0);
+        when Wednesday =>
+          Start:= Start - (2+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  + (4+Weeks_Ago*7,0,0,0,0);
+        when Thursday =>
+          Start:= Start - (3+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  + (3+Weeks_Ago*7,0,0,0,0);
+        when Friday =>
+          Start:= Start - (4+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  + (2+Weeks_Ago*7,0,0,0,0);
+        when Saturday =>
+          Start:= Start - (5+Weeks_Ago*7,0,0,0,0);
+          Stop := Stop  + (1+Weeks_Ago*7,0,0,0,0);
+        when Sunday =>
+          Start:= Start - (6+Weeks_Ago*7,0,0,0,0);
+      end case ;
+    end;
+
+    T.Start;
+    Prepare_Bets;
+    Select_Sum_Bets_Named.Set("START", Start);
+    Select_Sum_Bets_Named.Set("STOP", Stop);
+    Select_Sum_Bets_Named.Set("BETNAME", Betname);
+
+
+    Select_Sum_Bets_Named.Open_Cursor;
+    Select_Sum_Bets_Named.Fetch(End_Of_Set);
+    if not End_Of_Set then
+      Select_Sum_Bets_Named.Get(1,Total_Profit);
+    end if;
+    Select_Sum_Bets_Named.Close_Cursor;
+    JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+
+    T.Commit;
+    Log(Object & Service, "Return " & JSON_Reply.Write);
+    return Json_Reply;
+
+  end Weekly_Total;
+----------------------------------------------------------------
+  function Weeks(Username  : in String;
+                 Context   : in String) return String is
+    Service         : constant String := "Weeks";
+    JSON_Reply      : JSON_Value := Create_Object;
+    Weeks           : JSON_Array := Empty_Array;
+    Week            : JSON_Value := Create_Object;
+    Result          : JSON_Value := Create_Object;
+    use Calendar2;
+    Betname : Betname_Type := (others => ' ');
+  begin
+
+    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
+
+    for W in 0 .. 6 loop
+      Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
+      Result := Weekly_Total(Username  => Username,
+                             Betname   => Betname,
+                             Weeks_Ago => Integer_4(W)) ;
+
+      Week.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(w'Img));
+      Week.Set_Field (Field_Name => "week", Field => Result);
+      Append(Weeks,Week);
+
+      Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
+      Result := Weekly_Total(Username  => Username,
+                             Betname   => Betname,
+                             Weeks_Ago => Integer_4(W)) ;
+
+      Week.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(w'Img));
+      Week.Set_Field (Field_Name => "week", Field => Result);
+      Append(Weeks,Week);
+    end loop;
+
+    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Weeks);
+
+    Log(Object & Service, "returning:" & Json_Reply.Write);
+    return Json_Reply.Write;
+
+  end Weeks;
+  ---------------------------------------------------
 
 end Bot_Ws_Services;
