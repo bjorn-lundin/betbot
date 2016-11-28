@@ -26,6 +26,7 @@ $.makeTable = function (mydata) {
         TableRow += "</tr>";
         $(table).append( TableRow);
     });
+    $(table).append('</table>');
     return ($(table));
 };
 
