@@ -353,7 +353,7 @@ package body Bot_Ws_Services is
       Stop.Millisecond := 0;
     end;
 
-    Log(Object & Service, "Start '" & Start.To_String & "' Stop" & Stop.To_String);
+    Log(Object & Service, "Start:" & Start.To_String & " Stop:" & Stop.To_String);
 
     T.Start;
     Prepare_Bets;
