@@ -2,29 +2,66 @@
 <html lang="en">
     <head>
         <title>Display Betbot</title>
-        <script
-			  src="https://code.jquery.com/jquery-3.1.1.js"
-			  integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA="
-			  crossorigin="anonymous"></script>        
+        <script type="text/javascript" src="js/jquery-3.1.1.js"></script>        
         <script type="text/javascript" src="js/display.js"></script>
     </head>
+    
     <body>
         <form id='loginform' data-ajax='false'>
           <fieldset data-role='controlgroup'>
-            <legend>Välj användare</legend>
               <label for='bnl'>Björn</label>
-              <input type='radio' name='username' id='bnl' value='bnl' checked>
+              <input type='radio' name='username' id='bnl' value='bnl' checked >
               <label for='jmb'>Joakim</label>
               <input type='radio' name='username' id='jmb' value='jmb'>
               <label for='msm'>Mats</label>
               <input type='radio' name='username' id='msm' value='msm'>
+              <label for='soc'>Soccer</label>
+              <input type='radio' name='username' id='soc' value='soc' >
           </fieldset>
-          <input type='button' data-theme='b' name='submit' id='submit' value='Logga in'>
         </form>
         
         
         <div id='todays_total'>
           <p>From server</p>
+        </div>      
+        <progress id='pb' value="22" max="100"></progress> 
+        
+        <div id='weekly_totals'>
+          <table>
+          <caption>Profit weeks ago</caption>
+          <tr><th>Name</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>S</th</tr>
+          <tr><td id='r1c1'>Name</td>
+              <td id='r1c2'>0</td>
+              <td id='r1c3'>1</td>
+              <td id='r1c4'>2</td>
+              <td id='r1c5'>3</td>
+              <td id='r1c6'>4</td>
+              <td id='r1c7'>5</td>
+              <td id='r1c8'>6</td>
+              <td id='r1cS'>S</td>
+          </tr>
+          <tr><td id='r2c1'>Name</td>
+              <td id='r2c2'>0</td>
+              <td id='r2c3'>1</td>
+              <td id='r2c4'>2</td>
+              <td id='r2c5'>3</td>
+              <td id='r2c6'>4</td>
+              <td id='r2c7'>5</td>
+              <td id='r2c8'>6</td>
+              <td id='r2cS'>S</td>
+          </tr>
+          <tr><td id='rSc1'>Name</td>
+              <td id='rSc2'>0</td>
+              <td id='rSc3'>1</td>
+              <td id='rSc4'>2</td>
+              <td id='rSc5'>3</td>
+              <td id='rSc6'>4</td>
+              <td id='rSc7'>5</td>
+              <td id='rSc8'>6</td>
+              <td id='rScS'>S</td>
+          </tr>
+          </table>
+        
         </div>
         
         
