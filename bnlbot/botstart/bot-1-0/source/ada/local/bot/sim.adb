@@ -338,8 +338,8 @@ package body Sim is
   -------------------------------------------------------------------------
 
 
-  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
-                                      Selectionid : in     Integer_4; 
+  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type;
+                                      Selectionid : in     Integer_4;
                                       List        :    out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Price_History_Data : Price_Histories.Price_History_Type;
@@ -361,7 +361,7 @@ package body Sim is
 
       Select_Sampleids_In_One_Market_2.Set("MARKETID", Marketid);
       Select_Sampleids_In_One_Market_2.Set("SELECTIONID", Selectionid);
-      
+
       Select_Sampleids_In_One_Market_2.Open_Cursor;
       loop
         Select_Sampleids_In_One_Market_2.Fetch(Eos);
@@ -542,8 +542,8 @@ package body Sim is
     Marketid : Marketid_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Market_With_Data_Pack.List);
     Market : Markets.Market_Type;
-    
-    
+
+
   begin
     List.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -654,9 +654,9 @@ package body Sim is
       Serializer.Read_From_Disk(Winners_Map, Filename);
     end if;
   end Fill_Winners_Map;
-  
+
   -------------------------------------------------------------
-  
+
   procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
@@ -796,7 +796,9 @@ package body Sim is
 
   package body Disk_Serializer is
     --------------------------------------------------------
-    Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
+    --Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
+    Path : String := "/mnt/samsung1gb/data/streamed_objects/";
+
     function File_Exists(Filename : String) return Boolean is
      -- Service : constant String := "File_Exists";
       File_On_Disk : String := Path & Filename;
@@ -806,7 +808,7 @@ package body Sim is
     begin
       if not Dir_Exists then
         Ad.Create_Directory(Dir);
-      end if;    
+      end if;
     --  Log(Object & Service, "Exists: " & Exists'Img);
       return File_Exists;
     end File_Exists;
