@@ -18,7 +18,7 @@ begin
     Sql.Connect
       (Host     => "localhost",
        Port     => 5432,
-       Db_Name  => "bnl",
+       Db_Name  => "dry",
        Login    => "bnl",
        Password => "bnl");
     Log ("Connected to db");
