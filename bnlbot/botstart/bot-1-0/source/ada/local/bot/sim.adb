@@ -534,13 +534,13 @@ package body Sim is
 -- start lay_during_race2
   -------------------------------------------------------------------------
   procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
-                             List  :    out Market_With_Data_Pack.List) is
+                             List  :    out Markets_Pack.List) is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
     Eos,Eos2 : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Marketid_Type := (others => ' ');
-    package Serializer is new Disk_Serializer(Market_With_Data_Pack.List);
+    package Serializer is new Disk_Serializer(Markets_Pack.List);
     Market : Markets.Market_Type;
 
 
@@ -576,7 +576,7 @@ package body Sim is
   end Read_All_Markets;
   -------------------------------------------------------------------------
 
-  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Market_With_Data_Pack.List;
+  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Markets_Pack.List;
                                       Date                       : in     Calendar2.Time_Type;
                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
@@ -657,7 +657,7 @@ package body Sim is
 
   -------------------------------------------------------------
 
-  procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
+  procedure Fill_Winners_Map(Market_With_Data_List : in     Markets_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
@@ -698,19 +698,19 @@ package body Sim is
   -----------------------------------------
 
   procedure Fill_Marketid_Runners_Pricets_Map(
-                     Market_With_Data_List                    : in     Market_With_Data_Pack.List;
+                     Market_With_Data_List                    : in     Markets_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
                      Date                                     : in     Calendar2.Time_Type;
-                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) is
+                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) is
     Eos       : Boolean := False;
     Apriceshistory_List    : Price_Histories.Lists.List;
     Price_History_Data    : Price_Histories.Price_History_Type;
     T : Sql.Transaction_Type;
     Cnt             : Integer := 0;
-    Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map;
+    Timestamp_To_Apriceshistory_Map : Timestamp_To_Prices_History_Maps.Map;
     Filename : String := Date.String_Date_ISO & "/marketid_timestamp_to_apriceshistory_map.dat";
 
-    package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Apriceshistory_Maps.Map);
+    package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Prices_History_Maps.Map);
   begin
     Marketid_Timestamp_To_Apriceshistory_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -865,8 +865,8 @@ package body Sim is
     Fill_Marketid_Runners_Pricets_Map(Market_With_Data_List,
                                           Marketid_Pricets_Map,
                                           Date,
-                                          Marketid_Timestamp_To_Apriceshistory_Map) ;
-    Log("Found:" & Marketid_Timestamp_To_Apriceshistory_Map.Length'Img );
+                                          Marketid_Timestamp_To_Prices_History_Map) ;
+    Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
 
     Log("fill map winners ");
     Fill_Winners_Map(Market_With_Data_List, Date, Winners_Map );
@@ -886,8 +886,8 @@ package body Sim is
     --Log("Get_Place_Price '" & Place_Marketid & "'");
     if Place_Marketid /= Marketid_Type'(others => ' ') then
       declare
-        Timestamp_To_Apriceshistory_Map : Timestamp_To_Apriceshistory_Maps.Map :=
-                      Marketid_Timestamp_To_Apriceshistory_Map(Place_Marketid);
+        Timestamp_To_Apriceshistory_Map : Timestamp_To_Prices_History_Maps.Map :=
+                      Marketid_Timestamp_To_Prices_History_Map(Place_Marketid);
       begin
         for Timestamp of Marketid_Pricets_Map(Place_Marketid) loop
           declare

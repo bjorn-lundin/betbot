@@ -96,8 +96,8 @@ procedure Back_During_Race_And_Lay_Later is
             b.Laybet.Status(1) := 'M';
             Log("updated laybet in betlist");
             exit;
-          end if;  
-        end loop;           
+          end if;
+        end loop;
         exit;
       end if;
     end loop;
@@ -124,8 +124,8 @@ procedure Back_During_Race_And_Lay_Later is
             b.Backbet.Status(1) := 'M';
             Log("updated backbet in betlist");
             exit;
-          end if;  
-        end loop;           
+          end if;
+        end loop;
         exit;
       end if;
     end loop;
@@ -158,7 +158,7 @@ procedure Back_During_Race_And_Lay_Later is
       Bet.Backbet.Price       := BR(1).Backprice;
       Bet.Backbet.Betplaced   := BR(1).Pricets;
       Bet.Backbet.Status(1) := 'U';
-      Move("BACK_" & 
+      Move("BACK_" &
             F8_Image(Min_Backprice1) & "_" &
             F8_Image(Max_Backprice1) & "_" &
             F8_Image(Min_Backprice2) & "_" &
@@ -174,15 +174,15 @@ procedure Back_During_Race_And_Lay_Later is
       Bet.Laybet.Price       := Lay_Atprice;
       Bet.Laybet.Betplaced   := BR(1).Pricets;
       Bet.Laybet.Status(1) := 'U';
-      Move("LAY_" & 
+      Move("LAY_" &
             F8_Image(Min_Backprice1) & "_" &
             F8_Image(Max_Backprice1) & "_" &
             F8_Image(Min_Backprice2) & "_" &
             F8_Image(Max_Backprice2) & "_" &
             F8_Image(Lay_Atprice) ,
             Bet.Laybet.Betname);
-      
-      
+
+
       Bet_List.Append(Bet);
       Bet_Placed := True;
     end if;
@@ -234,8 +234,8 @@ begin
           Cnt := Cnt + 1;
           -- list of timestamps in this market
           declare
-            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Apriceshistory_Maps.Map :=
-                          Sim.Marketid_Timestamp_To_Apriceshistory_Map(Market.Marketid);
+            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                          Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
             Bet_Placed : Boolean := False;
             First : Boolean := True;
           begin

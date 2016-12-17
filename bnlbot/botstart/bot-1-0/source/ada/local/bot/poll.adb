@@ -366,6 +366,55 @@ procedure Poll is
   end Try_To_Make_Lay_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
+  procedure Do_Place_Lay_Bets_At_Start(
+      Bettype         : Config.Bet_Type;
+      BR              : Best_Runners_Array_Type;
+      Marketid        : Marketid_Type;
+      Match_Directly : Boolean := False) is
+
+    Max_Back_Price       : Float_8;
+    Max_Lay_Price        : Max_Lay_Price_Type;
+    First_Bet           : Integer := 0;
+    Place_Num           : Integer := 0;
+    Num_Bets            : Integer := 0;
+    Image : String := Bettype'Img;
+  begin          --1         2         3
+      --  123456789012345678901234567890123456789
+      --  Lay_2_2_4_11_17_Win
+
+
+    Num_Bets  := Integer'Value(Image(5..5));
+    First_Bet := Integer'Value(Image(7..7));
+    Place_Num := Integer'Value(Image(9..9));
+    Max_Back_Price := Float_8'Value(Image(11..12));
+    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(14..15));
+
+
+
+    if Place_Num <= Br'Last and then
+      BR(1).Backprice >= Float_8(1.01) and then
+      BR(Place_Num).Backprice < Float_8(10_000.0)  and then  -- so it exists
+      Br (Place_Num).Backprice <= Max_Back_Price and then
+      Br (Place_Num).Backprice <= Max_Lay_Price then
+      for I in Br'Range loop
+        if I >= First_Bet and then
+          Br (I).Backprice <= Max_Lay_Price and then
+          Br (I).Backprice <= Max_Back_Price and then
+          I < First_Bet + Num_Bets then
+
+          Send_Lay_Bet(Selectionid     => Br(i).Selectionid,
+                       Main_Bet        => Bettype,
+                       Marketid        => Marketid,
+                       Max_Price       => Max_Lay_Price,
+                       Match_Directly  => Match_Directly);
+          
+        end if;
+      end loop;
+    end if;
+  end Do_Place_Lay_Bets_At_Start;
+  -----------------------------------------------
+
+
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Markets.Market_Type;
@@ -382,6 +431,7 @@ procedure Poll is
     Price             : Prices.Price_Type;
     Has_Been_In_Play,
     In_Play           : Boolean := False;
+    First_Time        : Boolean := True;
     Best_Runners      : Best_Runners_Array_Type := (others => Prices.Empty_Data);
 
     Worst_Runner      : Prices.Price_Type := Prices.Empty_Data;
@@ -568,6 +618,18 @@ procedure Poll is
           case i is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
+
+            when Lay_2_2_4_11_17_Win =>
+              if First_Time then
+                Do_Place_Lay_Bets_At_Start(
+                        Bettype         => i,
+                        BR              => Best_Runners,
+                        Marketid        => Markets_Array(Win).Marketid,
+                        Match_Directly  => True);
+
+                First_Time := False;
+              end if;
+
 
             when Lay_2_90_20_WIN_8_00 ..
                  Lay_1_80_20_WIN_4_15   =>
