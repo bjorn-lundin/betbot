@@ -62,11 +62,11 @@ package Sim is
 
   procedure Read_Marketid(Marketid : in     Marketid_Type;
                           List     :    out Price_Histories.Lists.List) ;
-                          
-  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type; 
-                                      Selectionid : in     Integer_4 ; 
+
+  procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type;
+                                      Selectionid : in     Integer_4 ;
                                       List        :    out Price_Histories.Lists.List) ;
-                          
+
 
   procedure Create_Runner_Data(Price_List : in Prices.Lists.List;
                                Alg        : in Algorithm_Type;
@@ -81,10 +81,10 @@ package Sim is
 
 
   --package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Marketid_Type);
-  package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Markets.Market_Type, Markets."=");
-  
+  package Markets_Pack is new Ada.Containers.Doubly_Linked_Lists(Markets.Market_Type, Markets."=");
+
   procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
-                             List  :    out Market_With_Data_Pack.List) ;
+                             List  :    out Markets_Pack.List) ;
 
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
 
@@ -95,7 +95,7 @@ package Sim is
          "=",
          Timestamp_Pack."=");
 
-  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Market_With_Data_Pack.List;
+  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Markets_Pack.List;
                                       Date                    : in     Calendar2.Time_Type;
                                       Marketid_Pricets_Map    :    out Marketid_Pricets_Maps.Map);
 
@@ -108,13 +108,13 @@ package Sim is
          "=",
          RUnners.Lists."=");
 
-  procedure Fill_Winners_Map(Market_With_Data_List : in     Market_With_Data_Pack.List;
+  procedure Fill_Winners_Map(Market_With_Data_List : in     Markets_Pack.List;
                              Date                     : in     Calendar2.Time_Type;
                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
   procedure Fill_Winners_Map(Market_List : in     Markets.Lists.List;
                              Winners_Map :    out Marketid_Winner_Maps.Map );
-                             
+
 
   -- for lay_during_race2 stop
   package Win_Place_Maps is new Ada.Containers.Hashed_Maps (
@@ -132,26 +132,26 @@ package Sim is
   --'2015-04-12 16:41:25.500'
   subtype Timestamp_String_Key_Type is String(1..23);
 
-  package Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps (
+  package Timestamp_To_Prices_History_Maps is new Ada.Containers.Hashed_Maps (
          Timestamp_String_Key_Type,
          Price_Histories.Lists.List,
          Ada.Strings.Hash,
          "=",
          Price_Histories.Lists."=");
 
-  package Marketid_Timestamp_To_Apriceshistory_Maps is new Ada.Containers.Hashed_Maps
+  package Marketid_Timestamp_To_Prices_History_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
-         Timestamp_To_Apriceshistory_Maps.Map,
+         Timestamp_To_Prices_History_Maps.Map,
          Ada.Strings.Hash,
          "=",
-         Timestamp_To_Apriceshistory_Maps."=");
+         Timestamp_To_Prices_History_Maps."=");
 
 
   procedure Fill_Marketid_Runners_Pricets_Map(
-                     Market_With_Data_List                 : in     Market_With_Data_Pack.List;
+                     Market_With_Data_List                 : in     Markets_Pack.List;
                      Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
                      Date                                     : in     Calendar2.Time_Type;
-                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Apriceshistory_Maps.Map) ;
+                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) ;
 
   -- for timestamp slices stop
 
@@ -167,8 +167,8 @@ package Sim is
   function Get_Place_Price(Win_Data : Price_Histories.Price_History_Type) return Price_Histories.Price_History_Type;
 
 
-  Market_With_Data_List                    : Sim.Market_With_Data_Pack.List;
-  Marketid_Timestamp_To_Apriceshistory_Map : Sim.Marketid_Timestamp_To_Apriceshistory_Maps.Map;
+  Market_With_Data_List                    : Sim.Markets_Pack.List;
+  Marketid_Timestamp_To_Prices_History_Map : Sim.Marketid_Timestamp_To_Prices_History_Maps.Map;
   Marketid_Pricets_Map                     : Sim.Marketid_Pricets_Maps.Map;
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;

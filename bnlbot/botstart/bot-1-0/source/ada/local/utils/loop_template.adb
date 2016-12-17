@@ -100,8 +100,8 @@ begin
           Cnt := Cnt + 1;
           -- list of timestamps in this market
           declare
-            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Apriceshistory_Maps.Map :=
-                          Sim.Marketid_Timestamp_To_Apriceshistory_Map(Market.Marketid);
+            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                          Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
          --   Bet_Placed : Boolean := False;
             First : Boolean := True;
           begin
