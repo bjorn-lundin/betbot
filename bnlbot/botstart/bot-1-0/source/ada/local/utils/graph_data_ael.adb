@@ -49,13 +49,13 @@ procedure Graph_Data_Ael is
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
-   
+
    type Equity_Result_Type is record
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
      Equity       : Float_8 := 0.0;
    end record;
-   
-   
+
+
    package Days_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Days_Result_Type);
    Days_Result_List   : Days_Result_Pack.List;
 
@@ -64,7 +64,7 @@ procedure Graph_Data_Ael is
 
    package Avg_Price_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Avg_Price_Result_Type);
    Avg_Price_Result_List   : Avg_Price_Result_Pack.List;
-   
+
    package Equity_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Equity_Result_Type);
    Equity_Result_List   : Equity_Result_Pack.List;
 
@@ -208,12 +208,12 @@ procedure Graph_Data_Ael is
      Profit : Float_8 := 0.0;
    begin
      Select_Equity_Date.Prepare(
-       "select B.STARTTS, B.PROFIT " & 
-       "from ABETS B " & 
-       "where true " & 
---       "and B.BETNAME in ('LAY_1.7_10_WIN_6_20','LAY_1.8_15_WIN_7_15','LAY_1.4_10_WIN_5_20') " & 
-       "and B.BETNAME = :BETNAME " & 
-       "and B.STATUS in ('SETTLED','SUCCESS','MATCHED') " & 
+       "select B.STARTTS, B.PROFIT " &
+       "from ABETS B " &
+       "where true " &
+--       "and B.BETNAME in ('LAY_1.7_10_WIN_6_20','LAY_1.8_15_WIN_7_15','LAY_1.4_10_WIN_5_20') " &
+       "and B.BETNAME = :BETNAME " &
+       "and B.STATUS in ('SETTLED','SUCCESS','MATCHED','') " &
        "order by B.STARTTS");
      Select_Equity_Date.Set("BETNAME", Betname);
 
@@ -236,7 +236,7 @@ begin
       Sa_Betname'access,
       Long_Switch => "--betname=",
       Help        => "betname for equity");
-      
+
    Define_Switch
      (Cmd_Line,
       Ba_Equity'access,
@@ -266,25 +266,25 @@ begin
       Ia_Days'access,
       Long_Switch => "--days=",
       Help        => "days of stats");
-      
+
    Define_Switch
      (Cmd_Line,
       Ba_Print_Strategies'access,
       Long_Switch => "--print_strategies",
       Help        => "print strategies");
-      
-      
-      
+
+
+
 
   Getopt (Cmd_Line);  -- process the command line
-  
-  
-  if Ba_Print_Strategies then 
+
+
+  if Ba_Print_Strategies then
     Config.Print_Strategies;
     return;
-  end if;  
-  
-  
+  end if;
+
+
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
@@ -299,19 +299,19 @@ begin
 
   T.Start;
     if Ba_Lapsed then
-      Day_Statistics_Lapsed_vs_Settled(Betname => Sa_Betname.all, 
-                                       Days    => Integer_4(Ia_Days), 
+      Day_Statistics_Lapsed_vs_Settled(Betname => Sa_Betname.all,
+                                       Days    => Integer_4(Ia_Days),
                                        A_List  => Days_Result_List);
     elsif Ba_Profit then
-      Day_Statistics_Profit_Vs_Matched(Betname => Sa_Betname.all, 
-                                       Days    => Integer_4(Ia_Days), 
+      Day_Statistics_Profit_Vs_Matched(Betname => Sa_Betname.all,
+                                       Days    => Integer_4(Ia_Days),
                                        A_List  => Profit_Result_List);
     elsif Ba_Avg_Price then
-      Avg_Price_For_Settled_Bets(Betname => Sa_Betname.all, 
-                                 Days    => Integer_4(Ia_Days), 
+      Avg_Price_For_Settled_Bets(Betname => Sa_Betname.all,
+                                 Days    => Integer_4(Ia_Days),
                                  A_List  => Avg_Price_Result_List);
     elsif Ba_Equity then
-      Equity_Data(Betname => Sa_Betname.all, 
+      Equity_Data(Betname => Sa_Betname.all,
                   A_List  => Equity_Result_List);
     end if;
   T.Commit;
