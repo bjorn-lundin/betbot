@@ -393,12 +393,23 @@ procedure Poll is
 
     if Place_Num <= Br'Last and then
       BR(1).Backprice >= Float_8(1.01) and then
-      BR(Place_Num).Backprice < Float_8(10_000.0)  and then  -- so it exists
+      BR(Place_Num).Backprice < Float_8(10_000.0) and then  -- so it exists
       Br (Place_Num).Backprice <= Max_Back_Price and then
-      Br (Place_Num).Backprice <= Max_Lay_Price then
+      Br (Place_Num).Layprice <= Max_Lay_Price then
+      
       for I in Br'Range loop
+      
+      Log("Do_Place_Lay_Bets_At_Start I=" & I'Img & 
+         " Num_Bets=" & Num_Bets'Img &
+         " First_Bet=" & First_Bet'Img &
+         " Place_Num=" & Place_Num'Img & 
+         " Max_Back_Price=" & F8_Image(Max_Back_Price) & 
+         " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) & 
+         " Br (I).Layprice=" & F8_Image(Br (I).Layprice) & 
+         " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+      
         if I >= First_Bet and then
-          Br (I).Backprice <= Max_Lay_Price and then
+          Br (I).Layprice <= Max_Lay_Price and then
           Br (I).Backprice <= Max_Back_Price and then
           I < First_Bet + Num_Bets then
 
