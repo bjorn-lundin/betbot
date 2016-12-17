@@ -17,12 +17,12 @@ procedure Race_Time is
   --Me : constant String := "Race_Time";
   package EV renames Ada.Environment_Variables;
   gDebug : Boolean := False;
-  
-  
+
+
   Cmd_Line : Command_Line_Configuration;
   Ba_Rpc : aliased Boolean := False;
   Ba_Sql : aliased Boolean := False;
-  
+
   -------------------------------
   procedure Debug (What : String) is
   begin
@@ -37,15 +37,15 @@ procedure Race_Time is
      Text_Io.Put_Line (What);
   end Print;
   -------------------------------
-   
+
   Start_Time_List : Table_Astarttimes.Astarttimes_List_Pack2.List;
   Arrow_Is_Printed : Boolean := False;
   Now : Time_Type := Time_Type_First;
   Select_Racetime : Sql.Statement_Type;
   Delete_Racetime : Sql.Statement_Type;
-  
+
   type Mode_Type is (Mode_Rpc,Mode_Sql);
-  
+
   Mode : Mode_Type;
   ------------------------------------------------------------
   procedure Insert_Starttimes(List : Table_Astarttimes.Astarttimes_List_Pack2.List) is
@@ -54,17 +54,17 @@ procedure Race_Time is
   begin
     T.Start;
     Delete_Racetime.Prepare(
-      "delete from ASTARTTIMES " & 
+      "delete from ASTARTTIMES " &
       "where STARTTIME::date <= (select CURRENT_DATE - 1)");
     begin
       Delete_Racetime.Execute;
     exception
       when SQl.No_Such_Row => null;
     end;
-    
+
     for S of List loop
       Dummy := S; -- workaround gnat 4.6.3
-      Dummy.Insert; 
+      Dummy.Insert;
     end loop;
 
     T.Commit;
@@ -77,17 +77,17 @@ procedure Race_Time is
   begin
     T.Start;
     Select_Racetime.Prepare(
-      "select * from ASTARTTIMES " & 
-      "where STARTTIME::date = (select CURRENT_DATE) " & 
+      "select * from ASTARTTIMES " &
+      "where STARTTIME::date = (select CURRENT_DATE) " &
       "order by STARTTIME");
-    
+
     Select_Racetime.Open_Cursor;
     loop
       Select_Racetime.Fetch(Eos);
       exit when Eos;
       Start_Data := Table_Astarttimes.Get(Select_Racetime);
       List.Append(Start_Data);
-    end loop;      
+    end loop;
     Select_Racetime.Close_Cursor;
     T.Commit;
   end Get_Starttimes;
@@ -95,9 +95,9 @@ procedure Race_Time is
   use type Text_Io.Count;
   type String_Ptr is access String;
   Db_Service : String_Ptr := null;
-  
+
   use type Ada.Containers.Count_Type;
-  
+
 begin
 
   Define_Switch
@@ -113,7 +113,7 @@ begin
      Help        => "sql");
 
   Getopt (Cmd_Line);  -- process the command line
-  
+
   if Ba_Rpc then
     Mode := Mode_Rpc;
   elsif Ba_Sql then
@@ -123,13 +123,13 @@ begin
     return;
   end if;
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
-   
+
 --  Log(Me, "Login betfair");
   if Ev.Value("BOT_MACHINE_ROLE") = "DISPLAY" then
     Db_Service := new String'("database_race_time");
   else
     Db_Service := new String'("database");
-  end if;  
+  end if;
 
   case Mode is
     when Mode_Rpc =>
@@ -142,11 +142,18 @@ begin
       );
     when Mode_Sql => null;
   end case;
- 
-  Days : loop        
+
+  Days : loop
     begin
       Start_Time_List.Clear;
-      
+
+      loop
+        exit when (Clock.Hour > 11) or else
+                  (Clock.Hour = 11 and Clock.Minute >= 46);
+        Text_Io.Put_Line("Server not up - wait until 11:46");
+        delay 60.0;
+      end loop;
+
       case Mode is
         when Mode_Rpc =>
           Rpc.Login;
@@ -171,11 +178,11 @@ begin
           Get_Starttimes(List => Start_Time_List);
           Sql.Close_Session;
       end case;
-    
+
       Day : loop
         Arrow_Is_Printed := False;
         Now := Calendar2.Clock;
-        Text_Io.New_Line(Text_Io.Count(Start_Time_List.Length) +1);   
+        Text_Io.New_Line(Text_Io.Count(Start_Time_List.Length) +1);
         for S of Start_Time_List loop
           if not Arrow_Is_Printed and then
             Now <= S.Starttime then
@@ -189,22 +196,22 @@ begin
                  S.Starttime.String_Time(Seconds => False) & " | " &
                  S.Venue(1..15)
                ) ;
-          end if;      
+          end if;
         end loop;
         for i in 1 .. 30 loop
-          Text_Io.Put('.');   
+          Text_Io.Put('.');
           delay 1.0;
-        end loop;  
+        end loop;
         -- new day, get new list after it is written to db
-        exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else 
+        exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else
                        Start_Time_List.Length = 0 ;
-      end loop Day;    
+      end loop Day;
     exception
       when Sql.Not_Connected =>
-        Text_Io.Put_Line("Sql.Not_Connected, wait for 120 s");   
+        Text_Io.Put_Line("Sql.Not_Connected, wait for 120 s");
         delay 120.0;
-    end;  
-  end loop Days; 
+    end;
+  end loop Days;
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
