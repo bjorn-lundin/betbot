@@ -26,6 +26,7 @@ with Bot_Svn_Info;
 with Bets;
 with Config;
 with Utils; use Utils;
+with Tics;
 
 procedure Poll is
   package EV renames Ada.Environment_Variables;
@@ -119,7 +120,7 @@ procedure Poll is
     end;
 
     if not Cfg.Bet(Main_Bet).Enabled then
-      Log("Not enbled bet in poll.ini" );
+      Log("Not enbled bet in poll.ini " & Main_Bet'Img );
       return;
     end if;
 
@@ -137,7 +138,12 @@ procedure Poll is
            Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
       Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PLB.Size);
       Bot_Messages.Send(Receiver, PLB);
-      Bets_Allowed(Main_Bet).Has_Betted := True;
+      
+      case Main_Bet is -- some betrs have several runners ...
+        when Lay_2_2_4_11_17_Win .. Lay_2_2_4_11_17_Win => null;
+        when others => Bets_Allowed(Main_Bet).Has_Betted := True;
+      end case;
+      
       Did_Bet(1) := True;
     end if;
 
@@ -377,19 +383,18 @@ procedure Poll is
     First_Bet           : Integer := 0;
     Place_Num           : Integer := 0;
     Num_Bets            : Integer := 0;
+    Lay_Price           : Float_8 := 0.0;
+    Tic                 : Integer := 0;
     Image : String := Bettype'Img;
   begin          --1         2         3
       --  123456789012345678901234567890123456789
       --  Lay_2_2_4_11_17_Win
-
 
     Num_Bets  := Integer'Value(Image(5..5));
     First_Bet := Integer'Value(Image(7..7));
     Place_Num := Integer'Value(Image(9..9));
     Max_Back_Price := Float_8'Value(Image(11..12));
     Max_Lay_Price := Max_Lay_Price_Type'Value(Image(14..15));
-
-
 
     if Place_Num <= Br'Last and then
       BR(1).Backprice >= Float_8(1.01) and then
@@ -406,17 +411,20 @@ procedure Poll is
               " Max_Back_Price=" & F8_Image(Max_Back_Price) & 
               " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) & 
               " Br (I).Layprice=" & F8_Image(Br (I).Layprice) & 
-              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));              
       
         if I >= First_Bet then
           if I < First_Bet + Num_Bets then
             if Br (I).Layprice <= Max_Lay_Price then
               if Br (I).Backprice <= Max_Back_Price then
+                -- to get legal odds
+                Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Layprice + Float_8(5.0));
+                Lay_Price := Tics.Get_Tic_Price(Tic);
 
                 Send_Lay_Bet(Selectionid     => Br(I).Selectionid,
                              Main_Bet        => Bettype,
                              Marketid        => Marketid,
-                             Max_Price       => Max_Lay_Price_Type(br (I).Layprice + Float_8(5.0)), --Max_Lay_Price,
+                             Max_Price       => Max_Lay_Price_Type(Lay_Price),
                              Match_Directly  => Match_Directly);
               else
                 Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
@@ -432,6 +440,7 @@ procedure Poll is
         end if;
       end loop;
     end if;
+    Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
   end Do_Place_Lay_Bets_At_Start;
   -----------------------------------------------
 
