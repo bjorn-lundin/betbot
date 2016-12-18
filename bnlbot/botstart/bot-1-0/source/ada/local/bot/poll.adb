@@ -418,8 +418,8 @@ procedure Poll is
             if Br (I).Layprice <= Max_Lay_Price then
               if Br (I).Backprice <= Max_Back_Price then
                 -- to get legal odds
-                Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Layprice + Float_8(5.0));
-                Lay_Price := Tics.Get_Tic_Price(Tic);
+                Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Layprice);
+                Lay_Price := Tics.Get_Tic_Price(Tic+4); -- some small margin to get the bet 
 
                 Send_Lay_Bet(Selectionid     => Br(I).Selectionid,
                              Main_Bet        => Bettype,
