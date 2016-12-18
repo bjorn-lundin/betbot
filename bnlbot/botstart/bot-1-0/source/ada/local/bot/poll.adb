@@ -399,26 +399,36 @@ procedure Poll is
       
       for I in Br'Range loop
       
-      Log("Do_Place_Lay_Bets_At_Start I=" & I'Img & 
-         " Num_Bets=" & Num_Bets'Img &
-         " First_Bet=" & First_Bet'Img &
-         " Place_Num=" & Place_Num'Img & 
-         " Max_Back_Price=" & F8_Image(Max_Back_Price) & 
-         " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) & 
-         " Br (I).Layprice=" & F8_Image(Br (I).Layprice) & 
-         " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+        Log("Do_Place_Lay_Bets_At_Start I=" & I'Img & 
+              " Num_Bets=" & Num_Bets'Img &
+              " First_Bet=" & First_Bet'Img &
+              " Place_Num=" & Place_Num'Img & 
+              " Max_Back_Price=" & F8_Image(Max_Back_Price) & 
+              " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) & 
+              " Br (I).Layprice=" & F8_Image(Br (I).Layprice) & 
+              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
       
-        if I >= First_Bet and then
-          Br (I).Layprice <= Max_Lay_Price and then
-          Br (I).Backprice <= Max_Back_Price and then
-          I < First_Bet + Num_Bets then
+        if I >= First_Bet then
+          if I < First_Bet + Num_Bets then
+            if Br (I).Layprice <= Max_Lay_Price then
+              if Br (I).Backprice <= Max_Back_Price then
 
-          Send_Lay_Bet(Selectionid     => Br(i).Selectionid,
-                       Main_Bet        => Bettype,
-                       Marketid        => Marketid,
-                       Max_Price       => Max_Lay_Price,
-                       Match_Directly  => Match_Directly);
-          
+                Send_Lay_Bet(Selectionid     => Br(I).Selectionid,
+                             Main_Bet        => Bettype,
+                             Marketid        => Marketid,
+                             Max_Price       => Max_Lay_Price_Type(br (I).Layprice + Float_8(5.0)), --Max_Lay_Price,
+                             Match_Directly  => Match_Directly);
+              else
+                Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
+              end if;                       
+            else
+              Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br (I).Layprice <= Max_Lay_Price));
+            end if;                       
+          else
+            Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
+          end if;                       
+        else
+          Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
         end if;
       end loop;
     end if;
