@@ -41,60 +41,60 @@ procedure Race_Time is
   Start_Time_List : Table_Astarttimes.Astarttimes_List_Pack2.List;
   Arrow_Is_Printed : Boolean := False;
   Now : Time_Type := Time_Type_First;
-  Select_Racetime : Sql.Statement_Type;
-  Delete_Racetime : Sql.Statement_Type;
+--  Select_Racetime : Sql.Statement_Type;
+--  Delete_Racetime : Sql.Statement_Type;
 
   type Mode_Type is (Mode_Rpc,Mode_Sql);
 
   Mode : Mode_Type;
   ------------------------------------------------------------
-  procedure Insert_Starttimes(List : Table_Astarttimes.Astarttimes_List_Pack2.List) is
-    T : Sql.Transaction_Type;
-    Dummy : Table_Astarttimes.Data_Type;
-  begin
-    T.Start;
-    Delete_Racetime.Prepare(
-      "delete from ASTARTTIMES " &
-      "where STARTTIME::date <= (select CURRENT_DATE - 1)");
-    begin
-      Delete_Racetime.Execute;
-    exception
-      when SQl.No_Such_Row => null;
-    end;
-
-    for S of List loop
-      Dummy := S; -- workaround gnat 4.6.3
-      Dummy.Insert;
-    end loop;
-
-    T.Commit;
-  end Insert_Starttimes;
-  ------------------------------------------
-  procedure Get_Starttimes(List : out Table_Astarttimes.Astarttimes_List_Pack2.List) is
-    T : Sql.Transaction_Type;
-    Eos : Boolean := False;
-    Start_Data : Table_Astarttimes.Data_Type;
-  begin
-    T.Start;
-    Select_Racetime.Prepare(
-      "select * from ASTARTTIMES " &
-      "where STARTTIME::date = (select CURRENT_DATE) " &
-      "order by STARTTIME");
-
-    Select_Racetime.Open_Cursor;
-    loop
-      Select_Racetime.Fetch(Eos);
-      exit when Eos;
-      Start_Data := Table_Astarttimes.Get(Select_Racetime);
-      List.Append(Start_Data);
-    end loop;
-    Select_Racetime.Close_Cursor;
-    T.Commit;
-  end Get_Starttimes;
+--    procedure Insert_Starttimes(List : Table_Astarttimes.Astarttimes_List_Pack2.List) is
+--      T : Sql.Transaction_Type;
+--      Dummy : Table_Astarttimes.Data_Type;
+--    begin
+--      T.Start;
+--      Delete_Racetime.Prepare(
+--        "delete from ASTARTTIMES " &
+--        "where STARTTIME::date <= (select CURRENT_DATE - 1)");
+--      begin
+--        Delete_Racetime.Execute;
+--      exception
+--        when SQl.No_Such_Row => null;
+--      end;
+--
+--      for S of List loop
+--        Dummy := S; -- workaround gnat 4.6.3
+--        Dummy.Insert;
+--      end loop;
+--
+--      T.Commit;
+--    end Insert_Starttimes;
+--    ------------------------------------------
+--    procedure Get_Starttimes(List : out Table_Astarttimes.Astarttimes_List_Pack2.List) is
+--      T : Sql.Transaction_Type;
+--      Eos : Boolean := False;
+--      Start_Data : Table_Astarttimes.Data_Type;
+--    begin
+--      T.Start;
+--      Select_Racetime.Prepare(
+--        "select * from ASTARTTIMES " &
+--        "where STARTTIME::date = (select CURRENT_DATE) " &
+--        "order by STARTTIME");
+--
+--      Select_Racetime.Open_Cursor;
+--      loop
+--        Select_Racetime.Fetch(Eos);
+--        exit when Eos;
+--        Start_Data := Table_Astarttimes.Get(Select_Racetime);
+--        List.Append(Start_Data);
+--      end loop;
+--      Select_Racetime.Close_Cursor;
+--      T.Commit;
+--    end Get_Starttimes;
   ------------------------------------------
   use type Text_Io.Count;
-  type String_Ptr is access String;
-  Db_Service : String_Ptr := null;
+  --type String_Ptr is access String;
+  --Db_Service : String_Ptr := null;
 
   use type Ada.Containers.Count_Type;
 
@@ -125,11 +125,11 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
 --  Log(Me, "Login betfair");
-  if Ev.Value("BOT_MACHINE_ROLE") = "DISPLAY" then
-    Db_Service := new String'("database_race_time");
-  else
-    Db_Service := new String'("database");
-  end if;
+--    if Ev.Value("BOT_MACHINE_ROLE") = "DISPLAY" then
+--      Db_Service := new String'("database_race_time");
+--    else
+--      Db_Service := new String'("database");
+--    end if;
 
   case Mode is
     when Mode_Rpc =>
@@ -146,37 +146,29 @@ begin
   Days : loop
     begin
       Start_Time_List.Clear;
-
-      loop
-        exit when (Clock.Hour > 11) or else
-                  (Clock.Hour = 11 and Clock.Minute >= 46);
-        Text_Io.Put_Line("Server not up - wait until 11:46");
-        delay 60.0;
-      end loop;
-
       case Mode is
         when Mode_Rpc =>
           Rpc.Login;
           Rpc.Get_Starttimes(List => Start_Time_List);
-          Sql.Connect
-              (Host     => Ini.Get_Value("database", "host", ""),
-               Port     => Ini.Get_Value("database", "port", 5432),
-               Db_Name  => Ini.Get_Value("database", "name", ""),
-               Login    => Ini.Get_Value("database", "username", ""),
-               Password =>Ini.Get_Value("database", "password", ""));
-          Insert_Starttimes(List => Start_Time_List);
+--            Sql.Connect
+--                (Host     => Ini.Get_Value("database", "host", ""),
+--                 Port     => Ini.Get_Value("database", "port", 5432),
+--                 Db_Name  => Ini.Get_Value("database", "name", ""),
+--                 Login    => Ini.Get_Value("database", "username", ""),
+--                 Password =>Ini.Get_Value("database", "password", ""));
+--            Insert_Starttimes(List => Start_Time_List);
           Rpc.Logout;
-          Sql.Close_Session;
-          exit Days;
-        when Mode_Sql =>
-          Sql.Connect
-              (Host     => Ini.Get_Value(Db_Service.all, "host", ""),
-               Port     => Ini.Get_Value(Db_Service.all, "port", 5432),
-               Db_Name  => Ini.Get_Value(Db_Service.all, "name", ""),
-               Login    => Ini.Get_Value(Db_Service.all, "username", ""),
-               Password => Ini.Get_Value(Db_Service.all, "password", ""));
-          Get_Starttimes(List => Start_Time_List);
-          Sql.Close_Session;
+--          Sql.Close_Session;
+--          exit Days;
+        when Mode_Sql => null;
+--            Sql.Connect
+--                (Host     => Ini.Get_Value(Db_Service.all, "host", ""),
+--                 Port     => Ini.Get_Value(Db_Service.all, "port", 5432),
+--                 Db_Name  => Ini.Get_Value(Db_Service.all, "name", ""),
+--                 Login    => Ini.Get_Value(Db_Service.all, "username", ""),
+--                 Password => Ini.Get_Value(Db_Service.all, "password", ""));
+--            Get_Starttimes(List => Start_Time_List);
+--            Sql.Close_Session;
       end case;
 
       Day : loop

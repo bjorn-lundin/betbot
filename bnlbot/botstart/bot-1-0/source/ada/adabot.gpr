@@ -45,6 +45,7 @@ project Adabot is
                     );
 
    Stat_Mains   := ("stat_maker.adb",
+                    "sim_back_1_2_3.adb",
                     "check_lay.adb",
                     "check_grn.adb",
                     "check_for_greenup_plc.adb",

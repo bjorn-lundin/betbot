@@ -796,8 +796,8 @@ package body Sim is
 
   package body Disk_Serializer is
     --------------------------------------------------------
-    --Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
-    Path : String := "/mnt/samsung1gb/data/streamed_objects/";
+    Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
+    --Path : String := "/mnt/samsung1gb/data/streamed_objects/";
 
     function File_Exists(Filename : String) return Boolean is
      -- Service : constant String := "File_Exists";
