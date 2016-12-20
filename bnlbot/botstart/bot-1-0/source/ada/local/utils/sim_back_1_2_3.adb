@@ -244,16 +244,15 @@ begin
           Cnt := Cnt + 1;
           -- list of timestamps in this market
           declare
-            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Apriceshistory_Maps.Map :=
-                          Sim.Marketid_Timestamp_To_Apriceshistory_Map(Market.Marketid);
-         --   Bet_Placed : Boolean := False;
+            Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                                                Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
             First : Boolean := True;
           begin
             Loop_Timestamp : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               --Log("Treat marketid '" & Market.Marketid & "' pricets " & Timestamp.To_String);
               declare
                 List : Price_Histories.Lists.List :=
-                          Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
+                         Timestamp_To_Apriceshistory_Map (Timestamp.To_String);
               begin
                 if First then
                   Enough_Runners := List.Length >= 8;
