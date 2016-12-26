@@ -103,11 +103,13 @@ procedure Markets_Fetcher is
     8 => (True, (("poll_market_8  "), (others => ' ')))
   );
   
-  Race_Pollers : array (1..4) of Poll_Process := (
+  Race_Pollers : array (1..6) of Poll_Process := (
     1 => (True, (("poll_1         "), (others => ' '))),
     2 => (True, (("poll_2         "), (others => ' '))),
     3 => (True, (("poll_3         "), (others => ' '))),
-    4 => (True, (("poll_4         "), (others => ' ')))
+    4 => (True, (("poll_4         "), (others => ' '))),
+    5 => (True, (("poll_5         "), (others => ' '))),
+    6 => (True, (("poll_6         "), (others => ' ')))
   );
   Test_Pollers : array (1..4) of Poll_Process := (
     1 => (True, (("poll_bounds_1  "), (others => ' '))),
