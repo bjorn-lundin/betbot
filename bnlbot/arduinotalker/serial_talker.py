@@ -160,19 +160,14 @@ def main(g):
   buff = ""
   conn = psycopg2.connect("dbname=bnl \
                          user=bnl \
-                         host=prod.nonodev.com \
+                         host=betbot.nonobet.com \
                          password=ld4BC9Q51FU9CYjC21gp \
                          sslmode=require \
                          application_name=serial_talker")
 
   bets = ['BACK_1_10_07_1_2_PLC_1_01',
-          'BACK_1_10_10_1_2_PLC_1_01',
-          'BACK_1_06_1_10_05_07_1_2_PLC_1_01',
-          'BACK_1_11_1_15_01_04_1_2_PLC_1_01',
           'BACK_1_11_1_15_05_07_1_2_PLC_1_01',
-          'BACK_1_11_1_15_08_10_1_2_PLC_1_01',
-          'BACK_1_96_2_00_08_10_1_2_WIN_1_70',
-          'LAY_1_80_10_WIN_4_10']
+          'LAY_2_2_4_11_17_WIN']
 
   row0 = {}
   row0['0'] = 0
