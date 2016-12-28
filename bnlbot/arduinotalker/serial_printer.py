@@ -12,7 +12,7 @@ import sys
 import datetime
 import signal
 import pyscope
-import thermal_printer
+#import thermal_printer
 
 
 ############ BNL start ####################
@@ -49,14 +49,14 @@ class progress_bar():
 
     def __init__(self,screen):
         self.s = screen
-      
+
     def update(self,progress):
-        RED   = (255, 0, 0) 
-        GREEN = (0, 255, 0) 
-        WHITE = (255, 255, 255) 
-        BLACK = (0, 0, 0) 
+        RED   = (255, 0, 0)
+        GREEN = (0, 255, 0)
+        WHITE = (255, 255, 255)
+        BLACK = (0, 0, 0)
         GRAY = (128,128,128)
-    
+
         pygame.draw.rect(self.s, GREEN, pygame.Rect(0,0,pygame.display.Info().current_w,pygame.display.Info().current_h),1)
         pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width*progress, self.height))
         pygame.draw.rect(self.s, WHITE, pygame.Rect(self.left, self.top, self.width, self. height), 1)
@@ -73,14 +73,34 @@ def findout_result_change(conn, g):
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
     cur = conn.cursor()
-    cur.execute("""select sum(B.PROFIT)  
-                 from ABETS B   
-                 where B.BETWON is not NULL  
-                 and B.STATUS = 'SETTLED'  
-                 and B.EXESTATUS = 'SUCCESS' 
-                 and B.BETPLACED >= %s  
-                 and B.BETPLACED <= %s """ ,
-                 (start, stop))
+#    cur.execute("""select sum(B.PROFIT)
+#                 from ABETS B
+#                 where B.BETWON is not NULL
+#                 and B.STATUS = 'SETTLED'
+#                 and B.EXESTATUS = 'SUCCESS'
+#                 and B.BETPLACED >= %s
+#                 and B.BETPLACED <= %s """ ,
+#                 (start, stop))
+
+    cur.execute("""
+       select 
+         round(sum(
+         case SUM_PROFIT > 0
+           when TRUE then SUM_PROFIT * (1.0 - (0.065)) 
+           when FALSE then SUM_PROFIT
+         end ),0)::numeric as PROFIT
+       from (
+         select sum(B.PROFIT) SUM_PROFIT , MARKETID
+         from ABETS B   
+         where B.BETWON is not NULL  
+         and B.STATUS = 'SETTLED'  
+         and B.EXESTATUS = 'SUCCESS' 
+         and B.BETPLACED >= %s   
+         and B.BETPLACED <= %s 
+         group by MARKETID
+       ) TMP 
+       """ , (start, stop))
+
     result = 0
     if cur.rowcount >= 1 :
         row = cur.fetchone()
@@ -105,28 +125,40 @@ def findout_exposure(conn, g):
     start = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
     stop = datetime.datetime(today.year, today.month, today.day, 23, 59, 59)
     cur = conn.cursor()
-    #cur.execute("select sum(B.SIZE)  \
-    #             from ABETS B   \
-    #             where B.BETWON is NULL  \
-    #             and BETNAME not like 'DR%%'  \
-    #             and B.BETPLACED >= %s  \
-    #             and B.BETPLACED <= %s " ,
-    #             (start, stop))
-                 
-    cur.execute("""select \
-                    case B.SIDE 
-                      when 'LAY'  then sum(B.SIZE) * (avg(PRICE)-1) 
-                      when 'BACK' then sum(B.SIZE) 
-                      else 0.0 
-                    end 
-                 from ABETS B 
-                 where B.BETWON is NULL 
-                 and B.EXESTATUS = 'SUCCESS' 
-                 and B.BETPLACED >= %s  
-                 and B.BETPLACED <= %s 
-                 group BY B.SIDE """ ,
-                 (start, stop))                
-                 
+
+#    cur.execute("""select \
+#                    case B.SIDE
+#                      when 'LAY'  then sum(B.SIZE) * (avg(PRICE)-1)
+#                      when 'BACK' then sum(B.SIZE)
+#                      else 0.0
+#                    end
+#                 from ABETS B
+#                 where B.BETWON is NULL
+#                 and B.EXESTATUS = 'SUCCESS'
+#                 and B.BETPLACED >= %s
+#                 and B.BETPLACED <= %s
+#                 group BY B.SIDE """ ,
+#                 (start, stop))
+
+    cur.execute("""
+       select sum(RISK) from (                  
+         select
+           case B.SIDE
+              when 'LAY'  then max(B.SIZE * (B.PRICEMATCHED-1))
+              when 'BACK' then sum(B.SIZE)
+              else 0.0
+            end as RISK,
+            B.MARKETID
+         from ABETS B
+         where 1=1
+         and B.BETWON is NULL
+         and B.EXESTATUS = 'SUCCESS'
+         and B.BETPLACED >= %s
+         and B.BETPLACED <= %s
+         group BY B.SIDE, B.MARKETID   
+       ) TMP    
+               """ ,(start, stop))
+
     result = 0
     if cur.rowcount >= 1 :
         row = cur.fetchone()
@@ -165,12 +197,12 @@ def show(c,g,s,p):
   s.display_exposure(g.exposure)
   today = datetime.datetime.now()
 
-  if p != 0 :
-    if today > g.time_to_print :
-        print_to_printer(p,g)
-        #next print time is a day from now
-        g.time_to_print = g.time_to_print + datetime.timedelta(days=1)
-        
+ # if p != 0 :
+ #   if today > g.time_to_print :
+ #       print_to_printer(p,g)
+ #       #next print time is a day from now
+ #       g.time_to_print = g.time_to_print + datetime.timedelta(days=1)
+
 ########### end show #############################
 
 ## start main
@@ -182,11 +214,12 @@ s = pyscope.pyscope()
 pb = progress_bar(s.screen)
 g = global_obj()
 disp_no = os.getenv("DISPLAY")
-if disp_no:
-  #print "I'm running under X display = {0}".format(disp_no)
-  p = 0
-else:    
-  p = thermal_printer.thermal_printer(serialport='/dev/ttyAMA0')
+p = 0
+#if disp_no:
+#  #print "I'm running under X display = {0}".format(disp_no)
+#  p = 0
+#else:
+#  p = thermal_printer.thermal_printer(serialport='/dev/ttyAMA0')
 
 
 
@@ -209,7 +242,7 @@ while True:
             try:
                 c = psycopg2.connect("dbname=bnl \
                       user=bnl \
-                      host=prod.nonodev.com \
+                      host=betbot.nonobet.com \
                       password=ld4BC9Q51FU9CYjC21gp \
                       sslmode=require \
                       application_name=serial_printer")
