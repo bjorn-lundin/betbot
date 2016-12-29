@@ -491,7 +491,7 @@ procedure Poll is
     -- check if ok to bet and set bet size
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
 
-    if abs(Saldo.Exposure) > Float_8(9_500.0) then
+    if abs(Saldo.Exposure) > Float_8(6_500.0) then
        Log(Me & "Run", "Too much exposure - skip this race " & Saldo.To_String);
        return;
     end if;
@@ -506,7 +506,7 @@ procedure Poll is
         end if;
       end if;
       Log(Me & "Run", "Bet_Size " & F8_Image(Float_8( Bets_Allowed(i).Bet_Size)) & " " & Saldo.To_String);
-      if -5.0 < Bets_Allowed(i).Max_Loss_Per_Day and then Bets_Allowed(i).Max_Loss_Per_Day < 0.0 then
+      if -10.0 <= Bets_Allowed(i).Max_Loss_Per_Day and then Bets_Allowed(i).Max_Loss_Per_Day < 0.0 then
         Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
       end if;
 
