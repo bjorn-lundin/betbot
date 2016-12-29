@@ -17,17 +17,18 @@ package body Config is
      Log(Me & Service, "read ini file :'" & Filename & "'");
 
      Ini.Load(Filename);
-     Cfg.Enabled              := Ini.Get_Value("global","enabled",False); 
-     Cfg.Allowed_Countries    := To_Unbounded_String(Ini.Get_Value("global","countries",""));
-     
+     Cfg.Enabled           := Ini.Get_Value("global","enabled",False);
+     Cfg.Allowed_Countries := To_Unbounded_String(Ini.Get_Value("global","countries",""));
+     Cfg.Max_Exposure      := Float_8'Value(Ini.Get_Value("global","max_exposure","5000.0")); -- -1.0 -> -100% of size
+
      for i in Bet_Type'range loop
-       Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","1.0")); 
+       Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","1.0"));
        Cfg.Bet(i).Max_Loss_Per_Day := Float_8'Value(Ini.Get_Value(i'img,"max_loss_per_day","-1.0")); -- -1.0 -> -100% of size
        Cfg.Bet(i).Min_Price := To_Unbounded_String(Ini.Get_Value(i'img,"min_price","1.01"));
-       Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",False); 
+       Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",False);
      end loop;
-     
-    
+
+
     declare
       use Ada.Characters.Handling;
       use Ada.Strings.Fixed;
@@ -45,20 +46,21 @@ package body Config is
         for i in Week_Day_Type'range loop
           Cfg.Allowed_Days(i) := Index(To_Lower(Days), "al") > Zero;
         end loop;
-      end if;      
-    end; 
+      end if;
+    end;
      return Cfg;
   end Create;
-  -------------------------------------------------------------  
+  -------------------------------------------------------------
   function To_String(Cfg : Config_Type) return String is
     use Utils;
     use Calendar2;
     use Ada.Characters.Handling;
-    part1 : String := 
+    part1 : String :=
       "<config>" &
         "<enabled>" & Cfg.Enabled'Img & "</enabled>" &
         "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
-        "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" ;
+        "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" &
+        "<max_exposure>" & F8_Image(Cfg.Max_Exposure) & "</max_exposure>" ;
     Part3 : String := "</config>";
     Days : Unbounded_String := Null_Unbounded_String;
     Bets : Unbounded_String := Null_Unbounded_String;
@@ -66,15 +68,15 @@ package body Config is
 
         Append(Days, "<days>");
         for i in Week_Day_Type'range loop
-          Append(Days, "<" & To_Lower(i'Img) & ">" & 
+          Append(Days, "<" & To_Lower(i'Img) & ">" &
                        To_Lower(Cfg.Allowed_Days(i)'Img) &
                         "</" & To_Lower(i'Img) & ">" );
         end loop;
         Append(Days, "</days>");
-        
+
         Append(Bets, "<bets>");
         for i in Bet_Type'range loop
-          Append(Bets, "<" & To_Lower(i'Img) & ">" & 
+          Append(Bets, "<" & To_Lower(i'Img) & ">" &
                            "<size>" & F8_Image(Float_8(Cfg.Bet(i).Size)) & "</size>" &
                            "<max_loss_per_day>" & F8_Image(Cfg.Bet(i).Max_Loss_Per_Day) & "</max_loss_per_day>" &
                            "<min_price>" & To_String(Cfg.Bet(i).Min_Price) & "</min_price>" &
@@ -82,9 +84,9 @@ package body Config is
                         "</" & To_Lower(i'Img) & ">" );
         end loop;
         Append(Bets, "</bets>");
-      
-        return Part1 & To_String(Days) & To_String(Bets) & Part3;   
-      
+
+        return Part1 & To_String(Days) & To_String(Bets) & Part3;
+
   end To_String;
   -------------------------------------------------------------
   function Country_Is_Ok (Cfg : Config_Type; Country_Code : String) return Boolean is
@@ -123,23 +125,23 @@ package body Config is
     elsif Countries = "AL" then
       Found := True;
     end if;
-    
+
     if not Found then
         Log(Me & Service, "wrong country. OK countries are :'" & Countries & "' market country is '" & Country_Code & "'");
     end if;
-    return Found;    
+    return Found;
   end Country_Is_Ok;
   -------------------------------------------------------------
-  
+
   procedure Print_Strategies is
   begin
-  
+
     for i in Bet_Type'range loop
       Text_Io.Put(I'Img & " ");
     end loop;
-  
-  end Print_Strategies;
-  
 
-  
+  end Print_Strategies;
+
+
+
 end Config;
