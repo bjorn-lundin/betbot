@@ -10,6 +10,7 @@ package Config is
       Lay_2_2_4_11_17_Win, -- several bets in this type
       Lay_2_90_20_WIN_8_00,
       Back_1_96_2_00_08_10_1_2_WIN_1_70,
+      BACK_1_11_1_15_05_07_1_2_PLC_1_01,
       Back_1_10_07_1_2_PLC_1_01,
       Back_1_10_10_1_2_PLC_1_01,
       Back_1_10_10_1_2_PLC_1_02

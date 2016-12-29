@@ -710,7 +710,7 @@ procedure Poll is
                 end if;
               end;
             when Back_1_96_2_00_08_10_1_2_WIN_1_70 ..
-                 Back_1_96_2_00_08_10_1_2_WIN_1_70   =>
+                 BACK_1_11_1_15_05_07_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
