@@ -39,16 +39,38 @@ def get_row_weeks_back(conn, betname, delta_weeks)  :
 
 #                 "and B.BETMODE = 2 " \
     cur = conn.cursor()
+#    cur.execute("""
+#                 select sum(B.PROFIT)
+#                 from ABETS B
+#                 where B.BETNAME = %s
+#                 and B.BETWON is not NULL
+#                 and B.EXESTATUS = 'SUCCESS'
+#                 and B.STATUS in ('SETTLED')
+#                 and B.BETPLACED >= %s
+#                 and B.BETPLACED <= %s """ ,
+#                   (betname, mon2, sun2))
+
+
     cur.execute("""
-                 select sum(B.PROFIT)
-                 from ABETS B
-                 where B.BETNAME = %s
-                 and B.BETWON is not NULL
-                 and B.EXESTATUS = 'SUCCESS'
-                 and B.STATUS in ('SETTLED')
-                 and B.BETPLACED >= %s
-                 and B.BETPLACED <= %s """ ,
-                   (betname, mon2, sun2))
+       select
+          round(
+                 sum(
+                       case SUM_PROFIT > 0
+                         when TRUE then SUM_PROFIT * (1.0 - (0.065))
+                         when FALSE then SUM_PROFIT
+                       end
+                 ),
+                 0
+               )::numeric as PROFIT
+       from
+         PROFIT_PER_MARKET_AND_BETNAME
+       where true
+         and BETNAME = %s
+         and STARTTS >= %s
+         and STARTTS <= %s
+       order by PROFIT desc  """ ,
+         (betname, mon2, sun2))
+
 
 #    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
 
@@ -74,19 +96,96 @@ def get_row(conn, betname, delta_days)  :
     day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
 #    print betname, day_start, day_stop
     cur = conn.cursor()
-#                 "and B.BETMODE = 2 " \
     cur.execute("""
-                 select
-                   sum(B.PROFIT)
-                 from ABETS B
-                 where B.BETNAME = %s
-                 and B.BETWON is not NULL
-                 and B.EXESTATUS = 'SUCCESS'
-                 and B.STATUS in ('SETTLED')
-                 and B.BETPLACED >= %s
-                 and B.BETPLACED <= %s """,
-                   (betname,day_start,day_stop))
+       select
+          round(
+                 sum(
+                       case SUM_PROFIT > 0
+                         when TRUE then SUM_PROFIT * (1.0 - (0.065))
+                         when FALSE then SUM_PROFIT
+                       end
+                 ),
+                 0
+               )::numeric as PROFIT
+       from
+         PROFIT_PER_MARKET_AND_BETNAME
+       where true
+         and BETNAME = %s
+         and STARTTS >= %s
+         and STARTTS <= %s
+       order by PROFIT desc  """ ,
+             (betname,day_start,day_stop))
+
+
 #    print betname, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
+    if cur.rowcount >= 1 :
+        row = cur.fetchone()
+        if row :
+          result = row[0]
+        else :
+          result = 0
+
+    cur.close()
+    conn.commit()
+    if result == None :
+       result = 0
+
+    return result
+    ################################## end get_row
+
+def get_profit(conn, betname, delta_days)  :
+    cur = conn.cursor()
+    cur.execute("""
+       select
+         round(
+                sum(
+                      case SUM_PROFIT > 0
+                        when TRUE then SUM_PROFIT * (1.0 - (0.065))
+                        when FALSE then SUM_PROFIT
+                      end
+                ),
+                0
+              )::numeric as PROFIT
+      from
+        PROFIT_PER_MARKET_AND_BETNAME
+      where true
+        and STARTTS::date > (select CURRENT_DATE - interval '%s days')
+        and betname = %s
+      order by PROFIT desc
+                """,(delta_days,betname))
+
+    if cur.rowcount >= 1 :
+        row = cur.fetchone()
+        if row :
+          result = row[0]
+        else :
+          result = 0
+
+    cur.close()
+    conn.commit()
+
+    if result == None :
+       result = 0
+
+    return result
+    ################################## end get_profit
+
+def get_lay_risk(conn, betname, delta_days)  :
+    cur = conn.cursor()
+    cur.execute("""
+        select sum(RISK) from (
+        select
+           MARKETID,
+           max(SIZEMATCHED * (PRICEMATCHED-1)) as RISK
+        from
+          ABETS
+        where true
+        and STARTTS::date > (select CURRENT_DATE - interval '%s days')
+          and BETNAME = %s
+        group by MARKETID
+        ) TMP
+         """,(delta_days,betname))
+
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
@@ -100,57 +199,69 @@ def get_row(conn, betname, delta_days)  :
     cur.close()
     conn.commit()
     return result
-    ################################## end get_row
+    ################################## end get_lay_risk
 
-def get_bet_ratio(conn, betname, delta_days)  :
-    result=0
+def get_back_risk(conn, betname, delta_days)  :
     cur = conn.cursor()
-#                 "and B.BETMODE = 2 " \
     cur.execute("""
-                  select
-                    BETNAME,
-                    ((case side
-                      when 'LAY'  then sum(PROFIT)/(sum(SIZEMATCHED) * (avg(PRICEMATCHED)-1))
-                      when 'BACK' then sum(PROFIT)/sum(SIZEMATCHED)
-                    end)*100.0) as PROFITRATIO
-                  from
-                    ABETS
-                  where BETPLACED::date > (select CURRENT_DATE - interval '%s days')
-                    and BETWON is not null
-                    and EXESTATUS = 'SUCCESS'
-                    and STATUS in ('SETTLED')
-                    and BETNAME = %s
-                  group by
-                    BETNAME,SIDE
-                  having
-                    sum(SIZEMATCHED) > 0
-                    and max(BETPLACED)::date >= '2015-01-01'
-                  order by
-                    PROFITRATIO desc
-                """,(delta_days,betname)
-                )
+        select sum(RISK) from (
+        select
+           MARKETID,
+           sum(SIZEMATCHED) as RISK
+        from
+          ABETS
+        where true
+        and STARTTS::date > (select CURRENT_DATE - interval '%s days')
+          and BETNAME = %s
+        group by MARKETID
+        ) TMP
+         """,(delta_days,betname))
 
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
-          result = row[1]
+          result = row[0]
         else :
           result = 0
 
     if result == None :
        result = 0
 
-
-    if result <= -100.0 :
-       result = -99.99
-
-    if result >= 100.0 :
-       result = 99.99
-
-    return result
     cur.close()
     conn.commit()
-#end print_bet_ratio
+    return result
+    ################################## end get_back_risk
+
+def get_bet_ratio(conn, betname, delta_days)  :
+
+    # 1 if is laybet
+    # 2 get sum risked
+
+    # 3 if is backbet
+    # 4 get sum risked
+
+    # 5 get sum profit
+
+    profit=0.0
+    risked=1.0
+
+    if betname[:3] == "LAY" :
+      risked = get_lay_risk(conn, betname, delta_days)
+
+    elif betname[:4] == "BACK" :
+      risked = get_back_risk(conn, betname, delta_days)
+
+    profit = get_profit(conn, betname, delta_days)
+    #print betname, str(risked), str(profit)
+    
+    if int(risked) <= 0 : 
+      return 0 # avoid div0
+      
+    if int(profit) <= 0 : 
+      return 0 # 
+
+    return 100.0 * float(profit) / float(risked)
+#end get_bet_ratio
 
 
 
@@ -295,8 +406,8 @@ if __name__ == '__main__':
           main(g)
       except psycopg2.OperationalError:
           print 'Db not reachable or started?'
-      except psycopg2.DatabaseError:
-          print 'Bad database connection - dberror?'
+#      except psycopg2.DatabaseError:
+#          print 'Bad database connection - dberror?'
 
 #      time.sleep(60)
       for x in range(1, 48):
