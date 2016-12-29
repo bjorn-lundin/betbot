@@ -1,28 +1,16 @@
 with Types;    use Types;
-with Sql;
 with Calendar2; use Calendar2;
 with Text_IO;
 with Ini;
 with Ada.Environment_Variables;
---with Utils; use Utils;
 with Rpc;
-with Logging; use Logging;
 with Table_Astarttimes;
-with Gnat.Command_Line; use Gnat.Command_Line;
 with Stacktrace;
 with Ada.Containers;
 
 procedure Race_Time is
-
-  --Me : constant String := "Race_Time";
   package EV renames Ada.Environment_Variables;
   gDebug : Boolean := False;
-
-
-  Cmd_Line : Command_Line_Configuration;
-  Ba_Rpc : aliased Boolean := False;
-  Ba_Sql : aliased Boolean := False;
-
   -------------------------------
   procedure Debug (What : String) is
   begin
@@ -37,34 +25,14 @@ procedure Race_Time is
      Text_Io.Put_Line (What);
   end Print;
   -------------------------------
-
   Start_Time_List : Table_Astarttimes.Astarttimes_List_Pack2.List;
   Arrow_Is_Printed : Boolean := False;
   Now : Time_Type := Time_Type_First;
   use type Text_Io.Count;
-
   use type Ada.Containers.Count_Type;
 
 begin
-
-  Define_Switch
-    (Config      => Cmd_Line,
-     Output      => Ba_Rpc'access,
-     Long_Switch => "--rpc",
-     Help        => "rpc");
-
-  Define_Switch
-    (Config      => Cmd_Line,
-     Output      => Ba_Sql'access,
-     Long_Switch => "--sql",
-     Help        => "sql");
-
-  Getopt (Cmd_Line);  -- process the command line
-
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
-
-
-
   Rpc.Init(
            Username   => Ini.Get_Value("betfair","username",""),
            Password   => Ini.Get_Value("betfair","password",""),
@@ -91,25 +59,25 @@ begin
         for S of Start_Time_List loop
           if not Arrow_Is_Printed and then
             Now <= S.Starttime then
-               Print(
-                 S.Starttime.String_Time(Seconds => False) & " | " &
-                 S.Venue(1..15) & " <===="
-               ) ;
+            Print(
+                  S.Starttime.String_Time(Seconds => False) & " | " &
+                    S.Venue(1..15) & " <===="
+                 ) ;
             Arrow_Is_Printed := True;
           else
-               Print(
-                 S.Starttime.String_Time(Seconds => False) & " | " &
-                 S.Venue(1..15)
-               ) ;
+            Print(
+                  S.Starttime.String_Time(Seconds => False) & " | " &
+                    S.Venue(1..15)
+                 ) ;
           end if;
         end loop;
-        for i in 1 .. 30 loop
+        for I in 1 .. 30 loop
           Text_Io.Put('.');
           delay 1.0;
         end loop;
         -- new day, get new list after it is written to db
-        exit Day when (Now.Hour = 5 and then Now.Minute = 30) or else
-                       Start_Time_List.Length = 0 ;
+        exit Day when (Now.Hour = 0 and then Now.Minute = 0 and then Now.Second < 30) or else
+          Start_Time_List.Length = 0 ;
       end loop Day;
     end;
   end loop Days;
