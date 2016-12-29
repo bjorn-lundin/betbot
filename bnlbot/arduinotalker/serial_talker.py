@@ -1,8 +1,5 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
-#
-#import
-
 import time
 from time import sleep
 import sys
@@ -24,33 +21,13 @@ def get_row_weeks_back(conn, betname, delta_weeks)  :
     result = 0
     today = datetime.datetime.now()
     day = today + datetime.timedelta(days = int(delta_weeks * 7))
-#    day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
 
     mon = day - datetime.timedelta(today.weekday())
     sun = mon + datetime.timedelta(days = 6)
 
-#    print 'mon', mon
-#    print 'sun', sun
-
     mon2 = datetime.datetime(mon.year, mon.month, mon.day, 0, 0, 0)
     sun2 = datetime.datetime(sun.year, sun.month, sun.day, 23, 59, 59)
-#    print 'mon2', mon2
-#    print 'sun2', sun2
-
-#                 "and B.BETMODE = 2 " \
     cur = conn.cursor()
-#    cur.execute("""
-#                 select sum(B.PROFIT)
-#                 from ABETS B
-#                 where B.BETNAME = %s
-#                 and B.BETWON is not NULL
-#                 and B.EXESTATUS = 'SUCCESS'
-#                 and B.STATUS in ('SETTLED')
-#                 and B.BETPLACED >= %s
-#                 and B.BETPLACED <= %s """ ,
-#                   (betname, mon2, sun2))
-
-
     cur.execute("""
        select
           round(
@@ -70,9 +47,6 @@ def get_row_weeks_back(conn, betname, delta_weeks)  :
          and STARTTS <= %s
        order by PROFIT desc  """ ,
          (betname, mon2, sun2))
-
-
-#    print bet_type, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
 
     if cur.rowcount >= 1 :
         row = cur.fetchone()
@@ -94,7 +68,6 @@ def get_row(conn, betname, delta_days)  :
     day = datetime.datetime.now() + datetime.timedelta(days = delta_days)
     day_start = datetime.datetime(day.year, day.month, day.day,  0,  0,  0)
     day_stop  = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-#    print betname, day_start, day_stop
     cur = conn.cursor()
     cur.execute("""
        select
@@ -116,8 +89,6 @@ def get_row(conn, betname, delta_days)  :
        order by PROFIT desc  """ ,
              (betname,day_start,day_stop))
 
-
-#    print betname, 'rc', cur.rowcount, 'start', day_start, 'stop', day_stop
     if cur.rowcount >= 1 :
         row = cur.fetchone()
         if row :
@@ -256,14 +227,10 @@ def get_bet_ratio(conn, betname, delta_days)  :
     
     if int(risked) <= 0 : 
       return 0 # avoid div0
-      
-    if int(profit) <= 0 : 
-      return 0 # 
 
     return 100.0 * float(profit) / float(risked)
+############
 #end get_bet_ratio
-
-
 
 def main(g):
   # return
@@ -295,7 +262,6 @@ def main(g):
   buff += lcd_row_0 + '\r\n'
   buff += '---------------------------------------------------------------------------\r\n'
 #  print lcd_row_0
-
 
   for bet in bets :
     row1 = {}
@@ -342,7 +308,6 @@ def main(g):
       row1['typ'] = bet[:32].strip()
     else :
       row2['typ'] = bet
-
 
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])
@@ -406,10 +371,9 @@ if __name__ == '__main__':
           main(g)
       except psycopg2.OperationalError:
           print 'Db not reachable or started?'
-#      except psycopg2.DatabaseError:
-#          print 'Bad database connection - dberror?'
+      except psycopg2.DatabaseError:
+          print 'Bad database connection - dberror?'
 
-#      time.sleep(60)
       for x in range(1, 48):
         time.sleep(1)
         sys.stdout.write('.')
