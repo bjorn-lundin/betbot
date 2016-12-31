@@ -45,10 +45,10 @@ procedure Sim_Back_1_2_3 is
  --place_num=${place_num} \
  --max_back_price=${max_back} \
  --max_lay_price_delta=${max_lay_delta} > ./${name}.log 2>&1 &
-  Global_Has_Checked_Betname_Exists : Boolean := False;
   Betname_Exists : Sql.Statement_Type;
 
   Start : Calendar2.Time_Type := Calendar2.Clock;
+  Global_Bet_Suffix : String_Object;
 
   --------------------------------------------
   function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
@@ -60,20 +60,21 @@ procedure Sim_Back_1_2_3 is
 
   type Best_Runners_Array_Type is array (1 .. 10) of Price_Histories.Price_History_Type ;
   Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-  Bet_Suffix     :  String_Object;
 
   -------------------------------------
   function Check_Betname_Exists (Betname : String) return Boolean is
     Eos : Boolean := False;
+    T   : Sql.Transaction_Type;
   begin
+    T.Start;
     Betname_Exists.Prepare ("select 'a' from ABETS where BETNAME=:BETNAME");
     Betname_Exists.Set ("BETNAME", Betname);
     Betname_Exists.Open_Cursor;
     Betname_Exists.Fetch (Eos);
     Betname_Exists.Close_Cursor;
+    T.Commit;
     return not Eos;
   end Check_Betname_Exists;
-
 
   --------------------------------------------------
   procedure Treat (BR             : in Best_Runners_Array_Type;
@@ -83,34 +84,16 @@ procedure Sim_Back_1_2_3 is
                    Place_Num      : in Integer;
                    Max_Back_Price : in Float_8;
                    Max_Lay_Price  : in Float_8;
-                   Bet_Suffix     : in out String_Object) is
+                   Bet_Suffix     : in String_Object) is
 
     Bet     : Bets.Bet_Type;
     T       : Sql.Transaction_Type;
     Betname : Betname_Type ;
     Runner  : Runners.Runner_Type;
   begin
-    Bet_Suffix.Set("");
-    Bet_Suffix.Append ("_" & Trim (Num_Bets'Img) & "_" &
-                       Trim (First_Bet'Img) & "_" &
-                       Trim (Place_Num'Img) & "_" &
-                       F8_Image (Max_Back_Price) & "_" &
-                       F8_Image (Max_Lay_Price) );
-
 
     Move ("BACK" & Bet_Suffix.Fix_String, Betname);
     T.Start;
-
-    if not Global_Has_Checked_Betname_Exists then
-      Global_Has_Checked_Betname_Exists := True;
-      if Check_Betname_Exists (Betname) then
-        T.Commit;
-        raise Betname_Already_Exists;
-      end if;
-    end if;
-
-
-
 
     if Place_Num <= BR'Last and then BR (Place_Num).Backprice <= Max_Back_Price then
       for I in BR'Range loop
@@ -219,6 +202,24 @@ begin
      Password => "bnl");
   Log ("Connected to db");
 
+  declare
+    Betname    : Betname_Type := (others => ' ');
+  begin
+    Global_Bet_Suffix.Append ("_" & Trim (IA_Num_Bets'Img) & "_" &
+                       Trim (IA_First_Bet'Img) & "_" &
+                       Trim (IA_Place_Num'Img) & "_" &
+                       F8_Image (Global_Max_Back_Price) & "_" &
+                       F8_Image (Global_Max_Back_Price + Global_Max_Lay_Price_Delta) );
+    Move ("LAY" & Global_Bet_Suffix.Fix_String, Betname);
+    if Check_Betname_Exists (Betname) then
+      raise Betname_Already_Exists;
+    end if;
+    Move ("BACK" & Global_Bet_Suffix.Fix_String, Betname);
+    if Check_Betname_Exists (Betname) then
+      raise Betname_Already_Exists;
+    end if;
+  end;
+
   Day_Loop : loop
     exit Day_Loop when Day >  End_Date;
     Sim.Fill_Data_Maps(Day);
@@ -290,7 +291,7 @@ begin
                        Place_Num      => IA_Place_Num,
                        Max_Back_Price => Global_Max_Back_Price,
                        Max_Lay_Price  => Global_Max_Back_Price + Global_Max_Lay_Price_Delta,
-                       Bet_Suffix     => Bet_Suffix);
+                       Bet_Suffix     => Global_Bet_Suffix);
 
               end;
               exit Loop_Timestamp ; --when False;
@@ -304,7 +305,6 @@ begin
 --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
 --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
-
       Bet_List : Bets.Lists.List;
       All_Bets : Sql.Statement_Type;
       Runner_List : Runners.Lists.List;
@@ -312,8 +312,8 @@ begin
     begin
       T.Start;
       All_Bets.Prepare ("select * from ABETS where BETWON is null and BETNAME in (:BACKSUFFIX,:LAYSUFFIX) order by BETPLACED");
-      All_Bets.Set("BACKSUFFIX","BACK" & Bet_Suffix.Fix_String);
-      All_Bets.Set("LAYSUFFIX","LAY" & Bet_Suffix.Fix_String);
+      All_Bets.Set("BACKSUFFIX","BACK" & Global_Bet_Suffix.Fix_String);
+      All_Bets.Set("LAYSUFFIX","LAY" & Global_Bet_Suffix.Fix_String);
       Bets.Read_List(All_Bets, Bet_List);
       T.Commit;
       Log("num bets laid" & Bet_List.Length'Img);
@@ -388,7 +388,6 @@ begin
   Log("Started : " & Start.To_String);
   Log("Done : " & Calendar2.Clock.To_String);
   Logging.Close;
-
 
 exception
    when Betname_Already_Exists  =>
