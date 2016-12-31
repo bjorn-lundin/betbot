@@ -163,9 +163,9 @@ procedure Sim_Back_1_2_3 is
   use type Ada.Containers.Count_Type;
   Price : Price_Histories.Price_History_Type;
 
-  Day : Time_Type := (2016,03,19,00,00,00,000);
-  End_Date : Time_Type := Clock;
-  One_Day : Interval_Type := (1,0,0,0,0);
+  Day      : Time_Type     := (2016,03,31,00,00,00,000);
+  End_Date : Time_Type     := (2016,12,18,00,00,00,000);
+  One_Day  : Interval_Type := (1,0,0,0,0);
 begin
 
   if not EV.Exists ("BOT_NAME") then
@@ -205,13 +205,10 @@ begin
       Help        => "For laybets check runner 'place_num' for layodds <= max_back_price+max_lay_price_delta " &
                      "and for backodds <= max_back_price");
 
-
   Getopt (Cmd_Line);  -- process the command line
-
 
   Global_Max_Back_Price      := Float_8'Value(SA_Max_Back_Price.all);
   Global_Max_Lay_Price_Delta := Float_8'Value(SA_Max_Lay_Price_Delta.all);
-
 
   Log ("Connect db");
   Sql.Connect
@@ -222,9 +219,7 @@ begin
      Password => "bnl");
   Log ("Connected to db");
 
-
   Day_Loop : loop
-
     exit Day_Loop when Day >  End_Date;
     Sim.Fill_Data_Maps(Day);
     Log("start process date " & Day.To_String);
