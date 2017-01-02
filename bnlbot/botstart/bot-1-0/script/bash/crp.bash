@@ -24,7 +24,7 @@ if [ "$arg1" == "" ] ; then
 fi
 
 if [ "$arg1" == "all" ] ; then
-  PID_FILE_DIRECTORIES="soc ael dry jmb msm bnl"
+  PID_FILE_DIRECTORIES="ghd dry jmb msm bnl"
 else
   PID_FILE_DIRECTORIES=$arg1
 fi  

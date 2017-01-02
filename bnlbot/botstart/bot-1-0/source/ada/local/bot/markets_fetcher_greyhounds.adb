@@ -359,8 +359,8 @@ begin
       Rpc.Login;
     end if;
     
-    UTC_Time_Stop  := UTC_Time_Start + One_Minute + Eleven_Seconds; 
-    UTC_Time_Start := UTC_Time_Start + One_Minute;
+    UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds; 
+    UTC_Time_Start := UTC_Time_Start ; 
  
  
     T.Start;
@@ -499,90 +499,92 @@ begin
       end loop; --for loop
     end;
     
-    Log(Me, "Market_Found: " & Market_Found'Img);
-    if Market_Found then 
-      declare
-        Market   : JSON_Value := Create_Object;
-        MNR      : Bot_Messages.Market_Notification_Record;
-        --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
-        type Eos_Type is (Amarket, Aevent);
-        Eos       : array (Eos_Type'range) of Boolean := (others => False);
-        Db_Market : Markets.Market_Type;
-        Db_Event  : Table_AEvents.Event_Type;
-        --------------------------------------------------------------------                
-        
-      begin
-        for i in 1 .. Length (Market_Ids) loop
-          Market := Get(Market_Ids, i);
-          MNR.Market_Id := (others => ' ');
-          Move(String'(Market.Get),MNR.Market_Id);
-          --some more detailed dispatching is needed now 
-          -- what kind of event is it.  
-          T.Start;
-            Db_Market.Marketid := MNR.Market_Id;
-            Table_Amarkets.Read(DB_Market, Eos(Amarket));
-            if not Eos(Amarket) then
-              Db_Event.Eventid := Db_Market.Eventid;
-              Table_Aevents.Read(Db_Event, Eos(Aevent));
-              if not Eos(Aevent) then
-                Log(Me, "DB_Event.Eventtypeid: " & DB_Event.Eventtypeid'Img);
-              
-                case DB_Event.Eventtypeid is
-                  ------------------------------------------------------------------                
-                  when 4339      => -- greyhounds
-                    if Is_Data_Collector then
-                      for i in Data_Pollers'range loop
-                        Log(Me, "Data_Pollers(i).Free: " & Data_Pollers(i).Free'Img);
-                        if Data_Pollers(i).Free then
-                          Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
-                          Data_Pollers(i).Free := False;
-                          exit;
-                        end if;
-                      end loop;
-                      
-                    --elsif Is_Better then
-                      for i in Race_Pollers_1'range loop
-                        Log(Me, "Race_Pollers_1(i).Free: " & Race_Pollers_1(i).Free'Img);
-                        if Race_Pollers_1(i).Free then
-                          Log(Me, "Notifying " & Trim(Race_Pollers_1(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_1(i).Process.Name)), MNR);
-                          Race_Pollers_1(i).Free := False;
-                          exit;
-                        end if;
-                      end loop; 
-                      
-                      for i in Race_Pollers_2'range loop
-                        Log(Me, "Race_Pollers_2(i).Free: " & Race_Pollers_2(i).Free'Img);
-                        if Race_Pollers_2(i).Free then
-                          Log(Me, "Notifying " & Trim(Race_Pollers_2(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                          Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_2(i).Process.Name)), MNR);
-                          Race_Pollers_2(i).Free := False;
-                          exit;
-                        end if;
-                      end loop; 
-                    --  
-                    --elsif Is_Tester then
-                    --  for i in Test_Pollers'range loop
-                    --    if Test_Pollers(i).Free then
-                    --      Log(Me, "Notifying " & Trim(Test_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
-                    --      Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Test_Pollers(i).Process.Name)), MNR);
-                    --      Test_Pollers(i).Free := False;
-                    --      exit;
-                    --    end if;
-                    --  end loop;                    
-                    end if;
-               
-                  ------------------------------------------------------------------                
-                  when others => null;
-                  ------------------------------------------------------------------                                  
-                end case;  
-              end if;
-            end if;              
-          T.Commit;
-        end loop;
-      end;  
-    end if;        
+  --just get prices at race start for now
+    
+  --  Log(Me, "Market_Found: " & Market_Found'Img);
+  --  if Market_Found then 
+  --    declare
+  --      Market   : JSON_Value := Create_Object;
+  --      MNR      : Bot_Messages.Market_Notification_Record;
+  --      --Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
+  --      type Eos_Type is (Amarket, Aevent);
+  --      Eos       : array (Eos_Type'range) of Boolean := (others => False);
+  --      Db_Market : Markets.Market_Type;
+  --      Db_Event  : Table_AEvents.Event_Type;
+  --      --------------------------------------------------------------------                
+  --      
+  --    begin
+  --      for i in 1 .. Length (Market_Ids) loop
+  --        Market := Get(Market_Ids, i);
+  --        MNR.Market_Id := (others => ' ');
+  --        Move(String'(Market.Get),MNR.Market_Id);
+  --        --some more detailed dispatching is needed now 
+  --        -- what kind of event is it.  
+  --        T.Start;
+  --          Db_Market.Marketid := MNR.Market_Id;
+  --          Table_Amarkets.Read(DB_Market, Eos(Amarket));
+  --          if not Eos(Amarket) then
+  --            Db_Event.Eventid := Db_Market.Eventid;
+  --            Table_Aevents.Read(Db_Event, Eos(Aevent));
+  --            if not Eos(Aevent) then
+  --              Log(Me, "DB_Event.Eventtypeid: " & DB_Event.Eventtypeid'Img);
+  --            
+  --              case DB_Event.Eventtypeid is
+  --                ------------------------------------------------------------------                
+  --                when 4339      => -- greyhounds
+  --                  if Is_Data_Collector then
+  --                    for i in Data_Pollers'range loop
+  --                      Log(Me, "Data_Pollers(i).Free: " & Data_Pollers(i).Free'Img);
+  --                      if Data_Pollers(i).Free then
+  --                        Log(Me, "Notifying " & Trim(Data_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+  --                        Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Data_Pollers(i).Process.Name)), MNR);
+  --                        Data_Pollers(i).Free := False;
+  --                        exit;
+  --                      end if;
+  --                    end loop;
+  --                    
+  --                  --elsif Is_Better then
+  --                    for i in Race_Pollers_1'range loop
+  --                      Log(Me, "Race_Pollers_1(i).Free: " & Race_Pollers_1(i).Free'Img);
+  --                      if Race_Pollers_1(i).Free then
+  --                        Log(Me, "Notifying " & Trim(Race_Pollers_1(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+  --                        Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_1(i).Process.Name)), MNR);
+  --                        Race_Pollers_1(i).Free := False;
+  --                        exit;
+  --                      end if;
+  --                    end loop; 
+  --                    
+  --                    for i in Race_Pollers_2'range loop
+  --                      Log(Me, "Race_Pollers_2(i).Free: " & Race_Pollers_2(i).Free'Img);
+  --                      if Race_Pollers_2(i).Free then
+  --                        Log(Me, "Notifying " & Trim(Race_Pollers_2(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+  --                        Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Race_Pollers_2(i).Process.Name)), MNR);
+  --                        Race_Pollers_2(i).Free := False;
+  --                        exit;
+  --                      end if;
+  --                    end loop; 
+  --                  --  
+  --                  --elsif Is_Tester then
+  --                  --  for i in Test_Pollers'range loop
+  --                  --    if Test_Pollers(i).Free then
+  --                  --      Log(Me, "Notifying " & Trim(Test_Pollers(i).Process.Name) & " with marketid: '" & MNR.Market_Id & "'");
+  --                  --      Bot_Messages.Send(Process_IO.To_Process_Type(Trim(Test_Pollers(i).Process.Name)), MNR);
+  --                  --      Test_Pollers(i).Free := False;
+  --                  --      exit;
+  --                  --    end if;
+  --                  --  end loop;                    
+  --                  end if;
+  --             
+  --                ------------------------------------------------------------------                
+  --                when others => null;
+  --                ------------------------------------------------------------------                                  
+  --              end case;  
+  --            end if;
+  --          end if;              
+  --        T.Commit;
+  --      end loop;
+  --    end;  
+  --  end if;        
   end loop Main_Loop; 
                
   Log(Me, "shutting down, close db");

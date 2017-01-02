@@ -139,7 +139,7 @@ procedure Poll is
       Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PLB.Size);
       Bot_Messages.Send(Receiver, PLB);
       
-      case Main_Bet is -- some betrs have several runners ...
+      case Main_Bet is -- some bets have several runners ...
         when Lay_2_2_4_11_17_Win .. Lay_2_2_4_11_17_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;

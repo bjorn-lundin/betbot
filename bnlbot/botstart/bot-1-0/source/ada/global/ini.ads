@@ -71,6 +71,7 @@ package Ini is
   -- v9.4-6643
   procedure Load (File_Name : in String);
 
+  function Is_Loaded return Boolean;
 
   -- Write current configuration to the last loaded text file. All comments 
   -- will be lost !
