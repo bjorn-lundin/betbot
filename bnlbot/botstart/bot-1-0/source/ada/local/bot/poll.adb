@@ -83,7 +83,7 @@ procedure Poll is
       when 10 ..99   => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Num'Img, Both));
       when 100 ..999 => return Process_Io.To_Process_Type("bet_placer_"   & Trim(Num'Img, Both));
       when others    => raise Constraint_Error with "To many processes" & Num'Img;
-    end case;    
+    end case;
   end Get_Bet_Placer;
   ----------------------------------------------------------
 
@@ -138,12 +138,12 @@ procedure Poll is
            Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
       Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PLB.Size);
       Bot_Messages.Send(Receiver, PLB);
-      
+
       case Main_Bet is -- some bets have several runners ...
-        when Lay_2_2_4_11_17_Win .. Lay_2_2_4_11_17_Win => null;
+        when Lay_2_2_4_11_17_Win .. Back_3_4_4_8_14_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
-      
+
       Did_Bet(1) := True;
     end if;
 
@@ -157,6 +157,68 @@ procedure Poll is
     end if;
 
   end Send_Lay_Bet;
+  --------------------------------------------------------------
+
+
+  procedure Send_Back_Bet(Selectionid    : Integer_4;
+                         Main_Bet       : Bet_Type;
+                         Min_Price      : Back_Price_Type;
+                         Marketid       : Marketid_Type;
+                         Match_Directly : Boolean := False) is
+
+    PBB             : Bot_Messages.Place_Back_Bet_Record;
+    Did_Bet : array(1..1) of Boolean := (others => False);
+    Receiver : Process_Io.Process_Type := Get_Bet_Placer(Main_Bet);
+  begin
+    declare
+      -- only bet on allowed days
+      Now : Time_Type := Clock;
+      Day : Week_Day_Type := Week_Day_Of(Now);
+    begin
+      if not Cfg.Allowed_Days(Day) then
+        Log("No bet layed, bad weekday" );
+        return;
+      end if;
+    end;
+
+    if not Cfg.Bet(Main_Bet).Enabled then
+      Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+      return;
+    end if;
+
+    case Match_Directly is
+      when False => PBB.Match_Directly := 0;
+      when True  => PBB.Match_Directly := 1;
+    end case;
+
+    PBB.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
+    Move(Marketid, PBB.Market_Id);
+    Move(F8_Image(Float_8(Min_Price)), PBB.Price); --abs max
+    PBB.Selection_Id := Selectionid;
+
+    if not Bets_Allowed(Main_Bet).Has_Betted and then
+           Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
+      Move(F8_Image(Float_8(Bets_Allowed(Main_Bet).Bet_Size)), PBB.Size);
+      Bot_Messages.Send(Receiver, PBB);
+
+      case Main_Bet is -- some bets have several runners ...
+        when Lay_2_2_4_11_17_Win .. Back_3_4_4_8_14_Win => null;
+        when others => Bets_Allowed(Main_Bet).Has_Betted := True;
+      end case;
+
+      Did_Bet(1) := True;
+    end if;
+
+    if Did_Bet(1) then
+      Log("Send_Back_Bet called with " &
+         " Selectionid=" & Selectionid'Img &
+         " Main_Bet=" & Main_Bet'Img &
+         " Marketid= '" & Marketid & "'" &
+         " Receiver= '" & Receiver.Name & "'");
+      Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(PBB.Bet_Name) & "' sel.id:" &  PBB.Selection_Id'Img );
+    end if;
+
+  end Send_Back_Bet;
   --------------------------------------------------------------
 
   procedure Send_Bet(Selectionid     : Integer_4;
@@ -344,7 +406,7 @@ procedure Poll is
     Tmp(2)    := '.';
     Tmp(3..4) := Image(7..8);
     Max_Backprice_1 := Float_8'Value(Tmp);
-    
+
     Tmp := (others => ' ');
     Tmp(1..2) := Image(10..11);
     Max_Layprice_n := Max_Lay_Price_Type'Value(Tmp);
@@ -352,7 +414,7 @@ procedure Poll is
     Tmp := (others => ' ');
     Tmp(1) := Image(17);
     Layed_Num := Integer'Value(Tmp);
-    
+
     Tmp := (others => ' ');
     Tmp(1..2) := Image(19..20);
     Additional_Layprice_n :=  Max_Lay_Price_Type'Value(Tmp);
@@ -386,6 +448,7 @@ procedure Poll is
     Lay_Price           : Float_8 := 0.0;
     Tic                 : Integer := 0;
     Image : String := Bettype'Img;
+    Service : String := "Do_Place_Lay_Bets_At_Start";
   begin          --1         2         3
       --  123456789012345678901234567890123456789
       --  Lay_2_2_4_11_17_Win
@@ -401,25 +464,25 @@ procedure Poll is
       BR(Place_Num).Backprice < Float_8(10_000.0) and then  -- so it exists
       Br (Place_Num).Backprice <= Max_Back_Price and then
       Br (Place_Num).Layprice <= Max_Lay_Price then
-      
+
       for I in Br'Range loop
-      
-        Log("Do_Place_Lay_Bets_At_Start I=" & I'Img & 
+
+        Log(Service & " I=" & I'Img &
               " Num_Bets=" & Num_Bets'Img &
               " First_Bet=" & First_Bet'Img &
-              " Place_Num=" & Place_Num'Img & 
-              " Max_Back_Price=" & F8_Image(Max_Back_Price) & 
-              " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) & 
-              " Br (I).Layprice=" & F8_Image(Br (I).Layprice) & 
-              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));              
-      
+              " Place_Num=" & Place_Num'Img &
+              " Max_Back_Price=" & F8_Image(Max_Back_Price) &
+              " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) &
+              " Br (I).Layprice=" & F8_Image(Br (I).Layprice) &
+              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+
         if I >= First_Bet then
           if I < First_Bet + Num_Bets then
             if Br (I).Layprice <= Max_Lay_Price then
               if Br (I).Backprice <= Max_Back_Price then
                 -- to get legal odds
                 Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Layprice);
-                Lay_Price := Tics.Get_Tic_Price(Tic+4); -- some small margin to get the bet 
+                Lay_Price := Tics.Get_Tic_Price(Tic+4); -- some small margin to get the bet
 
                 Send_Lay_Bet(Selectionid     => Br(I).Selectionid,
                              Main_Bet        => Bettype,
@@ -427,21 +490,93 @@ procedure Poll is
                              Max_Price       => Max_Lay_Price_Type(Lay_Price),
                              Match_Directly  => Match_Directly);
               else
-                Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
-              end if;                       
+                Log (Service & ": I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
+              end if;
             else
-              Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br (I).Layprice <= Max_Lay_Price));
-            end if;                       
+              Log (Service & ": I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br (I).Layprice <= Max_Lay_Price));
+            end if;
           else
-            Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
-          end if;                       
+            Log (Service & ": I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
+          end if;
         else
-          Log ("Do_Place_Lay_Bets_At_Start: I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
+          Log (Service & ": I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
         end if;
       end loop;
     end if;
     Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
   end Do_Place_Lay_Bets_At_Start;
+  -----------------------------------------------
+  procedure Do_Place_Back_Bets_At_Start(
+      Bettype         : Config.Bet_Type;
+      BR              : Best_Runners_Array_Type;
+      Marketid        : Marketid_Type;
+      Match_Directly : Boolean := False) is
+
+    Service : String := "Do_Place_Back_Bets_At_Start";
+    Max_Back_Price       : Float_8;
+    Max_Lay_Price        : Max_Lay_Price_Type;
+    First_Bet            : Integer := 0;
+    Place_Num            : Integer := 0;
+    Num_Bets             : Integer := 0;
+    Back_Price           : Float_8 := 0.0;
+    Tic                  : Integer := 0;
+    Image : String := Bettype'Img;
+  begin          --1         2         3
+      --  123456789012345678901234567890123456789
+      --  Back_2_2_4_11_17_Win
+
+    Num_Bets  := Integer'Value(Image(6..6));
+    First_Bet := Integer'Value(Image(8..8));
+    Place_Num := Integer'Value(Image(10..10));
+    Max_Back_Price := Float_8'Value(Image(12..13));
+    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(15..16));
+
+    if Place_Num <= Br'Last and then
+      BR(1).Backprice >= Float_8(1.01) and then
+      BR(Place_Num).Backprice < Float_8(10_000.0) and then  -- so it exists
+      Br (Place_Num).Backprice <= Max_Back_Price and then
+      Br (Place_Num).Layprice <= Max_Lay_Price then
+
+      for I in Br'Range loop
+
+        Log(Service & " I=" & I'Img &
+              " Num_Bets=" & Num_Bets'Img &
+              " First_Bet=" & First_Bet'Img &
+              " Place_Num=" & Place_Num'Img &
+              " Max_Back_Price=" & F8_Image(Max_Back_Price) &
+              " Max_Lay_Price=" & F8_Image(Float_8(Max_Lay_Price)) &
+              " Br (I).Layprice=" & F8_Image(Br (I).Layprice) &
+              " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+
+        if I >= First_Bet then
+          if I < First_Bet + Num_Bets then
+            if Br (I).Layprice <= Max_Lay_Price then
+              if Br (I).Backprice <= Max_Back_Price then
+                -- to get legal odds
+                Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Backprice);
+                Back_Price := Tics.Get_Tic_Price(Tic-4); -- some small margin to get the bet
+
+                Send_Back_Bet (Selectionid     => Br (I).Selectionid,
+                               Main_Bet        => Bettype,
+                               Marketid        => Marketid,
+                               Min_Price       => Back_Price_Type (Back_Price),
+                               Match_Directly  => Match_Directly);
+              else
+                Log (Service & ": I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
+              end if;
+            else
+              Log (Service & ": I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br (I).Layprice <= Max_Lay_Price));
+            end if;
+          else
+            Log (Service & ": I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
+          end if;
+        else
+          Log (Service & ": I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
+        end if;
+      end loop;
+    end if;
+    Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
+  end Do_Place_Back_Bets_At_Start;
   -----------------------------------------------
 
 
@@ -647,17 +782,23 @@ procedure Poll is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
 
-            when Lay_2_2_4_11_17_Win =>
+            when Lay_2_2_4_11_17_Win .. Lay_3_1_4_10_16_Win =>
               if First_Time then
                 Do_Place_Lay_Bets_At_Start(
                         Bettype         => i,
                         BR              => Best_Runners,
                         Marketid        => Markets_Array(Win).Marketid,
-                        Match_Directly  => True);
-
-                First_Time := False;
+                                           Match_Directly  => True);
               end if;
 
+            when Back_3_4_4_8_14_Win .. Back_6_4_4_8_14_Win =>
+              if First_Time then
+                Do_Place_Back_Bets_At_Start(
+                        Bettype         => i,
+                        BR              => Best_Runners,
+                        Marketid        => Markets_Array(Win).Marketid,
+                        Match_Directly  => True);
+              end if;
 
             when Lay_2_90_20_WIN_8_00 ..
                  Lay_2_90_20_WIN_8_00   =>
@@ -683,7 +824,7 @@ procedure Poll is
                         Match_Directly  => Match_Directly);
                 end if;
               end;
-      
+
             when Back_1_10_07_1_2_PLC_1_01 ..
                  Back_1_10_10_1_2_PLC_1_02   =>
               declare
@@ -736,7 +877,8 @@ procedure Poll is
                 end if;
               end;
           end case;
-        end loop;        
+        end loop;
+        First_Time := False;
       end if; -- Best_Runner(1).Backodds >= 1.01
     end loop Poll_Loop;
 
