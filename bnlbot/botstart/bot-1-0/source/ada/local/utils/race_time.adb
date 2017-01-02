@@ -55,7 +55,7 @@ begin
       Day : loop
         Arrow_Is_Printed := False;
         Now := Calendar2.Clock;
-        Text_Io.New_Line(Text_Io.Count(Start_Time_List.Length) +1);
+        Text_Io.New_Line(Text_Io.Count(100));
         for S of Start_Time_List loop
           if not Arrow_Is_Printed and then
             Now <= S.Starttime then

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-EXE=check_lay
+EXE=sim_back_1_2_3
 
 function wait_until_all_done {
 # bnl@ibm2:~$ ps -ef | grep check_for_greenup_win2 | grep -v grep
@@ -18,35 +17,58 @@ function wait_until_all_done {
     if [ $R -eq 1 ] ; then
       break
     fi  
-    sleep 30
+    sleep 5
   done
 }
 
-runners_place_list="4 5 6 7"
-addon_odds_list="10 20 30"
-max_lay_list="35 40 45 50"
-min_lay_list="1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8"
 
+function wait_until_less_than_8 {
+# bnl@ibm2:~$ ps -ef | grep check_for_greenup_win2 | grep -v grep
+# bnl@ibm2:~$ echo $?
+# 1
+# bnl@ibm2:~$ ps -ef | grep crypto | grep -v grep
+# root        23     2  0 19:38 ?        00:00:00 [crypto]
+# bnl@ibm2:~$ echo $?
+# 0
+  while true ; do
+    cnt=$(ps -ef | grep -v grep |grep -c ${EXE})
+    R=$?
+    #echo $R
+    if [ $cnt -lt 8 ] ; then
+      break
+    fi  
+    sleep 5
+  done
+}
+
+
+
+num_bets_list="1 2 3 4 5 6"
+first_bet_list="1 2 3 4 5 6"
+max_lay_delta_list="6"
+place_num_list="1 2 3 4 5 6"
+max_back_list="2 3 4 5 6 7 8 9 10"
 
 wait_until_all_done
 
-for rp in ${runners_place_list} ; do
-  for ao in ${addon_odds_list} ; do
-    for max in ${max_lay_list} ; do
-      for min in ${min_lay_list} ; do
-        echo "bnl_${min}_${max}_${rp}_${ao}.log "
-        nohup $BOT_TARGET/bin/check_lay \
-         --betname=LAY_${min}_${max}_WIN_${rp}_${ao} \
-         --runners_place=${rp} \
-         --addon_odds=${ao} \
-         --min_price=${min} \
-         --max_price=${max} > ./lay_${min}_${max}_win_${rp}_${ao}.log 2>&1 &
-      sleep 1     
+for num_bets in ${num_bets_list} ; do
+  for first_bet in ${first_bet_list} ; do
+    for place_num in ${place_num_list} ; do
+      for max_back in ${max_back_list} ; do
+        for max_lay_delta in ${max_lay_delta_list} ; do
+          name=${num_bets}_${first_bet}_${place_num}_${max_back}_${max_lay_delta}
+          echo "${name}.log "
+          nohup ${BOT_TARGET}/bin/${EXE} \
+           --num_bets=${num_bets} \
+           --first_bet=${first_bet} \
+           --place_num=${place_num} \
+           --max_back_price=${max_back} \
+           --max_lay_price_delta=${max_lay_delta} > ./${name}.log 2>&1 &
+        sleep 1
+        wait_until_less_than_8
+        done
       done
-      wait_until_all_done
+      date
     done
   done
 done
-
-
-
