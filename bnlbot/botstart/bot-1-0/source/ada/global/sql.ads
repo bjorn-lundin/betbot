@@ -93,7 +93,7 @@ package Sql is
    -- Start with Connect
    -- There can be one connection only to a database.
    -- This package is NOT task-safe
-   -- if several tasks are needed, create a serailising task, that handles ALL db interaction
+   -- if several tasks are needed, create a serialising task, that handles ALL db interaction
    
    
 

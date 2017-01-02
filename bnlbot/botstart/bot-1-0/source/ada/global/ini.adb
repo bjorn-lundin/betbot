@@ -28,7 +28,7 @@ with Utils;
 
 package body Ini is
 
-
+  Global_Is_Loaded : Boolean := False;
   type String_Pointer_Type is access String;
 
   type Variable_Type;
@@ -339,11 +339,16 @@ package body Ini is
       when Text_Io.End_Error => null;
     end;
     Text_Io.Close(File);  -- V8.2a
+     Global_Is_Loaded := True;
 --    if To_String(Washed_File_Name) /= File_Name then
 --      Ada.Directories.Delete_File(To_String(Washed_File_Name));
 --    end if;
   end Load;
 
+  function Is_Loaded return Boolean is
+  begin
+    return Global_Is_Loaded;
+  end Is_Loaded; 
 
   procedure Save is
     S   : Section_Pointer_Type := Data.Section_List;

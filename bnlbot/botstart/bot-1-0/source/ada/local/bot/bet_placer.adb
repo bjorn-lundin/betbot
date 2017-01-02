@@ -119,7 +119,6 @@ procedure Bet_Placer is
         Ixxluts        => Now              --set by insert
       );
     else -- real bet
-
       Log(Me & "Place_Bet", "call Rpc.Place_Bet");
       Rpc.Place_Bet (Bet_Name         => Bet_Name,
                      Market_Id        => Market_Id,
@@ -131,9 +130,7 @@ procedure Bet_Placer is
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
                      Bet              => A_Bet);
-      Log(Me & "Place_Bet", "call Rpc.Place_Bet");
-      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " inserted bet: " & A_Bet.To_String);
-
+      Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " created bet to put on disk: " & A_Bet.To_String);
     end if; -- dry run
 
     -- save bet in JSON on disk
