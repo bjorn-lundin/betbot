@@ -24,7 +24,8 @@
   betname
 from
   abets
-where STATUS in ('MATCHED','SETTLED')
+--where STATUS in ('MATCHED','SETTLED')
+where STATUS in ('SETTLED')
   and betwon is not null
 group by
   betname,side
