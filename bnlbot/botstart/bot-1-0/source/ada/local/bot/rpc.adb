@@ -1,6 +1,6 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Environment_Variables;
+--with Ada.Environment_Variables;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
@@ -12,13 +12,13 @@ with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
 with Stacktrace;
 with Ada.Calendar.Time_Zones;
-with Bot_System_Number;
-with Sql;
-with Ini;
+--with Bot_System_Number;
+--with Sql;
+--with Ini;
 
 package body RPC is
 
- package EV renames Ada.Environment_Variables;
+ --package EV renames Ada.Environment_Variables;
  Me : constant String := "RPC.";
 
   No_Such_Field : exception;
@@ -1672,27 +1672,29 @@ package body RPC is
     end ;
 
     if Trim(Execution_Report_Status) /= "SUCCESS" then
-      Log(Me & "Make_Bet", "bad bet, get fake betid");
-      
-      if not Sql.Is_Session_Open then
-        begin        
-          if not Ini.Is_Loaded then 
-            Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-          end if;           
-          Log(Me, "Connect Db");
-          Sql.Connect
-                (Host     => Ini.Get_Value("database", "host", ""),
-                 Port     => Ini.Get_Value("database", "port", 5432),
-                 Db_Name  => Ini.Get_Value("database", "name", ""),
-                 Login    => Ini.Get_Value("database", "username", ""),
-                 Password => Ini.Get_Value("database", "password", ""));
-          Log(Me, "db Connected");
-          Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
-          Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
-          Log(Me, "Close Db");
-          Sql.Close_Session;
-        end;
-      end if;
+      Log(Me & "Make_Bet", "bad bet, get fake betid in bet_checker");
+      Bet_Id := 0;
+      Log(Me & "Make_Bet", "bad bet, set powerdays=0 to NOT try to cancel the bet");
+      Powerdays := 0;
+      --if not Sql.Is_Session_Open then
+      --  begin        
+      --    if not Ini.Is_Loaded then 
+      --      Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
+      --    end if;           
+      --    Log(Me, "Connect Db");
+      --    Sql.Connect
+      --          (Host     => Ini.Get_Value("database", "host", ""),
+      --           Port     => Ini.Get_Value("database", "port", 5432),
+      --           Db_Name  => Ini.Get_Value("database", "name", ""),
+      --           Login    => Ini.Get_Value("database", "username", ""),
+      --           Password => Ini.Get_Value("database", "password", ""));
+      --    Log(Me, "db Connected");
+      --    Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      --    Log(Me & "Make_Bet", "bad bet, save it for later with dr betid");
+      --    Log(Me, "Close Db");
+      --    Sql.Close_Session;
+      --  end;
+      --end if;
     end if;
 
     Log(Me & "Make_Bet", "create bet");

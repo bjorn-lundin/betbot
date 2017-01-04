@@ -9,12 +9,12 @@ package Config is
   type Bet_Type is (
                     Lay_2_2_4_11_17_Win, -- Several Bets In This Type
                     Lay_3_1_4_10_16_Win,
-                    Back_3_4_4_8_14_Win,
-                    Back_4_4_4_8_14_Win,
-                    Back_4_4_4_9_15_Win,
-                    Back_5_4_4_8_14_Win,
-                    Back_5_4_4_9_15_Win,
-                    Back_6_4_4_8_14_Win,
+                    Back_3_4_4_08_14_Win,
+                    Back_4_4_4_08_14_Win,
+                    Back_4_4_4_09_15_Win,
+                    Back_5_4_4_08_14_Win,
+                    Back_5_4_4_09_15_Win,
+                    Back_6_4_4_08_14_Win,
                     Lay_2_90_20_Win_8_00,
                     Back_1_96_2_00_08_10_1_2_Win_1_70,
                     Back_1_11_1_15_05_07_1_2_Plc_1_01,
