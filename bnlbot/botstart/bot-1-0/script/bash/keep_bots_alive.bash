@@ -2,6 +2,7 @@
 
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
+#2 0 * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/dump_db.bash
 #install with
 
 #echo "25 3 * * * /home/bnl/bnlbot/do_backup_db.bash" >  crontab.tmp
@@ -18,18 +19,8 @@
 
 #exit 0
 
-NUM_RUNNING=$(ps -ef | grep -v grep | grep -c keep_bots_alive.bash)
-#if [ $NUM_RUNNING -gt 2 ] ; then
-#  exit 0
-#fi
-
 [ -r /var/lock/bot ] && exit 0
 
-export PG_DUMP=pg_dump
-export VACUUMDB=vacuumdb
-export REINDEXDB=reindexdb
-
-export DUMP_DIRECTORY="/data/dbdumps"
 
 TZ='Europe/Stockholm'
 export TZ
@@ -99,31 +90,18 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
 
-#  case $BOT_MACHINE_ROLE in
-#    PROD) BOT_LIST="bot" ;;
-#    TEST) BOT_LIST="bot" ;;
-#    SIM)  BOT_LIST="" ;;
-#    *)    BOT_LIST="" ;;
-#  esac
-
   Start_Bot $BOT_USER bet_checker bet_checker
 
   POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6"
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
-
-  #for bot in $BOT_LIST ; do
-  #  if [ $bot == "bot" ] ; then
-  #    Start_Bot $BOT_USER $bot bot betfair.ini
-  #  else
-  #    Start_Bot $BOT_USER $bot bot $bot.ini
-  #  fi
-  #done
+  
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
                    bet_placer_004 bet_placer_005 bet_placer_006 \
                    bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 bet_placer_011 bet_placer_012 "
+                   bet_placer_010 bet_placer_011 bet_placer_012 \
+                   bet_placer_013 bet_placer_014 bet_placer_015 "
                    
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -138,13 +116,6 @@ function Check_Bots_For_User () {
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
-  fi
-
-  if [ $BOT_HOUR == "00" ] ; then
-    if [ $BOT_MINUTE == "01" ] ; then
-    #  Start_Bot $BOT_USER data_mover data_mover
-      $BOT_TARGET/bin/race_time --rpc
-    fi
   fi
 
 }
@@ -249,11 +220,6 @@ function Check_System_Bots_For_User () {
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 
-  #if [ $BOT_HOUR == "13" ] ; then
-  #  if [ $BOT_MINUTE == "10" ] ; then
-  #    Start_Bot $BOT_USER data_mover data_mover
-  #  fi
-  #fi
 
   #if [ $IS_TESTER == "true" ] ; then
   #  case $BOT_MINUTE in
@@ -371,44 +337,6 @@ function Create_Plots () {
   cd ${old_pwd}
 }
 
-function create_dump () {
-
-  #WD=/data/db_dumps/script
-  DATE=$(date +"%d")
-  YEAR=$(date +"%Y")
-  MONTH=$(date +"%m")
-  TARGET_DIR=/data/db_dumps/${YEAR}/${MONTH}/${DATE}
-
-  [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
-
-  export PATH=/usr/bin:$PATH
-
-  DB_LIST="ael bnl dry ghd jmb msm soc"
-  TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets"
-
-  for DBNAME in ${DB_LIST} ; do
-    for TABLE in ${TABLE_LIST} ; do
-      pg_dump --schema-only --dbname=${DBNAME} --table=${TABLE} > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}_schema.dmp
-      pg_dump --data-only  --dbname=${DBNAME} --column-inserts --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.dmp.gz
-      R=$?
-      if [ $R -eq 0 ] ; then
-        case ${TABLE} in
-          abets)  echo "null" > /dev/null ;;
-              *)  psql --no-psqlrc --dbname=${DBNAME} --command="truncate table ${TABLE}" ;;
-        esac
-      fi
-    done
-  done
-
-  #DB_LIST="${DB_LIST} ${DBNAME}"
-  #
-  for DBNAME in ${DB_LIST} ; do
-    vacuumdb --dbname=${DBNAME} --analyze
-  # # reindexdb --dbname=${DBNAME} --system
-  # # reindexdb --dbname=${DBNAME}
-  done
-
-}
 
 # start here
 
@@ -417,8 +345,14 @@ MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
 DAY=$(date +"%d")
 
+NUM_RUNNING=$(ps -ef | grep -v grep | grep -c keep_bots_alive.bash)
+if [ $NUM_RUNNING -gt 1 ] ; then
+  exit 0
+fi    
+
 case $BOT_MACHINE_ROLE in
   PROD)
+    
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     SYSTEM_USER_LIST="dry soc ghd"
@@ -432,47 +366,6 @@ case $BOT_MACHINE_ROLE in
     for USR in $SYSTEM_USER_LIST ; do
       Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
     done
-
-    if [ $HOUR == "00" ] ; then
-      if [ $MINUTE == "01" ] ; then
-          create_dump
-      fi
-    fi
-
-    #if [ $DAY == "1" ] ; then
-    #  if [ $HOUR == "13" ] ; then
-    #    if [ $MINUTE == "12" ] ; then
-    #      SLEEPTIME=1
-    #      for USR in $USER_LIST ; do
-    #        #Start one every 20 min in the background
-    #        (sleep $SLEEPTIME && $PG_DUMP --host=$HOST --username=bnl --dbname=$USR | gzip > ${DUMP_DIRECTORY}/${USR}_${WEEK_DAY}.dmp.gz) &
-    #        (( SLEEPTIME = SLEEPTIME +1200 ))
-    #      done
-    #    fi
-    #  fi
-    #fi
-
-
-    #if [ $HOUR == "13" ] ; then
-    #  if [ $MINUTE == "20" ] ; then
-    #    for USR in $USER_LIST_PLAYERS_ONLY ; do
-    #
-    #    #Start one every 5 min in the background, both with and without system tables
-    #    SLEEPTIME=1
-    #    (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR --system) &
-    #    (( SLEEPTIME = SLEEPTIME +10 ))
-    #    (sleep $SLEEPTIME && $REINDEXDB --host=$HOST --username=bnl --dbname=$USR ) &
-    #    (( SLEEPTIME = SLEEPTIME +300 ))
-    #    done
-    #  fi
-    #fi
-
-   # if [ $MINUTE == "05" ] || [ $MINUTE == "25" ] || [ $MINUTE == "45" ] ; then
-   #   for USR in $USER_LIST_PLAYERS_ONLY ; do
-   #     Create_Plots $USR 42
-   #     Create_Plots $USR 182
-   #   done
-   # fi
 
   ;;
   *)
