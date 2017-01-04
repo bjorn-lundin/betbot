@@ -1,4 +1,5 @@
 ﻿-- assume 100:- as backbet
+--group on marketid and day
 with backbets as (
   select 
     betname,
