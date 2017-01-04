@@ -140,7 +140,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is -- some bets have several runners ...
-        when Lay_2_2_4_11_17_Win .. Back_3_4_4_8_14_Win => null;
+        when Lay_2_2_4_11_17_Win .. Back_3_4_4_08_14_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -202,7 +202,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PBB);
 
       case Main_Bet is -- some bets have several runners ...
-        when Lay_2_2_4_11_17_Win .. Back_3_4_4_8_14_Win => null;
+        when Lay_2_2_4_11_17_Win .. Back_3_4_4_08_14_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -791,7 +791,7 @@ procedure Poll is
                                            Match_Directly  => True);
               end if;
 
-            when Back_3_4_4_8_14_Win .. Back_6_4_4_8_14_Win =>
+            when Back_3_4_4_08_14_Win .. Back_6_4_4_08_14_Win =>
               if First_Time then
                 Do_Place_Back_Bets_At_Start(
                         Bettype         => i,

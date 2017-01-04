@@ -28,7 +28,7 @@ project Adabot is
                     "poll_gh_market.adb",
                     "poll_soccer.adb",
                     "markets_fetcher.adb",
-                    "markets_fetcher_soccer.adb",
+                    "markets_fetcher_greyhounds.adb",
                     "saldo_fetcher.adb",
                     "aws_mail.adb",
                     "winners_fetcher_json.adb",
