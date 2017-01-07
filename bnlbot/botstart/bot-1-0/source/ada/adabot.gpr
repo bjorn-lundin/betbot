@@ -48,6 +48,7 @@ project Adabot is
                     "sim_back_1_2_3.adb",
                     "check_lay.adb",
                     "check_grn.adb",
+                    "profit_min_max.adb",
                     "check_for_greenup_plc.adb",
                     "check_for_lay_win.adb",
                     "create_cache.adb",
