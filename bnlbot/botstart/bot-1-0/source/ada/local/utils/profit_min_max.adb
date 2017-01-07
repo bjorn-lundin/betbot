@@ -1,3 +1,8 @@
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Environment_Variables;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
 
 with Types ; use Types;
 with Bot_Types ; use Bot_Types;
@@ -9,19 +14,24 @@ with Logging; use Logging;
 --with General_Routines; use General_Routines;
 with Tics;
 with Utils; use Utils;
+with Bot_System_Number;
 
 procedure Profit_Min_Max is
+  package EV renames Ada.Environment_Variables;
   Bet_List     : Bets.Lists.List;
   Bets_A_Day   : Sql.Statement_Type;
   T : Sql.Transaction_Type;
   Daily_Profit , Global_Profit : Profit_Type := 0.0;
-  Start_Date   : Calendar2.Time_Type := (2016,12,19,0,0,0,0);
-  Stop_Date    : Calendar2.Time_Type := (2017,1,8,0,0,0,0);
+  Start_Date   : Calendar2.Time_Type := (2016,1,1,0,0,0,0);
+  Stop_Date    : Calendar2.Time_Type := (2017,1,31,0,0,0,0);
   Current_Date : Calendar2.Time_Type := Start_Date;
   One_Day      : Calendar2.Interval_Type := (1,0,0,0,0);
-  Global_Max   : Profit_Type := 500.0;
-  Global_Min   : Profit_Type := -200.0;
   Global_Size  : Bet_Size_Type   := 100.0;
+
+  Sa_Par_Betname  : aliased Gnat.Strings.String_Access;
+  Ia_Max          : aliased Integer := 0;
+  Ia_Min          : aliased Integer := 0;
+  Cmd_Line        : Command_Line_Configuration;
 
   ------------------------------------------------------------
   procedure Profit_Per_Bet_And_Day(Bet_List : Bets.Lists.List;
@@ -38,6 +48,9 @@ procedure Profit_Min_Max is
       elsif Local_Profit < Min then
         exit;
       end if;
+      Move(Bet.Betname & "_" & F8_Image(Float_8(Min),0) & "_" & F8_Image(Float_8(Max),0),Bet.Betname);
+      Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+      Bet.Insert;
     end loop;
     Profit := Local_Profit;
   end Profit_Per_Bet_And_Day;
@@ -73,10 +86,33 @@ procedure Profit_Min_Max is
   end Fix_Bets_In_List;
   ------------------------------------------------------------
 
-
-
-
 begin
+
+   Define_Switch
+    (Cmd_Line,
+     Sa_Par_Betname'access,
+     Long_Switch => "--betname=",
+     Help        => "betname");
+
+   Define_Switch
+     (Cmd_Line,
+      IA_Min'access,
+      Long_Switch => "--min=",
+      Help        => "min daily profit (ie max loss)");
+
+   Define_Switch
+     (Cmd_Line,
+      Ia_Max'access,
+      Long_Switch => "--max=",
+      Help        => "max daily profit");
+
+  Getopt (Cmd_Line);  -- process the command line
+
+
+
+  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
+
+
   Log ("Connect db");
   Sql.Connect
     (Host     => "betbot.nonobet.com",
@@ -101,7 +137,8 @@ begin
                     );
 
   loop
-    Bets_A_Day.Set("BETNAME","BACK_4_4_4_09_15_WIN");
+    Log("start ------ " & Current_Date.To_String & " --------");
+    Bets_A_Day.Set("BETNAME",Sa_Par_Betname.all);
     Bets_A_Day.Set("START",Current_Date);
     Bets_A_Day.Set("STOP",Current_Date+One_Day);
     Bet_List.Clear;
@@ -109,12 +146,12 @@ begin
     Log("num bets" & Bet_List.Length'Img);
     Fix_Bets_In_List(Bet_List);
     Profit_Per_Bet_And_Day(Bet_List => Bet_List,
-                           Min      => Global_Min,
-                           Max      => Global_Max,
+                           Min      => Profit_Type(IA_Min),
+                           Max      => Profit_Type(IA_Max),
                            Profit   => Daily_Profit) ;
 
     Global_Profit := Global_Profit + Daily_Profit;
-    Log("daily profit = " & Current_Date.To_String & " " & Integer_4(Daily_Profit)'Img);
+    Log("daily profit = " & Current_Date.To_String & " " & Sa_Par_Betname.all & " " & Integer_4(Daily_Profit)'Img);
     Current_Date := Current_Date + One_Day;
     exit when Current_Date > Stop_Date;
   end loop;
