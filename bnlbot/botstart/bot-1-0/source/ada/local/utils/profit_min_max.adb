@@ -39,16 +39,21 @@ procedure Profit_Min_Max is
                                    Max      : Profit_Type;
                                    Profit   : out Profit_Type) is
     Local_Profit : Profit_Type := 0.0;
+    Current_Marketid : Marketid_Type := (others => ' ');
+    Exit_On_Next_Market : Boolean := False;
   begin -- TODO fix correct commision
     for Bet of Bet_List loop
+      exit when Exit_On_Next_Market and Current_Marketid /= Bet.Marketid;
+      Current_Marketid := Bet.Marketid;
       Local_Profit := Local_Profit + Profit_Type(Bet.Profit);
       Log(F8_Image(Float_8(Local_Profit)));
       if Local_Profit > Max then
-        exit;
+        Exit_On_Next_Market := True;
       elsif Local_Profit < Min then
-        exit;
+        Exit_On_Next_Market := True;
       end if;
-      Move(Trim(Bet.Betname) & "_" & F8_Image(Float_8(Min),0) & "_" & F8_Image(Float_8(Max),0),Bet.Betname);
+      Move (Trim (Bet.Betname) & "_" & F8_Image (Float_8 (Min), 0) & "_" & F8_Image (Float_8 (Max), 0), Bet.Betname);
+      Move("Min="&F8_Image (Float_8 (Min), 0) & ", Max=" & F8_Image (Float_8 (Max), 0), Bet.Reference);
       Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
       Bet.Insert;
     end loop;
@@ -137,10 +142,10 @@ begin
 
   T.Start;
   Bets_A_Day.Prepare("select * from ABETS " &
-                       "where BETNAME=:BETNAME " &
-                       "and STARTTS >=:START " &
-                       "and STARTTS <=:STOP " &
-                        "order by BETPLACED"
+                      "where BETNAME=:BETNAME " &
+                      "and STARTTS >=:START " &
+                      "and STARTTS <=:STOP " &
+                      "order by STARTTS,MARKETID,BETPLACED"
                     );
 
   loop
@@ -153,9 +158,9 @@ begin
     Log("num bets" & Bet_List.Length'Img);
     Fix_Bets_In_List(Bet_List);
     Profit_Per_Bet_And_Day (Bet_List => Bet_List,
-                           Min      => Profit_Type(IA_Min),
-                           Max      => Profit_Type(IA_Max),
-                           Profit   => Daily_Profit) ;
+                            Min      => Profit_Type(IA_Min),
+                            Max      => Profit_Type(IA_Max),
+                            Profit   => Daily_Profit) ;
 
     Global_Profit := Global_Profit + Daily_Profit;
     Log("daily profit = " & Current_Date.To_String & " " & Trim(Betname) & " " & Integer_4(Daily_Profit)'Img);
