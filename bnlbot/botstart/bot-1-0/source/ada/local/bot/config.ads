@@ -7,22 +7,16 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    Lay_2_2_4_11_17_Win, -- Several Bets In This Type
-                    Lay_2_2_4_10_16_Win_100_700,
-                    Lay_3_1_4_10_16_Win_200_700,
-                    Lay_3_1_4_10_16_Win,
-                    Back_3_4_4_08_14_Win,
-                    Back_4_4_4_08_14_Win,
-                    Back_4_4_4_09_15_Win,
-                    Back_5_4_4_08_14_Win,
-                    Back_5_4_4_09_15_Win,
-                    Back_6_4_4_08_14_Win,
-                    Lay_2_90_20_Win_8_00,
+                    LAY_2_2_4_10_16_WIN_600_900,  -- Several Bets In This Type
+                    LAY_3_1_4_10_16_WIN_600_900,  -- Several Bets In This Type
+                    BACK_3_4_4_08_14_WIN_500_800, -- Several Bets In This Type
+                    BACK_4_4_4_08_14_WIN_500_900, -- Several Bets In This Type
+                    BACK_5_4_4_09_15_WIN_500_900, -- Several Bets In This Type
+                    BACK_6_4_4_08_14_WIN_600_900, -- Several Bets In This Type
                     Back_1_96_2_00_08_10_1_2_Win_1_70,
                     Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Back_1_10_07_1_2_Plc_1_01,
-                    Back_1_10_10_1_2_Plc_1_01,
-                    Back_1_10_10_1_2_Plc_1_02
+                    Back_1_10_10_1_2_Plc_1_01
                    );
 
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;

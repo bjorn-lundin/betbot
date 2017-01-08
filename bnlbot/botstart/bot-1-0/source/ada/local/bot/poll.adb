@@ -141,7 +141,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is -- some bets have several runners ...
-        when Lay_2_2_4_11_17_Win .. Back_3_4_4_08_14_Win => null;
+        when LAY_2_2_4_10_16_WIN_600_900 .. BACK_6_4_4_08_14_WIN_600_900 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -203,7 +203,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PBB);
 
       case Main_Bet is -- some bets have several runners ...
-        when Lay_2_2_4_11_17_Win .. Back_3_4_4_08_14_Win => null;
+        when LAY_2_2_4_10_16_WIN_600_900 .. BACK_6_4_4_08_14_WIN_600_900 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -386,53 +386,53 @@ procedure Poll is
   end Try_To_Make_Back_Bet_4_Bounds;
 
   -------------------------------------------------------------------------------------------------------------------
-  procedure Try_To_Make_Lay_Bet(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      Marketid        : Marketid_Type;
-      Match_Directly : Boolean := False) is
-
-    Max_Backprice_1       : Float_8;
-    Max_Layprice_n        : Max_Lay_Price_Type;
-    Additional_Layprice_n : Max_Lay_Price_Type;
-    Layed_Num             : Integer;
-    Tmp : String (1..4) := (others => ' ');
-    Image : String := Bettype'Img;
-  begin          --1         2         3
-      --  123456789012345678901234567890123456789
-      --  Lay_2_30_10_WIN_4_02
-      --  Lay_1_80_10_WIN_4_10,
-
-    Tmp(1)    := Image(5);
-    Tmp(2)    := '.';
-    Tmp(3..4) := Image(7..8);
-    Max_Backprice_1 := Float_8'Value(Tmp);
-
-    Tmp := (others => ' ');
-    Tmp(1..2) := Image(10..11);
-    Max_Layprice_n := Max_Lay_Price_Type'Value(Tmp);
-
-    Tmp := (others => ' ');
-    Tmp(1) := Image(17);
-    Layed_Num := Integer'Value(Tmp);
-
-    Tmp := (others => ' ');
-    Tmp(1..2) := Image(19..20);
-    Additional_Layprice_n :=  Max_Lay_Price_Type'Value(Tmp);
-
-    if BR(1).Backprice <= Max_Backprice_1 and then
-       BR(1).Backprice >= Float_8(1.01) and then
-       BR(Layed_Num).Backprice < Float_8(10_000.0)  and then  -- so it exists
-       BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
-      -- lay n in WIN market...
-
-      Send_Lay_Bet(Selectionid     => BR(Layed_Num).Selectionid,
-                   Main_Bet        => Bettype,
-                   Marketid        => Marketid,
-                   Max_Price       => Max_Layprice_n + Additional_Layprice_n,
-                   Match_Directly  => Match_Directly);
-    end if;
-  end Try_To_Make_Lay_Bet;
+--    procedure Try_To_Make_Lay_Bet(
+--        Bettype         : Config.Bet_Type;
+--        BR              : Best_Runners_Array_Type;
+--        Marketid        : Marketid_Type;
+--        Match_Directly : Boolean := False) is
+--
+--      Max_Backprice_1       : Float_8;
+--      Max_Layprice_n        : Max_Lay_Price_Type;
+--      Additional_Layprice_n : Max_Lay_Price_Type;
+--      Layed_Num             : Integer;
+--      Tmp : String (1..4) := (others => ' ');
+--      Image : String := Bettype'Img;
+--    begin          --1         2         3
+--        --  123456789012345678901234567890123456789
+--        --  Lay_2_30_10_WIN_4_02
+--        --  Lay_1_80_10_WIN_4_10,
+--
+--      Tmp(1)    := Image(5);
+--      Tmp(2)    := '.';
+--      Tmp(3..4) := Image(7..8);
+--      Max_Backprice_1 := Float_8'Value(Tmp);
+--
+--      Tmp := (others => ' ');
+--      Tmp(1..2) := Image(10..11);
+--      Max_Layprice_n := Max_Lay_Price_Type'Value(Tmp);
+--
+--      Tmp := (others => ' ');
+--      Tmp(1) := Image(17);
+--      Layed_Num := Integer'Value(Tmp);
+--
+--      Tmp := (others => ' ');
+--      Tmp(1..2) := Image(19..20);
+--      Additional_Layprice_n :=  Max_Lay_Price_Type'Value(Tmp);
+--
+--      if BR(1).Backprice <= Max_Backprice_1 and then
+--         BR(1).Backprice >= Float_8(1.01) and then
+--         BR(Layed_Num).Backprice < Float_8(10_000.0)  and then  -- so it exists
+--         BR(3).Backprice < Float_8(10_000.0) then  -- so it exists
+--        -- lay n in WIN market...
+--
+--        Send_Lay_Bet(Selectionid     => BR(Layed_Num).Selectionid,
+--                     Main_Bet        => Bettype,
+--                     Marketid        => Marketid,
+--                     Max_Price       => Max_Layprice_n + Additional_Layprice_n,
+--                     Match_Directly  => Match_Directly);
+--      end if;
+--    end Try_To_Make_Lay_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
   procedure Do_Place_Lay_Bets_At_Start(
@@ -797,7 +797,7 @@ procedure Poll is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
 
-            when Lay_2_2_4_11_17_Win .. Lay_3_1_4_10_16_Win =>
+            when LAY_2_2_4_10_16_WIN_600_900 .. LAY_3_1_4_10_16_WIN_600_900 =>
               if First_Time then
                 Do_Place_Lay_Bets_At_Start(
                         Bettype         => i,
@@ -806,7 +806,7 @@ procedure Poll is
                                            Match_Directly  => True);
               end if;
 
-            when Back_3_4_4_08_14_Win .. Back_6_4_4_08_14_Win =>
+            when BACK_3_4_4_08_14_WIN_500_800 .. BACK_6_4_4_08_14_WIN_600_900 =>
               if First_Time then
                 Do_Place_Back_Bets_At_Start(
                         Bettype         => i,
@@ -815,33 +815,33 @@ procedure Poll is
                         Match_Directly  => True);
               end if;
 
-            when Lay_2_90_20_WIN_8_00 ..
-                 Lay_2_90_20_WIN_8_00   =>
-              declare
-                M_Type     : Market_Type := Win;
-                Image      : String      := i'Img;
-                Do_Try_Bet : Boolean     := True;
-              begin
-               --  12345678901234567890
-               --  Back_1_10_20_1_4_WIN
-                if Image(12..14) = "PLC" then
-                  M_Type := Place;
-                  Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
-                  Match_Directly := True;
-                elsif Image(18..20) = "WIN" then
-                  Match_Directly := True;
-                end if;
-                if Do_Try_Bet then
-                  Try_To_Make_Lay_Bet (
-                        Bettype         => i,
-                        BR              => Best_Runners,
-                        Marketid        => Markets_Array(M_Type).Marketid,
-                        Match_Directly  => Match_Directly);
-                end if;
-              end;
-
+           -- when Lay_2_90_20_WIN_8_00 ..
+           --      Lay_2_90_20_WIN_8_00   =>
+           --   declare
+           --     M_Type     : Market_Type := Win;
+           --     Image      : String      := i'Img;
+           --     Do_Try_Bet : Boolean     := True;
+           --   begin
+           --    --  12345678901234567890
+           --    --  Back_1_10_20_1_4_WIN
+           --     if Image(12..14) = "PLC" then
+           --       M_Type := Place;
+           --       Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+           --       Match_Directly := True;
+           --     elsif Image(18..20) = "WIN" then
+           --       Match_Directly := True;
+           --     end if;
+           --     if Do_Try_Bet then
+           --       Try_To_Make_Lay_Bet (
+           --             Bettype         => i,
+           --             BR              => Best_Runners,
+           --             Marketid        => Markets_Array(M_Type).Marketid,
+           --             Match_Directly  => Match_Directly);
+           --     end if;
+           --   end;
+--
             when Back_1_10_07_1_2_PLC_1_01 ..
-                 Back_1_10_10_1_2_PLC_1_02   =>
+                 Back_1_10_10_1_2_PLC_1_01   =>
               declare
                 M_Type : Market_Type := Win;
                 Image : String := i'Img;
