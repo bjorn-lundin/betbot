@@ -8,6 +8,7 @@ package Config is
 
   type Bet_Type is (
                     Lay_2_2_4_11_17_Win, -- Several Bets In This Type
+                    Lay_3_1_4_10_16_Win_200_700,
                     Lay_3_1_4_10_16_Win,
                     Back_3_4_4_08_14_Win,
                     Back_4_4_4_08_14_Win,
