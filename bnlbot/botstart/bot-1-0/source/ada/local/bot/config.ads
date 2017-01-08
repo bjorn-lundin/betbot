@@ -27,7 +27,8 @@ package Config is
 
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
-    Max_Loss_Per_Day           : Float_8          := -500.0;
+    Max_Loss_Per_Day           : Float_8          := -200.0;
+    Max_Earnings_Per_Day       : Float_8          :=  200.0;
     Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
   end record;

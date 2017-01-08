@@ -70,6 +70,7 @@ procedure Poll is
     Is_Allowed_To_Bet : Boolean       := False;
     Has_Betted        : Boolean       := False;
     Max_Loss_Per_Day  : Bet_Size_Type := 0.0;
+    Max_Earnings_Per_Day  : Bet_Size_Type := 0.0;
     Bet_Size_Portion  : Bet_Size_Portion_Type := 1.0;
   end record;
 
@@ -621,6 +622,7 @@ procedure Poll is
       Bets_Allowed(i).Bet_Size   := Cfg.Bet(i).Size;
       Bets_Allowed(i).Has_Betted := False;
       Bets_Allowed(i).Max_Loss_Per_Day := Bet_Size_Type(Cfg.Bet(i).Max_Loss_Per_Day);
+      Bets_Allowed(i).Max_Earnings_Per_Day := Bet_Size_Type(Cfg.Bet(i).Max_Earnings_Per_Day);
     end loop;
 
     -- check if ok to bet and set bet size
@@ -646,11 +648,24 @@ procedure Poll is
         Bets_Allowed(i).Max_Loss_Per_Day := Bets_Allowed(i).Max_Loss_Per_Day * Bets_Allowed(i).Bet_Size;
       end if;
 
-      Bets_Allowed(i).Is_Allowed_To_Bet := Bets.Profit_Today(Bets_Allowed(i).Bet_Name) >= Float_8(Bets_Allowed(i).Max_Loss_Per_Day);
-      Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " max allowed loss set to " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
-      if not Bets_Allowed(i).Is_Allowed_To_Bet then
-        Log(Me & "Run", Trim(Bets_Allowed(i).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image(Float_8(Bets_Allowed(i).Max_Loss_Per_Day)));
-      end if;
+      declare
+        Todays_Profit : Float_8 := Bets.Profit_Today (Bets_Allowed (I).Bet_Name);
+      begin
+        if Bets_Allowed (I).Is_Allowed_To_Bet then
+          Bets_Allowed (I).Is_Allowed_To_Bet := Todays_Profit >= Float_8 (Bets_Allowed (I).Max_Loss_Per_Day);
+          Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " max allowed loss set to " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
+          if not Bets_Allowed (I).Is_Allowed_To_Bet then
+            Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
+          end if;
+        end if;
+        if Bets_Allowed (I).Is_Allowed_To_Bet then
+          Bets_Allowed (I).Is_Allowed_To_Bet := Todays_Profit <= Float_8 (Bets_Allowed (I).Max_Earnings_Per_Day);
+          Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " max allowed earnings set to " & F8_Image (Float_8 (Bets_Allowed (I).Max_Earnings_Per_Day)));
+          if not Bets_Allowed (I).Is_Allowed_To_Bet then
+            Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " has won too much today, limit is " & F8_Image (Float_8 (Bets_Allowed (I).Max_Earnings_Per_Day)));
+          end if;
+        end if;
+      end;
     end loop;
 
     Market.Read(Eos);
