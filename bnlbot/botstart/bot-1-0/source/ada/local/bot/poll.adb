@@ -651,13 +651,12 @@ procedure Poll is
       declare
         Todays_Profit : Float_8 := Bets.Profit_Today (Bets_Allowed (I).Bet_Name);
       begin
-        if Bets_Allowed (I).Is_Allowed_To_Bet then
-          Bets_Allowed (I).Is_Allowed_To_Bet := Todays_Profit >= Float_8 (Bets_Allowed (I).Max_Loss_Per_Day);
-          Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " max allowed loss set to " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
-          if not Bets_Allowed (I).Is_Allowed_To_Bet then
-            Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
-          end if;
+        Bets_Allowed (I).Is_Allowed_To_Bet := Todays_Profit >= Float_8 (Bets_Allowed (I).Max_Loss_Per_Day);
+        Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " max allowed loss set to " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
+        if not Bets_Allowed (I).Is_Allowed_To_Bet then
+          Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " is BACK bet OR has lost too much today, max loss is " & F8_Image (Float_8 (Bets_Allowed (I).Max_Loss_Per_Day)));
         end if;
+        
         if Bets_Allowed (I).Is_Allowed_To_Bet then
           Bets_Allowed (I).Is_Allowed_To_Bet := Todays_Profit <= Float_8 (Bets_Allowed (I).Max_Earnings_Per_Day);
           Log (Me & "Run", Trim (Bets_Allowed (I).Bet_Name) & " max allowed earnings set to " & F8_Image (Float_8 (Bets_Allowed (I).Max_Earnings_Per_Day)));
