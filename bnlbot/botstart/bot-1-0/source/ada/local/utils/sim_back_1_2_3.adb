@@ -85,7 +85,6 @@ procedure Sim_Back_1_2_3 is
                    Max_Back_Price : in Float_8;
                    Max_Lay_Price  : in Float_8;
                    Bet_Suffix     : in String_Object) is
-
     Bet     : Bets.Bet_Type;
     T       : Sql.Transaction_Type;
     Betname : Betname_Type ;
@@ -99,7 +98,7 @@ procedure Sim_Back_1_2_3 is
       for I in BR'Range loop
         if I >= First_Bet and then
           I < First_Bet + Num_Bets and then
-          BR (I).Backprice <= Max_Back_Price then
+          BR (I).Backprice < 10_000.0 then
 
           Runner.Selectionid := BR (I).Selectionid;
           Bet := Bets.Create (Name   => Betname,
@@ -118,11 +117,11 @@ procedure Sim_Back_1_2_3 is
 
     if Place_Num <= BR'Last and then
       BR (Place_Num).Backprice <= Max_Back_Price and then
-      BR (Place_Num).Backprice <= Max_Lay_Price then
+      BR (Place_Num).Layprice <= Max_Lay_Price then
       for I in BR'Range loop
         if I >= First_Bet and then
-          BR (I).Backprice <= Max_Lay_Price and then
-          BR (I).Backprice <= Max_Back_Price and then
+          BR (I).Backprice < 10_000.0 and then
+          BR (I).Layprice <= Max_Lay_Price and then
           I < First_Bet + Num_Bets then
 
           Runner.Selectionid := BR (I).Selectionid;
