@@ -9,6 +9,7 @@ package Config is
   type Bet_Type is (
                     LAY_2_2_4_10_16_WIN_600_900,  -- Several Bets In This Type
                     LAY_3_1_4_10_16_WIN_600_900,  -- Several Bets In This Type
+                    LAY_5_4_2_06_12_WIN_500_800,  -- Several Bets In This Type
                     BACK_3_4_4_08_14_WIN_500_800, -- Several Bets In This Type
                     BACK_4_4_4_08_14_WIN_500_900, -- Several Bets In This Type
                     BACK_5_4_4_09_15_WIN_500_900, -- Several Bets In This Type

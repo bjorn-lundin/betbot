@@ -796,7 +796,7 @@ procedure Poll is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
 
-            when LAY_2_2_4_10_16_WIN_600_900 .. LAY_3_1_4_10_16_WIN_600_900 =>
+            when LAY_2_2_4_10_16_WIN_600_900 .. LAY_5_4_2_06_12_WIN_500_800 =>
               if First_Time then
                 Do_Place_Lay_Bets_At_Start(
                         Bettype         => i,
