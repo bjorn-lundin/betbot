@@ -21,11 +21,11 @@ procedure Profit_Min_Max is
   Bets_A_Day   : Sql.Statement_Type;
   T : Sql.Transaction_Type;
   Daily_Profit , Global_Profit : Profit_Type := 0.0;
-  Start_Date   : Calendar2.Time_Type := (2016,12,31,0,0,0,0);
+  Start_Date   : Calendar2.Time_Type := (2016,3,31,0,0,0,0);
   Stop_Date    : Calendar2.Time_Type := (2017,1,31,0,0,0,0);
   Current_Date : Calendar2.Time_Type := Start_Date;
   One_Day      : Calendar2.Interval_Type := (1,0,0,0,0);
-  Global_Size  : Bet_Size_Type   := 100.0;
+  Global_Size  : Bet_Size_Type   := 30.0;
 
   Ba_Checkonly : aliased Boolean := False;
   Sa_Betname   : aliased Gnat.Strings.String_Access;
@@ -159,6 +159,7 @@ begin
                       "order by STARTTS,MARKETID,BETPLACED"
                     );
 
+  Log("start ------ '" & Sa_Betname.all & "' '" & Current_Date.To_String & " --------");
   loop
     --Log("start ------ " & Current_Date.To_String & " --------");
     Bets_A_Day.Set("BETNAME",Sa_Betname.all);

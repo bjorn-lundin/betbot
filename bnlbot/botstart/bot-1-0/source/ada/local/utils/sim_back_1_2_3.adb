@@ -145,8 +145,8 @@ procedure Sim_Back_1_2_3 is
   use type Ada.Containers.Count_Type;
   Price : Price_Histories.Price_History_Type;
 
-  Day      : Time_Type     := (2016,03,31,00,00,00,000);
-  End_Date : Time_Type     := (2016,12,18,00,00,00,000);
+  Day      : Time_Type     := (2016,3,31,00,00,00,000);
+  End_Date : Time_Type     := (2017, 1, 7,00,00,00,000);
   One_Day  : Interval_Type := (1,0,0,0,0);
 begin
 
