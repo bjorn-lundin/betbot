@@ -8,9 +8,10 @@ with Logging; use Logging;
 procedure Create_Cache is
 
   Start        : Time_Type := Clock;
-  Date_Start   : Time_Type := (2016,02,25,00,00,00,000);
-  Date_Stop    : Time_Type := (2016,12,01,00,00,00,000);
-  Current_Date : Time_Type := Date_Start - (1,0,0,0,0); -- 1 day
+  One_Day      : Interval_Type := (1,0,0,0,0);
+  Date_Start   : Time_Type := (2017,1,5,00,00,00,000); --Start - One_Day; -- (2016,02,25,00,00,00,000);
+  Date_Stop    : Time_Type := Start + One_Day; -- (2016,12,01,00,00,00,000);
+  Current_Date : Time_Type := Date_Start - One_Day;
 
 begin
 
