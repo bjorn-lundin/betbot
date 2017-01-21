@@ -43,11 +43,11 @@ function wait_until_less_than_8 {
 
 
 
-num_bets_list="1 2 3 4 5 6"
-first_bet_list="1 2 3 4 5 6"
+num_bets_list="1 2 3 4 5"
+first_bet_list="1 2 3 4"
 max_lay_delta_list="6"
-place_num_list="1 2 3 4 5 6"
-max_back_list="2 3 4 5 6 7 8 9 10"
+place_num_list="1 2 3 4 5"
+max_back_list="2 3 4 5 6"
 
 wait_until_all_done
 
