@@ -564,7 +564,7 @@ package body Sim is
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
               "group by M.MARKETID,M.STARTTS " &
-              "order by M.STARTTS,M.MARKETID, ");
+              "order by M.STARTTS,M.MARKETID");
           Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Horse.Open_Cursor;
           loop
