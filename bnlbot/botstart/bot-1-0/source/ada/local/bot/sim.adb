@@ -22,8 +22,8 @@ package body Sim is
   Select_All_Win_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
-  Select_All_Markets : Sql.Statement_Type;
-
+  Select_All_Markets_Horse : Sql.Statement_Type;
+  Select_All_Markets_Hound : Sql.Statement_Type;
 
   Select_Get_Win_Market : Sql.Statement_Type;
   Select_Get_Place_Market : Sql.Statement_Type;
@@ -554,26 +554,49 @@ package body Sim is
     List.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
-      Select_All_Markets.Prepare (
-            "select distinct(M.MARKETID) " &
-            "from APRICESHISTORY H, AMARKETS M " &
-            "where H.MARKETID = M.MARKETID " &
-          --  "and M.MARKETTYPE in ('WIN') " &
-            "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-            "and STARTTS::date = :DATE " &
-            "order by M.MARKETID");
+      case Animal is
+        when Horse =>
+          Select_All_Markets_Horse.Prepare (
+                                            "select distinct(M.MARKETID) " &
+                                              "from APRICESHISTORY H, AMARKETS M " &
+                                              "where H.MARKETID = M.MARKETID " &
+                                            --  "and M.MARKETTYPE in ('WIN') " &
+                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+                                              "and M.STARTTS::date = :DATE " &
+                                              "order by M.MARKETID");
+          Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
+          Select_All_Markets_Horse.Open_Cursor;
+          loop
+            Select_All_Markets_Horse.Fetch (Eos);
+            exit when Eos;
+            Select_All_Markets_Horse.Get (1, Marketid);
+            Market.Marketid := Marketid;
+            Market.Read (Eos2); -- must exist, just read id
+            List.Append (Market);
+          end loop;
+          Select_All_Markets_Horse.Close_Cursor;
 
-      Select_All_Markets.Set("DATE", Date.String_Date_ISO );
-      Select_All_Markets.Open_Cursor;
-      loop
-        Select_All_Markets.Fetch(Eos);
-        exit when Eos;
-        Select_All_Markets.Get(1, Marketid);
-        Market.Marketid := Marketid;
-        Market.Read(Eos2); -- must exist, just read id
-        List.Append(Market);
-      end loop;
-      Select_All_Markets.Close_Cursor;
+        when Hound =>
+          Select_All_Markets_Hound.Prepare (
+                                            "select distinct(M.MARKETID) " &
+                                              "from AMARKETS M " &
+                                            --  "and M.MARKETTYPE in ('WIN') " &
+                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+                                              "and M.STARTTS::date = :DATE " &
+                                              "order by M.MARKETID");
+          Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
+          Select_All_Markets_Hound.Open_Cursor;
+          loop
+            Select_All_Markets_Hound.Fetch (Eos);
+            exit when Eos;
+            Select_All_Markets_Hound.Get (1, Marketid);
+            Market.Marketid := Marketid;
+            Market.Read (Eos2); -- must exist, just read id
+            List.Append (Market);
+          end loop;
+          Select_All_Markets_Hound.Close_Cursor;
+        when Human => null;
+      end case;
       T.Commit;
       Serializer.Write_To_Disk(List, Filename);
     else
