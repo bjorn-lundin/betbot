@@ -580,16 +580,17 @@ package body Sim is
         when Hound =>
           Select_All_Markets_Hound.Prepare (
             "select M.MARKETID " &
-              "from AMARKETS M " &
-              "where true " &
+            "from AMARKETS M " &
+            "where true " &
             --  "and M.MARKETTYPE in ('WIN') " &
-              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-              "and M.STARTTS::date = :DATE " &
-              "order by M.STARTTS");
+            "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+            "and M.STARTTS::date = :DATE " &
+            "order by M.STARTTS");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Hound.Open_Cursor;
           loop
             Select_All_Markets_Hound.Fetch (Eos);
+            Log("eos " & Eos'img);
             exit when Eos;
             Select_All_Markets_Hound.Get ("MARKETID", Marketid);
             Market.Marketid := Marketid;
