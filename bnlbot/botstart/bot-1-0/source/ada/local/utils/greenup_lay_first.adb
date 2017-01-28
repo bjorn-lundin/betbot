@@ -145,8 +145,9 @@ procedure Greenup_Lay_First is
     end if;
 
     --Log(Me & "Run", "market found  " & Market.To_String);
-    Sim.Read_Marketid_Selectionid(Marketid    =>  Market.Marketid,  
-                                  Selectionid => Price_Data.Selectionid, 
+    Sim.Read_Marketid_Selectionid(Marketid    =>  Market.Marketid,
+                                  Selectionid => Price_Data.Selectionid,
+                                  Animal      => Bot_Types.Horse,
                                   List        => Price_During_Race_List) ;
     --Greenup_Result := None;
 
@@ -252,7 +253,7 @@ begin
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
     Price_List  : Prices.Lists.List;
-  begin  
+  begin
     T.Start;
     Stm.Prepare(
      "select P.* " &
@@ -282,8 +283,8 @@ begin
               for Dt in Delta_Tics_Type'range loop
                 Run(Price, Dt, Min_Layprice, Max_Layprice);
               end loop;
-            end if; 
-          end loop;  
+            end if;
+          end loop;
           T.Commit;
         end;
       end loop;

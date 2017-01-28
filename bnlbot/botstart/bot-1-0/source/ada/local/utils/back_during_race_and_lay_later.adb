@@ -9,7 +9,7 @@ with Ada.Environment_Variables;
 with Sim;
 with Utils; use Utils;
 with Types ; use Types;
---with Bot_Types ; use Bot_Types;
+with Bot_Types ; use Bot_Types;
 with Stacktrace;
 with Sql;
 with Price_Histories;
@@ -216,7 +216,7 @@ begin
     exit Day_Loop when Day.Year  =  End_Date.Year and then
                        Day.Month = End_Date.Month and then
                        Day.Day   > End_Date.Day;
-    Sim.Fill_Data_Maps(Day);
+    Sim.Fill_Data_Maps(Day, Bot_Types.Horse);
     Log("start process date " & Day.To_String);
 
     declare
