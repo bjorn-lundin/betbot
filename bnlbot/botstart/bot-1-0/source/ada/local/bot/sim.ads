@@ -194,6 +194,7 @@ package Sim is
   Marketid_Timestamp_To_Prices_History_Map : Sim.Marketid_Timestamp_To_Prices_History_Maps.Map;
   Marketid_Pricets_Map                     : Sim.Marketid_Pricets_Maps.Map;
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
+  Prices_Map                               : Sim.Marketid_Prices_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
 
 

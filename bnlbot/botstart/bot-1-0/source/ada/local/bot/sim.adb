@@ -867,7 +867,7 @@ package body Sim is
     --  Log(Object & Service, "Exists: " & Exists'Img);
       if File_Exists then
         File_Exists := AD.Size (File_On_Disk) > 4;
-      end if;  
+      end if;
       return File_Exists;
     end File_Exists;
     ---------------------------------------------------------------
@@ -931,6 +931,10 @@ package body Sim is
     Log("fill map winners ");
     Fill_Winners_Map(Market_With_Data_List, Date, Animal, Winners_Map );
     Log("Found:" & Winners_Map.Length'Img );
+
+    Log("fill map Prices_Map ");
+    Fill_Prices_Map(Market_With_Data_List, Date, Animal, Prices_Map );
+    Log("Found:" & Prices_Map.Length'Img );
 
     Log("fill map Win/Place markets ");
     Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
