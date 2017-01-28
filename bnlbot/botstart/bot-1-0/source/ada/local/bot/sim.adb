@@ -581,9 +581,7 @@ package body Sim is
           Select_All_Markets_Hound.Prepare (
             "select M.MARKETID " &
             "from AMARKETS M " &
-            "where true " &
-            --  "and M.MARKETTYPE in ('WIN') " &
-            "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+            "where M.MARKETTYPE in ('PLACE', 'WIN') " &
             "and M.STARTTS::date = :DATE " &
             "order by M.STARTTS");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
@@ -595,8 +593,6 @@ package body Sim is
             Select_All_Markets_Hound.Get ("MARKETID", Marketid);
             Market.Marketid := Marketid;
             Market.Read (Eos2); -- must exist, just read id
-            Log(Market.To_String);
-
             List.Append (Market);
           end loop;
           Select_All_Markets_Hound.Close_Cursor;
