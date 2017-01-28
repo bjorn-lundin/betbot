@@ -15,24 +15,42 @@ procedure Create_Cache is
 
 begin
 
-    Log ("Connect db");
-    Sql.Connect
-      (Host     => "localhost",
-       Port     => 5432,
-       Db_Name  => "dry",
-       Login    => "bnl",
-       Password => "bnl");
-    Log ("Connected to db");
+  Log ("Connect db dry");
+  Sql.Connect
+    (Host     => "localhost",
+     Port     => 5432,
+     Db_Name  => "dry",
+     Login    => "bnl",
+     Password => "bnl");
+  Log ("Connected to db");
 
   loop
-    Current_Date := Current_Date + (1,0,0,0,0);
+    Current_Date := Current_Date + (1, 0, 0, 0, 0);
     exit when Current_Date >= Date_Stop;
-    Sim.Fill_Data_Maps(Current_Date, Animal => Bot_Types.Horse);
+    Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Horse);
   end loop;
-  Log("Started : " & Start.To_String);
-  Log("Done : " & Calendar2.Clock.To_String);
+  Log ("Started : " & Start.To_String);
+  Log ("Done : " & Calendar2.Clock.To_String);
   Sql.Close_Session;
 
+  Current_Date := Date_Start - One_Day;
+  Log ("Connect db ghd ");
+  Sql.Connect
+    (Host     => "localhost",
+     Port     => 5432,
+     Db_Name  => "ghd",
+     Login    => "bnl",
+     Password => "bnl");
+  Log ("Connected to db");
+
+  loop
+    Current_Date := Current_Date + (1, 0, 0, 0, 0);
+    exit when Current_Date >= Date_Stop;
+    Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Hound);
+  end loop;
+  Log ("Started : " & Start.To_String);
+  Log ("Done : " & Calendar2.Clock.To_String);
+  Sql.Close_Session;
 
   exception
    when E: others =>

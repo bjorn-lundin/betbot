@@ -106,6 +106,17 @@ package Sim is
                                        Marketid_Pricets_Map    :    out Marketid_Pricets_Maps.Map);
 
 
+  package Marketid_Prices_Maps is new Ada.Containers.Hashed_Maps
+        (Marketid_Type,
+         Prices.Lists.List,
+         Ada.Strings.Hash,
+         "=",
+         Prices.Lists."=");
+
+  procedure Fill_Prices_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                             Date                     : in     Calendar2.Time_Type;
+                             Animal                   : in     Animal_Type;
+                             Prices_Map               :    out Marketid_Prices_Maps.Map );
 
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
@@ -119,9 +130,10 @@ package Sim is
                               Animal                   : in     Animal_Type;
                               Winners_Map              :    out Marketid_Winner_Maps.Map );
 
-  procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
-                              Animal      : in     Animal_Type;
-                              Winners_Map :    out Marketid_Winner_Maps.Map );
+
+--  procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
+--                              Animal      : in     Animal_Type;
+--                              Winners_Map :    out Marketid_Winner_Maps.Map );
 
 
   -- for lay_during_race2 stop

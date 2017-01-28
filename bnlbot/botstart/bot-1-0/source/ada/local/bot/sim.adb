@@ -16,6 +16,7 @@ package body Sim is
   package EV renames Ada.Environment_Variables;
   package AD renames Ada.Directories;
 
+  Select_Prices_In_One_Market,
   Select_Race_Winner_In_One_Market,
   Select_Pricets_In_A_Market,
   Select_All_Win_Markets,
@@ -623,44 +624,45 @@ package body Sim is
 
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
+  -------------------------------------------------------------
 
-  procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
-                              Animal      : in     Animal_Type;
-                              Winners_Map :    out Marketid_Winner_Maps.Map ) is
-    Eos             : Boolean := False;
-    Filename : String := "all_winners_map.dat";
-    Runner_Data : Runners.Runner_Type;
-    Runner_List : Runners.Lists.List;
-    T : Sql.Transaction_Type;
-    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map, Animal);
-  begin
-    Winners_Map.Clear;
-    if not Serializer.File_Exists(Filename) then
-      T.Start;
-      Select_Race_Winner_In_One_Market.Prepare(
-        "select * " &
-        "from ARUNNERS " &
-        "where MARKETID = :MARKETID " &
-        "and STATUS = 'WINNER' ") ;
-      for Market of Market_List loop
-        Runner_List.Clear;
-        Select_Race_Winner_In_One_Market.Set("MARKETID", Market.Marketid) ;
-        Select_Race_Winner_In_One_Market.Open_Cursor;
-        loop
-          Select_Race_Winner_In_One_Market.Fetch(Eos);
-          exit when Eos;
-          Runner_Data := Runners.Get(Select_Race_Winner_In_One_Market);
-          Runner_List.Append(Runner_Data);
-        end loop;
-        Select_Race_Winner_In_One_Market.Close_Cursor;
-        Winners_Map.Insert(Market.Marketid, Runner_List);
-      end loop;
-      T.Commit;
-      Serializer.Write_To_Disk(Winners_Map, Filename);
-    else
-      Serializer.Read_From_Disk(Winners_Map, Filename);
-    end if;
-  end Fill_Winners_Map;
+--    procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
+--                                Animal      : in     Animal_Type;
+--                                Winners_Map :    out Marketid_Winner_Maps.Map ) is
+--      Eos             : Boolean := False;
+--      Filename : String := "all_winners_map.dat";
+--      Runner_Data : Runners.Runner_Type;
+--      Runner_List : Runners.Lists.List;
+--      T : Sql.Transaction_Type;
+--      package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map, Animal);
+--    begin
+--      Winners_Map.Clear;
+--      if not Serializer.File_Exists(Filename) then
+--        T.Start;
+--        Select_Race_Winner_In_One_Market.Prepare(
+--          "select * " &
+--          "from ARUNNERS " &
+--          "where MARKETID = :MARKETID " &
+--          "and STATUS = 'WINNER' ") ;
+--        for Market of Market_List loop
+--          Runner_List.Clear;
+--          Select_Race_Winner_In_One_Market.Set("MARKETID", Market.Marketid) ;
+--          Select_Race_Winner_In_One_Market.Open_Cursor;
+--          loop
+--            Select_Race_Winner_In_One_Market.Fetch(Eos);
+--            exit when Eos;
+--            Runner_Data := Runners.Get(Select_Race_Winner_In_One_Market);
+--            Runner_List.Append(Runner_Data);
+--          end loop;
+--          Select_Race_Winner_In_One_Market.Close_Cursor;
+--          Winners_Map.Insert(Market.Marketid, Runner_List);
+--        end loop;
+--        T.Commit;
+--        Serializer.Write_To_Disk(Winners_Map, Filename);
+--      else
+--        Serializer.Read_From_Disk(Winners_Map, Filename);
+--      end if;
+--    end Fill_Winners_Map;
 
   -------------------------------------------------------------
 
@@ -703,6 +705,48 @@ package body Sim is
       Serializer.Read_From_Disk(Winners_Map, Filename);
     end if;
   end Fill_Winners_Map;
+
+  -------------------------------------------------------------
+
+  procedure Fill_Prices_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                             Date                     : in     Calendar2.Time_Type;
+                             Animal                   : in     Animal_Type;
+                             Prices_Map               :    out Marketid_Prices_Maps.Map ) is
+    Eos             : Boolean := False;
+    Filename : String := Date.String_Date_ISO & "/prices_map.dat";
+    Price_Data : Prices.Price_Type;
+    Price_List : Prices.Lists.List;
+    T : Sql.Transaction_Type;
+    package Serializer is new Disk_Serializer (Marketid_Prices_Maps.Map, Animal);
+  begin
+    Prices_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+      T.Start;
+      Select_Prices_In_One_Market.Prepare(
+        "select * " &
+        "from APRICES " &
+        "where MARKETID = :MARKETID " &
+        "order by SELECTIONID") ;
+      for Market of Market_With_Data_List loop
+        Price_List.Clear;
+        Select_Prices_In_One_Market.Set("MARKETID", Market.Marketid) ;
+        Select_Prices_In_One_Market.Open_Cursor;
+        loop
+          Select_Prices_In_One_Market.Fetch(Eos);
+          exit when Eos;
+          Price_Data := Prices.Get(Select_Prices_In_One_Market);
+          Price_List.Append(Price_Data);
+        end loop;
+        Select_Prices_In_One_Market.Close_Cursor;
+        Prices_Map.Insert(Market.Marketid, Price_List);
+      end loop;
+      T.Commit;
+
+      Serializer.Write_To_Disk(Prices_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Prices_Map, Filename);
+    end if;
+  end Fill_Prices_Map;
   -----------------------------------------
 
   procedure Fill_Marketid_Runners_Pricets_Map (
