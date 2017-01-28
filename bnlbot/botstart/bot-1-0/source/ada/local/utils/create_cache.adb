@@ -17,7 +17,7 @@ procedure Create_Cache is
   Date_Stop    : Time_Type := Start + One_Day;
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
-      Cmd_Line     : Command_Line_Configuration;
+  Cmd_Line     : Command_Line_Configuration;
   --    IA_Day       : aliased Integer := 0;
   --    IA_Month     : aliased Integer := 0;
   --    IA_Year      : aliased Integer := 0;
@@ -30,15 +30,6 @@ begin
   if not EV.Exists ("BOT_NAME") then
     EV.Set ("BOT_NAME", "create_cache");
   end if;
-
-  Log ("Connect db dry");
-  Sql.Connect
-    (Host     => "localhost",
-     Port     => 5432,
-     Db_Name  => "dry",
-     Login    => "bnl",
-     Password => "bnl");
-  Log ("Connected to db");
 
   Define_Switch
     (Cmd_Line,
@@ -73,6 +64,8 @@ begin
   elsif Sa_Animal.all = "human" then
     Animal := Human;
   end if;
+  Log ("animal1 " & Sa_Animal.all);
+  Log ("animal2 " & Animal'img);
 
   case Animal is
     when Horse =>
@@ -96,12 +89,10 @@ begin
       Sql.Close_Session;
 
     when Hound =>
-
-
       Current_Date := Date_Start - One_Day;
       Log ("Connect db ghd");
       Sql.Connect
-        (Host     => "localhost",
+        (Host     => "192.168.1.20",
          Port     => 5432,
          Db_Name  => "ghd",
          Login    => "bnl",
