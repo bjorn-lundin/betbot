@@ -549,7 +549,6 @@ package body Sim is
     List.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
-      Log("animal " & Animal'Img);
       case Animal is
         when Horse =>
           Select_All_Markets_Horse.Prepare (
@@ -557,7 +556,6 @@ package body Sim is
               "from APRICESHISTORY H, AMARKETS M " &
               "where true " &
               "and H.MARKETID = M.MARKETID " &
-            --  "and M.MARKETTYPE in ('WIN') " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
               "group by M.MARKETID,M.STARTTS " &
@@ -585,7 +583,6 @@ package body Sim is
           Select_All_Markets_Hound.Open_Cursor;
           loop
             Select_All_Markets_Hound.Fetch (Eos);
-            Log("eos " & Eos'img);
             exit when Eos;
             Select_All_Markets_Hound.Get ("MARKETID", Marketid);
             Market.Marketid := Marketid;
@@ -597,9 +594,7 @@ package body Sim is
       end case;
       T.Commit;
       Serializer.Write_To_Disk(List, Filename);
-      Log("wrote to disk");
     else
-      Log("read from disk");
       Serializer.Read_From_Disk(List, Filename);
     end if;
   end Read_All_Markets;
