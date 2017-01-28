@@ -557,13 +557,14 @@ package body Sim is
       case Animal is
         when Horse =>
           Select_All_Markets_Horse.Prepare (
-                                            "select distinct(M.MARKETID) " &
-                                              "from APRICESHISTORY H, AMARKETS M " &
-                                              "where H.MARKETID = M.MARKETID " &
-                                            --  "and M.MARKETTYPE in ('WIN') " &
-                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-                                              "and M.STARTTS::date = :DATE " &
-                                              "order by M.MARKETID");
+            "select distinct(M.MARKETID) " &
+              "from APRICESHISTORY H, AMARKETS M " &
+              "where true " &
+              "and H.MARKETID = M.MARKETID " &
+            --  "and M.MARKETTYPE in ('WIN') " &
+              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+              "and M.STARTTS::date = :DATE " &
+              "order by M.MARKETID");
           Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Horse.Open_Cursor;
           loop
@@ -578,12 +579,13 @@ package body Sim is
 
         when Hound =>
           Select_All_Markets_Hound.Prepare (
-                                            "select distinct(M.MARKETID) " &
-                                              "from AMARKETS M " &
-                                            --  "and M.MARKETTYPE in ('WIN') " &
-                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-                                              "and M.STARTTS::date = :DATE " &
-                                              "order by M.MARKETID");
+            "select distinct(M.MARKETID) " &
+              "from AMARKETS M " &
+              "where true " &
+            --  "and M.MARKETTYPE in ('WIN') " &
+              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+              "and M.STARTTS::date = :DATE " &
+              "order by M.MARKETID");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Hound.Open_Cursor;
           loop
