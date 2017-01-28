@@ -13,8 +13,8 @@ procedure Create_Cache is
 
   One_Day      : Interval_Type :=  (1,0,0,0,0); -- 1 day
   Start        : Time_Type := Clock;
-  Date_Start   : Time_Type := (2017,1,6,00,00,00,000);
-  Date_Stop    : Time_Type := (2017,1,31,00,00,00,000);
+  Date_Start   : Time_Type := (2016,3,25,00,00,00,000);
+  Date_Stop    : Time_Type := Start + One_Day;
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
 --    Cmd_Line     : Command_Line_Configuration;
