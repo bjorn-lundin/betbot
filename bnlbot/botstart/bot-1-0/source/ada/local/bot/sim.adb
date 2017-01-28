@@ -552,6 +552,7 @@ package body Sim is
     List.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
+      Log("animal " & Animal'Img);
       case Animal is
         when Horse =>
           Select_All_Markets_Horse.Prepare (
@@ -590,9 +591,11 @@ package body Sim is
           loop
             Select_All_Markets_Hound.Fetch (Eos);
             exit when Eos;
-            Select_All_Markets_Hound.Get (1, Marketid);
+            Select_All_Markets_Hound.Get ("MARKETID", Marketid);
             Market.Marketid := Marketid;
             Market.Read (Eos2); -- must exist, just read id
+            Log(Market.To_String);
+
             List.Append (Market);
           end loop;
           Select_All_Markets_Hound.Close_Cursor;
