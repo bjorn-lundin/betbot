@@ -40,7 +40,7 @@ project Adabot is
                     "poll_bounds.adb",
                     "bot_web_server.adb",
                     "menu_parser.adb",
-                    "football_live_feed.adb",
+          --          "football_live_feed.adb",
                     "check_bot_running.adb"
                     );
 
