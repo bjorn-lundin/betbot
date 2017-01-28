@@ -16,17 +16,18 @@ package body Sim is
   package EV renames Ada.Environment_Variables;
   package AD renames Ada.Directories;
 
+  Select_Sampleids_In_One_Market,
+  Select_Sampleids_In_One_Market_2,
+  Select_Get_Win_Market,
+  Select_Get_Place_Market,
   Select_Prices_In_One_Market,
   Select_Race_Winner_In_One_Market,
+  Select_All_Markets_Horse,
+  Select_All_Markets_Hound,
   Select_Pricets_In_A_Market,
   Select_All_Win_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
-  Select_All_Markets_Horse : Sql.Statement_Type;
-  Select_All_Markets_Hound : Sql.Statement_Type;
-
-  Select_Get_Win_Market : Sql.Statement_Type;
-  Select_Get_Place_Market : Sql.Statement_Type;
 
   Current_Market : Markets.Market_Type := Markets.Empty_Data;
   Global_Price_During_Race_List : Price_Histories.Lists.List;
@@ -40,8 +41,6 @@ package body Sim is
 
   use type Ada.Containers.Count_Type;
 
-  Select_Sampleids_In_One_Market : Sql.Statement_Type;
-  Select_Sampleids_In_One_Market_2 : Sql.Statement_Type;
 
   ----------------------------------------------------------
 
