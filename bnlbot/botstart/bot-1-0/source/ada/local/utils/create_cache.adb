@@ -4,22 +4,23 @@ with Stacktrace;
 with Sql;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
-with Gnat.Command_Line; use Gnat.Command_Line;
+--with Gnat.Command_Line; use Gnat.Command_Line;
 --with Gnat.Strings;
 with Ada.Environment_Variables;
 with Bot_Types;
 
 procedure Create_Cache is
 
+  One_Day      : Interval_Type :=  (1,0,0,0,0); -- 1 day
   Start        : Time_Type := Clock;
   Date_Start   : Time_Type := (2017,1,6,00,00,00,000);
   Date_Stop    : Time_Type := (2017,1,31,00,00,00,000);
-  Current_Date : Time_Type := Date_Start - (1,0,0,0,0); -- 1 day
+  Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
-  Cmd_Line     : Command_Line_Configuration;
-  IA_Day       : aliased Integer := 0;
-  IA_Month     : aliased Integer := 0;
-  IA_Year      : aliased Integer := 0;
+--    Cmd_Line     : Command_Line_Configuration;
+--    IA_Day       : aliased Integer := 0;
+--    IA_Month     : aliased Integer := 0;
+--    IA_Year      : aliased Integer := 0;
 
   package EV renames Ada.Environment_Variables;
 
@@ -40,25 +41,25 @@ begin
   Log ("Connected to db");
 
 
-  Define_Switch
-     (Cmd_Line,
-      Ia_Year'access,
-      Long_Switch => "--year=",
-      Help        => "year of date");
-
-  Define_Switch
-     (Cmd_Line,
-      Ia_Month'access,
-      Long_Switch => "--month=",
-      Help        => "month of date");
-
-  Define_Switch
-     (Cmd_Line,
-      Ia_Day'access,
-      Long_Switch => "--day=",
-      Help        => "day of date");
-
-  Getopt (Cmd_Line);  -- process the command line
+--    Define_Switch
+--       (Cmd_Line,
+--        Ia_Year'access,
+--        Long_Switch => "--year=",
+--        Help        => "year of date");
+--
+--    Define_Switch
+--       (Cmd_Line,
+--        Ia_Month'access,
+--        Long_Switch => "--month=",
+--        Help        => "month of date");
+--
+--    Define_Switch
+--       (Cmd_Line,
+--        Ia_Day'access,
+--        Long_Switch => "--day=",
+--        Help        => "day of date");
+--
+--    Getopt (Cmd_Line);  -- process the command line
 
   Log ("Connect db");
   Sql.Connect
@@ -70,7 +71,7 @@ begin
   Log ("Connected to db");
 
   loop
-    Current_Date := Current_Date + (1, 0, 0, 0, 0);
+    Current_Date := Current_Date + One_Day;
     exit when Current_Date >= Date_Stop;
     Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Horse);
   end loop;
@@ -91,7 +92,7 @@ begin
   Log ("Connected to db");
 
   loop
-    Current_Date := Current_Date + (1, 0, 0, 0, 0);
+    Current_Date := Current_Date + One_Day;
     exit when Current_Date >= Date_Stop;
     Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Hound);
   end loop;
