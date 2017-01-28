@@ -28,7 +28,6 @@ package body Sim is
   Select_All_Win_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
-
   Current_Market : Markets.Market_Type := Markets.Empty_Data;
   Global_Price_During_Race_List : Price_Histories.Lists.List;
 
@@ -40,7 +39,6 @@ package body Sim is
   Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
 
   use type Ada.Containers.Count_Type;
-
 
   ----------------------------------------------------------
 
