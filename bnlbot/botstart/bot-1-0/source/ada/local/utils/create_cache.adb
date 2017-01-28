@@ -88,7 +88,7 @@ begin
       loop
         Current_Date := Current_Date + One_Day;
         exit when Current_Date >= Date_Stop;
-        Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Horse);
+        Sim.Fill_Data_Maps (Current_Date, Animal => Animal);
       end loop;
 
       Log ("Started : " & Start.To_String);
@@ -111,7 +111,7 @@ begin
       loop
         Current_Date := Current_Date + One_Day;
         exit when Current_Date >= Date_Stop;
-        Sim.Fill_Data_Maps (Current_Date, Animal => Bot_Types.Hound);
+        Sim.Fill_Data_Maps (Current_Date, Animal => Animal);
       end loop;
       Log ("Started : " & Start.To_String);
       Log ("Done : " & Calendar2.Clock.To_String);

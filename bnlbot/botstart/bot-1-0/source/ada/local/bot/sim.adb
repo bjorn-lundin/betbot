@@ -548,8 +548,6 @@ package body Sim is
     Marketid : Marketid_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Markets_Pack.List,Animal);
     Market : Markets.Market_Type;
-
-
   begin
     List.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -564,7 +562,7 @@ package body Sim is
             --  "and M.MARKETTYPE in ('WIN') " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
-              "order by M.MARKETID");
+              "order by M.STARTTS");
           Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Horse.Open_Cursor;
           loop
@@ -585,7 +583,7 @@ package body Sim is
             --  "and M.MARKETTYPE in ('WIN') " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
-              "order by M.MARKETID");
+              "order by M.STARTTS");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Hound.Open_Cursor;
           loop
@@ -601,7 +599,9 @@ package body Sim is
       end case;
       T.Commit;
       Serializer.Write_To_Disk(List, Filename);
+      Log("wrote to disk");
     else
+      Log("read from disk");
       Serializer.Read_From_Disk(List, Filename);
     end if;
   end Read_All_Markets;
@@ -891,7 +891,7 @@ package body Sim is
       end if;
     --  Log(Object & Service, "Exists: " & Exists'Img);
       if File_Exists then
-        File_Exists := AD.Size (File_On_Disk) > 4;
+        File_Exists := AD.Size (File_On_Disk) > 5;
       end if;
       return File_Exists;
     end File_Exists;
@@ -936,7 +936,7 @@ package body Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type) is
   begin
-    Log("fill maps with Date " & Date.String_Date_ISO & " form animal " &  Animal'Img);
+    Log("fill maps with Date " & Date.String_Date_ISO & " for animal " &  Animal'Img);
     Log("fill list with all valid marketids" );
     Read_All_Markets(Date, Animal, Market_With_Data_List);
     Log("Found:" & Market_With_Data_List.Length'Img );
