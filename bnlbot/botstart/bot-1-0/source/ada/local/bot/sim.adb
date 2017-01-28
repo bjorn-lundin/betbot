@@ -74,6 +74,7 @@ package body Sim is
   ----------------------------------------------------------
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
                               Market     : in out Markets.Market_Type;
+                              Animal     : in     Animal_Type;
                               Price_List : in out Prices.Lists.List;
                               In_Play    :    out Boolean) is
     Service : constant String := "Get_Market_Prices";
@@ -102,7 +103,7 @@ package body Sim is
       Log(Object & Service, "set Current_Market");
       Current_Market := Market;
       Log(Object & Service, "start Read_Marketid '" & Market_Id & "'");
-      Sim.Read_Marketid(Marketid => Market_Id, List => Global_Price_During_Race_List) ;
+      Sim.Read_Marketid(Marketid => Market_Id, Animal => Animal, List => Global_Price_During_Race_List) ;
       Log(Object & Service, "done Read_Marketid '" & Market_Id & "' len" & Global_Price_During_Race_List.Length'Img);
       -- get a list of unique ts in the race in order
       for Item of Global_Price_During_Race_List loop
@@ -300,13 +301,15 @@ package body Sim is
   end Clear;
 
 
-  procedure Read_Marketid(Marketid : in Marketid_Type; List : out Price_Histories.Lists.List) is
+  procedure Read_Marketid (Marketid : in Marketid_Type;
+                           Animal   : in Animal_Type;
+                           List     : out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Prices_History_Data : Price_Histories.Price_History_Type;
     Filename : String := "markets/" & "win_" & Marketid & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
-    package Serializer is new Disk_Serializer(Price_Histories.Lists.List);
+    package Serializer is new Disk_Serializer(Price_Histories.Lists.List,Animal);
   begin
 
     if not Serializer.File_Exists(Filename) then
@@ -340,13 +343,14 @@ package body Sim is
 
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type;
                                       Selectionid : in     Integer_4;
+                                      Animal     : in     Animal_Type;
                                       List        :    out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Price_History_Data : Price_Histories.Price_History_Type;
     Filename : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
-    package Serializer is new Disk_Serializer(Price_Histories.Lists.List);
+    package Serializer is new Disk_Serializer(Price_Histories.Lists.List,Animal);
   begin
 
     if not Serializer.File_Exists(Filename) then
@@ -533,14 +537,15 @@ package body Sim is
   --------------------------------------------------------------------------------------------
 -- start lay_during_race2
   -------------------------------------------------------------------------
-  procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
-                             List  :    out Markets_Pack.List) is
+  procedure Read_All_Markets(Date   : in     Calendar2.Time_Type;
+                             Animal : in     Animal_Type;
+                             List   :    out Markets_Pack.List) is
   --  Service  : constant String := "Read_All_Markets";
     T        : Sql.Transaction_Type;
     Eos,Eos2 : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Marketid_Type := (others => ' ');
-    package Serializer is new Disk_Serializer(Markets_Pack.List);
+    package Serializer is new Disk_Serializer(Markets_Pack.List,Animal);
     Market : Markets.Market_Type;
 
 
@@ -576,15 +581,16 @@ package body Sim is
   end Read_All_Markets;
   -------------------------------------------------------------------------
 
-  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Markets_Pack.List;
-                                      Date                       : in     Calendar2.Time_Type;
-                                      Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
+  procedure Fill_Marketid_Pricets_Map (Market_With_Data_List      : in     Markets_Pack.List;
+                                       Date                       : in     Calendar2.Time_Type;
+                                       Animal                     : in     Animal_Type;
+                                       Marketid_Pricets_Map       :    out Marketid_Pricets_Maps.Map) is
     Eos          : Boolean := False;
     Pricets_List : Timestamp_Pack.List;
     Filename     : String := Date.String_Date_ISO & "/marketid_pricets_map.dat";
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
     T : Sql.Transaction_Type;
-    package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map);
+    package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map,Animal);
   begin
     Marketid_Pricets_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -618,14 +624,15 @@ package body Sim is
   end Fill_Marketid_Pricets_Map;
   -------------------------------------------------------------
 
-  procedure Fill_Winners_Map(Market_List : in     Markets.Lists.List;
-                             Winners_Map :    out Marketid_Winner_Maps.Map ) is
+  procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
+                              Animal      : in     Animal_Type;
+                              Winners_Map :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
     Filename : String := "all_winners_map.dat";
     Runner_Data : Runners.Runner_Type;
     Runner_List : Runners.Lists.List;
     T : Sql.Transaction_Type;
-    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
+    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map, Animal);
   begin
     Winners_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -657,15 +664,16 @@ package body Sim is
 
   -------------------------------------------------------------
 
-  procedure Fill_Winners_Map(Market_With_Data_List : in     Markets_Pack.List;
-                             Date                     : in     Calendar2.Time_Type;
-                             Winners_Map              :    out Marketid_Winner_Maps.Map ) is
+  procedure Fill_Winners_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                              Date                     : in     Calendar2.Time_Type;
+                              Animal                   : in     Animal_Type;
+                              Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
     Filename : String := Date.String_Date_ISO & "/winners_map.dat";
     Runner_Data : Runners.Runner_Type;
     Runner_List : Runners.Lists.List;
     T : Sql.Transaction_Type;
-    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map);
+    package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map, Animal);
   begin
     Winners_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -697,11 +705,12 @@ package body Sim is
   end Fill_Winners_Map;
   -----------------------------------------
 
-  procedure Fill_Marketid_Runners_Pricets_Map(
-                     Market_With_Data_List                    : in     Markets_Pack.List;
-                     Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
-                     Date                                     : in     Calendar2.Time_Type;
-                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) is
+  procedure Fill_Marketid_Runners_Pricets_Map (
+                                               Market_With_Data_List                    : in     Markets_Pack.List;
+                                               Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
+                                               Date                                     : in     Calendar2.Time_Type;
+                                               Animal                                   : in     Animal_Type;
+                                               Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) is
     Eos       : Boolean := False;
     Apriceshistory_List    : Price_Histories.Lists.List;
     Price_History_Data    : Price_Histories.Price_History_Type;
@@ -709,8 +718,7 @@ package body Sim is
     Cnt             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Prices_History_Maps.Map;
     Filename : String := Date.String_Date_ISO & "/marketid_timestamp_to_apriceshistory_map.dat";
-
-    package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Prices_History_Maps.Map);
+    package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Prices_History_Maps.Map, Animal);
   begin
     Marketid_Timestamp_To_Apriceshistory_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -755,14 +763,15 @@ package body Sim is
   -------------------------------------------------------------------
 
 
-  procedure Fill_Win_Place_Map(Date         : in     Calendar2.Time_Type;
-                               Win_Place_Map :    out Win_Place_Maps.Map) is
+  procedure Fill_Win_Place_Map (Date          : in     Calendar2.Time_Type;
+                                Animal        : in     Animal_Type;
+                                Win_Place_Map :    out Win_Place_Maps.Map) is
     T: Sql.Transaction_Type;
     Eos : Boolean := False;
     Place_Marketid,
     Win_Marketid    : Marketid_Type := (others => ' ');
     Filename : String := Date.String_Date_ISO & "/win_place_map.dat";
-    package Serializer is new Disk_Serializer(Win_Place_Maps.Map);
+    package Serializer is new Disk_Serializer(Win_Place_Maps.Map, Animal);
   begin
     Win_Place_Map.Clear;
     if not Serializer.File_Exists(Filename) then
@@ -796,7 +805,8 @@ package body Sim is
 
   package body Disk_Serializer is
     --------------------------------------------------------
-    Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/";
+    Ani : String := Lower_Case(Animal'Img);
+    Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Ani & "/";
     --Path : String := "/mnt/samsung1gb/data/streamed_objects/";
 
     function File_Exists(Filename : String) return Boolean is
@@ -850,30 +860,32 @@ package body Sim is
   end Disk_Serializer;
   ----------------------------------------------------------
 
-  procedure Fill_Data_Maps(Date : in Calendar2.Time_Type) is
+  procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
+                            Animal : in Animal_Type) is
   begin
-    Log("fill maps with Date " & Date.String_Date_ISO);
+    Log("fill maps with Date " & Date.String_Date_ISO & " form animal " &  Animal'Img);
     Log("fill list with all valid marketids" );
-    Read_All_Markets(Date, Market_With_Data_List);
+    Read_All_Markets(Date, Animal, Market_With_Data_List);
     Log("Found:" & Market_With_Data_List.Length'Img );
 
     Log("fill map with all pricets for a marketid ");
-    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Marketid_Pricets_Map);
+    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
     Log("Found:" & Marketid_Pricets_Map.Length'Img );
 
     Log("fill map with map of timestamp list for all marketids ");
-    Fill_Marketid_Runners_Pricets_Map(Market_With_Data_List,
-                                          Marketid_Pricets_Map,
-                                          Date,
-                                          Marketid_Timestamp_To_Prices_History_Map) ;
+    Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
+                                       Marketid_Pricets_Map,
+                                       Date,
+                                       Animal,
+                                       Marketid_Timestamp_To_Prices_History_Map) ;
     Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
 
     Log("fill map winners ");
-    Fill_Winners_Map(Market_With_Data_List, Date, Winners_Map );
+    Fill_Winners_Map(Market_With_Data_List, Date, Animal, Winners_Map );
     Log("Found:" & Winners_Map.Length'Img );
 
     Log("fill map Win/Place markets ");
-    Fill_Win_Place_Map(Date, Win_Place_Map);
+    Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
     Log("Found:" & Win_Place_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------

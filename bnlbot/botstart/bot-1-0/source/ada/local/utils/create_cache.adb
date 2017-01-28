@@ -4,7 +4,7 @@ with Stacktrace;
 with Sql;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
-
+with Bot_Types;
 procedure Create_Cache is
 
   Start        : Time_Type := Clock;
@@ -27,7 +27,7 @@ begin
   loop
     Current_Date := Current_Date + (1,0,0,0,0);
     exit when Current_Date >= Date_Stop;
-    Sim.Fill_Data_Maps(Current_Date);
+    Sim.Fill_Data_Maps(Current_Date, Animal => Bot_Types.Horse);
   end loop;
   Log("Started : " & Start.To_String);
   Log("Done : " & Calendar2.Clock.To_String);

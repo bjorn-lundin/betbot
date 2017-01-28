@@ -18,6 +18,7 @@ package Sim is
 
   generic
     type Data_Type is private;
+    Animal : Animal_Type ;
   package Disk_Serializer is
     function File_Exists(Filename : String) return Boolean ;
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String);
@@ -27,6 +28,7 @@ package Sim is
 
   procedure Get_Market_Prices(Market_Id  : in     Marketid_Type;
                               Market     : in out Markets.Market_Type;
+                              Animal     : in     Animal_Type;
                               Price_List : in out Prices.Lists.List;
                               In_Play    :    out Boolean);
 
@@ -60,11 +62,13 @@ package Sim is
   Fifo : array (Num_Runners_Type'range) of Fifo_Type;
 
 
-  procedure Read_Marketid(Marketid : in     Marketid_Type;
-                          List     :    out Price_Histories.Lists.List) ;
+  procedure Read_Marketid (Marketid : in     Marketid_Type;
+                           Animal   : in     Animal_Type;
+                           List     :    out Price_Histories.Lists.List) ;
 
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type;
                                       Selectionid : in     Integer_4 ;
+                                      Animal      : in     Animal_Type;
                                       List        :    out Price_Histories.Lists.List) ;
 
 
@@ -83,8 +87,9 @@ package Sim is
   --package Market_With_Data_Pack is new Ada.Containers.Doubly_Linked_Lists(Marketid_Type);
   package Markets_Pack is new Ada.Containers.Doubly_Linked_Lists(Markets.Market_Type, Markets."=");
 
-  procedure Read_All_Markets(Date : in     Calendar2.Time_Type;
-                             List  :    out Markets_Pack.List) ;
+  procedure Read_All_Markets(Date   : in     Calendar2.Time_Type;
+                             Animal : in     Animal_Type;
+                             List   :    out Markets_Pack.List) ;
 
   package Timestamp_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type, Calendar2."=");
 
@@ -95,9 +100,10 @@ package Sim is
          "=",
          Timestamp_Pack."=");
 
-  procedure Fill_Marketid_Pricets_Map(Market_With_Data_List   : in     Markets_Pack.List;
-                                      Date                    : in     Calendar2.Time_Type;
-                                      Marketid_Pricets_Map    :    out Marketid_Pricets_Maps.Map);
+  procedure Fill_Marketid_Pricets_Map (Market_With_Data_List   : in     Markets_Pack.List;
+                                       Date                    : in     Calendar2.Time_Type;
+                                       Animal                  : in     Animal_Type;
+                                       Marketid_Pricets_Map    :    out Marketid_Pricets_Maps.Map);
 
 
 
@@ -108,12 +114,14 @@ package Sim is
          "=",
          RUnners.Lists."=");
 
-  procedure Fill_Winners_Map(Market_With_Data_List : in     Markets_Pack.List;
-                             Date                     : in     Calendar2.Time_Type;
-                             Winners_Map              :    out Marketid_Winner_Maps.Map );
+  procedure Fill_Winners_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                              Date                     : in     Calendar2.Time_Type;
+                              Animal                   : in     Animal_Type;
+                              Winners_Map              :    out Marketid_Winner_Maps.Map );
 
-  procedure Fill_Winners_Map(Market_List : in     Markets.Lists.List;
-                             Winners_Map :    out Marketid_Winner_Maps.Map );
+  procedure Fill_Winners_Map (Market_List : in     Markets.Lists.List;
+                              Animal      : in     Animal_Type;
+                              Winners_Map :    out Marketid_Winner_Maps.Map );
 
 
   -- for lay_during_race2 stop
@@ -123,8 +131,9 @@ package Sim is
          Ada.Strings.Hash,
          "=",
          "=");
-  procedure Fill_Win_Place_Map(Date          : in     Calendar2.Time_Type;
-                               Win_Place_Map :    out Win_Place_Maps.Map);
+  procedure Fill_Win_Place_Map (Date          : in     Calendar2.Time_Type;
+                                Animal        : in     Animal_Type;
+                                Win_Place_Map :    out Win_Place_Maps.Map);
 
 
   -- for timestamp slices start
@@ -147,11 +156,12 @@ package Sim is
          Timestamp_To_Prices_History_Maps."=");
 
 
-  procedure Fill_Marketid_Runners_Pricets_Map(
-                     Market_With_Data_List                 : in     Markets_Pack.List;
-                     Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
-                     Date                                     : in     Calendar2.Time_Type;
-                     Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) ;
+  procedure Fill_Marketid_Runners_Pricets_Map (
+                                               Market_With_Data_List                    : in     Markets_Pack.List;
+                                               Marketid_Pricets_Map                     : in     Marketid_Pricets_Maps.Map;
+                                               Date                                     : in     Calendar2.Time_Type;
+                                               Animal                                   : in     Animal_Type;
+                                               Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) ;
 
   -- for timestamp slices stop
 
@@ -162,7 +172,8 @@ package Sim is
   function Is_Race_Winner(Selectionid          : Integer_4;
                           Marketid             : Marketid_Type) return Boolean;
 
-  procedure Fill_Data_Maps(Date  : in Calendar2.Time_Type) ;
+  procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
+                            Animal : in Animal_Type) ;
 
   function Get_Place_Price(Win_Data : Price_Histories.Price_History_Type) return Price_Histories.Price_History_Type;
 
