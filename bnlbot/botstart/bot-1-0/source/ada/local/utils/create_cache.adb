@@ -43,8 +43,8 @@ begin
   Define_Switch
     (Cmd_Line,
      Sa_Animal'Access,
-     Long_Switch => "--year=",
-     Help        => "year of date");
+     Long_Switch => "--animal=",
+     Help        => "horse|hound|human");
   --    Define_Switch
   --       (Cmd_Line,
   --        Ia_Year'access,
