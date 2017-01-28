@@ -563,14 +563,14 @@ package body Sim is
             --  "and M.MARKETTYPE in ('WIN') " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
-              "group by M.STARTTS " &
-              "order by M.STARTTS ");
+              "group by M.MARKETID,M.STARTTS " &
+              "order by M.STARTTS,M.MARKETID, ");
           Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Horse.Open_Cursor;
           loop
             Select_All_Markets_Horse.Fetch (Eos);
             exit when Eos;
-            Select_All_Markets_Horse.Get (1, Marketid);
+            Select_All_Markets_Horse.Get ("MARKETID", Marketid);
             Market.Marketid := Marketid;
             Market.Read (Eos2); -- must exist, just read id
             List.Append (Market);
