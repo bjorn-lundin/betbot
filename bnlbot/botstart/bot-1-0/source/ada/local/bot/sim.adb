@@ -859,11 +859,15 @@ package body Sim is
       File_Exists  : Boolean := AD.Exists(File_On_Disk) ;
       Dir          : String := Ad.Containing_Directory(File_On_Disk);
       Dir_Exists   : Boolean := AD.Exists(Dir) ;
+      use type AD.File_Size;
     begin
       if not Dir_Exists then
         Ad.Create_Directory(Dir);
       end if;
     --  Log(Object & Service, "Exists: " & Exists'Img);
+      if File_Exists then
+        File_Exists := AD.Size (File_On_Disk) > 4;
+      end if;  
       return File_Exists;
     end File_Exists;
     ---------------------------------------------------------------
