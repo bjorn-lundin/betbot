@@ -141,7 +141,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is -- some bets have several runners ...
-        when LAY_2_2_4_10_16_WIN_600_900 .. BACK_6_4_4_08_14_WIN_600_900 => null;
+        when LAY_02_02_04_10_16_WIN_600_900 .. BACK_06_04_04_08_14_WIN_600_900 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -203,7 +203,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PBB);
 
       case Main_Bet is -- some bets have several runners ...
-        when LAY_2_2_4_10_16_WIN_600_900 .. BACK_6_4_4_08_14_WIN_600_900 => null;
+        when LAY_02_02_04_10_16_WIN_600_900 .. BACK_06_04_04_08_14_WIN_600_900 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -452,13 +452,13 @@ procedure Poll is
     Service : String := "Do_Place_Lay_Bets_At_Start";
   begin          --1         2         3
       --  123456789012345678901234567890123456789
-      --  Lay_2_2_4_11_17_Win
+      --  Lay_02_02_04_11_17_Win
 
-    Num_Bets  := Integer'Value(Image(5..5));
-    First_Bet := Integer'Value(Image(7..7));
-    Place_Num := Integer'Value(Image(9..9));
-    Max_Back_Price := Float_8'Value(Image(11..12));
-    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(14..15));
+    Num_Bets  := Integer'Value(Image(5..6));
+    First_Bet := Integer'Value(Image(8..9));
+    Place_Num := Integer'Value(Image(11..12));
+    Max_Back_Price := Float_8'Value(Image(14..15));
+    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(17..18));
 
     if Place_Num <= Br'Last and then
       BR(1).Backprice >= Float_8(1.01) and then
@@ -524,13 +524,13 @@ procedure Poll is
     Image : String := Bettype'Img;
   begin          --1         2         3
       --  123456789012345678901234567890123456789
-      --  Back_2_2_4_11_17_Win
+      --  Back_02_02_04_11_17_Win
 
-    Num_Bets  := Integer'Value(Image(6..6));
-    First_Bet := Integer'Value(Image(8..8));
-    Place_Num := Integer'Value(Image(10..10));
-    Max_Back_Price := Float_8'Value(Image(12..13));
-    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(15..16));
+    Num_Bets  := Integer'Value(Image(6..7));
+    First_Bet := Integer'Value(Image(9..10));
+    Place_Num := Integer'Value(Image(12..13));
+    Max_Back_Price := Float_8'Value(Image(15..16));
+    Max_Lay_Price := Max_Lay_Price_Type'Value(Image(18..19));
 
     if Place_Num <= Br'Last and then
       BR(1).Backprice >= Float_8(1.01) and then
@@ -796,7 +796,7 @@ procedure Poll is
             --when Lay_160_200        => null; -- treat later
             --when Lay_1_10_25_4      => null; -- treat later
 
-            when LAY_2_2_4_10_16_WIN_600_900 .. LAY_5_4_2_06_12_WIN_500_800 =>
+            when LAY_02_02_04_10_16_WIN_600_900 .. LAY_10_01_04_10_12_WIN_999_999 =>
               if First_Time then
                 Do_Place_Lay_Bets_At_Start(
                         Bettype         => i,
@@ -805,7 +805,7 @@ procedure Poll is
                                            Match_Directly  => True);
               end if;
 
-            when BACK_3_4_4_08_14_WIN_500_800 .. BACK_6_4_4_08_14_WIN_600_900 =>
+            when BACK_03_04_04_08_14_WIN_500_800 .. BACK_06_04_04_08_14_WIN_600_900 =>
               if First_Time then
                 Do_Place_Back_Bets_At_Start(
                         Bettype         => i,
