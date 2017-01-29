@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # should be run from a crontab like
-#* * * * * cd / && /home/bnl/bnlbot/botstart/bot-0-9/script/bash/keep_bots_alive.bash
+#* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 #2 0 * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/dump_db.bash
 #install with
 
@@ -96,13 +96,14 @@ function Check_Bots_For_User () {
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
-  
+
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
                    bet_placer_004 bet_placer_005 bet_placer_006 \
                    bet_placer_007 bet_placer_008 bet_placer_009 \
                    bet_placer_010 bet_placer_011 bet_placer_012 \
-                   bet_placer_013 bet_placer_014 bet_placer_015 "
-                   
+                   bet_placer_013 bet_placer_014 bet_placer_015 \
+                   bet_placer_016 bet_placer_017 bet_placer_018 "
+
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
   done
@@ -345,7 +346,15 @@ MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
 DAY=$(date +"%d")
 
-NUM_RUNNING=$(ps -ef | grep -v grep | grep -c keep_bots_alive.bash)
+#
+#ps
+#bnl      13563 13562  0 17:45 ?        00:00:00 /bin/sh -c cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+#bnl      13565 13563  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+#bnl      13573 13565  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+
+NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh |  grep -c keep_bots_alive.bash)
+#echo "NUM_RUNNING: $NUM_RUNNING $(date)"
+
 if [ $NUM_RUNNING -gt 1 ] ; then
   exit 0
 fi    
