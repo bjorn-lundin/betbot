@@ -7,14 +7,18 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    LAY_2_2_4_10_16_WIN_600_900,  -- Several Bets In This Type
-                    LAY_3_1_4_10_16_WIN_600_900,  -- Several Bets In This Type
-                    LAY_5_4_1_06_12_WIN_600_700,  -- Several Bets In This Type
-                    LAY_5_4_2_06_12_WIN_500_800,  -- Several Bets In This Type
-                    BACK_3_4_4_08_14_WIN_500_800, -- Several Bets In This Type
-                    BACK_4_4_4_08_14_WIN_500_900, -- Several Bets In This Type
-                    BACK_5_4_4_09_15_WIN_500_900, -- Several Bets In This Type
-                    BACK_6_4_4_08_14_WIN_600_900, -- Several Bets In This Type
+                    LAY_02_02_04_10_16_WIN_600_900,  -- Several Bets In This Type
+                    LAY_03_01_04_10_16_WIN_600_900,  -- Several Bets In This Type
+                    LAY_05_04_01_06_12_WIN_600_700,  -- Several Bets In This Type
+                    LAY_05_04_02_06_12_WIN_500_800,  -- Several Bets In This Type
+                    LAY_06_04_04_13_15_WIN_999_999,  -- Several Bets In This Type
+                    LAY_09_01_03_07_13_WIN_999_999,  -- Several Bets In This Type
+                    LAY_10_01_02_09_11_WIN_999_999,  -- Several Bets In This Type
+                    LAY_10_01_04_10_12_WIN_999_999,  -- Several Bets In This Type
+                    BACK_03_04_04_08_14_WIN_500_800, -- Several Bets In This Type
+                    BACK_04_04_04_08_14_WIN_500_900, -- Several Bets In This Type
+                    BACK_05_04_04_09_15_WIN_500_900, -- Several Bets In This Type
+                    BACK_06_04_04_08_14_WIN_600_900, -- Several Bets In This Type
                     Back_1_96_2_00_08_10_1_2_Win_1_70,
                     Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Back_1_10_07_1_2_Plc_1_01,
