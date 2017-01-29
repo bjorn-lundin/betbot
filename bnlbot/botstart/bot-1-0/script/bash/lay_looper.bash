@@ -43,11 +43,11 @@ function wait_until_less_than_8 {
 
 
 
-num_bets_list="1 2 3 4 5"
-first_bet_list="1 2 3 4"
-max_lay_delta_list="6"
+num_bets_list="1 2 3 4 5 6 7 8 9 10 11"
+first_bet_list="1 2 3 4 5 6"
+max_lay_delta_list="2"
 place_num_list="1 2 3 4 5"
-max_back_list="2 3 4 5 6"
+max_back_list="2 3 4 5 6 7 8 9 10 11 12 13 14"
 
 wait_until_all_done
 
@@ -58,7 +58,7 @@ for num_bets in ${num_bets_list} ; do
         for max_lay_delta in ${max_lay_delta_list} ; do
           name=${num_bets}_${first_bet}_${place_num}_${max_back}_${max_lay_delta}
           echo "${name}.log "
-          nohup ${BOT_TARGET}/bin/${EXE} \
+          nohup ${BOT_TARGET}/bin/${EXE} --animal=hound \
            --num_bets=${num_bets} \
            --first_bet=${first_bet} \
            --place_num=${place_num} \
