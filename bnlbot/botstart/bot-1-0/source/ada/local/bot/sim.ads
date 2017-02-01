@@ -6,6 +6,7 @@ with Prices;
 with Bets;
 with Price_Histories;
 with Runners;
+with Events;
 with Calendar2;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Doubly_Linked_Lists;
@@ -118,6 +119,19 @@ package Sim is
                              Animal                   : in     Animal_Type;
                              Prices_Map               :    out Marketid_Prices_Maps.Map );
 
+  package Eventid_Events_Maps is new Ada.Containers.Hashed_Maps
+        (Eventid_Type,
+         Events.Event_Type,
+         Ada.Strings.Hash,
+         "=",
+         Events."=");
+
+  procedure Fill_Events_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                             Date                     : in     Calendar2.Time_Type;
+                             Animal                   : in     Animal_Type;
+                             Events_Map               :    out Eventid_Events_Maps.Map );
+
+
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
          RUnners.Lists.List,
@@ -196,6 +210,7 @@ package Sim is
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
   Prices_Map                               : Sim.Marketid_Prices_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
+  Events_Map                               : Sim.Eventid_Events_Maps.Map;
 
 
 end Sim ;
