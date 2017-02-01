@@ -20,6 +20,7 @@ package body Sim is
   Select_Sampleids_In_One_Market_2,
   Select_Get_Win_Market,
   Select_Get_Place_Market,
+  Select_Event_In_One_Market,
   Select_Prices_In_One_Market,
   Select_Race_Winner_In_One_Market,
   Select_All_Markets_Horse,
@@ -765,6 +766,50 @@ package body Sim is
       Serializer.Read_From_Disk(Prices_Map, Filename);
     end if;
   end Fill_Prices_Map;
+    -------------------------------------------------------------
+
+  procedure Fill_Events_Map (Market_With_Data_List    : in     Markets_Pack.List;
+                             Date                     : in     Calendar2.Time_Type;
+                             Animal                   : in     Animal_Type;
+                             Events_Map               :    out Eventid_Events_Maps.Map ) is
+    Eos             : Boolean := False;
+    Filename : String := Date.String_Date_ISO & "/events_map.dat";
+    Event_Data : Events.Event_Type;
+    Event_List : Events.Lists.List;
+    T : Sql.Transaction_Type;
+    package Serializer is new Disk_Serializer (Eventid_Events_Maps.Map, Animal);
+  begin
+    Events_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+      T.Start;
+      Select_Event_In_One_Market.Prepare(
+        "select * " &
+        "from AEVENTS " &
+        "where EVENTID = :EVENTID " &
+        "order by OPENTS") ;
+      for Market of Market_With_Data_List loop
+        Event_List.Clear;
+        Select_Event_In_One_Market.Set("EVENTID", Market.Eventid) ;
+        Select_Event_In_One_Market.Open_Cursor;
+        loop
+          Select_Event_In_One_Market.Fetch(Eos);
+          exit when Eos;
+          Event_Data := Events.Get (Select_Event_In_One_Market);
+          if not Events_Map.Contains (Key => Market.Eventid) then
+            -- several markets points to 1 event
+            Events_Map.Insert (Market.Eventid, Event_Data);
+          end if;
+        end loop;
+        Select_Event_In_One_Market.Close_Cursor;
+      end loop;
+      T.Commit;
+
+      Serializer.Write_To_Disk(Events_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Events_Map, Filename);
+    end if;
+  end Fill_Events_Map;
+
   -----------------------------------------
 
   procedure Fill_Marketid_Runners_Pricets_Map (
@@ -934,17 +979,17 @@ package body Sim is
     Read_All_Markets(Date, Animal, Market_With_Data_List);
     Log("Found:" & Market_With_Data_List.Length'Img );
 
-    Log("fill map with all pricets for a marketid ");
-    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
-    Log("Found:" & Marketid_Pricets_Map.Length'Img );
+--      Log("fill map with all pricets for a marketid ");
+--      Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
+--      Log("Found:" & Marketid_Pricets_Map.Length'Img );
 
-    Log("fill map with map of timestamp list for all marketids ");
-    Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
-                                       Marketid_Pricets_Map,
-                                       Date,
-                                       Animal,
-                                       Marketid_Timestamp_To_Prices_History_Map) ;
-    Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
+--      Log("fill map with map of timestamp list for all marketids ");
+--      Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
+--                                         Marketid_Pricets_Map,
+--                                         Date,
+--                                         Animal,
+--                                         Marketid_Timestamp_To_Prices_History_Map) ;
+--      Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
 
     Log("fill map winners ");
     Fill_Winners_Map(Market_With_Data_List, Date, Animal, Winners_Map );
@@ -954,9 +999,13 @@ package body Sim is
     Fill_Prices_Map(Market_With_Data_List, Date, Animal, Prices_Map );
     Log("Found:" & Prices_Map.Length'Img );
 
-    Log("fill map Win/Place markets ");
-    Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
-    Log("Found:" & Win_Place_Map.Length'Img );
+    Log("fill map Events_Map ");
+    Fill_Events_Map(Market_With_Data_List, Date, Animal, Events_Map );
+    Log("Found:" & Events_Map.Length'Img );
+
+--      Log("fill map Win/Place markets ");
+--      Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
+--      Log("Found:" & Win_Place_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 
