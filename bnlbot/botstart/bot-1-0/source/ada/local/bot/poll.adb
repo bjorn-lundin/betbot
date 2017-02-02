@@ -142,7 +142,7 @@ procedure Poll is
 
       case Main_Bet is -- some bets have several runners ...
         when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_06_01_01_01_06_WIN_999_999 .. HOUND_LAY_06_01_01_01_06_WIN_999_999 => null;
+        when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -205,7 +205,7 @@ procedure Poll is
 
       case Main_Bet is -- some bets have several runners ...
         when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_06_01_01_01_06_WIN_999_999 .. HOUND_LAY_06_01_01_01_06_WIN_999_999 => null;
+        when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -353,7 +353,7 @@ procedure Poll is
       --  123456789012345678901234567890123456789
       --  HORSE_BACK_1_36_1_40_01_04_1_2_PLC_1_10
 
-    Tmp(1) := Image(2);
+    Tmp(1) := Image(12);
     Tmp(2) := '.';
     Tmp(3..4) := Image(14..15);
     Min_Backprice_1 := Float_8'Value(Tmp);
@@ -911,11 +911,11 @@ procedure Poll is
                                                    Match_Directly  => Match_Directly);
                   end if;
                   end;
-                  when HOUND_LAY_06_01_01_01_06_WIN_999_999 => null;
+                  when HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
               end case;
             when Hound =>
               case I is
-                when HOUND_LAY_06_01_01_01_06_WIN_999_999 .. HOUND_LAY_06_01_01_01_06_WIN_999_999 =>
+                when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 =>
                   if First_Time then
                     Do_Place_Lay_Bets_At_Start (
                                                 Bettype         => I,
