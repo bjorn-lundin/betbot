@@ -70,7 +70,7 @@ procedure Markets_Fetcher is
   My_Lock         : Lock.Lock_Type;
   UTC_Time_Start,
   UTC_Time_Stop   : Calendar2.Time_Type ;
-  Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
+  --Three_Minutes   : Calendar2.Interval_Type := (0,0,3,0,0);
   Eleven_Seconds  : Calendar2.Interval_Type := (0,0,0,11,0);
   One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
   Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
@@ -362,8 +362,10 @@ begin
       UTC_Time_Stop  := UTC_Time_Start + Three_Days;
       UTC_Time_Start := UTC_Time_Start + One_Day;
     else
-      UTC_Time_Stop  := UTC_Time_Start + Three_Minutes + Eleven_Seconds;
-      UTC_Time_Start := UTC_Time_Start + Three_Minutes;
+     -- UTC_Time_Stop  := UTC_Time_Start + Three_Minutes + Eleven_Seconds;
+     -- UTC_Time_Start := UTC_Time_Start + Three_Minutes;
+      UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds;
+     -- UTC_Time_Start := UTC_Time_Start; 
     end if;
 
     T.Start;

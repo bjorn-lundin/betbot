@@ -741,6 +741,7 @@ procedure Poll is
       case Animal is
         when Horse =>
           if Markets_Array (Place).Numwinners < Integer_4 (3) then
+            Log ("Animal " & Animal'Img & " Markets_Array (Place).Numwinners " & Markets_Array (Place).Numwinners'Img & " no bet here - exit poll loop");
             exit Poll_Loop;
           end if;
         when Hound => null;
@@ -811,6 +812,7 @@ procedure Poll is
 
       if Best_Runners (1).Backprice >= Float_8 (1.01) then
         for I in Bet_Type'Range loop
+          Log ("Animal " & Animal'Img & " betname " & i'Img & " First_Time " & First_Time'Img);
           case Animal is
             when Horse =>
               case I is
@@ -819,6 +821,7 @@ procedure Poll is
 
               when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_LAY_10_01_04_10_12_WIN_999_999 =>
                 if First_Time then
+                  Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
                   Do_Place_Lay_Bets_At_Start (
                                               Bettype         => I,
                                               BR              => Best_Runners,
@@ -828,6 +831,7 @@ procedure Poll is
 
               when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 =>
                 if First_Time then
+                  Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
                   Do_Place_Back_Bets_At_Start (
                                                Bettype         => I,
                                                BR              => Best_Runners,
@@ -917,6 +921,7 @@ procedure Poll is
               case I is
                 when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 =>
                   if First_Time then
+                    Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
                     Do_Place_Lay_Bets_At_Start (
                                                 Bettype         => I,
                                                 BR              => Best_Runners,
