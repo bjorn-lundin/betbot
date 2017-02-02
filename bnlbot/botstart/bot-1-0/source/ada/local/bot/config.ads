@@ -23,7 +23,7 @@ package Config is
                     HORSE_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     HORSE_Back_1_10_07_1_2_Plc_1_01,
                     HORSE_Back_1_10_10_1_2_Plc_1_01,
-                    HOUND_LAY_06_01_01_01_06_WIN_999_999
+                    HOUND_LAY_06_01_01_04_06_WIN_999_999
                    );
 
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
