@@ -8,5 +8,6 @@ and B.SELECTIONID = R.SELECTIONID
 and b.status = 'SETTLED'
 --and side = 'BACK'
 --group by betname 
+--order by betname
 order by betplaced ,betname, pricematched ,B.STARTTS
 
