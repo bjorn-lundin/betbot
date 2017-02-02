@@ -35,5 +35,5 @@ select
   sum(cnt) as cnt
 from backbets
 group by betname, startts::date 
-order by betname, startts::date 
+order by startts::date desc,betname
 

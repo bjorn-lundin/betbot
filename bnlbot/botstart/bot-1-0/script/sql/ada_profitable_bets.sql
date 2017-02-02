@@ -16,6 +16,7 @@
      when 'LAY'  then sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
      else 0.0
   end)::numeric,2) as interest_rate_pct,
+  round(sum(sizematched),0) as sumsm,
   min(betplaced)::date as mindate,
   max(betplaced)::date as maxdate,
   max(betplaced)::date - min(betplaced)::date  + 1 as days, 
@@ -29,8 +30,8 @@ where STATUS in ('SETTLED')
   and betwon is not null
 group by
   betname,side
-having sum(profit) > -0
-and max(betplaced) > '2016-01-01 00:00:00' 
+having sum(profit) > -10000
+and max(betplaced) > '2017-01-01 00:00:00' 
 and count('a') >= 10
 order by
   sum(profit) desc,
