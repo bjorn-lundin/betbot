@@ -85,7 +85,7 @@ procedure Markets_Fetcher is
 
   Is_Better         : Boolean := (not Is_Data_Collector) and (not Is_Tester);
 
-
+  --Global_Animal : Animal_Type := Hound;
 
   type Poll_Process is record
     Free     : Boolean := True;
@@ -377,7 +377,7 @@ begin
     Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes);
     Filter.Set_Field (Field_Name => "marketBettingTypes", Field => Market_Betting_Types);
 --    Filter.Set_Field (Field_Name => "inPlayOnly",         Field => False);
-    Filter.Set_Field (Field_Name => "turnInPlayEnabled",  Field => True);
+  --  Filter.Set_Field (Field_Name => "turnInPlayEnabled",  Field => True);
     Filter.Set_Field (Field_Name => "marketStartTime",    Field => Market_Start_Time);
 
     Params.Set_Field (Field_Name => "filter",           Field => Filter);
