@@ -282,11 +282,11 @@ procedure Poll is
 
   -------------------------------------------------------------------------------------------------------------------
 
-  procedure Try_To_Make_Back_Bet(
-    Bettype         : Config.Bet_Type;
-    BR              : Best_Runners_Array_Type;
-    Marketid        : Marketid_Type;
-    Match_Directly : Boolean := False) is
+  procedure Try_To_Make_Back_Bet(Bettype         : Config.Bet_Type;
+                                 BR              : Best_Runners_Array_Type;
+                                 Marketid        : Marketid_Type;
+                                 Match_Directly : Boolean := False) is
+   
     Max_Backprice_1 : Float_8;
     Min_Backprice_1 : Float_8;
     Min_Backprice_n : Float_8;
@@ -334,11 +334,10 @@ procedure Poll is
   end Try_To_Make_Back_Bet;
 
   ------------------------------------------------------
-  procedure Try_To_Make_Back_Bet_4_Bounds(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      Marketid        : Marketid_Type;
-      Match_Directly : Boolean := False) is
+  procedure Try_To_Make_Back_Bet_4_Bounds(Bettype         : Config.Bet_Type;
+                                          BR              : Best_Runners_Array_Type;
+                                          Marketid        : Marketid_Type;
+                                          Match_Directly : Boolean := False) is
 
     Max_Backprice_1 : Float_8;
     Min_Backprice_1 : Float_8;
@@ -437,11 +436,10 @@ procedure Poll is
 --    end Try_To_Make_Lay_Bet;
 
   -------------------------------------------------------------------------------------------------------------------
-  procedure Do_Place_Lay_Bets_At_Start(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      Marketid        : Marketid_Type;
-      Match_Directly : Boolean := False) is
+  procedure Do_Place_Lay_Bets_At_Start(Bettype         : Config.Bet_Type;
+                                       BR              : Best_Runners_Array_Type;
+                                       Marketid        : Marketid_Type;
+                                       Match_Directly : Boolean := False) is
 
     Max_Back_Price       : Float_8;
     Max_Lay_Price        : Max_Lay_Price_Type;
@@ -509,11 +507,10 @@ procedure Poll is
     Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
   end Do_Place_Lay_Bets_At_Start;
   -----------------------------------------------
-  procedure Do_Place_Back_Bets_At_Start(
-      Bettype         : Config.Bet_Type;
-      BR              : Best_Runners_Array_Type;
-      Marketid        : Marketid_Type;
-      Match_Directly : Boolean := False) is
+  procedure Do_Place_Back_Bets_At_Start(Bettype         : Config.Bet_Type;
+                                        BR              : Best_Runners_Array_Type;
+                                        Marketid        : Marketid_Type;
+                                        Match_Directly  : Boolean := False) is
 
     Service : String := "Do_Place_Back_Bets_At_Start";
     Max_Back_Price       : Float_8;
@@ -612,7 +609,7 @@ procedure Poll is
     Current_Turn_Not_Started_Race : Integer_4 := 0;
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo             : Balances.Balance_Type;
-    Match_Directly : Boolean := False;
+    Match_Directly : Boolean := True;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -873,12 +870,11 @@ procedure Poll is
                 begin
                   --  12345678901234567890
                   --  Back_1_10_20_1_4_WIN
-                  if Image (18 .. 20) = "PLC" then
+                  if Utils.Position(Image,"PLC") > Integer(0) then
                     M_Type := Place;
                     Do_Try_Bet := Found_Place and then Markets_Array (Place).Numwinners >= Integer_4 (3) ;
-                    --Match_Directly := False;
                     Match_Directly := True;
-                  elsif Image (18 .. 20) = "WIN" then
+                  elsif Utils.Position(Image,"WIN") > Integer(0) then
                     Match_Directly := True;
                   end if;
                   if Do_Try_Bet then
@@ -899,12 +895,12 @@ procedure Poll is
                   --           1         2         3
                   --  123456789012345678901234567890123456789
                   --  Back_1_61_1_65_01_04_1_2_PLC_1_10
-                  if Image (26 .. 28) = "PLC" then
+                  --if Image (26 .. 28) = "PLC" then
+                  if Utils.Position(Image,"PLC") > Integer(0) then
                     M_Type := Place;
                     Do_Try_Bet := Found_Place and then Markets_Array (Place).Numwinners >= Integer_4 (3) ;
-                    --Match_Directly := False;
                     Match_Directly := True;
-                  elsif Image (26 .. 28) = "WIN" then
+                  elsif Utils.Position(Image,"WIN") > Integer(0) then
                     Match_Directly := True;
                   end if;
                   if Do_Try_Bet then
