@@ -2,7 +2,7 @@ with Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 with Ada.Containers;
---with Text_Io;
+with Text_Io;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
 
@@ -68,7 +68,7 @@ procedure Sim_Back_1_2_3 is
   --------------------------------------------
 
   package Backprice_Sorter is new Prices.Lists.Generic_Sorting ("<");
-  type Best_Runners_Array_Type is array (1 .. 10) of Prices.Price_Type ;
+  type Best_Runners_Array_Type is array (1 .. 26) of Prices.Price_Type ;
   Best_Runners      : Best_Runners_Array_Type := (others => Prices.Empty_Data);
 
   -------------------------------------
@@ -87,6 +87,55 @@ procedure Sim_Back_1_2_3 is
   end Check_Betname_Exists;
 
   --------------------------------------------------
+  procedure Winners_Price_And_Distance (BR     : in Best_Runners_Array_Type;
+                                        Market : in Markets.Market_Type ) is --prints the winners odds and distance to 2nd
+    Runner_List : Runners.Lists.List;
+   -- List_Is_OK  : Boolean := True;
+    W           : Prices.Price_Type;
+    R           : Runners.Runner_Type;
+    Index       : Integer := 0;
+  begin
+
+  --  Text_Io.Put_Line ("Market:" & Market.to_string);
+    Runner_List := Sim.Winners_Map (Market.Marketid);
+  ---  Text_Io.Put_Line ("list found");
+
+    Outer: for Winner of Runner_List loop
+   -- Text_Io.Put_Line ("winner:" & Winner.To_String);
+      Inner : for idx in BR'Range loop
+   --     Text_Io.Put_Line ("idx:" & Idx'img);
+          Text_Io.Put_Line ("idx:" & Idx'Img & "|selid:" & Br(Idx).Selectionid'img & "|backodds:" & F8_Image(Br(Idx).Backprice));
+        if Winner.Selectionid = Br(Idx).Selectionid then
+          R := Winner;
+          Index := Idx;
+          exit Outer;
+        end if;
+      end loop Inner;
+    end loop Outer;
+    if Index = 0 then
+      Text_Io.Put_Line ("NO WINNER IN Market:" & Market.to_string);
+      return;
+    end if;
+    for Idx in BR'Range loop
+      if R.Selectionid = Br (Idx).Selectionid then
+        W :=  Br (Idx);
+        exit;
+      end if;
+    end loop;
+
+    Text_Io.Put_Line ("Marketid:" & Market.Marketid & "|" &
+                        "Winner_index:" & Index'Img & "|" &
+                        "Winnerodds_Back:" & F8_Image (W.Backprice) & "|" &
+                        "Winnerodds_Lay:" & F8_Image (W.Layprice ) & "|" &
+                        "Leaderodds_Back:" & F8_Image (BR (1).Backprice ) & "|" &
+                        "Leaderodds_Lay:" & F8_Image (BR (1).Layprice ) & "|" &
+                        "Win_Odds_Back-Fav_Odds_Back:" & Utils.F8_Image (BR (Index).Backprice - BR (1).Backprice) );
+
+
+  end Winners_Price_And_Distance;
+  pragma Unreferenced(Winners_Price_And_Distance);
+  --------------------------------------------------
+
   procedure Treat (BR             : in Best_Runners_Array_Type;
                    Market         : in Markets.Market_Type;
                    Num_Bets       : in Integer;
@@ -272,7 +321,6 @@ begin
     declare
       Cnt    : Integer := 0;
       Is_Win : Boolean := True;
-      --  Bet : Bets.Bet_Type;
     begin
       Log ("num markets " & Day.To_String & " " & Sim.Market_With_Data_List.Length'Img);
 
@@ -296,17 +344,10 @@ begin
               List : Prices.Lists.List :=  Sim.Prices_Map (Market.Marketid);
             begin
 
-              --                  if First then
-              --                    Enough_Runners := List.Length >= 8;
-              --                    First := False;
-              --                    if not Enough_Runners then
-              --                      exit Loop_Market;  -- too few runners
-              --                    end if;
-              --                  end if;
-
               Price.Backprice := 10_000.0;
               Best_Runners := (others => Price);
 
+              Backprice_Sorter.Sort (List);
               declare
                 Idx : Integer := 0;
               begin
@@ -316,16 +357,18 @@ begin
                   Best_Runners (Idx) := Tmp;
                 end loop;
               end ;
-              Backprice_Sorter.Sort (List);
-              for A of List loop
-                Log ("list - " & A.To_String);
-              end loop;
+    --          for A of List loop
+    --            Log ("list - " & A.To_String);
+    --          end loop;
 
               --do something here
-              Log ("dolog " & Market.Startts.To_String & " - " &
-                     Market.Marketid & " - " &
-                     Market.Marketname (1 .. 15));
+    --          Log ("dolog " & Market.Startts.To_String & " - " &
+    --                 Market.Marketid & " - " &
+   --                  Market.Marketname (1 .. 15));
 
+--                Winners_Price_And_Distance (
+--                       BR             => Best_Runners,
+--                       Market         => Market); --prints the winners odds and distance to 2nd
               Treat (BR             => Best_Runners,
                      Market         => Market,
                      Num_Bets       => IA_Num_Bets,
@@ -336,8 +379,6 @@ begin
                      Bet_Suffix     => Global_Bet_Suffix);
 
             end;
-            --              exit Loop_Timestamp ; --when False;
-            --            end loop Loop_Timestamp; --  Timestamp
           end;
         end if; -- Is_Win
       end loop Loop_Market;  -- marketid

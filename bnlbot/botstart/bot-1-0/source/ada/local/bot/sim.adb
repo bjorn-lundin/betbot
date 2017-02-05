@@ -554,9 +554,11 @@ package body Sim is
         when Horse =>
           Select_All_Markets_Horse.Prepare (
             "select M.MARKETID,STARTTS " &
-              "from APRICESHISTORY H, AMARKETS M " &
+              "from APRICESHISTORY H, AMARKETS M, AEVENTS E " &
               "where true " &
               "and H.MARKETID = M.MARKETID " &
+              "and E.EVENTID = M.EVENTID " &
+              "and E.EVENTTYPEID = 7 " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
               "and M.STARTTS::date = :DATE " &
               "group by M.MARKETID,M.STARTTS " &
@@ -576,8 +578,11 @@ package body Sim is
         when Hound =>
           Select_All_Markets_Hound.Prepare (
             "select M.MARKETID " &
-            "from AMARKETS M " &
-            "where M.MARKETTYPE in ('PLACE', 'WIN') " &
+            "from AMARKETS M, AEVENTS E " &
+            "where true " &
+            "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+            "and E.EVENTID = M.EVENTID " &
+            "and E.EVENTTYPEID = 4339 " &
             "and M.STARTTS::date = :DATE " &
             "order by M.STARTTS");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );

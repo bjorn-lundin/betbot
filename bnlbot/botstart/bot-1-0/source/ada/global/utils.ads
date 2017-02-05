@@ -15,10 +15,10 @@ package Utils is
   function Lower_Case (S : String) return String;
   function Upper_Case (C : Character) return Character;
   function Upper_Case (S : String) return String;
-  
-  
+
+
 
   function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String;
   function To_Utf8(Str : Unicode.CES.Byte_Sequence) return String;
-  
+
 end Utils;
