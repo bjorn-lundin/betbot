@@ -497,6 +497,17 @@ package body Bets is
     if Start_Ts = Calendar2.Time_Type_First then
       Eos(Abets) := True;
     end if;
+    
+    declare --remove bets with betid < 100_000_000
+      Bet_List_2 : Bets.Lists.List := Bet_List.Copy;
+    begin
+      Bet_List.Clear;
+      for B of Bet_List_2 loop
+        if B.Betid > 100_000_000 then
+          Bet_List.Append(b);
+        end if;  
+      end loop;      
+    end;
 
     if not Eos(Abets) then
       for i in Cleared_Bet_Status_Type'range loop
