@@ -141,8 +141,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is -- some bets have several runners ...
-        when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
+        when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
+        when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -204,8 +204,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PBB);
 
       case Main_Bet is -- some bets have several runners ...
-        when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
+        when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
+        when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -286,7 +286,7 @@ procedure Poll is
                                  BR              : Best_Runners_Array_Type;
                                  Marketid        : Marketid_Type;
                                  Match_Directly : Boolean := False) is
-   
+
     Max_Backprice_1 : Float_8;
     Min_Backprice_1 : Float_8;
     Min_Backprice_n : Float_8;
@@ -816,15 +816,15 @@ procedure Poll is
                 --when Lay_160_200        => null; -- treat later
                 --when Lay_1_10_25_4      => null; -- treat later
 
-              when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_LAY_10_01_04_10_12_WIN_999_999 =>
-                if First_Time then
-                  Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
-                  Do_Place_Lay_Bets_At_Start (
-                                              Bettype         => I,
-                                              BR              => Best_Runners,
-                                              Marketid        => Markets_Array (Win).Marketid,
-                                              Match_Directly  => True);
-                end if;
+--                when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_LAY_10_01_04_10_12_WIN_999_999 =>
+--                  if First_Time then
+--                    Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
+--                    Do_Place_Lay_Bets_At_Start (
+--                                                Bettype         => I,
+--                                                BR              => Best_Runners,
+--                                                Marketid        => Markets_Array (Win).Marketid,
+--                                                Match_Directly  => True);
+--                  end if;
 
               when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 =>
                 if First_Time then
@@ -885,7 +885,7 @@ procedure Poll is
                                           Match_Directly  => Match_Directly);
                   end if;
                 end;
-              when HORSE_Back_1_96_2_00_08_10_1_2_WIN_1_70 ..
+              when HORSE_BACK_1_11_1_15_05_07_1_2_PLC_1_01 ..
                   HORSE_BACK_1_11_1_15_05_07_1_2_PLC_1_01   =>
                 declare
                   M_Type     : Market_Type := Win;
@@ -911,11 +911,11 @@ procedure Poll is
                                                    Match_Directly  => Match_Directly);
                   end if;
                   end;
-                  when HOUND_LAY_06_01_01_04_06_WIN_999_999 => null;
+                  when HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
               end case;
             when Hound =>
               case I is
-                when HOUND_LAY_06_01_01_04_06_WIN_999_999 .. HOUND_LAY_06_01_01_04_06_WIN_999_999 =>
+                when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 =>
                   if First_Time then
                     Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
                     Do_Place_Lay_Bets_At_Start (
@@ -924,7 +924,7 @@ procedure Poll is
                                                 Marketid        => Markets_Array (Win).Marketid,
                                                 Match_Directly  => True);
                   end if;
-                when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_Back_1_10_10_1_2_Plc_1_01 => null;
+                when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_Back_1_10_10_1_2_Plc_1_01 => null;
               end case ;
             when Human => null;
           end case;
