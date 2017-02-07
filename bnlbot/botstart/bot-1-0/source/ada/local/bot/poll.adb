@@ -610,6 +610,7 @@ procedure Poll is
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'first;
     Saldo             : Balances.Balance_Type;
     Match_Directly : Boolean := True;
+    Exit_After_First_Loop : Boolean := False;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -813,9 +814,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                --when Lay_160_200        => null; -- treat later
-                --when Lay_1_10_25_4      => null; -- treat later
-
+              
 --                when HORSE_LAY_02_02_04_10_16_WIN_600_900 .. HORSE_LAY_10_01_04_10_12_WIN_999_999 =>
 --                  if First_Time then
 --                    Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
@@ -829,8 +828,7 @@ procedure Poll is
               when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 =>
                 if First_Time then
                   Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
-                  Do_Place_Back_Bets_At_Start (
-                                               Bettype         => I,
+                  Do_Place_Back_Bets_At_Start (Bettype         => I,
                                                BR              => Best_Runners,
                                                Marketid        => Markets_Array (Win).Marketid,
                                                Match_Directly  => True);
@@ -878,8 +876,7 @@ procedure Poll is
                     Match_Directly := True;
                   end if;
                   if Do_Try_Bet then
-                    Try_To_Make_Back_Bet (
-                                          Bettype         => I,
+                    Try_To_Make_Back_Bet (Bettype         => I,
                                           BR              => Best_Runners,
                                           Marketid        => Markets_Array (M_Type).Marketid,
                                           Match_Directly  => Match_Directly);
@@ -904,32 +901,35 @@ procedure Poll is
                     Match_Directly := True;
                   end if;
                   if Do_Try_Bet then
-                    Try_To_Make_Back_Bet_4_Bounds (
-                                                   Bettype         => I,
+                    Try_To_Make_Back_Bet_4_Bounds (Bettype         => I,
                                                    BR              => Best_Runners,
                                                    Marketid        => Markets_Array (M_Type).Marketid,
                                                    Match_Directly  => Match_Directly);
                   end if;
                   end;
-                  when HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
+                  when Hound_Lay_02_01_01_02_04_Win_999_999 => null;
               end case;
             when Hound =>
               case I is
-                when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 =>
+                when Hound_Lay_02_01_01_02_04_Win_999_999 .. Hound_Lay_02_01_01_02_04_Win_999_999 =>
                   if First_Time then
                     Log ("Treating Animal " & Animal'Img & " betname " & i'Img);
-                    Do_Place_Lay_Bets_At_Start (
-                                                Bettype         => I,
+                    Do_Place_Lay_Bets_At_Start (Bettype         => I,
                                                 BR              => Best_Runners,
                                                 Marketid        => Markets_Array (Win).Marketid,
                                                 Match_Directly  => True);
+                    Exit_After_First_Loop := True; -- these bet only gets one shot at the beginning    
                   end if;
-                when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_Back_1_10_10_1_2_Plc_1_01 => null;
+                when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_1_10_10_1_2_Plc_1_01 => null;
               end case ;
             when Human => null;
           end case;
 
         end loop;
+        if First_Time and then Exit_After_First_Loop then
+          exit Poll_Loop;                         
+        end if;
+        
         First_Time := False;
       end if; -- Best_Runner(1).Backodds >= 1.01
     end loop Poll_Loop;
