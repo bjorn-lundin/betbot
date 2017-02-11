@@ -102,7 +102,6 @@ procedure Markets_Fetcher is
     7 => (True, (("poll_market_7  "), (others => ' '))),
     8 => (True, (("poll_market_8  "), (others => ' ')))
   );
-
   Race_Pollers : array (1..10) of Poll_Process := (
     1 => (True, (("poll_1         "), (others => ' '))),
     2 => (True, (("poll_2         "), (others => ' '))),
@@ -294,7 +293,6 @@ begin
 
    -- Create JSON arrays
   Append(Exchange_Ids , Create("1"));      -- Not Australia
-
   Append(Event_Type_Ids , Create("7"));     -- horse
   Append(Event_Type_Ids , Create("4339"));  -- hound
 --   none for all countries
@@ -365,9 +363,8 @@ begin
      -- UTC_Time_Stop  := UTC_Time_Start + Three_Minutes + Eleven_Seconds;
      -- UTC_Time_Start := UTC_Time_Start + Three_Minutes;
       UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds;
-     -- UTC_Time_Start := UTC_Time_Start; 
+     -- UTC_Time_Start := UTC_Time_Start;
     end if;
-
     T.Start;
 
     Market_Start_Time.Set_Field(Field_Name => "from", Field => Calendar2.String_Date_Time_ISO(UTC_Time_Start));
