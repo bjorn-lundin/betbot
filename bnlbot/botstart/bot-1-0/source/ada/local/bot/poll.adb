@@ -142,7 +142,7 @@ procedure Poll is
 
       case Main_Bet is -- some bets have several runners ...
         when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
+        when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -205,7 +205,7 @@ procedure Poll is
 
       case Main_Bet is -- some bets have several runners ...
         when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_02_01_01_02_04_WIN_999_999 .. HOUND_LAY_02_01_01_02_04_WIN_999_999 => null;
+        when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -919,11 +919,12 @@ procedure Poll is
                                                      Match_Directly  => Match_Directly);
                     end if;
                   end;
-                when Hound_Lay_02_01_01_02_04_Win_999_999 => null;
+                when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
               end case;
+              
             when Hound =>
               case I is
-                when Hound_Lay_02_01_01_02_04_Win_999_999 .. Hound_Lay_02_01_01_02_04_Win_999_999 =>
+                when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 =>
                   if First_Time then
                     Log ("Treating Animal " & Animal'Img & " betname " & I'Img);
                     Do_Place_Lay_Bets_At_Start (Bettype         => I,
