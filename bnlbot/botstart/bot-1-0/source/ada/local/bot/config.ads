@@ -7,21 +7,18 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    Horse_Back_03_04_04_08_14_Win_500_800, -- Several Bets In This Type
-                    Horse_Back_04_04_04_08_14_Win_500_900, -- Several Bets In This Type
-                    Horse_Back_05_04_04_09_15_Win_500_900, -- Several Bets In This Type
-                    Horse_Back_06_04_04_08_14_Win_600_900, -- Several Bets In This Type
+                    --Horse_Back_03_04_04_08_14_Win_500_800, -- Several Bets In This Type
+                    --Horse_Back_04_04_04_08_14_Win_500_900, -- Several Bets In This Type
+                    --Horse_Back_05_04_04_09_15_Win_500_900, -- Several Bets In This Type
+                    --Horse_Back_06_04_04_08_14_Win_600_900, -- Several Bets In This Type
                     Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_12_1_14_06_07_1_2_Win_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
-                    Horse_Back_1_10_10_1_2_Plc_1_01,
                     Horse_Back_1_12_06_1_2_Win_1_01,
                     Horse_Back_1_13_07_1_2_Win_1_01,
                     Horse_Back_1_14_07_1_2_Win_1_01,
                     Horse_Back_1_19_02_1_2_Win_1_01,
-                    Hound_Lay_01_03_04_06_08_Win_999_999,
                     Hound_Lay_01_06_04_07_09_Win_999_999,
-                    Hound_Lay_02_01_01_02_04_Win_999_999,
                     Hound_Lay_03_04_06_07_09_Win_999_999
                    );
 

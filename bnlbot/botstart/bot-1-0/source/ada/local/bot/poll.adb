@@ -141,8 +141,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is -- some bets have several runners ...
-        when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
+       -- when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
+        when Hound_Lay_01_06_04_07_09_Win_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -204,8 +204,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PBB);
 
       case Main_Bet is -- some bets have several runners ...
-        when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
-        when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
+       -- when HORSE_BACK_03_04_04_08_14_WIN_500_800 .. HORSE_BACK_06_04_04_08_14_WIN_600_900 => null;
+        when Hound_Lay_01_06_04_07_09_Win_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -577,6 +577,7 @@ procedure Poll is
     end if;
     Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
   end Do_Place_Back_Bets_At_Start;
+  pragma Unreferenced (Do_Place_Back_Bets_At_Start);
   -----------------------------------------------
 
 
@@ -839,14 +840,14 @@ procedure Poll is
                 --                                 Match_Directly  => True);
                 --   end if;
             
-                when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_06_04_04_08_14_Win_600_900 =>
-                  if First_Time then
-                    Log ("Treating Animal " & Animal'Img & " betname " & I'Img);
-                    Do_Place_Back_Bets_At_Start (Bettype         => I,
-                                                 Br              => Best_Runners,
-                                                 Marketid        => Markets_Array (Win).Marketid,
-                                                 Match_Directly  => True);
-                  end if;
+--                  when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_06_04_04_08_14_Win_600_900 =>
+--                    if First_Time then
+--                      Log ("Treating Animal " & Animal'Img & " betname " & I'Img);
+--                      Do_Place_Back_Bets_At_Start (Bettype         => I,
+--                                                   Br              => Best_Runners,
+--                                                   Marketid        => Markets_Array (Win).Marketid,
+--                                                   Match_Directly  => True);
+--                    end if;
 
                   -- when Lay_2_90_20_WIN_8_00 .. Lay_2_90_20_WIN_8_00   =>
                   --   declare
@@ -920,12 +921,12 @@ procedure Poll is
                                                      Match_Directly  => Match_Directly);
                     end if;
                   end;
-                when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
+                when Hound_Lay_01_06_04_07_09_Win_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 => null;
               end case;
               
             when Hound =>
               case I is
-                when HOUND_LAY_01_03_04_06_08_WIN_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 =>
+                when Hound_Lay_01_06_04_07_09_Win_999_999 .. HOUND_LAY_03_04_06_07_09_WIN_999_999 =>
                   if First_Time then
                     Log ("Treating Animal " & Animal'Img & " betname " & I'Img);
                     Do_Place_Lay_Bets_At_Start (Bettype         => I,
@@ -934,7 +935,7 @@ procedure Poll is
                                                 Match_Directly  => True);
                     Exit_After_First_Loop := True; -- these bet only gets one shot at the beginning    
                   end if;
-                when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_1_19_02_1_2_Win_1_01 => null;
+                when Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 .. Horse_Back_1_19_02_1_2_Win_1_01 => null;
               end case ;
             when Human => null;
           end case;
