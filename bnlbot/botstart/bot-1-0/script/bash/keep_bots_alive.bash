@@ -92,7 +92,7 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER bet_checker bet_checker
 
-  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6"
+  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6 poll_7 poll_8"
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
@@ -100,9 +100,10 @@ function Check_Bots_For_User () {
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
                    bet_placer_004 bet_placer_005 bet_placer_006 \
                    bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 bet_placer_011 bet_placer_012 \
-                   bet_placer_013 bet_placer_014 bet_placer_015 \
-                   bet_placer_016 bet_placer_017 bet_placer_018 "
+                   bet_placer_010 bet_placer_011 bet_placer_012 "
+                   
+#                   bet_placer_013 bet_placer_014 bet_placer_015 \
+#                   bet_placer_016 bet_placer_017 bet_placer_018 "
 
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
