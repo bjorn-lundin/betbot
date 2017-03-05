@@ -7,20 +7,25 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    HORSE_BACK_03_04_04_08_14_WIN_500_800, -- Several Bets In This Type
-                    HORSE_BACK_04_04_04_08_14_WIN_500_900, -- Several Bets In This Type
-                    HORSE_BACK_05_04_04_09_15_WIN_500_900, -- Several Bets In This Type
-                    HORSE_BACK_06_04_04_08_14_WIN_600_900, -- Several Bets In This Type
-                    HORSE_Back_1_11_1_15_05_07_1_2_Plc_1_01,
-                    HORSE_Back_1_10_07_1_2_Plc_1_01,
-                    HORSE_Back_1_10_10_1_2_Plc_1_01,
-                    HOUND_LAY_01_03_04_06_08_WIN_999_999,
-                    HOUND_LAY_01_06_04_07_09_WIN_999_999,
-                    HOUND_LAY_02_01_01_02_04_WIN_999_999,
-                    HOUND_LAY_03_04_06_07_09_WIN_999_999                    
+                    Horse_Back_03_04_04_08_14_Win_500_800, -- Several Bets In This Type
+                    Horse_Back_04_04_04_08_14_Win_500_900, -- Several Bets In This Type
+                    Horse_Back_05_04_04_09_15_Win_500_900, -- Several Bets In This Type
+                    Horse_Back_06_04_04_08_14_Win_600_900, -- Several Bets In This Type
+                    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
+                    Horse_Back_1_12_1_14_06_07_1_2_Win_1_01,
+                    Horse_Back_1_10_07_1_2_Plc_1_01,
+                    Horse_Back_1_10_10_1_2_Plc_1_01,
+                    Horse_Back_1_12_06_1_2_Win_1_01,
+                    Horse_Back_1_13_07_1_2_Win_1_01,
+                    Horse_Back_1_14_07_1_2_Win_1_01,
+                    Horse_Back_1_19_02_1_2_Win_1_01,
+                    Hound_Lay_01_03_04_06_08_Win_999_999,
+                    Hound_Lay_01_06_04_07_09_Win_999_999,
+                    Hound_Lay_02_01_01_02_04_Win_999_999,
+                    Hound_Lay_03_04_06_07_09_Win_999_999
                    );
-                   
-                   
+
+
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
 
   type Bet_Config_Type is tagged record

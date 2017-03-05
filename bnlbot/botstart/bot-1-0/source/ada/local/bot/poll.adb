@@ -872,7 +872,7 @@ procedure Poll is
                   --     end if;
                   --   end;
                   --
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_10_10_1_2_Plc_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_19_02_1_2_Win_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -886,6 +886,7 @@ procedure Poll is
                                     Markets_Array (Place).Numwinners >= Integer_4 (3) ;
                       Match_Directly := True;
                     elsif Utils.Position(Image,"WIN") > Integer(0) then
+                      M_Type         := Win;
                       Match_Directly := True;
                     end if;
                     if Do_Try_Bet then
@@ -895,7 +896,7 @@ procedure Poll is
                                             Match_Directly  => Match_Directly);
                     end if;
                   end;
-                when Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 .. Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 =>
+                when Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 .. Horse_Back_1_12_1_14_06_07_1_2_Win_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -904,12 +905,12 @@ procedure Poll is
                     --           1         2         3
                     --  123456789012345678901234567890123456789
                     --  Back_1_61_1_65_01_04_1_2_PLC_1_10
-                    --if Image (26 .. 28) = "PLC" then
                     if Utils.Position(Image,"PLC") > Integer(0) then
                       M_Type := Place;
                       Do_Try_Bet := Found_Place and then Markets_Array (Place).Numwinners >= Integer_4 (3) ;
                       Match_Directly := True;
                     elsif Utils.Position(Image,"WIN") > Integer(0) then
+                      M_Type         := Win;
                       Match_Directly := True;
                     end if;
                     if Do_Try_Bet then
@@ -933,7 +934,7 @@ procedure Poll is
                                                 Match_Directly  => True);
                     Exit_After_First_Loop := True; -- these bet only gets one shot at the beginning    
                   end if;
-                when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_1_10_10_1_2_Plc_1_01 => null;
+                when Horse_Back_03_04_04_08_14_Win_500_800 .. Horse_Back_1_19_02_1_2_Win_1_01 => null;
               end case ;
             when Human => null;
           end case;
