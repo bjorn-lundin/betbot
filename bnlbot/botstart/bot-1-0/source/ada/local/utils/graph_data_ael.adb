@@ -213,7 +213,8 @@ procedure Graph_Data_Ael is
        "where true " &
 --       "and B.BETNAME in ('LAY_1.7_10_WIN_6_20','LAY_1.8_15_WIN_7_15','LAY_1.4_10_WIN_5_20') " &
        "and B.BETNAME = :BETNAME " &
-       "and B.STATUS in ('SETTLED','SUCCESS','MATCHED','') " &
+       --"and B.STATUS in ('SETTLED','SUCCESS','MATCHED','') " &
+       "and (( B.STATUS in ('SETTLED','SUCCESS','MATCHED','')) or (B.INSTERRCODE = 'INVALID_BET_SIZE'))" &
        "order by B.STARTTS");
      Select_Equity_Date.Set("BETNAME", Betname);
 

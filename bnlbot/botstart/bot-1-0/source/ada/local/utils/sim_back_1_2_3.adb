@@ -156,6 +156,8 @@ procedure Sim_Back_1_2_3 is
     if Place_Num <= BR'Last and then BR (Place_Num).Backprice <= Max_Back_Price then
       for I in BR'Range loop
         if I >= First_Bet and then
+          BR (I).Backprice >  Float_8(1.0) and then
+          BR (I).Layprice  >  Float_8(1.0) and then
           I < First_Bet + Num_Bets and then
           BR (I).Backprice < 10_000.0 then
 
@@ -179,8 +181,10 @@ procedure Sim_Back_1_2_3 is
       BR (Place_Num).Layprice <= Max_Lay_Price then
       for I in BR'Range loop
         if I >= First_Bet and then
-          BR (I).Backprice < 10_000.0 and then
-          BR (I).Layprice <= Max_Lay_Price and then
+          BR (I).Backprice <  10_000.0 and then
+          BR (I).Layprice  <= Max_Lay_Price and then
+          BR (I).Backprice >  Float_8(1.0) and then
+          BR (I).Layprice  >  Float_8(1.0) and then
           I < First_Bet + Num_Bets then
 
           Runner.Selectionid := BR (I).Selectionid;

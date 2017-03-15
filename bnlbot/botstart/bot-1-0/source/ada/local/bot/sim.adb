@@ -984,17 +984,17 @@ package body Sim is
     Read_All_Markets(Date, Animal, Market_With_Data_List);
     Log("Found:" & Market_With_Data_List.Length'Img );
 
---      Log("fill map with all pricets for a marketid ");
---      Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
---      Log("Found:" & Marketid_Pricets_Map.Length'Img );
+    Log("fill map with all pricets for a marketid ");
+    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
+    Log("Found:" & Marketid_Pricets_Map.Length'Img );
 
---      Log("fill map with map of timestamp list for all marketids ");
---      Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
---                                         Marketid_Pricets_Map,
---                                         Date,
---                                         Animal,
---                                         Marketid_Timestamp_To_Prices_History_Map) ;
---      Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
+    Log("fill map with map of timestamp list for all marketids ");
+    Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
+                                       Marketid_Pricets_Map,
+                                       Date,
+                                       Animal,
+                                       Marketid_Timestamp_To_Prices_History_Map) ;
+    Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
 
     Log("fill map winners ");
     Fill_Winners_Map(Market_With_Data_List, Date, Animal, Winners_Map );
@@ -1008,9 +1008,9 @@ package body Sim is
     Fill_Events_Map(Market_With_Data_List, Date, Animal, Events_Map );
     Log("Found:" & Events_Map.Length'Img );
 
---      Log("fill map Win/Place markets ");
---      Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
---      Log("Found:" & Win_Place_Map.Length'Img );
+    Log("fill map Win/Place markets ");
+    Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
+    Log("Found:" & Win_Place_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 
