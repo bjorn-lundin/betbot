@@ -219,7 +219,7 @@ package body Bets is
         Betname        => Name,
         Betwon         => False,
         Profit         => 0.0,
-        Status         => (others => ' '),
+        Status         => "UNMATCHED                                         ",
         Exestatus      => (others => ' '),
         Exeerrcode     => (others => ' '),
         Inststatus     => (others => ' '),
@@ -497,7 +497,7 @@ package body Bets is
     if Start_Ts = Calendar2.Time_Type_First then
       Eos(Abets) := True;
     end if;
-    
+
     declare --remove bets with betid < 100_000_000
       Bet_List_2 : Bets.Lists.List := Bet_List.Copy;
     begin
@@ -505,8 +505,8 @@ package body Bets is
       for B of Bet_List_2 loop
         if B.Betid > 100_000_000 then
           Bet_List.Append(b);
-        end if;  
-      end loop;      
+        end if;
+      end loop;
     end;
 
     if not Eos(Abets) then

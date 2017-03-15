@@ -17,6 +17,7 @@ package Config is
                     Horse_Back_1_12_06_1_2_Win_1_01,
                     Horse_Back_1_13_07_1_2_Win_1_01,
                     Horse_Back_1_14_07_1_2_Win_1_01,
+                    Horse_Back_1_16_17_1_2_Win_1_01,
                     Horse_Back_1_19_02_1_2_Win_1_01,
                     Hound_Lay_01_06_04_07_09_Win_999_999,
                     Hound_Lay_03_04_06_07_09_Win_999_999
