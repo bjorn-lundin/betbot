@@ -61,6 +61,9 @@ begin
   Date_Start.Month := Month_Type(Ia_Month);
   Date_Start.Day := Day_Type(Ia_Day);
 
+  Date_Stop  := Date_Start + One_Day;
+
+  Current_Date := Date_Start - One_Day; -- 1 day
 
   if Sa_Animal.all = "horse" then
     Animal := Horse;
