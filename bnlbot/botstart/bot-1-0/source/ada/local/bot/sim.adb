@@ -464,11 +464,10 @@ package body Sim is
   begin
     T.Start;
     Select_Get_Place_Market.Prepare(
-      "select MW.* from AMARKETS MW, AMARKETS MP " &
+      "select MP.* from AMARKETS MW, AMARKETS MP " &
       "where MW.EVENTID = MP.EVENTID " &
       "and MW.STARTTS = MP.STARTTS " &
       "and MW.MARKETID = :WINMARKETID " &
-      "and MP.NUMWINNERS = 3 " &
       "and MP.MARKETTYPE = 'PLACE' " &
       "and MW.MARKETTYPE = 'WIN' ");
 
