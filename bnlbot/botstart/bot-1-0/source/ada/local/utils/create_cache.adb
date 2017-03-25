@@ -18,9 +18,9 @@ procedure Create_Cache is
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
   Cmd_Line     : Command_Line_Configuration;
-  IA_Day       : aliased Integer := 0;
-  IA_Month     : aliased Integer := 0;
-  IA_Year      : aliased Integer := 0;
+--    IA_Day       : aliased Integer := 0;
+--    IA_Month     : aliased Integer := 0;
+--    IA_Year      : aliased Integer := 0;
   Sa_Animal        : aliased Gnat.Strings.String_Access;
   Animal           : Animal_Type := Horse;
   package EV renames Ada.Environment_Variables;
@@ -36,34 +36,34 @@ begin
      Sa_Animal'Access,
      Long_Switch => "--animal=",
      Help        => "horse|hound|human");
-    Define_Switch
-       (Cmd_Line,
-        Ia_Year'access,
-        Long_Switch => "--year=",
-        Help        => "year of date");
-
-    Define_Switch
-       (Cmd_Line,
-        Ia_Month'access,
-        Long_Switch => "--month=",
-        Help        => "month of date");
-
-    Define_Switch
-       (Cmd_Line,
-        Ia_Day'access,
-        Long_Switch => "--day=",
-        Help        => "day of date");
+--      Define_Switch
+--         (Cmd_Line,
+--          Ia_Year'access,
+--          Long_Switch => "--year=",
+--          Help        => "year of date");
+--
+--      Define_Switch
+--         (Cmd_Line,
+--          Ia_Month'access,
+--          Long_Switch => "--month=",
+--          Help        => "month of date");
+--
+--      Define_Switch
+--         (Cmd_Line,
+--          Ia_Day'access,
+--          Long_Switch => "--day=",
+--          Help        => "day of date");
 
   Getopt (Cmd_Line);  -- process the command line
 
 
-  Date_Start.Year := Year_Type(Ia_Year);
-  Date_Start.Month := Month_Type(Ia_Month);
-  Date_Start.Day := Day_Type(Ia_Day);
-
-  Date_Stop  := Date_Start + One_Day;
-
-  Current_Date := Date_Start - One_Day; -- 1 day
+--    Date_Start.Year := Year_Type(Ia_Year);
+--    Date_Start.Month := Month_Type(Ia_Month);
+--    Date_Start.Day := Day_Type(Ia_Day);
+--
+--    Date_Stop  := Date_Start + One_Day;
+--
+--    Current_Date := Date_Start - One_Day; -- 1 day
 
   if Sa_Animal.all = "horse" then
     Animal := Horse;
@@ -72,7 +72,6 @@ begin
   elsif Sa_Animal.all = "human" then
     Animal := Human;
   end if;
-  Log ("animal1 " & Sa_Animal.all);
   Log ("animal2 " & Animal'img);
 
   case Animal is
