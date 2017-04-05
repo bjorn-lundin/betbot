@@ -18,13 +18,13 @@ procedure Create_Cache is
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
   Cmd_Line     : Command_Line_Configuration;
---    IA_Day       : aliased Integer := 0;
---    IA_Month     : aliased Integer := 0;
---    IA_Year      : aliased Integer := 0;
+  IA_Day       : aliased Integer := 0;
+  IA_Month     : aliased Integer := 0;
+  IA_Year      : aliased Integer := 0;
   Sa_Animal        : aliased Gnat.Strings.String_Access;
   Animal           : Animal_Type := Horse;
   package EV renames Ada.Environment_Variables;
-
+  Db : String (1..3) := (others => ' ');
 begin
 
   if not EV.Exists ("BOT_NAME") then
@@ -36,87 +36,76 @@ begin
      Sa_Animal'Access,
      Long_Switch => "--animal=",
      Help        => "horse|hound|human");
---      Define_Switch
---         (Cmd_Line,
---          Ia_Year'access,
---          Long_Switch => "--year=",
---          Help        => "year of date");
---
---      Define_Switch
---         (Cmd_Line,
---          Ia_Month'access,
---          Long_Switch => "--month=",
---          Help        => "month of date");
---
---      Define_Switch
---         (Cmd_Line,
---          Ia_Day'access,
---          Long_Switch => "--day=",
---          Help        => "day of date");
+    Define_Switch
+       (Cmd_Line,
+        Ia_Year'access,
+        Long_Switch => "--year=",
+        Help        => "year of date");
+
+    Define_Switch
+       (Cmd_Line,
+        Ia_Month'access,
+        Long_Switch => "--month=",
+        Help        => "month of date");
+
+    Define_Switch
+       (Cmd_Line,
+        Ia_Day'access,
+        Long_Switch => "--day=",
+        Help        => "day of date");
 
   Getopt (Cmd_Line);  -- process the command line
 
 
---    Date_Start.Year := Year_Type(Ia_Year);
---    Date_Start.Month := Month_Type(Ia_Month);
---    Date_Start.Day := Day_Type(Ia_Day);
---
---    Date_Stop  := Date_Start + One_Day;
---
---    Current_Date := Date_Start - One_Day; -- 1 day
+  Date_Start.Year := Year_Type(Ia_Year);
+  Date_Start.Month := Month_Type(Ia_Month);
+  Date_Start.Day := Day_Type(Ia_Day);
+
+  Date_Stop  := Date_Start + One_Day;
+  Current_Date := Date_Start; -- 1 day
 
   if Sa_Animal.all = "horse" then
     Animal := Horse;
+    Db := "dry";
   elsif Sa_Animal.all = "hound" then
     Animal := Hound;
+    Db := "ghd";
   elsif Sa_Animal.all = "human" then
     Animal := Human;
   end if;
-  Log ("animal2 " & Animal'img);
+  Log ("animal2 " & Animal'Img);
+
+  Sql.Connect
+    (Host     => "localhost",
+     Port     => 5432,
+     Db_Name  => db,
+     Login    => "bnl",
+     Password => "bnl");
+  Log ("Connected to db: " & Db);
+
+
+  Log ("Current date='" & Current_Date.String_Date_ISO & "' Date_Stop='" & Date_Stop.String_Date_ISO & "'");
 
   case Animal is
     when Horse =>
-      Log ("Connect db dry");
-      Sql.Connect
-        (Host     => "localhost",
-         Port     => 5432,
-         Db_Name  => "dry",
-         Login    => "bnl",
-         Password => "bnl");
-      Log ("Connected to db");
-
       loop
-        Current_Date := Current_Date + One_Day;
-        exit when Current_Date >= Date_Stop;
+        exit when Current_Date > Date_Stop;
         Sim.Fill_Data_Maps (Current_Date, Animal => Animal);
+        Current_Date := Current_Date + One_Day;
       end loop;
-
-      Log ("Started : " & Start.To_String);
-      Log ("Done : " & Calendar2.Clock.To_String);
-      Sql.Close_Session;
 
     when Hound =>
-      Current_Date := Date_Start - One_Day;
-      Log ("Connect db ghd");
-      Sql.Connect
-        (Host     => "192.168.1.20",
-         Port     => 5432,
-         Db_Name  => "ghd",
-         Login    => "bnl",
-         Password => "bnl");
-      Log ("Connected to db");
-
       loop
-        Current_Date := Current_Date + One_Day;
-        exit when Current_Date >= Date_Stop;
+        exit when Current_Date > Date_Stop;
         Sim.Fill_Data_Maps (Current_Date, Animal => Animal);
+        Current_Date := Current_Date + One_Day;
       end loop;
-      Log ("Started : " & Start.To_String);
-      Log ("Done : " & Calendar2.Clock.To_String);
-      Sql.Close_Session;
 
     when Human => null;
   end case;
+  Log ("Started : " & Start.To_String);
+  Log ("Done : " & Calendar2.Clock.To_String);
+  Sql.Close_Session;
 
 
 exception

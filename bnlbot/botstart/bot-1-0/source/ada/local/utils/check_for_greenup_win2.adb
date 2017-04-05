@@ -48,8 +48,8 @@ procedure Check_for_Greenup_Win2 is
   
   Me                  : constant String := "Check_for_Greenup_Win2.";
   Global_Bet_Name     : Betname_Type := (others => ' ');
-  Global_Max_Layprice : Float_8 := 0.0;
-  Global_Max_Backprice: Float_8 := 0.0;
+  Global_Max_Layprice : Fixed_Type := 0.0;
+  Global_Max_Backprice: Fixed_Type := 0.0;
   Cmd_Line            : Command_Line_Configuration;
   SA_Max_Layprice     : aliased Gnat.Strings.String_Access;
   SA_Max_Backprice    : aliased Gnat.Strings.String_Access;
@@ -84,7 +84,7 @@ procedure Check_for_Greenup_Win2 is
     Bet : Table_Abets.Data_Type;
     Now : Calendar2.Time_Type := Calendar2.Clock;
     Bet_Name     : Betname_Type := Global_Bet_Name;
-    Backprice : Float_8 := 0.0;     
+    Backprice : Fixed_Type := 0.0;     
     
   begin
     Bet_Name(11 .. 14) := "_WIN";
@@ -97,8 +97,8 @@ procedure Check_for_Greenup_Win2 is
         Powerdays      => 0,
         Selectionid    => R.Selectionid,
         Reference      => (others => '-'),
-        Size           => Float_8(30.0),
-        Price          => P.Layprice + Float_8(i),
+        Size           => Fixed_Type(30.0),
+        Price          => P.Layprice + Fixed_Type(i),
         Side           => "LAY ",
         Betname        => Bet_Name,
         Betwon         => False,
@@ -111,7 +111,7 @@ procedure Check_for_Greenup_Win2 is
         Startts        => M.Startts,
         Betplaced      => P.Pricets,
         Pricematched   => P.Layprice,
-        Sizematched    => Float_8(30.0),
+        Sizematched    => Fixed_Type(30.0),
         Runnername     => R.Runnernamestripped,
         Fullmarketname => M.Marketname,
         Svnrevision    => Bot_Svn_Info.Revision,
@@ -122,9 +122,9 @@ procedure Check_for_Greenup_Win2 is
     end loop;
     
     -- do a backbet too
-    Backprice := P.Backprice - Float_8(1.0);
-    if Backprice < Float_8(1.01) then
-       Backprice := Float_8(1.01);  
+    Backprice := P.Backprice - Fixed_Type(1.0);
+    if Backprice < Fixed_Type(1.01) then
+       Backprice := Fixed_Type(1.01);  
     end if;
     Bet_Name := Global_Bet_Name;
     Bet_Name(1..3) := "BCK"; 
@@ -138,7 +138,7 @@ procedure Check_for_Greenup_Win2 is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(30.0),
+      Size           => Fixed_Type(30.0),
       Price          => Backprice,
       Side           => "BACK",
       Betname        => Bet_Name,
@@ -152,7 +152,7 @@ procedure Check_for_Greenup_Win2 is
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
       Pricematched   => P.Backprice,
-      Sizematched    => Float_8(30.0),
+      Sizematched    => Fixed_Type(30.0),
       Runnername     => R.Runnernamestripped,
       Fullmarketname => M.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -208,8 +208,8 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   Move(SA_Betname.all,Global_Bet_Name);
-  Global_Max_Layprice := Float_8'Value(SA_Max_Layprice.all);
-  Global_Max_Backprice := Float_8'Value(SA_Max_Backprice.all);
+  Global_Max_Layprice := Fixed_Type'Value(SA_Max_Layprice.all);
+  Global_Max_Backprice := Fixed_Type'Value(SA_Max_Backprice.all);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
@@ -324,10 +324,10 @@ begin
             -- Best_Runners is sorted lowest backprice to highest, max 4 entries
 
             if Best_Runners(1).Backprice <= Global_Max_Backprice and then
-               Best_Runners(1).Backprice >= Float_8(1.01) then
+               Best_Runners(1).Backprice >= Fixed_Type(1.01) then
 
                for i in Best_Runners'range loop
-                 if Float_8(1.01) <= Best_Runners(i).Layprice and then
+                 if Fixed_Type(1.01) <= Best_Runners(i).Layprice and then
                                      Best_Runners(i).Layprice <= Global_Max_Layprice  then
                    Runner.Marketid    := Best_Runners(i).Marketid;
                    Runner.Selectionid := Best_Runners(i).Selectionid;

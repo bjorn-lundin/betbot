@@ -214,8 +214,8 @@ package body Sim is
       Powerdays      => 0,
       Selectionid    => Selection_Id,
       Reference      => (others => '-'),
-      Size           => Float_8(Size),
-      Price          => Float_8(Price),
+      Size           => Fixed_Type(Size),
+      Price          => Fixed_Type(Price),
       Side           => Side_String,
       Betname        => Bet_Name,
       Betwon         => False,
@@ -227,8 +227,8 @@ package body Sim is
       Insterrcode    => Instruction_Report_Error_Code,
       Startts        => Market.Startts,
       Betplaced      => Local_Bet_Placed,
-      Pricematched   => Float_8(Price),
-      Sizematched    => Float_8(Size),
+      Pricematched   => Fixed_Type(Price),
+      Sizematched    => Fixed_Type(Size),
       Runnername     => Runner_Name,
       Fullmarketname => Market.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -263,7 +263,7 @@ package body Sim is
               if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
               -- recalculate the avg values
                 declare
-                  Backprice,Layprice : Float_8 := 0.0;
+                  Backprice,Layprice : Fixed_Type := 0.0;
                   Sample : Prices.Price_Type;
                   Cnt : Natural := 0;
                 begin
@@ -274,8 +274,8 @@ package body Sim is
                     Cnt := Cnt +1 ;
                   --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
                   end loop;
-                  Sample.Backprice := Backprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
-                  Sample.Layprice := Layprice / Float_8(Fifo(i).One_Runner_Sample_List.Length);
+                  Sample.Backprice := Backprice / Fixed_Type(Fifo(i).One_Runner_Sample_List.Length);
+                  Sample.Layprice := Layprice / Fixed_Type(Fifo(i).One_Runner_Sample_List.Length);
                   Avg_Price_List.Append(Sample);
                  -- Log ("Filter_List : avg " & Sample.To_String );
                 end;

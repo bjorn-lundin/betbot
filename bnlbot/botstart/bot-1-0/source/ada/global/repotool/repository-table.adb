@@ -3434,7 +3434,7 @@ package body Repository.Table is
           Put_Line("        Tmp : Float := 0.0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Float_8(Tmp);");                
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Fixed_Type(Tmp);");                
           Put_Line("      end;");
           Put_Line("    end if;");
           
@@ -3644,7 +3644,7 @@ package body Repository.Table is
           when A_Boolean =>
             Put_Line("       Handler." & Self.Name.Camel_Case & "_Data." & Col.Name.Camel_Case & " := Boolean'value(The_Value);");
           when A_Float .. A_Double =>
-            Put_Line("       Handler." & Self.Name.Camel_Case & "_Data." & Col.Name.Camel_Case & " := Float_8'value(The_Value);");
+            Put_Line("       Handler." & Self.Name.Camel_Case & "_Data." & Col.Name.Camel_Case & " := Fixed_Type'value(The_Value);");
           when A_Date =>
             Put_Line("       Handler." & Self.Name.Camel_Case & "_Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(The_Value," & Quote("00:00:00.000") & ");");
           when A_Time =>

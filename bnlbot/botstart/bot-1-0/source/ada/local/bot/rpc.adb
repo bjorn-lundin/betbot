@@ -74,7 +74,7 @@ package body RPC is
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     end ;
     Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
-    
+
     -- login reply should look something like below (522 chars)
     -- <html>
     -- <head>
@@ -88,15 +88,15 @@ package body RPC is
     -- </form>
     -- </body>
     -- </html>
-    
+
     declare
       String_Reply : String := Aws.Response.Message_Body(AWS_Reply);
-    begin  
+    begin
       if String_Reply'length < 500 then
         raise Login_Failed with "Bad reply from server at login";
       end if;
     end ;
-    
+
     Header := AWS.Response.Header(AWS_Reply);
 
     for i in 1 .. AWS.Headers.Length(Header) loop
@@ -227,14 +227,14 @@ package body RPC is
 
   procedure Get_Value(Container: in    JSON_Value;
                       Field    : in     String;
-                      Target   : in out Float_8;
+                      Target   : in out Fixed_Type;
                       Found    :    out Boolean ) is
     Tmp : Float := 0.0;
   begin
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
       Found := True;
-      Target := Float_8(Tmp);
+      Target := Fixed_Type(Tmp);
     else
       Found := False;
     end if;
@@ -373,10 +373,10 @@ package body RPC is
               Log(Me, "APINGException.errorCode " & AccountAPINGException.Get("errorCode"));
               if AccountAPINGException.Get("errorCode") = "INVALID_SESSION_INFORMATION" then
                 raise Invalid_Session;
-              end if;              
+              end if;
             else
               raise No_Such_Field with "AccountAPINGException - errorCode";
-            end if;  
+            end if;
           else
             raise No_Such_Field with "Data - APINGException";
           end if;
@@ -514,7 +514,7 @@ package body RPC is
         Is_Matched := True;
       end if;
     end if;
-    Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Float_8(AVG_Price_Matched)))  ;
+    Log(Me & "Bet_Is_Matched", "Is_Matched: " & Is_Matched'Img & " AVG_Price_Matched: " & F8_Image(Fixed_Type(AVG_Price_Matched)))  ;
   end Bet_Is_Matched;
   -----------------------------------------------------------------
   procedure Check_Market_Result(Market_Id   : in     Marketid_Type;
@@ -680,7 +680,7 @@ package body RPC is
           DB_Runner := Runners.Empty_Data;
           Json_Runner := Get(Json_Runners_Array, i);
           Log(Me & "Check_Market_Result", "got Runner" & i'Img);
-          
+
           if Json_Runner.Has_Field("selectionId") then
             declare
               i : Long_Long_Integer := Json_Runner.Get("selectionId");
@@ -858,13 +858,13 @@ package body RPC is
         Market.Status := (others => ' ');
         Move( Result.Get("status"), Market.Status);
       end if;
-      Log(Me & "Market_Status_Is_Changed", 
+      Log(Me & "Market_Status_Is_Changed",
                   "Status changed for market '" & Market_Id_Received & "' " &
                    Is_Changed_Array(Status)'img & " status " & Market.Status);
     else
       Log(Me & "Market_Status_Is_Changed", "No status field found!!!");
     end if;
-    
+
     if Result.Has_Field("betDelay") then
       Is_Changed_Array(Betdelay) :=  Result.Get("betDelay") /= Long_Long_Integer(Market.Betdelay);
       if Is_Changed_Array(Betdelay) then
@@ -874,15 +874,15 @@ package body RPC is
           Market.Betdelay := Integer_4(Bet_Delay);
         end;
       end if;
-      Log(Me & "Market_Status_Is_Changed", 
+      Log(Me & "Market_Status_Is_Changed",
                     "Bet delay changed for market '" & Market_Id_Received & "' " &
                      Is_Changed_Array(Betdelay)'img & " Betdelay " & Market.Betdelay'Img);
     else
       Log(Me & "Market_Status_Is_Changed", "No betDelay field found!!!");
     end if;
-        
+
     Is_Changed := Is_Changed_Array(Status) or Is_Changed_Array(Betdelay);
-    
+
   end Market_Status_Is_Changed;
   ---------------------------------------
   procedure Get_Balance(Betfair_Result : out Result_Type ; Saldo : out Balances.Balance_Type) is
@@ -902,28 +902,28 @@ package body RPC is
                     Reply => Reply_Get_Account_Funds,
                     URL   => Token.URL_ACCOUNT);
 
-    begin                
+    begin
       if API_Exceptions_Are_Present(Reply_Get_Account_Funds) then
           -- try again
         Betfair_Result := Logged_Out ;
         return;
       end if;
     exception
-      when Invalid_Session => 
+      when Invalid_Session =>
         Betfair_Result := Logged_Out ;
-        return;      
-    end ;      
+        return;
+    end ;
 
     if Reply_Get_Account_Funds.Has_Field("result") then
        Result := Reply_Get_Account_Funds.Get("result");
        if Result.Has_Field("availableToBetBalance") then
-         Saldo.Balance := Float_8(Float'(Result.Get("availableToBetBalance")));
+         Saldo.Balance := Fixed_Type(Float'(Result.Get("availableToBetBalance")));
        else
          raise No_Such_Field with "Object 'Result' - Field 'availableToBetBalance'";
        end if;
 
        if Result.Has_Field("exposure") then
-         Saldo.Exposure := Float_8(Float'(Result.Get("exposure")));
+         Saldo.Exposure := Fixed_Type(Float'(Result.Get("exposure")));
        else
          raise No_Such_Field with "Object 'Result' - Field 'exposure'";
        end if;
@@ -1043,7 +1043,7 @@ package body RPC is
     if API_Exceptions_Are_Present(JSON_Reply) then
       return False;
     end if;
-    
+
     --{
     --    "jsonrpc": "2.0",
     --    "result": {
@@ -1075,8 +1075,8 @@ package body RPC is
     --        }]
     --    },
     --    "id": 1
-    --}    
-    
+    --}
+
     Get_Value(Container => JSON_Reply,
               Field     => "result",
               Target    => Result,
@@ -1085,21 +1085,21 @@ package body RPC is
       Log(Me & "Cancel_Bet", "NO RESULT!!" );
       return False;
     end if;
-    
+
     Get_Value(Container => Result,
               Field     => "status",
               Target    => Status,
               Found     => Found);
     if not Found then
       Log(Me & "Cancel_Bet", "NO STATUS!!" );
-      return False;  
+      return False;
     end if;
-    Log(Me & "Cancel_Bet", "status : '" & Trim(Status) & "' returning " & 
+    Log(Me & "Cancel_Bet", "status : '" & Trim(Status) & "' returning " &
                             Boolean'Image(Trim(Status) = "SUCCESS"));
-    return Trim(Status) = "SUCCESS" ;    
+    return Trim(Status) = "SUCCESS" ;
   end Cancel_Bet;
   -----------------------------------
-  
+
 
   procedure Cancel_Bet(Market_Id : in Marketid_Type;
                        Bet_Id    : in Integer_8) is
@@ -1132,7 +1132,7 @@ package body RPC is
       Betfair_Result := Logged_Out ;
       return;
     end if;
-    
+
     Log(Me & "Cancel_Bet", "Betfair_Result: " & Betfair_Result'Img);
   end Cancel_Bet;
   -----------------------------------
@@ -1183,9 +1183,9 @@ package body RPC is
     --      Selectionid :    Integer_4  := 0 ; -- Primary Key
     --      Pricets :    Time_Type  := Time_Type_First ; -- Primary Key
     --      Status :    String (1..50) := (others => ' ') ; --
-    --      Totalmatched :    Float_8  := 0.0 ; --
-    --      Backprice :    Float_8  := 0.0 ; --
-    --      Layprice :    Float_8  := 0.0 ; --
+    --      Totalmatched :    Fixed_Type  := 0.0 ; --
+    --      Backprice :    Fixed_Type  := 0.0 ; --
+    --      Layprice :    Fixed_Type  := 0.0 ; --
     --      Ixxlupd :    String (1..15) := (others => ' ') ; --
     --      Ixxluts :    Time_Type  := Time_Type_First ; --
     --  end record;
@@ -1239,7 +1239,7 @@ package body RPC is
           if Array_Length_Back >= 1 then
              Back := Get (Arr   => Back_Array, Index => 1);
             if Back.Has_Field("price") then
-              DB_Runner_Price.Backprice := Float_8(Float'(Back.Get("price")));
+              DB_Runner_Price.Backprice := Fixed_Type(Float'(Back.Get("price")));
             else
               raise No_Such_Field with "Object 'Back' - Field 'price'";
             end if;
@@ -1254,7 +1254,7 @@ package body RPC is
           if Array_Length_Lay >= 1 then
              Lay := Get (Arr   => Lay_Array, Index => 1);
             if Lay.Has_Field("price") then
-              DB_Runner_Price.Layprice := Float_8(Float'(Lay.Get("price")));
+              DB_Runner_Price.Layprice := Fixed_Type(Float'(Lay.Get("price")));
             else
               raise No_Such_Field with "Object 'Lay' - Field 'price'";
             end if;
@@ -1413,7 +1413,7 @@ package body RPC is
                        Price            : in     Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
-                       Fill_Or_Kill     : in     Boolean := False; 
+                       Fill_Or_Kill     : in     Boolean := False;
                        Bet              :    out Bets.Bet_Type ) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
@@ -1428,16 +1428,16 @@ package body RPC is
     Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
     Order_Status                   : String (1..50)  :=  (others => ' ') ;
     L_Size_Matched,
-    Average_Price_Matched          : Float_8 := 0.0;
+    Average_Price_Matched          : Fixed_Type := 0.0;
     Powerdays                      : Integer_4 := Match_Directly;
 
     Bet_Id : Integer_8 := 0;
     Now : Calendar2.Time_Type := Calendar2.Clock;
 
-    Price_String  : String         := F8_Image(Float_8(Price)); -- 2 decimals only
+    Price_String  : String         := F8_Image(Fixed_Type(Price)); -- 2 decimals only
     Local_Price   : Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
 
-    Size_String   : String         := F8_Image(Float_8(Size)); -- 2 decimals only
+    Size_String   : String         := F8_Image(Fixed_Type(Size)); -- 2 decimals only
     Local_Size    : Bet_Size_Type  := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
 
     Price_Matched : Bet_Price_Type := 0.0;
@@ -1455,7 +1455,7 @@ package body RPC is
     --,"minFillSize":5.0,"timeInForce":"FILL_OR_KILL"
     if Fill_Or_Kill then
       Limit_Order.Set_Field (Field_Name => "timeInForce", Field => "FILL_OR_KILL");
-      Limit_Order.Set_Field (Field_Name => "minFillSize", Field => Float(Local_Size));      
+      Limit_Order.Set_Field (Field_Name => "minFillSize", Field => Float(Local_Size));
     end if;
     Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
     Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
@@ -1591,20 +1591,20 @@ package body RPC is
                 Target    => Execution_Report_Status,
                 Found     => Found);
 
-        if Found then 
+        if Found then
           Log(Me & "Make_Bet.Place_Bet", "Execution_Report_Status : '" & Execution_Report_Status & "'");
-        end if;                
-                
-                
+        end if;
+
+
       Get_Value(Container => Result,
                 Field     => "errorCode",
                 Target    => Execution_Report_Error_Code,
                 Found     => Found);
 
-        if Found then 
+        if Found then
           Log(Me & "Make_Bet.Place_Bet", "Execution_Report_Error_Code : '" & Execution_Report_Error_Code & "'");
-        end if;                
-                
+        end if;
+
 
       if Result.Has_Field("instructionReports") then
         Instructions := Result.Get("instructionReports");
@@ -1618,24 +1618,24 @@ package body RPC is
                   Target    => Instruction_Report_Status,
                   Found     => Found);
 
-        if Found then 
+        if Found then
           Log(Me & "Make_Bet.Place_Bet", "Instruction_Report_Status : '" & Instruction_Report_Status & "'");
-        end if;                
-                  
+        end if;
+
         Get_Value(Container => InstructionsItem,
                   Field     => "errorCode",
                   Target    => Instruction_Report_Error_Code,
                   Found     => Found);
-        if Found then 
+        if Found then
           Log(Me & "Make_Bet.Place_Bet", "Instruction_Report_Error_Code : '" & Instruction_Report_Error_Code & "'");
-        end if;                
+        end if;
       end if;
 
       Get_Value(Container => InstructionsItem,
                 Field     => "instruction",
                 Target    => Instruction,
                 Found     => Found);
-                
+
       if not Found then
         Log(Me & "Make_Bet", "NO Instruction in Instructions!!" );
         raise JSON_Exception with "Betfair reply has no Instruction!";
@@ -1645,17 +1645,18 @@ package body RPC is
                 Field     => "betId",
                 Target    => Bet_Id,
                 Found     => Found);
-      
+
       Get_Value(Container => InstructionsItem,
                 Field     => "sizeMatched",
                 Target    => L_Size_Matched,
                 Found     => Found);
-                                
+
       if Found then
         Size_Matched := Bet_Size_Type(L_Size_Matched);
       end if;
 
-      if abs(L_Size_Matched - Float_8(Size)) < 0.0001 then
+--      if abs(L_Size_Matched - Fixed_Type(Size)) < 0.0001 then
+      if L_Size_Matched = Fixed_Type(Size) then
         Move( "EXECUTION_COMPLETE", Order_Status );
       else
         Move( "EXECUTABLE", Order_Status );
@@ -1665,7 +1666,7 @@ package body RPC is
                 Field     => "averagePriceMatched",
                 Target    => Average_Price_Matched,
                 Found     => Found);
-                      
+
       if Found then
         Price_Matched := Bet_Price_Type(Average_Price_Matched);
       end if;
@@ -1677,10 +1678,10 @@ package body RPC is
       Log(Me & "Make_Bet", "bad bet, set powerdays=0 to NOT try to cancel the bet");
       Powerdays := 0;
       --if not Sql.Is_Session_Open then
-      --  begin        
-      --    if not Ini.Is_Loaded then 
+      --  begin
+      --    if not Ini.Is_Loaded then
       --      Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-      --    end if;           
+      --    end if;
       --    Log(Me, "Connect Db");
       --    Sql.Connect
       --          (Host     => Ini.Get_Value("database", "host", ""),
@@ -1705,8 +1706,8 @@ package body RPC is
       Powerdays      => Powerdays,
       Selectionid    => Selection_Id,
       Reference      => (others => '-'),
-      Size           => Float_8(Local_Size),
-      Price          => Float_8(Local_Price),
+      Size           => Fixed_Type(Local_Size),
+      Price          => Fixed_Type(Local_Price),
       Side           => Side_String,
       Betname        => Bet_Name,
       Betwon         => False,
@@ -1718,8 +1719,8 @@ package body RPC is
       Insterrcode    => Instruction_Report_Error_Code,
       Startts        => Calendar2.Time_Type_First,
       Betplaced      => Now,
-      Pricematched   => Float_8(Price_Matched),
-      Sizematched    => Float_8(Size_Matched),
+      Pricematched   => Fixed_Type(Price_Matched),
+      Sizematched    => Fixed_Type(Size_Matched),
       Runnername     => Runner_Name,
       Fullmarketname => (others => ' '),
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -1746,7 +1747,7 @@ package body RPC is
 --      Marketid :    String (1..11) := (others => ' ') ; -- Primary Key
 --      Selectionid :    Integer_4  := 0 ; -- Primary Key
 --      Sortprio :    Integer_4  := 0 ; --
---      Handicap :    Float_8  := 0.0 ; --
+--      Handicap :    Fixed_Type  := 0.0 ; --
 --      Runnername :    String (1..50) := (others => ' ') ; --
 --      Runnernamestripped :    String (1..50) := (others => ' ') ; -- non unique index 3
 --      Runnernamenum :    String (1..2) := (others => ' ') ; --
@@ -1794,7 +1795,7 @@ package body RPC is
                Field     => "handicap",
                Target    => DB_Runner.Handicap,
                Found     => Found);
-                 
+
        if not Found then
          raise No_Such_Field with "Object 'Runner' - Field 'handicap'";
        end if;
@@ -1862,13 +1863,13 @@ package body RPC is
 
        Log(Me & Service, DB_Runner.To_String);
 
-       begin 
+       begin
          Runner_List.Append(DB_Runner);
        exception
-         when E: others => 
+         when E: others =>
           Log(Me & Service, "WHAT HAPPENED HERE?");
           Stacktrace.Tracebackinfo(E);
-       end ; 
+       end ;
     end loop;
     Log(Me & Service, "stop");
   end Parse_Runners;
@@ -1925,8 +1926,8 @@ package body RPC is
     --      Numwinners :    Integer_4  := 0 ; -- non unique index 5
     --      Numrunners :    Integer_4  := 0 ; --
     --      Numactiverunners :    Integer_4  := 0 ; --
-    --      Totalmatched :    Float_8  := 0.0 ; --
-    --      Totalavailable :    Float_8  := 0.0 ; --
+    --      Totalmatched :    Fixed_Type  := 0.0 ; --
+    --      Totalavailable :    Fixed_Type  := 0.0 ; --
     --      Ixxlupd :    String (1..15) := (others => ' ') ; --
     --      Ixxluts :    Time_Type  := Time_Type_First ; --
     --  end record;
@@ -2023,7 +2024,7 @@ package body RPC is
 
   end Parse_Market;
   -----------------------------------------------
-  
+
   procedure Get_Navigation_Data( Menu : in out JSON_Value) is
     AWS_Reply    : Aws.Response.Data;
     HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
@@ -2054,22 +2055,22 @@ package body RPC is
          raise Bad_Reply ;
   end Get_Navigation_Data;
 
-  
+
   --------------------------------
-  
+
   procedure Get_Starttimes(List : out Table_Astarttimes.Astarttimes_List_Pack2.List) is
     JSON_Query   : JSON_Value := Create_Object;
     JSON_Reply   : JSON_Value := Create_Object;
     Result_Array : JSON_Array := Empty_Array;
-    
+
     Result       : JSON_Value := Create_Object;
     Found        : Boolean    := False;
-    
-    
+
+
     Params               : JSON_Value := Create_Object;
     Filter               : JSON_Value := Create_Object;
-    
-    
+
+
     Event                : JSON_Value := Create_Object;
     Market_Start_Time    : JSON_Value := Create_Object;
     Market_Projection,
@@ -2077,57 +2078,57 @@ package body RPC is
     Market_Type_Codes,
     Exchange_Ids,
     Event_Type_Ids       : JSON_Array := Empty_Array;
-  
+
     Now  : Calendar2.Time_Type := Calendar2.Clock;
     From : Calendar2.Time_Type := Now;
     To   : Calendar2.Time_Type := Now;
     Starttime : Calendar2.Time_Type := Now;
     List_Data : Table_Astarttimes.Data_Type;
-    
+
     One_Hour        : Calendar2.Interval_Type := (0,1,0,0,0);
     Two_Hours       : Calendar2.Interval_Type := (0,2,0,0,0);
     UTC_Offset_Minutes : Ada.Calendar.Time_Zones.Time_Offset;
     use type  Calendar2.Time_Type;
-    
+
     No_Such_UTC_Offset : exception;
-    
+
   begin
      -- Create JSON arrays
-    Append(Exchange_Ids , Create("1"));      -- Not Australia 
-    
+    Append(Exchange_Ids , Create("1"));      -- Not Australia
+
     Append(Event_Type_Ids , Create("7"));    -- horse
-  --   none for all countries   
+  --   none for all countries
     Append(Market_Countries , Create("GB"));
     Append(Market_Countries , Create("IE"));
     Append(Market_Type_Codes , Create("WIN"));                 -- for horses/hounds
     Append(Market_Projection , Create("MARKET_START_TIME"));
     Append(Market_Projection , Create("EVENT"));
-    
+
     From.Hour := 0;
     From.Minute := 0;
     From.Second := 0;
     From.Millisecond := 0;
-    
+
     To.Hour := 23;
     To.Minute := 59;
     To.Second := 59;
     To.Millisecond := 999;
-        
+
     Market_Start_Time.Set_Field(Field_Name => "from", Field => From.String_Date_Time_ISO);
     Market_Start_Time.Set_Field(Field_Name => "to",   Field => To.String_Date_Time_ISO);
-   
-    Filter.Set_Field (Field_Name => "exchangeIds",        Field => Exchange_Ids);                    
-    Filter.Set_Field (Field_Name => "eventTypeIds",       Field => Event_Type_Ids);                      
-    Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);                
-    Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes); 
+
+    Filter.Set_Field (Field_Name => "exchangeIds",        Field => Exchange_Ids);
+    Filter.Set_Field (Field_Name => "eventTypeIds",       Field => Event_Type_Ids);
+    Filter.Set_Field (Field_Name => "marketCountries",    Field => Market_Countries);
+    Filter.Set_Field (Field_Name => "marketTypeCodes",    Field => Market_Type_Codes);
     Filter.Set_Field (Field_Name => "marketStartTime",    Field => Market_Start_Time);
-                       
-    Params.Set_Field (Field_Name => "filter",           Field => Filter);                     
-    Params.Set_Field (Field_Name => "marketProjection", Field => Market_Projection);  
-    Params.Set_Field (Field_Name => "locale",           Field => "en"); --                
+
+    Params.Set_Field (Field_Name => "filter",           Field => Filter);
+    Params.Set_Field (Field_Name => "marketProjection", Field => Market_Projection);
+    Params.Set_Field (Field_Name => "locale",           Field => "en"); --
     Params.Set_Field (Field_Name => "sort",             Field => "FIRST_TO_START");
     Params.Set_Field (Field_Name => "maxResults",       Field => "999");
-                      
+
     JSON_Query.Set_Field (Field_Name => "params",  Field => Params);
     JSON_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     JSON_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketCatalogue");
@@ -2152,8 +2153,8 @@ package body RPC is
     --          "marketProjection": ["MARKET_START_TIME","EVENT"]
     --     },
     --     "id": 1
-    --} 
-    
+    --}
+
     Get_JSON_Reply(Query => JSON_Query,
                    Reply => JSON_Reply,
                    URL   => Token.URL_BETTING);
@@ -2161,7 +2162,7 @@ package body RPC is
     if API_Exceptions_Are_Present(JSON_Reply) then
       return ;
     end if;
-    
+
     --[{
     --     "jsonrpc": "2.0",
     --     "result": [{
@@ -2195,14 +2196,14 @@ package body RPC is
     --     "id": 1
     --}]
 
-    
+
     if Json_Reply.Has_Field("result") then
       Result_Array := Json_Reply.Get("result");
 
       if Length(Result_Array) > Natural(0) then
         for i in 1 .. Length(Result_Array) loop
-          Result := Get(Result_Array,i); 
-          
+          Result := Get(Result_Array,i);
+
           Get_Value(Container => Result,
                     Field     => "marketStartTime",
                     Target    => Starttime,
@@ -2210,16 +2211,16 @@ package body RPC is
           if not Found then
             Log(Me & "Get_Starttimes", "NO starttime!!" );
           end if;
-          
+
           UTC_Offset_Minutes := Ada.Calendar.Time_Zones.UTC_Time_Offset;
           case UTC_Offset_Minutes is
             when 60     => List_Data.Starttime := Starttime + One_Hour;
             when 120    => List_Data.Starttime := Starttime + Two_Hours;
             when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
-          end case;   
-          
-          
-          
+          end case;
+
+
+
           Get_Value(Container => Result,
                     Field     => "event",
                     Target    => Event,
@@ -2227,7 +2228,7 @@ package body RPC is
           if not Found then
             Log(Me & "Get_Starttimes", "NO event!!" );
           end if;
-          
+
           Get_Value(Container => Event,
                     Field     => "venue",
                     Target    => List_Data.Venue,
@@ -2235,11 +2236,11 @@ package body RPC is
           if not Found then
             Log(Me & "Get_Starttimes", "NO venue!!" );
           end if;
-          
+
           List.Append(List_Data);
-          
-        end loop;     
-        
+
+        end loop;
+
       else
         Log(Me & "Get_Starttimes", "NO RESULT!! 3 " );
         return ;
@@ -2249,8 +2250,8 @@ package body RPC is
       return ;
     end if;
 
-    
-    
+
+
   end Get_Starttimes;
-  
+
 end RPC;

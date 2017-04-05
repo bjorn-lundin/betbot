@@ -3,9 +3,9 @@ with Bot_Types; use Bot_Types;
 package Tics is
   Bad_odds : exception;
 ------------------------------------------
-  function Get_Tic_Index(Price : Float_8) return Integer ;
+  function Get_Tic_Index(Price : Fixed_Type) return Integer ;
 ------------------------------------------
-  function Get_Tic_Price(I : Integer) return Float_8 ;
+  function Get_Tic_Price(I : Integer) return Fixed_Type ;
 ------------------------------------------
   function Get_Zero_Size(Backprice : Back_Price_Type;
                          Backsize  : Bet_Size_Type;
@@ -15,7 +15,7 @@ package Tics is
                           Laysize    : Bet_Size_Type;
                           Backprice  : Back_Price_Type) return Bet_Size_Type ;
 
-  function Get_Nearest_Higher_Tic_Index(Price : Float_8) return Integer ;
+  function Get_Nearest_Higher_Tic_Index(Price : Fixed_Type) return Integer ;
 
 
 end Tics;

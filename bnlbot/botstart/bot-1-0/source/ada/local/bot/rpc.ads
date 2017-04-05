@@ -40,7 +40,7 @@ package RPC is
 
   procedure Get_Value(Container: in     JSON_Value;
                       Field    : in     String;
-                      Target   : in out Float_8;
+                      Target   : in out Fixed_Type;
                       Found    :    out Boolean );
 
   procedure Get_Value(Container: in     JSON_Value;

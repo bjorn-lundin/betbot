@@ -4,6 +4,21 @@ with Ada.Strings.Fixed;     use Ada.Strings.Fixed;
 
 package body Types is
 
+--    type Float_8 is new Long_Float;
+--
+--    function "*" (Left, Right : Fixed_Type) return Fixed_Type is
+--    begin
+--      return Fixed_Type (Float_8 (Left) * Float_8 (Right));
+--    end "*";
+--
+--    function "/" (Left, Right : Fixed_Type) return Fixed_Type is
+--    begin
+--      return Fixed_Type (Float_8 (Left) / Float_8 (Right));
+--    end "/";
+
+
+
+
   function Do_Camel_Case(LC_String : String) return String is
   -- will Not remove underscores, and make Capital letter of next, all
   -- others small : eg COMLI_MASTER_SLAVE -> comliMasterSlave
@@ -13,10 +28,10 @@ package body Types is
     use Ada.Characters.Handling;
   begin
     for i in Tmp'range loop
-      case Tmp(i) is 
-        when '_'    => 
+      case Tmp(i) is
+        when '_'    =>
           Capitalize_Next := True;
-        when others => 
+        when others =>
           if Is_Digit(Tmp(i)) then
             Capitalize_Next := True;
           elsif Capitalize_Next then
@@ -28,14 +43,14 @@ package body Types is
     return Tmp;
   end Do_Camel_Case;
   -----------------------------------------------------------
-  
+
   function Create(What : String) return String_Object is
     Tmp : String_Object;
   begin
     Tmp.Set(What);
     return Tmp;
   end Create;
-  
+
   procedure Set(Self : in out String_Object; What : String) is
   begin
     Self.Value := To_Unbounded_String(What);
@@ -51,34 +66,34 @@ package body Types is
   -----------------------------------------------------------
   function Fix_String(Self : String_Object) return String is
   begin -- return the right trimmed string
-    return Trim(To_String(Self.Value), Right);    
+    return Trim(To_String(Self.Value), Right);
   end Fix_String;
   -----------------------------------------------------------
   function UBString(Self : String_Object) return Unbounded_String is
-  begin 
+  begin
     return Self.Value;
   end UBString;
   -----------------------------------------------------------
   function Lower_Case( Self : String_Object) return String is
-  begin 
-    return Trim(To_String(Self.Lower_Case_Cache), Right); 
+  begin
+    return Trim(To_String(Self.Lower_Case_Cache), Right);
   end Lower_Case;
   -----------------------------------------------------------
   function Upper_Case( Self : String_Object) return String is
-  begin 
-    return Trim(To_String(Self.Upper_Case_Cache), Right); 
+  begin
+    return Trim(To_String(Self.Upper_Case_Cache), Right);
   end Upper_Case;
   -----------------------------------------------------------
   function Camel_Case(Self : String_Object) return String is
   begin
-    return Trim(To_String(Self.Camel_Case_Cache), Right);     
+    return Trim(To_String(Self.Camel_Case_Cache), Right);
   end Camel_Case;
   -----------------------------------------------------------
   procedure Append(Self : in out String_Object; What : String) is
   begin
     Append(Self.Value, To_Unbounded_String(What));
-    Self.Set(To_String(Self.Value)); -- needs to update cache. DO NOT USE Fix_String, it trims ... 
-  end Append;                                          
+    Self.Set(To_String(Self.Value)); -- needs to update cache. DO NOT USE Fix_String, it trims ...
+  end Append;
   -----------------------------------------------------------
   function Empty_String_Object return String_Object is
     Another : String_Object;
@@ -107,23 +122,23 @@ package body Types is
     Delete(Source  => Self.Value,
            From    => Len,
            Through => Len);
-    Self.Set(To_String(Self.Value)); -- needs to update cache. DO NOT USE Fix_String, it trims ... 
+    Self.Set(To_String(Self.Value)); -- needs to update cache. DO NOT USE Fix_String, it trims ...
   end Delete_Last_Char;
 
   -----------------------------------------------------------
-  procedure Put_Line(Self : in out String_Object; 
-                     How  : in How_Type := Fix; 
-                     File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output) is                     
+  procedure Put_Line(Self : in out String_Object;
+                     How  : in How_Type := Fix;
+                     File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output) is
   begin
     case How is
       when Fix   => Ada.Text_Io.Put_Line(File,Self.Fix_String);
       when Upper => Ada.Text_Io.Put_Line(File,Self.Upper_Case);
       when Lower => Ada.Text_Io.Put_Line(File,Self.Lower_Case);
       when Camel => Ada.Text_Io.Put_Line(File,Self.Camel_Case);
-    end case;  
+    end case;
   end Put_Line;
   -----------------------------------------------------------
-  procedure Put(Self : in out String_Object; 
+  procedure Put(Self : in out String_Object;
                 How  : in How_Type := Fix;
                 File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output) is
   begin
@@ -132,8 +147,8 @@ package body Types is
       when Upper => Ada.Text_Io.Put(File,Self.Upper_Case);
       when Lower => Ada.Text_Io.Put(File,Self.Lower_Case);
       when Camel => Ada.Text_Io.Put(File,Self.Camel_Case);
-    end case;  
+    end case;
   end Put;
   -----------------------------------------------------------
- 
+
 end Types;

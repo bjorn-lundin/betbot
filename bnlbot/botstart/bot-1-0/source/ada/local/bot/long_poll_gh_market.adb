@@ -74,13 +74,13 @@ procedure Long_Poll_GH_Market is
     ----------------------------------------------------------------
     procedure Lay_The_Bet(Name          : in    String ;
                           BR            : in    Best_Runners_Array_Type;
-                          Max_Lay_Price : in    Float_8) is
+                          Max_Lay_Price : in    Fixed_Type) is
       Runner_Data : Table_Arunners.Data_Type;
       Eos : Boolean := False;
       Lay_Bet_Name : Bot_Types.Bet_Name_Type := (others => ' ');
       Bet : Table_Abets.Data_Type;
     begin
-     if Float_8(1.01) <= BR(1).Layprice and then BR(1).Layprice <= Max_Lay_Price then
+     if Fixed_Type(1.01) <= BR(1).Layprice and then BR(1).Layprice <= Max_Lay_Price then
         Runner_Data.Marketid := BR(1).Marketid;
         Runner_Data.Selectionid := BR(1).Selectionid;
         Runner_Data.Read(Eos);
@@ -107,8 +107,8 @@ procedure Long_Poll_GH_Market is
     --------------------------------------------
     procedure Lay_The_Bet_Between(Name          : in    String ;
                           BR            : in    Best_Runners_Array_Type;
-                          Min_Lay_Price : in    Float_8;
-                          Max_Lay_Price : in    Float_8) is
+                          Min_Lay_Price : in    Fixed_Type;
+                          Max_Lay_Price : in    Fixed_Type) is
       Runner_Data : Table_Arunners.Data_Type;
       Eos : Boolean := False;
       Lay_Bet_Name : Bot_Types.Bet_Name_Type := (others => ' ');

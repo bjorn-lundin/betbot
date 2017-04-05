@@ -40,15 +40,15 @@ procedure Check_for_Greenup_Win3 is
   Select_Timestamps   : Sql.Statement_Type;
   Select_Selectionids : Sql.Statement_Type;
   Find_Plc_Market     : Sql.Statement_Type;
-  Comission         : constant Float_8 := 0.0 / 100.0;
+  Comission         : constant Fixed_Type := 0.0 / 100.0;
 
   Me                  : constant String := "Check_for_Greenup_Win3.";
   Global_Bet_Name     : Betname_Type := (others => ' ');
-  Global_Max_Price : Float_8 := 0.0;
-  Global_Min_Price : Float_8 := 0.0;
+  Global_Max_Price : Fixed_Type := 0.0;
+  Global_Min_Price : Fixed_Type := 0.0;
   Global_Laysize   : Bet_Size_Type := 50.0;
 
-  --Global_Max_Backprice: Float_8 := 0.0;
+  --Global_Max_Backprice: Fixed_Type := 0.0;
   Cmd_Line            : Command_Line_Configuration;
   IA_Tics_Greenup     : aliased Integer := 0;
   IA_Tics_Stoploss    : aliased Integer := 0;
@@ -121,7 +121,7 @@ procedure Check_for_Greenup_Win3 is
 --        Powerdays      => 0,
 --        Selectionid    => R.Selectionid,
 --        Reference      => (others => '-'),
---        Size           => Float_8(Laysize),
+--        Size           => Fixed_Type(Laysize),
 --        Price          => P.Layprice ,
 --        Side           => "LAY ",
 --        Betname        => Betname,
@@ -134,8 +134,8 @@ procedure Check_for_Greenup_Win3 is
 --        Insterrcode    => (others => ' '),
 --        Startts        => M.Startts,
 --        Betplaced      => P.Pricets,
---        Pricematched   => Float_8(0.0),
---        Sizematched    => Float_8(Laysize),
+--        Pricematched   => Fixed_Type(0.0),
+--        Sizematched    => Fixed_Type(Laysize),
 --        Runnername     => R.Runnernamestripped,
 --        Fullmarketname => M.Marketname,
 --        Svnrevision    => Bot_Svn_Info.Revision,
@@ -166,8 +166,8 @@ procedure Check_for_Greenup_Win3 is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(Green_Backsize),
-      Price          => Float_8(Green_Backprice),
+      Size           => Fixed_Type(Green_Backsize),
+      Price          => Fixed_Type(Green_Backprice),
       Side           => "BACK",
       Betname        => Betname,
       Betwon         => False,
@@ -179,8 +179,8 @@ procedure Check_for_Greenup_Win3 is
       Insterrcode    => (others => ' '),
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
-      Pricematched   => Float_8(0.0),
-      Sizematched    => Float_8(Green_Backsize),
+      Pricematched   => Fixed_Type(0.0),
+      Sizematched    => Fixed_Type(Green_Backsize),
       Runnername     => R.Runnernamestripped,
       Fullmarketname => M.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -230,8 +230,8 @@ procedure Check_for_Greenup_Win3 is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(Stop_Backsize),
-      Price          => Float_8(Stop_Backprice),
+      Size           => Fixed_Type(Stop_Backsize),
+      Price          => Fixed_Type(Stop_Backprice),
       Side           => "BACK",
       Betname        => Betname,
       Betwon         => False,
@@ -243,8 +243,8 @@ procedure Check_for_Greenup_Win3 is
       Insterrcode    => (others => ' '),
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
-      Pricematched   => Float_8(0.0),
-      Sizematched    => Float_8(Stop_Backsize),
+      Pricematched   => Fixed_Type(0.0),
+      Sizematched    => Fixed_Type(Stop_Backsize),
       Runnername     => R.Runnernamestripped,
       Fullmarketname => M.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -458,8 +458,8 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   Move(SA_Betname.all,Global_Bet_Name);
-  Global_Max_Price := Float_8'Value(SA_Max_Price.all);
-  Global_Min_Price := Float_8'Value(SA_Min_Price.all);
+  Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
+  Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
  
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
@@ -610,10 +610,10 @@ begin
                 end if;
 
                 if Placed(The_Runner.Sortprio,Lay) and then
-                   Best_Runners(i).Backprice <= Float_8(1000.0) and then
-                   Best_Runners(i).Backprice >= Float_8(1.01)   and then
-                   Best_Runners(i).Layprice  <= Float_8(1000.0) and then
-                   Best_Runners(i).Layprice  >= Float_8(1.01)   and then
+                   Best_Runners(i).Backprice <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Backprice >= Fixed_Type(1.01)   and then
+                   Best_Runners(i).Layprice  <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Layprice  >= Fixed_Type(1.01)   and then
                    not Matched(The_Runner.Sortprio,Lay) then
   
                   Matched(The_Runner.Sortprio,Lay) := Matched_Lay(Best_Runners(i));
@@ -621,10 +621,10 @@ begin
 
                 if Placed(The_Runner.Sortprio,Lay) and then
                    Matched(The_Runner.Sortprio,Lay) and then
-                   Best_Runners(i).Backprice <= Float_8(1000.0) and then
-                   Best_Runners(i).Backprice >= Float_8(1.01)   and then
-                   Best_Runners(i).Layprice  <= Float_8(1000.0) and then
-                   Best_Runners(i).Layprice  >= Float_8(1.01)   and then
+                   Best_Runners(i).Backprice <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Backprice >= Fixed_Type(1.01)   and then
+                   Best_Runners(i).Layprice  <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Layprice  >= Fixed_Type(1.01)   and then
                    not Placed(The_Runner.Sortprio,Back) then
 
                   Place_Back(The_Market, The_Runner, Best_Runners(i));
@@ -633,10 +633,10 @@ begin
                 end if;
 
                 if Placed(The_Runner.Sortprio,Back) and then
-                   Best_Runners(i).Backprice <= Float_8(1000.0) and then
-                   Best_Runners(i).Backprice >= Float_8(1.01)   and then
-                   Best_Runners(i).Layprice  <= Float_8(1000.0) and then
-                   Best_Runners(i).Layprice  >= Float_8(1.01)   and then
+                   Best_Runners(i).Backprice <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Backprice >= Fixed_Type(1.01)   and then
+                   Best_Runners(i).Layprice  <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Layprice  >= Fixed_Type(1.01)   and then
                    not Placed(The_Runner.Sortprio,Stoploss)         and then
                    not Matched(The_Runner.Sortprio,Back) then
 
@@ -646,10 +646,10 @@ begin
                 if Matched(The_Runner.Sortprio,Lay) and then
                    not Matched(The_Runner.Sortprio,Back) and then
                    not Placed(The_Runner.Sortprio,Stoploss) and then
-                   Best_Runners(i).Backprice <= Float_8(1000.0) and then
-                   Best_Runners(i).Backprice >= Float_8(1.01)   and then
-                   Best_Runners(i).Layprice  <= Float_8(1000.0) and then
-                   Best_Runners(i).Layprice  >= Float_8(1.01)   and then
+                   Best_Runners(i).Backprice <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Backprice >= Fixed_Type(1.01)   and then
+                   Best_Runners(i).Layprice  <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Layprice  >= Fixed_Type(1.01)   and then
                    Best_Runners(i).Backprice <= Global_Min_Price then
                   Place_Stoploss(The_Market, The_Runner, Best_Runners(i)); -- cancels Back too
                   Bet_List.Append(The_Bet);                   
@@ -658,10 +658,10 @@ begin
                 end if;
 
                 if Placed(The_Runner.Sortprio,Stoploss) and then
-                   Best_Runners(i).Backprice <= Float_8(1000.0) and then
-                   Best_Runners(i).Backprice >= Float_8(1.01)   and then
-                   Best_Runners(i).Layprice  <= Float_8(1000.0) and then
-                   Best_Runners(i).Layprice  >= Float_8(1.01)   and then
+                   Best_Runners(i).Backprice <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Backprice >= Fixed_Type(1.01)   and then
+                   Best_Runners(i).Layprice  <= Fixed_Type(1000.0) and then
+                   Best_Runners(i).Layprice  >= Fixed_Type(1.01)   and then
                    not Matched(The_Runner.Sortprio,Stoploss) then
 
                   Matched(The_Runner.Sortprio,Stoploss) := Matched_Stoploss(Best_Runners(i));

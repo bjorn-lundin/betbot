@@ -7,10 +7,10 @@ with Runners;
 with Markets;
 with Sql;
 package Bets is
-  function Profit_Today(Bet_Name : Betname_Type) return Float_8 ;
+  function Profit_Today(Bet_Name : Betname_Type) return Fixed_Type ;
   function Exists(Bet_Name : Betname_Type; Market_Id : Marketid_Type) return Boolean;
 
-  Commission : constant Float_8 := 0.0; --6.5/100.0;
+  Commission : constant Fixed_Type := 0.0; --6.5/100.0;
 
   type Bet_Type is new Table_Abets.Data_Type with null record;
 

@@ -385,7 +385,7 @@ package body Repository is
         end if;
       when A_Int         => return "Integer_4";
       when A_Big_Int     => return "Integer_8";
-      when A_Double      => return "Float_8";
+      when A_Double      => return "Fixed_Type";
       when A_Boolean     => return "Boolean";
       when A_Short_Code  => return "Integer_4";
       when A_Date        => return "Time_Type";
@@ -1359,7 +1359,7 @@ package body Repository is
             when A_Int .. A_Long | A_Short_Code | A_Boolean =>
               Put_Line("          Data." & Col.Name.Camel_Case & " := Integer_4'Value(The_Value);");
             when A_Float .. A_Double =>
-              Put_Line("          Data." & Col.Name.Camel_Case & " := Float_8'Value(The_Value);");
+              Put_Line("          Data." & Col.Name.Camel_Case & " := Fixed_Type'Value(The_Value);");
             when A_Date =>
               Put_Line("          Data." & Col.Name.Camel_Case & " := Sattmate_Calendar.To_Time_Type(The_Value," & Quote("00:00:00.000") & ");");
             when A_Time =>

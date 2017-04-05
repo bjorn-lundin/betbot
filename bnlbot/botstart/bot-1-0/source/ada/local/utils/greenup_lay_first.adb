@@ -65,10 +65,10 @@ procedure Greenup_Lay_First is
     if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := Float_8(Back_Stake) * (B.Price - 1.0);
+          B.Profit := Fixed_Type(Back_Stake) * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
-          B.Profit := Float_8(-Back_Stake);
+          B.Profit := Fixed_Type(-Back_Stake);
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
           B.Betwon := True;
@@ -76,9 +76,9 @@ procedure Greenup_Lay_First is
     elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := Float_8(-Lay_Stake) * (B.Price - 1.0);
+          B.Profit := Fixed_Type(-Lay_Stake) * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
-          B.Profit := Float_8(Lay_Stake);
+          B.Profit := Fixed_Type(Lay_Stake);
           B.Betwon := True;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
@@ -176,7 +176,7 @@ procedure Greenup_Lay_First is
       Check_Bet(Runner, Bet.Laybet);
 
       for Race_Data of Price_During_Race_List loop
-        if Price_Data.Backprice > Float_8(0.0) and then Price_Data.Layprice > Float_8(0.0) then   -- must be valid
+        if Price_Data.Backprice > Fixed_Type(0.0) and then Price_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
           if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
             if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
               Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
@@ -272,8 +272,8 @@ begin
     for Max_Layprice in Max_Layprice_Type'range loop
       for Min_Layprice in Min_Layprice_Type'range loop
         declare
-          Layprice_High : Float_8 := Float_8(Max_Layprice)/10.0;
-          Layprice_Low  : Float_8 := Float_8(Min_Layprice)/10.0;
+          Layprice_High : Fixed_Type := Fixed_Type(Max_Layprice)/10.0;
+          Layprice_Low  : Fixed_Type := Fixed_Type(Min_Layprice)/10.0;
         begin
           T.Start;
           for Price of Price_List loop
@@ -291,7 +291,7 @@ begin
     end loop;
   end;
   --declare
-  --  Profit : array (Bet_Side_Type'range) of Float_8 := (others => 0.0);
+  --  Profit : array (Bet_Side_Type'range) of Fixed_Type := (others => 0.0);
   --  Count  : array (Bet_Side_Type'range) of Natural := (others => 0);
   --begin
   --  for Bet of Bet_List loop

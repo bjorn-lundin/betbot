@@ -92,16 +92,16 @@ package body Bot_Config is
 
       -- Gloal
       Cfg.Global_Section.Delay_Between_Turns_Bad_Funding :=
-           Float_8'Value(Ini.Get_Value("Global","Delay_Between_Turns_Bad_Funding","60.0"));
+           Fixed_Type'Value(Ini.Get_Value("Global","Delay_Between_Turns_Bad_Funding","60.0"));
 
       Cfg.Global_Section.Delay_Between_Turns_No_Markets :=
-           Float_8'Value(Ini.Get_Value("Global","Delay_Between_Turns_No_Markets","7.0"));
+           Fixed_Type'Value(Ini.Get_Value("Global","Delay_Between_Turns_No_Markets","7.0"));
 
       Cfg.Global_Section.Delay_Between_Turns :=
-           Float_8'Value(Ini.Get_Value("Global","Delay_Between_Turns","5.0"));
+           Fixed_Type'Value(Ini.Get_Value("Global","Delay_Between_Turns","5.0"));
 
       Cfg.Global_Section.Network_Failure_Delay :=
-           Float_8'Value(Ini.Get_Value("Global","Network_Failure_Delay","60.0"));
+           Fixed_Type'Value(Ini.Get_Value("Global","Network_Failure_Delay","60.0"));
 
       Cfg.Global_Section.Logging := Ini.Get_Value("Global", "logging", True);
 
@@ -368,14 +368,14 @@ package body Bot_Config is
              "<Bet>" &
                "<Bet_Name>" & To_String(Bet_Section.Bet_Name) & "</Bet_Name>" &
                "<Enabled>" & Bet_Section.Enabled'Img & "</Enabled>" &
-               "<Max_Daily_Loss>" & F8_Image(Float_8(Bet_Section.Max_Daily_Loss)) & "</Max_Daily_Loss>" &
-               "<Max_Daily_Profit>" & F8_Image(Float_8(Bet_Section.Max_Daily_Profit)) & "</Max_Daily_Profit>" &
-               "<Delta_Price>" & F8_Image(Float_8(Bet_Section.Delta_Price)) & "</Delta_Price>" &
-               "<Max_Price>" & F8_Image(Float_8(Bet_Section.Max_Price)) & "</Max_Price>" &
-               "<Min_Price>" & F8_Image(Float_8(Bet_Section.Min_Price)) & "</Min_Price>" &
+               "<Max_Daily_Loss>" & F8_Image(Fixed_Type(Bet_Section.Max_Daily_Loss)) & "</Max_Daily_Loss>" &
+               "<Max_Daily_Profit>" & F8_Image(Fixed_Type(Bet_Section.Max_Daily_Profit)) & "</Max_Daily_Profit>" &
+               "<Delta_Price>" & F8_Image(Fixed_Type(Bet_Section.Delta_Price)) & "</Delta_Price>" &
+               "<Max_Price>" & F8_Image(Fixed_Type(Bet_Section.Max_Price)) & "</Max_Price>" &
+               "<Min_Price>" & F8_Image(Fixed_Type(Bet_Section.Min_Price)) & "</Min_Price>" &
                "<Max_Num_In_The_Air>" & Bet_Section.Max_Num_In_The_Air'Img & "</Max_Num_In_The_Air>" &
-               "<Bet_Size>" & F8_Image(Float_8(Bet_Section.Bet_Size)) & "</Bet_Size>" &
---               "<Delta_Size>" & F8_Image(Float_8(Bet_Section.Delta_Size)) & "</Delta_Size>" &
+               "<Bet_Size>" & F8_Image(Fixed_Type(Bet_Section.Bet_Size)) & "</Bet_Size>" &
+--               "<Delta_Size>" & F8_Image(Fixed_Type(Bet_Section.Delta_Size)) & "</Delta_Size>" &
 --               "<Bet_Mode>" & Bet_Section.Bet_Mode'Img & "</Bet_Mode>" &
                "<Allow_In_Play>" & Bet_Section.Allow_In_Play'Img & "</Allow_In_Play>" &
                "<Animal>" & Bet_Section.Animal'Img & "</Animal>" &
@@ -384,14 +384,14 @@ package body Bot_Config is
                "<Min_Num_Runners>" & Bet_Section.Min_Num_Runners'Img & "</Min_Num_Runners>" &
                "<Num_Winners>" & Bet_Section.Num_Winners'Img & "</Num_Winners>" &
                "<Countries>" & To_String(Bet_Section.Countries) & "</Countries>" &
-               "<Max_Exposure>" & F8_Image(Float_8(Bet_Section.Max_Exposure)) & "</Max_Exposure>" &
+               "<Max_Exposure>" & F8_Image(Fixed_Type(Bet_Section.Max_Exposure)) & "</Max_Exposure>" &
                "<Green_Up_Mode>" & Bet_Section.Green_Up_Mode'Img & "</Green_Up_Mode>" &
                "<Lay_First_Bet_Persistance>" & Bet_Section.Lay_First_Bet_Persistance'Img & "</Lay_First_Bet_Persistance>" &
                "<Back_First_Bet_Persistance>" & Bet_Section.Back_First_Bet_Persistance'Img & "</Back_First_Bet_Persistance>" &
                "<Lay_Second_Bet_Persistance>" & Bet_Section.Lay_Second_Bet_Persistance'Img & "</Lay_Second_Bet_Persistance>" &
                "<Back_Second_Bet_Persistance>" & Bet_Section.Back_Second_Bet_Persistance'Img & "</Back_Second_Bet_Persistance>" &
                "<Min_Num_Runners_Better_Ranked>" & Bet_Section.Min_Num_Runners_Better_Ranked'Img & "</Min_Num_Runners_Better_Ranked>" &
-               "<Race_Favorite_Max_Price>" & F8_Image(Float_8(Bet_Section.Race_Favorite_Max_Price)) & "</Race_Favorite_Max_Price>" &
+               "<Race_Favorite_Max_Price>" & F8_Image(Fixed_Type(Bet_Section.Race_Favorite_Max_Price)) & "</Race_Favorite_Max_Price>" &
                "<Bet_Type>" & Bet_Section.Bet_Type'Img & "</Bet_Type>" &
              "</Bet>"  );
 --             Bet_Pack.Get_Next(Cfg.Bet_Section_List, Bet_Section, Eol);

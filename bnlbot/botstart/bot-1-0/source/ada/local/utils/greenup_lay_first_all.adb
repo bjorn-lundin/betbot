@@ -79,10 +79,10 @@ procedure Greenup_Lay_First_All is
     if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := Float_8(Back_Stake) * (B.Price - 1.0);
+          B.Profit := Fixed_Type(Back_Stake) * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
-          B.Profit := Float_8(-Back_Stake);
+          B.Profit := Fixed_Type(-Back_Stake);
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
           B.Betwon := True;
@@ -90,9 +90,9 @@ procedure Greenup_Lay_First_All is
     elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := Float_8(-Lay_Stake) * (B.Price - 1.0);
+          B.Profit := Fixed_Type(-Lay_Stake) * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
-          B.Profit := Float_8(Lay_Stake);
+          B.Profit := Fixed_Type(Lay_Stake);
           B.Betwon := True;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
@@ -205,7 +205,7 @@ procedure Greenup_Lay_First_All is
         --Log(Me & "Run", " Race_Data.Backprice >= Bet.Greenup_Backbet.Price " & Boolean(Race_Data.Backprice >= Bet.Greenup_Backbet.Price)'img);
         --Log(Me & "Run", " Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price " & Boolean(Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price)'img);
             
-        if Price_Data.Backprice > Float_8(0.0) and then Price_Data.Layprice > Float_8(0.0) then   -- must be valid
+        if Price_Data.Backprice > Fixed_Type(0.0) and then Price_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
           if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
             if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
               if    Race_Data.Backprice >= Bet.Greenup_Backbet.Price then -- a match
@@ -293,8 +293,8 @@ begin
     for Max_Layprice in Max_Layprice_Type'range loop
       for Min_Layprice in Min_Layprice_Type'range loop
         declare
-          Layprice_High : Float_8 := Float_8(Max_Layprice)/10.0;
-          Layprice_Low  : Float_8 := Float_8(Min_Layprice)/10.0;
+          Layprice_High : Fixed_Type := Fixed_Type(Max_Layprice)/10.0;
+          Layprice_Low  : Fixed_Type := Fixed_Type(Min_Layprice)/10.0;
         begin
           for Price of Price_List loop
             if Price.Layprice <= Layprice_High and then

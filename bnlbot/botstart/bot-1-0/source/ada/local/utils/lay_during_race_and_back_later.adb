@@ -40,8 +40,8 @@ procedure Lay_During_Race_And_Back_Later is
 --  IA_Lay_At_Back_Price  : aliased Integer := 100;
 --  IA_Max_Lay_Price      : aliased Integer := 200;
 
-  Lay_Size  : Float_8 := 30.0;
-  Back_Size : Float_8 := 1500.0;
+  Lay_Size  : Fixed_Type := 30.0;
+  Back_Size : Fixed_Type := 1500.0;
 
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
   --Bet_Status : Bet_Status_Type := No_Bet_Laid;
@@ -70,8 +70,8 @@ procedure Lay_During_Race_And_Back_Later is
           if B.Laybet.Status(1) = 'U' and then
             R.Pricets >  B.Laybet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
             R.Layprice <= B.Laybet.Price and then -- Laybet so yes '<=' NOT '>='
-            R.Layprice >  Float_8(1.0) and then -- sanity
-            R.Backprice >  Float_8(1.0) then -- sanity
+            R.Layprice >  Fixed_Type(1.0) and then -- sanity
+            R.Backprice >  Fixed_Type(1.0) then -- sanity
 
              B.Laybet.Status(1) := 'M';
              B.Laybet.Pricematched := R.Layprice;
@@ -92,8 +92,8 @@ procedure Lay_During_Race_And_Back_Later is
           if B.Backbet.Status(1) = 'U' and then
             R.Pricets >  B.Backbet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
             R.Backprice >= B.Backbet.Price and then -- Backbet so yes '<=' NOT '>='
-            R.Backprice >  Float_8(1.0) and then -- sanity
-            R.Backprice >  Float_8(1.0) then -- sanity
+            R.Backprice >  Fixed_Type(1.0) and then -- sanity
+            R.Backprice >  Fixed_Type(1.0) then -- sanity
 
              B.Backbet.Status(1) := 'M';
              B.Backbet.Pricematched := R.Backprice;
@@ -140,10 +140,10 @@ procedure Lay_During_Race_And_Back_Later is
 
        if not Bet_Already_Laid then
          -- place a laybet if odds are ok
-         if R.Backprice >= Float_8(Min_Backprice)and then
-            R.Layprice  >= Float_8(Min_Layprice) and then
-            R.Backprice <= Float_8(Max_Backprice) and then
-            R.Layprice  <= Float_8(Max_Layprice) then
+         if R.Backprice >= Fixed_Type(Min_Backprice)and then
+            R.Layprice  >= Fixed_Type(Min_Layprice) and then
+            R.Backprice <= Fixed_Type(Max_Backprice) and then
+            R.Layprice  <= Fixed_Type(Max_Layprice) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -175,8 +175,8 @@ procedure Lay_During_Race_And_Back_Later is
             B.Laybet.Status(1) = 'M' and then   -- matched laybet
             B.Backbet.Status(1) = ' ' then   -- not progressing backbet
 
-           if R.Backprice <= Float_8(Global_Back_At_Backprice) and then
-              R.Backprice >= Float_8(1.0) then --sanit
+           if R.Backprice <= Fixed_Type(Global_Back_At_Backprice) and then
+              R.Backprice >= Fixed_Type(1.0) then --sanit
               -- this looks bad, back this one too
               -- update in place in list
               B.Backbet.Marketid    := R.Marketid;
@@ -283,7 +283,7 @@ begin
     Log ("Connected to db");
 
     declare
-      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin

@@ -390,8 +390,8 @@ procedure Poll_Bounds is
       -- Back_1_46_1_50_11_13_1_2_WIN, 
 
       declare
-        Min_1, Max_1 : Float_8 := 0.0;
-        Min_2, Max_2 : Float_8 := 0.0;
+        Min_1, Max_1 : Fixed_Type := 0.0;
+        Min_2, Max_2 : Fixed_Type := 0.0;
         Betname      : String  := i'img;
         Backed_Place    : Integer;
         Next_Place      : Integer;
@@ -399,10 +399,10 @@ procedure Poll_Bounds is
       begin
         if not Bets_Allowed(i).Has_Betted then
          
-          Min_1 := Float_8'Value(Betname( 6) & "." & Betname(8..9));
-          Max_1 := Float_8'Value(Betname(11) & "." & Betname(13..14));
-          Min_2 := Float_8'Value(Betname(16..17));
-          Max_2 := Float_8'Value(Betname(19..20));
+          Min_1 := Fixed_Type'Value(Betname( 6) & "." & Betname(8..9));
+          Max_1 := Fixed_Type'Value(Betname(11) & "." & Betname(13..14));
+          Min_2 := Fixed_Type'Value(Betname(16..17));
+          Max_2 := Fixed_Type'Value(Betname(19..20));
           Backed_Place := Integer'Value(Betname(22..22));
           Next_Place := Integer'Value(Betname(24..24));
           
@@ -410,17 +410,17 @@ procedure Poll_Bounds is
              Best_Runners(Backed_Place).Backprice <= Max_1 and then
              Best_Runners(Next_Place).Backprice >= Min_2 and then
              Best_Runners(Next_Place).Backprice <= Max_2 and then
-             Best_Runners(Backed_Place).Layprice > Float_8(1.01) and then
-             Best_Runners(Backed_Place).Layprice < Float_8(1_000.0) then
+             Best_Runners(Backed_Place).Layprice > Fixed_Type(1.01) and then
+             Best_Runners(Backed_Place).Layprice < Fixed_Type(1_000.0) then
              
              Bet := Table_Abets.Empty_Data;
 
              Bet.Marketid    := Win_Marketid;
              Bet.Selectionid := Best_Runners(Backed_Place).Selectionid;
              Bet.Side        := "BACK";
-             Bet.Size        := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Size        := Fixed_Type(Bets_Allowed(i).Bet_Size);
              Bet.Price       := Best_Runners(Backed_Place).Backprice;
-             Bet.Sizematched := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Sizematched := Fixed_Type(Bets_Allowed(i).Bet_Size);
              Bet.Pricematched:= Best_Runners(Backed_Place).Backprice;
              Bet.Betplaced   := Best_Runners(Backed_Place).Pricets;
              Bet.Reference(1) := '.';
@@ -442,9 +442,9 @@ procedure Poll_Bounds is
              Bet.Marketid    := Plc_Marketid;
              Bet.Selectionid := Best_Runners(Backed_Place).Selectionid;
              Bet.Side        := "BACK";
-             Bet.Size        := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Size        := Fixed_Type(Bets_Allowed(i).Bet_Size);
              Bet.Price       := Best_Runners(Backed_Place).Backprice;
-             Bet.Sizematched := Float_8(Bets_Allowed(i).Bet_Size);
+             Bet.Sizematched := Fixed_Type(Bets_Allowed(i).Bet_Size);
              Bet.Pricematched:= Best_Runners(Backed_Place).Backprice;
              Bet.Betplaced   := Best_Runners(Backed_Place).Pricets;
              Bet.Reference(1) := '.';
@@ -619,8 +619,8 @@ procedure Poll_Bounds is
 
       for Tmp of Price_List loop
         if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice > Float_8(1.0) and then
-           Tmp.Layprice < Float_8(1_000.0) and then
+           Tmp.Backprice > Fixed_Type(1.0) and then
+           Tmp.Layprice < Fixed_Type(1_000.0) and then
            Tmp.Selectionid /= Best_Runners(1).Selectionid and then
            Tmp.Selectionid /= Best_Runners(2).Selectionid then
 
@@ -633,7 +633,7 @@ procedure Poll_Bounds is
       end loop;
       Log("Worst_Runner " & Worst_Runner.To_String);
 
-      if Best_Runners(1).Backprice >= Float_8(1.01) then
+      if Best_Runners(1).Backprice >= Fixed_Type(1.01) then
         if Found_Place and then Market_Array(Place).Numwinners >= Integer_4(3) then
           Try_To_Make_Back_Bet (
                 Best_Runners => Best_Runners,

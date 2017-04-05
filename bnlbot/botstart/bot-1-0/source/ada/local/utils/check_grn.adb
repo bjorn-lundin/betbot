@@ -33,17 +33,17 @@ procedure Check_Grn is
   Select_Timestamps   : Sql.Statement_Type;
 
   Cmd_Line            : Command_Line_Configuration;
-  
+
   Global_Betname   : Betname_Type := (others => ' ');
   Global_Laysize   : Bet_Size_Type := 40.0;
 
   SA_Max_Price     : aliased Gnat.Strings.String_Access;
   SA_Min_Price     : aliased Gnat.Strings.String_Access;
   Sa_Betname       : aliased Gnat.Strings.String_Access;
-  
+
   IA_Runners_Place : aliased Integer := 0;
   IA_Addon_Odds    : aliased Integer := 0;
-  
+
  -- Bad_Runners_Place : exception;
 
 
@@ -73,7 +73,7 @@ begin
       SA_Min_Price'access,
       Long_Switch => "--min_price=",
       Help        => "Min price");
-      
+
   Define_Switch
      (Cmd_Line,
       IA_Runners_Place'access,
@@ -86,20 +86,20 @@ begin
       Long_Switch => "--addon_odds=",
       Help        => "Runners place in race (1-50)");
 
-      
-      
+
+
   Getopt (Cmd_Line);  -- process the command line
 
   Move(SA_Betname.all,Global_Betname);
- -- Global_Max_Price := Float_8'Value(SA_Max_Price.all);
- -- Global_Min_Price := Float_8'Value(SA_Min_Price.all);
-  
+ -- Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
+ -- Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
+
  -- case IA_Runners_Place is
  --   when 1 .. 50 => null;
  --   when others => raise Bad_Runners_Place with IA_Runners_Place'Img;
- -- end case;  
-  
- 
+ -- end case;
+
+
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
@@ -139,7 +139,7 @@ begin
     return;
   end if;
 
-  
+
   declare
     Runner_List     : Runners.Lists.List;
     Market_List : Markets.Lists.List;
@@ -152,7 +152,7 @@ begin
     Markets.Read_List(Select_Markets, Market_List);
     Log(Me & "Main" , "read done");
     T.Commit;
-  
+
     Market_Loop : for Market of Market_List loop
       T.Start;
       Cnt := Cnt +1;
@@ -161,9 +161,9 @@ begin
       end if;
       Select_Cand.Set("MARKETID",Market.Marketid);
       Runners.Read_List(Select_Cand, Runner_List);
-  
+
       Runner_Loop : for Runner of Runner_List loop
-  
+
         declare
           Eos   : Boolean := False;
           Bet   : array (Bet_Side_Type'Range) of Bets.Bet_Type;
@@ -174,20 +174,20 @@ begin
           Price.Marketid := Runner.Marketid;
           Price.Selectionid := Runner.Selectionid;
           Price.Read(Eos);
-           
+
           if not Eos and then
-             Price.Backprice >= Float_8(1.01)  and then
-             Price.Layprice  <=  Float_8(29.0) and then
-             Price.Layprice  >=  Float_8(10.0) and then
-             Price.Backprice <=  Float_8(30.0) and then
-             Price.Backprice >=  Float_8(10.0) and then
-             Price.Layprice/Price.Backprice <= Float_8(1.1) then -- max 10% difference Lay/Back
-  
+             Price.Backprice >= Fixed_Type(1.01)  and then
+             Price.Layprice  <=  Fixed_Type(29.0) and then
+             Price.Layprice  >=  Fixed_Type(10.0) and then
+             Price.Backprice <=  Fixed_Type(30.0) and then
+             Price.Backprice >=  Fixed_Type(10.0) and then
+             Price.Layprice/Price.Backprice <=1.1 then -- max 10% difference Lay/Back
+
             Bet(Lay) := Bets.Create(Side   => Lay,
                                     Name   => Global_Betname,
                                     Size   => Global_Laysize,
-                                    Price  => Price_Type(Price.Layprice),  
-                                    Placed => Price.Pricets,                  
+                                    Price  => Price_Type(Price.Layprice),
+                                    Placed => Price.Pricets,
                                     Runner => Runner,
                                     Market => Market);
             Bet(Lay).Match_Directly(False);
@@ -195,14 +195,14 @@ begin
             Bet(Lay).Check_Matched;
             Bet(Lay).Check_Outcome;
             Bet(Lay).Update_Withcheck;
-            
+
             --Backsize * Backprice = Laysize * Layprice -1
-            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice - Float_8(1.0)) / (Price.Layprice ));  
+            Backsize := Global_Laysize * (Bet_Size_Type(Price.Layprice - Fixed_Type(1.0)) / (Price.Layprice ));
             Bet(Back) := Bets.Create(Side   => Back,
                                      Name   => Global_Betname,
                                      Size   => Backsize,
-                                     Price  => Price_Type(Price.Layprice + Float_8(1.0)),  
-                                     Placed => Price.Pricets,                  
+                                     Price  => Price_Type(Price.Layprice + Fixed_Type(1.0)),
+                                     Placed => Price.Pricets,
                                      Runner => Runner,
                                      Market => Market);
             Bet(Back).Match_Directly(False);
@@ -213,7 +213,7 @@ begin
           end if; --Eos
         end;
       end loop Runner_Loop;
-  
+
       T.Commit;
     end loop Market_Loop;
   end ;

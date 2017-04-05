@@ -72,8 +72,8 @@ procedure Saldo_Fetcher is
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
-      Today     : Float_8 := Saldo.Balance + abs(Saldo.Exposure);
-      Yesterday : Float_8 := Old.Balance + abs(Old.Exposure);
+      Today     : Fixed_Type := Saldo.Balance + abs(Saldo.Exposure);
+      Yesterday : Fixed_Type := Old.Balance + abs(Old.Exposure);
       Msg : constant String :=
           "Dagens saldo-rapport " & Cr & Lf &
           "konto:     " & Ini.Get_Value("betfair","username","") & Cr & Lf &

@@ -38,8 +38,8 @@ procedure Lay_During_Race3 is
   IA_Lay_At_Price    : aliased Integer := 100;
   IA_Max_Lay_Price   : aliased Integer := 200;
 
-  Lay_Size  : Float_8 := 30.0;
-  Back_Size : Float_8 := 100.0;
+  Lay_Size  : Fixed_Type := 30.0;
+  Back_Size : Fixed_Type := 100.0;
 
   type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
   Bet_Status : Bet_Status_Type := No_Bet_Laid;
@@ -89,10 +89,10 @@ procedure Lay_During_Race3 is
       
         -- make sure no bet in the air, waiting for 1 second
         if not Bet_Already_Laid then
-          if WR.Backprice >= Float_8(Min_Backprice)and then
-             WR.Layprice  >= Float_8(Min_Layprice) and then
-             WR.Backprice <= Float_8(Max_Backprice) and then
-             WR.Layprice  <= Float_8(Max_Layprice) then
+          if WR.Backprice >= Fixed_Type(Min_Backprice)and then
+             WR.Layprice  >= Fixed_Type(Min_Layprice) and then
+             WR.Backprice <= Fixed_Type(Max_Backprice) and then
+             WR.Layprice  <= Fixed_Type(Max_Layprice) then
 
             Bet.Marketid    := WR.Marketid;
             Bet.Selectionid := WR.Selectionid;
@@ -112,8 +112,8 @@ procedure Lay_During_Race3 is
           if B.Bet.Selectionid =  WR.Selectionid then
             if WR.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
               if WR.Layprice <= B.Bet.Price and then -- Laybet so yes '<=' NOT '>='
-               WR.Layprice >  Float_8(1.0) and then -- sanity
-               WR.Backprice >  Float_8(1.0) then -- sanity
+               WR.Layprice >  Fixed_Type(1.0) and then -- sanity
+               WR.Backprice >  Fixed_Type(1.0) then -- sanity
                  Status := No_Bet_Laid; --reset for other runners
                  B.Bet.Status(1) := 'M';
                  B.Bet.Pricematched := WR.Layprice;
@@ -147,11 +147,11 @@ procedure Lay_During_Race3 is
 --        end loop;                
 --        -- make sure no bet in the air, waiting for 1 second
 --        if not Bet_Already_Laid then
-          if BRA(1).Backprice <= Float_8(1.20) and then
-             BRA(1).Backprice >  Float_8(1.10) and then
-             BRA(2).Backprice >= Float_8(10.0) and then
-             BRA(2).Backprice < Float_8(10_000.0) and then  -- so it exists
-             BRA(3).Backprice < Float_8(10_000.0) then  -- so it exists
+          if BRA(1).Backprice <= Fixed_Type(1.20) and then
+             BRA(1).Backprice >  Fixed_Type(1.10) and then
+             BRA(2).Backprice >= Fixed_Type(10.0) and then
+             BRA(2).Backprice < Fixed_Type(10_000.0) and then  -- so it exists
+             BRA(3).Backprice < Fixed_Type(10_000.0) then  -- so it exists
              
              -- for place  Place_Data_At_Time_Of_Bet_Laid := Sim.Get_Place_Price(BRA(1));
              -- for place  if Place_Data_At_Time_Of_Bet_Laid /= Table_Apriceshistory.Empty_Data then
@@ -181,8 +181,8 @@ procedure Lay_During_Race3 is
           if B.Bet.Selectionid = BRA(1).Selectionid then
             if BRA(1).Pricets     >  B.Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
               if BRA(1).Backprice >= B.Bet.Price and then -- Backbet so yes '>=' NOT '<='
-                 BRA(1).Layprice  > Float_8(1.0) and then -- sanity
-                 BRA(1).Backprice >  Float_8(1.0) then -- sanity
+                 BRA(1).Layprice  > Fixed_Type(1.0) and then -- sanity
+                 BRA(1).Backprice >  Fixed_Type(1.0) then -- sanity
                    B.Bet.Status(1) := 'M'; --Matched
                    B.Bet.Pricematched :=  BRA(1).Backprice;
                    exit;
@@ -217,8 +217,8 @@ procedure Lay_During_Race3 is
       begin
         for Tmp of List loop
           if Tmp.Status(1..6) = "ACTIVE" and then
-             Tmp.Backprice > Float_8(1.0) and then
-             Tmp.Layprice < Float_8(1_000.0)  then
+             Tmp.Backprice > Fixed_Type(1.0) and then
+             Tmp.Layprice < Fixed_Type(1_000.0)  then
             Idx := Idx +1;
             exit when Idx > BRA'Last;
             BRA(Idx) := Tmp;
@@ -228,8 +228,8 @@ procedure Lay_During_Race3 is
 
       for Tmp of List loop
         if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice > Float_8(1.0) and then
-           Tmp.Layprice < Float_8(1_000.0) and then
+           Tmp.Backprice > Fixed_Type(1.0) and then
+           Tmp.Layprice < Fixed_Type(1_000.0) and then
            Tmp.Selectionid /= BRA(1).Selectionid and then
            Tmp.Selectionid /= BRA(2).Selectionid then
 
@@ -284,7 +284,7 @@ begin
     begin
       for Marketid of Sim.Market_Id_With_Data_List loop
         Cnt := Cnt + 1;
-     --   Log( F8_Image(Float_8(Cnt)*100.0/ Float_8(Sim.Market_Id_With_Data_List.Length)) & " %");
+     --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
         Bet_Status := No_Bet_Laid;
         -- list of timestamps in this market
         declare
@@ -326,8 +326,8 @@ begin
     Log("num bets laid" & Global_Bet_List.Length'Img);
   
     declare
-      Sum, Sum_Winners, Sum_Losers : Float_8 := 0.0;
-      Profit : Float_8 := 0.0;
+      Sum, Sum_Winners, Sum_Losers : Fixed_Type := 0.0;
+      Profit : Fixed_Type := 0.0;
       Winners,Losers,Unmatched,Strange : Integer_4 := 0;
     begin
       for Bet_Record of Global_Bet_List loop

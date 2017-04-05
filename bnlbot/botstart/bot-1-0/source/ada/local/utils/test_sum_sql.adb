@@ -30,7 +30,7 @@ procedure Test_Sum_Sql is
 
    type Days_Summation_Type is record
      Betname   : String (Bet_Name_Type'range) := (others => ' ');
-     Sumprofit : Float_8 := 0.0;
+     Sumprofit : Fixed_Type := 0.0;
      Count     : Integer_4 := 0;
    end record;
 
@@ -168,8 +168,8 @@ begin
   declare
    R : Days_Summation_Type;
    Col : Positive_Count := 1;
-   Total_Day : array (0..7) of Float_8 := (others => 0.0);
-   Total_Week : array (0..7) of Float_8 := (others => 0.0);
+   Total_Day : array (0..7) of Fixed_Type := (others => 0.0);
+   Total_Week : array (0..7) of Fixed_Type := (others => 0.0);
 
   begin
     for Name of Bet_List loop
@@ -228,8 +228,8 @@ begin
   declare
    R : Days_Summation_Type;
    Col : Positive_Count := 1;
-   Total_Day  : array (0..7) of Float_8 := (others => 0.0);
-   Total_Week : array (0..7) of Float_8 := (others => 0.0);
+   Total_Day  : array (0..7) of Fixed_Type := (others => 0.0);
+   Total_Week : array (0..7) of Fixed_Type := (others => 0.0);
 
   begin
     for Name of Bet_List loop

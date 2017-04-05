@@ -59,8 +59,8 @@ procedure Check_for_Greenup_Win2 is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(30.0),
-      Price          => Float_8(1.9),
+      Size           => Fixed_Type(30.0),
+      Price          => Fixed_Type(1.9),
       Side           => "LAY ",
       Betname        => Bet_Name,
       Betwon         => False,
@@ -73,7 +73,7 @@ procedure Check_for_Greenup_Win2 is
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
       Pricematched   => P.Layprice,
-      Sizematched    => Float_8(30.0),
+      Sizematched    => Fixed_Type(30.0),
       Runnername     => R.Runnername,
       Fullmarketname => (others => ' '),
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -173,9 +173,9 @@ begin
 
           Ph_Loop : for Ph of Ph_List loop
             if not Has(Laid) and then
-               Ph.Layprice >= Float_8(1.01) and then
-               Ph.Layprice >= Float_8(1.01) and then
-               Ph.Backprice <= Float_8(1.90) then
+               Ph.Layprice >= Fixed_Type(1.01) and then
+               Ph.Layprice >= Fixed_Type(1.01) and then
+               Ph.Backprice <= Fixed_Type(1.90) then
 
               Has(Laid) := True;
               --Ts := Ph.Pricets;
@@ -184,8 +184,8 @@ begin
             if Has(Laid) then
               -- taken care of in update_ael_bets
               -- Ph.Pricets >= Ts + (0,0,0,1,0) and then
-              -- Ph.Layprice >= Float_8(1.01) and then
-              -- Ph.Layprice <= Float_8(1.9) then
+              -- Ph.Layprice >= Fixed_Type(1.01) and then
+              -- Ph.Layprice <= Fixed_Type(1.9) then
 
               if Runner.Status(1..6) = "WINNER" then
                  Num(Laid,Win) := Num(Laid,Win) +1;

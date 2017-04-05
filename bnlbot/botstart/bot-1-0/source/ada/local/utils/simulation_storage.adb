@@ -122,7 +122,7 @@ package body Simulation_Storage is
           Select_All_Markets.Fetch(Eos(Market_Key));
           exit when Eos(Market_Key);
           Cur := Cur +1;
-          Log(Object & Service, Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
+          Log(Object & Service, Utils.F8_Image( Fixed_Type( 100 * Cur) / Fixed_Type(Cnt)) & " %");
           
           Select_All_Markets.Get(1,Marketid); 
           -- check for existance of place market
@@ -468,8 +468,8 @@ package body Simulation_Storage is
     --                  Strategy_Type'(
     --                       Betname         => Repository_Types.Create(Templ), 
     --                       Marketid        => (others => ' '), 
-    --                       Leader_At_Max   => Float_8'Value(Templ(9..12)),
-    --                       Next_At_Min     => Float_8'Value(Templ(14..17)),
+    --                       Leader_At_Max   => Fixed_Type'Value(Templ(9..12)),
+    --                       Next_At_Min     => Fixed_Type'Value(Templ(14..17)),
     --                       Place_Of_Next   => 4,
     --                       Place_Of_Runner => Place_Of_Runner_Type'Value(Templ(19..19)),
     --                       Backprice_Matched => 0.0,

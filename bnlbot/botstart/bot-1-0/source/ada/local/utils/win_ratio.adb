@@ -161,8 +161,8 @@ procedure Win_Ratio is
   Global_Bet_List : Bet_List_Pack.List;
   Global_Laybet_for_This_Market_List : Bet_List_Pack.List;
 
-  Global_Lay_Size  : Float_8 := 30.0;
-  Global_Back_Size : Float_8 := 30.0;
+  Global_Lay_Size  : Fixed_Type := 30.0;
+  Global_Back_Size : Fixed_Type := 30.0;
   
   
   Start : Calendar2.Time_Type := Calendar2.Clock;
@@ -193,8 +193,8 @@ procedure Win_Ratio is
             if B.Bet.Status(1) = 'U' and then
               R.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
               R.Backprice >= B.Bet.Price and then -- Backbet so yes '<=' NOT '>='
-              R.Backprice >  Float_8(1.0) and then -- sanity
-              R.Layprice >  Float_8(1.0) then -- sanity
+              R.Backprice >  Fixed_Type(1.0) and then -- sanity
+              R.Layprice >  Fixed_Type(1.0) then -- sanity
   
                B.Bet.Status(1) := 'M';
                B.Bet.Pricematched := R.Backprice;
@@ -206,8 +206,8 @@ procedure Win_Ratio is
             if B.Bet.Status(1) = 'U' and then
               R.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
               R.Layprice <= B.Bet.Price and then -- Laybet so yes '<=' NOT '>='
-              R.Layprice >  Float_8(1.0) and then -- sanity
-              R.Backprice >  Float_8(1.0) then -- sanity
+              R.Layprice >  Fixed_Type(1.0) and then -- sanity
+              R.Backprice >  Fixed_Type(1.0) then -- sanity
   
                B.Bet.Status(1) := 'M';
                B.Bet.Pricematched := R.Layprice;
@@ -236,10 +236,10 @@ procedure Win_Ratio is
 -- laybets
 --    for R of List loop 
 --       if not Global_Bets_Allowed(Lay_600_700).Has_Betted then
---         if R.Backprice >= Float_8(600)and then
---            R.Layprice  >= Float_8(50) and then
---            R.Backprice <= Float_8(900) and then
---            R.Layprice  <= Float_8(700) then
+--         if R.Backprice >= Fixed_Type(600)and then
+--            R.Layprice  >= Fixed_Type(50) and then
+--            R.Backprice <= Fixed_Type(900) and then
+--            R.Layprice  <= Fixed_Type(700) then
 --
 --           Bet.Marketid    := R.Marketid;
 --           Bet.Selectionid := R.Selectionid;
@@ -290,22 +290,22 @@ procedure Win_Ratio is
       -- Back_1_46_1_50_11_13_1_2_WIN, 
 
       declare
-        Min_1, Max_1 : Float_8 := 0.0;
-        Min_2, Max_2 : Float_8 := 0.0;
+        Min_1, Max_1 : Fixed_Type := 0.0;
+        Min_2, Max_2 : Fixed_Type := 0.0;
         Betname      : String  := i'img;
       begin
         if not Global_Bets_Allowed(i).Has_Betted then
-          Min_1 := Float_8'Value(Betname( 6) & "." & Betname(8..9));
-          Max_1 := Float_8'Value(Betname(11) & "." & Betname(13..14));
-          Min_2 := Float_8'Value(Betname(16..17));
-          Max_2 := Float_8'Value(Betname(19..20));
+          Min_1 := Fixed_Type'Value(Betname( 6) & "." & Betname(8..9));
+          Max_1 := Fixed_Type'Value(Betname(11) & "." & Betname(13..14));
+          Min_2 := Fixed_Type'Value(Betname(16..17));
+          Max_2 := Fixed_Type'Value(Betname(19..20));
           
           if Best_Runners(1).Backprice >= Min_1 and then
              Best_Runners(1).Backprice <= Max_1 and then
              Best_Runners(2).Backprice >= Min_2 and then
              Best_Runners(2).Backprice <= Max_2 and then
-             Best_Runners(1).Layprice > Float_8(1.01) and then
-             Best_Runners(1).Layprice < Float_8(1_000.0) then
+             Best_Runners(1).Layprice > Fixed_Type(1.01) and then
+             Best_Runners(1).Layprice < Fixed_Type(1_000.0) then
              
              Bet.Marketid    := Best_Runners(1).Marketid;
              Bet.Selectionid := Best_Runners(1).Selectionid;
@@ -441,7 +441,7 @@ begin
     Log("num bets laid" & Global_Bet_List.Length'Img);
 
     declare
-      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin

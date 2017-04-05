@@ -36,8 +36,8 @@ procedure Sim_Back_1_2_3 is
   SA_Max_Lay_Price_Delta : aliased Gnat.Strings.String_Access;
   SA_Animal              : aliased Gnat.Strings.String_Access;
 
-  Global_Max_Back_Price      : Float_8 := 0.0;
-  Global_Max_Lay_Price_Delta : Float_8 := 0.0;
+  Global_Max_Back_Price      : Fixed_Type := 0.0;
+  Global_Max_Lay_Price_Delta : Fixed_Type := 0.0;
   Global_Lay_Size            : Bet_Size_Type := 30.0;
   Global_Back_Size           : Bet_Size_Type := 30.0;
   Global_Animal              : Animal_Type := Horse; --default
@@ -141,8 +141,8 @@ procedure Sim_Back_1_2_3 is
                    Num_Bets       : in Integer;
                    First_Bet      : in Integer;
                    Place_Num      : in Integer;
-                   Max_Back_Price : in Float_8;
-                   Max_Lay_Price  : in Float_8;
+                   Max_Back_Price : in Fixed_Type;
+                   Max_Lay_Price  : in Fixed_Type;
                    Bet_Suffix     : in String_Object) is
     Bet     : Bets.Bet_Type;
     T       : Sql.Transaction_Type;
@@ -156,8 +156,8 @@ procedure Sim_Back_1_2_3 is
     if Place_Num <= BR'Last and then BR (Place_Num).Backprice <= Max_Back_Price then
       for I in BR'Range loop
         if I >= First_Bet and then
-          BR (I).Backprice >  Float_8(1.0) and then
-          BR (I).Layprice  >  Float_8(1.0) and then
+          BR (I).Backprice >  Fixed_Type(1.0) and then
+          BR (I).Layprice  >  Fixed_Type(1.0) and then
           I < First_Bet + Num_Bets and then
           BR (I).Backprice < 10_000.0 then
 
@@ -183,8 +183,8 @@ procedure Sim_Back_1_2_3 is
         if I >= First_Bet and then
           BR (I).Backprice <  10_000.0 and then
           BR (I).Layprice  <= Max_Lay_Price and then
-          BR (I).Backprice >  Float_8(1.0) and then
-          BR (I).Layprice  >  Float_8(1.0) and then
+          BR (I).Backprice >  Fixed_Type(1.0) and then
+          BR (I).Layprice  >  Fixed_Type(1.0) and then
           I < First_Bet + Num_Bets then
 
           Runner.Selectionid := BR (I).Selectionid;
@@ -260,8 +260,8 @@ begin
 
   Getopt (Cmd_Line);  -- process the command line
 
-  Global_Max_Back_Price      := Float_8'Value (SA_Max_Back_Price.all);
-  Global_Max_Lay_Price_Delta := Float_8'Value (SA_Max_Lay_Price_Delta.all);
+  Global_Max_Back_Price      := Fixed_Type'Value (SA_Max_Back_Price.all);
+  Global_Max_Lay_Price_Delta := Fixed_Type'Value (SA_Max_Lay_Price_Delta.all);
 
 
   if SA_Animal.all = "horse" then
@@ -389,13 +389,14 @@ begin
     end;
 
     declare
-      --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+      --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T           : Sql.Transaction_Type;
       Bet_List    : Bets.Lists.List;
       All_Bets    : Sql.Statement_Type;
       Runner_List : Runners.Lists.List;
       List_Is_OK  : Boolean := True;
+      use Types;
     begin
       T.Start;
       All_Bets.Prepare ("select * from ABETS where BETWON is null and BETNAME in (:BACKSUFFIX,:LAYSUFFIX) order by BETPLACED");
