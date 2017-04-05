@@ -11,16 +11,17 @@ package Config is
                     --Horse_Back_04_04_04_08_14_Win_500_900, -- Several Bets In This Type
                     --Horse_Back_05_04_04_09_15_Win_500_900, -- Several Bets In This Type
                     --Horse_Back_06_04_04_08_14_Win_600_900, -- Several Bets In This Type
-                    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
-                    Horse_Back_1_12_1_14_06_07_1_2_Win_1_01,
+                    --Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
+                    --Horse_Back_1_12_1_14_06_07_1_2_Win_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
-                    Horse_Back_1_12_06_1_2_Win_1_01,
-                    Horse_Back_1_13_07_1_2_Win_1_01,
-                    Horse_Back_1_14_07_1_2_Win_1_01,
-                    Horse_Back_1_16_17_1_2_Win_1_01,
-                    Horse_Back_1_19_02_1_2_Win_1_01,
-                    Hound_Lay_01_06_04_07_09_Win_999_999,
-                    Hound_Lay_03_04_06_07_09_Win_999_999
+                    Horse_Back_1_19_01_1_2_Plc_1_01
+                    --Horse_Back_1_12_06_1_2_Win_1_01,
+                    --Horse_Back_1_13_07_1_2_Win_1_01,
+                    --Horse_Back_1_14_07_1_2_Win_1_01,
+                    --Horse_Back_1_16_17_1_2_Win_1_01,
+                    --Horse_Back_1_19_02_1_2_Win_1_01,
+                    --Hound_Lay_01_06_04_07_09_Win_999_999,
+                    --Hound_Lay_03_04_06_07_09_Win_999_999
                    );
 
 
@@ -28,8 +29,8 @@ package Config is
 
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
-    Max_Loss_Per_Day           : Float_8          := -200.0;
-    Max_Earnings_Per_Day       : Float_8          :=  200.0;
+    Max_Loss_Per_Day           : Fixed_Type          := -200.0;
+    Max_Earnings_Per_Day       : Fixed_Type          :=  200.0;
     Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
   end record;
@@ -38,7 +39,7 @@ package Config is
 
   type Config_Type is tagged record
     --Size                       : Bet_Size_Type    := 30.0;
-    Max_Exposure               : Float_8          := 0.0;
+    Max_Exposure               : Fixed_Type          := 0.0;
     Max_Turns_Not_Started_Race : Integer_4        := 102;  --102*5s -> 8,5 min
     Enabled                    : Boolean          := False;
     Allowed_Countries          : Unbounded_String := Null_Unbounded_String;
