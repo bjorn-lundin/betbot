@@ -46,7 +46,7 @@ procedure  Stat_Maker_Gh is
   Ia_Par_Lower_Limit : aliased Integer := 0;
   Ia_Par_Week        : aliased Integer := 0;
   Ia_Par_Month       : aliased Integer := 0;
-  Lower_Limit        : Float_8 := -999_999_999.0;
+  Lower_Limit        : Fixed_Type := -999_999_999.0;
 
 
   Select_Untreated_Bets              : Sql.Statement_Type;
@@ -104,7 +104,7 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if Ia_Par_Lower_Limit /= 0 then
-    Lower_Limit := Float_8(Ia_Par_Lower_Limit);
+    Lower_Limit := Fixed_Type(Ia_Par_Lower_Limit);
   end if;
 
   if Ba_Par_Quiet then
@@ -145,7 +145,7 @@ begin
 --      for b of Bet_List loop
 --        Cnt := Cnt +1;
 --        if Cnt rem 100 = 0 then
---          Log(Me, F8_Image(Float_8(cnt)*100.0/Float_8(Bet_List.Length)) & '%');
+--          Log(Me, F8_Image(Fixed_Type(cnt)*100.0/Fixed_Type(Bet_List.Length)) & '%');
 --        end if;
 --        if B.Status(1) = '-' then
 --          B.Status(1) := 'U';
@@ -187,7 +187,7 @@ begin
 --      for b of Bet_List loop
 --        Cnt := Cnt +1;
 --        if Cnt rem 100 = 0 then
---          Log(Me, F8_Image(Float_8(cnt)*100.0/Float_8(Bet_List.Length) ) & '%');
+--          Log(Me, F8_Image(Fixed_Type(cnt)*100.0/Fixed_Type(Bet_List.Length) ) & '%');
 --        end if;
 --        B.Update_Withcheck;
 --      end loop;

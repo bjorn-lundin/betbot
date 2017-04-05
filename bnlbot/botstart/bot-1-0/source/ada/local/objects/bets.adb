@@ -36,11 +36,11 @@ package body Bets is
   end Insert_And_Nullify_Betwon;
 
   ------------------------------------------------------------
-  function Profit_Today(Bet_Name : Betname_Type) return Float_8 is
+  function Profit_Today(Bet_Name : Betname_Type) return Fixed_Type is
     T : Sql.Transaction_Type;
     Eos : Boolean := False;
     Start_Date, End_Date : Time_Type := Clock;
-    Profit : Float_8 := 0.0;
+    Profit : Fixed_Type := 0.0;
   begin
     T.Start;
       Start_Date := Calendar2.Clock;
@@ -213,8 +213,8 @@ package body Bets is
         Powerdays      => 0,
         Selectionid    => Runner.Selectionid,
         Reference      => (others => '-'),
-        Size           => Float_8(Size),
-        Price          => Float_8(Price),
+        Size           => Fixed_Type(Size),
+        Price          => Fixed_Type(Price),
         Side           => Local_Side,
         Betname        => Name,
         Betwon         => False,
@@ -226,8 +226,8 @@ package body Bets is
         Insterrcode    => (others => ' '),
         Startts        => Market.Startts,
         Betplaced      => Placed,
-        Pricematched   => Float_8(0.0),
-        Sizematched    => Float_8(Size),
+        Pricematched   => Fixed_Type(0.0),
+        Sizematched    => Fixed_Type(Size),
         Runnername     => Runner.Runnernamestripped,
         Fullmarketname => Market.Marketname,
         Svnrevision    => Bot_Svn_Info.Revision,
@@ -263,13 +263,13 @@ package body Bets is
     for PH of List loop
       if Self.Side(1..4) = "BACK" then
         if PH.Backprice >= Self.Price and then -- Match ok
-           PH.Backprice <= Float_8(1000.0) then -- Match ok
+           PH.Backprice <= Fixed_Type(1000.0) then -- Match ok
            Self.Pricematched := PH.Backprice;
            Self.Status(1..7) := "MATCHED";
         end if;
       elsif Self.Side(1..3) = "LAY" then
         if PH.Layprice <= Self.Price and then -- Match ok
-           PH.Layprice >= Float_8(1.01) then
+           PH.Layprice >= Fixed_Type(1.01) then
            Self.Pricematched := PH.Layprice;
            Self.Status(1..7) := "MATCHED";
         end if;
@@ -279,7 +279,7 @@ package body Bets is
     end loop;
     if Self.Status(1) /= 'M' then
        Self.Status(1..7) := "LAPSED ";
-       Self.Pricematched := Float_8(0.0);
+       Self.Pricematched := Fixed_Type(0.0);
        Self.Profit := 0.0;
     end if;
   end Check_Matched;
@@ -356,7 +356,7 @@ package body Bets is
     Eos        : array (Eos_Type'range) of Boolean := (others => False);
     Selection_In_Winners,
     Bet_Won               : Boolean := False;
-    Profit                : Float_8 := 0.0;
+    Profit                : Fixed_Type := 0.0;
     Start_Ts              : Calendar2.Time_Type := Calendar2.Time_Type_First;
     Stop_Ts               : Calendar2.Time_Type := Calendar2.Time_Type_Last;
 
@@ -603,8 +603,8 @@ package body Bets is
           Move("EXECUTABLE_NO_MATCH", Bet.Status); --?
         else
           Move("EXECUTION_COMPLETE", Bet.Status);
-          Bet.Pricematched := Float_8(Avg_Price_Matched);
-          Bet.Sizematched := Float_8(Size_Matched);
+          Bet.Pricematched := Fixed_Type(Avg_Price_Matched);
+          Bet.Sizematched := Fixed_Type(Size_Matched);
         end if;
         Log(Me & "Check_If_Bet_Accepted", "update bet " & Bet.To_String);
         Bet.Update_Withcheck;
@@ -633,8 +633,8 @@ package body Bets is
     Log(Me & "Is_Matched", "Betid=" & Self.Betid'Img &
          " Is_Matched=" & Is_Matched'Img &
          " Is_Removed=" & Is_Removed'Img &
-         " Avg_Price_Matched=" & F8_Image(Float_8(Avg_Price_Matched)) &
-         " Size_Matched=" & F8_Image(Float_8(Size_Matched)));
+         " Avg_Price_Matched=" & F8_Image(Fixed_Type(Avg_Price_Matched)) &
+         " Size_Matched=" & F8_Image(Fixed_Type(Size_Matched)));
 
     if Is_Matched and then
       Self.Status(1..18) /= "EXECUTION_COMPLETE" then -- dont update if already matched
@@ -643,10 +643,11 @@ package body Bets is
         Move("EXECUTION_COMPLETE", Self.Status);
         Is_Updated := True;
       else
-        if abs(Self.Size - Float_8(Size_Matched)) < 0.001 then
+--        if abs(Self.Size - Fixed_Type(Size_Matched)) < 0.0001 then
+        if Self.Size = Fixed_Type(Size_Matched) then
           Move("EXECUTION_COMPLETE", Self.Status);
-          Self.Pricematched := Float_8(Avg_Price_Matched);
-          Self.Sizematched := Float_8(Size_Matched);
+          Self.Pricematched := Fixed_Type(Avg_Price_Matched);
+          Self.Sizematched := Fixed_Type(Size_Matched);
           Is_Updated := True;
         end if;
       end if;

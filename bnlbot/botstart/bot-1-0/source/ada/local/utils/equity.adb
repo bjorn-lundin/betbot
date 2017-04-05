@@ -30,9 +30,9 @@ procedure Equity is
    Eos : array (Eos_Type'range) of Boolean := (others => False);
    First_Time: Boolean := True;
    First_Start_Date, Start_Date, Stop_Date: Calendar2.Time_Type;
-   Profit : Float_8 := 0.0;
+   Profit : Fixed_Type := 0.0;
    type Saldo_Type is (Ref, Sim, Dry, His);
-   Saldo : array (Saldo_Type'range) of Float_8 := (others => 0.0);
+   Saldo : array (Saldo_Type'range) of Fixed_Type := (others => 0.0);
    Ts : Calendar2.Time_Type;
 
    gDebug : Boolean := False;  
@@ -139,7 +139,7 @@ begin
          Login    => Sa_Par_Db_User.all,
          Password => Sa_Par_Db_Pwd.all);
 --   Log ("connected to database");
-   Saldo(Sim) := Float_8'Value(Sa_Saldo.all);
+   Saldo(Sim) := Fixed_Type'Value(Sa_Saldo.all);
    T.Start;
 
    Dates.Prepare("select distinct(STARTTS) " & 

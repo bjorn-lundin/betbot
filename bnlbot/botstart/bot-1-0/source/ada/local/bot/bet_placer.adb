@@ -65,8 +65,8 @@ procedure Bet_Placer is
     L_Size_Matched,
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
-    Local_Price : Float_8 := Float_8(Price);
-    Local_Size  : Float_8 := Float_8(Size);
+    Local_Price : Fixed_Type := Fixed_Type(Price);
+    Local_Size  : Fixed_Type := Fixed_Type(Size);
     Local_Side  : String (1..4) := (others => ' ');
 
   begin
@@ -110,8 +110,8 @@ procedure Bet_Placer is
         Insterrcode    => Instruction_Report_Error_Code,
         Startts        => Calendar2.Time_Type_First,
         Betplaced      => Now,
-        Pricematched   => Float_8(Average_Price_Matched),
-        Sizematched    => Float_8(L_Size_Matched),
+        Pricematched   => Fixed_Type(Average_Price_Matched),
+        Sizematched    => Fixed_Type(L_Size_Matched),
         Runnername     => (others => ' '),
         Fullmarketname => (others => ' '),
         Svnrevision    => Bot_Svn_Info.Revision,

@@ -51,22 +51,22 @@ package Statistics is
   type Market_Type is (Win,Plc);
   type Result_Type_Type is (Count, Hitrate, Hitrate_Times_Count);
   
-  package Float_8_Pack is new Ada.Containers.Doubly_Linked_Lists(Float_8);
+  package Fixed_Type_Pack is new Ada.Containers.Doubly_Linked_Lists(Fixed_Type);
   
   type Part_Type is record
     Cnt        : Natural := 0 ;
     Won        : Natural := 0 ;
-    Hitrate    : Float_8 := 0.0;     
-    Odds_List  : Float_8_Pack.List;
-    Avg_Odds   : Float_8 := 0.0; 
+    Hitrate    : Fixed_Type := 0.0;     
+    Odds_List  : Fixed_Type_Pack.List;
+    Avg_Odds   : Fixed_Type := 0.0; 
   end record;
   
   
   type Stats_Type is tagged record
     Every               : Part_Type;
     Matched             : Part_Type;
-    Needed_Hitrate      : Float_8 := 0.0;
-    Profit              : Float_8 := 0.0; 
+    Needed_Hitrate      : Fixed_Type := 0.0;
+    Profit              : Fixed_Type := 0.0; 
   end record;  
   
   procedure Treat(Self : in out Stats_Type; Bet : Table_Abets.Data_Type);
@@ -87,7 +87,7 @@ package Statistics is
   function Get_Market_Type(Betname : String) return Market_Type;
      
   
-   function Get_Avg_Odds(Betname : String) return Float_8 ;
+   function Get_Avg_Odds(Betname : String) return Fixed_Type ;
 
   
 

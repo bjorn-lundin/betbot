@@ -21,26 +21,47 @@ package Bot_Types is
                             Hat_Tricked_Scored,
                             Penalty_Taken,
                             Sending_Off);
+--     type Bet_Side_Type is (Back, Lay);
+--     type Team_Type is (Home, Away);
+--     type Animal_Type is (Horse, Hound, Human);
+--     type Max_Daily_Profit_Type is new Fixed_Type;
+--     type Max_Daily_Loss_Type is new Fixed_Type;
+--     type Max_Lay_Price_Type is new Fixed_Type;
+--     type Min_Lay_Price_Type is new Fixed_Type;
+--     type Price_Type is new Fixed_Type;
+--     subtype Lay_Price_Type is Price_Type;
+--     subtype Back_Price_Type is Price_Type;
+--     type Delta_Price_Type is new Fixed_Type;
+--     type Bet_Size_Type is new Fixed_Type;
+--     type Bet_Price_Type is new Fixed_Type;
+--     type Min_Num_Runners_Type is new Byte;
+--     type Max_Num_Runners_Type is new Byte;
+--     type Num_Winners_Type is new Byte;
+--     type Favorite_By_Type is new Fixed_Type;
+--     type Profit_Type is new Fixed_Type;
+--     type Max_Exposure_Type is new Fixed_Type;
+--     type Bet_Size_Portion_Type is new Fixed_Type;
+
    type Bet_Side_Type is (Back, Lay);
    type Team_Type is (Home, Away);
    type Animal_Type is (Horse, Hound, Human);
-   type Max_Daily_Profit_Type is new Float_8;
-   type Max_Daily_Loss_Type is new Float_8;
-   type Max_Lay_Price_Type is new Float_8;
-   type Min_Lay_Price_Type is new Float_8;
-   type Price_Type is new Float_8;
+   type Max_Daily_Profit_Type is new Fixed_Type;
+   type Max_Daily_Loss_Type is new Fixed_Type;
+   type Max_Lay_Price_Type is new Fixed_Type;
+   type Min_Lay_Price_Type is new Fixed_Type;
+   type Price_Type is new Fixed_Type;
    subtype Lay_Price_Type is Price_Type;
    subtype Back_Price_Type is Price_Type;
-   type Delta_Price_Type is new Float_8;
-   type Bet_Size_Type is new Float_8;
-   type Bet_Price_Type is new Float_8;
+   type Delta_Price_Type is new Fixed_Type;
+   type Bet_Size_Type is new Fixed_Type;
+   type Bet_Price_Type is new Fixed_Type;
    type Min_Num_Runners_Type is new Byte;
    type Max_Num_Runners_Type is new Byte;
    type Num_Winners_Type is new Byte;
-   type Favorite_By_Type is new Float_8;
-   type Profit_Type is new Float_8;
-   type Max_Exposure_Type is new Float_8;
-   type Bet_Size_Portion_Type is new Float_8;
+   type Favorite_By_Type is new Fixed_Type;
+   type Profit_Type is new Fixed_Type;
+   type Max_Exposure_Type is new Fixed_Type;
+   type Bet_Size_Portion_Type is new Fixed_Type;
 
    type Bet_Persistence_Type is (Lapse, Persist, Market_On_Close);
 
@@ -71,15 +92,15 @@ package Bot_Types is
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
    function "+" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
    function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type;
-   function "+" (Left : Float_8 ; Right : Favorite_By_Type) return Back_Price_Type ;
-   function "+" (Left : Float_8 ; Right : Favorite_By_Type) return Float_8;
-   function "<=" (Left : Back_Price_Type ; Right : Float_8) return Boolean;
-   function "<=" (Left : Float_8 ; Right : Back_Price_Type) return Boolean ;
-   function "<" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean;
-   function "<=" (Left : Min_Lay_Price_Type ; Right : Float_8) return Boolean;
-   function "<=" (Left : Float_8 ; Right : Max_Lay_Price_Type) return Boolean ;
+   function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Back_Price_Type ;
+   function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Fixed_Type;
+   function "<=" (Left : Back_Price_Type ; Right : Fixed_Type) return Boolean;
+   function "<=" (Left : Fixed_Type ; Right : Back_Price_Type) return Boolean ;
+   function "<" (Left : Min_Lay_Price_Type ; Right : Fixed_Type) return Boolean;
+   function "<=" (Left : Min_Lay_Price_Type ; Right : Fixed_Type) return Boolean;
+   function "<=" (Left : Fixed_Type ; Right : Max_Lay_Price_Type) return Boolean ;
 
-   function "*" (Left : Bet_Size_Type ; Right : Price_Type) return Float_8;
+   function "*" (Left : Bet_Size_Type ; Right : Price_Type) return Fixed_Type;
 
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Profit_Type) return Boolean ;
    function ">=" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;
@@ -95,13 +116,24 @@ package Bot_Types is
    function "*" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
    function "/" (Left : Bet_Size_Type ; Right : Bet_Price_Type) return Bet_Size_Type;
 
-   function ">" (Left : Float_8 ; Right : Max_Exposure_Type) return Boolean ;
+   function ">" (Left : Fixed_Type ; Right : Max_Exposure_Type) return Boolean ;
 
-   function "/" (Left : Bet_Size_Type ; Right : Float_8) return Bet_Size_Type;
+   function "*" (Left : Bet_Size_Type ; Right : Fixed_Type) return Bet_Size_Type;
+   function "/" (Left : Bet_Size_Type ; Right : Fixed_Type) return Bet_Size_Type;
 
 
- --  function "*" (Left : Bet_Size_Type ; Right : Lay_Price_Type) return Float_8;
-   function "/" (Left : Float_8 ; Right : Back_Price_Type) return Bet_Size_Type ;
+ --  function "*" (Left : Bet_Size_Type ; Right : Lay_Price_Type) return Fixed_Type;
+   function "/" (Left : Fixed_Type ; Right : Back_Price_Type) return Bet_Size_Type ;
 
+
+
+   function "*" (Left : Bet_Size_Type ; Right : Bet_Size_Portion_Type) return Bet_Size_Type;
+   function "/" (Left : Bet_Size_Type ; Right : Bet_Size_Portion_Type) return Bet_Size_Type;
+
+   function "*" (Left,Right : Bet_Size_Type) return Bet_Size_Type;
+   function "/" (Left,Right : Bet_Size_Type) return Bet_Size_Type;
+
+   function "*" (Left,Right : Bet_Price_Type) return Bet_Price_Type;
+   function "/" (Left,Right : Bet_Price_Type) return Bet_Price_Type;
 
 end Bot_Types;

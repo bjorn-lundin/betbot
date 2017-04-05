@@ -64,14 +64,14 @@ procedure Poll_Soccer is
      Select_Matched_Bet.Close_Cursor;
      return not Eos;
   end Matched_Bet_Exists;
-  
-  
+
+
   procedure Back_The_Leader_Home(Market : Markets.Market_Type;
                                  Min_Match_Minute : Integer_4;
                                  Leader_Max,
                                  Leader_Min,
                                  Max_Delta_Back_Lay,
-                                 Delta_Lay_Bet : Float_8) is
+                                 Delta_Lay_Bet : Fixed_Type) is
 --  procedure Back_The_Leader_Home(Market : Markets.Market_Type) is
     Service          : constant String                              := "Back_The_Leader_Home";
     T                : Sql.Transaction_Type;
@@ -81,7 +81,7 @@ procedure Poll_Soccer is
     Runnername       : Runnername_Type                              := (others => ' ');
     Size             : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
     Price            : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
-    Price_8          : Float_8                                      := 0.0;
+    Price_8          : Fixed_Type                                      := 0.0;
     Match_Directly   : Integer_4                                    := 1;
     Bet              : array(Bet_Side_Type'Range) of Bets.Bet_Type;
     Bet_Matched      : Boolean                                      := False;
@@ -133,9 +133,9 @@ procedure Poll_Soccer is
     "and mmo3.betdelay > 0 " & --in play
     -- home team has the lead
     "and e.eventid = g.eventid " &
-    "and g.homescore > g.awayscore " &    
+    "and g.homescore > g.awayscore " &
     -- and the games has passed minute
-    "and g.minute > :MINUTE " &    
+    "and g.minute > :MINUTE " &
     -- the_draw
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
@@ -196,7 +196,7 @@ procedure Poll_Soccer is
           return;
         end if;
       end if;
-      
+
       Log(Me & "Place_Bet", "call Rpc.Place_Bet (Back)");
       Rpc.Place_Bet (Bet_Name         => Betname,
                      Market_Id        => Market.Marketid,
@@ -242,7 +242,7 @@ procedure Poll_Soccer is
       --Laysize = Backsize * Backprice/Layprice
         Price(Lay):= Price(Back) - Bet_Price_Type(Delta_Lay_Bet);
        -- Price(Lay):= Price(Back) - Bet_Price_Type(0.05);
-       
+
         if Delta_Lay_Bet < 0.0 then
           -- place no lay bet at all
           Log(Service & "Place_Bet", "Negative Delta_Lay_Bet - skip Laybet");
@@ -252,7 +252,7 @@ procedure Poll_Soccer is
 
         --check price is valid - put it back and forthDelta_Lay_Bet through tics
         declare
-          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Lay)));
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Fixed_Type(Price(Lay)));
         begin
           Price(Lay) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
         end;
@@ -304,7 +304,7 @@ procedure Poll_Soccer is
                                  Leader_Max,
                                  Leader_Min,
                                  Max_Delta_Back_Lay,
-                                 Delta_Lay_Bet : Float_8) is
+                                 Delta_Lay_Bet : Fixed_Type) is
     Service     : constant String := "Back_The_Leader_Away";
     T           : Sql.Transaction_Type;
     Eos         : Boolean       := False;
@@ -313,7 +313,7 @@ procedure Poll_Soccer is
     Runnername  : Runnername_Type  := (others => ' ');
     Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 30.0);
     Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
-    Price_8     : Float_8 := 0.0;
+    Price_8     : Fixed_Type := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
     Bet_Matched      : Boolean                                      := False;
@@ -366,10 +366,10 @@ procedure Poll_Soccer is
     "and mmo3.betdelay > 0 " & --in play
     -- away team has the lead
     "and e.eventid = g.eventid " &
-    "and g.homescore < g.awayscore " &        
+    "and g.homescore < g.awayscore " &
     -- and the games has passed minute
-    "and g.minute > :MINUTE " &    
-    -- the_draw   
+    "and g.minute > :MINUTE " &
+    -- the_draw
     "and e.eventid = mmo3.eventid " &
     "and pmo3.marketid = mmo3.marketid " &
     "and rmo3.marketid = pmo3.marketid " &
@@ -486,7 +486,7 @@ procedure Poll_Soccer is
 
         --check price is valid - put it back and forth through tics
         declare
-          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Lay)));
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Fixed_Type(Price(Lay)));
         begin
           Price(Lay) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
         end;
@@ -541,7 +541,7 @@ procedure Poll_Soccer is
     Runnername  : Runnername_Type  := (others => ' ');
     Size        : array(Bet_Side_Type'Range) of Bet_Size_Type  := (others => 50.0);
     Price       : array(Bet_Side_Type'Range) of Bet_Price_Type := (others =>  0.0);
-    Price_8     : Float_8 := 0.0;
+    Price_8     : Fixed_Type := 0.0;
     Match_Directly : Integer_4 := 1;
     Bet         : array(Bet_Side_Type'Range) of Bets.Bet_Type;
     Bet_Matched      : Boolean                                      := False;
@@ -686,11 +686,11 @@ procedure Poll_Soccer is
         Log(Service & "Place_Bet", Utils.Trim(Betname) & " inserted lay  bet: " & Bet(Lay).To_String);
         --Backsize * Backprice = Laysize * Layprice
         --Laysize = Backsize * Backprice/Layprice
-        Price(Back) := Price(Lay) * 1.2;
+        Price(Back) := Price(Lay) * Bet_Price_Type(1.2);
 
         --check price is valid - put it back and forth through tics
         declare
-          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Float_8(Price(Back)));
+          Tic : Integer := Tics.Get_Nearest_Higher_Tic_Index(Fixed_Type(Price(Back)));
         begin
           Price(Back) := Bet_Price_Type(Tics.Get_Tic_Price(Tic));
         end;
@@ -784,7 +784,7 @@ procedure Poll_Soccer is
     pragma Warnings(Off, In_Play);
     Dummy : Boolean := False;
     pragma Warnings(Off, Dummy);
-    
+
   begin
     Log(Me & "Run", "Treat market: " &  Market.To_String);
     -- do the poll

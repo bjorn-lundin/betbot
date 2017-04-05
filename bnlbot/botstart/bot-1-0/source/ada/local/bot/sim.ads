@@ -53,8 +53,8 @@ package Sim is
   type Fifo_Type is tagged record
     Selectionid    : Integer_4 := 0;
     One_Runner_Sample_List : Prices.Lists.List;
-    Avg_Lay_Price  : Float_8 := 0.0;
-    Avg_Back_Price : Float_8 := 0.0;
+    Avg_Lay_Price  : Fixed_Type := 0.0;
+    Avg_Back_Price : Fixed_Type := 0.0;
     In_Use         : Boolean := False;
     Index          : Num_Runners_Type := Num_Runners_Type'first;
   end record;

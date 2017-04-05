@@ -89,13 +89,13 @@ package Sql is
                       SSL_Mode   : in String := "require"); --disable,allow,prefer,require,verify-ca,verify-full
 
    function  Is_Session_Open return Boolean;
-   
+
    -- Start with Connect
    -- There can be one connection only to a database.
    -- This package is NOT task-safe
    -- if several tasks are needed, create a serialising task, that handles ALL db interaction
-   
-   
+
+
 
    -----------------------------------------------------------
 
@@ -103,7 +103,7 @@ package Sql is
                                               Scope : in Transaction_Isolation_Level_Scope_Type);
 
    type Transaction_Type is new Limited_Controlled with private;
-   
+
    procedure Start_Read_Write_Transaction (T : in out Transaction_Type);
    procedure Start (T : in out Transaction_Type) renames Start_Read_Write_Transaction;
    procedure Start_Read_Only_Transaction (T : in out Transaction_Type);
@@ -111,7 +111,7 @@ package Sql is
    procedure Rollback (T : in out Transaction_Type) ;
 
    function  Transaction_Status return Transaction_Status_Type;
-    
+
    -----------------------------------------------------------
 
    procedure Prepare (Statement : in out Statement_Type;
@@ -119,9 +119,9 @@ package Sql is
 
    -- Start a  transaction before prepare/set/get/execute/open_cursor/close_cursor
    -- prepare is done once per statement, even if prepare is called many times
-   
+
    -- typical usage for reading data:
-      
+
    --   Select_Stm : Sql.Statement_Type;
    --   T : Sql.Transaction_Type:
    --   Column : String(1.15) := (others => ' ');
@@ -135,16 +135,16 @@ package Sql is
    --     Select_Stm.Fetch(End_Of_Set);
    --     exit when End_Of_Set;
    --     Select_Stm.Get("COLUMN", Column);
-   --     Text_Io.Put_Line ("3 : Got COLUMN: '" &  Column & "' from db");      
+   --     Text_Io.Put_Line ("3 : Got COLUMN: '" &  Column & "' from db");
    --     Text_Io.New_Line;
-   --   end loop;  
+   --   end loop;
    --   Select_Stm.Close_Cursor;
    --   T.Commit;
    --   Sql.Close_Session;
    -- end  :
-   
+
    -- typical usage for Writing data:
-      
+
    --   Delete_Stm : Sql.Statement_Type;
    --   T : Sql.Transaction_Type:
    --   Num_Rows_Affected : Natural := 0;
@@ -157,7 +157,7 @@ package Sql is
    --   T.Commit;
    --   Sql.Close_Session;
    -- end  :
-   
+
    procedure Open_Cursor (Statement : in Statement_Type);
 
    procedure Fetch (Statement  : in Statement_Type;
@@ -200,11 +200,11 @@ package Sql is
 
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;
-                  Value     : out Float_8);
+                  Value     : out Fixed_Type);
 
    procedure Get (Statement : in Statement_Type;
                   Parameter : in String;
-                  Value     : out Float_8);
+                  Value     : out Fixed_Type);
 
    procedure Get (Statement : in Statement_Type;
                   Parameter : in Positive;
@@ -242,27 +242,27 @@ package Sql is
    procedure Get_Timestamp (Statement : in Statement_Type;
                             Parameter : in Positive;
                             Value     : out Calendar2.Time_Type) ;
-                            
+
    procedure Get_Timestamp (Statement : in Statement_Type;
                             Parameter : in String;
                             Value     : out Calendar2.Time_Type) ;
-                            
+
    procedure Get(Statement : in Statement_Type;
                  Parameter : in Positive;
                  Value     : out Calendar2.Time_Type) ;
-                 
+
    procedure Get(Statement : in Statement_Type;
                  Parameter : in String;
                  Value     : out Calendar2.Time_Type) ;
-                 
+
    procedure Get (Statement : in Statement_Type;
-   
+
                   Parameter : in Positive;
                   Value     : out Ada.Calendar.Time);
-                            
+
    procedure Get (Statement : in Statement_Type;
                   Parameter : in String;
-                  Value     : out Ada.Calendar.Time) ;                          
+                  Value     : out Ada.Calendar.Time) ;
 
    -----------------------------------------------------------
 
@@ -284,8 +284,8 @@ package Sql is
 
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
-                  Value     : in Float_8);
-                  
+                  Value     : in Fixed_Type);
+
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Boolean);
@@ -301,11 +301,11 @@ package Sql is
    procedure Set_Timestamp (Statement : in out Statement_Type;
                             Parameter : in String;
                             Value     : in Calendar2.Time_Type);
-                            
+
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in Calendar2.Time_Type);
-                            
+
    procedure Set (Statement : in out Statement_Type;
                   Parameter : in String;
                   Value     : in  Ada.Calendar.Time);

@@ -12,10 +12,10 @@ package Bot_Config is
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
 
   type Global_Section_Type is record
-    Delay_Between_Turns_Bad_Funding : Float_8 := 60.0;
-    Delay_Between_Turns_No_Markets  : Float_8 := 7.0;
-    Delay_Between_Turns             : Float_8 := 5.0;
-    Network_Failure_Delay           : Float_8 := 60.0;
+    Delay_Between_Turns_Bad_Funding : Fixed_Type := 60.0;
+    Delay_Between_Turns_No_Markets  : Fixed_Type := 7.0;
+    Delay_Between_Turns             : Fixed_Type := 5.0;
+    Network_Failure_Delay           : Fixed_Type := 60.0;
     Logging                         : Boolean := True;
   end record;
 

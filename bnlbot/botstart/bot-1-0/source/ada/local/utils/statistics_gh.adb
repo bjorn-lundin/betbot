@@ -7,39 +7,39 @@ package body Statistics_Gh is
  --  type Part_Type is record
  --    Cnt     : Natural := 0 ;
  --    Won     : Natural := 0 ;
- --    Hitrate : Float_8 := 0.0;     
+ --    Hitrate : Fixed_Type := 0.0;     
  --  end record;
  --    
  --  type Stats_Type is tagged record
  --    Every               : Part_Type;
  --    Matched             : Part_Type;
- --    Needed_Hitrate      : Float_8 := 0.0; 
- --    Odds                : Float_8 := 0.0; 
- --    Profit              : Float_8 := 0.0; 
+ --    Needed_Hitrate      : Fixed_Type := 0.0; 
+ --    Odds                : Fixed_Type := 0.0; 
+ --    Profit              : Fixed_Type := 0.0; 
  --  end record;  
 
 
-  Commission : constant Float_8 := 0.065;
+  Commission : constant Fixed_Type := 0.065;
 
-  function Needed_Hitrate(O : Float_8) return Float_8 is
+  function Needed_Hitrate(O : Fixed_Type) return Fixed_Type is
     -- =1/(K6-(K6-1)*$A$2)
   begin
     return 1.0/(O - (O-1.0)* Commission) ;
   end Needed_Hitrate;
   ------------------------------------------------------------
   procedure Calculate_Avg_Odds(Self : in out Stats_Type) is
-    Tmp : Float_8 := 0.0;
+    Tmp : Fixed_Type := 0.0;
   begin
     for o of Self.Every.Odds_List loop
       Tmp := Tmp + o;
     end loop;
-    Self.Every.Avg_Odds := Tmp / Float_8(Self.Every.Odds_List.Length);
+    Self.Every.Avg_Odds := Tmp / Fixed_Type(Self.Every.Odds_List.Length);
   
     Tmp := 0.0;
     for o of Self.Matched.Odds_List loop
       Tmp := Tmp + o;
     end loop;
-    Self.Matched.Avg_Odds := Tmp / Float_8(Self.Matched.Odds_List.Length);
+    Self.Matched.Avg_Odds := Tmp / Fixed_Type(Self.Matched.Odds_List.Length);
     
     Self.Needed_Hitrate := Needed_Hitrate(Self.Matched.Avg_Odds);
   end Calculate_Avg_Odds;
@@ -55,7 +55,7 @@ package body Statistics_Gh is
     Self.Every.Odds_List.Append(Bet.Pricematched);
     
     if Self.Every.Cnt > 0 then
-      Self.Every.Hitrate := Float_8(Self.Every.Won) / Float_8(Self.Every.Cnt);
+      Self.Every.Hitrate := Fixed_Type(Self.Every.Won) / Fixed_Type(Self.Every.Cnt);
     end if;
 
     if Bet.Status(1) = 'M' then
@@ -64,7 +64,7 @@ package body Statistics_Gh is
         Self.Matched.Won := Self.Matched.Won +1;
       end if;
       if Self.Matched.Cnt > 0 then
-        Self.Matched.Hitrate := Float_8(Self.Matched.Won) / Float_8(Self.Matched.Cnt);
+        Self.Matched.Hitrate := Fixed_Type(Self.Matched.Won) / Fixed_Type(Self.Matched.Cnt);
       end if;
       
       Self.Profit := Self.Profit + Bet.Profit * (1.0 - Commission);
@@ -135,8 +135,8 @@ package body Statistics_Gh is
   ------------------------------------------------------------
 
   
-  function Get_Avg_Odds(Bet : Table_Abets.Data_Type) return Float_8 is
-   -- First, Second  : Float_8 := 0.0;
+  function Get_Avg_Odds(Bet : Table_Abets.Data_Type) return Fixed_Type is
+   -- First, Second  : Fixed_Type := 0.0;
   begin
     return 1.01;
   exception

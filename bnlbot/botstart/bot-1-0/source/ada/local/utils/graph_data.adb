@@ -38,24 +38,24 @@ procedure Graph_Data is
    end record;
 
    type Profit_Result_Type is record
-     Profit       : Float_8   := 0.0;
-     Size_Matched : Float_8   := 0.0;
+     Profit       : Fixed_Type   := 0.0;
+     Size_Matched : Fixed_Type   := 0.0;
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
    type Avg_Price_Result_Type is record
-     Avg_Price    : Float_8   := 0.0;
-   --  Size_Matched : Float_8   := 0.0;
+     Avg_Price    : Fixed_Type   := 0.0;
+   --  Size_Matched : Fixed_Type   := 0.0;
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
-   
+
    type Equity_Result_Type is record
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
-     Equity       : Float_8 := 0.0;
+     Equity       : Fixed_Type := 0.0;
    end record;
-   
-   
+
+
    package Days_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Days_Result_Type);
    Days_Result_List   : Days_Result_Pack.List;
 
@@ -64,7 +64,7 @@ procedure Graph_Data is
 
    package Avg_Price_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Avg_Price_Result_Type);
    Avg_Price_Result_List   : Avg_Price_Result_Pack.List;
-   
+
    package Equity_Result_Pack is new Ada.Containers.Doubly_Linked_Lists(Equity_Result_Type);
    Equity_Result_List   : Equity_Result_Pack.List;
 
@@ -205,16 +205,16 @@ procedure Graph_Data is
                  A_List  : in out Equity_Result_Pack.List) is
      Eos : Boolean := False;
      Equity_Result : Equity_Result_Type;
-     Profit : Float_8 := 0.0;
+     Profit : Fixed_Type := 0.0;
    begin
      Select_Equity_Date.Prepare(
-       "select B.STARTTS, B.PROFIT " & 
-       "from ABETS B, ALL_RUNNERS R " & 
-       "where B.BETNAME = :BETNAME " & 
-       "and B.MARKETID = R.MARKETID " & 
-       "and B.SELECTIONID = R.SELECTIONID " & 
-       "and R.STATUS in ('WINNER','LOSER') " & 
-       "and B.STATUS in ('SETTLED') " & 
+       "select B.STARTTS, B.PROFIT " &
+       "from ABETS B, ALL_RUNNERS R " &
+       "where B.BETNAME = :BETNAME " &
+       "and B.MARKETID = R.MARKETID " &
+       "and B.SELECTIONID = R.SELECTIONID " &
+       "and R.STATUS in ('WINNER','LOSER') " &
+       "and B.STATUS in ('SETTLED') " &
        "order by B.STARTTS");
      Select_Equity_Date.Set("BETNAME", Betname);
 
@@ -237,7 +237,7 @@ begin
       Sa_Betname'access,
       Long_Switch => "--betname=",
       Help        => "betname for equity");
-      
+
    Define_Switch
      (Cmd_Line,
       Ba_Equity'access,
@@ -267,25 +267,25 @@ begin
       Ia_Days'access,
       Long_Switch => "--days=",
       Help        => "days of stats");
-      
+
    Define_Switch
      (Cmd_Line,
       Ba_Print_Strategies'access,
       Long_Switch => "--print_strategies",
       Help        => "print strategies");
-      
-      
-      
+
+
+
 
   Getopt (Cmd_Line);  -- process the command line
-  
-  
-  if Ba_Print_Strategies then 
+
+
+  if Ba_Print_Strategies then
     Config.Print_Strategies;
     return;
-  end if;  
-  
-  
+  end if;
+
+
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
@@ -300,19 +300,19 @@ begin
 
   T.Start;
     if Ba_Lapsed then
-      Day_Statistics_Lapsed_vs_Settled(Betname => Sa_Betname.all, 
-                                       Days    => Integer_4(Ia_Days), 
+      Day_Statistics_Lapsed_vs_Settled(Betname => Sa_Betname.all,
+                                       Days    => Integer_4(Ia_Days),
                                        A_List  => Days_Result_List);
     elsif Ba_Profit then
-      Day_Statistics_Profit_Vs_Matched(Betname => Sa_Betname.all, 
-                                       Days    => Integer_4(Ia_Days), 
+      Day_Statistics_Profit_Vs_Matched(Betname => Sa_Betname.all,
+                                       Days    => Integer_4(Ia_Days),
                                        A_List  => Profit_Result_List);
     elsif Ba_Avg_Price then
-      Avg_Price_For_Settled_Bets(Betname => Sa_Betname.all, 
-                                 Days    => Integer_4(Ia_Days), 
+      Avg_Price_For_Settled_Bets(Betname => Sa_Betname.all,
+                                 Days    => Integer_4(Ia_Days),
                                  A_List  => Avg_Price_Result_List);
     elsif Ba_Equity then
-      Equity_Data(Betname => Sa_Betname.all, 
+      Equity_Data(Betname => Sa_Betname.all,
                   A_List  => Equity_Result_List);
     end if;
   T.Commit;
@@ -323,7 +323,7 @@ begin
       R.Ts.String_Date_ISO & " | " &
       R.Lapsed'img   & " | " &
       R.Settled'img   & " | " &
-      F8_Image(Float_8(R.Settled) * 100.0 / Float_8( R.Settled + R.Lapsed ))
+            F8_Image (Fixed_Type (R.Settled * 100) / Fixed_Type ( R.Settled + R.Lapsed ))
     ) ;
   end loop;
 
@@ -332,7 +332,7 @@ begin
       R.Ts.String_Date_ISO & " | " &
       F8_Image(R.Profit) & " | " &
       F8_Image(R.Size_Matched) & " | " &
-      F8_Image(R.Profit * 100.0 / R.Size_Matched )
+      F8_Image(Fixed_Type(100.0) * Fixed_Type(R.Profit / R.Size_Matched ))
     ) ;
   end loop;
 

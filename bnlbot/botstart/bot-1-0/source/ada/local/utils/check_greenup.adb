@@ -12,11 +12,11 @@ procedure Check_Greenup is
    Bet_List : Table_Abets.Abets_List_Pack2.List  ;
    Runner : Table_Arunners.Data_Type;
    T : Sql.Transaction_Type;
-   Total_Profit   : Float_8 := 0.0;
+   Total_Profit   : Fixed_Type := 0.0;
 
    type Stats_Type is record
      Hits   : Integer_4 := 0;
-     Profit : Float_8   := 0.0;
+     Profit : Fixed_Type   := 0.0;
    end record ;
 
    type Betting_Type Is (Back_Win, Back_Lose, Lay_Win, Lay_Lose, Back_Removed, Lay_Removed);

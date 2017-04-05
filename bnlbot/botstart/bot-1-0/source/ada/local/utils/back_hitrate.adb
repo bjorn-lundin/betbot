@@ -39,7 +39,7 @@ procedure Back_Hitrate is
 --  IA_Lay_At_Price    : aliased Integer := 100;
 --  IA_Max_Lay_Price   : aliased Integer := 200;
 
-  Global_Back_Size : Float_8 := 30.0;
+  Global_Back_Size : Fixed_Type := 30.0;
   Empty_Market     : constant Market_Id_Type := (others => ' ');
 
   type Best_Runners_Type is array (1..4) of Table_Apricesfinish.Data_Type ;
@@ -68,10 +68,10 @@ procedure Back_Hitrate is
     begin
       for Tmp of Sample_List loop
         if Tmp.Status(1..6) = "ACTIVE" and then
-           Tmp.Backprice > Float_8(0.0) and then
-           Tmp.Layprice  > Float_8(0.0) and then
-           Tmp.Backprice < Float_8(1_000.0) and then
-           Tmp.Layprice  < Float_8(1_000.0)
+           Tmp.Backprice > Fixed_Type(0.0) and then
+           Tmp.Layprice  > Fixed_Type(0.0) and then
+           Tmp.Backprice < Fixed_Type(1_000.0) and then
+           Tmp.Layprice  < Fixed_Type(1_000.0)
         then
           Idx := Idx +1;
           exit when Idx > Best'Last;
@@ -207,7 +207,7 @@ begin
 
       Marketid := Marketid_Map_Pack.Key(Market_Id_C);
       Cur := Cur +1;
-      Log("Marketid " & Marketid & " " & Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
+      Log("Marketid " & Marketid & " " & Utils.F8_Image( Fixed_Type( 100 * Cur) / Fixed_Type(Cnt)) & " %");
 
       A_Sample_Map := Marketid_Map_Pack.Element(Market_Id_C);
       Sample_Id_C := A_Sample_Map.First;
@@ -233,8 +233,8 @@ begin
 
   Log("num matched bets" & Global_Bet_List.Length'Img);
   declare
-    Sum, Sum_Winners, Sum_Losers : Float_8 := 0.0;
-    Profit,Profit_102,Profit_103,Profit_104 : Float_8 := 0.0;
+    Sum, Sum_Winners, Sum_Losers : Fixed_Type := 0.0;
+    Profit,Profit_102,Profit_103,Profit_104 : Fixed_Type := 0.0;
     Winners,Losers : Integer_4 := 0;
     Betwon : Boolean := False;
     Cur,Cnt      : Integer := 0;
@@ -246,7 +246,7 @@ begin
     end if;
     for Bet of Global_Bet_List loop
       Cur := Cur +1;
-      Log("Correcting bets " & Utils.Trim(Bet.Betname) & " " & Bet.Marketid & " " & Utils.F8_Image( Float_8( 100 * Cur) / Float_8(Cnt)) & " %");
+      Log("Correcting bets " & Utils.Trim(Bet.Betname) & " " & Bet.Marketid & " " & Utils.F8_Image( Fixed_Type( 100 * Cur) / Fixed_Type(Cnt)) & " %");
 
       Betwon := False;
       for Winner of Global_Winner_Map(Bet.Marketid) loop
@@ -304,10 +304,10 @@ begin
 
 
   for Strategy of Global_Strategy_List loop
-    if Strategy.Profit      > Float_8(0.0) or else
-       Strategy.Profit_102  > Float_8(0.0) or else
-       Strategy.Profit_103  > Float_8(0.0) or else
-       Strategy.Profit_104  > Float_8(0.0) then
+    if Strategy.Profit      > Fixed_Type(0.0) or else
+       Strategy.Profit_102  > Fixed_Type(0.0) or else
+       Strategy.Profit_103  > Fixed_Type(0.0) or else
+       Strategy.Profit_104  > Fixed_Type(0.0) then
         Log( Strategy.Betname.Fix_String & " " &
                  F8_Image(Strategy.Profit) & " " &
                  F8_Image(Strategy.Profit_102) & " " &
@@ -316,7 +316,7 @@ begin
                  Strategy.Num_Matched'Img &
                  Strategy.Num_Wins'Img &
                  Strategy.Num_Lost'Img & " " &
-                 Utils.F8_Image( Float_8( 100 * Strategy.Num_Wins) / Float_8(Strategy.Num_Matched)) & " %"
+                 Utils.F8_Image( Fixed_Type( 100 * Strategy.Num_Wins) / Fixed_Type(Strategy.Num_Matched)) & " %"
                  );
     end if;
   end loop;

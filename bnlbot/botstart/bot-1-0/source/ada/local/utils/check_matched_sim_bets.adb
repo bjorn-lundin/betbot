@@ -26,7 +26,7 @@ procedure Check_Matched_Sim_Bets is
   Global_Animal                  : Animal_Type := Horse; --default
   Start             : Calendar2.Time_Type := Calendar2.Clock;
 
-  Commission : constant := 6.5 / 100.0;
+  Commission : constant Fixed_Type := 6.5 / 100.0;
 
   --  Enough_Runners : Boolean := False;
   use type Ada.Containers.Count_Type;

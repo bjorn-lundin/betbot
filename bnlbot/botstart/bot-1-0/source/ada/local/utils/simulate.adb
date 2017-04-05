@@ -65,8 +65,8 @@ procedure Simulate is
   Global_Bet_List : Bet_List_Pack.List;
   Global_Laybet_for_This_Market_List : Bet_List_Pack.List;
 
-  Global_Lay_Size  : Float_8 := 30.0;
-  Global_Back_Size : Float_8 := 30.0;
+  Global_Lay_Size  : Fixed_Type := 30.0;
+  Global_Back_Size : Fixed_Type := 30.0;
   
   
   Start : Calendar2.Time_Type := Calendar2.Clock;
@@ -97,8 +97,8 @@ procedure Simulate is
             if B.Bet.Status(1) = 'U' and then
               R.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
               R.Backprice >= B.Bet.Price and then -- Backbet so yes '<=' NOT '>='
-              R.Backprice >  Float_8(1.0) and then -- sanity
-              R.Backprice >  Float_8(1.0) then -- sanity
+              R.Backprice >  Fixed_Type(1.0) and then -- sanity
+              R.Backprice >  Fixed_Type(1.0) then -- sanity
   
                B.Bet.Status(1) := 'M';
                B.Bet.Pricematched := R.Backprice;
@@ -110,8 +110,8 @@ procedure Simulate is
             if B.Bet.Status(1) = 'U' and then
               R.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
               R.Layprice <= B.Bet.Price and then -- Laybet so yes '<=' NOT '>='
-              R.Layprice >  Float_8(1.0) and then -- sanity
-              R.Backprice >  Float_8(1.0) then -- sanity
+              R.Layprice >  Fixed_Type(1.0) and then -- sanity
+              R.Backprice >  Fixed_Type(1.0) then -- sanity
   
                B.Bet.Status(1) := 'M';
                B.Bet.Pricematched := R.Layprice;
@@ -151,10 +151,10 @@ procedure Simulate is
       
        
        if not Global_Bets_Allowed(Lay_160_200).Has_Betted then
-         if R.Backprice >= Float_8(160)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(800) and then
-            R.Layprice  <= Float_8(200) then
+         if R.Backprice >= Fixed_Type(160)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(800) and then
+            R.Layprice  <= Fixed_Type(200) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -186,10 +186,10 @@ procedure Simulate is
      --    end if;
      --  end loop;
        if not Global_Bets_Allowed(Lay_200_300).Has_Betted then
-         if R.Backprice >= Float_8(200)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(800) and then
-            R.Layprice  <= Float_8(300) then
+         if R.Backprice >= Fixed_Type(200)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(800) and then
+            R.Layprice  <= Fixed_Type(300) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -210,10 +210,10 @@ procedure Simulate is
          end if;       
        end if;    
        if not Global_Bets_Allowed(Lay_300_400).Has_Betted then
-         if R.Backprice >= Float_8(300)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(800) and then
-            R.Layprice  <= Float_8(400) then
+         if R.Backprice >= Fixed_Type(300)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(800) and then
+            R.Layprice  <= Fixed_Type(400) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -235,10 +235,10 @@ procedure Simulate is
        end if;           
               
        if not Global_Bets_Allowed(Lay_200_400).Has_Betted then
-         if R.Backprice >= Float_8(200)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(800) and then
-            R.Layprice  <= Float_8(400) then
+         if R.Backprice >= Fixed_Type(200)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(800) and then
+            R.Layprice  <= Fixed_Type(400) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -260,10 +260,10 @@ procedure Simulate is
        end if;    
 
        if not Global_Bets_Allowed(Lay_400_500).Has_Betted then
-         if R.Backprice >= Float_8(400)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(900) and then
-            R.Layprice  <= Float_8(500) then
+         if R.Backprice >= Fixed_Type(400)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(900) and then
+            R.Layprice  <= Fixed_Type(500) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -285,10 +285,10 @@ procedure Simulate is
        end if;    
 
        if not Global_Bets_Allowed(Lay_500_600).Has_Betted then
-         if R.Backprice >= Float_8(500)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(900) and then
-            R.Layprice  <= Float_8(600) then
+         if R.Backprice >= Fixed_Type(500)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(900) and then
+            R.Layprice  <= Fixed_Type(600) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -309,10 +309,10 @@ procedure Simulate is
          end if;       
        end if;    
        if not Global_Bets_Allowed(Lay_600_700).Has_Betted then
-         if R.Backprice >= Float_8(600)and then
-            R.Layprice  >= Float_8(50) and then
-            R.Backprice <= Float_8(900) and then
-            R.Layprice  <= Float_8(700) then
+         if R.Backprice >= Fixed_Type(600)and then
+            R.Layprice  >= Fixed_Type(50) and then
+            R.Backprice <= Fixed_Type(900) and then
+            R.Layprice  <= Fixed_Type(700) then
 
            Bet.Marketid    := R.Marketid;
            Bet.Selectionid := R.Selectionid;
@@ -358,10 +358,10 @@ procedure Simulate is
     end ;     
     
     if not Global_Bets_Allowed(Back_1_10_30_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(30.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(30.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -381,10 +381,10 @@ procedure Simulate is
     end if;
     
     if not Global_Bets_Allowed(Back_1_10_26_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(26.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(26.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -405,10 +405,10 @@ procedure Simulate is
  
    
     if not Global_Bets_Allowed(Back_1_10_23_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(23.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(23.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -428,10 +428,10 @@ procedure Simulate is
     end if; 
     
     if not Global_Bets_Allowed(Back_1_10_20_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(20.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(20.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -450,10 +450,10 @@ procedure Simulate is
       end if;
     end if; 
     if not Global_Bets_Allowed(Back_1_10_16_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(16.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(16.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -472,10 +472,10 @@ procedure Simulate is
       end if;
     end if; 
     if not Global_Bets_Allowed(Back_1_10_13_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(13.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(13.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -494,10 +494,10 @@ procedure Simulate is
       end if;
     end if; 
     if not Global_Bets_Allowed(Back_1_10_10_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(10.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(10.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -516,10 +516,10 @@ procedure Simulate is
       end if;
     end if; 
     if not Global_Bets_Allowed(Back_1_10_07_1_2_WIN).Has_Betted then
-      if Best_Runners(1).Backprice <= Float_8(1.10) and then
-         Best_Runners(1).Backprice >= Float_8(1.04) and then
-         Best_Runners(2).Backprice >= Float_8(07.0) and then
-         Best_Runners(3).Backprice <  Float_8(10_000.0) then
+      if Best_Runners(1).Backprice <= Fixed_Type(1.10) and then
+         Best_Runners(1).Backprice >= Fixed_Type(1.04) and then
+         Best_Runners(2).Backprice >= Fixed_Type(07.0) and then
+         Best_Runners(3).Backprice <  Fixed_Type(10_000.0) then
          -- back this one too
          -- update in place in list
          Bet.Marketid    := Best_Runners(1).Marketid;
@@ -621,7 +621,7 @@ begin
     Log("num bets laid" & Global_Bet_List.Length'Img);
 
     declare
-      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin

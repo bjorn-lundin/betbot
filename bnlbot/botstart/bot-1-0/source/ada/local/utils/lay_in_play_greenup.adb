@@ -176,10 +176,10 @@ procedure Lay_In_Play_Greenup is
           Move("MISSING",Tmp_Arunner_Data.Status);
         end if;
             if Tmp_Arunner_Data.Status(1..7) /= "REMOVED" and then
-               p.Backprice >= Float_8(10.0) and then
-               p.Backprice <= Float_8(550.0) and then
-               p.Layprice  <= Float_8(35.0) and then
-               p.Layprice  >= Float_8(25.0) then
+               p.Backprice >= Fixed_Type(10.0) and then
+               p.Backprice <= Fixed_Type(550.0) and then
+               p.Layprice  <= Fixed_Type(35.0) and then
+               p.Layprice  >= Fixed_Type(25.0) then
                
                Log("lay_bet " & " " & p.To_String);
                case Mode is 
@@ -349,10 +349,10 @@ procedure Lay_In_Play_Greenup is
               
               if not Runner_Has_Bet_Already and then
                  Runner.Status(1..6) = "ACTIVE" and then
-                 Runner.Backprice <= Float_8(500.0) and then -- proof of real value
-                 Runner.Layprice  >= Float_8(10.0) and then -- proof of real value
-                 Runner.Layprice  <= Float_8(400.0) and then
-                 Runner.Backprice >= Float_8(10.0) then
+                 Runner.Backprice <= Fixed_Type(500.0) and then -- proof of real value
+                 Runner.Layprice  >= Fixed_Type(10.0) and then -- proof of real value
+                 Runner.Layprice  <= Fixed_Type(400.0) and then
+                 Runner.Backprice >= Fixed_Type(10.0) then
                  
                  Log("lay_bet " & " " & Runner.To_String);
                  case Mode is 
@@ -373,7 +373,7 @@ procedure Lay_In_Play_Greenup is
                                    Runner_Name      => DB_Runner.Runnernamestripped,
                                    Selection_Id     => Runner.Selectionid,
                                    Size             => Bet_Size_Type(30.0),
-                                   Price            => Bet_Price_Type(Runner.Layprice +Float_8(10.0)),
+                                   Price            => Bet_Price_Type(Runner.Layprice +Fixed_Type(10.0)),
                                    Bet_Persistence  => Persist,
                                    Bet_Placed       => Runner.Pricets,
                                    Bet              => Bet.Lay_Bet ) ;
@@ -425,7 +425,7 @@ procedure Lay_In_Play_Greenup is
             for b of Bet_List loop
               for o of Price_List loop
                 if b.Lay_Bet.Selectionid = o.Selectionid and then
-                   o.Backprice >= b.Lay_Bet.Price + Float_8(10.00) and then
+                   o.Backprice >= b.Lay_Bet.Price + Fixed_Type(10.00) and then
                    b.Back_Bet = Table_Abets.Empty_Data then   -- no previous backbet for this laybet
                   
                   Log("safety backbet " & " " & o.To_String);

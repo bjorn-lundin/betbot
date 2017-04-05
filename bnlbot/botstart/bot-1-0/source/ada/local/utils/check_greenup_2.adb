@@ -134,10 +134,10 @@ begin
             First := True;
             H_List_Loop : for H of History_List loop
               History_n := H;
-              if H.Backprice > Float_8(1.0) and  --sane data
-                 H.Layprice > Float_8(1.0) and
-                 H.Layprice < Float_8(1001.0) and
-                 H.Layprice < Float_8(1001.0) then
+              if H.Backprice > Fixed_Type(1.0) and  --sane data
+                 H.Layprice > Fixed_Type(1.0) and
+                 H.Layprice < Fixed_Type(1001.0) and
+                 H.Layprice < Fixed_Type(1001.0) then
                 if First then
                   Odds_Range := Invalid;
                   Bet.Laybet            := Table_Abets.Empty_Data;
@@ -180,7 +180,7 @@ begin
                   end case;
                 end if;--first
 
-                exit H_List_Loop when History_n.Backprice < Float_8(1.01) or else History_n.Backprice > Float_8(1000.0);
+                exit H_List_Loop when History_n.Backprice < Fixed_Type(1.01) or else History_n.Backprice > Fixed_Type(1000.0);
                 Tic_Back := Tics.Get_Tic_Index(History_n.Backprice);
                 exit when Tic_Back >= Tic_Lay + Delta_Tics or Tic_Back +15 < Tic_Lay ;
               end if;  --sane date
@@ -229,8 +229,8 @@ begin
                          Info(d,o).Greenup'Img & "/" &
                          Info(d,o).Stop_Loss'Img & "/" &
                          Info(d,o).Tot_Num'Img & "/" &
-                         F8_Image(100.0* Float_8(Info(d,o).Greenup)/Float_8(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )) & "/" &
-                         F8_Image(100.0* Float_8(Info(d,o).Stop_Loss)/Float_8(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )));
+                         F8_Image(100.0* Fixed_Type(Info(d,o).Greenup)/Fixed_Type(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )) & "/" &
+                         F8_Image(100.0* Fixed_Type(Info(d,o).Stop_Loss)/Fixed_Type(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )));
              end loop;
            end loop;
            Last_Market_Date.Day := M.Startts.Day ;
@@ -245,14 +245,14 @@ begin
                   Info(d,o).Greenup'Img & "/" &
                   Info(d,o).Stop_Loss'Img & "/" &
                   Info(d,o).Tot_Num'Img & "/" &
-                  F8_Image(100.0* Float_8(Info(d,o).Greenup)/Float_8(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )) & "/" &
-                  F8_Image(100.0* Float_8(Info(d,o).Stop_Loss)/Float_8(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )));
+                  F8_Image(100.0* Fixed_Type(Info(d,o).Greenup)/Fixed_Type(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )) & "/" &
+                  F8_Image(100.0* Fixed_Type(Info(d,o).Stop_Loss)/Fixed_Type(Info(d,o).Greenup + Info(d,o).Stop_Loss + Info(d,o).Tot_Num )));
       end loop;
     end loop;
 
 
     declare
-      Profit : array (Delta_Tics_Greenup_Type'range) of Float_8 := (others => 0.0);
+      Profit : array (Delta_Tics_Greenup_Type'range) of Fixed_Type := (others => 0.0);
     begin
       for i in Delta_Tics_Greenup_Type'range loop
         for b of Bet_List(i) loop

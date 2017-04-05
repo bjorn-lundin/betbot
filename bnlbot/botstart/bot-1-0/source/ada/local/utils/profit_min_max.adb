@@ -47,15 +47,15 @@ procedure Profit_Min_Max is
       exit when Exit_On_Next_Market and Current_Marketid /= Bet.Marketid;
       Current_Marketid := Bet.Marketid;
       Local_Profit := Local_Profit + Profit_Type(Bet.Profit);
-      Log(F8_Image(Bet.Profit) & " => " & F8_Image(Bet.Pricematched) & " = " & F8_Image(Float_8(Local_Profit)));
+      Log(F8_Image(Bet.Profit) & " => " & F8_Image(Bet.Pricematched) & " = " & F8_Image(Fixed_Type(Local_Profit)));
       if Local_Profit > Max then
         Exit_On_Next_Market := True;
       elsif Local_Profit < Min then
         Exit_On_Next_Market := True;
       end if;
       if not Ba_Checkonly then
-        Move (Trim (Bet.Betname) & "_" & F8_Image (Float_8 (Min), 0) & "_" & F8_Image (Float_8 (Max), 0), Bet.Betname);
-        Move("Min="&F8_Image (Float_8 (Min), 0) & ", Max=" & F8_Image (Float_8 (Max), 0), Bet.Reference);
+        Move (Trim (Bet.Betname) & "_" & F8_Image (Fixed_Type (Min), 0) & "_" & F8_Image (Fixed_Type (Max), 0), Bet.Betname);
+        Move("Min="&F8_Image (Fixed_Type (Min), 0) & ", Max=" & F8_Image (Fixed_Type (Max), 0), Bet.Reference);
         Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
         Bet.Insert;
       end if;
@@ -68,7 +68,7 @@ procedure Profit_Min_Max is
     Tic : Integer := 0;
   begin
     for Bet of Bet_List loop
-      Bet.Size := Float_8(Global_Size);
+      Bet.Size := Fixed_Type(Global_Size);
       if    Bet.Side(1..3) = "LAY" then
         -- to get back to original legal odds
         Tic := Tics.Get_Nearest_Higher_Tic_Index(Bet.Price);
@@ -122,7 +122,7 @@ begin
 
   Getopt (Cmd_Line);  -- process the command line
 
-  Move(Sa_Betname.all & "_" & F8_Image(Float_8(IA_Min),0) & "_" & F8_Image(Float_8(IA_Max),0), Betname);
+  Move(Sa_Betname.all & "_" & F8_Image(Fixed_Type(IA_Min),0) & "_" & F8_Image(Fixed_Type(IA_Max),0), Betname);
 
   if not Ba_Checkonly then
     Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Trim(Betname) & ".log");

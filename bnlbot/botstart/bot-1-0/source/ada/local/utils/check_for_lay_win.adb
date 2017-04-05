@@ -38,13 +38,13 @@ procedure Check_for_Lay_Win is
   Select_Timestamps   : Sql.Statement_Type;
   Select_Selectionids : Sql.Statement_Type;
   Find_Plc_Market     : Sql.Statement_Type;
-  Comission         : constant Float_8 := 0.0 / 100.0;
+  Comission         : constant Fixed_Type := 0.0 / 100.0;
 
   Me                  : constant String := "Check_for_Lay_Win.";
   Global_Bet_Name     : Betname_Type := (others => ' ');
   Global_Laysize   : Bet_Size_Type := 30.0;
 
-  --Global_Max_Backprice: Float_8 := 0.0;
+  --Global_Max_Backprice: Fixed_Type := 0.0;
   Cmd_Line            : Command_Line_Configuration;
   IA_Tics_Greenup     : aliased Integer := 0;
   IA_Tics_Stoploss    : aliased Integer := 0;
@@ -92,8 +92,8 @@ procedure Check_for_Lay_Win is
         Powerdays      => 0,
         Selectionid    => R.Selectionid,
         Reference      => (others => '-'),
-        Size           => Float_8(Laysize),
-        Price          => Float_8(20.0) ,
+        Size           => Fixed_Type(Laysize),
+        Price          => Fixed_Type(20.0) ,
         Side           => "LAY ",
         Betname        => Betname,
         Betwon         => False,
@@ -105,8 +105,8 @@ procedure Check_for_Lay_Win is
         Insterrcode    => (others => ' '),
         Startts        => M.Startts,
         Betplaced      => P.Pricets,
-        Pricematched   => Float_8(0.0),
-        Sizematched    => Float_8(Laysize),
+        Pricematched   => Fixed_Type(0.0),
+        Sizematched    => Fixed_Type(Laysize),
         Runnername     => R.Runnernamestripped,
         Fullmarketname => M.Marketname,
         Svnrevision    => Bot_Svn_Info.Revision,
@@ -127,7 +127,7 @@ procedure Check_for_Lay_Win is
           if B.Status(1) = 'M' then
             return True; -- matched before
           elsif BR(i).Layprice <= B.Price and then
-                BR(i).Layprice >= Float_8(1.01) then
+                BR(i).Layprice >= Fixed_Type(1.01) then
             B.Status(1) := 'M';
             B.Pricematched := BR(i).Layprice;
             return True;
@@ -226,7 +226,7 @@ procedure Check_for_Lay_Win is
       BR              : Best_Runners_Array_Type;
       Market          : Markets.Market_Type) is
 
-    Max_Backprice_1       : Float_8;
+    Max_Backprice_1       : Fixed_Type;
     Max_Layprice_n        : Max_Lay_Price_Type;
     Additional_Layprice_n : Max_Lay_Price_Type;
     pragma Unreferenced (Additional_Layprice_n);
@@ -247,7 +247,7 @@ procedure Check_for_Lay_Win is
     Tmp(1)    := Image(5);
     Tmp(2)    := '.';
     Tmp(3..4) := Image(7..8);
-    Max_Backprice_1 := Float_8'Value(Tmp);
+    Max_Backprice_1 := Fixed_Type'Value(Tmp);
     
     Tmp := (others => ' ');
     Tmp(1..2) := Image(10..11);
@@ -268,8 +268,8 @@ procedure Check_for_Lay_Win is
     Additional_Layprice_n :=  Max_Lay_Price_Type'Value(Tmp);
 
     if BR(1).Backprice <= Max_Backprice_1 and then
-       BR(1).Backprice >= Float_8(1.01) and then
-       BR(Layed_Num).Layprice >  Float_8(1.01) and then  -- so it exists
+       BR(1).Backprice >= Fixed_Type(1.01) and then
+       BR(Layed_Num).Layprice >  Fixed_Type(1.01) and then  -- so it exists
        BR(Layed_Num).Layprice <= Max_Layprice_n then 
       -- lay n in WIN market...
         Runner := Table_Arunners.Empty_Data;
@@ -341,8 +341,8 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   --Move(SA_Betname.all,Global_Bet_Name);
-  --Global_Max_Price := Float_8'Value(SA_Max_Price.all);
-  --Global_Min_Price := Float_8'Value(SA_Min_Price.all);
+  --Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
+  --Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
  
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");

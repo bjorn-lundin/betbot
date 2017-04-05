@@ -30,7 +30,7 @@ package body Utils is
     --------------------------------
     function Expand_Symbol(Tmp : String) return String is
     begin
-      return EV.Value(To_Upper(Tmp(Start_Symbol+1..End_Symbol))); 
+      return EV.Value(To_Upper(Tmp(Start_Symbol+1..End_Symbol)));
     end Expand_Symbol;
     --------------------------------
   begin
@@ -39,42 +39,42 @@ package body Utils is
 
     if Start_Symbol /= -1 and End_Symbol /= -1 then
       if    Start_Symbol /= Tmp'First and End_Symbol /= Tmp'Last then
-        return Tmp(Tmp'First..Start_Symbol-1) & 
-               Expand_Symbol(Tmp(Start_Symbol..End_Symbol)) & 
+        return Tmp(Tmp'First..Start_Symbol-1) &
+               Expand_Symbol(Tmp(Start_Symbol..End_Symbol)) &
                Tmp(End_Symbol+1..Tmp'Last);
       else
         if Start_Symbol /= Tmp'First then
-          return Tmp(Tmp'First..Start_Symbol-1) & 
+          return Tmp(Tmp'First..Start_Symbol-1) &
                  Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
         else
-          return Expand_Symbol(Tmp(Start_Symbol..End_Symbol)) 
+          return Expand_Symbol(Tmp(Start_Symbol..End_Symbol))
                  & Tmp(End_Symbol+1..Tmp'Last);
         end if;
       end if;
     else
       if Start_Symbol /= -1  then
-        End_Symbol := Tmp'Last; 
+        End_Symbol := Tmp'Last;
         if Start_Symbol /= Tmp'First then
-          return Tmp(Tmp'First..Start_Symbol-1) & 
+          return Tmp(Tmp'First..Start_Symbol-1) &
                  Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
         else
           return Expand_Symbol(Tmp(Start_Symbol..End_Symbol));
         end if;
       else
-        return Tmp; 
-      end if; 
-    end if; 
+        return Tmp;
+      end if;
+    end if;
 
   end Expand_File_Path;
-  
+
   --------------------------------------------------------
    -------------------------------------
    function Position (S, Match : String) return Integer is
    begin
       if Match'Length > 0 then
          for I in S'First .. S'Last - Match'Length + 1 loop
-            if S (I .. I + Match'Length - 1) = Match then 
-              return I; 
+            if S (I .. I + Match'Length - 1) = Match then
+              return I;
             end if;
          end loop;
       end if;
@@ -103,14 +103,15 @@ package body Utils is
    end Trim;
    -------------------------------------
 
-   function F8_Image(F : Float_8; Aft : Natural := 2 ; Exp : Natural := 0) return String is
+   function F8_Image(F : Fixed_Type; Aft : Natural := 2 ; Exp : Natural := 0) return String is
       S : String(1..15) := (others => ' ');
    begin
-      F8.Put(To => S, Item => F, Aft => Aft, Exp => Exp);
-      return Trim(S);
+   --   F8.Put(To => S, Item => F, Aft => Aft, Exp => Exp);
+   --   return Trim (S);
+    return Trim(F'Img);
    end F8_Image;
    -------------------------------------
- 
+
    function Lower_Case (C : Character) return Character is
    begin
       return Ada.Characters.Handling.To_Lower (C);
@@ -140,9 +141,9 @@ package body Utils is
    begin
       Result := Tmp_Result (Tmp_Result'First .. Tmp_Result'Last);
       return Result;
-   end Upper_Case;  
+   end Upper_Case;
    -------------------------------------
-   
+
 
   -- Convert a string value to ISOLATIN
   --============================================================================
@@ -169,7 +170,7 @@ package body Utils is
     when Unicode.CES.Invalid_Encoding => return Str;
   end To_Utf8;
 
-   
+
 end Utils;
 
 

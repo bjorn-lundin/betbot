@@ -14,7 +14,7 @@ package body Calendar2 is
    Seconds_Per_Minute : constant Integer_4 := 60;
    Minutes_Per_Hour   : constant Integer_4 := 60;
    Hours_Per_Day      : constant Integer_4 := 24;
-                     
+
    Seconds_Per_Hour   : constant Integer_4 := Minutes_Per_Hour * Seconds_Per_Minute;
    Seconds_Per_Day    : constant Integer_4 := Hours_Per_Day * Seconds_Per_Hour;
 
@@ -96,7 +96,7 @@ package body Calendar2 is
 
       if Date_Str'Length = 11 then
          A_Time_Type.Year  := Year_Type'Value (Date (8 .. 11));
-         A_Time_Type.Month := Month (Date (4 .. 6)); 
+         A_Time_Type.Month := Month (Date (4 .. 6));
          A_Time_Type.Day   := Day_Type'Value (Date (1 .. 2));
       elsif Date_Str'Length = 10 then
          A_Time_Type.Year  := Year_Type'Value (Date (1 .. 4));
@@ -119,14 +119,14 @@ package body Calendar2 is
    end To_Time_Type;
 
    function To_Time (Date : in Calendar.Time) return Time_Type is
-      Seconds_Times_1000 : Integer_4 := Integer_4 (Float_8 (
+      Seconds_Times_1000 : Integer_4 := Integer_4 (Fixed_Type (
                                                    Calendar.Seconds (Date)) * 1000.0);
       Seconds            : Integer_4 := Seconds_Times_1000 / 1000;
    begin
-      if Seconds_Times_1000 = 86_400_000 then        
-         Seconds_Times_1000 := Seconds_Times_1000 - 1; 
-         Seconds := Seconds_Times_1000 / 1000;        
-      end if;                                       
+      if Seconds_Times_1000 = 86_400_000 then
+         Seconds_Times_1000 := Seconds_Times_1000 - 1;
+         Seconds := Seconds_Times_1000 / 1000;
+      end if;
 
       return (Year        => Year_Type (Calendar.Year (Date)),
               Month       => Month_Type (Calendar.Month (Date)),
@@ -399,7 +399,7 @@ package body Calendar2 is
       Hours        : Integer_4;
       Minutes      : Integer_4;
       Seconds      : Integer_4;
-      Milliseconds : Integer_4 := Integer_4 (Float_8 (Day_Duration) * 1000.0);
+      Milliseconds : Integer_4 := Integer_4 (Fixed_Type (Day_Duration) * 1000.0);
    begin
 
       if (Milliseconds = 86_400_000) then
@@ -922,7 +922,7 @@ package body Calendar2 is
       else
          for Month_Number in (Right.Month + 1) .. Month_Type'Last loop
             Result.Days := Result.Days +
-              Interval_Day_Type (Days_In (Right.Year, Month_Number)); 
+              Interval_Day_Type (Days_In (Right.Year, Month_Number));
          end loop;
          for Month_Number in Month_Type'First .. (Left.Month - 1) loop
             Result.Days := Result.Days +
@@ -1376,15 +1376,15 @@ package body Calendar2 is
       return String_Time (Dummy);
    end To_String;
 
-   
+
    function String_Date_Time_ISO (Date : in Time_Type; T : String := "T"; TZ : String := "Z"; Milliseconds : Boolean := True) return String is
      Da : String := String_Date_ISO (Date);
      Ti : String := String_Time(Date, Milliseconds => Milliseconds);
    begin
      return Da & T & Ti & TZ;
    end String_Date_Time_ISO;
-   
-   
+
+
    function To_String(D : Time_Type; Milliseconds : Boolean := True) return String is
    begin
      return String_Date_Time_ISO(Date => D, T => " " , Tz => "", Milliseconds => Milliseconds );
@@ -1411,7 +1411,7 @@ package body Calendar2 is
              Second      => Second_Type'Last,
              Millisecond => Millisecond_Type'Last);
    end Time_Type_Last;
-             
+
    function Time_Type_Last return Calendar.Time is
    begin
      return To_Calendar_Time(Time_Type_Last);
@@ -1422,5 +1422,5 @@ package body Calendar2 is
      return To_Calendar_Time(Time_Type_First);
    end Time_Type_First;
 
-   
+
 end Calendar2;

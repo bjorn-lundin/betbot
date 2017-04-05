@@ -30,7 +30,7 @@ procedure Graph_Data_Ael is
    Ia_Days         : aliased Integer := 42;
 
    gDebug : Boolean := False;
-
+   One_Hundred : constant Fixed_Type := 100.0;
    type Days_Result_Type is record
      Lapsed       : Integer_4 := 0;
      Settled      : Integer_4 := 0;
@@ -38,21 +38,21 @@ procedure Graph_Data_Ael is
    end record;
 
    type Profit_Result_Type is record
-     Profit       : Float_8   := 0.0;
-     Size_Matched : Float_8   := 0.0;
+     Profit       : Fixed_Type   := 0.0;
+     Size_Matched : Fixed_Type   := 0.0;
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
    type Avg_Price_Result_Type is record
-     Avg_Price    : Float_8   := 0.0;
-   --  Size_Matched : Float_8   := 0.0;
+     Avg_Price    : Fixed_Type   := 0.0;
+   --  Size_Matched : Fixed_Type   := 0.0;
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
    end record;
 
 
    type Equity_Result_Type is record
      Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
-     Equity       : Float_8 := 0.0;
+     Equity       : Fixed_Type := 0.0;
    end record;
 
 
@@ -205,7 +205,7 @@ procedure Graph_Data_Ael is
                  A_List  : in out Equity_Result_Pack.List) is
      Eos : Boolean := False;
      Equity_Result : Equity_Result_Type;
-     Profit : Float_8 := 0.0;
+     Profit : Fixed_Type := 0.0;
    begin
      Select_Equity_Date.Prepare(
        "select B.STARTTS, B.PROFIT " &
@@ -323,7 +323,7 @@ begin
       R.Ts.String_Date_ISO & " | " &
       R.Lapsed'img   & " | " &
       R.Settled'img   & " | " &
-      F8_Image(Float_8(R.Settled) * 100.0 / Float_8( R.Settled + R.Lapsed ))
+      F8_Image(Fixed_Type(R.Settled * 100 / ( R.Settled + R.Lapsed )))
     ) ;
   end loop;
 
@@ -332,7 +332,7 @@ begin
       R.Ts.String_Date_ISO & " | " &
       F8_Image(R.Profit) & " | " &
       F8_Image(R.Size_Matched) & " | " &
-      F8_Image(R.Profit * 100.0 / R.Size_Matched )
+      F8_Image(One_Hundred * Fixed_Type(R.Profit / R.Size_Matched))
     ) ;
   end loop;
 

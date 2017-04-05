@@ -47,18 +47,18 @@ procedure Lay_During_Race is
    IA_Lay_At_Price    : aliased Integer := 50;
    IA_Max_Lay_Price   : aliased Integer := 100;
 
-   Lay_Size  : Float_8 := 30.0;
+   Lay_Size  : Fixed_Type := 30.0;
 
-   Income, Stake: Float_8 := 0.0;
+   Income, Stake: Fixed_Type := 0.0;
 
    type Bet_Status_Type is (Bet_Laid, Bet_Won, Bet_Lost, No_Bet_Laid);
    Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
    type Stats_Type is record
      Hits : Integer_4 := 0;
-     Profit : Float_8 := 0.0;
+     Profit : Fixed_Type := 0.0;
    end record ;
-   Profit, Global_Profit : Float_8 := 0.0;
+   Profit, Global_Profit : Fixed_Type := 0.0;
 
    OK_Starting_Price : Boolean := False;
    First_Loop        : Boolean := True;
@@ -167,7 +167,7 @@ begin
           
           if First_Loop then
             First_Loop := False;
-            OK_Starting_Price := Prices.Backprice <= Float_8(IA_Max_Start_Price);
+            OK_Starting_Price := Prices.Backprice <= Fixed_Type(IA_Max_Start_Price);
             if not OK_Starting_Price then
               Log("|BAD STARTPRICE|" & Table_Araceprices.To_String(Prices));      
               exit Loop_Runner_Prices ;  -- done with this runner in this market !!
@@ -176,9 +176,9 @@ begin
             end if;
           end if; 
       
-          if Prices.Backprice >= Float_8(IA_Lay_At_Price) and then
-             Prices.Layprice <= Float_8(IA_Max_Lay_Price) and then
-             Prices.Layprice > Float_8(0.0) then             
+          if Prices.Backprice >= Fixed_Type(IA_Lay_At_Price) and then
+             Prices.Layprice <= Fixed_Type(IA_Max_Lay_Price) and then
+             Prices.Layprice > Fixed_Type(0.0) then             
             Bet_Status := Bet_Laid;
             Cnt := Cnt + 1;
             Log("BET_LAID:       " & Table_Araceprices.To_String(Prices));

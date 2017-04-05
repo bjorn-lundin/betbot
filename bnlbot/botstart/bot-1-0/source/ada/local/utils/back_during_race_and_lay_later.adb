@@ -42,19 +42,19 @@ procedure Back_During_Race_And_Lay_Later is
 --  IA_Lay_At_Back_Price  : aliased Integer := 100;
 --  IA_Max_Lay_Price      : aliased Integer := 200;
 
---  Lay_Size  : Float_8 := 30.0;
---  Back_Size : Float_8 := 1500.0;
+--  Lay_Size  : Fixed_Type := 30.0;
+--  Back_Size : Fixed_Type := 1500.0;
 
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
   --Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
-  Global_Min_Backprice1     : constant Float_8 := 1.31;
-  Global_Max_Backprice1     : constant Float_8 := 1.36;
-  Global_Min_Backprice2     : constant Float_8 := 2.5;
-  Global_Max_Backprice2     : constant Float_8 := 10.0;
-  Global_Lay_At_Backprice   : constant Float_8 := 1.25;
-  Global_Lay_Size           : constant Float_8 := 110.0;
-  Global_Back_Size          : constant Float_8 := 100.0;
+  Global_Min_Backprice1     : constant Fixed_Type := 1.31;
+  Global_Max_Backprice1     : constant Fixed_Type := 1.36;
+  Global_Min_Backprice2     : constant Fixed_Type := 2.5;
+  Global_Max_Backprice2     : constant Fixed_Type := 10.0;
+  Global_Lay_At_Backprice   : constant Fixed_Type := 1.25;
+  Global_Lay_Size           : constant Fixed_Type := 110.0;
+  Global_Back_Size          : constant Fixed_Type := 100.0;
 
   Start : Calendar2.Time_Type := Calendar2.Clock;
 
@@ -84,7 +84,7 @@ procedure Back_During_Race_And_Lay_Later is
          Bet.Laybet.Status(1) = 'U' and then
          R.Pricets > Bet.Laybet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
          R.Layprice <= Bet.Laybet.Price and then -- Laybet so yes '<=' NOT '>='
-         R.Layprice >  Float_8(1.0) then -- sanity
+         R.Layprice >  Fixed_Type(1.0) then -- sanity
 
         Bet.Laybet.Status(1) := 'M';
         Bet.Laybet.Pricematched := R.Layprice;
@@ -112,7 +112,7 @@ procedure Back_During_Race_And_Lay_Later is
          Bet.Backbet.Status(1) = 'U' and then
          R.Pricets > Bet.Backbet.Betplaced + (0,0,0,1,0) and then -- 1 second later at least, time for BF delay
          R.Backprice >= Bet.Backbet.Price and then -- Backbet so yes '<=' NOT '>='
-         R.Backprice >  Float_8(1.0) then -- sanity
+         R.Backprice >  Fixed_Type(1.0) then -- sanity
 
         Bet.Backbet.Status(1) := 'M';
         Bet.Backbet.Pricematched := R.Backprice;
@@ -135,11 +135,11 @@ procedure Back_During_Race_And_Lay_Later is
                   Bet            : in out Bet_Type;
                   Bet_Placed     : in out Boolean;
                   Bet_List       : in out Bet_List_Pack.List;
-                  Max_Backprice1 : in     Float_8;
-                  Min_Backprice1 : in     Float_8;
-                  Max_Backprice2 : in     Float_8;
-                  Min_Backprice2 : in     Float_8;
-                  Lay_Atprice    : in     Float_8 ) is
+                  Max_Backprice1 : in     Fixed_Type;
+                  Min_Backprice1 : in     Fixed_Type;
+                  Max_Backprice2 : in     Fixed_Type;
+                  Min_Backprice2 : in     Fixed_Type;
+                  Lay_Atprice    : in     Fixed_Type ) is
   begin
     if Bet_Placed then
       return;
@@ -302,7 +302,7 @@ begin
     Log("num bets laid" & Global_Bet_List.Length'Img);
 
     declare
-      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+      Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin

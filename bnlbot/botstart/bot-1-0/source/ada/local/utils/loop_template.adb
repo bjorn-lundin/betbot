@@ -31,19 +31,19 @@ procedure Loop_Template is
 --  IA_Lay_At_Back_Price  : aliased Integer := 100;
 --  IA_Max_Lay_Price      : aliased Integer := 200;
 
---  Lay_Size  : Float_8 := 30.0;
---  Back_Size : Float_8 := 1500.0;
+--  Lay_Size  : Fixed_Type := 30.0;
+--  Back_Size : Fixed_Type := 1500.0;
 
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
   --Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
---    Global_Min_Backprice1     : constant Float_8 := 1.31;
---    Global_Max_Backprice1     : constant Float_8 := 1.36;
---    Global_Min_Backprice2     : constant Float_8 := 2.5;
---    Global_Max_Backprice2     : constant Float_8 := 10.0;
---    Global_Lay_At_Backprice   : constant Float_8 := 1.25;
---    Global_Lay_Size           : constant Float_8 := 110.0;
---    Global_Back_Size          : constant Float_8 := 100.0;
+--    Global_Min_Backprice1     : constant Fixed_Type := 1.31;
+--    Global_Max_Backprice1     : constant Fixed_Type := 1.36;
+--    Global_Min_Backprice2     : constant Fixed_Type := 2.5;
+--    Global_Max_Backprice2     : constant Fixed_Type := 10.0;
+--    Global_Lay_At_Backprice   : constant Fixed_Type := 1.25;
+--    Global_Lay_Size           : constant Fixed_Type := 110.0;
+--    Global_Back_Size          : constant Fixed_Type := 100.0;
 
   Start : Calendar2.Time_Type := Calendar2.Clock;
 
@@ -153,7 +153,7 @@ begin
     Log("num bets laid" & Global_Bet_List.Length'Img);
 
     declare
---        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
+--        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
 --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin

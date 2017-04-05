@@ -48,9 +48,9 @@ procedure Check_For_Greenup_Plc is
 
   Me                  : constant String := "Check_For_Greenup_Plc.";
   Global_Bet_Name     : Betname_Type := (others => ' ');
-  --Global_Max_Layprice : Float_8 := 0.0;
+  --Global_Max_Layprice : Fixed_Type := 0.0;
   Global_Deltatics   : Integer := 0;
-  Global_Max_Backprice: Float_8 := 0.0;
+  Global_Max_Backprice: Fixed_Type := 0.0;
   Cmd_Line            : Command_Line_Configuration;
   --SA_Max_Layprice     : aliased Gnat.Strings.String_Access;
   SA_Deltatics        : aliased Gnat.Strings.String_Access;
@@ -101,7 +101,7 @@ procedure Check_For_Greenup_Plc is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(Backsize),
+      Size           => Fixed_Type(Backsize),
       Price          => P.Backprice,
       Side           => "BACK",
       Betname        => Bet_Name,
@@ -114,8 +114,8 @@ procedure Check_For_Greenup_Plc is
       Insterrcode    => (others => ' '),
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
-      Pricematched   => Float_8(0.0),
-      Sizematched    => Float_8(30.0),
+      Pricematched   => Fixed_Type(0.0),
+      Sizematched    => Fixed_Type(30.0),
       Runnername     => R.Runnernamestripped,
       Fullmarketname => M.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -135,8 +135,8 @@ procedure Check_For_Greenup_Plc is
       Powerdays      => 0,
       Selectionid    => R.Selectionid,
       Reference      => (others => '-'),
-      Size           => Float_8(Zero_Laysize),
-      Price          => Float_8(Zero_Layprice),
+      Size           => Fixed_Type(Zero_Laysize),
+      Price          => Fixed_Type(Zero_Layprice),
       Side           => "LAY ",
       Betname        => Bet_Name,
       Betwon         => False,
@@ -148,8 +148,8 @@ procedure Check_For_Greenup_Plc is
       Insterrcode    => (others => ' '),
       Startts        => M.Startts,
       Betplaced      => P.Pricets,
-      Pricematched   => Float_8(0.0),
-      Sizematched    => Float_8(30.0),
+      Pricematched   => Fixed_Type(0.0),
+      Sizematched    => Fixed_Type(30.0),
       Runnername     => R.Runnernamestripped,
       Fullmarketname => M.Marketname,
       Svnrevision    => Bot_Svn_Info.Revision,
@@ -180,12 +180,12 @@ procedure Check_For_Greenup_Plc is
 begin
   --declare
   --  Backsize       : Bet_Size_Type := 30.0;
-  --  Backprice_Tics : Integer := Tics.Get_Tic_Index(Float_8(2.0));
+  --  Backprice_Tics : Integer := Tics.Get_Tic_Index(Fixed_Type(2.0));
   --  Zero_Layprice  : Lay_Price_Type := Lay_Price_Type(Tics.Get_Tic_Price(Backprice_Tics -30)); -- 30 tics lower eg (2.0 - 1.7)
   --  Zero_Laysize   : Bet_Size_Type := Tics.Get_Zero_Size(Back_Price_Type(2.0),Backsize,Zero_Layprice);
   --begin
-  --  Log("Zero_Layprice " & F8_Image(Float_8(Zero_Layprice)));
-  --  Log("Zero_Laysize  " & F8_Image(Float_8(Zero_Laysize)));
+  --  Log("Zero_Layprice " & F8_Image(Fixed_Type(Zero_Layprice)));
+  --  Log("Zero_Laysize  " & F8_Image(Fixed_Type(Zero_Laysize)));
   --  return;
   --end ;
 
@@ -218,8 +218,8 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   Move(SA_Betname.all,Global_Bet_Name);
-  --Global_Max_Layprice := Float_8'Value(SA_Max_Layprice.all);
-  Global_Max_Backprice := Float_8'Value(SA_Max_Backprice.all);
+  --Global_Max_Layprice := Fixed_Type'Value(SA_Max_Layprice.all);
+  Global_Max_Backprice := Fixed_Type'Value(SA_Max_Backprice.all);
   Global_Deltatics    := Integer'Value(SA_Deltatics.all);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
@@ -335,7 +335,7 @@ begin
             -- Best_Runners is sorted lowest backprice to highest, max 4 entries
 
             if Best_Runners(1).Backprice <= Global_Max_Backprice and then
-               Best_Runners(1).Backprice >= Float_8(1.01) then
+               Best_Runners(1).Backprice >= Fixed_Type(1.01) then
 
                 Runner.Marketid    := Best_Runners(1).Marketid;
                 Runner.Selectionid := Best_Runners(1).Selectionid;

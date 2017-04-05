@@ -45,16 +45,16 @@ project Adabot is
                     );
 
    Stat_Mains   := ("stat_maker.adb",
-                    "sim_back_1_2_3.adb",
+           --compile issue         "sim_back_1_2_3.adb",
                     "sim_back_in_play.adb",
                     "check_matched_sim_bets.adb",
                     "check_lay.adb",
-                    "check_grn.adb",
+     --compile issue                           "check_grn.adb",
                     "profit_min_max.adb",
                     "check_for_greenup_plc.adb",
                     "check_for_lay_win.adb",
                     "create_cache.adb",
-                    "update_ael_bets.adb",
+          --compile issue                      "update_ael_bets.adb",
                     "back_during_race_and_lay_later.adb", 
                     "greenup_lay_first.adb"); 
 

@@ -36,8 +36,8 @@ procedure Check_Lay is
   Cmd_Line            : Command_Line_Configuration;
   
   Global_Betname   : Betname_Type := (others => ' ');
-  Global_Max_Price : Float_8 := 0.0;
-  Global_Min_Price : Float_8 := 0.0;
+  Global_Max_Price : Fixed_Type := 0.0;
+  Global_Min_Price : Fixed_Type := 0.0;
   Global_Laysize   : Bet_Size_Type := 50.0;
 
   SA_Max_Price     : aliased Gnat.Strings.String_Access;
@@ -112,8 +112,8 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   Move(SA_Betname.all,Global_Betname);
-  Global_Max_Price := Float_8'Value(SA_Max_Price.all);
-  Global_Min_Price := Float_8'Value(SA_Min_Price.all);
+  Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
+  Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
   
   case IA_Runners_Place is
     when 1 .. 50 => null;
@@ -214,16 +214,16 @@ begin
            
           if not Eos and then
              Best_Runners(1).Backprice <= Global_Min_Price and then
-             Best_Runners(1).Backprice >= Float_8(1.01) and then
-             Best_Runners(IA_Runners_Place).Backprice <  Float_8(1000.0) and then
-             Best_Runners(IA_Runners_Place).Layprice  <  Global_Max_Price + Float_8(IA_Addon_Odds) and then
+             Best_Runners(1).Backprice >= Fixed_Type(1.01) and then
+             Best_Runners(IA_Runners_Place).Backprice <  Fixed_Type(1000.0) and then
+             Best_Runners(IA_Runners_Place).Layprice  <  Global_Max_Price + Fixed_Type(IA_Addon_Odds) and then
              Best_Runners(IA_Runners_Place).Backprice >= Global_Max_Price and then
              Best_Runners(IA_Runners_Place).Layprice  >= Global_Max_Price then
   
               The_Bet := Bets.Create(Side       => Lay,
                                     Name       => Global_Betname,
                                     Size       => Global_Laysize,
-                                    Price      => Price_Type(Global_Max_Price + Float_8(IA_Addon_Odds)),  
+                                    Price      => Price_Type(Global_Max_Price + Fixed_Type(IA_Addon_Odds)),  
                                     Placed     => Best_Runners(IA_Runners_Place).Pricets,                  
                                     Runner => The_Runner,
                                     Market => The_Market);

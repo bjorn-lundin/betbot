@@ -44,7 +44,7 @@ procedure Update_Ael_Bets is
   Select_Bets_Month : Sql.Statement_Type;
   Rows_Affected     : Natural := 0;
   Me                : constant String := "Update_Ael_Bets.";
-  Comission         : constant Float_8 := 6.5 / 100.0;
+  Comission         : constant Fixed_Type := 6.5 / 100.0;
   Cmd_Line          : Command_Line_Configuration;
   SA_Month          : aliased Gnat.Strings.String_Access;
 
@@ -179,7 +179,7 @@ begin
         if Cnt rem 10_000 = 0 then
           T.Commit;
           Log(Me & "Select_Pm" , "treat: " & Bet.To_String);
-          Log(Me & "Select_Pm" , "treated: " & F8_Image(100.0 * Float_8(Cnt)/Float_8(Bet_List.Length)) & " %");
+          Log(Me & "Select_Pm" , "treated: " & F8_Image(100.0 * Fixed_Type(Cnt)/Fixed_Type(Bet_List.Length)) & " %");
           T.Start;
         end if;
         -- check lost/won
@@ -202,7 +202,7 @@ begin
           Ph_Data := Table_Apriceshistory.Get(Select_Pm);
           if Bet.Side(1..4) = "BACK" then
             if Ph_Data.Backprice >= Bet.Price and then
-               Ph_Data.Backprice <= Float_8(1000.0) then
+               Ph_Data.Backprice <= Fixed_Type(1000.0) then
               Bet.Pricematched := Ph_Data.Backprice;
               Rows_Affected := Rows_Affected +1;
               Was_Matched := True;
@@ -210,7 +210,7 @@ begin
             end if;
           elsif Bet.Side(1..3) = "LAY" then
             if Ph_Data.Layprice <= Bet.Price and then
-               Ph_Data.Layprice >= Float_8(1.01) then
+               Ph_Data.Layprice >= Fixed_Type(1.01) then
               Bet.Pricematched := Ph_Data.Layprice;
               Rows_Affected := Rows_Affected +1;
               Was_Matched := True;

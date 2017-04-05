@@ -128,7 +128,7 @@ package body Bot_Ws_Services is
     Bet_List        : Table_Abets.Abets_List_Pack2.List;
     JSON_Reply      : JSON_Value := Create_Object;
     Bets            : JSON_Array := Empty_Array;
-    Total_Profit    : Float_8    := 0.0;
+    Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
 
@@ -268,7 +268,7 @@ package body Bot_Ws_Services is
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
     JSON_Reply      : JSON_Value := Create_Object;
-    Total_Profit    : Float_8    := 0.0;
+    Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
 
@@ -315,7 +315,7 @@ package body Bot_Ws_Services is
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
     JSON_Reply      : JSON_Value := Create_Object;
-    Total_Profit    : Float_8    := 0.0;
+    Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
 

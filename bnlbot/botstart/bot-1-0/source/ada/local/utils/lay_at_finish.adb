@@ -58,18 +58,18 @@ procedure Lay_At_Finish is
    Ia_Min_Odds      : aliased Integer := 7;
    Ia_Max_Odds      : aliased Integer := 50;
 
-   Lay_Size  : Float_8 := 30.0;
+   Lay_Size  : Fixed_Type := 30.0;
 
-   Income, Stake: Float_8 := 0.0;
+   Income, Stake: Fixed_Type := 0.0;
 
    type Bet_Status_Type is (Bet_Laid, Bet_Won, Bet_Lost, No_Bet_Laid);
    Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
    type Stats_Type is record
      Hits : Integer_4 := 0;
-     Profit : Float_8 := 0.0;
+     Profit : Fixed_Type := 0.0;
    end record ;
-   Profit, Global_Profit : Float_8 := 0.0;
+   Profit, Global_Profit : Fixed_Type := 0.0;
 
    Has_A_Winner_Below_1_15 : Boolean := False;
    Has_A_Second_At_Seven_Or_More : Boolean := False;
@@ -167,16 +167,16 @@ begin
             Pricesfinish := Table_Apricesfinish.Get(Select_Runners);
             Cnt := Cnt +1;
             if not Has_A_Winner_Below_1_15 and then Cnt = 1 then
-              Has_A_Winner_Below_1_15 := Pricesfinish.Backprice <= Float_8(1.15);
+              Has_A_Winner_Below_1_15 := Pricesfinish.Backprice <= Fixed_Type(1.15);
             elsif not Has_A_Second_At_Seven_Or_More and then Cnt = 2 then
-              Has_A_Second_At_Seven_Or_More := Pricesfinish.Backprice >= Float_8(7.0);
+              Has_A_Second_At_Seven_Or_More := Pricesfinish.Backprice >= Fixed_Type(7.0);
             end if;
 
             if Has_A_Winner_Below_1_15 and then
                Has_A_Second_At_Seven_Or_More and then
                Cnt >= Ia_Best_Position and then
-               Pricesfinish.Layprice >= Float_8(Ia_Min_Odds) and then
-               Pricesfinish.Layprice <= Float_8(Ia_Max_Odds) then
+               Pricesfinish.Layprice >= Fixed_Type(Ia_Min_Odds) and then
+               Pricesfinish.Layprice <= Fixed_Type(Ia_Max_Odds) then
                Bet_Status := Bet_Laid;
                exit Loop_Runner; -- 1 bet per race
             end if;

@@ -19,12 +19,12 @@ package body Config is
      Ini.Load(Filename);
      Cfg.Enabled           := Ini.Get_Value("global","enabled",False);
      Cfg.Allowed_Countries := To_Unbounded_String(Ini.Get_Value("global","countries",""));
-     Cfg.Max_Exposure      := Float_8'Value(Ini.Get_Value("global","max_exposure","5000.0")); -- -1.0 -> -100% of size
+     Cfg.Max_Exposure      := Fixed_Type'Value(Ini.Get_Value("global","max_exposure","5000.0")); -- -1.0 -> -100% of size
 
      for i in Bet_Type'range loop
        Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","1.0"));
-       Cfg.Bet (i).Max_Loss_Per_Day := Float_8'Value (Ini.Get_Value (i'img, "max_loss_per_day", "-1.0")); -- -1.0 -> -100% of size
-       Cfg.Bet (i).Max_Earnings_Per_Day := Float_8'Value (Ini.Get_Value (i'img, "max_earnings_per_day", "1_000_000.0"));
+       Cfg.Bet (i).Max_Loss_Per_Day := Fixed_Type'Value (Ini.Get_Value (i'img, "max_loss_per_day", "-1.0")); -- -1.0 -> -100% of size
+       Cfg.Bet (i).Max_Earnings_Per_Day := Fixed_Type'Value (Ini.Get_Value (i'img, "max_earnings_per_day", "1_000_000.0"));
        Cfg.Bet(i).Min_Price := To_Unbounded_String(Ini.Get_Value(i'img,"min_price","1.01"));
        Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",False);
      end loop;
@@ -77,7 +77,7 @@ package body Config is
         Append(Bets, "<bets>");
         for i in Bet_Type'range loop
           Append(Bets, "<" & To_Lower(i'Img) & ">" &
-                           "<size>" & F8_Image(Float_8(Cfg.Bet(i).Size)) & "</size>" &
+                           "<size>" & F8_Image(Fixed_Type(Cfg.Bet(i).Size)) & "</size>" &
                            "<max_loss_per_day>" & F8_Image(Cfg.Bet(i).Max_Loss_Per_Day) & "</max_loss_per_day>" &
                            "<max_earnings_per_day>" & F8_Image(Cfg.Bet(i).Max_Earnings_Per_Day) & "</max_earnings_per_day>" &
                            "<min_price>" & To_String(Cfg.Bet(i).Min_Price) & "</min_price>" &
