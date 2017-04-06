@@ -377,7 +377,7 @@ procedure Poll is
                Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet_4_Bounds;
-  pragma Unreferenced(Try_To_Make_Back_Bet_4_Bounds);
+  --pragma Unreferenced(Try_To_Make_Back_Bet_4_Bounds);
 
   -------------------------------------------------------------------------------------------------------------------
 --    procedure Try_To_Make_Lay_Bet(
@@ -847,7 +847,7 @@ procedure Poll is
                   --     end if;
                   --   end;
                   --
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_19_01_1_2_Plc_1_01 =>
+                when Horse_Back_1_03_01_1_2_Plc_1_01 .. Horse_Back_1_19_01_1_2_Plc_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -871,30 +871,30 @@ procedure Poll is
                                             Match_Directly  => Match_Directly);
                     end if;
                   end;
---                  when Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 .. Horse_Back_1_12_1_14_06_07_1_2_Win_1_01 =>
---                    declare
---                      M_Type     : Market_Type := Win;
---                      Image      : String := I'Img;
---                      Do_Try_Bet : Boolean := True;
---                    begin
---                      --           1         2         3
---                      --  123456789012345678901234567890123456789
---                      --  Back_1_61_1_65_01_04_1_2_PLC_1_10
---                      if Utils.Position(Image,"PLC") > Integer(0) then
---                        M_Type := Place;
---                        Do_Try_Bet := Found_Place and then Markets_Array (Place).Numwinners >= Integer_4 (3) ;
---                        Match_Directly := True;
---                      elsif Utils.Position(Image,"WIN") > Integer(0) then
---                        M_Type         := Win;
---                        Match_Directly := True;
---                      end if;
---                      if Do_Try_Bet then
---                        Try_To_Make_Back_Bet_4_Bounds (Bettype         => I,
---                                                       Br              => Best_Runners,
---                                                       Marketid        => Markets_Array (M_Type).Marketid,
---                                                       Match_Directly  => Match_Directly);
---                      end if;
---                    end;
+                  when Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 .. Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01 =>
+                    declare
+                      M_Type     : Market_Type := Win;
+                      Image      : String := I'Img;
+                      Do_Try_Bet : Boolean := True;
+                    begin
+                      --           1         2         3
+                      --  123456789012345678901234567890123456789
+                      --  Back_1_61_1_65_01_04_1_2_PLC_1_10
+                      if Utils.Position(Image,"PLC") > Integer(0) then
+                        M_Type := Place;
+                        Do_Try_Bet := Found_Place and then Markets_Array (Place).Numwinners >= Integer_4 (3) ;
+                        Match_Directly := True;
+                      elsif Utils.Position(Image,"WIN") > Integer(0) then
+                        M_Type         := Win;
+                        Match_Directly := True;
+                      end if;
+                      if Do_Try_Bet then
+                        Try_To_Make_Back_Bet_4_Bounds (Bettype         => I,
+                                                       Br              => Best_Runners,
+                                                       Marketid        => Markets_Array (M_Type).Marketid,
+                                                       Match_Directly  => Match_Directly);
+                      end if;
+                    end;
               end case;
 
             when Hound => null;
