@@ -15,7 +15,9 @@ package Config is
                     --Horse_Back_1_12_1_14_06_07_1_2_Win_1_01,
                     Horse_Back_1_03_01_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
-                    Horse_Back_1_19_01_1_2_Plc_1_01
+                    Horse_Back_1_19_01_1_2_Plc_1_01,
+                    Horse_Lay_1_04_11_1_2_Win_2_25,
+                    Horse_Lay_1_09_02_1_2_Win_3_25
                     --Horse_Back_1_12_06_1_2_Win_1_01,
                     --Horse_Back_1_13_07_1_2_Win_1_01,
                     --Horse_Back_1_14_07_1_2_Win_1_01,
