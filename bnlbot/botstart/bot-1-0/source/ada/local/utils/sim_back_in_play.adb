@@ -37,7 +37,7 @@ procedure Sim_Back_In_Play is
   Global_Max_Leader_Back_Price   : Fixed_Type := 0.0;
   Global_Min_2nd_Back_Price      : Fixed_Type := 0.0;
   Global_Lay_Size                : Bet_Size_Type := 30.0;
-  Global_Back_Size               : Bet_Size_Type := 30.0;
+--  Global_Back_Size               : Bet_Size_Type := 30.0;
   Global_Animal                  : Animal_Type := Horse; --default
   Global_Bet_List                : Bets.Lists.List;
   --num_bets=${num_bets} \
@@ -203,96 +203,52 @@ procedure Sim_Back_In_Play is
       Log ("Treat", "BR(2) " & BR (2).To_String);
       Log ("Treat", "BR(3) " & BR (3).To_String);
 
-      Move ("BACK_PLC" & Bet_Suffix.Fix_String, Betname);
-      Runner.Selectionid := BR (1).Selectionid;
-      Bet := Bets.Create (Name   => Betname,
-                          Side   => Back,
-                          Size   => Global_Back_Size,
-                          Price  => Price_Type (1.01), --Price_Type (BR (1).Backprice),
-                          Placed => BR (1).Pricets,
-                          Runner => Runner,
-                          Market => Place_Market);
-      Bet.Powerdays := 1;
-      Bet_List.Append (Bet);
+--        Move ("BACK_PLC" & Bet_Suffix.Fix_String, Betname);
+--        Runner.Selectionid := BR (1).Selectionid;
+--        Bet := Bets.Create (Name   => Betname,
+--                            Side   => Back,
+--                            Size   => Global_Back_Size,
+--                            Price  => Price_Type (1.01), --Price_Type (BR (1).Backprice),
+--                            Placed => BR (1).Pricets,
+--                            Runner => Runner,
+--                            Market => Place_Market);
+--        Bet.Powerdays := 1;
+--        Bet_List.Append (Bet);
+--
+--        Move ("BACK_WIN" & Bet_Suffix.Fix_String, Betname);
+--        Runner.Selectionid := BR (1).Selectionid;
+--        Bet := Bets.Create (Name   => Betname,
+--                            Side   => Back,
+--                            Size   => Global_Back_Size,
+--                            Price  => Price_Type (1.01), --Price_Type (BR (1).Backprice),
+--                            Placed => BR (1).Pricets,
+--                            Runner => Runner,
+--                            Market => Win_Market);
+--        Bet.Powerdays := 1;
+--        Bet_List.Append (Bet);
 
-      Move ("BACK_WIN" & Bet_Suffix.Fix_String, Betname);
-      Runner.Selectionid := BR (1).Selectionid;
-      Bet := Bets.Create (Name   => Betname,
-                          Side   => Back,
-                          Size   => Global_Back_Size,
-                          Price  => Price_Type (1.01), --Price_Type (BR (1).Backprice),
-                          Placed => BR (1).Pricets,
-                          Runner => Runner,
-                          Market => Win_Market);
-      Bet.Powerdays := 1;
-      Bet_List.Append (Bet);
-
-      if Fixed_Type (1.0) < BR (2).Layprice and then
-         BR (2).Layprice  <  Fixed_Type (100.0) then
-        Bet := Bets.Empty_Data;
-        Runner.Selectionid := BR (2).Selectionid;
-        Move ("LAY_WIN" & Bet_Suffix.Fix_String & "_2", Betname);
-        Bet := Bets.Create (Name   => Betname,
-                            Side   => Lay,
-                            Size   => Global_Lay_Size,
-                            Price  => Price_Type (BR (2).Layprice + Fixed_Type (1.0)),
-                            Placed => BR (2).Pricets,
-                            Runner => Runner,
-                            Market => Win_Market);
-        Bet.Powerdays := 2;
-        Bet_List.Append (Bet);
-      end if;
-
-      if Fixed_Type (1.0) < BR (2).Layprice and then
-         BR (2).Layprice  <  Fixed_Type (100.0) then
-        Bet := Bets.Empty_Data;
-        Runner.Selectionid := BR (2).Selectionid;
-        Move ("LAY_PLC" & Bet_Suffix.Fix_String & "_2", Betname);
-        Bet := Bets.Create (Name   => Betname,
-                            Side   => Lay,
-                            Size   => Global_Lay_Size,
-                            Price  => Price_Type (BR (2).Layprice + Fixed_Type (1.0)),
-                            Placed => BR (2).Pricets,
-                            Runner => Runner,
-                            Market => Place_Market);
-        Bet.Powerdays := 2;
-        Bet_List.Append (Bet);
-      end if;
-
-      if Fixed_Type (1.0) < BR (3).Layprice and then
-         BR (3).Layprice  <  Fixed_Type (100.0) then
-        Bet := Bets.Empty_Data;
-        Runner.Selectionid := BR (3).Selectionid;
-        Move ("LAY_WIN" & Bet_Suffix.Fix_String & "_3", Betname);
-        Bet := Bets.Create (Name   => Betname,
-                            Side   => Lay,
-                            Size   => Global_Lay_Size,
-                            Price  => Price_Type (BR (3).Layprice + Fixed_Type (2.0)),
-                            Placed => BR (3).Pricets,
-                            Runner => Runner,
-                            Market => Win_Market);
-        Bet.Powerdays := 3;
-        Bet_List.Append (Bet);
-        Bet := Bets.Empty_Data;
-      end if;
-
-      if Fixed_Type (1.0) < BR (3).Layprice and then
-         BR (3).Layprice  <  Fixed_Type (100.0) then
-        Bet := Bets.Empty_Data;
-        Runner.Selectionid := BR (3).Selectionid;
-        Move ("LAY_PLC" & Bet_Suffix.Fix_String & "_3", Betname);
-        Bet := Bets.Create (Name   => Betname,
-                            Side   => Lay,
-                            Size   => Global_Lay_Size,
-                            Price  => Price_Type (BR (3).Layprice + Fixed_Type (2.0)),
-                            Placed => BR (3).Pricets,
-                            Runner => Runner,
-                            Market => Place_Market);
-        Bet.Powerdays := 3;
-        Bet_List.Append (Bet);
-        Bet := Bets.Empty_Data;
-      end if;
-
+      declare
+        S_Place : String_Object;
+      begin
+        for I in 2 .. 3 loop
+          if Fixed_Type (1.0) < BR (i).Layprice and then
+            BR (i).Layprice  <  Fixed_Type (1000.0) then
+            Bet := Bets.Empty_Data;
+            S_Place.Set(I'Img);
+            Runner.Selectionid := BR (i).Selectionid;
+            Move ("LAY_WIN" & Bet_Suffix.Fix_String & "_" & S_Place.Fix_String & "_NO_LIMIT", Betname);
+            Bet := Bets.Create (Name   => Betname,
+                                Side   => Lay,
+                                Size   => Global_Lay_Size,
+                                Price  => Price_Type (BR (i).Layprice + Fixed_Type (5.0)),
+                                Placed => BR (i).Pricets,
+                                Runner => Runner,
+                                Market => Win_Market);
+            Bet.Powerdays := Integer_4(I);
+            Bet_List.Append (Bet);
+          end if;
+        end loop;
+      end ;
       Placed_Bet := True;
     end if;
 

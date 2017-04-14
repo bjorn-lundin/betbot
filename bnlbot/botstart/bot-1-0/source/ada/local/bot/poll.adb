@@ -349,10 +349,6 @@ procedure Poll is
 
     Max_Price(1..2) := Image(29..30);
 
-    case Bettype is
-      when others               => Max_Price := "30.0";
-    end case;
-
     if BR(1).Backprice <= Max_Backprice_1 and then
        BR(1).Backprice >= Fixed_Type (1.01) and then
        BR(2).Backprice >= Min_Backprice_N and then
@@ -869,7 +865,7 @@ procedure Poll is
             when Horse =>
               case I is
 
-                when Horse_Lay_1_04_11_1_2_Win_2_25 .. Horse_Lay_1_09_02_1_2_Win_3_25   =>
+                when Horse_Lay_1_04_11_1_2_Win_2_30 .. Horse_Lay_1_09_02_1_2_Win_3_30   =>
                   --  12345678901234567890
                   --  Horse_Lay_1_09_02_1_2_Win_3_25
                   Try_To_Make_Lay_Bet (
