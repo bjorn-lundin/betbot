@@ -69,6 +69,11 @@ package body Types is
     return Trim(To_String(Self.Value), Right);
   end Fix_String;
   -----------------------------------------------------------
+  function Trim(Self : String_Object) return String is
+  begin -- return the right trimmed string
+    return Trim(To_String(Self.Value), Both);
+  end Trim;
+  -----------------------------------------------------------
   function UBString(Self : String_Object) return Unbounded_String is
   begin
     return Self.Value;
