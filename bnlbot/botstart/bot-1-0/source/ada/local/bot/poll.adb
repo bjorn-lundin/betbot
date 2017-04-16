@@ -335,7 +335,7 @@ procedure Poll is
     Layed_Num        : Integer;
     Tmp             : String (1 .. 5) := (others => ' ');
     Image           : String := Bettype'Img;
-    Max_Price       : String (1 .. 4) := (others => '.');
+    Max_Price       : String (1 .. 4) := (others => ' ');
   begin          --1         2
       --  12345678901234567890123456789012345
       --  HORSE_Lay_1_10_20_1_2_WIN_3_25
