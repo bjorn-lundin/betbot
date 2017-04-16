@@ -37,6 +37,7 @@ package Types is
   procedure Set (Self : in out String_Object; What : String);
   procedure Reset (Self : in out String_Object);
   function Fix_String ( Self : String_Object) return String;
+  function Trim(Self : String_Object) return String;
   function UBString ( Self : String_Object) return Unbounded_String;
   function Lower_Case ( Self : String_Object) return String;
   function Upper_Case ( Self : String_Object) return String ;
