@@ -192,11 +192,11 @@ procedure Bot_Web_Server is
     begin
       Logging.Log(Service, "check for Username in sessionid: " & Aws.Session.Image(Session_Id));
       Logging.Log(Service, "Username: '" & Name & "'");
-      if Name = "" then
-        Logging.Log(Service, "No useful session, returning file : betbot.html");
-        return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
-                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
-      end if;
+    --  if Name = "" then
+    --    Logging.Log(Service, "No useful session, returning file : betbot.html");
+    --    return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
+    --                              Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
+    --  end if;
     end;
     
     if Context = "" and URI /= "" then
