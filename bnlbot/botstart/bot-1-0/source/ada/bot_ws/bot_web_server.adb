@@ -36,6 +36,7 @@ with Types;
 
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
+  package AD renames Ada.Directories;
 
   Me : constant String := "Bot_Web_Server.";
 
@@ -48,6 +49,8 @@ procedure Bot_Web_Server is
 
    --===========================================================================
    Semaphore : Binary_Semaphores.Semaphore_Type;
+
+  Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
 
    package Global is
      Host           : Types.String_Object;
@@ -180,11 +183,11 @@ procedure Bot_Web_Server is
     Service    : constant String := "Get";
   begin
     Logging.Log(Service, "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
-    if not AWS.Status.Has_Session(Request) and then 
+    if not AWS.Status.Has_Session(Request) and then
        URI = "/"   then
-        Logging.Log(Service, "No session, returning file : betbot.html");
-        return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
-                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
+        Logging.Log(Service, "No session...");
+      --  return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
+      --                            Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
     end if;
     declare
       Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
@@ -198,7 +201,7 @@ procedure Bot_Web_Server is
     --                              Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
     --  end if;
     end;
-    
+
     if Context = "" and URI /= "" then
       if URI = "/" then
         Logging.Log(Service, "Returning file : betbot.html");
@@ -281,6 +284,7 @@ procedure Bot_Web_Server is
         when others          =>  Answer := Unknown(Request);
       end case;
       Semaphore.Release;
+      AWS.Session.Save (File_Name => Saved_Web_Sessions);
       return Answer;
   exception
     when Bot_Ws_Services.Stop_Process =>
@@ -341,7 +345,10 @@ begin
   AWS.Config.Set.Reuse_Address           (O => Config, Value => True);
   AWS.Config.Set.WWW_Root                (O => Config, Value => Ev.Value("BOT_SOURCE") & "/ada/bot_ws/html");
 
-  Logging.Log(Me, "WWW_Root: " & AWS.Config.WWW_Root(O => Config));
+  Logging.Log (Me, "WWW_Root: " & AWS.Config.WWW_Root (O => Config));
+  if AD.Exists (Saved_Web_Sessions) then
+    AWS.Session.Load(File_Name => Saved_Web_Sessions);
+  end if;
 
   AWS.Server.Start (Web_Server     => WS,
                     Callback       => Service'Unrestricted_Access,
