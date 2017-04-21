@@ -179,8 +179,21 @@ procedure Bot_Web_Server is
     Action : constant String := AWS.Parameters.Get(Params,"action");
   begin
     Logging.Log("Get", "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
-    if (Context = "" and URI /= "") then
-      if (URI = "/") then
+    if not AWS.Status.Has_Session(Request) and then 
+       URI = "/"   then
+        Logging.Log("Get", "No session, returning file : betbot.html");
+        return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
+                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
+    end if;
+    declare
+      Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
+    begin
+      Logging.Log(Service, "check for Username in sessionid: " & Aws.Session.Image(Session_Id));
+      Logging.Log(Service, "Username: '" & AWS.Session.Get (Session_ID, "username") & "'");
+    end;
+    
+    if Context = "" and URI /= "" then
+      if URI = "/" then
         Logging.Log("Get", "Returning file : betbot.html");
         return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
                                   Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
