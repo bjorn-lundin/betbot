@@ -177,11 +177,12 @@ procedure Bot_Web_Server is
     Params : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
     Context: constant String := AWS.Parameters.Get(Params,"context");
     Action : constant String := AWS.Parameters.Get(Params,"action");
+    Service    : constant String := "Get";
   begin
-    Logging.Log("Get", "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
+    Logging.Log(Service, "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
     if not AWS.Status.Has_Session(Request) and then 
        URI = "/"   then
-        Logging.Log("Get", "No session, returning file : betbot.html");
+        Logging.Log(Service, "No session, returning file : betbot.html");
         return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
                                   Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
     end if;
@@ -194,7 +195,7 @@ procedure Bot_Web_Server is
     
     if Context = "" and URI /= "" then
       if URI = "/" then
-        Logging.Log("Get", "Returning file : betbot.html");
+        Logging.Log(Service, "Returning file : betbot.html");
         return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
                                   Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
       else
@@ -202,7 +203,7 @@ procedure Bot_Web_Server is
           Filename     : constant String := URI (2 .. URI'Last);
           FullFilename : constant String := AWS.Config.WWW_Root(O => Config) & Filename;
         begin
-          Logging.Log("Get", "Filename=" & Filename & " returning:" & FullFilename);
+          Logging.Log(Service, "Filename=" & Filename & " returning:" & FullFilename);
           if Ada.Directories.Kind(FullFilename) = Ada.Directories.Ordinary_File then
             return AWS.Response.File(Content_Type => AWS.MIME.Content_Type (FullFilename),
                                      Filename     => FullFilename);
