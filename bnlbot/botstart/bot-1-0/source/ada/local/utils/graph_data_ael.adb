@@ -347,14 +347,14 @@ begin
   for R of Avg_Price_Result_List loop
     Print (
            R.Ts.String_Date_ISO & " | " &
-             F8_Image (R.Avg_Price, Aft => 3 )
+             F8_Image (R.Avg_Price )
           ) ;
   end loop;
 
   for R of Equity_Result_List loop
     Print (
            R.Ts.To_String (Milliseconds => False) & " | " &
-             F8_Image (R.Equity, Aft => 1 )
+             F8_Image (R.Equity )
           ) ;
   end loop;
 
