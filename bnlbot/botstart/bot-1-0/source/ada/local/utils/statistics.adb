@@ -94,7 +94,7 @@ package body Statistics is
                Second_Odds_Range_Type'Pos(Second)'Img & "|" &
                F8_Image(Self.Profit) & ":-\n" &
                Trim(Self.Matched.Won'Img) & "/" & Trim(Self.Matched.Cnt'Img) & "\n" &
-               "D" & F8_Image(100.0 * (Self.Matched.Hitrate-Self.Needed_Hitrate),1) & "%\n" &
+               "D" & F8_Image(100.0 * (Self.Matched.Hitrate-Self.Needed_Hitrate)) & "%\n" &
                "A" & F8_Image(Self.Matched.Avg_Odds)
       );
       if Second = Second_Odds_Range_Type'last then
@@ -106,7 +106,7 @@ package body Statistics is
                Second_Odds_Range_Type'Pos(Second)'Img & "|" &
                "-99999:-\n" &
                Trim(Self.Matched.Won'Img) & "/" & Trim(Self.Matched.Cnt'Img) & "\n" &
-               "D" & F8_Image(100.0 * (Self.Matched.Hitrate-Self.Needed_Hitrate),1) & "%\n" &
+               "D" & F8_Image(100.0 * (Self.Matched.Hitrate-Self.Needed_Hitrate)) & "%\n" &
                "A" & F8_Image(Self.Matched.Avg_Odds)
       );
       if Second = Second_Odds_Range_Type'last then
