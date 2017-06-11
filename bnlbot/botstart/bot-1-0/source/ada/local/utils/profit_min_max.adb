@@ -54,8 +54,8 @@ procedure Profit_Min_Max is
         Exit_On_Next_Market := True;
       end if;
       if not Ba_Checkonly then
-        Move (Trim (Bet.Betname) & "_" & F8_Image (Fixed_Type (Min), 0) & "_" & F8_Image (Fixed_Type (Max), 0), Bet.Betname);
-        Move("Min="&F8_Image (Fixed_Type (Min), 0) & ", Max=" & F8_Image (Fixed_Type (Max), 0), Bet.Reference);
+        Move (Trim (Bet.Betname) & "_" & F8_Image (Fixed_Type (Min)) & "_" & F8_Image (Fixed_Type (Max)), Bet.Betname);
+        Move("Min="&F8_Image (Fixed_Type (Min)) & ", Max=" & F8_Image (Fixed_Type (Max)), Bet.Reference);
         Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
         Bet.Insert;
       end if;
@@ -122,7 +122,7 @@ begin
 
   Getopt (Cmd_Line);  -- process the command line
 
-  Move(Sa_Betname.all & "_" & F8_Image(Fixed_Type(IA_Min),0) & "_" & F8_Image(Fixed_Type(IA_Max),0), Betname);
+  Move(Sa_Betname.all & "_" & F8_Image(Fixed_Type(IA_Min)) & "_" & F8_Image(Fixed_Type(IA_Max)), Betname);
 
   if not Ba_Checkonly then
     Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Trim(Betname) & ".log");
