@@ -83,7 +83,7 @@ procedure Saldo_Fetcher is
           "saldo igar:     " & Utils.F8_Image(Old.Balance) & Cr & Lf &
           "exposure igar:  " & Utils.F8_Image(abs(Old.Exposure))  & Cr & Lf &
           Cr & Lf &
-          "vinst idag: " & Utils.F8_Image(Today - Yesterday) & 
+          "vinst idag: " & Utils.F8_Image(Today - Yesterday) &
           Cr & Lf &
           Cr & Lf &
           "Database sizes:" & Cr & Lf &
@@ -99,9 +99,9 @@ procedure Saldo_Fetcher is
           "sent from: " & GNAT.Sockets.Host_Name ;
 
       Receivers : constant SMTP.Recipients :=  (
-                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
+                  SMTP.E_Mail("Bj=F6rn Lundin", "b.f.lundin@gmail.com"),
                   SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com"),
-                  SMTP.E_Mail("Mats Mårtensson", "mats.g.martensson@gmail.com")
+                  SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
                 );
     begin
       SMTP.Client.Send(Server  => SMTP_Server,
