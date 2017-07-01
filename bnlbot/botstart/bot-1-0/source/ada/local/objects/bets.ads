@@ -33,6 +33,7 @@ package Bets is
 
   procedure Update_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : Boolean := False);
   procedure Insert_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False);
+  function Is_Existing_Marketid_Selectionid(Self : in out Bet_Type) return Boolean ;
 
   function Empty_Data return Bet_Type;
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
