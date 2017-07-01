@@ -13,7 +13,7 @@ with Rpc;
 
 package body Bets is
   Me : constant String := "Bet.";
-
+  select_is_existing_marketid_selectionid,
   Select_Executable_Bets,
   Select_Dry_Run_Bets,
   Select_Real_Bets,
@@ -704,5 +704,22 @@ package body Bets is
   end Read_Marketid;
   ----------------------------------------
 
+   function Is_Existing_Marketid_Selectionid(Self : in out Bet_Type) return Boolean is
+      T : Sql.Transaction_Type;
+      eos : boolean := False;
+
+   begin
+      T.start;
+      select_is_existing_marketid_selectionid.Prepare(
+                                                      "select * from ABETS where MARKETID = :MARKETID and SELECTIONID = :SELECTIONID");
+      select_is_existing_marketid_selectionid.Set("MARKETID", self.Marketid);
+      select_is_existing_marketid_selectionid.Set("SELECTIONID", self.Selectionid);
+
+      select_is_existing_marketid_selectionid.Open_Cursor;
+      select_is_existing_marketid_selectionid.Fetch(Eos);
+      select_is_existing_marketid_selectionid.Close_Cursor;
+      T.Commit;
+      return not Eos;
+   end Is_Existing_Marketid_Selectionid;
 
 end Bets;
