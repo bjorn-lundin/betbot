@@ -204,8 +204,8 @@ begin
          Price.Marketid := The_Market.Marketid;
          prices.Read_I1_Marketid(price,price_list);
          for p of price_list loop
-            Start_Bets_OK := Global_Min_Price <= Price.Layprice and then
-                                                 Price.Layprice <= Global_Max_Price;
+            Start_Bets_OK := Global_Min_Price <= p.Layprice and then
+                                                 p.Layprice <= Global_Max_Price;
             if Start_Bets_OK then
                The_Runner := Runners.Empty_Data;
                The_Runner.Marketid    := p.Marketid;
@@ -215,7 +215,7 @@ begin
                The_Bet := Bets.Create(Side       => Lay,
                                       Name       => Global_Betname,
                                       Size       => Global_Laysize,
-                                      Price      => Price_Type(Price.Layprice),  
+                                      Price      => Price_Type(p.Layprice),  
                                       Placed     => The_Market.startts,                  
                                       Runner => The_Runner,
                                       Market => The_Market);
