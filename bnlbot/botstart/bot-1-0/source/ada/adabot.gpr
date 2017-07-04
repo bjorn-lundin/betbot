@@ -49,6 +49,7 @@ project Adabot is
                     "sim_back_in_play.adb",
                     "check_matched_sim_bets.adb",
                     "check_lay.adb",
+                    "check_lay2.adb",
      --compile issue                           "check_grn.adb",
                     "profit_min_max.adb",
                     "check_for_greenup_plc.adb",

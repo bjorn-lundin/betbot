@@ -265,20 +265,20 @@ package body Bets is
         if PH.Backprice >= Self.Price and then -- Match ok
            PH.Backprice <= Fixed_Type(1000.0) then -- Match ok
            Self.Pricematched := PH.Backprice;
-           Self.Status(1..7) := "MATCHED";
+           Move("MATCHED",Self.Status);
         end if;
       elsif Self.Side(1..3) = "LAY" then
         if PH.Layprice <= Self.Price and then -- Match ok
            PH.Layprice >= Fixed_Type(1.01) then
            Self.Pricematched := PH.Layprice;
-           Self.Status(1..7) := "MATCHED";
+           Move("MATCHED",Self.Status);
         end if;
       end if;
       exit when Self.Match_Directly or else -- match directly
                 Self.Status(1..7) = "MATCHED";     -- matched
     end loop;
     if Self.Status(1) /= 'M' then
-       Self.Status(1..7) := "LAPSED ";
+       Move("LAPSED",Self.Status);
        Self.Pricematched := Fixed_Type(0.0);
        Self.Profit := 0.0;
     end if;
