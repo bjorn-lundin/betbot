@@ -142,12 +142,14 @@ begin
    Log(Me, "db Connected");
 
    Select_Markets.Prepare(
-                          "select * " &
+                          "select M.* " &
                             "from " &
-                            "AMARKETS " &
-                            "where MARKETTYPE = 'WIN' " &
-                            "and STARTTS::date >= '2016-03-27' " & -- we do not have good data before that time
-                            "order by STARTTS"
+                            "AMARKETS M, AEVENTS E " &
+                            "where M.MARKETTYPE = 'WIN' " &
+                            "and M.EVENTID = E.EVENTID " &
+                            "and E.EVENTTYPEID = 7 " & -- horses
+                            "and M.STARTTS::date >= '2016-04-04' " & -- we do not have good data before that time
+                            "order by M.STARTTS"
                          );
 
    Select_Cand.Prepare(
