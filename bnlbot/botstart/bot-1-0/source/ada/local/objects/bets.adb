@@ -134,7 +134,7 @@ package body Bets is
     The_Runner.Selectionid := Self.Selectionid;
     The_Runner.Read(Eos);
     if Eos then
-      Log(Me & "Check_Outcome", "Runner does not exist");
+      Log(Me & "Check_Outcome", "Runner does not exist: " & The_runner.To_String);
       return;
     end if;
 
