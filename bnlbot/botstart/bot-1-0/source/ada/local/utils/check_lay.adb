@@ -23,6 +23,7 @@ with Runners;
 with Bets;
 with Price_Histories;
 with Bot_Svn_Info;
+with Prices;
 --with Utils; use Utils;
 
 procedure Check_Lay is
@@ -207,8 +208,11 @@ begin
                   Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                   The_Runner   : Runners.Runner_Type;
                   Eos          : Boolean := False;
+                  Eos2         : Boolean := False;
                   The_Bet      : Bets.Bet_Type;
                   use Price_Histories;
+                  Price        : Prices.Price_Type;
+                  Start_Bets_OK : Boolean := False;
                begin
                
                   Backprice_Sorter.Sort(Ph_List);               
@@ -230,14 +234,26 @@ begin
                         The_Bet.Marketid := Best_Runners(i).Marketid;
                         The_Bet.Selectionid := Best_Runners(i).Selectionid;
                         if not The_bet.Is_Existing_Marketid_Selectionid then
-                  
+
+                           
+                           Price.Marketid    := Best_Runners(i).Marketid;
+                           Price.Selectionid := Best_Runners(i).Selectionid;
+                           Price.Read(Eos2);
+                           if not Eos2 then
+                              Start_Bets_OK := Fixed_Type(15.0) <= Price.Backprice and then
+                                                       Price.Backprice <= Fixed_Type(50.0);
+                           else
+                              Start_Bets_OK := False;
+                           end if;
+                           
                            The_Runner := Runners.Empty_Data;
                            The_Runner.Marketid    := Best_Runners(i).Marketid;
                            The_Runner.Selectionid := Best_Runners(i).Selectionid;
                            The_Runner.Read(Eos);
                            The_Bet.Clear;
-           
+
                            if not Eos and then
+                             Start_Bets_OK and then
                              Best_Runners(i).Backprice >  Fixed_Type(1.01) and then
                              Best_Runners(i).Backprice <  Fixed_Type(1000.0) and then
                              Best_Runners(i).Layprice  <  Global_Max_Price and then
@@ -256,7 +272,22 @@ begin
                               The_Bet.Check_Matched;
                               The_Bet.Check_Outcome;
                               The_Bet.Update_Withcheck;
-                             -- exit Timestamp_Loop; -- 1 bet per market
+                              -- do the Backbet
+                              The_Bet.Clear;
+                              The_Bet := Bets.Create(Side       => Back,
+                                                     Name       => Global_Betname,
+                                                     Size       => Global_Laysize - 10.0,
+                                                     Price      => Best_Runners(i).Backprice + 4.0,  
+                                                     Placed     => Best_Runners(i).Pricets,                  
+                                                     Runner => The_Runner,
+                                                     Market => The_Market);
+
+                              The_Bet.Match_Directly(False);
+                              The_Bet.Insert;
+                              The_Bet.Check_Matched;
+                              The_Bet.Check_Outcome;
+                              The_Bet.Update_Withcheck;
+                              
                            end if; --is existing      
                         end if; --Eos
                      end if; -- /= best_runner(i)
