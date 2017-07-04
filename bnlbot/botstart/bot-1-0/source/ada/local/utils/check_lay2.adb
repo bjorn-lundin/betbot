@@ -202,6 +202,7 @@ begin
          end if;
          
          Price.Marketid := The_Market.Marketid;
+         Price_List.Clear;
          prices.Read_I1_Marketid(price,price_list);
          for p of price_list loop
             Start_Bets_OK := Global_Min_Price <= p.Layprice and then
