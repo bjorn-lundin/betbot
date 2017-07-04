@@ -205,27 +205,35 @@ begin
          prices.Read_I1_Marketid(price,price_list);
          for p of price_list loop
             Start_Bets_OK := Global_Min_Price <= p.Layprice and then
-                                                 p.Layprice <= Global_Max_Price;
+              p.Layprice <= Global_Max_Price;
             if Start_Bets_OK then
                The_Runner := Runners.Empty_Data;
                The_Runner.Marketid    := p.Marketid;
                The_Runner.Selectionid := p.Selectionid;
                The_Runner.Read(Eos); 
-               The_Bet.Clear;
-               The_Bet := Bets.Create(Side       => Lay,
-                                      Name       => Global_Betname,
-                                      Size       => Global_Laysize,
-                                      Price      => Price_Type(p.Layprice),  
-                                      Placed     => The_Market.startts,                  
-                                      Runner => The_Runner,
-                                      Market => The_Market);
+               if not Eos then
+                  if The_Runner.status(1..7) /= "REMOVED" then
+                  The_Bet.Clear;
+                  The_Bet := Bets.Create(Side       => Lay,
+                                         Name       => Global_Betname,
+                                         Size       => Global_Laysize,
+                                         Price      => Price_Type(p.Layprice),  
+                                         Placed     => The_Market.startts,                  
+                                         Runner => The_Runner,
+                                         Market => The_Market);
 
-               The_Bet.Match_Directly(True);
-               The_Bet.Pricematched :=p.layprice;
-               Move("MATCHED",The_Bet.Status);
-               The_Bet.Insert;
-               The_Bet.Check_Outcome;
-               The_Bet.Update_Withcheck;               
+                  The_Bet.Match_Directly(True);
+                  The_Bet.Pricematched := p.layprice;
+                  Move("MATCHED",The_Bet.Status);
+                  The_Bet.Insert;
+                  The_Bet.Check_Outcome;
+                  The_Bet.Update_Withcheck;               
+                  else
+                     Log(Me & "Main" , "runner removed: " & The_runner.To_String);                  
+                  end if;   
+               else
+                  Log(Me & "Main" , "no such runner: " & The_runner.To_String);                  
+               end if;   
             end if;            
          end loop;
          
