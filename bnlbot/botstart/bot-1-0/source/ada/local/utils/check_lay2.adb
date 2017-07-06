@@ -107,32 +107,13 @@ begin
       Long_Switch => "--min_price=",
       Help        => "Min price");
       
---     Define_Switch
---       (Cmd_Line,
---        IA_Runners_Place'access,
---        Long_Switch => "--runners_place=",
---        Help        => "Runners place in race (1-50)");
---  
---     Define_Switch
---       (Cmd_Line,
---        IA_Addon_Odds'access,
---        Long_Switch => "--addon_odds=",
---        Help        => "Runners place in race (1-50)");
 
-      
-      
    Getopt (Cmd_Line);  -- process the command line
 
    Move(SA_Betname.all,Global_Betname);
    Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
    Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
-  
---     case IA_Runners_Place is
---        when 1 .. 50 => null;
---        when others => raise Bad_Runners_Place with IA_Runners_Place'Img;
---     end case;  
-  
- 
+
    Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
    Log(Me, "Connect Db");
    Sql.Connect
@@ -180,15 +161,11 @@ begin
       Price_List  : Prices.Lists.List;
       The_Runner   : Runners.Runner_Type;
       Eos          : Boolean := False;
-      --Eos2         : Boolean := False;
       The_Bet      : Bets.Bet_Type;
---      use Price_Histories;
       Price        : Prices.Price_Type;
       Market_List : Markets.Lists.List;
       Start_Bets_OK : Boolean := False;
       Cnt         : Natural := 0;
-      --type Has_Type is (Lay);
-     -- subtype Max_Runners_Type is Integer range 1 .. 50;
       use type ada.Containers.Count_Type;
    begin
       T.Start;
@@ -241,6 +218,7 @@ begin
                end if;   
             end if;            
          end loop;
+         
          if Runners_To_Watch_List.Length > 0 then         
             Ts_List.Clear;
             Select_Timestamps.Set("MARKETID", The_Market.Marketid);
@@ -252,36 +230,16 @@ begin
                Price_Histories.Read_List(Select_Cand, Ph_List);
                  
                declare
-                 -- Idx : Integer := 0;
-                 -- type Best_Runners_Array_Type is array (Max_Runners_Type'range) of Price_Histories.Price_History_Type ;
-                 -- Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                   The_Runner   : Runners.Runner_Type;
-                 -- Eos          : Boolean := False;
-                 -- Eos2         : Boolean := False;
                   The_Bet      : Bets.Bet_Type;
                   use Price_Histories;
-                  -- Price        : Prices.Price_Type;
                begin
-               
-                  --                    Backprice_Sorter.Sort(Ph_List);               
-                  --                 
-                  --                    Ph_Loop : for Ph of Ph_List loop
-                  --                       Idx := Idx +1;
-                  --                       exit Ph_Loop when Idx > Best_Runners'Last;
-                  --                       if idx <=3 then
-                  --                          Best_Runners(Idx) := Price_Histories.Empty_Data;
-                  --                       else   
-                  --                          Best_Runners(Idx) := Ph;
-                  --                       end if;
-                  --                    end loop Ph_Loop;
-                  --                    -- Best_Runners is sorted lowest backprice to highest, max 20 entries
-
                   for r of Runners_To_Watch_List loop
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
-                           The_Bet.Clear;
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                             ph.Backprice <= Fixed_Type(10.0) then
+                              ph.Backprice <= Fixed_Type(10.0) then
+                              The_Bet.Clear;
                               The_Bet := Bets.Create(Side       => Back,
                                                      Name       => Global_Betname,
                                                      Size       => 200.0,
@@ -294,7 +252,9 @@ begin
                               The_Bet.Check_Matched;
                               The_Bet.Check_Outcome;
                               The_Bet.Update_Withcheck;
-                              ph.status(1..4) := "KILL";
+                              R.status(1..4) := "KILL";
+                              Log(Me & "Main" , "backbet: " & The_Bet.To_String);                  
+                              
                            end if; --Eos
                         end if; -- /= best_runner(i)
                      end loop; --i in best_runners
