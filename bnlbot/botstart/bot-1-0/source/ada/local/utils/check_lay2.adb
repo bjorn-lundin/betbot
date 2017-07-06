@@ -232,6 +232,7 @@ begin
                declare
                   The_Runner   : Runners.Runner_Type;
                   The_Bet      : Bets.Bet_Type;
+                  Eos : boolean := False;
                   use Price_Histories;
                begin
                   for r of Runners_To_Watch_List loop
@@ -240,20 +241,27 @@ begin
                            if ph.Backprice >= Fixed_Type(1.01) and then
                               ph.Backprice <= Fixed_Type(10.0) then
                               The_Bet.Clear;
-                              The_Bet := Bets.Create(Side       => Back,
-                                                     Name       => Global_Betname,
-                                                     Size       => 200.0,
-                                                     Price      => 1.01,  
-                                                     Placed     => ph.Pricets,                  
-                                                     Runner => The_Runner,
-                                                     Market => The_Market);
-                              The_Bet.Match_Directly(False);
-                              The_Bet.Insert;
-                              The_Bet.Check_Matched;
-                              The_Bet.Check_Outcome;
-                              The_Bet.Update_Withcheck;
-                              R.status(1..4) := "KILL";
-                              Log(Me & "Main" , "backbet: " & The_Bet.To_String);                  
+                              The_Runner.Marketid := ph.Marketid;
+                              The_Runner.Selectionid := ph.Selectionid;
+                              The_runner.read(Eos);
+                              if not Eos then                              
+                                 The_Bet := Bets.Create(Side       => Back,
+                                                        Name       => Global_Betname,
+                                                        Size       => 200.0,
+                                                        Price      => 1.01,  
+                                                        Placed     => ph.Pricets,                  
+                                                        Runner => The_Runner,
+                                                        Market => The_Market);
+                                 The_Bet.Match_Directly(False);
+                                 The_Bet.Insert;
+                                 The_Bet.Check_Matched;
+                                 The_Bet.Check_Outcome;
+                                 The_Bet.Update_Withcheck;
+                                 R.status(1..4) := "KILL";
+                                 Log(Me & "Main" , "backbet: " & The_Bet.To_String);                  
+                              else
+                                 Log(Me & "Main" , "no such runner: " & The_runner.To_String);                  
+                              end if;   
                               
                            end if; --Eos
                         end if; -- /= best_runner(i)
