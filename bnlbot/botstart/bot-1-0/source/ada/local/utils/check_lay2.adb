@@ -39,10 +39,12 @@ procedure Check_Lay2 is
    Global_Betname   : Betname_Type := (others => ' ');
    Global_Max_Price : Fixed_Type := 0.0;
    Global_Min_Price : Fixed_Type := 0.0;
+   Global_Min_Back_Price : Fixed_Type := 5.0;
    Global_Laysize   : Bet_Size_Type := 50.0;
 
    SA_Max_Price     : aliased Gnat.Strings.String_Access;
    SA_Min_Price     : aliased Gnat.Strings.String_Access;
+   SA_Min_Back_Price     : aliased Gnat.Strings.String_Access;
    Sa_Betname       : aliased Gnat.Strings.String_Access;
   
   -- IA_Runners_Place : aliased Integer := 0;
@@ -107,13 +109,19 @@ begin
       Long_Switch => "--min_price=",
       Help        => "Min price");
       
+   Define_Switch
+     (Cmd_Line,
+      SA_Min_Back_Price'access,
+      Long_Switch => "--min_back_price=",
+      Help        => "Min back price");
 
    Getopt (Cmd_Line);  -- process the command line
 
    Move(SA_Betname.all,Global_Betname);
    Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
    Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
-
+   Global_Min_Back_Price := Fixed_Type'Value(SA_Min_Back_Price.all); 
+   
    Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
    Log(Me, "Connect Db");
    Sql.Connect
@@ -232,14 +240,14 @@ begin
                declare
                   The_Runner   : Runners.Runner_Type;
                   The_Bet      : Bets.Bet_Type;
-                  Eos : boolean := False;
+                  Eos          : Boolean := False;
                   use Price_Histories;
                begin
                   for r of Runners_To_Watch_List loop
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                              ph.Backprice <= Fixed_Type(10.0) then
+                              ph.Backprice <= Global_Min_Back_Price then
                               The_Bet.Clear;
                               The_Runner.Marketid := ph.Marketid;
                               The_Runner.Selectionid := ph.Selectionid;
