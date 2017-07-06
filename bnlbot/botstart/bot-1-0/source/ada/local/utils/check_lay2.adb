@@ -54,13 +54,15 @@ procedure Check_Lay2 is
    Ts_List             : Ts_List_Pack.List;
 
    
+   --------------------------------------------
    function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
    begin
       return Left.Backprice < Right.Backprice;
    end "<";
-   --------------------------------------------
    package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
    
+   
+   Runners_To_Watch_List : Runners.Lists.List;   
    
    ---------------------------------------------------
 
@@ -172,7 +174,6 @@ begin
       Log(Me & "Main" , "bet '" & Global_Betname & "' already exists. Exiting");
       return;
    end if;
-
   
    declare
       Ph_List     : Price_Histories.Lists.List;
@@ -202,7 +203,7 @@ begin
          if Cnt rem 100 = 0 then
             Log(Me & "Main" , "treat: " & The_Market.To_String);
          end if;
-         
+         Runners_To_Watch_List.Clear;
          Price.Marketid := The_Market.Marketid;
          Price_List.Clear;
          prices.Read_I1_Marketid(price,price_list);
@@ -216,21 +217,22 @@ begin
                The_Runner.Read(Eos); 
                if not Eos then
                   if The_Runner.status(1..7) /= "REMOVED" then
-                  The_Bet.Clear;
-                  The_Bet := Bets.Create(Side       => Lay,
-                                         Name       => Global_Betname,
-                                         Size       => Global_Laysize,
-                                         Price      => Price_Type(p.Layprice),  
-                                         Placed     => The_Market.startts,                  
-                                         Runner => The_Runner,
-                                         Market => The_Market);
+                     The_Bet.Clear;
+                     The_Bet := Bets.Create(Side       => Lay,
+                                            Name       => Global_Betname,
+                                            Size       => Global_Laysize,
+                                            Price      => Price_Type(p.Layprice),  
+                                            Placed     => The_Market.startts,                  
+                                            Runner => The_Runner,
+                                            Market => The_Market);
 
-                  The_Bet.Match_Directly(True);
-                  The_Bet.Pricematched := p.layprice;
-                  Move("MATCHED",The_Bet.Status);
-                  The_Bet.Insert;
-                  The_Bet.Check_Outcome;
-                  The_Bet.Update_Withcheck;               
+                     The_Bet.Match_Directly(True);
+                     The_Bet.Pricematched := p.layprice;
+                     Move("MATCHED",The_Bet.Status);
+                     The_Bet.Insert;
+                     The_Bet.Check_Outcome;
+                     The_Bet.Update_Withcheck;               
+                     Runners_To_Watch_List.Append(The_Runner);
                   else
                      Log(Me & "Main" , "runner removed: " & The_runner.To_String);                  
                   end if;   
@@ -239,29 +241,28 @@ begin
                end if;   
             end if;            
          end loop;
-         
---           Ts_List.Clear;
---           Select_Timestamps.Set("MARKETID", The_Market.Marketid);
---           Read_Ts(Select_Timestamps, Ts_List);
---           if Ts_List.Length > 3 then 
---              Timestamp_Loop : for Ts of Ts_List loop
---                 Ph_List.Clear;
---                 Select_Cand.Set("MARKETID",The_Market.Marketid);
---                 Select_Cand.Set("PRICETS",Ts);
---                 Price_Histories.Read_List(Select_Cand, Ph_List);
---                   
---                 declare
---                    Idx : Integer := 0;
---                    type Best_Runners_Array_Type is array (Max_Runners_Type'range) of Price_Histories.Price_History_Type ;
---                    Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
---                    The_Runner   : Runners.Runner_Type;
---                    Eos          : Boolean := False;
---                    Eos2         : Boolean := False;
---                    The_Bet      : Bets.Bet_Type;
---                    use Price_Histories;
---                    Price        : Prices.Price_Type;
---                 begin
---                 
+         if Runners_To_Watch_List.Length > 0 then         
+            Ts_List.Clear;
+            Select_Timestamps.Set("MARKETID", The_Market.Marketid);
+            Read_Ts(Select_Timestamps, Ts_List);
+            Timestamp_Loop : for Ts of Ts_List loop
+               Ph_List.Clear;
+               Select_Cand.Set("MARKETID",The_Market.Marketid);
+               Select_Cand.Set("PRICETS",Ts);
+               Price_Histories.Read_List(Select_Cand, Ph_List);
+                 
+               declare
+                  Idx : Integer := 0;
+                  type Best_Runners_Array_Type is array (Max_Runners_Type'range) of Price_Histories.Price_History_Type ;
+                  Best_Runners : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+                  The_Runner   : Runners.Runner_Type;
+                  Eos          : Boolean := False;
+                  Eos2         : Boolean := False;
+                  The_Bet      : Bets.Bet_Type;
+                  use Price_Histories;
+                  Price        : Prices.Price_Type;
+               begin
+               
 --                    Backprice_Sorter.Sort(Ph_List);               
 --                 
 --                    Ph_Loop : for Ph of Ph_List loop
@@ -274,65 +275,50 @@ begin
 --                       end if;
 --                    end loop Ph_Loop;
 --                    -- Best_Runners is sorted lowest backprice to highest, max 20 entries
---  
---                    for i in Best_Runners'range loop
---                       if Best_Runners(i) /=  Price_Histories.Empty_Data then
---  
---                          The_Bet.Marketid := Best_Runners(i).Marketid;
---                          The_Bet.Selectionid := Best_Runners(i).Selectionid;
---                          if not The_bet.Is_Existing_Marketid_Selectionid then
---  
---                             
---                             
---                             The_Runner := Runners.Empty_Data;
---                             The_Runner.Marketid    := Best_Runners(i).Marketid;
---                             The_Runner.Selectionid := Best_Runners(i).Selectionid;
---                             The_Runner.Read(Eos);
---                             The_Bet.Clear;
---  
---                             if not Eos and then
---                               Start_Bets_OK and then
---                               Best_Runners(i).Backprice >  Fixed_Type(1.01) and then
---                               Best_Runners(i).Backprice <  Fixed_Type(1000.0) and then
---                               Best_Runners(i).Layprice  <  Global_Max_Price and then
---                               Best_Runners(i).Layprice  >= Global_Min_Price then
---    
---                                The_Bet := Bets.Create(Side       => Lay,
---                                                       Name       => Global_Betname,
---                                                       Size       => Global_Laysize,
---                                                       Price      => Price_Type(Global_Max_Price),  
---                                                       Placed     => Best_Runners(i).Pricets,                  
---                                                       Runner => The_Runner,
---                                                       Market => The_Market);
---  
---                                The_Bet.Match_Directly(True);
---                                The_Bet.Insert;
---                                The_Bet.Check_Matched;
---                                The_Bet.Check_Outcome;
---                                The_Bet.Update_Withcheck;
---                                -- do the Backbet
---                                The_Bet.Clear;
---                                The_Bet := Bets.Create(Side       => Back,
---                                                       Name       => Global_Betname,
---                                                       Size       => Global_Laysize - 10.0,
---                                                       Price      => Best_Runners(i).Backprice + 4.0,  
---                                                       Placed     => Best_Runners(i).Pricets,                  
---                                                       Runner => The_Runner,
---                                                       Market => The_Market);
---  
---                                The_Bet.Match_Directly(False);
---                                The_Bet.Insert;
---                                The_Bet.Check_Matched;
---                                The_Bet.Check_Outcome;
---                                The_Bet.Update_Withcheck;
---                                
---                             end if; --is existing      
---                          end if; --Eos
---                       end if; -- /= best_runner(i)
---                    end loop; --i in best_runners
---                 end;
---              end loop Timestamp_Loop;
---           end if;
+
+                  for r of Runners_To_Watch_List loop
+                     for ph of Ph_List loop
+                        if ph.Selectionid = R.Selectionid then
+                           The_Bet.Marketid := ph.Marketid;
+                           The_Bet.Selectionid := ph.Selectionid;
+                           if not The_bet.Is_Existing_Marketid_Selectionid then
+                              The_Bet.Clear;
+                              if ph.Backprice >= Fixed_Type(1.01) and then
+                                ph.Backprice <= Fixed_Type(10.0) then
+  
+                                 The_Bet := Bets.Create(Side       => Back,
+                                                        Name       => Global_Betname,
+                                                        Size       => 200.0,
+                                                        Price      => 1.01,  
+                                                        Placed     => ph.Pricets,                  
+                                                        Runner => The_Runner,
+                                                        Market => The_Market);
+                                 The_Bet.Match_Directly(False);
+                                 The_Bet.Insert;
+                                 The_Bet.Check_Matched;
+                                 The_Bet.Check_Outcome;
+                                 The_Bet.Update_Withcheck;
+                                 ph.status(1..4) := "KILL";
+                              end if; --is existing      
+                           end if; --Eos
+                        end if; -- /= best_runner(i)
+                     end loop; --i in best_runners
+                  end loop; --r of Runners_to_Watch
+                  
+                  declare
+                     Tmp_List : runners.Lists.list := Runners_To_Watch_List.Copy;
+                  begin
+                     Runners_To_Watch_List.Clear;
+                     for T of Tmp_List loop
+                        if T.Status(1..4) /= "KILL" then
+                           Runners_To_Watch_List.Append(T);
+                        end if;                          
+                     end loop;                     
+                  end;
+                                      
+               end;
+            end loop Timestamp_Loop;
+         end if; 
          T.Commit;
       end loop Market_Loop;
    end ;
