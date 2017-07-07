@@ -50,6 +50,7 @@ project Adabot is
                     "check_matched_sim_bets.adb",
                     "check_lay.adb",
                     "check_lay2.adb",
+                    "check_lay3.adb",
      --compile issue                           "check_grn.adb",
                     "profit_min_max.adb",
                     "check_for_greenup_plc.adb",
