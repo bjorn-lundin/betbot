@@ -138,6 +138,8 @@ begin
                             "AMARKETS M, AEVENTS E " &
                             "where M.MARKETTYPE = 'WIN' " &
                             "and M.EVENTID = E.EVENTID " &
+                            "and M.ACTIVERUNNERS >= 8 " & 
+                            "and M.TOTALMATCHED >= 1000000 " & 
                             "and E.EVENTTYPEID = 7 " & -- horses
                             "and M.STARTTS::date >= '2016-04-04' " & -- we do not have good data before that time
                             "order by M.STARTTS"
@@ -250,7 +252,7 @@ begin
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                              ph.Backprice <= r.handicap - Fixed_Type(10.0) then
+                              ph.Backprice <= r.handicap - Fixed_Type(20.0) then
                               
                               back_bet_size := Global_Laysize * Bet_Size_Type(r.handicap/ph.Backprice) ;
                               The_Bet.Clear;
