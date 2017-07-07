@@ -39,7 +39,7 @@ procedure Check_Lay2 is
    Global_Betname   : Betname_Type := (others => ' ');
    Global_Max_Price : Fixed_Type := 0.0;
    Global_Min_Price : Fixed_Type := 0.0;
-   Global_Min_Back_Price : Fixed_Type := 5.0;
+   --Global_Min_Back_Price : Fixed_Type := 5.0;
    Global_Laysize   : Bet_Size_Type := 50.0;
 
    SA_Max_Price     : aliased Gnat.Strings.String_Access;
@@ -120,7 +120,7 @@ begin
    Move(SA_Betname.all,Global_Betname);
    Global_Max_Price := Fixed_Type'Value(SA_Max_Price.all);
    Global_Min_Price := Fixed_Type'Value(SA_Min_Price.all);
-   Global_Min_Back_Price := Fixed_Type'Value(SA_Min_Back_Price.all); 
+   --Global_Min_Back_Price := Fixed_Type'Value(SA_Min_Back_Price.all); 
    
    Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
    Log(Me, "Connect Db");
@@ -217,6 +217,8 @@ begin
                      The_Bet.Insert;
                      The_Bet.Check_Outcome;
                      The_Bet.Update_Withcheck;               
+                     the_bet.read(Eos);
+                     the_runner.Handicap := the_bet.Pricematched;
                      Runners_To_Watch_List.Append(The_Runner);
                   else
                      Log(Me & "Main" , "runner removed: " & The_runner.To_String);                  
@@ -242,12 +244,15 @@ begin
                   The_Bet      : Bets.Bet_Type;
                   Eos          : Boolean := False;
                   use Price_Histories;
+                  back_bet_size : Bet_Size_Type := 0.0;
                begin
                   for r of Runners_To_Watch_List loop
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                              ph.Backprice <= Global_Min_Back_Price then
+                              ph.Backprice <= r.handicap - Fixed_Type(10.0) then
+                              
+                              back_bet_size := Global_Laysize * Bet_Size_Type(r.handicap/ph.Backprice) ;
                               The_Bet.Clear;
                               The_Runner.Marketid := ph.Marketid;
                               The_Runner.Selectionid := ph.Selectionid;
@@ -255,7 +260,7 @@ begin
                               if not Eos then                              
                                  The_Bet := Bets.Create(Side       => Back,
                                                         Name       => Global_Betname,
-                                                        Size       => 200.0,
+                                                        Size       => back_bet_size,
                                                         Price      => 1.01,  
                                                         Placed     => ph.Pricets,                  
                                                         Runner => The_Runner,
