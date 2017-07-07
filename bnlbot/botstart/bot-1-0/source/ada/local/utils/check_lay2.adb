@@ -138,7 +138,7 @@ begin
                             "AMARKETS M, AEVENTS E " &
                             "where M.MARKETTYPE = 'WIN' " &
                             "and M.EVENTID = E.EVENTID " &
-                            "and M.ACTIVERUNNERS >= 8 " & 
+                            "and M.NUMACTIVERUNNERS >= 8 " & 
                             "and M.TOTALMATCHED >= 1000000 " & 
                             "and E.EVENTTYPEID = 7 " & -- horses
                             "and M.STARTTS::date >= '2016-04-04' " & -- we do not have good data before that time
