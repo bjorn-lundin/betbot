@@ -252,9 +252,9 @@ begin
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                              ph.Backprice <= Fixed_Type(5.0) then
+                              ph.Backprice >= r.handicap + Fixed_Type(10.0) then
                               
-                              back_bet_size := 700.0; -- Global_Laysize * Bet_Size_Type(r.handicap/ph.Backprice) ;
+                              back_bet_size := Global_Laysize * Bet_Size_Type(r.handicap/ph.Backprice) ;
                               The_Bet.Clear;
                               The_Runner.Marketid := ph.Marketid;
                               The_Runner.Selectionid := ph.Selectionid;
