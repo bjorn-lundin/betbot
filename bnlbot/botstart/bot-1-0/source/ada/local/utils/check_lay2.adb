@@ -46,7 +46,7 @@ procedure Check_Lay2 is
    SA_Min_Price     : aliased Gnat.Strings.String_Access;
    SA_Min_Back_Price     : aliased Gnat.Strings.String_Access;
    Sa_Betname       : aliased Gnat.Strings.String_Access;
-  
+   Ba_No_Backbet    : aliased Boolean := False;  
   -- IA_Runners_Place : aliased Integer := 0;
   -- IA_Addon_Odds    : aliased Integer := 0;
   
@@ -115,6 +115,12 @@ begin
       Long_Switch => "--min_back_price=",
       Help        => "Min back price");
 
+   Define_Switch
+     (Cmd_Line,
+      Ba_No_Backbet'access,
+      Long_Switch => "--no-backbet",
+      Help        => "skip placing backbets");
+   
    Getopt (Cmd_Line);  -- process the command line
 
    Move(SA_Betname.all,Global_Betname);
@@ -230,8 +236,8 @@ begin
                end if;   
             end if;            
          end loop;
-         
-         if Runners_To_Watch_List.Length > 0 then         
+
+         if not Ba_No_Backbet and then Runners_To_Watch_List.Length > 0 then         
             Ts_List.Clear;
             Select_Timestamps.Set("MARKETID", The_Market.Marketid);
             Read_Ts(Select_Timestamps, Ts_List);
