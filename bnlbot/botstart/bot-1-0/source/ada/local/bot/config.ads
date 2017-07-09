@@ -18,7 +18,15 @@ package Config is
                     Horse_Back_1_19_01_1_2_Plc_1_01,
                     HORSE_LAY_1_04_11_1_2_WIN_2_30,
                     HORSE_LAY_1_05_05_1_2_WIN_2_40,
-                    HORSE_LAY_1_09_02_1_2_WIN_3_30
+                    HORSE_LAY_1_09_02_1_2_WIN_3_30,
+                    HORSE_LAY_ALL_03_60,
+                    HORSE_LAY_ALL_03_80,
+                    HORSE_LAY_ALL_05_20,
+                    HORSE_LAY_ALL_08_60,
+                    HORSE_LAY_ALL_10_00,
+                    HORSE_LAY_ALL_19_00,
+                    HORSE_LAY_ALL_25_00,
+                    HORSE_LAY_ALL_48_00
                     --Horse_Back_1_12_06_1_2_Win_1_01,
                     --Horse_Back_1_13_07_1_2_Win_1_01,
                     --Horse_Back_1_14_07_1_2_Win_1_01,
