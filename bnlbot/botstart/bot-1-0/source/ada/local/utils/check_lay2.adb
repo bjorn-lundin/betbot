@@ -252,7 +252,9 @@ begin
                      for ph of Ph_List loop
                         if ph.Selectionid = R.Selectionid then
                            if ph.Backprice >= Fixed_Type(1.01) and then
-                              ph.Backprice >= r.handicap + Fixed_Type(10.0) then
+                              ph.Backprice <= Fixed_Type(1000.0) and then
+                             -- ph.Backprice >= r.handicap + Fixed_Type(10.0) then -- for greenup
+                              ph.Backprice <= Fixed_Type(1.5) then                 -- for bail out
                               
                               back_bet_size := Global_Laysize * Bet_Size_Type(r.handicap/ph.Backprice) ;
                               The_Bet.Clear;
