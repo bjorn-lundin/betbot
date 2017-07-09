@@ -228,13 +228,14 @@ begin
                      the_bet.read(Eos);
                      the_runner.Handicap := the_bet.Pricematched;
                      Runners_To_Watch_List.Append(The_Runner);
-                  else
-                     Log(Me & "Main" , "runner removed: " & The_runner.To_String);                  
-                  end if;   
+                 -- else
+                 --    Log(Me & "Main" , "runner removed: " & The_runner.To_String);                  
+                 -- end if;   
                else
                   Log(Me & "Main" , "no such runner: " & The_runner.To_String);                  
                end if;   
             end if;            
+          end if;            
          end loop;
 
          if not Ba_No_Backbet and then Runners_To_Watch_List.Length > 0 then         
