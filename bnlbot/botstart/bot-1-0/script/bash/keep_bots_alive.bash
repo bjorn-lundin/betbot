@@ -423,10 +423,31 @@ for f in $ALARM_FILES ; do
   fi
 done
 
+#db check
 
+if [ $HOUR != "11" ] ; then
+#  echo "1"
+  . $BOT_START/bot.bash bnl
+  psql --command="select * from aevents where countrycode='ww'" --quiet --tuples-only >/dev/null
+  R=$?
+  DAY2_FILE=$(date +"%F")
+  DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
 
+  if [ $R != "0" ] ; then
+    for RECIPENT in $MAIL_LIST ; do
+      if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
+        echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
+        touch ${DB_ALARM_TODAY_FILE}
+      fi
+    done
+  fi
 
+  #delete old alarmfiles
+  DB_ALARM_FILES=$(ls /tmp/db_alarm*  2>/dev/null)
 
-
-
-
+  for f in $DB_ALARM_FILES ; do
+    if [ $f != $DB_ALARM_TODAY_FILE ] ; then
+      rm -f $f
+    fi
+  done
+fi
