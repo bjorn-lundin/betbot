@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang='sv'>
   <head>
+    <meta charset="UTF8">
     <title>Bot mobile web</title>
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <link rel='stylesheet' href='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css' />
@@ -8,10 +9,9 @@
     <script src='//code.jquery.com/jquery-1.10.2.min.js'></script>
     <script src='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js'></script>
     <script src='/js/b2.js'></script>
-    
   </head>
   <body>
-      <!-- dialog for login -->    
+      <!-- dialog for login -->
     <div data-role='page' id='login' data-dialog='true'>
       <div data-role='header'>
         <h1>Login</h1>
@@ -19,8 +19,8 @@
       <div data-role='main' class='ui-content'>
         <form id='loginform' data-ajax='false'>
           <fieldset data-role='controlgroup'>
-            <legend>Välj användare</legend>
-              <label for='bnl'>Björn</label>
+            <legend>VÃ¤lj anvÃ¤ndare</legend>
+              <label for='bnl'>BjÃ¶rn</label>
               <input type='radio' name='username' id='bnl' value='bnl' checked>
               <label for='jmb'>Joakim</label>
               <input type='radio' name='username' id='jmb' value='jmb'>
@@ -31,33 +31,33 @@
         </form>
       </div>
       <div data-role='footer'>
-        <h2>Björntjänst Betting</h2>
+        <h2>BjÃ¶rntjÃ¤nst Betting</h2>
       </div>
     </div>
-  
+
     <!-- page for menu -->    
     <div data-role='page' id='menu'>
       <div data-role='header'>
         <h1>Meny</h1>
-        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt användare</a>
+        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt anvÃ¤ndare</a>
       </div>
       <div data-role='main' class='ui-content'>
         <ul data-role='listview' data-inset='true'>
           <li><a href='#viewer' id='todays'>Dagens spel</a></li>
-          <li><a href='#viewer' id='yesterday'>Gårdagens spel</a></li>
+          <li><a href='#viewer' id='yesterday'>GÃ¥rdagens spel</a></li>
           <li><a href='#viewer' id='thisweek'>Denna veckas spel</a></li>
-          <li><a href='#viewer' id='lastweek'>Förra veckans spel</a></li>
+          <li><a href='#viewer' id='lastweek'>FÃ¶rra veckans spel</a></li>
         </ul>
       </div>
       <div data-role='footer'>
-        <h1>Björntjänst Betting</h1>
+        <h1>BjÃ¶rntjÃ¤nst Betting</h1>
       </div>
     </div>
 
     <!-- page for resultset -->    
     <div data-role='page' id='viewer'>
       <div data-role='header'>
-        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt användare</a>
+        <a href='#login' class='ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left'>Byt anvÃ¤ndare</a>
         <h1>Resultat</h1>
         <a href='#menu' class='ui-btn ui-corner-all ui-shadow ui-icon-home ui-btn-icon-left'>Meny</a>
       </div>
@@ -66,10 +66,8 @@
        <!-- total and result-table will be placed here -->
       </div>
       <div data-role='footer'>
-        <h1>Björntjänst Betting</h1>
+        <h1>BjÃ¶rntjÃ¤nst Betting</h1>
       </div>
     </div>
-
-    
   </body>
 </html>
