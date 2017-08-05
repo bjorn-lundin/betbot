@@ -9,6 +9,7 @@ alias stop_bet_checker='$BOT_TARGET/bin/bot_send --receiver=bet_checker --messag
 alias stop_bot='$BOT_TARGET/bin/bot_send --receiver=bot --message=exit'
 alias stop_markets_fetcher='$BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
 alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll --message=exit'
+alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
 alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit' 
 alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_031 --message=exit' 
