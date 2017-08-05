@@ -140,7 +140,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, PLB);
 
       case Main_Bet is
-            when HORSE_LAY_ALL_03_60 .. HORSE_LAY_ALL_48_00 =>
+            when HORSE_LAY_ALL_08_60 .. HORSE_LAY_ALL_10_00 =>
                null;
             when others =>
                Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -901,7 +901,7 @@ procedure Poll is
                when Horse =>
                   case I is
 
-                  when HORSE_LAY_1_05_10_1_2_WIN_3_40 .. HORSE_LAY_1_10_10_1_2_WIN_4_30   =>
+                  when HORSE_LAY_1_05_10_1_2_WIN_3_40 .. HORSE_LAY_1_10_10_1_2_WIN_4_40   =>
                      --  12345678901234567890
                      --  Horse_Lay_1_09_02_1_2_Win_3_25
                      Try_To_Make_Lay_Bet (
@@ -958,7 +958,7 @@ procedure Poll is
                                                           Match_Directly  => Match_Directly);
                         end if;
                      end;
-                     when HORSE_LAY_ALL_03_60 .. HORSE_LAY_ALL_48_00 =>
+                     when HORSE_LAY_ALL_08_60 .. HORSE_LAY_ALL_10_00 =>
                         if First_Poll then
                            Lay_At_Start(Bettype         => I,
                                    Br              => Best_Runners,
