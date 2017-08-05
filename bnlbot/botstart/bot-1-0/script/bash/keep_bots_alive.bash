@@ -92,7 +92,7 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER bet_checker bet_checker
 
-  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6 poll_7 poll_8"
+  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6 poll_7 poll_8 poll_9 poll_10 poll_11 poll_12"
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done

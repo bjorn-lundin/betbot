@@ -901,7 +901,7 @@ procedure Poll is
                when Horse =>
                   case I is
 
-                  when Horse_Lay_1_04_11_1_2_Win_2_30 .. Horse_Lay_1_09_02_1_2_Win_3_30   =>
+                  when HORSE_LAY_1_05_10_1_2_WIN_3_40 .. HORSE_LAY_1_10_10_1_2_WIN_4_30   =>
                      --  12345678901234567890
                      --  Horse_Lay_1_09_02_1_2_Win_3_25
                      Try_To_Make_Lay_Bet (
@@ -910,7 +910,7 @@ procedure Poll is
                                           Marketid        => Markets_Array (Win).Marketid,
                                           Match_Directly  => True);
 
-                  when Horse_Back_1_03_01_1_2_Plc_1_01 .. Horse_Back_1_19_01_1_2_Plc_1_01 =>
+                  when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_10_07_1_2_Plc_1_01 =>
                      declare
                         M_Type     : Market_Type := Win;
                         Image      : String := I'Img;
