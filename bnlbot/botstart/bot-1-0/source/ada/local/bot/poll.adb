@@ -901,7 +901,7 @@ procedure Poll is
                when Horse =>
                   case I is
 
-                  when HORSE_LAY_1_05_10_1_2_WIN_3_40 .. HORSE_LAY_1_10_10_1_2_WIN_4_40   =>
+                  when HORSE_LAY_1_05_10_1_2_WIN_3_40 .. HORSE_LAY_1_20_10_1_2_WIN_4_40   =>
                      --  12345678901234567890
                      --  Horse_Lay_1_09_02_1_2_Win_3_25
                      Try_To_Make_Lay_Bet (

@@ -10,7 +10,13 @@ package Config is
                     Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     HORSE_LAY_1_05_10_1_2_WIN_3_40,
+                    HORSE_LAY_1_10_10_1_2_WIN_3_40,
+                    HORSE_LAY_1_15_10_1_2_WIN_3_40,
+                    HORSE_LAY_1_20_10_1_2_WIN_3_40,
+                    HORSE_LAY_1_05_10_1_2_WIN_4_40,
                     HORSE_LAY_1_10_10_1_2_WIN_4_40,
+                    HORSE_LAY_1_15_10_1_2_WIN_4_40,
+                    HORSE_LAY_1_20_10_1_2_WIN_4_40,
                     HORSE_LAY_ALL_08_60,
                     HORSE_LAY_ALL_10_00
                    );

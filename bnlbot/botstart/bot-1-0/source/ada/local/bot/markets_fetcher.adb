@@ -102,7 +102,7 @@ procedure Markets_Fetcher is
     7 => (True, (("poll_market_7  "), (others => ' '))),
     8 => (True, (("poll_market_8  "), (others => ' ')))
   );
-  Race_Pollers : array (1..10) of Poll_Process := (
+  Race_Pollers : array (1..12) of Poll_Process := (
     1 => (True, (("poll_1         "), (others => ' '))),
     2 => (True, (("poll_2         "), (others => ' '))),
     3 => (True, (("poll_3         "), (others => ' '))),
@@ -112,7 +112,9 @@ procedure Markets_Fetcher is
     7 => (True, (("poll_7         "), (others => ' '))),
     8 => (True, (("poll_8         "), (others => ' '))),
     9 => (True, (("poll_9         "), (others => ' '))),
-   10 => (True, (("poll_10        "), (others => ' ')))
+   10 => (True, (("poll_10        "), (others => ' '))),
+   11 => (True, (("poll_11        "), (others => ' '))),
+   12 => (True, (("poll_12        "), (others => ' ')))
   );
   Test_Pollers : array (1..4) of Poll_Process := (
     1 => (True, (("poll_bounds_1  "), (others => ' '))),
@@ -294,7 +296,7 @@ begin
    -- Create JSON arrays
   Append(Exchange_Ids , Create("1"));      -- Not Australia
   Append(Event_Type_Ids , Create("7"));     -- horse
-  Append(Event_Type_Ids , Create("4339"));  -- hound
+--Append(Event_Type_Ids , Create("4339"));  -- hound
 --   none for all countries
   Append(Market_Countries , Create("GB"));
   Append(Market_Countries , Create("IE"));
