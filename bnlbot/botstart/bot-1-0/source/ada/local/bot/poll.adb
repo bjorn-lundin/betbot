@@ -382,13 +382,13 @@ procedure Poll is
 
     for Bet of Lay_Bet_List loop
       if Bet.Status(1..18) = "EXECUTION_COMPLETE" then
-        if Bet.Sizematched < 10.0 then
+        if Bet.Pricematched < 10.0 then
           Backprice := Bet.Pricematched + 0.2;
-        elsif Fixed_Type(10.0) <= Bet.Sizematched and then Bet.Sizematched < 20.0 then
+        elsif Fixed_Type(10.0) <= Bet.Pricematched and then Bet.Pricematched < 20.0 then
           Backprice := Bet.Pricematched + 0.5;
-        elsif Fixed_Type(20.0) <= Bet.Sizematched and then Bet.Sizematched < 30.0 then
+        elsif Fixed_Type(20.0) <= Bet.Pricematched and then Bet.Pricematched < 30.0 then
           Backprice := Bet.Pricematched + 1.0;
-        elsif Fixed_Type(30.0) <= Bet.Sizematched and then Bet.Sizematched < 50.0 then
+        elsif Fixed_Type(30.0) <= Bet.Pricematched and then Bet.Pricematched < 50.0 then
           Backprice := Bet.Pricematched + 2.0;
         else --
           Backprice := Bet.Pricematched + 5.0;
