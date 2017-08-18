@@ -40,23 +40,19 @@ project Adabot is
                     "poll_bounds.adb",
                     "bot_web_server.adb",
                     "menu_parser.adb",
-          --          "football_live_feed.adb",
+                    "football_live_feed.adb",
                     "check_bot_running.adb"
                     );
 
    Stat_Mains   := ("stat_maker.adb",
-           --compile issue         "sim_back_1_2_3.adb",
                     "sim_back_in_play.adb",
                     "check_matched_sim_bets.adb",
                     "check_lay.adb",
                     "check_lay2.adb",
-                    "check_lay3.adb",
-     --compile issue                           "check_grn.adb",
                     "profit_min_max.adb",
                     "check_for_greenup_plc.adb",
                     "check_for_lay_win.adb",
                     "create_cache.adb",
-          --compile issue                      "update_ael_bets.adb",
                     "back_during_race_and_lay_later.adb", 
                     "greenup_lay_first.adb"); 
 

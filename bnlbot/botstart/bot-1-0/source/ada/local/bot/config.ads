@@ -9,20 +9,12 @@ package Config is
   type Bet_Type is (
                     Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
-                    HORSE_LAY_1_05_10_1_2_WIN_3_40,
-                    HORSE_LAY_1_10_10_1_2_WIN_3_40,
-                    HORSE_LAY_1_15_10_1_2_WIN_3_40,
-                    HORSE_LAY_1_20_10_1_2_WIN_3_40,
-                    HORSE_LAY_1_05_10_1_2_WIN_4_40,
-                    HORSE_LAY_1_10_10_1_2_WIN_4_40,
-                    HORSE_LAY_1_15_10_1_2_WIN_4_40,
-                    HORSE_LAY_1_20_10_1_2_WIN_4_40,
-                    HORSE_LAY_ALL_08_60,
-                    HORSE_LAY_ALL_10_00
+                    Horse_Lay_1_05_10_1_2_Win_3_40,
+                    Horse_Greenup_Lay_Back_Win_20_48
                    );
 
 
-  type Allowed_Days_Array is array(Calendar2.Week_Day_Type'range) of Boolean;
+  type Allowed_Days_Array is array(Calendar2.Week_Day_Type'Range) of Boolean;
 
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
@@ -32,7 +24,7 @@ package Config is
     Enabled                    : Boolean          := False;
   end record;
 
-  type Bet_Config_Array_Type is array(Bet_Type'range) of Bet_Config_Type;
+  type Bet_Config_Array_Type is array(Bet_Type'Range) of Bet_Config_Type;
 
   type Config_Type is tagged record
     --Size                       : Bet_Size_Type    := 30.0;
