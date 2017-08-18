@@ -382,7 +382,9 @@ procedure Poll is
 
     for Bet of Lay_Bet_List loop
       if Bet.Status(1..18) = "EXECUTION_COMPLETE" then
-        if Bet.Sizematched < 20.0 then
+        if Bet.Sizematched < 10.0 then
+          Backprice := Bet.Pricematched + 0.2;
+        elsif Fixed_Type(10.0) <= Bet.Sizematched and then Bet.Sizematched < 20.0 then
           Backprice := Bet.Pricematched + 0.5;
         elsif Fixed_Type(20.0) <= Bet.Sizematched and then Bet.Sizematched < 30.0 then
           Backprice := Bet.Pricematched + 1.0;
@@ -391,17 +393,13 @@ procedure Poll is
         else --
           Backprice := Bet.Pricematched + 5.0;
         end if;
+
         declare
           Pricematched_Minus_One : Float := Float(Bet.Pricematched) - Float(1.0);
           Backprice_Minus_One    : Float := Float(Backprice) - Float(1.0);
         begin
           Backsize := Bet.Sizematched * Fixed_Type(Pricematched_Minus_One / Backprice_Minus_One);
         end;
-        Log(Service & "Bet.Selectionid " & Bet.Selectionid'Img);
-        Log(Service & "Bettype " & Bettype'Img);
-        Log(Service & "Marketid '" & Marketid & "'");
-        Log(Service & "Backprice " & Backprice'Img);
-        Log(Service & "Backsize " & Backsize'Img);
 
         Send_Back_Bet(Selectionid     => Bet.Selectionid,
                       Main_Bet        => Bettype,
