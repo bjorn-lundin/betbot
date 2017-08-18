@@ -340,9 +340,9 @@ procedure Poll is
 
   begin          --1         2         3
     --  12345678901234567890123456789012345
-    --  HORSE_Greenup_Lay_Back_20_48_Win
-    Min_Layprice := Fixed_Type'Value(Image(24..25));
-    Max_Layprice := Fixed_Type'Value(Image(27..28));
+    --  HORSE_Greenup_Lay_Back_WIN_20_48
+    Min_Layprice := Fixed_Type'Value(Image(28..29));
+    Max_Layprice := Fixed_Type'Value(Image(31..32));
 
     for I in Br'Range loop
       Log(Service & " " & Bettype'Img & " I=" & I'Img &
