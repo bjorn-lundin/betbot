@@ -26,6 +26,7 @@ with Bot_Svn_Info;
 with Bets;
 with Config;
 with Utils; use Utils;
+with Tics;
 
 procedure Poll is
   package Ev renames Ada.Environment_Variables;
@@ -338,6 +339,7 @@ procedure Poll is
     Backprice    : Back_Price_Type := 0.0;
     Backsize     : Fixed_Type := 0.0;
     Did_Bet      : Boolean := False;
+    Tic          : Integer := 0;
 
   begin          --1         2         3
     --  12345678901234567890123456789012345
@@ -382,17 +384,8 @@ procedure Poll is
 
     for Bet of Lay_Bet_List loop
       if Bet.Status(1..18) = "EXECUTION_COMPLETE" then
-        if Bet.Pricematched < 10.0 then
-          Backprice := Bet.Pricematched + 0.2;
-        elsif Fixed_Type(10.0) <= Bet.Pricematched and then Bet.Pricematched < 20.0 then
-          Backprice := Bet.Pricematched + 0.5;
-        elsif Fixed_Type(20.0) <= Bet.Pricematched and then Bet.Pricematched < 30.0 then
-          Backprice := Bet.Pricematched + 1.0;
-        elsif Fixed_Type(30.0) <= Bet.Pricematched and then Bet.Pricematched < 50.0 then
-          Backprice := Bet.Pricematched + 2.0;
-        else --
-          Backprice := Bet.Pricematched + 5.0;
-        end if;
+        Tic := Tics.Get_Nearest_Higher_Tic_Index(Bet.Pricematched);
+        Backprice := Back_Price_Type(Tics.Get_Tic_Price(Tic));
 
         declare
           Pricematched_Minus_One : Float := Float(Bet.Pricematched) - Float(1.0);
