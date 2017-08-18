@@ -388,9 +388,14 @@ procedure Poll is
           Pricematched_Minus_One : Float := Float(Bet.Pricematched) - Float(1.0);
           Backprice_Minus_One    : Float := Float(Backprice) - Float(1.0);
         begin
-
-        Backsize := Bet.Sizematched * Fixed_Type(Pricematched_Minus_One / Backprice_Minus_One);
+          Backsize := Bet.Sizematched * Fixed_Type(Pricematched_Minus_One / Backprice_Minus_One);
         end;
+        Log(Service & "Bet.Selectionid " & Bet.Selectionid'Img);
+        Log(Service & "Bettype " & Bettype'Img);
+        Log(Service & "Marketid '" & Marketid & "'");
+        Log(Service & "Backprice " & Backprice'Img);
+        Log(Service & "Backsize " & Backsize'Img);
+
         Send_Back_Bet(Selectionid     => Bet.Selectionid,
                       Main_Bet        => Bettype,
                       Marketid        => Marketid,
