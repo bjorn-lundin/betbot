@@ -385,7 +385,7 @@ procedure Poll is
     for Bet of Lay_Bet_List loop
       if Bet.Status(1..18) = "EXECUTION_COMPLETE" then
         Tic := Tics.Get_Nearest_Higher_Tic_Index(Bet.Pricematched);
-        Backprice := Back_Price_Type(Tics.Get_Tic_Price(Tic));
+        Backprice := Back_Price_Type(Tics.Get_Tic_Price(Tic+1));
 
         declare
           Pricematched_Minus_One : Float := Float(Bet.Pricematched) - Float(1.0);
