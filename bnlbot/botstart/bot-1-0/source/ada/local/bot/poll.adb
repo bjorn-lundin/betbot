@@ -327,8 +327,8 @@ procedure Poll is
   -----------------------------------------------------------------------------------
   procedure Try_To_Greenup_Lay_Back(Bettype         : Config.Bet_Type;
                                     Br              : Best_Runners_Array_Type;
-                                    Marketid        : Marketid_Type;
-                                    Match_Directly  : Boolean := False) is
+                                    Marketid        : Marketid_Type) is
+
     Service      : constant String := "Try_To_Greenup_Lay_Back";
     Max_Layprice : Fixed_Type;
     Min_Layprice : Fixed_Type;
@@ -337,7 +337,6 @@ procedure Poll is
     Lay_Bet_List : Bets.Lists.List;
     Backprice    : Back_Price_Type := 0.0;
     Backsize     : Fixed_Type := 0.0;
-
 
   begin          --1         2         3
     --  12345678901234567890123456789012345
@@ -362,7 +361,7 @@ procedure Poll is
                      Main_Bet        => Bettype,
                      Marketid        => Marketid,
                      Max_Price       => Max_Lay_Price_Type(Br(I).Layprice),
-                     Match_Directly  => Match_Directly);
+                     Match_Directly  => True);
         -- save the bets so we can put correct back bets
       end if;
     end loop;
@@ -401,7 +400,7 @@ procedure Poll is
       end if;
     end loop;
 
-    Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet for this type of bets
+    Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet/send_back_bet for this type of bets
 
   end Try_To_Greenup_Lay_Back;
   -----------------------------------------------------------------------------------
@@ -765,8 +764,7 @@ procedure Poll is
                   if First_Poll then
                     Try_To_Greenup_Lay_Back(Bettype         => I,
                                             Br              => Best_Runners,
-                                            Marketid        => Markets_Array (Win).Marketid,
-                                            Match_Directly  => True);
+                                            Marketid        => Markets_Array (Win).Marketid);
                   end if;
 
               end case;
