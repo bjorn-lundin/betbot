@@ -198,7 +198,7 @@ procedure Poll is
     if Local_Back_Size = 0.0 then
       Move(F8_Image(Fixed_Type(Bets_Allowed(Main_Bet).Bet_Size)), Pbb.Size);
     else
-      Pbb.Size := F8_Image(Local_Back_Size);
+      Move(F8_Image(Local_Back_Size), Pbb.Size);
     end if;
 
     Move(F8_Image(Fixed_Type(Min_Price)), Pbb.Price); --abs max
@@ -337,6 +337,7 @@ procedure Poll is
     Lay_Bet_List : Bets.Lists.List;
     Backprice    : Back_Price_Type := 0.0;
     Backsize     : Fixed_Type := 0.0;
+    Did_Bet      : Boolean := False;
 
   begin          --1         2         3
     --  12345678901234567890123456789012345
@@ -362,9 +363,15 @@ procedure Poll is
                      Marketid        => Marketid,
                      Max_Price       => Max_Lay_Price_Type(Br(I).Layprice),
                      Match_Directly  => True);
+        Did_Bet := True;
         -- save the bets so we can put correct back bets
       end if;
     end loop;
+
+    if not Did_Bet then
+      return;
+    end if;
+
     -- delay for giving last bet time to be placed properly
     Log(Service & "delay 5 secs for giving db processing time");
     delay 5.0;
