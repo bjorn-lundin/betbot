@@ -138,7 +138,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, Plb);
 
       case Main_Bet is
-        when Horse_Greenup_Lay_Back_Win_20_48 =>
+        when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -210,7 +210,7 @@ procedure Poll is
       Bot_Messages.Send(Receiver, Pbb);
 
       case Main_Bet is
-        when Horse_Greenup_Lay_Back_Win_20_48 =>
+        when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -341,11 +341,11 @@ procedure Poll is
     Did_Bet      : Boolean := False;
     Tic          : Integer := 0;
 
-  begin          --1         2         3
-    --  12345678901234567890123456789012345
-    --  HORSE_Greenup_Lay_Back_WIN_20_48
-    Min_Layprice := Fixed_Type'Value(Image(28..29));
-    Max_Layprice := Fixed_Type'Value(Image(31..32));
+  begin          --1         2         3       4
+    --  1234567890123456789012345678901234567890
+    --  Horse_Greenup_Lay_Back_Win_15_00_19_50
+    Min_Layprice := Fixed_Type'Value(Image(28..29) & '.' & Image(31..32));
+    Max_Layprice := Fixed_Type'Value(Image(34..35) & '.' & Image(37..38));
 
     for I in Br'Range loop
       Log(Service & " " & Bettype'Img & " I=" & I'Img &
@@ -763,7 +763,7 @@ procedure Poll is
                                                      Match_Directly  => Match_Directly);
                     end if;
                   end;
-                when Horse_Greenup_Lay_Back_Win_20_48 =>
+                when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
                   if First_Poll and Has_Been_In_Play then
                     Try_To_Greenup_Lay_Back(Bettype         => I,
                                             Br              => Best_Runners,

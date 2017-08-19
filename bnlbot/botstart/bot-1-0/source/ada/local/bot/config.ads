@@ -10,7 +10,10 @@ package Config is
                     Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Lay_1_05_10_1_2_Win_3_40,
-                    Horse_Greenup_Lay_Back_Win_20_48
+                    Horse_Greenup_Lay_Back_Win_15_00_19_50,
+                    Horse_Greenup_Lay_Back_Win_20_00_29_00,
+                    Horse_Greenup_Lay_Back_Win_30_00_38_00,
+                    Horse_Greenup_Lay_Back_Win_40_00_48_00
                    );
 
 
@@ -18,8 +21,8 @@ package Config is
 
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
-    Max_Loss_Per_Day           : Fixed_Type          := -200.0;
-    Max_Earnings_Per_Day       : Fixed_Type          :=  200.0;
+    Max_Loss_Per_Day           : Fixed_Type       := -200.0;
+    Max_Earnings_Per_Day       : Fixed_Type       :=  200.0;
     Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
   end record;
@@ -29,10 +32,10 @@ package Config is
   type Config_Type is tagged record
     --Size                       : Bet_Size_Type    := 30.0;
     Max_Exposure               : Fixed_Type          := 0.0;
-    Max_Turns_Not_Started_Race : Integer_4        := 102;  --102*5s -> 8,5 min
-    Enabled                    : Boolean          := False;
-    Allowed_Countries          : Unbounded_String := Null_Unbounded_String;
-    Allowed_Days               : Allowed_Days_Array     := (others => False);
+    Max_Turns_Not_Started_Race : Integer_4           := 102;  --102*5s -> 8,5 min
+    Enabled                    : Boolean             := False;
+    Allowed_Countries          : Unbounded_String    := Null_Unbounded_String;
+    Allowed_Days               : Allowed_Days_Array  := (others => False);
     Bet                        : Bet_Config_Array_Type;
   end record;
 
