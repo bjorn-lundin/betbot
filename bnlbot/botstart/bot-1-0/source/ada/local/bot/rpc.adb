@@ -73,16 +73,20 @@ package body RPC is
       Connection : Http_Connection;
       Result     : Aws.Response.Data;
     begin
+    Log(Me & "Login", "1" );
       Create (Connection,
               Url, User, Pwd, Proxy, Proxy_User, Proxy_Pwd,
               Persistent => False,
               Timeouts   => Timeouts);
+    Log(Me & "Login", "2" );
 
       Post (Connection, Result, Data, Content_Type,
             Attachments => Attachments,
             Headers     => Headers);
+    Log(Me & "Login", "3");
 
       Close (Connection);
+    Log(Me & "Login", "4" );
       return Result;
     end Post2;
 
