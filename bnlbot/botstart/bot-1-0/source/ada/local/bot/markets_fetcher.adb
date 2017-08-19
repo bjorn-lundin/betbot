@@ -102,19 +102,21 @@ procedure Markets_Fetcher is
     7 => (True, (("poll_market_7  "), (others => ' '))),
     8 => (True, (("poll_market_8  "), (others => ' ')))
   );
-  Race_Pollers : array (1..12) of Poll_Process := (
-    1 => (True, (("poll_1         "), (others => ' '))),
-    2 => (True, (("poll_2         "), (others => ' '))),
-    3 => (True, (("poll_3         "), (others => ' '))),
-    4 => (True, (("poll_4         "), (others => ' '))),
-    5 => (True, (("poll_5         "), (others => ' '))),
-    6 => (True, (("poll_6         "), (others => ' '))),
-    7 => (True, (("poll_7         "), (others => ' '))),
-    8 => (True, (("poll_8         "), (others => ' '))),
-    9 => (True, (("poll_9         "), (others => ' '))),
+  Race_Pollers : array (1..14) of Poll_Process := (
+    1 => (True, (("poll_01        "), (others => ' '))),
+    2 => (True, (("poll_02        "), (others => ' '))),
+    3 => (True, (("poll_03        "), (others => ' '))),
+    4 => (True, (("poll_04        "), (others => ' '))),
+    5 => (True, (("poll_05        "), (others => ' '))),
+    6 => (True, (("poll_06        "), (others => ' '))),
+    7 => (True, (("poll_07        "), (others => ' '))),
+    8 => (True, (("poll_08        "), (others => ' '))),
+    9 => (True, (("poll_09        "), (others => ' '))),
    10 => (True, (("poll_10        "), (others => ' '))),
    11 => (True, (("poll_11        "), (others => ' '))),
-   12 => (True, (("poll_12        "), (others => ' ')))
+   12 => (True, (("poll_12        "), (others => ' '))),
+   13 => (True, (("poll_13        "), (others => ' '))),
+   14 => (True, (("poll_14        "), (others => ' ')))
   );
   Test_Pollers : array (1..4) of Poll_Process := (
     1 => (True, (("poll_bounds_1  "), (others => ' '))),
