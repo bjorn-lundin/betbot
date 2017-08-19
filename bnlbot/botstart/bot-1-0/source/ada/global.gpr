@@ -1,4 +1,4 @@
-
+with "xmlada";
 with "aws";
 
 project Global is
