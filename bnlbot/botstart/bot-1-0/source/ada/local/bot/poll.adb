@@ -355,6 +355,7 @@ procedure Poll is
     Backsize     : Fixed_Type := 0.0;
     Did_Bet      : Boolean := False;
     Tic          : Integer := 0;
+    Betname      : Betname_Type := (others => ' ');
 
   begin          --1         2         3       4
     --  1234567890123456789012345678901234567890
@@ -364,10 +365,11 @@ procedure Poll is
 
     for I in Br'Range loop
       Log(Service & " " & Bettype'Img & " I=" & I'Img &
+            " Br(I).Selid" & Br(I).Selectionid'Img &
             " Min_Layprice=" & F8_Image(Min_Layprice) &
             " Max_Layprice=" & F8_Image(Max_Layprice) &
-            " Br (I).Layprice=" & F8_Image(Br (I).Layprice) &
-            " Br (I).Backprice=" & F8_Image(Br (I).Backprice));
+            " Br(I).Layprice=" & F8_Image(Br(I).Layprice) &
+            " Br(I).Backprice=" & F8_Image(Br(I).Backprice));
 
       if Min_Layprice <= Br(I).Layprice and then
         Br(I).Layprice <= Max_Layprice then
@@ -397,9 +399,10 @@ procedure Poll is
     -- ok check bets matched. They are either cancelled or fully accepted - match_directly is true
     Lay_Bet.Marketid := Marketid;
     Bets.Read_Marketid(Data => Lay_Bet, List => Lay_Bet_List);
-
+    Move(Image,Betname);
     for Bet of Lay_Bet_List loop
-      if Bet.Status(1..18) = "EXECUTION_COMPLETE" then
+      if Bet.Status(1..18) = "EXECUTION_COMPLETE" and then
+         Bet.Betname = Betname then -- or we get hits from similar strategies and double bets :-(
         Tic := Tics.Get_Nearest_Higher_Tic_Index(Bet.Pricematched);
         Backprice := Back_Price_Type(Tics.Get_Tic_Price(Tic+1));
 
