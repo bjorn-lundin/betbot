@@ -783,7 +783,7 @@ procedure Poll is
                     end if;
                   end;
                 when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-                  if First_Poll and Has_Been_In_Play then
+                  if First_Poll then
                     Try_To_Greenup_Lay_Back(Bettype         => I,
                                             Br              => Best_Runners,
                                             Marketid        => Markets_Array (Win).Marketid);
@@ -794,14 +794,11 @@ procedure Poll is
             when Hound => null;
             when Human => null;
           end case;
-
         end loop;
 
       end if; -- Best_Runner(1).Backodds >= 1.01
-      if Has_Been_In_Play then
-        First_Poll := False;
-      end if;
 
+      First_Poll := False;
     end loop Poll_Loop;
 
   end Run;
