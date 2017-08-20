@@ -53,6 +53,7 @@ procedure Bet_Placer is
                       Side         : Bet_Side_Type;
                       Size         : Bet_Size_Type;
                       Price        : Bet_Price_Type;
+                      Fill_Or_Kill : Boolean ;
                       Match_Directly : Integer_4) is
 
     A_Bet : Bets.Bet_Type;
@@ -129,6 +130,7 @@ procedure Bet_Placer is
                      Price            => Price,
                      Bet_Persistence  => Persist,
                      Match_Directly   => Match_Directly,
+                     Fill_Or_Kill     => Fill_Or_Kill,
                      Bet              => A_Bet);
       Log(Me & "Place_Bet", Utils.Trim(Bet_Name) & " created bet to put on disk: " & A_Bet.To_String);
     end if; -- dry run
@@ -167,6 +169,7 @@ procedure Bet_Placer is
   -------------------------------------------------------
 
   procedure Back_Bet(Place_Back_Bet : Bot_Messages.Place_Back_Bet_Record) is
+    Ifalse : constant Integer_4 := 0;
   begin
     Place_Bet(Bet_Name     => Place_Back_Bet.Bet_Name,
               Market_Id    => Place_Back_Bet.Market_Id,
@@ -174,12 +177,14 @@ procedure Bet_Placer is
               Side         => Back,
               Size         => Bet_Size_Type'Value(Place_Back_Bet.Size),
               Price        => Bet_Price_Type'Value(Place_Back_Bet.Price),
-              Match_Directly => Place_Back_Bet.Match_Directly
+              Match_Directly => Place_Back_Bet.Match_Directly,
+              Fill_Or_Kill => Place_Back_Bet.Fill_Or_Kill /= Ifalse
               ) ;
   end Back_Bet;
 
   ------------------------------------------------------
   procedure Lay_Bet(Place_Lay_Bet : Bot_Messages.Place_Lay_Bet_Record) is
+    Ifalse : constant Integer_4 := 0;
   begin
     Place_Bet(Bet_Name     => Place_Lay_Bet.Bet_Name,
               Market_Id    => Place_Lay_Bet.Market_Id,
@@ -187,7 +192,9 @@ procedure Bet_Placer is
               Side         => Lay,
               Size         => Bet_Size_Type'Value(Place_Lay_Bet.Size),
               Price        => Bet_Price_Type'Value(Place_Lay_Bet.Price),
-              Match_Directly => Place_Lay_Bet.Match_Directly) ;
+              Match_Directly => Place_Lay_Bet.Match_Directly,
+              Fill_Or_Kill => Place_Lay_Bet.Fill_Or_Kill /= Ifalse
+              ) ;
   end Lay_Bet;
 
   ------------------------------------------------------

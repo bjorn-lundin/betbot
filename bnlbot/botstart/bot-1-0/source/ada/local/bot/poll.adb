@@ -100,7 +100,8 @@ procedure Poll is
                          Main_Bet       : Bet_Type;
                          Max_Price      : Max_Lay_Price_Type;
                          Marketid       : Marketid_Type;
-                         Match_Directly : Boolean := False) is
+                         Match_Directly : Boolean := False;
+                         Fill_Or_Kill   : Boolean := False) is
 
     Plb             : Bot_Messages.Place_Lay_Bet_Record;
     Did_Bet         : array(1..1) of Boolean := (others => False);
@@ -126,6 +127,12 @@ procedure Poll is
       when False => Plb.Match_Directly := 0;
       when True  => Plb.Match_Directly := 1;
     end case;
+
+    case Fill_Or_Kill is
+      when False => Plb.Fill_Or_Kill := 0;
+      when True  => Plb.Fill_Or_Kill := 1;
+    end case;
+
 
     Plb.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Marketid, Plb.Market_Id);
@@ -165,7 +172,9 @@ procedure Poll is
                           Min_Price      : Back_Price_Type;
                           Marketid       : Marketid_Type;
                           Match_Directly : Boolean := False;
-                          Back_Size      : Fixed_Type := 0.0) is
+                          Back_Size      : Fixed_Type := 0.0;
+                          Fill_Or_Kill   : Boolean := False) is
+
 
     Pbb             : Bot_Messages.Place_Back_Bet_Record;
     Did_Bet         : array(1..1) of Boolean := (others => False);
@@ -192,6 +201,12 @@ procedure Poll is
       when False => Pbb.Match_Directly := 0;
       when True  => Pbb.Match_Directly := 1;
     end case;
+
+    case Fill_Or_Kill is
+      when False => Pbb.Fill_Or_Kill := 0;
+      when True  => Pbb.Fill_Or_Kill := 1;
+    end case;
+
 
     Pbb.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
     Move(Marketid, Pbb.Market_Id);
@@ -364,7 +379,8 @@ procedure Poll is
                      Main_Bet        => Bettype,
                      Marketid        => Marketid,
                      Max_Price       => Max_Lay_Price_Type(Br(I).Layprice),
-                     Match_Directly  => True);
+                     Match_Directly  => True,
+                     Fill_Or_Kill    => True);
         Did_Bet := True;
         -- save the bets so we can put correct back bets
       end if;

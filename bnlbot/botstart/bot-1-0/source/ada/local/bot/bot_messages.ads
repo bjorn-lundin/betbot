@@ -15,7 +15,7 @@ package Bot_Messages is
   Place_Lay_Bet_Message : constant Process_io.Identity_Type := 2003;
   New_Bet_Placed_Notification_Message : constant Process_io.Identity_Type := 2004;
   Poll_State_Message : constant Process_io.Identity_Type := 2005;
-  
+
 
   ----------------------------------------------------------------
   type Market_Notification_Record is record
@@ -76,10 +76,11 @@ package Bot_Messages is
   type Place_Back_Bet_Record is record
       Bet_Name     : Betname_Type    := (others => ' ');
       Market_Id    : Marketid_Type   := (others => ' ');
-      Selection_Id : Integer_4        := 0;
-      Size         : String(1..7)     := (others => ' ');
-      Price        : String(1..6)     := (others => ' ');
-      Match_Directly : Integer_4      := 0;
+      Selection_Id : Integer_4       := 0;
+      Size         : String(1..7)    := (others => ' ');
+      Price        : String(1..6)    := (others => ' ');
+      Match_Directly : Integer_4     := 0;
+      Fill_Or_Kill : Integer_4       := 0;
   end record;
 
 --  for Place_Back_Bet_Record'alignment use 4;
@@ -103,7 +104,8 @@ package Bot_Messages is
                                3 => Process_Io.Integer_4_Type,
                                4 => Process_Io.String_Type(7),
                                5 => Process_Io.String_Type(6),
-                               6 => Process_Io.Integer_4_Type
+                               6 => Process_Io.Integer_4_Type,
+                               7 => Process_Io.Integer_4_Type
                               )
            );
   --
@@ -122,10 +124,11 @@ package Bot_Messages is
   type Place_Lay_Bet_Record is record
       Bet_Name     : Betname_Type    := (others => ' ');
       Market_Id    : Marketid_Type   := (others => ' ');
-      Selection_Id : Integer_4        := 0;
-      Size         : String(1..7)     := (others => ' ');
-      Price        : String(1..6)     := (others => ' ');
-      Match_Directly : Integer_4      := 0;
+      Selection_Id : Integer_4       := 0;
+      Size         : String(1..7)    := (others => ' ');
+      Price        : String(1..6)    := (others => ' ');
+      Match_Directly : Integer_4     := 0;
+      Fill_Or_Kill : Integer_4       := 0;
   end record;
 
 --  for Place_Back_Bet_Record'alignment use 4;
@@ -149,7 +152,8 @@ package Bot_Messages is
                                3 => Process_Io.Integer_4_Type,
                                4 => Process_Io.String_Type(7),
                                5 => Process_Io.String_Type(6),
-                               6 => Process_Io.Integer_4_Type
+                               6 => Process_Io.Integer_4_Type,
+                               7 => Process_Io.Integer_4_Type
                               )
            );
   --
@@ -163,7 +167,7 @@ package Bot_Messages is
             renames Place_Lay_Bet_Package.Send;
 
   -----------------------------------------------------------------------
-  
+
      ----------------------------------------------------------------
   type New_Bet_Placed_Notification_Record is record
       Dummy : Integer_4 := 0;
@@ -192,22 +196,22 @@ package Bot_Messages is
   ---------------------------------------------------------------------------
 
 
-  
+
   ----------------------------------------------------------------
   type Poll_State_Record is record
       Free : Integer_4 := 0;
       Name : Process_Io.Name_Type := (others => ' ');
       Node : Process_Io.Name_Type := (others => ' ');
   end record;
-  
+
   for Poll_State_Record'alignment use 4;
   for Poll_State_Record use record
       Free at 0 range 0..8*4-1;
       Name at 4 range 0..8*15-1;
       Node at 20 range 0..8*15-1;
   end record;
-  for Poll_State_Record'Size use 8*36; 
-  
+  for Poll_State_Record'Size use 8*36;
+
 
   package Poll_State_Package is new Process_Io.Generic_Io
           (Identity        => Poll_State_Message,
@@ -226,5 +230,5 @@ package Bot_Messages is
             renames Poll_State_Package.Send;
   ---------------------------------------------------------------------------
 
-  
+
 end Bot_Messages;
