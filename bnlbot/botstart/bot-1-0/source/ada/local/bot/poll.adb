@@ -145,7 +145,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, Plb);
 
       case Main_Bet is
-        when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+        --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+        when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -225,7 +226,8 @@ procedure Poll is
       Bot_Messages.Send(Receiver, Pbb);
 
       case Main_Bet is
-        when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+        --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+        when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -341,6 +343,60 @@ procedure Poll is
   end Try_To_Make_Lay_Bet;
 
   -----------------------------------------------------------------------------------
+  procedure Try_To_Lay(Bettype         : Config.Bet_Type;
+                                    Br              : Best_Runners_Array_Type;
+                                    Marketid        : Marketid_Type) is
+
+    Service      : constant String := "Try_To_Lay";
+    Max_Layprice : Fixed_Type;
+    Min_Layprice : Fixed_Type;
+    Image        : String := Bettype'Img;
+
+  begin
+    -- we want a favorite and a backup ...
+    if Br(2).Backprice > Fixed_Type(5) then
+      Log(Service & " " & Bettype'Img & " Br(2).Backprice > 5, skipping" & Br(2).Backprice'Img);
+      return;
+    end if;
+
+               --1         2         3       4
+    --  1234567890123456789012345678901234567890
+    --  Horse_Lay_Win_15_00_19_50
+    Min_Layprice := Fixed_Type'Value(Image(16..16) & '.' & Image(18..19));
+    Max_Layprice := Fixed_Type'Value(Image(21..22) & '.' & Image(24..25));
+
+
+    for I in Br'Range loop
+      Log(Service & " " & Bettype'Img & " I=" & I'Img &
+            " Br(I).Selid" & Br(I).Selectionid'Img &
+            " Min_Layprice=" & F8_Image(Min_Layprice) &
+            " Max_Layprice=" & F8_Image(Max_Layprice) &
+            " Br(I).Layprice=" & F8_Image(Br(I).Layprice) &
+            " Br(I).Backprice=" & F8_Image(Br(I).Backprice));
+
+      if Min_Layprice <= Br(I).Layprice and then
+        Br(I).Layprice <= Max_Layprice then
+        -- to get legal odds
+        --Tic := Tics.Get_Nearest_Higher_Tic_Index(Br(I).Layprice);
+        --Lay_Price := Tics.Get_Tic_Price(Tic+4); -- some small margin to get the bet
+
+        Send_Lay_Bet(Selectionid     => Br(I).Selectionid,
+                     Main_Bet        => Bettype,
+                     Marketid        => Marketid,
+                     Max_Price       => Max_Lay_Price_Type(Br(I).Layprice),
+                     Match_Directly  => True,
+                     Fill_Or_Kill    => True);
+        -- save the bets so we can put correct back bets
+      end if;
+    end loop;
+
+
+    Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet/send_back_bet for this type of bets
+
+  end Try_To_Lay;
+  -----------------------------------------------------------------------------------
+
+  -----------------------------------------------------------------------------------
   procedure Try_To_Greenup_Lay_Back(Bettype         : Config.Bet_Type;
                                     Br              : Best_Runners_Array_Type;
                                     Marketid        : Marketid_Type) is
@@ -433,8 +489,8 @@ procedure Poll is
     Bets_Allowed(Bettype).Has_Betted := True; -- disabled in send_lay_bet/send_back_bet for this type of bets
 
   end Try_To_Greenup_Lay_Back;
+  pragma Unreferenced(Try_To_Greenup_Lay_Back);
   -----------------------------------------------------------------------------------
-
 
   ------------------------------------------------------
   procedure Try_To_Make_Back_Bet_4_Bounds(Bettype         : Config.Bet_Type;
@@ -790,11 +846,17 @@ procedure Poll is
                                                      Match_Directly  => Match_Directly);
                     end if;
                   end;
-                when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+                --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
+                --if First_Poll then
+                --  Try_To_Greenup_Lay_Back(Bettype         => I,
+                --                          Br              => Best_Runners,
+                --                          Marketid        => Markets_Array (Win).Marketid);
+                --end if;
+                when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
                   if First_Poll then
-                    Try_To_Greenup_Lay_Back(Bettype         => I,
-                                            Br              => Best_Runners,
-                                            Marketid        => Markets_Array (Win).Marketid);
+                    Try_To_Lay(Bettype         => I,
+                               Br              => Best_Runners,
+                               Marketid        => Markets_Array (Win).Marketid);
                   end if;
 
               end case;
