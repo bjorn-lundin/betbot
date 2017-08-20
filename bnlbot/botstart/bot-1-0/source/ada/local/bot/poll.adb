@@ -146,7 +146,7 @@ procedure Poll is
 
       case Main_Bet is
         --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
+        when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -227,7 +227,7 @@ procedure Poll is
 
       case Main_Bet is
         --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
+        when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -343,9 +343,9 @@ procedure Poll is
   end Try_To_Make_Lay_Bet;
 
   -----------------------------------------------------------------------------------
-  procedure Try_To_Lay(Bettype         : Config.Bet_Type;
-                                    Br              : Best_Runners_Array_Type;
-                                    Marketid        : Marketid_Type) is
+  procedure Try_To_Lay(Bettype  : Config.Bet_Type;
+                       Br       : Best_Runners_Array_Type;
+                       Marketid : Marketid_Type) is
 
     Service      : constant String := "Try_To_Lay";
     Max_Layprice : Fixed_Type;
@@ -361,9 +361,9 @@ procedure Poll is
 
                --1         2         3       4
     --  1234567890123456789012345678901234567890
-    --  Horse_Lay_Win_15_00_19_50
+    --  Horse_Lay_Win_15_00_019_50
     Min_Layprice := Fixed_Type'Value(Image(16..16) & '.' & Image(18..19));
-    Max_Layprice := Fixed_Type'Value(Image(21..22) & '.' & Image(24..25));
+    Max_Layprice := Fixed_Type'Value(Image(21..23) & '.' & Image(25..26));
 
 
     for I in Br'Range loop
@@ -852,7 +852,7 @@ procedure Poll is
                 --                          Br              => Best_Runners,
                 --                          Marketid        => Markets_Array (Win).Marketid);
                 --end if;
-                when Horse_Lay_Win_15_00_19_50 .. Horse_Lay_Win_40_00_48_00 =>
+                when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
                   if First_Poll then
                     Try_To_Lay(Bettype         => I,
                                Br              => Best_Runners,
