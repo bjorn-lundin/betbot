@@ -362,7 +362,7 @@ procedure Poll is
                --1         2         3       4
     --  1234567890123456789012345678901234567890
     --  Horse_Lay_Win_15_00_019_50
-    Min_Layprice := Fixed_Type'Value(Image(16..16) & '.' & Image(18..19));
+    Min_Layprice := Fixed_Type'Value(Image(15..16) & '.' & Image(18..19));
     Max_Layprice := Fixed_Type'Value(Image(21..23) & '.' & Image(25..26));
 
 
