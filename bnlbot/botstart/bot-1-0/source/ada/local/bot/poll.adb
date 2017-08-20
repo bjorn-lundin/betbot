@@ -54,6 +54,7 @@ procedure Poll is
   Data            : Bot_Messages.Poll_State_Record ;
   This_Process    : Process_Io.Process_Type := Process_Io.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
+  Bad_Selection_Id : constant Integer_4 := 0;
 
 
   -------------------------------------------------------------
@@ -120,6 +121,11 @@ procedure Poll is
 
     if not Cfg.Bet(Main_Bet).Enabled then
       Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+      return;
+    end if;
+
+    if Selectionid = Bad_Selection_Id then
+      Log("Bad selectionid, = 0 ");
       return;
     end if;
 
@@ -195,6 +201,11 @@ procedure Poll is
 
     if not Cfg.Bet(Main_Bet).Enabled then
       Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+      return;
+    end if;
+
+    if Selectionid = Bad_Selection_Id then
+      Log("Bad selectionid, = 0 ");
       return;
     end if;
 
