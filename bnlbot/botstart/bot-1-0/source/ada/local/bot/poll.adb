@@ -357,11 +357,19 @@ procedure Poll is
     Tic          : Integer := 0;
     Betname      : Betname_Type := (others => ' ');
 
-  begin          --1         2         3       4
+  begin
+    -- we want a favorite and a backup ...
+    if Br(2).Backprice > Fixed_Type(5) then
+      Log(Service & " " & Bettype'Img & " Br(2).Backprice > 5, skipping" & Br(2).Backprice'Img);
+      return;
+    end if;
+
+               --1         2         3       4
     --  1234567890123456789012345678901234567890
     --  Horse_Greenup_Lay_Back_Win_15_00_19_50
     Min_Layprice := Fixed_Type'Value(Image(28..29) & '.' & Image(31..32));
     Max_Layprice := Fixed_Type'Value(Image(34..35) & '.' & Image(37..38));
+
 
     for I in Br'Range loop
       Log(Service & " " & Bettype'Img & " I=" & I'Img &
