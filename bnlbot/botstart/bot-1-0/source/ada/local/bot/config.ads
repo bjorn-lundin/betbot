@@ -14,7 +14,7 @@ package Config is
                     --Horse_Greenup_Lay_Back_Win_20_00_29_00,
                     --Horse_Greenup_Lay_Back_Win_30_00_38_00,
                     --Horse_Greenup_Lay_Back_Win_40_00_48_00
-                    Horse_Lay_Win_15_00_019_50,
+                    Horse_Lay_Win_17_00_019_50,
                     Horse_Lay_Win_20_00_029_00,
                     Horse_Lay_Win_30_00_038_00,
                     Horse_Lay_Win_40_00_048_00,
