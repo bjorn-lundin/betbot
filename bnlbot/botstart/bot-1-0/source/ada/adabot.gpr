@@ -22,6 +22,7 @@ project Adabot is
    System_Mains := ("repo.adb",
                    -- "bot.adb",
                     "bot_send.adb",
+                    "test_ssl.adb",
                     "poll.adb",
                     "race_time.adb",
                     "poll_market.adb",

@@ -56,42 +56,6 @@ package body RPC is
     AWS_Reply    : Aws.Response.Data;
     Header : AWS.Headers.List;
     use Aws.Client;
-    --bnl test start
-    function Post2
-      (Url          : String;
-       Data         : String;
-       Content_Type : String          := No_Data;
-       User         : String          := No_Data;
-       Pwd          : String          := No_Data;
-       Proxy        : String          := No_Data;
-       Proxy_User   : String          := No_Data;
-       Proxy_Pwd    : String          := No_Data;
-       Timeouts     : Timeouts_Values := No_Timeout;
-       Attachments  : Attachment_List := Empty_Attachment_List;
-       Headers      : Header_List     := Empty_Header_List) return Aws.Response.Data
-    is
-      Connection : Http_Connection;
-      Result     : Aws.Response.Data;
-    begin
-    Log(Me & "Login", "1" );
-      Create (Connection,
-              Url, User, Pwd, Proxy, Proxy_User, Proxy_Pwd,
-              Persistent => False,
-              Timeouts   => Timeouts);
-    Log(Me & "Login", "2" );
-
-      Post (Connection, Result, Data, Content_Type,
-            Attachments => Attachments,
-            Headers     => Headers);
-    Log(Me & "Login", "3");
-
-      Close (Connection);
-    Log(Me & "Login", "4" );
-      return Result;
-    end Post2;
-
-    --bnl test stop
-
 
   begin
     Aws.Headers.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
@@ -105,20 +69,13 @@ package body RPC is
                          "product=home.betfair.int" & "&" &
                          "url=https://www.betfair.com/";
     begin
---        AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/login",
---                                      Data         => Data,
---                                      Content_Type => "application/x-www-form-urlencoded",
---                                      Headers      => Login_HTTP_Headers,
---                                      Timeouts     => Aws.Client.Timeouts (Each => 30.0));
-      AWS_Reply := Post2 (Url          => "https://identitysso.betfair.com/api/login",
+      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/login",
                                     Data         => Data,
                                     Content_Type => "application/x-www-form-urlencoded",
                                     Headers      => Login_HTTP_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     end ;
     Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
-
-
 
 
     -- login reply should look something like below (522 chars)
