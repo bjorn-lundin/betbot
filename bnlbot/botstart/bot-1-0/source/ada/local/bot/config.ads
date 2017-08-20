@@ -10,10 +10,14 @@ package Config is
                     Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Lay_1_05_10_1_2_Win_3_40,
-                    Horse_Greenup_Lay_Back_Win_15_00_19_50,
-                    Horse_Greenup_Lay_Back_Win_20_00_29_00,
-                    Horse_Greenup_Lay_Back_Win_30_00_38_00,
-                    Horse_Greenup_Lay_Back_Win_40_00_48_00
+                    --Horse_Greenup_Lay_Back_Win_15_00_19_50,
+                    --Horse_Greenup_Lay_Back_Win_20_00_29_00,
+                    --Horse_Greenup_Lay_Back_Win_30_00_38_00,
+                    --Horse_Greenup_Lay_Back_Win_40_00_48_00
+                    Horse_Lay_Win_15_00_19_50,
+                    Horse_Lay_Win_20_00_29_00,
+                    Horse_Lay_Win_30_00_38_00,
+                    Horse_Lay_Win_40_00_48_00
                    );
 
 
