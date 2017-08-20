@@ -146,7 +146,7 @@ procedure Poll is
 
       case Main_Bet is
         --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
+        when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -227,7 +227,7 @@ procedure Poll is
 
       case Main_Bet is
         --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
+        when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
           null;
         when others =>
           Bets_Allowed(Main_Bet).Has_Betted := True;
@@ -852,7 +852,7 @@ procedure Poll is
                 --                          Br              => Best_Runners,
                 --                          Marketid        => Markets_Array (Win).Marketid);
                 --end if;
-                when Horse_Lay_Win_15_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
+                when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
                   if First_Poll then
                     Try_To_Lay(Bettype         => I,
                                Br              => Best_Runners,
