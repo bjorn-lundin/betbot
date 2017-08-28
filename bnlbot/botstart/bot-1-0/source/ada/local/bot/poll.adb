@@ -336,12 +336,12 @@ procedure Poll is
     Max_Price(1..2) := Image(29..30);
 
     if Br(1).Backprice <= Max_Backprice_1 and then
-      Br(1).Backprice >= Fixed_Type (1.01) and then
-      Br(2).Backprice >= Min_Backprice_N and then
-      Br(2).Backprice < Fixed_Type (10_000.0) and then
-      Br(Layed_Num).Layprice <= Fixed_Type'Value(Max_Price) and then
-      Br(Layed_Num).Layprice >= Fixed_Type(1.01) and then
-      Br (Layed_Num).Backprice <  Fixed_Type (10_000.0) then  -- so it exists
+       Br(1).Backprice >= Fixed_Type (1.01) and then
+       Br(2).Backprice >= Min_Backprice_N and then
+       Br(2).Backprice < Fixed_Type (10_000.0) and then
+       Br(Layed_Num).Layprice <= Fixed_Type'Value(Max_Price) and then
+       Br(Layed_Num).Layprice >= Fixed_Type(1.01) and then
+       Br(Layed_Num).Backprice < Fixed_Type (10_000.0) then  -- so it exists
 
       -- lay #2 or #3 in win market...
 
@@ -800,7 +800,7 @@ procedure Poll is
             when Horse =>
               case I is
 
-                when Horse_Lay_1_05_10_1_2_Win_3_40    =>
+                when Horse_Lay_1_05_10_1_2_Win_3_40 .. Horse_Lay_1_05_10_1_2_Win_3_50   =>
                   --  12345678901234567890
                   --  Horse_Lay_1_09_02_1_2_Win_3_25
                   Try_To_Make_Lay_Bet (
