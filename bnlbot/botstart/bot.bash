@@ -35,6 +35,10 @@ case $HOSTNAME in
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
+  tp*)
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=GNAT
+    ;;
   raspberrypi*)  
     export BOT_MACHINE_ROLE=DISPLAY
     export BOT_XML_SOURCE=LOCAL
