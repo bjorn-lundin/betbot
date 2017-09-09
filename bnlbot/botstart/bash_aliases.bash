@@ -107,3 +107,4 @@ alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --m
                            $BOT_TARGET/bin/bot_send --receiver=poll_market_7 --message=exit && \
                            $BOT_TARGET/bin/bot_send --receiver=poll_market_8 --message=exit'
 
+
