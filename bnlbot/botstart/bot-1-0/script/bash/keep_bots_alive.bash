@@ -1,18 +1,17 @@
 #!/bin/bash
 
 # should be run from a crontab like
-#* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
-#2 0 * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/dump_db.bash
+#* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+#2 0 * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/dump_db.bash
 #install with
-
-#echo "25 3 * * * /home/bnl/bnlbot/do_backup_db.bash" >  crontab.tmp
+#echo "25 3 * * * /home/bnl/svn/do_backup_db.bash" >  crontab.tmp
 #crontab -l > crontab.tmp
-#echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" >>  crontab.tmp
+#echo "* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash" >>  crontab.tmp
 #crontab -r
 #cat crontab.tmp | crontab
 #crontab -l
 #rm crontab.tmp
-#echo "* * * * * cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash" | crontab
+#echo "* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash" | crontab
 
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
@@ -24,7 +23,7 @@
 
 TZ='Europe/Stockholm'
 export TZ
-export BOT_START=/home/bnl/bnlbot/botstart
+export BOT_START=/home/bnl/svn/botstart
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
 
@@ -92,7 +91,8 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER bet_checker bet_checker
 
-  POLLERS_LIST="poll_1 poll_2 poll_3 poll_4 poll_5 poll_6 poll_7 poll_8 poll_9 poll_10 poll_11 poll_12"
+  POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 poll_07 \
+                poll_08 poll_09 poll_10 poll_11 poll_12 poll_13 poll_14"
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
@@ -100,9 +100,9 @@ function Check_Bots_For_User () {
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
                    bet_placer_004 bet_placer_005 bet_placer_006 \
                    bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 bet_placer_011 bet_placer_012 "
-                   
-#                   bet_placer_013 bet_placer_014 bet_placer_015 \
+                   bet_placer_010 bet_placer_011 bet_placer_012 \
+                   bet_placer_013 bet_placer_014 "
+#bet_placer_015 \
 #                   bet_placer_016 bet_placer_017 bet_placer_018 "
 
   for placer in $BET_PLACER_LIST ; do
