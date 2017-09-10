@@ -144,13 +144,13 @@ def findout_exposure(conn, g):
        select sum(RISK) from (                  
          select
            case B.SIDE
-              when 'LAY'  then max(B.SIZE * (B.PRICEMATCHED-1))
-              when 'BACK' then sum(B.SIZE)
+              when 'LAY'  then max(B.SIZEMATCHED * (B.PRICEMATCHED-1))
+              when 'BACK' then sum(B.SIZEMATCHED)
               else 0.0
             end as RISK,
             B.MARKETID
          from ABETS B
-         where 1=1
+         where  STATUS in ('EXECUTION_COMPLETE','EXECUTABLE')
          and B.BETWON is NULL
          and B.EXESTATUS = 'SUCCESS'
          and B.BETPLACED >= %s
