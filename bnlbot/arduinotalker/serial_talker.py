@@ -152,7 +152,7 @@ def get_lay_risk(conn, betname, delta_days)  :
           ABETS
         where true
         and STARTTS::date > (select CURRENT_DATE - interval '%s days')
-          and BETNAME = %s
+        and BETNAME = %s
         group by MARKETID
         ) TMP
          """,(delta_days,betname))
@@ -183,7 +183,7 @@ def get_back_risk(conn, betname, delta_days)  :
           ABETS
         where true
         and STARTTS::date > (select CURRENT_DATE - interval '%s days')
-          and BETNAME = %s
+        and BETNAME = %s
         group by MARKETID
         ) TMP
          """,(delta_days,betname))
@@ -216,12 +216,23 @@ def get_bet_ratio(conn, betname, delta_days)  :
     profit=0.0
     risked=1.0
 
-    if betname[:3] == "LAY" :
+    if betname[:9] == "HORSE_LAY" :
       risked = get_lay_risk(conn, betname, delta_days)
 
-    elif betname[:4] == "BACK" :
+    elif betname[:10] == "HORSE_BACK" :
       risked = get_back_risk(conn, betname, delta_days)
 
+    elif betname[:10] == "HORSE_GREE" :
+      risked = -1
+
+    elif betname[:9] == "HOUND_LAY" :
+      risked = get_lay_risk(conn, betname, delta_days)
+
+    elif betname[:10] == "HOUND_BACK" :
+      risked = get_back_risk(conn, betname, delta_days)
+    else :
+      print betname, "not taken care of"
+  
     profit = get_profit(conn, betname, delta_days)
     #print betname, str(risked), str(profit)
     
@@ -243,10 +254,21 @@ def main(g):
                          sslmode=require \
                          application_name=serial_talker")
 
-  bets = ['BACK_1_10_07_1_2_PLC_1_01',
-          'BACK_1_11_1_15_05_07_1_2_PLC_1_01',
-          'LAY_2_2_4_11_17_WIN']
+  bets = ['HORSE_BACK_1_10_07_1_2_PLC_1_01',
+          'HORSE_BACK_1_11_1_15_05_07_1_2_PLC_1_01',
+          'HORSE_LAY_1_05_10_1_2_WIN_3_40',
+          'HORSE_LAY_1_05_10_1_2_WIN_3_50',
+          'HORSE_LAY_WIN_17_00_019_50',
+          'HORSE_LAY_WIN_48_00_060_00',
+          'HORSE_LAY_WIN_85_00_100_00']
 
+
+#          'HORSE_LAY_WIN_15_00_019_50',
+#          'HORSE_LAY_WIN_20_00_029_00',
+#          'HORSE_LAY_WIN_30_00_038_00',
+#          'HORSE_LAY_WIN_40_00_048_00',
+
+          
   row0 = {}
   row0['0'] = 0
   row0['1'] = 1
@@ -257,7 +279,7 @@ def main(g):
   row0['6'] = 6
   row0['typ'] = 'Namn/# dagar sedan'
 
-  lcd_row_0 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  lcd_row_0 = '%(typ)39s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
   buff += '---------------------------------------------------------------------------\r\n'
   buff += lcd_row_0 + '\r\n'
   buff += '---------------------------------------------------------------------------\r\n'
@@ -269,17 +291,17 @@ def main(g):
     row1['0'] = get_row(conn, bet,   row0['0'])
     row1['1'] = get_row(conn, bet, - row0['1'])
     row1['2'] = get_row(conn, bet, - row0['2'])
-    row1['3'] = get_row(conn, bet, - row0['3'])
+    row1['3'] = get_row(conn, bet, - row0['3'])	
     row1['4'] = get_row(conn, bet, - row0['4'])
     row1['5'] = get_row(conn, bet, - row0['5'])
     row1['6'] = get_row(conn, bet, - row0['6'])
 
-    if len(bet) > 33 :
-      row1['typ'] = bet[:32].strip()
+    if len(bet) > 39 :
+      row1['typ'] = bet[:39].strip()
     else :
       row1['typ'] = bet
 
-    lcd_row_1 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
+    lcd_row_1 = '%(typ)39s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row1
     buff += lcd_row_1 + '\r\n'
 
   row0['typ'] = 'Namn/# veckor sedan'
@@ -291,7 +313,7 @@ def main(g):
   row0['5'] = 5
   row0['6'] = 'Summa'
   buff += '---------------------------------------------------------------------------\r\n'
-  lcd_row_0 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
+  lcd_row_0 = '%(typ)39s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6s' % row0
   buff += lcd_row_0 + '\r\n'
   buff += '---------------------------------------------------------------------------\r\n'
 
@@ -304,14 +326,14 @@ def main(g):
     row2['4'] = get_row_weeks_back(conn, bet, - row0['4'])
     row2['5'] = get_row_weeks_back(conn, bet, - row0['5'])
     #remove HORSES_ from HORSES_WIN_9.0_10.0_GREENUP_GB_LB_7_2_5.0
-    if len(bet) > 33 :
-      row1['typ'] = bet[:32].strip()
+    if len(bet) > 39 :
+      row2['typ'] = bet[:39].strip()
     else :
       row2['typ'] = bet
 
     row2['6'] = int(row2['0']) +  int(row2['1']) + int(row2['2']) + \
                 int(row2['3']) +  int(row2['4']) + int(row2['5'])
-    lcd_row_2 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
+    lcd_row_2 = '%(typ)39s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row2
     buff += lcd_row_2 + '\r\n'
 
   row0['typ'] = 'S(profit)/S(size.m.)'
@@ -322,7 +344,7 @@ def main(g):
   row0['4'] = 182
   row0['5'] = 365
   row0['6'] = 900
-  lcd_row_0 = '%(typ)33s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
+  lcd_row_0 = '%(typ)39s%(0)6d%(1)6d%(2)6d%(3)6d%(4)6d%(5)6d%(6)6d' % row0
   buff += '---------------------------------------------------------------------------\r\n'
   buff += lcd_row_0 + '\r\n'
   buff += '---------------------------------------------------------------------------\r\n'
@@ -336,14 +358,13 @@ def main(g):
     row3['4'] = get_bet_ratio(conn, bet, row0['4'])
     row3['5'] = get_bet_ratio(conn, bet, row0['5'])
     row3['6'] = get_bet_ratio(conn, bet, row0['6'])
-    if len(bet) > 33 :
-      row1['typ'] = bet[:32].strip()
+    if len(bet) > 39 :
+      row3['typ'] = bet[:39].strip()
     else :
       row3['typ'] = bet
 
-    lcd_row_3 = '%(typ)33s%(0)6.2f%(1)6.2f%(2)6.2f%(3)6.2f%(4)6.2f%(5)6.2f%(6)6.2f' % row3
+    lcd_row_3 = '%(typ)39s%(0)6.2f%(1)6.2f%(2)6.2f%(3)6.2f%(4)6.2f%(5)6.2f%(6)6.2f' % row3
     buff += lcd_row_3 + '\r\n'
-
 
   #clear screen
   tmp = sp.call('clear',shell=True)
