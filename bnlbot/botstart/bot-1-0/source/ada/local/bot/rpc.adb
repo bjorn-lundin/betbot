@@ -4,7 +4,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
---with Aws.Headers.Set;
+with Aws.Headers.Set;
 with Aws.Response;
 with Aws.Client;
 with Bot_Svn_Info;
@@ -58,7 +58,7 @@ package body RPC is
     use Aws.Client;
 
   begin
-    Aws.Headers.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
 
     declare
       Data : String :=  "username=" & Global_Token.Get_Username & "&" &
@@ -140,9 +140,9 @@ package body RPC is
     Logout_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
   begin
-    Aws.Headers.Add (Logout_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
-    Aws.Headers.Add (Logout_HTTP_Headers, "Accept", "application/json");
-    Aws.Headers.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
 
     AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/logout",
                                   Data         => "", --Data,
@@ -162,9 +162,9 @@ package body RPC is
     AWS_Reply    : Aws.Response.Data;
   begin
     Result := True;
-    Aws.Headers.Add (Keep_Alive_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
-    Aws.Headers.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
-    Aws.Headers.Add (Keep_Alive_HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (Keep_Alive_HTTP_Headers, "X-Authentication", Global_Token.Get);
 
     AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/keepAlive",
                                   Data         => "", --Data,
@@ -185,9 +185,9 @@ package body RPC is
     AWS_Reply    : Aws.Response.Data;
     HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
   begin
-    Aws.Headers.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
-    Aws.Headers.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
-    Aws.Headers.Add (HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (HTTP_Headers, "Accept", "application/json");
     Log(Me  & "Get_JSON_Reply", "posting: " & Query.Write);
     AWS_Reply := Aws.Client.Post (Url          => URL,
                                   Data         => Query.Write,
@@ -2033,9 +2033,9 @@ package body RPC is
     HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
   begin
     Log(Me, "Get_Navigation_Data start");
-    Aws.Headers.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
-    Aws.Headers.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
-    Aws.Headers.Add (HTTP_Headers, "Accept", "application/json");
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Authentication", Global_Token.Get);
+    Aws.Headers.Set.Add (HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+    Aws.Headers.Set.Add (HTTP_Headers, "Accept", "application/json");
     AWS_Reply := Aws.Client.Get (Url          => Token.URL_NAVIGATION_DATA,
                                  Headers      => HTTP_Headers,
                                  Timeouts     => Aws.Client.Timeouts (Each => 1200.0));
