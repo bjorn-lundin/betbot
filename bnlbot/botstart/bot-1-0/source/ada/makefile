@@ -33,7 +33,7 @@ all : log
 log :
 	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
 
-race_time : $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT)
+race_time : $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT) repo $(TABLE_MAKE_FILE)
 	gprbuild -p -P adabot race_time
 
 bot : adabot
