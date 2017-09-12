@@ -3,12 +3,10 @@
 source betbot-aws.sh
 
 main() {
-
-    #testListBuckets
-    #testListFiles
-    testSendEmail
+    testListBuckets
+    testListFiles
+    #testSendEmail
     #syncDataLocalToS3 "bnl"
-
 }
 
 main "$@"
