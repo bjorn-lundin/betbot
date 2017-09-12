@@ -16,9 +16,8 @@ readonly LocalLogDir="./log"
 readonly localConfDir="./conf"
 
 readonly logEmailFrom='betbot@nonobet.com'
-
-# Below list with ',' no white space
 readonly logEmailTo='ToAddresses=b.f.lundin@gmail.com,joakim@birgerson.com'
+# Above list with ',' no white space
 
 # Source credentials if available
 if [ -f $credFile ]; then
@@ -169,7 +168,7 @@ testSendEmail()
 }
 
 
-# High level CLI commands
+# High level CLI commands with error log via email
 ##########################################################################
 
 # Docs
@@ -180,18 +179,13 @@ testSendEmail()
 # $2 - Calling function
 runCommand()
 {
-    local awsCommand="${1}"; shift
-    local callingFunc="${1}"; shift
-    #local response=""
+    local awsCommand="${1}"
+    local callingFunc="${2}"
     local response=""
     response=$(${awsCommand} 2>&1)
-    retCode=${?}
-
-    echo ${response}
-    echo ${retCode}
-
+    returnCode=${?}
     if [ ${retCode} -ne 0 ]; then
-        log "${callingFunc}" "${retCode}" "${response}"
+        log "${callingFunc}" "${returnCode}" "${response}"
     fi
 }
 
@@ -200,7 +194,6 @@ syncDataLocalToS3()
     local command=""
     command+="aws s3 sync ${localDataDir} s3://${bucket}/${S3DataDir}"
     command+=" --storage-class STANDARD_IA"
-    #aws s3 sync ${localDataDir} s3://${bucket}/${S3DataDir} \
     runCommand "${command}" "${FUNCNAME[0]}"
 }
 
