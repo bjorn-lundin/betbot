@@ -47,7 +47,7 @@ log()
     local emailSubject="ERROR - ${appName}"
     local emailMessage=""
 
-    ec2InstanceId=$(curl -m 3 ${ec2InstanceIdUrl} 2>/dev/null)
+    ec2InstanceId=$(curl -m 3 -s ${ec2InstanceIdUrl})
     localHostname=$(hostname )
 
     emailMessage=\
@@ -206,28 +206,33 @@ syncDataLocalToS3()
 
 syncDataS3ToLocal()
 {
-    aws s3 sync s3://${bucket}/${S3DataDir} ${localDataDir}
+    local user="${1}"
+    aws s3 sync s3://${bucket}/${S3DataDir}/${user} ${localDataDir}/${user}
 }
 
 syncLogLocalToS3()
 {
-    aws s3 sync ${LocalLogDir} s3://${bucket}/${S3LogDir} \
+    local user="${1}"
+    aws s3 sync ${LocalLogDir}/${user} s3://${bucket}/${S3LogDir}/${user} \
         --storage-class STANDARD_IA
 }
 
 syncLogS3ToLocal()
 {
-    aws s3 sync s3://${bucket}/${S3LogDir} ${LocalLogDir}
+    local user="${1}"
+    aws s3 sync s3://${bucket}/${S3LogDir}/${user} ${LocalLogDir}/${user}
 }
 
 syncConfigLocalToS3()
 {
-    aws s3 sync ${localConfDir} s3://${bucket}/${S3ConfDir}
+    local user="${1}"
+    aws s3 sync ${localConfDir}/${user} s3://${bucket}/${S3ConfDir}/${user}
 }
 
 syncConfigS3ToLocal()
 {
-    aws s3 sync s3://${bucket}/${S3ConfDir} ${localConfDir}
+    local user="${1}"
+    aws s3 sync s3://${bucket}/${S3ConfDir}/${user} ${localConfDir}/${user}
 }
 
 
