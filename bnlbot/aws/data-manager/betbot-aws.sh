@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+
+# Environment
+##########################################################################
+export AWS_DEFAULT_REGION="eu-west-1"
+
+
 # Config
 ##########################################################################
 readonly appName="Betbot Data Management"
 readonly credFile="./cred"
-eadonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv/bin/activate"
+readonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv/bin/activate"
 
 readonly bucket="nonobet-betbot"
 readonly S3DataDir="data"
@@ -184,7 +190,7 @@ runCommand()
     local response=""
     response=$(${awsCommand} 2>&1)
     returnCode=${?}
-    if [ ${retCode} -ne 0 ]; then
+    if [ ${returnCode} -ne 0 ]; then
         log "${callingFunc}" "${returnCode}" "${response}"
     fi
 }
