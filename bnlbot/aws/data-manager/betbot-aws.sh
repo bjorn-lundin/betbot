@@ -222,7 +222,7 @@ syncLogS3ToLocal()
     runCommand "${command}" "${FUNCNAME[0]}"
 }
 
-syncConfigLocalToS3()
+syncConfLocalToS3()
 {
     local user="${1}"
     local command="aws s3 sync"
@@ -230,7 +230,7 @@ syncConfigLocalToS3()
     runCommand "${command}" "${FUNCNAME[0]}"
 }
 
-syncConfigS3ToLocal()
+syncConfS3ToLocal()
 {
     local user="${1}"
     local command="aws s3 sync"
