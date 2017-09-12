@@ -120,7 +120,8 @@ END
         --destination "${logEmailTo}" \
         --message \
             "Subject={Data=${emailSubject},Charset=utf8},\
-            Body={Html={Data='${emailMessage}',Charset=utf8}}"
+            Body={Html={Data='${emailMessage}',Charset=utf8}}"\
+        2>&1 >/dev/null
 }
 
 
@@ -188,7 +189,7 @@ runCommand()
     local awsCommand="${1}"
     local callingFunc="${2}"
     local response=""
-    response=$(${awsCommand} 2>&1)
+    response=$(${awsCommand} 2>&1 >/dev/null)
     returnCode=${?}
     if [ ${returnCode} -ne 0 ]; then
         log "${callingFunc}" "${returnCode}" "${response}"
