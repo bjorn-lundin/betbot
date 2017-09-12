@@ -7,7 +7,7 @@ main() {
     #testListBuckets
     #testListFiles
     testSendEmail
-    #syncDataLocalToS3
+    #syncDataLocalToS3 "bnl"
 
 }
 
