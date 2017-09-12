@@ -20,7 +20,7 @@ Activate python virtual environment
 Install latest awscli into virtual environment
     pip3 install awscli
 
-Add correct pyenv path in aws script. E.g.:
+Add correct pyenv activation path in aws script. E.g.:
     ...
-    readonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv"
+    readonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv/bin/activate"
     ...
