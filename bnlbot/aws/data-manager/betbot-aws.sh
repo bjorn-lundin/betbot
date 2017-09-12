@@ -17,7 +17,7 @@ readonly localConfDir="./conf"
 
 readonly logEmailFrom='betbot@nonobet.com'
 
-# list with ',' no white
+# Below list with ',' no white space
 readonly logEmailTo='ToAddresses=b.f.lundin@gmail.com,joakim@birgerson.com'
 
 # Source credentials if available
