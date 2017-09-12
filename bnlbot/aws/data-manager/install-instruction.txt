@@ -1,0 +1,24 @@
+Debian 8.9
+----------
+
+Install python
+    sudo apt-get install python
+
+Install python virtual environment
+    sudo apt-get install python-virtualenv
+
+Create a python3 virtual environment
+    mkdir /home/bnl/python
+    virtualenv --python=/usr/bin/python3 \
+        /home/bnl/python/betbot-data-manager-pyenv
+
+Activate python virtual environment
+    source /home/bnl/python/betbot-data-manager-pyenv/bin/activate
+
+Install latest awscli into virtual environment
+    pip3 install awscli
+
+Add correct pyenv path in aws script. E.g.:
+    ...
+    readonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv"
+    ...
