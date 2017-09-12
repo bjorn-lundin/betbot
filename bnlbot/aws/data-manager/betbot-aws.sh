@@ -37,9 +37,9 @@ source ${pyEnv}
 # $3 - AWS CLI command response
 log()
 {
-    local function=${1}; shift
-    local returnCode=${1}; shift
-    local commandResponse=${1}; shift
+    local function=${1}
+    local returnCode=${2}
+    local commandResponse=${3}
 
     local ec2InstanceIdUrl="http://169.254.169.254/latest/meta-data/instance-id"
     local ec2InstanceId=""
