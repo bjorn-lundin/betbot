@@ -4,7 +4,7 @@
 ##########################################################################
 readonly appName="Betbot Data Management"
 readonly credFile="./cred"
-readonly pyEnv="./py-env/bin/activate"
+eadonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv/bin/activate"
 
 readonly bucket="nonobet-betbot"
 readonly S3DataDir="data"
