@@ -1,8 +1,10 @@
 Debian 8.9
 ----------
 
-Install python
-    sudo apt-get install python
+Check/install python
+    which python3
+    or
+    sudo apt-get install python3
 
 Install python virtual environment
     sudo apt-get install python-virtualenv
