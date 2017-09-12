@@ -168,7 +168,7 @@ testSendEmail()
 }
 
 
-# High level CLI commands with error log via email
+# High level CLI commands with email error log
 ##########################################################################
 
 # Docs
@@ -191,8 +191,8 @@ runCommand()
 
 syncDataLocalToS3()
 {
-    local command=""
-    command+="aws s3 sync ${localDataDir} s3://${bucket}/${S3DataDir}"
+    local command="aws s3 sync"
+    command+=" ${localDataDir} s3://${bucket}/${S3DataDir}"
     command+=" --storage-class STANDARD_IA"
     runCommand "${command}" "${FUNCNAME[0]}"
 }
@@ -200,33 +200,40 @@ syncDataLocalToS3()
 syncDataS3ToLocal()
 {
     local user="${1}"
-    aws s3 sync s3://${bucket}/${S3DataDir}/${user} ${localDataDir}/${user}
+    local command="aws s3 sync"
+    command+=" s3://${bucket}/${S3DataDir}/${user} ${localDataDir}/${user}"
+    runCommand "${command}" "${FUNCNAME[0]}"
 }
 
 syncLogLocalToS3()
 {
     local user="${1}"
-    aws s3 sync ${LocalLogDir}/${user} s3://${bucket}/${S3LogDir}/${user} \
-        --storage-class STANDARD_IA
+    local command="aws s3 sync"
+    command+="  ${LocalLogDir}/${user} s3://${bucket}/${S3LogDir}/${user}"
+    command+=" --storage-class STANDARD_IA"
+    runCommand "${command}" "${FUNCNAME[0]}"
 }
 
 syncLogS3ToLocal()
 {
     local user="${1}"
-    aws s3 sync s3://${bucket}/${S3LogDir}/${user} ${LocalLogDir}/${user}
+    local command="aws s3 sync"
+    command+=" s3://${bucket}/${S3LogDir}/${user} ${LocalLogDir}/${user}"
+    runCommand "${command}" "${FUNCNAME[0]}"
 }
 
 syncConfigLocalToS3()
 {
     local user="${1}"
-    aws s3 sync ${localConfDir}/${user} s3://${bucket}/${S3ConfDir}/${user}
+    local command="aws s3 sync"
+    command+=" ${localConfDir}/${user} s3://${bucket}/${S3ConfDir}/${user}"
+    runCommand "${command}" "${FUNCNAME[0]}"
 }
 
 syncConfigS3ToLocal()
 {
     local user="${1}"
-    aws s3 sync s3://${bucket}/${S3ConfDir}/${user} ${localConfDir}/${user}
+    local command="aws s3 sync"
+    command+=" s3://${bucket}/${S3ConfDir}/${user} ${localConfDir}/${user}"
+    runCommand "${command}" "${FUNCNAME[0]}"
 }
-
-
-
