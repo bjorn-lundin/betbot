@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source betbot-aws.sh
+source betbot-data-manager.sh
 
 main() {
     testListBuckets
