@@ -8,7 +8,7 @@ export AWS_DEFAULT_REGION="eu-west-1"
 
 # Config
 ##########################################################################
-readonly appName="Betbot Data Management"
+readonly appName="Betbot Data Manager"
 readonly credFile="./cred"
 readonly pyEnv="/home/bnl/python/betbot-data-manager-pyenv/bin/activate"
 
@@ -22,7 +22,8 @@ readonly LocalLogDir="./log"
 readonly localConfDir="./conf"
 
 readonly logEmailFrom='Nonobet Betbot <betbot@nonobet.com>'
-readonly logEmailTo='ToAddresses=b.f.lundin@gmail.com,joakim@birgerson.com'
+#readonly logEmailTo='ToAddresses=b.f.lundin@gmail.com,joakim@birgerson.com'
+readonly logEmailTo='ToAddresses=joakim@birgerson.com'
 # Above list with ',' no white space
 
 # Source credentials if available
