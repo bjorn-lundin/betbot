@@ -6,9 +6,36 @@ alias mc='. /usr/lib/mc/mc-wrapper.sh'
 alias mcedit='mcedit -c'
 
 alias stop_bet_checker='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit'
-alias stop_bot='$BOT_TARGET/bin/bot_send --receiver=bot --message=exit'
 alias stop_markets_fetcher='$BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
-alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll --message=exit'
+
+alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_02 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_03 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_04 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_05 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_06 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_07 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_08 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_09 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_10 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_11 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_12 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_13 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_14 --message=exit'
+
+alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=play_market_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
+                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
+
 alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
 alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit' 
