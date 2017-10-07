@@ -44,7 +44,16 @@ begin
   Days : loop
     begin
       Start_Time_List.Clear;
-      Rpc.Login;
+      for i in 1 .. 100 loop
+        begin
+          Rpc.Login;
+          exit;
+        exception
+          when Rpc.Login_Failed =>
+          Print(i'img & " Login failed - wait 1 minute (of 100 tries)");
+          delay 60.0; -- wait a minute
+        end;
+      end loop;
       Rpc.Get_Starttimes(List => Start_Time_List);
       Rpc.Logout;
       if Start_Time_List.Length = 0 then
