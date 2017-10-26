@@ -52,6 +52,9 @@ begin
           when Rpc.Login_Failed =>
           Print(i'img & " Login failed - wait 1 minute (of 100 tries)");
           delay 60.0; -- wait a minute
+          when Rpc.Post_Timeout =>
+          Print(i'img & " Post_Timeout - wait 1 minute (of 100 tries)");
+          delay 60.0; -- wait a minute
         end;
       end loop;
       Rpc.Get_Starttimes(List => Start_Time_List);
