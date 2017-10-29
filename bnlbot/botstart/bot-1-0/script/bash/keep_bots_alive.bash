@@ -393,7 +393,7 @@ export ALARM_SIZE=90
 DAY_FILE=$(date +"%F")
 ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
-MAIL_LIST="b.f.lundin@gmail.com joakim@birgerson.com"
+MAIL_LIST="b.f.lundin@gmail.com joakim.birgerson@gmail.com"
 
 DISK_LIST="xvda xvdf"
 

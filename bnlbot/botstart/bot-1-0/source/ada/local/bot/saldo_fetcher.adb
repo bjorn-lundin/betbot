@@ -100,7 +100,7 @@ procedure Saldo_Fetcher is
 
       Receivers : constant SMTP.Recipients :=  (
                   SMTP.E_Mail("Bj=F6rn Lundin", "b.f.lundin@gmail.com"),
-                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com"),
+                  SMTP.E_Mail("Joakim Birgerson", "joakim.birgerson@gmail.com"),
                   SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
                 );
     begin
