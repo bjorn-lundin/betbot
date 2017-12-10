@@ -164,13 +164,13 @@ procedure Greenup_Lay_First_All is
       end if;
 
       if Price_Data.Layprice < 10.0 then
-       Move(Reference & ",lay=000" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Trim(Reference,Both) & ",lay=000" & F8_Image(Price_Data.Layprice),Reference);
       elsif  Price_Data.Layprice < 100.0 then
-       Move(Reference & ",lay=00" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Trim(Reference,Both) & ",lay=00" & F8_Image(Price_Data.Layprice),Reference);
       elsif Price_Data.Layprice < 1000.0 then
-       Move(Reference & ",lay=0" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Trim(Reference,Both) & ",lay=0" & F8_Image(Price_Data.Layprice),Reference);
       else
-       Move(Reference & ",lay=" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Trim(Reference,Both) & ",lay=" & F8_Image(Price_Data.Layprice),Reference);
       end if;
 
       Move(Reference, Bet.Laybet.Reference);
