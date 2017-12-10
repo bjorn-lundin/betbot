@@ -28,4 +28,9 @@ price_refer_sum.dat :
 
 .PHONY : clean
 clean :
-	rm -rf  *.png *.dat
+	rm -rf  *.dat
+
+
+.PHONY : very_clean
+very_clean :
+	rm -rf  *.dat *.png
