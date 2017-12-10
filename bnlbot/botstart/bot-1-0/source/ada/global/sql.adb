@@ -985,7 +985,9 @@ package body Sql is
       end if;
 
       begin
+        --Text_Io.Put_Line("Fetch, Rows_Affected (1)" & Ntpl'Img);
         Ntpl := Rows_Affected (Private_Statement.Result);
+        --Text_Io.Put_Line("Fetch, Rows_Affected (2)" & Ntpl'Img);
       exception
         when Constraint_Error => Ntpl := 0;
       end;

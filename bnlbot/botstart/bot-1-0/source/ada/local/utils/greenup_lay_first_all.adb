@@ -23,18 +23,21 @@ with Ini;
 with Logging; use Logging;
 --with Process_IO;
 --with Core_Messages;
-with Table_Amarkets;
+--with Table_Amarkets;
 --with Table_Aevents;
 with Table_Aprices;
 --with Table_Abalances;
-with Table_Apriceshistory;
+--with Table_Apriceshistory;
 with Bot_Svn_Info;
 --with Config;
 --with Utils; use Utils;
 with Table_Abets;
-with Table_Arunners;
 with Tics;
 with Sim;
+with Price_Histories;
+with Markets;
+with Runners;
+with Bets;
 
 
 procedure Greenup_Lay_First_All is
@@ -49,40 +52,29 @@ procedure Greenup_Lay_First_All is
   Cmd_Line        : Command_Line_Configuration;
   -------------------------------------------------------------
   type Bet_Type is record
-    Laybet            : Table_Abets.Data_Type := Table_Abets.Empty_Data;
-    Greenup_Backbet   : Table_Abets.Data_Type := Table_Abets.Empty_Data;
-    Stop_Loss_Backbet : Table_Abets.Data_Type := Table_Abets.Empty_Data;
+    Laybet    : Bets.Bet_Type;
+    Backbet   : Bets.Bet_Type;
   end record;
   use type Table_Abets.Data_Type;
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
-  Bet_List : Bet_List_Pack.List;
-  
-  
---  Bet_List : array (Delta_Tics_Type'range) of Bet_List_Pack.List;
 
-  Back_Stake      : constant Bet_Size_Type := 30.0;
-  Lay_Stake       : constant Bet_Size_Type := 40.0;
-  Stop_Loss_Stake : constant Bet_Size_Type := 40.0;
+  Lay_Size       : constant Bet_Size_Type := 100.0;
 
-  subtype Max_Layprice_Type is Integer_4 range 100 .. 100;
-  subtype Min_Layprice_Type is Integer_4 range  50 .. 50;
-  subtype Delta_Tics_Greenup_Type is Integer range 10 .. 20;
-  subtype Delta_Tics_Stop_Loss_Type is Integer range 100 .. 200;
+  Layprice_High : Fixed_Type := 100.0;
+  Layprice_Low  : Fixed_Type :=   2.0;
+  subtype Delta_Tics_Greenup_Type is Integer range 1 .. 20;
 
   -----------------------------------------------------------------
-  procedure Check_Bet ( R : in Table_Arunners.Data_Type;
-                        B : in out Table_Abets.Data_Type) is
+  procedure Check_Bet ( R : in Runners.Runner_Type;
+                        B : in out Bets.Bet_Type) is
   begin
-    if R.Status(1..7) = "REMOVED" then
-      return;
-    end if;
     if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := Fixed_Type(Back_Stake) * (B.Price - 1.0);
+          B.Profit := B.Size * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
-          B.Profit := Fixed_Type(-Back_Stake);
+          B.Profit := -B.Size;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
           B.Betwon := True;
@@ -90,9 +82,9 @@ procedure Greenup_Lay_First_All is
     elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := Fixed_Type(-Lay_Stake) * (B.Price - 1.0);
+          B.Profit := -B.Size * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
-          B.Profit := Fixed_Type(Lay_Stake);
+          B.Profit := B.Size;
           B.Betwon := True;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
@@ -105,42 +97,47 @@ procedure Greenup_Lay_First_All is
   -----------------------------------------------------------------
 
   procedure Run(Price_Data : in Table_Aprices.Data_Type;
-                Delta_Tics_Greenup : in Integer;
-                Delta_Tics_Stop_Loss : in Integer;
-                Min_Layprice : in Min_Layprice_Type;
-                Max_Layprice : in Max_Layprice_Type ) is
+                Delta_Tics : in Integer;
+                Lay_Size   : in Bet_Size_Type) is
 
-    Market    : Markets.Market_Type;
-    --Event     : Table_AEvents.Event_Type;
-    Eos               : Boolean := False;
-    Price_During_Race_List : Table_Apriceshistory.Apriceshistory_List_Pack2.List;
-    Runner : Table_Arunners.Data_Type;
-    Tic_Lay : Integer := 0;
-    Bet : Bet_Type;
-    Last_Price : Table_Apriceshistory.Data_Type;
-    Lay_Bet_Name   : constant Bet_Name_Type := "2_HOUNDS_WIN_GREEN_UP_LAY                                                                           ";
-    Back_Bet_Name  : constant Bet_Name_Type := "2_HOUNDS_WIN_GREEN_UP_BACK                                                                          ";
-    Stop_Loss_Name : constant Bet_Name_Type := "2_HOUNDS_WIN_GREEN_UP_BACK_STOP_LOSS                                                                ";
-    Dst_Change : Calendar2.Time_Type := (2016,03,27,03,0,0,0);
+    Market                 : Markets.Market_Type;
+    Eos                    : Boolean := False;
+    Price_During_Race_List : Price_Histories.Lists.List; --Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+    Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
+    Tic_Lay                : Integer := 0;
+    Bet                    : Bet_Type;
+    --Last_Price             : Table_Apriceshistory.Data_Type;
+    Lay_Bet_Name           : String_Object;
+    Back_Bet_Name          : String_Object;
+    --Dst_Change             : Calendar2.Time_Type := (2016,03,27,03,0,0,0);
+
+    Back_Size              : Bet_Size_Type := 0.0;
+    Ln : Betname_Type := (others => ' ');
+    Bn : Betname_Type := (others => ' ');
   begin
-   -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
+
+    Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
+    Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
+
+    -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market.Marketid := Price_Data.Marketid;
     Market.Read(Eos);
     if Eos then
       Log(Me & "Run", "no market found");
       return;
     end if;
-    
-    --fix dst/utc
-    if Market.Startts < Dst_Change then
-      Market.Startts := Market.Startts + (0,1,0,0,0); -- 1 hour
-    elsif Market.Startts > Dst_Change then
-      Market.Startts := Market.Startts + (0,2,0,0,0); -- 2 hours
-    end if;  
-    
+
+--      --fix dst/utc
+--      if Market.Startts < Dst_Change then
+--        Market.Startts := Market.Startts + (0,1,0,0,0); -- 1 hour
+--      elsif Market.Startts > Dst_Change then
+--        Market.Startts := Market.Startts + (0,2,0,0,0); -- 2 hours
+--      end if;
+
     Log(Me & "Run", "Market: " & Market.To_String);
-    Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,  
-                                  Selectionid => Price_Data.Selectionid, 
+    Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,
+                                  Selectionid => Price_Data.Selectionid,
+                                  Animal      => Horse,
                                   List        => Price_During_Race_List) ;
 
     Runner.Marketid := Price_Data.Marketid;
@@ -150,88 +147,79 @@ procedure Greenup_Lay_First_All is
     if Price_During_Race_List.Length > 80 then
       if Eos then
         Log(Me & "Run", "no runner found found  " & Runner.To_String);
-      end if;     
+        return;
+      end if;
+
+      if Runner.Status(1..7) = "REMOVED" then
+        Log(Me & "Run", "runner removed " & Runner.To_String);
+        return;
+      end if;
+
       Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
-      
-      Sim.Place_Bet(Bet_Name         => Lay_Bet_Name,
+      Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
+
+      Move(Lay_Bet_Name.Fix_String,Ln);
+      Sim.Place_Bet(Bet_Name         => Ln,
                     Market_Id        => Market.Marketid,
                     Side             => Lay,
                     Runner_Name      => Runner.Runnernamestripped,
                     Selection_Id     => Price_Data.Selectionid,
-                    Size             => Lay_Stake,
+                    Size             => Lay_Size,
                     Price            => Bet_Price_Type(Price_Data.Layprice),
                     Bet_Persistence  => Persist,
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Laybet ) ;
       Move("M",Bet.Laybet.Status);
-      Move(Max_Layprice'Img & '/' & Trim(Min_Layprice'Img,Both) & '/' & Trim(Delta_Tics_Greenup'Img,Both) & '/' & Trim(Delta_Tics_Stop_Loss'Img,Both), Bet.Laybet.Reference);
+      Move(Trim(Delta_Tics'Img,Both) ,Bet.Laybet.Reference);
       Check_Bet(Runner, Bet.Laybet);
 
-      Sim.Place_Bet(Bet_Name         => Back_Bet_Name,
-                    Market_Id        => Market.Marketid,
-                    Side             => Back,
-                    Runner_Name      => Runner.Runnernamestripped,
-                    Selection_Id     => Price_Data.Selectionid,
-                    Size             => Back_Stake,
-                    Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics_Greenup)),
-                    Bet_Persistence  => Persist,
-                    Bet_Placed       => Price_Data.Pricets,
-                    Bet              => Bet.Greenup_Backbet ) ;
-      Move("U",Bet.Greenup_Backbet.Status);
-      Move(Max_Layprice'Img & '/' & Trim(Min_Layprice'Img,Both) & '/' & Trim(Delta_Tics_Greenup'Img,Both) & '/' & Trim(Delta_Tics_Stop_Loss'Img,Both), Bet.Greenup_Backbet.Reference);
+      declare
+        B_Price : Fixed_Type := Tics.Get_Tic_Price(Tic_Lay + Delta_Tics);
+      begin
+        Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
+        Log(Me & "Run", "Back_Size " & Back_Size'img & " Lay_Size" & Lay_Size'Img &
+                      " Price_Data.Layprice " & Price_Data.Layprice'img   &
+                      " Tic_Lay " & Tic_Lay'img   &
+                      " Delta_Tics " & Delta_Tics'img   &
+                      " B_Price " & B_Price'Img &
+                      " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
+                      );
+      end;
 
-      Sim.Place_Bet(Bet_Name         => Stop_Loss_Name,
+
+      Move(Back_Bet_Name.Fix_String,Bn);
+
+      Sim.Place_Bet(Bet_Name         => Bn,
                     Market_Id        => Market.Marketid,
                     Side             => Back,
                     Runner_Name      => Runner.Runnernamestripped,
                     Selection_Id     => Price_Data.Selectionid,
-                    Size             => Stop_Loss_Stake,
-                    Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay - Delta_Tics_Stop_Loss)),
+                    Size             => Back_Size,
+                    Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics)),
                     Bet_Persistence  => Persist,
                     Bet_Placed       => Price_Data.Pricets,
-                    Bet              => Bet.Stop_Loss_Backbet ) ;
-      Move("U",Bet.Stop_Loss_Backbet.Status);
-      Move(Max_Layprice'Img & '/' & Trim(Min_Layprice'Img,Both) & '/' & Trim(Delta_Tics_Greenup'Img,Both) & '/' & Trim(Delta_Tics_Stop_Loss'Img,Both), Bet.Stop_Loss_Backbet.Reference);
-      
-      
-      --Log(Me & "Run", "Price_Data " & Price_Data.To_String);
-      --Log(Me & "Run", "Bet.Laybet " & Bet.Laybet.To_String);
-      --Log(Me & "Run", "Bet.Greenup_Backbet " & Bet.Greenup_Backbet.To_String);
-      --Log(Me & "Run", "Bet.Stop_Loss_Backbet " & Bet.Stop_Loss_Backbet.To_String);
+                    Bet              => Bet.Backbet ) ;
+      Move("U",Bet.Backbet.Status);
+      Move(Trim(Delta_Tics'Img,Both) , Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
-        --Log(Me & "Run", "Race_Data " & Race_Data.To_String);
-        --Log(Me & "Run", " Race_Data.Backprice >= Bet.Greenup_Backbet.Price " & Boolean(Race_Data.Backprice >= Bet.Greenup_Backbet.Price)'img);
-        --Log(Me & "Run", " Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price " & Boolean(Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price)'img);
-            
-        if Price_Data.Backprice > Fixed_Type(0.0) and then Price_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
+        if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
           if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
             if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
-              if    Race_Data.Backprice >= Bet.Greenup_Backbet.Price then -- a match
-                Move("M",Bet.Greenup_Backbet.Status);
+              if    Race_Data.Backprice >= Bet.Backbet.Price then -- a match
+                Move("M",Bet.Backbet.Status);
                 exit;
-              elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
-                Move("M",Bet.Stop_Loss_Backbet.Status);
-                exit;
+--                elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
+--                  Move("M",Bet.Stop_Loss_Backbet.Status);
+--                  exit;
               end if;
             end if;
           end if;
         end if;
-        Last_Price := Race_Data;
-      --  Log(Me & "Run", "Race_Data.Pricets >= Market.Startts " & Boolean(Race_Data.Pricets >= Market.Startts)'img);
-        exit when Race_Data.Pricets >= Market.Startts; --- closing time
       end loop;
-      
-      --if we are not matched, then stop_loss
-      if  Bet.Greenup_Backbet.Status(1) = 'U' and then
-        Bet.Stop_Loss_Backbet.Status(1) = 'U' then
-          Bet.Stop_Loss_Backbet.Price := Last_Price.Backprice;
-          Move("M",Bet.Stop_Loss_Backbet.Status);
-          Move("C",Bet.Greenup_Backbet.Status);
-      end if;
-      Check_Bet(Runner, Bet.Greenup_Backbet);
-      Check_Bet(Runner, Bet.Stop_Loss_Backbet);
+
+      Check_Bet(Runner, Bet.Backbet);
 
      -- Bet_List.Insert
     else
@@ -250,10 +238,10 @@ begin
       Help        => "use alternative inifile");
 
   Getopt (Cmd_Line);  -- process the command line
-   
+
   if not EV.Exists("BOT_NAME") then
     EV.Set("BOT_NAME","greenup_lfa");
-  end if;  
+  end if;
 
   Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
@@ -261,11 +249,11 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
-        (Host     => Ini.Get_Value("database_ghd", "host", ""),
-         Port     => Ini.Get_Value("database_ghd", "port", 5432),
-         Db_Name  => Ini.Get_Value("database_ghd", "name", ""),
-         Login    => Ini.Get_Value("database_ghd", "username", ""),
-         Password =>Ini.Get_Value("database_ghd", "password", ""));
+        (Host     => Ini.Get_Value("database_home", "host", ""),
+         Port     => Ini.Get_Value("database_home", "port", 5432),
+         Db_Name  => Ini.Get_Value("database_home", "name", ""),
+         Login    => Ini.Get_Value("database_home", "username", ""),
+         Password =>Ini.Get_Value("database_home", "password", ""));
   Log(Me, "db Connected");
 
 
@@ -273,7 +261,7 @@ begin
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
     Price_List  : Table_Aprices.Aprices_List_Pack2.List;
-  begin  
+  begin
     T.Start;
     Stm.Prepare(
      "select P.* " &
@@ -282,53 +270,40 @@ begin
      "and M.MARKETTYPE = 'WIN' " &
      "and E.COUNTRYCODE in ('GB','IE') " &
      "and P.MARKETID = M.MARKETID " &
-     "and E.EVENTTYPEID = 4339 " &
-     "and M.STARTTS::date > '2016-03-10' " &
-   --  "and P.LAYPRICE <= :MAX_LAYPRICE " &
+     "and E.EVENTTYPEID = 7 " &
+     "and P.LAYPRICE <= :MAX_LAYPRICE " &
    --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
      "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
+    Stm.Set("MAX_LAYPRICE",100.0);
     Table_Aprices.Read_List(Stm, Price_List);
     T.Commit;
 
-    for Max_Layprice in Max_Layprice_Type'range loop
-      for Min_Layprice in Min_Layprice_Type'range loop
-        declare
-          Layprice_High : Fixed_Type := Fixed_Type(Max_Layprice)/10.0;
-          Layprice_Low  : Fixed_Type := Fixed_Type(Min_Layprice)/10.0;
-        begin
-          for Price of Price_List loop
-            if Price.Layprice <= Layprice_High and then
-               Price.Layprice >= Layprice_Low then
-               
-              Log(Me & "Run", "Treat market:" & Min_Layprice'Img & " " & Max_Layprice'Img & " " & Price.To_String );
-              T.Start;
-              for Dtg in Delta_Tics_Greenup_Type'range loop
-                for Dtsl in Delta_Tics_Stop_Loss_Type'range loop                  
-                  Log(Me & "Run", "Treat market:" & Min_Layprice'Img & " " & Max_Layprice'Img & " " & Dtg'Img & " " & Dtsl'Img & " " & Price.To_String );
-                  Run(Price_Data           => Price, 
-                      Delta_Tics_Greenup   => Dtg, 
-                      Delta_Tics_Stop_Loss => Dtsl,
-                      Min_Layprice         => Min_Layprice, 
-                      Max_Layprice         => Max_Layprice);
-                end loop;
-              end loop;
-              T.Commit;
-            end if; 
-          end loop;  
-        end;
+    begin
+      for Price of Price_List loop -- all runners in race
+        if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
+          T.Start;
+          for Dtg in Delta_Tics_Greenup_Type'Range loop
+            Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
+            Run(Price_Data => Price,
+                Delta_Tics => Dtg,
+                Lay_Size   => Lay_Size);
+            Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
+          end loop;
+          T.Commit;
+        end if;
       end loop;
-    end loop;
+    end;
   end;
-  
+
   Log(Me, "Close Db");
   Sql.Close_Session;
   Logging.Close;
-  
+
 exception
   when Lock.Lock_Error =>
     Log(Me, "lock error, exit");
     Logging.Close;
-    
+
   when E: others =>
     declare
       Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
@@ -344,4 +319,3 @@ exception
     Log(Me, "Closed log and die");
     Logging.Close;
 end Greenup_Lay_First_All;
-
