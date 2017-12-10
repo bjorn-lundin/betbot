@@ -5,8 +5,6 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 with Ada.Containers;
 with Ada.Containers.Doubly_Linked_Lists;
---with Bot_System_Number;
-
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 
@@ -15,30 +13,21 @@ with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
---with Bot_Messages;
 with Rpc;
 with Lock ;
---with Posix;
 with Ini;
 with Logging; use Logging;
---with Process_IO;
---with Core_Messages;
---with Table_Amarkets;
---with Table_Aevents;
-with Table_Aprices;
---with Table_Abalances;
---with Table_Apriceshistory;
 with Bot_Svn_Info;
---with Config;
---with Utils; use Utils;
+with Utils; use Utils;
 with Table_Abets;
 with Tics;
 with Sim;
+
+with Prices;
 with Price_Histories;
 with Markets;
 with Runners;
 with Bets;
-
 
 procedure Greenup_Lay_First_All is
 
@@ -59,7 +48,6 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
   Lay_Size       : constant Bet_Size_Type := 100.0;
-
   Layprice_High : Fixed_Type := 100.0;
   Layprice_Low  : Fixed_Type :=   2.0;
   subtype Delta_Tics_Greenup_Type is Integer range 1 .. 20;
@@ -96,28 +84,33 @@ procedure Greenup_Lay_First_All is
 
   -----------------------------------------------------------------
 
-  procedure Run(Price_Data : in Table_Aprices.Data_Type;
+  procedure Run(Price_Data : in Prices.Price_Type;
                 Delta_Tics : in Integer;
                 Lay_Size   : in Bet_Size_Type) is
 
     Market                 : Markets.Market_Type;
     Eos                    : Boolean := False;
-    Price_During_Race_List : Price_Histories.Lists.List; --Table_Apriceshistory.Apriceshistory_List_Pack2.List;
+    Price_During_Race_List : Price_Histories.Lists.List;
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
     Tic_Lay                : Integer := 0;
     Bet                    : Bet_Type;
-    --Last_Price             : Table_Apriceshistory.Data_Type;
     Lay_Bet_Name           : String_Object;
     Back_Bet_Name          : String_Object;
-    --Dst_Change             : Calendar2.Time_Type := (2016,03,27,03,0,0,0);
 
     Back_Size              : Bet_Size_Type := 0.0;
-    Ln : Betname_Type := (others => ' ');
-    Bn : Betname_Type := (others => ' ');
+    Ln                     : Betname_Type := (others => ' ');
+    Bn                     : Betname_Type := (others => ' ');
+    Reference              : String(1..20) := (others  => ' ');
+
   begin
 
-    Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
-    Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
+    if Delta_Tics >= 10 then
+      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
+      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
+    else
+      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both));
+      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both));
+    end if;
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market.Marketid := Price_Data.Marketid;
@@ -126,13 +119,6 @@ procedure Greenup_Lay_First_All is
       Log(Me & "Run", "no market found");
       return;
     end if;
-
---      --fix dst/utc
---      if Market.Startts < Dst_Change then
---        Market.Startts := Market.Startts + (0,1,0,0,0); -- 1 hour
---      elsif Market.Startts > Dst_Change then
---        Market.Startts := Market.Startts + (0,2,0,0,0); -- 2 hours
---      end if;
 
     Log(Me & "Run", "Market: " & Market.To_String);
     Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,
@@ -156,7 +142,7 @@ procedure Greenup_Lay_First_All is
       end if;
 
       Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
-      Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
+     -- Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
 
       Move(Lay_Bet_Name.Fix_String,Ln);
       Sim.Place_Bet(Bet_Name         => Ln,
@@ -170,7 +156,10 @@ procedure Greenup_Lay_First_All is
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Laybet ) ;
       Move("M",Bet.Laybet.Status);
-      Move(Trim(Delta_Tics'Img,Both) ,Bet.Laybet.Reference);
+
+      Move("deltatics="&trim(Delta_Tics'Img,Both) & ",layprice=" & F8_Image(Price_Data.Layprice),Reference);
+      Move(Reference,Bet.Laybet.Reference);
+
       Check_Bet(Runner, Bet.Laybet);
 
       declare
@@ -200,7 +189,7 @@ procedure Greenup_Lay_First_All is
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
-      Move(Trim(Delta_Tics'Img,Both) , Bet.Backbet.Reference);
+      Move(Reference,Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
@@ -218,10 +207,8 @@ procedure Greenup_Lay_First_All is
           end if;
         end if;
       end loop;
-
       Check_Bet(Runner, Bet.Backbet);
 
-     -- Bet_List.Insert
     else
       Log(Me & "not enough data for runner" & Price_During_Race_List.Length'Img, Price_Data.To_String);
     end if;
@@ -260,7 +247,7 @@ begin
   declare
     Stm : Sql.Statement_Type;
     T   : Sql.Transaction_Type;
-    Price_List  : Table_Aprices.Aprices_List_Pack2.List;
+    Price_List  : Prices.Lists.List;
   begin
     T.Start;
     Stm.Prepare(
@@ -275,7 +262,7 @@ begin
    --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
      "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
     Stm.Set("MAX_LAYPRICE",100.0);
-    Table_Aprices.Read_List(Stm, Price_List);
+    Prices.Read_List(Stm, Price_List);
     T.Commit;
 
     begin
@@ -283,11 +270,11 @@ begin
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
           for Dtg in Delta_Tics_Greenup_Type'Range loop
-            Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
+         --   Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Dtg,
                 Lay_Size   => Lay_Size);
-            Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
+         --   Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
           end loop;
           T.Commit;
         end if;
