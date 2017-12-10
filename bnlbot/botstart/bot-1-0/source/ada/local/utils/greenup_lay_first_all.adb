@@ -50,7 +50,7 @@ procedure Greenup_Lay_First_All is
   Lay_Size       : constant Bet_Size_Type := 100.0;
   Layprice_High : Fixed_Type := 100.0;
   Layprice_Low  : Fixed_Type :=   2.0;
-  subtype Delta_Tics_Greenup_Type is Integer range 1 .. 20;
+  subtype Delta_Tics_Type is Integer range 1 .. 41;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -85,7 +85,7 @@ procedure Greenup_Lay_First_All is
   -----------------------------------------------------------------
 
   procedure Run(Price_Data : in Prices.Price_Type;
-                Delta_Tics : in Integer;
+                Delta_Tics : in Delta_Tics_Type;
                 Lay_Size   : in Bet_Size_Type) is
 
     Market                 : Markets.Market_Type;
@@ -177,52 +177,55 @@ procedure Greenup_Lay_First_All is
 
       Check_Bet(Runner, Bet.Laybet);
 
-      declare
-        B_Price : Fixed_Type := Tics.Get_Tic_Price(Tic_Lay + Delta_Tics);
-      begin
-        Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
-        Log(Me & "Run", "Back_Size " & Back_Size'img & " Lay_Size" & Lay_Size'Img &
-                      " Price_Data.Layprice " & Price_Data.Layprice'img   &
-                      " Tic_Lay " & Tic_Lay'img   &
-                      " Delta_Tics " & Delta_Tics'img   &
-                      " B_Price " & B_Price'Img &
-                      " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
-                      );
-      end;
+      if Delta_Tics < Delta_Tics_Type'Last then
+        -- if last then no backbet
+        declare
+          B_Price : Fixed_Type := Tics.Get_Tic_Price(Tic_Lay + Delta_Tics);
+        begin
+          Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
+          Log(Me & "Run", "Back_Size " & Back_Size'Img & " Lay_Size" & Lay_Size'Img &
+                " Price_Data.Layprice " & Price_Data.Layprice'Img   &
+                " Tic_Lay " & Tic_Lay'Img   &
+                " Delta_Tics " & Delta_Tics'Img   &
+                " B_Price " & B_Price'Img &
+                " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
+             );
+        end;
 
 
-      Move(Back_Bet_Name.Fix_String,Bn);
+        Move(Back_Bet_Name.Fix_String,Bn);
 
-      Sim.Place_Bet(Bet_Name         => Bn,
-                    Market_Id        => Market.Marketid,
-                    Side             => Back,
-                    Runner_Name      => Runner.Runnernamestripped,
-                    Selection_Id     => Price_Data.Selectionid,
-                    Size             => Back_Size,
-                    Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics)),
-                    Bet_Persistence  => Persist,
-                    Bet_Placed       => Price_Data.Pricets,
-                    Bet              => Bet.Backbet ) ;
-      Move("U",Bet.Backbet.Status);
-      Move(Reference,Bet.Backbet.Reference);
+        Sim.Place_Bet(Bet_Name         => Bn,
+                      Market_Id        => Market.Marketid,
+                      Side             => Back,
+                      Runner_Name      => Runner.Runnernamestripped,
+                      Selection_Id     => Price_Data.Selectionid,
+                      Size             => Back_Size,
+                      Price            => Bet_Price_Type(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics)),
+                      Bet_Persistence  => Persist,
+                      Bet_Placed       => Price_Data.Pricets,
+                      Bet              => Bet.Backbet ) ;
+        Move("U",Bet.Backbet.Status);
+        Move(Reference,Bet.Backbet.Reference);
 
-      -- see if we meet stop_loss or greenup
-      for Race_Data of Price_During_Race_List loop
-        if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
-          if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
-            if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
-              if    Race_Data.Backprice >= Bet.Backbet.Price then -- a match
-                Move("M",Bet.Backbet.Status);
-                exit;
---                elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
---                  Move("M",Bet.Stop_Loss_Backbet.Status);
---                  exit;
+        -- see if we meet stop_loss or greenup
+        for Race_Data of Price_During_Race_List loop
+          if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
+            if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
+              if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
+                if    Race_Data.Backprice >= Bet.Backbet.Price then -- a match
+                  Move("M",Bet.Backbet.Status);
+                  exit;
+                  --                elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
+                  --                  Move("M",Bet.Stop_Loss_Backbet.Status);
+                  --                  exit;
+                end if;
               end if;
             end if;
           end if;
-        end if;
-      end loop;
-      Check_Bet(Runner, Bet.Backbet);
+        end loop;
+        Check_Bet(Runner, Bet.Backbet);
+      end if;
 
     else
       Log(Me & "not enough data for runner" & Price_During_Race_List.Length'Img, Price_Data.To_String);
@@ -284,7 +287,7 @@ begin
       for Price of Price_List loop -- all runners in race
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
-          for Dtg in Delta_Tics_Greenup_Type'Range loop
+          for Dtg in Delta_Tics_Type'Range loop
          --   Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Dtg,
