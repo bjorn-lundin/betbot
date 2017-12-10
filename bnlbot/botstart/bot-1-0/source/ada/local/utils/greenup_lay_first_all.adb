@@ -157,8 +157,23 @@ procedure Greenup_Lay_First_All is
                     Bet              => Bet.Laybet ) ;
       Move("M",Bet.Laybet.Status);
 
-      Move("deltatics="&trim(Delta_Tics'Img,Both) & ",layprice=" & F8_Image(Price_Data.Layprice),Reference);
-      Move(Reference,Bet.Laybet.Reference);
+      if Delta_Tics >= 10 then
+        Move("deltatics="&Trim(Delta_Tics'Img,Both),Reference);
+      else
+        Move("deltatics=0"&Trim(Delta_Tics'Img,Both),Reference);
+      end if;
+
+      if Price_Data.Layprice < 10.0 then
+       Move(Reference & ",layprice=000" & F8_Image(Price_Data.Layprice),Reference);
+      elsif  Price_Data.Layprice < 100.0 then
+       Move(Reference & ",layprice=00" & F8_Image(Price_Data.Layprice),Reference);
+      elsif Price_Data.Layprice < 1000.0 then
+       Move(Reference & ",layprice=0" & F8_Image(Price_Data.Layprice),Reference);
+      else
+       Move(Reference & ",layprice=" & F8_Image(Price_Data.Layprice),Reference);
+      end if;
+
+      Move(Reference, Bet.Laybet.Reference);
 
       Check_Bet(Runner, Bet.Laybet);
 
