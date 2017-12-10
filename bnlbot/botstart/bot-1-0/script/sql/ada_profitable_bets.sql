@@ -30,7 +30,7 @@ where STATUS in ('SETTLED')
   and betwon is not null
 group by
   betname,side
-having sum(profit) > -10000
+having sum(profit) > -100
 and max(betplaced) > '2017-01-01 00:00:00' 
 and count('a') >= 10
 order by
