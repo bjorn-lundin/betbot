@@ -100,7 +100,7 @@ procedure Greenup_Lay_First_All is
     Back_Size              : Bet_Size_Type := 0.0;
     Ln                     : Betname_Type := (others => ' ');
     Bn                     : Betname_Type := (others => ' ');
-    Reference              : String(1..20) := (others  => ' ');
+    Reference              : String(1..30) := (others  => ' ');
 
   begin
 
@@ -158,19 +158,19 @@ procedure Greenup_Lay_First_All is
       Move("M",Bet.Laybet.Status);
 
       if Delta_Tics >= 10 then
-        Move("deltatics="&Trim(Delta_Tics'Img,Both),Reference);
+        Move("tics="&Trim(Delta_Tics'Img,Both),Reference);
       else
-        Move("deltatics=0"&Trim(Delta_Tics'Img,Both),Reference);
+        Move("tics=0"&Trim(Delta_Tics'Img,Both),Reference);
       end if;
 
       if Price_Data.Layprice < 10.0 then
-       Move(Reference & ",layprice=000" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Reference & ",lay=000" & F8_Image(Price_Data.Layprice),Reference);
       elsif  Price_Data.Layprice < 100.0 then
-       Move(Reference & ",layprice=00" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Reference & ",lay=00" & F8_Image(Price_Data.Layprice),Reference);
       elsif Price_Data.Layprice < 1000.0 then
-       Move(Reference & ",layprice=0" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Reference & ",lay=0" & F8_Image(Price_Data.Layprice),Reference);
       else
-       Move(Reference & ",layprice=" & F8_Image(Price_Data.Layprice),Reference);
+       Move(Reference & ",lay=" & F8_Image(Price_Data.Layprice),Reference);
       end if;
 
       Move(Reference, Bet.Laybet.Reference);
