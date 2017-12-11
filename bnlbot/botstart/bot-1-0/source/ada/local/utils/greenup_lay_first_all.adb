@@ -50,7 +50,7 @@ procedure Greenup_Lay_First_All is
   Lay_Size       : constant Bet_Size_Type := 100.0;
   Layprice_High : Fixed_Type := 100.0;
   Layprice_Low  : Fixed_Type :=  15.0;
-  subtype Delta_Tics_Type is Integer range 35 .. 61;
+  subtype Delta_Tics_Type is Integer range 41 .. 41;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -120,7 +120,7 @@ procedure Greenup_Lay_First_All is
       return;
     end if;
 
-    Log(Me & "Run", "Market: " & Market.To_String);
+   -- Log(Me & "Run", "Market: " & Market.To_String);
     Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,
                                   Selectionid => Price_Data.Selectionid,
                                   Animal      => Horse,
@@ -234,6 +234,7 @@ procedure Greenup_Lay_First_All is
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
 ------------------------------ main start -------------------------------------
+  Current_Date : Calendar2.Time_Type := Calendar2.Clock;
 begin
 
    Define_Switch
@@ -285,6 +286,11 @@ begin
 
     begin
       for Price of Price_List loop -- all runners in race
+        if Price.Pricets.Day /= Current_Date.Day then
+          Log(Me, "start Treat date: " & Current_Date.String_Date_ISO );
+          Current_Date := Price.Pricets;
+        end if;
+
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
           for Dtg in Delta_Tics_Type'Range loop
