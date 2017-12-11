@@ -49,8 +49,8 @@ procedure Greenup_Lay_First_All is
 
   Lay_Size       : constant Bet_Size_Type := 100.0;
   Layprice_High : Fixed_Type := 100.0;
-  Layprice_Low  : Fixed_Type :=   2.0;
-  subtype Delta_Tics_Type is Integer range 1 .. 41;
+  Layprice_Low  : Fixed_Type :=  15.0;
+  subtype Delta_Tics_Type is Integer range 35 .. 61;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
