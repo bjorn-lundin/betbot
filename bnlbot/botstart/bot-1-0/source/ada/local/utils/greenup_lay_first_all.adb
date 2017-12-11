@@ -49,8 +49,8 @@ procedure Greenup_Lay_First_All is
 
   Lay_Size        : constant Bet_Size_Type := 100.0;
   Layprice_High   : Fixed_Type := 100.0;
-  Layprice_Low    : Fixed_Type :=  15.0;
-  subtype Delta_Tics_Type is Integer range 41 .. 41;
+  Layprice_Low    : Fixed_Type :=  8.0;
+  subtype Delta_Tics_Type is Integer range 42 .. 61;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -181,13 +181,13 @@ procedure Greenup_Lay_First_All is
         B_Price : Fixed_Type := Tics.Get_Tic_Price(Tic_Lay + Delta_Tics);
       begin
         Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
-        Log(Me & "Run", "Back_Size " & Back_Size'Img & " Lay_Size" & Lay_Size'Img &
-              " Price_Data.Layprice " & Price_Data.Layprice'Img   &
-              " Tic_Lay " & Tic_Lay'Img   &
-              " Delta_Tics " & Delta_Tics'Img   &
-              " B_Price " & B_Price'Img &
-              " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
-           );
+--          Log(Me & "Run", "Back_Size " & Back_Size'Img & " Lay_Size" & Lay_Size'Img &
+--                " Price_Data.Layprice " & Price_Data.Layprice'Img   &
+--                " Tic_Lay " & Tic_Lay'Img   &
+--                " Delta_Tics " & Delta_Tics'Img   &
+--                " B_Price " & B_Price'Img &
+--                " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
+--             );
       end;
 
 
