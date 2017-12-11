@@ -48,9 +48,9 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
   Lay_Size        : constant Bet_Size_Type := 100.0;
-  Layprice_High   : Fixed_Type :=  14.5;
+  Layprice_High   : Fixed_Type :=  38.0;
   Layprice_Low    : Fixed_Type :=   8.0;
-  subtype Delta_Tics_Type is Integer range 25 .. 70;
+  subtype Delta_Tics_Type is Integer range 1 .. 24;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
