@@ -243,7 +243,7 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
-    Ev.Set("BOT_NAME","greenup_lfa2");
+    Ev.Set("BOT_NAME","greenup_lfa");
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Ev.Value("BOT_NAME") & ".log");
