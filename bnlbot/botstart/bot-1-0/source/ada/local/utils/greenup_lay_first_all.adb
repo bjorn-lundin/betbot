@@ -48,8 +48,8 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
   Lay_Size        : constant Bet_Size_Type := 100.0;
-  Layprice_High   : Fixed_Type :=  40.0;
-  Layprice_Low    : Fixed_Type :=  15.0;
+  Layprice_High   : Fixed_Type :=  14.5;
+  Layprice_Low    : Fixed_Type :=   8.0;
   subtype Delta_Tics_Type is Integer range 25 .. 70;
 
   -----------------------------------------------------------------
@@ -243,7 +243,7 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
-    Ev.Set("BOT_NAME","greenup_lfa");
+    Ev.Set("BOT_NAME","greenup_lfa2");
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Ev.Value("BOT_NAME") & ".log");
