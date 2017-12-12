@@ -4,35 +4,34 @@ DBNAME:=bnl
 
 .PHONY : all 
 
-all  : price_refer_sum.png
-   
+all  : heatmap.png heatmap_3d.png
 
-price_refer_sum.png : heatmap_gh.gpl plot_data.dat
+heatmap.png : heatmap.gpl plot_data.dat
 	gnuplot -e "type='Win'" \
-	        -e "target_png='price_refer_sum.png'" \
+	        -e "target_png='heatmap.png'" \
             -e "source_dat='plot_data.dat'" heatmap.gpl
+
+heatmap_3d.png : heatmap_3d.gpl plot_data.dat
 	gnuplot -e "type='Win'" \
-	        -e "target_png='price_refer_sum_3d.png'" \
+	        -e "target_png='heatmap_3d.png'" \
             -e "source_dat='plot_data.dat'" heatmap_3d.gpl
-	#rm heatmap_win_all.dat
 
-plot_data.dat : price_refer_sum.dat filter_data.bash
-	cat price_refer_sum.dat | ./filter_data.bash > plot_data.dat
+plot_data.dat : heatmap.dat filter_data.bash
+	cat heatmap.dat | ./filter_data.bash > plot_data.dat
 
+excel.dat : plot_data.dat filter_data_for_excel.bash
+	cat plot_data.dat | ./filter_data_for_excel.bash > excel.dat
 
-price_refer_sum.dat :
-	psql --host=$(DBHOST)\
+heatmap.dat :
+	psql --host=$(DBHOST) \
     --username=$(DBUSER) \
     --tuples-only \
-    --command="select reference, sum(profit) from abets group by reference order by reference" \
-    --output=price_refer_sum.dat $(DBNAME)
-
-
+    --command="select reference, sum(profit) from abets where status = 'M' group by reference order by reference" \
+    --output=heatmap.dat $(DBNAME)
 
 .PHONY : clean
 clean :
 	rm -rf  *.dat
-
 
 .PHONY : very_clean
 very_clean :
