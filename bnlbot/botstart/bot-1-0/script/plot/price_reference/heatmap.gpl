@@ -2,7 +2,6 @@ set datafile commentschars '#'
 set datafile separator '|'
 
 set terminal pngcairo size 2048,1536 background '#ffffff'
-#set terminal pngcairo size 1024,768 background '#ffffff'
 set output target_png
 
 set title "Horses GB/IE - for size=100 skr and greenup for no loss " . type  
@@ -14,12 +13,10 @@ set key off
 set xlabel "layodds (in tics)"
 set ylabel "delta tics"
 
-#set xrange [200:280]
+#set xrange [200:260]
 #set yrange [4:20]
 
-
-#set cbrange [0:300]
-
+set cbrange [0:30000]
 #set cbrange  [range_low:range_high]
 
 
@@ -36,17 +33,11 @@ set ylabel "delta tics"
 #
 
 
-#set pm3d
-#set view map
-#splot source_dat
+set pm3d
+set view map
+splot source_dat
 
-#set view map
-set dgrid3d
-splot source_dat using 1:2:3 with pm3d
-
-
-#plot source_dat using 1:2:3 with image, \
-#     source_dat using 1:2:(strcol(3)) with labels
-#offset 0,1.5
-  
+#set dgrid3d
+#splot source_dat using 1:2:3 with pm3d
+ 
 
