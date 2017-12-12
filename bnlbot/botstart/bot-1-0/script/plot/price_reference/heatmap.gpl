@@ -36,14 +36,13 @@ set ylabel "delta tics"
 #
 
 
-set pm3d
-set view map
-splot source_dat
-
+#set pm3d
+#set view map
+#splot source_dat
 
 #set view map
-#set dgrid3d
-#splot source_dat using 1:2:3 with pm3d
+set dgrid3d
+splot source_dat using 1:2:3 with pm3d
 
 
 #plot source_dat using 1:2:3 with image, \

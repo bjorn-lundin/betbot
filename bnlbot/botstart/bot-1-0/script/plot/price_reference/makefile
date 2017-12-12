@@ -10,7 +10,10 @@ all  : price_refer_sum.png
 price_refer_sum.png : heatmap_gh.gpl plot_data.dat
 	gnuplot -e "type='Win'" \
 	        -e "target_png='price_refer_sum.png'" \
-            -e "source_dat='plot_data.dat'" heatmap_gh.gpl
+            -e "source_dat='plot_data.dat'" heatmap.gpl
+	gnuplot -e "type='Win'" \
+	        -e "target_png='price_refer_sum_3d.png'" \
+            -e "source_dat='plot_data.dat'" heatmap_3d.gpl
 	#rm heatmap_win_all.dat
 
 plot_data.dat : price_refer_sum.dat filter_data.bash
