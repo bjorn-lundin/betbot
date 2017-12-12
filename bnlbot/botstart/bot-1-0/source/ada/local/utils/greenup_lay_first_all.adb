@@ -14,7 +14,7 @@ with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
 with Rpc;
-with Lock ;
+--with Lock ;
 with Ini;
 with Logging; use Logging;
 with Bot_Svn_Info;
@@ -100,6 +100,7 @@ procedure Greenup_Lay_First_All is
     Reference              : String(1..30) := (others  => ' ');
 
   begin
+      Log(Me & "Run", "start");
 
     if Delta_Tics >= 10 then
       Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
@@ -299,10 +300,14 @@ begin
     raise Constraint_Error with "no log file name set";
   elsif Ia_Min_Tic = 0 then
     raise Constraint_Error with "no min-tic set";
-  elsif Ia_Min_Tic = 0  then
+  elsif Ia_Max_Tic = 0  then
     raise Constraint_Error with "no max-tic set";
   end if;
   Log("9");
+
+  Log(Ia_Min_Tic'Img & Ia_Max_Tic'Img & " '" & Sa_Min_Layprice.all & "' '" & Sa_Max_Layprice.all & "'");
+
+
 
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","greenup_lfa");
@@ -349,6 +354,8 @@ begin
     Prices.Read_List(Stm, Price_List);
     T.Commit;
 
+    Log(Layprice_Low'Img & " " & Layprice_High'Img & " " & Price_List.Length'Img);
+
     begin
       for Price of Price_List loop -- all runners in race
         if Price.Pricets.Day /= Current_Date.Day then
@@ -360,11 +367,11 @@ begin
           T.Start;
           --for Dtg in Delta_Tics_Type'Range loop
           for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
-            --   Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
+            Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Dtg,
                 Lay_Size   => Lay_Size);
-            --   Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
+            Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
           end loop;
           T.Commit;
         end if;
@@ -377,9 +384,9 @@ begin
   Logging.Close;
 
 exception
-  when Lock.Lock_Error =>
-    Log(Me, "lock error, exit");
-    Logging.Close;
+--    when Lock.Lock_Error =>
+--      Log(Me, "lock error, exit");
+--      Logging.Close;
 
   when E: others =>
     declare
