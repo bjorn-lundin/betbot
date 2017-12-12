@@ -243,44 +243,52 @@ procedure Greenup_Lay_First_All is
 
 
 begin
+  Log("1");
 
   Define_Switch
     (Cmd_Line,
      Sa_Min_Layprice'Access,
      Long_Switch => "--min_lay=",
      Help        => "Min layprice");
+  Log("2");
 
   Define_Switch
     (Cmd_Line,
      Sa_Max_Layprice'Access,
      Long_Switch => "--max_lay=",
      Help        => "Min layprice");
+  Log("3");
 
   Define_Switch
     (Cmd_Line,
      Ia_Min_Tic'Access,
      Long_Switch => "--min_tic=",
      Help        => "min tic");
+  Log("4");
 
   Define_Switch
     (Cmd_Line,
      Ia_Max_Tic'Access,
      Long_Switch => "--max_tic=",
      Help        => "max tic");
+  Log("5");
 
   Define_Switch
     (Cmd_Line,
      Sa_Logfilename'Access,
      Long_Switch => "--logfile=",
      Help        => "name of log file");
+  Log("6");
 
   Define_Switch
     (Cmd_Line,
      Sa_Par_Inifile'Access,
      Long_Switch => "--inifile=",
      Help        => "use alternative inifile");
+  Log("7");
 
   Getopt (Cmd_Line);  -- process the command line
+  Log("8");
 
 
   if Sa_Min_Layprice.all = "" then
@@ -294,6 +302,7 @@ begin
   elsif Ia_Min_Tic = 0  then
     raise Constraint_Error with "no max-tic set";
   end if;
+  Log("9");
 
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","greenup_lfa");
