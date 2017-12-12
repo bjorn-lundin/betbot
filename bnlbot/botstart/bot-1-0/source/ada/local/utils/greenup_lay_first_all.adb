@@ -46,11 +46,8 @@ procedure Greenup_Lay_First_All is
   end record;
   use type Table_Abets.Data_Type;
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
+  subtype Delta_Tics_Type is Integer range 0 .. 350;
 
-  Lay_Size        : constant Bet_Size_Type := 100.0;
-  Layprice_High   : Fixed_Type :=  38.0;
-  Layprice_Low    : Fixed_Type :=   8.0;
-  subtype Delta_Tics_Type is Integer range 1 .. 24;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -231,7 +228,51 @@ procedure Greenup_Lay_First_All is
   use type Sql.Transaction_Status_Type;
   ------------------------------ main start -------------------------------------
   Current_Date : Calendar2.Time_Type := Calendar2.Clock;
+
+  Sa_Min_Layprice : aliased Gnat.Strings.String_Access;
+  Sa_Max_Layprice : aliased Gnat.Strings.String_Access;
+  Sa_Logfilename  : aliased Gnat.Strings.String_Access;
+  Ia_Min_Tic      : aliased Integer;
+  Ia_Max_Tic      : aliased Integer;
+
+
+  Lay_Size        : constant Bet_Size_Type := 100.0;
+  Layprice_High   : Fixed_Type := 0.0;
+  Layprice_Low    : Fixed_Type := 0.0;
+
+
+
 begin
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Min_Layprice'Access,
+     Long_Switch => "--min_lay=",
+     Help        => "Min layprice");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Max_Layprice'Access,
+     Long_Switch => "--max_lay=",
+     Help        => "Min layprice");
+
+  Define_Switch
+    (Cmd_Line,
+     Ia_Min_Tic'Access,
+     Long_Switch => "--min_tic=",
+     Help        => "min tic");
+
+  Define_Switch
+    (Cmd_Line,
+     Ia_Max_Tic'Access,
+     Long_Switch => "--max_tic=",
+     Help        => "max tic");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Logfilename'Access,
+     Long_Switch => "--logfile=",
+     Help        => "name of log file");
 
   Define_Switch
     (Cmd_Line,
@@ -241,11 +282,24 @@ begin
 
   Getopt (Cmd_Line);  -- process the command line
 
+
+  if Sa_Min_Layprice.all = "" then
+    raise Constraint_Error with "no min-lay-price set";
+  elsif Sa_Max_Layprice.all = "" then
+    raise Constraint_Error with "no max-lay-price set";
+  elsif Sa_Logfilename.all = "" then
+    raise Constraint_Error with "no log file name set";
+  elsif Ia_Min_Tic = 0 then
+    raise Constraint_Error with "no min-tic set";
+  elsif Ia_Min_Tic = 0  then
+    raise Constraint_Error with "no max-tic set";
+  end if;
+
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","greenup_lfa");
   end if;
 
-  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Ev.Value("BOT_NAME") & ".log");
+  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
@@ -257,6 +311,12 @@ begin
      Login    => Ini.Get_Value("database_home", "username", ""),
      Password =>Ini.Get_Value("database_home", "password", ""));
   Log(Me, "db Connected");
+
+
+
+  Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all );
+  Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all );
+
 
 
   declare
@@ -289,7 +349,8 @@ begin
 
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
-          for Dtg in Delta_Tics_Type'Range loop
+          --for Dtg in Delta_Tics_Type'Range loop
+          for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
             --   Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Dtg,
