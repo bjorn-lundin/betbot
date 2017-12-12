@@ -46,7 +46,7 @@ do
 
     echo "$price_new|$dtics|$fsum"
 
-    if [ $dtics == "41" ] ; then
+    if [ $dtics == "90" ] ; then
       echo ""
     fi
   fi
