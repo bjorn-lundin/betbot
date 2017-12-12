@@ -174,7 +174,6 @@ procedure Greenup_Lay_First_All is
       end if;
 
       Move(Reference, Bet.Laybet.Reference);
-
       Check_Bet(Runner, Bet.Laybet);
 
       declare
@@ -208,22 +207,22 @@ procedure Greenup_Lay_First_All is
 
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
-        if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) then   -- must be valid
-          if Race_Data.Pricets >= Price_Data.Pricets then   -- must be later in time
-            if Price_Data.Selectionid = Race_Data.Selectionid then -- same dog
-              if    Race_Data.Backprice >= Bet.Backbet.Price then -- a match
+        if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) and then   -- must be valid
+           Race_Data.Backprice < Fixed_Type(1000.0) and then Race_Data.Layprice < Fixed_Type(1000.0) then   -- must be valid
+          if Race_Data.Pricets >= Price_Data.Pricets + (0,0,0,1,0) then   -- must be at least 1 sec later in time
+              if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
                 Move("M",Bet.Backbet.Status);
+                Move(F8_Image(Bet.Backbet.Price), Bet.Backbet.Inststatus);
+                Bet.Backbet.Price := Race_Data.Backprice;
                 exit;
                 --                elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
                 --                  Move("M",Bet.Stop_Loss_Backbet.Status);
                 --                  exit;
               end if;
-            end if;
           end if;
         end if;
       end loop;
       Check_Bet(Runner, Bet.Backbet);
-
     else
       Log(Me & "not enough data for runner" & Price_During_Race_List.Length'Img, Price_Data.To_String);
     end if;
