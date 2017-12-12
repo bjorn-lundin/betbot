@@ -53,30 +53,32 @@ procedure Greenup_Lay_First_All is
   procedure Check_Bet ( R : in Runners.Runner_Type;
                         B : in out Bets.Bet_Type) is
   begin
-    if B.Side(1..4) = "BACK" then
-      if R.Status(1..6) = "WINNER" then
-        B.Betwon := True;
-        B.Profit := B.Size * (B.Price - 1.0);
-      elsif R.Status(1..5) = "LOSER" then
-        B.Betwon := False;
-        B.Profit := -B.Size;
-      elsif R.Status(1..7) = "REMOVED" then
-        B.Status(1) := 'R';
-        B.Betwon := True;
+    if B.Status(1) = 'M' then
+      if B.Side(1..4) = "BACK" then
+        if R.Status(1..6) = "WINNER" then
+          B.Betwon := True;
+          B.Profit := B.Size * (B.Price - 1.0);
+        elsif R.Status(1..5) = "LOSER" then
+          B.Betwon := False;
+          B.Profit := -B.Size;
+        elsif R.Status(1..7) = "REMOVED" then
+          B.Status(1) := 'R';
+          B.Betwon := True;
+        end if;
+      elsif B.Side(1..3) = "LAY" then
+        if R.Status(1..6) = "WINNER" then
+          B.Betwon := False;
+          B.Profit := -B.Size * (B.Price - 1.0);
+        elsif R.Status(1..5) = "LOSER" then
+          B.Profit := B.Size;
+          B.Betwon := True;
+        elsif R.Status(1..7) = "REMOVED" then
+          B.Status(1) := 'R';
+          B.Betwon := True;
+        end if;
       end if;
-    elsif B.Side(1..3) = "LAY" then
-      if R.Status(1..6) = "WINNER" then
-        B.Betwon := False;
-        B.Profit := -B.Size * (B.Price - 1.0);
-      elsif R.Status(1..5) = "LOSER" then
-        B.Profit := B.Size;
-        B.Betwon := True;
-      elsif R.Status(1..7) = "REMOVED" then
-        B.Status(1) := 'R';
-        B.Betwon := True;
-      end if;
+      B.Insert;
     end if;
-    B.Insert;
   end Check_Bet;
 
   -----------------------------------------------------------------
@@ -326,12 +328,8 @@ begin
      Password =>Ini.Get_Value("database_home", "password", ""));
   Log(Me, "db Connected");
 
-
-
-  Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all );
-  Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all );
-
-
+  Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all);
+  Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all);
 
   declare
     Stm         : Sql.Statement_Type;
