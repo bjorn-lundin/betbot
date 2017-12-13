@@ -151,7 +151,7 @@ begin
                            "where M.EVENTID = E.EVENTID " &
                            "and E.EVENTTYPEID = 7 " &
                            "and M.NUMRUNNERS >= 7 " &
-                           "and M.MARKETTYPE = 'WIN' " &
+                           "and M.MARKETTYPE = 'PLACE' " &
                            "order by M.STARTTS");
 
   Markets.Read_List(Select_Markets,Ml);
