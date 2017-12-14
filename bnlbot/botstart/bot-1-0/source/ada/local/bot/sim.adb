@@ -1029,9 +1029,9 @@ package body Sim is
             List : Price_Histories.Lists.List :=
                       Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
           begin
-            for Data of reverse List loop
+            for Data of List loop
               if Data.Selectionid = Win_Data.Selectionid and then
-                 Data.Pricets <= Win_Data.Pricets then
+                 Data.Pricets + (0,0,0,1,0) >= Win_Data.Pricets then
                    return Data;
               end if;
             end loop;

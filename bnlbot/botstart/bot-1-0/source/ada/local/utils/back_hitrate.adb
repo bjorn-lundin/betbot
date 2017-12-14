@@ -164,7 +164,7 @@ begin
   Sql.Connect
     (Host     => "localhost",
      Port     => 5432,
-     Db_Name  => "dry",
+     Db_Name  => "bnl",
      Login    => "bnl",
      Password => "bnl");
   Log ("Connected to db");
@@ -176,8 +176,8 @@ begin
   Simulation_Storage.Fill_Maps(Marketid_Map  => Global_Marketid_Map,
                                Winner_Map    => Global_Winner_Map,
                                Win_Place_Map => Global_Win_Place_Map);
-                               
-                               
+
+
   Sql.Close_Session;
   Log ("exit");
   return;
