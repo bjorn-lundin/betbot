@@ -61,6 +61,7 @@ project Adabot is
 
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "markets_sender.adb",
+                     "sim_bets.adb",
                      "fix_database.adb",
                      "price_to_tics.adb"   );
 
