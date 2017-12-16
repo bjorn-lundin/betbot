@@ -165,40 +165,37 @@ procedure Sim_Bets is
     Runner_Index : Integer := 0;
     Bet          : Bets.Bet_Type;
   begin
-    if Strategy.Marketid = Empty_Market then
-      --check the strategy against the Best_Runners
-      High_Index := Integer(Strategy.Place_Of_Next);
-      if Best_Runners(1).Backprice <= Strategy.Leader_At_Max and then
-        Best_Runners(High_Index).Backprice >= Strategy.Next_At_Min
-      then
-        Log ("Treat_For_Place","Strategy '" & Strategy.Betname.Fix_String & "' Matched, Checking Place Odds");
+    --check the strategy against the Best_Runners
+    High_Index := Integer(Strategy.Place_Of_Next);
+    if Best_Runners(1).Backprice <= Strategy.Leader_At_Max and then
+      Best_Runners(High_Index).Backprice >= Strategy.Next_At_Min
+    then
+      Log ("Treat_For_Place","Strategy '" & Strategy.Betname.Fix_String & "' Matched, Checking Place Odds");
 
-        Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
-        Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
-        Runner_Index := Integer(Strategy.Place_Of_Runner);
-        Strategy.Backprice_Matched := Sim.Get_Place_Price(Win_Data => Best_Runners(1)).Backprice;
-        Log ("Treat_For_Place","place-odds: " & F8_Image(Strategy.Backprice_Matched));
+      Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
+      Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
+      Runner_Index := Integer(Strategy.Place_Of_Runner);
+      Strategy.Backprice_Matched := Sim.Get_Place_Price(Win_Data => Best_Runners(1)).Backprice;
+      Log ("Treat_For_Place","place-odds: " & F8_Image(Strategy.Backprice_Matched));
 
-        if Strategy.Backprice_Matched > Fixed_Type(1.0) then
-          Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
-          Strategy.Num_Matched := Strategy.Num_Matched +1;
-          Move(Strategy.Betname.Upper_Case, Bet.Betname);
-          Bet.Marketid     := Sim.Win_Place_Map(Best_Runners(1).Marketid);
-          Bet.Selectionid  := Best_Runners(Runner_Index).Selectionid;
-          Bet.Size         := Global_Back_Size;
-          Bet.Price        := Best_Runners(Runner_Index).Backprice;
-          Bet.Sizematched  := Global_Back_Size;
-          Bet.Pricematched := Strategy.Backprice_Matched;
-          Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;
-          Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
-          Bet_List.Append(Bet);
-        else
-          -- still mark as strategy unmached - it only gets 1 shot
-          Strategy.Num_Unmatched := Strategy.Num_Unmatched +1;
-        end if;
+      if Strategy.Backprice_Matched > Fixed_Type(1.0) then
+        Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
+        Strategy.Num_Matched := Strategy.Num_Matched +1;
+        Move(Strategy.Betname.Upper_Case, Bet.Betname);
+        Bet.Marketid     := Sim.Win_Place_Map(Best_Runners(1).Marketid);
+        Bet.Selectionid  := Best_Runners(Runner_Index).Selectionid;
+        Bet.Size         := Global_Back_Size;
+        Bet.Price        := Best_Runners(Runner_Index).Backprice;
+        Bet.Sizematched  := Global_Back_Size;
+        Bet.Pricematched := Strategy.Backprice_Matched;
+        Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;
+        Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
+        Bet_List.Append(Bet);
+      else
+        -- still mark as strategy unmached - it only gets 1 shot
+        Strategy.Num_Unmatched := Strategy.Num_Unmatched +1;
       end if;
     end if;
-
   end Treat_For_Place;
 
 
@@ -243,10 +240,9 @@ begin
         if Is_Win then
           Log("Treat market " & Market.To_String );
           Cnt := Cnt + 1;
-          -- list of timestamps in this market
+          -- reset strategies
           for Strategy of Strategy_List loop
             Strategy.Marketid := Empty_Market;
-            Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First;
           end loop;
 
           declare
@@ -293,8 +289,8 @@ begin
 
                 --do something here
                 for Strategy of Strategy_List loop
-                  if Strategy.Marketid /= Empty_Market and then
-                    Strategy.Ts_Of_Fulfill > Calendar2.Time_Type_First then
+                  if Strategy.Marketid = Empty_Market then
+                    Log("Strategy " & Strategy.Betname.Fix_String & " market " & Market.Marketid );
                     Treat_For_Place(Best_Runners, Strategy, Bet_List);
                   end if;
                 end loop;
