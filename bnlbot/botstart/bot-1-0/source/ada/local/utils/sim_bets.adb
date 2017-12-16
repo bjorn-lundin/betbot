@@ -57,6 +57,7 @@ procedure Sim_Bets is
   type Place_Of_Runner_Type is new Integer range 1 .. 3 ;
   type Strategy_Type is record
     Betname           : Types.String_Object;
+    Side              : String(1..4) := (others => ' ');
     Marketid          : Marketid_Type := (others => ' ');
     Leader_At_Max     : Fixed_Type := 0.0;
     Next_At_Min       : Fixed_Type := 0.0;
@@ -77,6 +78,7 @@ procedure Sim_Bets is
   begin
     Strategy_List.Append(Strategy_Type'(Betname         => Create("SIM_PLC_1.10_7.0_1"),
                                         Marketid        => (others            => ' '),
+                                        Side            => "BACK",
                                         Leader_At_Max   => 1.10,
                                         Next_At_Min     => 7.0,
                                         Place_Of_Next   => 2,
@@ -91,6 +93,7 @@ procedure Sim_Bets is
                         );
     Strategy_List.Append(Strategy_Type'(Betname         => Create("SIM_PLC_1.25_12.0_1"),
                                         Marketid        => (others            => ' '),
+                                        Side            => "BACK",
                                         Leader_At_Max   => 1.25,
                                         Next_At_Min     => 12.0,
                                         Place_Of_Next   => 2,
@@ -105,6 +108,7 @@ procedure Sim_Bets is
                         );
     Strategy_List.Append(Strategy_Type'(Betname         => Create("SIM_PLC_1.10_10.0_1"),
                                         Marketid        => (others            => ' '),
+                                        Side            => "BACK",
                                         Leader_At_Max   => 1.10,
                                         Next_At_Min     => 10.0,
                                         Place_Of_Next   => 2,
@@ -190,6 +194,7 @@ procedure Sim_Bets is
         Bet.Pricematched := Strategy.Backprice_Matched;
         Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;
         Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
+        Bet.Side         := Strategy.Side;
         Bet_List.Append(Bet);
       else
         -- still mark as strategy unmached - it only gets 1 shot
