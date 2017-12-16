@@ -1025,20 +1025,23 @@ package body Sim is
                       Marketid_Timestamp_To_Prices_History_Map(Place_Marketid);
       begin
         for Timestamp of Marketid_Pricets_Map(Place_Marketid) loop
-          declare
-            List : Price_Histories.Lists.List :=
-                      Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
-          begin
-            for Data of List loop
-              if Data.Selectionid = Win_Data.Selectionid and then
-                 Data.Pricets + (0,0,0,1,0) >= Win_Data.Pricets then
-                   return Data;
-              end if;
-            end loop;
-          end;
+          if Timestamp >= Win_Data.Pricets + (0,0,0,1,0) and then  -- after and then within 1 second match must ooccur
+             Timestamp <= Win_Data.Pricets + (0,0,0,2,0) then
+            declare
+              List : Price_Histories.Lists.List :=
+                Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
+            begin
+              for Data of List loop
+                if Data.Selectionid = Win_Data.Selectionid then
+                  return Data;
+                end if;
+              end loop;
+            end;
+          end if;
         end loop;
       end;
     end if;
+    Log("Get_Place_Price, Win/plc marketids '" & Win_Data.Marketid & "/" & Place_Marketid & "' no place prices found");
     return Price_Histories.Empty_Data;
   exception
     when E: Constraint_Error =>

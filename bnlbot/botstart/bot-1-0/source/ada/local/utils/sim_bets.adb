@@ -17,39 +17,17 @@ with Price_Histories;
 with Bets;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
---with Bot_System_Number;
+with Bot_System_Number;
 
 
 procedure Sim_Bets is
 
   package Ev renames Ada.Environment_Variables;
 
-
   Bet_List : Bets.Lists.List;
-  --  Config           : Command_Line_Configuration;
-
-  --  IA_Back_At_Back_Price : aliased Integer := 50;
-  --  IA_Lay_At_Back_Price  : aliased Integer := 100;
-  --  IA_Max_Lay_Price      : aliased Integer := 200;
-
-  --  Lay_Size  : Float_8 := 30.0;
-  --  Back_Size : Float_8 := 1500.0;
-
-  --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
-  --Bet_Status : Bet_Status_Type := No_Bet_Laid;
-
-  --    Global_Min_Backprice1     : constant Float_8 := 1.31;
-  --    Global_Max_Backprice1     : constant Float_8 := 1.36;
-  --    Global_Min_Backprice2     : constant Float_8 := 2.5;
-  --    Global_Max_Backprice2     : constant Float_8 := 10.0;
-  --    Global_Lay_At_Backprice   : constant Float_8 := 1.25;
-  --    Global_Lay_Size           : constant Float_8 := 110.0;
-  --    Global_Back_Size          : constant Float_8 := 100.0;
 
   Global_Back_Size : Fixed_Type := 30.0;
   Empty_Market     : constant Marketid_Type := (others => ' ');
-
-
 
   Start           : Calendar2.Time_Type := Calendar2.Clock;
 
@@ -110,22 +88,20 @@ procedure Sim_Bets is
                                         Num_Wins          => 0,
                                         Ts_Of_Fulfill   => Calendar2.Time_Type_First)
                         );
-    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_1"),
-    --                                    Marketid        => (others => ' '),
-    --                                    Leader_At_Max   => 1.25,
-    --                                    Next_At_Min     => 12.0,
-    --                                    Place_Of_Next   => 2,
-    --                                    Place_Of_Runner => 1,
-    --                                    Backprice_Matched => 0.0,
-    --                                    Profit            => 0.0,
-    --                                    Profit_102        => 0.0,
-    --                                    Profit_103        => 0.0,
-    --                                    Profit_104        => 0.0,
-    --                                    Num_Lost          => 0,
-    --                                    Num_Wins          => 0,
-    --                                    Num_Matched       => 0,
-    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-    --                           );
+    Strategy_List.Append(Strategy_Type'(Betname         => Create("SIM_PLC_1.25_12.0_1"),
+                                        Marketid        => (others            => ' '),
+                                        Leader_At_Max   => 1.25,
+                                        Next_At_Min     => 12.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 1,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Unmatched     => 0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Num_Matched       => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                        );
     --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_2"),
     --                                    Marketid        => (others => ' '),
     --                                    Leader_At_Max   => 1.10,
@@ -236,38 +212,38 @@ procedure Sim_Bets is
                             Bet_List     : in out Bets.Lists.List ) is
     High_Index,
     Runner_Index : Integer := 0;
-    Bet : Bets.Bet_Type;
+    Bet          : Bets.Bet_Type;
   begin
-      if Strategy.Marketid = Empty_Market then
-        --check the strategy againt the Best_Runners
-        High_Index := Integer(Strategy.Place_Of_Next);
-        if Best_Runners(1).Backprice <= Strategy.Leader_At_Max and then
-            Best_Runners(High_Index).Backprice >= Strategy.Next_At_Min
-        then
-          Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
-          Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
-          Runner_Index := Integer(Strategy.Place_Of_Runner);
-          Strategy.Backprice_Matched := Sim.Get_Place_Price(Win_Data => Best_Runners(1)).Backprice;
+    if Strategy.Marketid = Empty_Market then
+      --check the strategy againt the Best_Runners
+      High_Index := Integer(Strategy.Place_Of_Next);
+      if Best_Runners(1).Backprice <= Strategy.Leader_At_Max and then
+        Best_Runners(High_Index).Backprice >= Strategy.Next_At_Min
+      then
+        Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
+        Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
+        Runner_Index := Integer(Strategy.Place_Of_Runner);
+        Strategy.Backprice_Matched := Sim.Get_Place_Price(Win_Data => Best_Runners(1)).Backprice;
 
-          if Strategy.Backprice_Matched > Fixed_Type(1.0) then
-            Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
-            Strategy.Num_Matched := Strategy.Num_Matched +1;
-            Move(Strategy.Betname.Upper_Case, Bet.Betname);
-            Bet.Marketid     := Sim.Win_Place_Map(Best_Runners(1).Marketid);
-            Bet.Selectionid  := Best_Runners(Runner_Index).Selectionid;
-            Bet.Size         := Global_Back_Size;
-            Bet.Price        := Best_Runners(Runner_Index).Backprice;
-            Bet.Sizematched  := Global_Back_Size;
-            Bet.Pricematched := Best_Runners(Runner_Index).Backprice;
-            Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;
-            Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
-            Bet_List.Append(Bet);
-          else
-            -- still mark as strategy mached - it only gets 1 shot
-            Strategy.Num_Unmatched := Strategy.Num_Unmatched +1;
-          end if;
+        if Strategy.Backprice_Matched > Fixed_Type(1.0) then
+          Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
+          Strategy.Num_Matched := Strategy.Num_Matched +1;
+          Move(Strategy.Betname.Upper_Case, Bet.Betname);
+          Bet.Marketid     := Sim.Win_Place_Map(Best_Runners(1).Marketid);
+          Bet.Selectionid  := Best_Runners(Runner_Index).Selectionid;
+          Bet.Size         := Global_Back_Size;
+          Bet.Price        := Best_Runners(Runner_Index).Backprice;
+          Bet.Sizematched  := Global_Back_Size;
+          Bet.Pricematched := Strategy.Backprice_Matched;
+          Bet.Betplaced    := Best_Runners(Runner_Index).Pricets;
+          Bet.Startts      := Best_Runners(Runner_Index).Pricets;  -- correct date anyway
+          Bet_List.Append(Bet);
+        else
+          -- still mark as strategy unmached - it only gets 1 shot
+          Strategy.Num_Unmatched := Strategy.Num_Unmatched +1;
         end if;
       end if;
+    end if;
 
   end Treat_For_Place;
 
@@ -297,7 +273,6 @@ begin
   Load_Strategies(Strategy_List);
 
   Day_Loop : loop
-
     exit Day_Loop when Day >  End_Date;
     Sim.Fill_Data_Maps(Day,Horse);
     Log("start process date " & Day.To_String);
@@ -305,7 +280,6 @@ begin
     declare
       Cnt    : Integer := 0;
       Is_Win : Boolean := True;
-      --  Bet : Bets.Bet_Type;
     begin
       Log("num markets " & Day.To_String & " " & Sim.Market_With_Data_List.Length'Img);
 
@@ -337,6 +311,7 @@ begin
                   Enough_Runners := List.Length >= 8;
                   First := False;
                   if not Enough_Runners then
+                    Log("To few runner, only" & List.Length'Img);
                     exit Loop_Timestamp;  -- too few runners
                   end if;
                 end if;
@@ -365,7 +340,7 @@ begin
                 --do something here
                 for Strategy of Strategy_List loop
                   if Strategy.Marketid /= Empty_Market and then
-                     Strategy.Ts_Of_Fulfill > Calendar2.Time_Type_First then
+                    Strategy.Ts_Of_Fulfill > Calendar2.Time_Type_First then
                     Treat_For_Place(Best_Runners, Strategy, Bet_List);
                   end if;
                 end loop;
@@ -382,32 +357,16 @@ begin
     Log("num bets laid" & Bet_List.Length'Img);
 
     declare
-      --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Float_8   := (others => 0.0);
-      --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
       T : Sql.Transaction_Type;
     begin
       T.Start;
       for Bet of Bet_List loop
-        --Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+        Bet.Betid := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+        Bet.Check_Outcome;
         Bet.Insert;
       end loop;
       T.Commit;
 
-      --        for i in Side_Type'range loop
-      --          Sum(i) := Sum_Winners(i) + Sum_Losers(i) ;
-      --          Log("RESULT day       : " & Day.To_String & " " & i'Img );
-      --          Log("RESULT Winners   : " & Winners(i)'Img & " " & Integer_4(Sum_Winners(i))'Img );
-      --          Log("RESULT Losers    : " & Losers(i)'Img  & " " & Integer_4(Sum_Losers(i))'Img);
-      --          Log("RESULT Unmatched : " & Unmatched(i)'Img  & " " & Unmatched(i)'Img);
-      --          Log("RESULT Strange   : " & Strange(i)'Img  & " " & Strange(i)'Img);
-      --          Log("RESULT Sum       : " & Integer_4(Sum(i))'Img );
-      --        end loop;
-      --        Log(" Min_Backprice1:" & Global_Min_Backprice1'Img &
-      --            " Max_Backprice1:" & Global_Max_Backprice1'Img &
-      --            " Min_Backprice2:" & Global_Min_Backprice2'Img &
-      --            " Max_Backprice2:" & Global_Max_Backprice2'Img);
-      --
-      --        Log(" GT:" &  Integer(Sum(Back) + Sum(Lay))'Img);
     end ;
 
     Bet_List.Clear;
