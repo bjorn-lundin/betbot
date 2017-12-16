@@ -18,6 +18,7 @@ with Bets;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
 with Bot_System_Number;
+with Utils; use Utils;
 
 
 procedure Sim_Bets is
@@ -102,70 +103,20 @@ procedure Sim_Bets is
                                         Num_Matched       => 0,
                                         Ts_Of_Fulfill   => Calendar2.Time_Type_First)
                         );
-    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_2"),
-    --                                    Marketid        => (others => ' '),
-    --                                    Leader_At_Max   => 1.10,
-    --                                    Next_At_Min     => 7.0,
-    --                                    Place_Of_Next   => 2,
-    --                                    Place_Of_Runner => 2,
-    --                                    Backprice_Matched => 0.0,
-    --                                    Profit            => 0.0,
-    --                                    Profit_102        => 0.0,
-    --                                    Profit_103        => 0.0,
-    --                                    Profit_104        => 0.0,
-    --                                    Num_Matched       => 0,
-    --                                    Num_Lost          => 0,
-    --                                    Num_Wins          => 0,
-    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-    --                           );
-    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_2"),
-    --                                    Marketid        => (others => ' '),
-    --                                    Leader_At_Max   => 1.25,
-    --                                    Next_At_Min     => 12.0,
-    --                                    Place_Of_Next   => 2,
-    --                                    Place_Of_Runner => 2,
-    --                                    Backprice_Matched => 0.0,
-    --                                    Profit            => 0.0,
-    --                                    Profit_102        => 0.0,
-    --                                    Profit_103        => 0.0,
-    --                                    Profit_104        => 0.0,
-    --                                    Num_Lost          => 0,
-    --                                    Num_Wins          => 0,
-    --                                    Num_Matched       => 0,
-    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-    --                           );
-    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.10_7.0_3"),
-    --                                    Marketid        => (others => ' '),
-    --                                    Leader_At_Max   => 1.10,
-    --                                    Next_At_Min     => 7.0,
-    --                                    Place_Of_Next   => 2,
-    --                                    Place_Of_Runner => 3,
-    --                                    Backprice_Matched => 0.0,
-    --                                    Profit            => 0.0,
-    --                                    Profit_102        => 0.0,
-    --                                    Profit_103        => 0.0,
-    --                                    Profit_104        => 0.0,
-    --                                    Num_Matched       => 0,
-    --                                    Num_Lost          => 0,
-    --                                    Num_Wins          => 0,
-    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-    --                           );
-    --Strategy_List.Append(Strategy_Type'(Betname         => Repository_Types.Create("SIM_PLC_1.25_12.0_3"),
-    --                                    Marketid        => (others => ' '),
-    --                                    Leader_At_Max   => 1.25,
-    --                                    Next_At_Min     => 12.0,
-    --                                    Place_Of_Next   => 2,
-    --                                    Place_Of_Runner => 3,
-    --                                    Backprice_Matched => 0.0,
-    --                                    Profit            => 0.0,
-    --                                    Profit_102        => 0.0,
-    --                                    Profit_103        => 0.0,
-    --                                    Profit_104        => 0.0,
-    --                                    Num_Lost          => 0,
-    --                                    Num_Wins          => 0,
-    --                                    Num_Matched       => 0,
-    --                                    Ts_Of_Fulfill   => Calendar2.Time_Type_First)
-    --                           );
+    Strategy_List.Append(Strategy_Type'(Betname         => Create("SIM_PLC_1.10_10.0_1"),
+                                        Marketid        => (others            => ' '),
+                                        Leader_At_Max   => 1.10,
+                                        Next_At_Min     => 10.0,
+                                        Place_Of_Next   => 2,
+                                        Place_Of_Runner => 1,
+                                        Backprice_Matched => 0.0,
+                                        Profit            => 0.0,
+                                        Num_Matched       => 0,
+                                        Num_Unmatched     => 0,
+                                        Num_Lost          => 0,
+                                        Num_Wins          => 0,
+                                        Ts_Of_Fulfill   => Calendar2.Time_Type_First)
+                        );
     --declare            --1234567890123456789
     --  Templ : String := "SIM_PLC_1.90_60.0_1";
     --begin
@@ -215,15 +166,18 @@ procedure Sim_Bets is
     Bet          : Bets.Bet_Type;
   begin
     if Strategy.Marketid = Empty_Market then
-      --check the strategy againt the Best_Runners
+      --check the strategy against the Best_Runners
       High_Index := Integer(Strategy.Place_Of_Next);
       if Best_Runners(1).Backprice <= Strategy.Leader_At_Max and then
         Best_Runners(High_Index).Backprice >= Strategy.Next_At_Min
       then
+        Log ("Treat_For_Place","Strategy '" & Strategy.Betname.Fix_String & "' Matched, Checking Place Odds");
+
         Strategy.Marketid := Best_Runners(1).Marketid;     -- mark strategy as fulfilled, when and with what marketid
         Strategy.Ts_Of_Fulfill := Best_Runners(1).Pricets;
         Runner_Index := Integer(Strategy.Place_Of_Runner);
         Strategy.Backprice_Matched := Sim.Get_Place_Price(Win_Data => Best_Runners(1)).Backprice;
+        Log ("Treat_For_Place","place-odds: " & F8_Image(Strategy.Backprice_Matched));
 
         if Strategy.Backprice_Matched > Fixed_Type(1.0) then
           Strategy.Ts_Of_Fulfill := Calendar2.Time_Type_First; -- so we do not bet again with this strategy on this market
@@ -312,7 +266,7 @@ begin
                   First := False;
                   if not Enough_Runners then
                     Log("To few runner, only" & List.Length'Img);
-                    exit Loop_Timestamp;  -- too few runners
+                    exit Loop_Market;  -- too few runners
                   end if;
                 end if;
 
