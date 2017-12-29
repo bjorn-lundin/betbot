@@ -206,10 +206,11 @@ procedure Greenup_Lay_First_All is
       Move(Reference,Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
+      --there is no delay here since bet is placed in beginning of race
       for Race_Data of Price_During_Race_List loop
         if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) and then   -- must be valid
            Race_Data.Backprice < Fixed_Type(1000.0) and then Race_Data.Layprice < Fixed_Type(1000.0) then   -- must be valid
-          if Race_Data.Pricets >= Price_Data.Pricets + (0,0,0,1,0) then   -- must be at least 1 sec later in time
+          if Race_Data.Pricets >= Price_Data.Pricets then
               if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
                 Move("M",Bet.Backbet.Status);
                 Move(F8_Image(Bet.Backbet.Price), Bet.Backbet.Inststatus);
