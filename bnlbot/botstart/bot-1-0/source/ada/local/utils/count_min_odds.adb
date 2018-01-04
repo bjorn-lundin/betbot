@@ -188,8 +188,8 @@ begin
      Password =>Ini.Get_Value("database_home", "password", ""));
   Log(Me, "db Connected");
 
-  Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all);
-  Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all);
+  --Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all);
+  --Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all);
 
   --init arrays
   for i in Winners'Range loop
