@@ -120,11 +120,11 @@ procedure Count_Min_Odds is
   ------------------------------ main start -------------------------------------
   Current_Date : Calendar2.Time_Type := Calendar2.Clock;
 
-  Sa_Min_Layprice : aliased Gnat.Strings.String_Access;
-  Sa_Max_Layprice : aliased Gnat.Strings.String_Access;
+ -- Sa_Min_Layprice : aliased Gnat.Strings.String_Access;
+ -- Sa_Max_Layprice : aliased Gnat.Strings.String_Access;
   Sa_Logfilename  : aliased Gnat.Strings.String_Access;
-  Ia_Min_Tic      : aliased Integer;
-  Ia_Max_Tic      : aliased Integer;
+ -- Ia_Min_Tic      : aliased Integer;
+ -- Ia_Max_Tic      : aliased Integer;
 
 
   Layprice_High   : Fixed_Type := 0.0;
@@ -132,29 +132,29 @@ procedure Count_Min_Odds is
 
 begin
 
-  Define_Switch
-    (Cmd_Line,
-     Sa_Min_Layprice'Access,
-     Long_Switch => "--min_lay=",
-     Help        => "Min layprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Max_Layprice'Access,
-     Long_Switch => "--max_lay=",
-     Help        => "Min layprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Min_Tic'Access,
-     Long_Switch => "--min_tic=",
-     Help        => "min tic");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Max_Tic'Access,
-     Long_Switch => "--max_tic=",
-     Help        => "max tic");
+--    Define_Switch
+--      (Cmd_Line,
+--       Sa_Min_Layprice'Access,
+--       Long_Switch => "--min_lay=",
+--       Help        => "Min layprice");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Sa_Max_Layprice'Access,
+--       Long_Switch => "--max_lay=",
+--       Help        => "Min layprice");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Ia_Min_Tic'Access,
+--       Long_Switch => "--min_tic=",
+--       Help        => "min tic");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Ia_Max_Tic'Access,
+--       Long_Switch => "--max_tic=",
+--       Help        => "max tic");
 
   Define_Switch
     (Cmd_Line,
@@ -188,8 +188,8 @@ begin
      Password =>Ini.Get_Value("database_home", "password", ""));
   Log(Me, "db Connected");
 
-  --Layprice_High := Fixed_Type'Value(Sa_Max_Layprice.all);
-  --Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all);
+  Layprice_High := 100.00; --fixed_Type'Value(Sa_Max_Layprice.all);
+  Layprice_Low  :=   1.01; --fixed_Type'Value(Sa_Min_Layprice.all);
 
   --init arrays
   for i in Winners'Range loop
@@ -213,7 +213,7 @@ begin
                   "and E.EVENTTYPEID = 7 " &
                   "and P.LAYPRICE <= :MAX_LAYPRICE " &
                   "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
-    Stm.Set("MAX_LAYPRICE",100.0);
+    Stm.Set("MAX_LAYPRICE",Layprice_High);
     Prices.Read_List(Stm, Price_List);
     T.Commit;
     Log(Layprice_Low'Img & " " & Layprice_High'Img & " " & Price_List.Length'Img);
@@ -225,16 +225,16 @@ begin
           Current_Date := Price.Pricets;
         end if;
 
---        if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
+        if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
           --for Dtg in Delta_Tics_Type'Range loop
-          for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
+     --     for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
             Run(Price_Data => Price,
                 Winners => Winners,
                 Losers => Losers);
-          end loop;
+     --     end loop;
           T.Commit;
---        end if;
+        end if;
       end loop;
     end;
   end;
