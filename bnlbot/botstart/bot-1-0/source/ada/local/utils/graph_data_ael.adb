@@ -209,20 +209,24 @@ procedure Graph_Data_Ael is
     Profit        : Fixed_Type := 0.0;
   begin
     Select_Equity_Date.Prepare (
-                                "select B.STARTTS, B.PROFIT " &
+                                "select B.STARTTS,B.MARKETID, sum(B.PROFIT) PROFIT " &
                                   "from ABETS B " &
                                   "where true " &
-                                --       "and B.BETNAME in ('LAY_1.7_10_WIN_6_20','LAY_1.8_15_WIN_7_15','LAY_1.4_10_WIN_5_20') " &
-                                  "and B.BETNAME = :BETNAME " &
-                                  "and B.PRICEMATCHED <= :POWERDAYS " &
-                                --"and B.STATUS in ('SETTLED','SUCCESS','MATCHED','') " &
-                                  "and (( B.STATUS in ('SETTLED','SUCCESS','MATCHED','')) or (B.INSTERRCODE = 'INVALID_BET_SIZE'))" &
-                                  "order by B.STARTTS");
-    Select_Equity_Date.Set ("BETNAME", Betname);
-
-
-    Select_Equity_Date.Set ("POWERDAYS", Fixed_Type(Ia_Maxprice));
-
+                                  "and B.SIDE = 'LAY' " &
+                                  --"and B.PRICE in (8.4,8.6,8.8) " &
+                                  "and B.REFERENCE in ('lay=0008.40,tics=01','lay=0008.60,tics=01','lay=0008.80,tics=01') " &
+                                --  "and B.REFERENCE = :REFERENCE " &
+                                  "and B.STATUS ='M' " &
+                                  "group by B.MARKETID, B.STARTTS " &
+                                  "order by B.STARTTS, B.MARKETID");
+--                                  "select B.STARTTS, B.PROFIT " &
+--                                    "from ABETS B " &
+--                                    "where true " &
+--                                    "and B.SIDE = 'LAY' " &
+--                                    "and B.REFERENCE = :REFERENCE " &
+--                                    "and B.STATUS ='M' " &
+--                                    "order by B.STARTTS");
+   -- Select_Equity_Date.Set ("REFERENCE", Betname);
     Select_Equity_Date.Open_Cursor;
     loop
       Select_Equity_Date.Fetch (Eos);
@@ -299,11 +303,11 @@ begin
 
   Debug ("Connect Db");
   Sql.Connect
-    (Host     => Ini.Get_Value ("stats", "host", ""),
-     Port     => Ini.Get_Value ("stats", "port", 5432),
-     Db_Name  => Ini.Get_Value ("stats", "name", ""),
-     Login    => Ini.Get_Value ("stats", "username", ""),
-     Password => Ini.Get_Value ("stats", "password", ""));
+    (Host     => Ini.Get_Value("database_home", "host", ""),
+     Port     => Ini.Get_Value("database_home", "port", 5432),
+     Db_Name  => Ini.Get_Value("database_home", "name", ""),
+     Login    => Ini.Get_Value("database_home", "username", ""),
+     Password => Ini.Get_Value("database_home", "password", ""));
   Debug ("db Connected");
 
   T.Start;
