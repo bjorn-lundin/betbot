@@ -22,6 +22,7 @@ procedure Graph_Data_Ael is
   Select_Equity_Date    : Sql.Statement_Type;
 
   Sa_Betname          : aliased Gnat.Strings.String_Access;
+  Sa_Price            : aliased Gnat.Strings.String_Access;
   Ba_Print_Strategies : aliased Boolean := False;
   Ba_Avg_Price        : aliased Boolean := False;
   Ba_Profit           : aliased Boolean := False;
@@ -203,22 +204,20 @@ procedure Graph_Data_Ael is
   --------------------------------------------------------
   procedure Equity_Data (
                          Betname : in     String;
+                         Price   : in     Fixed_Type;
                          A_List  : in out Equity_Result_Pack.List) is
     Eos           : Boolean := False;
     Equity_Result : Equity_Result_Type;
     Profit        : Fixed_Type := 0.0;
   begin
     Select_Equity_Date.Prepare (
-                                "select B.STARTTS,B.MARKETID, sum(B.PROFIT) PROFIT " &
+                                "select B.STARTTS, B.PROFIT " &
                                   "from ABETS B " &
                                   "where true " &
-                                  "and B.SIDE = 'LAY' " &
-                                  --"and B.PRICE in (8.4,8.6,8.8) " &
-                                  "and B.REFERENCE in ('lay=0008.40,tics=01','lay=0008.60,tics=01','lay=0008.80,tics=01') " &
-                                --  "and B.REFERENCE = :REFERENCE " &
+                                  "and B.SIDE = :SIDE " &
+                                  "and B.PRICE = :PRICE " &
                                   "and B.STATUS ='M' " &
-                                  "group by B.MARKETID, B.STARTTS " &
-                                  "order by B.STARTTS, B.MARKETID");
+                                  "order by B.STARTTS");
 --                                  "select B.STARTTS, B.PROFIT " &
 --                                    "from ABETS B " &
 --                                    "where true " &
@@ -226,7 +225,8 @@ procedure Graph_Data_Ael is
 --                                    "and B.REFERENCE = :REFERENCE " &
 --                                    "and B.STATUS ='M' " &
 --                                    "order by B.STARTTS");
-   -- Select_Equity_Date.Set ("REFERENCE", Betname);
+    Select_Equity_Date.Set ("PRICE", Price);
+    Select_Equity_Date.Set ("SIDE", Betname);
     Select_Equity_Date.Open_Cursor;
     loop
       Select_Equity_Date.Fetch (Eos);
@@ -289,6 +289,13 @@ begin
      Long_Switch => "--max_price=",
      Help        => "for laybets - default 1000");
 
+  Define_Switch
+    (Cmd_Line,
+     Sa_Price'Access,
+     Long_Switch => "--price=",
+     Help        => "price of bet");
+
+
   Getopt (Cmd_Line);  -- process the command line
 
 
@@ -325,6 +332,7 @@ begin
                                 A_List  => Avg_Price_Result_List);
   elsif Ba_Equity then
     Equity_Data (Betname => Sa_Betname.all,
+                 Price => Fixed_Type'Value(Sa_Price.all),
                  A_List  => Equity_Result_List);
   end if;
   T.Commit;
