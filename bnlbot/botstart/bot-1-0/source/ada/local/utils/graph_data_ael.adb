@@ -204,7 +204,6 @@ procedure Graph_Data_Ael is
   --------------------------------------------------------
   procedure Equity_Data (
                          Betname : in     String;
-                         Price   : in     Fixed_Type;
                          A_List  : in out Equity_Result_Pack.List) is
     Eos           : Boolean := False;
     Equity_Result : Equity_Result_Type;
@@ -214,19 +213,10 @@ procedure Graph_Data_Ael is
                                 "select B.STARTTS, B.PROFIT " &
                                   "from ABETS B " &
                                   "where true " &
-                                  "and B.SIDE = :SIDE " &
-                                  "and B.PRICE = :PRICE " &
+                                  "and B.BETNAME = :BETNAME " &
                                   "and B.STATUS ='M' " &
                                   "order by B.STARTTS");
---                                  "select B.STARTTS, B.PROFIT " &
---                                    "from ABETS B " &
---                                    "where true " &
---                                    "and B.SIDE = 'LAY' " &
---                                    "and B.REFERENCE = :REFERENCE " &
---                                    "and B.STATUS ='M' " &
---                                    "order by B.STARTTS");
-    Select_Equity_Date.Set ("PRICE", Price);
-    Select_Equity_Date.Set ("SIDE", Betname);
+    Select_Equity_Date.Set ("BETNAME", Betname);
     Select_Equity_Date.Open_Cursor;
     loop
       Select_Equity_Date.Fetch (Eos);
@@ -332,7 +322,6 @@ begin
                                 A_List  => Avg_Price_Result_List);
   elsif Ba_Equity then
     Equity_Data (Betname => Sa_Betname.all,
-                 Price => Fixed_Type'Value(Sa_Price.all),
                  A_List  => Equity_Result_List);
   end if;
   T.Commit;
