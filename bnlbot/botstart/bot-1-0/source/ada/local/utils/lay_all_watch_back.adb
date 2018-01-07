@@ -49,6 +49,8 @@ procedure Lay_All_Watch_Back is
   subtype Delta_Tics_Type is Integer range 0 .. 350;
 
 
+
+
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
                         B : in out Bets.Bet_Type) is
@@ -57,7 +59,7 @@ procedure Lay_All_Watch_Back is
       if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := B.Size * (B.Price - 1.0);
+          B.Profit := B.Size * (B.Price - Bets.Commission);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
           B.Profit := -B.Size;
@@ -68,7 +70,7 @@ procedure Lay_All_Watch_Back is
       elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := -B.Size * (B.Price - 1.0);
+          B.Profit := -B.Size * (B.Price - Bets.Commission);
         elsif R.Status(1..5) = "LOSER" then
           B.Profit := B.Size;
           B.Betwon := True;
@@ -105,9 +107,17 @@ procedure Lay_All_Watch_Back is
       Log(Me & "Run", "start");
 
     if Delta_Tics >= 10 then
-      Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+      if Price_Data.Layprice < 10.0 then
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+      else
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+      end if;
     else
-      Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+      if Price_Data.Layprice < 10.0 then
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+      else
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+      end if;
     end if;
     Back_Bet_Name.Set(Lay_Bet_Name.Fix_String);
 
@@ -189,9 +199,9 @@ procedure Lay_All_Watch_Back is
                               Runner_Name      => Runner.Runnernamestripped,
                               Selection_Id     => Price_Data.Selectionid,
                               Size             => Back_Size,
-                              Price            => Bet_Price_Type(B_Price),
+                              Price            => Bet_Price_Type(Race_Data.Backprice),
                               Bet_Persistence  => Persist,
-                              Bet_Placed       => Price_Data.Pricets,
+                              Bet_Placed       => Match_Time,
                               Bet              => Bet.Backbet ) ;
                 Move("M",Bet.Backbet.Status);
                 exit Race;
