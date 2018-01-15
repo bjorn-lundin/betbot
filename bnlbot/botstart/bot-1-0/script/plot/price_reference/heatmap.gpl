@@ -4,7 +4,7 @@ set datafile separator '|'
 set terminal pngcairo size 2048,1536 background '#ffffff'
 set output target_png
 
-set title "Horses GB/IE - for size=100 skr and greenup for no loss " . type  
+set title title . ' - ' . type  
 
 set cblabel "skr" 
 #set grid
@@ -16,7 +16,7 @@ set ylabel "delta tics"
 #set xrange [200:260]
 #set yrange [4:20]
 
-set cbrange [0:30000]
+set cbrange [0:]
 #set cbrange  [range_low:range_high]
 
 
