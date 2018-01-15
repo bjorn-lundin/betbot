@@ -106,17 +106,25 @@ procedure Lay_All_Watch_Back is
   begin
       Log(Me & "Run", "start");
 
-    if Delta_Tics >= 10 then
+    if Delta_Tics < Delta_Tics_Type(10) then
       if Price_Data.Layprice < 10.0 then
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
       else
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
       end if;
-    else
+
+    elsif Delta_Tics < Delta_Tics_Type(100) then
       if Price_Data.Layprice < 10.0 then
         Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
       else
         Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+      end if;
+
+    else
+      if Price_Data.Layprice < 10.0 then
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+      else
+        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
       end if;
     end if;
     Back_Bet_Name.Set(Lay_Bet_Name.Fix_String);
