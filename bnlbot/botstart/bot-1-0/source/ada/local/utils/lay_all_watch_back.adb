@@ -104,7 +104,7 @@ procedure Lay_All_Watch_Back is
     B_Price                : Fixed_Type := 0.0;
 
   begin
-      Log(Me & "Run", "start");
+    Log(Me & "Run", "start");
 
     if Delta_Tics < Delta_Tics_Type(10) then
       if Price_Data.Layprice < 10.0 then
@@ -186,20 +186,21 @@ procedure Lay_All_Watch_Back is
       begin
         Race : for Race_Data of Price_During_Race_List loop
           if Race_Data.Backprice > Fixed_Type(1.0)    and then -- must be valid
-             Race_Data.Layprice  > Fixed_Type(1.0)    and then -- must be valid
-             Race_Data.Backprice < Fixed_Type(1000.1) and then -- must be valid
-             Race_Data.Layprice  < Fixed_Type(1000.1) then     -- must be valid
+            Race_Data.Layprice  > Fixed_Type(1.0)    and then -- must be valid
+            Race_Data.Backprice < Fixed_Type(1000.1) and then -- must be valid
+            Race_Data.Layprice  < Fixed_Type(1000.1) then     -- must be valid
 
             if Race_Data.Pricets   >= Price_Data.Pricets and then
-               Race_Data.Backprice <= B_Price            and then
-               Match_Time           = Not_Set            then -- first time condition true
+              Race_Data.Backprice <= B_Price            and then
+              Match_Time           = Not_Set            then -- first time condition true
 
               Match_Time := Race_Data.Pricets;
             end if;
 
             if Race_Data.Pricets >= Match_Time + (0,0,0,1,0) then
 
-              if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
+              if Race_Data.Backprice >= B_Price then -- we are under the safety level - do backbet
+
                 Move(Back_Bet_Name.Fix_String,Bn);
                 Sim.Place_Bet(Bet_Name         => Bn,
                               Market_Id        => Market.Marketid,
@@ -380,9 +381,9 @@ begin
   Logging.Close;
 
 exception
---    when Lock.Lock_Error =>
---      Log(Me, "lock error, exit");
---      Logging.Close;
+    --    when Lock.Lock_Error =>
+    --      Log(Me, "lock error, exit");
+    --      Logging.Close;
 
   when E: others =>
     declare
