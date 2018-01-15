@@ -159,6 +159,7 @@ procedure Lay_All_Watch_Back is
       end if;
 
       Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
+
       -- Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
 
       Move(Lay_Bet_Name.Fix_String,Ln);
@@ -174,6 +175,12 @@ procedure Lay_All_Watch_Back is
                     Bet              => Bet.Laybet ) ;
       Move("M",Bet.Laybet.Status);
       Check_Bet(Runner, Bet.Laybet);
+
+      if Tic_Lay - Delta_Tics < Integer(1) then
+        Log(Me & "Run", "Tic_Lay - Delta_Tics < 1 - can't back  " & Runner.To_String);
+        return;
+      end if;
+
 
       B_Price   := Tics.Get_Tic_Price(Tic_Lay - Delta_Tics);
       Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
