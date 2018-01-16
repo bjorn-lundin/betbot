@@ -16,6 +16,7 @@ package Tics is
                           Backprice  : Back_Price_Type) return Bet_Size_Type ;
 
   function Get_Nearest_Higher_Tic_Index(Price : Fixed_Type) return Integer ;
-
-
+------------------------------------------
+  procedure Tic_Table;
+------------------------------------------
 end Tics;
