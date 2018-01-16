@@ -7,6 +7,7 @@ with Logging; use Logging;
 package body Markets is
   Me : constant String := "Markets.";
 
+  Find_Plc_Market,
   Select_Unsettled_Markets,
   Select_Ongoing_Markets : Sql.Statement_Type;
 
@@ -17,14 +18,49 @@ package body Markets is
   end Empty_Data;
 
   ----------------------------------------
-  
+
+  procedure Corresponding_Place_Market(Self         : in out Market_Type;
+                                       Place_Market :    out Market_Type;
+                                       Found        :    out Boolean) is
+    T   : Sql.Transaction_Type;
+    Eos : Boolean := False;
+  begin
+    T.Start;
+    Find_Plc_Market.Prepare(
+                             "select MP.* from AMARKETS MW, AMARKETS MP " &
+                               "where MW.EVENTID = MP.EVENTID " &
+                               "and MW.STARTTS = MP.STARTTS " &
+                               "and MW.MARKETID = :WINMARKETID " &
+                               "and MP.MARKETTYPE = 'PLACE' " &
+                               "and MP.NUMWINNERS = :NUM " &
+                               "and MW.MARKETTYPE = 'WIN'");
+
+    Find_Plc_Market.Set("NUM", Integer_4(3));
+    Find_Plc_Market.Set("WINMARKETID", Self.Marketid);
+    Find_Plc_Market.Open_Cursor;
+    Find_Plc_Market.Fetch (Eos);
+    if not Eos then
+      Place_Market := Markets.Get(Find_Plc_Market);
+      Found := True;
+    else
+      Log (Me & "MaCorresponding_Place_Marketke_Bet", "no PLACE market found");
+      Found := False;
+    end if;
+    Find_Plc_Market.Close_Cursor;
+    T.Commit;
+  end Corresponding_Place_Market;
+
+
+  ----------------------------------------
+
+
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;
                       Max  : in     Integer_4 := Integer_4'Last) is
     Old_List :Table_Amarkets.Amarkets_List_Pack2.List;
     New_Data : Market_Type;
   begin
-    Table_Amarkets.Read_List(Stm,Old_List,Max);  
+    Table_Amarkets.Read_List(Stm,Old_List,Max);
     for i of Old_List loop
       New_Data := (
         Marketid         => i.Marketid,
@@ -40,11 +76,11 @@ package body Markets is
         Totalmatched     => i.Totalmatched,
         Totalavailable   => i.Totalavailable,
         Ixxlupd          => i.Ixxlupd,
-        Ixxluts          => i.Ixxluts           
+        Ixxluts          => i.Ixxluts
       );
       List.Append(New_Data);
     end loop;
-  end Read_List;  
+  end Read_List;
   ----------------------------------------
 
 
@@ -57,7 +93,7 @@ package body Markets is
     New_Data : Market_Type;
   begin
     New_Data.Eventid := Data.Eventid;
-    Table_Amarkets.Read_Eventid(Data, Old_List, Order, Max);  
+    Table_Amarkets.Read_Eventid(Data, Old_List, Order, Max);
     for i of Old_List loop
       New_Data := (
         Marketid         => i.Marketid,
@@ -73,11 +109,11 @@ package body Markets is
         Totalmatched     => i.Totalmatched,
         Totalavailable   => i.Totalavailable,
         Ixxlupd          => i.Ixxlupd,
-        Ixxluts          => i.Ixxluts           
+        Ixxluts          => i.Ixxluts
       );
       List.Append(New_Data);
     end loop;
-  end Read_Eventid;  
+  end Read_Eventid;
   ----------------------------------------
 
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) is
@@ -140,8 +176,8 @@ package body Markets is
 
   begin
     Log(Me & "Check_Market_Status", "start");
-    
-    case Bot_Config.Config.System_Section.Bot_Mode is 
+
+    case Bot_Config.Config.System_Section.Bot_Mode is
       when Real =>
         loop
           begin
@@ -150,13 +186,13 @@ package body Markets is
               "select M.* from AMARKETS M " &
               "where M.STATUS <> 'CLOSED' order by M.STARTTS");
             Markets.Read_List(Select_Ongoing_Markets, Market_List);
-         
+
             for m of Market_List loop
               Log(Me & "Check_Market_Status", Market_List.Length'Img & " market left to check");
               Market := m;
               Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
               RPC.Market_Status_Is_Changed(Market, Is_Changed);
-         
+
               if Is_Changed then
                 Log(Me & "Check_Market_Status", "update market " & Market.To_String);
                 Market.Update_Withcheck;
@@ -165,15 +201,15 @@ package body Markets is
             T.Commit;
             exit;
           exception
-            when Sql.No_Such_Row => 
+            when Sql.No_Such_Row =>
               Log(Me & "Check_Market_Status", "trf conflict update market " & Market.To_String);
               T.Rollback;
               Market_List.Clear;
-          end;          
-        end loop;       
-        
+          end;
+        end loop;
+
       when Simulation => null;
-    end case;       
+    end case;
     Log(Me & "Check_Market_Status", "stop");
   end Check_Market_Status;
  ---------------------------------------------------------------------------------

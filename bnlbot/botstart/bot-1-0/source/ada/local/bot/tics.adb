@@ -1,4 +1,7 @@
 
+with Text_Io;
+with Utils; use Utils;
+
 package body Tics is
   Global_Odds_Table : array(1 .. 350) of Fixed_Type := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
@@ -109,6 +112,11 @@ package body Tics is
     raise Bad_odds with Price'Img;
   end Get_Nearest_Higher_Tic_Index;
 ------------------------------------------
-
-
+  procedure Tic_Table is
+  begin
+    for i in Global_Odds_Table'range loop
+      Text_Io.Put_Line(I'Img & '|' & F8_Image(Global_Odds_Table(i)));
+    end loop;
+  end Tic_Table;
+------------------------------------------
 end Tics;

@@ -48,8 +48,8 @@ procedure Lay_All_Watch_Back is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Integer range 0 .. 350;
 
-
-
+  B_Place : aliased Boolean := False;
+  B_Nolay : aliased Boolean := False;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -89,44 +89,77 @@ procedure Lay_All_Watch_Back is
                 Delta_Tics : in Delta_Tics_Type;
                 Lay_Size   : in Bet_Size_Type) is
 
-    Market                 : Markets.Market_Type;
+    Market, Place_Market   : Markets.Market_Type;
     Eos                    : Boolean := False;
+    Place_Price_During_Race_List,
     Price_During_Race_List : Price_Histories.Lists.List;
+
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
     Tic_Lay                : Integer := 0;
     Bet                    : Bet_Type;
     Lay_Bet_Name           : String_Object;
     Back_Bet_Name          : String_Object;
 
-    Back_Size              : Bet_Size_Type := 0.0;
+    Back_Size              : Bet_Size_Type := 100.0;
     Ln                     : Betname_Type := (others => ' ');
     Bn                     : Betname_Type := (others => ' ');
     B_Price                : Fixed_Type := 0.0;
+    Found_Place_Market     : Boolean := False;
+
+    History_Exists         : Boolean := False;
+
 
   begin
     Log(Me & "Run", "start");
 
-    if Delta_Tics < Delta_Tics_Type(10) then
-      if Price_Data.Layprice < 10.0 then
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
-      else
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
-      end if;
+    if B_Place then
 
-    elsif Delta_Tics < Delta_Tics_Type(100) then
-      if Price_Data.Layprice < 10.0 then
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+      if Delta_Tics < Delta_Tics_Type(10) then
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
+
+      elsif Delta_Tics < Delta_Tics_Type(100) then
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
+
       else
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("PLCGREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
       end if;
 
     else
-      if Price_Data.Layprice < 10.0 then
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+      if Delta_Tics < Delta_Tics_Type(10) then
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
+
+      elsif Delta_Tics < Delta_Tics_Type(100) then
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
+
       else
-        Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        if Price_Data.Layprice < 10.0 then
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Layprice));
+        else
+          Lay_Bet_Name.Set("GREENUP_LAY_FIXED_LOSS_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Layprice));
+        end if;
       end if;
     end if;
+
     Back_Bet_Name.Set(Lay_Bet_Name.Fix_String);
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
@@ -137,17 +170,46 @@ procedure Lay_All_Watch_Back is
       return;
     end if;
 
+
+
+    if B_Place then
+      Market.Corresponding_Place_Market(Place_Market => Place_Market,Found => Found_Place_Market);
+
+      if Found_Place_Market then
+        Sim.Read_Marketid_Selectionid(Marketid    => Place_Market.Marketid,
+                                      Selectionid => Price_Data.Selectionid,
+                                      Animal      => Horse,
+                                      List        => Place_Price_During_Race_List) ;
+      else
+        Log(Me & "Run", "no place market found");
+        return;
+      end if;
+    end if;
+
     -- Log(Me & "Run", "Market: " & Market.To_String);
     Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,
                                   Selectionid => Price_Data.Selectionid,
                                   Animal      => Horse,
                                   List        => Price_During_Race_List) ;
 
-    Runner.Marketid := Price_Data.Marketid;
-    Runner.Selectionid := Price_Data.Selectionid;
-    Runner.Read(Eos);
+    if B_Place then
+      Runner.Marketid := Place_Market.Marketid;
+      Runner.Selectionid := Price_Data.Selectionid;
+      Runner.Read(Eos);
+    else
+      Runner.Marketid := Market.Marketid;
+      Runner.Selectionid := Price_Data.Selectionid;
+      Runner.Read(Eos);
+    end if;
 
-    if Price_During_Race_List.Length > 80 then
+
+    History_Exists := Price_During_Race_List.Length > 80;
+    if B_Place and History_Exists then
+      History_Exists := Place_Price_During_Race_List.Length > 80;
+    end if;
+
+
+    if History_Exists then
       if Eos then
         Log(Me & "Run", "no runner found found  " & Runner.To_String);
         return;
@@ -162,19 +224,21 @@ procedure Lay_All_Watch_Back is
 
       -- Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
 
-      Move(Lay_Bet_Name.Fix_String,Ln);
-      Sim.Place_Bet(Bet_Name         => Ln,
-                    Market_Id        => Market.Marketid,
-                    Side             => Lay,
-                    Runner_Name      => Runner.Runnernamestripped,
-                    Selection_Id     => Price_Data.Selectionid,
-                    Size             => Lay_Size,
-                    Price            => Bet_Price_Type(Price_Data.Layprice),
-                    Bet_Persistence  => Persist,
-                    Bet_Placed       => Price_Data.Pricets,
-                    Bet              => Bet.Laybet ) ;
-      Move("M",Bet.Laybet.Status);
-      Check_Bet(Runner, Bet.Laybet);
+      if not B_Nolay then
+        Move(Lay_Bet_Name.Fix_String,Ln);
+        Sim.Place_Bet(Bet_Name         => Ln,
+                      Market_Id        => Market.Marketid,
+                      Side             => Lay,
+                      Runner_Name      => Runner.Runnernamestripped,
+                      Selection_Id     => Price_Data.Selectionid,
+                      Size             => Lay_Size,
+                      Price            => Bet_Price_Type(Price_Data.Layprice),
+                      Bet_Persistence  => Persist,
+                      Bet_Placed       => Price_Data.Pricets,
+                      Bet              => Bet.Laybet ) ;
+        Move("M",Bet.Laybet.Status);
+        Check_Bet(Runner, Bet.Laybet);
+      end if;
 
       if Tic_Lay - Delta_Tics < Integer(1) then
         Log(Me & "Run", "Tic_Lay - Delta_Tics < 1 - can't back  " & Runner.To_String);
@@ -183,7 +247,7 @@ procedure Lay_All_Watch_Back is
 
 
       B_Price   := Tics.Get_Tic_Price(Tic_Lay - Delta_Tics);
-      Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
+    --  Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
 
       -- see if we meet stop_loss or greenup
       --there is no delay here since bet is placed in beginning of race
@@ -192,25 +256,57 @@ procedure Lay_All_Watch_Back is
         Match_Time : Calendar2.Time_Type := Not_Set;
       begin
         Race : for Race_Data of Price_During_Race_List loop
-          if Race_Data.Backprice > Fixed_Type(1.0)    and then -- must be valid
+          if Race_Data.Backprice > Fixed_Type(1.0)   and then -- must be valid
             Race_Data.Layprice  > Fixed_Type(1.0)    and then -- must be valid
             Race_Data.Backprice < Fixed_Type(1000.1) and then -- must be valid
             Race_Data.Layprice  < Fixed_Type(1000.1) then     -- must be valid
 
             if Race_Data.Pricets   >= Price_Data.Pricets and then
-              Race_Data.Backprice <= B_Price            and then
-              Match_Time           = Not_Set            then -- first time condition true
+              Race_Data.Backprice <= B_Price             and then
+              Match_Time           = Not_Set             then -- first time condition true
 
               Match_Time := Race_Data.Pricets;
+              if B_Place then
+                exit Race;
+              end if;
             end if;
 
             if Race_Data.Pricets >= Match_Time + (0,0,0,1,0) then
 
-              if Race_Data.Backprice >= B_Price then -- we are under the safety level - do backbet
+              Move(Back_Bet_Name.Fix_String,Bn);
+              Sim.Place_Bet(Bet_Name         => Bn,
+                            Market_Id        => Market.Marketid,
+                            Side             => Back,
+                            Runner_Name      => Runner.Runnernamestripped,
+                            Selection_Id     => Price_Data.Selectionid,
+                            Size             => Back_Size,
+                            Price            => Bet_Price_Type(Race_Data.Backprice),
+                            Bet_Persistence  => Persist,
+                            Bet_Placed       => Match_Time,
+                            Bet              => Bet.Backbet ) ;
+              Move("M",Bet.Backbet.Status);
+              exit Race;
 
+            end if;
+          end if;
+        end loop Race;
+
+        Race_Plc : for Race_Data of Place_Price_During_Race_List loop
+          if not B_Place then
+            exit Race_Plc;
+          end if;
+
+          if Race_Data.Backprice > Fixed_Type(1.0)   and then -- must be valid
+            Race_Data.Layprice  > Fixed_Type(1.0)    and then -- must be valid
+            Race_Data.Backprice < Fixed_Type(1000.1) and then -- must be valid
+            Race_Data.Layprice  < Fixed_Type(1000.1) then     -- must be valid
+
+            if Race_Data.Pricets >= Match_Time + (0,0,0,1,0) then
+
+                -- take first bet we can get
                 Move(Back_Bet_Name.Fix_String,Bn);
                 Sim.Place_Bet(Bet_Name         => Bn,
-                              Market_Id        => Market.Marketid,
+                              Market_Id        => Place_Market.Marketid,
                               Side             => Back,
                               Runner_Name      => Runner.Runnernamestripped,
                               Selection_Id     => Price_Data.Selectionid,
@@ -220,12 +316,12 @@ procedure Lay_All_Watch_Back is
                               Bet_Placed       => Match_Time,
                               Bet              => Bet.Backbet ) ;
                 Move("M",Bet.Backbet.Status);
-                exit Race;
+                exit Race_Plc;
 
-              end if;
             end if;
           end if;
-        end loop Race;
+        end loop Race_Plc;
+
       end;
 
       Check_Bet(Runner, Bet.Backbet);
@@ -252,53 +348,56 @@ procedure Lay_All_Watch_Back is
 
 
 begin
-  Log("1");
 
   Define_Switch
     (Cmd_Line,
      Sa_Min_Layprice'Access,
      Long_Switch => "--min_lay=",
      Help        => "Min layprice");
-  Log("2");
 
   Define_Switch
     (Cmd_Line,
      Sa_Max_Layprice'Access,
      Long_Switch => "--max_lay=",
      Help        => "Min layprice");
-  Log("3");
 
   Define_Switch
     (Cmd_Line,
      Ia_Min_Tic'Access,
      Long_Switch => "--min_tic=",
      Help        => "min tic");
-  Log("4");
 
   Define_Switch
     (Cmd_Line,
      Ia_Max_Tic'Access,
      Long_Switch => "--max_tic=",
      Help        => "max tic");
-  Log("5");
 
   Define_Switch
     (Cmd_Line,
      Sa_Logfilename'Access,
      Long_Switch => "--logfile=",
      Help        => "name of log file");
-  Log("6");
 
   Define_Switch
     (Cmd_Line,
      Sa_Par_Inifile'Access,
      Long_Switch => "--inifile=",
      Help        => "use alternative inifile");
-  Log("7");
+
+  Define_Switch
+    (Cmd_Line,
+     B_Place'Access,
+     Long_Switch => "--place",
+     Help        => "back place market instead");
+
+  Define_Switch
+    (Cmd_Line,
+     B_Nolay'Access,
+     Long_Switch => "--nolay",
+     Help        => "do not actually make a laybet");
 
   Getopt (Cmd_Line);  -- process the command line
-  Log("8");
-
 
   if Sa_Min_Layprice.all = "" then
     raise Constraint_Error with "no min-lay-price set";
