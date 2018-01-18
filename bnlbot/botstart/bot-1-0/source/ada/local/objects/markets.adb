@@ -43,7 +43,7 @@ package body Markets is
       Place_Market := Markets.Get(Find_Plc_Market);
       Found := True;
     else
-      Log (Me & "MaCorresponding_Place_Marketke_Bet", "no PLACE market found");
+      Log (Me & "Corresponding_Place_Market", "no PLACE market found");
       Found := False;
     end if;
     Find_Plc_Market.Close_Cursor;
