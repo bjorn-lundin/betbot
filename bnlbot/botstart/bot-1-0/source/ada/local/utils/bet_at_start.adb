@@ -102,8 +102,8 @@ procedure Bet_At_Start is
     Bet                    : Bet_Type;
     Betname                : String_Object;
 
-    Ln                     : Betname_Type := (others => ' ');
---    Bn                     : Betname_Type := (others => ' ');
+    --Ln                     : Betname_Type := (others => ' ');
+    Bn                     : Betname_Type := (others => ' ');
  --   B_Price                : Fixed_Type := 0.0;
     Found_Place_Market     : Boolean := False;
 
@@ -120,7 +120,8 @@ procedure Bet_At_Start is
       return;
     end if;
 
-    Market(Win).Corresponding_Place_Market(Place_Market => Market(Place),Found => Found_Place_Market);
+    Market(Win).Corresponding_Place_Market(Place_Market => Market(Place),
+                                           Found        => Found_Place_Market);
 
     if Found_Place_Market then
       Runner(Place).Marketid    := Market(Place).Marketid;
@@ -142,7 +143,6 @@ procedure Bet_At_Start is
         declare
           Price       : Bet_Price_Type := 0.0;
           Place_Price : Prices.Price_Type;
-          Eos         : Boolean := False;
         begin
           case M is
             when Win   =>
@@ -155,10 +155,15 @@ procedure Bet_At_Start is
               if not Found_Place_Market then
                 goto Next; -- at end of loop Markettype
               end if;
+
+              if Eos(Place) then
+                goto Next; -- at end of loop Markettype
+              end if;
+
               Place_Price.Marketid    := Runner(Place).Marketid;
               Place_Price.Selectionid := Runner(Place).Selectionid;
-              Place_Price.Read(Eos);
-              if not Eos then
+              Place_Price.Read(Eos(Place));
+              if not Eos(Place) then
                 case S is
                   when Lay  => Price := Bet_Price_Type(Place_Price.Layprice);
                   when Back => Price := Bet_Price_Type(Place_Price.Backprice);
@@ -190,9 +195,8 @@ procedure Bet_At_Start is
             end if;
           end if;
 
-
-          Move(M'Img & '_' & S'Img & '_' & Betname.Fix_String,Ln);
-          Sim.Place_Bet(Bet_Name         => Ln,
+          Move(M'Img & '_' & S'Img & '_' & Betname.Fix_String,Bn);
+          Sim.Place_Bet(Bet_Name         => Bn,
                         Market_Id        => Market(M).Marketid,
                         Side             => S,
                         Runner_Name      => Runner(M).Runnernamestripped,
@@ -327,7 +331,7 @@ begin
                 "select P.* " &
                   "from APRICES P, AMARKETS M, AEVENTS E " &
                   "where E.EVENTID=M.EVENTID " &
-                --  "and M.MARKETTYPE = 'WIN' " &
+                  "and M.MARKETTYPE = 'WIN' " &
                   "and E.COUNTRYCODE in ('GB','IE') " &
                   "and P.MARKETID = M.MARKETID " &
                   "and E.EVENTTYPEID = 7 " &
