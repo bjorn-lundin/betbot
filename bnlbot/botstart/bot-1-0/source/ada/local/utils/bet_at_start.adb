@@ -100,8 +100,7 @@ procedure Bet_At_Start is
     Runner                 : array (Market_Type'Range) of Runners.Runner_Type;--table_Arunners.Data_Type;
 --    Tic_Lay                : Integer := 0;
     Bet                    : Bet_Type;
-    Lay_Bet_Name           : String_Object;
-    Back_Bet_Name          : String_Object;
+    Betname                : String_Object;
 
     Ln                     : Betname_Type := (others => ' ');
 --    Bn                     : Betname_Type := (others => ' ');
@@ -112,30 +111,6 @@ procedure Bet_At_Start is
 
   begin
     Log(Me & "Run", "start");
-
-    if Delta_Tics < Delta_Tics_Type(10) then
-      if Price_Data.Backprice < 10.0 then
-        Lay_Bet_Name.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
-      else
-        Lay_Bet_Name.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
-      end if;
-
-    elsif Delta_Tics < Delta_Tics_Type(100) then
-      if Price_Data.Backprice < 10.0 then
-        Lay_Bet_Name.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
-      else
-        Lay_Bet_Name.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
-      end if;
-
-    else
-      if Price_Data.Backprice < 10.0 then
-        Lay_Bet_Name.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
-      else
-        Lay_Bet_Name.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
-      end if;
-    end if;
-
-    Back_Bet_Name.Set(Lay_Bet_Name.Fix_String);
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market(Win).Marketid := Price_Data.Marketid;
@@ -156,7 +131,6 @@ procedure Bet_At_Start is
     Runner(Win).Marketid    := Market(Win).Marketid;
     Runner(Win).Selectionid := Price_Data.Selectionid;
     Runner(Win).Read(Eos(Win));
-
 
     if Runner(Win).Status(1..7) = "REMOVED" then
       Log(Me & "Run", "runner removed " & Runner(Win).To_String);
@@ -179,7 +153,7 @@ procedure Bet_At_Start is
 
             when Place =>
               if not Found_Place_Market then
-                goto Next; -- at end of loop
+                goto Next; -- at end of loop Markettype
               end if;
               Place_Price.Marketid    := Runner(Place).Marketid;
               Place_Price.Selectionid := Runner(Place).Selectionid;
@@ -194,8 +168,30 @@ procedure Bet_At_Start is
               end if;
           end case;
 
+          if Delta_Tics < Delta_Tics_Type(10) then
+            if Price_Data.Backprice < 10.0 then
+              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+            else
+              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+            end if;
 
-          Move(Lay_Bet_Name.Fix_String,Ln);
+          elsif Delta_Tics < Delta_Tics_Type(100) then
+            if Price_Data.Backprice < 10.0 then
+              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+            else
+              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+            end if;
+
+          else
+            if Price_Data.Backprice < 10.0 then
+              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+            else
+              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+            end if;
+          end if;
+
+
+          Move(M'Img & '_' & S'Img & '_' & Betname.Fix_String,Ln);
           Sim.Place_Bet(Bet_Name         => Ln,
                         Market_Id        => Market(M).Marketid,
                         Side             => S,
