@@ -22,12 +22,12 @@ project Adabot is
    System_Mains := ("repo.adb",
                    -- "bot.adb",
                     "bot_send.adb",
-                    "test_ssl.adb",
+                   -- "test_ssl.adb",
                     "poll.adb",
                     "race_time.adb",
                     "poll_market.adb",
                     "poll_gh_market.adb",
-                    "poll_soccer.adb",
+                   -- "poll_soccer.adb",
                     "markets_fetcher.adb",
                     "markets_fetcher_greyhounds.adb",
                     "saldo_fetcher.adb",
@@ -41,30 +41,24 @@ project Adabot is
                     "poll_bounds.adb",
                     "bot_web_server.adb",
                     "menu_parser.adb",
-                    "football_live_feed.adb",
+                --    "football_live_feed.adb",
                     "check_bot_running.adb"
                     );
 
-   Stat_Mains   := ("stat_maker.adb",
-                    "sim_back_in_play.adb",
-                    "check_matched_sim_bets.adb",
-                    "check_lay.adb",
-                    "check_lay2.adb",
-                    "profit_min_max.adb",
-                    "check_for_greenup_plc.adb",
-                    "check_for_lay_win.adb",
+   Stat_Mains   := (
                     "create_cache.adb",
-                    "count_min_odds.adb",
-                    "lay_back_all.adb", 
                     "lay_all_watch_back.adb", 
-                    "price_graph_during_race.adb",
-                    "back_during_race_and_lay_later.adb", 
-                    "greenup_lay_first_all.adb",
-                    "greenup_lay_first.adb"); 
+                    "bet_at_start.adb"
+                    --"lay_back_all.adb", 
+                    --"stat_maker.adb",
+                    --"sim_back_in_play.adb",                    
+                    -- "sim_bets.adb",
+                   -- "greenup_lay_first_all.adb",
+                   -- "greenup_lay_first.adb"
+                   ); 
 
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "markets_sender.adb",
-                     "sim_bets.adb",
                      "fix_database.adb",
                      "price_to_tics.adb"   );
 
