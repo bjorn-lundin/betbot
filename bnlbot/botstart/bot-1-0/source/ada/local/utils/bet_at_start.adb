@@ -173,25 +173,26 @@ procedure Bet_At_Start is
               end if;
           end case;
 
+          --always set WIN-backprice in name
           if Delta_Tics < Delta_Tics_Type(10) then
             if Price_Data.Backprice < 10.0 then
-              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
             else
-              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_00" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
             end if;
 
           elsif Delta_Tics < Delta_Tics_Type(100) then
             if Price_Data.Backprice < 10.0 then
-              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
             else
-              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_0" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
             end if;
 
           else
             if Price_Data.Backprice < 10.0 then
-              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_0" & F8_Image(Price_Data.Backprice));
             else
-              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Fixed_Type(Price)));
+              Betname.Set(Betname_Prefix & "_" & Trim(Delta_Tics'Img,Both) & "_" & F8_Image(Price_Data.Backprice));
             end if;
           end if;
 
