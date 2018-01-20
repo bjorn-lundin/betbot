@@ -78,6 +78,20 @@ procedure Poll is
   function Get_Bet_Placer (Bettype : Config.Bet_Type) return Process_Io.Process_Type is
     Num : Integer := Config.Bet_Type'Pos (Bettype) +1;
   begin
+    case Bettype is
+      when Horse_Back_Plc_04_00 .. Horse_Back_Plc_04_40 => return Process_Io.To_Process_Type ("bet_placer_005");
+      when Horse_Back_Plc_04_50 .. Horse_Back_Plc_04_90 => return Process_Io.To_Process_Type ("bet_placer_006");
+      when Horse_Back_Plc_05_00 .. Horse_Back_Plc_05_40 => return Process_Io.To_Process_Type ("bet_placer_007");
+      when Horse_Back_Plc_05_50 .. Horse_Back_Plc_05_90 => return Process_Io.To_Process_Type ("bet_placer_008");
+      when Horse_Back_Plc_06_00 .. Horse_Back_Plc_06_80 => return Process_Io.To_Process_Type ("bet_placer_009");
+      when Horse_Back_Plc_07_00 .. Horse_Back_Plc_07_80 => return Process_Io.To_Process_Type ("bet_placer_010");
+      when Horse_Back_Plc_08_00 .. Horse_Back_Plc_08_80 => return Process_Io.To_Process_Type ("bet_placer_011");
+      when Horse_Back_Plc_09_00 .. Horse_Back_Plc_09_80 => return Process_Io.To_Process_Type ("bet_placer_012");
+      when Horse_Back_Plc_10_00 .. Horse_Back_Plc_17_50 => return Process_Io.To_Process_Type ("bet_placer_013");
+      when Horse_Back_Plc_18_00 .. Horse_Back_Plc_24_00 => return Process_Io.To_Process_Type ("bet_placer_014");
+      when others => null;
+    end case;
+
     case Num is
       when 1 .. 9     => return Process_Io.To_Process_Type ("bet_placer_00" & Trim (Num'Img, Both));
       when 10 .. 99   => return Process_Io.To_Process_Type ("bet_placer_0"  & Trim (Num'Img, Both));
@@ -150,13 +164,7 @@ procedure Poll is
       Move (F8_Image (Fixed_Type (Bets_Allowed (Main_Bet).Bet_Size)), Plb.Size);
       Bot_Messages.Send (Receiver, Plb);
 
-      case Main_Bet is
-          --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
-          null;
-        when others =>
-          Bets_Allowed (Main_Bet).Has_Betted := True;
-      end case;
+      Bets_Allowed (Main_Bet).Has_Betted := True;
 
       Did_Bet (1) := True;
     end if;
@@ -236,13 +244,7 @@ procedure Poll is
       Bets_Allowed (Main_Bet).Is_Allowed_To_Bet then
       Bot_Messages.Send (Receiver, Pbb);
 
-      case Main_Bet is
-          --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-        when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
-          null;
-        when others =>
-          Bets_Allowed (Main_Bet).Has_Betted := True;
-      end case;
+      Bets_Allowed (Main_Bet).Has_Betted := True;
 
       Did_Bet (1) := True;
     end if;
@@ -405,7 +407,45 @@ procedure Poll is
     Bets_Allowed (Bettype).Has_Betted := True; -- disabled in send_lay_bet/send_back_bet for this type of bets
 
   end Try_To_Lay;
+  pragma Unreferenced(Try_To_Lay);
   -----------------------------------------------------------------------------------
+
+  procedure Try_To_Back_Place_At_Start (Bettype  : Config.Bet_Type;
+                                        Br       : Best_Runners_Array_Type;
+                                        Marketid : Marketid_Type) is
+
+    Service      : constant String := "Try_To_Back_Place_At_Start";
+    Backprice : Fixed_Type;
+    Image        : String := Bettype'Img;
+  begin
+
+    -- back all horses on place market that has the win-markets backprice
+    -- we want a favorite and a backup ...
+
+    --1         2         3       4
+    --  1234567890123456789012345678901234567890
+    --  Horse_Back_Plc_04_00
+    Backprice := Fixed_Type'Value (Image (16 .. 17) & '.' & Image (19 .. 20));
+
+    for I in Br'Range loop
+      Log (Service & " " & Bettype'Img & " I=" & I'Img &
+             " Br(I).Selid" & Br(I).Selectionid'Img &
+             " Backprice=" & F8_Image(Br(I).Backprice));
+
+      if Backprice = Br(I).Backprice then
+        Send_Back_Bet (Selectionid     => Br(I).Selectionid,
+                       Main_Bet        => Bettype,
+                       Marketid        => Marketid,
+                       Min_Price       => Price_Type(Backprice),
+                       Match_Directly  => True,
+                       Fill_Or_Kill    => False);
+      end if;
+    end loop;
+
+  end Try_To_Back_Place_At_Start;
+  -----------------------------------------------------------------------------------
+
+
 
   -----------------------------------------------------------------------------------
   procedure Try_To_Greenup_Lay_Back (Bettype         : Config.Bet_Type;
@@ -857,13 +897,19 @@ procedure Poll is
                   --                          Br              => Best_Runners,
                   --                          Marketid        => Markets_Array (Win).Marketid);
                   --end if;
-                when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
-                  if First_Poll then
-                    Try_To_Lay (Bettype         => I,
-                                Br              => Best_Runners,
-                                Marketid        => Markets_Array (Win).Marketid);
-                  end if;
+                  -- when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
+                  --   if First_Poll then
+                  --     Try_To_Lay (Bettype         => I,
+                  --                 Br              => Best_Runners,
+                  --                 Marketid        => Markets_Array (Win).Marketid);
+                  --   end if;
 
+                when Horse_Back_Plc_04_00 .. Horse_Back_Plc_24_00 =>
+                  if First_Poll then
+                    Try_To_Back_Place_At_Start (Bettype         => I,
+                                                Br              => Best_Runners,
+                                                Marketid        => Markets_Array (Place).Marketid);
+                  end if;
               end case;
 
             when Hound => null;
