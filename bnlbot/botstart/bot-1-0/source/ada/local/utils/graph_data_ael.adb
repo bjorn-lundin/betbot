@@ -12,6 +12,7 @@ with  Ada.Environment_Variables;
 --with Bot_Types;
 with Utils; use Utils;
 with Config;
+with Bot_Types;
 procedure Graph_Data_Ael is
   package EV renames Ada.Environment_Variables;
   Cmd_Line              : Command_Line_Configuration;
@@ -20,6 +21,7 @@ procedure Graph_Data_Ael is
   Select_Profit_Date    : Sql.Statement_Type;
   Select_Avg_Price_Date : Sql.Statement_Type;
   Select_Equity_Date    : Sql.Statement_Type;
+  Select_Histogram_Data : Sql.Statement_Type;
 
   Sa_Betname          : aliased Gnat.Strings.String_Access;
   Sa_Price            : aliased Gnat.Strings.String_Access;
@@ -28,6 +30,7 @@ procedure Graph_Data_Ael is
   Ba_Profit           : aliased Boolean := False;
   Ba_Lapsed           : aliased Boolean := False;
   Ba_Equity           : aliased Boolean := False;
+  Ba_Histogram        : aliased Boolean := False;
   Ia_Days             : aliased Integer := 42;
   Ia_Maxprice         : aliased Integer := 1000;
 
@@ -57,6 +60,11 @@ procedure Graph_Data_Ael is
     Equity       : Fixed_Type := 0.0;
   end record;
 
+  type Histogram_Result_Type is record
+    Name       : String_Object;
+    Profit     : Fixed_Type := 0.0;
+  end record;
+
 
   package Days_Result_Pack is new Ada.Containers.Doubly_Linked_Lists (Days_Result_Type);
   Days_Result_List   : Days_Result_Pack.List;
@@ -69,6 +77,10 @@ procedure Graph_Data_Ael is
 
   package Equity_Result_Pack is new Ada.Containers.Doubly_Linked_Lists (Equity_Result_Type);
   Equity_Result_List   : Equity_Result_Pack.List;
+
+  package Histogram_Result_Pack is new Ada.Containers.Doubly_Linked_Lists (Histogram_Result_Type);
+  Histogram_Result_List   : Histogram_Result_Pack.List;
+
 
   -------------------------------
   procedure Debug (What : String) is
@@ -228,6 +240,35 @@ procedure Graph_Data_Ael is
     end loop;
     Select_Equity_Date.Close_Cursor;
   end Equity_Data;
+  --------------------------------------------------------
+  procedure Histogram_Data (
+                         Betname : in     String;
+                         A_List  : in out  Histogram_Result_Pack.List) is
+    Eos                : Boolean := False;
+    Histogram_Result   : Histogram_Result_Type;
+--    Profit        : Fixed_Type := 0.0;
+    Name : Bot_Types.Betname_Type := (others => ' ');
+  begin
+    Select_Histogram_Data.Prepare (
+                                "select B.BETNAME, Sum(B.PROFIT) profit " &
+                                  "from ABETS B " &
+                                  "where true " &
+                                  "and B.BETNAME like :BETNAME " &
+                                  "and B.STATUS ='M' " &
+                                  "group by B.BETNAME " &
+                                  "order by B.BETNAME");
+    Select_Histogram_Data.Set ("BETNAME", '%' & Betname & '%');
+    Select_Histogram_Data.Open_Cursor;
+    loop
+      Select_Histogram_Data.Fetch (Eos);
+      exit when Eos;
+      Select_Histogram_Data.Get ("BETNAME", Name);
+      Select_Histogram_Data.Get ("PROFIT", Histogram_Result.Profit);
+      Histogram_Result.Name.Set(Name);
+      A_List.Append (Histogram_Result);
+    end loop;
+    Select_Histogram_Data.Close_Cursor;
+  end Histogram_Data ;
   ------------------------------------------------------
 
 begin
@@ -272,6 +313,13 @@ begin
      Ba_Print_Strategies'Access,
      Long_Switch => "--print_strategies",
      Help        => "print strategies");
+
+  Define_Switch
+    (Cmd_Line,
+     Ba_Histogram'Access,
+     Long_Switch => "--histogram",
+     Help        => "histogram data");
+
 
   Define_Switch
     (Cmd_Line,
@@ -323,6 +371,9 @@ begin
   elsif Ba_Equity then
     Equity_Data (Betname => Sa_Betname.all,
                  A_List  => Equity_Result_List);
+  elsif Ba_Histogram then
+    Histogram_Data (Betname => Sa_Betname.all,
+                    A_List  => Histogram_Result_List);
   end if;
   T.Commit;
   Sql.Close_Session;
@@ -356,6 +407,13 @@ begin
     Print (
            R.Ts.To_String (Milliseconds => False) & " | " &
              F8_Image (R.Equity )
+          ) ;
+  end loop;
+
+  for R of Histogram_Result_List loop
+    Print (
+           R.Name.Fix_String & " | " &
+             F8_Image (R.Profit )
           ) ;
   end loop;
 
