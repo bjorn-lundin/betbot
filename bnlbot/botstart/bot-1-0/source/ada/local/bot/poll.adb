@@ -436,7 +436,7 @@ procedure Poll is
         Send_Back_Bet (Selectionid     => Br(I).Selectionid,
                        Main_Bet        => Bettype,
                        Marketid        => Marketid,
-                       Min_Price       => Price_Type(Backprice),
+                       Min_Price       => 1.01, --Price_Type(Backprice),
                        Match_Directly  => True,
                        Fill_Or_Kill    => False);
       end if;
