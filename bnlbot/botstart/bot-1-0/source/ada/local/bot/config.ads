@@ -94,7 +94,7 @@ package Config is
   type Config_Type is tagged record
     --Size                       : Bet_Size_Type    := 30.0;
     Max_Exposure               : Fixed_Type          := 0.0;
-    Max_Turns_Not_Started_Race : Integer_4           := 102;  --102*5s -> 8,5 min
+    Max_Turns_Not_Started_Race : Integer_4           := 120;  --102*5s -> 8,5 min
     Enabled                    : Boolean             := False;
     Allowed_Countries          : Unbounded_String    := Null_Unbounded_String;
     Allowed_Days               : Allowed_Days_Array  := (others => False);

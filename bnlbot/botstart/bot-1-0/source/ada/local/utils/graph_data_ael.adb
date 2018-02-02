@@ -24,12 +24,15 @@ procedure Graph_Data_Ael is
   Select_Histogram_Data : Sql.Statement_Type;
 
   Sa_Betname          : aliased Gnat.Strings.String_Access;
+  Sa_Betname1         : aliased Gnat.Strings.String_Access;
+  Sa_Betname2         : aliased Gnat.Strings.String_Access;
   Sa_Price            : aliased Gnat.Strings.String_Access;
   Ba_Print_Strategies : aliased Boolean := False;
   Ba_Avg_Price        : aliased Boolean := False;
   Ba_Profit           : aliased Boolean := False;
   Ba_Lapsed           : aliased Boolean := False;
   Ba_Equity           : aliased Boolean := False;
+  Ba_Equity2          : aliased Boolean := False;
   Ba_Histogram        : aliased Boolean := False;
   Ia_Days             : aliased Integer := 42;
   Ia_Maxprice         : aliased Integer := 1000;
@@ -53,7 +56,6 @@ procedure Graph_Data_Ael is
     --  Size_Matched : Fixed_Type   := 0.0;
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
   end record;
-
 
   type Equity_Result_Type is record
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
@@ -80,7 +82,6 @@ procedure Graph_Data_Ael is
 
   package Histogram_Result_Pack is new Ada.Containers.Doubly_Linked_Lists (Histogram_Result_Type);
   Histogram_Result_List   : Histogram_Result_Pack.List;
-
 
   -------------------------------
   procedure Debug (What : String) is
@@ -214,6 +215,35 @@ procedure Graph_Data_Ael is
   ------------------------------------------------------
 
   --------------------------------------------------------
+  procedure Equity_Data2 (
+                         Betname1,Betname2 : in     String;
+                         A_List  : in out Equity_Result_Pack.List) is
+    Eos           : Boolean := False;
+    Equity_Result : Equity_Result_Type;
+    Profit        : Fixed_Type := 0.0;
+  begin
+    Select_Equity_Date.Prepare (
+                                "select B.STARTTS, PROFIT " &
+                                  "from ABETS B " &
+                                  "where true " &
+                                  "and B.BETNAME >= :BETNAME1 " &
+                                  "and B.BETNAME <= :BETNAME2 " &
+                                  "and B.STATUS ='M' " &
+                                  "order by STARTTS");
+    Select_Equity_Date.Set ("BETNAME1", Betname1);
+    Select_Equity_Date.Set ("BETNAME2", Betname2);
+    Select_Equity_Date.Open_Cursor;
+    loop
+      Select_Equity_Date.Fetch (Eos);
+      exit when Eos;
+      Select_Equity_Date.Get ("STARTTS", Equity_Result.Ts);
+      Select_Equity_Date.Get ("PROFIT", Profit);
+      Equity_Result.Equity := Equity_Result.Equity + Profit;
+      A_List.Append (Equity_Result);
+    end loop;
+    Select_Equity_Date.Close_Cursor;
+  end Equity_Data2;
+  --------------------------------------------------------
   procedure Equity_Data (
                          Betname : in     String;
                          A_List  : in out Equity_Result_Pack.List) is
@@ -274,6 +304,18 @@ procedure Graph_Data_Ael is
 begin
   Define_Switch
     (Cmd_Line,
+     Sa_Betname1'Access,
+     Long_Switch => "--betname1=",
+     Help        => "betname1 for equity (use with betname2)");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Betname2'Access,
+     Long_Switch => "--betname2=",
+     Help        => "betname2 for equity (use with betname1)");
+
+  Define_Switch
+    (Cmd_Line,
      Sa_Betname'Access,
      Long_Switch => "--betname=",
      Help        => "betname for equity");
@@ -282,6 +324,12 @@ begin
     (Cmd_Line,
      Ba_Equity'Access,
      Long_Switch => "--equity",
+     Help        => "equity diagram");
+
+  Define_Switch
+    (Cmd_Line,
+     Ba_Equity2'Access,
+     Long_Switch => "--equity2",
      Help        => "equity diagram");
 
   Define_Switch
@@ -320,7 +368,6 @@ begin
      Long_Switch => "--histogram",
      Help        => "histogram data");
 
-
   Define_Switch
     (Cmd_Line,
      Ia_Maxprice'Access,
@@ -333,7 +380,6 @@ begin
      Long_Switch => "--price=",
      Help        => "price of bet");
 
-
   Getopt (Cmd_Line);  -- process the command line
 
 
@@ -341,8 +387,6 @@ begin
     Config.Print_Strategies;
     return;
   end if;
-
-
 
   Ini.Load (Ev.Value ("BOT_HOME") & "/login.ini");
 
@@ -371,6 +415,12 @@ begin
   elsif Ba_Equity then
     Equity_Data (Betname => Sa_Betname.all,
                  A_List  => Equity_Result_List);
+
+  elsif Ba_Equity2 then
+    Equity_Data2 (Betname1 => Sa_Betname1.all,
+                  Betname2 => Sa_Betname2.all,
+                  A_List  => Equity_Result_List);
+
   elsif Ba_Histogram then
     Histogram_Data (Betname => Sa_Betname.all,
                     A_List  => Histogram_Result_List);
