@@ -269,12 +269,12 @@ procedure Poll is
   begin
     -- do we have a case?
     for Gbr of Global_Best_Runners loop
-      for Cbr of  Br loop
+      for Cbr of Br loop
         if Fixed_Type(8.0) <= Gbr.Backprice and then Gbr.Backprice <= Fixed_Type(12.0) and then
           Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
           -- make win bet
           Log ("Try_To_Back_Win_High_To_Low place bet");
-          Log ("Try_To_Back_Win_High_To_Low start   price " & Cbr.To_String   );
+          Log ("Try_To_Back_Win_High_To_Low start   price " & Gbr.To_String   );
           Log ("Try_To_Back_Win_High_To_Low current price " & Cbr.To_String   );
 
           Send_Back_Bet (Selectionid     => Cbr.Selectionid,
