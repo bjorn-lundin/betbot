@@ -280,7 +280,7 @@ procedure Poll is
           Send_Back_Bet (Selectionid     => Cbr.Selectionid,
                          Main_Bet        => Bettype,
                          Marketid        => Marketid,
-                         Min_Price       => Back_Price_Type'Value ("1.01"),
+                         Min_Price       => Back_Price_Type(Cbr.Backprice), --Back_Price_Type'Value ("1.01"),
                          Match_Directly  => Match_Directly);
           -- Reset the global runner not to bet again on it
           Gbr := Prices.Empty_Data;
