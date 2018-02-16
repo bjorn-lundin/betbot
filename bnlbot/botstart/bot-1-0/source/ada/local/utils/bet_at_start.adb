@@ -51,8 +51,8 @@ procedure Bet_At_Start is
   --package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Integer range 0 .. 350;
 
-  B_Place : aliased Boolean := False;
-  B_Nolay : aliased Boolean := False;
+  --B_Place : aliased Boolean := False;
+  --B_Nolay : aliased Boolean := False;
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -62,24 +62,26 @@ procedure Bet_At_Start is
       if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := B.Size * (B.Price - Bets.Commission);
+          B.Profit := (B.Size * (B.Price - 1.0)) * (1.0 - Bets.Commission);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
           B.Profit := -B.Size;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
           B.Betwon := True;
+          B.Profit := 0.0;
         end if;
       elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := -B.Size * (B.Price - Bets.Commission);
+          B.Profit := -B.Size * (B.Price - 1.0);
         elsif R.Status(1..5) = "LOSER" then
-          B.Profit := B.Size;
+          B.Profit := B.Size * (1.0 - Bets.Commission);
           B.Betwon := True;
         elsif R.Status(1..7) = "REMOVED" then
           B.Status(1) := 'R';
           B.Betwon := True;
+          B.Profit := 0.0;
         end if;
       end if;
       B.Insert;
@@ -110,7 +112,7 @@ procedure Bet_At_Start is
     Betname_Prefix         : constant String := "BET_AT_START";
 
   begin
-    Log(Me & "Run", "start");
+   -- Log(Me & "Run", "start");
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market(Win).Marketid := Price_Data.Marketid;
@@ -123,11 +125,6 @@ procedure Bet_At_Start is
     Market(Win).Corresponding_Place_Market(Place_Market => Market(Place),
                                            Found        => Found_Place_Market);
 
-    if Found_Place_Market then
-      Runner(Place).Marketid    := Market(Place).Marketid;
-      Runner(Place).Selectionid := Price_Data.Selectionid;
-      Runner(Place).Read(Eos(Place));
-    end if;
 
     Runner(Win).Marketid    := Market(Win).Marketid;
     Runner(Win).Selectionid := Price_Data.Selectionid;
@@ -154,6 +151,10 @@ procedure Bet_At_Start is
             when Place =>
               if not Found_Place_Market then
                 goto Next; -- at end of loop Markettype
+              else
+                Runner(Place).Marketid    := Market(Place).Marketid;
+                Runner(Place).Selectionid := Price_Data.Selectionid;
+                Runner(Place).Read(Eos(Place));
               end if;
 
               if Eos(Place) then
@@ -220,44 +221,44 @@ procedure Bet_At_Start is
   ------------------------------ main start -------------------------------------
   Current_Date : Calendar2.Time_Type := Calendar2.Clock;
 
-  Sa_Min_Backprice : aliased Gnat.Strings.String_Access;
-  Sa_Max_Backprice : aliased Gnat.Strings.String_Access;
+ -- Sa_Min_Backprice : aliased Gnat.Strings.String_Access;
+--  Sa_Max_Backprice : aliased Gnat.Strings.String_Access;
   Sa_Logfilename  : aliased Gnat.Strings.String_Access;
-  Ia_Min_Tic      : aliased Integer;
-  Ia_Max_Tic      : aliased Integer;
+  Ia_Min_Tic      : aliased Integer := 1;
+  Ia_Max_Tic      : aliased Integer := 1;
 
 
   Size             : constant Bet_Size_Type := 100.0;
-  Backprice_High   : Fixed_Type := 0.0;
-  Backprice_Low    : Fixed_Type := 0.0;
+  Backprice_High   : Fixed_Type := 100.0;
+  Backprice_Low    : Fixed_Type := 1.01;
 
 
 
 begin
 
-  Define_Switch
-    (Cmd_Line,
-     Sa_Min_Backprice'Access,
-     Long_Switch => "--min_lay=",
-     Help        => "Min layprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Max_Backprice'Access,
-     Long_Switch => "--max_lay=",
-     Help        => "Min layprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Min_Tic'Access,
-     Long_Switch => "--min_tic=",
-     Help        => "min tic");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Max_Tic'Access,
-     Long_Switch => "--max_tic=",
-     Help        => "max tic");
+--    Define_Switch
+--      (Cmd_Line,
+--       Sa_Min_Backprice'Access,
+--       Long_Switch => "--min_lay=",
+--       Help        => "Min layprice");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Sa_Max_Backprice'Access,
+--       Long_Switch => "--max_lay=",
+--       Help        => "Min layprice");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Ia_Min_Tic'Access,
+--       Long_Switch => "--min_tic=",
+--       Help        => "min tic");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       Ia_Max_Tic'Access,
+--       Long_Switch => "--max_tic=",
+--       Help        => "max tic");
 
   Define_Switch
     (Cmd_Line,
@@ -271,34 +272,36 @@ begin
      Long_Switch => "--inifile=",
      Help        => "use alternative inifile");
 
-  Define_Switch
-    (Cmd_Line,
-     B_Place'Access,
-     Long_Switch => "--place",
-     Help        => "back place market instead");
-
-  Define_Switch
-    (Cmd_Line,
-     B_Nolay'Access,
-     Long_Switch => "--nolay",
-     Help        => "do not actually make a laybet");
+--    Define_Switch
+--      (Cmd_Line,
+--       B_Place'Access,
+--       Long_Switch => "--place",
+--       Help        => "back place market instead");
+--
+--    Define_Switch
+--      (Cmd_Line,
+--       B_Nolay'Access,
+--       Long_Switch => "--nolay",
+--       Help        => "do not actually make a laybet");
 
   Getopt (Cmd_Line);  -- process the command line
 
-  if Sa_Min_Backprice.all = "" then
-    raise Constraint_Error with "no min-back-price set";
-  elsif Sa_Max_Backprice.all = "" then
-    raise Constraint_Error with "no max-back-price set";
-  elsif Sa_Logfilename.all = "" then
+--    if Sa_Min_Backprice.all = "" then
+--      raise Constraint_Error with "no min-back-price set";
+--    elsif Sa_Max_Backprice.all = "" then
+--      raise Constraint_Error with "no max-back-price set";
+--    elsif Sa_Logfilename.all = "" then
+--      raise Constraint_Error with "no log file name set";
+--    elsif Ia_Min_Tic = 0 then
+--      raise Constraint_Error with "no min-tic set";
+--    elsif Ia_Max_Tic = 0  then
+--      raise Constraint_Error with "no max-tic set";
+--    end if;
+  if Sa_Logfilename.all = "" then
     raise Constraint_Error with "no log file name set";
-  elsif Ia_Min_Tic = 0 then
-    raise Constraint_Error with "no min-tic set";
-  elsif Ia_Max_Tic = 0  then
-    raise Constraint_Error with "no max-tic set";
   end if;
-  Log("9");
 
-  Log(Ia_Min_Tic'Img & Ia_Max_Tic'Img & " '" & Sa_Min_Backprice.all & "' '" & Sa_Max_Backprice.all & "'");
+--  Log(Ia_Min_Tic'Img & Ia_Max_Tic'Img & " '" & Sa_Min_Backprice.all & "' '" & Sa_Max_Backprice.all & "'");
 
 
 
@@ -312,15 +315,15 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log(Me, "Connect Db");
   Sql.Connect
-    (Host     => Ini.Get_Value("database_home", "host", ""),
-     Port     => Ini.Get_Value("database_home", "port", 5432),
-     Db_Name  => Ini.Get_Value("database_home", "name", ""),
-     Login    => Ini.Get_Value("database_home", "username", ""),
-     Password =>Ini.Get_Value("database_home", "password", ""));
+    (Host     => Ini.Get_Value("local", "host", ""),
+     Port     => Ini.Get_Value("local", "port", 5432),
+     Db_Name  => Ini.Get_Value("local", "name", ""),
+     Login    => Ini.Get_Value("local", "username", ""),
+     Password =>Ini.Get_Value("local", "password", ""));
   Log(Me, "db Connected");
 
-  Backprice_High := Fixed_Type'Value(Sa_Max_Backprice.all);
-  BAckprice_Low  := Fixed_Type'Value(Sa_Min_Backprice.all);
+ --Backprice_High := Fixed_Type'Value(Sa_Max_Backprice.all);
+  --BAckprice_Low  := Fixed_Type'Value(Sa_Min_Backprice.all);
 
   declare
     Stm         : Sql.Statement_Type;
@@ -335,7 +338,7 @@ begin
                   "and M.MARKETTYPE = 'WIN' " &
                   "and E.COUNTRYCODE in ('GB','IE') " &
                   "and P.MARKETID = M.MARKETID " &
-                  "and E.EVENTTYPEID = 7 " &
+           --       "and E.EVENTTYPEID = 7 " &
                   "and P.LAYPRICE <= :MAX_LAYPRICE " &
                 --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
                   "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
@@ -343,7 +346,7 @@ begin
     Prices.Read_List(Stm, Price_List);
     T.Commit;
 
-    Log(Backprice_Low'Img & " " & Backprice_High'Img & " " & Price_List.Length'Img);
+--    Log(Backprice_Low'Img & " " & Backprice_High'Img & " " & Price_List.Length'Img);
 
     begin
       for Price of Price_List loop -- all runners in race
@@ -352,15 +355,17 @@ begin
           Current_Date := Price.Pricets;
         end if;
 
-        if Backprice_Low <= Price.Backprice and then Price.Backprice <= Backprice_High then
+        if Backprice_Low <= Price.Backprice and then Price.Backprice <= Backprice_High and then
+           -- max diff 10% between back and layodds for the winner market
+           Price.Layprice >= 1.0 and then Fixed_Type(Price.Backprice / Price.Layprice) <= Fixed_Type(1.1) then
           T.Start;
           --for Dtg in Delta_Tics_Type'Range loop
           for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
-            Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
+       --     Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Dtg,
                 Size   => Size);
-            Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
+       --     Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
           end loop;
           T.Commit;
         end if;

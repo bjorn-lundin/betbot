@@ -392,11 +392,11 @@ begin
 
   Debug ("Connect Db");
   Sql.Connect
-    (Host     => Ini.Get_Value("database_home", "host", ""),
-     Port     => Ini.Get_Value("database_home", "port", 5432),
-     Db_Name  => Ini.Get_Value("database_home", "name", ""),
-     Login    => Ini.Get_Value("database_home", "username", ""),
-     Password => Ini.Get_Value("database_home", "password", ""));
+    (Host     => Ini.Get_Value("local", "host", ""),
+     Port     => Ini.Get_Value("local", "port", 5432),
+     Db_Name  => Ini.Get_Value("local", "name", ""),
+     Login    => Ini.Get_Value("local", "username", ""),
+     Password => Ini.Get_Value("local", "password", ""));
   Debug ("db Connected");
 
   T.Start;
