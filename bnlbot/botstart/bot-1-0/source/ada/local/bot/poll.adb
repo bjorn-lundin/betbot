@@ -51,7 +51,7 @@ procedure Poll is
   type Market_Type is (Win, Place);
   type Best_Runners_Array_Type is array (1 .. 16) of Prices.Price_Type ;
 
-  Global_Best_Runners  : Best_Runners_Array_Type := (others => Prices.Empty_Data);
+  Global_Best_Runners  : array (Market_Type'Range) of Best_Runners_Array_Type := (others => (others => Prices.Empty_Data));
   Global_Bet_Placer    : Integer := 0;
 
 
@@ -258,7 +258,8 @@ procedure Poll is
   -------------------------------------------------------------------------------------------------------------------
   procedure Save_Candidates(Br : Best_Runners_Array_Type) is  -- global Best_Runners
   begin
-    Global_Best_Runners := Br;
+    Global_Best_Runners(Win) := Br;
+    Global_Best_Runners(Place) := Br;
   end Save_Candidates;
   -----------------------------------------------------------------------------------
 
@@ -268,7 +269,7 @@ procedure Poll is
                                          Match_Directly : Boolean := False) is
   begin
     -- do we have a case?
-    for Gbr of Global_Best_Runners loop
+    for Gbr of Global_Best_Runners(Win) loop
       for Cbr of Br loop
         if Gbr.Selectionid = Cbr.Selectionid and then
           Fixed_Type(8.0) <= Gbr.Backprice and then Gbr.Backprice <= Fixed_Type(12.0) and then
@@ -289,6 +290,34 @@ procedure Poll is
       end loop;
     end loop;
   end Try_To_Back_Win_High_To_Low;
+  -----------------------------------------------------------------------------------
+  procedure Try_To_Back_Place_High_To_Low(Bettype        : Config.Bet_Type;
+                                          Br             : Best_Runners_Array_Type;
+                                          Marketid       : Marketid_Type;
+                                          Match_Directly : Boolean := False) is
+  begin
+    -- do we have a case?
+    for Gbr of Global_Best_Runners(Place) loop  -- not really place odds, but odds for this place stratey. It's really win odds
+      for Cbr of Br loop
+        if Gbr.Selectionid = Cbr.Selectionid and then
+          Fixed_Type(8.0) <= Gbr.Backprice and then Gbr.Backprice <= Fixed_Type(12.0) and then
+          Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
+          -- make win bet
+          Log ("Try_To_Back_Place_High_To_Low place bet");
+          Log ("Try_To_Back_Place_High_To_Low start   price " & Gbr.To_String   );
+          Log ("Try_To_Back_Place_High_To_Low current price " & Cbr.To_String   );
+
+          Send_Back_Bet (Selectionid     => Cbr.Selectionid,
+                         Main_Bet        => Bettype,
+                         Marketid        => Marketid,
+                         Min_Price       => Back_Price_Type'Value ("1.01"),
+                         Match_Directly  => Match_Directly);
+          -- Reset the global runner not to bet again on it
+          Gbr := Prices.Empty_Data;
+        end if;
+      end loop;
+    end loop;
+  end Try_To_Back_Place_High_To_Low;
   -----------------------------------------------------------------------------------
 
 
@@ -670,9 +699,13 @@ procedure Poll is
       end loop;
       Log ("Worst_Runner " & Worst_Runner.To_String);
 
+      if First_Poll then
+        Save_Candidates(Br => Best_Runners); -- save into global Best_Runners
+      end if;
+
       if Best_Runners (1).Backprice >= Fixed_Type (1.01) then
         for I in Bet_Type'Range loop
-          Log ("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
+         Log ("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
           case Animal is
             when Horse =>
               case I is
@@ -737,34 +770,16 @@ procedure Poll is
                                                      Match_Directly  => Match_Directly);
                     end if;
                   end;
-                  --when Horse_Greenup_Lay_Back_Win_15_00_19_50 .. Horse_Greenup_Lay_Back_Win_40_00_48_00 =>
-                  --if First_Poll then
-                  --  Try_To_Greenup_Lay_Back(Bettype         => I,
-                  --                          Br              => Best_Runners,
-                  --                          Marketid        => Markets_Array (Win).Marketid);
-                  --end if;
-                  -- when Horse_Lay_Win_17_00_019_50 .. Horse_Lay_Win_85_00_100_00 =>
-                  --   if First_Poll then
-                  --     Try_To_Lay (Bettype         => I,
-                  --                 Br              => Best_Runners,
-                  --                 Marketid        => Markets_Array (Win).Marketid);
-                  --   end if;
 
                 when Horse_Back_Win_High_To_Low =>
-                  if First_Poll then
-                    Save_Candidates(Br => Best_Runners); -- save into global Best_Runners
-                  end if;
-
                   Try_To_Back_Win_High_To_Low(Bettype         => I,
                                               Br              => Best_Runners,
-                                              Marketid        => Markets_Array (Place).Marketid);
+                                              Marketid        => Markets_Array (Win).Marketid);
 
---                  when Horse_Back_Plc_04_00 .. Horse_Back_Plc_24_00 =>
---                    if First_Poll then
---                      Try_To_Back_Place_At_Start (Bettype         => I,
---                                                  Br              => Best_Runners,
---                                                  Marketid        => Markets_Array (Place).Marketid);
---                    end if;
+                when Horse_Back_Place_High_To_Low =>
+                  Try_To_Back_Place_High_To_Low(Bettype         => I,
+                                                Br              => Best_Runners,
+                                                Marketid        => Markets_Array (Place).Marketid);
               end case;
 
             when Hound => null;
