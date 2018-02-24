@@ -240,7 +240,11 @@ procedure Poll is
       Bets_Allowed (Main_Bet).Is_Allowed_To_Bet then
       Bot_Messages.Send (Receiver, Pbb);
 
-      Bets_Allowed (Main_Bet).Has_Betted := True;
+      case Main_Bet is
+        when Horse_Back_Place_High_To_Low => null; -- checks in calling proc - may be several bets
+        when Horse_Back_Win_High_To_Low => null;   -- checks in calling proc - may be several bets
+        when others =>  Bets_Allowed (Main_Bet).Has_Betted := True;
+      end case;
 
       Did_Bet (1) := True;
     end if;
