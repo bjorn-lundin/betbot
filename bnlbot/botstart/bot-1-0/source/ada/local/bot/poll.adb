@@ -275,15 +275,28 @@ procedure Poll is
                                          Marketid       : Marketid_Type;
                                          Match_Directly : Boolean := False) is
     use Ada.Strings.Unbounded;
+    Start_Price_S   : String (1 .. 5) := (others => '.');
+    Image           : String := Bettype'Img;
+    Start_Price     : Fixed_Type := 0.0;
   begin
+    --  1         2         3        4
+    --  123456789012345678901234567890123456789
+    --  Horse_Back_Win_High_To_Low_08_40
+
+    Start_Price_S(1) := Image(38);
+    Start_Price_S(2) := Image(39);
+    Start_Price_S(4) := Image(41);
+    Start_Price_S(5) := Image(42);
+
+    Start_Price := Fixed_Type'Value(Start_Price_S);
     -- do we have a case?
     for Gbr of Global_Best_Runners(Win) loop
       for Cbr of Br loop
         if Gbr.Selectionid = Cbr.Selectionid and then
-          Fixed_Type(8.0) <= Gbr.Backprice and then Gbr.Backprice <= Fixed_Type(12.0) and then
+          Start_Price = Gbr.Backprice and then
           Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
           -- make win bet
-          Log ("Try_To_Back_Win_High_To_Low place bet");
+          Log ("Try_To_Back_Win_High_To_Low place bet " & Image);
           Log ("Try_To_Back_Win_High_To_Low start   price " & Gbr.To_String   );
           Log ("Try_To_Back_Win_High_To_Low current price " & Cbr.To_String   );
 
@@ -305,15 +318,29 @@ procedure Poll is
                                           Marketid       : Marketid_Type;
                                           Match_Directly : Boolean := False) is
     use Ada.Strings.Unbounded;
+    Start_Price_S   : String (1 .. 5) := (others => '.');
+    Image           : String := Bettype'Img;
+    Start_Price     : Fixed_Type := 0.0;
   begin
+    --  1         2         3        4
+    --  123456789012345678901234567890123456789
+    --  Horse_Back_Place_High_To_Low_08_40
+
+    Start_Price_S(1) := Image(40);
+    Start_Price_S(2) := Image(41);
+    Start_Price_S(4) := Image(43);
+    Start_Price_S(5) := Image(44);
+
+    Start_Price := Fixed_Type'Value(Start_Price_S);
+
     -- do we have a case?
     for Gbr of Global_Best_Runners(Place) loop  -- not really place odds, but odds for this place stratey. It's really win odds
       for Cbr of Br loop
         if Gbr.Selectionid = Cbr.Selectionid and then
-          Fixed_Type(8.0) <= Gbr.Backprice and then Gbr.Backprice <= Fixed_Type(12.0) and then
+          Start_Price = Gbr.Backprice and then
           Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
           -- make win bet
-          Log ("Try_To_Back_Place_High_To_Low place bet");
+          Log ("Try_To_Back_Place_High_To_Low place bet " & Image);
           Log ("Try_To_Back_Place_High_To_Low start   price " & Gbr.To_String   );
           Log ("Try_To_Back_Place_High_To_Low current price " & Cbr.To_String   );
 
