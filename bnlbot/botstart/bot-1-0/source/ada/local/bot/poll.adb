@@ -241,8 +241,10 @@ procedure Poll is
       Bot_Messages.Send (Receiver, Pbb);
 
       case Main_Bet is
-        when Horse_Back_Place_High_To_Low => null; -- checks in calling proc - may be several bets
-        when Horse_Back_Win_High_To_Low => null;   -- checks in calling proc - may be several bets
+          -- checks in calling proc - may be several bets
+        when Horse_Back_Win_High_To_Low_08_00 .. Horse_Back_Win_High_To_Low_12_00 => null;
+          -- checks in calling proc - may be several bets
+        when Horse_Back_Place_High_To_Low_08_00 .. Horse_Back_Place_High_To_Low_12_00  => null;
         when others =>  Bets_Allowed (Main_Bet).Has_Betted := True;
       end case;
 
@@ -779,12 +781,12 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Back_Win_High_To_Low =>
+                when Horse_Back_Win_High_To_Low_08_00 .. Horse_Back_Win_High_To_Low_12_00 =>
                   Try_To_Back_Win_High_To_Low(Bettype         => I,
                                               Br              => Best_Runners,
                                               Marketid        => Markets_Array (Win).Marketid);
 
-                when Horse_Back_Place_High_To_Low =>
+                when Horse_Back_Place_High_To_Low_08_00 .. Horse_Back_Place_High_To_Low_12_00 =>
                   Try_To_Back_Place_High_To_Low(Bettype         => I,
                                                 Br              => Best_Runners,
                                                 Marketid        => Markets_Array (Place).Marketid);
