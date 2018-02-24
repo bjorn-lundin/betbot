@@ -11,8 +11,38 @@ package Config is
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Lay_1_05_10_1_2_Win_3_40,
                     Horse_Lay_1_05_10_1_2_Win_3_50,
-                    Horse_Back_Win_High_To_Low,
-                    Horse_Back_Place_High_To_Low
+
+                    Horse_Back_Win_High_To_Low_08_00,
+                    Horse_Back_Win_High_To_Low_08_20,
+                    Horse_Back_Win_High_To_Low_08_40,
+                    Horse_Back_Win_High_To_Low_08_60,
+                    Horse_Back_Win_High_To_Low_08_80,
+                    Horse_Back_Win_High_To_Low_09_00,
+                    Horse_Back_Win_High_To_Low_09_20,
+                    Horse_Back_Win_High_To_Low_09_40,
+                    Horse_Back_Win_High_To_Low_09_60,
+                    Horse_Back_Win_High_To_Low_09_80,
+                    Horse_Back_Win_High_To_Low_10_00,
+                    Horse_Back_Win_High_To_Low_10_50,
+                    Horse_Back_Win_High_To_Low_11_00,
+                    Horse_Back_Win_High_To_Low_11_50,
+                    Horse_Back_Win_High_To_Low_12_00,
+
+                    Horse_Back_Place_High_To_Low_08_00,
+                    Horse_Back_Place_High_To_Low_08_20,
+                    Horse_Back_Place_High_To_Low_08_40,
+                    Horse_Back_Place_High_To_Low_08_60,
+                    Horse_Back_Place_High_To_Low_08_80,
+                    Horse_Back_Place_High_To_Low_09_00,
+                    Horse_Back_Place_High_To_Low_09_20,
+                    Horse_Back_Place_High_To_Low_09_40,
+                    Horse_Back_Place_High_To_Low_09_60,
+                    Horse_Back_Place_High_To_Low_09_80,
+                    Horse_Back_Place_High_To_Low_10_00,
+                    Horse_Back_Place_High_To_Low_10_50,
+                    Horse_Back_Place_High_To_Low_11_00,
+                    Horse_Back_Place_High_To_Low_11_50,
+                    Horse_Back_Place_High_To_Low_12_00
                    );
 
 
