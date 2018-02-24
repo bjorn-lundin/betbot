@@ -51,37 +51,6 @@ procedure Lay_All_Watch_Back is
   B_Place : aliased Boolean := False;
   B_Nolay : aliased Boolean := False;
 
-  -----------------------------------------------------------------
-  procedure Check_Bet ( R : in Runners.Runner_Type;
-                        B : in out Bets.Bet_Type) is
-  begin
-    if B.Status(1) = 'M' then
-      if B.Side(1..4) = "BACK" then
-        if R.Status(1..6) = "WINNER" then
-          B.Betwon := True;
-          B.Profit := B.Size * (B.Price - Bets.Commission);
-        elsif R.Status(1..5) = "LOSER" then
-          B.Betwon := False;
-          B.Profit := -B.Size;
-        elsif R.Status(1..7) = "REMOVED" then
-          B.Status(1) := 'R';
-          B.Betwon := True;
-        end if;
-      elsif B.Side(1..3) = "LAY" then
-        if R.Status(1..6) = "WINNER" then
-          B.Betwon := False;
-          B.Profit := -B.Size * (B.Price - Bets.Commission);
-        elsif R.Status(1..5) = "LOSER" then
-          B.Profit := B.Size;
-          B.Betwon := True;
-        elsif R.Status(1..7) = "REMOVED" then
-          B.Status(1) := 'R';
-          B.Betwon := True;
-        end if;
-      end if;
-      B.Insert;
-    end if;
-  end Check_Bet;
 
   -----------------------------------------------------------------
 
@@ -210,7 +179,8 @@ procedure Lay_All_Watch_Back is
                       Bet_Placed       => Price_Data.Pricets,
                       Bet              => Bet.Laybet ) ;
         Move("M",Bet.Laybet.Status);
-        Check_Bet(Win_Runner, Bet.Laybet);
+        Bet.Laybet.Check_Outcome(Win_Runner);
+        Bet.Laybet.Insert;
       end if;
 
       if Tic_Lay - Delta_Tics < Integer(1) then
@@ -258,7 +228,8 @@ procedure Lay_All_Watch_Back is
                             Bet_Placed       => Match_Time,
                             Bet              => Bet.Backbet ) ;
               Move("M",Bet.Backbet.Status);
-              Check_Bet(Win_Runner, Bet.Backbet);
+              Bet.Backbet.Check_Outcome(Win_Runner);
+              Bet.Backbet.Insert;
               exit Race;
 
             end if;
@@ -289,7 +260,8 @@ procedure Lay_All_Watch_Back is
                             Bet_Placed       => Match_Time,
                             Bet              => Bet.Backbet ) ;
               Move("M",Bet.Backbet.Status);
-              Check_Bet(Place_Runner, Bet.Backbet);
+              Bet.Backbet.Check_Outcome(Place_Runner);
+              Bet.Backbet.Insert;
               exit Race_Plc;
 
             end if;
