@@ -279,14 +279,14 @@ procedure Poll is
     Image           : String := Bettype'Img;
     Start_Price     : Fixed_Type := 0.0;
   begin
-    --  1         2         3        4
+    --  0         1        2         3
     --  123456789012345678901234567890123456789
     --  Horse_Back_Win_High_To_Low_08_40
 
-    Start_Price_S(1) := Image(38);
-    Start_Price_S(2) := Image(39);
-    Start_Price_S(4) := Image(41);
-    Start_Price_S(5) := Image(42);
+    Start_Price_S(1) := Image(28);
+    Start_Price_S(2) := Image(29);
+    Start_Price_S(4) := Image(31);
+    Start_Price_S(5) := Image(32);
 
     Start_Price := Fixed_Type'Value(Start_Price_S);
     -- do we have a case?
@@ -322,14 +322,14 @@ procedure Poll is
     Image           : String := Bettype'Img;
     Start_Price     : Fixed_Type := 0.0;
   begin
-    --  1         2         3        4
+    --  0        1         2         3
     --  123456789012345678901234567890123456789
     --  Horse_Back_Place_High_To_Low_08_40
 
-    Start_Price_S(1) := Image(40);
-    Start_Price_S(2) := Image(41);
-    Start_Price_S(4) := Image(43);
-    Start_Price_S(5) := Image(44);
+    Start_Price_S(1) := Image(30);
+    Start_Price_S(2) := Image(31);
+    Start_Price_S(4) := Image(33);
+    Start_Price_S(5) := Image(34);
 
     Start_Price := Fixed_Type'Value(Start_Price_S);
 
