@@ -6,6 +6,7 @@ with Ada.Containers.Doubly_Linked_Lists;
 with Runners;
 with Markets;
 with Sql;
+
 package Bets is
   function Profit_Today(Bet_Name : Betname_Type) return Fixed_Type ;
   function Exists(Bet_Name : Betname_Type; Market_Id : Marketid_Type) return Boolean;
@@ -23,7 +24,6 @@ package Bets is
                   Market : Markets.Market_Type) return Bet_Type;
 
   procedure Check_Matched(Self : in out Bet_Type);
-  procedure Check_Outcome(Self : in out Bet_Type);
   procedure Clear(Self : in out Bet_Type);
 
   procedure Match_Directly(Self : in out Bet_Type; Value : Boolean );
@@ -34,6 +34,9 @@ package Bets is
   procedure Update_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : Boolean := False);
   procedure Insert_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : in Boolean := False);
   function Is_Existing_Marketid_Selectionid(Self : in out Bet_Type) return Boolean ;
+
+  procedure Check_Outcome ( Self   : in out Bet_Type ;
+                            Runner : in     Runners.Runner_Type := Runners.Empty_Data) ;
 
   function Empty_Data return Bet_Type;
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);

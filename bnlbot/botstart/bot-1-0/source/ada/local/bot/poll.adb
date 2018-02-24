@@ -26,6 +26,7 @@ with Bot_Svn_Info;
 with Bets;
 with Config;
 with Utils; use Utils;
+with Ada.Strings.Unbounded;
 --with Tics;
 
 procedure Poll is
@@ -267,6 +268,7 @@ procedure Poll is
                                          Br             : Best_Runners_Array_Type;
                                          Marketid       : Marketid_Type;
                                          Match_Directly : Boolean := False) is
+    use Ada.Strings.Unbounded;
   begin
     -- do we have a case?
     for Gbr of Global_Best_Runners(Win) loop
@@ -283,6 +285,7 @@ procedure Poll is
                          Main_Bet        => Bettype,
                          Marketid        => Marketid,
                          Min_Price       => Back_Price_Type(Cbr.Backprice), --Back_Price_Type'Value ("1.01"),
+                         -- later, when active Min_Price       => Back_Price_Type'Value (To_String(Cfg.Bet(Bettype).Min_Price)),
                          Match_Directly  => Match_Directly);
           -- Reset the global runner not to bet again on it
           Gbr := Prices.Empty_Data;
@@ -295,6 +298,7 @@ procedure Poll is
                                           Br             : Best_Runners_Array_Type;
                                           Marketid       : Marketid_Type;
                                           Match_Directly : Boolean := False) is
+    use Ada.Strings.Unbounded;
   begin
     -- do we have a case?
     for Gbr of Global_Best_Runners(Place) loop  -- not really place odds, but odds for this place stratey. It's really win odds
@@ -310,7 +314,7 @@ procedure Poll is
           Send_Back_Bet (Selectionid     => Cbr.Selectionid,
                          Main_Bet        => Bettype,
                          Marketid        => Marketid,
-                         Min_Price       => Back_Price_Type'Value ("1.01"),
+                         Min_Price       => Back_Price_Type'Value (To_String(Cfg.Bet(Bettype).Min_Price)),
                          Match_Directly  => Match_Directly);
           -- Reset the global runner not to bet again on it
           Gbr := Prices.Empty_Data;

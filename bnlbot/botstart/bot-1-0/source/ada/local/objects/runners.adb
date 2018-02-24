@@ -13,12 +13,12 @@ package body Runners is
     Old_List :Table_Arunners.Arunners_List_Pack2.List;
     New_Data : Runner_Type;
   begin
-    Table_Arunners.Read_List(Stm, Old_List, Max);  
+    Table_Arunners.Read_List(Stm, Old_List, Max);
     for i of Old_List loop
       New_Data := (
           Marketid           => i.Marketid,
           Selectionid        => i.Selectionid,
-          Sortprio           => I.Sortprio,  
+          Sortprio           => I.Sortprio,
           Status             => i.Status,
           Handicap           => i.Handicap,
           Runnername         => i.Runnername,
@@ -26,11 +26,10 @@ package body Runners is
           Runnernamenum      => i.Runnernamenum,
           Ixxlupd            => i.Ixxlupd,
           Ixxluts            => i.Ixxluts
-      );             
+      );
       List.Append(New_Data);
     end loop;
-  end Read_List;  
+  end Read_List;
   ----------------------------------------
 
-  
 end Runners;
