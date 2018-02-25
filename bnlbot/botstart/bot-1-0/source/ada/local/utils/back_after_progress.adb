@@ -192,7 +192,7 @@ procedure Back_After_Progress is
                   Bet(Winner).Check_Outcome(Runner(Winner));
                   Bet(Winner).Insert;
                 end if;
-                exit Race_Win;  -- match directly
+                exit Race_Win;  -- match directly - gets 1 chance only for matching price after the 1s delay is passed
               end if;
             end if;
           end loop Race_Win;
@@ -222,8 +222,8 @@ procedure Back_After_Progress is
                 Move("M",Bet(Place).Status);
                 Bet(Place).Check_Outcome(Runner(Place));
                 Bet(Place).Insert;
+                exit Race_Plc;  -- match directly - one chance only after 1s delay is passed - no special odds is needed
               end if;
-              exit Race_Plc;  -- match directly
             end if;
           end loop Race_Plc;
         end;
