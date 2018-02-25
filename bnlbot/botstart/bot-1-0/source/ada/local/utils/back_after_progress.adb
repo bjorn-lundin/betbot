@@ -42,20 +42,20 @@ procedure Back_After_Progress is
   begin
     if Start_Price < 10.0 then
       if Bet_Price < 10.0 then
-        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+        return "BACK_AFTER_00" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
       elsif Bet_Price < 100.0 then
-        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+        return "BACK_AFTER_00" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
       else
-        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+        return "BACK_AFTER_00" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
       end if;
 
     elsif Start_Price < 100.0 then
       if Bet_Price < 10.0 then
-        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+        return "BACK_AFTER_0" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
       elsif Bet_Price < 100.0 then
-        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+        return "BACK_AFTER_0" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
       else
-        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+        return "BACK_AFTER_0" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
       end if;
 
     elsif Start_Price < 1000.0 then
