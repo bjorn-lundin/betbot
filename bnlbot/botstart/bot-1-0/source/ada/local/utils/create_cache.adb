@@ -67,7 +67,7 @@ begin
 
    if Sa_Animal.all = "horse" then
       Animal := Horse;
-      Db := "dry";
+      Db := "bnl";
    elsif Sa_Animal.all = "hound" then
       Animal := Hound;
       Db := "ghd";
