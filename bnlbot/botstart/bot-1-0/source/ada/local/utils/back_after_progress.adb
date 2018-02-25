@@ -191,8 +191,8 @@ procedure Back_After_Progress is
                   Move("M",Bet(Winner).Status);
                   Bet(Winner).Check_Outcome(Runner(Winner));
                   Bet(Winner).Insert;
-                  exit Race_Win;
                 end if;
+                exit Race_Win;  -- match directly
               end if;
             end if;
           end loop Race_Win;
@@ -222,8 +222,8 @@ procedure Back_After_Progress is
                 Move("M",Bet(Place).Status);
                 Bet(Place).Check_Outcome(Runner(Place));
                 Bet(Place).Insert;
-                exit Race_Plc;
               end if;
+              exit Race_Plc;  -- match directly
             end if;
           end loop Race_Plc;
         end;
