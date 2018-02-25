@@ -48,8 +48,9 @@ project Adabot is
    Stat_Mains   := (
                     "update_back_plc_bets.adb", 
                     "create_cache.adb",
-                    "lay_all_watch_back.adb", 
-                    "bet_at_start.adb"
+                    "back_after_progress.adb"
+                    --"lay_all_watch_back.adb", 
+                    --"bet_at_start.adb",
                     --"lay_back_all.adb", 
                     --"stat_maker.adb",
                     --"sim_back_in_play.adb",                    
