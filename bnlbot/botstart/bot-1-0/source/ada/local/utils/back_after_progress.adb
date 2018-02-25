@@ -37,6 +37,41 @@ procedure Back_After_Progress is
 
   -----------------------------------------------------------------
 
+  function Name(Start_Price, Bet_Price : Fixed_Type) return String is
+
+  begin
+    if Start_Price < 10.0 then
+      if Bet_Price < 10.0 then
+        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+      elsif Bet_Price < 100.0 then
+        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+      else
+        return "BACK_AFTER_00_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+      end if;
+
+    elsif Start_Price < 100.0 then
+      if Bet_Price < 10.0 then
+        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+      elsif Bet_Price < 100.0 then
+        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+      else
+        return "BACK_AFTER_0_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+      end if;
+
+    elsif Start_Price < 1000.0 then
+      if Bet_Price < 10.0 then
+        return "BACK_AFTER_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+      elsif Bet_Price < 100.0 then
+        return "BACK_AFTER_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+      else
+        return "BACK_AFTER_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+      end if;
+    end if;
+
+    return "WTF-BACK_AFTER_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+  end Name;
+
+
   procedure Run(Price_Data : in Prices.Price_Type;
                 Backsize   : in Bet_Size_Type) is
 
@@ -47,16 +82,16 @@ procedure Back_After_Progress is
     History_Exists         : array (Bot_Types.Bet_Market_Type ) of Boolean := (others => False);
     Bet                    : array (Bot_Types.Bet_Market_Type ) of Bets.Bet_Type;
 
-    Tic                    : Integer := 0;
     Back_Bet_Name          : String_Object;
 
     Bn                     : Betname_Type := (others => ' ');
     B_Price                : Fixed_Type := 0.0;
     Found_Place_Market     : Boolean := False;
-    subtype Delta_Tics_Type is Integer range 0 .. 350;
+    Back_Tic               : Tics.Tics_Type := 1;
+    Start_Tic              : Tics.Tics_Type := 1;
+    use type Tics.Tics_Type ;
   begin
     Log(Me & "Run", "start");
-
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market(Winner).Marketid := Price_Data.Marketid;
@@ -114,25 +149,15 @@ procedure Back_After_Progress is
         return;
       end if;
 
-      Tic := Tics.Get_Tic_Index(Price_Data.Backprice);
+       Start_Tic := Tics.Get_Tic_Index(Price_Data.Backprice);
 
-      for Delta_Tics in Delta_Tics_Type'First .. Tic-1 loop
-
-        B_Price := Tics.Get_Tic_Price(Tic - Delta_Tics);
+      for Delta_Tics in Tics.Tics_Type'Range loop
+        Back_Tic := Start_Tic - Delta_Tics;
+        exit when Back_Tic = 1;
+        B_Price := Tics.Get_Tic_Price(Back_Tic);
         --  Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
-        if B_Price < 10.0 then
-          if Price_Data.Backprice < 10.0 then
-            Back_Bet_Name.Set("BACK_AFTER_TICS_0" & F8_Image(Price_Data.Backprice) & "_0" & F8_Image(B_Price));
-          else
-            Back_Bet_Name.Set("BACK_AFTER_TICS_0" & F8_Image(Price_Data.Backprice) & "_" & F8_Image(B_Price));
-          end if;
-        else
-          if Price_Data.Backprice < 10.0 then
-            Back_Bet_Name.Set("BACK_AFTER_TICS_" & F8_Image(Price_Data.Backprice) & "_0" & F8_Image(B_Price));
-          else
-            Back_Bet_Name.Set("BACK_AFTER_TICS_" & F8_Image(Price_Data.Backprice) & "_" & F8_Image(B_Price));
-          end if;
-        end if;
+
+        Back_Bet_Name.Set(Name(Start_Price => Price_Data.Backprice, Bet_Price => B_Price));
 
         declare
           Not_Set    : Calendar2.Time_Type := Calendar2.Time_Type_Last - (1,1,1,1,1);

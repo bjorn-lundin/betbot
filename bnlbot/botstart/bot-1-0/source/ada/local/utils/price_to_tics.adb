@@ -37,7 +37,7 @@ begin
     Tics.Tic_Table;
   else
     if Ba_To_Price then
-      Text_Io.Put_Line(Tics.Get_Tic_Price(I => Integer'Value(Sa_Value.all))'Img);
+      Text_Io.Put_Line(Tics.Get_Tic_Price(I => Tics.Tics_Type'Value(Sa_Value.all))'Img);
     else
       Text_Io.Put_Line(Tics.Get_Tic_Index(Price => Fixed_Type'Value(Sa_Value.all))'Img);
     end if;

@@ -3,7 +3,7 @@ with Text_Io;
 with Utils; use Utils;
 
 package body Tics is
-  Global_Odds_Table : array(1 .. 350) of Fixed_Type := (
+  Global_Odds_Table : array(Tics_Type'Range) of Fixed_Type := (
                        1.01,   1.02,   1.03,   1.04,   1.05,   1.06,   1.07,   1.08,   1.09,
                1.10,   1.11,   1.12,   1.13,   1.14,   1.15,   1.16,   1.17,   1.18,   1.19,
                1.20,   1.21,   1.22,   1.23,   1.24,   1.25,   1.26,   1.27,   1.28,   1.29,
@@ -43,7 +43,7 @@ package body Tics is
 
 
 ------------------------------------------
-  function Get_Tic_Index(Price : Fixed_Type) return Integer is
+  function Get_Tic_Index(Price : Fixed_Type) return Tics_Type is
   begin
     for i in Global_Odds_Table'range loop
       --if abs(Global_Odds_Table(i) - Price) < 0.0001 then
@@ -54,10 +54,8 @@ package body Tics is
     raise Bad_odds with Price'Img;
   end Get_Tic_Index;
 ------------------------------------------
-  function Get_Tic_Price(I : Integer) return Fixed_Type is
+  function Get_Tic_Price(I : Tics_Type) return Fixed_Type is
   begin
-    if i < Integer(  1) then return Global_Odds_Table(  1); end if;
-    if i > Integer(350) then return Global_Odds_Table(350); end if;
     return Global_Odds_Table(I);
   end Get_Tic_Price;
 ------------------------------------------
@@ -102,7 +100,7 @@ package body Tics is
   end Get_Green_Size;
   -------------------------------------------------------
 
-  function Get_Nearest_Higher_Tic_Index(Price : Fixed_Type) return Integer is
+  function Get_Nearest_Higher_Tic_Index(Price : Fixed_Type) return Tics_Type is
   begin
     for i in Global_Odds_Table'range loop
       if Global_Odds_Table(i) >= Price then
