@@ -33,10 +33,7 @@ procedure Back_After_Progress is
   use type Rpc.Result_Type;
   use type Ada.Containers.Count_Type;
 
-  Me              : constant String := "Back_After_Progress.";
-  Sa_Par_Inifile  : aliased Gnat.Strings.String_Access;
-  Cmd_Line        : Command_Line_Configuration;
-  Global_Backsize         : constant Bet_Size_Type := 100.0;
+  Me : constant String := "Back_After_Progress.";
 
   -----------------------------------------------------------------
 
@@ -57,8 +54,6 @@ procedure Back_After_Progress is
     B_Price                : Fixed_Type := 0.0;
     Found_Place_Market     : Boolean := False;
     subtype Delta_Tics_Type is Integer range 0 .. 350;
-
-
   begin
     Log(Me & "Run", "start");
 
@@ -94,7 +89,6 @@ procedure Back_After_Progress is
         Runner(Place).Read(Eos(Place));
         if Eos(Place) then
           Log(Me & "Run", "no place runner found");
-        else
           History_Exists(Place) := False;
         end if;
       end if;
@@ -110,7 +104,6 @@ procedure Back_After_Progress is
       Runner(Winner).Read(Eos(Winner));
       if Eos(Winner) then
         Log(Me & "Run", "no Winner runner found");
-      else
         History_Exists(Winner) := False;
       end if;
     end if;
@@ -159,7 +152,7 @@ procedure Back_After_Progress is
 
               elsif  Race_Data.Pricets >= Match_Time + (0,0,0,1,0) then -- wait 1 sec
                 if Race_Data.Backprice >= B_Price then     -- must be same or better for match
-                  Move("WIN" & Back_Bet_Name.Fix_String,Bn);
+                  Move("WIN_" & Back_Bet_Name.Fix_String,Bn);
                   Sim.Place_Bet(Bet_Name         => Bn,
                                 Market_Id        => Market(Winner).Marketid,
                                 Side             => Back,
@@ -190,7 +183,7 @@ procedure Back_After_Progress is
               if Race_Data.Pricets >= Match_Time + (0,0,0,1,0) then
 
                 -- take first bet we can get
-                Move("PLC" & Back_Bet_Name.Fix_String,Bn);
+                Move("PLC_" & Back_Bet_Name.Fix_String,Bn);
                 Sim.Place_Bet(Bet_Name         => Bn,
                               Market_Id        => Market(Place).Marketid,
                               Side             => Back,
@@ -223,8 +216,10 @@ procedure Back_After_Progress is
   Sa_Min_Backprice : aliased Gnat.Strings.String_Access;
   Sa_Max_Backprice : aliased Gnat.Strings.String_Access;
   Sa_Logfilename   : aliased Gnat.Strings.String_Access;
-  Ia_Min_Tic       : aliased Integer;
-  Ia_Max_Tic       : aliased Integer;
+
+  Sa_Par_Inifile   : aliased Gnat.Strings.String_Access;
+  Cmd_Line         : Command_Line_Configuration;
+  Global_Backsize  : constant Bet_Size_Type := 100.0;
 
   Backprice_High   : Fixed_Type := 0.0;
   Backprice_Low    : Fixed_Type := 0.0;
@@ -242,18 +237,6 @@ begin
      Sa_Max_Backprice'Access,
      Long_Switch => "--max_back=",
      Help        => "Min Backprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Min_Tic'Access,
-     Long_Switch => "--min_tic=",
-     Help        => "min tic");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Max_Tic'Access,
-     Long_Switch => "--max_tic=",
-     Help        => "max tic");
 
   Define_Switch
     (Cmd_Line,
@@ -276,13 +259,9 @@ begin
     raise Constraint_Error with "no max-back-price set";
   elsif Sa_Logfilename.all = "" then
     raise Constraint_Error with "no log file name set";
-  elsif Ia_Min_Tic = 0 then
-    raise Constraint_Error with "no min-tic set";
-  elsif Ia_Max_Tic = 0  then
-    raise Constraint_Error with "no max-tic set";
   end if;
 
-  Log(Ia_Min_Tic'Img & Ia_Max_Tic'Img & " '" & Sa_Min_Backprice.all & "' '" & Sa_Max_Backprice.all & "'");
+  Log(Sa_Min_Backprice.all & "' '" & Sa_Max_Backprice.all & "'");
 
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","back_after_progress");
@@ -330,13 +309,11 @@ begin
     begin
       for Price of Price_List loop -- all runners in race
         if Price.Pricets.Day /= Current_Date.Day then
-          Log(Me, "start Treat date: " & Current_Date.String_Date_Iso );
+          Log(Me, "start treat date: " & Current_Date.String_Date_Iso );
           Current_Date := Price.Pricets;
         end if;
         T.Start;
-        --for Dtg in Delta_Tics_Type'Range loop
-        Run(Price_Data => Price,
-            Backsize   => Global_Backsize);
+        Run(Price_Data => Price, Backsize => Global_Backsize);
         T.Commit;
       end loop;
     end;
