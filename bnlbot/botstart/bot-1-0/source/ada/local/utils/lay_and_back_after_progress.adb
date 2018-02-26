@@ -96,9 +96,13 @@ procedure Lay_And_Back_After_Progress is
     Log(Me & "Run", "start");
 
 
-    if Price_Data.Backprice > Fixed_Type(1.0) and Then
-       Price_Data.Layprice/Price_Data.Backprice > Fixed_Type(1.1) then
+    if Price_Data.Backprice > Fixed_Type(1.0) and then
+      Price_Data.Layprice/Price_Data.Backprice > Fixed_Type(1.1) then
       Log(Me & "Run", "diff > 10% " & Price_Data.To_String);
+      return;
+    elsif Price_Data.Backprice < Fixed_Type(1.0) then
+      return;
+    elsif Price_Data.Layprice < Fixed_Type(1.0) then
       return;
     end if;
 
@@ -190,22 +194,31 @@ procedure Lay_And_Back_After_Progress is
             Pd_Lay.Marketid := Market(Place).Marketid;
             Pd_Lay.Selectionid := Price_Data.Selectionid;
             Pd_Lay.Read(Eos);
-            Backsize := Laysize * Bet_Size_Type(Price_Data.Layprice/B_Price);
-            if not Eos then
-              Move("PLC_" & Bet_Name.Fix_String,Bn);
-              Sim.Place_Bet(Bet_Name         => Bn,
-                            Market_Id        => Market(Place).Marketid,
-                            Side             => Lay,
-                            Runner_Name      => Runner(Place).Runnernamestripped,
-                            Selection_Id     => Pd_Lay.Selectionid,
-                            Size             => Laysize,
-                            Price            => Bet_Price_Type(Pd_Lay.Layprice),
-                            Bet_Persistence  => Persist,
-                            Bet_Placed       => Market(Place).Startts,
-                            Bet              => Laybet(Place) ) ;
-              Move("M",Laybet(Place).Status);
-              Laybet(Place).Check_Outcome(Runner(Place));
-              Laybet(Place).Insert;
+            if Pd_Lay.Backprice > Fixed_Type(1.0) and then
+              Pd_Lay.Layprice/Pd_Lay.Backprice > Fixed_Type(1.1) then
+              History_Exists(Place) := False;
+            elsif Pd_Lay.Backprice < Fixed_Type(1.0) then
+              History_Exists(Place) := False;
+            elsif Pd_Lay.Layprice < Fixed_Type(1.0) then
+              History_Exists(Place) := False;
+            else
+              Backsize := Laysize * Bet_Size_Type(Pd_Lay.Layprice/B_Price);
+              if not Eos then
+                Move("PLC_" & Bet_Name.Fix_String,Bn);
+                Sim.Place_Bet(Bet_Name         => Bn,
+                              Market_Id        => Market(Place).Marketid,
+                              Side             => Lay,
+                              Runner_Name      => Runner(Place).Runnernamestripped,
+                              Selection_Id     => Pd_Lay.Selectionid,
+                              Size             => Laysize,
+                              Price            => Bet_Price_Type(Pd_Lay.Layprice),
+                              Bet_Persistence  => Persist,
+                              Bet_Placed       => Market(Place).Startts,
+                              Bet              => Laybet(Place) ) ;
+                Move("M",Laybet(Place).Status);
+                Laybet(Place).Check_Outcome(Runner(Place));
+                Laybet(Place).Insert;
+              end if;
             end if;
           end;
         end if;
