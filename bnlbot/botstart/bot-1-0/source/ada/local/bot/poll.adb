@@ -242,10 +242,10 @@ procedure Poll is
 
       case Main_Bet is
           -- checks in calling proc - may be several bets
-        when Horse_Back_Win_High_To_Low_08_00 .. Horse_Back_Win_High_To_Low_12_00 => null;
+        when Horse_Back_Win_High_To_Low_08_00_03_00 .. Horse_Back_Win_High_To_Low_21_00_13_00 => null;
           -- checks in calling proc - may be several bets
-        when Horse_Back_Place_High_To_Low_08_00 .. Horse_Back_Place_High_To_Low_12_00  => null;
-        when others =>  Bets_Allowed (Main_Bet).Has_Betted := True;
+        when Horse_Back_Place_High_To_Low_03_40_03_00 .. Horse_Back_Place_High_To_Low_12_00_03_00 => null;
+        when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
       Did_Bet (1) := True;
@@ -276,25 +276,34 @@ procedure Poll is
                                          Match_Directly : Boolean := False) is
     use Ada.Strings.Unbounded;
     Start_Price_S   : String (1 .. 5) := (others => '.');
+    Bet_Price_S     : String (1 .. 5) := (others => '.');
     Image           : String := Bettype'Img;
     Start_Price     : Fixed_Type := 0.0;
+    Bet_Price       : Fixed_Type := 0.0;
   begin
     --  0         1        2         3
     --  123456789012345678901234567890123456789
-    --  Horse_Back_Win_High_To_Low_08_40
+    --  Horse_Back_Win_High_To_Low_08_40_03_00
 
     Start_Price_S(1) := Image(28);
     Start_Price_S(2) := Image(29);
     Start_Price_S(4) := Image(31);
     Start_Price_S(5) := Image(32);
-
     Start_Price := Fixed_Type'Value(Start_Price_S);
+
+    Bet_Price_S(1) := Image(34);
+    Bet_Price_S(2) := Image(35);
+    Bet_Price_S(4) := Image(37);
+    Bet_Price_S(5) := Image(38);
+    Bet_Price := Fixed_Type'Value(Bet_Price_S);
+
+
     -- do we have a case?
     for Gbr of Global_Best_Runners(Win) loop
       for Cbr of Br loop
         if Gbr.Selectionid = Cbr.Selectionid and then
           Start_Price = Gbr.Backprice and then
-          Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
+          Cbr.Backprice <= Bet_Price then -- made a nice run
           -- make win bet
           Log ("Try_To_Back_Win_High_To_Low place bet " & Image);
           Log ("Try_To_Back_Win_High_To_Low start   price " & Gbr.To_String   );
@@ -319,26 +328,33 @@ procedure Poll is
                                           Match_Directly : Boolean := False) is
     use Ada.Strings.Unbounded;
     Start_Price_S   : String (1 .. 5) := (others => '.');
+    Bet_Price_S     : String (1 .. 5) := (others => '.');
     Image           : String := Bettype'Img;
     Start_Price     : Fixed_Type := 0.0;
+    Bet_Price       : Fixed_Type := 0.0;
   begin
-    --  0        1         2         3
-    --  123456789012345678901234567890123456789
-    --  Horse_Back_Place_High_To_Low_08_40
+    --  0        1         2         3         4
+    --  1234567890123456789012345678901234567890
+    --  Horse_Back_Place_High_To_Low_08_40_03_00
 
     Start_Price_S(1) := Image(30);
     Start_Price_S(2) := Image(31);
     Start_Price_S(4) := Image(33);
     Start_Price_S(5) := Image(34);
-
     Start_Price := Fixed_Type'Value(Start_Price_S);
+
+    Bet_Price_S(1) := Image(36);
+    Bet_Price_S(2) := Image(37);
+    Bet_Price_S(4) := Image(39);
+    Bet_Price_S(5) := Image(40);
+    Bet_Price := Fixed_Type'Value(Bet_Price_S);
 
     -- do we have a case?
     for Gbr of Global_Best_Runners(Place) loop  -- not really place odds, but odds for this place stratey. It's really win odds
       for Cbr of Br loop
         if Gbr.Selectionid = Cbr.Selectionid and then
           Start_Price = Gbr.Backprice and then
-          Cbr.Backprice <= Fixed_Type(3.0) then -- made a nice run
+          Cbr.Backprice <= Bet_Price then -- made a nice run
           -- make win bet
           Log ("Try_To_Back_Place_High_To_Low place bet " & Image);
           Log ("Try_To_Back_Place_High_To_Low start   price " & Gbr.To_String   );
@@ -808,15 +824,17 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Back_Win_High_To_Low_08_00 .. Horse_Back_Win_High_To_Low_12_00 =>
+                when Horse_Back_Win_High_To_Low_08_00_03_00 .. Horse_Back_Win_High_To_Low_21_00_13_00 =>
                   Try_To_Back_Win_High_To_Low(Bettype         => I,
                                               Br              => Best_Runners,
-                                              Marketid        => Markets_Array (Win).Marketid);
+                                              Marketid        => Markets_Array (Win).Marketid,
+                                              Match_Directly  => True);
 
-                when Horse_Back_Place_High_To_Low_08_00 .. Horse_Back_Place_High_To_Low_12_00 =>
+                when Horse_Back_Place_High_To_Low_03_40_03_00 .. Horse_Back_Place_High_To_Low_12_00_03_00 =>
                   Try_To_Back_Place_High_To_Low(Bettype         => I,
                                                 Br              => Best_Runners,
-                                                Marketid        => Markets_Array (Place).Marketid);
+                                                Marketid        => Markets_Array (Place).Marketid,
+                                                Match_Directly  => True);
               end case;
 
             when Hound => null;
