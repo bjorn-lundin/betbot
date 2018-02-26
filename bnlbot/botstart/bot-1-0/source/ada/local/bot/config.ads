@@ -12,37 +12,41 @@ package Config is
                     Horse_Lay_1_05_10_1_2_Win_3_40,
                     Horse_Lay_1_05_10_1_2_Win_3_50,
 
-                    Horse_Back_Win_High_To_Low_08_00,
-                    Horse_Back_Win_High_To_Low_08_20,
-                    Horse_Back_Win_High_To_Low_08_40,
-                    Horse_Back_Win_High_To_Low_08_60,
-                    Horse_Back_Win_High_To_Low_08_80,
-                    Horse_Back_Win_High_To_Low_09_00,
-                    Horse_Back_Win_High_To_Low_09_20,
-                    Horse_Back_Win_High_To_Low_09_40,
-                    Horse_Back_Win_High_To_Low_09_60,
-                    Horse_Back_Win_High_To_Low_09_80,
-                    Horse_Back_Win_High_To_Low_10_00,
-                    Horse_Back_Win_High_To_Low_10_50,
-                    Horse_Back_Win_High_To_Low_11_00,
-                    Horse_Back_Win_High_To_Low_11_50,
-                    Horse_Back_Win_High_To_Low_12_00,
+                    Horse_Back_Win_High_To_Low_08_00_03_00,
+                    Horse_Back_Win_High_To_Low_08_20_03_00,
+                    Horse_Back_Win_High_To_Low_08_40_03_00,
+                    Horse_Back_Win_High_To_Low_08_60_03_00,
+                    Horse_Back_Win_High_To_Low_08_80_03_00,
+                    Horse_Back_Win_High_To_Low_09_00_03_00,
+                    Horse_Back_Win_High_To_Low_09_20_03_00,
+                    Horse_Back_Win_High_To_Low_09_40_03_00,
+                    Horse_Back_Win_High_To_Low_09_60_03_00,
+                    Horse_Back_Win_High_To_Low_09_80_03_00,
+                    Horse_Back_Win_High_To_Low_10_00_03_00,
+                    Horse_Back_Win_High_To_Low_10_50_03_00,
+                    Horse_Back_Win_High_To_Low_11_00_03_00,
+                    Horse_Back_Win_High_To_Low_11_50_03_00,
+                    Horse_Back_Win_High_To_Low_12_00_03_00,
+                    Horse_Back_Win_High_To_Low_20_00_13_50,
+                    Horse_Back_Win_High_To_Low_21_00_13_00,
 
-                    Horse_Back_Place_High_To_Low_08_00,
-                    Horse_Back_Place_High_To_Low_08_20,
-                    Horse_Back_Place_High_To_Low_08_40,
-                    Horse_Back_Place_High_To_Low_08_60,
-                    Horse_Back_Place_High_To_Low_08_80,
-                    Horse_Back_Place_High_To_Low_09_00,
-                    Horse_Back_Place_High_To_Low_09_20,
-                    Horse_Back_Place_High_To_Low_09_40,
-                    Horse_Back_Place_High_To_Low_09_60,
-                    Horse_Back_Place_High_To_Low_09_80,
-                    Horse_Back_Place_High_To_Low_10_00,
-                    Horse_Back_Place_High_To_Low_10_50,
-                    Horse_Back_Place_High_To_Low_11_00,
-                    Horse_Back_Place_High_To_Low_11_50,
-                    Horse_Back_Place_High_To_Low_12_00
+                    Horse_Back_Place_High_To_Low_03_40_03_00,
+                    Horse_Back_Place_High_To_Low_08_00_03_00,
+                    Horse_Back_Place_High_To_Low_08_20_03_00,
+                    Horse_Back_Place_High_To_Low_08_40_03_00,
+                    Horse_Back_Place_High_To_Low_08_60_03_00,
+                    Horse_Back_Place_High_To_Low_08_80_03_00,
+                    Horse_Back_Place_High_To_Low_09_00_03_00,
+                    Horse_Back_Place_High_To_Low_09_20_03_00,
+                    Horse_Back_Place_High_To_Low_09_40_03_00,
+                    Horse_Back_Place_High_To_Low_09_60_03_00,
+                    Horse_Back_Place_High_To_Low_09_80_03_00,
+                    Horse_Back_Place_High_To_Low_10_00_03_00,
+                    Horse_Back_Place_High_To_Low_10_50_02_12,
+                    Horse_Back_Place_High_To_Low_10_50_03_00,
+                    Horse_Back_Place_High_To_Low_11_00_03_00,
+                    Horse_Back_Place_High_To_Low_11_50_03_00,
+                    Horse_Back_Place_High_To_Low_12_00_03_00
                    );
 
 
@@ -51,7 +55,7 @@ package Config is
   type Bet_Config_Type is tagged record
     Size                       : Bet_Size_Type    := 30.0;
     Max_Loss_Per_Day           : Fixed_Type       := -200.0;
-    Max_Earnings_Per_Day       : Fixed_Type       :=  200.0;
+    Max_Earnings_Per_Day       : Fixed_Type       := 999_999.0;
     Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
   end record;
