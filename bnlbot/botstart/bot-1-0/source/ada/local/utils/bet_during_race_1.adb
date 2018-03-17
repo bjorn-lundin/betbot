@@ -74,10 +74,10 @@ procedure Bet_During_Race_1 is
   function Price_Is_Ok(Price : Price_Histories.Price_History_Type) return Boolean is
   begin
     return
-        Price.Backprice  > Fixed_Type(1.0)    and then -- must be valid
-        Price.Layprice   > Fixed_Type(1.0)    and then -- must be valid
-        Price.Backprice  < Fixed_Type(1000.1) and then -- must be valid
-        Price.Layprice   < Fixed_Type(1000.1) ;     -- must be valid
+      Price.Backprice  > Fixed_Type(1.0)    and then -- must be valid
+      Price.Layprice   > Fixed_Type(1.0)    and then -- must be valid
+      Price.Backprice  < Fixed_Type(1000.1) and then -- must be valid
+      Price.Layprice   < Fixed_Type(1000.1) ;     -- must be valid
   end Price_Is_Ok;
 
   -----------------------------------------------------------------
@@ -159,7 +159,7 @@ procedure Bet_During_Race_1 is
         return;
       end if;
 
-      Tic_Loop : for Bet_Tic in Betting_Limit_Type'Range loop
+      Tic_Loop  : for Bet_Tic in Betting_Limit_Type'Range loop
         Bet_Price := Tics.Get_Tic_Price(Bet_Tic);
         --  Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/Bet_Price);
 
@@ -173,6 +173,9 @@ procedure Bet_During_Race_1 is
           Side_Loop_Winner : for Bet_Side in Bet_Side_Type loop
             Match_Time(Back) := Not_Set;
             Match_Time(Lay) := Not_Set;
+            Bet(Winner,Bet_Side) := Bets.Empty_Data;
+            Bet_State := Running;
+
             Race_Win : for Race_Data of Price_During_Race_List(Winner) loop
               if Price_Is_Ok(Race_Data) then
 
@@ -182,14 +185,14 @@ procedure Bet_During_Race_1 is
                       when Back =>
                         -- must come from a higher odds
                         if Race_Data.Pricets >= Price_Data.Pricets and then
-                           Race_Data.Backprice >= Bet_Price then
+                          Race_Data.Backprice >= Bet_Price then
                           Bet_State := Bet_Candidate;
                         end if;
 
                       when Lay =>
                         -- must come from a lower odds
                         if Race_Data.Pricets >= Price_Data.Pricets and then
-                           Race_Data.Backprice >= Bet_Price then
+                          Race_Data.Backprice >= Bet_Price then
                           Bet_State := Bet_Candidate;
                         end if;
                     end case;
@@ -250,10 +253,10 @@ procedure Bet_During_Race_1 is
                     end case;
 
                   when Bet_Matched =>
-                        Bet(Winner,Bet_Side).Check_Outcome(Runner(Winner));
-                        Log("insert Winner/" & Bet_Side'Img & " " & Bet(Winner,Bet_Side).To_String);
-                        Bet(Winner,Bet_Side).Insert;
-                        exit Race_Win; -- match directly
+                    Bet(Winner,Bet_Side).Check_Outcome(Runner(Winner));
+                    Log("insert Winner/" & Bet_Side'Img & " " & Bet(Winner,Bet_Side).To_String);
+                    Bet(Winner,Bet_Side).Insert;
+                    exit Race_Win; -- match directly
 
                 end case;
               end if;  -- price is ok
@@ -261,83 +264,83 @@ procedure Bet_During_Race_1 is
           end loop Side_Loop_Winner;
 
           Bet_State := Running;
-            Side_Loop_Plc : for Bet_Side in Bet_Side_Type loop
+          Side_Loop_Plc : for Bet_Side in Bet_Side_Type loop
+            Bet(Place,Bet_Side) := Bets.Empty_Data;
+            Race_Plc : for Race_Data of Price_During_Race_List(Place) loop
+              exit Race_Plc when not History_Exists(Place);
 
-              Race_Plc : for Race_Data of Price_During_Race_List(Place) loop
-                exit Race_Plc when not History_Exists(Place);
+              if Price_Is_Ok(Race_Data)  then     -- must be valid
 
-                if Price_Is_Ok(Race_Data)  then     -- must be valid
+                case Bet_State is
+                  when Running =>
+                    Bet_State := Bet_Candidate;
 
-                  case Bet_State is
-                    when Running =>
-                      Bet_State := Bet_Candidate;
+                  when Bet_Candidate => -- must be after WIN bets
+                    case Bet_Side is
+                      when Back => -- use whatever price we get
+                        if Race_Data.Pricets >= Match_Time(Back) then
+                          Move("PLC_" & Back_Bet_Name.Fix_String,Bn);
+                          Sim.Place_Bet(Bet_Name         => Bn,
+                                        Market_Id        => Market(Place).Marketid,
+                                        Side             => Bet_Side,
+                                        Runner_Name      => Runner(Place).Runnernamestripped,
+                                        Selection_Id     => Price_Data.Selectionid,
+                                        Size             => Backsize,
+                                        Price            => Bet_Price_Type(Race_Data.Backprice),
+                                        Bet_Persistence  => Persist,
+                                        Bet_Placed       => Race_Data.Pricets,
+                                        Bet              => Bet(Place,Bet_Side) ) ;
+                          -- Match_Time := Race_Data.Pricets; -- update to reflect new bet time
+                          Bet_State := Bet_Placed;
+                        end if;
 
-                    when Bet_Candidate => -- must be after WIN bets
-                      case Bet_Side is
-                        when Back => -- use whatever price we get
-                          if Race_Data.Pricets >= Match_Time(Back) then
-                            Move("PLC_" & Back_Bet_Name.Fix_String,Bn);
-                            Sim.Place_Bet(Bet_Name         => Bn,
-                                          Market_Id        => Market(Place).Marketid,
-                                          Side             => Bet_Side,
-                                          Runner_Name      => Runner(Place).Runnernamestripped,
-                                          Selection_Id     => Price_Data.Selectionid,
-                                          Size             => Backsize,
-                                          Price            => Bet_Price_Type(Race_Data.Backprice),
-                                          Bet_Persistence  => Persist,
-                                          Bet_Placed       => Race_Data.Pricets,
-                                          Bet              => Bet(Place,Bet_Side) ) ;
-                            -- Match_Time := Race_Data.Pricets; -- update to reflect new bet time
-                            Bet_State := Bet_Placed;
-                          end if;
+                      when Lay =>
 
-                        when Lay =>
+                        if Race_Data.Pricets >= Match_Time(Lay) then
+                          Move("PLC_" & Back_Bet_Name.Fix_String,Bn);
+                          Sim.Place_Bet(Bet_Name         => Bn,
+                                        Market_Id        => Market(Place).Marketid,
+                                        Side             => Bet_Side,
+                                        Runner_Name      => Runner(Place).Runnernamestripped,
+                                        Selection_Id     => Price_Data.Selectionid,
+                                        Size             => Laysize,
+                                        Price            => Bet_Price_Type(Race_Data.Layprice),
+                                        Bet_Persistence  => Persist,
+                                        Bet_Placed       => Race_Data.Pricets,
+                                        Bet              => Bet(Place,Bet_Side) ) ;
+                          -- Match_Time := Race_Data.Pricets;
+                          Bet_State := Bet_Placed;
+                        end if;
+                    end case;
 
-                          if Race_Data.Pricets >= Match_Time(Lay) then
-                            Move("PLC_" & Back_Bet_Name.Fix_String,Bn);
-                            Sim.Place_Bet(Bet_Name         => Bn,
-                                          Market_Id        => Market(Place).Marketid,
-                                          Side             => Bet_Side,
-                                          Runner_Name      => Runner(Place).Runnernamestripped,
-                                          Selection_Id     => Price_Data.Selectionid,
-                                          Size             => Laysize,
-                                          Price            => Bet_Price_Type(Race_Data.Layprice),
-                                          Bet_Persistence  => Persist,
-                                          Bet_Placed       => Race_Data.Pricets,
-                                          Bet              => Bet(Place,Bet_Side) ) ;
-                            -- Match_Time := Race_Data.Pricets;
-                            Bet_State := Bet_Placed;
-                          end if;
-                      end case;
+                  when Bet_Placed =>
+                    case Bet_Side is
+                      when Back =>
+                        if Race_Data.Pricets >= Match_Time(Back) + (0,0,0,1,0) and then -- wait 1 sec
+                          Race_Data.Backprice >= Bet_Price then     -- must be same or higher for match
+                          Move("M",Bet(Place,Bet_Side).Status);
+                          Bet_State := Bet_Matched;
+                        end if;
+                      when Lay =>
+                        if Race_Data.Pricets >= Match_Time(Lay) + (0,0,0,1,0) and then -- wait 1 sec
+                          Race_Data.Backprice <= Bet_Price then     -- must be same or lower for match
+                          Move("M",Bet(Place,Bet_Side).Status);
+                          Bet_State := Bet_Matched;
+                        end if;
+                    end case;
 
-                    when Bet_Placed =>
-                      case Bet_Side is
-                        when Back =>
-                          if Race_Data.Pricets >= Match_Time(Back) + (0,0,0,1,0) and then -- wait 1 sec
-                            Race_Data.Backprice >= Bet_Price then     -- must be same or higher for match
-                            Move("M",Bet(Place,Bet_Side).Status);
-                            Bet_State := Bet_Matched;
-                          end if;
-                        when Lay =>
-                          if Race_Data.Pricets >= Match_Time(Lay) + (0,0,0,1,0) and then -- wait 1 sec
-                            Race_Data.Backprice <= Bet_Price then     -- must be same or lower for match
-                            Move("M",Bet(Place,Bet_Side).Status);
-                            Bet_State := Bet_Matched;
-                          end if;
-                      end case;
+                  when Bet_Matched =>
+                    Bet(Place,Bet_Side).Check_Outcome(Runner(Place));
+                    Log("insert Place/" & Bet_Side'Img & " " & Bet(Place,Bet_Side).To_String);
+                    Bet(Place,Bet_Side).Insert;
+                    exit Race_Plc; -- match directly
 
-                    when Bet_Matched =>
-                      Bet(Place,Bet_Side).Check_Outcome(Runner(Place));
-                      Log("insert Place/" & Bet_Side'Img & " " & Bet(Place,Bet_Side).To_String);
-                      Bet(Place,Bet_Side).Insert;
-                      exit Race_Plc; -- match directly
-
-                  end case;
-                end if;
-              end loop Race_Plc;
-            end loop Side_Loop_Plc;
-          end;
-        end loop Tic_Loop ;
+                end case;
+              end if;
+            end loop Race_Plc;
+          end loop Side_Loop_Plc;
+        end;
+      end loop Tic_Loop ;
 
     else
       Log(Me & "not enough data for runner" & Price_During_Race_List(Winner).Length'Img, Price_Data.To_String);
