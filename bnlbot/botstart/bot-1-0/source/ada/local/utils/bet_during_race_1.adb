@@ -251,6 +251,7 @@ procedure Bet_During_Race_1 is
 
                   when Bet_Matched =>
                         Bet(Winner,Bet_Side).Check_Outcome(Runner(Winner));
+                        Log("insert Winner/" & Bet_Side'Img & " " & Bet(Winner,Bet_Side).To_String);
                         Bet(Winner,Bet_Side).Insert;
                         exit Race_Win; -- match directly
 
@@ -327,6 +328,7 @@ procedure Bet_During_Race_1 is
 
                     when Bet_Matched =>
                       Bet(Place,Bet_Side).Check_Outcome(Runner(Place));
+                      Log("insert Place/" & Bet_Side'Img & " " & Bet(Place,Bet_Side).To_String);
                       Bet(Place,Bet_Side).Insert;
                       exit Race_Plc; -- match directly
 
@@ -342,10 +344,10 @@ procedure Bet_During_Race_1 is
     end if;
   exception
     when Sql.Duplicate_Index =>
-      Log(Bet(Winner,Back).To_String);
-      Log(Bet(Winner,Lay).To_String);
-      Log(Bet(Place,Back).To_String);
-      Log(Bet(Place,Lay).To_String);
+      Log("Winner/Back " & Bet(Winner,Back).To_String);
+      Log("Winner/Lay  " & Bet(Winner,Lay).To_String);
+      Log("Place /Back " & Bet(Place,Back).To_String);
+      Log("Place /Lay  " & Bet(Place,Lay).To_String);
       raise;
   end Run;
   ---------------------------------------------------------------------
