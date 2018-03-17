@@ -340,6 +340,13 @@ procedure Bet_During_Race_1 is
     else
       Log(Me & "not enough data for runner" & Price_During_Race_List(Winner).Length'Img, Price_Data.To_String);
     end if;
+  exception
+    when Sql.Duplicate_Index =>
+      Log(Bet(Winner,Back).To_String);
+      Log(Bet(Winner,Lay).To_String);
+      Log(Bet(Place,Back).To_String);
+      Log(Bet(Place,Lay).To_String);
+      raise;
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
