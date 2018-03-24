@@ -250,7 +250,7 @@ begin
   Define_Switch
     (Cmd_Line,
      Sa_Min_Layprice'Access,
-     Long_Switch => "--min_layk=",
+     Long_Switch => "--min_lay=",
      Help        => "Min layprice");
 
   Define_Switch
