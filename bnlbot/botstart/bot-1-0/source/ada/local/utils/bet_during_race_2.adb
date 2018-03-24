@@ -94,6 +94,7 @@ procedure Bet_During_Race_2 is
     Match_Time             : array (Bot_Types.Bet_Side_Type ) of Calendar2.Time_Type;
 
     Back_Bet_Name          : String_Object;
+    Ref                    : String_Object;
 
     Bn                     : Betname_Type := (others => ' ');
     Bet_Price              : Fixed_Type := 0.0;
@@ -142,6 +143,7 @@ procedure Bet_During_Race_2 is
         --  Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/Bet_Price);
 
         Back_Bet_Name.Set(Name(Start_Price => Price_Data.Backprice, Bet_Price => Bet_Price));
+        Ref.Set(Back_Bet_Name.Fix_String & "_TICS_" & F8_Image(Fixed_Type(Bet_Tic)));
 
         declare
           type Bet_State_Type is (Started, Laybet_Placed, Backbet_Placed, Backbet_Matched);
@@ -174,6 +176,7 @@ procedure Bet_During_Race_2 is
                   -- placed just before start -> always matched
                   Move("M",Bet(Winner,Lay).Status);
                   Bet(Winner,Lay).Check_Outcome(Runner(Winner));
+                  Move(Ref.Fix_String,Bet(Winner,Lay).Reference);
                   Bet(Winner,Lay).Insert;
                   Bet_State := Laybet_Placed;
 
@@ -204,6 +207,7 @@ procedure Bet_During_Race_2 is
 
                 when Backbet_Matched =>
                   Bet(Winner,Back).Check_Outcome(Runner(Winner));
+                  Move(Ref.Fix_String,Bet(Winner,Back).Reference);
                   Bet(Winner,Back).Insert;
                   exit Race_Win;
 
