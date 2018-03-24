@@ -85,12 +85,13 @@ procedure Bet_During_Race_2 is
                 Backsize   : in Bet_Size_Type;
                 Laysize    : in Bet_Size_Type) is
 
-    Market                 : array (Bot_Types.Bet_Market_Type ) of Markets.Market_Type;
-    Eos                    : array (Bot_Types.Bet_Market_Type ) of Boolean := (others => False);
-    Price_During_Race_List : array (Bot_Types.Bet_Market_Type ) of Price_Histories.Lists.List;
-    Runner                 : array (Bot_Types.Bet_Market_Type ) of Runners.Runner_Type;
-    History_Exists         : array (Bot_Types.Bet_Market_Type ) of Boolean := (others => False);
-    Bet                    : array (Bot_Types.Bet_Market_Type, Bot_Types.Bet_Side_Type ) of Bets.Bet_Type;
+    subtype Sim_Type is Bot_Types.Bet_Market_Type range Winner .. Winner;
+    Market                 : array (Sim_Type ) of Markets.Market_Type;
+    Eos                    : array (Sim_Type ) of Boolean := (others => False);
+    Price_During_Race_List : array (Sim_Type ) of Price_Histories.Lists.List;
+    Runner                 : array (Sim_Type ) of Runners.Runner_Type;
+    History_Exists         : array (Sim_Type ) of Boolean := (others => False);
+    Bet                    : array (Sim_Type, Bot_Types.Bet_Side_Type ) of Bets.Bet_Type;
     Match_Time             : array (Bot_Types.Bet_Side_Type ) of Calendar2.Time_Type;
 
     Back_Bet_Name          : String_Object;
@@ -143,13 +144,14 @@ procedure Bet_During_Race_2 is
         --  Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/Bet_Price);
 
         Back_Bet_Name.Set(Name(Start_Price => Price_Data.Backprice, Bet_Price => Bet_Price));
-        Ref.Set(Back_Bet_Name.Fix_String & "_TICS_" & F8_Image(Fixed_Type(Bet_Tic)));
-
         declare
           type Bet_State_Type is (Started, Laybet_Placed, Backbet_Placed, Backbet_Matched);
           Bet_State  : Bet_State_Type := Started;
           Not_Set    : Calendar2.Time_Type := Calendar2.Time_Type_Last - (1,1,1,1,1);
+          Tmp : String := Back_Bet_Name.Fix_String;
         begin
+          Ref.Set( Tmp(10 .. Tmp'last) & "_TICS_" & F8_Image(Fixed_Type(Bet_Tic)));
+
           Match_Time(Back) := Not_Set;
           Match_Time(Lay) := Not_Set;
           Bet(Winner,Back) := Bets.Empty_Data;
@@ -224,8 +226,6 @@ procedure Bet_During_Race_2 is
     when Sql.Duplicate_Index =>
       Log("Winner/Back " & Bet(Winner,Back).To_String);
       Log("Winner/Lay  " & Bet(Winner,Lay).To_String);
-      Log("Place /Back " & Bet(Place,Back).To_String);
-      Log("Place /Lay  " & Bet(Place,Lay).To_String);
       raise;
   end Run;
   ---------------------------------------------------------------------
