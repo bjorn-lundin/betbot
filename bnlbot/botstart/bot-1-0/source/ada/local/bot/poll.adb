@@ -612,6 +612,23 @@ procedure Poll is
       end;
     end loop;
 
+    --check for total loss today
+      declare
+        Todays_Profit_So_Far : Fixed_Type := 0.0;
+      begin
+        for I in Bets_Allowed'Range loop
+          Todays_Profit_So_Far := Todays_Profit_So_Far + Bets.Profit_Today (Bets_Allowed (I).Bet_Name);
+          if Todays_Profit_So_Far < Cfg.Max_Total_Loss_Per_Day then
+            Log (Me & "Run", "today's profit is  " & F8_Image (Todays_Profit_So_Far));
+            Log (Me & "Run", "we have lost too much today, max total loss is " & F8_Image (Cfg.Max_Total_Loss_Per_Day));
+            Log (Me & "Run", "No more bets today ...");
+            return;
+          end if;
+
+        end loop;
+      end;
+
+
     Market.Read (Eos);
     if not Eos then
       if  Market.Markettype (1 .. 3) /= "WIN"  then
