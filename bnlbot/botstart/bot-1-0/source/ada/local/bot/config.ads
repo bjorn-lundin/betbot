@@ -70,6 +70,7 @@ package Config is
     Allowed_Countries          : Unbounded_String    := Null_Unbounded_String;
     Allowed_Days               : Allowed_Days_Array  := (others => False);
     Bet                        : Bet_Config_Array_Type;
+    Max_Total_Loss_Per_Day     : Fixed_Type          := -800.0;
   end record;
 
   function Create(Filename : String) return Config_Type;

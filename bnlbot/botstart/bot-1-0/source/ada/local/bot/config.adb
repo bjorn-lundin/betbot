@@ -20,6 +20,7 @@ package body Config is
      Cfg.Enabled           := Ini.Get_Value("global","enabled",False);
      Cfg.Allowed_Countries := To_Unbounded_String(Ini.Get_Value("global","countries",""));
      Cfg.Max_Exposure      := Fixed_Type'Value(Ini.Get_Value("global","max_exposure","5000.0")); -- -1.0 -> -100% of size
+     Cfg.Max_Total_Loss_Per_Day := Fixed_Type'Value(Ini.Get_Value("global","max_total_loss_per_day","-800.0"));
 
      for i in Bet_Type'range loop
        Cfg.Bet(i).Size := Bet_Size_Type'Value(Ini.Get_Value(i'Img,"size","1.0"));
@@ -60,7 +61,8 @@ package body Config is
         "<enabled>" & Cfg.Enabled'Img & "</enabled>" &
         "<max_turns_not_started_race>" & Cfg.Max_Turns_Not_Started_Race'Img & "</max_turns_not_started_race>" &
         "<allowed_countries>" & To_String(Cfg.Allowed_Countries) & "</allowed_countries>" &
-        "<max_exposure>" & F8_Image(Cfg.Max_Exposure) & "</max_exposure>" ;
+        "<max_exposure>" & F8_Image(Cfg.Max_Exposure) & "</max_exposure>" &
+        "<max_total_loss_per_day>" & F8_Image(Cfg.Max_Total_Loss_Per_Day) & "</max_total_loss_per_day>" ;
     Part3 : String := "</config>";
     Days : Unbounded_String := Null_Unbounded_String;
     Bets : Unbounded_String := Null_Unbounded_String;
