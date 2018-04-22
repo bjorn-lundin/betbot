@@ -34,6 +34,7 @@ procedure Bet_During_Race_3 is
   use type Ada.Containers.Count_Type;
 
   Me : constant String := "Bet_During_Race_3.";
+  Ba_Check_For_Panic : aliased Boolean := False;
 
   -----------------------------------------------------------------
 
@@ -94,12 +95,15 @@ procedure Bet_During_Race_3 is
     History_Exists         : array (Sim_Type ) of Boolean := (others => False);
     Bet                    : array (Sim_Type, Bot_Types.Bet_Side_Type ) of Bets.Bet_Type;
     Match_Time             : array (Bot_Types.Bet_Side_Type ) of Calendar2.Time_Type;
+    Panicbet               : Bets.Bet_Type;
+    Panicbet_Placed_Ts     : Calendar2.Time_Type;
 
     Back_Bet_Name          : String_Object;
     Ref                    : String_Object;
 
     Bn                     : Betname_Type := (others => ' ');
     Bet_Price              : Fixed_Type := 0.0;
+    Panic_Price            : Fixed_Type := 0.0;
     Back_Tick              : Tics.Tics_Type := 1;
     --Found_Place_Market     : Boolean := False;
     use type Tics.Tics_Type ;
@@ -143,6 +147,7 @@ procedure Bet_During_Race_3 is
         begin
           Back_Tick := Tics.Get_Tic_Index(Price_Data.Backprice);
           Bet_Price := Tics.Get_Tic_Price(Back_Tick - Bet_Tic);
+          Panic_Price := Tics.Get_Tic_Price(Back_Tick - 20);
         exception
           when Constraint_Error =>  exit Tic_Loop;
         end;
@@ -150,14 +155,15 @@ procedure Bet_During_Race_3 is
 
         Back_Bet_Name.Set(Name(Start_Price => Price_Data.Backprice, Bet_Price => Bet_Price));
         declare
-          type Bet_State_Type is (Started, Backbet_Placed, Laybet_Placed, Laybet_Matched);
+          type Bet_State_Type is (Started, Backbet_Placed, Laybet_Placed, Laybet_Matched, Panicbet_Placed);
           Bet_State  : Bet_State_Type := Started;
           Not_Set    : Calendar2.Time_Type := Calendar2.Time_Type_Last - (1,1,1,1,1);
           Tmp        : String := Back_Bet_Name.Fix_String;
         begin
-          Ref.Set( Tmp(10 .. Tmp'last) & "_TICS_" & F8_Image(Fixed_Type(Bet_Tic)));
+          Ref.Set( Tmp(10 .. Tmp'Last) & "_TICS_" & F8_Image(Fixed_Type(Bet_Tic)));
           Match_Time(Back) := Not_Set;
           Match_Time(Lay) := Not_Set;
+          Panicbet_Placed_Ts := Not_Set;
           Bet(Winner,Back) := Bets.Empty_Data;
           Bet(Winner,Lay) := Bets.Empty_Data;
           Move("WIN_" & Back_Bet_Name.Fix_String,Bn);
@@ -175,7 +181,7 @@ procedure Bet_During_Race_3 is
                                 Size             => Backsize,
                                 Price            => Bet_Price_Type(Race_Data.Backprice),
                                 Bet_Persistence  => Persist,
-                                Bet_Placed       => Race_Data.Pricets,
+                                Bet_Placed       => Price_Data.Pricets,
                                 Bet              => Bet(Winner,Back) ) ;
                   Match_Time(Back) := Race_Data.Pricets;
                   -- placed just before start -> always matched
@@ -195,17 +201,34 @@ procedure Bet_During_Race_3 is
                                   Size             => Laysize,
                                   Price            => Bet_Price_Type(Price_Data.Layprice),
                                   Bet_Persistence  => Persist,
-                                  Bet_Placed       => Price_Data.Pricets,
+                                  Bet_Placed       => Race_Data.Pricets,
                                   Bet              => Bet(Winner,Lay) ) ;
                     Match_Time(Lay) := Race_Data.Pricets;
                     Bet_State := Laybet_Placed;
                   end if;
 
                 when Laybet_Placed =>
-                  if Race_Data.Pricets >= Match_Time(Back) + (0,0,0,1,0) and then -- wait 1 sec
-                    Race_Data.Layprice <= Bet_Price then     -- must be same or lower for a lay match
-                    Move("M",Bet(Winner,Lay).Status);
-                    Bet_State := Laybet_Matched;
+                  if Race_Data.Pricets >= Match_Time(Lay) + (0,0,0,1,0) then -- wait 1 sec
+                    if Race_Data.Layprice <= Bet_Price then     -- must be same or lower for a lay match
+                      Move("M",Bet(Winner,Lay).Status);
+                      Bet_State := Laybet_Matched;
+                    elsif Ba_Check_For_Panic and Then
+                          bet_State = Laybet_Placed and then  --check for panic
+                          Race_Data.Backprice >= Panic_Price then
+                      Sim.Place_Bet(Bet_Name         => Bn,
+                                    Market_Id        => Market(Winner).Marketid,
+                                    Side             => Lay,
+                                    Runner_Name      => Runner(Winner).Runnernamestripped,
+                                    Selection_Id     => Price_Data.Selectionid,
+                                    Size             => Laysize,
+                                    Price            => Bet_Price_Type(100.0),
+                                    Bet_Persistence  => Persist,
+                                    Bet_Placed       => Race_Data.Pricets,
+                                    Bet              => Panicbet ) ;
+                      Bet_State := Panicbet_Placed;
+                      Panicbet_Placed_Ts := Race_Data.Pricets;
+
+                    end if;
                   end if;
 
                 when Laybet_Matched =>
@@ -213,6 +236,15 @@ procedure Bet_During_Race_3 is
                   Move(Ref.Fix_String,Bet(Winner,Lay).Reference);
                   Bet(Winner,Lay).Insert;
                   exit Race_Win;
+
+                when Panicbet_Placed =>
+                  if Race_Data.Pricets >= Panicbet_Placed_Ts + (0,0,0,1,0) then -- wait 1 sec
+                    Panicbet.Check_Outcome(Runner(Winner));
+                    Move(Ref.Fix_String,Panicbet.Reference);
+                    Panicbet.Powerdays := 999; -- panic
+                    Panicbet.Insert;
+                    exit Race_Win;
+                  end if;
 
               end case;
             end if;  -- price is ok
@@ -247,7 +279,6 @@ procedure Bet_During_Race_3 is
   Price_Low     : Fixed_Type := 0.0;
 
 begin
-
   Define_Switch
     (Cmd_Line,
      Sa_Min_Price'Access,
@@ -271,6 +302,12 @@ begin
      Sa_Par_Inifile'Access,
      Long_Switch => "--inifile=",
      Help        => "use alternative inifile");
+
+  Define_Switch
+    (Cmd_Line,
+     Ba_Check_For_Panic'Access,
+     Long_Switch => "--panic",
+     Help        => "withdraw if runner semms to loose");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -333,8 +370,6 @@ begin
           Current_Date := Price.Pricets;
         end if;
         T.Start;
-
-
         Run(Price_Data => Price, Backsize => Global_Backsize, Laysize => Global_Laysize);
         T.Commit;
       end loop;
