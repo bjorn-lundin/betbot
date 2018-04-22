@@ -52,6 +52,7 @@ project Adabot is
                     "price_graph_during_race_year_month.adb",
                     "bet_during_race_1.adb",
                     "bet_during_race_2.adb",
+                    "bet_during_race_3.adb",
                     "lay_and_back_after_progress.adb"
                     --"lay_all_watch_back.adb",
                     --"bet_at_start.adb",
