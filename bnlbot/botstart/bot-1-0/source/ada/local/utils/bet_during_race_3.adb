@@ -43,33 +43,33 @@ procedure Bet_During_Race_3 is
   begin
     if Start_Price < 10.0 then
       if Bet_Price < 10.0 then
-        return Prefix & "_00" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+        return Prefix & "_00" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img ;
       elsif Bet_Price < 100.0 then
-        return Prefix & "_00" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+        return Prefix & "_00" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       else
-        return Prefix & "_00" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+        return Prefix & "_00" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       end if;
 
     elsif Start_Price < 100.0 then
       if Bet_Price < 10.0 then
-        return Prefix & "_0" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+        return Prefix & "_0" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       elsif Bet_Price < 100.0 then
-        return Prefix & "_0" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+        return Prefix & "_0" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       else
-        return Prefix & "_0" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+        return Prefix & "_0" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       end if;
 
     elsif Start_Price < 1000.0 then
       if Bet_Price < 10.0 then
-        return Prefix & "_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price);
+        return Prefix & "_" & F8_Image(Start_Price) & "_00" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       elsif Bet_Price < 100.0 then
-        return Prefix & "_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price);
+        return Prefix & "_" & F8_Image(Start_Price) & "_0" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       else
-        return Prefix & "_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+        return Prefix & "_" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
       end if;
     end if;
 
-    return "WTF-" & Prefix & " _" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price);
+    return "WTF-" & Prefix & " _" & F8_Image(Start_Price) & "_" & F8_Image(Bet_Price) & Ba_Check_For_Panic'Img;
   end Name;
   -----------------------------------------------------------------
   function Price_Is_Ok(Price : Price_Histories.Price_History_Type) return Boolean is
