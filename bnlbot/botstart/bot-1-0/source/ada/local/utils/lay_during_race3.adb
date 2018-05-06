@@ -308,7 +308,7 @@ begin
                 begin
                   --Best_Runners := (others => Price_Histories.Empty_Data);
                   --Worst_Runner := Price_Histories.Empty_Data;
-                  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
+                --  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
 
                   Sort_Array(List => List,
                              Bra  => Best_Runners,
