@@ -283,7 +283,7 @@ begin
         Cnt := Cnt + 1;
      --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
         Back_bet_Status := No_Bet_Laid;
-        LAy_bet_Status := No_Bet_Laid;
+        Lay_Bet_Status := No_Bet_Laid;
         -- list of timestamps in this market
         declare
           Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
@@ -304,6 +304,7 @@ begin
                 begin
                   --Best_Runners := (others => Price_Histories.Empty_Data);
                   --Worst_Runner := Price_Histories.Empty_Data;
+                  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
 
                   Sort_Array(List => List,
                              Bra  => Best_Runners,
