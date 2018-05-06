@@ -351,10 +351,6 @@ begin
 
     Log("num bets laid" & Global_Bet_List.Length'Img);
 
-    for Bet of Global_Bet_List loop
-      Bet.Insert;
-    end loop;
-
     Current_Date := Current_Date + One_Day;
     exit when Current_Date = Stop_Date;
 
