@@ -283,7 +283,13 @@ begin
     declare
       Cnt : Integer := 0;
     begin
-      for Market of Sim.Market_With_Data_List loop
+      Market_Loop : for Market of Sim.Market_With_Data_List loop
+        if Market.Markettype(1..3) /= "WIN" then
+          exit Market_Loop;
+        end if;
+
+
+
         Cnt := Cnt + 1;
      --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
         Back_bet_Status := No_Bet_Laid;
@@ -340,7 +346,7 @@ begin
 
           end loop loop_Ts; --  Timestamp
         end;
-      end loop;  -- marketid
+      end loop Market_Loop;
     end;
 
     Log("num bets laid" & Global_Bet_List.Length'Img);
