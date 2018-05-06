@@ -174,7 +174,8 @@ procedure Lay_During_Race3 is
             if Bra(1).Pricets     >  B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
               if Bra(1).Backprice >= B.Price and then -- Backbet so yes '>=' NOT '<='
                 Bra(1).Layprice  > Fixed_Type(1.0) and then -- sanity
-                Bra(1).Backprice >  Fixed_Type(1.0) then -- sanity
+                Bra(1).Backprice >  Fixed_Type(1.0) and then -- sanity
+                B.Status(1)  = 'U' then -- sanity
                   B.Status(1..20) := "MATCHED             "; --Matched
                   B.Pricematched :=  Bra(1).Backprice;
                   B.Check_Outcome;
