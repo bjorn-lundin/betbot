@@ -327,7 +327,7 @@ begin
                              Status        => Back_Bet_Status,
                              Bet_List      => Global_Bet_List,
                              Back_1_At     => Back_1_At,
-                             Back_2_At     => Back_1_At);
+                             Back_2_At     => Back_2_At);
 
                     Treat_Lay(List          => List,
                               Market        => Market,
