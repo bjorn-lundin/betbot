@@ -1,6 +1,7 @@
 with Ada.Strings; use Ada.Strings;
 --with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Environment_Variables;
 
 with Sim;
 with Utils; use Utils;
@@ -12,21 +13,19 @@ with Sql;
 with Price_Histories;
 with Bets;
 with Gnat.Command_Line; use Gnat.Command_Line;
----with GNAT.Strings;
+with GNAT.Strings;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
 with Markets;
 with Runners;
+with Bot_Svn_Info;
+with Ini;
 
 
 procedure Lay_During_Race3 is
 
+  package Ev renames Ada.Environment_Variables;
   Global_Bet_List : Bets.Lists.List;
-  Config           : Command_Line_Configuration;
-
-  IA_Max_Start_Price : aliased Integer := 30;
-  IA_Lay_At_Price    : aliased Integer := 100;
-  IA_Max_Lay_Price   : aliased Integer := 200;
 
   Lay_Size  : Bet_Size_Type := 30.0;
   Back_Size : Bet_Size_Type := 30.0;
@@ -242,36 +241,36 @@ procedure Lay_During_Race3 is
   Current_Date : Calendar2.Time_Type := Start_Date;
   Stop_Date    : constant  Calendar2.Time_Type := (2018,03,01,0,0,0,0);
   T            : Sql.Transaction_Type;
+  Cmd_Line         : Command_Line_Configuration;
+  Sa_Logfilename   : aliased Gnat.Strings.String_Access;
+
 begin
   Define_Switch
-    (Config      => Config,
-     Output      => IA_Max_Start_Price'access,
-     Long_Switch => "--max_start_price=",
-     Help        => "starting price (back)(");
+    (Cmd_Line,
+     Sa_Logfilename'Access,
+     Long_Switch => "--logfile=",
+     Help        => "name of log file");
 
-  Define_Switch
-    (Config      => Config,
-     Output      => Ia_Lay_At_Price'access,
-     Long_Switch => "--lay_at_price=",
-     Help        => "Lay the runner at this price(Back)");
+  Getopt (Cmd_Line);  -- process the command line
 
-  Define_Switch
-    (Config      => Config,
-     Output      => IA_Max_Lay_Price'access,
-     Long_Switch => "--max_lay_price=",
-     Help        => "Runner cannot have higer price that this when layed (Lay)");
+  if not Ev.Exists("BOT_NAME") then
+    Ev.Set("BOT_NAME","lay_during_race3");
+  end if;
 
-  Getopt (Config);  -- process the command line
+  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
+  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
-
-  Log ("Connect db");
+  Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
+  Log("main", "Connect Db");
   Sql.Connect
-    (Host     => "localhost",
-     Port     => 5432,
-     Db_Name  => "dry",
-     Login    => "bnl",
-     Password => "bnl");
-  Log ("Connected to db");
+    (Host     => Ini.Get_Value("database_home", "host", ""),
+     Port     => Ini.Get_Value("database_home", "port", 5432),
+     Db_Name  => Ini.Get_Value("database_home", "name", ""),
+     Login    => Ini.Get_Value("database_home", "username", ""),
+     Password =>Ini.Get_Value("database_home", "password", ""));
+  Log("main", "db Connected");
+
+
   loop
     T.Start;
     Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
