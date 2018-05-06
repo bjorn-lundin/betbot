@@ -1,209 +1,201 @@
-with Ada.Containers.Doubly_Linked_Lists;
---with Ada.Strings;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings; use Ada.Strings;
+--with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Sim;
 with Utils; use Utils;
 with Types ; use Types;
---with Bot_Types ; use Bot_Types;
+with Bot_Types ; use Bot_Types;
 with Stacktrace;
 with Sql;
 --with Text_Io;
-with Table_Apriceshistory;
-with Table_Abets;
+with Price_Histories;
+with Bets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 ---with GNAT.Strings;
-with Calendar2; -- use Calendar2;
+with Calendar2;  use Calendar2;
 with Logging; use Logging;
+with Markets;
+with Runners;
 
 
 procedure Lay_During_Race3 is
 
-  Bad_Bet_Side : exception;
-  -- Market_Id_With_Data_Pack
-  -- Holds list of all market ids that has data
-
-
-  type Bet_List_Record is record
-    Bet          : Table_Abets.Data_Type;
-    Price_Finish : Table_Apriceshistory.Data_Type;
-  end record;
-
-  package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_List_Record);
-
-  Global_Bet_List : Bet_List_Pack.List;
+  Global_Bet_List : Bets.Lists.List;
   Config           : Command_Line_Configuration;
 
   IA_Max_Start_Price : aliased Integer := 30;
   IA_Lay_At_Price    : aliased Integer := 100;
   IA_Max_Lay_Price   : aliased Integer := 200;
 
-  Lay_Size  : Fixed_Type := 30.0;
-  Back_Size : Fixed_Type := 100.0;
+  Lay_Size  : Bet_Size_Type := 30.0;
+  Back_Size : Bet_Size_Type := 30.0;
 
   type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
-  Bet_Status : Bet_Status_Type := No_Bet_Laid;
-
-
-  Global_Min_Backprice  : constant Integer_4 := 250;
-  Global_Max_Backprice  : constant Integer_4 := 300;
-  Global_Min_Layprice   : constant Integer_4 := 100;
-  Global_Max_Layprice   : constant Integer_4 := 290;
-  Start                 : Calendar2.Time_Type := Calendar2.Clock;
+  Lay_bet_Status : Bet_Status_Type := No_Bet_Laid;
+  Back_bet_Status : Bet_Status_Type := No_Bet_Laid;
 
    --------------------------------------------------------------------------
 
-  function "<" (Left,Right : Table_Apriceshistory.Data_Type) return Boolean is
+  function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
   begin
     return Left.Backprice < Right.Backprice;
   end "<";
   --------------------------------------------
-  package Backprice_Sorter is new Table_Apriceshistory.Apriceshistory_List_Pack2.Generic_Sorting("<");
+  package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
 
-  type Best_Runners_Array_Type is array (1..4) of Table_Apriceshistory.Data_Type;
+  type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type;
 
 
-  procedure Treat_Lay(List         : in     Table_Apriceshistory.Apriceshistory_List_Pack2.List ;
-                      WR           : in     Table_Apriceshistory.Data_Type ;
+  procedure Treat_Lay(List         : in     Price_Histories.Lists.List ;
+                      Market       : in     Markets.Market_Type;
+                      WR           : in     Price_Histories.Price_History_Type ;
+                      BRA          : in     Best_Runners_Array_Type ;
+                      Old_Bra      : in     Best_Runners_Array_Type ;
                       Status       : in out Bet_Status_Type;
-                      Bet_List     : in out Bet_List_Pack.List;
-                      Max_Backprice: in     Integer_4;
-                      Min_Backprice: in     Integer_4;
-                      Max_Layprice : in     Integer_4;
-                      Min_Layprice : in     Integer_4) is
-    pragma Unreferenced(List);                  
-    use Calendar2;
-    Bet_Already_Laid : Boolean := False;
-    Bet : Table_Abets.Data_Type;
+                      Bet_List     : in out Bets.Lists.List) is
+    pragma Unreferenced(List);
+   -- pragma Unreferenced(BRA);
+   -- pragma Unreferenced(Old_bra);
+    Bet : Bets.Bet_Type;
+    Runner : Runners.Runner_Type;
+    Name : Betname_Type := (others => ' ');
+    Idx : Integer := 0;
   begin
     case Status is
       when No_Bet_Laid =>
-        -- check for bet already laid for this runner on this market  
+        -- check for bet already laid for this runner on this market
         for B of Bet_List loop
-          if B.Bet.Selectionid = WR.Selectionid and then
-             B.Bet.Marketid    = WR.Marketid then
-               Bet_Already_Laid := True;
-               exit;
-          end if;    
-        end loop;                
-      
-        -- make sure no bet in the air, waiting for 1 second
-        if not Bet_Already_Laid then
-          if WR.Backprice >= Fixed_Type(Min_Backprice)and then
-             WR.Layprice  >= Fixed_Type(Min_Layprice) and then
-             WR.Backprice <= Fixed_Type(Max_Backprice) and then
-             WR.Layprice  <= Fixed_Type(Max_Layprice) then
-
-            Bet.Marketid    := WR.Marketid;
-            Bet.Selectionid := WR.Selectionid;
-            Bet.Size        := Lay_Size;
-            Bet.Side        := "LAY ";
-            Bet.Price       := WR.Layprice;
-            Bet.Betplaced   := WR.Pricets;
-            Status          := Bet_Laid;
-            Bet.Status(1) := 'U';
-            Bet_List.Append(Bet_List_Record'(Bet,WR));
+          if B.Selectionid = WR.Selectionid and then
+             B.Marketid    = WR.Marketid and then
+             B.Side(1..3)  = "LAY" then
+               return ;
           end if;
+        end loop;
+
+
+        for I in Bra'Range loop
+          if Bra(I).Layprice >= Fixed_Type(5.0) + old_Bra(I).Layprice and then
+             Old_Bra(I).Layprice < Fixed_Type(30.0) then
+            Idx := I;
+            exit;
+          end if;
+        end loop;
+
+
+        -- make sure no bet in the air, waiting for 1 second
+        if Bra(Idx).Backprice >= Fixed_Type(1.0)and then
+          Bra(Idx).Layprice  >= Fixed_Type(1.0) and then
+          Bra(Idx).Backprice <= Fixed_Type(100.0) and then
+          Bra(Idx).Layprice  <= Fixed_Type(50.0) then
+
+          Runner.Selectionid := Bra(Idx).Selectionid;
+          Move("WIN_LAY_5.0_30.0", Name);
+          Bet := Bets.Create(Name   => Name,
+                             Side   => Lay,
+                             Size   => Lay_Size,
+                             Price  => Price_Type(50.0),
+                             Placed => Bra(Idx).Pricets,
+                             Runner => Runner,
+                             Market => Market);
+          Status          := Bet_Laid;
+          Bet_List.Append(Bet);
         end if;
-        
+
       when Bet_Laid    =>
         -- make sure the WR here is the same as got the bet laid
         for B of Bet_List loop
-          if B.Bet.Selectionid =  WR.Selectionid then
-            if WR.Pricets >  B.Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
-              if WR.Layprice <= B.Bet.Price and then -- Laybet so yes '<=' NOT '>='
+          if B.Selectionid =  WR.Selectionid then
+            if WR.Pricets >  B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+              if WR.Layprice <= B.Price and then -- Laybet so yes '<=' NOT '>='
                WR.Layprice >  Fixed_Type(1.0) and then -- sanity
                WR.Backprice >  Fixed_Type(1.0) then -- sanity
-                 Status := No_Bet_Laid; --reset for other runners
-                 B.Bet.Status(1) := 'M';
-                 B.Bet.Pricematched := WR.Layprice;
+                 B.Status(1..20) := "MATCHED             "; --Matched
+                 B.Pricematched := WR.Layprice;
+                 B.Check_Outcome;
+                 B.Insert;
                  exit;
               end if;
             end if;
           end if;
-        end loop;                
+        end loop;
     end case;
   end Treat_Lay;
+
   --------------------------------------------------------------------------
-  procedure Treat_Back(List         : in     Table_Apriceshistory.Apriceshistory_List_Pack2.List ;
+  procedure Treat_Back(List         : in     Price_Histories.Lists.List ;
+                       Market       : in     Markets.Market_Type;
                        BRA          : in     Best_Runners_Array_Type ;
                        Status       : in out Bet_Status_Type;
-                       Bet_List     : in out Bet_List_Pack.List) is
-    pragma Unreferenced(List);                  
-    use Calendar2;
-    Bet_Already_Laid : Boolean := False;
-    Bet : Table_Abets.Data_Type;
-    Place_Data_At_Time_Of_Bet_Laid : Table_Apriceshistory.Data_Type;
-    use type Table_Apriceshistory.Data_Type;
+                       Bet_List     : in out Bets.Lists.List;
+                       Back_1_At    : in Fixed_Type;
+                       Back_2_At    : in Fixed_Type) is
+    pragma Unreferenced(List);
+    Bet : Bets.Bet_Type;
+    use type Price_Histories.Price_History_Type;
+    Runner : Runners.Runner_Type;
+    Name : Betname_Type := (others => ' ');
   begin
     case Status is
       when No_Bet_Laid =>
---        -- check for bet already laid for this market  
---        for B of Bet_List loop
---          if B.Bet.Marketid = BRA(1).Marketid then
---            Bet_Already_Laid := True;
---            exit;
---          end if;    
---        end loop;                
---        -- make sure no bet in the air, waiting for 1 second
---        if not Bet_Already_Laid then
-          if BRA(1).Backprice <= Fixed_Type(1.20) and then
-             BRA(1).Backprice >  Fixed_Type(1.10) and then
-             BRA(2).Backprice >= Fixed_Type(10.0) and then
-             BRA(2).Backprice < Fixed_Type(10_000.0) and then  -- so it exists
-             BRA(3).Backprice < Fixed_Type(10_000.0) then  -- so it exists
-             
-             -- for place  Place_Data_At_Time_Of_Bet_Laid := Sim.Get_Place_Price(BRA(1));
-             -- for place  if Place_Data_At_Time_Of_Bet_Laid /= Table_Apriceshistory.Empty_Data then
-             -- for place    Bet.Marketid    := Place_Data_At_Time_Of_Bet_Laid.Marketid;
-             -- for place    Bet.Selectionid := Place_Data_At_Time_Of_Bet_Laid.Selectionid;
-             -- for place    Bet.Size        := Back_Size;
-             -- for place    Bet.Side        := "BACK";
-             -- for place    Bet.Price       := Place_Data_At_Time_Of_Bet_Laid.Backprice;
-             -- for place    Bet.Betplaced   := BRA(1).Pricets;
-             -- for place    Status          := Bet_Laid;
-             -- for place    Bet.Status(1) := 'U';
-             -- for place    Bet_List.Append(Bet_List_Record'(Bet,BRA(1)));
-              Bet.Marketid    := BRA(1).Marketid;
-              Bet.Selectionid := BRA(1).Selectionid;
-              Bet.Size        := Back_Size;
-              Bet.Side        := "BACK";
-              Bet.Price       := BRA(1).Backprice;
-              Bet.Betplaced   := BRA(1).Pricets;
-              Status          := Bet_Laid;
-              Bet.Status(1) := 'U'; --Unmatched
-              Bet_List.Append(Bet_List_Record'(Bet,BRA(1)));
-   --       end if;
-        end if;
-        
-      when Bet_Laid    =>
+        -- check for bet already laid for this runner on this market
         for B of Bet_List loop
-          if B.Bet.Selectionid = BRA(1).Selectionid then
-            if BRA(1).Pricets     >  B.Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
-              if BRA(1).Backprice >= B.Bet.Price and then -- Backbet so yes '>=' NOT '<='
-                 BRA(1).Layprice  > Fixed_Type(1.0) and then -- sanity
-                 BRA(1).Backprice >  Fixed_Type(1.0) then -- sanity
-                   B.Bet.Status(1) := 'M'; --Matched
-                   B.Bet.Pricematched :=  BRA(1).Backprice;
-                   exit;
+          if B.Selectionid = Bra(1).Selectionid and then
+             B.Marketid    = Bra(1).Marketid and then
+             B.Side(1..4)  = "BACK" then
+               return ;
+          end if;
+        end loop;
+
+        if Bra(1).Backprice <= Back_1_At and then
+          Bra(2).Backprice >= Back_2_At and then
+          Bra(2).Backprice < Fixed_Type(10_000.0) then  -- so it exists
+
+          Runner.Selectionid := Bra(1).Selectionid;
+
+          Move("WIN_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At), Name);
+          Bet := Bets.Create(Name   => Name,
+                             Side   => Back,
+                             Size   => Back_Size,
+                             Price  => Price_Type(Bra(1).Backprice),
+                             Placed => Bra(1).Pricets,
+                             Runner => Runner,
+                             Market => Market);
+
+          Status          := Bet_Laid;
+          Bet_List.Append(Bet);
+        end if;
+
+      when Bet_Laid  =>
+        for B of Bet_List loop
+          if B.Selectionid = Bra(1).Selectionid then
+            if Bra(1).Pricets     >  B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+              if Bra(1).Backprice >= B.Price and then -- Backbet so yes '>=' NOT '<='
+                Bra(1).Layprice  > Fixed_Type(1.0) and then -- sanity
+                Bra(1).Backprice >  Fixed_Type(1.0) then -- sanity
+                  B.Status(1..20) := "MATCHED             "; --Matched
+                  B.Pricematched :=  Bra(1).Backprice;
+                  B.Check_Outcome;
+                  B.Insert;
+                  exit;
               end if;
             end if;
           end if;
-        end loop;                
+        end loop;
+
     end case;
   end Treat_Back;
   --------------------------------------------------------------------------
 
+  Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+  Old_Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+  Worst_Runner      : Price_Histories.Price_History_Type := Price_Histories.Empty_Data;
 
-  Best_Runners      : Best_Runners_Array_Type := (others => Table_Apriceshistory.Empty_Data);
-  Worst_Runner      : Table_Apriceshistory.Data_Type := Table_Apriceshistory.Empty_Data;
-
-
-  procedure Sort_Array(List : in out Table_Apriceshistory.Apriceshistory_List_Pack2.List ;
+  procedure Sort_Array(List : in out Price_Histories.Lists.List ;
                        BRA  :    out Best_Runners_Array_Type;
-                       WR   :    out Table_Apriceshistory.Data_Type ) is
+                       WR   :    out Price_Histories.Price_History_Type ) is
 
-    Price             : Table_Apriceshistory.Data_Type;
+    Price             : Price_Histories.Price_History_Type;
   begin
       -- ok find the runner with lowest backprice:
       Backprice_Sorter.Sort(List);
@@ -244,6 +236,12 @@ procedure Lay_During_Race3 is
 
   end Sort_Array;
   ---------------------------------------------------------------
+
+  Start_Date   : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+  One_Day      : constant Calendar2.Interval_Type := (1,0,0,0,0);
+  Current_Date : Calendar2.Time_Type := Start_Date;
+  Stop_Date    : constant  Calendar2.Time_Type := (2018,03,01,0,0,0,0);
+  T            : Sql.Transaction_Type;
 begin
   Define_Switch
     (Config      => Config,
@@ -265,137 +263,97 @@ begin
 
   Getopt (Config);  -- process the command line
 
-  
-  for Month in Calendar2.Short_Month_Type'range loop
-    Log ("Connect db");
-    Sql.Connect
-      (Host     => "localhost",
-       Port     => 5432,
-       Db_Name  => "dry",
-       Login    => "bnl",
-       Password => "bnl");
-    Log ("Connected to db");  
-    Sim.Fill_Data_Maps(Month);
-    Sql.Close_Session;    -- no need for db anymore
+
+  Log ("Connect db");
+  Sql.Connect
+    (Host     => "localhost",
+     Port     => 5432,
+     Db_Name  => "dry",
+     Login    => "bnl",
+     Password => "bnl");
+  Log ("Connected to db");
+  loop
+    T.Start;
+    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
     Log("start process");
-  
+
     declare
       Cnt : Integer := 0;
     begin
-      for Marketid of Sim.Market_Id_With_Data_List loop
+      for Market of Sim.Market_With_Data_List loop
         Cnt := Cnt + 1;
      --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
-        Bet_Status := No_Bet_Laid;
+        Back_bet_Status := No_Bet_Laid;
+        LAy_bet_Status := No_Bet_Laid;
         -- list of timestamps in this market
         declare
-          Timestamp_To_Apriceshistory_Map : Sim.Timestamp_To_Apriceshistory_Maps.Map :=
-                        Sim.Marketid_Timestamp_To_Apriceshistory_Map(Marketid);
+          Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                        Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
+
+          Back_1_At , Back_2_At: Fixed_Type  ;
         begin
-          for Timestamp of Sim.Marketid_Pricets_Map(Marketid) loop
-            declare
-              List : Table_Apriceshistory.Apriceshistory_List_Pack2.List :=
-                        Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
-            begin
-              Best_Runners := (others => Table_Apriceshistory.Empty_Data);
-              Worst_Runner := Table_Apriceshistory.Empty_Data;
-  
-              Sort_Array(List => List,
-                         BRA  => Best_Runners,
-                         WR   => Worst_Runner);
-  
-              Treat_Back(List         => List,
-                        BRA           => Best_Runners,
-                        Status        => Bet_Status,
-                        Bet_List      => Global_Bet_List);
-                        
-             -- Treat_Lay(List          => List,
-             --           WR            => Worst_Runner,
-             --           Status        => Bet_Status,
-             --           Bet_List      => Global_Bet_List,
-             --           Max_Backprice => Global_Max_Backprice,
-             --           Min_Backprice => Global_Min_Backprice,
-             --           Max_Layprice  => Global_Max_Layprice,
-             --           Min_Layprice  => Global_Min_Layprice);
-  
-            end;
-          end loop; --  Timestamp
+          Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+            Back_1_At := 1.26;
+            Loop_1 : loop
+              Back_1_At := Back_1_At - 0.01;
+              Back_2_At := 11.0;
+
+              Loop_2 : loop
+                Back_2_At := Back_2_At - 1.0;
+                declare
+                  List : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
+                begin
+                  --Best_Runners := (others => Price_Histories.Empty_Data);
+                  --Worst_Runner := Price_Histories.Empty_Data;
+
+                  Sort_Array(List => List,
+                             Bra  => Best_Runners,
+                             Wr   => Worst_Runner);
+
+                  Treat_Back(List          => List,
+                             Market        => Market,
+                             Bra           => Best_Runners,
+                             Status        => Back_Bet_Status,
+                             Bet_List      => Global_Bet_List,
+                             Back_1_At     => Back_1_At,
+                             Back_2_At     => Back_1_At);
+
+                    Treat_Lay(List          => List,
+                              Market        => Market,
+                              Bra           => Best_Runners,
+                              Old_bra       => Old_best_Runners,
+                              Wr            => Worst_Runner,
+                              Status        => Lay_Bet_Status,
+                              Bet_List      => Global_Bet_List);
+                    Old_Best_Runners := Best_Runners;
+
+                end;
+                exit Loop_Ts when Lay_Bet_Status = Bet_Laid and then Back_Bet_Status = Bet_Laid;
+                exit Loop_2 when Back_2_At = 1.0;
+              end loop loop_2;
+              exit Loop_1 when Back_1_At = 1.0;
+            end loop loop_1;
+
+          end loop loop_Ts; --  Timestamp
         end;
       end loop;  -- marketid
     end;
 
     Log("num bets laid" & Global_Bet_List.Length'Img);
-  
-    declare
-      Sum, Sum_Winners, Sum_Losers : Fixed_Type := 0.0;
-      Profit : Fixed_Type := 0.0;
-      Winners,Losers,Unmatched,Strange : Integer_4 := 0;
-    begin
-      for Bet_Record of Global_Bet_List loop
-        --Log("");
-        --Log(Bet_Record.Bet.To_String);
-        --Log(Bet_Record.Price_Finish.To_String);
-        --Log("----------------");
-        case Bet_Record.Bet.Status(1) is
-          when 'M'  => -- matched
-          
-            if Bet_Record.Bet.Side(1..3) = "LAY" then
-              -- did it win ?
-              if Sim.Is_Race_Winner(Bet_Record.Bet.Selectionid, Bet_Record.Bet.Marketid) then
-                Profit := -(Bet_Record.Bet.Price - 1.0) * Lay_Size ;
-                Losers := Losers +1;
-                Sum_Losers := Sum_Losers + Profit;
-                Log("bad bet: " & Bet_Record.Price_Finish.To_String);
-              else-- won
-                Profit := Lay_Size * 0.935;
-                Winners := Winners+1;
-                Sum_Winners := Sum_Winners + Profit;
-              end if;
-            elsif Bet_Record.Bet.Side(1..4) = "BACK" then
-              -- did it win ?
-              if Sim.Is_Race_Winner(Bet_Record.Bet.Selectionid, Bet_Record.Bet.Marketid) then
-                Profit := (Bet_Record.Bet.Price - 1.0) * Back_Size * 0.935;
-                Winners := Winners+1;
-                Sum_Winners := Sum_Winners + Profit;
-              else-- won
-                Profit := -Back_Size ;
-                Losers := Losers +1;
-                Sum_Losers := Sum_Losers + Profit;
-                Log("bad bet: " & Bet_Record.Price_Finish.To_String);
-              end if;
-            
-            else
-              raise Bad_Bet_Side with "Bet_Record.Bet.Side ='" & Bet_Record.Bet.Side & "'";
-            end if;
-          when 'U'  => -- unmatched
-            Unmatched := Unmatched +1;
-          when others => --Strange
-            Strange := Strange +1;
-        end case;
-      end loop;
-      Sum := Sum_Winners + Sum_Losers ;
-      Log("RESULT Month   : " & Month'Img );   
-      Log("RESULT Winners   : " & Winners'Img & " " & Integer_4(Sum_Winners)'Img );
-      Log("RESULT Losers    : " & Losers'Img  & " " & Integer_4(Sum_Losers)'Img);
-      Log("RESULT Unmatched : " & Unmatched'Img  & " " & Unmatched'Img);
-      Log("RESULT Strange   : " & Strange'Img  & " " & Strange'Img);
-      Log("RESULT Sum       : " & Integer_4(Sum)'Img &
-      " Min_Backprice:" & Global_Min_Backprice'Img &
-      " Max_Backprice:" & Global_Max_Backprice'Img &
-      " Min_Layprice:"  & Global_Min_Layprice'Img  &
-      " Max_Layprice:"  & Global_Max_Layprice'Img);
-    end ;
-  
-    Global_Bet_List.Clear;
-  end loop;
-  Log("Started : " & Start.To_String);
 
---  Log("Total profit = " & Integer_4(Global_Profit)'Img);
---  for i in Bet_Status_Type'range loop
---    Log(i'Img & Stats(i).Hits'Img & Integer_4(Stats(i).Profit)'Img);
---  end loop;
---  Log("used --max_start_price=" & IA_Max_Start_Price'Img &
---    " --lay_at_price=" & IA_Lay_At_Price'Img &
---    " --max_lay_price=" & IA_Max_Lay_Price'Img);
+    for Bet of Global_Bet_List loop
+      Bet.Insert;
+    end loop;
+
+    Current_Date := Current_Date + One_Day;
+    exit when Current_Date = Stop_Date;
+
+    Global_Bet_List.Clear;
+    T.Commit;
+  end loop;
+
+  Sql.Close_Session;    -- no need for db anymore
+
 exception
    when E: others =>
       Stacktrace.Tracebackinfo(E);
