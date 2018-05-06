@@ -81,6 +81,9 @@ procedure Lay_During_Race3 is
           end if;
         end loop;
 
+        if Idx = 0 then
+          return;
+        end if;
 
         -- make sure no bet in the air, waiting for 1 second
         if Bra(Idx).Backprice >= Fixed_Type(1.0)and then
