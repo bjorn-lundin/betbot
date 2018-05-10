@@ -30,7 +30,7 @@ procedure Lay_During_Race3 is
   Lay_Size  : Bet_Size_Type := 30.0;
   Back_Size : Bet_Size_Type := 30.0;
 
-  type Bet_Status_Type is (No_Bet_Laid, Bet_Laid);
+  type Bet_Status_Type is (No_Bet_Laid, Bet_Laid, Bet_Matched);
   Lay_Bet_Status : Bet_Status_Type := No_Bet_Laid;
   Back_Bet_Status : Bet_Status_Type := No_Bet_Laid;
 
@@ -124,11 +124,13 @@ procedure Lay_During_Race3 is
                 B.Pricematched := Wr.Layprice;
                 B.Check_Outcome;
                 B.Insert;
+                Status := Bet_Matched;
                 exit;
               end if;
             end if;
           end if;
         end loop;
+      when Bet_Matched => raise Constraint_Error with Status'Img & " in Treat_Lay!"; -- cant happen here
     end case;
   end Treat_Lay;
 
@@ -188,12 +190,13 @@ procedure Lay_During_Race3 is
                 B.Pricematched := Bra(1).Backprice;
                 B.Check_Outcome;
                 B.Insert;
+                Status := Bet_Matched;
                 exit;
               end if;
             end if;
           end if;
         end loop;
-
+      when Bet_Matched => raise Constraint_Error with Status'Img & " in Treat_Lay!"; -- cant happen here
     end case;
   end Treat_Back;
   --------------------------------------------------------------------------
@@ -415,7 +418,9 @@ begin
               Old_Best_Runners := Best_Runners;
 
             end;
-            exit Loop_Ts when Lay_Bet_Status = Bet_Laid and then Back_Bet_Status = Bet_Laid;
+            exit Loop_Ts when (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched)
+                               or else
+                              (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
           end loop Loop_Ts; --  Timestamp
         end;
       end loop Market_Loop;
