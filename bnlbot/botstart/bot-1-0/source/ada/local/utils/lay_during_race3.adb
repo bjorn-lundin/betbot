@@ -39,6 +39,7 @@ procedure Lay_During_Race3 is
   Global_Back_2_At,
   Global_Min_Delta,
   Global_Max_Price: Fixed_Type := 0.0;
+  Ba_Place_Back_Bet : aliased Boolean := False;
 
 
   --------------------------------------------------------------------------
@@ -136,7 +137,7 @@ procedure Lay_During_Race3 is
 
   --------------------------------------------------------------------------
   procedure Treat_Back(List         : in     Price_Histories.Lists.List ;
-                       Market       : in     Markets.Market_Type;
+                       Market       : in out Markets.Market_Type;
                        Bra          : in     Best_Runners_Array_Type ;
                        Status       : in out Bet_Status_Type;
                        Bet_List     : in out Bets.Lists.List;
@@ -176,6 +177,59 @@ procedure Lay_During_Race3 is
 
           Status          := Bet_Laid;
           Bet_List.Append(Bet);
+
+          if Ba_Place_Back_Bet then
+            declare
+              Bet_Place                    : Bets.Bet_Type;
+              Place_Market                 : Markets.Market_Type;
+              Found                        : Boolean := False;
+              Place_Price_During_Race_List : Price_Histories.Lists.List;
+              Place_Bet_Status             :  Bet_Status_Type := No_Bet_Laid;
+            begin
+              Market.Corresponding_Place_Market(Place_Market => Place_Market, Found => Found);
+              if Found then
+                Runner.Marketid := Place_Market.Marketid;
+
+                -- read the place odds for this runner - if any
+                Sim.Read_Marketid_Selectionid(Marketid    => Place_Market.Marketid,
+                                              Selectionid => Runner.Selectionid,
+                                              Animal      => Horse,
+                                              List        => Place_Price_During_Race_List) ;
+                for Po of Place_Price_During_Race_List loop
+                  case Place_Bet_Status is
+                    when No_Bet_Laid =>
+                      if Po.Pricets >= Bra(1).Pricets then
+                        Bet_Place := Bets.Create(Name   => "PLC_" & Name,
+                                           Side   => Back,
+                                           Size   => Back_Size,
+                                           Price  => Price_Type(Po.Backprice),
+                                           Placed => Po.Pricets,
+                                           Runner => Runner,
+                                           Market => Place_Market);
+                        Place_Bet_Status := Bet_Laid;
+                      end if;
+
+                    when Bet_Laid =>
+                      if Po.Pricets   >  Bet_Place.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+                        if Po.Backprice >= Bet_Place.Price and then -- Backbet so yes '>=' NOT '<='
+                          Po.Layprice  > Fixed_Type(1.0) and then -- sanity
+                          Po.Backprice >  Fixed_Type(1.0) and then -- sanity
+                          Bet_Place.Status(1)  = 'U' then -- sanity
+                          Bet_Place.Status(1..20) := "MATCHED             "; --Matched
+                          Bet_Place.Pricematched := Po.Backprice;
+                          Bet_Place.Check_Outcome;
+                          Bet_Place.Insert;
+                          Status := Bet_Matched;
+                        end if;
+                      end if;
+
+                    when Bet_Matched => exit;
+                  end case;
+                end loop;
+              end if;
+            end;
+          end if;
+
         end if;
 
       when Bet_Laid  =>
@@ -196,7 +250,7 @@ procedure Lay_During_Race3 is
             end if;
           end if;
         end loop;
-      when Bet_Matched => raise Constraint_Error with Status'Img & " in Treat_Lay!"; -- cant happen here
+      when Bet_Matched => raise Constraint_Error with Status'Img & " in Treat_back!"; -- cant happen here
     end case;
   end Treat_Back;
   --------------------------------------------------------------------------
@@ -304,6 +358,11 @@ begin
      Long_Switch => "--max_price=",
      Help        => "max price that min_delta applies to");
 
+  Define_Switch
+    (Cmd_Line,
+     Ba_Place_Back_Bet'Access,
+     Long_Switch => "--place_back_bet",
+     Help        => "put place back too");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -338,6 +397,10 @@ begin
   end if;
 
 
+
+
+
+
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","lay_during_race3");
   end if;
@@ -352,7 +415,7 @@ begin
      Port     => Ini.Get_Value("database_home", "port", 5432),
      Db_Name  => Ini.Get_Value("database_home", "name", ""),
      Login    => Ini.Get_Value("database_home", "username", ""),
-     Password =>Ini.Get_Value("database_home", "password", ""));
+     Password => Ini.Get_Value("database_home", "password", ""));
   Log("main", "db Connected");
 
 
@@ -419,8 +482,8 @@ begin
 
             end;
             exit Loop_Ts when (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched)
-                               or else
-                              (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
+              or else
+                (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
           end loop Loop_Ts; --  Timestamp
         end;
       end loop Market_Loop;
