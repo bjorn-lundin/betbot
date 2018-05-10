@@ -199,7 +199,8 @@ procedure Lay_During_Race3 is
                   case Place_Bet_Status is
                     when No_Bet_Laid =>
                       if Po.Pricets >= Bra(1).Pricets then
-                        Bet_Place := Bets.Create(Name   => "PLC_" & Name,
+                        Name(1..4) := "PLC_";
+                        Bet_Place := Bets.Create(Name   => Name,
                                            Side   => Back,
                                            Size   => Back_Size,
                                            Price  => Price_Type(Po.Backprice),
