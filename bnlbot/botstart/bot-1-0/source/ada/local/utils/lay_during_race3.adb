@@ -151,14 +151,6 @@ procedure Lay_During_Race3 is
   begin
     case Status is
       when No_Bet_Laid =>
-        -- check for bet already laid for this runner on this market
-        for B of Bet_List loop
-          if B.Selectionid = Bra(1).Selectionid and then
-            B.Marketid    = Bra(1).Marketid and then
-            B.Side(1..4)  = "BACK" then
-            return ;
-          end if;
-        end loop;
 
         if Bra(1).Backprice <= Back_1_At and then
           Bra(2).Backprice >= Back_2_At and then
@@ -201,12 +193,12 @@ procedure Lay_During_Race3 is
                       if Po.Pricets >= Bra(1).Pricets then
                         Name(1..4) := "PLC_";
                         Bet_Place := Bets.Create(Name   => Name,
-                                           Side   => Back,
-                                           Size   => Back_Size,
-                                           Price  => Price_Type(Po.Backprice),
-                                           Placed => Po.Pricets,
-                                           Runner => Runner,
-                                           Market => Place_Market);
+                                                 Side   => Back,
+                                                 Size   => Back_Size,
+                                                 Price  => Price_Type(Po.Backprice),
+                                                 Placed => Po.Pricets,
+                                                 Runner => Runner,
+                                                 Market => Place_Market);
                         Place_Bet_Status := Bet_Laid;
                       end if;
 
@@ -257,7 +249,7 @@ procedure Lay_During_Race3 is
   --------------------------------------------------------------------------
 
   Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-  Old_Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+  Old_Best_Runners  : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
   Worst_Runner      : Price_Histories.Price_History_Type := Price_Histories.Empty_Data;
 
   procedure Sort_Array(List : in out Price_Histories.Lists.List ;
@@ -398,10 +390,6 @@ begin
   end if;
 
 
-
-
-
-
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","lay_during_race3");
   end if;
@@ -419,7 +407,6 @@ begin
      Password => Ini.Get_Value("database_home", "password", ""));
   Log("main", "db Connected");
 
-
   Log("main", "params start");
 
   Log("main", "params stop");
@@ -434,59 +421,58 @@ begin
       Cnt : Integer := 0;
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
-        if Market.Markettype(1..3) /= "WIN" then
-          exit Market_Loop;
-        end if;
+        if Market.Markettype(1..3) = "WIN" then
 
-        Cnt := Cnt + 1;
-        --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
-        Back_Bet_Status := No_Bet_Laid;
-        Lay_Bet_Status := No_Bet_Laid;
-        -- list of timestamps in this market
-        declare
-          Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-            Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
+          Cnt := Cnt + 1;
+          --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
+          Back_Bet_Status := No_Bet_Laid;
+          Lay_Bet_Status := No_Bet_Laid;
+          -- list of timestamps in this market
+          declare
+            Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+              Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
 
-        begin
-          Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-            declare
-              List : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
-            begin
-              --Best_Runners := (others => Price_Histories.Empty_Data);
-              --Worst_Runner := Price_Histories.Empty_Data;
-              --  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
+          begin
+            Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+              declare
+                List : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
+              begin
+                --Best_Runners := (others => Price_Histories.Empty_Data);
+                --Worst_Runner := Price_Histories.Empty_Data;
+                --  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
 
-              Sort_Array(List => List,
-                         Bra  => Best_Runners,
-                         Wr   => Worst_Runner);
+                Sort_Array(List => List,
+                           Bra  => Best_Runners,
+                           Wr   => Worst_Runner);
 
-              if Global_Action = Do_Back or else Global_Action = Do_Both then
-                Treat_Back(List          => List,
-                           Market        => Market,
-                           Bra           => Best_Runners,
-                           Status        => Back_Bet_Status,
-                           Bet_List      => Global_Bet_List,
-                           Back_1_At     => Global_Back_1_At,
-                           Back_2_At     => Global_Back_2_At);
-              end if;
+                if Global_Action = Do_Back or else Global_Action = Do_Both then
+                  Treat_Back(List          => List,
+                             Market        => Market,
+                             Bra           => Best_Runners,
+                             Status        => Back_Bet_Status,
+                             Bet_List      => Global_Bet_List,
+                             Back_1_At     => Global_Back_1_At,
+                             Back_2_At     => Global_Back_2_At);
+                end if;
 
-              if Global_Action = Do_Lay or else Global_Action = Do_Both then
-                Treat_Lay(List          => List,
-                          Market        => Market,
-                          Bra           => Best_Runners,
-                          Old_Bra       => Old_Best_Runners,
-                          Wr            => Worst_Runner,
-                          Status        => Lay_Bet_Status,
-                          Bet_List      => Global_Bet_List);
-              end if;
-              Old_Best_Runners := Best_Runners;
+                if Global_Action = Do_Lay or else Global_Action = Do_Both then
+                  Treat_Lay(List          => List,
+                            Market        => Market,
+                            Bra           => Best_Runners,
+                            Old_Bra       => Old_Best_Runners,
+                            Wr            => Worst_Runner,
+                            Status        => Lay_Bet_Status,
+                            Bet_List      => Global_Bet_List);
+                end if;
+                Old_Best_Runners := Best_Runners;
 
-            end;
-            exit Loop_Ts when (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched)
-              or else
-                (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
-          end loop Loop_Ts; --  Timestamp
-        end;
+              end;
+              exit Loop_Ts when (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched)
+                or else
+                  (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
+            end loop Loop_Ts; --  Timestamp
+          end;
+        end if; -- Market_type(1..3) = WIN
       end loop Market_Loop;
     end;
 
