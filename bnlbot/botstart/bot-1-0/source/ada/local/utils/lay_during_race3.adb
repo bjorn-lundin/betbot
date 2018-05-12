@@ -40,6 +40,7 @@ procedure Lay_During_Race3 is
   Global_Min_Delta,
   Global_Max_Price: Fixed_Type := 0.0;
   Ba_Place_Back_Bet : aliased Boolean := False;
+  Ba_Immediate_Match : aliased Boolean := False;
 
 
   --------------------------------------------------------------------------
@@ -157,8 +158,11 @@ procedure Lay_During_Race3 is
           Bra(2).Backprice < Fixed_Type(10_000.0) then  -- so it exists
 
           Runner.Selectionid := Bra(1).Selectionid;
-
-          Move("WIN_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At), Name);
+          if Back_2_At < 10.0 then
+            Move("WIN_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
+          else
+            Move("WIN_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
+          end if;
           Bet := Bets.Create(Name   => Name,
                              Side   => Back,
                              Size   => Back_Size,
@@ -203,7 +207,7 @@ procedure Lay_During_Race3 is
                       end if;
 
                     when Bet_Laid =>
-                      if Po.Pricets   >  Bet_Place.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+                      if Po.Pricets > Bet_Place.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
                         if Po.Backprice >= Bet_Place.Price and then -- Backbet so yes '>=' NOT '<='
                           Po.Layprice  > Fixed_Type(1.0) and then -- sanity
                           Po.Backprice >  Fixed_Type(1.0) and then -- sanity
@@ -214,6 +218,8 @@ procedure Lay_During_Race3 is
                           Bet_Place.Insert;
                           Status := Bet_Matched;
                         end if;
+                      elsif Po.Pricets > Bet_Place.Betplaced + (0,0,0,2,0)  and then Ba_Immediate_Match  then
+                        Status := Bet_Matched; -- makes the calling loop exit
                       end if;
 
                     when Bet_Matched => exit;
@@ -222,13 +228,12 @@ procedure Lay_During_Race3 is
               end if;
             end;
           end if;
-
         end if;
 
       when Bet_Laid  =>
         for B of Bet_List loop
           if B.Selectionid = Bra(1).Selectionid then
-            if Bra(1).Pricets     >  B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+            if Bra(1).Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
               if Bra(1).Backprice >= B.Price and then -- Backbet so yes '>=' NOT '<='
                 Bra(1).Layprice  > Fixed_Type(1.0) and then -- sanity
                 Bra(1).Backprice >  Fixed_Type(1.0) and then -- sanity
@@ -240,6 +245,8 @@ procedure Lay_During_Race3 is
                 Status := Bet_Matched;
                 exit;
               end if;
+            elsif Bra(1).Pricets > B.Betplaced + (0,0,0,2,0)  and then Ba_Immediate_Match  then
+              Status := Bet_Matched; -- makes the calling loop exit
             end if;
           end if;
         end loop;
@@ -356,6 +363,13 @@ begin
      Ba_Place_Back_Bet'Access,
      Long_Switch => "--place_back_bet",
      Help        => "put place back too");
+
+  Define_Switch
+    (Cmd_Line,
+     Ba_Immediate_Match'Access,
+     Long_Switch => "--immediate_match",
+     Help        => "abandon bet if not matched within a second");
+
 
   Getopt (Cmd_Line);  -- process the command line
 
