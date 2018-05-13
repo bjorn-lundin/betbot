@@ -51,7 +51,7 @@ procedure Bet_During_Race_5 is
   --------------------------------------------
   package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
 
-  type Best_Runners_Array_Type is array (1..12) of Price_Histories.Price_History_Type;
+  type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type;
 
 
   procedure Treat_Lay(List         : in     Price_Histories.Lists.List ;
@@ -65,11 +65,10 @@ procedure Bet_During_Race_5 is
     pragma Unreferenced(Wr);
     pragma Unreferenced(Status);
     -- pragma Unreferenced(BRA);
-    -- pragma Unreferenced(Old_bra);
+    pragma Unreferenced(Old_bra);
     Bet    : Bets.Bet_Type;
     Runner : Runners.Runner_Type;
     Name   : Betname_Type := (others => ' ');
-    Idx    : Integer := 0;
     Local_Bra : Best_Runners_Array_Type := Bra;
   begin
 
@@ -83,24 +82,16 @@ procedure Bet_During_Race_5 is
     end loop;
 
     -- find the first one to lay. lay only one at a time
-    for I in Local_Bra'Range loop
-      if Local_Bra(I).Selectionid > 0 and then
-        Local_Bra(I).Layprice >= Global_Min_Delta + Old_Bra(I).Layprice and then
-        Old_Bra(I).Layprice < Global_Max_Price then
-        Idx := I;
-        exit;
-      end if;
-    end loop;
+      if Local_Bra(4).Selectionid > 0 and then
+         Local_Bra(1).Selectionid > 0 and then
+         Local_Bra(1).Backprice >= Fixed_Type(1.0)and then
+         Local_Bra(1).Layprice  >= Fixed_Type(1.0) and then
+         Local_Bra(1).Backprice <= Global_Min_Delta  and then
+         Local_Bra(4).Layprice <= Global_Max_Price then
 
-    if Idx > Integer(0) then --Candidate Found To Lay
 
-      if Local_Bra(Idx).Backprice >= Fixed_Type(1.0)and then
-        Local_Bra(Idx).Layprice  >= Fixed_Type(1.0) and then
-        Local_Bra(Idx).Backprice <= Global_Max_Price and then
-        Local_Bra(Idx).Layprice  <= Global_Max_Price then
-
-        Runner.Selectionid := Local_Bra(Idx).Selectionid;
-        Runner.Marketid := Local_Bra(Idx).Marketid;
+        Runner.Selectionid := Local_Bra(4).Selectionid;
+        Runner.Marketid := Local_Bra(4).Marketid;
 
         if Global_Max_Price < 100.0 then
           if Global_Min_Delta < 10.0 then
@@ -120,12 +111,11 @@ procedure Bet_During_Race_5 is
                            Side   => Lay,
                            Size   => Lay_Size,
                            Price  => Price_Type(Global_Max_Price),
-                           Placed => Local_Bra(Idx).Pricets,
+                           Placed => Local_Bra(4).Pricets,
                            Runner => Runner,
                            Market => Market);
         Bet_List.Append(Bet);
       end if;
-    end if;
 
     -- Try To check outcome
 
