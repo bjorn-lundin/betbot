@@ -70,7 +70,6 @@ procedure Bet_During_Race_5 is
     Runner : Runners.Runner_Type;
     Name   : Betname_Type := (others => ' ');
     Idx    : Integer := 0;
-    Local_Max_Price : Fixed_Type := Global_Max_Price + Fixed_Type(25.0);
     Local_Bra : Best_Runners_Array_Type := Bra;
   begin
 
@@ -97,23 +96,30 @@ procedure Bet_During_Race_5 is
 
       if Local_Bra(Idx).Backprice >= Fixed_Type(1.0)and then
         Local_Bra(Idx).Layprice  >= Fixed_Type(1.0) and then
-        Local_Bra(Idx).Backprice <= Fixed_Type(100.0) and then
-        Local_Bra(Idx).Layprice  <= Local_Max_Price then
+        Local_Bra(Idx).Backprice <= Global_Max_Price and then
+        Local_Bra(Idx).Layprice  <= Global_Max_Price then
 
         Runner.Selectionid := Local_Bra(Idx).Selectionid;
         Runner.Marketid := Local_Bra(Idx).Marketid;
 
-        if Global_Min_Delta < 10.0 then
-          Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
-        else
-          Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+        if Global_Max_Price < 100.0 then
+          if Global_Min_Delta < 10.0 then
+            Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+          else
+            Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+          end if;
+        else -- Global_Max_Price <=100.0
+          if Global_Min_Delta < 10.0 then
+            Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+          else
+            Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+          end if;
         end if;
-
 
         Bet := Bets.Create(Name   => Name,
                            Side   => Lay,
                            Size   => Lay_Size,
-                           Price  => Price_Type(Local_Max_Price),
+                           Price  => Price_Type(Global_Max_Price),
                            Placed => Local_Bra(Idx).Pricets,
                            Runner => Runner,
                            Market => Market);
@@ -121,9 +127,7 @@ procedure Bet_During_Race_5 is
       end if;
     end if;
 
-
     -- Try To check outcome
-
 
     for B of Bet_List loop
       --find runner
