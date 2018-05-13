@@ -38,8 +38,8 @@ procedure Bet_During_Race_4 is
   Global_Back_1_At,
   Global_Back_2_At,
   Global_Min_Delta,
-  Global_Max_Price: Fixed_Type := 0.0;
-  Ba_Place_Back_Bet : aliased Boolean := False;
+  Global_Max_Price   : Fixed_Type := 0.0;
+  Ba_Place_Back_Bet  : aliased Boolean := False;
   Ba_Immediate_Match : aliased Boolean := False;
 
 
@@ -140,118 +140,86 @@ procedure Bet_During_Race_4 is
   procedure Treat_Back(List         : in     Price_Histories.Lists.List ;
                        Market       : in out Markets.Market_Type;
                        Bra          : in     Best_Runners_Array_Type ;
-                       Status       : in out Bet_Status_Type;
-                       Bet_List     : in out Bets.Lists.List;
+                       Status       :    out Bet_Status_Type;
                        Back_1_At    : in Fixed_Type;
                        Back_2_At    : in Fixed_Type) is
     pragma Unreferenced(List);
-    Bet : Bets.Bet_Type;
     use type Price_Histories.Price_History_Type;
     Runner : Runners.Runner_Type;
     Name : Betname_Type := (others => ' ');
   begin
-    case Status is
-      when No_Bet_Laid =>
 
-        if Bra(1).Backprice <= Back_1_At and then
-          Bra(2).Backprice >= Back_2_At and then
-          Bra(2).Backprice < Fixed_Type(10_000.0) then  -- so it exists
+    if Bra(1).Backprice <= Back_1_At and then
+      Bra(2).Backprice >= Back_2_At and then
+      Bra(2).Backprice < Fixed_Type(10_000.0) then  -- so it exists
 
-          Runner.Selectionid := Bra(1).Selectionid;
-          if Back_2_At < 10.0 then
-            Move("WIN_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
-          else
-            Move("WIN_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
-          end if;
-          Bet := Bets.Create(Name   => Name,
-                             Side   => Back,
-                             Size   => Back_Size,
-                             Price  => Price_Type(Bra(1).Backprice),
-                             Placed => Bra(1).Pricets,
-                             Runner => Runner,
-                             Market => Market);
+      if Ba_Place_Back_Bet then
+        declare
+          Bet_Place                    : Bets.Bet_Type;
+          Place_Market                 : Markets.Market_Type;
+          Found                        : Boolean := False;
+          Place_Price_During_Race_List : Price_Histories.Lists.List;
+          Place_Bet_Status             :  Bet_Status_Type := No_Bet_Laid;
+        begin
+          Market.Corresponding_Place_Market(Place_Market => Place_Market, Found => Found);
+          if Found then
+            Runner.Marketid := Place_Market.Marketid;
+            Runner.Selectionid := Bra(1).Selectionid;
 
-          Status          := Bet_Laid;
-          Bet_List.Append(Bet);
-
-          if Ba_Place_Back_Bet then
-            declare
-              Bet_Place                    : Bets.Bet_Type;
-              Place_Market                 : Markets.Market_Type;
-              Found                        : Boolean := False;
-              Place_Price_During_Race_List : Price_Histories.Lists.List;
-              Place_Bet_Status             :  Bet_Status_Type := No_Bet_Laid;
-            begin
-              Market.Corresponding_Place_Market(Place_Market => Place_Market, Found => Found);
-              if Found then
-                Runner.Marketid := Place_Market.Marketid;
-
-                -- read the place odds for this runner - if any
-                Sim.Read_Marketid_Selectionid(Marketid    => Place_Market.Marketid,
-                                              Selectionid => Runner.Selectionid,
-                                              Animal      => Horse,
-                                              List        => Place_Price_During_Race_List) ;
-                for Po of Place_Price_During_Race_List loop
-                  case Place_Bet_Status is
-                    when No_Bet_Laid =>
-                      if Po.Pricets >= Bra(1).Pricets then
-                        Name(1..4) := "PLC_";
-                        Bet_Place := Bets.Create(Name   => Name,
-                                                 Side   => Back,
-                                                 Size   => Back_Size,
-                                                 Price  => Price_Type(Po.Backprice),
-                                                 Placed => Po.Pricets,
-                                                 Runner => Runner,
-                                                 Market => Place_Market);
-                        Place_Bet_Status := Bet_Laid;
-                      end if;
-
-                    when Bet_Laid =>
-                      if Po.Pricets > Bet_Place.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
-                        if Po.Backprice >= Bet_Place.Price and then -- Backbet so yes '>=' NOT '<='
-                          Po.Layprice  > Fixed_Type(1.0) and then -- sanity
-                          Po.Backprice >  Fixed_Type(1.0) and then -- sanity
-                          Bet_Place.Status(1)  = 'U' then -- sanity
-                          Bet_Place.Status(1..20) := "MATCHED             "; --Matched
-                          Bet_Place.Pricematched := Po.Backprice;
-                          Bet_Place.Check_Outcome;
-                          Bet_Place.Insert;
-                          Status := Bet_Matched;
-                        end if;
-                      elsif Po.Pricets > Bet_Place.Betplaced + (0,0,0,2,0)  and then Ba_Immediate_Match  then
-                        Status := Bet_Matched; -- makes the calling loop exit
-                      end if;
-
-                    when Bet_Matched => exit;
-                  end case;
-                end loop;
-              end if;
-            end;
-          end if;
-        end if;
-
-      when Bet_Laid  =>
-        for B of Bet_List loop
-          if B.Selectionid = Bra(1).Selectionid then
-            if Bra(1).Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
-              if Bra(1).Backprice >= B.Price and then -- Backbet so yes '>=' NOT '<='
-                Bra(1).Layprice  > Fixed_Type(1.0) and then -- sanity
-                Bra(1).Backprice >  Fixed_Type(1.0) and then -- sanity
-                B.Status(1)  = 'U' then -- sanity
-                B.Status(1..20) := "MATCHED             "; --Matched
-                B.Pricematched := Bra(1).Backprice;
-                B.Check_Outcome;
-                B.Insert;
-                Status := Bet_Matched;
-                exit;
-              end if;
-            elsif Bra(1).Pricets > B.Betplaced + (0,0,0,2,0)  and then Ba_Immediate_Match  then
-              Status := Bet_Matched; -- makes the calling loop exit
+            if Back_2_At < 10.0 then
+              Move("WIN_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
+            else
+              Move("WIN_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
             end if;
+
+            -- read the place odds for this runner - if any
+            Sim.Read_Marketid_Selectionid(Marketid    => Place_Market.Marketid,
+                                          Selectionid => Runner.Selectionid,
+                                          Animal      => Horse,
+                                          List        => Place_Price_During_Race_List) ;
+            for Po of Place_Price_During_Race_List loop
+              case Place_Bet_Status is
+                when No_Bet_Laid =>
+                  if Po.Pricets >= Bra(1).Pricets then
+                    Name(1..4) := "PLC_";
+                    Bet_Place := Bets.Create(Name   => Name,
+                                             Side   => Back,
+                                             Size   => Back_Size,
+                                             Price  => Price_Type(Po.Backprice),
+                                             Placed => Po.Pricets,
+                                             Runner => Runner,
+                                             Market => Place_Market);
+                    Place_Bet_Status := Bet_Laid;
+                  end if;
+
+                when Bet_Laid =>
+                  if Po.Pricets > Bet_Place.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+                    if Po.Backprice >= Bet_Place.Price and then -- Backbet so yes '>=' NOT '<='
+                      Po.Layprice > Fixed_Type(1.0) and then -- sanity
+                      Po.Backprice > Fixed_Type(1.0) and then -- sanity
+                      Bet_Place.Status(1)  = 'U' then -- sanity
+                      Bet_Place.Status(1..20) := "MATCHED             "; --Matched
+                      Bet_Place.Pricematched := Po.Backprice;
+                      Bet_Place.Check_Outcome;
+                      Bet_Place.Insert;
+                      Place_Bet_Status := Bet_Matched;
+                    elsif Ba_Immediate_Match then
+                      Place_Bet_Status := Bet_Matched;
+                      exit;
+                    end if;
+                  end if;
+
+                when Bet_Matched => exit;
+              end case;
+            end loop;
+            Status := Bet_Matched; -- bet handled, exit outer loop
           end if;
-        end loop;
-      when Bet_Matched => raise Constraint_Error with Status'Img & " in Treat_back!"; -- cant happen here
-    end case;
+        end;
+      else
+        Status := Bet_Matched; -- no placemarket, skip this in outer loop
+      end if;
+    end if;
+
   end Treat_Back;
   --------------------------------------------------------------------------
 
@@ -318,7 +286,7 @@ procedure Bet_During_Race_4 is
   Sa_Min_Delta   : aliased  Gnat.Strings.String_Access;
   Sa_Max_Price   : aliased  Gnat.Strings.String_Access;
 
-  type Action_Type is (Do_Back, Do_Lay, Do_Both);
+  type Action_Type is (Do_Back, Do_Lay);
   Global_Action  : Action_Type := Do_Back;
 
 begin
@@ -397,8 +365,6 @@ begin
     Global_Action := Do_Back;
   elsif Sa_Action.all = "lay" then
     Global_Action := Do_Lay;
-  elsif Sa_Action.all = "both" then
-    Global_Action := Do_Both;
   else
     raise Constraint_Error with "Bad Action: '" & Sa_Action.all & "'";
   end if;
@@ -459,31 +425,29 @@ begin
                            Bra  => Best_Runners,
                            Wr   => Worst_Runner);
 
-                if Global_Action = Do_Back or else Global_Action = Do_Both then
-                  Treat_Back(List          => List,
-                             Market        => Market,
-                             Bra           => Best_Runners,
-                             Status        => Back_Bet_Status,
-                             Bet_List      => Global_Bet_List,
-                             Back_1_At     => Global_Back_1_At,
-                             Back_2_At     => Global_Back_2_At);
-                end if;
-
-                if Global_Action = Do_Lay or else Global_Action = Do_Both then
-                  Treat_Lay(List          => List,
-                            Market        => Market,
-                            Bra           => Best_Runners,
-                            Old_Bra       => Old_Best_Runners,
-                            Wr            => Worst_Runner,
-                            Status        => Lay_Bet_Status,
-                            Bet_List      => Global_Bet_List);
-                end if;
+                case Global_Action is
+                  when Do_Back =>
+                    Treat_Back(List          => List,
+                               Market        => Market,
+                               Bra           => Best_Runners,
+                               Status        => Back_Bet_Status,
+                               Back_1_At     => Global_Back_1_At,
+                               Back_2_At     => Global_Back_2_At);
+                  when Do_Lay =>
+                    Treat_Lay(List          => List,
+                              Market        => Market,
+                              Bra           => Best_Runners,
+                              Old_Bra       => Old_Best_Runners,
+                              Wr            => Worst_Runner,
+                              Status        => Lay_Bet_Status,
+                              Bet_List      => Global_Bet_List);
+                end case;
                 Old_Best_Runners := Best_Runners;
 
               end;
-              exit Loop_Ts when (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched)
-                or else
-                  (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched);
+              exit Loop_Ts when  (Global_Action = Do_Back and then Back_Bet_Status = Bet_Matched)
+                           or else
+                                 (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched);
             end loop Loop_Ts; --  Timestamp
           end;
         end if; -- Market_type(1..3) = WIN
