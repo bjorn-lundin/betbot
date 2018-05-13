@@ -22,7 +22,7 @@ with Bot_Svn_Info;
 with Ini;
 
 
-procedure Bet_During_Race_4 is
+procedure Bet_During_Race_5 is
 
   package Ev renames Ada.Environment_Variables;
   Global_Bet_List : Bets.Lists.List;
@@ -481,4 +481,4 @@ begin
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
-end Bet_During_Race_4;
+end Bet_During_Race_5;
