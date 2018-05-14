@@ -481,10 +481,11 @@ begin
       end loop Market_Loop;
     end;
 
+    T.Commit;
+
     Current_Date := Current_Date + One_Day;
     exit when Current_Date = Stop_Date;
 
-    T.Commit;
   end loop Date_Loop;
 
   Sql.Close_Session;    -- no need for db anymore
