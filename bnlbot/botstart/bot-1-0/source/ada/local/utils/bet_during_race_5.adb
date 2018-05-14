@@ -219,6 +219,7 @@ procedure Bet_During_Race_5 is
                     Bet_Place.Insert;
                     Place_Bet_Status := Bet_Matched;
                   elsif Ba_Immediate_Match then
+                    Bet_Place.Status(1) := 'L'; -- lapsed. will not be matched anymore
                     Place_Bet_Status := Bet_Matched;
                     exit;
                   end if;
@@ -458,7 +459,7 @@ begin
               --  (Global_Action = Do_Lay and then Lay_Bet_Status = Bet_Matched);
             end loop Loop_Ts; --  Timestamp
           end;
-          Log("num lay bets laid" & Global_Bet_List.Length'Img);
+          --Log("num lay bets laid" & Global_Bet_List.Length'Img);
           Global_Bet_List.Clear;
         end if; -- Market_type(1..3) = WIN
       end loop Market_Loop;
