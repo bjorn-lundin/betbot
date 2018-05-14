@@ -302,6 +302,7 @@ procedure Bet_During_Race_5 is
   Sa_Min_Delta   : aliased  Gnat.Strings.String_Access;
   Sa_Max_Price   : aliased  Gnat.Strings.String_Access;
   Ba_Summer_Only : aliased Boolean := False;
+  Ba_Rest_After_Summer_Only : aliased Boolean := False;
 
   type Action_Type is (Do_Back, Do_Lay);
   Global_Action  : Action_Type := Do_Back;
@@ -355,8 +356,11 @@ begin
      Long_Switch => "--summer_only",
      Help        => "set last day 2016-08-31, for short runs");
 
-
-
+  Define_Switch
+    (Cmd_Line,
+     Ba_Rest_After_Summer_Only'Access,
+     Long_Switch => "--rest_after_summer_only",
+     Help        => "set first day 2016-08-31, for runs after short runs to get all");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -390,7 +394,9 @@ begin
     Stop_Date := (2016,09,1,0,0,0,0);
   end if;
 
-
+  if Ba_Rest_After_Summer_Only then
+    Current_Date := (2016,09,1,0,0,0,0);
+  end if;
 
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","lay_during_race3");
