@@ -292,7 +292,7 @@ procedure Bet_During_Race_5 is
   Start_Date     : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day        : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date   :          Calendar2.Time_Type := Start_Date;
-  Stop_Date      : constant Calendar2.Time_Type := (2018,03,01,0,0,0,0);
+  Stop_Date      :          Calendar2.Time_Type := (2018,03,01,0,0,0,0);
   T              :          Sql.Transaction_Type;
   Cmd_Line       :          Command_Line_Configuration;
   Sa_Logfilename : aliased  Gnat.Strings.String_Access;
@@ -301,6 +301,7 @@ procedure Bet_During_Race_5 is
   Sa_Back_2_At   : aliased  Gnat.Strings.String_Access;
   Sa_Min_Delta   : aliased  Gnat.Strings.String_Access;
   Sa_Max_Price   : aliased  Gnat.Strings.String_Access;
+  Ba_Summer_Only : aliased Boolean := False;
 
   type Action_Type is (Do_Back, Do_Lay);
   Global_Action  : Action_Type := Do_Back;
@@ -348,6 +349,14 @@ begin
      Long_Switch => "--immediate_match",
      Help        => "abandon bet if not matched within a second");
 
+  Define_Switch
+    (Cmd_Line,
+     Ba_Summer_Only'Access,
+     Long_Switch => "--summer_only",
+     Help        => "set last day 2016-08-31, for short runs");
+
+
+
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -375,6 +384,12 @@ begin
   else
     raise Constraint_Error with "Bad Action: '" & Sa_Action.all & "'";
   end if;
+
+
+  if Ba_Summer_Only then
+    Stop_Date := (2016,09,1,0,0,0,0);
+  end if;
+
 
 
   if not Ev.Exists("BOT_NAME") then
