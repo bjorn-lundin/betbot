@@ -183,9 +183,9 @@ procedure Bet_During_Race_5 is
           Runner.Selectionid := Bra(1).Selectionid;
 
           if Back_2_At < 10.0 then
-            Move("PLC_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
+            Move("PLC_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1) & "_1.01", Name);
           else
-            Move("PLC_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1), Name);
+            Move("PLC_BACK_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1) & "_1.01", Name);
           end if;
 
           -- read the place odds for this runner - if any
@@ -196,11 +196,12 @@ procedure Bet_During_Race_5 is
           for Po of Place_Price_During_Race_List loop
             case Place_Bet_Status is
               when No_Bet_Laid =>
-                if Po.Pricets >= Bra(1).Pricets then
+                if Po.Pricets >= Bra(1).Pricets then -- find the same time in the race
                   Bet_Place := Bets.Create(Name   => Name,
                                            Side   => Back,
                                            Size   => Back_Size,
-                                           Price  => Price_Type(Po.Backprice),
+                                           --Price  => Price_Type(Po.Backprice),
+                                           Price  => Price_Type(1.01),
                                            Placed => Po.Pricets,
                                            Runner => Runner,
                                            Market => Place_Market);
