@@ -256,7 +256,7 @@ procedure Graph_Data_Ael is
                                   "from ABETS B " &
                                   "where true " &
                                   "and B.BETNAME = :BETNAME " &
-                                  "and B.STATUS ='M' " &
+                                  "and B.STATUS ='MATCHED' " &
                                   "order by B.STARTTS");
     Select_Equity_Date.Set ("BETNAME", Betname);
     Select_Equity_Date.Open_Cursor;
@@ -392,11 +392,11 @@ begin
 
   Debug ("Connect Db");
   Sql.Connect
-    (Host     => Ini.Get_Value("local", "host", ""),
-     Port     => Ini.Get_Value("local", "port", 5432),
-     Db_Name  => Ini.Get_Value("local", "name", ""),
-     Login    => Ini.Get_Value("local", "username", ""),
-     Password => Ini.Get_Value("local", "password", ""));
+    (Host     => Ini.Get_Value("database_home", "host", ""),
+     Port     => Ini.Get_Value("database_home", "port", 5432),
+     Db_Name  => Ini.Get_Value("database_home", "name", ""),
+     Login    => Ini.Get_Value("database_home", "username", ""),
+     Password => Ini.Get_Value("database_home", "password", ""));
   Debug ("db Connected");
 
   T.Start;
