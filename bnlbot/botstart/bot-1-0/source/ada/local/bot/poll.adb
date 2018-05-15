@@ -789,7 +789,7 @@ procedure Poll is
                                        Marketid        => Markets_Array (Win).Marketid,
                                        Match_Directly  => True);
 
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_17_01_1_2_Plc_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_30_01_1_2_Plc_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -809,7 +809,7 @@ procedure Poll is
                     if Do_Try_Bet and then
                       Has_Been_In_Play then
 
-                      if I = Horse_Back_1_17_01_1_2_Plc_1_01 then
+                      if I In Horse_Back_1_17_01_1_2_Plc_1_01 .. Horse_Back_1_30_01_1_2_Plc_1_01 then
                         Match_Directly := False;
                       end if;
 
