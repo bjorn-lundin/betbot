@@ -27,6 +27,7 @@ procedure Graph_Data_Ael is
   Sa_Betname1         : aliased Gnat.Strings.String_Access;
   Sa_Betname2         : aliased Gnat.Strings.String_Access;
   Sa_Price            : aliased Gnat.Strings.String_Access;
+  Sa_Min_Price_Matched : aliased Gnat.Strings.String_Access;
   Ba_Print_Strategies : aliased Boolean := False;
   Ba_Avg_Price        : aliased Boolean := False;
   Ba_Profit           : aliased Boolean := False;
@@ -250,6 +251,8 @@ procedure Graph_Data_Ael is
     Eos           : Boolean := False;
     Equity_Result : Equity_Result_Type;
     Profit        : Fixed_Type := 0.0;
+    Min_Price_Matched        : Fixed_Type := 1.01;
+
   begin
     Select_Equity_Date.Prepare (
                                 "select B.STARTTS, B.PROFIT " &
@@ -257,8 +260,15 @@ procedure Graph_Data_Ael is
                                   "where true " &
                                   "and B.BETNAME = :BETNAME " &
                                   "and B.STATUS ='MATCHED' " &
+                                  "and B.PRICEMATCHED >= :PRICEMATCHED " &
                                   "order by B.STARTTS");
     Select_Equity_Date.Set ("BETNAME", Betname);
+
+    if Sa_Min_Price_Matched.all /= "" then
+      Min_Price_Matched := Fixed_Type'Value(Sa_Min_Price_Matched.all);
+    end if;
+    Select_Equity_Date.Set ("PRICEMATCHED", Min_Price_Matched);
+
     Select_Equity_Date.Open_Cursor;
     loop
       Select_Equity_Date.Fetch (Eos);
@@ -379,6 +389,15 @@ begin
      Sa_Price'Access,
      Long_Switch => "--price=",
      Help        => "price of bet");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Min_Price_Matched'Access,
+     Long_Switch => "--min_price_matched=",
+     Help        => "min price matched of bet");
+
+
+
 
   Getopt (Cmd_Line);  -- process the command line
 
