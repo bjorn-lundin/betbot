@@ -116,7 +116,7 @@ package body Bot_Ws_Services is
     );
 
     Select_Sum_Bets_Grouped_By_Name.Prepare(
-      "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT " &
+      "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
       "round((case sum(SIZEMATCHED) " &
       "    when 0 then 0.0 " &
       "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
@@ -126,7 +126,7 @@ package body Bot_Ws_Services is
       "and STARTTS <= :STOP " &
       "and STATUS = 'SETTLED' " &
       "group by BETNAME " &
-      "order by BETNAME " );
+      "order by BETNAME" );
 
   end Prepare_Bets;
   ------------------------------------------------------------
