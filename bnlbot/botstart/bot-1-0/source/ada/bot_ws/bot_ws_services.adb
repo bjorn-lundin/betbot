@@ -10,8 +10,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Utils;
 with Logging; use Logging;
 with Gnatcoll.Json; use Gnatcoll.Json;
-with Table_Abets;
-
+with Bets;
 
 package body Bot_Ws_Services is
 
@@ -21,6 +20,7 @@ package body Bot_Ws_Services is
   Select_Bets : Sql.Statement_Type;
   Select_Sum_Bets : Sql.Statement_Type;
   Select_Sum_Bets_Named : Sql.Statement_Type;
+  Select_Sum_Bets_Grouped_By_Name : Sql.Statement_Type;
 
   ------------------------------------------------------------------
 
@@ -114,6 +114,20 @@ package body Bot_Ws_Services is
       "and BETNAME = :BETNAME " &
       "and STATUS = 'SETTLED'"
     );
+
+    Select_Sum_Bets_Grouped_By_Name.Prepare(
+      "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT " &
+      "round((case sum(SIZEMATCHED) " &
+      "    when 0 then 0.0 " &
+      "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
+      " end)::numeric,2) RATIO " &
+      "from ABETS " &
+      "where STARTTS >= :START " &
+      "and STARTTS <= :STOP " &
+      "and STATUS = 'SETTLED' " &
+      "group by BETNAME " &
+      "order by BETNAME " );
+
   end Prepare_Bets;
   ------------------------------------------------------------
 
@@ -125,9 +139,9 @@ package body Bot_Ws_Services is
     End_Of_Set      : Boolean := False;
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
-    Bet_List        : Table_Abets.Abets_List_Pack2.List;
+    Bet_List        : Bets.Lists.List;
     JSON_Reply      : JSON_Value := Create_Object;
-    Bets            : JSON_Array := Empty_Array;
+    Json_Bets       : JSON_Array := Empty_Array;
     Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
@@ -220,7 +234,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Set("START", Start);
     Select_Sum_Bets.Set("STOP", Stop);
 
-    Table_Abets.Read_List(Select_Bets, Bet_List);
+    Bets.Read_List(Select_Bets, Bet_List);
     JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
 
@@ -237,7 +251,7 @@ package body Bot_Ws_Services is
         Bet.Set_Field (Field_Name => "betplaced",    Field => B.Betplaced.String_Date_And_Time(Milliseconds => True));
         Bet.Set_Field (Field_Name => "pm",           Field => Float(B.Pricematched));
         Bet.Set_Field (Field_Name => "sm",           Field => Float(B.Sizematched));
-        Append(Bets, Bet);
+        Append(Json_bets, Bet);
       end ;
     end loop;
 
@@ -248,7 +262,7 @@ package body Bot_Ws_Services is
     end if;
     Select_Sum_Bets.Close_Cursor;
     JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
-    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Bets);
+    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Json_bets);
 
     T.Commit;
     Log(Object & Service, "Return " & JSON_Reply.Write);
@@ -433,5 +447,122 @@ package body Bot_Ws_Services is
 
   end Weeks;
   ---------------------------------------------------
+
+  function Sum_Settled_Bets(Username  : in String;
+                            Context   : in String) return String is
+    Service         : constant String := "Sum_Settled_Bets";
+    T               : Sql.Transaction_Type;
+    End_Of_Set      : Boolean := False;
+    Start           : Calendar2.Time_Type := Calendar2.Clock;
+    Stop            : Calendar2.Time_Type := Start;
+    JSON_Reply      : JSON_Value := Create_Object;
+    Json_Bets       : JSON_Array := Empty_Array;
+
+    use Calendar2;
+  begin
+
+    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
+
+    Start.Hour        := 0;
+    Start.Minute      := 0;
+    Start.Second      := 0;
+    Start.Millisecond := 0;
+
+    Stop.Hour        := 23;
+    Stop.Minute      := 59;
+    Stop.Second      := 59;
+    Stop.Millisecond := 0;
+
+    T.Start;
+    Prepare_Bets;
+
+    if Context = "sum_todays_bets" then
+      null; -- is ok already
+    elsif Context = "sum_7_days_bets" then
+      Start := Start - (6,0,0,0,0);
+    elsif Context = "sum_thisweeks_bets" then
+      declare
+        Dow : Week_Day_Type := Week_Day_Of (Start) ;
+      begin
+        case Dow is
+          when Monday =>
+            Stop := Stop  + (6,0,0,0,0);
+          when Tuesday =>
+            Start:= Start - (1,0,0,0,0);
+            Stop := Stop  + (5,0,0,0,0);
+          when Wednesday =>
+            Start:= Start - (2,0,0,0,0);
+            Stop := Stop  + (4,0,0,0,0);
+          when Thursday =>
+            Start:= Start - (3,0,0,0,0);
+            Stop := Stop  + (3,0,0,0,0);
+          when Friday =>
+            Start:= Start - (4,0,0,0,0);
+            Stop := Stop  + (2,0,0,0,0);
+          when Saturday =>
+            Start:= Start - (5,0,0,0,0);
+            Stop := Stop  + (1,0,0,0,0);
+          when Sunday =>
+            Start:= Start - (6,0,0,0,0);
+        end case ;
+      end;
+    elsif Context = "sum_total_bets" then
+        Start := (2018,5,1,0,0,0,0);
+    else
+      JSON_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
+      JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+      JSON_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
+      Log(Object & Service, "Return " & JSON_Reply.Write);
+      return JSON_Reply.Write;
+    end if;
+
+    Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
+
+    Select_Sum_Bets_Grouped_By_Name.Set("START", Start);
+    Select_Sum_Bets_Grouped_By_Name.Set("STOP", Stop);
+
+    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+
+    Select_Sum_Bets_Grouped_By_Name.Open_Cursor;
+    Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
+    loop
+      Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
+      exit when End_Of_Set ;
+      declare
+        Bet : JSON_Value := Create_Object;
+        Betname : Betname_Type := (others => ' ');
+        Profit : Fixed_Type := 0.0;
+        Sizematched : Fixed_Type := 0.0;
+        Count : Integer_4 := 0;
+        Ratio : Fixed_Type := 0.0;
+      begin
+        -- betname, profit, sizematched, count, riskratio
+        Select_Sum_Bets_Grouped_By_Name.Get("BETNAME", Betname);
+        Select_Sum_Bets_Grouped_By_Name.Get("PROFIT", Profit);
+        Select_Sum_Bets_Grouped_By_Name.Get("SIZEMATCHED", Sizematched);
+        Select_Sum_Bets_Grouped_By_Name.Get("CNT", Count);
+        Select_Sum_Bets_Grouped_By_Name.Get("RATIO", Ratio);
+
+        Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(Betname));
+        Bet.Set_Field (Field_Name => "profit",       Field => Float(Profit));
+        Bet.Set_Field (Field_Name => "sm",           Field => Float(Sizematched));
+        Bet.Set_Field (Field_Name => "count",        Field => Long_Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "ratio",        Field => Float(Ratio));
+        Append(Json_Bets, Bet);
+      end;
+    end loop;
+    Select_Sum_Bets_Grouped_By_Name.Close_Cursor;
+
+    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
+
+    T.Commit;
+    Log(Object & Service, "Return " & JSON_Reply.Write);
+    return JSON_Reply.Write;
+
+  end Sum_Settled_Bets;
+----------------------------------------------------------------
+
+
 
 end Bot_Ws_Services;

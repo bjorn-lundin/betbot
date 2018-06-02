@@ -14,6 +14,9 @@ package Bot_Ws_Services is
   function Settled_Bets   (Username  : in String;
                            Context   : in String) return String;
 
+  function Sum_Settled_Bets(Username  : in String;
+                            Context   : in String) return String;
+
   function Todays_Total   (Username  : in String;
                            Context   : in String) return String;
 
