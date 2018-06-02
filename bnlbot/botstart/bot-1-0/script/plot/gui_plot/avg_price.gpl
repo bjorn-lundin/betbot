@@ -10,8 +10,8 @@ set key top left
 
 set title "avg price for winning bets last " . days . " days \n" . user . " : " . ts
 
-set yrange [1.0:1.08]
-set ytics 0.01
+#set yrange [1.0:1.15]
+#set ytics 0.01
 
 set ylabel "Odds"
 

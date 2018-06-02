@@ -92,16 +92,13 @@ function Check_Bots_For_User () {
   Start_Bot $BOT_USER bet_checker bet_checker
 
   POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 poll_07 \
-                poll_08 poll_09 poll_10 poll_11 poll_12 poll_13 poll_14"
+                poll_08 poll_09 poll_10 "
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
 
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 \
-                   bet_placer_007 bet_placer_008 bet_placer_009 \
-                   bet_placer_010 bet_placer_011 bet_placer_012 \
-                   bet_placer_013 bet_placer_014 "
+                   bet_placer_004 bet_placer_005 bet_placer_006 "                  
 #bet_placer_015 \
 #                   bet_placer_016 bet_placer_017 bet_placer_018 "
 
@@ -161,20 +158,6 @@ function Check_System_Bots_For_User () {
        Start_Bot $BOT_USER bot_ws bot_web_server
     ;;
 
-    #ael)
-    #  Start_Bot $BOT_USER markets_fetcher markets_fetcher
-    #  Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-    #  Start_Bot $BOT_USER bet_checker bet_checker
-    #
-    #  POLLERS_LIST="poll_bounds_1 poll_bounds_2 poll_bounds_3 poll_bounds_4"
-    #
-    #  for poller in $POLLERS_LIST ; do
-    #    Start_Bot $BOT_USER $poller poll_bounds poll_bounds.ini
-    #  done
-    #  IS_TESTER="true"
-    #
-    #;;
-
     ghd)
        Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
        Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
@@ -190,30 +173,7 @@ function Check_System_Bots_For_User () {
        #done
     ;;
 
-    #soc)
-    #   Start_Bot $BOT_USER markets_fetcher markets_fetcher_soccer
-    #   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-    #   Start_Bot $BOT_USER bet_checker bet_checker
-    #   #Start_Bot $BOT_USER poll_soccer poll_soccer
-    #   Start_Bot $BOT_USER live_feed football_live_feed
-    #   #DATA_COLLECTORS_LIST="poll_market_s01 poll_market_s02 poll_market_s03 poll_market_s04 \
-    #   #                      poll_market_s05 poll_market_s06 poll_market_s07 poll_market_s08 \
-    #   #                      poll_market_s09 poll_market_s10 poll_market_s11 poll_market_s12 \
-    #   #                      poll_market_s13 poll_market_s14 poll_market_s15 poll_market_s16 \
-    #   #                      poll_market_s17 poll_market_s18 poll_market_s19 poll_market_s20"
-    #
-    #   #for collector in $DATA_COLLECTORS_LIST ; do
-    #   #  Start_Bot $BOT_USER $collector poll_soccer
-    #   #done
-    #
-    #  # Start_Bot $BOT_USER menu_parser menu_parser
-    #
-    #   #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
-    #   #for player in $PLAYERS_LIST2 ; do
-    #   #  Start_Bot $BOT_USER $player long_poll_gh_market
-    #   #done
-    #;;
-
+   
 
   esac
 
@@ -223,23 +183,6 @@ function Check_System_Bots_For_User () {
   fi
 
 
-  #if [ $IS_TESTER == "true" ] ; then
-  #  case $BOT_MINUTE in
-  #      00) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      05) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      10) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      15) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      25) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      35) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      45) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      50) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #      55) $BOT_TARGET/bin/stat_maker --update_only ;;
-  #  esac
-  ##  A=NULL
-  #fi
 }
 
 ##
@@ -260,19 +203,11 @@ function Create_Plots () {
 
   for S in $STRATEGIES ; do
 
-      if [ $S == "LAY_160_200" ] ; then
-        ST="HORSES_WIN_LAY_FINISH_160_200_1"
-      elif [ $S == "LAY_1_10_25_4" ] ; then
-        ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4"
-      else
-        ST=$S
-      fi
-
-    strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
+    strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
     #create datafiles
-    ${BOT_TARGET}/bin/graph_data --betname=${ST} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${ST} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${ST} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
     #put it in wd of gnuplot
     cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
     DF1="settled_vs_lapsed_${DAYS}_${strategy}"
@@ -282,6 +217,7 @@ function Create_Plots () {
       -e "user='$USR'" \
       -e "days='$DAYS'" \
       settled_vs_lapsed.gpl 2>/dev/null
+      
     DF2="profit_vs_matched_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
@@ -289,6 +225,7 @@ function Create_Plots () {
       -e "user='$USR'" \
       -e "days='$DAYS'" \
       profit_vs_matched.gpl 2>/dev/null
+      
     DF2="avg_price_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
@@ -302,17 +239,9 @@ function Create_Plots () {
     FILES=""
     for S in $STRATEGIES ; do
 
-      if [ $S == "LAY_160_200" ] ; then
-        ST="HORSES_WIN_LAY_FINISH_160_200_1"
-      elif [ $S == "LAY_1_10_25_4" ] ; then
-        ST="HORSES_WIN_LAY_FINISH_1.10_25.0_4"
-      else
-        ST=$S
-      fi
-
-      strategy=$(echo ${ST} | tr '[:upper:]' '[:lower:]')
+      strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --equity  --betname=${ST}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -332,9 +261,12 @@ function Create_Plots () {
       -e "user='$USR'" \
       equity.gpl  2>/dev/null
   fi
-  #move to user area and cleanup
+  #move to user area and cleanup, and to web server
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
+  if [ ${USR} == "bnl" ] ; then 
+    cp *.png ${BOT_START}/bot-1-0/source/ada/bot_ws/html/img/
+  fi
   rm *.png
   cd ${old_pwd}
 }
@@ -371,6 +303,8 @@ case $BOT_MACHINE_ROLE in
     HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
+      Create_Plots $USR 7
+      Create_Plots $USR 42
     done
 
     for USR in $SYSTEM_USER_LIST ; do

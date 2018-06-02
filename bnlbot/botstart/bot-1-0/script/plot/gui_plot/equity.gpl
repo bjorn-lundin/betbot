@@ -1,8 +1,8 @@
 set datafile commentschars '#'
 set datafile separator '|'
 
-set terminal pngcairo size 2000,768 background '#ffffff'
-#set terminal pngcairo size 1024,768 background '#ffffff'
+#set terminal pngcairo size 2000,768 background '#ffffff'
+set terminal pngcairo size 1000,500 background '#ffffff'
 set output target_png
 
 set grid

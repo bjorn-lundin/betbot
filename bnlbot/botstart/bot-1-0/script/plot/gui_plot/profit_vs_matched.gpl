@@ -1,8 +1,8 @@
 set datafile commentschars '#'
 set datafile separator '|'
 
-#set terminal pngcairo size 2000,768 background '#ffffff'
-set terminal pngcairo size 1024,768 background '#ffffff'
+set terminal pngcairo size 1000,500 background '#ffffff'
+#set terminal pngcairo size 1024,768 background '#ffffff'
 set output data_file . '.png'
 
 set grid
@@ -10,10 +10,10 @@ set key top left
 
 set title "profit vs matched for last " . days . " days \n" . user . " : " . ts
 
-set yrange [-1:5]
-set y2range [-500:10000]
-set ytics 0.500
-set y2tics 500
+#set yrange [-15:10]
+#set y2range [-1000:5000]
+#set ytics 5.0
+#set y2tics 1000
 
 set ylabel "%"
 set y2label "kr"
@@ -29,4 +29,6 @@ set bmargin 8
      
 plot data_file . ".dat" using 1:4 with lines axes x1y1 title 'ratio - y1', \
      data_file . ".dat" using 1:2 with boxes axes x1y2 title 'profit - y2', \
-     data_file . ".dat" using 1:3 with boxes axes x1y2 title 'matched - y2'
+     data_file . ".dat" using 1:3 with boxes axes x1y2 title 'matched - y2', \
+     data_file . ".dat" using 1:4 with lines smooth bezier axes x1y1 title 'ratio smooth bezier - y1'
+     
