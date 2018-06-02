@@ -36,7 +36,7 @@ function Do_Ajax_Bets() {
   var n = d.getTime(); 
 
   $.ajax({url: 'https://betbot.nonobet.com',
-      data: {'context' : 'todays_bets',
+      data: {'context' : 'sum_todays_bets',
              'dummy' : n },
       type: 'get',                   
       async: 'true',
@@ -54,7 +54,7 @@ function Do_Ajax_Bets() {
       success: function (reply) {
           console.log("Do_Ajax_Bets.success");
           if(reply.result == "OK") {
-             console.log("Do_Ajax_Bets.success OK");
+             console.log("Do_Ajax_Bets.success OK\n" + reply.datatable);
              
              
             // //fill the table
@@ -99,8 +99,7 @@ function Do_Ajax_Today() {
              console.log(" Do_Ajax_Today.success OK");
              
             // $('#todays_total').empty();
-             $('#today').text("Resultat:"+ reply.total + " kr" );
-             
+             $('#today').text("Resultat:"+ reply.total + " kr"  + " matchat:" + reply.totalsm + " kr" + " vinst/risk:"  + (100.0 *reply.total / reply.totalsm).toFixed(2) + " %");
              
           } else {
              console.log("Do_Ajax_Today.success NOT OK");
@@ -113,6 +112,20 @@ function Do_Ajax_Today() {
 
 }
 
+
+function Do_Page_Reload () {
+  var unique = $.now();
+  
+//  $("#equity_png").remove();
+//  $("#seven_days").html("<img src='/img/equity.png'/>" ); 
+
+//   $('img').attr('src', '/img/equity.png' + '?' + unique);
+   $('#equity_png').attr('src', '/img/equity.png' + '?' + unique);
+   $('#profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
+   
+   
+}
+
 function Run_All() {
   console.log("Run_All start");
   var pBar = document.getElementById('pb');
@@ -123,10 +136,9 @@ function Run_All() {
   
   if (Cnt == 100) {
    // Do_Ajax_Race();
-    Do_Ajax_Today();
-    Do_Ajax_Bets();
-  //  Do_Ajax_Seven_Days()
-  //  Do_Ajax_Twenty_Eigth_Days()
+    Do_Page_Reload(); // get new graphs
+    Do_Ajax_Today(); // get todays earnigns
+    Do_Ajax_Bets();  // and a list of bets
     Cnt = 0;
     console.log("Run_All stop 1");
   } else {
@@ -179,7 +191,7 @@ function Do_Login() {
 function Do_Start() {
      //call by window.onload 
      console.log("onReady Start");
-     Cnt = 95;
+     Cnt = 98;
      //start timer ...
     // Start_Timer();
      Do_Login();
