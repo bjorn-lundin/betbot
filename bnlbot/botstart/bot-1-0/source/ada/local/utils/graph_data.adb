@@ -208,21 +208,18 @@ procedure Graph_Data is
      Profit : Fixed_Type := 0.0;
    begin
      Select_Equity_Date.Prepare(
-       "select B.STARTTS, B.PROFIT " &
-       "from ABETS B, ALL_RUNNERS R " &
+       "select B.BETPLACED, B.PROFIT " &
+       "from ABETS B " &
        "where B.BETNAME = :BETNAME " &
-       "and B.MARKETID = R.MARKETID " &
-       "and B.SELECTIONID = R.SELECTIONID " &
-       "and R.STATUS in ('WINNER','LOSER') " &
-       "and B.STATUS in ('SETTLED') " &
-       "order by B.STARTTS");
+       "and B.STATUS = 'SETTLED' " &
+       "order by B.BETPLACED");
      Select_Equity_Date.Set("BETNAME", Betname);
 
      Select_Equity_Date.Open_Cursor;
      loop
        Select_Equity_Date.Fetch(Eos);
        exit when Eos;
-       Select_Equity_Date.Get("STARTTS",Equity_Result.Ts);
+       Select_Equity_Date.Get("BETPLACED",Equity_Result.Ts);
        Select_Equity_Date.Get("PROFIT",Profit);
        Equity_Result.Equity := Equity_Result.Equity + Profit;
        A_List.Append(Equity_Result);
