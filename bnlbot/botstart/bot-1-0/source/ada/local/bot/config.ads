@@ -7,20 +7,12 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
-                    Horse_Back_1_10_07_1_2_Plc_1_01,
-                    Horse_Back_1_17_01_1_2_Plc_1_01,
+                --    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
+                --    Horse_Back_1_10_07_1_2_Plc_1_01,
+                --    Horse_Back_1_17_01_1_2_Plc_1_01,
                     Horse_Back_1_30_01_1_2_Plc_1_01,
                     Horse_Back_1_36_01_1_2_Plc_1_01,
-                    Horse_Back_1_50_01_1_2_Plc_1_06,
-                    Horse_Lay_1_05_10_1_2_Win_3_40,
-                    Horse_Lay_1_05_10_1_2_Win_3_50,
-
-                    Horse_Back_Win_High_To_Low_08_00_03_00,
-                    Horse_Back_Win_High_To_Low_21_00_13_00,
-
-                    Horse_Back_Place_High_To_Low_03_40_03_00,
-                    Horse_Back_Place_High_To_Low_12_00_03_00
+                    Horse_Back_1_50_01_1_2_Plc_1_06
                    );
 
 
