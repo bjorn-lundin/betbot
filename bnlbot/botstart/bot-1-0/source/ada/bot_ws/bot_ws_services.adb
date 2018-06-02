@@ -100,14 +100,14 @@ package body Bot_Ws_Services is
       "order by BETPLACED "
     );
     Select_Sum_Bets.Prepare(
-      "select sum(PROFIT) " &
+      "select sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED " &
       "from ABETS " &
       "where STARTTS >= :START " &
       "and STARTTS <= :STOP " &
       "and STATUS = 'SETTLED'"
     );
     Select_Sum_Bets_Named.Prepare(
-      "select sum(PROFIT) " &
+      "select sum(PROFIT) PROFIT " &
       "from ABETS " &
       "where STARTTS >= :START " &
       "and STARTTS <= :STOP " &
@@ -244,7 +244,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Open_Cursor;
     Select_Sum_Bets.Fetch(End_Of_Set);
     if not End_Of_Set then
-      Select_Sum_Bets.Get(1,Total_Profit);
+      Select_Sum_Bets.Get("PROFIT",Total_Profit);
     end if;
     Select_Sum_Bets.Close_Cursor;
     JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
@@ -268,6 +268,7 @@ package body Bot_Ws_Services is
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
     JSON_Reply      : JSON_Value := Create_Object;
+    Total_Sizematched,
     Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
@@ -295,10 +296,12 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Open_Cursor;
     Select_Sum_Bets.Fetch(End_Of_Set);
     if not End_Of_Set then
-      Select_Sum_Bets.Get(1,Total_Profit);
+      Select_Sum_Bets.Get("PROFIT",Total_Profit);
+      Select_Sum_Bets.Get("SIZEMATCHED",Total_Sizematched);
     end if;
     Select_Sum_Bets.Close_Cursor;
     JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+    JSON_Reply.Set_Field (Field_Name => "totalsm", Field =>  Float(Total_Sizematched));
 
     T.Commit;
     Log(Object & Service, "Return " & JSON_Reply.Write);
@@ -365,7 +368,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Named.Open_Cursor;
     Select_Sum_Bets_Named.Fetch(End_Of_Set);
     if not End_Of_Set then
-      Select_Sum_Bets_Named.Get(1,Total_Profit);
+      Select_Sum_Bets_Named.Get("PROFIT",Total_Profit);
     end if;
     Select_Sum_Bets_Named.Close_Cursor;
     Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
