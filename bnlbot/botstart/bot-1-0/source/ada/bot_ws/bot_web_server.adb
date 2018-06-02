@@ -139,6 +139,22 @@ procedure Bot_Web_Server is
       Response := Aws.Response.Build (Application_JSON,
                                       Bot_Ws_Services.Weeks(Username => Username,
                                                             Context  => Context));
+    elsif Context="sum_todays_bets" then
+      Response := Aws.Response.Build (Application_Json,
+                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                       Context  => Context));
+    elsif Context="sum_7_days_bets" then
+      Response := Aws.Response.Build (Application_Json,
+                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                       Context  => Context));
+    elsif Context="sum_thisweeks_bets" then
+      Response := Aws.Response.Build (Application_Json,
+                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                       Context  => Context));
+    elsif Context="sum_total_bets" then
+      Response := Aws.Response.Build (Application_Json,
+                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                       Context  => Context));
 
     else
       Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
