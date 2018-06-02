@@ -69,6 +69,13 @@ package body Types is
     return Trim(To_String(Self.Value), Right);
   end Fix_String;
   -----------------------------------------------------------
+  function Fix_String( Self : String_Object; Length : Integer; Justify : Ada.Strings.Alignment := Ada.Strings.Left  ) return String is
+    Dummy : String(1..Length) := (others => ' ');
+  begin -- return the string with fixed lentgh
+    Move(To_String(Trim(Self.Value,Both)),Dummy,Justify => Justify, Drop => Right);
+    return Dummy;
+  end Fix_String;
+  -----------------------------------------------------------
   function Trim(Self : String_Object) return String is
   begin -- return the right trimmed string
     return Trim(To_String(Self.Value), Both);
