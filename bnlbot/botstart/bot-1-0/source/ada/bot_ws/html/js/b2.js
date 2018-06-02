@@ -6,10 +6,10 @@ var context = 'todays_bets'
 
 //bnl
 $.makeTable = function (mydata) {
-    var table = $('<table data-role="table" data-mode="columntoggle" class="ui-responsive" id="datatable">');
+    var table = $('<table data-role="table" class="ui-responsive" id="datatable">');
     var tblHeader = "<thead><tr>";
     for (var k in mydata[0]) tblHeader += "<th>" + k + "</th>";
-    tblHeader += "</tr></thead>";
+    tblHeader += "</tr></thead><tbody>";
     $(tblHeader).appendTo(table);
     $.each(mydata, function (index, value) {
         var TableRow = "<tr>";
@@ -26,7 +26,7 @@ $.makeTable = function (mydata) {
         TableRow += "</tr>";
         $(table).append( TableRow);
     });
-    $(table).append('</table>');
+    $(table).append('</tbody></table>');
     return ($(table));
 };
 
