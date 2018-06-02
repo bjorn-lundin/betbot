@@ -525,7 +525,6 @@ package body Bot_Ws_Services is
     JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
 
     Select_Sum_Bets_Grouped_By_Name.Open_Cursor;
-    Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
     loop
       Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
       exit when End_Of_Set ;
