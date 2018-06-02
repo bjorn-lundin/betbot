@@ -20,8 +20,8 @@ function create_dump () {
   for DBNAME in ${DB_LIST} ; do
     for TABLE in ${TABLE_LIST} ; do
       pg_dump --schema-only --dbname=${DBNAME} --table=${TABLE} > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}_schema.dmp
-      # pg_dump --data-only  --dbname=${DBNAME} --column-inserts --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.dmp.gz
-      pg_dump --data-only  --dbname=${DBNAME} --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.tar.gz
+      #pg_dump --data-only  --dbname=${DBNAME} --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.tar.gz
+      pg_dump --data-only  --dbname=${DBNAME} --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.zip
 
       R=$?
       if [ $R -eq 0 ] ; then
