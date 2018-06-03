@@ -1,67 +1,76 @@
-with Types; use Types;
-with Bot_Types; use Bot_Types;
---with Ada.Exceptions;
-with Sql;
-with Calendar2;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Environment_Variables;
+with Ada.Containers;
 --with Ada.Characters.Handling;
+--with Ada.Exceptions;
+
+with Types; use Types;
+with Bot_Types; use Bot_Types;
+with Sql;
+with Calendar2;
+with Rpc;
 with Utils;
 with Logging; use Logging;
 with Gnatcoll.Json; use Gnatcoll.Json;
 with Bets;
+with Table_Astarttimes;
+with Ini;
+
 
 package body Bot_Ws_Services is
 
   Object : constant String := "Bot_Ws_Services.";
 
 
-  Select_Bets : Sql.Statement_Type;
-  Select_Sum_Bets : Sql.Statement_Type;
-  Select_Sum_Bets_Named : Sql.Statement_Type;
+  Select_Bets                     : Sql.Statement_Type;
+  Select_Sum_Bets                 : Sql.Statement_Type;
+  Select_Sum_Bets_Named           : Sql.Statement_Type;
   Select_Sum_Bets_Grouped_By_Name : Sql.Statement_Type;
+  Global_Initiated                : Boolean := False;
+  Global_Start_Time_List          : Table_Astarttimes.Astarttimes_List_Pack2.List;
 
   ------------------------------------------------------------------
 
 
   function Positive_Answer( Context : in String)  return String is
-    JSON_Reply      : JSON_Value := Create_Object;
+    Json_Reply      : Json_Value := Create_Object;
     Service         : constant String := "Positive_Answer";
   begin
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);          -- ???
-    Log(Object & Service, "Return " & JSON_Reply.Write);
-    return JSON_Reply.Write;
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);          -- ???
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
   end Positive_Answer;
   ------------------------------------------------------------
 
   function Negative_Answer(Text, Context : in String) return String is
-    JSON_Reply      : JSON_Value := Create_Object;
+    Json_Reply      : Json_Value := Create_Object;
     Service         : constant String := "Negative_Answer";
   begin
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "FAILED");
-    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);          -- ???
-    JSON_Reply.Set_Field (Field_Name => "text",  Field => Text);          -- ???
-    Log(Object & Service, "Return " & JSON_Reply.Write);
-    return JSON_Reply.Write;
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "FAILED");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);          -- ???
+    Json_Reply.Set_Field (Field_Name => "text",  Field => Text);          -- ???
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
   end Negative_Answer;
 
-   --------------------------------------
+  --------------------------------------
   function Login_Os(User, Password : String) return Boolean is
     pragma Warnings(Off,User);
-    pragma Warnings(Off,PAssword);
+    pragma Warnings(Off,Password);
   begin
     return True;
   end Login_Os;
   ------------------------------------------------------------
 
   function Operator_Login(Username    : in String;
-                          Password   : in String;
+                          Password    : in String;
                           Context     : in String) return String is
-    Error_Message   : Unbounded_String := Null_Unbounded_String;
-    Is_Login_Ok       : Boolean := false;
-    Service         : constant String := "Operator_Login";
+    Error_Message     : Unbounded_String := Null_Unbounded_String;
+    Is_Login_Ok       : Boolean := False;
+    Service           : constant String := "Operator_Login";
   begin
     Log(Object & Service, "User '" & Username & "' Login");
     if not Login_Os(Username,Password) then
@@ -83,7 +92,7 @@ package body Bot_Ws_Services is
                            Context  : in String) return String is
     Service        : constant String := "Operator_Logout";
   begin
-      Log(Object & Service, "User '" & Username & "' Logout");
+    Log(Object & Service, "User '" & Username & "' Logout");
     return Positive_Answer(Context => Context);
   end Operator_Logout;
 
@@ -92,56 +101,56 @@ package body Bot_Ws_Services is
   procedure Prepare_Bets is
   begin
     Select_Bets.Prepare(
-      "select * " &
-      "from ABETS " &
-      "where STARTTS >= :START " &
-      "and STARTTS <= :STOP " &
-      "and STATUS = 'SETTLED' " &
-      "order by BETPLACED "
-    );
+                        "select * " &
+                          "from ABETS " &
+                          "where STARTTS >= :START " &
+                          "and STARTTS <= :STOP " &
+                          "and STATUS = 'SETTLED' " &
+                          "order by BETPLACED "
+                       );
     Select_Sum_Bets.Prepare(
-      "select sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED " &
-      "from ABETS " &
-      "where STARTTS >= :START " &
-      "and STARTTS <= :STOP " &
-      "and STATUS = 'SETTLED'"
-    );
+                            "select sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED " &
+                              "from ABETS " &
+                              "where STARTTS >= :START " &
+                              "and STARTTS <= :STOP " &
+                              "and STATUS = 'SETTLED'"
+                           );
     Select_Sum_Bets_Named.Prepare(
-      "select sum(PROFIT) PROFIT " &
-      "from ABETS " &
-      "where STARTTS >= :START " &
-      "and STARTTS <= :STOP " &
-      "and BETNAME = :BETNAME " &
-      "and STATUS = 'SETTLED'"
-    );
+                                  "select sum(PROFIT) PROFIT " &
+                                    "from ABETS " &
+                                    "where STARTTS >= :START " &
+                                    "and STARTTS <= :STOP " &
+                                    "and BETNAME = :BETNAME " &
+                                    "and STATUS = 'SETTLED'"
+                                 );
 
     Select_Sum_Bets_Grouped_By_Name.Prepare(
-      "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
-      "round((case sum(SIZEMATCHED) " &
-      "    when 0 then 0.0 " &
-      "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
-      " end)::numeric,2) RATIO " &
-      "from ABETS " &
-      "where STARTTS >= :START " &
-      "and STARTTS <= :STOP " &
-      "and STATUS = 'SETTLED' " &
-      "group by BETNAME " &
-      "order by BETNAME" );
+                                            "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
+                                              "round((case sum(SIZEMATCHED) " &
+                                              "    when 0 then 0.0 " &
+                                              "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
+                                              " end)::numeric,2) RATIO " &
+                                              "from ABETS " &
+                                              "where STARTTS >= :START " &
+                                              "and STARTTS <= :STOP " &
+                                              "and STATUS = 'SETTLED' " &
+                                              "group by BETNAME " &
+                                              "order by BETNAME" );
 
   end Prepare_Bets;
   ------------------------------------------------------------
 
 
   function Settled_Bets(Username  : in String;
-                      Context   : in String) return String is
+                        Context   : in String) return String is
     Service         : constant String := "Settled_Bets";
     T               : Sql.Transaction_Type;
     End_Of_Set      : Boolean := False;
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
     Bet_List        : Bets.Lists.List;
-    JSON_Reply      : JSON_Value := Create_Object;
-    Json_Bets       : JSON_Array := Empty_Array;
+    Json_Reply      : Json_Value := Create_Object;
+    Json_Bets       : Json_Array := Empty_Array;
     Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
@@ -219,11 +228,11 @@ package body Bot_Ws_Services is
         end case ;
       end;
     else
-      JSON_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
-      JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
-      JSON_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
-      Log(Object & Service, "Return " & JSON_Reply.Write);
-      return JSON_Reply.Write;
+      Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
+      Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+      Json_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
+      Log(Object & Service, "Return " & Json_Reply.Write);
+      return Json_Reply.Write;
     end if;
 
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
@@ -235,14 +244,14 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Set("STOP", Stop);
 
     Bets.Read_List(Select_Bets, Bet_List);
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
     -- betname, marketid, betwon, profit, betplaced, pricematched, sizematched
 
     for B of Bet_List loop
       declare
-        Bet : JSON_Value := Create_Object;
+        Bet : Json_Value := Create_Object;
       begin
         Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(B.Betname));
         Bet.Set_Field (Field_Name => "marketid",     Field => B.Marketid);
@@ -251,7 +260,7 @@ package body Bot_Ws_Services is
         Bet.Set_Field (Field_Name => "betplaced",    Field => B.Betplaced.String_Date_And_Time(Milliseconds => True));
         Bet.Set_Field (Field_Name => "pm",           Field => Float(B.Pricematched));
         Bet.Set_Field (Field_Name => "sm",           Field => Float(B.Sizematched));
-        Append(Json_bets, Bet);
+        Append(Json_Bets, Bet);
       end ;
     end loop;
 
@@ -261,18 +270,18 @@ package body Bot_Ws_Services is
       Select_Sum_Bets.Get("PROFIT",Total_Profit);
     end if;
     Select_Sum_Bets.Close_Cursor;
-    JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
-    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Json_bets);
+    Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+    Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
 
     T.Commit;
-    Log(Object & Service, "Return " & JSON_Reply.Write);
-    return JSON_Reply.Write;
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
 
   end Settled_Bets;
-----------------------------------------------------------------
+  ----------------------------------------------------------------
 
 
-----------------------------------------------------------------
+  ----------------------------------------------------------------
 
   function Todays_Total(Username  : in String;
                         Context   : in String) return String is
@@ -281,7 +290,7 @@ package body Bot_Ws_Services is
     End_Of_Set      : Boolean := False;
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
-    JSON_Reply      : JSON_Value := Create_Object;
+    Json_Reply      : Json_Value := Create_Object;
     Total_Sizematched,
     Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
@@ -304,8 +313,8 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Set("START", Start);
     Select_Sum_Bets.Set("STOP", Stop);
 
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
     Select_Sum_Bets.Open_Cursor;
     Select_Sum_Bets.Fetch(End_Of_Set);
@@ -314,24 +323,24 @@ package body Bot_Ws_Services is
       Select_Sum_Bets.Get("SIZEMATCHED",Total_Sizematched);
     end if;
     Select_Sum_Bets.Close_Cursor;
-    JSON_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
-    JSON_Reply.Set_Field (Field_Name => "totalsm", Field =>  Float(Total_Sizematched));
+    Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
+    Json_Reply.Set_Field (Field_Name => "totalsm", Field =>  Float(Total_Sizematched));
 
     T.Commit;
-    Log(Object & Service, "Return " & JSON_Reply.Write);
-    return JSON_Reply.Write;
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
 
   end Todays_Total;
-----------------------------------------------------------------
+  ----------------------------------------------------------------
   function Weekly_Total(Username  : in String;
-                      Betname   : in Betname_Type;
-                      Weeks_Ago : in Integer_4) return JSON_Value is
+                        Betname   : in Betname_Type;
+                        Weeks_Ago : in Integer_4) return Json_Value is
     Service         : constant String := "Weekly_Total";
     T               : Sql.Transaction_Type;
     End_Of_Set      : Boolean := False;
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
-    JSON_Reply      : JSON_Value := Create_Object;
+    Json_Reply      : Json_Value := Create_Object;
     Total_Profit    : Fixed_Type    := 0.0;
     use Calendar2;
   begin
@@ -390,24 +399,24 @@ package body Bot_Ws_Services is
     Json_Reply.Set_Field (Field_Name => "weeks_ago", Field => Utils.Trim(Weeks_Ago'Img));
 
     T.Commit;
-    Log(Object & Service, "Return " & JSON_Reply.Write);
+    Log(Object & Service, "Return " & Json_Reply.Write);
     return Json_Reply;
 
   end Weekly_Total;
-----------------------------------------------------------------
+  ----------------------------------------------------------------
   function Weeks(Username  : in String;
                  Context   : in String) return String is
     Service         : constant String := "Weeks";
-    JSON_Reply      : JSON_Value := Create_Object;
-    Weeks           : JSON_Array := Empty_Array;
+    Json_Reply      : Json_Value := Create_Object;
+    Weeks           : Json_Array := Empty_Array;
     use Calendar2;
-    Betname : Betname_Type := (others => ' ');
+    Betname         : Betname_Type := (others => ' ');
     subtype Num_Weeks_Type is Integer_4 range 0 .. 6;
   begin
 
     Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
 
-    for W in Num_Weeks_Type'range loop
+    for W in Num_Weeks_Type'Range loop
       declare
         Result : Json_Value := Create_Object;
         Week   : Json_Value := Create_Object;
@@ -418,12 +427,12 @@ package body Bot_Ws_Services is
                                Weeks_Ago => W);
 
         Week.Set_Field (Field_Name => "week", Field => Result);
-       -- Append(Weeks,Week);
+        -- Append(Weeks,Week);
         Append(Weeks,Result);
       end;
     end loop;
 
-    for W in Num_Weeks_Type'range loop
+    for W in Num_Weeks_Type'Range loop
       declare
         Result : Json_Value := Create_Object;
         Week   : Json_Value := Create_Object;
@@ -439,8 +448,8 @@ package body Bot_Ws_Services is
       end;
     end loop;
 
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Weeks);
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "datatable", Field => Weeks);
 
     Log(Object & Service, "returning:" & Json_Reply.Write);
     return Json_Reply.Write;
@@ -455,8 +464,8 @@ package body Bot_Ws_Services is
     End_Of_Set      : Boolean := False;
     Start           : Calendar2.Time_Type := Calendar2.Clock;
     Stop            : Calendar2.Time_Type := Start;
-    JSON_Reply      : JSON_Value := Create_Object;
-    Json_Bets       : JSON_Array := Empty_Array;
+    Json_Reply      : Json_Value := Create_Object;
+    Json_Bets       : Json_Array := Empty_Array;
 
     use Calendar2;
   begin
@@ -507,13 +516,13 @@ package body Bot_Ws_Services is
         end case ;
       end;
     elsif Context = "sum_total_bets" then
-        Start := (2018,5,1,0,0,0,0);
+      Start := (2018,5,1,0,0,0,0);
     else
-      JSON_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
-      JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
-      JSON_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
-      Log(Object & Service, "Return " & JSON_Reply.Write);
-      return JSON_Reply.Write;
+      Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
+      Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+      Json_Reply.Set_Field (Field_Name => "text",    Field => "Bad context");          -- ???
+      Log(Object & Service, "Return " & Json_Reply.Write);
+      return Json_Reply.Write;
     end if;
 
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
@@ -521,20 +530,20 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Grouped_By_Name.Set("START", Start);
     Select_Sum_Bets_Grouped_By_Name.Set("STOP", Stop);
 
-    JSON_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    JSON_Reply.Set_Field (Field_Name => "context", Field => Context);
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
     Select_Sum_Bets_Grouped_By_Name.Open_Cursor;
     loop
       Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
       exit when End_Of_Set ;
       declare
-        Bet : JSON_Value := Create_Object;
+        Bet     : Json_Value := Create_Object;
         Betname : Betname_Type := (others => ' ');
-        Profit : Fixed_Type := 0.0;
+        Profit  : Fixed_Type := 0.0;
         Sizematched : Fixed_Type := 0.0;
-        Count : Integer_4 := 0;
-        Ratio : Fixed_Type := 0.0;
+        Count   : Integer_4 := 0;
+        Ratio   : Fixed_Type := 0.0;
       begin
         -- betname, profit, sizematched, count, riskratio
         Select_Sum_Bets_Grouped_By_Name.Get("BETNAME", Betname);
@@ -553,15 +562,104 @@ package body Bot_Ws_Services is
     end loop;
     Select_Sum_Bets_Grouped_By_Name.Close_Cursor;
 
-    JSON_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
+    Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
 
     T.Commit;
-    Log(Object & Service, "Return " & JSON_Reply.Write);
-    return JSON_Reply.Write;
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
 
   end Sum_Settled_Bets;
-----------------------------------------------------------------
+  ----------------------------------------------------------------
 
+  procedure Initiate (Start_Time_List : in out Table_Astarttimes.Astarttimes_List_Pack2.List;
+                      Initiated       : in out Boolean) is
+    Service : constant String := "Initiate";
+    use type  Ada.Containers.Count_Type;
+  begin
+    Start_Time_List.Clear;
+
+    Rpc.Init(
+             Username   => Ini.Get_Value("betfair","username",""),
+             Password   => Ini.Get_Value("betfair","password",""),
+             Product_Id => Ini.Get_Value("betfair","product_id",""),
+             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+             App_Key    => Ini.Get_Value("betfair","appkey","")
+            );
+
+    begin
+      Rpc.Login;
+    exception
+      when Rpc.Login_Failed => Log(Object & Service, "Start Rpc.Login_Failed ");
+      when Rpc.Post_Timeout => Log(Object & Service, "Start Rpc.Post_Timeout 1");
+    end;
+
+    begin
+      Rpc.Get_Starttimes(List => Start_Time_List);
+    exception
+      when Rpc.Post_Timeout => Log(Object & Service, "Start Rpc.Post_Timeout 2");
+    end;
+
+    begin
+      Rpc.Logout;
+    exception
+      when others => Log(Object & Service, "caught logout issues");
+    end;
+
+    if Start_Time_List.Length = 0 then
+      Log(Object & Service, "no races left today? ");
+      Initiated := False;
+    else
+      Initiated := True;
+    end if;
+
+  end Initiate;
+
+  --------------------------------------------------------
+
+  function Get_Starttimes(Username  : in String;
+                          Context   : in String) return String is
+    pragma Unreferenced(Username);
+    Service : constant String := "Get_Starttimes";
+    --package Ev renames Ada.Environment_Variables;
+    Arrow_Is_Printed : Boolean := False;
+    Now : Calendar2.Time_Type := Calendar2.Clock;
+    use type Ada.Containers.Count_Type;
+    Start_Time       : Json_Value := Create_Object;
+    Json_Reply       : Json_Value := Create_Object;
+    Json_Start_Times : Json_Array := Empty_Array;
+    use type Calendar2.Time_Type;
+
+  begin
+    if not Global_Initiated then
+      Initiate(Global_Start_Time_List, Global_Initiated);
+    end if;
+
+    if Global_Start_Time_List.Length = 0 then
+      Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
+      Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+      Json_Reply.Set_Field (Field_Name => "text",    Field => "No races found");
+      Log(Object & Service, "Return " & Json_Reply.Write);
+      return Json_Reply.Write;
+    else
+      Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+      Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+    end if;
+
+    for S of Global_Start_Time_List loop
+      if not Arrow_Is_Printed and then Now <= S.Starttime then
+        Arrow_Is_Printed := True;
+      end if;
+      Start_Time.Set_Field (Field_Name => "starttime", Field => S.Starttime.String_Time(Seconds => False));
+      Start_Time.Set_Field (Field_Name => "venue",     Field => S.Venue);
+      Start_Time.Set_Field (Field_Name => "next",      Field => Arrow_Is_Printed);
+      Append(Json_Start_Times, Start_Time);
+    end loop;
+
+    Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Start_Times);
+
+    return Json_Reply.Write;
+
+  end Get_Starttimes;
 
 
 end Bot_Ws_Services;
