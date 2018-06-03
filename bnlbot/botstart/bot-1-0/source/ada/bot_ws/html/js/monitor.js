@@ -15,7 +15,10 @@ $.makeTable = function (mydata) {
         $.each(value, function (key, val) {
             console.log("key: " + key + " val: " + val);
             if (typeof val == "string" && key == "betname") {
-              TableRow += "<td>" + val.slice(0,18) + "</td>";
+              //          1         2         3
+              //0123456789012345678901234567890123456789
+              //horse_back_1_50_01_1_2_plc_1_06
+              TableRow += "<td>" + val.slice(11) + "</td>";
             } else if (typeof val == "string" && key == "betplaced") {
               TableRow += "<td>" + val.slice(12,24) + "</td>";
             } else {            
@@ -30,13 +33,12 @@ $.makeTable = function (mydata) {
     return ($(table));
 };
 
-
-function Do_Ajax_Bets() {
+function Do_Ajax_Table(context) {
   var d = new Date();
   var n = d.getTime(); 
 
   $.ajax({url: 'https://betbot.nonobet.com',
-      data: {'context' : 'sum_todays_bets',
+      data: {'context' : context,
              'dummy' : n },
       type: 'get',                   
       async: 'true',
@@ -56,24 +58,40 @@ function Do_Ajax_Bets() {
           if(reply.result == "OK") {
              console.log("Do_Ajax_Bets.success OK\n" + reply.datatable);
              
-             
             // //fill the table
             var table = $.makeTable(reply.datatable);
-            $('#bets').html(table).trigger('create')
-             
+            if (context == 'sum_todays_bets') {
+              $('#sum_todays_bets').html(table).trigger('create')
+            } 
+            
+            if (context == 'sum_7_days_bets') {
+              $('#sum_7_days_bets').html(table).trigger('create')
+            }
+            
+            if (context == 'sum_thisweeks_bets') {
+              $('#sum_thisweeks_bets').html(table).trigger('create')
+            }
+
+            if (context == 'sum_total_bets') {
+              $('#sum_total_bets').html(table).trigger('create')
+            }           
+            
+            if (context == 'starttimes') {
+              $('#starttimes').html(table).trigger('create')
+            }            
              
           } else {
              console.log("Do_Ajax_Bets.success NOT OK");
           }
       },
       error: function (request,error) {
-          console.log("Do_Ajax_Bets.error " + error);
+          console.log("Do_Ajax_Bets.error " + error + "\context:" + context);
       }
   });                   
 
 }
 
-function Do_Ajax_Today() {
+function Do_Ajax_Today(context) {
   var d = new Date();
   var n = d.getTime(); 
 
@@ -114,16 +132,9 @@ function Do_Ajax_Today() {
 
 
 function Do_Page_Reload () {
-  var unique = $.now();
-  
-//  $("#equity_png").remove();
-//  $("#seven_days").html("<img src='/img/equity.png'/>" ); 
-
-//   $('img').attr('src', '/img/equity.png' + '?' + unique);
-   $('#equity_png').attr('src', '/img/equity.png' + '?' + unique);
-   $('#profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
-   
-   
+  var unique = $.now();  
+  $('#equity_png').attr('src', '/img/equity.png' + '?' + unique);
+  $('#profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
 }
 
 function Run_All() {
@@ -135,10 +146,14 @@ function Run_All() {
   console.log("Run_All" + Cnt + "-" + percent );
   
   if (Cnt == 100) {
-   // Do_Ajax_Race();
     Do_Page_Reload(); // get new graphs
     Do_Ajax_Today(); // get todays earnigns
-    Do_Ajax_Bets();  // and a list of bets
+    Do_Ajax_Table('sum_todays_bets');  // and a list of bets
+    Do_Ajax_Table('sum_7_days_bets');  // and a list of bets
+    Do_Ajax_Table('sum_thisweeks_bets');  // and a list of bets
+    Do_Ajax_Table('sum_total_bets');  // and a list of bets
+    Do_Ajax_Table('starttimes');  // and a list of bets
+    
     Cnt = 0;
     console.log("Run_All stop 1");
   } else {
@@ -191,7 +206,7 @@ function Do_Login() {
 function Do_Start() {
      //call by window.onload 
      console.log("onReady Start");
-     Cnt = 98;
+     Cnt = 97;
      //start timer ...
     // Start_Timer();
      Do_Login();

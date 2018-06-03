@@ -1,48 +1,82 @@
 <!doctype html>
 <html lang='sv'>
   <head>
-    <meta charset="UTF8">
+    <meta charset="UTF8" />
     <title>Bot Web Monitor</title>
     <meta name='viewport' content='width=device-width, initial-scale=1' />
    <!-- <link rel='stylesheet' href='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css' /> -->
     <link rel="stylesheet" type="text/css" href="/css/local_fixes.css" title='local_fixes'/> 
-    <script src='//code.jquery.com/jquery-1.10.2.min.js'></script>
+    <script src='//code.jquery.com/jquery-1.10.2.min.js'> </script>
   <!--
     <script src='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js'></script>
     <script src='/js/b2.js'></script>
   -->  
-    <script src='/js/monitor.js'></script>
+    <script src='/js/monitor.js'> </script>
   </head>
   <body>
-    <progress id='pb' value="22" max="100"></progress> 
+   
+    <div class="row">
+      <div class="column left">    
+           <!-- dialog for today's total result -->
+          <div id='today'></div>
+      
+          <!-- page for todays bets -->   
+          <div>
+            <p>Today's bets</p>     
+            <div id='sum_todays_bets'></div>
+          </div>
+      
+          <!-- page for  bets -->    
+          <div>
+            <p>Last 7 day's bets</p>     
+            <div id='sum_7_days_bets'></div>
+          </div>
+          
+          <!-- page for  bets -->    
+          <div>
+            <p>This week's bets</p>     
+            <div id='sum_thisweeks_bets'></div>
+          </div>
+          
+          <!-- page for  bets -->    
+          <div>
+            <p>Total bets since 2018-05-01</p>     
+            <div id='sum_total_bets'></div>
+          </div> 
+          
+          
+      </div> <!-- div class left -->
+      
+      
+      <div class="column middle">            
+          <!-- page for resultset -->    
+          <div id='seven_days'>
+            <img id='equity_png' src='/img/equity.png'/>
+          </div>
+          
+          <div id='forty_two_days'>
+            <img id='profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06' src='/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png'/>
+          </div>
+          
+      </div> <!-- div class middle -->
+      
+      <div class="column right">            
+          <progress id='pb' value="22" max="100"></progress> 
+          <div>
+            <p>Today's races</p>     
+            <div id='starttimes'></div>
+          </div>
+      </div>     
+      
+    </div> <!-- div class row -->
 
-     <!-- dialog for today's total result -->
-    <div id='today'>
-    </div> 
-  
-      <!-- dialog for today's races -->
-    <div id='race'>
-    </div>
-
-    <!-- page for todays bets -->    
-    <div id='bets'>
-    </div>
-
-    <!-- page for resultset -->    
-    <div id='seven_days'>
-      <img id='equity_png' src='/img/equity.png'/>
-    </div>
-    
-    <div id='forty_two_days'>
-      <img id='profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06' src='/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png'/>
-    </div>
-    
     <div id='tools'>   
       <form id='loginform'>
        <input type='hidden' name='username' id='bnl' value='bnl'>
       <!-- <button type="button" onclick="Do_Login()">Login</button> -->
       </form>
-    </div>
+    </div>    
+    
     
   </body>
 </html>

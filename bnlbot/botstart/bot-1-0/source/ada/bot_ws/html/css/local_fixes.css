@@ -1,10 +1,43 @@
 
-
+/* tables with every other row blue */
 th {
    border-bottom: 1px solid #d6d6d6;
 }
 
-
 tr:nth-child(even) {
     background: #d0e4fe;
 }
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* Create two unequal columns that floats next to each other */
+.column {
+    float: left;
+    padding: 10px;
+}
+/*     height: 300px; Should be removed. Only for demonstration */
+
+.left {
+  width: 28%;
+}
+
+.right {
+  width: 15%;
+}
+
+.middle {
+    width: 57%;
+}
+
+/* Clear floats after the columns */
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
