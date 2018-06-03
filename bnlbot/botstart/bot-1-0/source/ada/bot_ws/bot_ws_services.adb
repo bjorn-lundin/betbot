@@ -624,7 +624,6 @@ package body Bot_Ws_Services is
     Arrow_Is_Printed : Boolean := False;
     Now : Calendar2.Time_Type := Calendar2.Clock;
     use type Ada.Containers.Count_Type;
-    Start_Time       : Json_Value := Create_Object;
     Json_Reply       : Json_Value := Create_Object;
     Json_Start_Times : Json_Array := Empty_Array;
     use type Calendar2.Time_Type;
@@ -649,10 +648,14 @@ package body Bot_Ws_Services is
       if not Arrow_Is_Printed and then Now <= S.Starttime then
         Arrow_Is_Printed := True;
       end if;
-      Start_Time.Set_Field (Field_Name => "starttime", Field => S.Starttime.String_Time(Seconds => False));
-      Start_Time.Set_Field (Field_Name => "venue",     Field => S.Venue);
-      Start_Time.Set_Field (Field_Name => "next",      Field => Arrow_Is_Printed);
-      Append(Json_Start_Times, Start_Time);
+      declare
+        Start_Time : Json_Value := Create_Object;
+      begin
+        Start_Time.Set_Field (Field_Name => "starttime", Field => S.Starttime.String_Time(Seconds => False));
+        Start_Time.Set_Field (Field_Name => "venue",     Field => S.Venue);
+        Start_Time.Set_Field (Field_Name => "next",      Field => Arrow_Is_Printed);
+        Append(Json_Start_Times, Start_Time);
+      end;
     end loop;
 
     Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Start_Times);
