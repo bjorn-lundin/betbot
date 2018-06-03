@@ -23,4 +23,8 @@ package Bot_Ws_Services is
   function Weeks          (Username  : in String;
                            Context   : in String) return String ;
 
+  function Get_Starttimes(Username  : in String;
+                          Context   : in String) return String ;
+
+
 end Bot_Ws_Services;
