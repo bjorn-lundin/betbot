@@ -627,7 +627,7 @@ package body Bot_Ws_Services is
     Json_Reply       : Json_Value := Create_Object;
     Json_Start_Times : Json_Array := Empty_Array;
     use type Calendar2.Time_Type;
-
+    Arrow : String(1..2) := (others => ' ');
   begin
     if not Global_Initiated then
       Initiate(Global_Start_Time_List, Global_Initiated);
@@ -647,13 +647,16 @@ package body Bot_Ws_Services is
     for S of Global_Start_Time_List loop
       if not Arrow_Is_Printed and then Now <= S.Starttime then
         Arrow_Is_Printed := True;
+        Arrow := "->";
+      else
+        Arrow := "  ";
       end if;
       declare
         Start_Time : Json_Value := Create_Object;
       begin
         Start_Time.Set_Field (Field_Name => "starttime", Field => S.Starttime.String_Time(Seconds => False));
         Start_Time.Set_Field (Field_Name => "venue",     Field => S.Venue);
-        Start_Time.Set_Field (Field_Name => "next",      Field => Arrow_Is_Printed);
+        Start_Time.Set_Field (Field_Name => "next",      Field => Arrow);
         Append(Json_Start_Times, Start_Time);
       end;
     end loop;
