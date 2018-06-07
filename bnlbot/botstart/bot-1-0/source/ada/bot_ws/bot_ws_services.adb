@@ -627,7 +627,7 @@ package body Bot_Ws_Services is
     Json_Reply       : Json_Value := Create_Object;
     Json_Start_Times : Json_Array := Empty_Array;
     use type Calendar2.Time_Type;
-    Arrow : String(1..2) := (others => ' ');
+    Arrow : String(1..3) := (others => ' ');
   begin
     if not Global_Initiated then
       Initiate(Global_Start_Time_List, Global_Initiated);
@@ -647,9 +647,9 @@ package body Bot_Ws_Services is
     for S of Global_Start_Time_List loop
       if not Arrow_Is_Printed and then Now <= S.Starttime then
         Arrow_Is_Printed := True;
-        Arrow := "->";
+        Arrow := "-->";
       else
-        Arrow := "  ";
+        Arrow := "   ";
       end if;
       declare
         Start_Time : Json_Value := Create_Object;
