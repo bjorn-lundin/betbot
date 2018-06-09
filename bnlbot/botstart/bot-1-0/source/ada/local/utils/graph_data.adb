@@ -22,12 +22,15 @@ procedure Graph_Data is
    Select_Equity_Date    : Sql.Statement_Type;
 
    Sa_Betname      : aliased Gnat.Strings.String_Access;
+   Sa_Startdate    : aliased Gnat.Strings.String_Access;
    Ba_Print_Strategies : aliased Boolean := False;
    Ba_Avg_Price    : aliased Boolean := False;
    Ba_Profit       : aliased Boolean := False;
    Ba_Lapsed       : aliased Boolean := False;
    Ba_Equity       : aliased Boolean := False;
    Ia_Days         : aliased Integer := 42;
+   Global_Start_Date : Time_Type := Time_Type_First;
+
 
    gDebug : Boolean := False;
 
@@ -212,8 +215,10 @@ procedure Graph_Data is
        "from ABETS B " &
        "where B.BETNAME = :BETNAME " &
        "and B.STATUS = 'SETTLED' " &
+       "and B.STARTTS >= :STARTDATE " &
        "order by B.BETPLACED");
      Select_Equity_Date.Set("BETNAME", Betname);
+     Select_Equity_Date.Set_Timestamp("STARTDATE", Global_Start_Date);
 
      Select_Equity_Date.Open_Cursor;
      loop
@@ -271,7 +276,11 @@ begin
       Long_Switch => "--print_strategies",
       Help        => "print strategies");
 
-
+   Define_Switch
+     (Cmd_Line,
+      Sa_Startdate'access,
+      Long_Switch => "--startdate",
+      Help        => "startdate");
 
 
   Getopt (Cmd_Line);  -- process the command line
@@ -282,6 +291,12 @@ begin
     return;
   end if;
 
+
+  if Sa_Startdate.all /= "" then
+    Global_Start_Date.Year := Year_Type'Value(Sa_Startdate.all(1..4));
+    Global_Start_Date.Month := Month_Type'Value(Sa_Startdate.all(6..7));
+    Global_Start_Date.Day := Day_Type'Value(Sa_Startdate.all(9..10));
+  end if;
 
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
