@@ -8,8 +8,8 @@ package Config is
 
   type Bet_Type is (
                 --    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
-                --    Horse_Back_1_10_07_1_2_Plc_1_01,
-                --    Horse_Back_1_17_01_1_2_Plc_1_01,
+                    Horse_Back_1_10_07_1_2_Plc_1_01,
+                    Horse_Back_1_17_01_1_2_Plc_1_01,
                     Horse_Back_1_30_01_1_2_Plc_1_01,
                     Horse_Back_1_36_01_1_2_Plc_1_01,
                     Horse_Back_1_50_01_1_2_Plc_1_06

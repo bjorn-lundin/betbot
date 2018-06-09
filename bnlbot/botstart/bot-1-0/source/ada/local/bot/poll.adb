@@ -78,9 +78,11 @@ procedure Poll is
   function Get_Bet_Placer (Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Horse_Back_1_30_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_001");
-      when Horse_Back_1_36_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_002");
-      when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type ("bet_placer_003");
+      when Horse_Back_1_10_07_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_001");
+      when Horse_Back_1_17_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_002");
+      when Horse_Back_1_30_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_003");
+      when Horse_Back_1_36_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type ("bet_placer_004");
+      when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type ("bet_placer_005");
     end case;
 --      --if not reserved - get an anonymous one
 --      Global_Bet_Placer := Global_Bet_Placer + 1;
@@ -477,7 +479,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_30_01_1_2_Plc_1_01 .. Horse_Back_1_50_01_1_2_Plc_1_06 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_50_01_1_2_Plc_1_06 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
