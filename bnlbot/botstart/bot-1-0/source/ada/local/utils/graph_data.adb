@@ -279,7 +279,7 @@ begin
    Define_Switch
      (Cmd_Line,
       Sa_Startdate'access,
-      Long_Switch => "--startdate",
+      Long_Switch => "--startdate=",
       Help        => "startdate");
 
 
