@@ -295,11 +295,6 @@ begin
     declare
       S : String (1 .. Sa_Startdate.all'Length) := Sa_Startdate.all;
     begin
-      Text_Io.Put_Line("Sa_Startdate.all'first=" & Sa_Startdate.all'First'Img );
-      Text_Io.Put_Line("Sa_Startdate.all'last=" & Sa_Startdate.all'Last'Img );
-      Text_Io.Put_Line("s'first=" & S'First'Img );
-      Text_Io.Put_Line("S'last=" & S'Last'Img );
-
       Global_Start_Date.Year := Year_Type'Value(S(1..4));
       Global_Start_Date.Month := Month_Type'Value(S(6..7));
       Global_Start_Date.Day := Day_Type'Value(S(9..10));
