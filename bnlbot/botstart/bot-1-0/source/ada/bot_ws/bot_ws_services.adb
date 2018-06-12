@@ -129,7 +129,8 @@ package body Bot_Ws_Services is
                                               "round((case sum(SIZEMATCHED) " &
                                               "    when 0 then 0.0 " &
                                               "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
-                                              " end)::numeric,2) RATIO " &
+                                              " end)::numeric,2) RATIO, " &
+                                              "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
                                               "where STARTTS >= :START " &
                                               "and STARTTS <= :STOP " &
@@ -538,12 +539,13 @@ package body Bot_Ws_Services is
       Select_Sum_Bets_Grouped_By_Name.Fetch(End_Of_Set);
       exit when End_Of_Set ;
       declare
-        Bet     : Json_Value := Create_Object;
-        Betname : Betname_Type := (others => ' ');
-        Profit  : Fixed_Type := 0.0;
-        Sizematched : Fixed_Type := 0.0;
-        Count   : Integer_4 := 0;
-        Ratio   : Fixed_Type := 0.0;
+        Bet            : Json_Value   := Create_Object;
+        Betname        : Betname_Type := (others => ' ');
+        Profit         : Fixed_Type   := 0.0;
+        Sizematched    : Fixed_Type   := 0.0;
+        Count          : Integer_4    := 0;
+        Ratio          : Fixed_Type   := 0.0;
+        Profit_Per_Bet : Fixed_Type   := 0.0;
       begin
         -- betname, profit, sizematched, count, riskratio
         Select_Sum_Bets_Grouped_By_Name.Get("BETNAME", Betname);
@@ -551,11 +553,14 @@ package body Bot_Ws_Services is
         Select_Sum_Bets_Grouped_By_Name.Get("SIZEMATCHED", Sizematched);
         Select_Sum_Bets_Grouped_By_Name.Get("CNT", Count);
         Select_Sum_Bets_Grouped_By_Name.Get("RATIO", Ratio);
+        Select_Sum_Bets_Grouped_By_Name.Get("PROFITPERBET", Profit_Per_Bet);
+
 
         Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(Betname));
         Bet.Set_Field (Field_Name => "profit",       Field => Float(Profit));
         Bet.Set_Field (Field_Name => "sm",           Field => Float(Sizematched));
         Bet.Set_Field (Field_Name => "count",        Field => Long_Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "p/b",      Field => Float(Profit_Per_Bet));
         Bet.Set_Field (Field_Name => "ratio",        Field => Float(Ratio));
         Append(Json_Bets, Bet);
       end;
