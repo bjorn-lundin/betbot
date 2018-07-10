@@ -95,7 +95,10 @@ begin
               end;
             end loop Loop_Ts; --  Timestamp
             Iv := Last - First;
-            Log(" R |" & String_Interval(Interval => Iv, Days => False, Hours => False) & "|" & Market.Marketname & "|" );
+            Log(" R |" &
+                  String_Interval(Interval => Iv, Days => False, Hours => False) & "|" &
+                  Market.Marketid & "|" &
+                  Market.Marketname & "|" );
 
           end;
           --Log("num lay bets laid" & Global_Bet_List.Length'Img);
