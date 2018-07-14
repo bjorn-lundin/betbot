@@ -249,8 +249,8 @@ begin
                           Sim.Is_Race_Winner(Best_Runners(2).Selectionid, Market.Marketid)'Img & "|" &
                           Sim.Is_Race_Winner(Best_Runners(3).Selectionid, Market.Marketid)'Img & "|" &
                           Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img & "|" &
-                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img & "|" &
-                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img
+                          Sim.Is_Race_Winner(Best_Runners(2).Selectionid, Place_Market_Id)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(3).Selectionid, Place_Market_Id)'Img
                        );
 
 
