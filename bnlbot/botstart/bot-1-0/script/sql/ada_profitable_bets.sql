@@ -22,17 +22,21 @@
   max(betplaced)::date - min(betplaced)::date  + 1 as days, 
   round(count('a')/(max(betplaced)::date - min(betplaced)::date  + 1)::numeric,2) as betsperday, 
   round((sum(profit)/(max(betplaced)::date - min(betplaced)::date  + 1))::numeric, 2) as profitperday,
+  side,
   betname
 from
   abets
---where STATUS in ('MATCHED','SETTLED')
-where STATUS in ('SETTLED')
+where true
+  and STATUS in ('SETTLED')
   and betwon is not null
+  and betname not like 'DR%'
+  and betname not like 'MR%'
 group by
   betname,side
-having sum(profit) > -100
-and max(betplaced) > '2017-01-01 00:00:00' 
-and count('a') >= 10
+having true
+and sum(profit) > 300
+--and max(betplaced) > '2018-01-01 00:00:00' 
+and count('a') >= 300
 order by
   sum(profit) desc,
   betname

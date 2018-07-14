@@ -5,15 +5,26 @@
 ###############################################################################
 
 
+#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_10.50 \
+#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_11.00 \
+#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_11.50 \
+#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_04.70 \
+#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_04.30 \
 
 BET_NAMES_DRY := \
- HORSE_BACK_04_04_04_08_14_WIN_500_900 \
- HORSE_BACK_03_04_04_08_14_WIN_500_800 \
- HORSE_BACK_06_04_04_08_14_WIN_600_900 \
- HOUND_LAY_01_03_04_06_08_WIN_999_999
+PLC_BACK_1.10_07.00_F_1.01 \
+PLC_BACK_1.50_02.00_F_1.01 \
+PLC_BACK_1.50_01.00_F_1.01 \
+PLC_BACK_1.54_01.00_F_1.01 \
+PLC_BACK_1.54_02.00_F_1.01 \
+PLC_BACK_1.52_01.00_F_1.01 \
+PLC_BACK_1.52_02.00_F_1.01 \
+PLC_BACK_1.50_02.00_T_1.01 \
+PLC_BACK_1.50_01.00_T_1.01 \
+PLC_BACK_1.54_01.00_T_1.01 \
+PLC_BACK_1.54_02.00_T_1.01
 
-BET_NAMES_REAL := \
-  HORSES_PLC_BACK_FINISH_1.15_7.0_1
+
 
 
 BET_NAMES := $(BET_NAMES_DRY)
@@ -78,7 +89,8 @@ png_top: $(DATS)
 #                                 --saldo=$(SALDO) > $*.dat
 
 %.dat:
-	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity > $*.dat
+	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity --min_price_matched=1.06 > $*.dat
+
 
 %.png: $(DATS)
 	gnuplot -e "db_name='$(DBNAME)'" \
