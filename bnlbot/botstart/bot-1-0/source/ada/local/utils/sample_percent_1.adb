@@ -280,6 +280,9 @@ begin
               end loop Loop_Ts_Plc; --  Timestamp place market
 
               Log(So.Fix_String);
+            exception
+              -- usually key not in map ie no sample for plc
+              when Constraint_Error => null;
             end;
           end if; -- Is_Marketname_Ok
         end if; -- WIN
