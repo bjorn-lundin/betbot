@@ -189,8 +189,8 @@ begin
 
   Date_Loop : loop
     T.Start;
+    Log("start process " & Current_Date.String_Date_ISO);
     Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
-    Log("start process");
 
     declare
       Cnt          : Integer := 0;
