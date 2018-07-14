@@ -237,7 +237,7 @@ begin
                 Loop_Ts_Win : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
                   if Timestamp >= Stop_Time then
 
-                    So.Set("datapoint|" & F8_Image(Percent) & "|");
+                    So.Set("datapoint|" & Market.Marketid & "|" & Place_Market_Id & "|" & F8_Image(Percent) & "|");
 
                     declare
                       List : Price_Histories.Lists.List := Win_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
