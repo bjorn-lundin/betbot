@@ -214,77 +214,84 @@ begin
             Cnt := Cnt + 1;
             --   Log( F8_Image(Fixed_Type(Cnt)*100.0/ Fixed_Type(Sim.Market_Id_With_Data_List.Length)) & " %");
             -- list of timestamps in this market
-            declare
-              Win_Market_Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-                                                  Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
-              Plc_Market_Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-                                                  Sim.Marketid_Timestamp_To_Prices_History_Map(Place_Market_Id);
-              Stop_Time                       : Time_Type := Time_Type_First;
-              Last_Time                       : Time_Type := Time_Type_First;
-              So : String_Object;
             begin
-              -- check start of race and add percetange of avf time to find sampletime
-              Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-                if Last_Time = Time_Type_First then
-                  Last_Time := Timestamp;
-                elsif Timestamp - Last_Time < (0,0,0,1,0) then -- race started
-                  Stop_Time := Timestamp + To_Interval(Seconds_Type(Percent * Fixed_Type(to_Seconds(Timemap(Market.Marketname)))));
-                end if;
-              end loop Loop_Ts1;
+              declare
+                Win_Market_Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                                                               Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
+                Plc_Market_Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                                                               Sim.Marketid_Timestamp_To_Prices_History_Map(Place_Market_Id);
+                Stop_Time                                  : Time_Type := Time_Type_First;
+                Last_Time                                  : Time_Type := Time_Type_First;
+                So                                         : String_Object;
+              begin
+                -- check start of race and add percetange of avf time to find sampletime
+                Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+                  if Last_Time = Time_Type_First then
+                    Last_Time := Timestamp;
+                  elsif Timestamp - Last_Time < (0,0,0,1,0) then -- race started
+                    Stop_Time := Timestamp + To_Interval(Seconds_Type(Percent * Fixed_Type(To_Seconds(Timemap(Market.Marketname)))));
+                  end if;
+                end loop Loop_Ts1;
 
-              -- Get the data for winner market
-              Loop_Ts_Win : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-                if Timestamp >= Stop_Time then
+                -- Get the data for winner market
+                Loop_Ts_Win : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+                  if Timestamp >= Stop_Time then
 
-                  So.Set("datapoint|" & F8_Image(Percent) & "|");
+                    So.Set("datapoint|" & F8_Image(Percent) & "|");
 
-                  declare
-                    List : Price_Histories.Lists.List := Win_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
-                  begin
-                    --  Log("in loop", Timestamp.To_String & "_" );
+                    declare
+                      List : Price_Histories.Lists.List := Win_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
+                    begin
+                      --  Log("in loop", Timestamp.To_String & "_" );
 
-                    Sort_Array(List => List, Bra => Best_Runners_Win);
+                      Sort_Array(List => List, Bra => Best_Runners_Win);
 
-                    So.Append(F8_Image(Percent) & "|");
-                    for I in 1..3 loop
-                      So.Append(F8_Image(Best_Runners_Win(I).Backprice) & "|");
-                      So.Append(Sim.Is_Race_Winner(Best_Runners_Win(I).Selectionid, Market.Marketid)'Img & "|");
-                    end loop;
-
-                  end;
-                  exit Loop_Ts_Win ;
-                end if;
-              end loop Loop_Ts_Win; --  Timestamp winner market
-
-              -- Get the data for place market
-              Loop_Ts_Plc : for Timestamp of Sim.Marketid_Pricets_Map(Place_Market_Id) loop
-                if Timestamp >= Stop_Time then
-                  declare
-                    List : Price_Histories.Lists.List := Plc_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
-                  begin
-                    --  Log("in loop", Timestamp.To_String & "_" );
-                    Sort_Array(List => List, Bra => Best_Runners_Plc);
-                    -- find the runner in same order as win market. check for sel id
-
-                    for I in 1..3 loop
-                      for Y in Best_Runners_Plc'Range loop
-                        if Best_Runners_Win(I).Selectionid = Best_Runners_Plc(Y).Selectionid then
-                          So.Append(F8_Image(Best_Runners_Plc(Y).Backprice) & "|");
-                          So.Append(Sim.Is_Race_Winner(Best_Runners_Plc(Y).Selectionid, Place_Market_Id)'Img & "|");
-                        end if;
+                      So.Append(F8_Image(Percent) & "|");
+                      for I in 1..3 loop
+                        So.Append(F8_Image(Best_Runners_Win(I).Backprice) & "|");
+                        So.Append(Sim.Is_Race_Winner(Best_Runners_Win(I).Selectionid, Market.Marketid)'Img & "|");
                       end loop;
-                    end loop;
-                  end;
-                  exit Loop_Ts_Plc ;
-                end if;
-              end loop Loop_Ts_Plc; --  Timestamp place market
 
-              Log(So.Fix_String);
+                    end;
+                    exit Loop_Ts_Win ;
+                  end if;
+                end loop Loop_Ts_Win; --  Timestamp winner market
+
+                -- Get the data for place market
+                Loop_Ts_Plc : for Timestamp of Sim.Marketid_Pricets_Map(Place_Market_Id) loop
+                  if Timestamp >= Stop_Time then
+                    declare
+                      List : Price_Histories.Lists.List := Plc_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
+                    begin
+                      --  Log("in loop", Timestamp.To_String & "_" );
+                      Sort_Array(List => List, Bra => Best_Runners_Plc);
+                      -- find the runner in same order as win market. check for sel id
+
+                      for I in 1..3 loop
+                        for Y in Best_Runners_Plc'Range loop
+                          if Best_Runners_Win(I).Selectionid = Best_Runners_Plc(Y).Selectionid then
+                            So.Append(F8_Image(Best_Runners_Plc(Y).Backprice) & "|");
+                            So.Append(Sim.Is_Race_Winner(Best_Runners_Plc(Y).Selectionid, Place_Market_Id)'Img & "|");
+                          end if;
+                        end loop;
+                      end loop;
+                    end;
+                    exit Loop_Ts_Plc ;
+                  end if;
+                end loop Loop_Ts_Plc; --  Timestamp place market
+
+                Log(So.Fix_String);
+              exception
+                  -- usually key not in map ie no sample for plc
+                when Constraint_Error =>
+                  Log("CE1/plc/win markets " & Place_Market_Id & "/" & Market.Marketid);
+              end;
             exception
-              -- usually key not in map ie no sample for plc
+                -- usually key not in map ie no sample for plc
               when Constraint_Error =>
-                Log("CE/plc/win markets " & Place_Market_Id & "/" & Market.Marketid);
+                Log("CE2/plc/win markets " & Place_Market_Id & "/" & Market.Marketid);
             end;
+
           end if; -- Is_Marketname_Ok
         end if; -- WIN
       end loop Market_Loop;
