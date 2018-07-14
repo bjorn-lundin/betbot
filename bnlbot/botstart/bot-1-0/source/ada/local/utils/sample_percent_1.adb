@@ -285,6 +285,7 @@ begin
                     exit Loop_Ts_Plc ;
                   end if;
                 end loop Loop_Ts_Plc; --  Timestamp place market
+                So.Append(Market.Marketname & "|");
 
                 Log(So.Fix_String);
               exception
