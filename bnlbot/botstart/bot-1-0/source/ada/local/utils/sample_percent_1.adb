@@ -171,7 +171,7 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
-    Ev.Set("BOT_NAME","lay_during_race3");
+    Ev.Set("BOT_NAME","lay_sp1sp1during_race3");
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
@@ -240,7 +240,7 @@ begin
                     --  Log("in loop", Timestamp.To_String & "_" );
 
                     Sort_Array(List => List, Bra => Best_Runners);
-                    Log("|" &
+                    Log("datapoint|" &
                           F8_Image(Percent) & "|" &
                           F8_Image(Best_Runners(4).Backprice - Best_Runners(1).Backprice) & "|" &
                           Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Market.Marketid )'Img & "|" &
