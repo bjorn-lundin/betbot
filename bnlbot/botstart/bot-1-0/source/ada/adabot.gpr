@@ -59,6 +59,7 @@ project Adabot is
                     "check_greed.adb",
                     "race_length.adb",
                     "show_race_lengths.adb",
+                    "sample_percent_1.adb",
                     "check_ratio_favorites_on_place.adb",
                     "lay_and_back_after_progress.adb"
                     --"lay_all_watch_back.adb",

@@ -7,14 +7,14 @@ with Gnat.Awk;
 with Text_Io; use Text_Io;
 
 with Calendar2; use Calendar2;
---with Types; use Types;
+with Types; use Types;
 with Bot_types; use Bot_types;
 
 procedure Show_Race_Lengths is
 
   Computer_File : Awk.Session_Type;
 
-  subtype Marketname_Type is String(1..50);
+  --subtype Marketname_Type is String(1..50);
 
   type Stats_Type is record
     Marketid   : Marketid_Type := (others => ' ');
@@ -60,7 +60,7 @@ begin
      S : Stats_Type;
      Key :  Marketname_Type := Awk.Field(4);
     begin
-      S.Time  := To_Interval(awk.Field(2));
+      S.Time  := To_Interval(Awk.Field(2));
       S.Marketid := Awk.Field(3);
       if The_Map.Contains(Key) then
         The_Map(Key).Append(S);
@@ -74,10 +74,19 @@ begin
   Awk.Close (Computer_File);
 
   for M in The_Map.Iterate loop
-    Put_Line("Key " & Stats.Key(M)) ;
-    for List_Element of Stats.Element(M) loop
-      Put_Line("   -   " & String_Interval(List_Element.Time, Days => False, Hours => False) & " -> " & List_Element.Marketid) ;
-    end loop;
+   -- Put_Line("Key " & Stats.Key(M)) ;
+    declare
+      S : Seconds_Type := 0;
+      F : Integer_4 := 0;
+    begin
+      for List_Element of Stats.Element(M) loop
+        --Put_Line("   -   " & String_Interval(List_Element.Time, Days => False, Hours => False) & " -> " & List_Element.Marketid) ;
+        S := S + To_Seconds(List_Element.Time);
+      end loop;
+      F := S / Seconds_Type(stats.Element(M).Length);
+      S := Seconds_Type(F);
+      Put_Line("Key " & Stats.Key(M) & " avg: " & String_Interval(To_Interval(S), Days => False, Hours => False) & " #-> " & Stats.Element(M).Length'Img) ;
+    end ;
   end loop;
 
 end Show_Race_Lengths;
