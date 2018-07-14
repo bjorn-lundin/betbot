@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Table Wiz="3" Desc="odds before end" Name="AMIDRACE" Tablespace="">
+      <!--  <Column Name="id"              AllowNull="0" Description="id"/> -->
+        <Column Name="fraction"        AllowNull="0" Description="fraction of race"/>
+        <Column Name="marketidwin"     AllowNull="0" Description="winmarket id"/>
+        <Column Name="marketidplc"     AllowNull="0" Description="plcmarket id"/>
+        <Column Name="marketname"      AllowNull="0" Description="market name"/>
+        <Column Name="r1pricewin"      AllowNull="0" Description="odds of runner 1 win"/>
+        <Column Name="r1wonwin"        AllowNull="0" Description="runner 1 won win"/>
+        <Column Name="r2pricewin"      AllowNull="0" Description="odds of runner 2 win"/>
+        <Column Name="r2wonwin"        AllowNull="0" Description="runner 2 won win"/>
+        <Column Name="r3pricewin"      AllowNull="0" Description="odds of runner 3 win"/>
+        <Column Name="r3wonwin"        AllowNull="0" Description="runner 3 won win"/>
+        <Column Name="r1priceplc"      AllowNull="0" Description="odds of runner 1 plc"/>
+        <Column Name="r1wonplc"        AllowNull="0" Description="runner 1 won plc"/>
+        <Column Name="r2priceplc"      AllowNull="0" Description="odds of runner 2 plc"/>
+        <Column Name="r2wonplc"        AllowNull="0" Description="runner 2 won plc"/>
+        <Column Name="r3priceplc"      AllowNull="0" Description="odds of runner 3 plc"/>
+        <Column Name="r3wonplc"        AllowNull="0" Description="runner 3 won plc"/>
+        <Index Columns="fraction,marketidwin,marketidplc" type="primary"/>
+        <!--
+        <Index Columns="id" type="primary"/>
+        <Index Columns="fraction,marketidwin,marketidwin" type="index"/>
+        -->
+    </Table>
+</BnlBot>
