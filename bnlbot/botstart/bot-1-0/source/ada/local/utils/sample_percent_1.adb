@@ -245,8 +245,6 @@ begin
                       --  Log("in loop", Timestamp.To_String & "_" );
 
                       Sort_Array(List => List, Bra => Best_Runners_Win);
-
-                      So.Append(F8_Image(Percent) & "|");
                       for I in 1..3 loop
                         So.Append(F8_Image(Best_Runners_Win(I).Backprice) & "|");
                         So.Append(Sim.Is_Race_Winner(Best_Runners_Win(I).Selectionid, Market.Marketid)'Img & "|");
@@ -262,18 +260,26 @@ begin
                   if Timestamp >= Stop_Time then
                     declare
                       List : Price_Histories.Lists.List := Plc_Market_Timestamp_To_Prices_History_Map(Timestamp.To_String);
+                      Found : Boolean := False;
                     begin
                       --  Log("in loop", Timestamp.To_String & "_" );
                       Sort_Array(List => List, Bra => Best_Runners_Plc);
                       -- find the runner in same order as win market. check for sel id
 
                       for I in 1..3 loop
+                        Found := False;
                         for Y in Best_Runners_Plc'Range loop
                           if Best_Runners_Win(I).Selectionid = Best_Runners_Plc(Y).Selectionid then
                             So.Append(F8_Image(Best_Runners_Plc(Y).Backprice) & "|");
                             So.Append(Sim.Is_Race_Winner(Best_Runners_Plc(Y).Selectionid, Place_Market_Id)'Img & "|");
+                            Found := True;
+                            exit;
                           end if;
                         end loop;
+                        if not Found then
+                            So.Append(F8_Image(1000.0) & "|");
+                            So.Append("FALSE" & "|");
+                        end if;
                       end loop;
                     end;
                     exit Loop_Ts_Plc ;
