@@ -35,5 +35,6 @@
         <Index Columns="startts" type="index"/>
         <Index Columns="betname" type="index"/>
         <Index Columns="status" type="index"/>
+        <Index Columns="reference" type="index"/>
     </Table>
 </BnlBot>

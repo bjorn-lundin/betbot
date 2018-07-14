@@ -10,24 +10,26 @@ set cblabel "skr"
 #set grid
 set key off
 
-set xrange [1:260]
-set yrange [1:260]
 
-set cbrange [0:]
+set yrange [1:10]
+set xrange [1.18:1.56]
+set xtics 1.18,0.01,1.56
+set ytics 1,1,10
+
+set cbrange [0:7000]
 #set cbrange  [range_low:range_high]
 
-set x2tics ("1.01" 1, "2.0" 100 , "3.0" 150, "4.0" 170,"5.0" 180, "6.0" 190, "7.0" 195,  "8.0" 200, "9.0" 205,  "10.0" 210, "15.0" 220, "20.0" 230, "30.0" 240,  "50.0" 250, "100.0" 260)
 set link x2
-set y2tics ("1.01" 1, "2.0" 100 , "3.0" 150, "4.0" 170,"5.0" 180, "6.0" 190, "7.0" 195,  "8.0" 200, "9.0" 205,  "10.0" 210, "15.0" 220, "20.0" 230, "30.0" 240,  "50.0" 250, "100.0" 260)
 set link y2
 
-set xlabel "start-odds (in tics)"
-set ylabel "bet-odds (in tics)"
-set x2label "start-odds (in dec)"
-set y2label "bet-odds (in dec)"
+set xlabel "leader backprice"
+set ylabel "delta backprice to second place"
+set x2label "leader backprice"
+set y2label "delta backprice to second place"
 
 
-
+#set x2tics ("1.01" 1, "2.0" 100 , "3.0" 150, "4.0" 170,"5.0" 180, "6.0" 190, "7.0" 195,  "8.0" 200, "9.0" 205,  "10.0" 210, "15.0" 220, "20.0" 230, "30.0" 240,  "50.0" 250, "100.0" 260)
+#set y2tics ("1.01" 1, "2.0" 100 , "3.0" 150, "4.0" 170,"5.0" 180, "6.0" 190, "7.0" 195,  "8.0" 200, "9.0" 205,  "10.0" 210, "15.0" 220, "20.0" 230, "30.0" 240,  "50.0" 250, "100.0" 260)
 #set palette maxcolors 9
 #set palette defined ( 0 '#000090',\
 #                      1 '#000fff',\
