@@ -97,14 +97,14 @@ procedure Sample_Percent_1 is
   end To_Interval;
   -----------------------------------------------------
 
-  procedure Read_Avg_Race_Times (Tm : in out Times.Map) is
+  procedure Read_Avg_Race_Times (Tm : in out Times.Map; File : String) is
     use Gnat;
     Computer_File : Awk.Session_Type;
   begin
     Log("start Read_Avg_Race_Times");
     Awk.Set_Current (Computer_File);
     Awk.Open (Separators => "|",
-              Filename   => "/home/bnl/bnlbot/botstart/bot-1-0/history/data/avg_race_times.dat");
+              Filename   => File);
 
     while not Awk.End_Of_File loop
       Awk.Get_Line;
@@ -146,7 +146,8 @@ procedure Sample_Percent_1 is
   T              :          Sql.Transaction_Type;
   Cmd_Line       :          Command_Line_Configuration;
   Sa_Logfilename : aliased  Gnat.Strings.String_Access;
-  Ia_Percent     : aliased  Integer := 0;
+  Sa_Datafilename : aliased  Gnat.Strings.String_Access;
+  Ia_Percent      : aliased  Integer := 0;
 
 begin
   Define_Switch
@@ -154,6 +155,12 @@ begin
      Sa_Logfilename'Access,
      Long_Switch => "--logfile=",
      Help        => "name of log file");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Datafilename'Access,
+     Long_Switch => "--datafile=",
+     Help        => "path to avg times data file");
 
   Define_Switch
     (Cmd_Line,
@@ -180,7 +187,7 @@ begin
      Password => Ini.Get_Value("database_home", "password", ""));
   Log("main", "db Connected");
 
-  Read_Avg_Race_Times(Tm => Timemap);
+  Read_Avg_Race_Times(Tm => Timemap, File => Sa_Datafilename.all);
 
   Date_Loop : loop
     T.Start;
