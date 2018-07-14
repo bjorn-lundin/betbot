@@ -78,16 +78,17 @@ package Bot_Types is
 
    type Green_Up_Mode_Type is (None, Lay_First_Then_Back, Back_First_Then_Lay);
 
-   subtype Marketid_Type       is String(Table_Amarkets.Empty_Data.Marketid'range);
-   subtype Eventid_Type        is String(Table_Aevents.Empty_Data.Eventid'range);
-   subtype Eventname_Type      is String(Table_Aevents.Empty_Data.Eventname'range);
-   subtype Runnername_Type     is String(Table_Arunners.Empty_Data.Runnername'range);
-   subtype Status_Type          is String(Table_Arunners.Empty_Data.Status'range);
-   subtype Betname_Type        is String(Table_Abets.Empty_Data.Betname'range);
-   subtype Teamname_Type        is String(Table_Ateams.Empty_Data.Teamname'range);
-   subtype Bet_Side_String_Type is String(Table_Abets.Empty_Data.Side'range);
+   subtype Marketid_Type            is String(Table_Amarkets.Empty_Data.Marketid'range);
+   subtype Marketname_Type          is String(Table_Amarkets.Empty_Data.Marketname'range);
+   subtype Eventid_Type             is String(Table_Aevents.Empty_Data.Eventid'range);
+   subtype Eventname_Type           is String(Table_Aevents.Empty_Data.Eventname'range);
+   subtype Runnername_Type          is String(Table_Arunners.Empty_Data.Runnername'range);
+   subtype Status_Type              is String(Table_Arunners.Empty_Data.Status'range);
+   subtype Betname_Type             is String(Table_Abets.Empty_Data.Betname'range);
+   subtype Teamname_Type            is String(Table_Ateams.Empty_Data.Teamname'range);
+   subtype Bet_Side_String_Type     is String(Table_Abets.Empty_Data.Side'range);
    subtype Bet_Timestamp_Image_Type is String(1..23);
-   subtype Venue_Type           is String (1..50);
+   subtype Venue_Type               is String (1..50);
 
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
    function "+" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
@@ -121,11 +122,8 @@ package Bot_Types is
    function "*" (Left : Bet_Size_Type ; Right : Fixed_Type) return Bet_Size_Type;
    function "/" (Left : Bet_Size_Type ; Right : Fixed_Type) return Bet_Size_Type;
 
-
  --  function "*" (Left : Bet_Size_Type ; Right : Lay_Price_Type) return Fixed_Type;
    function "/" (Left : Fixed_Type ; Right : Back_Price_Type) return Bet_Size_Type ;
-
-
 
    function "*" (Left : Bet_Size_Type ; Right : Bet_Size_Portion_Type) return Bet_Size_Type;
    function "/" (Left : Bet_Size_Type ; Right : Bet_Size_Portion_Type) return Bet_Size_Type;
