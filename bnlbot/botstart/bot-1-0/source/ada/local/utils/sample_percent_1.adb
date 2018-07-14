@@ -242,9 +242,15 @@ begin
                     Sort_Array(List => List, Bra => Best_Runners);
                     Log("datapoint|" &
                           F8_Image(Percent) & "|" &
-                          F8_Image(Best_Runners(4).Backprice - Best_Runners(1).Backprice) & "|" &
-                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Market.Marketid )'Img & "|" &
-                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id )'Img
+                          F8_Image(Best_Runners(1).Backprice) & "|" &
+                          F8_Image(Best_Runners(2).Backprice) & "|" &
+                          F8_Image(Best_Runners(3).Backprice) & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Market.Marketid)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(2).Selectionid, Market.Marketid)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(3).Selectionid, Market.Marketid)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img & "|" &
+                          Sim.Is_Race_Winner(Best_Runners(1).Selectionid, Place_Market_Id)'Img
                        );
 
 
