@@ -94,10 +94,13 @@ begin
   Log("main", "db Connected");
 
   Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_50.dat");
+  Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_55.dat");
   Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_60.dat");
+  Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_65.dat");
   Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_70.dat");
+  Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_75.dat");
   Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_80.dat");
-  Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_90.dat");
+  Insert_From_File("/home/bnl/bnlbot/botstart/bot-1-0/history/data/data_85.dat");
 
   Sql.Close_Session;
 exception

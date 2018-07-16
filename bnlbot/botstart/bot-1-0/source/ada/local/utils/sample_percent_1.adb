@@ -220,17 +220,20 @@ begin
                                                                Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
                 Plc_Market_Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
                                                                Sim.Marketid_Timestamp_To_Prices_History_Map(Place_Market_Id);
-                Stop_Time                                  : Time_Type := Time_Type_First;
+                Stop_Time                                  : Time_Type := Time_Type_Last;
                 Last_Time                                  : Time_Type := Time_Type_First;
                 So                                         : String_Object;
               begin
                 -- check start of race and add percetange of avf time to find sampletime
                 Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
                   if Last_Time = Time_Type_First then
-                    Last_Time := Timestamp;
+                    null; -- skip first sample
                   elsif Timestamp - Last_Time < (0,0,0,1,0) then -- race started
                     Stop_Time := Timestamp + To_Interval(Seconds_Type(Percent * Fixed_Type(To_Seconds(Timemap(Market.Marketname)))));
+                    Log("Stop_Time found " & Stop_Time.To_String(Milliseconds => True) & "/" & Timestamp.To_String(Milliseconds => True) );
+                    exit Loop_Ts1;
                   end if;
+                  Last_Time := Timestamp;
                 end loop Loop_Ts1;
 
                 -- Get the data for winner market
