@@ -58,17 +58,18 @@ begin
     declare
      L :  Race_Length_Pack.List;
      S : Stats_Type;
-     Key :  Marketname_Type := Awk.Field(4);
+     Key :  Marketname_Type := Awk.Field(5);
     begin
+      --2018-07-17 18:23:06.352 |datapoint|03:50.309|1.123950409|2m NHF                                            |
       if Awk.Field(2) = "datapoint" then
-      S.Time  := To_Interval(Awk.Field(2));
-      S.Marketid := Awk.Field(3);
-      if The_Map.Contains(Key) then
-        The_Map(Key).Append(S);
-      else
-        L.Append(S);
-        The_Map.Insert(Key, L);
-      end if;
+        S.Time  := To_Interval(Awk.Field(3));
+        S.Marketid := Awk.Field(4);
+        if The_Map.Contains(Key) then
+          The_Map(Key).Append(S);
+        else
+          L.Append(S);
+          The_Map.Insert(Key, L);
+        end if;
       end if;
     end;
   --  Put_Line(Awk.Field(2) & " -> " & Awk.Field(3) & " -> " &Awk.Field(4)) ;
