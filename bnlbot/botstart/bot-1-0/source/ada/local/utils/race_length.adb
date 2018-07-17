@@ -6,7 +6,6 @@ with Bot_Types ; use Bot_Types;
 with Stacktrace;
 with Sql;
 --with Text_Io;
-with Bets;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Calendar2;  use Calendar2;
@@ -18,8 +17,6 @@ with Ini;
 procedure Race_Length is
 
   package Ev renames Ada.Environment_Variables;
-  Global_Bet_List : Bets.Lists.List;
-
 
   Start_Date     : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day        : constant Calendar2.Interval_Type := (1,0,0,0,0);
@@ -35,7 +32,6 @@ begin
      Sa_Logfilename'Access,
      Long_Switch => "--logfile=",
      Help        => "name of log file");
-
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -64,45 +60,33 @@ begin
   Date_Loop : loop
     T.Start;
     Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
-    Log("start process");
-
-    declare
-      Cnt       : Integer := 0;
+    Log("start process " & Current_Date.String_Date_ISO);
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
         if Market.Markettype(1..3) = "WIN" then
-
-          Cnt := Cnt + 1;
-
           -- list of timestamps in this market
           declare
-          --  Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-          --                                      Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
-            First, Last                     : Calendar2.Time_Type := Calendar2.Time_Type_First;
-            First_Is_Set                    : Boolean := False;
-            Iv : Interval_Type := (0,0,0,0,0);
+            Race_Start_Time    : Time_Type := Time_Type_Last;
+            Last_Time          : Time_Type := Time_Type_First;
+            Found              : Boolean := False;
           begin
-            Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-              begin
-                if First = Calendar2.Time_Type_First then
-                  First := Timestamp;
-                elsif not First_Is_Set and then Timestamp - First < (0,0,0,1,0) then
-                  First := Timestamp;
-                  First_Is_Set := True;
-                else
-                  Last := Timestamp;
-                end if;
-              end;
-            end loop Loop_Ts; --  Timestamp
-            Iv := Last - First;
-            Log(" R |" &
-                  String_Interval(Interval => Iv, Days => False, Hours => False) & "|" &
+            -- check start of race
+            Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+              Log("Timestamp: " & Timestamp.To_String(Milliseconds => True) & " Last_time: " & Last_Time.To_String(Milliseconds => True));
+              if Last_Time = Time_Type_First then
+                null; -- skip first sample
+              elsif not Found and then Timestamp - Last_Time < (0,0,0,1,0) then -- race started
+                Race_Start_Time := Timestamp;
+                Log("Race_Start_Time found " & Race_Start_Time.To_String(Milliseconds => True) & "/" & Timestamp.To_String(Milliseconds => True) );
+                Found := True;
+              end if;
+              Last_Time := Timestamp;
+            end loop Loop_Ts1;
+            Log("|datapoint|" &
+                  String_Interval(Interval => Last_Time - Race_Start_Time, Days => False, Hours => False) & "|" &
                   Market.Marketid & "|" &
                   Market.Marketname & "|" );
-
           end;
-          --Log("num lay bets laid" & Global_Bet_List.Length'Img);
-          Global_Bet_List.Clear;
         end if; -- Market_type(1..3) = WIN
       end loop Market_Loop;
     end;

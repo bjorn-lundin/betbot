@@ -60,6 +60,7 @@ begin
      S : Stats_Type;
      Key :  Marketname_Type := Awk.Field(4);
     begin
+      if Awk.Field(2) = "datapoint" then
       S.Time  := To_Interval(Awk.Field(2));
       S.Marketid := Awk.Field(3);
       if The_Map.Contains(Key) then
@@ -67,6 +68,7 @@ begin
       else
         L.Append(S);
         The_Map.Insert(Key, L);
+      end if;
       end if;
     end;
   --  Put_Line(Awk.Field(2) & " -> " & Awk.Field(3) & " -> " &Awk.Field(4)) ;
