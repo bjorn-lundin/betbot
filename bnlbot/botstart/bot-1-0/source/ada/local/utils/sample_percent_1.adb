@@ -226,10 +226,10 @@ begin
                   Log("Timestamp: " & Timestamp.To_String(Milliseconds => True) & " Last_time: " & Last_Time.To_String(Milliseconds => True));
                   if Last_Time = Time_Type_First then
                     null; -- skip first sample
-                  elsif Timestamp - Last_Time < (0,0,0,1,0) then -- race started
+                  elsif Stop_Time /= Time_Type_Last and then Timestamp - Last_Time < (0,0,0,1,0) then -- race started
                     Stop_Time := Timestamp + To_Interval(Seconds_Type(Percent * Fixed_Type(To_Seconds(Timemap(Market.Marketname)))));
                     Log("Stop_Time found " & Stop_Time.To_String(Milliseconds => True) & "/" & Timestamp.To_String(Milliseconds => True) );
-                    exit Loop_Ts1;
+                   -- exit Loop_Ts1;
                   end if;
                   Last_Time := Timestamp;
                 end loop Loop_Ts1;
