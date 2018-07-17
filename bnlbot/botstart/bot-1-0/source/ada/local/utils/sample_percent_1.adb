@@ -220,15 +220,17 @@ begin
                 Stop_Time                                  : Time_Type := Time_Type_Last;
                 Last_Time                                  : Time_Type := Time_Type_First;
                 So                                         : String_Object;
+                Found                                      : Boolean := False;
               begin
                 -- check start of race and add percetange of avf time to find sampletime
                 Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
                   Log("Timestamp: " & Timestamp.To_String(Milliseconds => True) & " Last_time: " & Last_Time.To_String(Milliseconds => True));
                   if Last_Time = Time_Type_First then
                     null; -- skip first sample
-                  elsif Stop_Time /= Time_Type_Last and then Timestamp - Last_Time < (0,0,0,1,0) then -- race started
+                  elsif not Found and then Timestamp - Last_Time < (0,0,0,1,0) then -- race started
                     Stop_Time := Timestamp + To_Interval(Seconds_Type(Percent * Fixed_Type(To_Seconds(Timemap(Market.Marketname)))));
                     Log("Stop_Time found " & Stop_Time.To_String(Milliseconds => True) & "/" & Timestamp.To_String(Milliseconds => True) );
+                    Found := True;
                    -- exit Loop_Ts1;
                   end if;
                   Last_Time := Timestamp;
