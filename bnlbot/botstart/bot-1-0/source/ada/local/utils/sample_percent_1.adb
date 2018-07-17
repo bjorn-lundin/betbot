@@ -22,7 +22,6 @@ with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Calendar2;  use Calendar2;
 with Logging; use Logging;
-with Bot_Svn_Info;
 with Ini;
 
 
@@ -43,8 +42,6 @@ procedure Sample_Percent_1 is
   Best_Runners_Win : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
   Best_Runners_Plc : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
 
-  --package Race_Length_Pack is new Ada.Containers.Doubly_Linked_Lists(Stats_Type);
-
   package Times is new Ada.Containers.Hashed_Maps
     (Marketname_Type,
      Interval_Type,
@@ -54,11 +51,9 @@ procedure Sample_Percent_1 is
 
   Timemap : Times.Map;
 
-
-
+  -------------------------------------------------------------------------
   procedure Sort_Array(List : in out Price_Histories.Lists.List ;
                        Bra  :    out Best_Runners_Array_Type ) is
-
     Price             : Price_Histories.Price_History_Type;
   begin
     -- ok find the runner with lowest backprice:
@@ -80,7 +75,6 @@ procedure Sample_Percent_1 is
         end if;
       end loop;
     end ;
-
   end Sort_Array;
   ---------------------------------------------------------------
   function To_Interval(S2: String) return Calendar2.Interval_Type is
@@ -88,7 +82,6 @@ procedure Sample_Percent_1 is
     S : String (1.. S2'Length) := S2;
   begin
     -- '02:29.585'
-
     Tmp.Days := 0;
     Tmp.Hours := 0;
     Tmp.Minutes := Minute_Type'Value (S (1 .. 2));
@@ -124,14 +117,14 @@ procedure Sample_Percent_1 is
 
   function Is_Marketname_Ok(Name : Marketname_Type ; Tm : Times.Map) return Boolean is
   begin
-    Log("start  Is_Marketname_Ok '" & Name & "'");
+   -- Log("start  Is_Marketname_Ok '" & Name & "'");
     for T in Tm.Iterate loop
       if Times.Key(T) = Name then
-        Log("stop  Is_Marketname_Ok TRUE");
+      --  Log("stop  Is_Marketname_Ok TRUE");
         return True;
       end if;
     end loop;
-    Log("stop  Is_Marketname_Ok FALSE");
+  --  Log("stop  Is_Marketname_Ok FALSE");
     return False;
   end Is_Marketname_Ok;
 
@@ -169,11 +162,10 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
-    Ev.Set("BOT_NAME","lay_sp1sp1during_race3");
+    Ev.Set("BOT_NAME","sp1");
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
-  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log("main", "Connect Db");
@@ -184,6 +176,11 @@ begin
      Login    => Ini.Get_Value("database_home", "username", ""),
      Password => Ini.Get_Value("database_home", "password", ""));
   Log("main", "db Connected");
+
+  Log("main", "parameters start");
+  Log("main", "datafile " & Sa_Datafilename.all);
+  Log("main", "percent" & Ia_Percent'Img);
+  Log("main", "parameters stop");
 
   Read_Avg_Race_Times(Tm => Timemap, File => Sa_Datafilename.all);
 
@@ -226,6 +223,7 @@ begin
               begin
                 -- check start of race and add percetange of avf time to find sampletime
                 Loop_Ts1 : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+                  Log("Timestamp: " & Timestamp.To_String(Milliseconds => True) & " Last_time: " & Last_Time.To_String(Milliseconds => True));
                   if Last_Time = Time_Type_First then
                     null; -- skip first sample
                   elsif Timestamp - Last_Time < (0,0,0,1,0) then -- race started
