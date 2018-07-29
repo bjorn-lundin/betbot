@@ -201,6 +201,10 @@ package Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type) ;
 
+  procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
+                               Animal : in Animal_Type) ;
+
+
   function Get_Place_Price(Win_Data : Price_Histories.Price_History_Type) return Price_Histories.Price_History_Type;
 
 
