@@ -12,6 +12,8 @@ package Markets is
                                        Place_Market :    out Market_Type;
                                        Found        :    out Boolean);
 
+  function Marketname_Ok(Self : Market_Type) return Boolean;
+
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Market_Type);
 
   procedure Read_Eventid(  Data  : in out Market_Type'Class;
@@ -27,7 +29,6 @@ package Markets is
 
   procedure Check_Market_Status ;
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) ;
-
 
 
 

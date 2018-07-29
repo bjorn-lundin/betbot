@@ -214,5 +214,25 @@ package body Markets is
   end Check_Market_Status;
  ---------------------------------------------------------------------------------
 
+   function Marketname_Ok(Self : Market_Type) return Boolean is
+   begin
+      return Self.Marketname(1..9)  = "1m Hcap  "   or else
+             Self.Marketname(1..11) = "1m1f Hcap  " or else
+             Self.Marketname(1..11) = "1m2f Hcap  " or else
+             Self.Marketname(1..11) = "1m3f Hcap  " or else
+             Self.Marketname(1..11) = "1m4f Hcap  " or else
+             Self.Marketname(1..11) = "1m5f Hcap  " or else
+             Self.Marketname(1..11) = "1m6f Hcap  " or else
+             Self.Marketname(1..11) = "1m7f Hcap  " or else
+             Self.Marketname(1..9)  = "2m Hcap  "   or else
+             Self.Marketname(1..11) = "2m1f Hcap  " or else
+             Self.Marketname(1..11) = "2m2f Hcap  " or else
+             Self.Marketname(1..11) = "2m3f Hcap  " or else
+             Self.Marketname(1..11) = "2m4f Hcap  " or else
+             Self.Marketname(1..11) = "2m5f Hcap  " or else
+             Self.Marketname(1..11) = "2m6f Hcap  " or else
+             Self.Marketname(1..11) = "2m7f Hcap  " ;
+   end Marketname_Ok;
+
 
 end Markets;

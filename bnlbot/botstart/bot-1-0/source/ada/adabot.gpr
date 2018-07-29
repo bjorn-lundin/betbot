@@ -57,6 +57,7 @@ project Adabot is
                     "bet_during_race_5.adb",
                     "lay_during_race3.adb",
                     "check_greed.adb",
+                    "check_high_lay_odds.adb",
                     "race_length.adb",
                     "insert_midrace.adb",
                     "show_race_lengths.adb",
