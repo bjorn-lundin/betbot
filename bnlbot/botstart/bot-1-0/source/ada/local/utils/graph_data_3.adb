@@ -235,7 +235,7 @@ begin
 
 
   for Gt of Grand_List loop
-    if Gt.Cnt >= 200 then
+    if Gt.Cnt >= 1 then
       Print (
              Gt.Cnt'Img   & " | " &
                F8_Image (Gt.Odds)  & " | " &

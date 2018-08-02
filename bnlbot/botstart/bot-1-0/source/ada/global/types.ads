@@ -67,7 +67,4 @@ private
     Lower_Case_Cache,
     Upper_Case_Cache : Unbounded_String := Null_Unbounded_String;
   end record;
-
-
-
 end Types;

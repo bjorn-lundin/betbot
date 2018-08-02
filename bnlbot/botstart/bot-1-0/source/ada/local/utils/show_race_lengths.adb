@@ -55,6 +55,7 @@ begin
 
   while not Awk.End_Of_File loop
     Awk.Get_Line;
+    Put_Line(Awk.Field(2) & " -> " & Awk.Field(3) & " -> " &Awk.Field(4) & " -> '" &Awk.Field(4) & "'") ;
     declare
      L :  Race_Length_Pack.List;
      S : Stats_Type;
