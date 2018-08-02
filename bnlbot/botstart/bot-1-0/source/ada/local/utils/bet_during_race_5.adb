@@ -20,6 +20,7 @@ with Markets;
 with Runners;
 with Bot_Svn_Info;
 with Ini;
+with Filters;
 
 
 procedure Bet_During_Race_5 is
@@ -51,21 +52,28 @@ procedure Bet_During_Race_5 is
   --------------------------------------------
   package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
 
-  type Best_Runners_Array_Type is array (1..4) of Price_Histories.Price_History_Type;
+--  type Best_Runners_Type is array (1..16) of Price_Histories.Price_History_Type;
+--  type Filter_Array_Type is array (1..16) of Filters.Filter_Type;
+  type Filter_Array_Type is array (Bet_Side_Type'Range) of Filters.Filter_Type;
+
+  type Best_Runners_Type is record
+    Price  : Price_Histories.Price_History_Type := Price_Histories.Empty_Data;
+    Filter : Filter_Array_Type;
+  end record;
 
 
-  procedure Treat_Lay(List         : in     Price_Histories.Lists.List ;
-                      Market       : in     Markets.Market_Type;
-                      Wr           : in     Price_Histories.Price_History_Type ;
+  type Best_Runners_Array_Type is array (1..16) of Best_Runners_Type;
+  --  type Best_Runners_Array_Type is array (1..16) of Best_Runners_Type2;
+
+
+  procedure Treat_Lay(Market       : in     Markets.Market_Type;
                       Bra          : in     Best_Runners_Array_Type ;
                       Old_Bra      : in     Best_Runners_Array_Type ;
                       Status       : in out Bet_Status_Type;
                       Bet_List     : in out Bets.Lists.List) is
-    pragma Unreferenced(List);
-    pragma Unreferenced(Wr);
     pragma Unreferenced(Status);
     -- pragma Unreferenced(BRA);
-    pragma Unreferenced(Old_bra);
+    pragma Unreferenced(Old_Bra);
     Bet    : Bets.Bet_Type;
     Runner : Runners.Runner_Type;
     Name   : Betname_Type := (others => ' ');
@@ -75,47 +83,47 @@ procedure Bet_During_Race_5 is
     -- remove runners from local-BRA that already are betted on
     for B of Bet_List loop
       for I in Local_Bra'Range loop
-        if Local_Bra(I).Selectionid = B.Selectionid then
-          Local_Bra(I) := Price_Histories.Empty_Data;
+        if Local_Bra(I).Price.Selectionid = B.Selectionid then
+          Local_Bra(I).Price := Price_Histories.Empty_Data;
         end if;
       end loop;
     end loop;
 
     -- find the first one to lay. lay only one at a time
-      if Local_Bra(4).Selectionid > 0 and then
-         Local_Bra(1).Selectionid > 0 and then
-         Local_Bra(1).Backprice >= Fixed_Type(1.0)and then
-         Local_Bra(1).Layprice  >= Fixed_Type(1.0) and then
-         Local_Bra(1).Backprice <= Global_Min_Delta  and then
-         Local_Bra(4).Layprice <= Global_Max_Price then
+    if Local_Bra(4).Price.Selectionid > 0 and then
+      Local_Bra(1).Price.Selectionid > 0 and then
+      Local_Bra(1).Price.Backprice >= Fixed_Type(1.0)and then
+      Local_Bra(1).Price.Layprice  >= Fixed_Type(1.0) and then
+      Local_Bra(1).Price.Backprice <= Global_Min_Delta  and then
+      Local_Bra(4).Price.Layprice <= Global_Max_Price then
 
 
-        Runner.Selectionid := Local_Bra(4).Selectionid;
-        Runner.Marketid := Local_Bra(4).Marketid;
+      Runner.Selectionid := Local_Bra(4).Price.Selectionid;
+      Runner.Marketid := Local_Bra(4).Price.Marketid;
 
-        if Global_Max_Price < 100.0 then
-          if Global_Min_Delta < 10.0 then
-            Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
-          else
-            Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
-          end if;
-        else -- Global_Max_Price <=100.0
-          if Global_Min_Delta < 10.0 then
-            Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
-          else
-            Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
-          end if;
+      if Global_Max_Price < 100.0 then
+        if Global_Min_Delta < 10.0 then
+          Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+        else
+          Move("WIN_LAY_0" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
         end if;
-
-        Bet := Bets.Create(Name   => Name,
-                           Side   => Lay,
-                           Size   => Lay_Size,
-                           Price  => Price_Type(Global_Max_Price),
-                           Placed => Local_Bra(4).Pricets,
-                           Runner => Runner,
-                           Market => Market);
-        Bet_List.Append(Bet);
+      else -- Global_Max_Price <=100.0
+        if Global_Min_Delta < 10.0 then
+          Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_0" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+        else
+          Move("WIN_LAY_" & F8_Image(Global_Max_Price) & "_" & F8_Image(Global_Min_Delta) & "_" & Ba_Immediate_Match'Img(1), Name);
+        end if;
       end if;
+
+      Bet := Bets.Create(Name   => Name,
+                         Side   => Lay,
+                         Size   => Lay_Size,
+                         Price  => Price_Type(Global_Max_Price),
+                         Placed => Local_Bra(4).Price.Pricets,
+                         Runner => Runner,
+                         Market => Market);
+      Bet_List.Append(Bet);
+    end if;
 
     -- Try To check outcome
 
@@ -126,8 +134,8 @@ procedure Bet_During_Race_5 is
       begin
 
         for I in Local_Bra'Range loop
-          if Bra(I).Selectionid = B.Selectionid then
-            R := Bra(I);
+          if Bra(I).Price.Selectionid = B.Selectionid then
+            R := Bra(I).Price;
             exit;
           end if;
         end loop;
@@ -154,21 +162,19 @@ procedure Bet_During_Race_5 is
   end Treat_Lay;
 
   --------------------------------------------------------------------------
-  procedure Treat_Back(List         : in     Price_Histories.Lists.List ;
-                       Market       : in out Markets.Market_Type;
+  procedure Treat_Back(Market       : in out Markets.Market_Type;
                        Bra          : in     Best_Runners_Array_Type ;
                        Status       :    out Bet_Status_Type;
                        Back_1_At    : in Fixed_Type;
                        Back_2_At    : in Fixed_Type) is
-    pragma Unreferenced(List);
     use type Price_Histories.Price_History_Type;
     Runner : Runners.Runner_Type;
     Name : Betname_Type := (others => ' ');
   begin
 
-    if Bra(1).Backprice <= Back_1_At and then
-      Bra(2).Backprice >= Back_2_At and then
-      Bra(2).Backprice < Fixed_Type(10_000.0) then  -- so it exists
+    if Bra(1).Price.Backprice <= Back_1_At and then
+      Bra(2).Price.Backprice >= Back_2_At and then
+      Bra(2).Price.Backprice < Fixed_Type(10_000.0) then  -- so it exists
 
       declare
         Bet_Place                    : Bets.Bet_Type;
@@ -180,7 +186,7 @@ procedure Bet_During_Race_5 is
         Market.Corresponding_Place_Market(Place_Market => Place_Market, Found => Found);
         if Found then
           Runner.Marketid := Place_Market.Marketid;
-          Runner.Selectionid := Bra(1).Selectionid;
+          Runner.Selectionid := Bra(1).Price.Selectionid;
 
           if Back_2_At < 10.0 then
             Move("PLC_BACK_" & F8_Image(Back_1_At) & "_0" & F8_Image(Back_2_At) & "_" & Ba_Immediate_Match'Img(1) & "_1.01", Name);
@@ -196,7 +202,7 @@ procedure Bet_During_Race_5 is
           for Po of Place_Price_During_Race_List loop
             case Place_Bet_Status is
               when No_Bet_Laid =>
-                if Po.Pricets >= Bra(1).Pricets then -- find the same time in the race
+                if Po.Pricets >= Bra(1).Price.Pricets then -- find the same time in the race
                   Bet_Place := Bets.Create(Name   => Name,
                                            Side   => Back,
                                            Size   => Back_Size,
@@ -239,8 +245,7 @@ procedure Bet_During_Race_5 is
   end Treat_Back;
   --------------------------------------------------------------------------
 
-  Best_Runners      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-  Old_Best_Runners  : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+  Old_Best_Runners  : Best_Runners_Array_Type ; --:= --(others => Price_Histories.Empty_Data);
   Worst_Runner      : Price_Histories.Price_History_Type := Price_Histories.Empty_Data;
 
   procedure Sort_Array(List : in out Price_Histories.Lists.List ;
@@ -248,12 +253,31 @@ procedure Bet_During_Race_5 is
                        Wr   :    out Price_Histories.Price_History_Type ) is
 
     Price             : Price_Histories.Price_History_Type;
+
   begin
+    for I of List loop
+      for J in Bra'Range loop
+        if I.Selectionid = Bra(J).Filter(Back).Selectionid then
+          Bra(J).Filter(Back).Add(Value => I.Backprice);
+          Bra(J).Filter(Back).Recalculate;
+          I.Backprice := Bra(J).Filter(Back).Mean;
+        end if;
+
+        if I.Selectionid = Bra(J).Filter(Lay).Selectionid then
+          Bra(J).Filter(Lay).Add(Value => I.Layprice);
+          Bra(J).Filter(Lay).Recalculate;
+          I.Layprice := Bra(J).Filter(Lay).Mean;
+        end if;
+      end loop;
+    end loop;
+
     -- ok find the runner with lowest backprice:
     Backprice_Sorter.Sort(List);
 
     Price.Backprice := 10_000.0;
-    Bra := (others => Price);
+    for J in Bra'Range loop
+      Bra(J).Price := Price;
+    end loop;
     Wr.Layprice := 10_000.0;
 
     declare
@@ -265,21 +289,15 @@ procedure Bet_During_Race_5 is
           Tmp.Layprice < Fixed_Type(1_000.0)  then
           Idx := Idx +1;
           exit when Idx > Bra'Last;
-          Bra(Idx) := Tmp;
+          Bra(Idx).Price := Tmp;
         end if;
       end loop;
     end ;
 
-    for Tmp of List loop
-      if Tmp.Status(1..6) = "ACTIVE" and then
-        Tmp.Backprice > Fixed_Type(1.0) and then
-        Tmp.Layprice < Fixed_Type(1_000.0) and then
-        Tmp.Selectionid /= Bra(1).Selectionid and then
-        Tmp.Selectionid /= Bra(2).Selectionid then
 
-        Wr := Tmp;
-      end if;
-    end loop;
+
+
+
 
     -- for i in BRA'range loop
     --   Log("Best_Runners(i)" & i'Img & " " & BRA(i).To_String);
@@ -389,7 +407,6 @@ begin
     raise Constraint_Error with "Bad Action: '" & Sa_Action.all & "'";
   end if;
 
-
   if Ba_Summer_Only then
     Stop_Date := (2016,09,1,0,0,0,0);
   end if;
@@ -439,8 +456,9 @@ begin
           -- list of timestamps in this market
           declare
             Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-              Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
-
+                                                Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
+            First                           : Boolean := True;
+            Best_Runners  : Best_Runners_Array_Type ;
           begin
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               declare
@@ -448,14 +466,28 @@ begin
               begin
                 --  Log("in loop", Timestamp.To_String & "_" & F8_Image(Back_1_At) & "_" & F8_Image(Back_2_At));
 
+                if First then
+                  -- if first run, just grab an index for the selectionid
+                  for I of List loop
+                    for J In Best_Runners'Range loop
+                      if Best_Runners(J).Filter(Back).Selectionid = Integer_4(0) then
+                        Best_Runners(J).Filter(Back).Selectionid := I.Selectionid;
+                      end if;
+                      if Best_Runners(J).Filter(Lay).Selectionid = Integer_4(0) then
+                        Best_Runners(J).Filter(Lay).Selectionid := I.Selectionid;
+                      end if;
+                    end loop;
+                  end loop;
+                  First := False;
+                end if;
+
                 Sort_Array(List => List,
                            Bra  => Best_Runners,
                            Wr   => Worst_Runner);
 
                 case Global_Action is
                   when Do_Back =>
-                    Treat_Back(List          => List,
-                               Market        => Market,
+                    Treat_Back(Market        => Market,
                                Bra           => Best_Runners,
                                Status        => Back_Bet_Status,
                                Back_1_At     => Global_Back_1_At,
@@ -464,11 +496,9 @@ begin
                     if First_Run then -- to get values on old_Best_runners
                       First_Run := False;
                     else
-                      Treat_Lay(List          => List,
-                                Market        => Market,
+                      Treat_Lay(Market        => Market,
                                 Bra           => Best_Runners,
                                 Old_Bra       => Old_Best_Runners,
-                                Wr            => Worst_Runner,
                                 Status        => Lay_Bet_Status,
                                 Bet_List      => Global_Bet_List);
                     end if;
