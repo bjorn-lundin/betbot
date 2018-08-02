@@ -258,13 +258,13 @@ procedure Bet_During_Race_5 is
     for I of List loop
       for J in Bra'Range loop
         if I.Selectionid = Bra(J).Filter(Back).Selectionid then
-          Bra(J).Filter(Back).Add(Value => I.Backprice);
+          Bra(J).Filter(Back).Add(Value => I.Backprice, Timestamp => I.Pricets);
           Bra(J).Filter(Back).Recalculate;
           I.Backprice := Bra(J).Filter(Back).Mean;
         end if;
 
         if I.Selectionid = Bra(J).Filter(Lay).Selectionid then
-          Bra(J).Filter(Lay).Add(Value => I.Layprice);
+          Bra(J).Filter(Lay).Add(Value => I.Layprice, Timestamp => I.Pricets);
           Bra(J).Filter(Lay).Recalculate;
           I.Layprice := Bra(J).Filter(Lay).Mean;
         end if;
