@@ -10,14 +10,14 @@ package body Filters is
     Self.Values(Self.Values'First) := Value;
   end Add;
 
-  procedure Calculate(Self : in out Filter_Type) is
+  procedure Recalculate(Self : in out Filter_Type) is
   begin
     Self.Mean := 0.0;
     for I in Self.Values'Range loop
       Self.Mean := Self.Mean + Self.Values(I) * Self.Weights(I);
     end loop;
     Self.Mean := Self.Mean / Fixed_Type(Self.Values'Length);
-  end Calculate;
+  end Recalculate;
 
 
 end Filters;
