@@ -959,9 +959,15 @@ package body Sim is
       File   : Ada.Streams.Stream_IO.File_Type;
       Stream : Ada.Streams.Stream_IO.Stream_Access;
       File_On_Disk : String := Path & Filename;
-    --  Service : constant String := "Read_From_Disk";
+      Service : constant String := "Read_From_Disk";
     begin
-     -- Log(Object & Service, "read from file '" & Filename & "'");
+         -- Log(Object & Service, "read from file '" & Filename & "'");
+      loop
+         exit when not Ad.Exists("/dev/shm/block.dat") ;
+         Log(Object & Service, "Blocking file detected - wait");
+         delay 0.2;
+      end loop;
+
       Ada.Streams.Stream_IO.Open
           (File => File,
            Name => File_On_Disk,
