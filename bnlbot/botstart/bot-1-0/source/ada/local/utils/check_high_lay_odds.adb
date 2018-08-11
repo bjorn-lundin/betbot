@@ -38,7 +38,7 @@ procedure Check_High_Lay_Odds is
   --   end record;
 
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid, Bet_Matched);
-  Commission : Fixed_Type  := 0.065;
+  --Commission : Fixed_Type  := 0.065;
 
   subtype Key is String(1..7);
 
@@ -212,9 +212,9 @@ procedure Check_High_Lay_Odds is
       end;
     end loop;
 
-    for B of Local_Bet_List loop
-      Bet_List.Append(B);
-    end loop;
+   for B of Local_Bet_List loop
+     Bet_List.Append(B);
+   end loop;
   end Treat_Lay;
   -- pragma Unreferenced (Treat_Lay);
 
@@ -370,7 +370,21 @@ begin
               declare
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
                 Bra      :  Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+                Name              : Betname_Type := (others => ' ');
+                Five     : String(1..5) := "05.00";
               begin
+                if Min_Lay_Price /= 5.0 then
+                  Five := F8_Image(Fixed_Type(Min_Lay_Price));
+                end if;
+
+
+                Move("WIN_" &
+                       Five & "_" &
+                       F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
+                       F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
+                       F8_Image(Fixed_Type(Lay_Price))   & "_1ST", Name);
+
+
                 Sort_Array(List => List, Bra  => Bra);
                 Treat_Lay(Market           => Market,
                           Bra              => Bra,
@@ -381,40 +395,40 @@ begin
                           Bet_List         => Bet_List);
               end;
             end loop Loop_Ts; --  Timestamp
-            -- calculate commission
-            declare
-              Tot_Market_Profit : Fixed_Type := 0.0;
-              Bet               : Bets.Bet_Type;
-              Name              : Betname_Type := (others => ' ');
-              Runner            : Runners.Runner_Type;
-            begin
-              for B of Bet_List loop
-                if B.Status(1) = 'M' then
-                  Tot_Market_Profit := Tot_Market_Profit + B.Profit;
-                end if;
-              end loop;
-              if Tot_Market_Profit > Fixed_Type(0.0) then
-                Move("WIN_" &
-                       F8_Image(Fixed_Type(Min_Lay_Price)) & "_" &
-                       F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
-                       F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
-                       F8_Image(Fixed_Type(Lay_Price))   & "_1ST", Name);
-                Runner.Selectionid := 0;
-                Runner.Marketid := Market.Marketid ;
-                Runner.Runnernamestripped(1..10) := "commission" ;
-                Bet := Bets.Create(Name   => Name,
-                                   Side   => Back,
-                                   Size   => Bet_Size_Type(0.0),
-                                   Price  => Price_Type(0.0),
-                                   Placed => Calendar2.Clock,
-                                   Runner => Runner,
-                                   Market => Market);
-                Bet.Side(1..4) := "COMM";
-                Bet.Status(1..7) := "MATCHED";
-                Bet.Profit := -Commission * Tot_Market_Profit;
-                Bet.Insert;
-              end if;
-            end;
+--              -- calculate commission
+--              declare
+--                Tot_Market_Profit : Fixed_Type := 0.0;
+--                Bet               : Bets.Bet_Type;
+--                Runner            : Runners.Runner_Type;
+--              begin
+--                for B of Bet_List loop
+--                  if B.Status(1) = 'M' then
+--                    Tot_Market_Profit := Tot_Market_Profit + B.Profit;
+--                  end if;
+--                end loop;
+--                if Tot_Market_Profit > Fixed_Type(0.0) then
+--                  Move("WIN_" &
+--                         F8_Image(Fixed_Type(Min_Lay_Price)) & "_" &
+--                         F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
+--                         F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
+--                         F8_Image(Fixed_Type(Lay_Price))   & "_1ST", Name);
+--
+--                  Runner.Selectionid := 0;
+--                  Runner.Marketid := Market.Marketid ;
+--                  Runner.Runnernamestripped(1..10) := "commission" ;
+--                  Bet := Bets.Create(Name   => Name,
+--                                     Side   => Back,
+--                                     Size   => Bet_Size_Type(0.0),
+--                                     Price  => Price_Type(0.0),
+--                                     Placed => Calendar2.Clock,
+--                                     Runner => Runner,
+--                                     Market => Market);
+--                  Bet.Side(1..4) := "COMM";
+--                  Bet.Status(1..7) := "MATCHED";
+--                  Bet.Profit := -Commission * Tot_Market_Profit;
+--                  Bet.Insert;
+--                end if;
+--              end;
           end;
         end if; -- Market_type(1..3) = WIN
         T.Commit;

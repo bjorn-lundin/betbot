@@ -23,18 +23,20 @@ procedure Graph_Data_Ael is
   Select_Equity_Date    : Sql.Statement_Type;
   Select_Histogram_Data : Sql.Statement_Type;
 
-  Sa_Betname          : aliased Gnat.Strings.String_Access;
-  Sa_Betname1         : aliased Gnat.Strings.String_Access;
-  Sa_Betname2         : aliased Gnat.Strings.String_Access;
-  Sa_Price            : aliased Gnat.Strings.String_Access;
+  Sa_Betname           : aliased Gnat.Strings.String_Access;
+  Sa_Betname1          : aliased Gnat.Strings.String_Access;
+  Sa_Betname2          : aliased Gnat.Strings.String_Access;
+  Sa_Side              : aliased Gnat.Strings.String_Access;
+  Sa_Price             : aliased Gnat.Strings.String_Access;
   Sa_Min_Price_Matched : aliased Gnat.Strings.String_Access;
-  Ba_Print_Strategies : aliased Boolean := False;
-  Ba_Avg_Price        : aliased Boolean := False;
-  Ba_Profit           : aliased Boolean := False;
-  Ba_Lapsed           : aliased Boolean := False;
-  Ba_Equity           : aliased Boolean := False;
-  Ba_Equity2          : aliased Boolean := False;
-  Ba_Histogram        : aliased Boolean := False;
+  Ba_Print_Strategies  : aliased Boolean := False;
+  Ba_Avg_Price         : aliased Boolean := False;
+  Ba_Profit            : aliased Boolean := False;
+  Ba_Lapsed            : aliased Boolean := False;
+  Ba_Equity            : aliased Boolean := False;
+  Ba_Equity2           : aliased Boolean := False;
+  Ba_Histogram         : aliased Boolean := False;
+
   Ia_Days             : aliased Integer := 42;
   Ia_Maxprice         : aliased Integer := 1000;
 
@@ -248,16 +250,18 @@ procedure Graph_Data_Ael is
   procedure Equity_Data (
                          Betname : in     String;
                          A_List  : in out Equity_Result_Pack.List) is
-    Eos           : Boolean := False;
-    Equity_Result : Equity_Result_Type;
-    Profit        : Fixed_Type := 0.0;
-    Min_Price_Matched        : Fixed_Type := 1.01;
+    Eos               : Boolean := False;
+    Equity_Result     : Equity_Result_Type;
+    Profit            : Fixed_Type := 0.0;
+    Min_Price_Matched : Fixed_Type := 1.01;
+    Side              : String(1..4) := "BACK";
 
   begin
     Select_Equity_Date.Prepare (
                                 "select B.STARTTS, B.PROFIT " &
                                   "from ABETS B " &
                                   "where true " &
+                                  "and B.SIDE = :SIDE " &
                                   "and B.BETNAME = :BETNAME " &
                                   "and B.STATUS ='MATCHED' " &
                                   "and B.PRICEMATCHED >= :PRICEMATCHED " &
@@ -268,6 +272,13 @@ procedure Graph_Data_Ael is
       Min_Price_Matched := Fixed_Type'Value(Sa_Min_Price_Matched.all);
     end if;
     Select_Equity_Date.Set ("PRICEMATCHED", Min_Price_Matched);
+
+    if Sa_Side.all /= "" then
+      Select_Equity_Date.Set ("SIDE", Sa_Side.all);
+    else
+      Select_Equity_Date.Set ("SIDE", Side);
+    end if;
+
 
     Select_Equity_Date.Open_Cursor;
     loop
@@ -395,6 +406,12 @@ begin
      Sa_Min_Price_Matched'Access,
      Long_Switch => "--min_price_matched=",
      Help        => "min price matched of bet");
+
+  Define_Switch
+    (Cmd_Line,
+     SA_Side'Access,
+     Long_Switch => "--side=",
+     Help        => "BACK or LAY");
 
 
 
