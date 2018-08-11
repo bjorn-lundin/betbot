@@ -172,6 +172,7 @@ package body Bot_Types is
   begin
     return Bet_Price_Type (Fixed_Type (Right) * Fixed_Type (Left));
   end "*";
+
   function "/" (Left, Right : Bet_Price_Type) return Bet_Price_Type is
   begin
     return Bet_Price_Type (Fixed_Type (Right) / Fixed_Type (Left));

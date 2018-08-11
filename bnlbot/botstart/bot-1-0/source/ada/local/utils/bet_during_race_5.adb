@@ -68,12 +68,9 @@ procedure Bet_During_Race_5 is
 
   procedure Treat_Lay(Market       : in     Markets.Market_Type;
                       Bra          : in     Best_Runners_Array_Type ;
-                      Old_Bra      : in     Best_Runners_Array_Type ;
                       Status       : in out Bet_Status_Type;
                       Bet_List     : in out Bets.Lists.List) is
     pragma Unreferenced(Status);
-    -- pragma Unreferenced(BRA);
-    pragma Unreferenced(Old_Bra);
     Bet    : Bets.Bet_Type;
     Runner : Runners.Runner_Type;
     Name   : Betname_Type := (others => ' ');
