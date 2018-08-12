@@ -32,6 +32,8 @@ procedure Check_High_Lay_Odds is
 
   Lay_Size           : Bet_Size_Type := 40.0;
 
+  Ba_Back_Bet        : aliased Boolean := False;
+
   --   type Odds_Record is record
   --      Back_Num : Natural := 0;
   --      Lay_Num : Natural := 0;
@@ -135,7 +137,7 @@ procedure Check_High_Lay_Odds is
         if R.Selectionid > 0 and then B.Status(1) = 'U' then -- found unmatched bet
           if R.Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
 
-            if B.Side(1..3) = "LAY" then
+            if B.Side(1..3) = "LAY" and then Ba_Back_Bet Then
               Price_OK :=  R.Layprice <= B.Price and then
                 R.Layprice > Fixed_Type(1.0) ; -- sanity
               Price := R.Layprice;
@@ -295,6 +297,12 @@ begin
      Sa_Lay_Price'Access,
      Long_Switch => "--lay_price=",
      Help        => "lay the runnaer at this price");
+
+  Define_Switch
+    (Cmd_Line,
+     Ba_Back_Bet'Access,
+     Long_Switch => "--back_bet",
+     Help        => "do a back bet too");
 
   Getopt (Cmd_Line);  -- process the command line
 
