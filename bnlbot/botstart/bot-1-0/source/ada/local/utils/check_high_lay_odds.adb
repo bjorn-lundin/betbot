@@ -66,12 +66,12 @@ procedure Check_High_Lay_Odds is
   procedure Treat_Lay(Market                                                    : in     Markets.Market_Type;
                       Bra                                                       : in     Best_Runners_Array_Type ;
                       Min_Lay_Price, Max_Lay_Price, Max_Leader_Price, Lay_Price : in Price_Type;
+                      Name                                                      : in Betname_Type;
                       Bet_List                                                  : in out Bets.Lists.List) is
     Bet    : Bets.Bet_Type;
     Runner : Runners.Runner_Type;
-    Name   : Betname_Type := (others => ' ');
     Local_Bra : Best_Runners_Array_Type := Bra;
-    Local_Bet_List : Bets.Lists.List;
+   -- Local_Bet_List : Bets.Lists.List;
   begin
     -- remove runners from local-BRA that already are betted on
 --      for B of Bet_List loop
@@ -98,12 +98,6 @@ procedure Check_High_Lay_Odds is
             Runner.Selectionid := Local_Bra(I).Selectionid;
             Runner.Marketid := Local_Bra(I).Marketid;
 
-            Move("WIN_" &
-                   F8_Image(Fixed_Type(Min_Lay_Price)) & "_" &
-                   F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
-                   F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
-                   F8_Image(Fixed_Type(Lay_Price)) & "_1ST", Name);
-
             Bet := Bets.Create(Name   => Name,
                                Side   => Lay,
                                Size   => Lay_Size,
@@ -111,7 +105,7 @@ procedure Check_High_Lay_Odds is
                                Placed => Local_Bra(I).Pricets,
                                Runner => Runner,
                                Market => Market);
-            Local_Bet_List.Append(Bet);
+            Bet_List.Append(Bet);
             Log("Bet_laid", Bet.To_String);
             exit; -- one bet only per race
           end if;
@@ -124,7 +118,7 @@ procedure Check_High_Lay_Odds is
       declare
         R              : Price_Histories.Price_History_Type;
         Price_Ok       : Boolean := False;
-        Price          : Fixed_Type := 0.0;
+        Pricematched   : Fixed_Type := 0.0;
         Is_Race_Winner : Boolean := False;
       begin
         for I in Local_Bra'Range loop      --find runner
@@ -138,31 +132,28 @@ procedure Check_High_Lay_Odds is
           if R.Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
 
             if B.Side(1..3) = "LAY" and then Ba_Back_Bet Then
-              Price_OK :=  R.Layprice <= B.Price and then
-                R.Layprice > Fixed_Type(1.0) ; -- sanity
-              Price := R.Layprice;
-            elsif  B.Side(1..4) = "BACK" then
-              Price_OK := R.Backprice >= B.Price and then
-                R.Backprice > Fixed_Type(1.0); -- sanity
-              Price := R.Backprice;
+              Price_OK := R.Layprice <= B.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
+              Pricematched := R.Layprice;
+            elsif B.Side(1..4) = "BACK" then
+              Price_OK := R.Backprice >= B.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
+              Pricematched := R.Backprice;
             end if;
 
             if Price_OK then
               B.Status := (others => ' ');
               B.Status(1..7) := "MATCHED"; --Matched
-              B.Pricematched := Price;
+              B.Pricematched := Pricematched;
               Is_Race_Winner := Sim.Is_Race_Winner(B.Selectionid, B.Marketid);
 
               if B.Side(1..3) = "LAY" then
                 B.Betwon := not Is_Race_Winner;
                 if B.Betwon then
-                  B.Profit :=  B.Sizematched; -- commision is calculated/market
+                  B.Profit :=  B.Sizematched; -- commission is calculated/market
                 else
                   B.Profit := -B.Sizematched * (B.Pricematched - 1.0);
                 end if;
-              end if;
 
-              if B.Side(1..4) = "BACK" then
+              elsif B.Side(1..4) = "BACK" then
                 B.Betwon := Is_Race_Winner;
                 if B.Betwon then
                   B.Profit :=  B.Sizematched * (B.Pricematched - 1.0);  -- commision is calculated/market
@@ -184,11 +175,6 @@ procedure Check_High_Lay_Odds is
                 begin
                   Runner.Selectionid := B.Selectionid;
                   Runner.Marketid    := B.Marketid;
-                  Move("WIN_" &
-                         F8_Image(Fixed_Type(Min_Lay_Price)) & "_" &
-                         F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
-                         F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
-                         F8_Image(Fixed_Type(Lay_Price))  & "_1ST", Name);
                   -- get real tic value
                   --  Log(B.Size'Img & "/" & B.Pricematched'Img & "/" & Back_Size'Img & "/" & Back_Price'Img);
                   Back_Price := Back_Price / Fixed_Type(Back_Size);
@@ -205,7 +191,7 @@ procedure Check_High_Lay_Odds is
                                      Placed => R.Pricets,
                                      Runner => Runner,
                                      Market => Market);
-                  Local_Bet_List.Append(Bet);
+                  Bet_List.Append(Bet);
                 end;
               end if;
             end if;
@@ -214,9 +200,9 @@ procedure Check_High_Lay_Odds is
       end;
     end loop;
 
-   for B of Local_Bet_List loop
-     Bet_List.Append(B);
-   end loop;
+  -- for B of Local_Bet_List loop
+  --   Bet_List.Append(B);
+  -- end loop;
   end Treat_Lay;
   -- pragma Unreferenced (Treat_Lay);
 
@@ -377,14 +363,13 @@ begin
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               declare
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
-                Bra      :  Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-                Name              : Betname_Type := (others => ' ');
+                Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+                Name     : Betname_Type := (others => ' ');
                 Five     : String(1..5) := "05.00";
               begin
                 if Min_Lay_Price /= 5.0 then
                   Five := F8_Image(Fixed_Type(Min_Lay_Price));
                 end if;
-
 
                 Move("WIN_" &
                        Five & "_" &
@@ -400,6 +385,7 @@ begin
                           Max_Lay_Price    => Max_Lay_Price,
                           Max_Leader_Price => Max_Leader_Price,
                           Lay_Price        => Lay_Price,
+                          Name             => Name,
                           Bet_List         => Bet_List);
               end;
             end loop Loop_Ts; --  Timestamp
@@ -448,14 +434,12 @@ begin
     Current_Date := Current_Date + One_Day;
     exit when Current_Date = Stop_Date;
 
-
   end loop Date_Loop;
 
-  Sql.Close_Session;    -- no need for db anymore
-
-
+  Sql.Close_Session;
 
 exception
   when E: others =>
     Stacktrace.Tracebackinfo(E);
+    Sql.Close_Session;
 end Check_High_Lay_Odds;
