@@ -85,7 +85,7 @@ procedure Check_High_Lay_Odds is
       for I in Local_Bra'Range loop
         --if Local_Bra(I).Selectionid > Integer_4(0) and then Lay_Bet_Status = No_Bet_Laid then
         if Local_Bra(I).Selectionid > Integer_4(0) then
-          --  Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
+          Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
           --  Log("Treat_Lay", " 1 " & Local_Bra(1).To_String);
 
           if Local_Bra(I).Selectionid > Integer_4(0) and then
@@ -121,12 +121,15 @@ procedure Check_High_Lay_Odds is
         Pricematched   : Fixed_Type := 0.0;
         Is_Race_Winner : Boolean := False;
       begin
+        Log("checking bet ", Bet.To_String);
         for I in Local_Bra'Range loop      --find runner
-          if Bra(I).Selectionid = B.Selectionid then
-            R := Bra(I);
+          if Local_Bra(I).Selectionid = B.Selectionid then
+            R := Local_Bra(I);
             exit;
           end if;
         end loop;
+
+        Log("R is ", R.To_String);
 
         if R.Selectionid > 0 and then B.Status(1) = 'U' then -- found unmatched bet
           if R.Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
@@ -138,6 +141,7 @@ procedure Check_High_Lay_Odds is
               Price_OK := R.Backprice >= B.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
               Pricematched := R.Backprice;
             end if;
+            Log("Price_OK ", Price_Ok'Img);
 
             if Price_OK then
               B.Status := (others => ' ');
