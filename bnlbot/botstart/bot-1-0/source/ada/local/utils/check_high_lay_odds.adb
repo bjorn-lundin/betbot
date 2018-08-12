@@ -85,7 +85,7 @@ procedure Check_High_Lay_Odds is
       for I in Local_Bra'Range loop
         --if Local_Bra(I).Selectionid > Integer_4(0) and then Lay_Bet_Status = No_Bet_Laid then
         if Local_Bra(I).Selectionid > Integer_4(0) then
-          Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
+        --  Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
           --  Log("Treat_Lay", " 1 " & Local_Bra(1).To_String);
 
           if Local_Bra(I).Selectionid > Integer_4(0) and then
