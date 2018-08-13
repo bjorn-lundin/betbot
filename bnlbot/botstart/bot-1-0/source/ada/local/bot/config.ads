@@ -12,7 +12,8 @@ package Config is
                     Horse_Back_1_17_01_1_2_Plc_1_01,
                     Horse_Back_1_30_01_1_2_Plc_1_01,
                     Horse_Back_1_36_01_1_2_Plc_1_01,
-                    Horse_Back_1_50_01_1_2_Plc_1_06
+                    Horse_Back_1_50_01_1_2_Plc_1_06,
+                    Horse_Lay_05_15_1_14_55_Win
                    );
 
 

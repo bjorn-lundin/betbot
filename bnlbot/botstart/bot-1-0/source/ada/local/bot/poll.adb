@@ -83,6 +83,8 @@ procedure Poll is
       when Horse_Back_1_30_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_36_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_004");
       when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Lay_05_15_1_14_55_Win     => return Process_Io.To_Process_Type("bet_placer_006");
+
     end case;
     --      --if not reserved - get an anonymous one
     --      Global_Bet_Placer := Global_Bet_Placer + 1;
@@ -196,6 +198,87 @@ procedure Poll is
     end if;
 
   end Send_Back_Bet;
+  ----------------------------------------------------------------------------
+
+  procedure Send_Lay_Bet(Selectionid    : Integer_4;
+                          Main_Bet       : Bet_Type;
+                          Max_Price      : Lay_Price_Type;
+                          Marketid       : Marketid_Type;
+                          Match_Directly : Boolean := False;
+                          Size           : Fixed_Type := 0.0;
+                          Fill_Or_Kill   : Boolean := False) is
+
+
+    Plb             : Bot_Messages.Place_Lay_Bet_Record;
+    Did_Bet         : array(1 .. 1) of Boolean := (others => False);
+    Receiver        : Process_Io.Process_Type := Get_Bet_Placer(Main_Bet);
+    Local_Size      : Fixed_Type := Size;
+  begin
+    declare
+      -- only bet on allowed days
+      Now : Time_Type := Clock;
+      Day : Week_Day_Type := Week_Day_Of(Now);
+    begin
+      if not Cfg.Allowed_Days(Day) then
+        Log("No bet layed, bad weekday" );
+        return;
+      end if;
+    end;
+
+    if not Cfg.Bet(Main_Bet).Enabled then
+      Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+      return;
+    end if;
+
+    if Selectionid = Bad_Selection_Id then
+      Log("Bad selectionid, = 0 ");
+      return;
+    end if;
+
+    case Match_Directly is
+      when False => Plb.Match_Directly := 0;
+      when True  => Plb.Match_Directly := 1;
+    end case;
+
+    case Fill_Or_Kill is
+      when False => Plb.Fill_Or_Kill := 0;
+      when True  => Plb.Fill_Or_Kill := 1;
+    end case;
+
+    Plb.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
+    Move(Marketid, Plb.Market_Id);
+
+    if Local_Size = 0.0 then
+      Move(F8_Image(Fixed_Type(Bets_Allowed(Main_Bet).Bet_Size)), Plb.Size);
+    else
+      Move(F8_Image(Local_Size), Plb.Size);
+    end if;
+
+    Move(F8_Image(Fixed_Type(Max_Price)), Plb.Price); --abs max
+    Plb.Selection_Id := Selectionid;
+
+    if not Bets_Allowed(Main_Bet).Has_Betted and then
+      Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
+      Bot_Messages.Send(Receiver, Plb);
+
+      case Main_Bet is
+          -- checks in calling proc - may be several bets
+        when others => Bets_Allowed(Main_Bet).Has_Betted := True;
+      end case;
+
+      Did_Bet(1) := True;
+    end if;
+
+    if Did_Bet(1) then
+      Log("Send_Lay_Bet called with " &
+            " Selectionid=" & Selectionid'Img &
+            " Main_Bet=" & Main_Bet'Img &
+            " Marketid= '" & Marketid & "'" &
+            " Receiver= '" & Receiver.Name & "'");
+      Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(Plb.Bet_Name) & "' sel.id:" &  Plb.Selection_Id'Img );
+    end if;
+
+  end Send_Lay_Bet;
 
   ---------------------------------------------------------------------
 
@@ -244,6 +327,51 @@ procedure Poll is
                     Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet;
+
+  ------------------------------------------------------
+  procedure Try_To_Make_Lay_Bet(Bettype         : Config.Bet_Type;
+                                 Br              : Best_Runners_Array_Type;
+                                 Marketid        : Marketid_Type;
+                                 Match_Directly  : Boolean := False) is
+
+    Max_Lay_Price    : Fixed_Type := 0.0;
+    Min_Lay_Price    : Fixed_Type := 0.0;
+    Max_Leader_Price : Fixed_Type := 0.0;
+    Lay_At_Price     : Lay_Price_Type := 0.0;
+    Tmp             : String (1 .. 4) := (others => ' ');
+    Image           : String := Bettype'Img;
+
+  begin        --1         2       3
+    --  12345678901234567890123456789012345
+    --  Horse_Lay_05_15_1_14_55_Win
+
+    Min_Lay_Price := Fixed_Type'Value(Image(11 .. 12));
+    Max_Lay_Price := Fixed_Type'Value(Image(14 .. 15));
+    Tmp(1) := Image(17);
+    Tmp(2) := '.';
+    Tmp(3 .. 4) := Image(19 .. 20);
+
+    Max_Leader_Price := Fixed_Type'Value(Tmp);
+    Lay_At_Price := Lay_Price_Type'Value(Image(22 .. 23));
+
+    if not Bets_Allowed(Bettype).Has_Betted then -- set in send_lay_bet
+      for R of Br loop
+        -- sim was run with looking at backprice - not layprice
+        if Min_Lay_Price <= R.Backprice and then R.Backprice <= Max_Lay_Price and then
+          Br(1).Backprice <= Max_Leader_Price and then
+          Br(1).Backprice >  Fixed_Type(1.0) then  -- so it exists
+          -- Back The leader in PLC market...
+
+          Send_Lay_Bet(Selectionid     => R.Selectionid,
+                       Main_Bet        => Bettype,
+                       Marketid        => Marketid,
+                       Max_Price       => Lay_At_Price,
+                       Match_Directly  => Match_Directly);
+          exit; -- only one bet allowed
+        end if;
+      end loop;
+    end if;
+  end Try_To_Make_Lay_Bet;
 
   ------------------------------------------------------
 
@@ -515,6 +643,18 @@ procedure Poll is
                                            Match_Directly  => Match_Directly);
                     end if;
                   end;
+
+
+                when Horse_Lay_05_15_1_14_55_Win =>
+                  if Markets_Array(Win).Marketname_Ok then
+                      Try_To_Make_Lay_Bet(Bettype         => I,
+                                          Br              => Best_Runners,
+                                          Marketid        => Markets_Array(Win).Marketid,
+                                          Match_Directly  => False);
+
+                  end if;
+
+
               end case;
 
             when Hound => null;
