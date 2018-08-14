@@ -72,7 +72,7 @@ procedure Check_High_Lay_Odds is
     Runner : Runners.Runner_Type;
     Local_Bra : Best_Runners_Array_Type := Bra;
     Two : constant Fixed_Type := 2.0;
-   -- Local_Bet_List : Bets.Lists.List;
+    Local_Bet_List : Bets.Lists.List;
   begin
     -- remove runners from local-BRA that already are betted on
 --      for B of Bet_List loop
@@ -198,7 +198,7 @@ procedure Check_High_Lay_Odds is
                                      Placed => R.Pricets,
                                      Runner => Runner,
                                      Market => Market);
-                  Bet_List.Append(Bet);
+                  Local_Bet_List.Append(Bet);
                 end;
               end if;
             end if;
@@ -207,9 +207,9 @@ procedure Check_High_Lay_Odds is
       end;
     end loop;
 
-  -- for B of Local_Bet_List loop
-  --   Bet_List.Append(B);
-  -- end loop;
+   for B of Local_Bet_List loop
+     Bet_List.Append(B);
+   end loop;
   end Treat_Lay;
   -- pragma Unreferenced (Treat_Lay);
 
