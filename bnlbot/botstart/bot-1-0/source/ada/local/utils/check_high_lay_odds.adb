@@ -244,7 +244,7 @@ procedure Check_High_Lay_Odds is
   -- pragma Unreferenced (Sort_Array);
   ---------------------------------------------------------------
 
-  Start_Date          : constant Calendar2.Time_Type := (2018,01,01,0,0,0,0);
+  Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date        :          Calendar2.Time_Type := Start_Date;
   Stop_Date           : constant Calendar2.Time_Type := (2018,08,01,0,0,0,0);
