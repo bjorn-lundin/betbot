@@ -77,6 +77,15 @@ begin
 
   Getopt (Cmd_Line);  -- process the command line
 
+
+  Log("Sa_Animal.all  " & Sa_Animal.all);
+  Log("Ia_Start_Year " & Ia_Start_Year'Img);
+  Log("Ia_Start_Month" & Ia_Start_Month'Img);
+  Log("Ia_Start_Day  " & Ia_Start_Day'Img);
+  Log("Ia_Stop_Year  " & Ia_Stop_Year'Img);
+  Log("Ia_Stop_Month " & Ia_Stop_Month'Img);
+  Log("Ia_Stop_Day   " & Ia_Stop_Day'Img);
+
   Date_Start.Year := Year_Type(Ia_Start_Year);
   Date_Start.Month := Month_Type(Ia_Start_Month);
   Date_Start.Day := Day_Type(Ia_Start_Day);
