@@ -242,6 +242,8 @@ procedure Markets_Fetcher_Greyhounds is
 ------------------------------ main start -------------------------------------
   Is_Time_To_Check_Markets : Boolean               := True;
   Market_Found             : Boolean               := True;
+  pragma Warnings(Off, Market_Found);
+
   Market_Ids               : JSON_Array            := Empty_Array;
   Minute_Last_Check        : Calendar2.Minute_Type := 0;
   Now                      : Calendar2.Time_Type   := Calendar2.Clock;
@@ -612,4 +614,3 @@ exception
     end ;
     Posix.Do_Exit(0); -- terminate
 end Markets_Fetcher_Greyhounds;
-
