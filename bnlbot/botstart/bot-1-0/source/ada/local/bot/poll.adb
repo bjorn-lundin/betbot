@@ -340,6 +340,7 @@ procedure Poll is
     Lay_At_Price     : Lay_Price_Type := 0.0;
     Tmp             : String (1 .. 4) := (others => ' ');
     Image           : String := Bettype'Img;
+    Two : constant Fixed_Type := 2.0;
 
   begin        --1         2       3
     --  12345678901234567890123456789012345
@@ -357,10 +358,12 @@ procedure Poll is
     if not Bets_Allowed(Bettype).Has_Betted then -- set in send_lay_bet
       for R of Br loop
         -- sim was run with looking at backprice - not layprice
-        if Min_Lay_Price <= R.Backprice and then R.Backprice <= Max_Lay_Price and then
-          Br(1).Backprice <= Max_Leader_Price and then
-          Br(1).Backprice >  Fixed_Type(1.0) then  -- so it exists
-          -- Back The leader in PLC market...
+        if R.Backprice    >= Fixed_Type(1.0) and then  -- sanity
+          R.Layprice      >= Fixed_Type(1.0) and then  -- sanity
+          R.Layprice      <= Fixed_Type(Two * R.Backprice) and then -- sanity not too big difference allowed
+          Br(1).Backprice >  Fixed_Type(1.0) and then  --  sanity so it exists
+          Min_Lay_Price   <= R.Backprice and then R.Backprice <= Max_Lay_Price and then
+          Br(1).Backprice <= Max_Leader_Price then
 
           Send_Lay_Bet(Selectionid     => R.Selectionid,
                        Main_Bet        => Bettype,
