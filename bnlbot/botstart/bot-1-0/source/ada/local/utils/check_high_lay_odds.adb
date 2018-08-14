@@ -71,6 +71,7 @@ procedure Check_High_Lay_Odds is
     Bet    : Bets.Bet_Type;
     Runner : Runners.Runner_Type;
     Local_Bra : Best_Runners_Array_Type := Bra;
+    Two : constant Fixed_Type := 2.0;
    -- Local_Bet_List : Bets.Lists.List;
   begin
     -- remove runners from local-BRA that already are betted on
@@ -88,12 +89,14 @@ procedure Check_High_Lay_Odds is
         --  Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
           --  Log("Treat_Lay", " 1 " & Local_Bra(1).To_String);
 
-          if Local_Bra(I).Selectionid > Integer_4(0) and then
-            Local_Bra(I).Backprice >= Fixed_Type(1.0) and then
-            Local_Bra(I).Layprice  >= Fixed_Type(1.0) and then
-            Min_Lay_Price <= Local_Bra(I).Backprice and then
-            Local_Bra(I).Backprice <= Max_Lay_Price and then
-            Local_Bra(1).Backprice <= Max_Leader_Price then
+          if Local_Bra(I).Selectionid > Integer_4(0) and then  -- sanity
+            Local_Bra(I).Backprice    >= Fixed_Type(1.0) and then  -- sanity
+            Local_Bra(I).Layprice     >= Fixed_Type(1.0) and then  -- sanity
+            Local_Bra(I).Layprice     <= Fixed_Type(Two * Local_Bra(I).Backprice) and then -- not too big difference allowed
+            Min_Lay_Price             <= Local_Bra(I).Backprice and then
+            Local_Bra(I).Backprice    <= Max_Lay_Price and then
+            Local_Bra(1).Backprice    <= Max_Leader_Price and then
+            Local_Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
             Runner.Selectionid := Local_Bra(I).Selectionid;
             Runner.Marketid := Local_Bra(I).Marketid;
