@@ -83,42 +83,43 @@ procedure Lay_Losers_1 is
         end if;
       end loop;
     end loop;
-    if Bet_List.Length = 0 then
-      for I in Local_Bra'Range loop
-        --if Local_Bra(I).Selectionid > Integer_4(0) and then Lay_Bet_Status = No_Bet_Laid then
-        if Local_Bra(I).Selectionid > Integer_4(0) then
-          --  Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
-          --  Log("Treat_Lay", " 1 " & Local_Bra(1).To_String);
-          --Local_Bra(I).Layprice     <= Fixed_Type(Two * Local_Bra(I).Backprice) and then -- not too big difference allowed
 
-          if Local_Bra(I).Selectionid > Integer_4(0) and then  -- sanity
-            Local_Bra(1).Backprice    > Fixed_Type(1.0) and then  -- sanity
-            Min_Lay_Price             <= Local_Bra(I).Backprice and then
-            Local_Bra(I).Backprice    <= Max_Lay_Price and then
-            Local_Bra(I).Layprice     >= Lay_Idx * Local_Bra(I).Backprice then
+    for I in Local_Bra'Range loop
+      --if Local_Bra(I).Selectionid > Integer_4(0) and then Lay_Bet_Status = No_Bet_Laid then
+      if Local_Bra(I).Selectionid > Integer_4(0) then
+        --  Log("Treat_Lay", I'Img & " " & Local_Bra(I).To_String);
+        --  Log("Treat_Lay", " 1 " & Local_Bra(1).To_String);
+        --Local_Bra(I).Layprice     <= Fixed_Type(Two * Local_Bra(I).Backprice) and then -- not too big difference allowed
 
-            Runner.Selectionid := Local_Bra(I).Selectionid;
-            Runner.Marketid := Local_Bra(I).Marketid;
+        if Local_Bra(I).Selectionid > Integer_4(0) and then  -- sanity
+          Local_Bra(1).Backprice    > Fixed_Type(1.0) and then  -- sanity
+          Min_Lay_Price             <= Local_Bra(I).Backprice and then
+          Local_Bra(I).Backprice    <= Max_Lay_Price and then
+          Local_Bra(I).Layprice     >= Lay_Idx * Local_Bra(I).Backprice then
 
-            declare
-              Tic       : Tics.Tics_Type := Tics.Get_Nearest_Higher_Tic_Index((Lay_Idx + Fixed_Type(1.0)) * Local_Bra(I).Backprice);
-              Lay_Price : Price_Type := Price_Type(Tics.Get_Tic_Price(Tic));
-            begin
-              Bet := Bets.Create(Name   => Name,
-                                 Side   => Lay,
-                                 Size   => Lay_Size,
-                                 Price  => Lay_Price,
-                                 Placed => Local_Bra(I).Pricets,
-                                 Runner => Runner,
-                                 Market => Market);
-            end;
-            Bet_List.Append(Bet);
-            Log("Bet_laid", Bet.To_String);
-            --exit; -- one bet only per race
-          end if;
+          Runner.Selectionid := Local_Bra(I).Selectionid;
+          Runner.Marketid := Local_Bra(I).Marketid;
+
+          declare
+            Tic       : Tics.Tics_Type := Tics.Get_Nearest_Higher_Tic_Index((Lay_Idx + Fixed_Type(1.0)) * Local_Bra(I).Backprice);
+            Lay_Price : Price_Type := Price_Type(Tics.Get_Tic_Price(Tic));
+          begin
+            Bet := Bets.Create(Name   => Name,
+                               Side   => Lay,
+                               Size   => Lay_Size,
+                               Price  => Lay_Price,
+                               Placed => Local_Bra(I).Pricets,
+                               Runner => Runner,
+                               Market => Market);
+          end;
+          Bet_List.Append(Bet);
+          Log("Bet_laid", Bet.To_String);
+          --exit; -- one bet only per race
         end if;
-      end loop;
-    end if;
+      end if;
+    end loop;
+
+
     -- Try To check outcome
 
     for B of Bet_List loop
@@ -129,9 +130,9 @@ procedure Lay_Losers_1 is
         Is_Race_Winner : Boolean := False;
       begin
         Log("checking bet ", B.To_String);
-        for I in Local_Bra'Range loop      --find runner
-          if Local_Bra(I).Selectionid = B.Selectionid then
-            R := Local_Bra(I);
+        for I in Bra'Range loop      --find runner
+          if Bra(I).Selectionid = B.Selectionid then
+            R := Bra(I);
             exit;
           end if;
         end loop;
@@ -282,7 +283,7 @@ begin
      Long_Switch => "--max_lay_price=",
      Help        => "back price must be lower that this");
 
-   Define_Switch
+  Define_Switch
     (Cmd_Line,
      Sa_Lay_Idx'Access,
      Long_Switch => "--lay_idx=",
@@ -297,7 +298,7 @@ begin
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
-    Ev.Set("BOT_NAME","lay_during_race3");
+    Ev.Set("BOT_NAME","lay_losers_1");
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
