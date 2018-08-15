@@ -63,12 +63,14 @@ procedure Lay_Losers_1 is
   type Best_Runners_Array_Type is array (1..12) of Price_Histories.Price_History_Type;
 
 
-  procedure Treat_Lay(Market                       : in Markets.Market_Type;
-                      Bra                          : in Best_Runners_Array_Type ;
-                      Min_Lay_Price, Max_Lay_Price : in Price_Type;
-                      Lay_Idx                      : in Fixed_Type;
-                      Name                         : in Betname_Type;
-                      Bet_List                     : in out Bets.Lists.List) is
+  procedure Treat_Lay(Market           : in Markets.Market_Type;
+                      Bra              : in Best_Runners_Array_Type ;
+                      Min_Lay_Price,
+                      Max_Lay_Price,
+                      Max_Leader_Price : in Price_Type;
+                      Lay_Idx          : in Fixed_Type;
+                      Name             : in Betname_Type;
+                      Bet_List         : in out Bets.Lists.List) is
     Bet            : Bets.Bet_Type;
     Runner         : Runners.Runner_Type;
     Local_Bra      : Best_Runners_Array_Type := Bra;
@@ -95,7 +97,10 @@ procedure Lay_Losers_1 is
           Local_Bra(1).Backprice    > Fixed_Type(1.0) and then  -- sanity
           Min_Lay_Price             <= Local_Bra(I).Backprice and then
           Local_Bra(I).Backprice    <= Max_Lay_Price and then
-          Local_Bra(I).Layprice     >= Lay_Idx * Local_Bra(I).Backprice then
+          Local_Bra(I).Layprice     >= Lay_Idx * Local_Bra(I).Backprice and then
+                Bra(1).Backprice    <= Max_Leader_Price and then
+                Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
+
 
           Runner.Selectionid := Local_Bra(I).Selectionid;
           Runner.Marketid := Local_Bra(I).Marketid;
@@ -259,6 +264,7 @@ procedure Lay_Losers_1 is
   Sa_Min_Lay_Price    : aliased  Gnat.Strings.String_Access;
   Sa_Max_Lay_Price    : aliased  Gnat.Strings.String_Access;
   Sa_Lay_Idx          : aliased  Gnat.Strings.String_Access;
+  Sa_Max_Leader_Price : aliased  Gnat.Strings.String_Access;
   Min_Lay_Price       :          Price_Type := 0.0;
   Max_Lay_Price       :          Price_Type := 0.0;
   Max_Leader_Price    :          Price_Type := 0.0;
@@ -285,6 +291,12 @@ begin
 
   Define_Switch
     (Cmd_Line,
+     Sa_Max_Leader_Price'Access,
+     Long_Switch => "--max_leader_price=",
+     Help        => "leader's back price must be lower that this");
+
+  Define_Switch
+    (Cmd_Line,
      Sa_Lay_Idx'Access,
      Long_Switch => "--lay_idx=",
      Help        => "lay the runner at this idx * backprice");
@@ -306,11 +318,13 @@ begin
   Log("main", "params start");
   Log("main", "Sa_Min_Lay_Price" & Sa_Min_Lay_Price.all);
   Log("main", "Sa_Max_Lay_Price" & Sa_Max_Lay_Price.all);
+  Log("main", "Sa_Max_Leader_Price" & Sa_Max_Leader_Price.all);
   Log("main", "Sa_Lay_idx" & Sa_Lay_Idx.all);
   Log("main", "params stop");
 
   Min_Lay_Price    := Price_Type'Value(Sa_Min_Lay_Price.all);
   Max_Lay_Price    := Price_Type'Value(Sa_Max_Lay_Price.all);
+  Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
   Lay_Idx          := Fixed_Type'Value(Sa_Lay_Idx.all);
 
   if Min_Lay_Price >= Max_Lay_Price then
@@ -382,7 +396,7 @@ begin
                           Bra              => Bra,
                           Min_Lay_Price    => Min_Lay_Price,
                           Max_Lay_Price    => Max_Lay_Price,
-                          --    Max_Leader_Price => Max_Leader_Price,
+                          Max_Leader_Price => Max_Leader_Price,
                           Lay_Idx          => Lay_Idx,
                           Name             => Name,
                           Bet_List         => Bet_List);
