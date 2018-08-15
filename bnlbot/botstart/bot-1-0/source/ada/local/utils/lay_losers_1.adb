@@ -402,6 +402,7 @@ begin
                           Bet_List         => Bet_List);
               end;
             end loop Loop_Ts; --  Timestamp
+            Bets.Sum_Laybets(Bet_List, -2000.0);
           end;
         end if; -- Market_type(1..3) = WIN
         T.Commit;

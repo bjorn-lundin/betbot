@@ -22,6 +22,10 @@ package body Bets is
   Select_Profit_Today,
   Select_Ph           : Sql.Statement_Type;
 
+
+  Global_Sum_Lay : Fixed_Type := 0.0;
+
+
   --
   procedure Update_And_Nullify_Betwon(Self : in out Bet_Type; Keep_Timestamp : Boolean := False) is
   begin
@@ -730,5 +734,26 @@ package body Bets is
     T.Commit;
     return not Eos;
   end Is_Existing_Marketid_Selectionid;
+
+
+  procedure Reset_Sum_Laybets is
+  begin
+    Global_Sum_Lay := 0.0;
+  end Reset_Sum_Laybets;
+
+  procedure Sum_Laybets(List : Lists.List; Threshold : Fixed_Type) is
+  begin
+    for B of List loop
+      if B.Side(1..3)= "LAY" then
+        Global_Sum_Lay := Global_Sum_Lay + B.Profit;
+      end if;
+    end loop;
+
+    if Global_Sum_Lay < Threshold then
+      raise Constraint_Error with "profit below threshold " & Global_Sum_Lay'Img & " vs " & Threshold'Img;
+    end if;
+
+  end Sum_Laybets;
+
 
 end Bets;
