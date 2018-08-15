@@ -54,5 +54,8 @@ package Bets is
   procedure Check_Bets;
   procedure Check_If_Bet_Accepted;
 
+  procedure Reset_Sum_Laybets ;
+  procedure Sum_Laybets(List : Lists.List; Threshold : Fixed_Type) ;
+
 
 end Bets;
