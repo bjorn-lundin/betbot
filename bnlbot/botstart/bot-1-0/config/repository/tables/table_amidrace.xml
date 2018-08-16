@@ -18,6 +18,9 @@
         <Column Name="r2wonplc"        AllowNull="0" Description="runner 2 won plc"/>
         <Column Name="r3priceplc"      AllowNull="0" Description="odds of runner 3 plc"/>
         <Column Name="r3wonplc"        AllowNull="0" Description="runner 3 won plc"/>
+        <Column Name="svnrevision"     AllowNull="0" Description="svn revision of bot"/>
+        <Column Name="ixxlupd"         AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"         AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="fraction,marketidwin,marketidplc" type="primary"/>
         <!--
         <Index Columns="id" type="primary"/>

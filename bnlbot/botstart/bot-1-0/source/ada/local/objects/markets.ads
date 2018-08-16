@@ -3,7 +3,7 @@ with Sql;
 with Table_Amarkets;
 with Types; use Types;
 
---with Bot_Types; use Bot_Types;
+with Bot_Types; use Bot_Types;
 package Markets is
   type Market_Type is new Table_Amarkets.Data_Type with null record;
   function Empty_Data return Market_Type ;
@@ -13,6 +13,11 @@ package Markets is
                                        Found        :    out Boolean);
 
   function Marketname_Ok(Self : Market_Type) return Boolean;
+
+  function Distance(Self : in out Market_Type) return Integer_4;
+  function Distance_Name(Self : in out Market_Type) return Distancename_Type;
+
+
 
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Market_Type);
 
@@ -29,8 +34,6 @@ package Markets is
 
   procedure Check_Market_Status ;
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) ;
-
-
 
 
 

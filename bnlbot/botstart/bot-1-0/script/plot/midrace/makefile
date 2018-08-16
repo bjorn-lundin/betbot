@@ -5,15 +5,16 @@ DBNAME:=bnl
 .PHONY : all 
 
 PNGS:= \
-gd3_0.50_1_PLC.png  gd3_0.55_2_PLC.png  gd3_0.60_3_PLC.png  gd3_0.70_1_PLC.png  gd3_0.75_2_PLC.png  gd3_0.80_3_PLC.png \
-gd3_0.50_1_WIN.png  gd3_0.55_2_WIN.png  gd3_0.60_3_WIN.png  gd3_0.70_1_WIN.png  gd3_0.75_2_WIN.png  gd3_0.80_3_WIN.png \
-gd3_0.50_2_PLC.png  gd3_0.55_3_PLC.png  gd3_0.65_1_PLC.png  gd3_0.70_2_PLC.png  gd3_0.75_3_PLC.png  gd3_0.85_1_PLC.png \
-gd3_0.50_2_WIN.png  gd3_0.55_3_WIN.png  gd3_0.65_1_WIN.png  gd3_0.70_2_WIN.png  gd3_0.75_3_WIN.png  gd3_0.85_1_WIN.png \
-gd3_0.50_3_PLC.png  gd3_0.60_1_PLC.png  gd3_0.65_2_PLC.png  gd3_0.70_3_PLC.png  gd3_0.80_1_PLC.png  gd3_0.85_2_PLC.png \
-gd3_0.50_3_WIN.png  gd3_0.60_1_WIN.png  gd3_0.65_2_WIN.png  gd3_0.70_3_WIN.png  gd3_0.80_1_WIN.png  gd3_0.85_2_WIN.png \
-gd3_0.55_1_PLC.png  gd3_0.60_2_PLC.png  gd3_0.65_3_PLC.png  gd3_0.75_1_PLC.png  gd3_0.80_2_PLC.png  gd3_0.85_3_PLC.png \
-gd3_0.55_1_WIN.png  gd3_0.60_2_WIN.png  gd3_0.65_3_WIN.png  gd3_0.75_1_WIN.png  gd3_0.80_2_WIN.png  gd3_0.85_3_WIN.png
-        
+gd3_0.50_1_PLC.png gd3_0.50_1_WIN.png gd3_0.50_2_PLC.png gd3_0.50_2_WIN.png gd3_0.50_3_PLC.png gd3_0.50_3_WIN.png \
+gd3_0.55_1_PLC.png gd3_0.55_1_WIN.png gd3_0.55_2_PLC.png gd3_0.55_2_WIN.png gd3_0.55_3_PLC.png gd3_0.55_3_WIN.png \
+gd3_0.60_1_PLC.png gd3_0.60_1_WIN.png gd3_0.60_2_PLC.png gd3_0.60_2_WIN.png gd3_0.60_3_PLC.png gd3_0.60_3_WIN.png \
+gd3_0.65_1_PLC.png gd3_0.65_1_WIN.png gd3_0.65_2_PLC.png gd3_0.65_2_WIN.png gd3_0.65_3_PLC.png gd3_0.65_3_WIN.png \
+gd3_0.70_1_PLC.png gd3_0.70_1_WIN.png gd3_0.70_2_PLC.png gd3_0.70_2_WIN.png gd3_0.70_3_PLC.png gd3_0.70_3_WIN.png \
+gd3_0.75_1_PLC.png gd3_0.75_1_WIN.png gd3_0.75_2_PLC.png gd3_0.75_2_WIN.png gd3_0.75_3_PLC.png gd3_0.75_3_WIN.png \
+gd3_0.80_1_PLC.png gd3_0.80_1_WIN.png gd3_0.80_2_PLC.png gd3_0.80_2_WIN.png gd3_0.80_3_PLC.png gd3_0.80_3_WIN.png \
+gd3_0.85_1_PLC.png gd3_0.85_1_WIN.png gd3_0.85_2_PLC.png gd3_0.85_2_WIN.png gd3_0.85_3_PLC.png gd3_0.85_3_WIN.png \
+gd3_0.90_1_PLC.png gd3_0.90_1_WIN.png gd3_0.90_2_PLC.png gd3_0.90_2_WIN.png gd3_0.90_3_PLC.png gd3_0.90_3_WIN.png \
+gd3_0.95_1_PLC.png gd3_0.95_1_WIN.png gd3_0.95_2_PLC.png gd3_0.95_2_WIN.png gd3_0.95_3_PLC.png gd3_0.95_3_WIN.png
 
 all: $(PNGS)
 

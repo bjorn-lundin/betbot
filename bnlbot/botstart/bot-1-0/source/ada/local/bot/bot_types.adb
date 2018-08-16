@@ -21,20 +21,20 @@ package body Bot_Types is
     return Left + Back_Price_Type (Right);
   end "+";
   ---------------------------------------------
-  function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type is
-  begin
-    return Left + Back_Price_Type (Right);
-  end "+";
-  ---------------------------------------------
-  function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Back_Price_Type is
-  begin
-    return Back_Price_Type (Left) + Back_Price_Type (Right);
-  end "+";
-  ---------------------------------------------
-  function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Fixed_Type is
-  begin
-    return Left + Fixed_Type (Right);
-  end "+";
+--  function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type is
+--  begin
+--    return Left + Back_Price_Type (Right);
+--  end "+";
+--  ---------------------------------------------
+--  function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Back_Price_Type is
+--  begin
+--    return Back_Price_Type (Left) + Back_Price_Type (Right);
+--  end "+";
+--  ---------------------------------------------
+--  function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Fixed_Type is
+--  begin
+--    return Left + Fixed_Type (Right);
+--  end "+";
   ---------------------------------------------
   function "+" (Left : Bet_Price_Type ; Right : Delta_Price_Type) return Bet_Price_Type is
   begin
