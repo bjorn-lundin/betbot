@@ -20,7 +20,7 @@ with Ini;
 --with Ada.Containers.Hashed_Maps;
 --with Ada.Strings.Hash;
 with Probabilities;
-
+with Bot_System_Number;
 
 procedure Do_Stats_1 is
  -- use type Ada.Containers.Count_Type;
@@ -74,24 +74,28 @@ procedure Do_Stats_1 is
         declare
           Wonrace    : Boolean := False;
           Placedrace : Boolean := False;
+          Bet_Id     : Integer_8 := 0;
         begin
           Wonrace := Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Bra(1).Marketid);
           if Placemarket_Exists then
             Placedrace :=Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Place_Marketid);
           end if;
-          Probability := (Marketid     => Bra(1).Marketid,
-                            Selectionid  => Bra(1).Selectionid,
-                            R1           => Bra(1).Backprice,
-                            R2           => Bra(2).Backprice,
-                            R3           => Bra(3).Backprice,
-                            R4           => Bra(4).Backprice,
-                            Distance     => Market.Distance,
-                            Distancename => Market.Distance_Name,
-                            Wonrace      => Wonrace,
-                            Placedrace   => Placedrace,
-                            Svnrevision  => 0,
-                            Ixxlupd      => (others => ' '),
-                            Ixxluts      => Calendar2.Clock);
+          Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+
+          Probability := (Betid        => Bet_Id,
+                          Marketid     => Bra(1).Marketid,
+                          Selectionid  => Bra(1).Selectionid,
+                          R1           => Bra(1).Backprice,
+                          R2           => Bra(2).Backprice,
+                          R3           => Bra(3).Backprice,
+                          R4           => Bra(4).Backprice,
+                          Distance     => Market.Distance,
+                          Distancename => Market.Distance_Name,
+                          Wonrace      => Wonrace,
+                          Placedrace   => Placedrace,
+                          Svnrevision  => 0,
+                          Ixxlupd      => (others       => ' '),
+                          Ixxluts      => Calendar2.Clock);
           Probability.Insert;
         end;
       end if;
