@@ -97,6 +97,7 @@ procedure Do_Stats_1 is
                         Marketid       => Bra(1).Marketid,
                         Marketidplc    => Place_Marketid,
                         Selectionid    => Bra(1).Selectionid,
+                        R1limit        => Fixed_Type(Max_Leader_Price),
                         R1             => Bra(1).Backprice,
                         R2             => Bra(2).Backprice,
                         R3             => Bra(3).Backprice,
