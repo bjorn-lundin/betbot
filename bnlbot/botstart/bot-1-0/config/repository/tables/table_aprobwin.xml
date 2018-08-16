@@ -5,7 +5,8 @@
         <Column Name="marketid"       AllowNull="0" Description="market id"/>
         <Column Name="marketidplc"    AllowNull="0" Description="market id place"/>
         <Column Name="selectionid"    AllowNull="0" Description="selection id"/>
-        <Column Name="r1"             AllowNull="0" Description="Max leader odds"/>
+        <Column Name="r1limit"        AllowNull="0" Description="Max leader odds"/>
+        <Column Name="r1"             AllowNull="0" Description="1 leader odds"/>
         <Column Name="r2"             AllowNull="0" Description="2 leader odds"/>
         <Column Name="r3"             AllowNull="0" Description="3 leader odds"/>
         <Column Name="r4"             AllowNull="0" Description="4 leader odds"/>
