@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Table Wiz="3" Desc="Probailtity to win" Name="APROBWIN" Tablespace="">
+        <Column Name="marketid"       AllowNull="0" Description="market id"/>
+        <Column Name="selectionid"    AllowNull="0" Description="selection id"/>
+        <Column Name="r1"             AllowNull="0" Description="Max leader odds"/>
+        <Column Name="r2"             AllowNull="0" Description="2 leader odds"/>
+        <Column Name="r3"             AllowNull="0" Description="3 leader odds"/>
+        <Column Name="r4"             AllowNull="0" Description="4 leader odds"/>
+        <Column Name="distance"       AllowNull="0" Description="distance of race"/>
+        <Column Name="distancename"   AllowNull="0" Description="name of distance"/>
+        <Column Name="wonrace"        AllowNull="0" Description="name of bet"/>
+        <Column Name="placedrace"     AllowNull="1" Description="success"/>
+        <Column Name="svnrevision"    AllowNull="0" Description="svn revision of bot"/>
+        <Column Name="ixxlupd"        AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"        AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="marketid,selectionid,r1" type="primary"/>
+    </Table>
+</BnlBot>

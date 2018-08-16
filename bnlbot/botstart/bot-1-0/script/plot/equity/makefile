@@ -4,28 +4,15 @@
 #                                                                             #
 ###############################################################################
 
-
-#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_10.50 \
-#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_11.00 \
-#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_11.50 \
-#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_04.70 \
-#PLCGREENUP_LAY_FIXED_LOSS_TICS_001_04.30 \
-
 BET_NAMES_DRY := \
-PLC_BACK_1.10_07.00_F_1.01 \
-PLC_BACK_1.50_02.00_F_1.01 \
-PLC_BACK_1.50_01.00_F_1.01 \
-PLC_BACK_1.54_01.00_F_1.01 \
-PLC_BACK_1.54_02.00_F_1.01 \
-PLC_BACK_1.52_01.00_F_1.01 \
-PLC_BACK_1.52_02.00_F_1.01 \
-PLC_BACK_1.50_02.00_T_1.01 \
-PLC_BACK_1.50_01.00_T_1.01 \
-PLC_BACK_1.54_01.00_T_1.01 \
-PLC_BACK_1.54_02.00_T_1.01
-
-
-
+WIN_05.00_30.00_1.14_70.00_1ST \
+WIN_10.00_30.00_1.14_70.00_1ST \
+WIN_05.00_40.00_1.14_70.00_1ST \
+WIN_05.00_35.00_1.14_55.00_1ST \
+WIN_05.00_35.00_1.14_65.00_1ST \
+WIN_05.00_30.00_1.14_50.00_1ST \
+WIN_05.00_30.00_1.14_60.00_1ST \
+WIN_05.00_25.00_1.14_55.00_1ST \
 
 BET_NAMES := $(BET_NAMES_DRY)
 
@@ -89,7 +76,7 @@ png_top: $(DATS)
 #                                 --saldo=$(SALDO) > $*.dat
 
 %.dat:
-	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity --min_price_matched=1.06 > $*.dat
+	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity --side=LAY > $*.dat
 
 
 %.png: $(DATS)
@@ -100,8 +87,4 @@ png_top: $(DATS)
 
 .PHONY : clean
 clean :
-	rm -rf  *.png
-
-.PHONY : clean_all
-clean_all : clean
-	rm -rf *.dat *.green
+	rm -rf  *.png *.dat

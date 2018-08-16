@@ -60,7 +60,7 @@ package Bot_Types is
    type Min_Num_Runners_Type is new Byte;
    type Max_Num_Runners_Type is new Byte;
    type Num_Winners_Type is new Byte;
-   type Favorite_By_Type is new Fixed_Type;
+  -- type Favorite_By_Type is new Fixed_Type;
    type Profit_Type is new Fixed_Type;
    type Max_Exposure_Type is new Fixed_Type;
    type Bet_Size_Portion_Type is new Fixed_Type;
@@ -91,15 +91,16 @@ package Bot_Types is
    subtype Bet_Side_String_Type     is String(Table_Abets.Empty_Data.Side'range);
    subtype Bet_Timestamp_Image_Type is String(1..23);
    subtype Venue_Type               is String(1..50);
+   subtype Distancename_Type        is String(1..4);
 
    function "-" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
    function "-" (Left : Bet_Price_Type ; Right : Delta_Price_Type) return Bet_Price_Type;
 
    function "+" (Left : Bet_Price_Type ; Right : Delta_Price_Type) return Bet_Price_Type;
    function "+" (Left : Back_Price_Type ; Right : Delta_Price_Type) return Back_Price_Type;
-   function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type;
-   function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Back_Price_Type ;
-   function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Fixed_Type;
+ --  function "+" (Left : Back_Price_Type ; Right : Favorite_By_Type) return Back_Price_Type;
+  -- function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Back_Price_Type ;
+ --  function "+" (Left : Fixed_Type ; Right : Favorite_By_Type) return Fixed_Type;
 
    function "<" (Left : Min_Lay_Price_Type ; Right : Fixed_Type) return Boolean;
    function "<" (Left : Profit_Type ; Right : Max_Daily_Loss_Type) return Boolean ;

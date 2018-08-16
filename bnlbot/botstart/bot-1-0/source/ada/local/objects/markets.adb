@@ -1,8 +1,9 @@
-with Bot_Types; use Bot_Types;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Runners;
 with Rpc;
 with Bot_Config;
 with Logging; use Logging;
+
 
 package body Markets is
   Me : constant String := "Markets.";
@@ -233,6 +234,41 @@ package body Markets is
              Self.Marketname(1..11) = "2m6f Hcap  " or else
              Self.Marketname(1..11) = "2m7f Hcap  " ;
    end Marketname_Ok;
+
+
+  function Distance(Self : in out Market_Type) return Integer_4 is
+    Name      : Distancename_Type := (others => ' ');
+    Mile      : constant Fixed_Type := 1609.344; --m
+    Furlong   : constant Fixed_Type := 201.168; --m
+    Furlongs,
+    Miles     : Fixed_Type := 0.0;
+  begin
+
+    Name := Self.Distance_Name;
+    if Name(3..3) /= " " then
+      Furlongs := Fixed_Type'Value(Name(3..3));
+    end if;
+    Miles  := Fixed_Type'Value(Name(1..1));
+
+    return Integer_4(Mile*Miles) + Integer_4(Furlong*Furlongs);
+  end Distance;
+
+
+
+  function Distance_Name(Self : in out Market_Type) return Distancename_Type is
+    Idx : Integer := 0;
+    Name : Distancename_Type := (others => ' ');
+  begin
+    for I in Self.Marketname'Range loop
+      case Self.Marketname(I) is
+        when ' ' => Idx := I; exit;
+        when others => null;
+      end case;
+    end loop;
+    Move(Self.Marketname(1 .. Idx-1), Name);
+    return Name;
+  end Distance_Name;
+
 
 
 end Markets;

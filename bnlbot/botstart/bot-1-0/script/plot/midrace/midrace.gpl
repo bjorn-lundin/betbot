@@ -25,7 +25,5 @@ plnc(x) = (x-1)/(x-commission2)
 
 plot datafile using 2:5 with boxes, \
      datafile using 2:4 with boxes, \
-     pb(x) with lines, \
-     pl(x) with lines, \
-     pbnc(x) with lines, \
-     plnc(x) with lines
+     pb(x) with lines lt rgb "red", \
+     pl(x) with lines lt rgb "red"
