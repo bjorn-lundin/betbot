@@ -3,6 +3,7 @@
     <Table Wiz="3" Desc="Probailtity to win" Name="APROBWIN" Tablespace="">
         <Column Name="betid"          AllowNull="0" Description="bet id"/>
         <Column Name="marketid"       AllowNull="0" Description="market id"/>
+        <Column Name="marketidplc"    AllowNull="0" Description="market id place"/>
         <Column Name="selectionid"    AllowNull="0" Description="selection id"/>
         <Column Name="r1"             AllowNull="0" Description="Max leader odds"/>
         <Column Name="r2"             AllowNull="0" Description="2 leader odds"/>
@@ -10,16 +11,21 @@
         <Column Name="r4"             AllowNull="0" Description="4 leader odds"/>
         <Column Name="distance"       AllowNull="0" Description="distance of race"/>
         <Column Name="distancename"   AllowNull="0" Description="name of distance"/>
-        <Column Name="wonrace"        AllowNull="0" Description="name of bet"/>
-        <Column Name="placedrace"     AllowNull="1" Description="success"/>
+        <Column Name="r1wonrace"      AllowNull="0" Description="won"/>
+        <Column Name="r1placedrace"   AllowNull="0" Description="placed"/>
+        <Column Name="r2wonrace"      AllowNull="0" Description="won"/>
+        <Column Name="r2placedrace"   AllowNull="0" Description="placed"/>
+        <Column Name="r3wonrace"      AllowNull="0" Description="wont"/>
+        <Column Name="r3placedrace"   AllowNull="0" Description="placed"/>
+        <Column Name="r4wonrace"      AllowNull="0" Description="won"/>
+        <Column Name="r4placedrace"   AllowNull="0" Description="placed"/>
         <Column Name="svnrevision"    AllowNull="0" Description="svn revision of bot"/>
         <Column Name="ixxlupd"        AllowNull="0" Description="Latest updater"/>
         <Column Name="ixxluts"        AllowNull="0" Description="Latest update timestamp"/>
         <Index Columns="betid" type="primary"/>
         <Index Columns="marketid" type="index"/>
+        <Index Columns="marketidplc" type="index"/>
         <Index Columns="selectionid" type="index"/>
         <Index Columns="r1" type="index"/>
-        <Index Columns="wonrace" type="index"/>
-        <Index Columns="placedrace" type="index"/>
     </Table>
 </BnlBot>
