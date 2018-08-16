@@ -62,7 +62,6 @@ procedure Do_Stats_1 is
     for I in Bra'Range loop
       if Fixed_Type(1.0) <  Bra(1).Backprice and then  -- sanity
          Bra(1).Backprice <= Max_Leader_Price then
-         Done := True;
 
         begin
           Place_Marketid :=  Sim.Win_Place_Map(Bra(1).Marketid);
@@ -97,14 +96,13 @@ procedure Do_Stats_1 is
                           Ixxlupd      => (others       => ' '),
                           Ixxluts      => Calendar2.Clock);
           Probability.Insert;
+          Done := True;
         end;
       end if;
     end loop;
-
   end Treat;
-  -- pragma Unreferenced (Treat_Lay);
 
-
+  ------------------------------------------
 
   procedure Sort_Array(List : in out Price_Histories.Lists.List ;
                        Bra  : in out Best_Runners_Array_Type ) is
@@ -200,8 +198,8 @@ begin
     declare
       Cnt       : Integer := 0;
     begin
+      T.Start;
       Market_Loop : for Market of Sim.Market_With_Data_List loop
-        T.Start;
         if Market.Markettype(1..3) = "WIN" and then
           Market.Marketname_Ok then
 
@@ -224,13 +222,13 @@ begin
                       Max_Leader_Price => Max_Leader_Price,
                       Done             => Done);
 
-                exit Loop_Ts when Done;
+                exit Market_Loop when Done;
               end;
             end loop Loop_Ts; --  Timestamp
           end;
         end if; -- Market_type(1..3) = WIN
-        T.Commit;
       end loop Market_Loop;
+      T.Commit;
     end;
 
     --Sim.Delete_Shared_Mem(Current_Date, Bot_Types.Horse);
