@@ -70,30 +70,50 @@ procedure Do_Stats_1 is
       end;
 
       declare
-        Wonrace    : Boolean := False;
-        Placedrace : Boolean := False;
+        R1wonrace    : Boolean := False;
+        R1placedrace : Boolean := False;
+        R2wonrace    : Boolean := False;
+        R2placedrace : Boolean := False;
+        R3wonrace    : Boolean := False;
+        R3placedrace : Boolean := False;
+        R4wonrace    : Boolean := False;
+        R4placedrace : Boolean := False;
         Bet_Id     : Integer_8 := 0;
       begin
-        Wonrace := Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Bra(1).Marketid);
+        R1wonrace := Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Bra(1).Marketid);
+        R2wonrace := Sim.Is_Race_Winner(Selectionid => Bra(2).Selectionid, Marketid => Bra(2).Marketid);
+        R3wonrace := Sim.Is_Race_Winner(Selectionid => Bra(3).Selectionid, Marketid => Bra(3).Marketid);
+        R4wonrace := Sim.Is_Race_Winner(Selectionid => Bra(4).Selectionid, Marketid => Bra(4).Marketid);
         if Placemarket_Exists then
-          Placedrace :=Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Place_Marketid);
+          R1placedrace := Sim.Is_Race_Winner(Selectionid => Bra(1).Selectionid, Marketid => Place_Marketid);
+          R2placedrace := Sim.Is_Race_Winner(Selectionid => Bra(2).Selectionid, Marketid => Place_Marketid);
+          R3placedrace := Sim.Is_Race_Winner(Selectionid => Bra(3).Selectionid, Marketid => Place_Marketid);
+          R4placedrace := Sim.Is_Race_Winner(Selectionid => Bra(4).Selectionid, Marketid => Place_Marketid);
         end if;
+
         Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
 
-        Probability := (Betid        => Bet_Id,
-                        Marketid     => Bra(1).Marketid,
-                        Selectionid  => Bra(1).Selectionid,
-                        R1           => Bra(1).Backprice,
-                        R2           => Bra(2).Backprice,
-                        R3           => Bra(3).Backprice,
-                        R4           => Bra(4).Backprice,
-                        Distance     => Market.Distance,
-                        Distancename => Market.Distance_Name,
-                        Wonrace      => Wonrace,
-                        Placedrace   => Placedrace,
-                        Svnrevision  => 0,
-                        Ixxlupd      => (others       => ' '),
-                        Ixxluts      => Calendar2.Clock);
+        Probability := (Betid          => Bet_Id,
+                        Marketid       => Bra(1).Marketid,
+                        Marketidplc    => Place_Marketid,
+                        Selectionid    => Bra(1).Selectionid,
+                        R1             => Bra(1).Backprice,
+                        R2             => Bra(2).Backprice,
+                        R3             => Bra(3).Backprice,
+                        R4             => Bra(4).Backprice,
+                        Distance       => Market.Distance,
+                        Distancename   => Market.Distance_Name,
+                        R1wonrace      => R1wonrace,
+                        R1placedrace   => R1placedrace,
+                        R2wonrace      => R2wonrace,
+                        R2placedrace   => R2placedrace,
+                        R3wonrace      => R3wonrace,
+                        R3placedrace   => R3placedrace,
+                        R4wonrace      => R4wonrace,
+                        R4placedrace   => R4placedrace,
+                        Svnrevision    => 0,
+                        Ixxlupd        => (others       => ' '),
+                        Ixxluts        => Calendar2.Clock);
         Probability.Insert;
         Done := True;
       end;
