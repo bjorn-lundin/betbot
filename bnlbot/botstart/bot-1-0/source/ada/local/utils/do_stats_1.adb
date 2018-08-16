@@ -1,10 +1,8 @@
-with Ada.Strings; use Ada.Strings;
+--with Ada.Strings; use Ada.Strings;
 --with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 
 with Sim;
-with Utils; use Utils;
 with Types ; use Types;
 with Bot_Types ; use Bot_Types;
 with Stacktrace;
@@ -19,35 +17,24 @@ with Markets;
 with Bot_Svn_Info;
 with Ini;
 --with Ada.Text_IO;
-with Ada.Containers.Hashed_Maps;
-with Ada.Strings.Hash;
+--with Ada.Containers.Hashed_Maps;
+--with Ada.Strings.Hash;
 with Probabilities;
 
 
 procedure Do_Stats_1 is
-  use type Ada.Containers.Count_Type;
+ -- use type Ada.Containers.Count_Type;
 
   package Ev renames Ada.Environment_Variables;
 
-
-  Ba_Back_Bet        : aliased Boolean := False;
-
-  --   type Odds_Record is record
-  --      Back_Num : Natural := 0;
-  --      Lay_Num : Natural := 0;
-  --   end record;
-
-  --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid, Bet_Matched);
-  --Commission : Fixed_Type  := 0.065;
-
-  subtype Key is String(1..7);
-
-  package Odds_Maps is new Ada.Containers.Hashed_Maps
-    (Key,
-     Natural,
-     Ada.Strings.Hash,
-     "=",
-     "=");
+--    subtype Key is String(1..7);
+--
+--    package Odds_Maps is new Ada.Containers.Hashed_Maps
+--      (Key,
+--       Natural,
+--       Ada.Strings.Hash,
+--       "=",
+--       "=");
 
   --------------------------------------------------------------------------
 
@@ -151,14 +138,8 @@ procedure Do_Stats_1 is
   T                   :          Sql.Transaction_Type;
   Cmd_Line            :          Command_Line_Configuration;
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Sa_Min_Lay_Price    : aliased  Gnat.Strings.String_Access;
-  Sa_Max_Lay_Price    : aliased  Gnat.Strings.String_Access;
-  Sa_Lay_Idx          : aliased  Gnat.Strings.String_Access;
   Sa_Max_Leader_Price : aliased  Gnat.Strings.String_Access;
-  Min_Lay_Price       :          Price_Type := 0.0;
-  Max_Lay_Price       :          Price_Type := 0.0;
   Max_Leader_Price    :          Price_Type := 0.0;
-  Lay_Idx             :          Fixed_Type := 0.0;
 
 begin
   Define_Switch
@@ -169,33 +150,9 @@ begin
 
   Define_Switch
     (Cmd_Line,
-     Sa_Min_Lay_Price'Access,
-     Long_Switch => "--min_lay_price=",
-     Help        => "back price must be higher that this");
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Max_Lay_Price'Access,
-     Long_Switch => "--max_lay_price=",
-     Help        => "back price must be lower that this");
-
-  Define_Switch
-    (Cmd_Line,
      Sa_Max_Leader_Price'Access,
      Long_Switch => "--max_leader_price=",
      Help        => "leader's back price must be lower that this");
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Lay_Idx'Access,
-     Long_Switch => "--lay_idx=",
-     Help        => "lay the runner at this idx * backprice");
-
-  Define_Switch
-    (Cmd_Line,
-     Ba_Back_Bet'Access,
-     Long_Switch => "--back_bet",
-     Help        => "do a back bet too");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -206,22 +163,10 @@ begin
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
   Log("main", "params start");
-  Log("main", "Sa_Min_Lay_Price" & Sa_Min_Lay_Price.all);
-  Log("main", "Sa_Max_Lay_Price" & Sa_Max_Lay_Price.all);
   Log("main", "Sa_Max_Leader_Price" & Sa_Max_Leader_Price.all);
-  Log("main", "Sa_Lay_idx" & Sa_Lay_Idx.all);
   Log("main", "params stop");
 
-  Min_Lay_Price    := Price_Type'Value(Sa_Min_Lay_Price.all);
-  Max_Lay_Price    := Price_Type'Value(Sa_Max_Lay_Price.all);
   Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
-  Lay_Idx          := Fixed_Type'Value(Sa_Lay_Idx.all);
-
-  if Min_Lay_Price >= Max_Lay_Price then
-    Log("main", "Min >= Mac -> stop");
-    return;
-  end if;
-
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
@@ -267,28 +212,15 @@ begin
               declare
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-                Name     : Betname_Type := (others => ' ');
-                Five     : String(1..5) := "05.00";
               begin
-                if Min_Lay_Price /= 5.0 then
-                  Five := F8_Image(Fixed_Type(Min_Lay_Price));
-                end if;
 
-                Move("WIN_" &
-                       Five & "_" &
-                       F8_Image(Fixed_Type(Max_Lay_Price)) & "_" &
-                       F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
-                       F8_Image(Lay_Idx)   & "_LAY_LOSERS_1", Name);
-
-
-                Sort_Array(List => List, Bra  => Bra);
+                Sort_Array(List => List, Bra => Bra);
                 Treat(Market           => Market,
                       Bra              => Bra,
                       Max_Leader_Price => Max_Leader_Price,
                       Done             => Done);
 
                 exit Loop_Ts when Done;
-
               end;
             end loop Loop_Ts; --  Timestamp
           end;
