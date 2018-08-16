@@ -61,7 +61,7 @@ procedure Do_Stats_1 is
     -- remove runners from local-BRA that already are betted on
     for I in Bra'Range loop
       if Fixed_Type(1.0) <  Bra(1).Backprice and then  -- sanity
-         Max_Leader_Price <=  Bra(1).Backprice then
+         Bra(1).Backprice <= Max_Leader_Price then
          Done := True;
 
         begin
