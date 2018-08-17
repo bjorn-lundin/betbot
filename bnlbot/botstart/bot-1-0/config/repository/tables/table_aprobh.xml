@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Table Wiz="3" Desc="Probailtity to win rows" Name="APROBH" Tablespace="">
+        <Column Name="betid"          AllowNull="0" Description="bet id"/>
+        <Column Name="marketid"       AllowNull="0" Description="market id"/>
+        <Column Name="marketidplc"    AllowNull="0" Description="market id place"/>
+        <Column Name="distance"       AllowNull="0" Description="distance of race"/>
+        <Column Name="distancename"   AllowNull="0" Description="name of distance"/>
+        <Column Name="svnrevision"    AllowNull="0" Description="svn revision of bot"/>
+        <Column Name="ixxlupd"        AllowNull="0" Description="Latest updater"/>
+        <Column Name="ixxluts"        AllowNull="0" Description="Latest update timestamp"/>
+        <Index Columns="betid" type="primary"/>
+        <Index Columns="marketid" type="index"/>
+        <Index Columns="marketidplc" type="index"/>
+    </Table>
+</BnlBot>
