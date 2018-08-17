@@ -27,6 +27,6 @@
         <Index Columns="marketid" type="index"/>
         <Index Columns="marketidplc" type="index"/>
         <Index Columns="selectionid" type="index"/>
-        <Index Columns="r1" type="index"/>
+        <Index Columns="r1limit" type="index"/>
     </Table>
 </BnlBot>
