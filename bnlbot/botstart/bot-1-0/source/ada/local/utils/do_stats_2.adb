@@ -86,69 +86,67 @@ procedure Do_Stats_2 is
           Placedrace   : array(Runner_Num_Type'Range) of Boolean := (others => False);
           Bet_Id       : Integer_8 := 0;
         begin
-          if Nexttime = Calendar2.Time_Type_First then
+          for I in Runner_Num_Type'Range loop
+            Wonrace(I) := Sim.Is_Race_Winner(Selectionid => Bra(I).Selectionid, Marketid => Bra(I).Marketid);
+          end loop;
+          if Placemarket_Exists then
             for I in Runner_Num_Type'Range loop
-              Wonrace(I) := Sim.Is_Race_Winner(Selectionid => Bra(I).Selectionid, Marketid => Bra(I).Marketid);
+              Placedrace(I) := Sim.Is_Race_Winner(Selectionid => Bra(I).Selectionid, Marketid => Place_Marketid);
             end loop;
-            if Placemarket_Exists then
-              for I in Runner_Num_Type'Range loop
-                Placedrace(I) := Sim.Is_Race_Winner(Selectionid => Bra(I).Selectionid, Marketid => Place_Marketid);
-              end loop;
-            end if;
-
-            Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
-
-            Probh := (Betid          => Bet_Id,
-                      Marketid       => Bra(1).Marketid,
-                      Marketidplc    => Place_Marketid,
-                      Distance       => Market.Distance,
-                      Distancename   => Market.Distance_Name,
-                      Svnrevision    => 0,
-                      Ixxlupd        => (others         => ' '),
-                      Ixxluts        => Calendar2.Clock);
-
-            for I in Runner_Num_Type'Range loop
-              Probr(Winner,I) := (Betid                 => Bet_Id,
-                                  Rank                  => Integer_4(I),
-                                  Markettype            => "WIN                      ",
-                                  Selectionid           => Bra(I).Selectionid,
-                                  R1limit               => Fixed_Type(Max_Leader_Price),
-                                  Backprice             => Bra(I).Backprice,
-                                  Layprice              => Bra(I).Layprice,
-                                  Backprice1            => -1.0,
-                                  Layprice1             => -1.0,
-                                  Betplaced             => Bra(I).Pricets,
-                                  Wonrace               => Wonrace(I),
-                                  Placedrace            => Placedrace(I),
-                                  Svnrevision           => 0,
-                                  Ixxlupd               => (others                => ' '),
-                                  Ixxluts               => Calendar2.Clock);
-            end loop;
-            for I in Runner_Num_Type'Range loop
-              Probr(Place,I) := (Betid                 => Bet_Id,
-                                 Rank                  => Integer_4(I),
-                                 Markettype            => "PLC                      ",
-                                 Selectionid           => Bra(I).Selectionid,
-                                 R1limit               => Fixed_Type(Max_Leader_Price),
-                                 Backprice             => Bra(I).Backprice,
-                                 Layprice              => Bra(I).Layprice,
-                                 Backprice1            => -1.0,
-                                 Layprice1             => -1.0,
-                                 Betplaced             => Bra(I).Pricets,
-                                 Wonrace               => Wonrace(I),
-                                 Placedrace            => Placedrace(I),
-                                 Svnrevision           => 0,
-                                 Ixxlupd               => (others                => ' '),
-                                 Ixxluts               => Calendar2.Clock);
-            end loop;
-            Nexttime := Bra(1).Pricets + (0,0,0,1,0);
           end if;
+
+          Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
+
+          Probh := (Betid          => Bet_Id,
+                    Marketid       => Bra(1).Marketid,
+                    Marketidplc    => Place_Marketid,
+                    Distance       => Market.Distance,
+                    Distancename   => Market.Distance_Name,
+                    Svnrevision    => 0,
+                    Ixxlupd        => (others         => ' '),
+                    Ixxluts        => Calendar2.Clock);
+
+          for I in Runner_Num_Type'Range loop
+            Probr(Winner,I) := (Betid                 => Bet_Id,
+                                Rank                  => Integer_4(I),
+                                Markettype            => "WIN                      ",
+                                Selectionid           => Bra(I).Selectionid,
+                                R1limit               => Fixed_Type(Max_Leader_Price),
+                                Backprice             => Bra(I).Backprice,
+                                Layprice              => Bra(I).Layprice,
+                                Backprice1            => -1.0,
+                                Layprice1             => -1.0,
+                                Betplaced             => Bra(I).Pricets,
+                                Wonrace               => Wonrace(I),
+                                Placedrace            => Placedrace(I),
+                                Svnrevision           => 0,
+                                Ixxlupd               => (others                => ' '),
+                                Ixxluts               => Calendar2.Clock);
+          end loop;
+          for I in Runner_Num_Type'Range loop
+            Probr(Place,I) := (Betid                 => Bet_Id,
+                               Rank                  => Integer_4(I),
+                               Markettype            => "PLC                      ",
+                               Selectionid           => Bra(I).Selectionid,
+                               R1limit               => Fixed_Type(Max_Leader_Price),
+                               Backprice             => Bra(I).Backprice,
+                               Layprice              => Bra(I).Layprice,
+                               Backprice1            => -1.0,
+                               Layprice1             => -1.0,
+                               Betplaced             => Bra(I).Pricets,
+                               Wonrace               => Wonrace(I),
+                               Placedrace            => Placedrace(I),
+                               Svnrevision           => 0,
+                               Ixxlupd               => (others                => ' '),
+                               Ixxluts               => Calendar2.Clock);
+          end loop;
+          Nexttime := Bra(1).Pricets + (0,0,0,1,0);
         end;
       end if;
 
 
     elsif Bra(1).Pricets + (0,0,0,1,0) >= Nexttime then
-
+      -- get prices a second later
       for I in Runner_Num_Type'Range loop
         Probr(Winner,I).Backprice1 := Bra(I).Backprice;
         Probr(Winner,I).Layprice1 := Bra(I).Layprice;
@@ -276,14 +274,14 @@ begin
             Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
                                                 Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
             Done                            : Boolean := False;
+            Nexttime : Calendar2.Time_Type := Calendar2.Time_Type_First;
           begin
+            Done := False;
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               declare
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-                Nexttime : Calendar2.Time_Type := Calendar2.Time_Type_First;
               begin
-
                 Sort_Array(List => List, Bra => Bra);
                 Treat(Market           => Market,
                       Bra              => Bra,
