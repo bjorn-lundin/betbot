@@ -58,6 +58,7 @@ project Adabot is
                     "do_stats_1.adb",
                     "do_stats_2.adb",
                     "lay_during_race3.adb",
+                    "lay_num_4.adb",
                     "lay_losers_1.adb",
                     "check_greed.adb",
                     "check_high_lay_odds.adb",
