@@ -72,6 +72,7 @@ procedure Lay_Num_4 is
     Five           : constant Fixed_Type := 5.0;
     Local_Bet_List : Bets.Lists.List;
     I              : Integer := 4;
+    Localname      : Betname_Type := Name;
   begin
     if Bet_List.Length = 0 then -- ie no previous bet in this race
       --  Log("Treat_Lay", I'Img & " " & Bra(I).To_String);
@@ -84,18 +85,22 @@ procedure Lay_Num_4 is
         Bra(1).Backprice    <= Max_Leader_Price and then
         Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
-        Runner.Selectionid := Bra(I).Selectionid;
-        Runner.Marketid := Bra(I).Marketid;
 
-        Bet := Bets.Create(Name   => Name,
-                           Side   => Lay,
-                           Size   => Lay_Size,
-                           Price  => Lay_Price,
-                           Placed => Bra(I).Pricets,
-                           Runner => Runner,
-                           Market => Market);
-        Bet_List.Append(Bet);
-        Log("Bet_laid", Bet.To_String);
+        for J in 1 .. 4 loop
+          Runner.Selectionid := Bra(I).Selectionid;
+          Runner.Marketid := Bra(I).Marketid;
+          Localname(19..22) := "_" & J'Img(2) & "TH";
+
+          Bet := Bets.Create(Name   => Localname,
+                             Side   => Lay,
+                             Size   => Lay_Size,
+                             Price  => Lay_Price,
+                             Placed => Bra(I).Pricets,
+                             Runner => Runner,
+                             Market => Market);
+          Bet_List.Append(Bet);
+          Log("Bet_laid", Bet.To_String);
+        end loop;
       end if;
     end if;
     -- Try To check outcome
@@ -323,7 +328,7 @@ begin
 
                 Move("WIN_LAY_" &
                        F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
-                       F8_Image(Fixed_Type(Lay_Price))   & "_4TH", Name);
+                       F8_Image(Fixed_Type(Lay_Price)) , Name);
 
                 Sort_Array(List => List, Bra  => Bra);
                 Treat_Lay(Market           => Market,
