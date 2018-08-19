@@ -71,31 +71,31 @@ procedure Lay_Num_4 is
     Runner         : Runners.Runner_Type;
     Five           : constant Fixed_Type := 5.0;
     Local_Bet_List : Bets.Lists.List;
-    I              : Integer := 4;
+    --I              : Integer := 4;
     Localname      : Betname_Type := Name;
   begin
     if Bet_List.Length = 0 then -- ie no previous bet in this race
       --  Log("Treat_Lay", I'Img & " " & Bra(I).To_String);
       --  Log("Treat_Lay", " 1 " & Bra(1).To_String);
 
-      if Bra(I).Selectionid > Integer_4(0) and then  -- sanity
-        Bra(I).Backprice    >= Fixed_Type(1.0) and then  -- sanity
-        Bra(I).Layprice     >= Fixed_Type(1.0) and then  -- sanity
-        Bra(I).Layprice     <= Fixed_Type(Five * Bra(I).Backprice) and then -- not too big difference allowed
+      if Bra(4).Selectionid > Integer_4(0) and then  -- sanity
+        Bra(4).Backprice    >= Fixed_Type(1.0) and then  -- sanity
+        Bra(4).Layprice     >= Fixed_Type(1.0) and then  -- sanity
+        Bra(4).Layprice     <= Fixed_Type(Five * Bra(4).Backprice) and then -- not too big difference allowed
         Bra(1).Backprice    <= Max_Leader_Price and then
         Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
 
         for J in 1 .. 4 loop
-          Runner.Selectionid := Bra(I).Selectionid;
-          Runner.Marketid := Bra(I).Marketid;
+          Runner.Selectionid := Bra(J).Selectionid;
+          Runner.Marketid := Bra(J).Marketid;
           Localname(19..22) := "_" & J'Img(2) & "TH";
 
           Bet := Bets.Create(Name   => Localname,
                              Side   => Lay,
                              Size   => Lay_Size,
                              Price  => Lay_Price,
-                             Placed => Bra(I).Pricets,
+                             Placed => Bra(J).Pricets,
                              Runner => Runner,
                              Market => Market);
           Bet_List.Append(Bet);
