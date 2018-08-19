@@ -302,10 +302,12 @@ begin
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                 Name     : Betname_Type := (others => ' ');
-                Num      : String(1..5) := F8_Image(Fixed_Type(Delta_Price));
+                Num      : String(1..5) := (others => ' ');
               begin
                 if Delta_Price < 10.0 then
                   Num := "0" & F8_Image(Fixed_Type(Delta_Price));
+                elsif  Delta_Price < 100.0 Then
+                  Num := F8_Image(Fixed_Type(Delta_Price));
                 end if;
 
                 Move("WIN_L2_" &
