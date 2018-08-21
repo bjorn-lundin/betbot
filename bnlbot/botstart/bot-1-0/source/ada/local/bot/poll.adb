@@ -490,8 +490,11 @@ procedure Poll is
 
     Market.Read(Eos);
     if not Eos then
-      if  Market.Markettype(1 .. 3) /= "WIN"  then
+      if Market.Markettype(1 .. 3) /= "WIN"  then
         Log(Me & "Run", "not a WIN market: " &  Market_Notification.Market_Id);
+        return;
+      elsif not Market.Marketname_Ok then
+        Log(Me & "Run", "not an OK Marketname: " & Market.To_String);
         return;
       else
         Event.Eventid := Market.Eventid;
