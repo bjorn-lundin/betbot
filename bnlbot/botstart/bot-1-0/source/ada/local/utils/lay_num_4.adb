@@ -21,18 +21,17 @@ with Runners;
 with Bot_Svn_Info;
 with Ini;
 --with Ada.Text_IO;
-with Ada.Containers.Hashed_Maps;
-with Ada.Strings.Hash;
-with Tics;
+--with Ada.Containers.Hashed_Maps;
+--with Ada.Strings.Hash;
+with Ada.Containers;
 
 procedure Lay_Num_4 is
-  use type Ada.Containers.Count_Type;
+ use type Ada.Containers.Count_Type;
 
   package Ev renames Ada.Environment_Variables;
 
   Lay_Size           : Bet_Size_Type := 40.0;
 
-  Ba_Back_Bet        : aliased Boolean := False;
 
   --   type Odds_Record is record
   --      Back_Num : Natural := 0;
@@ -42,14 +41,14 @@ procedure Lay_Num_4 is
   --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid, Bet_Matched);
   --Commission : Fixed_Type  := 0.065;
 
-  subtype Key is String(1..7);
-
-  package Odds_Maps is new Ada.Containers.Hashed_Maps
-    (Key,
-     Natural,
-     Ada.Strings.Hash,
-     "=",
-     "=");
+--    subtype Key is String(1..7);
+--
+--    package Odds_Maps is new Ada.Containers.Hashed_Maps
+--      (Key,
+--       Natural,
+--       Ada.Strings.Hash,
+--       "=",
+--       "=");
 
   --------------------------------------------------------------------------
 
@@ -69,7 +68,7 @@ procedure Lay_Num_4 is
                       Bet_List                    : in out Bets.Lists.List) is
     Bet            : Bets.Bet_Type;
     Runner         : Runners.Runner_Type;
-    Five           : constant Fixed_Type := 5.0;
+ --   Five           : constant Fixed_Type := 5.0;
     Local_Bet_List : Bets.Lists.List;
     --I              : Integer := 4;
     Localname      : Betname_Type := Name;
@@ -81,10 +80,9 @@ procedure Lay_Num_4 is
       if Bra(4).Selectionid > Integer_4(0) and then  -- sanity
         Bra(4).Backprice    >= Fixed_Type(1.0) and then  -- sanity
         Bra(4).Layprice     >= Fixed_Type(1.0) and then  -- sanity
-        Bra(4).Layprice     <= Fixed_Type(Five * Bra(4).Backprice) and then -- not too big difference allowed
+      --  Bra(4).Layprice     <= Fixed_Type(Five * Bra(4).Backprice) and then -- not too big difference allowed
         Bra(1).Backprice    <= Max_Leader_Price and then
         Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
-
 
         for J in 1 .. 4 loop
           Runner.Selectionid := Bra(J).Selectionid;
@@ -160,35 +158,6 @@ procedure Lay_Num_4 is
               B.Insert;
               Log("Bet_Inserted", B.To_String);
               -- if we just matched a laybet - put a backbet then
-              if B.Side(1..3) = "LAY" and then Ba_Back_Bet then
-                -- Bet.Size = Lay_Bet.Size - 5
-                -- Lay_Bet.Size * Lay_Bet.Pricematched = Back_Size * Back_Price;
-                declare
-                  Back_Size  : Bet_Size_Type  := Bet_Size_Type(B.Size - Fixed_Type(1.0));
-                  Back_Price : Fixed_Type := B.Size * B.Pricematched ;
-                  Tic        : Tics.Tics_Type;
-                begin
-                  Runner.Selectionid := B.Selectionid;
-                  Runner.Marketid    := B.Marketid;
-                  -- get real tic value
-                  --  Log(B.Size'Img & "/" & B.Pricematched'Img & "/" & Back_Size'Img & "/" & Back_Price'Img);
-                  Back_Price := Back_Price / Fixed_Type(Back_Size);
-                  --  Log(B.Size'Img & "/" & B.Pricematched'Img & "/" & Back_Size'Img & "/" & Back_Price'Img);
-
-                  Tic := Tics.Get_Nearest_Higher_Tic_Index(Back_Price);
-                  Back_Price := Tics.Get_Tic_Price(Tic);
-
-                  Bet.Clear;
-                  Bet := Bets.Create(Name   => Name,
-                                     Side   => Back,
-                                     Size   => Back_Size,
-                                     Price  => Price_Type(Back_Price),
-                                     Placed => R.Pricets,
-                                     Runner => Runner,
-                                     Market => Market);
-                  Local_Bet_List.Append(Bet);
-                end;
-              end if;
             end if;
           end if;
         end if;
