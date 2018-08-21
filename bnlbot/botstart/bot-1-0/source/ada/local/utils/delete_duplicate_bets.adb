@@ -73,6 +73,7 @@ begin
     end if;
     Old_Bet := B;
 
+    Cnt := Cnt -1;
     if Cnt rem 1_000 = 0 then
       T.Commit;
       T.Start;
