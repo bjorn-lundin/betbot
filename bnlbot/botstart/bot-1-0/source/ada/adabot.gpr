@@ -57,6 +57,7 @@ project Adabot is
 --                    "bet_during_race_5.adb",
                     "do_stats_1.adb",
                     "do_stats_2.adb",
+                    "delete_duplicate_bets.adb",
                     "lay_during_race3.adb",
                     "lay_num_2.adb",
                     "lay_num_4.adb",
@@ -70,14 +71,6 @@ project Adabot is
                     "graph_data_3.adb",
                     "check_ratio_favorites_on_place.adb",
                     "lay_and_back_after_progress.adb"
-                    --"lay_all_watch_back.adb",
-                    --"bet_at_start.adb",
-                    --"lay_back_all.adb",
-                    --"stat_maker.adb",
-                    --"sim_back_in_play.adb",
-                    -- "sim_bets.adb",
-                   -- "greenup_lay_first_all.adb",
-                   -- "greenup_lay_first.adb"
                    );
 
    Display_Mains :=  ("race_time.adb");
