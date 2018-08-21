@@ -217,7 +217,11 @@ package body Markets is
 
    function Marketname_Ok(Self : Market_Type) return Boolean is
    begin
-      return Self.Marketname(1..9)  = "1m Hcap  "   or else
+      return
+             Self.Marketname(1..9)  = "5f Hcap  "   or else
+             Self.Marketname(1..9)  = "6f Hcap  "   or else
+             Self.Marketname(1..9)  = "7f Hcap  "   or else
+             Self.Marketname(1..9)  = "1m Hcap  "   or else
              Self.Marketname(1..11) = "1m1f Hcap  " or else
              Self.Marketname(1..11) = "1m2f Hcap  " or else
              Self.Marketname(1..11) = "1m3f Hcap  " or else
