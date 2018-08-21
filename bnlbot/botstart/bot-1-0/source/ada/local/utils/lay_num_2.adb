@@ -66,7 +66,7 @@ procedure Lay_Num_2 is
                       Bet_List                    : in out Bets.Lists.List) is
     Bet            : Bets.Bet_Type;
     Runner         : Runners.Runner_Type;
-    Five           : constant Fixed_Type := 5.0;
+   -- Five           : constant Fixed_Type := 5.0;
     Local_Bet_List : Bets.Lists.List;
     Localname      : Betname_Type := Name;
   begin
@@ -77,12 +77,12 @@ procedure Lay_Num_2 is
       if Bra(2).Selectionid > Integer_4(0) and then  -- sanity
         Bra(2).Backprice    >= Fixed_Type(1.0) and then  -- sanity
         Bra(2).Layprice     >= Fixed_Type(1.0) and then  -- sanity
-        Bra(2).Layprice     <= Fixed_Type(Five * Bra(2).Backprice) and then -- not too big difference allowed
+       -- Bra(2).Layprice     <= Fixed_Type(Five * Bra(2).Backprice) and then -- not too big difference allowed
         Bra(2).Backprice    >= Bra(1).Backprice + Fixed_Type(Delta_Price) and then
         Bra(1).Backprice    <= Max_Leader_Price and then
         Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
-        for J in 2 .. 3 loop
+        for J in 1 .. 4 loop
           Runner.Selectionid := Bra(J).Selectionid;
           Runner.Marketid := Bra(J).Marketid;
 
