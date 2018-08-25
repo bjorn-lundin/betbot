@@ -49,6 +49,7 @@ project Adabot is
 --                    "update_back_plc_bets.adb",
                     "create_cache.adb",
 --                   "back_after_progress.adb",
+                    "back_during_race_1.adb",
 --                    "price_graph_during_race_year_month.adb",
 --                    "bet_during_race_1.adb",
 --                    "bet_during_race_2.adb",

@@ -36,6 +36,7 @@ procedure Graph_Data_Ael is
   Ba_Equity            : aliased Boolean := False;
   Ba_Equity2           : aliased Boolean := False;
   Ba_Histogram         : aliased Boolean := False;
+  Ba_Noloss           : aliased Boolean := False;
 
   Ia_Days             : aliased Integer := 42;
   Ia_Maxprice         : aliased Integer := 1000;
@@ -255,7 +256,7 @@ procedure Graph_Data_Ael is
     Profit            : Fixed_Type := 0.0;
     Min_Price_Matched : Fixed_Type := 1.01;
     Side              : String(1..4) := "BACK";
-
+    Curr_Dat          : Calendar2.Time_Type := Calendar2.Time_Type_First;
   begin
     Select_Equity_Date.Prepare (
                                 "select B.STARTTS, B.PROFIT " &
@@ -279,15 +280,33 @@ procedure Graph_Data_Ael is
       Select_Equity_Date.Set ("SIDE", Side);
     end if;
 
-
     Select_Equity_Date.Open_Cursor;
     loop
       Select_Equity_Date.Fetch (Eos);
       exit when Eos;
       Select_Equity_Date.Get ("STARTTS", Equity_Result.Ts);
       Select_Equity_Date.Get ("PROFIT", Profit);
-      Equity_Result.Equity := Equity_Result.Equity + Profit;
-      A_List.Append (Equity_Result);
+
+      if Ba_Noloss then
+        if Profit < 0.0 then
+          Equity_Result.Equity := Equity_Result.Equity + Profit; --add the bad result
+          A_List.Append (Equity_Result);
+          Curr_Dat := Equity_Result.Ts;                          --stop the rest of this day
+        end if;
+
+        if Curr_Dat.Year = Equity_Result.Ts.Year and then
+          Curr_Dat.Month = Equity_Result.Ts.Month and then
+          Curr_Dat.Day = Equity_Result.Ts.Day then
+          null; -- bad day
+        else
+          Equity_Result.Equity := Equity_Result.Equity + Profit;
+          A_List.Append (Equity_Result);
+        end if;
+      else
+        Equity_Result.Equity := Equity_Result.Equity + Profit;
+        A_List.Append (Equity_Result);
+      end if;
+
     end loop;
     Select_Equity_Date.Close_Cursor;
   end Equity_Data;
@@ -391,6 +410,12 @@ begin
 
   Define_Switch
     (Cmd_Line,
+     Ba_Noloss'Access,
+     Long_Switch => "--noloss",
+     Help        => "skip rest of day if loss");
+
+  Define_Switch
+    (Cmd_Line,
      Ia_Maxprice'Access,
      Long_Switch => "--max_price=",
      Help        => "for laybets - default 1000");
@@ -412,9 +437,6 @@ begin
      SA_Side'Access,
      Long_Switch => "--side=",
      Help        => "BACK or LAY");
-
-
-
 
   Getopt (Cmd_Line);  -- process the command line
 
