@@ -59,7 +59,7 @@ procedure Back_During_Race_1 is
 
   type Best_Runners_Array_Type is array (1..12) of Price_Histories.Price_History_Type;
 
-  procedure Treat_Lay(Market                      : in     Markets.Market_Type;
+  procedure Treat_Back(Market                      : in     Markets.Market_Type;
                       Bra                         : in     Best_Runners_Array_Type ;
                       Max_Leader_Price, Back_Price,Delta_Price : in Price_Type;
                       Name                        : in Betname_Type;
@@ -67,7 +67,7 @@ procedure Back_During_Race_1 is
     Bet            : Bets.Bet_Type;
     Runner         : Runners.Runner_Type;
    -- Five           : constant Fixed_Type := 5.0;
-    Local_Bet_List : Bets.Lists.List;
+ --   Local_Bet_List : Bets.Lists.List;
     Localname      : Betname_Type := Name;
     Place_Market   : Markets.Market_Type;
   begin
@@ -110,6 +110,7 @@ procedure Back_During_Race_1 is
             when others =>
             exit;
           end;
+          Localname(1..3) := "PLC";
           Localname(23) := '_';
           Localname(24) := J'Img(2);
 
@@ -189,10 +190,10 @@ procedure Back_During_Race_1 is
       end;
     end loop;
 
-    for B of Local_Bet_List loop
-      Bet_List.Append(B);
-    end loop;
-  end Treat_Lay;
+--    for B of Local_Bet_List loop
+--      Bet_List.Append(B);
+--      end loop;
+  end Treat_Back;
   -- pragma Unreferenced (Treat_Lay);
 
 
@@ -341,7 +342,7 @@ begin
                        F8_Image(Fixed_Type(Back_Price)) , Name);
 
                 Sort_Array(List => List, Bra  => Bra);
-                Treat_Lay(Market           => Market,
+                Treat_Back(Market           => Market,
                           Bra              => Bra,
                           Max_Leader_Price => Max_Leader_Price,
                           Back_Price        => Back_Price,
