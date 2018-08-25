@@ -69,7 +69,7 @@ procedure Back_During_Race_1 is
    -- Five           : constant Fixed_Type := 5.0;
  --   Local_Bet_List : Bets.Lists.List;
     Localname      : Betname_Type := Name;
-    Place_Market   : Markets.Market_Type;
+ --   Place_Market   : Markets.Market_Type;
   begin
     if Bet_List.Length = 0 then -- ie no previous bet in this race
       --  Log("Treat_Lay", I'Img & " " & Bra(I).To_String);
@@ -100,30 +100,30 @@ procedure Back_During_Race_1 is
           Bet_List.Append(Bet);
           Log("Bet_laid", Bet.To_String);
         end loop;
-        for J in 1 .. 4 loop
-          Runner.Selectionid := Bra(J).Selectionid;
-          begin
-            Place_Market.marketid := Sim.Win_Place_Map(Bra(J).Marketid);
-            Place_Market.Startts := Market.Startts;
-            Place_Market.Marketname(1..12) := "To Be Placed";
-          exception
-            when others =>
-            exit;
-          end;
-          Localname(1..3) := "PLC";
-          Localname(23) := '_';
-          Localname(24) := J'Img(2);
-
-          Bet := Bets.Create(Name   => Localname,
-                             Side   => Back,
-                             Size   => Back_Size,
-                             Price  => Back_Price,
-                             Placed => Bra(J).Pricets,
-                             Runner => Runner,
-                             Market => Place_Market);
-          Bet_List.Append(Bet);
-          Log("Bet_laid", Bet.To_String);
-        end loop;
+--          for J in 1 .. 4 loop
+--            Runner.Selectionid := Bra(J).Selectionid;
+--            begin
+--              Place_Market.marketid := Sim.Win_Place_Map(Bra(J).Marketid);
+--              Place_Market.Startts := Market.Startts;
+--              Place_Market.Marketname(1..12) := "To Be Placed";
+--            exception
+--              when others =>
+--              exit;
+--            end;
+--            Localname(1..3) := "PLC";
+--            Localname(23) := '_';
+--            Localname(24) := J'Img(2);
+--
+--            Bet := Bets.Create(Name   => Localname,
+--                               Side   => Back,
+--                               Size   => Back_Size,
+--                               Price  => 1.01,
+--                               Placed => Bra(J).Pricets,
+--                               Runner => Runner,
+--                               Market => Place_Market);
+--            Bet_List.Append(Bet);
+--            Log("Bet_laid", Bet.To_String);
+--          end loop;
 
       end if;
     end if;
