@@ -262,7 +262,7 @@ procedure Graph_Data_Ael is
                                 "select B.STARTTS, B.PROFIT " &
                                   "from ABETS B " &
                                   "where true " &
-                                  "and B.SIDE = :SIDE " &
+                               --   "and B.SIDE = :SIDE " &
                                   "and B.BETNAME = :BETNAME " &
                                   "and B.STATUS ='MATCHED' " &
                                   "and B.PRICEMATCHED >= :PRICEMATCHED " &
@@ -274,11 +274,11 @@ procedure Graph_Data_Ael is
     end if;
     Select_Equity_Date.Set ("PRICEMATCHED", Min_Price_Matched);
 
-    if Sa_Side.all /= "" then
-      Select_Equity_Date.Set ("SIDE", Sa_Side.all);
-    else
-      Select_Equity_Date.Set ("SIDE", Side);
-    end if;
+--    if Sa_Side.all /= "" then
+--      Select_Equity_Date.Set ("SIDE", Sa_Side.all);
+--    else
+--      Select_Equity_Date.Set ("SIDE", Side);
+--    end if;
 
     Select_Equity_Date.Open_Cursor;
     loop

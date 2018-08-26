@@ -79,12 +79,9 @@ procedure Poll is
   begin
     case Bettype is
       when Horse_Back_1_10_07_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_17_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_30_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_36_01_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Lay_05_15_1_14_55_Win     => return Process_Io.To_Process_Type("bet_placer_006");
-
+      when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type("bet_placer_002");
+      when Horse_Back_1_28_02_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Lay_05_15_1_14_55_Win     => return Process_Io.To_Process_Type("bet_placer_004");
     end case;
     --      --if not reserved - get an anonymous one
     --      Global_Bet_Placer := Global_Bet_Placer + 1;
@@ -327,7 +324,50 @@ procedure Poll is
                     Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet;
+  ------------------------------------------------------
+  procedure Try_To_Make_Back_Bet_Delta(Bettype         : Config.Bet_Type;
+                                 Br              : Best_Runners_Array_Type;
+                                 Marketid        : Marketid_Type;
+                                 Match_Directly  : Boolean := False) is
 
+    Max_Backprice_1 : Fixed_Type;
+    Delta_Price     : Fixed_Type;
+    Backed_Num      : Integer;
+    Next_Num        : Integer;
+    Tmp             : String (1 .. 5) := (others => ' ');
+    Image           : String := Bettype'Img;
+    Min_Price       : String (1 .. 4) := (others => '.');
+
+  begin          --1         2       3
+    --  12345678901234567890123456789012345
+    --  HORSE_Back_1_10_20_1_4_WIN_1_02
+    Tmp(1) := Image(12);
+    Tmp(2) := '.';
+    Tmp(3 .. 4) := Image(14 .. 15);
+    Max_Backprice_1 := Fixed_Type'Value(Tmp);
+
+    Delta_Price := Fixed_Type'Value(Image(17 .. 18));
+    Backed_Num := Integer'Value(Image(20 .. 20));
+    Next_Num := Integer'Value(Image(22 .. 22));
+
+    Min_Price(1)    := Image(28);
+    Min_Price(3 .. 4) := Image(30 .. 31);
+
+
+    if Br(Next_Num).Selectionid > Integer_4(0) and then  -- sanity
+      Br(Next_Num).Backprice    >= Fixed_Type(1.0) and then  -- sanity
+      Br(Next_Num).Layprice     >= Fixed_Type(1.0) and then  -- sanity
+      Br(Next_Num).Backprice    >= Br(Backed_Num).Backprice + Delta_Price and then
+      Br(Backed_Num).Backprice    <= Max_Backprice_1 and then
+      Br(Backed_Num).Backprice    > Fixed_Type(1.0) then  -- sanity
+
+      Send_Back_Bet(Selectionid     => Br(Backed_Num).Selectionid,
+                    Main_Bet        => Bettype,
+                    Marketid        => Marketid,
+                    Min_Price       => Back_Price_Type'Value(Min_Price),
+                    Match_Directly  => Match_Directly);
+    end if;
+  end Try_To_Make_Back_Bet_Delta;
   ------------------------------------------------------
   procedure Try_To_Make_Lay_Bet(Bettype         : Config.Bet_Type;
                                  Br              : Best_Runners_Array_Type;
@@ -650,6 +690,29 @@ procedure Poll is
                     end if;
                   end;
 
+                when Horse_Back_1_28_02_1_2_Win_1_01 =>
+                  declare
+                    Image      : String := I'Img;
+                    Do_Try_Bet : Boolean := True;
+                  begin
+                    --  12345678901234567890
+                    --  Back_1_10_20_1_4_WIN
+                    if Utils.Position(Image, "PLC") > Integer(0) then
+                      Do_Try_Bet := False;
+                      Match_Directly := False;
+                    elsif Utils.Position(Image, "WIN") > Integer(0) then
+                      Do_Try_Bet :=  Markets_Array(Win).Numwinners >= Integer_4(3) ;
+                      Match_Directly := False;
+                    end if;
+                    if Do_Try_Bet and then
+                      Has_Been_In_Play then
+
+                      Try_To_Make_Back_Bet_Delta(Bettype         => I,
+                                                 Br              => Best_Runners,
+                                                 Marketid        => Markets_Array(Win).Marketid,
+                                                 Match_Directly  => Match_Directly);
+                    end if;
+                  end;
 
                 when Horse_Lay_05_15_1_14_55_Win =>
                   if Markets_Array(Win).Marketname_Ok then
@@ -659,7 +722,6 @@ procedure Poll is
                                           Match_Directly  => False);
 
                   end if;
-
 
               end case;
 
