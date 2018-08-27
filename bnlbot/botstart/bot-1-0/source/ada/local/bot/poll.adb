@@ -701,7 +701,7 @@ procedure Poll is
                       Do_Try_Bet := False;
                       Match_Directly := False;
                     elsif Utils.Position(Image, "WIN") > Integer(0) then
-                      Do_Try_Bet :=  Markets_Array(Win).Numwinners >= Integer_4(3) ;
+                      Do_Try_Bet := True ;
                       Match_Directly := False;
                     end if;
                     if Do_Try_Bet and then
