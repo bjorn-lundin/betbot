@@ -9,10 +9,10 @@ package Config is
   type Bet_Type is (
                 --    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
-                    Horse_Back_1_50_01_1_2_Plc_1_06,
-                    Horse_Back_1_26_00_1_2_Win_1_01,
-                    Horse_Back_1_28_02_1_2_Win_1_01,
-                    Horse_Lay_05_15_1_14_55_Win
+                  --  Horse_Back_1_50_01_1_2_Plc_1_06,
+                    Horse_Back_1_26_00_1_2_Win_1_01
+                  --  Horse_Back_1_28_02_1_2_Win_1_01,
+                 --   Horse_Lay_05_15_1_14_55_Win
                    );
 
 

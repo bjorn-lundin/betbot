@@ -79,10 +79,7 @@ procedure Poll is
   begin
     case Bettype is
       when Horse_Back_1_10_07_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_50_01_1_2_Plc_1_06 => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_26_00_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_28_02_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Lay_05_15_1_14_55_Win     => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Back_1_26_00_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_002");
     end case;
     --      --if not reserved - get an anonymous one
     --      Global_Bet_Placer := Global_Bet_Placer + 1;
@@ -416,7 +413,7 @@ procedure Poll is
       end loop;
     end if;
   end Try_To_Make_Lay_Bet;
-
+  pragma Unreferenced(Try_To_Make_Lay_Bet);
   ------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -665,7 +662,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_50_01_1_2_Plc_1_06 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01  =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -691,7 +688,7 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Back_1_26_00_1_2_Win_1_01 .. Horse_Back_1_28_02_1_2_Win_1_01 =>
+                when Horse_Back_1_26_00_1_2_Win_1_01 =>
                   declare
                     Image      : String := I'Img;
                     Do_Try_Bet : Boolean := True;
@@ -715,14 +712,14 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Lay_05_15_1_14_55_Win =>
-                  if Markets_Array(Win).Marketname_Ok then
-                      Try_To_Make_Lay_Bet(Bettype         => I,
-                                          Br              => Best_Runners,
-                                          Marketid        => Markets_Array(Win).Marketid,
-                                          Match_Directly  => False);
-
-                  end if;
+--                  when Horse_Lay_05_15_1_14_55_Win =>
+--                    if Markets_Array(Win).Marketname_Ok then
+--                        Try_To_Make_Lay_Bet(Bettype         => I,
+--                                            Br              => Best_Runners,
+--                                            Marketid        => Markets_Array(Win).Marketid,
+--                                            Match_Directly  => False);
+--
+--                    end if;
 
               end case;
 
