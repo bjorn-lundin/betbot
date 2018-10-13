@@ -14,7 +14,7 @@ function create_dump () {
 
   [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
 
-  DB_LIST="ael bnl dry ghd jmb msm soc"
+  DB_LIST="bnl dry jmb msm"
   TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets"
 
   for DBNAME in ${DB_LIST} ; do
@@ -41,5 +41,5 @@ function create_dump () {
   # # reindexdb --dbname=${DBNAME}
   done
 }
-
+exit 0
 create_dump
