@@ -91,8 +91,7 @@ function Check_Bots_For_User () {
 
   Start_Bot $BOT_USER bet_checker bet_checker
 
-  POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 poll_07 \
-                poll_08 poll_09 poll_10 "
+  POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 "
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
@@ -158,20 +157,20 @@ function Check_System_Bots_For_User () {
        Start_Bot $BOT_USER bot_ws bot_web_server
     ;;
 
-    ghd)
-       Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
-       Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
-       Start_Bot $BOT_USER bet_checker bet_checker
-       #DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
-       #for collector in $DATA_COLLECTORS_LIST ; do
-       #  Start_Bot $BOT_USER $collector poll_gh_market
-       #done
-       #
-       #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
-       #for player in $PLAYERS_LIST2 ; do
-       #  Start_Bot $BOT_USER $player long_poll_gh_market
-       #done
-    ;;
+#    ghd)
+#       Start_Bot $BOT_USER gh_mark_fetcher markets_fetcher_greyhounds
+#       Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
+#       Start_Bot $BOT_USER bet_checker bet_checker
+#       #DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 poll_market_3 "
+#       #for collector in $DATA_COLLECTORS_LIST ; do
+#       #  Start_Bot $BOT_USER $collector poll_gh_market
+#       #done
+#       #
+#       #PLAYERS_LIST2="gh_poll_1 gh_poll_2 gh_poll_3 "
+#       #for player in $PLAYERS_LIST2 ; do
+#       #  Start_Bot $BOT_USER $player long_poll_gh_market
+#       #done
+#    ;;
 
    
 
@@ -297,14 +296,14 @@ case $BOT_MACHINE_ROLE in
     
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
-    SYSTEM_USER_LIST="dry soc ghd"
+    SYSTEM_USER_LIST="dry"
 #   "ael soc"
 
     HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      Create_Plots $USR 7
-      Create_Plots $USR 42
+    #  Create_Plots $USR 7
+    #  Create_Plots $USR 42
     done
 
     for USR in $SYSTEM_USER_LIST ; do
@@ -317,6 +316,13 @@ case $BOT_MACHINE_ROLE in
   exit 0 ;;
 esac
 
+
+if [ $BOT_MINUTE == "20" ] ; then
+  $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
+fi
+
+
+
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
 
@@ -327,9 +333,9 @@ export ALARM_SIZE=90
 DAY_FILE=$(date +"%F")
 ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
-MAIL_LIST="b.f.lundin@gmail.com joakim.birgerson@gmail.com"
+MAIL_LIST="b.f.lundin@gmail.com"
 
-DISK_LIST="xvda xvdf"
+DISK_LIST="sda"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')

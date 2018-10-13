@@ -23,12 +23,16 @@ export REPO_ENGINE=$BOT_TARGET/bin/repo
 
 HOSTNAME=$(hostname)
 case $HOSTNAME in
-  ip*)
+  HP-Mini*)    
     export BOT_MACHINE_ROLE=PROD
-    export BOT_XML_SOURCE=GNAT
-    ;;  
+    export BOT_XML_SOURCE=LOCAL
+    ;;
   prod*)    
-    export BOT_MACHINE_ROLE=PROD
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=GNAT
+    ;;
+  ip*)    
+    export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
   sebjlun*)

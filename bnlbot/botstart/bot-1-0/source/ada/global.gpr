@@ -1,8 +1,8 @@
-with "xmlada";
+--with "xmlada";
 with "aws";
 
 project Global is
-
+   for Languages use ("Ada");
 
    XML_Sources := external ("BOT_XML_SOURCE");
    type XML_Sources_Type is ("LOCAL", "GNAT");
@@ -36,7 +36,7 @@ project Global is
 
    for Object_Dir use Bot_Target & "/objects";
    
-   Xml_Source := (Bot_Source & "/ada/global/xmlada");
+   Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
                                     
    Common_Source_Dirs := ( "local",
                            "global",
@@ -61,7 +61,8 @@ project Global is
    end Binder;
 
    package Linker is
-     for Default_Switches ("ada") use ("-L/usr/lib/x86_64-linux-gnu", "-lpq");
+    -- for Default_Switches ("ada") use ("-L/usr/lib/x86_64-linux-gnu", "-lpq");
+     for Default_Switches ("ada") use ("-lpq");
    end Linker;
 
    package Builder is
