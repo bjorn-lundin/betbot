@@ -70,6 +70,7 @@ procedure Back_During_Race_1_lay_limit is
         Move(Trim(B.Betname,Both) & "_" & F8_Image(Price),B.Betname);
         B.Betid := Integer_8(bot_System_Number.New_Number(System_Number_Type => Bot_System_Number.Betid));
         B.Powerdays := 5;
+        B.Insert;
       end loop;
 
       T.Commit;
