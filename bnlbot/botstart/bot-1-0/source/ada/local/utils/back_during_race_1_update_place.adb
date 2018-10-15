@@ -119,7 +119,10 @@ procedure Back_During_Race_1_Update_Place is
       --Bets.Sum_Laybets(Bet_List, -12_000.0);
     end;
 
-
+  exception
+    when Constraint_Error =>
+      Bet.Powerdays := 6;
+      Bet.Update;
   end Treat;
 
   ------------------------------
