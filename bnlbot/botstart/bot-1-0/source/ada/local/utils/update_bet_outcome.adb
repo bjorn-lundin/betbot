@@ -157,7 +157,7 @@ procedure Update_Bet_Outcome is
           end if;
         end loop;
 
-        Log("R is ", R.To_String);
+       -- Log("R is ", R.To_String);
 
         if R.Selectionid > 0 and then B.Status(1) = 'U' then -- found unmatched bet
           if R.Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
@@ -169,7 +169,7 @@ procedure Update_Bet_Outcome is
               Price_Ok := R.Backprice >= B.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
               Pricematched := R.Backprice;
             end if;
-            Log("Price_OK ", Price_Ok'Img);
+        --    Log("Price_OK ", Price_Ok'Img);
 
             if Price_Ok then
               Move("MATCHED",B.Status);
@@ -195,7 +195,7 @@ procedure Update_Bet_Outcome is
                 end if;
 
                 B.Update_Withcheck;
-                Log("Bet_Inserted", B.To_String);
+                Log("Bet_Updated", B.To_String);
               exception
                 when others =>
                   Log("No-race-WInner ", "winner is missing in " & B.Marketid);
