@@ -50,6 +50,7 @@ project Adabot is
                     "create_cache.adb",
 --                   "back_after_progress.adb",
                     "back_during_race_1.adb",
+                    "update_bet_outcome.adb",
                     "back_during_race_1_lay_limit.adb",
                     "back_during_race_1_update_place.adb",
 --                    "price_graph_during_race_year_month.adb",

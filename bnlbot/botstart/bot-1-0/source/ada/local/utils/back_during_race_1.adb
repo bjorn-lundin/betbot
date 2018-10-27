@@ -139,7 +139,7 @@ procedure Back_During_Race_1 is
                                Price  => Back_Price,
                                Placed => Bra(J).Pricets,
                                Runner => Runner,
-                               Market => Market);
+                               Market => Place_Market);
             Bet_List.Append(Bet);
             Log("Bet_laid-PLC_BACK", Bet.To_String);
           end loop;
