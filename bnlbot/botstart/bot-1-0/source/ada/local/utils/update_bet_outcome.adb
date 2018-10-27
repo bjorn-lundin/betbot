@@ -109,6 +109,7 @@ procedure Update_Bet_Outcome is
 
     end loop;
   end Update_To_Place_Market;
+  pragma Unreferenced (Update_To_Place_Market);
 
 
   procedure Sort_Array(List : in out Price_Histories.Lists.List ;
@@ -193,7 +194,7 @@ procedure Update_Bet_Outcome is
                   end if;
                 end if;
 
-                B.Insert;
+                B.Update_Withcheck;
                 Log("Bet_Inserted", B.To_String);
               exception
                 when others =>
@@ -242,24 +243,24 @@ begin
   Debug("db Connected");
 
 
-  Date_Loop2 : loop
-    T.Start;
-    Log("start fill maps");
-    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
-    Log("start process maps");
-    Betlist.Clear;
-    Read_Bets(List => Betlist, Date => Current_Date);
-    T.Commit;
-
-    T.Start;
-    Update_To_Place_Market(Betlist);
-    T.Commit;
-    Current_Date := Current_Date + One_Day;
-    exit Date_Loop2 when Current_Date = Stop_Date;
-  end loop Date_Loop2;
-
-  Sql.Close_Session;
-  return;
+--    Date_Loop2 : loop
+--      T.Start;
+--      Log("start fill maps");
+--      Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+--      Log("start process maps");
+--      Betlist.Clear;
+--      Read_Bets(List => Betlist, Date => Current_Date);
+--      T.Commit;
+--
+--      T.Start;
+--      Update_To_Place_Market(Betlist);
+--      T.Commit;
+--      Current_Date := Current_Date + One_Day;
+--      exit Date_Loop2 when Current_Date = Stop_Date;
+--    end loop Date_Loop2;
+--
+--    Sql.Close_Session;
+--    return;
 
 
 
