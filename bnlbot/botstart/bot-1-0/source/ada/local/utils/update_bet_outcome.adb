@@ -149,7 +149,7 @@ procedure Update_Bet_Outcome is
         Pricematched   : Fixed_Type := 0.0;
         Is_Race_Winner : Boolean := False;
       begin
-        Log("checking bet ", B.To_String);
+     --   Log("checking bet ", B.To_String);
         for I in Bra'Range loop      --find runner
           if Bra(I).Selectionid = B.Selectionid then
             R := Bra(I);
