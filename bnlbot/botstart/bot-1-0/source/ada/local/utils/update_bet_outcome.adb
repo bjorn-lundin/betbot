@@ -309,7 +309,6 @@ begin
       end loop Market_Loop;
     end;
 
-    T.Commit;
     Current_Date := Current_Date + One_Day;
     exit when Current_Date = Stop_Date;
   end loop Date_Loop;
