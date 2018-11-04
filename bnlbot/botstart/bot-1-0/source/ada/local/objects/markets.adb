@@ -238,6 +238,70 @@ package body Markets is
              Self.Marketname(1..11) = "2m6f Hcap  " or else
              Self.Marketname(1..11) = "2m7f Hcap  " ;
    end Marketname_Ok;
+   ------------------------------------------------------------
+   function Marketname_Ok2(Self : Market_Type) return Boolean is
+   begin
+      return
+             Self.Marketname(1..9)  = "5f Hcap  "   or else
+             Self.Marketname(1..9)  = "6f Hcap  "   or else
+             Self.Marketname(1..9)  = "7f Hcap  "   or else
+             Self.Marketname(1..9)  = "1m Hcap  "   or else
+             Self.Marketname(1..11) = "1m1f Hcap  " or else
+             Self.Marketname(1..11) = "1m2f Hcap  " or else
+             Self.Marketname(1..11) = "1m3f Hcap  " or else
+             Self.Marketname(1..11) = "1m4f Hcap  " or else
+             Self.Marketname(1..11) = "1m5f Hcap  " or else
+             Self.Marketname(1..11) = "1m6f Hcap  " or else
+             Self.Marketname(1..11) = "1m7f Hcap  " or else
+             Self.Marketname(1..9)  = "2m Hcap  "   or else
+             Self.Marketname(1..11) = "2m1f Hcap  " or else
+             Self.Marketname(1..11) = "2m2f Hcap  " or else
+             Self.Marketname(1..11) = "2m3f Hcap  " or else
+             Self.Marketname(1..11) = "2m4f Hcap  " or else
+             Self.Marketname(1..11) = "2m5f Hcap  " or else
+             Self.Marketname(1..11) = "2m6f Hcap  " or else
+             Self.Marketname(1..11) = "2m7f Hcap  " or else
+
+             Self.Marketname(1..13)  = "5f Hcap Chs  "   or else
+             Self.Marketname(1..13)  = "6f Hcap Chs  "   or else
+             Self.Marketname(1..13)  = "7f Hcap Chs  "   or else
+             Self.Marketname(1..13)  = "1m Hcap Chs  "   or else
+             Self.Marketname(1..15) = "1m1f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m2f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m3f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m4f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m5f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m6f Hcap Chs  " or else
+             Self.Marketname(1..15) = "1m7f Hcap Chs  " or else
+             Self.Marketname(1..13)  = "2m Hcap Chs  "   or else
+             Self.Marketname(1..15) = "2m1f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m2f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m3f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m4f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m5f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m6f Hcap Chs  " or else
+             Self.Marketname(1..15) = "2m7f Hcap Chs  " or else
+
+             Self.Marketname(1..13)  = "5f Hcap Hrd  "   or else
+             Self.Marketname(1..13)  = "6f Hcap Hrd  "   or else
+             Self.Marketname(1..13)  = "7f Hcap Hrd  "   or else
+             Self.Marketname(1..13)  = "1m Hcap Hrd  "   or else
+             Self.Marketname(1..15) = "1m1f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m2f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m3f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m4f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m5f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m6f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "1m7f Hcap Hrd  " or else
+             Self.Marketname(1..13)  = "2m Hcap Hrd  "   or else
+             Self.Marketname(1..15) = "2m1f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m2f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m3f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m4f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m5f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m6f Hcap Hrd  " or else
+             Self.Marketname(1..15) = "2m7f Hcap Hrd  " ;
+   end Marketname_Ok2;
 
 
   function Distance(Self : in out Market_Type) return Integer_4 is
