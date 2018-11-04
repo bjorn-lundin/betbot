@@ -289,6 +289,14 @@ begin
      Long_Switch => "--back_price=",
      Help        => "back the runner at this price");
 
+  Define_Switch
+    (Cmd_Line,
+     Sa_Back_Price'Access,
+     Long_Switch => "--back_price=",
+     Help        => "back the runner at this price");
+
+
+
   Getopt (Cmd_Line);  -- process the command line
 
   if not Ev.Exists("BOT_NAME") then
@@ -338,7 +346,7 @@ begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
         T.Start;
         if Market.Markettype(1..3) = "WIN" and then
-          Market.Marketname_Ok then
+          Market.Marketname_Ok2 then
 
           Cnt := Cnt + 1;
           -- list of timestamps in this market
@@ -353,6 +361,7 @@ begin
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                 Name     : Betname_Type := (others => ' ');
                 Num      : String(1..5) := (others => ' ');
+                Tail     : String(1..4) := (others => ' ');
               begin
                 if Delta_Price < 10.0 then
                   Num := "0" & F8_Image(Fixed_Type(Delta_Price));
@@ -360,10 +369,15 @@ begin
                   Num := F8_Image(Fixed_Type(Delta_Price));
                 end if;
 
-                Move("WIN_B2_" &
+                if Utils.Position(S => Market.Marketname, Match => "Hrd") > Integer(0) then
+                  Tail := " Hrd";
+                elsif Utils.Position(S => Market.Marketname, Match => "Chs") > Integer(0) then
+                  Tail := " Chs";
+                end if;
+                Move("WIN_A1_" &
                        F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
                        Num & "_" &
-                       F8_Image(Fixed_Type(Back_Price)) , Name);
+                       F8_Image(Fixed_Type(Back_Price)) & Tail, Name);
 
                 Sort_Array(List => List, Bra  => Bra);
                 Treat_Back(Market            => Market,
