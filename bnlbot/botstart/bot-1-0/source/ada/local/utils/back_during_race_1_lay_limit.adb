@@ -149,7 +149,7 @@ begin
 
 
   T.Start;
-    All_Betnames.Prepare("select distinct(BETNAME) from ABETS where BETNAME like 'WIL%'");
+    All_Betnames.Prepare("select distinct(BETNAME) from ABETS where BETNAME like 'WIL_A2%'");
     All_Betnames.Open_Cursor;
     loop
       All_Betnames.Fetch(Eos);
