@@ -361,7 +361,7 @@ begin
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                 Name     : Betname_Type := (others => ' ');
                 Num      : String(1..5) := (others => ' ');
-                Tail     : String(1..4) := (others => ' ');
+                Tail     : String(1..6) := (others => 'x');
               begin
                 if Delta_Price < 10.0 then
                   Num := "0" & F8_Image(Fixed_Type(Delta_Price));
@@ -370,11 +370,11 @@ begin
                 end if;
 
                 if Utils.Position(S => Market.Marketname, Match => "Hrd") > Integer(0) then
-                  Tail := " Hrd";
+                  Tail := "___Hrd";
                 elsif Utils.Position(S => Market.Marketname, Match => "Chs") > Integer(0) then
-                  Tail := " Chs";
+                  Tail := "___Chs";
                 end if;
-                Move("WIN_A1_" &
+                Move("WIN_A2_" &
                        F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
                        Num & "_" &
                        F8_Image(Fixed_Type(Back_Price)) & Tail, Name);
