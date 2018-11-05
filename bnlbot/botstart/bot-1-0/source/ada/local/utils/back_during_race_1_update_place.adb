@@ -195,7 +195,7 @@ begin
 
 
   T.Start;
-    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%'");
+    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC_A2%'");
     Bets.Read_List(All_Place_Bets, Betlist);
   T.Commit;
 
