@@ -77,7 +77,8 @@ procedure Back_During_Race_1_Update_Place is
                 Price_Ok := R.Layprice <= Bet.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
                 Pricematched := R.Layprice;
               elsif Bet.Side(1..4) = "BACK" then
-                Price_Ok := R.Backprice >= Bet.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
+                Price_Ok := R.Backprice >= Bet.Price and then
+                R.Backprice > Fixed_Type(1.0) and then R.Backprice < Fixed_Type(1000.0);  -- sanity
                 Pricematched := R.Backprice;
               end if;
               Log("Price_OK ", Price_Ok'Img);
