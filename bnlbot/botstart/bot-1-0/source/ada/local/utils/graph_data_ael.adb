@@ -255,7 +255,7 @@ procedure Graph_Data_Ael is
     Equity_Result     : Equity_Result_Type;
     Profit            : Fixed_Type := 0.0;
     Min_Price_Matched : Fixed_Type := 1.01;
-    Side              : String(1..4) := "BACK";
+   -- Side              : String(1..4) := "BACK";
     Curr_Dat          : Calendar2.Time_Type := Calendar2.Time_Type_First;
   begin
     Select_Equity_Date.Prepare (
@@ -454,7 +454,8 @@ begin
      Port     => Ini.Get_Value("database_home", "port", 5432),
      Db_Name  => Ini.Get_Value("database_home", "name", ""),
      Login    => Ini.Get_Value("database_home", "username", ""),
-     Password => Ini.Get_Value("database_home", "password", ""));
+     Password => Ini.Get_Value("database_home", "password", ""),
+     SSL_Mode => "disable");
   Debug ("db Connected");
 
   T.Start;

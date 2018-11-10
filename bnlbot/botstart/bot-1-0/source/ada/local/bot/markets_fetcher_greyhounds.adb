@@ -209,7 +209,7 @@ procedure Markets_Fetcher_Greyhounds is
 
   procedure Set_Poller_State(Msg : in Process_Io.Message_Type) is
     Data : Bot_Messages.Poll_State_Record := Bot_Messages.Data(Msg);
-    use type Process_Io.Name_Type;
+    --use type Process_Io.Name_Type;
   begin
     Log(Me, "setting " & Trim(Data.Name) & " to state: " & Data.Free'Img );
     for i in Data_Pollers'range loop

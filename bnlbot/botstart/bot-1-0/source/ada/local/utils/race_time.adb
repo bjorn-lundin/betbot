@@ -28,7 +28,7 @@ procedure Race_Time is
    Start_Time_List : Table_Astarttimes.Astarttimes_List_Pack2.List;
    Arrow_Is_Printed : Boolean := False;
    Now : Time_Type := Time_Type_First;
-   use type Text_Io.Count;
+   --use type Text_Io.Count;
    use type Ada.Containers.Count_Type;
 
 begin

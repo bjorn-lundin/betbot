@@ -25,7 +25,7 @@ with Sql;
 
 with Utils;
 with Calendar2; use Calendar2;
-with Gnatcoll.Json; use Gnatcoll.Json;
+--with Gnatcoll.Json; --use Gnatcoll.Json;
 
 with Rpc;
 with Lock ;

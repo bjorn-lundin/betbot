@@ -31,7 +31,7 @@ with Bot_System_Number;
 
 procedure Poll_Bounds is
   package EV renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
 
   Me              : constant String := "Poll.";
   Timeout         : Duration := 120.0;

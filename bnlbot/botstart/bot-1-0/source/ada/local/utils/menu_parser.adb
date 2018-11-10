@@ -24,7 +24,7 @@ with Process_IO;
 
 procedure Menu_Parser is
   package EV renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
   use type Sql.Transaction_Status_Type;
   -----------------
   --function Load_File(Filename : in String) return String is

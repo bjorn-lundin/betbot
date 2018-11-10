@@ -294,7 +294,7 @@ package body Bot_Ws_Services is
     Json_Reply      : Json_Value := Create_Object;
     Total_Sizematched,
     Total_Profit    : Fixed_Type    := 0.0;
-    use Calendar2;
+    --use Calendar2;
   begin
 
     Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
@@ -410,7 +410,7 @@ package body Bot_Ws_Services is
     Service         : constant String := "Weeks";
     Json_Reply      : Json_Value := Create_Object;
     Weeks           : Json_Array := Empty_Array;
-    use Calendar2;
+    --use Calendar2;
     Betname         : Betname_Type := (others => ' ');
     subtype Num_Weeks_Type is Integer_4 range 0 .. 6;
   begin

@@ -21,7 +21,7 @@ with Statistics;
 --with Utils; use Utils;
 with Table_Abets;
 --with Table_Apriceshistory;
-with Ada.Containers;
+--with Ada.Containers;
 
 procedure  Stat_Maker is
   package EV renames Ada.Environment_Variables;
@@ -54,7 +54,7 @@ procedure  Stat_Maker is
 
   --Cnt : Natural := 0;
   Me : constant String := "Stat_Maker.Main";
-  use type Ada.Containers.Count_Type;
+  --use type Ada.Containers.Count_Type;
 
   subtype Week_Type is Integer_4 range 0 .. 53;
   Week  : Week_Type  := 0;
