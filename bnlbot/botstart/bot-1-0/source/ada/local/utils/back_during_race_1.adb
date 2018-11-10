@@ -29,7 +29,7 @@ procedure Back_During_Race_1 is
 
   package Ev renames Ada.Environment_Variables;
 
-  Back_Size           : Bet_Size_Type := 40.0;
+  Bet_Size           : Bet_Size_Type := 30.0;
 
   --   type Odds_Record is record
   --      Back_Num : Natural := 0;
@@ -92,13 +92,13 @@ procedure Back_During_Race_1 is
 
           Bet := Bets.Create(Name   => Localname,
                              Side   => Back,
-                             Size   => Back_Size,
+                             Size   => Bet_Size,
                              Price  => Back_Price,
                              Placed => Bra(J).Pricets,
                              Runner => Runner,
                              Market => Market);
           Bet_List.Append(Bet);
-          Log("Bet_laid-WIN-BACK", Bet.To_String);
+          --Log("Bet_laid-WIN-BACK", Bet.To_String);
         end loop;
 
         for J in 1 .. 4 loop -- lay 4 first runners winners market
@@ -111,19 +111,19 @@ procedure Back_During_Race_1 is
 
           Bet := Bets.Create(Name   => Localname,
                              Side   => Lay,
-                             Size   => Back_Size,
+                             Size   => Bet_Size,
                              Price  => Price_Type(Bra(J).Layprice),
                              Placed => Bra(J).Pricets,
                              Runner => Runner,
                              Market => Market);
           Bet_List.Append(Bet);
-          Log("Bet_laid-WIN_LAY", Bet.To_String);
+         -- Log("Bet_laid-WIN_LAY", Bet.To_String);
         end loop;
 
         begin
           Place_Market.Marketid := Sim.Win_Place_Map(Market.Marketid);
           Place_Market.Startts := Market.Startts;
-          Move("To Be Placed", Place_Market.Marketname);
+         -- Move("To Be Placed", Place_Market.Marketname);
 
           for J in 1 .. 4 loop -- back 4 first runners place market
             Runner.Selectionid := Bra(J).Selectionid;
@@ -135,13 +135,13 @@ procedure Back_During_Race_1 is
 
             Bet := Bets.Create(Name   => Localname,
                                Side   => Back,
-                               Size   => Back_Size,
+                               Size   => Bet_Size,
                                Price  => Back_Price,
                                Placed => Bra(J).Pricets,
                                Runner => Runner,
                                Market => Place_Market);
             Bet_List.Append(Bet);
-            Log("Bet_laid-PLC_BACK", Bet.To_String);
+          --  Log("Bet_laid-PLC_BACK", Bet.To_String);
           end loop;
         exception
           when others => null;
@@ -157,57 +157,66 @@ procedure Back_During_Race_1 is
         Pricematched   : Fixed_Type := 0.0;
         Is_Race_Winner : Boolean := False;
       begin
-        Log("checking bet ", B.To_String);
-        for I in Bra'Range loop      --find runner
-          if Bra(I).Selectionid = B.Selectionid then
-            R := Bra(I);
-            exit;
-          end if;
-        end loop;
+        -- don't check PLC bets here
+        if B.Betname(1..3) = "PLC" and then B.Status(1) = 'U' then
+          B.Insert;
+          B.Status(1) := 'I';
+        else -- check it
+        --  Log("checking bet ", B.To_String);
 
-        Log("R is ", R.To_String);
+        --  Log("R is ", R.To_String);
 
-        if R.Selectionid > 0 and then B.Status(1) = 'U' then -- found unmatched bet
-          if R.Pricets > B.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+          if B.Status(1) = 'U' then -- found unmatched bet
 
-            if B.Side(1..3) = "LAY" then
-              Price_Ok := R.Layprice <= B.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
-              Pricematched := R.Layprice;
-            elsif B.Side(1..4) = "BACK" then
-              Price_Ok := R.Backprice >= B.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
-              Pricematched := R.Backprice;
-            end if;
-            Log("Price_OK ", Price_Ok'Img);
+            for I in Bra'Range loop      --find runner
+              if Bra(I).Selectionid = B.Selectionid then
+                R := Bra(I);
+                exit;
+              end if;
+            end loop;
 
-            if Price_Ok then
-              Move("MATCHED",B.Status);
-              B.Pricematched := Pricematched;
-              begin
-                Is_Race_Winner := Sim.Is_Race_Winner(B.Selectionid, B.Marketid);
+            -- Found and then 1 second later at least, time for BF delay
+            if R.Selectionid > 0 and then R.Pricets > B.Betplaced + (0,0,0,1,0) then
 
-                if B.Side(1..3) = "LAY" then
-                  B.Betwon := not Is_Race_Winner;
-                  if B.Betwon then
-                    B.Profit :=  B.Sizematched; -- commission is calculated/market
-                  else
-                    B.Profit := -B.Sizematched * (B.Pricematched - 1.0);
+              if B.Side(1..3) = "LAY" then
+                Price_Ok := R.Layprice <= B.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
+                Pricematched := R.Layprice;
+              elsif B.Side(1..4) = "BACK" then
+                Price_Ok := R.Backprice >= B.Price and then R.Backprice > Fixed_Type(1.0); -- sanity
+                Pricematched := R.Backprice;
+              end if;
+        --      Log("Price_OK ", Price_Ok'Img);
+
+              if Price_Ok then
+                Move("MATCHED",B.Status);
+                B.Pricematched := Pricematched;
+                begin
+                  Is_Race_Winner := Sim.Is_Race_Winner(B.Selectionid, B.Marketid);
+
+                  if B.Side(1..3) = "LAY" then
+                    B.Betwon := not Is_Race_Winner;
+                    if B.Betwon then
+                      B.Profit :=  B.Sizematched; -- commission is calculated/market
+                    else
+                      B.Profit := -B.Sizematched * (B.Pricematched - 1.0);
+                    end if;
+
+                  elsif B.Side(1..4) = "BACK" then
+                    B.Betwon := Is_Race_Winner;
+                    if B.Betwon then
+                      B.Profit :=  B.Sizematched * (B.Pricematched - 1.0);  -- commision is calculated/market
+                    else
+                      B.Profit := -B.Sizematched;
+                    end if;
                   end if;
 
-                elsif B.Side(1..4) = "BACK" then
-                  B.Betwon := Is_Race_Winner;
-                  if B.Betwon then
-                    B.Profit :=  B.Sizematched * (B.Pricematched - 1.0);  -- commision is calculated/market
-                  else
-                    B.Profit := -B.Sizematched;
-                  end if;
-                end if;
-
-                B.Insert;
-                Log("Bet_Inserted", B.To_String);
-              exception
-                when others =>
-                  Log("No-race-WInner ", "winner is missing in " & B.Marketid);
-              end;
+                  B.Insert;
+        --          Log("Bet_Inserted", B.To_String);
+                exception
+                  when others =>
+                    Log("No-race-WInner ", "winner is missing in " & B.Marketid);
+                end;
+              end if;
             end if;
           end if;
         end if;
@@ -361,7 +370,7 @@ begin
                 Bra      : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                 Name     : Betname_Type := (others => ' ');
                 Num      : String(1..5) := (others => ' ');
-                Tail     : String(1..6) := (others => 'x');
+                Tail     : String(1..6) := "___Pln"; -- for 'plain'
               begin
                 if Delta_Price < 10.0 then
                   Num := "0" & F8_Image(Fixed_Type(Delta_Price));
@@ -374,7 +383,7 @@ begin
                 elsif Utils.Position(S => Market.Marketname, Match => "Chs") > Integer(0) then
                   Tail := "___Chs";
                 end if;
-                Move("WIN_A2_" &
+                Move("WIN_F1_" &
                        F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
                        Num & "_" &
                        F8_Image(Fixed_Type(Back_Price)) & Tail, Name);
