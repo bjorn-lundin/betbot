@@ -200,7 +200,7 @@ package body Process_Io.Pipe is
   -- BUF is any type of destination for the bytes read,
   -- with COUNT being the size of the buffer in bytes.
   -- The number of bytes read is returned, or -1 on an error.
-    use type C.Int;
+    --use type C.Int;
     type LM_Type is record -- this type is here only because tagged types maps bad to C
       Header  : Header_Type;
       Payload : Payload_Type;

@@ -23,7 +23,7 @@ with Bot_Ws_Services;
 with Process_Io;
 with Core_Messages;
 with Calendar2;
-with Logging; use Logging;
+with Logging; --use Logging;
 with Sql;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;

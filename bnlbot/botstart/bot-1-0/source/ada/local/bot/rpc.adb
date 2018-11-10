@@ -55,7 +55,7 @@ package body RPC is
     Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
     Header : AWS.Headers.List;
-    use Aws.Client;
+    --use Aws.Client;
 
   begin
     Aws.Headers.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");

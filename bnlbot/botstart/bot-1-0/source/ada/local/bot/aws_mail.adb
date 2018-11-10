@@ -20,9 +20,9 @@ with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
 
 with Stacktrace;
-with Calendar2; use Calendar2;
+with Calendar2; --use Calendar2;
 
-with Rpc;
+--with Rpc;
 with Lock ;
 with Posix;
 with Logging; use Logging;
@@ -33,7 +33,7 @@ with Text_io; use Text_io;
 
 procedure Aws_Mail is
   package EV renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
   
   Me : constant String := "Main.";  
 

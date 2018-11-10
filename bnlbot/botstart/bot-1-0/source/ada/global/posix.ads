@@ -33,8 +33,8 @@ package Posix is
   O_NONBLOCK : constant Int := Int(C_Constants.O_NONBLOCK);  -- if pipe, don't wait for data
   O_SYNC     : constant Int := Int(C_Constants.O_SYNC);      -- don't cache writes
   O_ASYNC    : constant Int := Int(C_Constants.O_ASYNC);     -- async. IO via SIGIO
-  O_DIRECT   : constant Int := Int(C_Constants.O_DIRECT);    -- direct disk access
-  O_LARGEFILE: constant Int := Int(C_Constants.O_LARGEFILE); -- not implemented in Linux (yet)
+  -- not on mac O_DIRECT   : constant Int := Int(C_Constants.O_DIRECT);    -- direct disk access
+  -- not on mac O_LARGEFILE: constant Int := Int(C_Constants.O_LARGEFILE); -- not implemented in Linux (yet)
   O_DIRECTORY: constant Int := Int(C_Constants.O_DIRECTORY); -- error if file isn't a dir
   O_NOFOLLOW : constant Int := Int(C_Constants.O_NOFOLLOW);  -- if sym link, open link itself  
 

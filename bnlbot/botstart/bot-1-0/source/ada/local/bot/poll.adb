@@ -30,7 +30,7 @@ with Utils; use Utils;
 
 procedure Poll is
   package Ev renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+ -- use type Rpc.Result_Type;
 
   Me              : constant String := "Poll.";
   Timeout         : Duration := 120.0;

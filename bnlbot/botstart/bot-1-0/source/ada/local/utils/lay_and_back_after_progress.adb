@@ -12,7 +12,7 @@ with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
-with Rpc;
+--with Rpc;
 --with Lock ;
 with Ini;
 with Logging; use Logging;
@@ -30,7 +30,7 @@ with Bets;
 procedure Lay_And_Back_After_Progress is
 
   package Ev renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
   use type Ada.Containers.Count_Type;
 
   Me : constant String := "Lay_Back_After_Progress.";
@@ -300,7 +300,7 @@ procedure Lay_And_Back_After_Progress is
     end if;
   end Run;
   ---------------------------------------------------------------------
-  use type Sql.Transaction_Status_Type;
+  --use type Sql.Transaction_Status_Type;
   ------------------------------ main start -------------------------------------
   Current_Date : Calendar2.Time_Type := Calendar2.Clock;
 

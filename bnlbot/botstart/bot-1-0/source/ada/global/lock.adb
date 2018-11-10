@@ -33,7 +33,7 @@ package body Lock is
   -- file is now locked
     --put pid in file  
     declare
-      use Interfaces.C;
+      --use Interfaces.C;
       use Calendar2;
       Str : String := Trim(Posix.Getpid'img & "|" & 
                       Calendar2.String_Date_Time_ISO(Calendar2.Clock, " ","") & "|" &  -- now

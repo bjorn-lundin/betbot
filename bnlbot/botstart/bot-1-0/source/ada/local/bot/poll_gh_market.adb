@@ -7,7 +7,7 @@ with Gnat.Strings;
 
 with Stacktrace;
 with Types; use Types;
-with Bot_Types; use Bot_Types;
+--with Bot_Types; --use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
 with Bot_Messages;
@@ -28,7 +28,7 @@ with Utils; use Utils;
 
 procedure Poll_GH_Market is
   package EV renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
 
   Me              : constant String := "Poll_Market.";
   Timeout         : Duration := 120.0;

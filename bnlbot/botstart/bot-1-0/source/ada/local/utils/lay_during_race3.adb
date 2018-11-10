@@ -146,7 +146,7 @@ procedure Lay_During_Race3 is
                        Back_2_At    : in Fixed_Type) is
     pragma Unreferenced(List);
     Bet : Bets.Bet_Type;
-    use type Price_Histories.Price_History_Type;
+    --use type Price_Histories.Price_History_Type;
     Runner : Runners.Runner_Type;
     Name : Betname_Type := (others => ' ');
   begin

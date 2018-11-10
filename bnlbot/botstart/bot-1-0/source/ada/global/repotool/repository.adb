@@ -465,7 +465,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Create_Table_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Tables : String_Object := String_Object(Self.All_Entities_Defined_Names(Tables));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Tbl  : Repository.Table.Table_Type ;
@@ -493,7 +493,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Drop_Table_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Tables : String_Object := String_Object(Self.All_Entities_Defined_Names(Tables));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Tbl  : Repository.Table.Table_Type ;
@@ -522,7 +522,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Create_View_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Views : String_Object := String_Object(Self.All_Entities_Defined_Names(Views));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Vw   : Repository.View.View_Type ;
@@ -550,7 +550,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Drop_View_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Views : String_Object := String_Object(Self.All_Entities_Defined_Names(Views));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Vw   : Repository.View.View_Type ;
@@ -617,7 +617,7 @@ package body Repository is
   function All_Entities_Defined_Names(Self : in out Config_Type; Entity : Config_Type_Type) return String_Object'class is
     Tmp   : String_Object;
     All_Entities : String_Object := String_Object(Self.All_Entities_Defined_Full_Path(Entity));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     package AD renames Ada.Directories;
@@ -822,7 +822,7 @@ package body Repository is
   function List_Coded_Values(Self : in out Config_Type; Listing_Type : in Listing_Type_Type) return String_Object'class is
     Tmp   : String_Object;
     All_Entities : String_Object := String_Object(Self.All_Entities_Defined_Full_Path(Codes));
-    use Gnat; use Text_Io;
+    use Gnat; 
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     package AD renames Ada.Directories;
