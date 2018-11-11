@@ -123,7 +123,7 @@ procedure Back_During_Race_1 is
         begin
           Place_Market.Marketid := Sim.Win_Place_Map(Market.Marketid);
           Place_Market.Startts := Market.Startts;
-         -- Move("To Be Placed", Place_Market.Marketname);
+          Move("To Be Placed", Place_Market.Marketname);
 
           for J in 1 .. 4 loop -- back 4 first runners place market
             Runner.Selectionid := Bra(J).Selectionid;
