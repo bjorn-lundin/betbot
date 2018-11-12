@@ -65,7 +65,7 @@ procedure Back_During_Race_1_Update_Place is
 
           if Bet.Status(1) = 'U' then -- found unmatched bet
 
-            Log("checking bet ", Bet.To_String);
+           -- Log("checking bet ", Bet.To_String);
             for Runner of List loop      --find runner
               if Runner.Selectionid = Bet.Selectionid then
                 R := Runner;
@@ -84,7 +84,7 @@ procedure Back_During_Race_1_Update_Place is
                 R.Backprice > Fixed_Type(1.0) and then R.Backprice < Fixed_Type(1000.0);  -- sanity
                 Pricematched := R.Backprice;
               end if;
-              Log("Price_OK ", Price_Ok'Img);
+         --     Log("Price_OK ", Price_Ok'Img);
 
               if Price_Ok then
                 Move("MATCHED",Bet.Status);
@@ -110,7 +110,7 @@ procedure Back_During_Race_1_Update_Place is
                   end if;
 
                   Bet.Update;
-                  Log("Bet_Updated", Bet.To_String);
+               --   Log("Bet_Updated", Bet.To_String);
                 exception
                   when others =>
                     Log("No-race-WInner ", "winner is missing in " & Bet.Marketid);
@@ -200,7 +200,7 @@ begin
 
 
   T.Start;
-    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' and betid=192062297 order by Betplaced");
+    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' order by Betplaced");
     Bets.Read_List(All_Place_Bets, Betlist);
   T.Commit;
   Log("main", "#bets" & Betlist.Length'Img);
