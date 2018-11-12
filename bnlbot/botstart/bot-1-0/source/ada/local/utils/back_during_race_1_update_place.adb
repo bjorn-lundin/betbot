@@ -210,10 +210,8 @@ begin
     if Bet_Date.Year /= B.Betplaced.Year or else
       Bet_Date.Month /= B.Betplaced.Month or else
       Bet_Date.Day /= B.Betplaced.Day then
-      Sim.Fill_Data_Maps(Date   => Bet_Date,
-                         Animal => Bot_Types.Horse);
       Bet_Date := B.Betplaced;
-
+      Sim.Fill_Data_Maps(Date => Bet_Date, Animal => Bot_Types.Horse);
     end if;
 
 
