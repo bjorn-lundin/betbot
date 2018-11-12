@@ -47,7 +47,7 @@ procedure Back_During_Race_1_Update_Place is
      "=");
 
   ------------------------------
-  procedure Treat(Bet : in out bets.Bet_Type) is
+  procedure Treat(Bet : in out Bets.Bet_Type) is
   begin
     declare
       Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
@@ -62,16 +62,18 @@ procedure Back_During_Race_1_Update_Place is
           Is_Race_Winner : Boolean := False;
         begin
 
-          Log("checking bet ", Bet.To_String);
-          for Runner of  List loop      --find runner
-            if Runner.Selectionid = Bet.Selectionid then
-              R := Runner;
-              exit;
-            end if;
-          end loop;
+          if Bet.Status(1) = 'U' then -- found unmatched bet
 
-          if Bet.Selectionid > 0 and then Bet.Status(1) = 'U' then -- found unmatched bet
-            if R.Pricets > Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
+         --   Log("checking bet ", Bet.To_String);
+            for Runner of List loop      --find runner
+              if Runner.Selectionid = Bet.Selectionid then
+                R := Runner;
+                exit;
+              end if;
+            end loop;
+
+
+            if R.Selectionid > 0 and then R.Pricets > Bet.Betplaced + (0,0,0,1,0) then -- 1 second later at least, time for BF delay
 
               if Bet.Side(1..3) = "LAY" then
                 Price_Ok := R.Layprice <= Bet.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
@@ -81,7 +83,7 @@ procedure Back_During_Race_1_Update_Place is
                 R.Backprice > Fixed_Type(1.0) and then R.Backprice < Fixed_Type(1000.0);  -- sanity
                 Pricematched := R.Backprice;
               end if;
-              Log("Price_OK ", Price_Ok'Img);
+             -- Log("Price_OK ", Price_Ok'Img);
 
               if Price_Ok then
                 Move("MATCHED",Bet.Status);
@@ -107,7 +109,7 @@ procedure Back_During_Race_1_Update_Place is
                   end if;
 
                   Bet.Update;
-                  Log("Bet_Inserted", Bet.To_String);
+                  --Log("Bet_Inserted", Bet.To_String);
                 exception
                   when others =>
                     Log("No-race-WInner ", "winner is missing in " & Bet.Marketid);
