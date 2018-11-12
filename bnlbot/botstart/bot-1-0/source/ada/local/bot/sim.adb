@@ -544,8 +544,20 @@ package body Sim is
     Filename : String := Date.String_Date_ISO & "/all_market_ids.dat";
     Marketid : Marketid_Type := (others => ' ');
     package Serializer is new Disk_Serializer(Markets_Pack.List,Animal);
-    Market : Markets.Market_Type;
+    Market   : Markets.Market_Type;
+    Date1    :  Calendar2.Time_Type := Date;
+    Date2    :  Calendar2.Time_Type := Date;
   begin
+    Date1.Hour := 0;
+    Date1.Minute := 0;
+    Date1.Second := 0;
+    Date1.Millisecond := 0;
+
+    Date2.Hour := 23;
+    Date2.Minute := 59;
+    Date2.Second := 59;
+    Date2.Millisecond := 999;
+
     List.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
@@ -559,10 +571,12 @@ package body Sim is
               "and E.EVENTID = M.EVENTID " &
               "and E.EVENTTYPEID = 7 " &
               "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-              "and M.STARTTS::date = :DATE " &
+              "and M.STARTTS >= :DATE1 " &
+              "and M.STARTTS <= :DATE2 " &
               "group by M.MARKETID,M.STARTTS " &
               "order by M.STARTTS,M.MARKETID");
-          Select_All_Markets_Horse.Set ("DATE", Date.String_Date_ISO );
+          Select_All_Markets_Horse.Set ("DATE1", Date1);
+          Select_All_Markets_Horse.Set ("DATE2", Date2);
           Select_All_Markets_Horse.Open_Cursor;
           loop
             Select_All_Markets_Horse.Fetch (Eos);

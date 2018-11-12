@@ -25,6 +25,7 @@ with Bets;
 --with Utils; use Utils;
 with Sim;
 with Price_Histories;
+with Bot_Types;
 
 procedure Back_During_Race_1_Update_Place is
   use type Ada.Containers.Count_Type;
@@ -137,6 +138,7 @@ procedure Back_During_Race_1_Update_Place is
   Sa_Back_Price       : aliased  Gnat.Strings.String_Access;
   Sa_Delta_Price      : aliased  Gnat.Strings.String_Access;
 
+  Bet_Date            : Calendar2.Time_Type := Calendar2.Time_Type_First;
 
 begin
   Define_Switch
@@ -198,12 +200,23 @@ begin
 
 
   T.Start;
-    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' and betid=192062297");
+    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' and betid=192062297 order by Betplaced");
     Bets.Read_List(All_Place_Bets, Betlist);
   T.Commit;
   Log("main", "#bets" & Betlist.Length'Img);
 
-  for B of Betlist Loop
+  for B of Betlist loop
+
+    if Bet_Date.Year /= B.Betplaced.Year or else
+      Bet_Date.Month /= B.Betplaced.Month or else
+      Bet_Date.Day /= B.Betplaced.Day then
+      Sim.Fill_Data_Maps(Date   => Bet_Date,
+                         Animal => Bot_Types.Horse);
+      Bet_Date := B.Betplaced;
+
+    end if;
+
+
     T.Start;
     --Log(B);
     Treat(B);
