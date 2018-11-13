@@ -200,7 +200,7 @@ begin
 
 
   T.Start;
-    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' order by Betplaced");
+    All_Place_Bets.Prepare("select * from ABETS where BETNAME like 'PLC%' and STATUS <> 'MATCHED' order by BETPLACED");
     Bets.Read_List(All_Place_Bets, Betlist);
   T.Commit;
   Log("main", "#bets" & Betlist.Length'Img);
