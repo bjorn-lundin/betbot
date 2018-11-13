@@ -328,16 +328,24 @@ Define_Switch
   Log("main", "Sa_Lay_Price " & Sa_Back_Price.all);
   Log("main", "Sa_Delta_Price " & Sa_Delta_Price.all);
   Log("main", "Sa_Placement " & Sa_Placement.all);
-  Log("main", "Sa_Placement first/last " & Sa_Placement.all'First'Img & Sa_Placement.all'Last'Img  );
+  --Log("main", "Sa_Placement first/last " & Sa_Placement.all'First'Img & Sa_Placement.all'Last'Img  );
   Log("main", "params stop");
 
   Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
   Back_Price       := Price_Type'Value(Sa_Back_Price.all);
   Delta_Price      := Price_Type'Value(Sa_Delta_Price.all);
 
- -- Back_Runner_Num     := Integer_4'Value(Sa_Placement.all(1..1));
-  Look_At_Runner_Num  := Integer'Value(Sa_Placement.all(2..2));
+  --declare
+  --  Tmp : String(1 .. Sa_Placement.all'Length) := Sa_Placement.all;
+  --begin
+  --  Back_Runner_Num := Integer_4'Value(Tmp(1..1));
+  --end ;
 
+  declare
+    Tmp : String(1 .. Sa_Placement.all'Length) := Sa_Placement.all;
+  begin
+    Look_At_Runner_Num := Integer'Value(Tmp(2..2));
+  end ;
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
