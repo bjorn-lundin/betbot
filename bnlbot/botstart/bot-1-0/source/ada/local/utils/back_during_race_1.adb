@@ -324,10 +324,10 @@ Define_Switch
 --  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
   Log("main", "params start");
-  Log("main", "Sa_Max_Leader_Price" & Sa_Max_Leader_Price.all);
-  Log("main", "Sa_Lay_Price" & Sa_Back_Price.all);
-  Log("main", "Sa_Delta_Price" & Sa_Delta_Price.all);
-  Log("main", "Sa_Placement" & Sa_Placement.all);
+  Log("main", "Sa_Max_Leader_Price " & Sa_Max_Leader_Price.all);
+  Log("main", "Sa_Lay_Price " & Sa_Back_Price.all);
+  Log("main", "Sa_Delta_Price " & Sa_Delta_Price.all);
+  Log("main", "Sa_Placement " & Sa_Placement.all);
   Log("main", "params stop");
 
   Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
