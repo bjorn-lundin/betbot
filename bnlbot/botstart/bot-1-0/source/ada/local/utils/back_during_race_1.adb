@@ -406,7 +406,7 @@ Define_Switch
                 elsif Utils.Position(S => Market.Marketname, Match => "Chs") > Integer(0) then
                   Tail := "___Chs";
                 end if;
-                Move("WIN_x" & Sa_Placement.all(2) & "_" &
+                Move("WIN_x" & Look_At_Runner_Num'img(2) & "_" &
                        F8_Image(Fixed_Type(Max_Leader_Price)) & "_" &
                        Num & "_" &
                        F8_Image(Fixed_Type(Back_Price)) & Tail, Name);
