@@ -56,8 +56,8 @@ procedure Back_During_Race_1_lay_limit is
     Price : Fixed_Type;
     Betlist : Bets.Lists.List;
   begin
-
-    for Tic in Tics.Tics_Type'Range loop
+            -- ca 8 - 100
+    for Tic in Tics.Tics_Type(200) .. Tics.Tics_Type(260) loop
       Betlist.Clear;
       Price := Tics.Get_Tic_Price(Tic);
       T.Start;
