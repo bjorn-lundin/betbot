@@ -328,6 +328,7 @@ Define_Switch
   Log("main", "Sa_Lay_Price " & Sa_Back_Price.all);
   Log("main", "Sa_Delta_Price " & Sa_Delta_Price.all);
   Log("main", "Sa_Placement " & Sa_Placement.all);
+  Log("main", "Sa_Placement first/last " & Sa_Placement.all'First'Img & Sa_Placement.all'Last'Img  );
   Log("main", "params stop");
 
   Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
