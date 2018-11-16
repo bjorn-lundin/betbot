@@ -80,7 +80,8 @@ procedure Poll is
     case Bettype is
       when Horse_Back_1_10_07_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_001");
       when Horse_Back_1_28_02_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_26_00_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
+     -- when Horse_Back_1_26_00_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Back_1_38_00_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
 
     end case;
     --      --if not reserved - get an anonymous one
@@ -368,6 +369,8 @@ procedure Poll is
                     Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet_Delta;
+  pragma Unreferenced(Try_To_Make_Back_Bet_Delta);
+
   ------------------------------------------------------
   procedure Try_To_Make_Lay_Bet(Bettype         : Config.Bet_Type;
                                  Br              : Best_Runners_Array_Type;
@@ -664,7 +667,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_28_02_1_2_Plc_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_38_00_1_2_Plc_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -690,29 +693,29 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Back_1_26_00_1_2_Win_1_01 =>
-                  declare
-                    Image      : String := I'Img;
-                    Do_Try_Bet : Boolean := True;
-                  begin
-                    --  12345678901234567890
-                    --  Back_1_10_20_1_4_WIN
-                    if Utils.Position(Image, "PLC") > Integer(0) then
-                      Do_Try_Bet := False;
-                      Match_Directly := False;
-                    elsif Utils.Position(Image, "WIN") > Integer(0) then
-                      Do_Try_Bet := True ;
-                      Match_Directly := False;
-                    end if;
-                    if Do_Try_Bet and then
-                      Has_Been_In_Play then
-
-                      Try_To_Make_Back_Bet_Delta(Bettype         => I,
-                                                 Br              => Best_Runners,
-                                                 Marketid        => Markets_Array(Win).Marketid,
-                                                 Match_Directly  => Match_Directly);
-                    end if;
-                  end;
+--                when Horse_Back_1_26_00_1_2_Win_1_01 =>
+--                  declare
+--                    Image      : String := I'Img;
+--                    Do_Try_Bet : Boolean := True;
+--                  begin
+--                    --  12345678901234567890
+--                    --  Back_1_10_20_1_4_WIN
+--                    if Utils.Position(Image, "PLC") > Integer(0) then
+--                      Do_Try_Bet := False;
+--                      Match_Directly := False;
+--                    elsif Utils.Position(Image, "WIN") > Integer(0) then
+--                      Do_Try_Bet := True ;
+--                      Match_Directly := False;
+--                    end if;
+--                    if Do_Try_Bet and then
+--                      Has_Been_In_Play then
+--
+--                      Try_To_Make_Back_Bet_Delta(Bettype         => I,
+--                                                 Br              => Best_Runners,
+--                                                 Marketid        => Markets_Array(Win).Marketid,
+--                                                 Match_Directly  => Match_Directly);
+--                    end if;
+--                  end;
 
 --                  when Horse_Lay_05_15_1_14_55_Win =>
 --                    if Markets_Array(Win).Marketname_Ok then
