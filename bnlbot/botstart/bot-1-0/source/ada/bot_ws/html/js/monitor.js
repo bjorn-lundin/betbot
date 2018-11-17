@@ -1,7 +1,9 @@
 
 var Timer;
 var Cnt;
-
+//var URL="https://betbot.nonobet.com"
+//var URL="http://192.168.1.6:9080"
+var URL ="https://lundin.duckdns.org"
 
 //bnl
 $.makeTable = function (mydata) {
@@ -21,7 +23,7 @@ $.makeTable = function (mydata) {
               TableRow += "<td>" + val.slice(11) + "</td>";
             } else if (typeof val == "string" && key == "betplaced") {
               TableRow += "<td>" + val.slice(12,24) + "</td>";
-            } else {            
+            } else {
               TableRow += "<td>" + val + "</td>";
             }
         });
@@ -35,12 +37,12 @@ $.makeTable = function (mydata) {
 
 function Do_Ajax_Table(context) {
   var d = new Date();
-  var n = d.getTime(); 
+  var n = d.getTime();
 
-  $.ajax({url: 'https://betbot.nonobet.com',
+  $.ajax({url: URL,
       data: {'context' : context,
              'dummy' : n },
-      type: 'get',                   
+      type: 'get',
       async: 'true',
       dataType: 'json',
       beforeSend: function() {
@@ -57,29 +59,29 @@ function Do_Ajax_Table(context) {
           console.log("Do_Ajax_Bets.success");
           if(reply.result == "OK") {
              console.log("Do_Ajax_Bets.success OK\n" + reply.datatable);
-             
+
             // //fill the table
             var table = $.makeTable(reply.datatable);
             if (context == 'sum_todays_bets') {
               $('#sum_todays_bets').html(table).trigger('create')
-            } 
-            
+            }
+
             if (context == 'sum_7_days_bets') {
               $('#sum_7_days_bets').html(table).trigger('create')
             }
-            
+
             if (context == 'sum_thisweeks_bets') {
               $('#sum_thisweeks_bets').html(table).trigger('create')
             }
 
             if (context == 'sum_total_bets') {
               $('#sum_total_bets').html(table).trigger('create')
-            }           
-            
+            }
+
             if (context == 'starttimes') {
               $('#starttimes').html(table).trigger('create')
-            }            
-             
+            }
+
           } else {
              console.log("Do_Ajax_Bets.success NOT OK");
           }
@@ -87,18 +89,18 @@ function Do_Ajax_Table(context) {
       error: function (request,error) {
           console.log("Do_Ajax_Bets.error " + error + "\context:" + context);
       }
-  });                   
+  });
 
 }
 
 function Do_Ajax_Today(context) {
   var d = new Date();
-  var n = d.getTime(); 
+  var n = d.getTime();
 
-  $.ajax({url: 'https://betbot.nonobet.com',
+  $.ajax({url: URL,
       data: {'context' : "todays_total",
              'dummy' : n },
-      type: 'get',                   
+      type: 'get',
       async: 'true',
       dataType: 'json',
       beforeSend: function() {
@@ -115,10 +117,10 @@ function Do_Ajax_Today(context) {
           console.log("Do_Ajax_Today.success");
           if(reply.result == "OK") {
              console.log(" Do_Ajax_Today.success OK");
-             
+
             // $('#todays_total').empty();
              $('#today').text("Resultat:"+ reply.total + " kr"  + " matchat:" + reply.totalsm + " kr" + " vinst/risk:"  + (100.0 *reply.total / reply.totalsm).toFixed(2) + " %");
-             
+
           } else {
              console.log("Do_Ajax_Today.success NOT OK");
           }
@@ -126,36 +128,28 @@ function Do_Ajax_Today(context) {
       error: function (request,error) {
           console.log("Do_Ajax_Today.error " + error);
       }
-  });                   
+  });
 
 }
 
 
 function Do_Page_Reload () {
-  var unique = $.now();  
+  var unique = $.now();
   $('#equity_png').attr('src', '/img/equity.png' + '?' + unique);
-  $('#profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/profit_vs_matched_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
-  $('#profit_vs_matched_42_horse_back_1_36_01_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_36_01_1_2_plc_1_01.png' + '?' + unique);
-  $('#profit_vs_matched_42_horse_back_1_30_01_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_30_01_1_2_plc_1_01.png' + '?' + unique);
+  $('#profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
+  $('#avg_price_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
+  $('#settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
 
-  $('#avg_price_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/avg_price_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
-  $('#avg_price_42_horse_back_1_36_01_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_36_01_1_2_plc_1_01.png' + '?' + unique);
-  $('#avg_price_42_horse_back_1_30_01_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_30_01_1_2_plc_1_01.png' + '?' + unique);
-
-  $('#settled_vs_lapsed_42_horse_back_1_50_01_1_2_plc_1_06').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_50_01_1_2_plc_1_06.png' + '?' + unique);
-  $('#settled_vs_lapsed_42_horse_back_1_36_01_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_36_01_1_2_plc_1_01.png' + '?' + unique);
-  $('#settled_vs_lapsed_42_horse_back_1_30_01_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_30_01_1_2_plc_1_01.png' + '?' + unique);
-  
 }
 
 function Run_All() {
   console.log("Run_All start");
   var pBar = document.getElementById('pb');
   Cnt = Cnt +1;
-  
+
   var percent = Cnt ;
   console.log("Run_All" + Cnt + "-" + percent );
-  
+
   if (Cnt == 100) {
     Do_Page_Reload(); // get new graphs
     Do_Ajax_Today(); // get todays earnigns
@@ -164,7 +158,7 @@ function Run_All() {
     Do_Ajax_Table('sum_thisweeks_bets');  // and a list of bets
     Do_Ajax_Table('sum_total_bets');  // and a list of bets
     Do_Ajax_Table('starttimes');  // and a list of bets
-    
+
     Cnt = 0;
     console.log("Run_All stop 1");
   } else {
@@ -183,9 +177,9 @@ function Start_Timer () {
 
 function Do_Login() {
 
- $.ajax({url: 'https://betbot.nonobet.com',
+ $.ajax({url: URL,
      data: $('#loginform').serialize(),
-     type: 'post',                   
+     type: 'post',
      async: 'true',
      dataType: 'json',
      beforeSend: function() {
@@ -202,7 +196,7 @@ function Do_Login() {
          console.log("success");
          if(reply.result == "OK") {
             console.log("Do_Login success OK");
-            Start_Timer()                         
+            Start_Timer()
          } else {
             console.log("Do_Login - success NOT OK");
          }
@@ -210,24 +204,24 @@ function Do_Login() {
      error: function (request,error) {
          console.log("Do_Login.error " + error);
      }
- });                   
+ });
 
 }
 
 function Do_Start() {
-     //call by window.onload 
+     //call by window.onload
      console.log("onReady Start");
      Cnt = 97;
      //start timer ...
     // Start_Timer();
      Do_Login();
-     
+
      console.log("onReady Stop");
 }
 
 
 $(document).ready(function(){
-  Do_Start();  
+  Do_Start();
 });
-  
+
 
