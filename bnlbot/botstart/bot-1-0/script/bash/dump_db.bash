@@ -10,7 +10,13 @@ function create_dump () {
   DATE=$(date +"%d")
   YEAR=$(date +"%Y")
   MONTH=$(date +"%m")
-  TARGET_DIR=/data/db_dumps/${YEAR}/${MONTH}/${DATE}
+  ROOT=""  
+  
+  if [ -d "/home/bnl/data" ] ; then
+    ROOT="/home/bnl"
+  fi  
+  
+  TARGET_DIR=${ROOT}/data/db_dumps/${YEAR}/${MONTH}/${DATE}
 
   [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
 
@@ -41,5 +47,5 @@ function create_dump () {
   # # reindexdb --dbname=${DBNAME}
   done
 }
-exit 0
+#exit 0
 create_dump
