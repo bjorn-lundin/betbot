@@ -299,11 +299,15 @@ case $BOT_MACHINE_ROLE in
     SYSTEM_USER_LIST="dry"
 #   "ael soc"
 
-    HOST=db.nonodev.com
+    #HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-    #  Create_Plots $USR 7
-    #  Create_Plots $USR 42
+      if [ $BOT_HOUR == "22" ] ; then
+        if [ $BOT_MINUTE == "28" ] ; then
+              Create_Plots $USR 7
+              Create_Plots $USR 42
+        fi
+      fi
     done
 
     for USR in $SYSTEM_USER_LIST ; do
@@ -368,7 +372,7 @@ done
 if [ $HOUR != "11" ] ; then
 #  echo "1"
   . $BOT_START/bot.bash bnl
-  psql --command="select * from aevents where countrycode='ww'" --quiet --tuples-only >/dev/null
+  psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
   R=$?
   DAY2_FILE=$(date +"%F")
   DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
