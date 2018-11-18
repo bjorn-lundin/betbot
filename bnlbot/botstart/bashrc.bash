@@ -26,7 +26,7 @@ case "${OS}" in
     *)
      echo "not supported OS ${OS}" ; exit 1
     ;;
-esac    
+esac
 
 if [ $bits == "armv7l" ] ; then
   export ADA_ROOT=/usr/local/ada
@@ -49,4 +49,5 @@ done
 S="$S . $BOT_START/bot.bash bnl"
 alias stop_bot_system=$S
 
+. $BOT_START/bash_aliases.bash
 
