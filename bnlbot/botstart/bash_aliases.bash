@@ -2,7 +2,16 @@
 
 #bnl start
 
-alias mc='. /usr/lib/mc/mc-wrapper.sh'
+case ${OS_ARCHITECTURE} in
+  lnx*) alias mc='. /usr/lib/mc/mc-wrapper.sh'
+  ;;
+  drw*) alias mc='. /opt/local/libexec/mc/mc-wrapper.sh'
+  ;;
+  *) echo "no mc found for ${OS_ARCHITECTURE}" >&2
+  ;;
+esac
+
+
 alias mcedit='mcedit -c'
 
 alias stop_bet_checker='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit'
@@ -38,16 +47,16 @@ alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
 
 alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_031 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_032 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_033 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_034 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_110 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_111 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_112 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_123 --message=exit' 
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_126 --message=exit' 
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_031 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_032 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_033 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_034 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_110 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_111 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_112 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_123 --message=exit'
+alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_126 --message=exit'
 
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
                      
