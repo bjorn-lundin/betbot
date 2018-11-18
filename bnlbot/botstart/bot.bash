@@ -23,6 +23,10 @@ export REPO_ENGINE=$BOT_TARGET/bin/repo
 
 HOSTNAME=$(hostname)
 case $HOSTNAME in
+  pibetbot*)    
+    export BOT_MACHINE_ROLE=PROD
+    export BOT_XML_SOURCE=LOCAL
+    ;;
   imac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
