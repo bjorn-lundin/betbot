@@ -23,7 +23,9 @@
 
 TZ='Europe/Stockholm'
 export TZ
-export BOT_START=/home/bnl/svn/botstart
+[ -d /home/bnl/svn/botstart ] && export BOT_START=/home/bnl/svn/botstart
+[ -d /bnlbot/botstart ] && export BOT_START=/bnlbot/botstart
+
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
 
@@ -97,7 +99,7 @@ function Check_Bots_For_User () {
   done
 
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 "                  
+                   bet_placer_004 bet_placer_005 bet_placer_006 "
 #bet_placer_015 \
 #                   bet_placer_016 bet_placer_017 bet_placer_018 "
 
@@ -172,8 +174,6 @@ function Check_System_Bots_For_User () {
 #       #done
 #    ;;
 
-   
-
   esac
 
   #zip logfiles every hour, on minute 17 in the background
@@ -216,7 +216,7 @@ function Create_Plots () {
       -e "user='$USR'" \
       -e "days='$DAYS'" \
       settled_vs_lapsed.gpl 2>/dev/null
-      
+
     DF2="profit_vs_matched_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
@@ -224,7 +224,7 @@ function Create_Plots () {
       -e "user='$USR'" \
       -e "days='$DAYS'" \
       profit_vs_matched.gpl 2>/dev/null
-      
+
     DF2="avg_price_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF2'" \
@@ -289,24 +289,20 @@ NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh |  grep -c keep_bots_alive.ba
 
 if [ $NUM_RUNNING -gt 1 ] ; then
   exit 0
-fi    
+fi
 
 case $BOT_MACHINE_ROLE in
-  PROD)
-    
+  PROD) 
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     SYSTEM_USER_LIST="dry"
 #   "ael soc"
 
-    #HOST=db.nonodev.com
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      if [ $BOT_HOUR == "22" ] ; then
-        if [ $BOT_MINUTE == "28" ] ; then
-              Create_Plots $USR 7
-              Create_Plots $USR 42
-        fi
+      if [ $MINUTE == "27" ] ; then
+        Create_Plots $USR 7
+        Create_Plots $USR 42
       fi
     done
 
@@ -321,7 +317,7 @@ case $BOT_MACHINE_ROLE in
 esac
 
 
-if [ $BOT_MINUTE == "20" ] ; then
+if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
@@ -339,7 +335,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com"
 
-DISK_LIST="sda"
+DISK_LIST="sda root"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
@@ -369,29 +365,37 @@ done
 
 #db check
 
-if [ $HOUR != "11" ] ; then
-#  echo "1"
-  . $BOT_START/bot.bash bnl
-  psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
-  R=$?
-  DAY2_FILE=$(date +"%F")
-  DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
+case $HOUR  in
 
-  if [ $R != "0" ] ; then
-    for RECIPENT in $MAIL_LIST ; do
-      if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
-        echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
-        touch ${DB_ALARM_TODAY_FILE}
+  "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+   # do nothing
+   ;;
+  "12"| "13" | "14" | "15" | "16" | "17" | "18" | "19" | "20" | "21" | "22" | "23")
+   # do checks
+
+    . $BOT_START/bot.bash bnl
+    psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
+    R=$?
+    DAY2_FILE=$(date +"%F")
+    DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
+
+    if [ $R != "0" ] ; then
+      for RECIPENT in $MAIL_LIST ; do
+        if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
+          echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
+          touch ${DB_ALARM_TODAY_FILE}
+        fi
+      done
+    fi
+
+    #delete old alarmfiles
+    DB_ALARM_FILES=$(ls /tmp/db_alarm*  2>/dev/null)
+
+    for f in $DB_ALARM_FILES ; do
+      if [ $f != $DB_ALARM_TODAY_FILE ] ; then
+        rm -f $f
       fi
     done
-  fi
+  ;;
+esac
 
-  #delete old alarmfiles
-  DB_ALARM_FILES=$(ls /tmp/db_alarm*  2>/dev/null)
-
-  for f in $DB_ALARM_FILES ; do
-    if [ $f != $DB_ALARM_TODAY_FILE ] ; then
-      rm -f $f
-    fi
-  done
-fi

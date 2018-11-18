@@ -10,13 +10,10 @@ function create_dump () {
   DATE=$(date +"%d")
   YEAR=$(date +"%Y")
   MONTH=$(date +"%m")
-  ROOT=""  
-  
-  if [ -d "/home/bnl/data" ] ; then
-    ROOT="/home/bnl"
-  fi  
-  
-  TARGET_DIR=${ROOT}/data/db_dumps/${YEAR}/${MONTH}/${DATE}
+
+  ROOT_DIR=$1
+
+  TARGET_DIR=${ROOT_DIR}/${YEAR}/${MONTH}/${DATE}
 
   [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
 
@@ -48,4 +45,8 @@ function create_dump () {
   done
 }
 #exit 0
-create_dump
+
+#make dumps to an existing directory and stop
+[ -d /bnlbot/botstart/db_dumps ] && create_dump /bnlbot/botstart/data/db_dumps && exit 0
+[ -d /home/bnl/data ] && create_dump /home/bnl/data/data/db_dumps && exit 0
+[ -d /data ] && create_dump /data/db_dumps && exit 0
