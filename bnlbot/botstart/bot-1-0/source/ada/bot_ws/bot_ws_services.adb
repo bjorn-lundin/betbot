@@ -178,55 +178,30 @@ package body Bot_Ws_Services is
       Stop  := Stop  - (1,0,0,0,0);
     elsif Context = "thisweeks_bets" then
       declare
-        Dow : Week_Day_Type := Week_Day_Of (Start) ;
+        Dow : Week_Day_Type  ;
       begin
-        case Dow is
-          when Monday =>
-            Stop := Stop  + (6,0,0,0,0);
-          when Tuesday =>
-            Start:= Start - (1,0,0,0,0);
-            Stop := Stop  + (5,0,0,0,0);
-          when Wednesday =>
-            Start:= Start - (2,0,0,0,0);
-            Stop := Stop  + (4,0,0,0,0);
-          when Thursday =>
-            Start:= Start - (3,0,0,0,0);
-            Stop := Stop  + (3,0,0,0,0);
-          when Friday =>
-            Start:= Start - (4,0,0,0,0);
-            Stop := Stop  + (2,0,0,0,0);
-          when Saturday =>
-            Start:= Start - (5,0,0,0,0);
-            Stop := Stop  + (1,0,0,0,0);
-          when Sunday =>
-            Start:= Start - (6,0,0,0,0);
-        end case ;
+        loop -- find monday
+          Dow := Week_Day_Of (Start) ;
+          case Dow is
+            when Monday => exit ;
+            when others => Start := Start - (1,0,0,0,0);
+          end case ;
+        end loop;
+        Stop := Start + (7,0,0,0,0);
       end;
     elsif Context = "lastweeks_bets" then
       declare
-        Dow : Week_Day_Type := Week_Day_Of (Start) ;
+        Dow : Week_Day_Type  ;
       begin
-        case Dow is
-          when Monday =>
-            Stop := Stop  + (6+7,0,0,0,0);
-          when Tuesday =>
-            Start:= Start - (1+7,0,0,0,0);
-            Stop := Stop  + (5+7,0,0,0,0);
-          when Wednesday =>
-            Start:= Start - (2+7,0,0,0,0);
-            Stop := Stop  + (4+7,0,0,0,0);
-          when Thursday =>
-            Start:= Start - (3+7,0,0,0,0);
-            Stop := Stop  + (3+7,0,0,0,0);
-          when Friday =>
-            Start:= Start - (4+7,0,0,0,0);
-            Stop := Stop  + (2+7,0,0,0,0);
-          when Saturday =>
-            Start:= Start - (5+7,0,0,0,0);
-            Stop := Stop  + (1+7,0,0,0,0);
-          when Sunday =>
-            Start:= Start - (6+7,0,0,0,0);
-        end case ;
+        Start := Start - (7,0,0,0,0); -- get to next week
+        loop -- find monday
+          Dow := Week_Day_Of (Start) ;
+          case Dow is
+            when Monday => exit ;
+            when others => Start := Start - (1,0,0,0,0);
+          end case ;
+        end loop;
+        Stop := Start + (7,0,0,0,0);
       end;
     else
       Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
