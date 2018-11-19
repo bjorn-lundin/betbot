@@ -187,7 +187,7 @@ package body Bot_Ws_Services is
             when others => Start := Start - (1,0,0,0,0);
           end case ;
         end loop;
-        Stop := Start + (7,0,0,0,0);
+        Stop := Start + (6,0,0,0,0);
       end;
     elsif Context = "lastweeks_bets" then
       declare
@@ -201,7 +201,7 @@ package body Bot_Ws_Services is
             when others => Start := Start - (1,0,0,0,0);
           end case ;
         end loop;
-        Stop := Start + (7,0,0,0,0);
+        Stop := Start + (6,0,0,0,0);
       end;
     else
       Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
