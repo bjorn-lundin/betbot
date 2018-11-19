@@ -257,13 +257,7 @@ procedure Bot_Web_Server is
     pragma Unreferenced(Request);
   begin
     Logging.Log ("Unknown", "Method : Unknown");
-    return AWS.Response.Acknowledge (Status_Code => Messages.[database]
-name=bnl
-username=bnl
-password=ld4BC9Q51FU9CYjC21gp
-port=5432
-host=localhost
-S405);
+    return AWS.Response.Acknowledge (Status_Code => Messages.S405);
   end Unknown;
   --------------------------------------
 
