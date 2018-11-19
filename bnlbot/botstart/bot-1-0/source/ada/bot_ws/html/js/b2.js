@@ -1,8 +1,6 @@
   //track changes in radiobtn clicks
-var selectedRadio ='bnl'; 
+var selectedRadio ='bnl';
 var context = 'todays_bets'
-
-
 
 //bnl
 $.makeTable = function (mydata) {
@@ -19,7 +17,7 @@ $.makeTable = function (mydata) {
               TableRow += "<td>" + val.slice(0,18) + "</td>";
             } else if (typeof val == "string" && key == "betplaced") {
               TableRow += "<td>" + val.slice(12,24) + "</td>";
-            } else {            
+            } else {
               TableRow += "<td>" + val + "</td>";
             }
         });
@@ -37,13 +35,13 @@ $(document).ready(function(){
          selectedRadio = $('input[name="username"]:checked', '#loginform').val();
          console.log("selectedRadio " + selectedRadio);
      });
-     
+
      $(document).on('click', '#submit', function() { // catch the form's submit event
              // Send data to server through the Ajax call
              // action is functionality we want to call and outputJSON is our data
                  $.ajax({url: 'login',
                      data: $('#loginform').serialize(),
-                     type: 'post',                   
+                     type: 'post',
                      async: 'true',
                      dataType: 'json',
                      beforeSend: function() {
@@ -60,7 +58,7 @@ $(document).ready(function(){
                          console.log("success");
                          if(reply.result == "OK") {
                             console.log("success OK");
-                            $.mobile.changePage("#menu");                         
+                            $.mobile.changePage("#menu");
                          } else {
                             console.log("success NOT OK");
                          }
@@ -68,38 +66,38 @@ $(document).ready(function(){
                      error: function (request,error) {
                          console.log("error " + error);
                      }
-                 });                   
+                 });
          return false; // cancel original event to prevent form submitting
-     });    
+     });
 
      $('#todays').on('tap', function() {
          context ='todays_bets';
          console.log("todays - context " + context);
      });
-     
+
      $('#yesterday').on('tap', function() {
          context ='yesterdays_bets';
          console.log("yesterday - context " + context);
      });
-     
+
      $('#thisweek').on('tap', function() {
          context ='thisweeks_bets';
          console.log("thisweek - context " + context);
      });
-     
+
      $('#lastweek').on('tap', function() {
          context ='lastweeks_bets';
          console.log("lastweek - context " + context);
      });
-     
-    
+
+
      $(document).on("pageshow","#viewer",function(){
        // var para = "<p id='tobedeleted'>ny kod från event</p>";
        // $('#tobedeleted').empty();
        // $('#viewer_content').append(para);
        $.ajax({url: '/0',
            data: {'context' : context},
-           type: 'get',                   
+           type: 'get',
            async: 'true',
            dataType: 'json',
            beforeSend: function() {
@@ -116,15 +114,15 @@ $(document).ready(function(){
                console.log("success");
                if(reply.result == "OK") {
                   console.log("success OK");
-                  
+
                   $('#viewer_content').empty();
                   $('#total').text("Resultat:"+ reply.total + " kr" );
-                  
+
                   //fill the table
                   var table = $.makeTable(reply.datatable);
                   $('#viewer_content').html(table).trigger('create')
-                  
-                  
+
+
                } else {
                   console.log("success NOT OK");
                }
@@ -132,9 +130,9 @@ $(document).ready(function(){
            error: function (request,error) {
                console.log("error " + error);
            }
-       });                   
-       
-       
+       });
+
+
      });     
      
      
