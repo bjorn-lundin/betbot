@@ -455,7 +455,7 @@ begin
      Db_Name  => Ini.Get_Value("database_home", "name", ""),
      Login    => Ini.Get_Value("database_home", "username", ""),
      Password => Ini.Get_Value("database_home", "password", ""),
-     SSL_Mode => "disable");
+     SSL_Mode => "require");
   Debug ("db Connected");
 
   T.Start;
