@@ -47,6 +47,6 @@ function create_dump () {
 #exit 0
 
 #make dumps to an existing directory and stop
-[ -d /bnlbot/botstart/db_dumps ] && create_dump /bnlbot/botstart/data/db_dumps && exit 0
-[ -d /home/bnl/data ] && create_dump /home/bnl/data/data/db_dumps && exit 0
+[ -d /bnlbot/botstart/data ] && create_dump /bnlbot/botstart/data/db_dumps && exit 0
+[ -d /home/bnl/data ] && create_dump /home/bnl/data/db_dumps && exit 0
 [ -d /data ] && create_dump /data/db_dumps && exit 0
