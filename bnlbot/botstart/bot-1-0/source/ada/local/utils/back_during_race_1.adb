@@ -264,7 +264,7 @@ procedure Back_During_Race_1 is
   Start_Date          : constant Calendar2.Time_Type := (2016,3,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date        :          Calendar2.Time_Type := Start_Date;
-  Stop_Date           : constant Calendar2.Time_Type := (2018,7,31,0,0,0,0);
+  Stop_Date           : constant Calendar2.Time_Type := (2018,11,16,0,0,0,0);
   T                   :          Sql.Transaction_Type;
   Cmd_Line            :          Command_Line_Configuration;
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
