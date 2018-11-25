@@ -10,7 +10,8 @@ package Config is
                 --    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Back_1_28_02_1_2_Plc_1_01,
-                    Horse_Back_1_38_00_1_2_Plc_1_01
+                    Horse_Back_1_38_00_1_2_Plc_1_01,
+                    Horse_Back_1_56_00_1_4_Plc_1_01
                   --  Horse_Back_1_50_01_1_2_Plc_1_06,
                   --  Horse_Back_1_26_00_1_2_Win_1_01
                   --  Horse_Back_1_28_02_1_2_Win_1_01,
