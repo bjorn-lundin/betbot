@@ -85,23 +85,23 @@ procedure Back_During_Race_1 is
         Bra(1).Backprice    <= Max_Leader_Price and then
         Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
-        for J in 1 .. 4 loop -- back 4 first runners winner market
-          Runner.Selectionid := Bra(J).Selectionid;
-          Runner.Marketid := Bra(J).Marketid;
-
-          Localname(23) := '_';
-          Localname(24) := J'Img(2);
-
-          Bet := Bets.Create(Name   => Localname,
-                             Side   => Back,
-                             Size   => Bet_Size,
-                             Price  => Back_Price,
-                             Placed => Bra(J).Pricets,
-                             Runner => Runner,
-                             Market => Market);
-          Bet_List.Append(Bet);
-          --Log("Bet_laid-WIN-BACK", Bet.To_String);
-        end loop;
+--          for J in 1 .. 4 loop -- back 4 first runners winner market
+--            Runner.Selectionid := Bra(J).Selectionid;
+--            Runner.Marketid := Bra(J).Marketid;
+--
+--            Localname(23) := '_';
+--            Localname(24) := J'Img(2);
+--
+--            Bet := Bets.Create(Name   => Localname,
+--                               Side   => Back,
+--                               Size   => Bet_Size,
+--                               Price  => Back_Price,
+--                               Placed => Bra(J).Pricets,
+--                               Runner => Runner,
+--                               Market => Market);
+--            Bet_List.Append(Bet);
+--            --Log("Bet_laid-WIN-BACK", Bet.To_String);
+--          end loop;
 
 --          for J in 1 .. 4 loop -- lay 4 first runners winners market
 --            Runner.Selectionid := Bra(J).Selectionid;
@@ -127,7 +127,7 @@ procedure Back_During_Race_1 is
           Place_Market.Startts := Market.Startts;
           Move("To Be Placed", Place_Market.Marketname);
 
-          for J in 1 .. 4 loop -- back 4 first runners place market
+          for J in 1 .. 1 loop -- back 1 first runners place market
             Runner.Selectionid := Bra(J).Selectionid;
             Runner.Marketid := Place_Market.Marketid;
 
