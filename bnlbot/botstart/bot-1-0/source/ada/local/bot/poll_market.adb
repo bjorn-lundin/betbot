@@ -132,7 +132,8 @@ procedure Poll_Market is
           delay 5.0; -- no need for heavy polling before start of race
         end if;
       else
-        delay 0.05; -- to avoid more than 20 polls/sec
+       -- delay 0.05; -- to avoid more than 20 polls/sec
+        delay 0.0;  -- pi need all cpu time it can get ... and network slow ..
       end if;
 
     end loop Poll_Loop;
