@@ -78,11 +78,20 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Horse_Back_1_10_07_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_28_02_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_002");
-     -- when Horse_Back_1_26_00_1_2_Win_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_38_00_1_2_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_56_00_1_4_Plc_1_01 => return Process_Io.To_Process_Type("bet_placer_004");
+      when Horse_Back_1_10_07_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_001");
+      when Horse_Back_1_28_02_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_002");
+      when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
+
+      when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
+      when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
+      when Horse_Back_1_38_00_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
+
+      when Horse_Back_1_10_07_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_001");
+      when Horse_Back_1_28_02_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_002");
+      when Horse_Back_1_38_00_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Back_1_56_00_1_4_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_004");
     end case;
     --      --if not reserved - get an anonymous one
     --      Global_Bet_Placer := Global_Bet_Placer + 1;
@@ -536,7 +545,7 @@ procedure Poll is
       if Market.Markettype(1 .. 3) /= "WIN"  then
         Log(Me & "Run", "not a WIN market: " &  Market_Notification.Market_Id);
         return;
-      elsif not Market.Marketname_Ok then
+      elsif not Market.Marketname_Ok2 then -- check Hrd/Chs in each bet
         Log(Me & "Run", "not an OK Marketname: " & Market.To_String);
         return;
       else
@@ -667,11 +676,12 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01_Hrd =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
                     Do_Try_Bet : Boolean := True;
+                    use Markets;
                   begin
                     --  12345678901234567890
                     --  Back_1_10_20_1_4_WIN
@@ -683,6 +693,16 @@ procedure Poll is
                       M_Type         := Win;
                       Match_Directly := False;
                     end if;
+
+                    if Do_Try_Bet then
+                      case Markets_Array(Win).Market_Subtype is
+                        when Plain  => null;
+                        when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+                        when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+                      end case;
+                    end if;
+
+
                     if Do_Try_Bet and then
                       Has_Been_In_Play then
 

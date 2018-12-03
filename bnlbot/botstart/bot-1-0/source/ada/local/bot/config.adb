@@ -28,6 +28,8 @@ package body Config is
        Cfg.Bet (i).Max_Earnings_Per_Day := Fixed_Type'Value (Ini.Get_Value (i'img, "max_earnings_per_day", "1_000_000.0"));
        Cfg.Bet(i).Min_Price := To_Unbounded_String(Ini.Get_Value(i'img,"min_price","1.01"));
        Cfg.Bet(i).Enabled := Ini.Get_Value(i'img,"enabled",False);
+       Cfg.Bet(i).Chase_Allowed := Ini.Get_Value(i'img,"chase",False);
+       Cfg.Bet(i).Hurdle_Allowed := Ini.Get_Value(i'img,"hurdle",False);
      end loop;
 
     declare
@@ -84,6 +86,8 @@ package body Config is
                            "<max_earnings_per_day>" & F8_Image(Cfg.Bet(i).Max_Earnings_Per_Day) & "</max_earnings_per_day>" &
                            "<min_price>" & To_String(Cfg.Bet(i).Min_Price) & "</min_price>" &
                            "<enabled>" & Cfg.Bet(i).Enabled'Img & "</enabled>" &
+                           "<chase_allowed>" & Cfg.Bet(i).Chase_Allowed'Img & "</chase_allowed>" &
+                           "<hurdle_allowed>" & Cfg.Bet(i).Hurdle_Allowed'Img & "</hurdle_allowed>" &
                         "</" & To_Lower(i'Img) & ">" );
         end loop;
         Append(Bets, "</bets>");

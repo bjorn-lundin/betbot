@@ -5,6 +5,9 @@ with Types; use Types;
 
 with Bot_Types; use Bot_Types;
 package Markets is
+
+  type Market_Subtype_Type is (Plain, Chase, Hurdle);
+
   type Market_Type is new Table_Amarkets.Data_Type with null record;
   function Empty_Data return Market_Type ;
 
@@ -17,6 +20,7 @@ package Markets is
 
   function Distance(Self : in out Market_Type) return Integer_4;
   function Distance_Name(Self : in out Market_Type) return Distancename_Type;
+  function Market_Subtype(Self : in out Market_Type) return Market_Subtype_Type;
 
 
 
