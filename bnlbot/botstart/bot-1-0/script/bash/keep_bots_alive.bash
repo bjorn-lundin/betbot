@@ -240,7 +240,7 @@ function Create_Plots () {
 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --startdate="2018-09-01" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -278,13 +278,14 @@ MINUTE=$(date +"%M")
 WEEK_DAY=$(date +"%u")
 DAY=$(date +"%d")
 
+
 #
 #ps
 #bnl      13563 13562  0 17:45 ?        00:00:00 /bin/sh -c cd / && /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 #bnl      13565 13563  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 #bnl      13573 13565  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 
-NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh |  grep -c keep_bots_alive.bash)
+NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -c keep_bots_alive.bash)
 #echo "NUM_RUNNING: $NUM_RUNNING $(date)"
 
 if [ $NUM_RUNNING -gt 1 ] ; then
@@ -300,9 +301,11 @@ case $BOT_MACHINE_ROLE in
 
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      if [ $MINUTE == "27" ] ; then
-        Create_Plots $USR 7
-        Create_Plots $USR 42
+      if [ $HOUR == "22" ] ; then
+        if [ $MINUTE == "59" ] ; then
+          Create_Plots $USR 7
+          Create_Plots $USR 42
+        fi
       fi
     done
 
@@ -316,12 +319,9 @@ case $BOT_MACHINE_ROLE in
   exit 0 ;;
 esac
 
-
 if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
-
-
 
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
