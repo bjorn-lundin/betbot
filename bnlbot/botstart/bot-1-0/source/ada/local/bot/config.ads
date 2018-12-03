@@ -7,15 +7,20 @@ with Calendar2;
 package Config is
 
   type Bet_Type is (
-                --    Horse_Back_1_11_1_15_05_07_1_2_Plc_1_01,
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Back_1_28_02_1_2_Plc_1_01,
                     Horse_Back_1_38_00_1_2_Plc_1_01,
-                    Horse_Back_1_56_00_1_4_Plc_1_01
-                  --  Horse_Back_1_50_01_1_2_Plc_1_06,
-                  --  Horse_Back_1_26_00_1_2_Win_1_01
-                  --  Horse_Back_1_28_02_1_2_Win_1_01,
-                 --   Horse_Lay_05_15_1_14_55_Win
+                    Horse_Back_1_56_00_1_4_Plc_1_01,
+
+                    Horse_Back_1_10_07_1_2_Plc_1_01_Chs,
+                    Horse_Back_1_28_02_1_2_Plc_1_01_Chs,
+                    Horse_Back_1_38_00_1_2_Plc_1_01_Chs,
+                    Horse_Back_1_56_00_1_4_Plc_1_01_Chs,
+
+                    Horse_Back_1_10_07_1_2_Plc_1_01_Hrd,
+                    Horse_Back_1_28_02_1_2_Plc_1_01_Hrd,
+                    Horse_Back_1_38_00_1_2_Plc_1_01_Hrd,
+                    Horse_Back_1_56_00_1_4_Plc_1_01_Hrd
                    );
 
 
@@ -27,6 +32,8 @@ package Config is
     Max_Earnings_Per_Day       : Fixed_Type       := 999_999.0;
     Min_Price                  : Unbounded_String := Null_Unbounded_String;
     Enabled                    : Boolean          := False;
+    Chase_Allowed              : Boolean          := False;
+    Hurdle_Allowed             : Boolean          := False;
   end record;
 
   type Bet_Config_Array_Type is array(Bet_Type'Range) of Bet_Config_Type;

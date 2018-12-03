@@ -3,7 +3,7 @@ with Runners;
 with Rpc;
 with Bot_Config;
 with Logging; use Logging;
-
+with Utils;
 
 package body Markets is
   Me : constant String := "Markets.";
@@ -336,6 +336,20 @@ package body Markets is
     Move(Self.Marketname(1 .. Idx-1), Name);
     return Name;
   end Distance_Name;
+
+
+  function Market_Subtype(Self : in out Market_Type) return Market_Subtype_Type is
+  begin
+    -- expects markets that are ok eg '2m5f Hcap Hrd'
+    if Utils.Position(Self.Marketname, "Hrd") > Self.Marketname'First then
+      return Hurdle;
+    elsif Utils.Position(Self.Marketname, "Chs") > Self.Marketname'First then
+      return Chase;
+    else
+      return Plain;
+    end if;
+  end Market_Subtype;
+
 
 
 
