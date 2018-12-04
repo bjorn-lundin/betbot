@@ -104,6 +104,14 @@ procedure Bot_Web_Server is
     --                  Param1   => Param1);
     --  end
     --end if;
+
+    if Sql.Is_Session_Open then
+      Logging.Log(Service, "was already connected, disconnect!");
+      Sql.Close_Session;
+      Logging.Log(Service, "did disconnect!");
+    end if;
+
+
     Sql.Connect
       (Host     => Global.Host.Fix_String,
        Port     => Global.Port,
