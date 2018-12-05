@@ -36,7 +36,7 @@ with Types;
 
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
-  package AD renames Ada.Directories;
+ -- package AD renames Ada.Directories;
 
   Me : constant String := "Bot_Web_Server.";
 
@@ -48,9 +48,9 @@ procedure Bot_Web_Server is
   My_Lock         : Lock.Lock_Type;
 
    --===========================================================================
-   Semaphore : Binary_Semaphores.Semaphore_Type;
+  Semaphore : Binary_Semaphores.Semaphore_Type;
 
-  Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
+ -- Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
 
    package Global is
      Host           : Types.String_Object;
@@ -312,7 +312,7 @@ procedure Bot_Web_Server is
         when others          =>  Answer := Unknown(Request);
       end case;
       Semaphore.Release;
-      AWS.Session.Save (File_Name => Saved_Web_Sessions);
+--      AWS.Session.Save (File_Name => Saved_Web_Sessions);
       return Answer;
   exception
     when Bot_Ws_Services.Stop_Process =>
@@ -374,9 +374,9 @@ begin
   AWS.Config.Set.WWW_Root                (O => Config, Value => Ev.Value("BOT_SOURCE") & "/ada/bot_ws/html");
 
   Logging.Log (Me, "WWW_Root: " & AWS.Config.WWW_Root (O => Config));
-  if AD.Exists (Saved_Web_Sessions) then
-    AWS.Session.Load(File_Name => Saved_Web_Sessions);
-  end if;
+--  if AD.Exists (Saved_Web_Sessions) then
+--    AWS.Session.Load(File_Name => Saved_Web_Sessions);
+--  end if;
 
   AWS.Server.Start (Web_Server     => WS,
                     Callback       => Service'Unrestricted_Access,
@@ -385,6 +385,7 @@ begin
   AWS.Server.Log.Start      (Web_Server => WS,
                              Split_Mode => Aws.Log.Daily,
                              Auto_Flush => True);
+                             
   AWS.Server.Log.Start_Error(Web_Server => WS,
                              Split_Mode => Aws.Log.Daily);
   Logging.Log("Main", "Log file name:" & AWS.Server.Log.Name (WS));

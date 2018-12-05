@@ -22,16 +22,21 @@ tr:nth-child(even) {
 /*     height: 300px; Should be removed. Only for demonstration */
 
 .left {
-  width: 28%;
+  width: 50%;
 }
 
 .right {
-  width: 15%;
+  width: 35%;
 }
 
 .middle {
-    width: 57%;
+    width: 15%;
 }
+
+.all {
+    width: 100%;
+}
+
 
 /* Clear floats after the columns */
 
