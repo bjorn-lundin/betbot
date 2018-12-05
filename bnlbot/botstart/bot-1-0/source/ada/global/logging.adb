@@ -6,19 +6,22 @@ with Ada.Io_Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed;
 with Stacktrace;
+with Binary_Semaphores;
 
 package body Logging is
 
-   Quiet : Boolean := False; 
+   Quiet : Boolean := False;
    Global_Indent : Integer := 0;
-   
+
    Global_File : Text_Io.File_Type;
    Global_Name : Unbounded_String :=  Null_Unbounded_String;
    Global_New_Log_File_On_Exit : Boolean := True;
 
    Dummy_Finalizer : Dummy_Type;
    pragma Warnings(Off, Dummy_Finalizer);
-   
+   Semaphore : Binary_Semaphores.Semaphore_Type;
+
+
    ---------------------------------------------
    procedure Change_Indent(How_Much : Integer) is
    begin
@@ -31,7 +34,7 @@ package body Logging is
    begin
     return S;
    end Indent;
-   
+
    ---------------------------------------------
    procedure New_Log_File_On_Exit(N : Boolean) is
      pragma Unreferenced(N);
@@ -56,7 +59,7 @@ package body Logging is
       Ada.Strings.Fixed.Move(Trim(Hour_Type'Image(T.Hour), Left), Ts(10..11), Justify => Right, Pad => '0');
       Ada.Strings.Fixed.Move(Trim(Minute_Type'Image(T.Minute), Left), Ts(12..13), Justify => Right, Pad => '0');
       Ada.Strings.Fixed.Move(Trim(Second_Type'Image(T.Second), Left), Ts(14..15), Justify => Right, Pad => '0');
-      Ada.Strings.Fixed.Move(Trim(Millisecond_Type'Image(T.Millisecond), Left), Ts(16..18), Drop => Right, 
+      Ada.Strings.Fixed.Move(Trim(Millisecond_Type'Image(T.Millisecond), Left), Ts(16..18), Drop => Right,
                              Justify => Right, Pad => '0');
       return Ts;
     end Timestamp_Format;
@@ -64,7 +67,7 @@ package body Logging is
     function Timestamp return String is
     begin
       return Timestamp_Format(Calendar2.Clock);
-    end Timestamp;     
+    end Timestamp;
 
     --------------------------
     OK : Boolean := False;
@@ -89,29 +92,29 @@ package body Logging is
           if not Exists(New_Name) then
             if Copy then
               Copy_File(Name,New_Name);
-            else  
+            else
               Rename(Name,New_Name);
             end if;
             OK := True;
-          end if;    
+          end if;
         exception
           when Ada.Io_Exceptions.Name_Error =>
-            Text_Io.Put_Line("Problems ren/cpy file '" & Name & "'");            
-            Text_Io.Put_Line("to                    '" & New_Name & "'");            
-          when E: others => 
+            Text_Io.Put_Line("Problems ren/cpy file '" & Name & "'");
+            Text_Io.Put_Line("to                    '" & New_Name & "'");
+          when E: others =>
              Stacktrace.Tracebackinfo(E);
         end;
         exit when OK;
  --9.8-18163        delay 0.001; -- wait for new millisecond
          delay 1.1; -- wait for new second --9.8-18163
-      end loop; 
-      --9.8-18163 
-      if not OK then 
+      end loop;
+      --9.8-18163
+      if not OK then
         raise Rename_Log_File_Error with "Problems ren/cpy file '" & Name & "' Copy=: " & Boolean'Image(Copy);
-      end if; 
-    end;       
+      end if;
+    end;
   end Rename_Log_File;
-   
+
    --------------------------------------------
    procedure Set_Quiet (Q: Boolean) is
    begin
@@ -130,6 +133,7 @@ package body Logging is
       if Quiet then
         return;
       end if;
+      Semaphore.Seize;
       if Text_Io.Is_Open(Global_File) then
         if Ada.Directories.Exists(To_String(Global_Name)) and then
            Ada.Directories.Size(To_String(Global_Name)) > 10_000_000 then
@@ -141,7 +145,8 @@ package body Logging is
         Text_Io.Flush (Global_File);
       else
         Text_Io.Put_Line (Text_Io.Standard_Error, String_Date_Time_ISO (Clock, " " , "") & " " & What);
-      end if;  
+      end if;
+      Semaphore.Release;
    end Log;
    ---------------------------------------------
    procedure Print (What : in String) is
@@ -156,26 +161,26 @@ package body Logging is
        Text_Io.Open(Global_File, Text_Io.Append_File, Name);
      else
        Text_Io.Create(Global_File, Text_Io.Out_File, Name);
-     end if;     
+     end if;
      Global_Name := To_Unbounded_String(Name);
    end Open;
    ----------------------------------------------------------
-   
-   procedure Close is 
+
+   procedure Close is
    begin
      if Text_Io.Is_Open(Global_File) then
-       Text_Io.Close(Global_File);   
+       Text_Io.Close(Global_File);
      end if;
    end Close;
-   
+
    ----------------------------------------------
-   procedure Finalize(D : in out Dummy_Type) is 
+   procedure Finalize(D : in out Dummy_Type) is
      pragma Warnings(Off,D);
    begin
      if Global_New_Log_File_On_Exit and then Text_Io.Is_Open(Global_File) then
-       Rename_Log_File(To_String(Global_Name), True); 
-     end if;                                        
+       Rename_Log_File(To_String(Global_Name), True);
+     end if;
    end Finalize;
    -------------------------------------------------------------------
-   
+
 end Logging;
