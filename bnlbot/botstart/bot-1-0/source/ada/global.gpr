@@ -82,7 +82,7 @@ project Global is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-k", "-s", "-j4"); -- use 1 cpu 
+      for Default_Switches ("ada") use ("-k", "-s", "-j4", "-m"); -- use 1 cpu , less recompile
    end Builder;
 
 
