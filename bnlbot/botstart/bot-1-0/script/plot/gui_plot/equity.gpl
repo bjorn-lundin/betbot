@@ -26,7 +26,7 @@ set xtics rotate by 45 offset 0, -5
 set xlabel "Datum" offset 0,-4
 set bmargin 8
 
-plot for [file in files] file using 1:2 with lines title system("basename " . file . " .dat")
+plot for [file in files] file using 1:2 with lines title system("basename " . file . " .dat | tr '_' '-'")
      
  
  

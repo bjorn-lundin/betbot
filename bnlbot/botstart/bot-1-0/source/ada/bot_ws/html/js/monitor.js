@@ -4,6 +4,7 @@ var Cnt;
 //var URL="https://betbot.nonobet.com"
 //var URL="http://192.168.1.6:9080"
 var URL ="https://lundin.duckdns.org"
+var login_again;
 
 //bnl
 $.makeTable = function (mydata) {
@@ -106,12 +107,10 @@ function Do_Ajax_Today(context) {
       beforeSend: function() {
           // This callback function will trigger before data is sent
           console.log("Do_Ajax_Today.beforeSend");
-          //$.mobile.loading( "show" );
       },
       complete: function() {
           // This callback function will trigger on data sent/received complete
           console.log("Do_Ajax_Today.complete");
-         // $.mobile.loading( "hide" );
       },
       success: function (reply) {
           console.log("Do_Ajax_Today.success");
@@ -139,20 +138,29 @@ function Do_Page_Reload () {
   $('#profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
   $('#avg_price_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
   $('#settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
+  
+  $('#profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01.png' + '?' + unique);
+  $('#avg_price_42_horse_back_1_28_02_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_28_02_1_2_plc_1_01.png' + '?' + unique);
+  $('#settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01.png' + '?' + unique);
 
+  $('#profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
+  $('#avg_price_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
+  $('#settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
 }
 
 function Run_All() {
-  console.log("Run_All start");
+ // console.log("Run_All start");
   var pBar = document.getElementById('pb');
   Cnt = Cnt +1;
 
   var percent = Cnt ;
-  console.log("Run_All" + Cnt + "-" + percent );
+ // console.log("Run_All" + Cnt + "-" + percent );
 
   if (Cnt == 100) {
+    console.log("Run_All start 1");
+    Do_Check_Login();  
     Do_Page_Reload(); // get new graphs
-    Do_Ajax_Today(); // get todays earnigns
+    Do_Ajax_Today(); // get todays earnings
     Do_Ajax_Table('sum_todays_bets');  // and a list of bets
     Do_Ajax_Table('sum_7_days_bets');  // and a list of bets
     Do_Ajax_Table('sum_thisweeks_bets');  // and a list of bets
@@ -164,7 +172,7 @@ function Run_All() {
   } else {
     pBar.value = percent;
   }
-  console.log("Run_All stop 2");
+ // console.log("Run_All stop 2");
 }
 
 
@@ -175,46 +183,119 @@ function Start_Timer () {
 }
 
 
-function Do_Login() {
+//function Do_Login() {
+//
+// $.ajax({url: URL,
+//     data: $('#loginform').serialize(),
+//     type: 'post',
+//     async: 'true',
+//     dataType: 'json',
+//     beforeSend: function() {
+//         // This callback function will trigger before data is sent
+//         console.log("Do_Login.beforeSend");
+//        // $.mobile.loading( "show" );
+//     },
+//     complete: function() {
+//         // This callback function will trigger on data sent/received complete
+//         console.log("Do_Login.complete");
+//        // $.mobile.loading( "hide" );
+//     },
+//     success: function (reply) {
+//         console.log("success");
+//         if(reply.result == "OK") {
+//            console.log("Do_Login success OK");
+//            Start_Timer()
+//         } else {
+//            console.log("Do_Login - success NOT OK");
+//         }
+//     },
+//     error: function (request,error) {
+//         console.log("Do_Login.error " + error);
+//     }
+// });
+//
+//}
 
- $.ajax({url: URL,
-     data: $('#loginform').serialize(),
-     type: 'post',
-     async: 'true',
-     dataType: 'json',
-     beforeSend: function() {
-         // This callback function will trigger before data is sent
-         console.log("Do_Login.beforeSend");
-        // $.mobile.loading( "show" );
-     },
-     complete: function() {
-         // This callback function will trigger on data sent/received complete
-         console.log("Do_Login.complete");
-        // $.mobile.loading( "hide" );
-     },
-     success: function (reply) {
-         console.log("success");
-         if(reply.result == "OK") {
-            console.log("Do_Login success OK");
-            Start_Timer()
-         } else {
-            console.log("Do_Login - success NOT OK");
-         }
-     },
-     error: function (request,error) {
-         console.log("Do_Login.error " + error);
-     }
- });
+
+function Do_Check_Login() {
+    
+  console.log("Do_Check_Login start");
+    
+  var d = new Date();
+  var n = d.getTime();
+  
+  //if fail server returns 401, 
+  //if ok server returns 200
+  $.ajax({url: URL,
+      data: {'context' : "check_logged_in",
+             'dummy' : n },
+      type: 'get',
+      async: 'false',
+      dataType: 'json',
+      beforeSend: function() {
+          // This callback function will trigger before data is sent
+          console.log("Do_Check_Login.beforeSend");
+      },
+      complete: function() {
+          // This callback function will trigger on data sent/received complete
+          console.log("Do_Check_Login.complete");
+      },
+      success: function (reply) {
+          console.log("Do_Check_Login.success");
+          login_again = false;
+      },
+      error: function (request,error,ex) {
+          console.log("Do_Check_Login.error " + error + ex);
+          login_again = true;
+      }
+  });
+
+  console.log("Do_Check_Login login_again " + login_again);
+  
+  
+  //log in if needed
+  if (login_again) {
+    $.ajax({url: URL,
+        data: $('#loginform').serialize(),
+        type: 'post',
+        async: 'false',
+        dataType: 'json',
+        beforeSend: function() {
+            // This callback function will trigger before data is sent
+            console.log("Do_Login.beforeSend");
+        },
+        complete: function() {
+            // This callback function will trigger on data sent/received complete
+            console.log("Do_Login.complete");
+        },
+        success: function (reply) {
+            console.log("success");
+            if(reply.result == "OK") {
+               console.log("Do_Login success OK");
+            } else {
+               console.log("Do_Login - success NOT OK");
+            }
+        },
+        error: function (request,error) {
+            console.log("Do_Login.error " + error);
+        }
+    });
+  }
+  console.log("Do_Check_Login stop");
 
 }
+
+
+
 
 function Do_Start() {
      //call by window.onload
      console.log("onReady Start");
+     login_again = true;
      Cnt = 97;
      //start timer ...
-    // Start_Timer();
-     Do_Login();
+     Start_Timer();
+    // Do_Login();
 
      console.log("onReady Stop");
 }

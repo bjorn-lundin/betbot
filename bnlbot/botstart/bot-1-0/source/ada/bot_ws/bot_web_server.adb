@@ -90,7 +90,7 @@ procedure Bot_Web_Server is
     Application_JSON : constant String := "application/json";
 
   begin
-    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : " & Username );
+    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : '" & Username & "'" );
     --if Context="some_context_with_parmes" then
     --  declare
     --    Param0 :constant String := AWS.Parameters.Get(Params,"param0");
@@ -105,6 +105,12 @@ procedure Bot_Web_Server is
     --  end
     --end if;
 
+    if Username = "" then
+      Logging.Log(Service, "Username blank - needs login");
+      return  AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
+    end if;
+    
+    
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");
       Sql.Close_Session;
@@ -271,6 +277,9 @@ procedure Bot_Web_Server is
 
   procedure Wait_Terminate is
     Message : Process_Io.Message_Type;
+    Is_Time_To_Exit : Boolean := False;
+    Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    use types;
   begin
     loop
       delay 2.0;
@@ -291,6 +300,14 @@ procedure Bot_Web_Server is
         when Process_Io.Timeout => null;
       end;
       Semaphore.Release;
+      
+      --restart every day
+      Now := Calendar2.Clock;
+      Is_Time_To_Exit := Now.Hour = 01 and then
+       ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
+
+      exit when Is_Time_To_Exit;
+      
     end loop;
   end Wait_Terminate;
 
