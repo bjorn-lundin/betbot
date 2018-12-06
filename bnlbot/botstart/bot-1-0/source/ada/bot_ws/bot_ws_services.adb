@@ -1,6 +1,6 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Environment_Variables;
 with Ada.Containers;
 --with Ada.Characters.Handling;
@@ -379,59 +379,8 @@ package body Bot_Ws_Services is
     return Json_Reply;
 
   end Weekly_Total;
+  pragma Unreferenced(Weekly_Total);
   ----------------------------------------------------------------
-  function Weeks(Username  : in String;
-                 Context   : in String) return String is
-    Service         : constant String := "Weeks";
-    Json_Reply      : Json_Value := Create_Object;
-    Weeks           : Json_Array := Empty_Array;
-    --use Calendar2;
-    Betname         : Betname_Type := (others => ' ');
-    subtype Num_Weeks_Type is Integer_4 range 0 .. 6;
-  begin
-
-    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
-
-    for W in Num_Weeks_Type'Range loop
-      declare
-        Result : Json_Value := Create_Object;
-        Week   : Json_Value := Create_Object;
-      begin
-        Move("BACK_1_10_07_1_2_PLC_1_01",Betname);
-        Result := Weekly_Total(Username  => Username,
-                               Betname   => Betname,
-                               Weeks_Ago => W);
-
-        Week.Set_Field (Field_Name => "week", Field => Result);
-        -- Append(Weeks,Week);
-        Append(Weeks,Result);
-      end;
-    end loop;
-
-    for W in Num_Weeks_Type'Range loop
-      declare
-        Result : Json_Value := Create_Object;
-        Week   : Json_Value := Create_Object;
-      begin
-        Move("BACK_1_11_1_15_05_07_1_2_PLC_1_01",Betname);
-        Result := Weekly_Total(Username  => Username,
-                               Betname   => Betname,
-                               Weeks_Ago => W);
-
-        Week.Set_Field (Field_Name => "week", Field => Result);
-        --Append(Weeks,Week);
-        Append(Weeks,Result);
-      end;
-    end loop;
-
-    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    Json_Reply.Set_Field (Field_Name => "datatable", Field => Weeks);
-
-    Log(Object & Service, "returning:" & Json_Reply.Write);
-    return Json_Reply.Write;
-
-  end Weeks;
-  ---------------------------------------------------
 
   function Sum_Settled_Bets(Username  : in String;
                             Context   : in String) return String is
@@ -465,32 +414,19 @@ package body Bot_Ws_Services is
       null; -- is ok already
     elsif Context = "sum_7_days_bets" then
       Start := Start - (6,0,0,0,0);
-    elsif Context = "sum_thisweeks_bets" then
+    elsif Context = "sum_thisweeks_bets" then   
       declare
-        Dow : Week_Day_Type := Week_Day_Of (Start) ;
+        Dow : Week_Day_Type  ;
       begin
-        case Dow is
-          when Monday =>
-            Stop := Stop  + (6,0,0,0,0);
-          when Tuesday =>
-            Start:= Start - (1,0,0,0,0);
-            Stop := Stop  + (5,0,0,0,0);
-          when Wednesday =>
-            Start:= Start - (2,0,0,0,0);
-            Stop := Stop  + (4,0,0,0,0);
-          when Thursday =>
-            Start:= Start - (3,0,0,0,0);
-            Stop := Stop  + (3,0,0,0,0);
-          when Friday =>
-            Start:= Start - (4,0,0,0,0);
-            Stop := Stop  + (2,0,0,0,0);
-          when Saturday =>
-            Start:= Start - (5,0,0,0,0);
-            Stop := Stop  + (1,0,0,0,0);
-          when Sunday =>
-            Start:= Start - (6,0,0,0,0);
-        end case ;
-      end;
+        loop -- find monday
+          Dow := Week_Day_Of (Start) ;
+          case Dow is
+            when Monday => exit ;
+            when others => Start := Start - (1,0,0,0,0);
+          end case ;
+        end loop;
+        Stop := Start + (6,0,0,0,0);
+      end;   
     elsif Context = "sum_total_bets" then
       Start := (2018,5,1,0,0,0,0);
     else

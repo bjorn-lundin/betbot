@@ -149,10 +149,6 @@ procedure Bot_Web_Server is
       Response := Aws.Response.Build (Application_JSON,
                                       Bot_Ws_Services.Todays_Total(Username => Username,
                                                                   Context  => Context));
-    elsif Context="weekly_total" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Weeks(Username => Username,
-                                                            Context  => Context));
     elsif Context="sum_todays_bets" then
       Response := Aws.Response.Build (Application_Json,
                                       Bot_Ws_Services.Sum_Settled_Bets(Username => Username,

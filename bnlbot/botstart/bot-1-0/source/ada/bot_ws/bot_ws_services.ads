@@ -20,9 +20,6 @@ package Bot_Ws_Services is
   function Todays_Total   (Username  : in String;
                            Context   : in String) return String;
 
-  function Weeks          (Username  : in String;
-                           Context   : in String) return String ;
-
   function Get_Starttimes(Username  : in String;
                           Context   : in String) return String ;
 
