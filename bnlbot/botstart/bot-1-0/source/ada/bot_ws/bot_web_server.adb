@@ -311,8 +311,8 @@ procedure Bot_Web_Server is
         when AWS.Status.PUT  =>  Answer := Put(Request);
         when others          =>  Answer := Unknown(Request);
       end case;
-      Semaphore.Release;
 --      AWS.Session.Save (File_Name => Saved_Web_Sessions);
+      Semaphore.Release;
       return Answer;
   exception
     when Bot_Ws_Services.Stop_Process =>
