@@ -697,7 +697,7 @@ procedure Poll is
 
                     if Do_Try_Bet then
                       case Markets_Array(Win).Market_Subtype is
-                        when Plain  => null;
+                        when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
                         when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
                         when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
                       end case;
