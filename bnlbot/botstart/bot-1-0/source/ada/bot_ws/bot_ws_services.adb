@@ -570,9 +570,10 @@ package body Bot_Ws_Services is
       declare
         Start_Time : Json_Value := Create_Object;
       begin
-        Start_Time.Set_Field (Field_Name => "starttime", Field => S.Starttime.String_Time(Seconds => False));
-        Start_Time.Set_Field (Field_Name => "venue",     Field => S.Venue);
-        Start_Time.Set_Field (Field_Name => "next",      Field => Arrow);
+        Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
+        Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
+        Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
+        Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
         Append(Json_Start_Times, Start_Time);
       end;
     end loop;

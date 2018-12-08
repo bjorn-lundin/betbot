@@ -2222,8 +2222,6 @@ package body RPC is
             when others => raise No_Such_UTC_Offset with UTC_Offset_Minutes'Img;
           end case;
 
-
-
           Get_Value(Container => Result,
                     Field     => "event",
                     Target    => Event,
@@ -2231,6 +2229,15 @@ package body RPC is
           if not Found then
             Log(Me & "Get_Starttimes", "NO event!!" );
           end if;
+
+          Get_Value(Container => Result,
+                    Field     => "marketName",
+                    Target    => List_Data.Marketname,
+                    Found     => Found);
+          if not Found then
+            Log(Me & "Get_Starttimes", "NO marketName!!" );
+          end if;
+
 
           Get_Value(Container => Event,
                     Field     => "venue",
