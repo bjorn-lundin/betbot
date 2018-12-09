@@ -562,28 +562,27 @@ package body Bot_Ws_Services is
     end if;
 
     for S of Global_Start_Time_List loop
-      if not Arrow_Is_Printed and then Now <= S.Starttime then
-        Arrow_Is_Printed := True;
-        Arrow := "-->";
-      else
-        Arrow := "   ";
-      end if;
       declare
         Start_Time : Json_Value := Create_Object;
-        Market : Markets.Market_Type;
+        Market     : Markets.Market_Type;
+        OK         : Boolean := False; 
       begin
         Market.Marketname := S.Marketname;
-        if Market.Marketname_Ok2 then         
-          Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
-          Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
-          Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
-          Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
-        else
-          Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
-          Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
-          Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
-          Start_Time.Set_Field (Field_Name => "next",       Field => "-X-");
-        end if;  
+        OK :=  Market.Marketname_Ok2 ;
+        
+        if OK and then not Arrow_Is_Printed and then Now <= S.Starttime then
+          Arrow_Is_Printed := True;
+          Arrow := "-->";
+        elsif not OK then 
+          Arrow := "-|-";
+        else   
+          Arrow := "---";
+        end if;
+        
+        Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
+        Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
+        Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
+        Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
         Append(Json_Start_Times, Start_Time);
       end;
     end loop;
