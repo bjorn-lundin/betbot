@@ -445,7 +445,7 @@ procedure Poll is
     Price             : Prices.Price_Type;
     Has_Been_In_Play,
     In_Play           : Boolean := False;
-    First_Poll        : Boolean := True;
+   -- First_Poll        : Boolean := True;
     Best_Runners      : Best_Runners_Array_Type := (others => Prices.Empty_Data);
 
     Eos               : Boolean := False;
@@ -756,7 +756,7 @@ procedure Poll is
 
       end if; -- Best_Runner(1).Backodds >= 1.01
 
-      First_Poll := False;
+    --  First_Poll := False;
     end loop Poll_Loop;
 
   end Run;
