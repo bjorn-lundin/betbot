@@ -2003,7 +2003,7 @@ package body RPC is
               Target    => DB_Market.Betdelay,
               Found     => Found);
 
-    Log(Me, "In_Play_Market: " & In_Play_Market'Img & " " & DB_Market.To_String);
+    Log(Me & Service, "In_Play_Market: " & In_Play_Market'Img & " " & DB_Market.To_String);
 --    Log(Me & Service, "stop");
 
   end Parse_Market;
