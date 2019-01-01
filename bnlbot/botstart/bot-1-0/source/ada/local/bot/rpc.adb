@@ -54,28 +54,84 @@ package body RPC is
   procedure Login is
     Login_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
-    Header : AWS.Headers.List;
+--    Header : AWS.Headers.List;
     --use Aws.Client;
 
   begin
     Aws.Headers.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
 
+-- curl -k -i -H "Accept: application/json" -H "X-Application: q0XW4VGRNoHuaszo" \
+--   -X POST -d 'username=bnlbnl&password=@Bf@vinst@1' \
+--   https://identitysso.betfair.se/api/login
+
+--HTTP/1.1 200 OK
+--Content-Type: application/json
+--Content-Length: 99
+--Date: Tue, 01 Jan 2019 12:06:48 GMT
+--{"token":"","product":"q0XW4VGRNoHuaszo","status":"FAIL","error":"TEMPORARY_BAN_TOO_MANY_REQUESTS"}
+
     declare
       Data : String :=  "username=" & Global_Token.Get_Username & "&" &
-                         "password=" & Global_Token.Get_Password &"&" &
-                         "login=true" & "&" &
-                         "redirectMethod=POST" & "&" &
-                         "product=home.betfair.int" & "&" &
-                         "product=home.betfair.int" & "&" &
-                         "url=https://www.betfair.com/";
+                         "password=" & Global_Token.Get_Password;
+      JSON_Reply : JSON_Value := Create_Object;
+      Login_Ok : Boolean := False;
     begin
-      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/login",
+      Aws.Headers.Add (Login_HTTP_Headers, "Accept", "application/json");
+      Aws.Headers.Add (Login_HTTP_Headers, "X-Application", Global_Token.Get_App_Key);
+
+      Log(Me & "Login", "send Data   '" & Data & "'");
+      Log(Me & "Login", "send appkey '" & Global_Token.Get_App_Key & "'");
+
+
+      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/login",
                                     Data         => Data,
                                     Content_Type => "application/x-www-form-urlencoded",
                                     Headers      => Login_HTTP_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
-    end ;
-    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
+      Log(Me & "Login", "reply'" & Aws.Response.Message_Body(AWS_Reply) & "'");
+      begin
+        if String'(Aws.Response.Message_Body(AWS_Reply)) /= "Post Timeout" then
+          JSON_Reply := Read (Strm     => Aws.Response.Message_Body(AWS_Reply),
+                              Filename => "");
+          Log(Me & "Get_JSON_Reply", "Got reply: " & JSON_Reply.Write  );
+        else
+          Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+          raise POST_Timeout ;
+        end if;
+      end;
+
+
+      if JSON_Reply.Has_Field("status") then
+        if JSON_Reply.Get("status") = "SUCCESS" then
+          if JSON_Reply.Has_Field("token") then
+            Global_Token.Set(Trim(JSON_Reply.Get("token")));
+            Login_Ok := True;
+          end if;
+        end if;
+      end if;
+
+      if not Login_Ok then
+        Log(Me & "Login", "Login failed -> Give up!");
+        raise Login_Failed;
+      end if;
+    end;
+
+--    declare
+--      Data : String :=  "username=" & Global_Token.Get_Username & "&" &
+--                         "password=" & Global_Token.Get_Password &"&" &
+--                         "login=true" & "&" &
+--                         "redirectMethod=POST" & "&" &
+--                         "product=home.betfair.int" & "&" &
+--                         "product=home.betfair.int" & "&" &
+--                         "url=https://www.betfair.se/";
+--    begin
+--      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/login",
+--                                    Data         => Data,
+--                                    Content_Type => "application/x-www-form-urlencoded",
+--                                    Headers      => Login_HTTP_Headers,
+--                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+--    end ;
+--    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
 
 
     -- login reply should look something like below (522 chars)
@@ -92,46 +148,47 @@ package body RPC is
     -- </body>
     -- </html>
 
-    declare
-      String_Reply : String := Aws.Response.Message_Body(AWS_Reply);
-    begin
-      if String_Reply'length < 500 then
-        raise Login_Failed with "Bad reply from server at login";
-      end if;
-    end ;
-
-    Header := AWS.Response.Header(AWS_Reply);
-
-    for i in 1 .. AWS.Headers.Length(Header) loop
-      declare
-        Head : String := AWS.Headers.Get_Line(Header,i);
-        Index_First_Equal : Integer := 0;
-        Index_First_Semi_Colon : Integer := 0;
-        -- Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/
-      begin
-        if Position(Head,"ssoid") > Integer(0) then
-          Log("Login"," " & Head);
-          for i in Head'range loop
-            case Head(i) is
-              when '=' =>
-                if Index_First_Equal = 0 then
-                  Index_First_Equal := i;
-                end if;
-
-              when ';' =>
-                if Index_First_Semi_Colon = 0 then
-                  Index_First_Semi_Colon := i;
-                end if;
-              when others => null;
-            end case;
-          end loop;
-          if Index_First_Equal > Integer(0) and then Index_First_Semi_Colon > Index_First_Equal then
-            Log("Login","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
-            Global_Token.Set(Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1));
-          end if;
-        end if;
-      end;
-    end loop;
+--    declare
+--      String_Reply : String := Aws.Response.Message_Body(AWS_Reply);
+--    begin
+--      if String_Reply'length < 500 then
+--        Log(Me & "Login", "reply '" & String_Reply & "'");
+--        raise Login_Failed with "Bad reply from server at login";
+--      end if;
+--    end ;
+--
+--    Header := AWS.Response.Header(AWS_Reply);
+--
+--    for i in 1 .. AWS.Headers.Length(Header) loop
+--      declare
+--        Head : String := AWS.Headers.Get_Line(Header,i);
+--        Index_First_Equal : Integer := 0;
+--        Index_First_Semi_Colon : Integer := 0;
+--        -- Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/
+--      begin
+--        if Position(Head,"ssoid") > Integer(0) then
+--          Log("Login"," " & Head);
+--          for i in Head'range loop
+--            case Head(i) is
+--              when '=' =>
+--                if Index_First_Equal = 0 then
+--                  Index_First_Equal := i;
+--                end if;
+--
+--              when ';' =>
+--                if Index_First_Semi_Colon = 0 then
+--                  Index_First_Semi_Colon := i;
+--                end if;
+--              when others => null;
+--            end case;
+--          end loop;
+--          if Index_First_Equal > Integer(0) and then Index_First_Semi_Colon > Index_First_Equal then
+--            Log("Login","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
+--            Global_Token.Set(Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1));
+--          end if;
+--        end if;
+--      end;
+--    end loop;
   end Login;
 
   ------------------------------------------------------------------------------
@@ -144,7 +201,7 @@ package body RPC is
     Aws.Headers.Add (Logout_HTTP_Headers, "Accept", "application/json");
     Aws.Headers.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
 
-    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/logout",
+    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/logout",
                                   Data         => "", --Data,
                                   Content_Type => "application/x-www-form-urlencoded",
                                   Headers      => Logout_HTTP_Headers,
@@ -166,7 +223,7 @@ package body RPC is
     Aws.Headers.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
     Aws.Headers.Add (Keep_Alive_HTTP_Headers, "X-Authentication", Global_Token.Get);
 
-    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.com/api/keepAlive",
+    AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/keepAlive",
                                   Data         => "", --Data,
                                   Content_Type => "application/x-www-form-urlencoded",
                                   Headers      => Keep_Alive_HTTP_Headers,
