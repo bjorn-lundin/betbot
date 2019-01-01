@@ -72,7 +72,7 @@ package body RPC is
 
     declare
       Data : String :=  "username=" & Global_Token.Get_Username & "&" &
-                         "password=" & Global_Token.Get_Password;
+                        "password=" & Global_Token.Get_Password;
       JSON_Reply : JSON_Value := Create_Object;
       Login_Ok : Boolean := False;
     begin
@@ -81,7 +81,6 @@ package body RPC is
 
       Log(Me & "Login", "send Data   '" & Data & "'");
       Log(Me & "Login", "send appkey '" & Global_Token.Get_App_Key & "'");
-
 
       AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/login",
                                     Data         => Data,
@@ -100,7 +99,6 @@ package body RPC is
         end if;
       end;
 
-
       if JSON_Reply.Has_Field("status") then
         if JSON_Reply.Get("status") = "SUCCESS" then
           if JSON_Reply.Has_Field("token") then
@@ -115,80 +113,6 @@ package body RPC is
         raise Login_Failed;
       end if;
     end;
-
---    declare
---      Data : String :=  "username=" & Global_Token.Get_Username & "&" &
---                         "password=" & Global_Token.Get_Password &"&" &
---                         "login=true" & "&" &
---                         "redirectMethod=POST" & "&" &
---                         "product=home.betfair.int" & "&" &
---                         "product=home.betfair.int" & "&" &
---                         "url=https://www.betfair.se/";
---    begin
---      AWS_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/login",
---                                    Data         => Data,
---                                    Content_Type => "application/x-www-form-urlencoded",
---                                    Headers      => Login_HTTP_Headers,
---                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
---    end ;
---    Log(Me & "Login", "reply" & Aws.Response.Message_Body(AWS_Reply));
-
-
-    -- login reply should look something like below (522 chars)
-    -- <html>
-    -- <head>
-    --     <title>Login</title>
-    -- </head>
-    -- <body onload="document.postLogin.submit()">
-    -- <iframe src="https://secure.img-cdn.mediaplex.com/0/16689/universal.html?page_name=loggedin&amp;loggedin=1&amp;mpuid=6081705" HEIGHT="1" WIDTH="1" FRAMEBORDER="0" ></iframe>
-    -- <form name="postLogin" action="https://www.betfair.com/" method="POST">
-    --     <input type="hidden" name="productToken" value="UeJjgqWpxf3VstCg9VqFmrDhsrHQkOvHu7alH5NCldA="/>
-    --     <input type="hidden" name="loginStatus" value="SUCCESS"/>
-    -- </form>
-    -- </body>
-    -- </html>
-
---    declare
---      String_Reply : String := Aws.Response.Message_Body(AWS_Reply);
---    begin
---      if String_Reply'length < 500 then
---        Log(Me & "Login", "reply '" & String_Reply & "'");
---        raise Login_Failed with "Bad reply from server at login";
---      end if;
---    end ;
---
---    Header := AWS.Response.Header(AWS_Reply);
---
---    for i in 1 .. AWS.Headers.Length(Header) loop
---      declare
---        Head : String := AWS.Headers.Get_Line(Header,i);
---        Index_First_Equal : Integer := 0;
---        Index_First_Semi_Colon : Integer := 0;
---        -- Set-Cookie: ssoid=o604egQ2BuWCG6ij8NMJtyer6fycB2Dw7eHLiWoA1vI=; Domain=.betfair.com; Path=/
---      begin
---        if Position(Head,"ssoid") > Integer(0) then
---          Log("Login"," " & Head);
---          for i in Head'range loop
---            case Head(i) is
---              when '=' =>
---                if Index_First_Equal = 0 then
---                  Index_First_Equal := i;
---                end if;
---
---              when ';' =>
---                if Index_First_Semi_Colon = 0 then
---                  Index_First_Semi_Colon := i;
---                end if;
---              when others => null;
---            end case;
---          end loop;
---          if Index_First_Equal > Integer(0) and then Index_First_Semi_Colon > Index_First_Equal then
---            Log("Login","ssoid: '" & Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1) & "'");
---            Global_Token.Set(Head(Index_First_Equal +1 .. Index_First_Semi_Colon -1));
---          end if;
---        end if;
---      end;
---    end loop;
   end Login;
 
   ------------------------------------------------------------------------------
