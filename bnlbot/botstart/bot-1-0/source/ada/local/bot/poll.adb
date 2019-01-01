@@ -673,7 +673,7 @@ procedure Poll is
 
       if Best_Runners(1).Backprice >= Fixed_Type(1.01) then
         for I in Bet_Type'Range loop
-          Log("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
+         -- Log("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
           case Animal is
             when Horse =>
               case I is

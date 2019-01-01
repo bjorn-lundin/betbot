@@ -1452,7 +1452,7 @@ package body RPC is
 
      --  Iterate the Reply_List_Market_Book object.
     if JSON_Reply.Has_Field("result") then
-      Log(Me, "we have result ");
+--      Log(Me, "we have result ");
       Result := JSON_Reply.Get("result");
       for i in 1 .. Length(Result) loop
         JSON_Market := Get(Result, i);
@@ -1824,7 +1824,7 @@ package body RPC is
    Stop_Paranthesis : Integer := 0;
 
   begin
-    Log(Me & Service, "start");
+  --  Log(Me & Service, "start");
     Json_Runners_Array := J_Market.Get("runners");
     Array_Length := Length (Json_Runners_Array);
 
@@ -1993,11 +1993,11 @@ package body RPC is
     --  end record;
 
   begin
-    Log(Me & Service, "start");
+    --Log(Me & Service, "start");
     In_Play_Market := False;
     Get_Value(Container => J_Market,
               Field     => "marketId",
-              Target    =>  DB_Market.Marketid,
+              Target    => DB_Market.Marketid,
               Found     => Found);
     if Found then
       Db_Market.Read(Eos);
@@ -2005,7 +2005,7 @@ package body RPC is
 
     Get_Value(Container => J_Market,
               Field     => "marketName",
-              Target    =>  DB_Market.Marketname,
+              Target    => DB_Market.Marketname,
               Found     => Found);
 
 
@@ -2080,7 +2080,7 @@ package body RPC is
               Found     => Found);
 
     Log(Me, "In_Play_Market: " & In_Play_Market'Img & " " & DB_Market.To_String);
-    Log(Me & Service, "stop");
+--    Log(Me & Service, "stop");
 
   end Parse_Market;
   -----------------------------------------------
