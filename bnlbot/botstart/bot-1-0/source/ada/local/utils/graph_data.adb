@@ -182,7 +182,7 @@ procedure Graph_Data is
        "and B.BETWON " &
        "and STATUS = :STATUS " &
        "and B.STARTTS >= (select CURRENT_DATE - interval ':SOME days') " &
-       "and extract(year from B.STARTTS) = extract(year from (select CURRENT_DATE )) " &
+    --   "and extract(year from B.STARTTS) = extract(year from (select CURRENT_DATE )) " &
        "group by BETNAME, B.STARTTS::date " &
        "order by B.STARTTS::date, BETNAME");
 
