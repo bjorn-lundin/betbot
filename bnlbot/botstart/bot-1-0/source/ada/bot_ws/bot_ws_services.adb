@@ -429,7 +429,7 @@ package body Bot_Ws_Services is
         Stop := Start + (6,0,0,0,0);
       end;   
     elsif Context = "sum_total_bets" then
-      Start := (2018,5,1,0,0,0,0);
+      Start := (2018,11,1,0,0,0,0);
     else
       Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
       Json_Reply.Set_Field (Field_Name => "context", Field => Context);
