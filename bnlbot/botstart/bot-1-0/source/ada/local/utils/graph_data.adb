@@ -210,14 +210,19 @@ procedure Graph_Data is
      Equity_Result : Equity_Result_Type;
      Profit : Fixed_Type := 0.0;
    begin
-     Select_Equity_Date.Prepare(
-       "select B.BETPLACED, B.PROFIT " &
-       "from ABETS B " &
-       "where B.BETNAME = :BETNAME " &
-       "and B.STATUS = 'SETTLED' " &
-       "and B.STARTTS >= :STARTDATE " &
-       "order by B.BETPLACED");
-     Select_Equity_Date.Set("BETNAME", Betname);
+    Select_Equity_Date.Prepare(
+                               "select B.BETPLACED, " &
+                                 "round(sum( " &
+                                 "    case when B.BETWON " &
+                                 "       then B.PROFIT * 0.935 " &
+                                 "       else B.PROFIT " &
+                                 "    end)::numeric,2) PROFIT, " &
+                                 "from ABETS B " &
+                                 "where B.BETNAME = :BETNAME " &
+                                 "and B.STATUS = 'SETTLED' " &
+                                 "and B.STARTTS >= :STARTDATE " &
+                                 "order by B.BETPLACED");
+    Select_Equity_Date.Set("BETNAME", Betname);
      Select_Equity_Date.Set_Timestamp("STARTDATE", Global_Start_Date);
 
      Select_Equity_Date.Open_Cursor;
