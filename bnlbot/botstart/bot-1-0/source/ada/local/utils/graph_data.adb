@@ -216,7 +216,7 @@ procedure Graph_Data is
                                  "    case when B.BETWON " &
                                  "       then B.PROFIT * 0.935 " &
                                  "       else B.PROFIT " &
-                                 "    end)::numeric,2) PROFIT, " &
+                                 "    end)::numeric,2) PROFIT " &
                                  "from ABETS B " &
                                  "where B.BETNAME = :BETNAME " &
                                  "and B.STATUS = 'SETTLED' " &
