@@ -212,7 +212,7 @@ procedure Graph_Data is
    begin
     Select_Equity_Date.Prepare(
                                "select B.BETPLACED, " &
-                                 "round(sum( " &
+                                 "round(( " &
                                  "    case when B.BETWON " &
                                  "       then B.PROFIT * 0.935 " &
                                  "       else B.PROFIT " &
