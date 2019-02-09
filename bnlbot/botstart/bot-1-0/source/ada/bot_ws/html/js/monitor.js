@@ -146,6 +146,11 @@ function Do_Page_Reload () {
   $('#profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
   $('#avg_price_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
   $('#settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01.png' + '?' + unique);
+
+  $('#profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01.png' + '?' + unique);
+  $('#avg_price_42_horse_back_1_56_00_1_4_plc_1_01').attr('src', '/img/avg_price_42_horse_back_1_56_00_1_4_plc_1_01.png' + '?' + unique);
+  $('#settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01').attr('src', '/img/settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01.png' + '?' + unique);
+  
 }
 
 function Run_All() {
