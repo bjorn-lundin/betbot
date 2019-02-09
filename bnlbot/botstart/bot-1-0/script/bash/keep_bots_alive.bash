@@ -240,7 +240,7 @@ function Create_Plots () {
 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --startdate="2018-10-15" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --startdate="2018-11-15" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -293,7 +293,7 @@ if [ $NUM_RUNNING -gt 1 ] ; then
 fi
 
 case $BOT_MACHINE_ROLE in
-  PROD) 
+  PROD)
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     SYSTEM_USER_LIST="dry"
@@ -301,6 +301,12 @@ case $BOT_MACHINE_ROLE in
 
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
+      if [ $HOUR == "12" ] ; then
+        if [ $MINUTE == "43" ] ; then
+          #Create_Plots $USR 7
+          Create_Plots $USR 42
+        fi
+      fi
       if [ $HOUR == "23" ] ; then
         if [ $MINUTE == "01" ] ; then
           #Create_Plots $USR 7
