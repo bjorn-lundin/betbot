@@ -110,14 +110,23 @@ package body Bot_Ws_Services is
                           "order by BETPLACED "
                        );
     Select_Sum_Bets.Prepare(
-                            "select sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED " &
+                            "select round(sum( " &
+                              "    case when BETWON " &
+                              "       then PROFIT * 0.935 " &
+                              "       else PROFIT " &
+                              "    end)::numeric,2) PROFIT, " & 
+                              "sum(SIZEMATCHED) SIZEMATCHED " &
                               "from ABETS " &
                               "where STARTTS >= :START " &
                               "and STARTTS <= :STOP " &
                               "and STATUS = 'SETTLED'"
                            );
     Select_Sum_Bets_Named.Prepare(
-                                  "select sum(PROFIT) PROFIT " &
+                                  "select " & "round(sum( " &
+                                    "    case when BETWON " &
+                                    "       then PROFIT * 0.935 " &
+                                    "       else PROFIT " &
+                                    "    end)::numeric,2) PROFIT, " &
                                     "from ABETS " &
                                     "where STARTTS >= :START " &
                                     "and STARTTS <= :STOP " &
@@ -126,10 +135,17 @@ package body Bot_Ws_Services is
                                  );
 
     Select_Sum_Bets_Grouped_By_Name.Prepare(
-                                            "select BETNAME, sum(PROFIT) PROFIT, sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
+                                            "select BETNAME, " &
+                                            --  " sum(PROFIT) PROFIT, " &
+                                              "round(sum( " &
+                                              "    case when BETWON " &
+                                              "       then PROFIT * 0.935 " &
+                                              "       else PROFIT " &
+                                              "    end)::numeric,2) PROFIT, " &
+                                              "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
                                               "round((case sum(SIZEMATCHED) " &
                                               "    when 0 then 0.0 " &
-                                              "    else 100.0 * sum(PROFIT) / sum(SIZEMATCHED) " &
+                                              "    else 93.5 * sum(PROFIT) / sum(SIZEMATCHED) " &
                                               " end)::numeric,2) RATIO, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
