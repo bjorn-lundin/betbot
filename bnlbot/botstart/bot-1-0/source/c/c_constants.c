@@ -5,7 +5,14 @@
 //#include <sys/wait.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+
+#ifdef __APPLE__
+#include <unistd.h>
+#endif
+
 #include <sys/fcntl.h>
+
 
 int	main() {
 
@@ -24,8 +31,16 @@ int	main() {
   printf("  O_NONBLOCK  : constant Interfaces.C.Int := %d; -- if pipe, don't wait for data\n",O_NONBLOCK);
   printf("  O_SYNC      : constant Interfaces.C.Int := %d; -- don't cache writes\n",O_SYNC);
   printf("  O_ASYNC     : constant Interfaces.C.Int := %d; -- async. IO via SIGIO\n",O_ASYNC);
+
+#ifndef __APPLE__
   printf("  O_DIRECT    : constant Interfaces.C.Int := %d; -- direct disk access\n",O_DIRECT);
+#endif
+
+
+#ifndef __APPLE__
   printf("  O_LARGEFILE : constant Interfaces.C.Int := %d; -- not implemented in Linux (yet)\n",O_LARGEFILE);
+#endif
+
   printf("  O_DIRECTORY : constant Interfaces.C.Int := %d; -- error if file isn't a dir\n",O_DIRECTORY);
   printf("  O_NOFOLLOW  : constant Interfaces.C.Int := %d; -- if sym link, open link itself\n",O_NOFOLLOW);
   
@@ -33,8 +48,10 @@ int	main() {
   printf("  F_RDLCK  : constant Interfaces.C.Int := %d; -- read lock\n",F_RDLCK);
   printf("  F_WRLCK  : constant Interfaces.C.Int := %d; -- write lock\n",F_WRLCK);
   printf("  F_UNLCK  : constant Interfaces.C.Int := %d; -- unlock (remove a lock)\n",F_UNLCK);
+#ifndef __APPLE__
   printf("  F_EXLCK  : constant Interfaces.C.Int := %d; -- exclusive lock\n",F_EXLCK);
   printf("  F_SHLCK  : constant Interfaces.C.Int := %d; -- shared lock\n",F_SHLCK);
+#endif
   
   printf("  F_DUPFD  : constant Interfaces.C.Int := %d; --\n",F_DUPFD);
   printf("  F_GETFD  : constant Interfaces.C.Int := %d; --\n",F_GETFD);
@@ -46,8 +63,11 @@ int	main() {
   printf("  F_SETLKW : constant Interfaces.C.Int := %d; --\n",F_SETLKW);
   printf("  F_SETOWN : constant Interfaces.C.Int := %d; --\n",F_SETOWN);
   printf("  F_GETOWN : constant Interfaces.C.Int := %d; --\n",F_GETOWN);
+
+#ifndef __APPLE__
   printf("  F_SETSIG : constant Interfaces.C.Int := %d; --\n",F_SETSIG);
   printf("  F_GETSIG : constant Interfaces.C.Int := %d; --\n",F_GETSIG);
+#endif
   
   printf("  SEEK_SET : constant Interfaces.C.Int := %d; -- absolute position\n",SEEK_SET);
   printf("  SEEK_CUR : constant Interfaces.C.Int := %d; -- offset from current position\n",SEEK_CUR);
