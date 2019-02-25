@@ -2,6 +2,11 @@
   count('a'),
   round(avg(profit)::numeric, 2) as avgprofit,
   round(sum(profit)::numeric, 2) as sumprofit,
+  round(sum(
+    case when betwon 
+       then profit*0.935
+       else profit
+    end),2) profit2, 
   round(avg(pricematched)::numeric, 3) as avgpricem,
 --  round(avg(sizematched)::numeric,0) as avgsizem,
   round((case SIDE 
@@ -12,10 +17,22 @@
 
  -- round((sum(profit)*100/sum(sizematched))::numeric,2) as interest_rate_pct,
   round((case SIDE 
-     when 'BACK' then sum(profit)*100/sum(sizematched) 
-     when 'LAY'  then sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
+     when 'BACK' then --sum(profit)*100/sum(sizematched) 
+      round((100.0 * 
+      sum(
+          case when betwon 
+            then profit*0.935
+            else profit
+          end)/sum(sizematched)),2) 
+     when 'LAY'  then --sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1))
+      round((100.0 * 
+      sum(
+          case when betwon 
+            then profit*0.935
+            else profit
+          end)/sum(sizematched)),2) 
      else 0.0
-  end)::numeric,2) as interest_rate_pct,
+  end)::numeric,2) as rate_pct,
   round(sum(sizematched),0) as sumsm,
   min(betplaced)::date as mindate,
   max(betplaced)::date as maxdate,

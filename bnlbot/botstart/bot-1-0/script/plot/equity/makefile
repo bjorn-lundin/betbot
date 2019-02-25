@@ -5,14 +5,7 @@
 ###############################################################################
 
 BET_NAMES_DRY := \
-WIN_05.00_30.00_1.14_70.00_1ST \
-WIN_10.00_30.00_1.14_70.00_1ST \
-WIN_05.00_40.00_1.14_70.00_1ST \
-WIN_05.00_35.00_1.14_55.00_1ST \
-WIN_05.00_35.00_1.14_65.00_1ST \
-WIN_05.00_30.00_1.14_50.00_1ST \
-WIN_05.00_30.00_1.14_60.00_1ST \
-WIN_05.00_25.00_1.14_55.00_1ST \
+PLC_x4_1.56_00.00_1.01_1_Pln \
 
 BET_NAMES := $(BET_NAMES_DRY)
 
@@ -20,9 +13,8 @@ DATS := $(foreach i,$(BET_NAMES), $(i).dat)
 PNGS := $(foreach i,$(BET_NAMES), $(i).png)
 
 
-# do a wordcount of how many items in array
-NUMBETS := $(shell echo $(BET_NAMES) | wc -w )
-
+# do a wordcount of how many items in array, strip whitespace on mac
+NUMBETS := $(shell echo $(BET_NAMES) | wc -w | tr -d '[:space:]')
 
 all  :  pngs png_top
 
@@ -39,11 +31,13 @@ test:
 	@echo "---------------------"
 	@echo $(DATS)
 	@echo "---------------------"
+	@echo $(NUMBETS)
+	@echo "---------------------"
 
 PHONY : png_top
 png_top: $(DATS)
 	gnuplot -e "db_name='$(DBNAME)'" \
-            -e "numbets ='$(NUMBETS)'" \
+            -e "numbets='$(NUMBETS)'" \
             -e "target_png='equity_top_$(NUMBETS).png'" \
             -e "files='$(BET_NAMES)'" equity_many.gpl
 ## equity start ##
