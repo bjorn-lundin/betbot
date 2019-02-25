@@ -402,6 +402,13 @@ begin
   AWS.Server.Log.Start_Error(Web_Server => WS,
                              Split_Mode => Aws.Log.Daily);
   Logging.Log("Main", "Log file name:" & AWS.Server.Log.Name (WS));
+  
+  declare -- prefill list at startup to alway get whole day
+    Dummy : String := Bot_Ws_Services.Get_Starttimes("noone","startup");
+  begin
+    null;
+  end;  
+  
   Wait_Terminate;
   AWS.Server.Shutdown (WS);
   AWS.Server.Log.Stop      (Web_Server => WS);
