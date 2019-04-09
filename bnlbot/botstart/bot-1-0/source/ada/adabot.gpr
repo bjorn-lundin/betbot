@@ -83,9 +83,9 @@ project Adabot is
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "markets_sender.adb",
                      "fix_database.adb",
-                     "eat_mem.adb",
-                     "crunch_trig.adb",
-                     "copy_photos.adb",
+                  --   "eat_mem.adb",
+                  --   "crunch_trig.adb",
+                  --   "copy_photos.adb",
                      "price_to_tics.adb"   );
 
    Test_Programs := ("test_string_object.adb");
