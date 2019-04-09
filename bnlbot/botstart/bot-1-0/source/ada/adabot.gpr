@@ -69,18 +69,23 @@ project Adabot is
                     "lay_losers_1.adb",
 --                    "check_greed.adb",
                     "check_high_lay_odds.adb",
---                    "race_length.adb",
+                    "race_length.adb",
+                    "race_data.adb",
 --                    "insert_midrace.adb",
---                    "show_race_lengths.adb",
+                    "show_race_lengths.adb",
 --                   "sample_percent_1.adb",
                     "graph_data_3.adb",
 --                    "check_ratio_favorites_on_place.adb",
+                    "split_to_ai.adb",
                     "lay_and_back_after_progress.adb"
                    );
 
    Display_Mains :=  ("race_time.adb");
    Other_Mains :=  ( "markets_sender.adb",
                      "fix_database.adb",
+                     "eat_mem.adb",
+                     "crunch_trig.adb",
+                     "copy_photos.adb",
                      "price_to_tics.adb"   );
 
    Test_Programs := ("test_string_object.adb");
