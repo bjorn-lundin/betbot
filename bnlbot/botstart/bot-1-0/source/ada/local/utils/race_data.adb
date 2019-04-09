@@ -12,7 +12,7 @@ with Calendar2;  use Calendar2;
 with Logging; use Logging;
 with Bot_Svn_Info;
 with Ini;
-
+with Events;
 
 procedure Race_Data is
 
@@ -62,13 +62,30 @@ begin
    -- Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
     Sim.Read_All_Markets(Current_Date, Bot_Types.Horse, Sim.Market_With_Data_List);
 
+
     Log("start process " & Current_Date.String_Date_ISO);
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
-        Log("|datapoint|" &
-              Market.Marketid & "|" &
-              Market.Marketname & "|" &
-              Market.Markettype(1..3) & "|" );
+        declare
+          Ev : Events.Event_Type;
+          Eos : Boolean := False;
+          Idx : Natural := 0;
+        begin
+          Ev.Eventid := Market.Eventid;
+          Ev.Read(Eos);
+          for I in Ev.Eventname'Range loop
+            if Ev.Eventname(I) = ' ' then
+              Idx := I;
+              exit;
+            end if;
+          end loop;
+
+          Log("|datapoint|" &
+                Market.Marketid & "|" &
+                Market.Marketname & "|" &
+                Market.Markettype(1..3) & "|" &
+                Ev.Eventname(1..Idx-1) & "|" );
+        end;
       end loop Market_Loop;
     end;
 
