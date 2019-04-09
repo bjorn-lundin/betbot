@@ -82,9 +82,10 @@ begin
             end if;
           end loop;
 
-          Market_Win.Marketid := Market.Marketid;
           if Market.Markettype(1) = 'P' then
             Market.Corresponding_Win_Market(Market_Win, Found);
+          else
+            Market_Win.Marketname := Market.Marketname;
           end if;
 
           Log("|datapoint|" &
