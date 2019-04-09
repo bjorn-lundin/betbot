@@ -9,6 +9,7 @@ package body Markets is
   Me : constant String := "Markets.";
 
   Find_Plc_Market,
+  Find_Win_Market,
   Select_Unsettled_Markets,
   Select_Ongoing_Markets : Sql.Statement_Type;
 
@@ -54,6 +55,39 @@ package body Markets is
 
   ----------------------------------------
 
+  procedure Corresponding_Win_Market(Self       : in out Market_Type;
+                                     Win_Market :    out Market_Type;
+                                     Found      :    out Boolean) is
+    T   : Sql.Transaction_Type;
+    Eos : Boolean := False;
+  begin
+    T.Start;
+    Find_Win_Market.Prepare(
+                             "select MW.* from AMARKETS MW, AMARKETS MP " &
+                               "where MW.EVENTID = MP.EVENTID " &
+                               "and MW.STARTTS = MP.STARTTS " &
+                               "and MP.MARKETID = :PLACEMARKETID " &
+                               "and MP.MARKETTYPE = 'PLACE' " &
+                              -- "and MP.NUMWINNERS = :NUM " &
+                               "and MW.MARKETTYPE = 'WIN'");
+
+   -- Find_Win_Market.Set("NUM", Integer_4(1));
+    Find_Win_Market.Set("PLACEMARKETID", Self.Marketid);
+    Find_Win_Market.Open_Cursor;
+    Find_Win_Market.Fetch (Eos);
+    if not Eos then
+      Win_Market := Markets.Get(Find_Win_Market);
+      Found := True;
+    else
+    --  Log (Me & "Corresponding_Win_Market", "no WIN market found");
+      Found := False;
+    end if;
+    Find_Win_Market.Close_Cursor;
+    T.Commit;
+  end Corresponding_Win_Market;
+
+
+  ----------------------------------------
 
   procedure Read_List(Stm  : in     Sql.Statement_Type;
                       List : in out Lists.List;

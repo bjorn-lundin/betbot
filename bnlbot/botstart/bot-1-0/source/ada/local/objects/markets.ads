@@ -11,9 +11,14 @@ package Markets is
   type Market_Type is new Table_Amarkets.Data_Type with null record;
   function Empty_Data return Market_Type ;
 
+  -- for a win market find the place market
   procedure Corresponding_Place_Market(Self         : in out Market_Type;
                                        Place_Market :    out Market_Type;
                                        Found        :    out Boolean);
+  -- for a place market find the win market
+  procedure Corresponding_Win_Market(Self       : in out Market_Type;
+                                     Win_Market :    out Market_Type;
+                                     Found      :    out Boolean);
 
   function Marketname_Ok(Self : Market_Type) return Boolean;
   function Marketname_Ok2(Self : Market_Type) return Boolean; -- allows Hrd and Chs as well

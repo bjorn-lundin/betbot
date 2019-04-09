@@ -62,14 +62,14 @@ begin
     T.Start;
    -- Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
     Sim.Read_All_Markets(Current_Date, Bot_Types.Horse, Sim.Market_With_Data_List);
-    Sim.Fill_Win_Place_Map(Current_Date, Bot_Types.Horse, Sim.Win_Place_Map);
+   -- Sim.Fill_Win_Place_Map(Current_Date, Bot_Types.Horse, Sim.Win_Place_Map);
 
     Log("start process " & Current_Date.String_Date_ISO);
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
         declare
           Ev : Events.Event_Type;
-          Eos : Boolean := False;
+          Eos,Found : Boolean := False;
           Idx : Natural := 0;
           Market_Win : Markets.Market_Type;
         begin
@@ -82,12 +82,10 @@ begin
             end if;
           end loop;
 
-          begin
-            Market_Win.Marketid := Sim.Win_Place_Map(Market.Marketid);
-          exception
-            when others => null;
-            Market_Win.Marketid := Market.Marketid;
-          end;
+          Market_Win.Marketid := Market.Marketid;
+          if Market.Markettype(1) = 'P' then
+            Market.Corresponding_Win_Market(Market_Win, Found);
+          end if;
 
           Log("|datapoint|" &
                 Market.Marketid & "|" &
