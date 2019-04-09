@@ -1,6 +1,8 @@
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings.Hash;
+with Ada.Strings ; use Ada.Strings;
+with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 
 with Gnat; use Gnat;
 with Gnat.Awk;
@@ -9,6 +11,7 @@ with Text_Io; use Text_Io;
 with Calendar2; use Calendar2;
 with Types; use Types;
 with Bot_types; use Bot_types;
+with Markets;
 
 procedure Show_Race_Lengths is
 
@@ -51,7 +54,8 @@ procedure Show_Race_Lengths is
 begin
   Awk.Set_Current (Computer_File);
   Awk.Open (Separators => "|",
-            Filename   => "/home/bnl/bnlbot/botstart/user/bnl/log/race_length.dat");
+            Filename => "/Users/bnl/svn/botstart/user/bnl/log/race_length.dat");
+--            Filename   => "/home/bnl/bnlbot/botstart/user/bnl/log/race_length.dat");
 
   while not Awk.End_Of_File loop
     Awk.Get_Line;
@@ -80,17 +84,24 @@ begin
   for M in The_Map.Iterate loop
    -- Put_Line("Key " & Stats.Key(M)) ;
     declare
-      S : Seconds_Type := 0;
-      F : Integer_4 := 0;
+      M2 : Markets.Market_Type;
     begin
-      for List_Element of Stats.Element(M) loop
+      Move(Stats.Key(M),M2.Marketname);
+      if M2.Marketname_Ok2 then
+        declare
+          S : Seconds_Type := 0;
+          F : Integer_4 := 0;
+        begin
+          for List_Element of Stats.Element(M) loop
         --Put_Line("   -   " & String_Interval(List_Element.Time, Days => False, Hours => False) & " -> " & List_Element.Marketid) ;
-        S := S + To_Seconds(List_Element.Time);
-      end loop;
-      F := S / Seconds_Type(stats.Element(M).Length);
-      S := Seconds_Type(F);
-      Put_Line("Key " & Stats.Key(M) & " avg: " & String_Interval(To_Interval(S), Days => False, Hours => False) & " #-> " & Stats.Element(M).Length'Img) ;
-    end ;
+            S := S + To_Seconds(List_Element.Time);
+          end loop;
+          F := S / Seconds_Type(Stats.Element(M).Length);
+          S := Seconds_Type(F);
+          Put_Line(Stats.Key(M) & "|" & S'Img & "|" & String_Interval(To_Interval(S), Days => False, Hours => False) & "|" & Stats.Element(M).Length'Img) ;
+        end;
+      end if;
+    end;
   end loop;
 
 end Show_Race_Lengths;
