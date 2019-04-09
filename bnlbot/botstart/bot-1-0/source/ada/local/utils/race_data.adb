@@ -13,6 +13,7 @@ with Logging; use Logging;
 with Bot_Svn_Info;
 with Ini;
 with Events;
+with Markets;
 
 procedure Race_Data is
 
@@ -61,7 +62,7 @@ begin
     T.Start;
    -- Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
     Sim.Read_All_Markets(Current_Date, Bot_Types.Horse, Sim.Market_With_Data_List);
-
+    Sim.Fill_Win_Place_Map(Current_Date, Bot_Types.Horse, Sim.Win_Place_Map);
 
     Log("start process " & Current_Date.String_Date_ISO);
     begin
@@ -70,6 +71,7 @@ begin
           Ev : Events.Event_Type;
           Eos : Boolean := False;
           Idx : Natural := 0;
+          Market_Win : Markets.Market_Type;
         begin
           Ev.Eventid := Market.Eventid;
           Ev.Read(Eos);
@@ -80,9 +82,17 @@ begin
             end if;
           end loop;
 
+          begin
+            Market_Win.Marketid := Sim.Win_Place_Map(Market.Marketid);
+          exception
+            when others => null;
+            Market_Win.Marketid := Market.Marketid;
+          end;
+
           Log("|datapoint|" &
                 Market.Marketid & "|" &
                 Market.Marketname & "|" &
+                Market_Win.Marketname & "|" &
                 Market.Markettype(1..3) & "|" &
                 Ev.Eventname(1..Idx-1) & "|" );
         end;
