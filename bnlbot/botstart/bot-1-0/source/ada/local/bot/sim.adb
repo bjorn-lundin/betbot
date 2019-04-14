@@ -916,7 +916,7 @@ package body Sim is
                                         "select distinct(M.MARKETID) " &
                                           "from APRICESHISTORY RP, AMARKETS M " &
                                           "where RP.MARKETID = M.MARKETID " &
-                                          "and M.MARKETTYPE = 'PLC' " &
+                                          "and M.MARKETTYPE = 'PLACE' " &
                                           "and STARTTS::date = :DATE " &
                                           "order by M.MARKETID");
 
