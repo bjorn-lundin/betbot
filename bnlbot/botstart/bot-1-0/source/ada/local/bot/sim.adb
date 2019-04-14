@@ -1148,12 +1148,12 @@ package body Sim is
       Log("Fill_Race_Times", Awk.Field(0)) ;
       Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
       declare
-        S   : Calendar2.Second_Type := 0;
+        S   : Calendar2.Seconds_Type := 0;
         Key : Marketname_Type :=(others => ' ');
       begin -- name                                               secs time      #races
             --3m Hcap Hrd                                       | 351|05:51.000| 262
           Key := Awk.Field(1);
-          S   := Second_Type'Val(Awk.Field(2));
+          S   := Seconds_Type'Val(Awk.Field(2));
           Rt_Map.Insert(Key, S);
       end;
     end loop;
