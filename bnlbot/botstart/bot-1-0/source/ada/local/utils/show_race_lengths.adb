@@ -54,7 +54,7 @@ procedure Show_Race_Lengths is
 begin
   Awk.Set_Current (Computer_File);
   Awk.Open (Separators => "|",
-            Filename => "/Users/bnl/svn/botstart/user/bnl/log/race_length.dat");
+            Filename => "/Users/bnl/svn/botstart/bot-1-0/data/race_length.dat");
 --            Filename   => "/home/bnl/bnlbot/botstart/user/bnl/log/race_length.dat");
 
   while not Awk.End_Of_File loop

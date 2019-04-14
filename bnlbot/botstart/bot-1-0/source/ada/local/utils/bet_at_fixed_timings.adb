@@ -4,7 +4,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
 
 with Sim;
-with Utils; use Utils;
+with Utils; --use Utils;
 with Types ; use Types;
 with Bot_Types ; use Bot_Types;
 with Stacktrace;
@@ -31,12 +31,6 @@ procedure Bet_At_Fixed_Timings is
 
   Bet_Size           : Bet_Size_Type := 30.0;
 
-  --   type Odds_Record is record
-  --      Back_Num : Natural := 0;
-  --      Lay_Num : Natural := 0;
-  --   end record;
-
-  --type Bet_Status_Type is (No_Bet_Laid, Bet_Laid, Bet_Matched);
   --Commission : Fixed_Type  := 0.065;
 
   subtype Key is String(1..7);
@@ -47,16 +41,6 @@ procedure Bet_At_Fixed_Timings is
      Ada.Strings.Hash,
      "=",
      "=");
-
-
-  package Racetime_Maps is new Ada.Containers.Hashed_Maps
-    (Bot_Types.Marketname_Type,
-     Natural,
-     Ada.Strings.Hash,
-     "=",
-     "=");
-
-
   --------------------------------------------------------------------------
 
   function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
@@ -68,17 +52,7 @@ procedure Bet_At_Fixed_Timings is
 
   type Best_Runners_Array_Type is array (1..12) of Price_Histories.Price_History_Type;
 
-
-
-  procedure Read_Race_Times(Racetimes : out Racetime_Maps.Map) is
-  begin
-    null;
-    pragma Compile_Time_Warning(True, "implement read_race_times");
-
-  end Read_Race_Times;
-
-
-
+  --------------------------------------------------------------------------------
   procedure Treat_Back(Market             : in     Markets.Market_Type;
                        Bra                : in     Best_Runners_Array_Type ;
                        Name               : in     Bot_Types.Betname_Type;
@@ -234,7 +208,6 @@ procedure Bet_At_Fixed_Timings is
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
   Sa_Percent_Of_Race  : aliased  Gnat.Strings.String_Access;
   Percent             : Fixed_Type := 0.0;
-  Rt_Map         : Racetime_Maps.Map;
 
 begin
   Define_Switch
@@ -282,7 +255,7 @@ begin
   Log("main", "db Connected");
 
 
-  Read_Race_Times(Rt_Map);
+  Sim.Fill_Race_Times(Sim.Racetime_Map);
 
   Date_Loop : loop
     T.Start;
@@ -293,10 +266,9 @@ begin
 
     declare
       Cnt           : Integer := 0;
-      Win_Found     : Boolean := True;
       Market_Ok     : Boolean := False;
       Eos           : Boolean := False;
-      Avg_Racetime  : Natural := 0;
+      Avg_Racetime  : Second_Type := 0;
       Win_Market    : Markets.Market_Type;
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
@@ -307,13 +279,13 @@ begin
             Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
             Win_Market.Read(Eos);
             Market_Ok := not Eos and then Win_Market.Marketname_Ok2;
-            Avg_Racetime := Rt_Map(Win_Market.Marketname);
+            Avg_Racetime := Sim.Racetime_Map(Win_Market.Marketname);
           exception
             when others => Market_Ok := False;
           end ;
         elsif Market.Markettype(1..3) = "WIN" then
           Market_Ok := Market.Marketname_Ok2;
-          Avg_Racetime := Rt_Map(Market.Marketname);
+          Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
           Win_Market := Market;
         else
           Market_Ok := False;
@@ -328,17 +300,18 @@ begin
                                                 Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
             Bet_List                        : Bets.Lists.List;
             Race_Started                    : Boolean := False;
-            Last_Timestamp                  : Calendar2.Time_Type := Calendar2.Time_Type_First;
-            Betat_Timestamp                 : Calendar2.Time_Type := Calendar2.Time_Type_First;
+            Last_Timestamp                  : Time_Type := Time_Type_First;
+            Betat_Timestamp                 : Time_Type := Time_Type_First;
 
           begin
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
 
-              if not Race_Started then
-                Last_Timestamp := Timestamp;
-              elsif not Race_Started and then Timestamp - Last_Timestamp < (0,0,0,1,0) then
+              if not Race_Started and then
+                Last_Timestamp /= Time_Type_First and Then
+                Timestamp - Last_Timestamp < (0,0,0,1,0) then
+
                 Race_Started := True;
-                Betat_Timestamp := Timestamp + To_Interval(Seconds_Type(Percent * Avg_Racetime));
+                Betat_Timestamp := Timestamp + To_Interval(Seconds_Type(Percent * Natural(Avg_Racetime)));
               elsif Timestamp >= Betat_Timestamp then
 
                 declare
@@ -365,8 +338,9 @@ begin
                              Bet_List           => Bet_List);
                 end;
               end if;
+              Last_Timestamp := Timestamp;
+
             end loop Loop_Ts; --  Timestamp
-            --Bets.Sum_Laybets(Bet_List, -12_000.0);
           end;
 
         end if;
