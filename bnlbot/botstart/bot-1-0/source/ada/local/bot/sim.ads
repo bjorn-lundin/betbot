@@ -206,7 +206,7 @@ package Sim is
   --average times for different races
   package Racetime_Maps is new Ada.Containers.Hashed_Maps
     (Bot_Types.Marketname_Type,
-     Calendar2.Second_Type,
+     Calendar2.Seconds_Type,
      Ada.Strings.Hash,
      "=",
      "=");

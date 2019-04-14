@@ -268,7 +268,7 @@ begin
       Cnt           : Integer := 0;
       Market_Ok     : Boolean := False;
       Eos           : Boolean := False;
-      Avg_Racetime  : Second_Type := 0;
+      Avg_Racetime  : Seconds_Type := 0;
       Win_Market    : Markets.Market_Type;
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
