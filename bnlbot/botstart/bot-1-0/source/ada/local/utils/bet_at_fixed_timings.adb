@@ -286,11 +286,15 @@ begin
             when others => Market_Ok := False;
           end ;
         elsif Market.Markettype(1..3) = "WIN" then
-          Market_Ok := Market.Marketname_Ok2;
-          if Market_Ok then
-            Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
-            Win_Market := Market;
-          end if;
+          begin
+            Market_Ok := Market.Marketname_Ok2;
+            if Market_Ok then
+              Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
+              Win_Market := Market;
+            end if;
+          exception
+            when others => Market_Ok := False;
+          end ;
         else
           Market_Ok := False;
           Log("WTF - market " & Market.To_String);
