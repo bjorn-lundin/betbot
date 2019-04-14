@@ -273,7 +273,7 @@ begin
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
         T.Start;
-        if Market.Markettype(1..3) = "PLC" then
+        if Market.Markettype(1..3) = "PLA" then
           --find win market name
           begin
             Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
