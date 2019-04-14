@@ -14,6 +14,8 @@ with Ada.Strings;
 with Ada.Strings.Hash;
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
+
+
 package Sim is
 
 
@@ -161,6 +163,15 @@ package Sim is
                                 Animal        : in     Animal_Type;
                                 Win_Place_Map :    out Win_Place_Maps.Map);
 
+  package Place_Win_Maps is new Ada.Containers.Hashed_Maps (
+         Marketid_Type,
+         Marketid_Type,
+         Ada.Strings.Hash,
+         "=",
+         "=");
+  procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
+                                Animal        : in     Animal_Type;
+                                Place_Win_Map :    out Place_Win_Maps.Map);
 
   -- for timestamp slices start
 
@@ -192,6 +203,16 @@ package Sim is
   -- for timestamp slices stop
 
 
+  --average times for different races
+  package Racetime_Maps is new Ada.Containers.Hashed_Maps
+    (Bot_Types.Marketname_Type,
+     Calendar2.Second_Type,
+     Ada.Strings.Hash,
+     "=",
+     "=");
+
+  procedure Fill_Race_Times(Rt_Map : out Racetime_Maps.Map);
+
   function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type) return Boolean;
 
@@ -214,7 +235,9 @@ package Sim is
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
   Prices_Map                               : Sim.Marketid_Prices_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
+  Place_Win_Map                            : Sim.Place_Win_Maps.Map;
   Events_Map                               : Sim.Eventid_Events_Maps.Map;
+  Racetime_Map                             : Sim.Racetime_Maps.Map;
 
 
 end Sim ;

@@ -10,6 +10,8 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
 with Text_Io;
 with Sql;
+with Gnat; use Gnat;
+with Gnat.Awk;
 
 package body Sim is
 
@@ -18,8 +20,6 @@ package body Sim is
 
   Select_Sampleids_In_One_Market,
   Select_Sampleids_In_One_Market_2,
-  Select_Get_Win_Market,
-  Select_Get_Place_Market,
   Select_Event_In_One_Market,
   Select_Prices_In_One_Market,
   Select_Race_Winner_In_One_Market,
@@ -27,16 +27,17 @@ package body Sim is
   Select_All_Markets_Hound,
   Select_Pricets_In_A_Market,
   Select_All_Win_Markets,
+  Select_All_Place_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
-  Current_Market : Markets.Market_Type := Markets.Empty_Data;
+  Current_Market                : Markets.Market_Type := Markets.Empty_Data;
   Global_Price_During_Race_List : Price_Histories.Lists.List;
 
   Global_Current_Pricets: Calendar2.Time_Type := Calendar2.Time_Type_First ;
   package Pricets_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Calendar2.Time_Type);
-  Pricets_List : Pricets_List_Pack.List;
+  Pricets_List          : Pricets_List_Pack.List;
 
-  Object : constant String := "Sim.";
+  Object          : constant String := "Sim.";
   Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
 
   use type Ada.Containers.Count_Type;
@@ -45,25 +46,25 @@ package body Sim is
 
   function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type)
-         return Boolean is
+                          return Boolean is
   begin
     return Is_Race_Winner(Runner.Selectionid, Marketid);
   end Is_Race_Winner;
 
   function Is_Race_Winner(Selectionid          : Integer_4;
                           Marketid             : Marketid_Type)
-         return Boolean is
+                          return Boolean is
     Service : constant String := "Is_Race_Winner";
   begin
     -- Log("Is_Race_Winner" & Selectionid'Img & " " & Marketid );
 
     -- Marketid_Winner_Map.Element((Marketid)) is a list of winning Arunners
-     for R of Winners_Map.Element(Marketid) loop
-       if Selectionid = R.Selectionid then
-         return True;
-       end if;
-     end loop;
-     return False;
+    for R of Winners_Map.Element(Marketid) loop
+      if Selectionid = R.Selectionid then
+        return True;
+      end if;
+    end loop;
+    return False;
   exception
     when Constraint_Error =>
       Log(Object & Service, "Key not in map '" & Marketid & "'");
@@ -84,7 +85,7 @@ package body Sim is
    -- T : Sql.Transaction_Type;
     Start,
     Stop,
-    Ts : Calendar2.Time_Type := Calendar2.Time_Type_First ;
+    Ts      : Calendar2.Time_Type := Calendar2.Time_Type_First ;
   begin
    -- Log(Object & Service, "start");
     In_Play := True;
@@ -93,8 +94,8 @@ package body Sim is
     if Current_Market = Markets.Empty_Data then
        --reset the fifo for ny race
       Log(Object & Service, "clear Fifo");
-      for i in Num_Runners_Type loop
-        Fifo(i).Clear;
+      for I in Num_Runners_Type loop
+        Fifo(I).Clear;
       end loop;
       Global_Current_Pricets := Calendar2.Time_Type_First ;
       Pricets_List.Clear;
@@ -143,16 +144,16 @@ package body Sim is
         if Race_Data.Pricets = Global_Current_Pricets then
           Have_Been_Inside := True;
           Price_Data := (
-             Marketid     => Race_Data.Marketid,
-             Selectionid  => Race_Data.Selectionid,
-             Pricets      => Race_Data.Pricets,
-             Status       => Race_Data.Status,
-             Totalmatched => Race_Data.Totalmatched,
-             Backprice    => Race_Data.Backprice,
-             Layprice     => Race_Data.Layprice,
-             Ixxlupd      => Race_Data.Ixxlupd,
-             Ixxluts      => Race_Data.Ixxluts
-          );
+                         Marketid     => Race_Data.Marketid,
+                         Selectionid  => Race_Data.Selectionid,
+                         Pricets      => Race_Data.Pricets,
+                         Status       => Race_Data.Status,
+                         Totalmatched => Race_Data.Totalmatched,
+                         Backprice    => Race_Data.Backprice,
+                         Layprice     => Race_Data.Layprice,
+                         Ixxlupd      => Race_Data.Ixxlupd,
+                         Ixxluts      => Race_Data.Ixxluts
+                        );
           Price_List.Append(Price_Data);
           --Log(Object & Service, "appended Price_Data " & Price_Data.To_String);
 
@@ -186,11 +187,11 @@ package body Sim is
     Instruction_Report_Error_Code  : String (1..50)  :=  (others => ' ') ;
     Order_Status                   : String (1..50)  :=  (others => ' ') ;
 
-    Bet_Id : Integer_8 := 0;
-    Now : Calendar2.Time_Type := Calendar2.Clock;
+    Bet_Id        : Integer_8 := 0;
+    Now           : Calendar2.Time_Type := Calendar2.Clock;
     Side_String   : Bet_Side_String_Type := (others => ' ');
-    Market : Markets.Market_Type;
-    Eos : Boolean := False;
+    Market        : Markets.Market_Type;
+    Eos           : Boolean := False;
     Local_Bet_Placed  :  Calendar2.Time_Type := Bet_Placed;
   begin
     if Local_Bet_Placed = Calendar2.Time_Type_First then
@@ -208,33 +209,33 @@ package body Sim is
     Move( "SUCCESS", Instruction_Report_Error_Code);
 
     Bet := (
-      Betid          => Bet_Id,
-      Marketid       => Market_Id,
-      Betmode        => Bot_Mode(Simulation),
-      Powerdays      => 0,
-      Selectionid    => Selection_Id,
-      Reference      => (others => '-'),
-      Size           => Fixed_Type(Size),
-      Price          => Fixed_Type(Price),
-      Side           => Side_String,
-      Betname        => Bet_Name,
-      Betwon         => False,
-      Profit         => 0.0,
-      Status         => Order_Status, -- ??
-      Exestatus      => Execution_Report_Status,
-      Exeerrcode     => Execution_Report_Error_Code,
-      Inststatus     => Instruction_Report_Status,
-      Insterrcode    => Instruction_Report_Error_Code,
-      Startts        => Market.Startts,
-      Betplaced      => Local_Bet_Placed,
-      Pricematched   => Fixed_Type(Price),
-      Sizematched    => Fixed_Type(Size),
-      Runnername     => Runner_Name,
-      Fullmarketname => Market.Marketname,
-      Svnrevision    => Bot_Svn_Info.Revision,
-      Ixxlupd        => (others => ' '), --set by insert
-      Ixxluts        => Now              --set by insert
-    );
+            Betid          => Bet_Id,
+            Marketid       => Market_Id,
+            Betmode        => Bot_Mode(Simulation),
+            Powerdays      => 0,
+            Selectionid    => Selection_Id,
+            Reference      => (others         => '-'),
+            Size           => Fixed_Type(Size),
+            Price          => Fixed_Type(Price),
+            Side           => Side_String,
+            Betname        => Bet_Name,
+            Betwon         => False,
+            Profit         => 0.0,
+            Status         => Order_Status, -- ??
+            Exestatus      => Execution_Report_Status,
+            Exeerrcode     => Execution_Report_Error_Code,
+            Inststatus     => Instruction_Report_Status,
+            Insterrcode    => Instruction_Report_Error_Code,
+            Startts        => Market.Startts,
+            Betplaced      => Local_Bet_Placed,
+            Pricematched   => Fixed_Type(Price),
+            Sizematched    => Fixed_Type(Size),
+            Runnername     => Runner_Name,
+            Fullmarketname => Market.Marketname,
+            Svnrevision    => Bot_Svn_Info.Revision,
+            Ixxlupd        => (others         => ' '), --set by insert
+            Ixxluts        => Now              --set by insert
+           );
   end Place_Bet;
   -----------------------------------------------------------------------
 
@@ -246,36 +247,36 @@ package body Sim is
         return;
       when Avg =>
         --Log ("Filter_List : start Price_List.Length" & Price_List.Length'Img);
-        for s of Price_List loop
+        for S of Price_List loop
         -- find my index in the array
-          Num_Run: for i in Num_Runners_Type'range loop
+          Num_Run: for I in Num_Runners_Type'Range loop
 
-            if S.Selectionid = Fifo(i).Selectionid then
+            if S.Selectionid = Fifo(I).Selectionid then
               -- insert elements at bottom and remove from top
               -- check if list needs trim
               loop
-                exit when Fifo(i).One_Runner_Sample_List.Length <= Min_Num_Samples;
-                Fifo(i).One_Runner_Sample_List.Delete_First;
+                exit when Fifo(I).One_Runner_Sample_List.Length <= Min_Num_Samples;
+                Fifo(I).One_Runner_Sample_List.Delete_First;
               end loop;
               -- append the new value
-              Fifo(i).One_Runner_Sample_List.Append(s);
+              Fifo(I).One_Runner_Sample_List.Append(S);
 
-              if Fifo(i).One_Runner_Sample_List.Length >= Min_Num_Samples then
+              if Fifo(I).One_Runner_Sample_List.Length >= Min_Num_Samples then
               -- recalculate the avg values
                 declare
                   Backprice,Layprice : Fixed_Type := 0.0;
-                  Sample : Prices.Price_Type;
-                  Cnt : Natural := 0;
+                  Sample             : Prices.Price_Type;
+                  Cnt                : Natural := 0;
                 begin
-                  for s2 of Fifo(i).One_Runner_Sample_List loop
+                  for S2 of Fifo(I).One_Runner_Sample_List loop
                     Backprice := Backprice + S2.Backprice;
                     Layprice := Layprice + S2.Layprice;
                     Sample := S2; -- save some data
                     Cnt := Cnt +1 ;
                   --  Log ("Filter_List Cnt : " & Cnt'Img & Sample.To_String );
                   end loop;
-                  Sample.Backprice := Backprice / Fixed_Type(Fifo(i).One_Runner_Sample_List.Length);
-                  Sample.Layprice := Layprice / Fixed_Type(Fifo(i).One_Runner_Sample_List.Length);
+                  Sample.Backprice := Backprice / Fixed_Type(Fifo(I).One_Runner_Sample_List.Length);
+                  Sample.Layprice := Layprice / Fixed_Type(Fifo(I).One_Runner_Sample_List.Length);
                   Avg_Price_List.Append(Sample);
                  -- Log ("Filter_List : avg " & Sample.To_String );
                 end;
@@ -284,7 +285,7 @@ package body Sim is
             end if;
           end loop Num_Run;
         end loop;
-      end case;
+    end case;
    -- Log ("Filter_List : done" );
   end Filter_List;
   -------------------------------
@@ -295,7 +296,7 @@ package body Sim is
     F.Avg_Lay_Price  := 0.0;
     F.Avg_Back_Price := 0.0;
     F.In_Use         := False;
-    F.Index          := Num_Runners_Type'first;
+    F.Index          := Num_Runners_Type'First;
     F.One_Runner_Sample_List.Clear;
   end Clear;
 
@@ -305,9 +306,9 @@ package body Sim is
                            List     : out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Prices_History_Data : Price_Histories.Price_History_Type;
-    Filename : String := "markets/" & "win_" & Marketid & ".dat";
-    T : Sql.Transaction_Type;
-    Eos : Boolean := False;
+    Filename            : String := "markets/" & "win_" & Marketid & ".dat";
+    T                   : Sql.Transaction_Type;
+    Eos                 : Boolean := False;
     package Serializer is new Disk_Serializer(Price_Histories.Lists.List,Animal);
   begin
 
@@ -315,10 +316,10 @@ package body Sim is
     --  Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
       T.Start;
       Select_Sampleids_In_One_Market.Prepare(
-        "select * " &
-        "from APRICESHISTORY " &
-        "where MARKETID = :MARKETID " &
-        "order by PRICETS" ) ;
+                                             "select * " &
+                                               "from APRICESHISTORY " &
+                                               "where MARKETID = :MARKETID " &
+                                               "order by PRICETS" ) ;
 
       Select_Sampleids_In_One_Market.Set("MARKETID", Marketid);
       Select_Sampleids_In_One_Market.Open_Cursor;
@@ -342,13 +343,13 @@ package body Sim is
 
   procedure Read_Marketid_Selectionid(Marketid    : in     Marketid_Type;
                                       Selectionid : in     Integer_4;
-                                      Animal     : in     Animal_Type;
+                                      Animal      : in     Animal_Type;
                                       List        :    out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Price_History_Data : Price_Histories.Price_History_Type;
-    Filename : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
-    T : Sql.Transaction_Type;
-    Eos : Boolean := False;
+    Filename           : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
+    T                  : Sql.Transaction_Type;
+    Eos                : Boolean := False;
     package Serializer is new Disk_Serializer(Price_Histories.Lists.List,Animal);
   begin
 
@@ -356,11 +357,11 @@ package body Sim is
     --  Log(Object & Service, "Filename '" & Filename & "' does NOT exist. Read from DB and create");
       T.Start;
       Select_Sampleids_In_One_Market_2.Prepare(
-        "select * " &
-        "from APRICESHISTORY " &
-        "where MARKETID = :MARKETID " &
-        "and SELECTIONID = :SELECTIONID " &
-        "order by PRICETS" ) ;
+                                               "select * " &
+                                                 "from APRICESHISTORY " &
+                                                 "where MARKETID = :MARKETID " &
+                                                 "and SELECTIONID = :SELECTIONID " &
+                                                 "order by PRICETS" ) ;
 
       Select_Sampleids_In_One_Market_2.Set("MARKETID", Marketid);
       Select_Sampleids_In_One_Market_2.Set("SELECTIONID", Selectionid);
@@ -386,7 +387,7 @@ package body Sim is
                                Alg        : in Algorithm_Type;
                                Is_Winner  : in Boolean;
                                Is_Place   : in Boolean ) is
-    F : Text_Io.File_Type;
+    F         : Text_Io.File_Type;
     Indicator : String(1..3) := (others => ' ');
     Placement : String(1..3) := (others => ' ');
   begin
@@ -407,10 +408,10 @@ package body Sim is
     for Runner of Price_List loop
       declare
         Filename : String := Skip_All_Blanks(Ev.Value("BOT_SCRIPT") & "/plot/race_price_runner_data/" &
-                                                      Runner.Marketid & "_" &
-                                                      Runner.Selectionid'Img & "_" &
-                                                      Indicator & "_" &
-                                                      Placement & ".dat");
+                                               Runner.Marketid & "_" &
+                                               Runner.Selectionid'Img & "_" &
+                                               Indicator & "_" &
+                                               Placement & ".dat");
       begin
         if not AD.Exists(Filename) then
           Text_Io.Create(F, Text_Io.Out_File,    Filename);
@@ -418,11 +419,11 @@ package body Sim is
           Text_Io.Open  (F, Text_Io.Append_File, Filename);
         end if;
         Text_IO.Put_Line(F, Runner.Pricets.To_String & " | " &
-                            Runner.Marketid & " | " &
-                            Runner.Selectionid'Img & " | " &
-                            Trim(Runner.Status) & " | " &
-                            F8_Image(Runner.Backprice) & " | " &
-                            F8_Image(Runner.Layprice) );
+                           Runner.Marketid & " | " &
+                           Runner.Selectionid'Img & " | " &
+                           Trim(Runner.Status) & " | " &
+                           F8_Image(Runner.Backprice) & " | " &
+                           F8_Image(Runner.Layprice) );
         Text_Io.Close(F);
       end;
     end loop;
@@ -430,63 +431,33 @@ package body Sim is
   -----------------------------------------------------------------
 
   function Get_Win_Market(Place_Market_Id : Marketid_Type) return Markets.Market_Type is
-    T             : Sql.Transaction_Type;
-    Winner_Market : Markets.Market_Type;
-    Eos           : Boolean := False;
+    Winner_Market   : Markets.Market_Type;
+    Market          : Markets.Market_Type;
+    Found           : Boolean := False;
   begin
-    T.Start;
-    Select_Get_Win_Market.Prepare(
-      "select MW.* from AMARKETS MW, AMARKETS MP " &
-      "where MW.EVENTID = MP.EVENTID " &
-      "and MW.STARTTS = MP.STARTTS " &
-      "and MP.MARKETID = :PLACEMARKETID " &
-      "and MP.MARKETTYPE = 'PLACE' " &
-      "and MW.MARKETTYPE = 'WIN' ");
-
-    Select_Get_Win_Market.Set("PLACEMARKETID",Place_Market_Id);
-    Select_Get_Win_Market.Open_Cursor;
-    Select_Get_Win_Market.Fetch(Eos);
-    if not Eos then
-      Winner_Market := Markets.Get(Select_Get_Win_Market);
-    end if;
-    Select_Get_Win_Market.Close_Cursor;
-    T.Commit;
-    Log(Object & "Get_Win_Market", "plc= '" & Place_Market_Id & "' win = '" & Winner_Market.Marketid & "'");
-
+    Market.Marketid := Place_Market_Id;
+    Market.Corresponding_Win_Market(Win_Market => Winner_Market,
+                                    Found      => Found);
+    --Log(Object & "Get_Win_Market", "plc= '" & Place_Market_Id & "' win = '" & Winner_Market.Marketid & "'");
     return Winner_Market;
   end Get_Win_Market;
   -----------------------------------------------------------------
 
   function Get_Place_Market(Winner_Market_Id : Marketid_Type) return Markets.Market_Type is
-    T            : Sql.Transaction_Type;
-    Place_Market : Markets.Market_Type;
-    Eos          : Boolean := False;
+    Place_Market    : Markets.Market_Type;
+    Market          : Markets.Market_Type;
+    Found           : Boolean := False;
   begin
-    T.Start;
-    Select_Get_Place_Market.Prepare(
-      "select MP.* from AMARKETS MW, AMARKETS MP " &
-      "where MW.EVENTID = MP.EVENTID " &
-      "and MW.STARTTS = MP.STARTTS " &
-      "and MW.MARKETID = :WINMARKETID " &
-      "and MP.MARKETTYPE = 'PLACE' " &
-      "and MW.MARKETTYPE = 'WIN' ");
-
-    Select_Get_Place_Market.Set("WINMARKETID",Winner_Market_Id);
-    Select_Get_Place_Market.Open_Cursor;
-    Select_Get_Place_Market.Fetch(Eos);
-    if not Eos then
-      Place_Market := Markets.Get(Select_Get_Place_Market);
-    end if;
-    Select_Get_Place_Market.Close_Cursor;
-    T.Commit;
+    Market.Marketid := Winner_Market_Id;
+    Market.Corresponding_Place_Market(Place_Market => Place_Market,
+                                      Found        => Found);
     --Log(Object & "Get_Place_Market", "plc= '" & Place_Market.Marketid & "' win = '" & Winner_Market_Id & "'");
-
     return Place_Market;
   end Get_Place_Market;
   -----------------------------------------------------------------
 
   procedure Create_Bet_Data(Bet : in Bets.Bet_Type) is
-    F : Text_Io.File_Type;
+    F         : Text_Io.File_Type;
     Indicator : String(1..3) := (others => ' ');
     Odds_Market : Markets.Market_Type ;
   begin
@@ -511,9 +482,9 @@ package body Sim is
 
     declare
       Filename : String := Skip_All_Blanks(Ev.Value("BOT_SCRIPT") & "/plot/race_price_runner_data/" &
-                                                    Odds_Market.Marketid & "_" &
-                                                    Lower_Case(Bet.Betname) & "_" &
-                                                    Indicator & ".dat");
+                                             Odds_Market.Marketid & "_" &
+                                             Lower_Case(Bet.Betname) & "_" &
+                                             Indicator & ".dat");
     begin
       if not AD.Exists(Filename) then
         Text_Io.Create(F, Text_Io.Out_File,    Filename);
@@ -521,12 +492,12 @@ package body Sim is
         Text_Io.Open  (F, Text_Io.Out_File, Filename);
       end if;
       Text_IO.Put_Line(F, Bet.Betplaced.To_String & " | " &
-                          Bet.Marketid & " | " &
-                          Bet.Selectionid'Img & " | " &
-                          Bet.Side & " | " &
-                          F8_Image(Bet.Pricematched) & " | " &
-                          F8_Image(Bet.Sizematched) & " | " &
-                          F8_Image(50.0) );
+                         Bet.Marketid & " | " &
+                         Bet.Selectionid'Img & " | " &
+                         Bet.Side & " | " &
+                         F8_Image(Bet.Pricematched) & " | " &
+                         F8_Image(Bet.Sizematched) & " | " &
+                         F8_Image(50.0) );
       Text_Io.Close(F);
     end;
 
@@ -564,17 +535,17 @@ package body Sim is
       case Animal is
         when Horse =>
           Select_All_Markets_Horse.Prepare (
-            "select M.MARKETID,STARTTS " &
-              "from APRICESHISTORY H, AMARKETS M, AEVENTS E " &
-              "where true " &
-              "and H.MARKETID = M.MARKETID " &
-              "and E.EVENTID = M.EVENTID " &
-              "and E.EVENTTYPEID = 7 " &
-              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-              "and M.STARTTS >= :DATE1 " &
-              "and M.STARTTS <= :DATE2 " &
-              "group by M.MARKETID,M.STARTTS " &
-              "order by M.STARTTS,M.MARKETID");
+                                            "select M.MARKETID,STARTTS " &
+                                              "from APRICESHISTORY H, AMARKETS M, AEVENTS E " &
+                                              "where true " &
+                                              "and H.MARKETID = M.MARKETID " &
+                                              "and E.EVENTID = M.EVENTID " &
+                                              "and E.EVENTTYPEID = 7 " &
+                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+                                              "and M.STARTTS >= :DATE1 " &
+                                              "and M.STARTTS <= :DATE2 " &
+                                              "group by M.MARKETID,M.STARTTS " &
+                                              "order by M.STARTTS,M.MARKETID");
           Select_All_Markets_Horse.Set ("DATE1", Date1);
           Select_All_Markets_Horse.Set ("DATE2", Date2);
           Select_All_Markets_Horse.Open_Cursor;
@@ -590,14 +561,14 @@ package body Sim is
 
         when Hound =>
           Select_All_Markets_Hound.Prepare (
-            "select M.MARKETID " &
-            "from AMARKETS M, AEVENTS E " &
-            "where true " &
-            "and M.MARKETTYPE in ('PLACE', 'WIN') " &
-            "and E.EVENTID = M.EVENTID " &
-            "and E.EVENTTYPEID = 4339 " &
-            "and M.STARTTS::date = :DATE " &
-            "order by M.STARTTS");
+                                            "select M.MARKETID " &
+                                              "from AMARKETS M, AEVENTS E " &
+                                              "where true " &
+                                              "and M.MARKETTYPE in ('PLACE', 'WIN') " &
+                                              "and E.EVENTID = M.EVENTID " &
+                                              "and E.EVENTTYPEID = 4339 " &
+                                              "and M.STARTTS::date = :DATE " &
+                                              "order by M.STARTTS");
           Select_All_Markets_Hound.Set ("DATE", Date.String_Date_ISO );
           Select_All_Markets_Hound.Open_Cursor;
           loop
@@ -627,18 +598,18 @@ package body Sim is
     Pricets_List : Timestamp_Pack.List;
     Filename     : String := Date.String_Date_ISO & "/marketid_pricets_map.dat";
     Ts           : Calendar2.Time_Type := Calendar2.Time_Type_First;
-    T : Sql.Transaction_Type;
+    T            : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Pricets_Maps.Map,Animal);
   begin
     Marketid_Pricets_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Pricets_In_A_Market.Prepare(
-        "select distinct(PRICETS) " &
-        "from APRICESHISTORY " &
-        "where MARKETID = :MARKETID " &
-        "and STATUS <> 'REMOVED' "  &
-        "order by PRICETS"  ) ;
+                                         "select distinct(PRICETS) " &
+                                           "from APRICESHISTORY " &
+                                           "where MARKETID = :MARKETID " &
+                                           "and STATUS <> 'REMOVED' "  &
+                                           "order by PRICETS"  ) ;
       for Market of Market_With_Data_List loop
         Select_Pricets_In_A_Market.Set("MARKETID", Market.Marketid) ;
         Select_Pricets_In_A_Market.Open_Cursor;
@@ -708,20 +679,20 @@ package body Sim is
                               Animal                   : in     Animal_Type;
                               Winners_Map              :    out Marketid_Winner_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := Date.String_Date_ISO & "/winners_map.dat";
-    Runner_Data : Runners.Runner_Type;
-    Runner_List : Runners.Lists.List;
-    T : Sql.Transaction_Type;
+    Filename        : String := Date.String_Date_ISO & "/winners_map.dat";
+    Runner_Data     : Runners.Runner_Type;
+    Runner_List     : Runners.Lists.List;
+    T               : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer(Marketid_Winner_Maps.Map, Animal);
   begin
     Winners_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Race_Winner_In_One_Market.Prepare(
-        "select * " &
-        "from ARUNNERS " &
-        "where MARKETID = :MARKETID " &
-        "and STATUS = 'WINNER' ") ;
+                                               "select * " &
+                                                 "from ARUNNERS " &
+                                                 "where MARKETID = :MARKETID " &
+                                                 "and STATUS = 'WINNER' ") ;
       for Market of Market_With_Data_List loop
         Runner_List.Clear;
         Select_Race_Winner_In_One_Market.Set("MARKETID", Market.Marketid) ;
@@ -750,20 +721,20 @@ package body Sim is
                              Animal                   : in     Animal_Type;
                              Prices_Map               :    out Marketid_Prices_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := Date.String_Date_ISO & "/prices_map.dat";
-    Price_Data : Prices.Price_Type;
-    Price_List : Prices.Lists.List;
-    T : Sql.Transaction_Type;
+    Filename        : String := Date.String_Date_ISO & "/prices_map.dat";
+    Price_Data      : Prices.Price_Type;
+    Price_List      : Prices.Lists.List;
+    T               : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer (Marketid_Prices_Maps.Map, Animal);
   begin
     Prices_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Prices_In_One_Market.Prepare(
-        "select * " &
-        "from APRICES " &
-        "where MARKETID = :MARKETID " &
-        "order by SELECTIONID") ;
+                                          "select * " &
+                                            "from APRICES " &
+                                            "where MARKETID = :MARKETID " &
+                                            "order by SELECTIONID") ;
       for Market of Market_With_Data_List loop
         Price_List.Clear;
         Select_Prices_In_One_Market.Set("MARKETID", Market.Marketid) ;
@@ -791,20 +762,20 @@ package body Sim is
                              Animal                   : in     Animal_Type;
                              Events_Map               :    out Eventid_Events_Maps.Map ) is
     Eos             : Boolean := False;
-    Filename : String := Date.String_Date_ISO & "/events_map.dat";
-    Event_Data : Events.Event_Type;
-    Event_List : Events.Lists.List;
-    T : Sql.Transaction_Type;
+    Filename        : String := Date.String_Date_ISO & "/events_map.dat";
+    Event_Data      : Events.Event_Type;
+    Event_List      : Events.Lists.List;
+    T               : Sql.Transaction_Type;
     package Serializer is new Disk_Serializer (Eventid_Events_Maps.Map, Animal);
   begin
     Events_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Event_In_One_Market.Prepare(
-        "select * " &
-        "from AEVENTS " &
-        "where EVENTID = :EVENTID " &
-        "order by OPENTS") ;
+                                         "select * " &
+                                           "from AEVENTS " &
+                                           "where EVENTID = :EVENTID " &
+                                           "order by OPENTS") ;
       for Market of Market_With_Data_List loop
         Event_List.Clear;
         Select_Event_In_One_Market.Set("EVENTID", Market.Eventid) ;
@@ -836,25 +807,25 @@ package body Sim is
                                                Date                                     : in     Calendar2.Time_Type;
                                                Animal                                   : in     Animal_Type;
                                                Marketid_Timestamp_To_Apriceshistory_Map :    out Marketid_Timestamp_To_Prices_History_Maps.Map) is
-    Eos       : Boolean := False;
-    Apriceshistory_List    : Price_Histories.Lists.List;
-    Price_History_Data    : Price_Histories.Price_History_Type;
-    T : Sql.Transaction_Type;
-    Cnt             : Integer := 0;
+    Eos                             : Boolean := False;
+    Apriceshistory_List             : Price_Histories.Lists.List;
+    Price_History_Data              : Price_Histories.Price_History_Type;
+    T                               : Sql.Transaction_Type;
+    Cnt                             : Integer := 0;
     Timestamp_To_Apriceshistory_Map : Timestamp_To_Prices_History_Maps.Map;
-    Filename : String := Date.String_Date_ISO & "/marketid_timestamp_to_apriceshistory_map.dat";
+    Filename                        : String := Date.String_Date_ISO & "/marketid_timestamp_to_apriceshistory_map.dat";
     package Serializer is new Disk_Serializer(Marketid_Timestamp_To_Prices_History_Maps.Map, Animal);
   begin
     Marketid_Timestamp_To_Apriceshistory_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_Pricets_For_Market.Prepare(
-        "select * " &
-        "from APRICESHISTORY " &
-        "where MARKETID = :MARKETID " &
-        "and PRICETS = :PRICETS " &
-        "and STATUS <> 'REMOVED' "  &
-        "order by SELECTIONID"  ) ;
+                                        "select * " &
+                                          "from APRICESHISTORY " &
+                                          "where MARKETID = :MARKETID " &
+                                          "and PRICETS = :PRICETS " &
+                                          "and STATUS <> 'REMOVED' "  &
+                                          "order by SELECTIONID"  ) ;
       for Market of Market_With_Data_List loop
         Cnt := Cnt + 1;
         Log("marketid '" & Market.Marketid & "' " & Cnt'Img & "/" & Market_With_Data_List.Length'Img );
@@ -891,23 +862,23 @@ package body Sim is
   procedure Fill_Win_Place_Map (Date          : in     Calendar2.Time_Type;
                                 Animal        : in     Animal_Type;
                                 Win_Place_Map :    out Win_Place_Maps.Map) is
-    T: Sql.Transaction_Type;
-    Eos : Boolean := False;
+    T               : Sql.Transaction_Type;
+    Eos             : Boolean := False;
     Place_Marketid,
     Win_Marketid    : Marketid_Type := (others => ' ');
-    Filename : String := Date.String_Date_ISO & "/win_place_map.dat";
+    Filename        : String := Date.String_Date_ISO & "/win_place_map.dat";
     package Serializer is new Disk_Serializer(Win_Place_Maps.Map, Animal);
   begin
     Win_Place_Map.Clear;
     if not Serializer.File_Exists(Filename) then
       T.Start;
       Select_All_Win_Markets.Prepare (
-        "select distinct(M.MARKETID) " &
-        "from APRICESHISTORY RP, AMARKETS M " &
-        "where RP.MARKETID = M.MARKETID " &
-        "and M.MARKETTYPE = 'WIN' " &
-        "and STARTTS::date = :DATE " &
-        "order by M.MARKETID");
+                                      "select distinct(M.MARKETID) " &
+                                        "from APRICESHISTORY RP, AMARKETS M " &
+                                        "where RP.MARKETID = M.MARKETID " &
+                                        "and M.MARKETTYPE = 'WIN' " &
+                                        "and STARTTS::date = :DATE " &
+                                        "order by M.MARKETID");
 
       Select_All_Win_Markets.Set("DATE", Date.String_Date_ISO) ;
       Select_All_Win_Markets.Open_Cursor;
@@ -916,7 +887,7 @@ package body Sim is
         exit when Eos;
         Select_All_Win_Markets.Get(1,Win_Marketid);
         Place_Marketid := Get_Place_Market(Win_Marketid).Marketid;
-        Win_Place_Map.Insert(Win_Marketid,Place_Marketid);
+        Win_Place_Map.Insert(Win_Marketid, Place_Marketid);
       end loop;
       Select_All_Win_Markets.Close_Cursor;
       T.Commit;
@@ -928,9 +899,48 @@ package body Sim is
   end Fill_Win_Place_Map;
   -------------------------------------------------------------------
 
+  procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
+                                Animal        : in     Animal_Type;
+                                Place_Win_Map :    out Place_Win_Maps.Map) is
+    T               : Sql.Transaction_Type;
+    Eos             : Boolean := False;
+    Place_Marketid,
+    Win_Marketid    : Marketid_Type := (others => ' ');
+    Filename        : String := Date.String_Date_ISO & "/place_win_map.dat";
+    package Serializer is new Disk_Serializer(Place_Win_Maps.Map, Animal);
+  begin
+    Place_Win_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+      T.Start;
+      Select_All_Place_Markets.Prepare (
+                                        "select distinct(M.MARKETID) " &
+                                          "from APRICESHISTORY RP, AMARKETS M " &
+                                          "where RP.MARKETID = M.MARKETID " &
+                                          "and M.MARKETTYPE = 'PLC' " &
+                                          "and STARTTS::date = :DATE " &
+                                          "order by M.MARKETID");
+
+      Select_All_Place_Markets.Set("DATE", Date.String_Date_ISO) ;
+      Select_All_Place_Markets.Open_Cursor;
+      loop
+        Select_All_Place_Markets.Fetch(Eos);
+        exit when Eos;
+        Select_All_Place_Markets.Get(1,Win_Marketid);
+        Win_Marketid := Get_Win_Market(Win_Marketid).Marketid;
+        Place_Win_Map.Insert(Place_Marketid, Win_Marketid);
+      end loop;
+      Select_All_Place_Markets.Close_Cursor;
+      T.Commit;
+      Serializer.Write_To_Disk(Place_Win_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Place_Win_Map, Filename);
+    end if;
+  end Fill_Place_Win_Map;
+
+
   package body Disk_Serializer is
     --------------------------------------------------------
-    Ani : String := Lower_Case(Animal'Img);
+    Ani  : String := Lower_Case(Animal'Img);
     Path : String := Ev.Value("BOT_HISTORY") & "/data/streamed_objects/" & Ani & "/";
     --Path : String := "/mnt/samsung1gb/data/streamed_objects/";
 
@@ -953,16 +963,16 @@ package body Sim is
     end File_Exists;
     ---------------------------------------------------------------
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
-      File   : Ada.Streams.Stream_IO.File_Type;
-      Stream : Ada.Streams.Stream_IO.Stream_Access;
+      File         : Ada.Streams.Stream_IO.File_Type;
+      Stream       : Ada.Streams.Stream_IO.Stream_Access;
       File_On_Disk : String := Path & Filename;
     --  Service : constant String := "Write_To_Disk";
     begin
     --  Log(Object & Service, "write to file '" & Filename & "'");
       Ada.Streams.Stream_IO.Create
-          (File => File,
-           Name => File_On_Disk,
-           Mode => Ada.Streams.Stream_IO.Out_File);
+        (File => File,
+         Name => File_On_Disk,
+         Mode => Ada.Streams.Stream_IO.Out_File);
       Stream := Ada.Streams.Stream_IO.Stream (File);
       Data_Type'Write(Stream, Container);
       Ada.Streams.Stream_IO.Close(File);
@@ -970,22 +980,22 @@ package body Sim is
     end Write_To_Disk;
     --------------------------------------------------------
     procedure Read_From_Disk (Container : in out Data_Type; Filename : in String) is
-      File   : Ada.Streams.Stream_IO.File_Type;
-      Stream : Ada.Streams.Stream_IO.Stream_Access;
+      File         : Ada.Streams.Stream_IO.File_Type;
+      Stream       : Ada.Streams.Stream_IO.Stream_Access;
       File_On_Disk : String := Path & Filename;
-      Service : constant String := "Read_From_Disk";
+      Service      : constant String := "Read_From_Disk";
     begin
          -- Log(Object & Service, "read from file '" & Filename & "'");
       loop
-         exit when not Ad.Exists("/dev/shm/block.dat") ;
-         Log(Object & Service, "Blocking file detected - wait");
-         delay 0.2;
+        exit when not Ad.Exists("/dev/shm/block.dat") ;
+        Log(Object & Service, "Blocking file detected - wait");
+        delay 0.2;
       end loop;
 
       Ada.Streams.Stream_IO.Open
-          (File => File,
-           Name => File_On_Disk,
-           Mode => Ada.Streams.Stream_IO.In_File);
+        (File => File,
+         Name => File_On_Disk,
+         Mode => Ada.Streams.Stream_IO.In_File);
       Stream := Ada.Streams.Stream_IO.Stream (File);
       Data_Type'Read(Stream, Container);
       Ada.Streams.Stream_IO.Close(File);
@@ -1030,6 +1040,10 @@ package body Sim is
     Log("fill map Win/Place markets ");
     Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
     Log("Found:" & Win_Place_Map.Length'Img );
+
+    Log("fill map Place/win markets ");
+    Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
+    Log("Found:" & Place_Win_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 
@@ -1042,14 +1056,14 @@ package body Sim is
     if Place_Marketid /= Marketid_Type'(others => ' ') then
       declare
         Timestamp_To_Apriceshistory_Map : Timestamp_To_Prices_History_Maps.Map :=
-                      Marketid_Timestamp_To_Prices_History_Map(Place_Marketid);
+                                            Marketid_Timestamp_To_Prices_History_Map(Place_Marketid);
       begin
         for Timestamp of Marketid_Pricets_Map(Place_Marketid) loop
           if Timestamp >= Win_Data.Pricets + (0,0,0,1,0) and then  -- after and then within 1 second match must ooccur
-             Timestamp <= Win_Data.Pricets + (0,0,0,2,0) then
+            Timestamp <= Win_Data.Pricets + (0,0,0,2,0) then
             declare
               List : Price_Histories.Lists.List :=
-                Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
+                       Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
             begin
               for Data of List loop
                 if Data.Selectionid = Win_Data.Selectionid then
@@ -1072,52 +1086,79 @@ package body Sim is
    ------------------------------------------------------------------
 
 
-   procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
-                                Animal : in Animal_Type) is
-      Ani : String := Lower_Case(Animal'Img);
-      Path : String := "/dev/shm/streamed_objects/" & Ani & "/";
-   begin
-      if Date.Month < Month_Type(10) and Date.Day < Day_Type(10) then
-         declare
-            Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
-         begin
-            Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-            if AD.Exists(Dir_On_Disk) then
-               AD.Delete_Tree(Dir_On_Disk);
-               Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-            end if;
-         end;
-      elsif Date.Month >= Month_Type(10) and Date.Day < Day_Type(10) then
-         declare
-            Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
-         begin
-            Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-            if AD.Exists(Dir_On_Disk) then
-               AD.Delete_Tree(Dir_On_Disk);
-               Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-            end if;
-         end;
-      elsif Date.Month < Month_Type(10) and Date.Day >= Day_Type(10) then
-         declare
-            Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
-         begin
-            Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-            if AD.Exists(Dir_On_Disk) then
-               AD.Delete_Tree(Dir_On_Disk);
-               Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-            end if;
-         end;
-      elsif Date.Month >= Month_Type(10) and Date.Day >= Day_Type(10) then
-         declare
-            Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
-         begin
-            Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-            if AD.Exists(Dir_On_Disk) then
-               AD.Delete_Tree(Dir_On_Disk);
-               Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-            end if;
-         end;
-      end if;
-      end Delete_Shared_Mem;
+  procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
+                               Animal : in Animal_Type) is
+    Ani  : String := Lower_Case(Animal'Img);
+    Path : String := "/dev/shm/streamed_objects/" & Ani & "/";
+  begin
+    if Date.Month < Month_Type(10) and Date.Day < Day_Type(10) then
+      declare
+        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
+      begin
+        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+        if AD.Exists(Dir_On_Disk) then
+          AD.Delete_Tree(Dir_On_Disk);
+          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+        end if;
+      end;
+    elsif Date.Month >= Month_Type(10) and Date.Day < Day_Type(10) then
+      declare
+        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
+      begin
+        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+        if AD.Exists(Dir_On_Disk) then
+          AD.Delete_Tree(Dir_On_Disk);
+          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+        end if;
+      end;
+    elsif Date.Month < Month_Type(10) and Date.Day >= Day_Type(10) then
+      declare
+        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
+      begin
+        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+        if AD.Exists(Dir_On_Disk) then
+          AD.Delete_Tree(Dir_On_Disk);
+          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+        end if;
+      end;
+    elsif Date.Month >= Month_Type(10) and Date.Day >= Day_Type(10) then
+      declare
+        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
+      begin
+        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+        if AD.Exists(Dir_On_Disk) then
+          AD.Delete_Tree(Dir_On_Disk);
+          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+        end if;
+      end;
+    end if;
+  end Delete_Shared_Mem;
+  --------------------------------------
+
+  procedure Fill_Race_Times(Rt_Map : out Racetime_Maps.Map) is
+    Computer_File : Awk.Session_Type;
+  begin
+    Awk.Set_Current (Computer_File);
+    Awk.Open (Separators => "|",
+              Filename   => "/Users/bnl/svn/botstart/bot-1-0/data/race_length.dat");
+
+    while not Awk.End_Of_File loop
+      Awk.Get_Line;
+      declare
+        S   : Calendar2.Second_Type := 0;
+        Key : Marketname_Type :=(others => ' ');
+      begin -- name                                               secs time      #races
+            --3m Hcap Hrd                                       | 351|05:51.000| 262
+          Key := Awk.Field(1);
+          S :=  Second_Type'Val(Awk.Field(2));
+          Rt_Map.Insert(Key, S);
+      end;
+  --  Put_Line(Awk.Field(2) & " -> " & Awk.Field(3) & " -> " &Awk.Field(4)) ;
+    end loop;
+    Awk.Close (Computer_File);
+
+  end Fill_Race_Times;
+
+  --------------------------------------
 
 end Sim ;
