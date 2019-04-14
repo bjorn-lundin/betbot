@@ -73,6 +73,7 @@ project Adabot is
                     "race_data.adb",
 --                    "insert_midrace.adb",
                     "show_race_lengths.adb",
+                    "bet_at_fixed_timings.adb",
 --                   "sample_percent_1.adb",
                     "graph_data_3.adb",
 --                    "check_ratio_favorites_on_place.adb",
