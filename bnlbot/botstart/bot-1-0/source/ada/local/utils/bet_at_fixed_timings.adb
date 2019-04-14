@@ -83,7 +83,7 @@ procedure Bet_At_Fixed_Timings is
         --Log("Bet_laid-WIN-BACK", Bet.To_String);
       end loop;
 
-      for J in 1 .. 5 loop -- lay 4 first runners winners market
+      for J in 1 .. 5 loop -- lay 5 first runners winners market
         Runner.Selectionid := Bra(J).Selectionid;
         Runner.Marketid := Bra(J).Marketid;
 
@@ -292,6 +292,7 @@ begin
               Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
               Win_Market := Market;
             end if;
+            Market_Ok := False;  --tmp !!!!
           exception
             when others => Market_Ok := False;
           end ;
@@ -336,7 +337,7 @@ begin
                   end if;
                   Move(Market.Markettype(1..3) & "_" &
                          Natural(Percent*100.0)'Img(2..3) & "_" &
-                         "X" & "_" &
+                         "X" &
                          Tail, Name);
 
                   Sort_Array(List => List, Bra  => Bra);
