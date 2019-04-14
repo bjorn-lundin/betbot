@@ -279,14 +279,18 @@ begin
             Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
             Win_Market.Read(Eos);
             Market_Ok := not Eos and then Win_Market.Marketname_Ok2;
-            Avg_Racetime := Sim.Racetime_Map(Win_Market.Marketname);
+            if Market_Ok then
+              Avg_Racetime := Sim.Racetime_Map(Win_Market.Marketname);
+            end if;
           exception
             when others => Market_Ok := False;
           end ;
         elsif Market.Markettype(1..3) = "WIN" then
           Market_Ok := Market.Marketname_Ok2;
-          Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
-          Win_Market := Market;
+          if Market_Ok then
+            Avg_Racetime := Sim.Racetime_Map(Market.Marketname);
+            Win_Market := Market;
+          end if;
         else
           Market_Ok := False;
           Log("WTF - market " & Market.To_String);
