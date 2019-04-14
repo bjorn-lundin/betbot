@@ -1137,10 +1137,11 @@ package body Sim is
 
   procedure Fill_Race_Times(Rt_Map : out Racetime_Maps.Map) is
     Computer_File : Awk.Session_Type;
+    Filename : String := Ev.Value("BOT_DATA") & "/race_length_times.dat";
   begin
     Awk.Set_Current (Computer_File);
     Awk.Open (Separators => "|",
-              Filename   => "/Users/bnl/svn/botstart/bot-1-0/data/race_length.dat");
+              Filename   => Filename);
 
     while not Awk.End_Of_File loop
       Awk.Get_Line;
@@ -1150,7 +1151,7 @@ package body Sim is
       begin -- name                                               secs time      #races
             --3m Hcap Hrd                                       | 351|05:51.000| 262
           Key := Awk.Field(1);
-          S :=  Second_Type'Val(Awk.Field(2));
+          S   := Second_Type'Val(Awk.Field(2));
           Rt_Map.Insert(Key, S);
       end;
   --  Put_Line(Awk.Field(2) & " -> " & Awk.Field(3) & " -> " &Awk.Field(4)) ;
