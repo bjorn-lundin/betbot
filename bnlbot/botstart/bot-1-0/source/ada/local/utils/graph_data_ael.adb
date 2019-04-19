@@ -41,7 +41,7 @@ procedure Graph_Data_Ael is
   Ia_Days             : aliased Integer := 42;
   Ia_Maxprice         : aliased Integer := 1000;
 
-  GDebug      : Boolean := False;
+  GDebug      : Boolean := TRue;
   One_Hundred : constant Fixed_Type := 100.0;
   type Days_Result_Type is record
     Lapsed       : Integer_4 := 0;
@@ -264,7 +264,7 @@ procedure Graph_Data_Ael is
                                   "where true " &
                                --   "and B.SIDE = :SIDE " &
                                   "and B.BETNAME = :BETNAME " &
-                                  "and B.STATUS ='MATCHED' " &
+                                  "and B.STATUS ='SETTLED' " &
                                   "and B.PRICEMATCHED >= :PRICEMATCHED " &
                                   "order by B.STARTTS");
     Select_Equity_Date.Set ("BETNAME", Betname);
