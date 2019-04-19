@@ -27,7 +27,7 @@ package body Sim is
   Select_All_Markets_Hound,
   Select_Pricets_In_A_Market,
   Select_All_Win_Markets,
-  Select_All_Place_Markets,
+  --Select_All_Place_Markets,
   Select_Pricets_For_Market : Sql.Statement_Type;
 
   Current_Market                : Markets.Market_Type := Markets.Empty_Data;
@@ -899,43 +899,44 @@ package body Sim is
   end Fill_Win_Place_Map;
   -------------------------------------------------------------------
 
-  procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
-                                Animal        : in     Animal_Type;
-                                Place_Win_Map :    out Place_Win_Maps.Map) is
-    T               : Sql.Transaction_Type;
-    Eos             : Boolean := False;
-    Place_Marketid,
-    Win_Marketid    : Marketid_Type := (others => ' ');
-    Filename        : String := Date.String_Date_ISO & "/place_win_map.dat";
-    package Serializer is new Disk_Serializer(Place_Win_Maps.Map, Animal);
-  begin
-    Place_Win_Map.Clear;
-    if not Serializer.File_Exists(Filename) then
-      T.Start;
-      Select_All_Place_Markets.Prepare (
-                                        "select distinct(M.MARKETID) " &
-                                          "from APRICESHISTORY RP, AMARKETS M " &
-                                          "where RP.MARKETID = M.MARKETID " &
-                                          "and M.MARKETTYPE = 'PLACE' " &
-                                          "and STARTTS::date = :DATE " &
-                                          "order by M.MARKETID");
-
-      Select_All_Place_Markets.Set("DATE", Date.String_Date_ISO) ;
-      Select_All_Place_Markets.Open_Cursor;
-      loop
-        Select_All_Place_Markets.Fetch(Eos);
-        exit when Eos;
-        Select_All_Place_Markets.Get(1,Win_Marketid);
-        Win_Marketid := Get_Win_Market(Win_Marketid).Marketid;
-        Place_Win_Map.Insert(Place_Marketid, Win_Marketid);
-      end loop;
-      Select_All_Place_Markets.Close_Cursor;
-      T.Commit;
-      Serializer.Write_To_Disk(Place_Win_Map, Filename);
-    else
-      Serializer.Read_From_Disk(Place_Win_Map, Filename);
-    end if;
-  end Fill_Place_Win_Map;
+-- cannot hvae 3 results for same key ..
+--    procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
+--                                  Animal        : in     Animal_Type;
+--                                  Place_Win_Map :    out Place_Win_Maps.Map) is
+--      T               : Sql.Transaction_Type;
+--      Eos             : Boolean := False;
+--      Place_Marketid,
+--      Win_Marketid    : Marketid_Type := (others => ' ');
+--      Filename        : String := Date.String_Date_ISO & "/place_win_map.dat";
+--      package Serializer is new Disk_Serializer(Place_Win_Maps.Map, Animal);
+--    begin
+--      Place_Win_Map.Clear;
+--      if not Serializer.File_Exists(Filename) then
+--        T.Start;
+--        Select_All_Place_Markets.Prepare (
+--                                          "select distinct(M.MARKETID) " &
+--                                            "from APRICESHISTORY RP, AMARKETS M " &
+--                                            "where RP.MARKETID = M.MARKETID " &
+--                                            "and M.MARKETTYPE = 'PLACE' " &
+--                                            "and STARTTS::date = :DATE " &
+--                                            "order by M.MARKETID");
+--
+--        Select_All_Place_Markets.Set("DATE", Date.String_Date_ISO) ;
+--        Select_All_Place_Markets.Open_Cursor;
+--        loop
+--          Select_All_Place_Markets.Fetch(Eos);
+--          exit when Eos;
+--          Select_All_Place_Markets.Get(1,Win_Marketid);
+--          Win_Marketid := Get_Win_Market(Win_Marketid).Marketid;
+--          Place_Win_Map.Insert(Place_Marketid, Win_Marketid);
+--        end loop;
+--        Select_All_Place_Markets.Close_Cursor;
+--        T.Commit;
+--        Serializer.Write_To_Disk(Place_Win_Map, Filename);
+--      else
+--        Serializer.Read_From_Disk(Place_Win_Map, Filename);
+--      end if;
+--    end Fill_Place_Win_Map;
 
 
   package body Disk_Serializer is
@@ -1041,9 +1042,9 @@ package body Sim is
     Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
     Log("Found:" & Win_Place_Map.Length'Img );
 
-    Log("fill map Place/win markets ");
-    Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
-    Log("Found:" & Place_Win_Map.Length'Img );
+ --   Log("fill map Place/win markets ");
+ --   Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
+ --   Log("Found:" & Place_Win_Map.Length'Img );
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 
