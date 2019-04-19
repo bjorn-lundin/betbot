@@ -163,15 +163,15 @@ package Sim is
                                 Animal        : in     Animal_Type;
                                 Win_Place_Map :    out Win_Place_Maps.Map);
 
-  package Place_Win_Maps is new Ada.Containers.Hashed_Maps (
-         Marketid_Type,
-         Marketid_Type,
-         Ada.Strings.Hash,
-         "=",
-         "=");
-  procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
-                                Animal        : in     Animal_Type;
-                                Place_Win_Map :    out Place_Win_Maps.Map);
+--    package Place_Win_Maps is new Ada.Containers.Hashed_Maps (
+--           Marketid_Type,
+--           Marketid_Type,
+--           Ada.Strings.Hash,
+--           "=",
+--           "=");
+--    procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
+--                                  Animal        : in     Animal_Type;
+--                                  Place_Win_Map :    out Place_Win_Maps.Map);
 
   -- for timestamp slices start
 
@@ -235,7 +235,7 @@ package Sim is
   Winners_Map                              : Sim.Marketid_Winner_Maps.Map;
   Prices_Map                               : Sim.Marketid_Prices_Maps.Map;
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
-  Place_Win_Map                            : Sim.Place_Win_Maps.Map;
+--  Place_Win_Map                            : Sim.Place_Win_Maps.Map;
   Events_Map                               : Sim.Eventid_Events_Maps.Map;
   Racetime_Map                             : Sim.Racetime_Maps.Map;
 

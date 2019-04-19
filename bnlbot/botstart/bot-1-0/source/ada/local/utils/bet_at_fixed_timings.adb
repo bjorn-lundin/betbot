@@ -276,7 +276,8 @@ begin
         if Market.Markettype(1..3) = "PLA" then
           --find win market name
           begin
-            Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
+            pragma Compile_Time_Warning(True,"fix place_win_map ..");
+--            Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
             Win_Market.Read(Eos);
             Market_Ok := not Eos and then Win_Market.Marketname_Ok2;
             if Market_Ok then
