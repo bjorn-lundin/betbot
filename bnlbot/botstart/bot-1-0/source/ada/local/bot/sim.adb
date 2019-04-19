@@ -347,7 +347,7 @@ package body Sim is
                                       List        :    out Price_Histories.Lists.List) is
   --  Service : constant String := "Read_Marketid";
     Price_History_Data : Price_Histories.Price_History_Type;
-    Filename           : String := "markets_selid/" & "win_" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
+    Filename           : String := "markets_selid/" & Marketid & "_" & Trim(Selectionid'Img) & ".dat";
     T                  : Sql.Transaction_Type;
     Eos                : Boolean := False;
     package Serializer is new Disk_Serializer(Price_Histories.Lists.List,Animal);
