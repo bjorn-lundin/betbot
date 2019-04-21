@@ -267,7 +267,8 @@ begin
     declare
       Cnt           : Integer := 0;
       Market_Ok     : Boolean := False;
-      Eos           : Boolean := False;
+      Eos, Found
+                    : Boolean := False;
       Avg_Racetime  : Seconds_Type := 0;
       Win_Market    : Markets.Market_Type;
     begin
@@ -276,12 +277,15 @@ begin
         if Market.Markettype(1..3) = "PLA" then
           --find win market name
           begin
-            pragma Compile_Time_Warning(True,"fix place_win_map ..");
---            Win_Market.Marketid := Sim.Place_Win_Map(Market.Marketid);
-            Win_Market.Read(Eos);
-            Market_Ok := not Eos and then Win_Market.Marketname_Ok2;
-            if Market_Ok then
-              Avg_Racetime := Sim.Racetime_Map(Win_Market.Marketname);
+            Market.Corresponding_Win_Market(Win_Market, Found);
+            if Found then
+              Win_Market.Read(Eos);
+              Market_Ok := not Eos and then Win_Market.Marketname_Ok2;
+              if Market_Ok then
+                Avg_Racetime := Sim.Racetime_Map(Win_Market.Marketname);
+              end if;
+            else
+              Market_Ok := False;
             end if;
           exception
             when others => Market_Ok := False;
@@ -294,6 +298,7 @@ begin
               Win_Market := Market;
             end if;
             Market_Ok := False;  --tmp !!!!
+            pragma Compile_Time_Warning(True, "disabled win markets");
           exception
             when others => Market_Ok := False;
           end ;
