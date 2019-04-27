@@ -63,6 +63,7 @@ project Adabot is
 --                    "do_stats_1.adb",
 --                    "do_stats_2.adb",
 --                    "delete_duplicate_bets.adb",
+                    "lay_at_start.adb",
                     "lay_during_race3.adb",
                     "lay_num_2.adb",
                     "lay_num_4.adb",
