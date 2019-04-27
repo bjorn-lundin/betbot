@@ -163,7 +163,7 @@ procedure Lay_At_Start is
             end loop;
 
             -- Found and then 1 second later at least, time for BF delay
-            if R.Selectionid > 0 and then R.Pricets > B.Betplaced + (0,0,0,1,0) then
+      --      if R.Selectionid > 0 and then R.Pricets > B.Betplaced + (0,0,0,1,0) then
 
               if B.Side(1..3) = "LAY" then
                 Price_Ok := R.Layprice <= B.Price and then R.Layprice > Fixed_Type(1.0) ; -- sanity
@@ -205,7 +205,7 @@ procedure Lay_At_Start is
                 end;
               end if;
             end if;
-          end if;
+      --    end if;
         end;
       end loop;
 
