@@ -73,7 +73,7 @@ procedure Lay_At_Start is
     Lay_Price            : Fixed_Type := 0.0;
     Tic                  : Tics.Tics_Type := 1;
     Image                : String := Bettype;
-    Service              : String := "Do_Place_Lay_Bets_At_Start";
+   -- Service              : String := "Do_Place_Lay_Bets_At_Start";
     Runner               : Runners.Runner_Type;
     use type Tics.Tics_Type;
     Bet                  : Bets.Bet_Type;
@@ -97,14 +97,14 @@ procedure Lay_At_Start is
 
         Runner.Selectionid := Br(I).Selectionid;
 
-        Log(Service & " " & Bettype & " I=" & I'Img &
-              " Num_Bets=" & Num_Bets'Img &
-              " First_Bet=" & First_Bet'Img &
-              " Place_Num=" & Place_Num'Img &
-              " Max_Back_Price=" & Max_Back_Price'Img &
-              " Max_Lay_Price=" & Max_Lay_Price'Img &
-              " Br(I).Layprice=" & Br(I).Layprice'Img &
-              " Br(I).Backprice=" & Br(I).Backprice'Img);
+--          Log(Service & " " & Bettype & " I=" & I'Img &
+--                " Num_Bets=" & Num_Bets'Img &
+--                " First_Bet=" & First_Bet'Img &
+--                " Place_Num=" & Place_Num'Img &
+--                " Max_Back_Price=" & Max_Back_Price'Img &
+--                " Max_Lay_Price=" & Max_Lay_Price'Img &
+--                " Br(I).Layprice=" & Br(I).Layprice'Img &
+--                " Br(I).Backprice=" & Br(I).Backprice'Img);
 
         if I >= First_Bet then
           if I < First_Bet + Num_Bets then
@@ -123,16 +123,20 @@ procedure Lay_At_Start is
                                    Market => Market);
                 Bet_List.Append(Bet);
               else
-                Log (Service & " " & Bettype & ": I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
+                null;
+--                Log (Service & " " & Bettype & ": I =" & I'Img & " Br (I).Backprice <= Max_Back_Price= " & Boolean'Image(Br (I).Backprice <= Max_Back_Price));
               end if;
             else
-              Log (Service & " " & Bettype & ": I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br(I).Layprice <= Fixed_Type(Max_Lay_Price)));
+                null;
+--              Log (Service & " " & Bettype & ": I =" & I'Img & " Br (I).Layprice <= Max_Lay_Price= " & Boolean'Image(Br(I).Layprice <= Fixed_Type(Max_Lay_Price)));
             end if;
           else
-            Log (Service & " " & Bettype & ": I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
+--            Log (Service & " " & Bettype & ": I =" & I'Img & " I < First_Bet + Num_Bets= " & Boolean'Image(I < First_Bet + Num_Bets));
+                null;
           end if;
         else
-          Log (Service & " " & Bettype & ": I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
+                null;
+--          Log (Service & " " & Bettype & ": I =" & I'Img & " I >= First_Bet= " & Boolean'Image(I >= First_Bet));
         end if;
       end loop;
     end if;
@@ -434,6 +438,7 @@ begin
       Win_Market    : Markets.Market_Type;
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
+      Log(Market.To_String);
         T.Start;
         if Market.Markettype(1..3) = "PLA" then
 --            --find win market name
