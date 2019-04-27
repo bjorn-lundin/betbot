@@ -517,7 +517,7 @@ begin
                         for Max_Back_Price in 10..30 loop
                        --   for Max_Lay_Price in 1..5 loop
 
-                          Move("HORSE_LAY_" &
+                          Move("LAY_" &
                                  Num_Bets'Img(2) & "_" &
                                  First_Bet'Img(2) & "_" &
                                  Place_Num'Img(2) & "_" &
