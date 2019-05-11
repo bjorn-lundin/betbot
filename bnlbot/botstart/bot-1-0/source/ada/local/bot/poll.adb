@@ -88,6 +88,8 @@ procedure Poll is
       when Horse_Back_1_38_00_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
 
+      when Horse_Lay_1_05_05_1_2_Win_2_15      => return Process_Io.To_Process_Type("bet_placer_005");
+
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_002");
 --        when Horse_Back_1_38_00_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_003");
@@ -381,53 +383,105 @@ procedure Poll is
   pragma Unreferenced(Try_To_Make_Back_Bet_Delta);
 
   ------------------------------------------------------
-  procedure Try_To_Make_Lay_Bet(Bettype         : Config.Bet_Type;
-                                 Br              : Best_Runners_Array_Type;
+--    procedure Try_To_Make_Lay_Bet(Bettype         : Config.Bet_Type;
+--                                   Br              : Best_Runners_Array_Type;
+--                                   Marketid        : Marketid_Type;
+--                                   Match_Directly  : Boolean := False) is
+--
+--      Max_Lay_Price    : Fixed_Type := 0.0;
+--      Min_Lay_Price    : Fixed_Type := 0.0;
+--      Max_Leader_Price : Fixed_Type := 0.0;
+--      Lay_At_Price     : Lay_Price_Type := 0.0;
+--      Tmp             : String (1 .. 4) := (others => ' ');
+--      Image           : String := Bettype'Img;
+--      Two : constant Fixed_Type := 2.0;
+--
+--    begin        --1         2       3
+--      --  12345678901234567890123456789012345
+--      --  Horse_Lay_05_15_1_14_55_Win
+--
+--      Min_Lay_Price := Fixed_Type'Value(Image(11 .. 12));
+--      Max_Lay_Price := Fixed_Type'Value(Image(14 .. 15));
+--      Tmp(1) := Image(17);
+--      Tmp(2) := '.';
+--      Tmp(3 .. 4) := Image(19 .. 20);
+--
+--      Max_Leader_Price := Fixed_Type'Value(Tmp);
+--      Lay_At_Price := Lay_Price_Type'Value(Image(22 .. 23));
+--
+--      if not Bets_Allowed(Bettype).Has_Betted then -- set in send_lay_bet
+--        for R of Br loop
+--          -- sim was run with looking at backprice - not layprice
+--          if R.Backprice    >= Fixed_Type(1.0) and then  -- sanity
+--            R.Layprice      >= Fixed_Type(1.0) and then  -- sanity
+--            R.Layprice      <= Fixed_Type(Two * R.Backprice) and then -- sanity not too big difference allowed
+--            Br(1).Backprice >  Fixed_Type(1.0) and then  --  sanity so it exists
+--            Min_Lay_Price   <= R.Backprice and then R.Backprice <= Max_Lay_Price and then
+--            Br(1).Backprice <= Max_Leader_Price then
+--
+--            Send_Lay_Bet(Selectionid     => R.Selectionid,
+--                         Main_Bet        => Bettype,
+--                         Marketid        => Marketid,
+--                         Max_Price       => Lay_At_Price,
+--                         Match_Directly  => Match_Directly);
+--            exit; -- only one bet allowed
+--          end if;
+--        end loop;
+--      end if;
+--    end Try_To_Make_Lay_Bet;
+--    pragma Unreferenced(Try_To_Make_Lay_Bet);
+
+
+  -- from rev 1897
+  procedure Try_To_Make_Lay_Bet (Bettype         : Config.Bet_Type;
+                                 BR              : Best_Runners_Array_Type;
                                  Marketid        : Marketid_Type;
                                  Match_Directly  : Boolean := False) is
-
-    Max_Lay_Price    : Fixed_Type := 0.0;
-    Min_Lay_Price    : Fixed_Type := 0.0;
-    Max_Leader_Price : Fixed_Type := 0.0;
-    Lay_At_Price     : Lay_Price_Type := 0.0;
-    Tmp             : String (1 .. 4) := (others => ' ');
-    Image           : String := Bettype'Img;
-    Two : constant Fixed_Type := 2.0;
-
-  begin        --1         2       3
-    --  12345678901234567890123456789012345
-    --  Horse_Lay_05_15_1_14_55_Win
-
-    Min_Lay_Price := Fixed_Type'Value(Image(11 .. 12));
-    Max_Lay_Price := Fixed_Type'Value(Image(14 .. 15));
-    Tmp(1) := Image(17);
+    Max_Backprice_1  : Fixed_Type;
+    Min_Backprice_N  : Fixed_Type;
+    Layed_Num        : Integer;
+    Tmp              : String (1 .. 5) := (others => ' ');
+    Image            : String := Bettype'Img;
+    Max_Price        : String (1 .. 4) := (others => ' ');
+  begin       -- 0         1         2         3
+	      --  12345678901234567890123456789012345
+	      --  HORSE_Lay_1_10_20_1_2_WIN_3_25
+    Tmp(1) := Image(11);
     Tmp(2) := '.';
-    Tmp(3 .. 4) := Image(19 .. 20);
+    Tmp(3..4) := Image(13..14);
+    Max_Backprice_1 := Fixed_Type'Value(Tmp);
 
-    Max_Leader_Price := Fixed_Type'Value(Tmp);
-    Lay_At_Price := Lay_Price_Type'Value(Image(22 .. 23));
+    Min_Backprice_N := Fixed_Type'Value(Image(16..17));
+    Layed_Num := Integer'Value(Image(27..27));
 
-    if not Bets_Allowed(Bettype).Has_Betted then -- set in send_lay_bet
-      for R of Br loop
-        -- sim was run with looking at backprice - not layprice
-        if R.Backprice    >= Fixed_Type(1.0) and then  -- sanity
-          R.Layprice      >= Fixed_Type(1.0) and then  -- sanity
-          R.Layprice      <= Fixed_Type(Two * R.Backprice) and then -- sanity not too big difference allowed
-          Br(1).Backprice >  Fixed_Type(1.0) and then  --  sanity so it exists
-          Min_Lay_Price   <= R.Backprice and then R.Backprice <= Max_Lay_Price and then
-          Br(1).Backprice <= Max_Leader_Price then
+    Max_Price(1..2) := Image(29..30);
 
-          Send_Lay_Bet(Selectionid     => R.Selectionid,
-                       Main_Bet        => Bettype,
-                       Marketid        => Marketid,
-                       Max_Price       => Lay_At_Price,
-                       Match_Directly  => Match_Directly);
-          exit; -- only one bet allowed
-        end if;
-      end loop;
+    if BR(1).Backprice <= Max_Backprice_1 and then
+      BR(1).Backprice >= Fixed_Type (1.01) and then
+      BR(2).Backprice >= Min_Backprice_N and then
+      BR(2).Backprice < Fixed_Type (10_000.0) and then
+      BR(Layed_Num).Layprice <= Fixed_Type'Value(Max_Price) and then
+      BR(Layed_Num).Layprice >= Fixed_Type(1.01) and then
+      BR (Layed_Num).Backprice <  Fixed_Type (10_000.0) then  -- so it exists
+
+	      -- lay #2 or #3 in win market...
+
+      Send_Lay_Bet (Selectionid     => BR (Layed_Num).Selectionid,
+                    Main_Bet        => Bettype,
+                    Marketid        => Marketid,
+                    Max_Price       => Lay_Price_Type'Value (Max_Price),
+                    Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Lay_Bet;
-  pragma Unreferenced(Try_To_Make_Lay_Bet);
+
+
+
+
+
+
+
+
+
   ------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -738,14 +792,16 @@ procedure Poll is
 --                    end if;
 --                  end;
 
---                  when Horse_Lay_05_15_1_14_55_Win =>
---                    if Markets_Array(Win).Marketname_Ok then
---                        Try_To_Make_Lay_Bet(Bettype         => I,
---                                            Br              => Best_Runners,
---                                            Marketid        => Markets_Array(Win).Marketid,
---                                            Match_Directly  => False);
---
---                    end if;
+                  when Horse_Lay_1_05_05_1_2_Win_2_15 =>
+                  if Markets_Array(Win).Marketname_Ok2 and then
+                     Has_Been_In_Play then
+
+                        Try_To_Make_Lay_Bet(Bettype         => I,
+                                            Br              => Best_Runners,
+                                            Marketid        => Markets_Array(Win).Marketid,
+                                            Match_Directly  => False);
+
+                    end if;
 
               end case;
 
