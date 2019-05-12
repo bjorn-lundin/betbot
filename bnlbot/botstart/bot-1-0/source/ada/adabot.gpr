@@ -79,6 +79,7 @@ project Adabot is
                     "graph_data_3.adb",
 --                    "check_ratio_favorites_on_place.adb",
                     "split_to_ai.adb",
+                    "parse_football_live_feed.adb",
                     "lay_and_back_after_progress.adb"
                    );
 
