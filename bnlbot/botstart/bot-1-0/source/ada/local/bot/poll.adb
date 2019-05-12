@@ -89,6 +89,7 @@ procedure Poll is
       when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
 
       when Horse_Lay_1_05_05_1_2_Win_2_15      => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Lay_1_05_05_1_2_Win_2_40      => return Process_Io.To_Process_Type("bet_placer_006");
 
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_002");
@@ -475,13 +476,6 @@ procedure Poll is
   end Try_To_Make_Lay_Bet;
 
 
-
-
-
-
-
-
-
   ------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -792,7 +786,7 @@ procedure Poll is
 --                    end if;
 --                  end;
 
-                  when Horse_Lay_1_05_05_1_2_Win_2_15 =>
+                  when Horse_Lay_1_05_05_1_2_Win_2_15 .. Horse_Lay_1_05_05_1_2_Win_2_40 =>
                   if Markets_Array(Win).Marketname_Ok2 and then
                      Has_Been_In_Play then
 
