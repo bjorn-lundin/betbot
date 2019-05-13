@@ -112,9 +112,9 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Prepare(
                             "select round(sum( " &
                               "    case when BETWON " &
-                              "       then PROFIT * 0.935 " &
+                              "       then PROFIT * 0.95 " &
                               "       else PROFIT " &
-                              "    end)::numeric,2) PROFIT, " & 
+                              "    end)::numeric,2) PROFIT, " &
                               "sum(SIZEMATCHED) SIZEMATCHED " &
                               "from ABETS " &
                               "where STARTTS >= :START " &
@@ -124,7 +124,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Named.Prepare(
                                   "select " & "round(sum( " &
                                     "    case when BETWON " &
-                                    "       then PROFIT * 0.935 " &
+                                    "       then PROFIT * 0.95 " &
                                     "       else PROFIT " &
                                     "    end)::numeric,2) PROFIT, " &
                                     "from ABETS " &
@@ -139,7 +139,7 @@ package body Bot_Ws_Services is
                                             --  " sum(PROFIT) PROFIT, " &
                                               "round(sum( " &
                                               "    case when BETWON " &
-                                              "       then PROFIT * 0.935 " &
+                                              "       then PROFIT * 0.95 " &
                                               "       else PROFIT " &
                                               "    end)::numeric,2) PROFIT, " &
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
@@ -431,7 +431,7 @@ package body Bot_Ws_Services is
       null; -- is ok already
     elsif Context = "sum_7_days_bets" then
       Start := Start - (6,0,0,0,0);
-    elsif Context = "sum_thisweeks_bets" then   
+    elsif Context = "sum_thisweeks_bets" then
       declare
         Dow : Week_Day_Type  ;
       begin
@@ -443,7 +443,7 @@ package body Bot_Ws_Services is
           end case ;
         end loop;
         Stop := Start + (6,0,0,0,0);
-      end;   
+      end;
     elsif Context = "sum_total_bets" then
       Start := (2018,11,1,0,0,0,0);
     else
@@ -581,20 +581,20 @@ package body Bot_Ws_Services is
       declare
         Start_Time : Json_Value := Create_Object;
         Market     : Markets.Market_Type;
-        OK         : Boolean := False; 
+        OK         : Boolean := False;
       begin
         Market.Marketname := S.Marketname;
         OK :=  Market.Marketname_Ok2 ;
-        
+
         if OK and then not Arrow_Is_Printed and then Now <= S.Starttime then
           Arrow_Is_Printed := True;
           Arrow := "-->";
-        elsif not OK then 
+        elsif not OK then
           Arrow := "-|-";
-        else   
+        else
           Arrow := "---";
         end if;
-        
+
         Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
         Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
         Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
