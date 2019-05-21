@@ -145,7 +145,7 @@ package body Bot_Ws_Services is
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
                                               "round((case sum(SIZEMATCHED) " &
                                               "    when 0 then 0.0 " &
-                                              "    else 93.5 * sum(PROFIT) / sum(SIZEMATCHED) " &
+                                              "    else 95 * sum(PROFIT) / sum(SIZEMATCHED) " &
                                               " end)::numeric,2) RATIO, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
@@ -179,11 +179,6 @@ package body Bot_Ws_Services is
     Start.Minute      := 0;
     Start.Second      := 0;
     Start.Millisecond := 0;
-
-    Stop.Hour        := 23;
-    Stop.Minute      := 59;
-    Stop.Second      := 59;
-    Stop.Millisecond := 0;
 
     T.Start;
     Prepare_Bets;
@@ -228,9 +223,14 @@ package body Bot_Ws_Services is
       return Json_Reply.Write;
     end if;
 
+    Stop.Hour        := 23;
+    Stop.Minute      := 59;
+    Stop.Second      := 59;
+    Stop.Millisecond := 999;
+    
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
 
-
+  
     Select_Bets.Set("START", Start);
     Select_Bets.Set("STOP", Stop);
     Select_Sum_Bets.Set("START", Start);
@@ -299,8 +299,8 @@ package body Bot_Ws_Services is
     Stop.Hour        := 23;
     Stop.Minute      := 59;
     Stop.Second      := 59;
-    Stop.Millisecond := 0;
-
+    Stop.Millisecond := 999;    
+    
     T.Start;
     Prepare_Bets;
     Select_Sum_Bets.Set("START", Start);
@@ -365,12 +365,12 @@ package body Bot_Ws_Services is
         when Sunday =>
           Start:= Start - (6+Weeks_Ago*7,0,0,0,0);
       end case ;
-      Stop := Start  + (6,0,0,0,0);
-      Stop.Hour        := 23;
-      Stop.Minute      := 59;
-      Stop.Second      := 59;
-      Stop.Millisecond := 0;
     end;
+    Stop := Start + (6,0,0,0,0);
+    Stop.Hour        := 23;
+    Stop.Minute      := 59;
+    Stop.Second      := 59;
+    Stop.Millisecond := 999;
 
     Log(Object & Service, "Start:" & Start.To_String & " Stop:" & Stop.To_String);
 
@@ -379,7 +379,6 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Named.Set("START", Start);
     Select_Sum_Bets_Named.Set("STOP", Stop);
     Select_Sum_Bets_Named.Set("BETNAME", Betname);
-
 
     Select_Sum_Bets_Named.Open_Cursor;
     Select_Sum_Bets_Named.Fetch(End_Of_Set);
@@ -419,11 +418,6 @@ package body Bot_Ws_Services is
     Start.Second      := 0;
     Start.Millisecond := 0;
 
-    Stop.Hour        := 23;
-    Stop.Minute      := 59;
-    Stop.Second      := 59;
-    Stop.Millisecond := 0;
-
     T.Start;
     Prepare_Bets;
 
@@ -453,6 +447,11 @@ package body Bot_Ws_Services is
       Log(Object & Service, "Return " & Json_Reply.Write);
       return Json_Reply.Write;
     end if;
+
+    Stop.Hour        := 23;
+    Stop.Minute      := 59;
+    Stop.Second      := 59;
+    Stop.Millisecond := 999;
 
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
 
