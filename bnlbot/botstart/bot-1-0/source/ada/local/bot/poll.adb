@@ -651,7 +651,7 @@ procedure Poll is
         Found_Place := False;
       end if;
     else
-      Log(Me & "Make_Bet", "no PLACE market found");
+      Log(Me & "Make_Bet", "no PLACE market found with 3 winners - exit poll loop");
       Found_Place := False;
     end if;
     Find_Plc_Market.Close_Cursor;
@@ -660,15 +660,7 @@ procedure Poll is
     -- do the poll
     Poll_Loop : loop
 
-      case Animal is
-        when Horse =>
-          if Markets_Array(Place).Numwinners < Integer_4(3) then
-            Log("Animal " & Animal'Img & " Markets_Array (Place).Numwinners " & Markets_Array(Place).Numwinners'Img & " no bet here - exit poll loop");
-            exit Poll_Loop;
-          end if;
-        when Hound => null;
-        when Human => null;
-      end case;
+      exit Poll_Loop when not Found_Place;
 
       Price_List.Clear;
       Rpc.Get_Market_Prices(Market_Id  => Market_Notification.Market_Id,
