@@ -25,6 +25,7 @@ with Bot_Messages;
 with Core_Messages;
 with Utils; use Utils;
 with RPC ;
+with Bot_Svn_Info;
 
 procedure Markets_Fetcher is
   package EV renames Ada.Environment_Variables;
@@ -253,6 +254,7 @@ begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
   Logging.Open(EV.Value("BOT_HOME") & "/log/markets_fetcher.log");
+  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Define_Switch
    (Cmd_Line,
@@ -477,7 +479,7 @@ begin
             Log(Me, "we have result ");
             Result_List_Market_Book := Reply_List_Market_Book.Get("result");
             for i in 1 .. Length (Result_List_Market_Book) loop
-              Log(Me, "we have result #:" & i'img);
+              Log(Me, "we have result(2) #:" & i'img);
               Market := Get(Result_List_Market_Book, i);
 
               if Market.Has_Field("marketId") then
