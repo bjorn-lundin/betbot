@@ -1,4 +1,4 @@
-with Ada.Strings; use Ada.Strings;
+ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Environment_Variables;
@@ -149,21 +149,21 @@ package body Bot_Ws_Services is
                                              -- " end)::numeric,2) RATIO, " &
                                               "SIDE side, " &
                                               "round((case SIDE " &
-                                              "   when 'BACK' then --sum(profit)*100/sum(sizematched) " &
-                                              "    round((100.0 * " &
-                                              "    sum( " &
+                                              "   when 'BACK' then " &
+                                              "     round((100.0 * " &
+                                              "     sum( " &
                                               "        case when betwon " &
                                               "          then profit*0.95 " &
                                               "          else profit " &
                                               "        end)/sum(sizematched)),2) " &
-                                              "   when 'LAY'  then " &
-                                              "   round((100.0 * " &
-                                              "   sum( " &
-                                              "       case when betwon " &
-                                              "         then 0.95* (profit/((pricematched-1) * sizematched)) " &
-                                              "         else       (profit/((pricematched-1) * sizematched)) " &
-                                              "       end))/sum(sizematched),2) " &
-                                              "   else 0.0 " &
+                                              "    when 'LAY'  then " &
+                                              "      round((100.0 * " &
+                                              "      sum( " &
+                                              "         case when betwon " &
+                                              "           then 0.95* (profit/((pricematched-1) * sizematched)) " &
+                                              "           else       (profit/((pricematched-1) * sizematched)) " &
+                                              "         end))/sum(sizematched),2) " &
+                                              "    else 0.0 " &
                                               "end)::numeric,2) as rate_pct, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
