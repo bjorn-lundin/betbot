@@ -156,13 +156,13 @@ package body Bot_Ws_Services is
                                               "          then profit*0.95 " &
                                               "          else profit " &
                                               "        end)/sum(sizematched)),2) " &
-                                              "   when 'LAY'  then --sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1)) " &
-                                              "    round((100.0 * " &
-                                              "    sum( " &
-                                              "        case when betwon " &
-                                              "          then profit*0.95 " &
-                                              "          else profit " &
-                                              "        end)/sum(sizematched)),2) " &
+                                              "   when 'LAY'  then " &
+                                              "   round((100.0 * " &
+                                              "   sum( " &
+                                              "       case when betwon " &
+                                              "         then 0.95* (profit/((pricematched-1) * sizematched)) " &
+                                              "         else       (profit/((pricematched-1) * sizematched)) " &
+                                              "       end))/sum(sizematched),2) " &
                                               "   else 0.0 " &
                                               "end)::numeric,2) as rate_pct, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
