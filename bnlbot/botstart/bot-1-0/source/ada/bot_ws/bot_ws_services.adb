@@ -143,16 +143,34 @@ package body Bot_Ws_Services is
                                               "       else PROFIT " &
                                               "    end)::numeric,2) PROFIT, " &
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
-                                              "round((case sum(SIZEMATCHED) " &
-                                              "    when 0 then 0.0 " &
-                                              "    else 95 * sum(PROFIT) / sum(SIZEMATCHED) " &
-                                              " end)::numeric,2) RATIO, " &
+                                              --"round((case sum(SIZEMATCHED) " &
+                                              --"    when 0 then 0.0 " &
+                                              --"    else 95 * sum(PROFIT) / sum(SIZEMATCHED) " &
+                                             -- " end)::numeric,2) RATIO, " &
+                                              "SIDE side, " &
+                                              "round((case SIDE " &
+                                              "   when 'BACK' then --sum(profit)*100/sum(sizematched) " &
+                                              "    round((100.0 * " &
+                                              "    sum( " &
+                                              "        case when betwon " &
+                                              "          then profit*0.95 " &
+                                              "          else profit " &
+                                              "        end)/sum(sizematched)),2) " &
+                                              "   when 'LAY'  then --sum(profit)*100/(count('a') * avg(sizematched) * (avg(pricematched)-1)) " &
+                                              "    round((100.0 * " &
+                                              "    sum( " &
+                                              "        case when betwon " &
+                                              "          then profit*0.95 " &
+                                              "          else profit " &
+                                              "        end)/sum(sizematched)),2) " &
+                                              "   else 0.0 " &
+                                              "end)::numeric,2) as rate_pct, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
                                               "where STARTTS >= :START " &
                                               "and STARTTS <= :STOP " &
                                               "and STATUS = 'SETTLED' " &
-                                              "group by BETNAME " &
+                                              "group by BETNAME,SIDE " &
                                               "order by BETNAME" );
 
   end Prepare_Bets;
@@ -227,10 +245,10 @@ package body Bot_Ws_Services is
     Stop.Minute      := 59;
     Stop.Second      := 59;
     Stop.Millisecond := 999;
-    
+
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
 
-  
+
     Select_Bets.Set("START", Start);
     Select_Bets.Set("STOP", Stop);
     Select_Sum_Bets.Set("START", Start);
@@ -299,8 +317,8 @@ package body Bot_Ws_Services is
     Stop.Hour        := 23;
     Stop.Minute      := 59;
     Stop.Second      := 59;
-    Stop.Millisecond := 999;    
-    
+    Stop.Millisecond := 999;
+
     T.Start;
     Prepare_Bets;
     Select_Sum_Bets.Set("START", Start);
