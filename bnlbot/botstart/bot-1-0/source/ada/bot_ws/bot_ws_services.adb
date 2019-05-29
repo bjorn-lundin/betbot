@@ -135,18 +135,13 @@ package body Bot_Ws_Services is
                                  );
 
     Select_Sum_Bets_Grouped_By_Name.Prepare(
-                                            "select BETNAME, " &
-                                            --  " sum(PROFIT) PROFIT, " &
+                                              "select BETNAME, " &
                                               "round(sum( " &
                                               "    case when BETWON " &
                                               "       then PROFIT * 0.95 " &
                                               "       else PROFIT " &
                                               "    end)::numeric,2) PROFIT, " &
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
-                                              --"round((case sum(SIZEMATCHED) " &
-                                              --"    when 0 then 0.0 " &
-                                              --"    else 95 * sum(PROFIT) / sum(SIZEMATCHED) " &
-                                             -- " end)::numeric,2) RATIO, " &
                                               "SIDE side, " &
                                               "round((case SIDE " &
                                               "   when 'BACK' then " &
@@ -164,7 +159,7 @@ package body Bot_Ws_Services is
                                               "           else       (profit/((pricematched-1) * sizematched)) " &
                                               "         end))/sum(sizematched),2) " &
                                               "    else 0.0 " &
-                                              "end)::numeric,2) as rate_pct, " &
+                                              "end)::numeric,2) as RATIO, " &
                                               "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
                                               "where STARTTS >= :START " &
@@ -501,12 +496,12 @@ package body Bot_Ws_Services is
         Select_Sum_Bets_Grouped_By_Name.Get("PROFITPERBET", Profit_Per_Bet);
 
 
-        Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(Betname));
-        Bet.Set_Field (Field_Name => "profit",       Field => Float(Profit));
-        Bet.Set_Field (Field_Name => "sm",           Field => Float(Sizematched));
-        Bet.Set_Field (Field_Name => "count",        Field => Long_Long_Integer(Count));
-        Bet.Set_Field (Field_Name => "p/b",      Field => Float(Profit_Per_Bet));
-        Bet.Set_Field (Field_Name => "ratio",        Field => Float(Ratio));
+        Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
+        Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
+        Bet.Set_Field (Field_Name => "sm",      Field => Float(Sizematched));
+        Bet.Set_Field (Field_Name => "count",   Field => Long_Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "p/b",     Field => Float(Profit_Per_Bet));
+        Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
         Append(Json_Bets, Bet);
       end;
     end loop;
