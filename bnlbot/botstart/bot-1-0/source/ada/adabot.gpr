@@ -77,6 +77,7 @@ project Adabot is
                     "bet_at_fixed_timings.adb",
 --                   "sample_percent_1.adb",
                     "graph_data_3.adb",
+                    "rewards.adb",
 --                    "check_ratio_favorites_on_place.adb",
                     "split_to_ai.adb",
                     "split_to_ai_mlrl.adb",

@@ -38,9 +38,9 @@ project Global is
                                               "-gnatwlaKW");
 
    for Object_Dir use Bot_Target & "/objects";
-   
+
    Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
-                                    
+
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
@@ -54,7 +54,7 @@ project Global is
          when "LOCAL" =>
             for Source_Dirs use Common_Source_Dirs & Xml_Source;
       end case;
-   
+
    package Compiler is
      for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
    end Compiler;
@@ -70,11 +70,11 @@ project Global is
      when "lnx_x86" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "lnx_x64" =>
-       OS_Dependents_Linker_Switches := ("-lpq"); 
+       OS_Dependents_Linker_Switches := ("-lpq");
      when "lnx_a32" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "drw_x64" =>
-       OS_Dependents_Linker_Switches := ("-L/opt/local/lib/postgresql11", "-lpq");
+       OS_Dependents_Linker_Switches := ("-L/opt/local/lib/postgresql11", "-lpq", "-Wl,-no_pie");
    end case;
 
    package Linker is
