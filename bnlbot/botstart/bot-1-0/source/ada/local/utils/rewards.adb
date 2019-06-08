@@ -2,13 +2,13 @@
 with Types; use Types;
 with Calendar2; use Calendar2;
 
-with GNAT; use GNAT;
+with Gnat; use Gnat;
 with Text_Io; use Text_Io;
 with Ada.Directories;
 with Stacktrace;
 --with Ada.Containers.Doubly_Linked_Lists;
 with Price_Histories;
-with GNAT.Command_Line; use GNAT.Command_Line;
+with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
@@ -20,21 +20,21 @@ with Sim;
 with Bot_Types; --use Bot_Types;
 
 procedure Rewards is
-  package AD renames Ada.Directories;
+  package Ad renames Ada.Directories;
   package Ev renames Ada.Environment_Variables;
 
---    function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
---    begin
---      return Left.Backprice < Right.Backprice;
---    end "<";
---    package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
+  --    function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
+  --    begin
+  --      return Left.Backprice < Right.Backprice;
+  --    end "<";
+  --    package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
   Global_Size : constant Bot_Types.Bet_Size_Type := 100.0;
   Commission  : constant Fixed_Type := 5.0/100.0;
 
   type Best_Runners_Array_Type is array (1..16) of Price_Histories.Price_History_Type;
 
   procedure To_Array(List : in out Price_Histories.Lists.List ;
-                       Bra  : in out Best_Runners_Array_Type ) is
+                     Bra  : in out Best_Runners_Array_Type ) is
 
     Price             : Price_Histories.Price_History_Type := Price_Histories.Empty_Data;
   begin
@@ -172,17 +172,41 @@ procedure Rewards is
   ------------------------------------------------------
 
 
+  Sa_Start_Date       : aliased  Gnat.Strings.String_Access;
+  Sa_Stop_Date        : aliased  Gnat.Strings.String_Access;
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
   Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/rewards";
-  Race                :          Text_IO.File_Type;
-  Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+  Race                :          Text_Io.File_Type;
+  Start_Date          :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date        :          Calendar2.Time_Type := Start_Date;
-  Stop_Date           : constant Calendar2.Time_Type := (2018,08,01,0,0,0,0);
+  Stop_Date           :          Calendar2.Time_Type := (2018,08,01,0,0,0,0);
   Cmd_Line            :          Command_Line_Configuration;
   T                   :          Sql.Transaction_Type;
 begin
 
+
+--    Text_Io.Put_Line (Calendar2.String_Interval(Stop_Date - Start_Date));
+--    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (0*217,0,0,0,0) ));
+--    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (1*217,0,0,0,0)));
+--    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (2*217,0,0,0,0)));
+--    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (3*217,0,0,0,0)));
+--    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (4*217,0,0,0,0)));
+--    return;
+
+
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Start_Date'Access,
+     Long_Switch => "--start_date=",
+     Help        => "start date eg 2019-02-25");
+
+  Define_Switch
+    (Cmd_Line,
+     Sa_Stop_Date'Access,
+     Long_Switch => "--stop_date=",
+     Help        => "stop date eg 2019-12-21");
 
   Define_Switch
     (Cmd_Line,
@@ -197,26 +221,42 @@ begin
   end if;
 
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
---  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
+  --  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
+
   Log("main", "params start");
+  Log("main", "start_date '" & Sa_Start_Date.all & "'");
+  Log("main", "stop_date  '" & Sa_Stop_Date.all & "'");
+  Log("main", "logfile    '" & Sa_Logfilename.all & "'");
   Log("main", "params stop");
 
 
-    Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-    Log("main", "Connect Db " &
-          Ini.Get_Value("database_home", "host", "")  & " " &
-          Ini.Get_Value("database_home", "port", 5432)'Img & " " &
-          Ini.Get_Value("database_home", "name", "") & " " &
-          Ini.Get_Value("database_home", "username", "") & " " &
-          Ini.Get_Value("database_home", "password", "")
-       );
-    Sql.Connect
-      (Host     => Ini.Get_Value("database_home", "host", ""),
-       Port     => Ini.Get_Value("database_home", "port", 5432),
-       Db_Name  => Ini.Get_Value("database_home", "name", ""),
-       Login    => Ini.Get_Value("database_home", "username", ""),
-       Password => Ini.Get_Value("database_home", "password", ""));
-    Log("main", "db Connected");
+  Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
+  Log("main", "Connect Db " &
+        Ini.Get_Value("database_home", "host", "")  & " " &
+        Ini.Get_Value("database_home", "port", 5432)'Img & " " &
+        Ini.Get_Value("database_home", "name", "") & " " &
+        Ini.Get_Value("database_home", "username", "") & " " &
+        Ini.Get_Value("database_home", "password", "")
+     );
+  Sql.Connect
+    (Host     => Ini.Get_Value("database_home", "host", ""),
+     Port     => Ini.Get_Value("database_home", "port", 5432),
+     Db_Name  => Ini.Get_Value("database_home", "name", ""),
+     Login    => Ini.Get_Value("database_home", "username", ""),
+     Password => Ini.Get_Value("database_home", "password", ""));
+  Log("main", "db Connected");
+
+
+  if Sa_Start_Date.all /= "" then
+    Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all,"");
+  end if;
+
+  if Sa_Stop_Date.all /= "" then
+    Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all,"");
+  end if;
+
+
+  Current_Date := Start_Date;
 
   Date_Loop : loop
     T.Start;
@@ -232,8 +272,8 @@ begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
 
         if Market.Markettype(1..3) = "WIN" and then
-         -- 8 <= Market.Numactiverunners and then
-          market.Numactiverunners <= 16 and then
+        -- 8 <= Market.Numactiverunners and then
+          Market.Numactiverunners <= 16 and then
           Market.Marketname_Ok2 then
           First := True;
 
@@ -245,8 +285,8 @@ begin
 
           Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
 
-          Text_IO.Create(File => Race,
-                         Mode => Text_IO.Out_File,
+          Text_Io.Create(File => Race,
+                         Mode => Text_Io.Out_File,
                          Name => Path & "/" & Market.Marketid & ".dat");
 
           -- list of timestamps in this market
@@ -255,7 +295,7 @@ begin
                                                 Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
 
             Timestamp_To_Prices_History_Map2 : Sim.Timestamp_To_Prices_History_Maps.Map :=
-                                                Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
+                                                 Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
             Have_Seen_1_0x                  : Boolean := False;
             All_More_Than_Limit             : Boolean := True;
             Last_Poll                       : Calendar2.Time_Type := Calendar2.Time_Type_First;
@@ -267,7 +307,7 @@ begin
                 Delta_Time          : Calendar2.Interval_Type := (0, 0, 0, 0, 0);
                 Profit              : Bot_Types.Profit_Type := 0.0;
               begin
---                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
+                --                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
                 To_Array(List => List, Bra => Bra);
 
                 if First then
@@ -289,12 +329,12 @@ begin
                   if Delta_Time < (0, 0, 0, 2, 0) then -- don't bother when race not started
                     for I in Bra'Range loop
 
-                      if I = 1 Then
+                      if I = 1 then
                         Put (Race, Calendar2.String_Time (Date => Bra(I).Pricets, Milliseconds => True ) & "|");
-                       -- Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
+                        -- Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
                       end if;
 
-                      if Bra(I).Selectionid > 0 Then
+                      if Bra(I).Selectionid > 0 then
                         Profit := Check_Profit (Bra (I),Timestamp_To_Prices_History_Map2);
                       else
                         Profit := 0.0;
@@ -313,7 +353,7 @@ begin
               end;
             end loop Loop_Ts; --  Timestamp
           end;
-          Text_IO.Close(Race);
+          Text_Io.Close(Race);
         end if; -- Market_type(1..3) = WIN
       end loop Market_Loop;
     end;
