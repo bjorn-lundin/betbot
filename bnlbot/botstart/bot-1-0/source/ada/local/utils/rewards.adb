@@ -131,7 +131,8 @@ procedure Rewards is
   -------------------------------------------------------
   function Check_Profit (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
     Is_Winner                       : Boolean := False;
-    Profit                          : Bot_Types.Profit_Type := 0.0;
+    use Bot_Types;
+    Profit                          : Profit_Type := 0.0;
   begin
 
     for W of Sim.Winners_Map (Runner.Marketid) loop
@@ -141,13 +142,16 @@ procedure Rewards is
       end if;
     end loop;
 
+    --simplification, but ok. betting on the wrong horse should be penalized, even if not matched
+    if not Is_Winner then
+      return - Profit_Type(Global_Size);
+    end if;
+
     Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
       declare
         List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
         Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
-        -- use type Bot_Types.Profit_Type;
-        use Bot_Types;
-        Tmp                 : Bot_Types.Profit_Type := 0.0;
+        Tmp                 : Profit_Type := 0.0;
       begin
 
         for J of List loop
@@ -156,10 +160,10 @@ procedure Rewards is
 
             if J.Backprice >= Runner.Backprice then --match
               if Is_Winner then
-                Tmp := Bot_Types.Profit_Type(Global_Size) * Bot_Types.Profit_Type (Runner.Backprice - 1.0) ;
-                Profit := Tmp * Bot_Types.Profit_Type (1.0 - Commission);
+                Tmp := Profit_Type(Global_Size) * Profit_Type (Runner.Backprice - 1.0) ;
+                Profit := Tmp * Profit_Type (1.0 - Commission);
               else
-                return - Bot_Types.Profit_Type(Global_Size);
+                return - Profit_Type(Global_Size);
               end if;
             end if;
 
