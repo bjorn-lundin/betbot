@@ -1,15 +1,15 @@
-with Ada.Strings;                  use Ada.Strings;             
+with Ada.Strings;                  use Ada.Strings;
 with Ada.Strings.Unbounded;        use Ada.Strings.Unbounded;
 with Calendar2;
-with Ada.Command_Line; 
+with Ada.Command_Line;
 with Text_Io;
 
 package body Stacktrace is
 
-  procedure Log (W : string) is 
+  procedure Log (W : string) is
   begin
     Text_Io.Put_Line(W);
-  end Log;  
+  end Log;
 
   ------------------------------------------------------------------------------
 
@@ -42,13 +42,16 @@ package body Stacktrace is
   begin
     Log(".....  Tracebackinfo at: " & Now & " .....");
     Log("Program terminated by an exception propagated out of the main subprogram.");
-    Log("Exception raised : ");  
+    Log("Exception raised : ");
     declare
       Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
       Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
       Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
       Command                 : Unbounded_String := Null_Unbounded_String;
-    begin    
+    begin
+      Log("Linux :");
+      Log("");
+      Log("");
       Log(Last_Exception_Name);
       Log("Message : " & Last_Exception_Messsage);
       Log(Last_Exception_Info);
@@ -56,8 +59,19 @@ package body Stacktrace is
                     " --functions --basenames --exe=" &
                     Ada.Command_Line.Command_Name & " " &
                     Pure_Hexdump(Last_Exception_Info));
- 
-      Log( To_String(Command));
+
+      Log ( To_String (Command));
+
+      Command := Null_Unbounded_String;
+      Log("-----------------");
+      Log("Os X");
+
+      Append(Command, "atos -o" &
+                    Ada.Command_Line.Command_Name & " " &
+                    Pure_Hexdump(Last_Exception_Info));
+      Log ( To_String (Command));
+
+
     end ;
   end Tracebackinfo;
   ------------------------------------------------------------------------------

@@ -136,10 +136,10 @@ package Sim is
 
   package Marketid_Winner_Maps is new Ada.Containers.Hashed_Maps
         (Marketid_Type,
-         RUnners.Lists.List,
+         Runners.Lists.List,
          Ada.Strings.Hash,
          "=",
-         RUnners.Lists."=");
+         Runners.Lists."=");
 
   procedure Fill_Winners_Map (Market_With_Data_List    : in     Markets_Pack.List;
                               Date                     : in     Calendar2.Time_Type;
