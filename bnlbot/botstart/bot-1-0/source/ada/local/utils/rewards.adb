@@ -179,7 +179,7 @@ procedure Rewards is
   Sa_Start_Date       : aliased  Gnat.Strings.String_Access;
   Sa_Stop_Date        : aliased  Gnat.Strings.String_Access;
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/rewards";
+  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
   Race                :          Text_Io.File_Type;
   Start_Date          :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
@@ -275,10 +275,11 @@ begin
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
 
-        if Market.Markettype(1..3) = "WIN" and then
+        if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
-          Market.Numactiverunners <= 16 and then
-          Market.Marketname_Ok2 then
+          Market.Numactiverunners <= 16 --and then
+         --   Market.Marketname_Ok2
+        then
           First := True;
 
           Cnt := Cnt + 1;
