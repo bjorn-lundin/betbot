@@ -129,7 +129,7 @@ procedure Split_To_Ai_MLRL is
   -------------------------------------------------------
 
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/";
+  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/races/";
   Race                :          Text_IO.File_Type;
   Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
@@ -195,10 +195,12 @@ begin
 --            Text_Io.Put_Line(Market.To_String);
 --          end if;
 
-        if Market.Markettype (1 .. 3) = "WIN" and then True and then
-        --  8 <= Market.Numrunners and then Market.Numrunners <= 16  and then
-          Market.Marketname_Ok2 then
-          First := True;
+     --   if Market.Markettype (1 .. 3) = "WIN" and then True and then
+        if Market.Markettype (1 .. 3) = "PLA" and then True and then
+        --  8 <= Market.Numrunners and then
+          Market.Numrunners <= 16  --and then
+         -- Market.Marketname_Ok2
+        then
           First := True;
 
           Cnt := Cnt + 1;
@@ -232,6 +234,7 @@ begin
                 To_Array(List => List, Bra => Bra);
 
                 if First then
+                  Put (Race, "Timestamp|");
                   for I in Bra'Range loop
                     Put(Race,Bra(I).Selectionid'Img);
                     if I < Bra'Last then
@@ -242,12 +245,12 @@ begin
                   end loop;
                   First := False;
                 else
-                  Delta_Time := Bra (1).Pricets - Last_Poll;
+                  Delta_Time := Bra(1).Pricets - Last_Poll;
                   Check_Odds (Bra, Have_Seen_1_0x, All_More_Than_Limit);
                   exit Loop_Ts when Have_Seen_1_0x and then All_More_Than_Limit;
 
                   if Delta_Time < (0, 0, 0, 2, 0) then -- don't bother when race not started
-                    Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
+                    Put (Race, Calendar2.String_Time (Date => Bra(1).Pricets, Milliseconds => True ) & "|");
                     for I in Bra'Range loop
                       Put (Race, Bra (I).Backprice'Img);
                       if I < Bra'Last then
