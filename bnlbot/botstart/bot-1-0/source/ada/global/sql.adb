@@ -809,6 +809,10 @@ package body Sql is
       --      Private_Statement.Is_Prepared := True;
       --  else
       --     Log(Me, "Prepare - Already prepared Stm: '" & Stm & "'");
+    else
+      if To_String(private_Statement.Original_Statement) /= Command then
+        raise Sequence_Error with "statement differs from old '" & To_String(Private_Statement.Original_Statement) & "'";
+      end if;      
     end if;
   end Prepare;
   ------------------------------------------------------------
