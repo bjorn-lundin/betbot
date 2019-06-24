@@ -81,6 +81,7 @@ project Adabot is
 --                    "check_ratio_favorites_on_place.adb",
                     "split_to_ai.adb",
                     "split_to_ai_mlrl.adb",
+                    "print_win_place_markets.adb",
                     "parse_football_live_feed.adb",
                     "lay_and_back_after_progress.adb"
                    );
