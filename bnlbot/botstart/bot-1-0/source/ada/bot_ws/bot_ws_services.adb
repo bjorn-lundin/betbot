@@ -239,20 +239,29 @@ package body Bot_Ws_Services is
       end;
     elsif Context = "lastmonths_bets" then
       declare
-        Passed_1st : Boolean := False;
+        Passed_1st_First_Time : Boolean := False;
+        Passed_1st_Second_Time : Boolean := False;
         Date_This_Month_1st : Calendar2.Time_Type := Calendar2.Time_Type_First;
       begin
-        loop -- find first of this month
+        loop -- find first of this month, and then first of last month
+         -- Log(Object & Service, "start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
           case Start.Day is
             when 1 =>
-              exit when Passed_1st ;
-              Passed_1st := True;
-              Date_This_Month_1st := Start;
-
-            when others => Start := Start - (1,0,0,0,0);
+              Passed_1st_First_Time := True;
+              exit when Passed_1st_Second_Time ;
+              
+              if Passed_1st_First_Time then
+                Passed_1st_Second_Time := True;
+              end if;
+              
+              Date_This_Month_1st := Start;              
+            when others => null;
           end case ;
+          Start := Start - (1,0,0,0,0);
         end loop;
         Stop := Date_This_Month_1st - (1,0,0,0,0);
+        
+        Log(Object & Service, "start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
       end;
     else
       Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");
