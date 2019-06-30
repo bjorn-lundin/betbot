@@ -112,8 +112,8 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Prepare(
                             "select round(sum( " &
                               "    case when BETWON " &
-                              "       then PROFIT * 0.95 " &
-                              "       else PROFIT " &
+                              "       then abets.PROFIT * 0.95 " &
+                              "       else abets.PROFIT " &
                               "    end)::numeric,2) PROFIT, " &
                               "sum(SIZEMATCHED) SIZEMATCHED " &
                               "from ABETS " &
@@ -124,8 +124,8 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Named.Prepare(
                                   "select " & "round(sum( " &
                                     "    case when BETWON " &
-                                    "       then PROFIT * 0.95 " &
-                                    "       else PROFIT " &
+                                    "       then abets.PROFIT * 0.95 " &
+                                    "       else abets.PROFIT " &
                                     "    end)::numeric,2) PROFIT, " &
                                     "from ABETS " &
                                     "where STARTTS >= :START " &
@@ -138,8 +138,8 @@ package body Bot_Ws_Services is
                                               "select BETNAME, " &
                                               "round(sum( " &
                                               "    case when BETWON " &
-                                              "       then PROFIT * 0.95 " &
-                                              "       else PROFIT " &
+                                              "       then abets.PROFIT * 0.95 " &
+                                              "       else abets.PROFIT " &
                                               "    end)::numeric,2) PROFIT, " &
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
                                               "SIDE side, " &
@@ -148,19 +148,19 @@ package body Bot_Ws_Services is
                                               "     round((100.0 * " &
                                               "     sum( " &
                                               "        case when betwon " &
-                                              "          then profit*0.95 " &
-                                              "          else profit " &
+                                              "          then abets.profit*0.95 " &
+                                              "          else abets.profit " &
                                               "        end)/sum(sizematched)),2) " &
                                               "    when 'LAY'  then " &
                                               "      round((100.0 * " &
                                               "      sum( " &
                                               "         case when betwon " &
-                                              "           then 0.95* (profit/((pricematched-1) * sizematched)) " &
-                                              "           else       (profit/((pricematched-1) * sizematched)) " &
+                                              "           then 0.95* (abets.profit/((pricematched-1) * sizematched)) " &
+                                              "           else       (abets.profit/((pricematched-1) * sizematched)) " &
                                               "         end))/sum(sizematched),2) " &
                                               "    else 0.0 " &
                                               "end)::numeric,2) as RATIO, " &
-                                              "round(sum(PROFIT)/count('a'),2) PROFITPERBET " &
+                                              "round(sum(abets.PROFIT)/count('a'),2) PROFITPERBET " &
                                               "from ABETS " &
                                               "where STARTTS >= :START " &
                                               "and STARTTS <= :STOP " &
@@ -227,6 +227,32 @@ package body Bot_Ws_Services is
           end case ;
         end loop;
         Stop := Start + (6,0,0,0,0);
+      end;
+    elsif Context = "thismonths_bets" then
+      begin
+        loop -- find first of this month
+          case Start.Day is
+            when 1 => exit ;
+            when others => Start := Start - (1,0,0,0,0);
+          end case ;
+        end loop;
+      end;
+    elsif Context = "lastmonths_bets" then
+      declare
+        Passed_1st : Boolean := False;
+        Date_This_Month_1st : Calendar2.Time_Type := Calendar2.Time_Type_First;
+      begin
+        loop -- find first of this month
+          case Start.Day is
+            when 1 =>
+              exit when Passed_1st ;
+              Passed_1st := True;
+              Date_This_Month_1st := Start;
+
+            when others => Start := Start - (1,0,0,0,0);
+          end case ;
+        end loop;
+        Stop := Date_This_Month_1st - (1,0,0,0,0);
       end;
     else
       Json_Reply.Set_Field (Field_Name => "result",  Field => "FAIL");

@@ -109,8 +109,8 @@ procedure Bot_Web_Server is
       Logging.Log(Service, "Username blank - needs login");
       return  AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
     end if;
-    
-    
+
+
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");
       Sql.Close_Session;
@@ -142,6 +142,14 @@ procedure Bot_Web_Server is
                                       Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context));
     elsif Context="lastweeks_bets" then
+      Response := Aws.Response.Build (Application_JSON,
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                   Context  => Context));
+    elsif Context="thismonths_bets" then
+      Response := Aws.Response.Build (Application_JSON,
+                                      Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                   Context  => Context));
+    elsif Context="lastmonths_bets" then
       Response := Aws.Response.Build (Application_JSON,
                                       Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                    Context  => Context));
@@ -296,14 +304,14 @@ procedure Bot_Web_Server is
         when Process_Io.Timeout => null;
       end;
       Semaphore.Release;
-      
+
       --restart every day
       Now := Calendar2.Clock;
       Is_Time_To_Exit := Now.Hour = 01 and then
        ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
 
       exit when Is_Time_To_Exit;
-      
+
     end loop;
   end Wait_Terminate;
 
@@ -398,17 +406,17 @@ begin
   AWS.Server.Log.Start      (Web_Server => WS,
                              Split_Mode => Aws.Log.Daily,
                              Auto_Flush => True);
-                             
+
   AWS.Server.Log.Start_Error(Web_Server => WS,
                              Split_Mode => Aws.Log.Daily);
   Logging.Log("Main", "Log file name:" & AWS.Server.Log.Name (WS));
-  
+
   declare -- prefill list at startup to alway get whole day
     Dummy : String := Bot_Ws_Services.Get_Starttimes("noone","startup");
   begin
     null;
-  end;  
-  
+  end;
+
   Wait_Terminate;
   AWS.Server.Shutdown (WS);
   AWS.Server.Log.Stop      (Web_Server => WS);
