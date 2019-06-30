@@ -90,6 +90,16 @@ $(document).ready(function(){
          console.log("lastweek - context " + context);
      });
 
+     $('#thismonth').on('tap', function() {
+         context ='thismonths_bets';
+         console.log("thismonth - context " + context);
+     });
+
+     $('#lastmonth').on('tap', function() {
+         context ='lastmonths_bets';
+         console.log("lastmonth - context " + context);
+     });
+
 
      $(document).on("pageshow","#viewer",function(){
        // var para = "<p id='tobedeleted'>ny kod från event</p>";
