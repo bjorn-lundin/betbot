@@ -203,6 +203,12 @@ procedure Bot_Web_Server is
      Application_JSON : constant String := "application/json";
      Response   : AWS.Response.Data;
    begin
+
+     for I in 1.. AWS.Parameters.Count(Params) loop
+       Logging.Log(Service, "Post - index: " & I'Img & "->" & AWS.Parameters.Get_Value(Params,I));
+     end loop;
+
+
      Logging.Log(Service, "Username: '" & Username & "'" );
      AWS.Session.Set (Session_ID, "username", Username);
      Response := Aws.Response.Build (Application_JSON,
