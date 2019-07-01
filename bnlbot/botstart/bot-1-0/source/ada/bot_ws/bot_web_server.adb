@@ -204,9 +204,15 @@ procedure Bot_Web_Server is
      Response   : AWS.Response.Data;
    begin
 
-     for I in 1.. AWS.Parameters.Count(Params) loop
-       Logging.Log(Service, "Post - index: " & I'Img & "->" & AWS.Parameters.Get_Value(Params,I));
-     end loop;
+    for I in 1.. Aws.Parameters.Count(Params) loop
+      Logging.Log(Service, "Post - index: " &
+                    I'Img &
+                    "->" &
+                    Aws.Parameters.Get_Name(Params,I) &
+                    "=" &
+                    Aws.Parameters.Get_Value(Params,I)
+                 );
+    end loop;
 
 
      Logging.Log(Service, "Username: '" & Username & "'" );
@@ -227,6 +233,18 @@ procedure Bot_Web_Server is
     Service    : constant String := "Get";
   begin
     Logging.Log(Service, "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
+
+    for I in 1.. Aws.Parameters.Count(Params) loop
+      Logging.Log(Service, "Get - index: " &
+                    I'Img &
+                    "->" &
+                    Aws.Parameters.Get_Name(Params,I) &
+                    "=" &
+                    Aws.Parameters.Get_Value(Params,I)
+                 );
+    end loop;
+
+
 --      if not AWS.Status.Has_Session(Request) and then
 --         URI = "/"   then
 --          Logging.Log(Service, "No session...");
