@@ -1,10 +1,13 @@
  with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
---with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Environment_Variables;
 with Ada.Containers;
 --with Ada.Characters.Handling;
 --with Ada.Exceptions;
+
+with Ada.Containers.Doubly_Linked_Lists;
+
 
 with Types; use Types;
 with Bot_Types; use Bot_Types;
@@ -30,9 +33,15 @@ package body Bot_Ws_Services is
   Select_Sum_Bets_Named           : Sql.Statement_Type;
   Select_Sum_Bets_Grouped_By_Name : Sql.Statement_Type;
   Select_Sum_Bets_Grouped_By_Week : Sql.Statement_Type;
+  Select_Sum_Bets_Grouped_By_Month : Sql.Statement_Type;
+  Select_Distict_Betnames         : Sql.Statement_Type;
+  
   Global_Initiated                : Boolean := False;
   Global_Start_Time_List          : Table_Astarttimes.Astarttimes_List_Pack2.List;
 
+  
+  package Betnames_List_Package is new Ada.Containers.Doubly_Linked_Lists(Bot_Types.Betname_Type);
+  
   ------------------------------------------------------------------
 
 
@@ -172,33 +181,70 @@ package body Bot_Ws_Services is
     
     Select_Sum_Bets_Grouped_By_Week.Prepare(
                                              "select " &
-                                               "substring(BETNAME,12,25) BNAME, " &
-                                               "extract(year from BETPLACED) yr, " &
-                                               "extract(week from BETPLACED) wk, " &
-                                               "extract(year from BETPLACED)::char(4) || '-' || extract(week from BETPLACED)::char(2) yrwk, " &
+                                               "BETNAME, " &
                                                "round(sum( " &
-                                                 "case when BETWON " &
-                                                    "then PROFIT * 0.95 " &
-                                                    "else PROFIT " &
-                                                 "end),2) PROFIT2, " &
-                                               "round((100.0 * " &
-                                                 "sum( " &
-                                                   "case when BETWON " &
-                                                      "then PROFIT * 0.95 " &
-                                                      "else PROFIT " &
-                                                   "end)/ " &
-                                                   "sum(SIZEMATCHED)),2) rate2 " &
-                                             "from ABETS " &
-                                             "where true  " &
-                                             "and STATUS = 'SETTLED' " &
-                                             "and STARTTS >= :START " &
-                                             "and STARTTS <= :STOP " &
-                                             "group by yr, wk, BNAME " &
-                                             "having max(STARTTS) > :START " &
-                                             "order by yr, wk, BNAME");
-
+                                                  "case when BETWON " &
+                                                     "then PROFIT * 0.95 " &
+                                                     "else PROFIT " &
+                                                  "end),2) PROFIT2, " &
+                                               "round((100.0 * sum( " &
+                                                  "case when BETWON " &
+                                                     "then PROFIT * 0.95 " &
+                                                     "else PROFIT " &
+                                                  "end)/ " &
+                                                  "sum(SIZEMATCHED)),2) rate2 " &
+                                             "from abets " &
+                                             "where true " &
+                                             "and BETNAME = :BETNAME " &
+                                             "and status = 'SETTLED' " &
+                                             "and startts > '2018-11-15' " &
+                                             "and extract(year from BETPLACED) = :YEAR " &
+                                             "and extract(week from BETPLACED) = :WEEK " &
+                                             "group by BETNAME " &
+                                             "having max(STARTTS) > '2018-11-15' " &
+                                             "order by BETNAME");
     
-
+    
+    Select_Sum_Bets_Grouped_By_Month.Prepare(
+                                             "select " &
+                                               "BETNAME, " &
+                                               "round(sum( " &
+                                                  "case when BETWON " &
+                                                     "then PROFIT * 0.95 " &
+                                                     "else PROFIT " &
+                                                  "end),2) PROFIT2, " &
+                                               "round((100.0 * sum( " &
+                                                  "case when BETWON " &
+                                                     "then PROFIT * 0.95 " &
+                                                     "else PROFIT " &
+                                                  "end)/ " &
+                                                  "sum(SIZEMATCHED)),2) rate2 " &
+                                             "from abets " &
+                                             "where true " &
+                                             "and BETNAME = :BETNAME " &
+                                             "and status = 'SETTLED' " &
+                                             "and startts > '2018-11-15' " &
+                                             "and extract(year from BETPLACED) = :YEAR " &
+                                             "and extract(month from BETPLACED) = :MONTH " &
+                                             "group by BETNAME " &
+                                             "having max(STARTTS) > '2018-11-15' " &
+                                             "order by BETNAME");
+    
+    
+    Select_Distict_Betnames.Prepare(    
+                                    "select " &
+                                      "betname " &
+                                    "from abets " &
+                                    "where true " &
+                                    "and status = 'SETTLED' " &
+                                    "and startts > '2018-11-15' " &
+                                    "group by betname " &
+                                    "having max(startts) > '2018-11-15' " &
+                                    "order by betname");
+                                
+    
+    
+    
   end Prepare_Bets;
   ------------------------------------------------------------
 
@@ -686,6 +732,24 @@ package body Bot_Ws_Services is
     return Json_Reply.Write;
 
   end Get_Starttimes;
+  
+  
+  procedure Get_Distinct_Betnames(Names : out Betnames_List_Package.List ) is 
+    End_Of_Set      : Boolean := False;
+    Betname         : Betname_Type := (others => ' ');
+  begin
+  
+    Select_Distict_Betnames.Open_Cursor;
+    loop
+      Select_Distict_Betnames.Fetch(End_Of_Set);
+      exit when End_Of_Set ;
+      Select_Distict_Betnames.Get("BETNAME", Betname);
+      Names.Append(Betname);
+    end loop;
+    Select_Distict_Betnames.Close_Cursor;
+    
+  end Get_Distinct_Betnames;
+  
   ----------------------------------------------------------
   function Get_Weeks(Username  : in String;
                      Context   : in String) return String is 
@@ -699,6 +763,7 @@ package body Bot_Ws_Services is
     Json_Reply      : Json_Value := Create_Object;
     Json_Bets       : Json_Array := Empty_Array;
     Labels          : Json_Array := Empty_Array;
+    Betname_List    : Betnames_List_Package.List;
 
     use Calendar2;
   begin
@@ -706,48 +771,63 @@ package body Bot_Ws_Services is
 
     T.Start;
     Prepare_Bets;
-
+    Get_Distinct_Betnames(Betname_List);
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
-
-    Select_Sum_Bets_Grouped_By_Week.Set("START", Start);
-    Select_Sum_Bets_Grouped_By_Week.Set("STOP", Stop);
-
+    
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
-    Select_Sum_Bets_Grouped_By_Week.Open_Cursor;
-    loop
-      Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
-      exit when End_Of_Set ;
+    Betnames_Loop  : for Betname of Betname_List loop 
       declare
-        Bet            : Json_Value   := Create_Object;
-     --   Label          : Json_Value   := Create_Object;
-        Betname        : Betname_Type := (others => ' ');
-        Profit         : Fixed_Type   := 0.0;
-        Week           : String(1..7) := (others => ' ');
-        Ratio          : Fixed_Type   := 0.0;
+        Bet   : Json_Value   := Create_Object;
+        Data  : Json_Array := Empty_Array;
       begin
-        -- betname, profit, sizematched, count, riskratio
-        Select_Sum_Bets_Grouped_By_Week.Get("BNAME", Betname);
-        Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
-        Select_Sum_Bets_Grouped_By_Week.Get("YRWK", Week);
-        Select_Sum_Bets_Grouped_By_Week.Get("RATE2", Ratio);
+      
+        Select_Sum_Bets_Grouped_By_Week.Set("BETNAME", Utils.Trim(Betname));
+              
+        Year_Loop : for Year in 2018 .. 2020 loop 
+          Week_Loop : for Week in 1 .. 53 loop           
         
-        if Week(7) = ' ' then 
-          Week(7) := Week(6);
-          Week(6) := '0';
-        end if;
-
-        Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
-        Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit)); -- should be array - 1 value per week
-       -- Label.Set_Field (Field_Name => "label", Field => Week);
-        Bet.Set_Field (Field_Name => "ratio", Field => Float(Ratio));
-        Append(Json_Bets, Bet);
-        Append(Labels, Create(Week));
+            if (2018,11,15,0,0,0,0) <= Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) and then   
+              Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) <= Stop then
+        
+              Select_Sum_Bets_Grouped_By_Week.Set("YEAR", Integer_4(Year));
+              Select_Sum_Bets_Grouped_By_Week.Set("WEEK", Integer_4(Week));
+              declare
+                String_Week    : String(1..7) := (others => ' ');
+              begin
+                Move(Utils.Trim(Year'Img) & "'" & Utils.Trim(Week'Img), String_Week);
+        
+                if String_Week(7) = ' ' then 
+                  String_Week(7) := String_Week(6);
+                  String_Week(6) := '0';
+                end if;
+        
+                Select_Sum_Bets_Grouped_By_Week.Open_Cursor;
+                loop
+                  Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
+                  exit when End_Of_Set ;
+                  declare
+                    Profit         : Fixed_Type   := 0.0;
+                   -- Ratio          : Fixed_Type   := 0.0;
+                  begin
+                    Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
+                    --Select_Sum_Bets_Grouped_By_Week.Get("RATE2", Ratio);
+                    Append(Data,Create(Float(Profit)));
+                  end;
+                end loop;
+                Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
+                Append(Labels, Create(String_Week));
+                
+                Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
+                Append(Json_Bets, Bet);
+                
+              end ;
+            end if;
+          end loop Week_Loop;
+        end loop Year_Loop;
       end;
-    end loop;
-    Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
-
+    end loop Betnames_Loop;
     --Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
     Json_Reply.Set_Field (Field_Name => "labels", Field => Labels);
     Json_Reply.Set_Field (Field_Name => "datasets", Field => Json_Bets);
