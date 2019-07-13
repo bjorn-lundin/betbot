@@ -749,6 +749,36 @@ package body Bot_Ws_Services is
     Select_Distict_Betnames.Close_Cursor;
     
   end Get_Distinct_Betnames;
+
+  
+  function Bet_Color( Name : String ) return String is
+    Service : constant String := "Bet_Color";
+  begin
+    if    Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01"     then return "Lavender" ; 
+    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_CHS" then return "Plum" ; 
+    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_HRD" then return "Orchid" ; 
+    elsif Name = "HORSE_BACK_1_10_13_1_2_WIN_1_01"     then return "Magenta" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumPurple" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "DarkViolet" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "DarkMagenta" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "Indigo" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "SlateBlue" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Olive" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "YellowGreen" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_CHS" then return "Lime" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "Chartreuse" ; 
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "SpringGreen" ; 
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "LightGreen" ; 
+    else    
+      Log(Object & Service, "bet '" & Name & "' has no color");    
+      return "Black" ; 
+    end if;
+      --DeepSkyBlue
+      --Cornflowerblue
+      --Skyblue	
+  end Bet_Color;
+    
+  
   
   ----------------------------------------------------------
   function Get_Weeks(Username  : in String;
@@ -764,7 +794,7 @@ package body Bot_Ws_Services is
     Labels          : Json_Array := Empty_Array;
     Betname_List    : Betnames_List_Package.List;
     Json_Bets       : Json_Array := Empty_Array;
-
+    Labels_Are_Appended : Boolean := False;
     use Calendar2;
   begin
     Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
@@ -781,6 +811,7 @@ package body Bot_Ws_Services is
       declare
         Bet       : Json_Value   := Create_Object;
         Data      : Json_Array := Empty_Array;
+        Profit    : Fixed_Type   := 0.0;
       begin
       
         Select_Sum_Bets_Grouped_By_Week.Set("BETNAME", Utils.Trim(Betname));
@@ -804,27 +835,28 @@ package body Bot_Ws_Services is
                 end if;
         
                 Select_Sum_Bets_Grouped_By_Week.Open_Cursor;
-                loop
-                  Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
-                  exit when End_Of_Set ;
-                  declare
-                    Profit         : Fixed_Type   := 0.0;
-                   -- Ratio          : Fixed_Type   := 0.0;
-                  begin
-                    Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
-                    Append(Data,Create(Float(Profit)));
-                  end;
-                end loop;
+                Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
+                if not End_Of_Set then 
+                   Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
+                else
+                  Profit := 0.0;
+                end if;
                 Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
-                Append(Labels, Create(String_Week));
+
+                Append(Data,Create(Float(Profit)));
+                
+                if not Labels_Are_Appended then 
+                  Append(Labels, Create(String_Week));
+                end if;
                 
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
-                Bet.Set_Field (Field_Name => "backgroundColor", Field => "blue");
+                Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
                 
               end ;
             end if;
           end loop Week_Loop;
         end loop Year_Loop;
+        Labels_Are_Appended := True;
         Bet.Set_Field (Field_Name => "Data", Field => Data);
         Append(Json_Bets, Bet);
        end;
