@@ -761,7 +761,7 @@ package body Bot_Ws_Services is
     elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumAquamarine" ; 
     elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "PaleGreen" ; 
     elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "Lime" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "DeepSkyBlue	" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "DeepSkyBlue" ; 
     elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "Cornflowerblue" ; 
     elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Blue" ; 
     elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "Wheat" ; 
@@ -943,6 +943,7 @@ package body Bot_Ws_Services is
                 
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
                 Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
+                Bet.Set_Field (Field_Name => "hoverBackgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
                 
               end ;
             end if;
