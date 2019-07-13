@@ -757,25 +757,22 @@ package body Bot_Ws_Services is
     if    Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01"     then return "Lavender" ; 
     elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_CHS" then return "Plum" ; 
     elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_HRD" then return "Orchid" ; 
-    elsif Name = "HORSE_BACK_1_10_13_1_2_WIN_1_01"     then return "Magenta" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumPurple" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "DarkViolet" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "DarkMagenta" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "Indigo" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "SlateBlue" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Olive" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "YellowGreen" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_CHS" then return "Lime" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "Chartreuse" ; 
-    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "SpringGreen" ; 
-    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "LightGreen" ; 
+    elsif Name = "HORSE_BACK_1_10_13_1_2_WIN_1_01"     then return "LightPink" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumAquamarine" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "PaleGreen" ; 
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "Lime" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "DeepSkyBlue	" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "Cornflowerblue" ; 
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Blue" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "Wheat" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_CHS" then return "RosyBrown" ; 
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "DarkGoldenrod" ; 
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "DeepPink" ; 
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "MediumVioletRed" ; 
     else    
       Log(Object & Service, "bet '" & Name & "' has no color");    
       return "Black" ; 
     end if;
-      --DeepSkyBlue
-      --Cornflowerblue
-      --Skyblue	
   end Bet_Color;
     
   
