@@ -761,9 +761,9 @@ package body Bot_Ws_Services is
     Start           : Calendar2.Time_Type := (2018,11,15,0,0,0,0);
     Stop            : Calendar2.Time_Type := Calendar2.Clock;
     Json_Reply      : Json_Value := Create_Object;
-    Json_Bets       : Json_Array := Empty_Array;
     Labels          : Json_Array := Empty_Array;
     Betname_List    : Betnames_List_Package.List;
+    Json_Bets       : Json_Array := Empty_Array;
 
     use Calendar2;
   begin
@@ -779,8 +779,8 @@ package body Bot_Ws_Services is
 
     Betnames_Loop  : for Betname of Betname_List loop 
       declare
-        Bet   : Json_Value   := Create_Object;
-        Data  : Json_Array := Empty_Array;
+        Bet       : Json_Value   := Create_Object;
+        Data      : Json_Array := Empty_Array;
       begin
       
         Select_Sum_Bets_Grouped_By_Week.Set("BETNAME", Utils.Trim(Betname));
@@ -796,7 +796,7 @@ package body Bot_Ws_Services is
               declare
                 String_Week    : String(1..7) := (others => ' ');
               begin
-                Move(Utils.Trim(Year'Img) & "'" & Utils.Trim(Week'Img), String_Week);
+                Move(Utils.Trim(Year'Img) & "-" & Utils.Trim(Week'Img), String_Week);
         
                 if String_Week(7) = ' ' then 
                   String_Week(7) := String_Week(6);
@@ -812,7 +812,6 @@ package body Bot_Ws_Services is
                    -- Ratio          : Fixed_Type   := 0.0;
                   begin
                     Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
-                    --Select_Sum_Bets_Grouped_By_Week.Get("RATE2", Ratio);
                     Append(Data,Create(Float(Profit)));
                   end;
                 end loop;
@@ -820,14 +819,17 @@ package body Bot_Ws_Services is
                 Append(Labels, Create(String_Week));
                 
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
-                Append(Json_Bets, Bet);
+                Bet.Set_Field (Field_Name => "backgroundColor", Field => "blue");
                 
               end ;
             end if;
           end loop Week_Loop;
         end loop Year_Loop;
-      end;
+        Bet.Set_Field (Field_Name => "Data", Field => Data);
+        Append(Json_Bets, Bet);
+       end;
     end loop Betnames_Loop;
+
     --Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
     Json_Reply.Set_Field (Field_Name => "labels", Field => Labels);
     Json_Reply.Set_Field (Field_Name => "datasets", Field => Json_Bets);
