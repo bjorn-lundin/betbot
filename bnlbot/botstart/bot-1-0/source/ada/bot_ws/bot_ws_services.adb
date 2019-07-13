@@ -689,7 +689,7 @@ package body Bot_Ws_Services is
   ----------------------------------------------------------
   function Get_Weeks(Username  : in String;
                      Context   : in String) return String is 
-    pragma Unreferenced(Username);
+    --pragma Unreferenced(Username);
     Service : constant String := "Get_Weeks";
 
     T               : Sql.Transaction_Type;
@@ -710,7 +710,7 @@ package body Bot_Ws_Services is
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
 
     Select_Sum_Bets_Grouped_By_Week.Set("START", Start);
-    Select_Sum_Bets_Grouped_By_Week.Set("STOP", Start);
+    Select_Sum_Bets_Grouped_By_Week.Set("STOP", Stop);
 
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
