@@ -857,7 +857,7 @@ package body Bot_Ws_Services is
           end loop Week_Loop;
         end loop Year_Loop;
         Labels_Are_Appended := True;
-        Bet.Set_Field (Field_Name => "Data", Field => Data);
+        Bet.Set_Field (Field_Name => "data", Field => Data);
         Append(Json_Bets, Bet);
        end;
     end loop Betnames_Loop;
@@ -871,6 +871,101 @@ package body Bot_Ws_Services is
     return Json_Reply.Write;
     
     end Get_Weeks;
+  ----------------------------------------------------------
+  ----------------------------------------------------------
+  function Get_Months(Username  : in String;
+                     Context   : in String) return String is 
+    --pragma Unreferenced(Username);
+    Service : constant String := "Get_Months";
+
+    T               : Sql.Transaction_Type;
+    End_Of_Set      : Boolean := False;
+    Start           : Calendar2.Time_Type := (2018,10,15,0,0,0,0);
+    Stop            : Calendar2.Time_Type := Calendar2.Clock;
+    Now             : Calendar2.Time_Type := Calendar2.Clock;
+    Json_Reply      : Json_Value := Create_Object;
+    Labels          : Json_Array := Empty_Array;
+    Betname_List    : Betnames_List_Package.List;
+    Json_Bets       : Json_Array := Empty_Array;
+    Labels_Are_Appended : Boolean := False;
+    use Calendar2;
+  begin
+    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
+
+    T.Start;
+    Prepare_Bets;
+    Get_Distinct_Betnames(Betname_List);
+    Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
+    
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+
+    Betnames_Loop  : for Betname of Betname_List loop 
+      declare
+        Bet       : Json_Value   := Create_Object;
+        Data      : Json_Array := Empty_Array;
+        Profit    : Fixed_Type   := 0.0;
+      begin
+      
+        Select_Sum_Bets_Grouped_By_Month.Set("BETNAME", Utils.Trim(Betname));
+              
+        Year_Loop : for Year in 2018 .. 2020 loop 
+          Month_Loop : for Month in 1 .. 12 loop           
+            Stop.Year := Year_Type(Year);
+            Stop.Month := Month_Type(Month);
+            Stop.Day := 1;
+        
+            if Start < Stop and then Stop < Now then
+        
+              Select_Sum_Bets_Grouped_By_Month.Set("YEAR", Integer_4(Year));
+              Select_Sum_Bets_Grouped_By_Month.Set("MONTH", Integer_4(Month));
+              declare
+                String_Month    : String(1..7) := (others => ' ');
+              begin
+                Move(Utils.Trim(Year'Img) & "-" & Utils.Trim(Month'Img), String_Month);
+        
+                if String_Month(7) = ' ' then 
+                  String_Month(7) := String_Month(6);
+                  String_Month(6) := '0';
+                end if;
+        
+                Select_Sum_Bets_Grouped_By_Month.Open_Cursor;
+                Select_Sum_Bets_Grouped_By_Month.Fetch(End_Of_Set);
+                if not End_Of_Set then 
+                   Select_Sum_Bets_Grouped_By_Month.Get("PROFIT2", Profit);
+                else
+                  Profit := 0.0;
+                end if;
+                Select_Sum_Bets_Grouped_By_Month.Close_Cursor;
+
+                Append(Data,Create(Float(Profit)));
+                
+                if not Labels_Are_Appended then 
+                  Append(Labels, Create(String_Month));
+                end if;
+                
+                Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
+                Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
+                
+              end ;
+            end if;
+          end loop Month_Loop;
+        end loop Year_Loop;
+        Labels_Are_Appended := True;
+        Bet.Set_Field (Field_Name => "data", Field => Data);
+        Append(Json_Bets, Bet);
+       end;
+    end loop Betnames_Loop;
+
+    --Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
+    Json_Reply.Set_Field (Field_Name => "labels", Field => Labels);
+    Json_Reply.Set_Field (Field_Name => "datasets", Field => Json_Bets);
+
+    T.Commit;
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
+    
+    end Get_Months;
   ----------------------------------------------------------
 
 end Bot_Ws_Services;
