@@ -35,13 +35,13 @@ $(document).ready(function(){
          selectedRadio = $('input[name="username"]:checked', '#loginform').val();
          console.log("selectedRadio " + selectedRadio);
      });
-     
+
 //  $( document ).ajaxError(function() {
 //    $('#viewer_content').empty();
 //    $('#total').text("Triggered ajaxError handler."  );
-//  });     
-       
-  
+//  });
+
+
   $(document).on('click', '#submit', function() { // catch the form's submit event
       // Send data to server through the Ajax call
       // action is functionality we want to call and outputJSON is our data
@@ -75,40 +75,40 @@ $(document).ready(function(){
       });
       return false; // cancel original event to prevent form submitting
   });
-  
+
   $('#todays').on('tap', function() {
       context ='todays_bets';
       console.log("todays - context " + context);
   });
-  
+
   $('#yesterday').on('tap', function() {
       context ='yesterdays_bets';
       console.log("yesterday - context " + context);
   });
-  
+
   $('#thisweek').on('tap', function() {
       context ='thisweeks_bets';
       console.log("thisweek - context " + context);
   });
-  
+
   $('#lastweek').on('tap', function() {
       context ='lastweeks_bets';
       console.log("lastweek - context " + context);
   });
-  
+
   $('#thismonth').on('tap', function() {
       context ='thismonths_bets';
       console.log("thismonth - context " + context);
   });
-  
+
   $('#lastmonth').on('tap', function() {
       context ='lastmonths_bets';
       console.log("lastmonth - context " + context);
   });
-  
-  
+
+
   $(document).on("pageshow","#viewer",function(){
-    // var para = "<p id='tobedeleted'>ny kod från event</p>";
+    // var para = "<p id='tobedeleted'>ny kod frÃ¥n event</p>";
     // $('#tobedeleted').empty();
     // $('#viewer_content').append(para);
       $.ajax({url: '/0',
@@ -130,15 +130,15 @@ $(document).ready(function(){
               console.log("success");
               if(reply.result == "OK") {
                  console.log("success OK");
-    
+
                  $('#viewer_content').empty();
                  $('#total').text("Resultat:"+ reply.total + " kr" );
-    
+
                  //fill the table
                  var table = $.makeTable(reply.datatable);
                  $('#viewer_content').html(table).trigger('create')
-    
-    
+
+
               } else {
                  console.log("success NOT OK");
               }
@@ -147,10 +147,8 @@ $(document).ready(function(){
               console.log("error " + error);
           }
     });
-  
-  
-  });     
-     
-     
-});  
+
+  });
+
+});
 

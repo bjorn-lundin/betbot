@@ -36,7 +36,7 @@ function Do_Ajax3() {
   var d = new Date();
   var n = d.getTime(); 
 
-  $.ajax({url: 'https://betbot.nonobet.com',
+  $.ajax({url: 'https://lundin.duckdns.org',
       data: {'context' : "weekly_total",
              'dummy' : n },
       type: 'get',                   
@@ -78,7 +78,7 @@ function Do_Ajax2() {
   var d = new Date();
   var n = d.getTime(); 
 
-  $.ajax({url: 'https://betbot.nonobet.com',
+  $.ajax({url: 'https://lundin.duckdns.org',
       data: {'context' : "todays_total",
              'dummy' : n },
       type: 'get',                   
@@ -142,7 +142,7 @@ function Start_Timer () {
 
 function Do_Login() {
 
- $.ajax({url: 'https://betbot.nonobet.com',
+ $.ajax({url: 'https://lundin.duckdns.org',
      data: $('#loginform').serialize(),
      type: 'post',                   
      async: 'true',
