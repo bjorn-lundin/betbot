@@ -29,6 +29,7 @@ package body Bot_Ws_Services is
   Select_Sum_Bets                 : Sql.Statement_Type;
   Select_Sum_Bets_Named           : Sql.Statement_Type;
   Select_Sum_Bets_Grouped_By_Name : Sql.Statement_Type;
+  Select_Sum_Bets_Grouped_By_Week : Sql.Statement_Type;
   Global_Initiated                : Boolean := False;
   Global_Start_Time_List          : Table_Astarttimes.Astarttimes_List_Pack2.List;
 
@@ -167,6 +168,36 @@ package body Bot_Ws_Services is
                                               "and STATUS = 'SETTLED' " &
                                               "group by BETNAME,SIDE " &
                                               "order by BETNAME" );
+    
+    
+    Select_Sum_Bets_Grouped_By_Week.Prepare(
+                                             "select " &
+                                               "substring(BETNAME,12,25) BNAME, " &
+                                               "extract(year from BETPLACED) yr, " &
+                                               "extract(week from BETPLACED) wk, " &
+                                               "extract(year from BETPLACED)::char(4) || '-' || extract(week from BETPLACED)::char(2) yrwk, " &
+                                               "round(sum( " &
+                                                 "case when BETWON " &
+                                                    "then PROFIT * 0.95 " &
+                                                    "else PROFIT " &
+                                                 "end),2) PROFIT2, " &
+                                               "round((100.0 * " &
+                                                 "sum( " &
+                                                   "case when BETWON " &
+                                                      "then PROFIT * 0.95 " &
+                                                      "else PROFIT " &
+                                                   "end)/ " &
+                                                   "sum(SIZEMATCHED)),2) rate2 " &
+                                             "from ABETS " &
+                                             "where true  " &
+                                             "and STATUS = 'SETTLED' " &
+                                             "and STARTTS >= :START " &
+                                             "and STARTTS <= :STOP " &
+                                             "group by yr, wk, BNAME " &
+                                             "having max(STARTTS) > :START " &
+                                             "order by yr, wk, BNAME");
+
+    
 
   end Prepare_Bets;
   ------------------------------------------------------------
@@ -655,6 +686,77 @@ package body Bot_Ws_Services is
     return Json_Reply.Write;
 
   end Get_Starttimes;
+  ----------------------------------------------------------
+  function Get_Weeks(Username  : in String;
+                     Context   : in String) return String is 
+    pragma Unreferenced(Username);
+    Service : constant String := "Get_Weeks";
 
+    T               : Sql.Transaction_Type;
+    End_Of_Set      : Boolean := False;
+    Start           : Calendar2.Time_Type := (2018,11,15,0,0,0,0);
+    Stop            : Calendar2.Time_Type := Calendar2.Clock;
+    Json_Reply      : Json_Value := Create_Object;
+    Json_Bets       : Json_Array := Empty_Array;
+    Labels          : Json_Array := Empty_Array;
+
+    use Calendar2;
+  begin
+    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
+
+    T.Start;
+    Prepare_Bets;
+
+    Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
+
+    Select_Sum_Bets_Grouped_By_Week.Set("START", Start);
+    Select_Sum_Bets_Grouped_By_Week.Set("STOP", Start);
+
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+
+    Select_Sum_Bets_Grouped_By_Week.Open_Cursor;
+    loop
+      Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
+      exit when End_Of_Set ;
+      declare
+        Bet            : Json_Value   := Create_Object;
+        Label          : Json_Value   := Create_Object;
+        Betname        : Betname_Type := (others => ' ');
+        Profit         : Fixed_Type   := 0.0;
+        Week           : String(1..7) := (others => ' ');
+        Ratio          : Fixed_Type   := 0.0;
+      begin
+        -- betname, profit, sizematched, count, riskratio
+        Select_Sum_Bets_Grouped_By_Week.Get("BNAME", Betname);
+        Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
+        Select_Sum_Bets_Grouped_By_Week.Get("YRWK", Week);
+        Select_Sum_Bets_Grouped_By_Week.Get("RATE2", Ratio);
+        
+        if Week(7) = ' ' then 
+          Week(7) := Week(6);
+          Week(6) := '0';
+        end if;
+
+        Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
+        Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
+        Label.Set_Field (Field_Name => "label", Field => Week);
+        Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
+        Append(Json_Bets, Bet);
+        Append(Labels, Label);
+      end;
+    end loop;
+    Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
+
+    --Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
+    Json_Reply.Set_Field (Field_Name => "labels", Field => Labels);
+    Json_Reply.Set_Field (Field_Name => "datasets", Field => Json_Bets);
+
+    T.Commit;
+    Log(Object & Service, "Return " & Json_Reply.Write);
+    return Json_Reply.Write;
+    
+    end Get_Weeks;
+  ----------------------------------------------------------
 
 end Bot_Ws_Services;

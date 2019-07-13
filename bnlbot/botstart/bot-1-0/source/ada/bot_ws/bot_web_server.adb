@@ -177,7 +177,10 @@ procedure Bot_Web_Server is
       Response := Aws.Response.Build (Application_Json,
                                       Bot_Ws_Services.Get_Starttimes(Username => Username,
                                                                      Context  => Context));
-
+    elsif Context="weeks" then
+      Response := Aws.Response.Build (Application_Json,
+                                      Bot_Ws_Services.Get_Weeks(Username => Username,
+                                                                     Context  => Context));
     else
       Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
     end if;
