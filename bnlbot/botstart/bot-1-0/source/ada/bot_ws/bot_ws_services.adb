@@ -721,7 +721,7 @@ package body Bot_Ws_Services is
       exit when End_Of_Set ;
       declare
         Bet            : Json_Value   := Create_Object;
-        Label          : Json_Value   := Create_Object;
+     --   Label          : Json_Value   := Create_Object;
         Betname        : Betname_Type := (others => ' ');
         Profit         : Fixed_Type   := 0.0;
         Week           : String(1..7) := (others => ' ');
@@ -738,12 +738,12 @@ package body Bot_Ws_Services is
           Week(6) := '0';
         end if;
 
-        Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
-        Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
-        Label.Set_Field (Field_Name => "label", Field => Week);
-        Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
+        Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
+        Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit)); -- should be array - 1 value per week
+       -- Label.Set_Field (Field_Name => "label", Field => Week);
+        Bet.Set_Field (Field_Name => "ratio", Field => Float(Ratio));
         Append(Json_Bets, Bet);
-        Append(Labels, Label);
+        Append(Labels, Create(Week));
       end;
     end loop;
     Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
