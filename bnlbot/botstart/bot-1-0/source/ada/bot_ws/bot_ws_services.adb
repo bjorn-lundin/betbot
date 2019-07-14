@@ -848,6 +848,7 @@ package body Bot_Ws_Services is
                 
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
                 Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
+                Bet.Set_Field (Field_Name => "hoverBackgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
                 
               end ;
             end if;
