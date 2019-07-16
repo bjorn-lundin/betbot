@@ -83,6 +83,7 @@ project Adabot is
                     "split_to_ai_mlrl.adb",
                     "print_win_place_markets.adb",
                     "parse_football_live_feed.adb",
+                    "test_bot_services.adb",
                     "lay_and_back_after_progress.adb"
                    );
 
