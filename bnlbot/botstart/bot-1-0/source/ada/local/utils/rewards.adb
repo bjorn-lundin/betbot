@@ -183,7 +183,8 @@ end Check_Profit;
 Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
 Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
 Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
-Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
+Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
+--Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
 Race                            :          Text_Io.File_Type;
 Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
 One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
@@ -215,6 +216,12 @@ begin
      Sa_Stop_Date'Access,
      Long_Switch => "--stop_date=",
      Help        => "stop date eg 2019-12-21");
+
+  Define_Switch
+     (Cmd_Line,
+     Sa_Markettype'Access,
+     Long_Switch => "--markettype=",
+     Help        => "PLC/WIN");
 
   Define_Switch
     (Cmd_Line,
@@ -276,28 +283,37 @@ begin
     declare
       Cnt       : Integer := 0;
       First     : Boolean := True;
+      Mtype     : String := "PLA";
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
 
-        if Market.Markettype(1..3) = "PLA" and then
+        if Sa_Markettype.all = "win" then
+          Mtype := "WIN";
+        end if;
+
+        if Market.Markettype(1..3) = Mtype and then True
+        --if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
-          Market.Numactiverunners <= 16 --and then
+        --  Market.Numactiverunners <= 16 --and then
         --   Market.Marketname_Ok2
         then
           First := True;
 
           Cnt := Cnt + 1;
 
-          if not Ad.Exists(Path) then
-            Ad.Create_Directory(Path);
-          end if;
+          declare
+            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Sa_Markettype.all & "/rewards";
+          begin
+            if not Ad.Exists(Path) then
+              Ad.Create_Directory(Path);
+            end if;
+       --   Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
 
-          Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
 
-          Text_Io.Create(File => Race,
-                         Mode => Text_Io.Out_File,
-                         Name => Path & "/" & Market.Marketid & ".dat");
-
+            Text_Io.Create(File => Race,
+                           Mode => Text_Io.Out_File,
+                           Name => Path & "/" & Market.Marketid & ".dat");
+          end;
           -- list of timestamps in this market
           declare
             Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
