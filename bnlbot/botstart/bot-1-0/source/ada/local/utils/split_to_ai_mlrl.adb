@@ -45,7 +45,7 @@ procedure Split_To_Ai_MLRL is
       for Tmp of List loop
         if Tmp.Status(1..6) = "ACTIVE" and then
           Tmp.Backprice > Fixed_Type(1.0) and then
-          Tmp.Layprice < Fixed_Type(1_000.0)  then
+          Tmp.Layprice < Fixed_Type(1_000.1)  then
           Idx := Idx +1;
           exit when Idx > Bra'Last;
           Bra(Idx) := Tmp;
@@ -140,7 +140,6 @@ procedure Split_To_Ai_MLRL is
   T                   :          Sql.Transaction_Type;
 begin
 
-
   Define_Switch
     (Cmd_Line,
      Sa_Logfilename'Access,
@@ -196,9 +195,9 @@ begin
 --          end if;
 
      --   if Market.Markettype (1 .. 3) = "WIN" and then True and then
-        if Market.Markettype (1 .. 3) = "PLA" and then True and then
+        if Market.Markettype (1 .. 3) = "PLA" 
         --  8 <= Market.Numrunners and then
-          Market.Numrunners <= 16  --and then
+        --  Market.Numrunners <= 16  --and then
          -- Market.Marketname_Ok2
         then
           First := True;
@@ -210,7 +209,7 @@ begin
             Ad.Create_Directory(Path & Marketname.Fix_String);
           end if;
 
-          Text_Io.Put_Line("marketid='" & Market.Marketid & "'");
+      --    Text_Io.Put_Line("marketid='" & Market.Marketid & "'");
 
           Text_IO.Create(File => Race,
                          Mode => Text_IO.Out_File,

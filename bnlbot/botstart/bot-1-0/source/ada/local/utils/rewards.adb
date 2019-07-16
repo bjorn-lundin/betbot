@@ -45,158 +45,162 @@ procedure Rewards is
       Idx : Integer := 0;
     begin
       for Tmp of List loop
-        if Tmp.Status(1..6) = "ACTIVE" and then
-          Tmp.Backprice > Fixed_Type(1.0) and then
-          Tmp.Layprice < Fixed_Type(1_000.0)  then
+        if Tmp.Status(1..6) = "ACTIVE" then
+        -- Tmp.Backprice > Fixed_Type(1.0) and then
+        -- Tmp.Layprice < Fixed_Type(1_000.0)  then
           Idx := Idx +1;
-          exit when Idx > Bra'Last;
-          Bra(Idx) := Tmp;
-        end if;
-      end loop;
-    end ;
-
-  end To_Array;
-
-  -----------------------------------------------------
-  function To_Time(S2: String) return Calendar2.Time_Type is
-    Tmp : Time_Type;
-    S   : String (1 .. S2'Last - S2'First + 1) := S2;
-  begin
-    -- '22-01-2013 11:09:06'
-
-    Tmp.Year  := Year_Type'Value (S (7 .. 10));
-    Tmp.Month := Month_Type'Value (S (4 .. 5));
-    Tmp.Day   := Day_Type'Value (S (1 .. 2));
-
-    Tmp.Hour   := Hour_Type'Value (S (12 .. 13));
-    Tmp.Minute := Minute_Type'Value (S (15 .. 16));
-    if S'Length = 19 then
-      Tmp.Second := Second_Type'Value (S (18 .. 19));
-    else
-      Tmp.Second := 0;
-    end if;
-    return Tmp;
-  end To_Time;
-  pragma Unreferenced(To_Time);
-  -----------------------------------------------------
-
-  function Create_Marketname(S : String) return String is
-    Tmp : String := Trim(S,Both);
-  begin
-    for I in Tmp'Range loop
-      case Tmp(I) is
-        when ' ' => Tmp(I) := '_';
-        when others => null;
-      end case;
+        exit when Idx > Bra'Last;
+        Bra(Idx) := Tmp;
+      end if;
     end loop;
-    return Tmp;
-  end Create_Marketname;
-  pragma Unreferenced(Create_Marketname);
-  -------------------------------------------------------
+  end ;
 
-  procedure Put (F : Text_Io.File_Type; S : String) is
-  begin
-    Text_Io.Put(F,S);
-  end Put;
+end To_Array;
 
-  -------------------------------------------------------
+-----------------------------------------------------
+function To_Time(S2: String) return Calendar2.Time_Type is
+  Tmp : Time_Type;
+  S   : String (1 .. S2'Last - S2'First + 1) := S2;
+begin
+  -- '22-01-2013 11:09:06'
 
-  procedure Put_Line (F : Text_Io.File_Type; S : String) is
-  begin
-    Text_Io.Put_Line(F,S);
-  end Put_Line;
+  Tmp.Year  := Year_Type'Value (S (7 .. 10));
+  Tmp.Month := Month_Type'Value (S (4 .. 5));
+  Tmp.Day   := Day_Type'Value (S (1 .. 2));
 
-  -------------------------------------------
+  Tmp.Hour   := Hour_Type'Value (S (12 .. 13));
+  Tmp.Minute := Minute_Type'Value (S (15 .. 16));
+  if S'Length = 19 then
+    Tmp.Second := Second_Type'Value (S (18 .. 19));
+  else
+    Tmp.Second := 0;
+  end if;
+  return Tmp;
+end To_Time;
+pragma Unreferenced(To_Time);
+-----------------------------------------------------
 
-  procedure Check_Odds (B : in Best_Runners_Array_Type; Seen_1_0x, More_Than_Limit : in out Boolean) is
-    Some_Under_Limit : Boolean := False;
-  begin
+function Create_Marketname(S : String) return String is
+  Tmp : String := Trim(S,Both);
+begin
+  for I in Tmp'Range loop
+    case Tmp(I) is
+      when ' ' => Tmp(I) := '_';
+      when others => null;
+    end case;
+  end loop;
+  return Tmp;
+end Create_Marketname;
+pragma Unreferenced(Create_Marketname);
+-------------------------------------------------------
+
+procedure Put (F : Text_Io.File_Type; S : String) is
+begin
+  Text_Io.Put(F,S);
+end Put;
+
+-------------------------------------------------------
+
+procedure Put_Line (F : Text_Io.File_Type; S : String) is
+begin
+  Text_Io.Put_Line(F,S);
+end Put_Line;
+
+-------------------------------------------
+
+procedure Check_Odds (B : in Best_Runners_Array_Type; Seen_1_0x, More_Than_Limit : in out Boolean) is
+  Some_Under_Limit : Boolean := False;
+begin
+  for Runner of B loop
+    if not Seen_1_0x and then Runner.Backprice <= Fixed_Type(1.05) then
+      Seen_1_0x := True;
+    end if;
+  end loop;
+
+  if Seen_1_0x then
     for Runner of B loop
-      if not Seen_1_0x and then Runner.Backprice <= Fixed_Type(1.05) then
-        Seen_1_0x := True;
+      -- is any runners within 1.01 - 50 ? then All_more_than limit is false
+      if Fixed_Type (1.0) < Runner.Backprice and then Runner.Backprice < Fixed_Type (25.0) then
+        Some_Under_Limit := True;
       end if;
     end loop;
+    More_Than_Limit := not Some_Under_Limit;
+  end if;
+end Check_Odds;
 
-    if Seen_1_0x then
-      for Runner of B loop
-        -- is any runners within 1.01 - 50 ? then All_more_than limit is false
-        if Fixed_Type (1.0) < Runner.Backprice and then Runner.Backprice < Fixed_Type (25.0) then
-          Some_Under_Limit := True;
-        end if;
-      end loop;
-      More_Than_Limit := not Some_Under_Limit;
+-------------------------------------------------------
+function Check_Profit (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
+  Is_Winner                       : Boolean := False;
+  use Bot_Types;
+  Profit                          : Profit_Type := 0.0;
+begin
+
+  for W of Sim.Winners_Map (Runner.Marketid) loop
+    if W.Selectionid = Runner.Selectionid then
+      Is_Winner := True;
+      exit;
     end if;
-  end Check_Odds;
+  end loop;
 
-  -------------------------------------------------------
-  function Check_Profit (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
-    Is_Winner                       : Boolean := False;
-    use Bot_Types;
-    Profit                          : Profit_Type := 0.0;
-  begin
+  --simplification, but ok. betting on the wrong horse should be penalized, even if not matched
+  if not Is_Winner then
+    return - Profit_Type(Global_Size);
+  end if;
 
-    for W of Sim.Winners_Map (Runner.Marketid) loop
-      if W.Selectionid = Runner.Selectionid then
-        Is_Winner := True;
-        exit;
-      end if;
-    end loop;
+  Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
+    declare
+      List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
+      Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
+      Tmp                 : Profit_Type := 0.0;
+    begin
 
-    --simplification, but ok. betting on the wrong horse should be penalized, even if not matched
-    if not Is_Winner then
-      return - Profit_Type(Global_Size);
-    end if;
+      for J of List loop
+        if J.Selectionid = Runner.Selectionid and then
+          Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
 
-    Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
-      declare
-        List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
-        Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
-        Tmp                 : Profit_Type := 0.0;
-      begin
-
-        for J of List loop
-          if J.Selectionid = Runner.Selectionid and then
-            Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
-
-            if J.Backprice >= Runner.Backprice then --match
-              if Is_Winner then
+          if J.Backprice >= Runner.Backprice then --match
+            if Is_Winner then
+              if  Runner.Backprice < 1.01 then
+                return 0.0;
+              else
                 Tmp := Profit_Type(Global_Size) * Profit_Type (Runner.Backprice - 1.0) ;
                 Profit := Tmp * Profit_Type (1.0 - Commission);
-              else
-                return - Profit_Type(Global_Size);
               end if;
+            else
+              return - Profit_Type(Global_Size);
             end if;
-
           end if;
-        end loop;
-      end;
-    end loop Loop_Ts_Check_Profit;
-    return Profit;
-  end Check_Profit;
-  ------------------------------------------------------
+
+        end if;
+      end loop;
+    end;
+  end loop Loop_Ts_Check_Profit;
+  return Profit;
+end Check_Profit;
+------------------------------------------------------
 
 
-  Sa_Start_Date       : aliased  Gnat.Strings.String_Access;
-  Sa_Stop_Date        : aliased  Gnat.Strings.String_Access;
-  Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
-  Race                :          Text_Io.File_Type;
-  Start_Date          :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
-  One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
-  Current_Date        :          Calendar2.Time_Type := Start_Date;
-  Stop_Date           :          Calendar2.Time_Type := (2018,08,01,0,0,0,0);
-  Cmd_Line            :          Command_Line_Configuration;
-  T                   :          Sql.Transaction_Type;
+Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
+Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
+Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
+Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
+Race                            :          Text_Io.File_Type;
+Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
+Current_Date                    :          Calendar2.Time_Type := Start_Date;
+Stop_Date                       :          Calendar2.Time_Type := (2018,08,01,0,0,0,0);
+Cmd_Line                        :          Command_Line_Configuration;
+T                               :          Sql.Transaction_Type;
 begin
 
 
---    Text_Io.Put_Line (Calendar2.String_Interval(Stop_Date - Start_Date));
---    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (0*217,0,0,0,0) ));
---    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (1*217,0,0,0,0)));
---    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (2*217,0,0,0,0)));
---    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (3*217,0,0,0,0)));
---    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (4*217,0,0,0,0)));
---    return;
+  --    Text_Io.Put_Line (Calendar2.String_Interval(Stop_Date - Start_Date));
+  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (0*217,0,0,0,0) ));
+  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (1*217,0,0,0,0)));
+  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (2*217,0,0,0,0)));
+  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (3*217,0,0,0,0)));
+  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (4*217,0,0,0,0)));
+  --    return;
 
 
 
@@ -278,7 +282,7 @@ begin
         if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
           Market.Numactiverunners <= 16 --and then
-         --   Market.Marketname_Ok2
+        --   Market.Marketname_Ok2
         then
           First := True;
 
@@ -301,9 +305,9 @@ begin
 
             Timestamp_To_Prices_History_Map2 : Sim.Timestamp_To_Prices_History_Maps.Map :=
                                                  Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
-            Have_Seen_1_0x                  : Boolean := False;
-            All_More_Than_Limit             : Boolean := True;
-            Last_Poll                       : Calendar2.Time_Type := Calendar2.Time_Type_First;
+            Have_Seen_1_0x                   : Boolean := False;
+            All_More_Than_Limit              : Boolean := True;
+            Last_Poll                        : Calendar2.Time_Type := Calendar2.Time_Type_First;
           begin
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
               declare
