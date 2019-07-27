@@ -479,8 +479,9 @@ package body Sql is
           --      declare
           --        Enc : String := Global_Connection.Database_Encoding;
           begin
-            Global_Connection.Set_Encoding (Latin_1);
-            Global_Connection.Set_Client_Encoding ("LATIN1");
+            null;
+           -- Global_Connection.Set_Encoding (Latin_1);
+           -- Global_Connection.Set_Client_Encoding ("LATIN1");
             --          if Enc = "UTF8" then
           end;
 

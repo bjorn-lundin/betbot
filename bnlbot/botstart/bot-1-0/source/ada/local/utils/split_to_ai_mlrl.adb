@@ -129,7 +129,7 @@ procedure Split_To_Ai_MLRL is
   -------------------------------------------------------
 
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/races/";
+  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/win/races/";
   Race                :          Text_IO.File_Type;
   Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
@@ -194,8 +194,8 @@ begin
 --            Text_Io.Put_Line(Market.To_String);
 --          end if;
 
-     --   if Market.Markettype (1 .. 3) = "WIN" and then True and then
-        if Market.Markettype (1 .. 3) = "PLA" 
+        if Market.Markettype (1 .. 3) = "WIN"
+     --   if Market.Markettype (1 .. 3) = "PLA"
         --  8 <= Market.Numrunners and then
         --  Market.Numrunners <= 16  --and then
          -- Market.Marketname_Ok2
