@@ -83,13 +83,13 @@ procedure Poll is
       when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
 
-      when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_38_00_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
-
-      when Horse_Lay_1_05_05_1_2_Win_2_15      => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Back_1_10_13_1_2_Win_1_01     => return Process_Io.To_Process_Type("bet_placer_006");
+--        when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
+--        when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
+--        when Horse_Back_1_38_00_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_003");
+--        when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
+--
+--        when Horse_Lay_1_05_05_1_2_Win_2_15      => return Process_Io.To_Process_Type("bet_placer_005");
+--        when Horse_Back_1_10_13_1_2_Win_1_01     => return Process_Io.To_Process_Type("bet_placer_006");
 
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_002");
@@ -210,85 +210,85 @@ procedure Poll is
   end Send_Back_Bet;
   ----------------------------------------------------------------------------
 
-  procedure Send_Lay_Bet(Selectionid    : Integer_4;
-                          Main_Bet       : Bet_Type;
-                          Max_Price      : Lay_Price_Type;
-                          Marketid       : Marketid_Type;
-                          Match_Directly : Boolean := False;
-                          Size           : Fixed_Type := 0.0;
-                          Fill_Or_Kill   : Boolean := False) is
-
-
-    Plb             : Bot_Messages.Place_Lay_Bet_Record;
-    Did_Bet         : array(1 .. 1) of Boolean := (others => False);
-    Receiver        : Process_Io.Process_Type := Get_Bet_Placer(Main_Bet);
-    Local_Size      : Fixed_Type := Size;
-  begin
-    declare
-      -- only bet on allowed days
-      Now : Time_Type := Clock;
-      Day : Week_Day_Type := Week_Day_Of(Now);
-    begin
-      if not Cfg.Allowed_Days(Day) then
-        Log("No bet layed, bad weekday" );
-        return;
-      end if;
-    end;
-
-    if not Cfg.Bet(Main_Bet).Enabled then
-      Log("Not enbled bet in poll.ini " & Main_Bet'Img );
-      return;
-    end if;
-
-    if Selectionid = Bad_Selection_Id then
-      Log("Bad selectionid, = 0 ");
-      return;
-    end if;
-
-    case Match_Directly is
-      when False => Plb.Match_Directly := 0;
-      when True  => Plb.Match_Directly := 1;
-    end case;
-
-    case Fill_Or_Kill is
-      when False => Plb.Fill_Or_Kill := 0;
-      when True  => Plb.Fill_Or_Kill := 1;
-    end case;
-
-    Plb.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
-    Move(Marketid, Plb.Market_Id);
-
-    if Local_Size = 0.0 then
-      Move(F8_Image(Fixed_Type(Bets_Allowed(Main_Bet).Bet_Size)), Plb.Size);
-    else
-      Move(F8_Image(Local_Size), Plb.Size);
-    end if;
-
-    Move(F8_Image(Fixed_Type(Max_Price)), Plb.Price); --abs max
-    Plb.Selection_Id := Selectionid;
-
-    if not Bets_Allowed(Main_Bet).Has_Betted and then
-      Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
-      Bot_Messages.Send(Receiver, Plb);
-
-      case Main_Bet is
-          -- checks in calling proc - may be several bets
-        when others => Bets_Allowed(Main_Bet).Has_Betted := True;
-      end case;
-
-      Did_Bet(1) := True;
-    end if;
-
-    if Did_Bet(1) then
-      Log("Send_Lay_Bet called with " &
-            " Selectionid=" & Selectionid'Img &
-            " Main_Bet=" & Main_Bet'Img &
-            " Marketid= '" & Marketid & "'" &
-            " Receiver= '" & Receiver.Name & "'");
-      Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(Plb.Bet_Name) & "' sel.id:" &  Plb.Selection_Id'Img );
-    end if;
-
-  end Send_Lay_Bet;
+--    procedure Send_Lay_Bet(Selectionid    : Integer_4;
+--                            Main_Bet       : Bet_Type;
+--                            Max_Price      : Lay_Price_Type;
+--                            Marketid       : Marketid_Type;
+--                            Match_Directly : Boolean := False;
+--                            Size           : Fixed_Type := 0.0;
+--                            Fill_Or_Kill   : Boolean := False) is
+--
+--
+--      Plb             : Bot_Messages.Place_Lay_Bet_Record;
+--      Did_Bet         : array(1 .. 1) of Boolean := (others => False);
+--      Receiver        : Process_Io.Process_Type := Get_Bet_Placer(Main_Bet);
+--      Local_Size      : Fixed_Type := Size;
+--    begin
+--      declare
+--        -- only bet on allowed days
+--        Now : Time_Type := Clock;
+--        Day : Week_Day_Type := Week_Day_Of(Now);
+--      begin
+--        if not Cfg.Allowed_Days(Day) then
+--          Log("No bet layed, bad weekday" );
+--          return;
+--        end if;
+--      end;
+--
+--      if not Cfg.Bet(Main_Bet).Enabled then
+--        Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+--        return;
+--      end if;
+--
+--      if Selectionid = Bad_Selection_Id then
+--        Log("Bad selectionid, = 0 ");
+--        return;
+--      end if;
+--
+--      case Match_Directly is
+--        when False => Plb.Match_Directly := 0;
+--        when True  => Plb.Match_Directly := 1;
+--      end case;
+--
+--      case Fill_Or_Kill is
+--        when False => Plb.Fill_Or_Kill := 0;
+--        when True  => Plb.Fill_Or_Kill := 1;
+--      end case;
+--
+--      Plb.Bet_Name := Bets_Allowed(Main_Bet).Bet_Name;
+--      Move(Marketid, Plb.Market_Id);
+--
+--      if Local_Size = 0.0 then
+--        Move(F8_Image(Fixed_Type(Bets_Allowed(Main_Bet).Bet_Size)), Plb.Size);
+--      else
+--        Move(F8_Image(Local_Size), Plb.Size);
+--      end if;
+--
+--      Move(F8_Image(Fixed_Type(Max_Price)), Plb.Price); --abs max
+--      Plb.Selection_Id := Selectionid;
+--
+--      if not Bets_Allowed(Main_Bet).Has_Betted and then
+--        Bets_Allowed(Main_Bet).Is_Allowed_To_Bet then
+--        Bot_Messages.Send(Receiver, Plb);
+--
+--        case Main_Bet is
+--            -- checks in calling proc - may be several bets
+--          when others => Bets_Allowed(Main_Bet).Has_Betted := True;
+--        end case;
+--
+--        Did_Bet(1) := True;
+--      end if;
+--
+--      if Did_Bet(1) then
+--        Log("Send_Lay_Bet called with " &
+--              " Selectionid=" & Selectionid'Img &
+--              " Main_Bet=" & Main_Bet'Img &
+--              " Marketid= '" & Marketid & "'" &
+--              " Receiver= '" & Receiver.Name & "'");
+--        Log("pinged '" &  Trim(Receiver.Name) & "' with bet '" & Trim(Plb.Bet_Name) & "' sel.id:" &  Plb.Selection_Id'Img );
+--      end if;
+--
+--    end Send_Lay_Bet;
 
   ---------------------------------------------------------------------
 
@@ -433,50 +433,50 @@ procedure Poll is
 --    pragma Unreferenced(Try_To_Make_Lay_Bet);
 
 
-  -- from rev 1897
-  procedure Try_To_Make_Lay_Bet (Bettype         : Config.Bet_Type;
-                                 BR              : Best_Runners_Array_Type;
-                                 Marketid        : Marketid_Type;
-                                 Match_Directly  : Boolean := False) is
-    Max_Backprice_1  : Fixed_Type;
-    Min_Backprice_N  : Fixed_Type;
-    Layed_Num        : Integer;
-    Tmp              : String (1 .. 5) := (others => ' ');
-    Image            : String := Bettype'Img;
-    Max_Price        : String (1 .. 4) := (others => ' ');
-  begin       -- 0         1         2         3
-	      --  12345678901234567890123456789012345
-	      --  HORSE_Lay_1_10_20_1_2_WIN_3_25
-    Tmp(1) := Image(11);
-    Tmp(2) := '.';
-    Tmp(3..4) := Image(13..14);
-    Max_Backprice_1 := Fixed_Type'Value(Tmp);
-
-    Min_Backprice_N := Fixed_Type'Value(Image(16..17));
-    Layed_Num := Integer'Value(Image(27..27));
-
-    Max_Price(1..2) := Image(29..30);
-
-    if BR(1).Backprice <= Max_Backprice_1 and then
-      BR(1).Backprice >= Fixed_Type (1.01) and then
-      BR(2).Backprice >= Min_Backprice_N and then
-      BR(2).Backprice < Fixed_Type (10_000.0) and then
-      BR(Layed_Num).Layprice <= Fixed_Type'Value(Max_Price) and then
-      BR(Layed_Num).Layprice >= Fixed_Type(1.01) and then
-      BR (Layed_Num).Backprice <  Fixed_Type (10_000.0) then  -- so it exists
-
-	      -- lay #2 or #3 in win market...
-
-      Send_Lay_Bet (Selectionid     => BR (Layed_Num).Selectionid,
-                    Main_Bet        => Bettype,
-                    Marketid        => Marketid,
-                    Max_Price       => Lay_Price_Type'Value (Max_Price),
-                    Match_Directly  => Match_Directly);
-    end if;
-  end Try_To_Make_Lay_Bet;
-
-
-  ------------------------------------------------------
+--    -- from rev 1897
+--    procedure Try_To_Make_Lay_Bet (Bettype         : Config.Bet_Type;
+--                                   BR              : Best_Runners_Array_Type;
+--                                   Marketid        : Marketid_Type;
+--                                   Match_Directly  : Boolean := False) is
+--      Max_Backprice_1  : Fixed_Type;
+--      Min_Backprice_N  : Fixed_Type;
+--      Layed_Num        : Integer;
+--      Tmp              : String (1 .. 5) := (others => ' ');
+--      Image            : String := Bettype'Img;
+--      Max_Price        : String (1 .. 4) := (others => ' ');
+--    begin       -- 0         1         2         3
+--  	      --  12345678901234567890123456789012345
+--  	      --  HORSE_Lay_1_10_20_1_2_WIN_3_25
+--      Tmp(1) := Image(11);
+--      Tmp(2) := '.';
+--      Tmp(3..4) := Image(13..14);
+--      Max_Backprice_1 := Fixed_Type'Value(Tmp);
+--
+--      Min_Backprice_N := Fixed_Type'Value(Image(16..17));
+--      Layed_Num := Integer'Value(Image(27..27));
+--
+--      Max_Price(1..2) := Image(29..30);
+--
+--      if BR(1).Backprice <= Max_Backprice_1 and then
+--        BR(1).Backprice >= Fixed_Type (1.01) and then
+--        BR(2).Backprice >= Min_Backprice_N and then
+--        BR(2).Backprice < Fixed_Type (10_000.0) and then
+--        BR(Layed_Num).Layprice <= Fixed_Type'Value(Max_Price) and then
+--        BR(Layed_Num).Layprice >= Fixed_Type(1.01) and then
+--        BR (Layed_Num).Backprice <  Fixed_Type (10_000.0) then  -- so it exists
+--
+--  	      -- lay #2 or #3 in win market...
+--
+--        Send_Lay_Bet (Selectionid     => BR (Layed_Num).Selectionid,
+--                      Main_Bet        => Bettype,
+--                      Marketid        => Marketid,
+--                      Max_Price       => Lay_Price_Type'Value (Max_Price),
+--                      Match_Directly  => Match_Directly);
+--      end if;
+--    end Try_To_Make_Lay_Bet;
+--
+--
+--    ------------------------------------------------------
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market     : Markets.Market_Type;
@@ -717,8 +717,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01_Chs |
-                     Horse_Back_1_10_13_1_2_Win_1_01                                        =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -778,17 +777,17 @@ procedure Poll is
 --                                                 Match_Directly  => Match_Directly);
 --                    end if;
 --                  end;
-
-                  when Horse_Lay_1_05_05_1_2_Win_2_15 =>
-                  if Markets_Array(Win).Marketname_Ok2 and then
-                     Has_Been_In_Play then
-
-                        Try_To_Make_Lay_Bet(Bettype         => I,
-                                            Br              => Best_Runners,
-                                            Marketid        => Markets_Array(Win).Marketid,
-                                            Match_Directly  => False);
-
-                    end if;
+--
+--                    when Horse_Lay_1_05_05_1_2_Win_2_15 =>
+--                    if Markets_Array(Win).Marketname_Ok2 and then
+--                       Has_Been_In_Play then
+--
+--                          Try_To_Make_Lay_Bet(Bettype         => I,
+--                                              Br              => Best_Runners,
+--                                              Marketid        => Markets_Array(Win).Marketid,
+--                                              Match_Directly  => False);
+--
+--                      end if;
 
               end case;
 
