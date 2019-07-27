@@ -41,6 +41,8 @@ with Ada.Environment_Variables;
 with Utils;
 with Logging; use Logging;
 --with text_io;
+with C_Constants;
+
 package body Sql is
   Me : constant String := "Sql";
 
@@ -479,10 +481,12 @@ package body Sql is
           --      declare
           --        Enc : String := Global_Connection.Database_Encoding;
           begin
-            null;
-           -- Global_Connection.Set_Encoding (Latin_1);
-           -- Global_Connection.Set_Client_Encoding ("LATIN1");
-            --          if Enc = "UTF8" then
+            case C_Constants.Os is
+              when C_Constants.Mac_X64 => null;
+              when C_Constants.Lnx_X64 | C_Constants.Lnx_A32 =>
+                Global_Connection.Set_Encoding (Latin_1);
+                Global_Connection.Set_Client_Encoding ("LATIN1");
+            end case;
           end;
 
         when Connection_Bad =>
@@ -507,8 +511,12 @@ package body Sql is
         Global_Connection.Set_Connected (True);
         Set_Transaction_Isolation_Level (Read_Commited, Session);
         begin
-          Global_Connection.Set_Encoding (Latin_1);
-          Global_Connection.Set_Client_Encoding ("LATIN1");
+            case C_Constants.Os is
+              when C_Constants.Mac_X64 => null;
+              when C_Constants.Lnx_X64 | C_Constants.Lnx_A32 =>
+                Global_Connection.Set_Encoding (Latin_1);
+                Global_Connection.Set_Client_Encoding ("LATIN1");
+            end case;
         end;
 
       when Connection_Bad =>
@@ -813,7 +821,7 @@ package body Sql is
     else
       if To_String(private_Statement.Original_Statement) /= Command then
         raise Sequence_Error with "statement differs from old '" & To_String(Private_Statement.Original_Statement) & "'";
-      end if;      
+      end if;
     end if;
   end Prepare;
   ------------------------------------------------------------
