@@ -291,7 +291,9 @@ begin
           Mtype := "WIN";
         end if;
 
-        if Market.Markettype(1..3) = Mtype and then True
+        if Market.Markettype(1..3) = Mtype and then
+          (Market.Marketid = "1.123631657" or Market.Marketid = "1.131837740")
+
         --if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
         --  Market.Numactiverunners <= 16 --and then

@@ -9,11 +9,11 @@ with Runners;
 with Events;
 with Calendar2;
 with Ada.Containers.Hashed_Maps;
+with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings;
 with Ada.Strings.Hash;
 --with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-
 
 
 package Sim is
@@ -203,6 +203,37 @@ package Sim is
   -- for timestamp slices stop
 
 
+
+  -- rewards
+
+  package Timestamp_To_Reward_Maps is new Ada.Containers.Hashed_Maps (
+         Timestamp_String_Key_Type,
+         Fixed_Type,
+         Ada.Strings.Hash,
+         "=",
+         "=");
+
+
+  package Selectionid_Maps is new Ada.Containers.Ordered_Maps (
+         Integer_4,
+         Timestamp_To_Reward_Maps.Map,
+         "<",
+         Timestamp_To_Reward_Maps."=");
+
+
+  package Rewards_Maps is new Ada.Containers.Hashed_Maps (
+         Marketid_Type,
+         Selectionid_Maps.Map,
+         Ada.Strings.Hash,
+         "=",
+         Selectionid_Maps."=");
+
+  procedure Fill_Rewards_Map(Date   : in     Calendar2.Time_Type;
+                             Animal : in     Animal_Type;
+                             Rm     :    out Rewards_Maps.Map);
+  -- end rewards
+
+
   --average times for different races
   package Racetime_Maps is new Ada.Containers.Hashed_Maps
     (Bot_Types.Marketname_Type,
@@ -238,6 +269,7 @@ package Sim is
 --  Place_Win_Map                            : Sim.Place_Win_Maps.Map;
   Events_Map                               : Sim.Eventid_Events_Maps.Map;
   Racetime_Map                             : Sim.Racetime_Maps.Map;
+  Rewards_Map                              : Sim.Rewards_Maps.Map;
 
 
 end Sim ;

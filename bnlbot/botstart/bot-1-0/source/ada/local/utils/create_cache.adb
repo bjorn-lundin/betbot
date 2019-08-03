@@ -13,7 +13,7 @@ procedure Create_Cache is
 
   One_Day      : Interval_Type :=  (1, 0, 0, 0, 0); -- 1 day
   Start        : Time_Type := Clock;
-  Date_Start   : Time_Type := (2016, 2, 25, 00, 00, 00, 000);
+  Date_Start   : Time_Type := (2016, 3, 16, 00, 00, 00, 000);
   Date_Stop    : Time_Type := Start + One_Day;
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
@@ -112,7 +112,7 @@ begin
   Log ("animal2 " & Animal'Img);
 
   Sql.Connect
-    (Host     => "localhost",
+    (Host     => "192.168.1.117",
      Port     => 5432,
      Db_Name  => Db,
      Login    => "bnl",
