@@ -1,17 +1,23 @@
 with Ada.Environment_Variables;
 with Ada.Directories;
 with Ada.Streams.Stream_IO;
+with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+--with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+--with Ada.Characters.Handling; use Ada.Characters.Handling;
+
+with Text_Io;
+
+with Gnat; use Gnat;
+with Gnat.Awk;
+
 with Logging; use Logging;
 with Stacktrace;
 with Bot_System_Number;
 with Calendar2; use Calendar2;
 with Utils; use Utils;
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Bot_Svn_Info;
-with Text_Io;
 with Sql;
-with Gnat; use Gnat;
-with Gnat.Awk;
 
 package body Sim is
 
@@ -105,7 +111,7 @@ package body Sim is
       Log(Object & Service, "start Read_Marketid '" & Market_Id & "'");
       Sim.Read_Marketid(Marketid => Market_Id, Animal => Animal, List => Global_Price_During_Race_List) ;
       Log(Object & Service, "done Read_Marketid '" & Market_Id & "' len" & Global_Price_During_Race_List.Length'Img);
-      -- get a list of unique ts in the race in order
+      -- get a list of unique ts in the race i/Users/bnl/svn/botstart/bot-1-0/history/data/ai/plc/rewards/1.123631656.datn order
       for Item of Global_Price_During_Race_List loop
         if Item.Pricets /= Ts then
           Pricets_List.Append(Item.Pricets);
@@ -897,9 +903,10 @@ package body Sim is
     end if;
 
   end Fill_Win_Place_Map;
+
   -------------------------------------------------------------------
 
--- cannot hvae 3 results for same key ..
+-- cannot have 3 results for same key ..
 --    procedure Fill_Place_Win_Map (Date          : in     Calendar2.Time_Type;
 --                                  Animal        : in     Animal_Type;
 --                                  Place_Win_Map :    out Place_Win_Maps.Map) is
@@ -937,6 +944,121 @@ package body Sim is
 --        Serializer.Read_From_Disk(Place_Win_Map, Filename);
 --      end if;
 --    end Fill_Place_Win_Map;
+
+
+  procedure Fill_Rewards_Map(Date   : in     Calendar2.Time_Type;
+                             Animal : in     Animal_Type;
+                             Rm     :    out Rewards_Maps.Map) is
+    Filename        : String := Date.String_Date_ISO & "/rewards_map.dat";
+    package Serializer is new Disk_Serializer(Rewards_Maps.Map, Animal);
+
+--      package Fnames is new Ada.Containers.Doubly_Linked_Lists(Unbounded_String);
+--      Fname_List      : Fnames.List;
+      Market_Type     : String := "win";
+  begin
+    RM.Clear;
+    if not Serializer.File_Exists(Filename) then
+
+      --for all markets this date
+      -- put filename in list
+
+      Market_Loop : for Market of Sim.Market_With_Data_List loop
+
+        Log("Fill_Rewards_Map", "Start " & Market.To_String) ;
+
+        if Market.Markettype(1..3) = "PLA" then
+          Market_Type := "plc";
+        elsif Market.Markettype(1..3) = "WIN" then
+          Market_Type := "win";
+        else
+          Market_Type := "xxx";
+        end if;
+
+        Scope_File: declare
+          -- scope for parsing a single file
+          Path            : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Market_Type & "/rewards";
+          Computer_File   : Awk.Session_Type;
+          Filename        : String := Path & "/" & Market.Marketid & ".dat";
+          Header_Seen     : Boolean := False;
+
+          Map_Selectionid : array (2..17) of Integer_4 := (others => 0);
+
+          Timestamps   :  array (2..17) of Timestamp_To_Reward_Maps.Map;
+          Selectionids    :  Selectionid_Maps.Map;
+
+          --use Map_Selectionid_Maps;
+          Num_Runners : Integer := 0;
+        begin
+          --   Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
+
+          Log("Fill_Rewards_Map", Filename) ;
+
+          Awk.Set_Current (Computer_File);
+          Awk.Open (Separators => "|",
+                    Filename   => Filename);
+
+          while not Awk.End_Of_File loop
+            Awk.Get_Line;
+            Log("Fill_Rewards_Map", Awk.Field(0)) ;
+
+            if not Header_Seen then
+              --treat headers, which col is what selectionid
+              for I in 2 .. 17 loop
+                --Ts(I).Clear;
+                declare
+                  Sel : Integer_4 := Integer_4'Value(Awk.Field(Awk.Count(I)));
+                begin
+                  Log("Fill_Rewards_Map",I'Img & " ->" & Sel'Img ) ;
+                  if Sel > 0 then
+                     Map_Selectionid(I) := Sel;
+                  else
+                    Num_Runners := I-1;
+                    exit;
+                  end if;
+                end;
+              end loop;
+              Header_Seen := True;
+            --  Log("Fill_Rewards_Map", Market.Marketid & "/" & "map-selids") ;
+
+            else
+              --treat data
+              declare
+                Ts_Val   : Calendar2.Time_Type := Market.Startts;
+              begin
+                Ts_Val.Hour := Hour_Type'Value(Awk.Field(1)(1..2));
+                Ts_Val.Minute := Minute_Type'Value(Awk.Field(1)(4..5));
+                Ts_Val.Second := Second_Type'Value(Awk.Field(1)(7..8));
+                Ts_Val.Millisecond := Millisecond_Type'Value(Awk.Field(1)(10..12));
+
+                for I in 2 .. Num_Runners loop
+                  Timestamps(I).Insert(Key => Ts_Val.To_String, New_Item => Fixed_Type'Value(Awk.Field(Awk.Count(I))));
+                end loop;
+              end;
+            end if;
+          end loop;
+
+          for I in 2 .. Num_Runners loop
+            Selectionids.Insert(Key => Map_Selectionid(I), New_Item => Timestamps(I));
+          end loop;
+
+          Rm.Insert(Key => Market.Marketid, New_Item => Selectionids);
+
+          Log("Fill_Rewards_Map done =  ", Market.Marketid);
+
+--            Log("Fill_Rewards_Map, Rm(""1.123648137"")(8554946)(""2016-03-16 14:22:12.762"") =  ",
+--                Fixed_Type'Image(Rm("1.123648137")(8554946)("2016-03-16 14:22:12.762")));
+
+          Awk.Close (Computer_File);
+        end Scope_File;
+
+      end loop Market_Loop;
+      Serializer.Write_To_Disk(Rm, Filename);
+    else
+      Serializer.Read_From_Disk(Rm, Filename);
+    end if;
+  end Fill_Rewards_Map;
+
+
 
 
   package body Disk_Serializer is
@@ -1041,6 +1163,11 @@ package body Sim is
     Log("fill map Win/Place markets ");
     Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
     Log("Found:" & Win_Place_Map.Length'Img );
+
+    Log("fill Rewards map");
+    Fill_Rewards_Map(Date, Animal, Rewards_Map);
+    Log("Found:" & Rewards_Map.length'Img );
+
 
  --   Log("fill map Place/win markets ");
  --   Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
