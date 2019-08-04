@@ -64,12 +64,15 @@ procedure Back_During_Race_7 is
 
   function Place_Timestamp(Place_Marketid: Marketid_Type; Wts : Calendar2.Time_Type) return Calendar2.Time_Type is
   begin
+    Log("Place_Timestamp", "Place_Marketid '" &  Place_Marketid & "' " & Wts.To_String);
+
     pragma Warnings(Off);
-      Loop_Ts2 : for Timestamp of Sim.Marketid_Pricets_Map(Place_Marketid) loop
-        if Timestamp > Wts then
-          return Timestamp;
-        end If;
-      end loop Loop_Ts2; --  Timestamp
+    Loop_Ts2 : for Timestamp of Sim.Marketid_Pricets_Map(Place_Marketid) loop
+      if Timestamp > Wts then
+        Log("Place_Timestamp", "will return " & Timestamp.To_String);
+        return Timestamp;
+      end if;
+    end loop Loop_Ts2; --  Timestamp
     pragma Warnings(On);
   end Place_Timestamp;
 
@@ -77,7 +80,7 @@ procedure Back_During_Race_7 is
 
 
   procedure Treat_Back(Market           : in     Markets.Market_Type;
-                       Bra              : in     Best_Runners_Array_Type ;
+                       Bra              : in out Best_Runners_Array_Type ;
                        Max_Leader_Price : in     Price_Type;
                        Delta_Price      : in     Price_Type;
                        Name             : in     Betname_Type;
@@ -86,61 +89,65 @@ procedure Back_During_Race_7 is
     Runner         : Runners.Runner_Type;
     Localname      : Betname_Type := Name;
     Place_Market   : Markets.Market_Type;
+
   begin
-    if Bet_List.Length = 0 then -- ie no previous bet in this race
-      --  Log("Treat_Lay", I'Img & " " & Bra(I).To_String);
-      --  Log("Treat_Lay", " 1 " & Bra(1).To_String);
+    --  if Bet_List.Length = 0 then -- ie no previous bet in this race
+      Log("Treat_Back", "1 " & Bra(1).To_String);
+      Log("Treat_Back", "4 " & Bra(4).To_String);
+    --  Log("Treat_Lay", " 1 " & Bra(1).To_String);
 
-      if Bra(4).Selectionid > Integer_4(0) and then  -- sanity
-        Bra(4).Backprice    >= Fixed_Type(1.0) and then  -- sanity
-      --Bra(3).Layprice     >= Fixed_Type(1.0) and then  -- sanity
-      -- Bra(3).Layprice     <= Fixed_Type(Five * Bra(3).Backprice) and then -- not too big difference allowed
-        Bra(4).Backprice    >= Bra(1).Backprice + Fixed_Type(Delta_Price) and then
-        Bra(1).Backprice    <= Max_Leader_Price and then
-        Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
+    if Bra(4).Selectionid = Integer_4(0) then -- #4 is out of the game
+      Bra(4).Backprice := Fixed_Type(10000.0);
+    end if;
 
-        for J in 1 .. 4 loop -- back 4 first runners winner market
-          Runner.Selectionid := Bra(J).Selectionid;
-          Runner.Marketid := Bra(J).Marketid;
+    if Bra(4).Backprice    >= Bra(1).Backprice + Fixed_Type(Delta_Price) and then
+      Bra(1).Backprice    <= Max_Leader_Price and then
+      Bra(1).Backprice    > Fixed_Type(1.0) then  -- sanity
 
-          Localname(23) := '_';
-          Localname(24) := J'Img(2);
+      for J in 1 .. 4 loop -- back 4 first runners winner market
+        Runner.Selectionid := Bra(J).Selectionid;
+        Runner.Marketid := Bra(J).Marketid;
 
-          Bet := Bets.Create(Name   => Localname,
-                             Side   => Back,
-                             Size   => Bet_Size,
-                             Price  => Price_Type(Bra(J).Backprice),
-                             Placed => Bra(J).Pricets,
-                             Runner => Runner,
-                             Market => Market);
-          Bet_List.Append(Bet);
-          --Log("Bet_laid-WIN-BACK", Bet.To_String);
-        end loop;
+      --  Localname(23) := '_';
+        Localname(23) := J'Img(2);
 
-        --          for J in 1 .. 4 loop -- lay 4 first runners winners market
-        --            Runner.Selectionid := Bra(J).Selectionid;
-        --            Runner.Marketid := Bra(J).Marketid;
-        --
-        --            Localname(1..3) := "WIL";
-        --            Localname(23) := '_';
-        --            Localname(24) := J'Img(2);
-        --
-        --            Bet := Bets.Create(Name   => Localname,
-        --                               Side   => Lay,
-        --                               Size   => Bet_Size,
-        --                               Price  => Price_Type(Bra(J).Layprice),
-        --                               Placed => Bra(J).Pricets,
-        --                               Runner => Runner,
-        --                               Market => Market);
-        --            Bet_List.Append(Bet);
-        --            -- Log("Bet_laid-WIN_LAY", Bet.To_String);
-        --          end loop;
-        declare
-          Matching_Betplaced : Calendar2.Time_Type := Time_Type_First;
-         -- Matching_Price     : Back_Price_Type     := Place_Timestamp(Bra(1).Pricets);
+        Bet := Bets.Create(Name   => Localname,
+                           Side   => Back,
+                           Size   => Bet_Size,
+                           Price  => Price_Type(Bra(J).Backprice),
+                           Placed => Bra(J).Pricets,
+                           Runner => Runner,
+                           Market => Market);
+        Bet_List.Append(Bet);
+        --Log("Bet_laid-WIN-BACK", Bet.To_String);
+      end loop;
 
-        begin
-          Place_Market.Marketid := Sim.Win_Place_Map(Market.Marketid);
+      --          for J in 1 .. 4 loop -- lay 4 first runners winners market
+      --            Runner.Selectionid := Bra(J).Selectionid;
+      --            Runner.Marketid := Bra(J).Marketid;
+      --
+      --            Localname(1..3) := "WIL";
+      --            Localname(23) := '_';
+      --            Localname(24) := J'Img(2);
+      --
+      --            Bet := Bets.Create(Name   => Localname,
+      --                               Side   => Lay,
+      --                               Size   => Bet_Size,
+      --                               Price  => Price_Type(Bra(J).Layprice),
+      --                               Placed => Bra(J).Pricets,
+      --                               Runner => Runner,
+      --                               Market => Market);
+      --            Bet_List.Append(Bet);
+      --            -- Log("Bet_laid-WIN_LAY", Bet.To_String);
+      --          end loop;
+      declare
+        Matching_Betplaced : Calendar2.Time_Type := Time_Type_First;
+        -- Matching_Price     : Back_Price_Type     := Place_Timestamp(Bra(1).Pricets);
+        Place_Exists : Boolean := False;
+      begin
+        Place_Market.Marketid := Sim.Win_Place_Map(Market.Marketid);
+        Place_Exists := Place_Market.Marketid(1) =  '1'; --all marketids starts with 1, not found -> ' '
+        if Place_Exists then
           Place_Market.Startts := Market.Startts;
 
           Matching_Betplaced  := Place_Timestamp(Place_Market.Marketid, Bra(1).Pricets);
@@ -153,8 +160,8 @@ procedure Back_During_Race_7 is
             Runner.Marketid := Place_Market.Marketid;
 
             Localname(1..3) := "PLC";
-            Localname(23) := '_';
-            Localname(24) := J'Img(2);
+            --Localname(23) := '_';
+            Localname(23) := J'Img(2);
 
             Bet := Bets.Create(Name   => Localname,
                                Side   => Back,
@@ -167,28 +174,39 @@ procedure Back_During_Race_7 is
             Bet_List.Append(Bet);
             --  Log("Bet_laid-PLC_BACK", Bet.To_String);
           end loop;
-        exception
-          when others => null;
-        end;
-      end if;
+        end if; --Place_Exists
+
+        -- Try To check outcome
+        for B of Bet_List loop
+          begin
+            if B.Status(1) = 'U' then
+              begin
+                B.Profit := Sim.Rewards_Map(B.Marketid)(B.Selectionid)(B.Betplaced.To_String);
+              exception
+                  when Constraint_Error =>
+                  B.Profit := 0.1;
+                  Move(B.Marketid & B.Selectionid'Img & " " & B.Betplaced.To_String, Bet.Exeerrcode);
+                  Log ("Treat_Back",B.Marketid & B.Selectionid'Img & " " & B.Betplaced.To_String );
+                 -- raise;
+              end;
+
+              if B.Profit > Fixed_Type(0.0) then
+                Move("MATCHED",B.Status);
+                B.Betwon := True;
+                B.Pricematched := (B.Profit + B.Size)/B.Size;
+              end if;
+            end if;
+          end;
+          if B.Status(1) = 'M' then
+            B.Insert;
+          end if;
+        end loop;
+
+        --        exception
+        --          when others => null;
+      end;
     end if;
 
-    -- Try To check outcome
-    for B of Bet_List loop
-      begin
-        if B.Status(1) = 'U' then
-          B.Profit := Sim.Rewards_Map(B.Marketid)(B.Selectionid)(B.Betplaced.To_String);
-          if B.Profit > Fixed_Type(0.0) then
-            Move("MATCHED",B.Status);
-          end if;
-        end if;
-      end;
-      B.Insert;
-    end loop;
-
-    --    for B of Local_Bet_List loop
-    --      Bet_List.Append(B);
-    --      end loop;
   end Treat_Back;
   -- pragma Unreferenced (Treat_Lay);
 
@@ -208,7 +226,7 @@ procedure Back_During_Race_7 is
       Idx : Integer := 0;
     begin
       for Tmp of List loop
-        if Tmp.Status(1..6) = "ACTIVE" and then
+        if Tmp.Status(1..6) = "ACTIVE"  and then
           Tmp.Backprice > Fixed_Type(1.0) and then
           Tmp.Layprice < Fixed_Type(1_000.1)  then
           Idx := Idx +1;
@@ -225,16 +243,25 @@ procedure Back_During_Race_7 is
   function Distance_Left(Market       : in out Markets.Market_Type;
                          Start_Time   : Calendar2.Time_Type;
                          Current_Time : Calendar2.Time_Type) return Integer_4 is
-    Total_Distance   : Integer_4 := 0;
-    Covered_Distance : Integer_4 := 0;
-    Total_Time       : Integer_4 := 0;
+    Total_Distance   : Fixed_Type;
+    Covered_Distance : Fixed_Type;
+    Total_Time       : Fixed_Type;
+    Total_Time2 : Integer_4 ;
   begin
 
-    Total_Distance := Market.Distance;
-    Total_Time := Sim.Racetime_Map(Market.Marketname);
+    Total_Distance :=Fixed_Type( Market.Distance);
+    Total_Time2 := Sim.Racetime_Map(Market.Marketname);
+    Total_Time := Fixed_Type(Total_Time2);
+    Covered_Distance := Total_Distance * Fixed_Type(To_Seconds(Current_Time-Start_Time)) / Total_Time;
 
-    Covered_Distance := Total_Distance * (To_Seconds(Current_Time-Start_Time) / Total_Time);
-    return Covered_Distance;
+   -- Log("Distace_Left", "To_Seconds(Current_Time-Start_Time)/Total_Time" & To_Seconds(Current_Time-Start_Time)'img & "/" & Total_Time'Img);
+
+  --  Log("Distace_Left", "Start_Time/Current_Time" & Start_Time.To_String & "/" & Current_Time.To_String);
+
+  --  Log("Distace_Left", "Covered_Distance/Total_Distance" & Covered_Distance'Img & "/" & Total_Distance'Img);
+   -- Log("Distace_Left", "Distance_Left" & Integer_4(Total_Distance - Covered_Distance)'Img);
+
+    return Integer_4(Total_Distance - Covered_Distance);
 
   end Distance_Left;
 
@@ -287,7 +314,7 @@ begin
     Ev.Set("BOT_NAME","bdr2");
   end if;
 
-  --  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
+ -- Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
   Log("main", "params start");
   Log("main", "Sa_Max_Leader_Price" & Sa_Max_Leader_Price.all);
@@ -295,9 +322,9 @@ begin
   Log("main", "Sa_Delta_Price" & Sa_Delta_Price.all);
   Log("main", "params stop");
 
-  Max_Leader_Price := Price_Type'Value(Sa_Max_Leader_Price.all);
-  Max_Distance_Left        := Integer_4'Value(Sa_Max_Distance_Left.all);
-  Delta_Price        := Price_Type'Value(Sa_Delta_Price.all);
+  Max_Leader_Price  := Price_Type'Value(Sa_Max_Leader_Price.all);
+  Max_Distance_Left := Integer_4'Value(Sa_Max_Distance_Left.all);
+  Delta_Price       := Price_Type'Value(Sa_Delta_Price.all);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
 
@@ -330,6 +357,7 @@ begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
         T.Start;
         if Market.Markettype(1..3) = "WIN"
+          and then 8 <= Market.Numrunners and then Market.Numrunners <= 16
           and then Market.Marketname_Ok2
         then
 
@@ -341,8 +369,14 @@ begin
                                                 Sim.Marketid_Timestamp_To_Prices_History_Map(Market.Marketid);
             Bet_List                        : Bets.Lists.List;
             Start_Time                      : Calendar2.Time_Type := Calendar2.Time_Type_Last;
+            Last_Timestamp                  : Calendar2.Time_Type := Calendar2.Time_Type_First;
+            Started                         : Boolean := False;
           begin
             Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+
+              if Timestamp - Last_Timestamp < (0,0,0,1,0) then
+                Started := True;
+              end if;
 
               declare
                 List     : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map(Timestamp.To_String);
@@ -373,11 +407,15 @@ begin
 
                 Sort_Array(List => List, Bra  => Bra);
 
-                if Start_Time = Calendar2.Time_Type_Last then
+                if Started
+                  and then Start_Time = Calendar2.Time_Type_Last
+                then
                   Start_Time := Bra(1).Pricets;
                 end if;
 
-                if Distance_Left(Market, Start_Time,Bra(1).Pricets) < Max_Distance_Left then
+                if Started
+                  and then Distance_Left(Market, Start_Time,Bra(1).Pricets) < Max_Distance_Left
+                then
 
                   Treat_Back(Market            => Market,
                              Bra               => Bra,
@@ -385,13 +423,16 @@ begin
                              Delta_Price       => Delta_Price,
                              Name              => Name,
                              Bet_List          => Bet_List);
-                  exit Loop_Ts;
+
+                  exit Loop_Ts when Bet_List.Length > 0;
+
                 end if;
 
 
               end;
+              Last_Timestamp := Timestamp;
             end loop Loop_Ts; --  Timestamp
-            --Bets.Sum_Laybets(Bet_List, -12_000.0);
+            Bet_List.Clear; --clear after each race
           end;
         end if; -- Market_type(1..3) = WIN
         T.Commit;

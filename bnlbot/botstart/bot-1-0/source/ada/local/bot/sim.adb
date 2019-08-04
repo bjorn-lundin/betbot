@@ -1283,8 +1283,8 @@ package body Sim is
 
           while not Awk.End_Of_File loop
             Awk.Get_Line;
-            Log("Fill_Race_Times", Awk.Field(0)) ;
-            Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
+           -- Log("Fill_Race_Times", Awk.Field(0)) ;
+           -- Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
             declare
               S   : Calendar2.Seconds_Type := 0;
               Key : Marketname_Type :=(others => ' ');
