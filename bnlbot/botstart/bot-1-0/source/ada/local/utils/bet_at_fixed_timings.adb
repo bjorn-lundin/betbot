@@ -255,8 +255,6 @@ begin
   Log("main", "db Connected");
 
 
-  Sim.Fill_Race_Times(Sim.Racetime_Map);
-
   Date_Loop : loop
     T.Start;
     Log("start fill maps");
