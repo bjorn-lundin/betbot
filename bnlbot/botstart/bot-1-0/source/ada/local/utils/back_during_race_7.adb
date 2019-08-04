@@ -198,12 +198,16 @@ procedure Back_During_Race_7 is
                 Move("MATCHED",B.Status);
                 B.Betwon := True;
                 B.Pricematched := (B.Profit + B.Size)/B.Size;
+              elsif B.Profit < Fixed_Type(0.0) then
+                Move("MATCHED",B.Status);
+                B.Betwon := False;
+                B.Pricematched := 0.0;
               end if;
             end if;
           end;
-          if B.Status(1) = 'M' then
-            B.Insert;
-          end if;
+        -- if B.Status(1) = 'M' then
+          B.Insert;
+        -- end if;
         end loop;
 
         --        exception
