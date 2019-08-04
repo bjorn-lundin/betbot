@@ -188,7 +188,7 @@ procedure Back_During_Race_7 is
                 B.Profit := Sim.Rewards_Map(B.Marketid)(B.Selectionid)(B.Betplaced.To_String);
               exception
                   when Constraint_Error =>
-                  B.Profit := 0.1;
+                  B.Profit := 0.0;
                   Move(B.Marketid & B.Selectionid'Img & " " & B.Betplaced.To_String, Bet.Exeerrcode);
                   Log ("Treat_Back",B.Marketid & B.Selectionid'Img & " " & B.Betplaced.To_String );
                  -- raise;
