@@ -92,8 +92,8 @@ procedure Back_During_Race_7 is
 
   begin
     --  if Bet_List.Length = 0 then -- ie no previous bet in this race
-      Log("Treat_Back", "1 " & Bra(1).To_String);
-      Log("Treat_Back", "4 " & Bra(4).To_String);
+     -- Log("Treat_Back", "1 " & Bra(1).To_String);
+    --  Log("Treat_Back", "4 " & Bra(4).To_String);
     --  Log("Treat_Lay", " 1 " & Bra(1).To_String);
 
     if Bra(4).Selectionid = Integer_4(0) then -- #4 is out of the game
