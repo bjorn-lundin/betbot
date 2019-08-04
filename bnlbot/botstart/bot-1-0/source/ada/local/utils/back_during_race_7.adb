@@ -73,6 +73,10 @@ procedure Back_During_Race_7 is
     end loop Loop_Ts2; --  Timestamp
     Log("Place_Timestamp", "NO TIME FOUND");
     return Time_Type_First;
+  exception
+    when Constraint_Error =>
+      Log("Place_Timestamp", "NOT IN MAP");
+      return Time_Type_First;
   end Place_Timestamp;
 
   ----------------------------------------------------------------
