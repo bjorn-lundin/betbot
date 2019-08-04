@@ -29,7 +29,7 @@ procedure Back_During_Race_7 is
 
   package Ev renames Ada.Environment_Variables;
 
-  Bet_Size           : Bet_Size_Type := 30.0;
+  Bet_Size           : Bet_Size_Type := 100.0;
 
   --   type Odds_Record is record
   --      Back_Num : Natural := 0;
