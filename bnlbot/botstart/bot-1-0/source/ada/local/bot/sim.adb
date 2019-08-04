@@ -1169,6 +1169,11 @@ package body Sim is
     Fill_Rewards_Map(Date, Animal, Rewards_Map);
     Log("Found:" & Rewards_Map.length'Img );
 
+    Log("fill Race_Times map");
+    Fill_Race_Times(Animal, Racetime_Map);
+    Log("Found:" & Racetime_Map.length'Img );
+
+
 
  --   Log("fill map Place/win markets ");
  --   Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
@@ -1264,7 +1269,8 @@ package body Sim is
   end Delete_Shared_Mem;
   --------------------------------------
 
-  procedure Fill_Race_Times(Rt_Map : out Racetime_Maps.Map) is
+  procedure Fill_Race_Times(Animal : in Animal_Type; Rt_Map : out Racetime_Maps.Map) is
+    pragma Unreferenced(Animal);
     Computer_File : Awk.Session_Type;
     Filename : String := Ev.Value("BOT_DATA") & "/race_length_times.dat";
   begin
