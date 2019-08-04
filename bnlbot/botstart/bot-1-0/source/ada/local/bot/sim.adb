@@ -45,6 +45,7 @@ package body Sim is
 
   Object          : constant String := "Sim.";
   Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
+  Global_Race_Times_Filled : Boolean := False;
 
   use type Ada.Containers.Count_Type;
 
@@ -1267,25 +1268,29 @@ package body Sim is
     Computer_File : Awk.Session_Type;
     Filename : String := Ev.Value("BOT_DATA") & "/race_length_times.dat";
   begin
-    Awk.Set_Current (Computer_File);
-    Awk.Open (Separators => "|",
-              Filename   => Filename);
 
-    while not Awk.End_Of_File loop
-      Awk.Get_Line;
-      Log("Fill_Race_Times", Awk.Field(0)) ;
-      Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
-      declare
-        S   : Calendar2.Seconds_Type := 0;
-        Key : Marketname_Type :=(others => ' ');
-      begin -- name                                               secs time      #races
-            --3m Hcap Hrd                                       | 351|05:51.000| 262
+    if not Global_Race_Times_Filled then
+      Awk.Set_Current (Computer_File);
+      Awk.Open (Separators => "|",
+                Filename   => Filename);
+
+      while not Awk.End_Of_File loop
+        Awk.Get_Line;
+        Log("Fill_Race_Times", Awk.Field(0)) ;
+        Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
+        declare
+          S   : Calendar2.Seconds_Type := 0;
+          Key : Marketname_Type :=(others => ' ');
+        begin -- name                                               secs time      #races
+          --3m Hcap Hrd                                       | 351|05:51.000| 262
           Key := Awk.Field(1);
           S   := Seconds_Type'Val(Awk.Field(2));
           Rt_Map.Insert(Key, S);
-      end;
-    end loop;
-    Awk.Close (Computer_File);
+        end;
+      end loop;
+      Awk.Close (Computer_File);
+      Global_Race_Times_Filled := True;
+    end if;
 
   end Fill_Race_Times;
 

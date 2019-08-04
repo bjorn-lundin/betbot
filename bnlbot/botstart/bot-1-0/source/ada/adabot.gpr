@@ -54,6 +54,7 @@ project Adabot is
                     "update_bet_outcome.adb",
                     "back_during_race_1_lay_limit.adb",
                     "back_during_race_1_update_place.adb",
+                    "back_during_race_7.adb",
 --                    "price_graph_during_race_year_month.adb",
 --                    "bet_during_race_1.adb",
 --                    "bet_during_race_2.adb",
@@ -83,7 +84,8 @@ project Adabot is
                     "split_to_ai_mlrl.adb",
                     "print_win_place_markets.adb",
                     "parse_football_live_feed.adb",
-                    "test_bot_services.adb",
+                  --  "test_bot_services.adb",
+                  --  "pussel.adb",
                     "lay_and_back_after_progress.adb"
                    );
 
