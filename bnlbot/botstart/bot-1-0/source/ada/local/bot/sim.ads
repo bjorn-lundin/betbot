@@ -242,7 +242,7 @@ package Sim is
      "=",
      "=");
 
-  procedure Fill_Race_Times(Rt_Map : out Racetime_Maps.Map);
+  procedure Fill_Race_Times(Animal : in     Animal_Type; Rt_Map : out Racetime_Maps.Map);
 
   function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type) return Boolean;
