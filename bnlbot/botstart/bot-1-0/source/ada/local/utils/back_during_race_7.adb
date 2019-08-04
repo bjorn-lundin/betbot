@@ -65,15 +65,14 @@ procedure Back_During_Race_7 is
   function Place_Timestamp(Place_Marketid: Marketid_Type; Wts : Calendar2.Time_Type) return Calendar2.Time_Type is
   begin
     Log("Place_Timestamp", "Place_Marketid '" &  Place_Marketid & "' " & Wts.To_String);
-
-    pragma Warnings(Off);
     Loop_Ts2 : for Timestamp of Sim.Marketid_Pricets_Map(Place_Marketid) loop
       if Timestamp > Wts then
         Log("Place_Timestamp", "will return " & Timestamp.To_String);
         return Timestamp;
       end if;
     end loop Loop_Ts2; --  Timestamp
-    pragma Warnings(On);
+    Log("Place_Timestamp", "NO TIME FOUND");
+    return Time_Type_First;
   end Place_Timestamp;
 
   ----------------------------------------------------------------
@@ -144,6 +143,7 @@ procedure Back_During_Race_7 is
         Matching_Betplaced : Calendar2.Time_Type := Time_Type_First;
         -- Matching_Price     : Back_Price_Type     := Place_Timestamp(Bra(1).Pricets);
         Place_Exists : Boolean := False;
+        Ts_Ok : Boolean := False;
       begin
         Place_Market.Marketid := Sim.Win_Place_Map(Market.Marketid);
         Place_Exists := Place_Market.Marketid(1) =  '1'; --all marketids starts with 1, not found -> ' '
@@ -151,29 +151,33 @@ procedure Back_During_Race_7 is
           Place_Market.Startts := Market.Startts;
 
           Matching_Betplaced  := Place_Timestamp(Place_Market.Marketid, Bra(1).Pricets);
+          Ts_Ok :=  Matching_Betplaced > Time_Type_First;
 
+          if Ts_Ok then
+            Move("To Be Placed", Place_Market.Marketname);
 
-          Move("To Be Placed", Place_Market.Marketname);
+            for J in 1 .. 4 loop -- back 4 first runners place market
+              Runner.Selectionid := Bra(J).Selectionid;
+              Runner.Marketid := Place_Market.Marketid;
 
-          for J in 1 .. 4 loop -- back 4 first runners place market
-            Runner.Selectionid := Bra(J).Selectionid;
-            Runner.Marketid := Place_Market.Marketid;
+              Localname(1..3) := "PLC";
+              --Localname(23) := '_';
+              Localname(23) := J'Img(2);
 
-            Localname(1..3) := "PLC";
-            --Localname(23) := '_';
-            Localname(23) := J'Img(2);
-
-            Bet := Bets.Create(Name   => Localname,
-                               Side   => Back,
-                               Size   => Bet_Size,
-                               Price  => Price_Type(Bra(J).Backprice),
-                               Placed => Matching_Betplaced,
-                               Runner => Runner,
-                               Market => Place_Market);
-            Move("winprice - not placeprice!", Bet.Reference);
-            Bet_List.Append(Bet);
-            --  Log("Bet_laid-PLC_BACK", Bet.To_String);
-          end loop;
+              Bet := Bets.Create(Name   => Localname,
+                                 Side   => Back,
+                                 Size   => Bet_Size,
+                                 Price  => Price_Type(Bra(J).Backprice),
+                                 Placed => Matching_Betplaced,
+                                 Runner => Runner,
+                                 Market => Place_Market);
+              Move("winprice - not placeprice!", Bet.Reference);
+              Bet_List.Append(Bet);
+              --  Log("Bet_laid-PLC_BACK", Bet.To_String);
+            end loop;
+          else
+            Log ("Treat_Back","bad timestamp" & Matching_Betplaced.To_String );
+          end if; --ts_ok
         end if; --Place_Exists
 
         -- Try To check outcome
