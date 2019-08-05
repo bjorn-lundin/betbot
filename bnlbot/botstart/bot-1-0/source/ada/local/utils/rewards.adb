@@ -276,7 +276,8 @@ begin
   Date_Loop : loop
     T.Start;
     Log("start fill maps");
-    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+--    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse, Rewards => False, Racetimes => False);
     Log("start process maps");
     T.Commit;
 

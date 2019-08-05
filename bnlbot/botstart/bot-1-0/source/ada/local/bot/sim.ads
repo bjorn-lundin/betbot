@@ -251,7 +251,10 @@ package Sim is
                           Marketid             : Marketid_Type) return Boolean;
 
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
-                            Animal : in Animal_Type) ;
+                            Animal : in Animal_Type;
+                            Rewards : Boolean := True;
+                            Racetimes : Boolean := True) ;
+
 
   procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
                                Animal : in Animal_Type) ;

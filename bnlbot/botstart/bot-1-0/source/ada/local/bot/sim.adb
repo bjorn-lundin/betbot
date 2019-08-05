@@ -1130,7 +1130,9 @@ package body Sim is
   ----------------------------------------------------------
 
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
-                            Animal : in Animal_Type) is
+                            Animal : in Animal_Type;
+                            Rewards : Boolean := True;
+                            Racetimes : Boolean := True) is
   begin
     Log("fill maps with Date " & Date.String_Date_ISO & " for animal " &  Animal'Img);
     Log("fill list with all valid marketids" );
@@ -1165,14 +1167,17 @@ package body Sim is
     Fill_Win_Place_Map(Date, Animal, Win_Place_Map);
     Log("Found:" & Win_Place_Map.Length'Img );
 
-    Log("fill Rewards map");
-    Fill_Rewards_Map(Date, Animal, Rewards_Map);
-    Log("Found:" & Rewards_Map.length'Img );
+    if Rewards then
+      Log("fill Rewards map");
+      Fill_Rewards_Map(Date, Animal, Rewards_Map);
+      Log("Found:" & Rewards_Map.Length'Img );
+    end if;
 
-    Log("fill Race_Times map");
-    Fill_Race_Times(Animal, Racetime_Map);
-    Log("Found:" & Racetime_Map.length'Img );
-
+    if Racetimes then
+      Log("fill Race_Times map");
+      Fill_Race_Times(Animal, Racetime_Map);
+      Log("Found:" & Racetime_Map.Length'Img );
+    end if;
 
 
  --   Log("fill map Place/win markets ");

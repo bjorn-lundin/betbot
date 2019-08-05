@@ -129,12 +129,13 @@ procedure Split_To_Ai_MLRL is
   -------------------------------------------------------
 
   Sa_Logfilename      : aliased  Gnat.Strings.String_Access;
-  Path                :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/races/";
   Race                :          Text_IO.File_Type;
-  Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+ -- Start_Date          : constant Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+  Start_Date          : constant Calendar2.Time_Type := (2018,8,1,0,0,0,0);
   One_Day             : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date        :          Calendar2.Time_Type := Start_Date;
-  Stop_Date           : constant Calendar2.Time_Type := (2018,08,01,0,0,0,0);
+ -- Stop_Date           : constant Calendar2.Time_Type := (2018,08,01,0,0,0,0);
+  Stop_Date           : constant Calendar2.Time_Type := (2019,08,01,0,0,0,0);
   Cmd_Line            :          Command_Line_Configuration;
   Marketname          :          String_Object;
   T                   :          Sql.Transaction_Type;
@@ -177,13 +178,14 @@ begin
   Date_Loop : loop
     T.Start;
     Log("start fill maps");
-    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse, Rewards => False, Racetimes => False);
     Log("start process maps");
     T.Commit;
 
     declare
       Cnt       : Integer := 0;
       First     : Boolean := True;
+      Race_Type : String := "win";
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
 
@@ -193,10 +195,17 @@ begin
 --            Text_Io.Put(Market.Marketid & "|");
 --            Text_Io.Put_Line(Market.To_String);
 --          end if;
+        if Market.Markettype (1 .. 3) = "PLA" then
+          Race_Type := "plc";
+        elsif Market.Markettype (1 .. 3) = "WIN" then
+          Race_Type := "win";
+        end if;
+
 
     --    if Market.Markettype (1 .. 3) = "WIN"
-        if Market.Markettype (1 .. 3) = "PLA" and then
-          (Market.Marketid = "1.123631657" or Market.Marketid = "1.131837740")
+        if True
+--            Market.Markettype (1 .. 3) = "PLA" and then
+--            (Market.Marketid = "1.123631657" or Market.Marketid = "1.131837740")
 
         --  8 <= Market.Numrunners and then
         --  Market.Numrunners <= 16  --and then
@@ -207,6 +216,11 @@ begin
           Cnt := Cnt + 1;
 
           Marketname.Set(Create_Marketname(Market.Marketname));
+
+          declare
+            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/races/";
+          begin
+
           if not Ad.Exists(Path & Marketname.Fix_String) then
             Ad.Create_Directory(Path & Marketname.Fix_String);
           end if;
@@ -216,6 +230,9 @@ begin
           Text_IO.Create(File => Race,
                          Mode => Text_IO.Out_File,
                          Name => Path & Marketname.Fix_String & "/" & Market.Marketid & ".dat");
+
+
+          end;
 
           -- list of timestamps in this market
           declare
