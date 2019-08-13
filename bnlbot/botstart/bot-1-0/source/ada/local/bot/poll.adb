@@ -26,6 +26,7 @@ with Bot_Svn_Info;
 with Bets;
 with Config;
 with Utils; use Utils;
+with Sim;
 --with Tics;
 
 procedure Poll is
@@ -82,6 +83,7 @@ procedure Poll is
       when Horse_Back_1_28_02_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_002");
       when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
+      when Horse_Back_1_55_800m_Plc_1_01       => return Process_Io.To_Process_Type("bet_placer_005");
 
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
@@ -478,6 +480,82 @@ procedure Poll is
 --
 --    ------------------------------------------------------
 
+
+
+  function Distance_Left(Market       : in out Markets.Market_Type;
+                         Start_Time   : Calendar2.Time_Type;
+                         Current_Time : Calendar2.Time_Type) return Integer_4 is
+    Total_Distance   : Fixed_Type;
+    Covered_Distance : Fixed_Type;
+    Total_Time       : Fixed_Type;
+    Total_Time2 : Integer_4 ;
+  begin
+
+    Total_Distance := Fixed_Type( Market.Distance);
+    Total_Time2 := Sim.Racetime_Map(Market.Marketname);
+    Total_Time := Fixed_Type(Total_Time2);
+    Covered_Distance := Total_Distance * Fixed_Type(To_Seconds(Current_Time-Start_Time)) / Total_Time;
+
+   -- Log("Distace_Left", "To_Seconds(Current_Time-Start_Time)/Total_Time" & To_Seconds(Current_Time-Start_Time)'img & "/" & Total_Time'Img);
+  --  Log("Distace_Left", "Start_Time/Current_Time" & Start_Time.To_String & "/" & Current_Time.To_String);
+  --  Log("Distace_Left", "Covered_Distance/Total_Distance" & Covered_Distance'Img & "/" & Total_Distance'Img);
+   -- Log("Distace_Left", "Distance_Left" & Integer_4(Total_Distance - Covered_Distance)'Img);
+
+    return Integer_4(Total_Distance - Covered_Distance);
+
+  end Distance_Left;
+  -----------------------------------------------------------
+
+  procedure Try_To_Make_Back_Bet_Distance_Left(Bettype         : in     Config.Bet_Type;
+                                               Br              : in     Best_Runners_Array_Type;
+                                               Winmarket       : in out Markets.Market_Type;
+                                               Plcmarket       : in out Markets.Market_Type;
+                                               Went_In_Play    : in     Calendar2.Time_Type;
+                                               Match_Directly  : in     Boolean := False) is
+
+    Max_Backprice_1 : Fixed_Type;
+    Min_Backprice_1 : Fixed_Type;
+    Distance_Left_To_Go   : Integer_4 := Integer_4'Last;
+    Distance_Bet    : Integer_4 := Integer_4'Last;
+    Tmp             : String (1 .. 5) := (others => ' ');
+    Image           : String := Bettype'Img;
+    Min_Price       : String (1 .. 4) := (others => '.');
+
+  begin          --1         2       3
+    --  12345678901234567890123456789012345
+    --  HORSE_BACK_1_55_800M_PLC_1_01
+    Tmp(1) := Image(12);
+    Tmp(2) := '.';
+    Tmp(3 .. 4) := Image(14 .. 15);
+    Max_Backprice_1 := Fixed_Type'Value(Tmp);
+
+    Distance_Bet := Integer_4'Value(Image(17..19));
+
+    Min_Price(1)      := Image(26);
+    Min_Price(3 .. 4) := Image(28 .. 29);
+
+    case Bettype is
+      when others  => Min_Backprice_1 := 1.01;
+    end case;
+
+    Distance_Left_To_Go := Distance_Left(Winmarket, Went_In_Play, Br(1).Pricets);
+
+    if Min_Backprice_1 <= Br(1).Backprice and then Br(1).Backprice <= Max_Backprice_1 and then
+      Distance_Left_To_Go <= Distance_Bet then
+      -- Back The leader in PLC market...
+
+      Send_Back_Bet(Selectionid     => Br(1).Selectionid,
+                    Main_Bet        => Bettype,
+                    Marketid        => Plcmarket.Marketid,
+                    Min_Price       => Back_Price_Type'Value(Min_Price),
+                    Match_Directly  => Match_Directly);
+      Log("Try_To_Make_Back_Bet_Distance_Left", "Distance_Left_To_Go" & Distance_Left_To_Go'Img & "total distance " & Winmarket.Distance'Img);
+    end if;
+  end Try_To_Make_Back_Bet_Distance_Left;
+  ------------------------------------------------------
+
+
+
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market     : Markets.Market_Type;
     Event      : Events.Event_Type;
@@ -505,6 +583,7 @@ procedure Poll is
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'First;
     Saldo             : Balances.Balance_Type;
     Match_Directly    : Boolean := False;
+    Ts_In_Play        : Calendar2.Time_Type := Calendar2.Time_Type_First;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -674,6 +753,7 @@ procedure Poll is
         -- toggle the first time we see in-play=true
         -- makes us insensible to Betfair toggling bug
         Has_Been_In_Play := In_Play;
+        Ts_In_Play := Price_List.First_Element.Pricets;
       end if;
 
       if not Has_Been_In_Play then
@@ -753,6 +833,50 @@ procedure Poll is
                                            Match_Directly  => Match_Directly);
                     end if;
                   end;
+
+
+                when Horse_Back_1_55_800m_Plc_1_01 =>
+                  declare
+                    Image      : String := I'Img;
+                    Do_Try_Bet : Boolean := True;
+                    use Markets;
+                  begin
+                    --  12345678901234567890
+                    --  Back_1_10_20_1_4_WIN
+                    if Utils.Position(Image, "PLC") > Integer(0) then
+                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                      Match_Directly := False;
+                    elsif Utils.Position(Image, "WIN") > Integer(0) then
+                      Match_Directly := False;
+                    end if;
+
+                    if Do_Try_Bet then
+                      case Markets_Array(Win).Market_Subtype is
+                        when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+                        when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+                        when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+                      end case;
+                    end if;
+
+
+                  if Do_Try_Bet and then
+                    Has_Been_In_Play then
+                    begin
+
+                      Try_To_Make_Back_Bet_Distance_Left(Bettype         => I,
+                                                         Br              => Best_Runners,
+                                                         Winmarket       => Markets_Array(Win),
+                                                         Plcmarket       => Markets_Array(Place),
+                                                         Went_In_Play    => Ts_In_Play,
+                                                         Match_Directly  => Match_Directly);
+                    exception
+                      when Constraint_Error =>
+                        Log ("main - in poll-loop", "Constraint_Error - market in map? " & Markets_Array(Win).To_String);
+                    end;
+
+                  end if;
+                end;
+
 
 --                when Horse_Back_1_26_00_1_2_Win_1_01 =>
 --                  declare
@@ -866,6 +990,9 @@ begin
   if Cfg.Enabled then
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
+
+
+  Sim.Fill_Race_Times(Horse, Sim.Racetime_Map);
 
   Main_Loop : loop
 
