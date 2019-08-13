@@ -34,7 +34,7 @@ procedure Poll is
  -- use type Rpc.Result_Type;
 
   Me              : constant String := "Poll.";
-  Timeout         : Duration := 120.0;
+  Timeout         : Duration := 1200.0;
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
   Find_Plc_Market : Sql.Statement_Type;
