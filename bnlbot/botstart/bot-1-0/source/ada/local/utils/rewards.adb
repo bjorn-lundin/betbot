@@ -183,13 +183,14 @@ end Check_Profit;
 Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
 Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
 Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
-Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
+--Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
 --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
 Race                            :          Text_Io.File_Type;
-Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+--Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+Start_Date                      :          Calendar2.Time_Type := (2019,4,19,0,0,0,0);
 One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
 Current_Date                    :          Calendar2.Time_Type := Start_Date;
-Stop_Date                       :          Calendar2.Time_Type := (2018,08,01,0,0,0,0);
+Stop_Date                       :          Calendar2.Time_Type := (2019,08,01,0,0,0,0);
 Cmd_Line                        :          Command_Line_Configuration;
 T                               :          Sql.Transaction_Type;
 begin
@@ -208,20 +209,20 @@ begin
   Define_Switch
     (Cmd_Line,
      Sa_Start_Date'Access,
-     Long_Switch => "--start_date=",
+     Long_Switch => "--startdate=",
      Help        => "start date eg 2019-02-25");
 
   Define_Switch
     (Cmd_Line,
      Sa_Stop_Date'Access,
-     Long_Switch => "--stop_date=",
+     Long_Switch => "--stopdate=",
      Help        => "stop date eg 2019-12-21");
 
-  Define_Switch
-     (Cmd_Line,
-     Sa_Markettype'Access,
-     Long_Switch => "--markettype=",
-     Help        => "PLC/WIN");
+--    Define_Switch
+--       (Cmd_Line,
+--       Sa_Markettype'Access,
+--       Long_Switch => "--markettype=",
+--       Help        => "PLC/WIN");
 
   Define_Switch
     (Cmd_Line,
@@ -284,16 +285,18 @@ begin
     declare
       Cnt       : Integer := 0;
       First     : Boolean := True;
-      Mtype     : String := "PLA";
+      Race_Type : String := "win";
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
 
-        if Sa_Markettype.all = "win" then
-          Mtype := "WIN";
+        if Market.Markettype (1 .. 3) = "PLA" then
+          Race_Type := "plc";
+        elsif Market.Markettype (1 .. 3) = "WIN" then
+          Race_Type := "win";
         end if;
 
-        if Market.Markettype(1..3) = Mtype and then
-          (Market.Marketid = "1.123631657" or Market.Marketid = "1.131837740")
+        if True
+          --market.Markettype(1..3) = Mtype and then
 
         --if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
@@ -301,11 +304,10 @@ begin
         --   Market.Marketname_Ok2
         then
           First := True;
-
           Cnt := Cnt + 1;
 
           declare
-            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Sa_Markettype.all & "/rewards";
+            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards";
           begin
             if not Ad.Exists(Path) then
               Ad.Create_Directory(Path);

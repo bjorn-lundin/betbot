@@ -264,7 +264,7 @@ procedure Graph_Data_Ael is
                                   "where true " &
                                --   "and B.SIDE = :SIDE " &
                                   "and B.BETNAME = :BETNAME " &
-                                  "and B.STATUS ='SETTLED' " &
+                                  "and B.STATUS in ('SETTLED','MATCHED') " &
                                   "and B.PRICEMATCHED >= :PRICEMATCHED " &
                                   "order by B.STARTTS");
     Select_Equity_Date.Set ("BETNAME", Betname);
