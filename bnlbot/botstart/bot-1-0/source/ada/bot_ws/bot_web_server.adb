@@ -5,7 +5,7 @@
 with Ada;    use Ada;
 with Ada.Text_IO;
 with Ada.Exceptions;
-with Ada.Directories; --v10.2-xxxx
+with Ada.Directories;
 with AWS;    use AWS;
 with AWS.Server;
 with AWS.Server.Log;
@@ -36,7 +36,7 @@ with Types;
 
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
- -- package AD renames Ada.Directories;
+  package AD renames Ada.Directories;
 
   Me : constant String := "Bot_Web_Server.";
 
@@ -50,7 +50,7 @@ procedure Bot_Web_Server is
    --===========================================================================
   Semaphore : Binary_Semaphores.Semaphore_Type;
 
- -- Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
+  Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
 
    package Global is
      Host           : Types.String_Object;
@@ -236,10 +236,11 @@ procedure Bot_Web_Server is
     URI    : constant String := AWS.Status.URI(Request);
     Params : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
     Context: constant String := AWS.Parameters.Get(Params,"context");
-    Action : constant String := AWS.Parameters.Get(Params,"action");
+  --  Action : constant String := AWS.Parameters.Get(Params,"action");
     Service    : constant String := "Get";
   begin
-    Logging.Log(Service, "Method : Get" & " Context : " & Context & " Action: " & Action & " URI:" & URI);
+--    Logging.Log(Service, "Method : Get" & " Context : '" & Context & "' Action: '" & Action & "' URI: '" & Uri & "'");
+    Logging.Log(Service, "Method : Get" & " Context : '" & Context & "' URI: '" & Uri & "'");
 
     for I in 1.. Aws.Parameters.Count(Params) loop
       Logging.Log(Service, "Get - index: " &
@@ -363,7 +364,7 @@ procedure Bot_Web_Server is
         when AWS.Status.PUT  =>  Answer := Put(Request);
         when others          =>  Answer := Unknown(Request);
       end case;
---      AWS.Session.Save (File_Name => Saved_Web_Sessions);
+      AWS.Session.Save (File_Name => Saved_Web_Sessions);
       Semaphore.Release;
       return Answer;
   exception
@@ -426,23 +427,23 @@ begin
   AWS.Config.Set.WWW_Root                (O => Config, Value => Ev.Value("BOT_SOURCE") & "/ada/bot_ws/html");
 
   Logging.Log (Me, "WWW_Root: " & AWS.Config.WWW_Root (O => Config));
---  if AD.Exists (Saved_Web_Sessions) then
---    AWS.Session.Load(File_Name => Saved_Web_Sessions);
---  end if;
+  if AD.Exists (Saved_Web_Sessions) then
+    AWS.Session.Load(File_Name => Saved_Web_Sessions);
+  end if;
 
   AWS.Server.Start (Web_Server     => WS,
                     Callback       => Service'Unrestricted_Access,
                     Config         => Config);
 
-  AWS.Server.Log.Start      (Web_Server => WS,
-                             Split_Mode => Aws.Log.Daily,
-                             Auto_Flush => True);
+  AWS.Server.Log.Start (Web_Server => WS,
+                        Split_Mode => Aws.Log.Daily,
+                        Auto_Flush => True);
 
   AWS.Server.Log.Start_Error(Web_Server => WS,
                              Split_Mode => Aws.Log.Daily);
   Logging.Log("Main", "Log file name:" & AWS.Server.Log.Name (WS));
 
-  declare -- prefill list at startup to alway get whole day
+  declare -- prefill list at startup to always get whole day
     Dummy : String := Bot_Ws_Services.Get_Starttimes("noone","startup");
   begin
     null;

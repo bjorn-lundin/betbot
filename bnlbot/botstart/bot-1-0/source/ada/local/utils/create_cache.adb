@@ -112,7 +112,7 @@ begin
   Log ("animal2 " & Animal'Img);
 
   Sql.Connect
-    (Host     => "192.168.1.117",
+    (Host     => "192.168.1.20",
      Port     => 5432,
      Db_Name  => Db,
      Login    => "bnl",

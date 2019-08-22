@@ -202,14 +202,14 @@ procedure Graph_Data is
    end Avg_Price_For_Settled_Bets;
    ------------------------------------------------------
 
-   --------------------------------------------------------
-   procedure Equity_Data(
-                 Betname : in     String;
-                 A_List  : in out Equity_Result_Pack.List) is
-     Eos : Boolean := False;
-     Equity_Result : Equity_Result_Type;
-     Profit : Fixed_Type := 0.0;
-   begin
+  --------------------------------------------------------
+  procedure Equity_Data(
+                        Betname : in     String;
+                        A_List  : in out Equity_Result_Pack.List) is
+    Eos           : Boolean := False;
+    Equity_Result : Equity_Result_Type;
+    Profit        : Fixed_Type := 0.0;
+  begin
     Select_Equity_Date.Prepare(
                                "select B.BETPLACED, " &
                                  "round(( " &
@@ -219,24 +219,24 @@ procedure Graph_Data is
                                  "    end)::numeric,2) PROFIT " &
                                  "from ABETS B " &
                                  "where B.BETNAME = :BETNAME " &
-                                 "and B.STATUS = 'SETTLED' " &
+                                 "and B.STATUS in ('SETTLED','MATCHED') " &
                                  "and B.STARTTS >= :STARTDATE " &
                                  "order by B.BETPLACED");
     Select_Equity_Date.Set("BETNAME", Betname);
-     Select_Equity_Date.Set_Timestamp("STARTDATE", Global_Start_Date);
+    Select_Equity_Date.Set_Timestamp("STARTDATE", Global_Start_Date);
 
-     Select_Equity_Date.Open_Cursor;
-     loop
-       Select_Equity_Date.Fetch(Eos);
-       exit when Eos;
-       Select_Equity_Date.Get("BETPLACED",Equity_Result.Ts);
-       Select_Equity_Date.Get("PROFIT",Profit);
-       Equity_Result.Equity := Equity_Result.Equity + Profit;
-       A_List.Append(Equity_Result);
-     end loop;
-     Select_Equity_Date.Close_Cursor;
-   end Equity_Data;
-   ------------------------------------------------------
+    Select_Equity_Date.Open_Cursor;
+    loop
+      Select_Equity_Date.Fetch(Eos);
+      exit when Eos;
+      Select_Equity_Date.Get("BETPLACED",Equity_Result.Ts);
+      Select_Equity_Date.Get("PROFIT",Profit);
+      Equity_Result.Equity := Equity_Result.Equity + Profit;
+      A_List.Append(Equity_Result);
+    end loop;
+    Select_Equity_Date.Close_Cursor;
+  end Equity_Data;
+  ------------------------------------------------------
 
 begin
    Define_Switch
