@@ -225,6 +225,7 @@ function Start_Timer () {
 function Do_Check_Login() {
     
   console.log("Do_Check_Login start");
+  login_again = true;
     
   var d = new Date();
   var n = d.getTime();
@@ -251,7 +252,6 @@ function Do_Check_Login() {
       },
       error: function (request,error,ex) {
           console.log("Do_Check_Login.error " + error + ex);
-          login_again = true;
       }
   });
 

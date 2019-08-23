@@ -85,116 +85,118 @@ procedure Bot_Web_Server is
     Response   : AWS.Response.Data;
     Start      : Calendar2.Time_Type := Calendar2.Clock;
     Service    : constant String := "Do_Service";
-    Session_ID : constant AWS.Session.ID := Aws.Status.Session(Request);
-    Username   : constant String := AWS.Session.Get(Session_ID, "username");
+    Session_ID : AWS.Session.ID ;
+   -- Username   : constant String := AWS.Session.Get(Session_ID, "username");
     Application_JSON : constant String := "application/json";
 
   begin
-    Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : '" & Username & "'" );
-    --if Context="some_context_with_parmes" then
-    --  declare
-    --    Param0 :constant String := AWS.Parameters.Get(Params,"param0");
-    --    Param1 :constant String := AWS.Parameters.Get(Params,"param1");
-    --  begin
-    --    Logging.Log(Service, "Param0 : " & Param0 &
-    --                        " Param1 : " & Param1);
-    --    Handle Stuff((Username => Username,
-    --                  Context  => Context)
-    --                  Param0   => Param0,
-    --                  Param1   => Param1);
-    --  end
-    --end if;
 
-    if Username = "" then
-      Logging.Log(Service, "Username blank - needs login");
-      return  AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
-    end if;
-
-
-    if Sql.Is_Session_Open then
-      Logging.Log(Service, "was already connected, disconnect!");
+    if not AWS.Status.Has_Session(Request) then
+      Logging.Log(Service, "NO SESSION EXISTS - Method : " & Method & "' Context : '" & Context & "'" );
+      return AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
+    end if;      
+      
+    Session_ID := Aws.Status.Session(Request);
+    declare 
+      Username   : constant String := AWS.Session.Get(Session_ID, "username");
+    begin    
+  
+      Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : '" & Username & "'" );
+      
+      if Username = "" then
+        Logging.Log(Service, "Username blank - needs login");
+        return AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
+      end if;
+      
+      
+      if Sql.Is_Session_Open then
+        Logging.Log(Service, "was already connected, disconnect!");
+        Sql.Close_Session;
+        Logging.Log(Service, "did disconnect!");
+      end if;
+      
+      
+      Sql.Connect
+        (Host     => Global.Host.Fix_String,
+         Port     => Global.Port,
+         Db_Name  => Username,                                  -- bnl/jmb/msm
+         Login    => Global.Login.Fix_String, -- always bnl
+         Password => Global.Password.Fix_String);
+      
+      if Context="logout" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Operator_Logout(Username =>  Username,
+                                                                        Context  => Context));
+      elsif Context="todays_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="yesterdays_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="thisweeks_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="lastweeks_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="thismonths_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="lastmonths_bets" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context));
+      elsif Context="todays_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Todays_Total(Username => Username,
+                                                                    Context  => Context));
+      elsif Context="sum_todays_bets" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                         Context  => Context));
+      elsif Context="sum_7_days_bets" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                         Context  => Context));
+      elsif Context="sum_thisweeks_bets" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                         Context  => Context));
+      elsif Context="sum_total_bets" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
+                                                                         Context  => Context));
+      elsif Context="starttimes" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Get_Starttimes(Username => Username,
+                                                                       Context  => Context));
+      elsif Context="weeks" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Get_Weeks(Username => Username,
+                                                                       Context  => Context));
+      elsif Context="months" then
+        Response := Aws.Response.Build (Application_Json,
+                                        Bot_Ws_Services.Get_Months(Username => Username,
+                                                                       Context  => Context));
+      else
+        Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
+      end if;
+      Logging.Log(Service, " Context : " & Context &
+                           " Username : " & Username &
+                           " Time consumed " & String_Interval(Calendar2.Clock - Start, Days => False));
+      
+      
+      
       Sql.Close_Session;
-      Logging.Log(Service, "did disconnect!");
-    end if;
 
-
-    Sql.Connect
-      (Host     => Global.Host.Fix_String,
-       Port     => Global.Port,
-       Db_Name  => Username,                                  -- bnl/jmb/msm
-       Login    => Global.Login.Fix_String, -- always bnl
-       Password => Global.Password.Fix_String);
-
-    if Context="logout" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Operator_Logout(Username =>  Username,
-                                                                      Context  => Context));
-    elsif Context="todays_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="yesterdays_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="thisweeks_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="lastweeks_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="thismonths_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="lastmonths_bets" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Settled_Bets(Username => Username,
-                                                                   Context  => Context));
-    elsif Context="todays_total" then
-      Response := Aws.Response.Build (Application_JSON,
-                                      Bot_Ws_Services.Todays_Total(Username => Username,
-                                                                  Context  => Context));
-    elsif Context="sum_todays_bets" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
-                                                                       Context  => Context));
-    elsif Context="sum_7_days_bets" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
-                                                                       Context  => Context));
-    elsif Context="sum_thisweeks_bets" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
-                                                                       Context  => Context));
-    elsif Context="sum_total_bets" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Sum_Settled_Bets(Username => Username,
-                                                                       Context  => Context));
-    elsif Context="starttimes" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Get_Starttimes(Username => Username,
-                                                                     Context  => Context));
-    elsif Context="weeks" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Get_Weeks(Username => Username,
-                                                                     Context  => Context));
-    elsif Context="months" then
-      Response := Aws.Response.Build (Application_Json,
-                                      Bot_Ws_Services.Get_Months(Username => Username,
-                                                                     Context  => Context));
-    else
-      Response := AWS.Response.Acknowledge (Status_Code => AWS.Messages.S200);
-    end if;
-    Logging.Log(Service, " Context : " & Context &
-                         " Username : " & Username &
-                         " Time consumed " & String_Interval(Calendar2.Clock - Start, Days => False));
-
-    Sql.Close_Session;
-
-    return Response;
+      return Response;
+    end;
+    
   end Do_Service;
    --------------------------------------
   function Put (Request : in AWS.Status.Data) return AWS.Response.Data is
