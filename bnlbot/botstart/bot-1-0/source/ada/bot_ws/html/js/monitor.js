@@ -16,7 +16,7 @@ $.makeTable = function (mydata) {
     $.each(mydata, function (index, value) {
         var TableRow = "<tr>";
         $.each(value, function (key, val) {
-            console.log("key: " + key + " val: " + val);
+           // console.log("key: " + key + " val: " + val);
             if (typeof val == "string" && key == "betname") {
               //          1         2         3
               //0123456789012345678901234567890123456789
@@ -117,9 +117,12 @@ function Do_Ajax_Today(context) {
           if(reply.result == "OK") {
              console.log(" Do_Ajax_Today.success OK");
 
+             if (reply.totalsm == 0.0) {
+               $('#today').text("Resultat:"+ reply.total + " kr"  + " matchat:" + reply.totalsm + " kr" + " vinst/risk: -");
+             } else {
             // $('#todays_total').empty();
-             $('#today').text("Resultat:"+ reply.total + " kr"  + " matchat:" + reply.totalsm + " kr" + " vinst/risk:"  + (100.0 *reply.total / reply.totalsm).toFixed(2) + " %");
-
+               $('#today').text("Resultat:"+ reply.total + " kr"  + " matchat:" + reply.totalsm + " kr" + " vinst/risk:"  + (100.0 *reply.total / reply.totalsm).toFixed(2) + " %");
+             } 
           } else {
              console.log("Do_Ajax_Today.success NOT OK");
           }
