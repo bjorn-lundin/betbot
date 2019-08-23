@@ -708,7 +708,7 @@ package body Bot_Ws_Services is
         OK         : Boolean := False;
       begin
         Market.Marketname := S.Marketname;
-        OK :=  Market.Marketname_Ok;
+        OK :=  Market.Marketname_Ok2;
 
         if OK and then not Arrow_Is_Printed and then Now <= S.Starttime then
           Arrow_Is_Printed := True;
