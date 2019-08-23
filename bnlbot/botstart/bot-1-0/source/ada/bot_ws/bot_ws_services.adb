@@ -769,6 +769,7 @@ package body Bot_Ws_Services is
     elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "DarkGoldenrod" ; 
     elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "DeepPink" ; 
     elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "MediumVioletRed" ; 
+    elsif Name = "HORSE_BACK_1_55_800M_PLC_1_01"       then return "Orange" ; 
     else    
       Log(Object & Service, "bet '" & Name & "' has no color");    
       return "Black" ; 
