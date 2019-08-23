@@ -42,37 +42,31 @@ $(document).ready(function(){
 //  });
 
 
+function Do_Login() { // catch the form's submit event
+      // Send data to server through the Ajax call
+      // action is functionality we want to call and outputJSON is our data
+
+      var params = $('#loginform').serialize();
+      console.log("Do_Login: params" + params + "'");
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', URL + '/login', false); //synchronous
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.send(params); 
+      var reply = xhr.responseText;
+      console.log('Do_Login got:' + reply);
+      if (reply.result == "OK") {
+         console.log("Do_Login success OK");
+         $.mobile.changePage("#menu");
+      } else {
+         console.log("Do_Login success NOT OK");
+      }      
+}
+
+
   $(document).on('click', '#submit', function() { // catch the form's submit event
       // Send data to server through the Ajax call
       // action is functionality we want to call and outputJSON is our data
-      $.ajax({url: 'login',
-          data: $('#loginform').serialize(),
-          type: 'post',
-          async: 'true',
-          dataType: 'json',
-          beforeSend: function() {
-              // This callback function will trigger before data is sent
-              console.log("beforeSend");
-              $.mobile.loading( "show" );
-          },
-          complete: function() {
-              // This callback function will trigger on data sent/received complete
-              console.log("complete");
-              $.mobile.loading( "hide" );
-          },
-          success: function (reply) {
-              console.log("success");
-              if(reply.result == "OK") {
-                 console.log("success OK");
-                 $.mobile.changePage("#menu");
-              } else {
-                 console.log("success NOT OK");
-              }
-          },
-          error: function (request,error) {
-              console.log("error " + error);
-          }
-      });
+      Do_Login();
       return false; // cancel original event to prevent form submitting
   });
 
@@ -106,7 +100,6 @@ $(document).ready(function(){
       console.log("lastmonth - context " + context);
   });
 
-
   $(document).on("pageshow","#viewer",function(){
     // var para = "<p id='tobedeleted'>ny kod från event</p>";
     // $('#tobedeleted').empty();
@@ -127,9 +120,9 @@ $(document).ready(function(){
               $.mobile.loading( "hide" );
           },
           success: function (reply) {
-              console.log("success");
+              console.log("success pageshow");
               if(reply.result == "OK") {
-                 console.log("success OK");
+                 console.log("success pageshow OK");
 
                  $('#viewer_content').empty();
                  $('#total').text("Resultat:"+ reply.total + " kr" );
@@ -140,11 +133,11 @@ $(document).ready(function(){
 
 
               } else {
-                 console.log("success NOT OK");
+                 console.log("success pageshow NOT OK");
               }
           },
           error: function (request,error) {
-              console.log("error " + error);
+              console.log("error pageshow " + error);
           }
     });
 
