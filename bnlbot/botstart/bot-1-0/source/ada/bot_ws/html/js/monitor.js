@@ -297,7 +297,7 @@ function Do_Start() {
      //call by window.onload
      console.log("onReady Start");
      login_again = true;
-     Cnt = 97;
+     Cnt = 99;
      //start timer ...
      Start_Timer();
     // Do_Login();
