@@ -708,22 +708,24 @@ package body Bot_Ws_Services is
         OK         : Boolean := False;
       begin
         Market.Marketname := S.Marketname;
-        OK :=  Market.Marketname_Ok2;
+        OK := Market.Marketname_Ok;
 
-        if OK and then not Arrow_Is_Printed and then Now <= S.Starttime then
-          Arrow_Is_Printed := True;
-          Arrow := "-->";
-        elsif not OK then
-          Arrow := "-|-";
-        else
-          Arrow := "---";
-        end if;
-
-        Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
-        Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
-        Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
-        Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
-        Append(Json_Start_Times, Start_Time);
+        if OK then
+          if not Arrow_Is_Printed and then Now <= S.Starttime then
+            Arrow_Is_Printed := True;
+            Arrow := "-->";
+          --elsif not OK then
+          --  Arrow := "-|-";
+          else
+            Arrow := "---";
+          end if;
+            
+          Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
+          Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
+          Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
+          Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
+          Append(Json_Start_Times, Start_Time);
+        end if;  
       end;
     end loop;
 
