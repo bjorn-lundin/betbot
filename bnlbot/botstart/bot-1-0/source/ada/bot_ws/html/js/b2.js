@@ -28,6 +28,26 @@ $.makeTable = function (mydata) {
     return ($(table));
 };
 
+function Do_Login() { // catch the form's submit event
+      // Send data to server through the Ajax call
+      // action is functionality we want to call and outputJSON is our data
+         
+      var params = $('#loginform').serialize();
+      console.log("Do_Login: params" + params + "'");
+      var xhr = new XMLHttpRequest();
+      //xhr.open('POST', URL + '/login', false); //synchronous
+      xhr.open('POST', '/login', false); //synchronous
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.send(params); 
+      var reply = JSON.parse(xhr.responseText);
+      console.log('Do_Login got:' + reply);
+      if (reply.result == "OK") {
+         console.log("Do_Login success OK");
+         $.mobile.changePage("#menu");
+      } else {
+         console.log("Do_Login success NOT OK");
+      }      
+}
 
 
 $(document).ready(function(){
@@ -40,27 +60,6 @@ $(document).ready(function(){
 //    $('#viewer_content').empty();
 //    $('#total').text("Triggered ajaxError handler."  );
 //  });
-
-
-function Do_Login() { // catch the form's submit event
-      // Send data to server through the Ajax call
-      // action is functionality we want to call and outputJSON is our data
-
-      var params = $('#loginform').serialize();
-      console.log("Do_Login: params" + params + "'");
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', URL + '/login', false); //synchronous
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.send(params); 
-      var reply = xhr.responseText;
-      console.log('Do_Login got:' + reply);
-      if (reply.result == "OK") {
-         console.log("Do_Login success OK");
-         $.mobile.changePage("#menu");
-      } else {
-         console.log("Do_Login success NOT OK");
-      }      
-}
 
 
   $(document).on('click', '#submit', function() { // catch the form's submit event
