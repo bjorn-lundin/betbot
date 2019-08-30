@@ -11,8 +11,9 @@ package Bot_Ws_Services is
   function Operator_Logout(Username  : in String;
                            Context   : in String) return String;
 
-  function Settled_Bets   (Username  : in String;
-                           Context   : in String) return String;
+  function Settled_Bets   (Username   : in String;
+                           Context    : in String;
+                           Total_Only : in Boolean := False) return String;
 
   function Sum_Settled_Bets(Username  : in String;
                             Context   : in String) return String;
