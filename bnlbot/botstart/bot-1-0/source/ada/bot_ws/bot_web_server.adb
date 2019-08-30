@@ -151,6 +151,31 @@ procedure Bot_Web_Server is
         Response := Aws.Response.Build (Application_JSON,
                                         Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                      Context  => Context));
+      elsif Context="todays_bets_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context,
+                                                                     Total_Only => True));
+      elsif Context="thisweeks_bets_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context,
+                                                                     Total_Only => True));
+      elsif Context="lastweeks_bets_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context,
+                                                                     Total_Only => True));
+      elsif Context="thismonths_bets_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context,
+                                                                     Total_Only => True));
+      elsif Context="lastmonths_bets_total" then
+        Response := Aws.Response.Build (Application_JSON,
+                                        Bot_Ws_Services.Settled_Bets(Username => Username,
+                                                                     Context  => Context,
+                                                                     Total_Only => True));        
       elsif Context="todays_total" then
         Response := Aws.Response.Build (Application_JSON,
                                         Bot_Ws_Services.Todays_Total(Username => Username,
@@ -421,7 +446,7 @@ begin
 
   Logging.Log("Main", "AWS " & AWS.Version & " starting at port 9080" );
   AWS.Config.Set.Server_Name             (O => Config, Value => "BetBot");
-  AWS.Config.Set.Max_Connection          (O => Config, Value => 4);
+  AWS.Config.Set.Max_Connection          (O => Config, Value => 8);
   AWS.Config.Set.Server_Port             (O => Config, Value => 9080);
   AWS.Config.Set.Session                 (O => Config, Value => True);
   AWS.Config.Set.Log_File_Directory      (O => Config, Value => Ev.Value("BOT_TARGET") & "/log" );

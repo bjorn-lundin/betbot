@@ -241,16 +241,13 @@ package body Bot_Ws_Services is
                                     "group by betname " &
                                     "having max(startts) > '2018-11-15' " &
                                     "order by betname");
-                                
-    
-    
-    
   end Prepare_Bets;
+
   ------------------------------------------------------------
 
-
-  function Settled_Bets(Username  : in String;
-                        Context   : in String) return String is
+  function Settled_Bets(Username   : in String;
+                        Context    : in String;
+                        Total_Only : in Boolean := False) return String is
     Service         : constant String := "Settled_Bets";
     T               : Sql.Transaction_Type;
     End_Of_Set      : Boolean := False;
@@ -263,7 +260,7 @@ package body Bot_Ws_Services is
     use Calendar2;
   begin
 
-    Log(Object & Service, "User '" & Username & "' Context '" & Context & "'");
+    Log(Object & Service, "User '" & Username & "' Context '" & Context & "' Total " & Total_Only'img );
 
     Start.Hour        := 0;
     Start.Minute      := 0;
@@ -356,31 +353,32 @@ package body Bot_Ws_Services is
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
 
 
-    Select_Bets.Set("START", Start);
-    Select_Bets.Set("STOP", Stop);
     Select_Sum_Bets.Set("START", Start);
     Select_Sum_Bets.Set("STOP", Stop);
+    
+    if not Total_Only then
+      Select_Bets.Set("START", Start);
+      Select_Bets.Set("STOP", Stop);
 
-    Bets.Read_List(Select_Bets, Bet_List);
-    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
-    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+      Bets.Read_List(Select_Bets, Bet_List);
+      -- betname, marketid, betwon, profit, betplaced, pricematched, sizematched
 
-    -- betname, marketid, betwon, profit, betplaced, pricematched, sizematched
-
-    for B of Bet_List loop
-      declare
-        Bet : Json_Value := Create_Object;
-      begin
-        Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(B.Betname));
-        Bet.Set_Field (Field_Name => "marketid",     Field => B.Marketid);
-        Bet.Set_Field (Field_Name => "won",          Field => B.Betwon);
-        Bet.Set_Field (Field_Name => "profit",       Field => Float(B.Profit));
-        Bet.Set_Field (Field_Name => "betplaced",    Field => B.Betplaced.String_Date_And_Time(Milliseconds => True));
-        Bet.Set_Field (Field_Name => "pm",           Field => Float(B.Pricematched));
-        Bet.Set_Field (Field_Name => "sm",           Field => Float(B.Sizematched));
-        Append(Json_Bets, Bet);
-      end ;
-    end loop;
+      for B of Bet_List loop
+        declare
+          Bet : Json_Value := Create_Object;
+        begin
+          Bet.Set_Field (Field_Name => "betname",      Field => Utils.Trim(B.Betname));
+          Bet.Set_Field (Field_Name => "marketid",     Field => B.Marketid);
+          Bet.Set_Field (Field_Name => "won",          Field => B.Betwon);
+          Bet.Set_Field (Field_Name => "profit",       Field => Float(B.Profit));
+          Bet.Set_Field (Field_Name => "betplaced",    Field => B.Betplaced.String_Date_And_Time(Milliseconds => True));
+          Bet.Set_Field (Field_Name => "pm",           Field => Float(B.Pricematched));
+          Bet.Set_Field (Field_Name => "sm",           Field => Float(B.Sizematched));
+          Append(Json_Bets, Bet);
+        end ;
+      end loop;
+      Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);    
+    end if;
 
     Select_Sum_Bets.Open_Cursor;
     Select_Sum_Bets.Fetch(End_Of_Set);
@@ -388,8 +386,12 @@ package body Bot_Ws_Services is
       Select_Sum_Bets.Get("PROFIT",Total_Profit);
     end if;
     Select_Sum_Bets.Close_Cursor;
+    
+    Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
+    Json_Reply.Set_Field (Field_Name => "context", Field => Context);
+    
+    
     Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
-    Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
 
     T.Commit;
     Log(Object & Service, "Return " & Json_Reply.Write);
