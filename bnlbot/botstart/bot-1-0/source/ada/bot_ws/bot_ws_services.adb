@@ -270,12 +270,12 @@ package body Bot_Ws_Services is
     T.Start;
     Prepare_Bets;
 
-    if Context = "todays_bets" then
+    if Context = "todays_bets" or Context = "todays_bets_total" then
       null; -- is ok already
     elsif Context = "yesterdays_bets" then
       Start := Start - (1,0,0,0,0);
       Stop  := Stop  - (1,0,0,0,0);
-    elsif Context = "thisweeks_bets" then
+    elsif Context = "thisweeks_bets" or Context = "thisweeks_bets_total" then
       declare
         Dow : Week_Day_Type  ;
       begin
@@ -288,7 +288,7 @@ package body Bot_Ws_Services is
         end loop;
         Stop := Start + (6,0,0,0,0);
       end;
-    elsif Context = "lastweeks_bets" then
+    elsif Context = "lastweeks_bets" or Context = "lastweeks_bets_total" then
       declare
         Dow : Week_Day_Type  ;
       begin
@@ -302,7 +302,7 @@ package body Bot_Ws_Services is
         end loop;
         Stop := Start + (6,0,0,0,0);
       end;
-    elsif Context = "thismonths_bets" then
+    elsif Context = "thismonths_bets" or Context = "thismonths_bets_total" then
       begin
         loop -- find first of this month
           case Start.Day is
@@ -311,7 +311,7 @@ package body Bot_Ws_Services is
           end case ;
         end loop;
       end;
-    elsif Context = "lastmonths_bets" then
+    elsif Context = "lastmonths_bets" or Context = "lastmonths_bets_total" then
       declare
         Passed_1st_First_Time : Boolean := False;
         Passed_1st_Second_Time : Boolean := False;
