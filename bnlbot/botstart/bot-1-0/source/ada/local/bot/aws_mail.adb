@@ -14,7 +14,7 @@ with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Strings;
 
 with AWS;
-with AWS.SMTP; 
+with AWS.SMTP;
 with AWS.SMTP.Authentication;
 with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
@@ -34,8 +34,8 @@ with Text_io; use Text_io;
 procedure Aws_Mail is
   package EV renames Ada.Environment_Variables;
   --use type Rpc.Result_Type;
-  
-  Me : constant String := "Main.";  
+
+  Me : constant String := "Main.";
 
   Sa_Par_Subject : aliased Gnat.Strings.String_Access;
   Cmd_Line        : Command_Line_Configuration;
@@ -55,9 +55,9 @@ procedure Aws_Mail is
       else
         Append(US, Ascii.CR);
         Append(US, Ch);
-      end if;       
+      end if;
     end loop;
-    return Ada.Strings.Unbounded.To_String(US);    
+    return Ada.Strings.Unbounded.To_String(US);
   end Get_From_Std_In;
 
 
@@ -65,30 +65,29 @@ procedure Aws_Mail is
   procedure Mail(Subject : String) is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      use AWS;
-     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com"; 
-     Status : SMTP.Status; 
+     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
+     Status : SMTP.Status;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
       Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A", 
+                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
                                               "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
                                    Port       => 2465,
                                    Secure     => True,
-                                   Credential => Auth'Unchecked_Access);                                  
+                                   Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
       Msg : constant String := Get_From_Std_In &
-          Cr & Lf &          
+          Cr & Lf &
           "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
           "sent from: " & GNAT.Sockets.Host_Name ;
-          
-      Receivers : constant SMTP.Recipients :=  (
-                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com") ,
-                  SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com")
-                ); 
-    begin     
+
+      Receivers : constant SMTP.Recipients :=  (1=>
+                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com")
+                );
+    begin
       SMTP.Client.Send(Server  => SMTP_Server,
                        From    => SMTP.E_Mail ("Alarm Betbot", "betbot@nonobet.com"),
                        To      => Receivers,
@@ -97,34 +96,34 @@ procedure Aws_Mail is
                        Status  => Status);
       Log (Me & "Mail", "subject: " & Subject);
       Log (Me & "Mail", "body: " & Msg);
-    end;                   
+    end;
     if not SMTP.Is_Ok (Status) then
       Log (Me & "Mail", "Can't send message: " & SMTP.Status_Message (Status));
-    end if;                  
+    end if;
   end Mail;
 
----------------------------------  
-     
+---------------------------------
+
 ------------------------------ main start -------------------------------------
 begin
- 
+
   Logging.Open(EV.Value("BOT_HOME") & "/log/aws_mailer.log");
-  
+
   Define_Switch
    (Cmd_Line,
     Sa_Par_Subject'access,
     Long_Switch => "--subject=",
     Help        => "subject to mail");
-    
+
   Getopt (Cmd_Line);  -- process the command line
 
   Log(Me, "start mail");
   Mail(Sa_Par_Subject.all);
   Log(Me, "do_exit");
   Posix.Do_Exit(0); -- terminate
- 
+
 exception
-  when Lock.Lock_Error => 
+  when Lock.Lock_Error =>
       Posix.Do_Exit(0); -- terminate
 
   when E: others =>
