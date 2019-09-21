@@ -71,8 +71,9 @@ procedure Aws_Mail is
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
       Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
-                                              "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
+                                SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
+                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
+
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
                                    Port       => 2465,
