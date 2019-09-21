@@ -350,9 +350,6 @@ package body Bot_Ws_Services is
     Stop.Second      := 59;
     Stop.Millisecond := 999;
 
-    Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
-
-
     Select_Sum_Bets.Set("START", Start);
     Select_Sum_Bets.Set("STOP", Stop);
     
@@ -389,12 +386,11 @@ package body Bot_Ws_Services is
     
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
-    
-    
     Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
 
     T.Commit;
     Log(Object & Service, "Return " & Json_Reply.Write);
+    Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
     return Json_Reply.Write;
 
   end Settled_Bets;
