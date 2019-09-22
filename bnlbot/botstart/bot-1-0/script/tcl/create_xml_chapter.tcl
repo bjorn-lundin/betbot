@@ -3,13 +3,16 @@
 package require Pgtcl
 
 set db "bnl"
-set host "localhost"
+#set host "localhost"
+#set host "192.168.1.7"
+set host "192.168.1.20"
 set port 5432
 set user "bnl"
 set pass "bnl"
+#set pass "ld4BC9Q51FU9CYjC21gp"
+
 set Bet_Name_List [list [lindex $argv 0]]
-#set Powerday_List [list 107 207 307 114 214 314 121 221 321 128 228 328 135 235 335]
-set Powerday_List [list 107 207 307 114 214 314 121 221 321 128 228 328]
+set Powerday_List [list 107]
 
 global Weekday_Profit_Array(null)
 global Weekday_Count_Array(null)
@@ -24,55 +27,52 @@ foreach Bet_Name $Bet_Name_List {
 
   foreach Powerday $Powerday_List {
     puts "<section xml:id=\'$Bet_Name\_$Powerday\'>"
-    puts "<title>$Powerday</title>"
-    puts "<mediaobject>"
-    puts "  <imageobject>"
-    puts "    <imagedata fileref=\'../script/plot/$Bet_Name\-$Powerday.png\'"
-    puts "               align=\'left\'"
-    puts "               width=\'80%\'"
-    puts "               scalfit=\'1\'/>"
-    puts "  </imageobject>"
-    puts "</mediaobject>"
+   # puts "<title>$Powerday</title>"
+   # puts "<mediaobject>"
+   # puts "  <imageobject>"
+   # puts "    <imagedata fileref=\'../script/plot/$Bet_Name\-$Powerday.png\'"
+   # puts "               align=\'left\'"
+   # puts "               width=\'80%\'"
+   # puts "               scalfit=\'1\'/>"
+   # puts "  </imageobject>"
+   # puts "</mediaobject>"
 #        -- b.startts::date > (select current_date - interval '420 days') \
 
     set query " select \
         count('a'), \
         round(avg(b.profit)::numeric, 1) as avgprofit, \
         round(sum(b.profit)::numeric, 0) as sumprofit, \
-        round(avg(b.price)::numeric, 1) as avgprice, \
-        round((sum(b.profit)/avg(b.price))::numeric, 0) as sumprofit_price, \
+        round(avg(b.pricematched)::numeric, 3) as avgprice, \
+        round((sum(b.profit)/avg(b.pricematched))::numeric, 0) as sumprofit_price, \
         min(b.startts)::date as mindate, \
         max(b.startts)::date as maxdate, \
         max(b.startts)::date - min(b.startts)::date  + 1 as days, \
         round(count('a')/(max(b.startts)::date - min(b.startts)::date  + 1)::numeric,1) as betsperday, \
         round((sum(profit)/(max(b.startts)::date - min(b.startts)::date  + 1))::numeric, 0) as profitperday, \
-        b.betmode, \
         e.countrycode, \
-        b.powerdays, \
         b.betname, \
         case \
-          when b.betname like '%LAY%' then round((sum(b.profit)/(avg(b.size)* (avg(b.price) -1)))::numeric, 0) \
-          else round((sum(b.profit)/avg(b.size))::numeric, 0) \
+          when b.betname like '%LAY%' then round((sum(b.profit)/(avg(b.sizematched)* (avg(b.pricematched) -1)))::numeric, 0) \
+          else round((100.0 * sum(b.profit)/sum(b.sizematched))::numeric, 3) \
         end as riskratio ,  \
-        avg(b.size) as avg_size \
+        avg(b.sizematched) as avg_size \
       from \
         abets b, amarkets m, aevents e \
       where \
         b.startts::date > '2013-07-30' \
-        and b.status = 'EXECUTION_COMPLETE' \
+        and b.status = 'SETTLED' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \
-        and ( (b.betmode in (1,3,4) and b.powerdays = $Powerday) or (b.powerdays = 0)) \
         and b.marketid = m.marketid \
         and m.eventid = e.eventid \
       group by \
         e.countrycode, \
-        b.betname, \
-        b.powerdays, \
-        b.betmode \
+        b.betname \
       having sum(b.profit) > -100000000.0 \
       order by \
-        b.betmode "
+        e.countrycode "
+        
+    #puts stderr $query    
     set res [pg_exec $::conn $query]
 
     set ntups [pg_result $res -numTuples]
@@ -86,25 +86,18 @@ foreach Bet_Name $Bet_Name_List {
 
     pg_result $res -clear
 
-    puts "<table><title>Interesting facts about $Bet_Name with powerday : $Powerday</title>"
+    puts "<table><title>Interesting facts about $Bet_Name</title>"
     puts "<tgroup cols=\"12\">"
-    puts "<thead><row><entry>Mode</entry><entry>Profit/ Risk</entry><entry>Count</entry><entry>avg(Profit)</entry><entry>sum(Profit)</entry><entry>avg(Price)</entry>"
-    puts "<entry>sum(Profit)/ avg(Price)</entry><entry>min(Date)</entry><entry>max(Date)</entry><entry>num(Days)</entry>"
-    puts "<entry>Bets/Day</entry><entry>Profit/Day</entry></row></thead><tbody>"
+    puts "<thead><row><entry>Country</entry><entry>Profit/Risk (%)</entry><entry>Count</entry>"
+    puts "<entry>avg(Profit)</entry><entry>sum(Profit)</entry><entry>avg(Price)</entry>"
+    puts "<entry>-</entry><entry>min(Date)</entry><entry>max(Date)</entry>"
+    puts "<entry>num(Days)</entry><entry>Bets/Day</entry><entry>Profit/Day</entry></row></thead><tbody>"
 
     foreach Tuple $Tuples {
-      set Mode [lindex $Tuple 10]
-      set Smode {}
-      switch $Mode {
-         1 {set Smode "dry"}
-         3 {set Smode "sim"}
-         4 {set Smode "ref"}
-        default {set Smode "unknown $Mode"}
-      }
-      puts "<row><entry>$Smode</entry><entry>[lindex $Tuple 14]</entry><entry>[lindex $Tuple 0]</entry> <entry>[lindex $Tuple 1]</entry>"
-      puts "<entry>[lindex $Tuple 2]</entry><entry>[lindex $Tuple 3]</entry> <entry>[lindex $Tuple 4]</entry>"
-      puts "<entry>[lindex $Tuple 5]</entry><entry>[lindex $Tuple 6]</entry> <entry>[lindex $Tuple 7]</entry>"
-      puts "<entry>[lindex $Tuple 8]</entry><entry>[lindex $Tuple 9]</entry></row>"
+      puts "<row><entry>[lindex $Tuple 10]</entry><entry>[lindex $Tuple 12]</entry><entry>[lindex $Tuple 0]</entry>"
+      puts "<entry>[lindex $Tuple 1]</entry><entry>[lindex $Tuple 2]</entry><entry>[lindex $Tuple 3]</entry>"
+      puts "<entry>-</entry><entry>[lindex $Tuple 5]</entry><entry>[lindex $Tuple 6]</entry>"
+      puts "<entry>[lindex $Tuple 7]</entry><entry>[lindex $Tuple 8]</entry><entry>[lindex $Tuple 9]</entry></row>"
     }
     puts "</tbody></tgroup></table>"
 #       -- b.startts::date > (select current_date - interval '420 days') \
@@ -112,8 +105,6 @@ foreach Bet_Name $Bet_Name_List {
     # how is the income spread across weekdays?
     set query " select \
         round(sum(b.profit)::numeric, 0) as sumprofit, \
-        b.powerdays, \
-        b.betmode, \
         b.betname, \
         extract(dow from b.startts ) as weekday, \
         count(b.profit) as count \
@@ -121,21 +112,19 @@ foreach Bet_Name $Bet_Name_List {
         abets b, amarkets m, aevents e \
       where \
         b.startts::date > '2013-07-30' \
-        and b.status = 'EXECUTION_COMPLETE' \
+        and b.status = 'SETTLED' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \
         and b.marketid = m.marketid \
         and m.eventid = e.eventid \
-        and ( (b.betmode in (1,3,4) and b.powerdays = $Powerday) or (b.powerdays = 0)) \
       group by \
         b.betname, \
-        b.powerdays, \
-        b.betmode, \
         weekday \
       having sum(b.profit) > -100000000.0 \
       order by \
-        b.betmode, \
         weekday "
+        
+    #puts stderr $query
     set res [pg_exec $::conn $query]
 
     set ntups [pg_result $res -numTuples]
@@ -150,70 +139,49 @@ foreach Bet_Name $Bet_Name_List {
     pg_result $res -clear
 
     puts "<table><title>Profit / num bets / % num bets distributed per weekday </title>"
-    puts "<tgroup cols=\"8\">"
-    puts "<thead><row><entry>mode</entry><entry>mon</entry><entry>tue</entry><entry>wed</entry><entry>thu</entry><entry>fri</entry><entry>sat</entry>"
+    puts "<tgroup cols=\"7\">"
+    puts "<thead><row><entry>mon</entry><entry>tue</entry><entry>wed</entry><entry>thu</entry><entry>fri</entry><entry>sat</entry>"
     puts "<entry>sun</entry></row></thead>"
     puts "<tbody>"
 
-
-    set Betmodes [list 1 3 4]
     set Days [list 1 2 3 4 5 6 0 ]
 
-    foreach Betmode $Betmodes {
-      foreach Weekday $Days {
-        if {![info exists Weekday_Profit_Array($Betmode,$Weekday) ]} {
-          set Weekday_Profit_Array($Betmode,$Weekday) 0
-        }
-        if {![info exists Weekday_Count_Array($Betmode,$Weekday) ]} {
-          set Weekday_Count_Array($Betmode,$Weekday) 0
-        }
-        if {![info exists Weekday_Count_Pct_Array($Betmode,$Weekday) ]} {
-          set Weekday_Count_Pct_Array($Betmode,$Weekday) 0
-        }
+    foreach Weekday $Days {
+      if {![info exists Weekday_Profit_Array($Weekday) ]} {
+        set Weekday_Profit_Array($Weekday) 0
+      }
+      if {![info exists Weekday_Count_Array($Weekday) ]} {
+        set Weekday_Count_Array($Weekday) 0
+      }
+      if {![info exists Weekday_Count_Pct_Array($Weekday) ]} {
+        set Weekday_Count_Pct_Array($Weekday) 0
       }
     }
-
 
     foreach Tuple $Tuples {
-      set Betmode [lindex $Tuple 2]
-      set Weekday [lindex $Tuple 4]
-      set Weekday_Profit_Array($Betmode,$Weekday) [lindex $Tuple 0]
-      set Weekday_Count_Array($Betmode,$Weekday) [lindex $Tuple 5]
+      set Weekday [lindex $Tuple 2]
+      set Weekday_Profit_Array($Weekday) [lindex $Tuple 0]
+      set Weekday_Count_Array($Weekday) [lindex $Tuple 3]
     }
 
-
-    foreach Betmode $Betmodes {
-      set Tot_Num_Bets 0
-      foreach Weekday $Days {
-        set Tot_Num_Bets [expr $Tot_Num_Bets + $Weekday_Count_Array($Betmode,$Weekday)]
-      }
-      set Tot_Num_Bets  [expr $Tot_Num_Bets + 0.0] ; # make it a float
-
-      foreach Weekday $Days {
-        if {$Tot_Num_Bets > 0 } {
-          set Weekday_Count_Pct_Array($Betmode,$Weekday) "[format "%.0f" [expr 100 * $Weekday_Count_Array($Betmode,$Weekday) / $Tot_Num_Bets ]]%"
-        }
+    set Tot_Num_Bets 0
+    foreach Weekday $Days {
+      set Tot_Num_Bets [expr $Tot_Num_Bets + $Weekday_Count_Array($Weekday)]
+    }
+    set Tot_Num_Bets  [expr $Tot_Num_Bets + 0.0] ; # make it a float
+    
+    foreach Weekday $Days {
+      if {$Tot_Num_Bets > 0 } {
+        set Weekday_Count_Pct_Array($Weekday) "[format "%.0f" [expr 100 * $Weekday_Count_Array($Weekday) / $Tot_Num_Bets ]]%"
       }
     }
-
-
-    foreach Betmode $Betmodes {
-      set Mode $Betmode
-      set Smode {}
-      switch $Mode {
-         1 {set Smode "dry"}
-         3 {set Smode "sim"}
-         4 {set Smode "ref"}
-        default {set Smode "unknown $Mode"}
-      }
-      puts "<row><entry>$Smode</entry>"
-      foreach Weekday $Days {
-        puts "<entry>$Weekday_Profit_Array($Betmode,$Weekday)/$Weekday_Count_Array($Betmode,$Weekday)/$Weekday_Count_Pct_Array($Betmode,$Weekday)</entry>"
-      }
-      puts "</row>"
+    
+    puts "<row>"
+    foreach Weekday $Days {
+      puts "<entry>$Weekday_Profit_Array($Weekday)/$Weekday_Count_Array($Weekday)/$Weekday_Count_Pct_Array($Weekday)</entry>"
     }
+    puts "</row>"    
     puts "</tbody></tgroup></table>"
-
     puts "</section>"
     puts "<?hard-pagebreak?>"
   }

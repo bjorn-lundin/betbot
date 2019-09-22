@@ -49,6 +49,12 @@
         <authorinitials>bnl</authorinitials>
         <revremark>Cherrypicked best bets, and analyzed per weekday, less chapters</revremark>
       </revision>
+      <revision>
+        <revnumber>0.20</revnumber>
+        <date>2019-09-21</date>
+        <authorinitials>bnl</authorinitials>
+        <revremark>Totally new bets include</revremark>
+      </revision>
       
     </revhistory>
   </info>
@@ -57,6 +63,10 @@
   <xi:include href='inifile.xml'/>
   <xi:include href='plots.xml'/>
 
+  <xi:include href='horse_back_1_10_07_1_2_plc_1_01.chapter'/>
+  <xi:include href='horse_back_1_28_02_1_2_plc_1_01.chapter'/>
+  
+<!--
   <xi:include href='horses_win_lay1_gb_6.chapter'/>
   <xi:include href='horses_win_lay3_gb_12.chapter'/>
   <xi:include href='horses_win_lay4_gb_12.chapter'/>
@@ -64,6 +74,7 @@
   <xi:include href='horses_win_fav2_gb_8.chapter'/>
   <xi:include href='horses_win_fav5_gb_11.chapter'/>
   <xi:include href='hounds_plc_lay6_gb_8.chapter'/>
+-->
   
   <xi:include href='database_description.xml'/>
 
