@@ -75,8 +75,8 @@ proc getRelations {Connection The_Table} {
 }
 
 
-proc ExtractDefinition { db {host "localhost"} {port "5432"} } {
-    set conn [pg_connect $db -host $host -port $port]
+proc ExtractDefinition { db {host "localhost"} {port "5432"} {passwd ""} } {
+    set conn [pg_connect $db -host $host -port $port -password $passwd]
     #Put all tables in list
     set res [pg_exec $conn \
     "SELECT  c.relname as Name \
@@ -113,5 +113,7 @@ proc ExtractDefinition { db {host "localhost"} {port "5432"} } {
 }
 
 #Main
-ExtractDefinition [lindex $argv 0]
+#ExtractDefinition [lindex $argv 0]
+#ExtractDefinition "bnl" "192.168.1.7" 5432 "ld4BC9Q51FU9CYjC21gp"
+ExtractDefinition "bnl" "192.168.1.20" 5432 "bnl"
  

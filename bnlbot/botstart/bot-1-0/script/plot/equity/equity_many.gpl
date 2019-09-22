@@ -22,7 +22,7 @@ set xdata time
 set timefmt  "%Y-%m-%d %H:%M:%S"
 set format x "%Y-%m-%d"
 
-set xtics rotate by 45 offset 0, -5
+set xtics 30*86400 rotate by 90 offset 0, -5
 set xlabel "Datum" offset 0,-4
 set bmargin 8
 

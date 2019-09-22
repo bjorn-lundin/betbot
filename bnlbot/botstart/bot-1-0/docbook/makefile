@@ -4,15 +4,10 @@
 #                                                                             #
 ###############################################################################
 
-POWERDAYSLIST := 114 214 314 121 221 321 128 228 328 135 235 335
+#POWERDAYSLIST := 114 214 314 121 221 321 128 228 328 135 235 335
 SOURCES := report.xml preface.xml plots.xml database_description.xml \
-  horses_win_lay1_gb_6.chapter \
-  horses_win_lay3_gb_12.chapter \
-  horses_win_lay4_gb_12.chapter \
-  horses_win_lay6_gb_15.chapter \
-  horses_win_fav2_gb_8.chapter \
-  horses_win_fav5_gb_11.chapter \
-  hounds_plc_lay6_gb_8.chapter
+  horse_back_1_28_02_1_2_plc_1_01.chapter \
+  horse_back_1_10_07_1_2_plc_1_01.chapter 
   
 
 #           horses_plc_lay4_ie.chapter \

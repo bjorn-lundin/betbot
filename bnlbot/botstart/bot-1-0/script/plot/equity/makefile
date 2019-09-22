@@ -7,6 +7,17 @@
 BET_NAMES_DRY := \
 PLC_x4_1.56_00.00_1.01_1_Pln \
 
+BET_NAMES_DRY := \
+PLC_x4_1.54_03.00_1.01_1_Pln \
+PLC_x4_1.38_03.00_1.01_1_Pln \
+
+
+#PLC_B2_1.28_02.00_1.01_1 \
+#PLC_B2_1.24_02.00_1.01_1 \
+#PLC_B2_1.26_02.00_1.01_1 \
+#PLC_B2_1.22_02.00_1.01_1
+
+
 BET_NAMES := $(BET_NAMES_DRY)
 
 DATS := $(foreach i,$(BET_NAMES), $(i).dat)
@@ -70,7 +81,7 @@ png_top: $(DATS)
 #                                 --saldo=$(SALDO) > $*.dat
 
 %.dat:
-	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity --side=LAY > $*.dat
+	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity  > $*.dat
 
 
 %.png: $(DATS)
