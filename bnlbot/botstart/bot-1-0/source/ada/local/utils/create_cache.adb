@@ -125,7 +125,7 @@ begin
     when Horse | Hound =>
       loop
         exit when Current_Date > Date_Stop;
-        Sim.Fill_Data_Maps (Current_Date, Animal => Animal);
+        Sim.Fill_Data_Maps (Current_Date, Animal => Animal, rewards => false, racetimes => false);
         Current_Date := Current_Date + One_Day;
       end loop;
 

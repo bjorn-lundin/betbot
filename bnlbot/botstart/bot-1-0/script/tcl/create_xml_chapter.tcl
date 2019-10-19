@@ -49,7 +49,7 @@ foreach Bet_Name $Bet_Name_List {
         max(b.startts)::date - min(b.startts)::date  + 1 as days, \
         round(count('a')/(max(b.startts)::date - min(b.startts)::date  + 1)::numeric,1) as betsperday, \
         round((sum(profit)/(max(b.startts)::date - min(b.startts)::date  + 1))::numeric, 0) as profitperday, \
-        e.countrycode, \
+        count('b'), \
         b.betname, \
         case \
           when b.betname like '%LAY%' then round((sum(b.profit)/(avg(b.sizematched)* (avg(b.pricematched) -1)))::numeric, 0) \
@@ -57,21 +57,15 @@ foreach Bet_Name $Bet_Name_List {
         end as riskratio ,  \
         avg(b.sizematched) as avg_size \
       from \
-        abets b, amarkets m, aevents e \
+        abets b \
       where \
         b.startts::date > '2013-07-30' \
         and b.status = 'SETTLED' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \
-        and b.marketid = m.marketid \
-        and m.eventid = e.eventid \
       group by \
-        e.countrycode, \
         b.betname \
-      having sum(b.profit) > -100000000.0 \
-      order by \
-        e.countrycode "
-        
+      having sum(b.profit) > -100000000.0"
     #puts stderr $query    
     set res [pg_exec $::conn $query]
 
@@ -94,7 +88,7 @@ foreach Bet_Name $Bet_Name_List {
     puts "<entry>num(Days)</entry><entry>Bets/Day</entry><entry>Profit/Day</entry></row></thead><tbody>"
 
     foreach Tuple $Tuples {
-      puts "<row><entry>[lindex $Tuple 10]</entry><entry>[lindex $Tuple 12]</entry><entry>[lindex $Tuple 0]</entry>"
+      puts "<row><entry>no country</entry><entry>[lindex $Tuple 12]</entry><entry>[lindex $Tuple 0]</entry>"
       puts "<entry>[lindex $Tuple 1]</entry><entry>[lindex $Tuple 2]</entry><entry>[lindex $Tuple 3]</entry>"
       puts "<entry>-</entry><entry>[lindex $Tuple 5]</entry><entry>[lindex $Tuple 6]</entry>"
       puts "<entry>[lindex $Tuple 7]</entry><entry>[lindex $Tuple 8]</entry><entry>[lindex $Tuple 9]</entry></row>"
@@ -109,14 +103,12 @@ foreach Bet_Name $Bet_Name_List {
         extract(dow from b.startts ) as weekday, \
         count(b.profit) as count \
       from \
-        abets b, amarkets m, aevents e \
+        abets b
       where \
         b.startts::date > '2013-07-30' \
         and b.status = 'SETTLED' \
         and b.betwon is not null \
         and b.betname = '[string toupper $Bet_Name]' \
-        and b.marketid = m.marketid \
-        and m.eventid = e.eventid \
       group by \
         b.betname, \
         weekday \
