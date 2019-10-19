@@ -21,7 +21,7 @@
         <Column Name="startts"        AllowNull="1" Description="start ts according to market"/>
         <Column Name="betplaced"      AllowNull="1" Description="when bet was placed"/>
         <Column Name="pricematched"   AllowNull="0" Description="matched price"/>
-        <Column Name="sizematched"    AllowNull="0" Description="size price"/>        
+        <Column Name="sizematched"    AllowNull="0" Description="size price"/>
         <Column Name="runnername"     AllowNull="0" Description="name of runner"/>
         <Column Name="fullmarketname" AllowNull="0" Description="name of market"/>
         <Column Name="svnrevision"    AllowNull="0" Description="svn revision of bot"/>
@@ -36,5 +36,6 @@
         <Index Columns="betname" type="index"/>
         <Index Columns="status" type="index"/>
         <Index Columns="reference" type="index"/>
+        <Index Columns="date_part('month'::text, betplaced)" type="functional"/>
     </Table>
 </BnlBot>
