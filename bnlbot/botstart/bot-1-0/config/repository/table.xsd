@@ -28,13 +28,14 @@
             <xs:enumeration value='primary'/>
             <xs:enumeration value='unique'/>
             <xs:enumeration value='index'/>
-        </xs:restriction>
+            <xs:enumeration value='functional'/>
+       </xs:restriction>
     </xs:simpleType>
 
 
   <xs:complexType name='indexType'>
-     <xs:attribute name='Columns'  type='xs:normalizedString'  use='required'/>
-     <xs:attribute name='type'     type='xcl:indexTypeType' use='required'/>
+     <xs:attribute name='Columns'  type='xs:normalizedString' use='required'/>
+     <xs:attribute name='type'     type='xcl:indexTypeType'   use='required'/>
   </xs:complexType>
 
   

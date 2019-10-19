@@ -332,9 +332,10 @@ package body Repository.Table is
                 if Utils.Lower_Case(Column_Name) = Col.Name.Lower_Case  then
 
                   case Idx.Type_Of is
-                    when I.Primary => Col.Primary := True;
-                    when I.Index   => Col.Indexed := True;
-                    when I.Unique  => Col.Unique  := True;
+                    when I.Primary     => Col.Primary    := True;
+                    when I.Index       => Col.Indexed    := True;
+                    when I.Unique      => Col.Unique     := True;
+                    when I.Functional  => Col.Functional := True;
                   end case;
                 end if;
               end loop;
@@ -494,6 +495,12 @@ package body Repository.Table is
           Put_Line("  " & Idx.Columns.Fix_String);
           Put_Line(")");
           Put_Line("/");
+
+        when I.Functional =>
+          Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
+          Put_Line("  " & Idx.Columns.Fix_String);
+          Put_Line(")");
+          Put_Line("/");
       end case;
 
       Put_Line("");
@@ -598,6 +605,12 @@ package body Repository.Table is
           Put_Line("  " & Idx.Columns.Fix_String);
           Put_Line(")");
           Put_Line("go");
+
+        when I.Functional =>
+          Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on " & Self.Name.Fix_String & " (");
+          Put_Line("  " & Idx.Columns.Fix_String);
+          Put_Line(")");
+          Put_Line("go");
       end case;
 
       Put_Line("");
@@ -686,6 +699,11 @@ package body Repository.Table is
           Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
           Put_Line(");");
+
+        when I.Functional =>
+          Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
+          Put_Line("  " & Idx.Columns.Fix_String);
+          Put_Line(");");
       end case;
 
       Put_Line("");
@@ -768,7 +786,7 @@ package body Repository.Table is
             Put_Line("                " & Quote(Keyword.Lower_Case & " " & Col.Name.Upper_Case & " =:" & Col.Name.Upper_Case & " ")  & " &" );
             Keyword.Set("and");
           end if;
-        when I.Index => raise Configuration_Error with "Keyed_Sql_Statement: " & Key'Img & " " & Col.Name.Camel_Case;
+        when I.Index | I.Functional => raise Configuration_Error with "Keyed_Sql_Statement: " & Key'Img & " " & Col.Name.Camel_Case;
       end case;
     end loop;
 
@@ -850,7 +868,7 @@ package body Repository.Table is
                 raise Configuration_Error with "Not supported datatype: " &  Data_Type(Col.Type_Of)'Img;
             end case;
           end if;
-        when I.Index => raise Configuration_Error with "Keyed_Sql_Statement: " & Key'Img & " " & Col.Name.Camel_Case;
+        when I.Index | I.Functional => raise Configuration_Error with "Keyed_Sql_Statement: " & Key'Img & " " & Col.Name.Camel_Case;
       end case;
     end loop;
 
@@ -1042,9 +1060,9 @@ package body Repository.Table is
     begin
       Code_Debug(" -- Start Set_All_Columns_But_Pk.Set_Null");
       case Data_Type(Col.Type_Of) is
-        when A_Char .. A_Short_Code | A_Clob => 
+        when A_Char .. A_Short_Code | A_Clob =>
           Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
-        when A_Date .. A_Timestamp           => 
+        when A_Date .. A_Timestamp           =>
           Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
         when others =>  raise Configuration_Error with "Not supported datatype: " &  Data_Type(Col.Type_Of)'Img;
       end case;
@@ -1120,11 +1138,11 @@ package body Repository.Table is
           Put_Line("    end if;");
           Set_Non_Null(Col,Stm_Name);
         else
-          case Data_Type(Col.Type_Of) is            
+          case Data_Type(Col.Type_Of) is
             when A_Boolean    =>
               -- call boolean cannot be null here
               Set_Non_Null(Col,Stm_Name);
-            when others =>       
+            when others =>
               case Data_Type(Col.Type_Of) is
                 when A_Char    =>
                   Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
@@ -1135,9 +1153,9 @@ package body Repository.Table is
             Put_Line("    else");
             Set_Non_Null(Col,Stm_Name);
             Put_Line("    end if;");
-          end case;            
+          end case;
         end if;
-        
+
       else --not nullable
 
         if Col.Name.Lower_Case = "ixxlupd" then
@@ -1170,9 +1188,9 @@ package body Repository.Table is
     begin
       Code_Debug(" -- Start Set_All_Columns_Incl_Pk.Set_Null");
       case Data_Type(Col.Type_Of) is
-        when A_Char .. A_Double | A_Short_Code | A_Clob => 
+        when A_Char .. A_Double | A_Short_Code | A_Clob =>
           Put_Line("      " & Stm_Name & ".Set_Null(" & Quote(Col.Name.Upper_Case) & ");");
-        when A_Date .. A_Timestamp           => 
+        when A_Date .. A_Timestamp           =>
           Put_Line("      " & Stm_Name & ".Set_Null_Date(" & Quote(Col.Name.Upper_Case) & ");");
         when others =>  raise Configuration_Error with "Not supported datatype: " &  Data_Type(Col.Type_Of)'Img;
       end case;
@@ -1244,9 +1262,9 @@ package body Repository.Table is
               Put_Line("  -- call  Set_Non_Null start boolean");
               Set_Non_Null(Col,Stm_Name);
               Put_Line("  -- call  Set_Non_Null stop boolean");
-            when others =>       
+            when others =>
               Put_Line("  -- call  not boolean");
-            
+
               case Data_Type(Col.Type_Of) is
                 when A_Char    =>
                   Put_Line("    if " & "Data." & Col.Name.Camel_Case & " = " &  Null_Value_For_Type_At_Comparison(Data_Type(Col.Type_Of), Col.Size_Of, "Data." & Col.Name.Fix_String) & " then");
@@ -1257,7 +1275,7 @@ package body Repository.Table is
               Put_Line("    else");
               Set_Non_Null(Col,Stm_Name);
               Put_Line("    end if;");
-          end case;            
+          end case;
         end if;
 
       else --not nullable
@@ -1329,7 +1347,7 @@ package body Repository.Table is
     Put_Line("with Gnatcoll.Json; use Gnatcoll.Json;");
     Put_Line("with Types, Calendar2, Sql;");
     Put_Line("with Table_Utils;  --All tables inherit from here");
-    
+
     Put_Line("");
     Put_Line("pragma Elaborate_All(Calendar2);");
     Put_Line("");
@@ -1799,6 +1817,7 @@ package body Repository.Table is
         when I.Primary =>  Primary_Procs_Spec(Idx, Self.Name) ;
         when I.Unique  =>  Unique_Procs_Spec(Idx, Self.Name) ;
         when I.Index   =>  Index_Procs_Spec(Idx, Self.Name) ;
+        when I.Functional => null;
       end case;
       Put_Line("");
     end loop;
@@ -2076,6 +2095,7 @@ package body Repository.Table is
         when I.Primary => Primary_Procs_Lists_Spec(Idx, Self.Name) ;
         when I.Unique  => Unique_Procs_Lists_Spec(Idx, Self.Name) ;
         when I.Index   => Index_Procs_Lists_Spec(Idx, Self.Name) ;
+        when I.Functional => null;
       end case;
       Put_Line("");
     end loop;
@@ -2221,6 +2241,7 @@ package body Repository.Table is
                 Idx_Fields_2.Set(Idx_Fields.Fix_String);
                 Put_Line("  Stm_Delete" & Idx_Fields_2.Fix_String & ": Sql.Statement_Type;");
               end if;
+            when I.Functional => null;
           end case;
           Put_Line("");
         end loop;
@@ -3207,6 +3228,7 @@ package body Repository.Table is
         when I.Primary => Primary_Procs_Body(Idx, Self.Name);
         when I.Unique  => Unique_Procs_Body(Idx, Self.Name);
         when I.Index   => Index_Procs_Body(Idx, Self.Name);
+        when I.Functional => null;
       end case;
       Put_Line("");
     end loop;
@@ -3362,7 +3384,7 @@ package body Repository.Table is
     Put_Line("          " & Quote("") & ";");
     Put_Line("  end To_String;");
     Put_Line("");
-    --------  
+    --------
     Put_Line("  function To_JSON(Data : in Table_" & Self.Name.Camel_Case & ".Data_Type) return JSON_Value is");
     Put_Line("    Json_Data : JSON_Value := Create_Object;");
     Put_Line("  begin");
@@ -3382,7 +3404,7 @@ package body Repository.Table is
           Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Data." & Col.Name.Camel_Case & ".To_String);");
         when A_Timestamp =>
           Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Data." & Col.Name.Camel_Case & ".To_String);");
-        when A_Clob .. A_Blob | A_Char_Code => 
+        when A_Clob .. A_Blob | A_Char_Code =>
           Put_Line( "          " & Quote(Col.Name.Lower_Case & " = not supported datatype for JSON " & Data_Type(Col.Type_Of)'Img) & " & "  & Quote(" ") & " &");
       end case;
     end loop;
@@ -3394,7 +3416,7 @@ package body Repository.Table is
     Put_Line("  function From_JSON(JSON_Data : in JSON_Value) return Table_" & Self.Name.Camel_Case & ".Data_Type is");
     Put_Line("    use Ada.Strings;");
     Put_Line("    Data : Table_" & Self.Name.Camel_Case & ".Data_Type;");
-    
+
     Put_Line("  begin");
     for Col of Self.Columns loop
       case Data_Type(Col.Type_Of) is
@@ -3402,70 +3424,70 @@ package body Repository.Table is
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      Move( Source => JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & "), Target => Data." & Col.Name.Camel_Case & " , Drop => Right);");
           Put_Line("    end if;");
-          
+
         when A_Int | A_Long | A_Short_Code =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : Long_Long_Integer := 0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_4(Tmp);");                
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_4(Tmp);");
           Put_Line("      end;");
           Put_Line("    end if;");
-          
+
         when A_Big_Int =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : Long_Long_Integer := 0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_8(Tmp);");                
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_8(Tmp);");
           Put_Line("      end;");
           Put_Line("    end if;");
-          
+
         when A_Boolean =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("        Data." & Col.Name.Camel_Case & " := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("    end if;");
-          
+
         when A_Float .. A_Double =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : Float := 0.0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Fixed_Type(Tmp);");                
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Fixed_Type(Tmp);");
           Put_Line("      end;");
           Put_Line("    end if;");
-          
+
         when A_Date =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : String := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("      begin  -- " & Quote("marketStartTime") & ":" & Quote("2013-06-22T17:39:00.000Z"));
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");         
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");
           Put_Line("      end;");
           Put_Line("    end if;");
-          
+
         when A_Time =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : String := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("      begin  -- " & Quote("marketStartTime") & ":" & Quote("2013-06-22T17:39:00.000Z"));
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");         
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");
           Put_Line("      end;");
           Put_Line("    end if;");
-          
+
         when A_Timestamp =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
           Put_Line("        Tmp : String := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("      begin  -- " & Quote("marketStartTime") & ":" & Quote("2013-06-22T17:39:00.000Z"));
-          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");         
+          Put_Line("        Data." & Col.Name.Camel_Case & " := Calendar2.To_Time_Type(Tmp(1..10), Tmp(12..23));");
           Put_Line("      end;");
           Put_Line("    end if;");
 
-        when A_Clob .. A_Blob | A_Char_Code => 
+        when A_Clob .. A_Blob | A_Char_Code =>
           Put_Line( "          " & Quote(Col.Name.Lower_Case & " = not supported datatype for JSON " & Data_Type(Col.Type_Of)'Img) & " & "  & Quote(" ") & " &");
       end case;
      Put_Line("");
@@ -3473,10 +3495,10 @@ package body Repository.Table is
     Put_Line("    return Data;");
     Put_Line("  end From_JSON;");
     Put_Line("");
-    
-  ---------------    
-    
-    
+
+  ---------------
+
+
     Put_Line("  function To_Xml(Data      : in Table_" & Self.Name.Camel_Case & ".Data_Type;");
     Put_Line("                  Ret_Start : in Boolean;");
     Put_Line("                  Ret_Data  : in Boolean;");
@@ -3707,7 +3729,7 @@ package body Repository.Table is
                           First_Stm_Row => "select * from " & Table_Name.Upper_Case,
                           Order_By_PK   => True,
                           Field_List    => Idx.Column_List);
-                          
+
       Set_Index_Sql_Statement(T => Self, Stm_Name => Stm.Fix_String, Field_List => Idx.Column_List );
 
 
@@ -4081,6 +4103,7 @@ package body Repository.Table is
         when I.Primary => Primary_Procs_Lists_Body(Idx, Self.Name) ;
         when I.Unique  => Unique_Procs_Lists_Body(Idx, Self.Name) ;
         when I.Index   => Index_Procs_Lists_Body(Idx, Self.Name) ;
+        when I.Functional => null;
       end case;
       Put_Line("");
     end loop;
