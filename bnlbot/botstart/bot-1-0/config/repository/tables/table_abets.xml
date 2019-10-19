@@ -36,6 +36,8 @@
         <Index Columns="betname" type="index"/>
         <Index Columns="status" type="index"/>
         <Index Columns="reference" type="index"/>
+        <Index Columns="date_part('year'::text, betplaced)" type="functional"/>
         <Index Columns="date_part('month'::text, betplaced)" type="functional"/>
+        <Index Columns="date_part('day'::text, betplaced)" type="functional"/>
     </Table>
 </BnlBot>
