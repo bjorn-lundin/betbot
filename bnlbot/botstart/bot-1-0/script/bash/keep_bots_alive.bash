@@ -263,12 +263,55 @@ function Create_Plots () {
   #move to user area and cleanup, and to web server
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
-  if [ ${USR} == "bnl" ] ; then 
+  if [ ${USR} == "bnl" ] ; then
     cp *.png ${BOT_START}/bot-1-0/source/ada/bot_ws/html/img/
   fi
   rm *.png
   cd ${old_pwd}
 }
+
+function check_stuck_markets_fetcher () {
+ #  return 0
+  #check that marketfetcher is not stuck
+  logfile=$BOT_HOME/log/markets_fetcher.log
+  md5file=$BOT_HOME/log/markets_fetcher.md5
+  pidfile=$BOT_HOME/locks/markets_fetcher
+
+#  echo "---123--------"
+
+  [ ! -r ${md5file} ] && echo "dummy" > ${md5file}
+
+#  echo "---md5--------"
+#  cat  ${md5file}
+#  echo "-----------"
+
+  this_sum1=$(md5sum ${logfile})
+  last_sum1=$(cat ${md5file})
+
+  this_sum=$(echo ${this_sum1} | cut -d' ' -f1)
+  last_sum=$(echo ${last_sum1} | cut -d' ' -f1)
+
+#  echo "---this_sum--------"
+#  echo  ${this_sum}
+#  echo "---last_sum--------"
+#  echo  ${last_sum}
+#  echo "-----------"
+
+
+  if [ "${this_sum}" == "${last_sum}" ] ; then
+    echo "do kill stuck markets_fetcher"
+    pid=$(cat ${pidfile} | cut -d'|' -f1)
+#    echo "killing pid $pid"
+    kill -term $pid
+    sleep 1
+    kill -kill $pid
+  else
+#    echo "md5 is different"
+    :
+  fi
+  echo $this_sum > ${md5file}
+}
+
 
 
 # start here
@@ -294,6 +337,13 @@ fi
 
 case $BOT_MACHINE_ROLE in
   PROD)
+    # reboot each night. Postgres did lock up once and lock kept by dead processes
+    if [ $HOUR == "02" ] ; then
+      if [ $MINUTE == "01" ] ; then
+        sudo service postgresql stop
+        sudo reboot
+      fi
+    fi
     #check the bots, and startup if  necessary
     USER_LIST_PLAYERS_ONLY="bnl jmb msm"
     SYSTEM_USER_LIST="dry"
@@ -302,7 +352,7 @@ case $BOT_MACHINE_ROLE in
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
       if [ $HOUR == "12" ] ; then
-        if [ $MINUTE == "43" ] ; then
+        if [ $MINUTE == "57" ] ; then
           #Create_Plots $USR 7
           Create_Plots $USR 42
         fi
@@ -313,10 +363,12 @@ case $BOT_MACHINE_ROLE in
           Create_Plots $USR 42
         fi
       fi
+      # was lock in db held by dead? psql check_stuck_markets_fetcher
     done
 
     for USR in $SYSTEM_USER_LIST ; do
       Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
+      check_stuck_markets_fetcher
     done
 
   ;;
