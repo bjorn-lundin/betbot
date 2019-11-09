@@ -16,6 +16,7 @@ alias mcedit='mcedit -c'
 
 alias stop_bet_checker='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit'
 alias stop_markets_fetcher='$BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
+alias stop_bot_ws='$BOT_TARGET/bin/bot_send --receiver=bot_ws --message=exit'
 
 alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
                  $BOT_TARGET/bin/bot_send --receiver=poll_02 --message=exit && \
@@ -32,31 +33,31 @@ alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
                  $BOT_TARGET/bin/bot_send --receiver=poll_13 --message=exit && \
                  $BOT_TARGET/bin/bot_send --receiver=poll_14 --message=exit'
 
-alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=play_market_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=play_market_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=play_market_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
+#alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=play_market_1 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=play_market_2 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=play_market_3 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
+#                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
 
-alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
+#alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
+alias stop_bet_placer_001='$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit'
+alias stop_bet_placer_002='$BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit'
+alias stop_bet_placer_003='$BOT_TARGET/bin/bot_send --receiver=bet_placer_003 --message=exit'
+alias stop_bet_placer_004='$BOT_TARGET/bin/bot_send --receiver=bet_placer_004 --message=exit'
+alias stop_bet_placer_005='$BOT_TARGET/bin/bot_send --receiver=bet_placer_005 --message=exit'
+alias stop_bet_placer_006='$BOT_TARGET/bin/bot_send --receiver=bet_placer_006 --message=exit'
+alias stop_bet_placer_007='$BOT_TARGET/bin/bot_send --receiver=bet_placer_007 --message=exit'
+alias stop_bet_placer_008='$BOT_TARGET/bin/bot_send --receiver=bet_placer_008 --message=exit'
+alias stop_bet_placer_009='$BOT_TARGET/bin/bot_send --receiver=bet_placer_009 --message=exit'
 alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_031 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_032 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_033 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_034 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_110 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_111 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_112 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_123 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_126 --message=exit'
 
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
                      
@@ -71,67 +72,13 @@ alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
-
-
-alias stop_all_bots='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bot --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_031 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_032 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_033 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_034 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_110 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_111 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_112 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_123 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=bet_placer_126 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_4 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_5 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_6 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_7 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_8 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_2 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=gh_poll_3 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=menu_parser --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s01 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s02 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s03 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s04 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s05 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s06 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s07 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s08 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s09 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s10 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s11 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s12 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s13 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s14 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s15 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s16 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s17 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s18 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s19 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=poll_market_s20 --message=exit && \
-                     $BOT_TARGET/bin/bot_send --receiver=markets_fetcher --message=exit'
-                  
-
-                     
+                     $BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'                    
 
 alias crp='$BOT_SCRIPT/bash/crp.bash'
 
 alias chguser='. $BOT_START/bot.bash $1'
 
-alias awspsql='psql --host=db.nonodev.com --dbname=bnl'
-
+alias awspsql='psql --host=lundin.duckdns.org --dbname=bnl'
 
 
 alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --message=exit && \
@@ -144,3 +91,16 @@ alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --m
                            $BOT_TARGET/bin/bot_send --receiver=poll_market_8 --message=exit'
 
 
+                           
+                           
+#function stop_bots  {
+#  while read line
+#  do
+#    if [ ! -z $line ] ; then 
+#      echo "$line"
+#    fi
+#  done 
+#}  < crp | awk '{print $9}'
+
+                     
+                           
