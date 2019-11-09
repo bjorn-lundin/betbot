@@ -20,85 +20,45 @@ project Adabot is
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
    System_Mains := ("repo.adb",
-                   -- "bot.adb",
                     "bot_send.adb",
-                   -- "test_ssl.adb",
                     "poll.adb",
                     "race_time.adb",
                     "poll_market.adb",
-                  --  "poll_gh_market.adb",
-                   -- "poll_soccer.adb",
                     "markets_fetcher.adb",
-                  --  "markets_fetcher_greyhounds.adb",
                     "saldo_fetcher.adb",
-                    "aws_mail.adb",
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
                     "bet_checker.adb",
                     "graph_data.adb",
-                    "graph_data_ael.adb",
+                   -- "graph_data_ael.adb",
                     "stat_maker.adb",
-                  --  "poll_bounds.adb",
                     "bot_web_server.adb",
-                  --  "menu_parser.adb",
-                --    "football_live_feed.adb",
                     "check_bot_running.adb"
                     );
 
    Stat_Mains   := (
---                    "update_back_plc_bets.adb",
                     "create_cache.adb",
---                   "back_after_progress.adb",
-                    "back_during_race_1.adb",
-                    "back_during_race_2.adb",
-                    "update_bet_outcome.adb",
-                    "back_during_race_1_lay_limit.adb",
-                    "back_during_race_1_update_place.adb",
-                    "back_during_race_7.adb",
---                    "price_graph_during_race_year_month.adb",
---                    "bet_during_race_1.adb",
---                    "bet_during_race_2.adb",
---                    "bet_during_race_3.adb",
---                    "bet_during_race_4.adb",
---                    "bet_during_race_5.adb",
---                    "do_stats_1.adb",
---                    "do_stats_2.adb",
---                    "delete_duplicate_bets.adb",
-                    "lay_at_start.adb",
-                    "lay_during_race3.adb",
-                    "lay_num_2.adb",
-                    "lay_num_4.adb",
-                    "lay_losers_1.adb",
---                    "check_greed.adb",
-                    "check_high_lay_odds.adb",
                     "race_length.adb",
                     "race_data.adb",
---                    "insert_midrace.adb",
                     "show_race_lengths.adb",
-                    "bet_at_fixed_timings.adb",
---                   "sample_percent_1.adb",
-                    "graph_data_3.adb",
                     "rewards.adb",
---                    "check_ratio_favorites_on_place.adb",
-                    "split_to_ai.adb",
-                    "split_to_ai_mlrl.adb",
                     "print_win_place_markets.adb",
-                    "parse_football_live_feed.adb",
-                  --  "test_bot_services.adb",
-                  --  "pussel.adb",
                     "lay_and_back_after_progress.adb"
                    );
 
    Display_Mains :=  ("race_time.adb");
+
    Other_Mains :=  ( "markets_sender.adb",
                  --    "telescope_server.adb",
+                 --   "split_to_ai.adb",
+                 --   "split_to_ai_mlrl.adb",
                  --    "fix_database.adb",
                   --   "eat_mem.adb",
                   --   "crunch_trig.adb",
                   --   "copy_photos.adb",
                      "price_to_tics.adb"   );
 
-   Test_Programs := ("test_string_object.adb");
+   Test_Programs := (); --("test_string_object.adb");
 
    case Bot_Machine_Role is
       when "PROD"       =>  for Main use System_Mains;
