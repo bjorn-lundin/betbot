@@ -116,36 +116,28 @@ begin
         elsif M.Markettype(1) = 'P' then
           Race_Type := Plc;
         else
-          raise Constraint_Error with "bad racetype" & M.To_String;
+          raise Constraint_Error with "bad racetype " & M.To_String;
         end if;
 
         Found := False;
         case Race_Type is
           when Win =>
             Market := M;
-            Found := True;
+            Ok := Market.Marketname_Ok and then Sim.Prices_Map.Length >= 8;
           when Plc =>
-            M.Corresponding_Place_Market(Market,Found );
+            M.Corresponding_Win_Market(Market,Found ); -- check plc market is an ok one
+            Ok := Market.Marketname_Ok and then Found and then Sim.Prices_Map.Length >= 8;
+            Market := M; -- to get plc-market back
         end case;
 
-         Ok := Market.Marketname_Ok and then Sim.Prices_Map.Length >= 8;
 
         if Ok then
-         -- Log("    -Treat market " & Market.To_String );
-
-          if Market.Markettype(1) = 'W' then
-            Race_Type := Win;
-          elsif Market.Markettype(1) = 'P' then
-            Race_Type := Plc;
-          else
-            raise Constraint_Error with "bad racetype" & Market.To_String;
-          end if;
 
           Result.Num_Races(Race_Type) := Result.Num_Races(Race_Type) +1;
 
           declare
             Price_Data : array (Rank_Type'Range) of Prices.Price_Type;
-
+            use type Prices.Price_Type;
           begin
             --find runner ranked 1,2,3
             Backprice_Sorter.Sort(Sim.Prices_Map(Market.Marketid));
@@ -170,6 +162,19 @@ begin
                 and then Price_Data(3).Backprice = 0.0
               then
                 Price_Data(3) := P;
+              end if;
+
+              if Price_Data(1) = Price_Data(2) then
+                Log("Price_Data(1) " & Price_Data(1).To_String);
+                raise Constraint_Error with "P(1) = P(2)";
+              end if;
+              if Price_Data(2) = Price_Data(3) then
+                Log("Price_Data(2) " & Price_Data(2).To_String);
+                raise Constraint_Error with "P(2) = P(3)";
+              end if;
+              if Price_Data(1) = Price_Data(3) then
+                Log("Price_Data(1) " & Price_Data(1).To_String);
+                raise Constraint_Error with "P(1) = P(3)";
               end if;
 
             end loop;
