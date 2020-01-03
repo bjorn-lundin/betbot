@@ -138,30 +138,42 @@ begin
           declare
             Price_Data : array (Rank_Type'Range) of Prices.Price_Type;
             use type Prices.Price_Type;
+            Did_Set : array (Rank_Type'Range) of Boolean;
           begin
             --find runner ranked 1,2,3
             Backprice_Sorter.Sort(Sim.Prices_Map(Market.Marketid));
             for P of Sim.Prices_Map(Market.Marketid) loop
 
+              Did_Set := (others => False);
+
               if P.Backprice > 1.0
                 and then Price_Data(1).Backprice = 0.0
+                and then Price_Data(2).Backprice = 0.0
+                and then Price_Data(3).Backprice = 0.0
               then
                 Price_Data(1) := P;
+                Did_Set(1) := True;
               end if;
 
               if P.Backprice > 1.0
+                and then not Did_Set(1)
                 and then Price_Data(1).Backprice /= 0.0
                 and then Price_Data(2).Backprice = 0.0
+                and then Price_Data(3).Backprice = 0.0
               then
                 Price_Data(2) := P;
+                Did_Set(2) := True;
               end if;
 
               if P.Backprice > 1.0
+                and then not Did_Set(1)
+                and then not Did_Set(2)
                 and then Price_Data(1).Backprice /= 0.0
                 and then Price_Data(2).Backprice /= 0.0
                 and then Price_Data(3).Backprice = 0.0
               then
                 Price_Data(3) := P;
+                Did_Set(3) := True;
               end if;
 
               if Price_Data(1) = Price_Data(2) then
