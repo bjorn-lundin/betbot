@@ -143,6 +143,7 @@ begin
             --find runner ranked 1,2,3
             Backprice_Sorter.Sort(Sim.Prices_Map(Market.Marketid));
             for P of Sim.Prices_Map(Market.Marketid) loop
+              Log("P " & P.To_String);
 
               Did_Set := (others => False);
 
@@ -188,6 +189,8 @@ begin
                 Log("Price_Data(1) " & Price_Data(1).To_String);
                 raise Constraint_Error with "P(1) = P(3)";
               end if;
+
+              exit when Did_Set(3);
 
             end loop;
 
