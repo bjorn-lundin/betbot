@@ -92,7 +92,8 @@ begin
      Port     => 5432,
      Db_Name  => "bnl",
      Login    => "bnl",
-     Password => "bnl");
+     Password => "bnl",
+     SSL_Mode => "prefer");
   Log ("Connected to db");
 
   Day_Loop : loop
@@ -138,16 +139,20 @@ begin
           declare
             Price_Data : array (Rank_Type'Range) of Prices.Price_Type;
             use type Prices.Price_Type;
-            Did_Set : array (Rank_Type'Range) of Boolean;
+            Did_Set    : array (Rank_Type'Range) of Boolean;
+            The_List : Prices.Lists.List;
           begin
             --find runner ranked 1,2,3
-            Backprice_Sorter.Sort(Sim.Prices_Map(Market.Marketid));
-            for P of Sim.Prices_Map(Market.Marketid) loop
+            The_List := Sim.Prices_Map(Market.Marketid).Copy;
+            Backprice_Sorter.Sort(The_List);
+
+            for P of The_List loop
               Log("P " & P.To_String);
 
               Did_Set := (others => False);
 
               if P.Backprice > 1.0
+                and then P.Status(1..6) = "ACTIVE"
                 and then Price_Data(1).Backprice = 0.0
                 and then Price_Data(2).Backprice = 0.0
                 and then Price_Data(3).Backprice = 0.0
@@ -157,6 +162,7 @@ begin
               end if;
 
               if P.Backprice > 1.0
+                and then P.Status(1..6) = "ACTIVE"
                 and then not Did_Set(1)
                 and then Price_Data(1).Backprice /= 0.0
                 and then Price_Data(2).Backprice = 0.0
@@ -167,6 +173,7 @@ begin
               end if;
 
               if P.Backprice > 1.0
+                and then P.Status(1..6) = "ACTIVE"
                 and then not Did_Set(1)
                 and then not Did_Set(2)
                 and then Price_Data(1).Backprice /= 0.0
