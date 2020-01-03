@@ -230,6 +230,7 @@ package Sim is
 
   procedure Fill_Rewards_Map(Date   : in     Calendar2.Time_Type;
                              Animal : in     Animal_Type;
+                             Side   : in     Bot_Types.Bet_Side_Type;
                              Rm     :    out Rewards_Maps.Map);
   -- end rewards
 

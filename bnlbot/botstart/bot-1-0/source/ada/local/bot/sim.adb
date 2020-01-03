@@ -949,8 +949,11 @@ package body Sim is
 
   procedure Fill_Rewards_Map(Date   : in     Calendar2.Time_Type;
                              Animal : in     Animal_Type;
+                             Side   : in     Bot_Types.Bet_Side_Type;
                              Rm     :    out Rewards_Maps.Map) is
-    Filename        : String := Date.String_Date_ISO & "/rewards_map.dat";
+    Soside : String_Object:= Create(Side'Img);
+
+    Filename        : String := Date.String_Date_ISO & "/" & Soside.Lower_Case & "_rewards_map.dat";
     package Serializer is new Disk_Serializer(Rewards_Maps.Map, Animal);
 
 --      package Fnames is new Ada.Containers.Doubly_Linked_Lists(Unbounded_String);
@@ -977,7 +980,7 @@ package body Sim is
 
         Scope_File: declare
           -- scope for parsing a single file
-          Path            : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Market_Type & "/rewards";
+          Path            : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Market_Type & "/rewards/" & Soside.Lower_Case;
           Computer_File   : Awk.Session_Type;
           Filename        : String := Path & "/" & Market.Marketid & ".dat";
           Header_Seen     : Boolean := False;
@@ -1172,7 +1175,7 @@ package body Sim is
 
     if Rewards then
       Log("fill Rewards map");
-      Fill_Rewards_Map(Date, Animal, Rewards_Map);
+      Fill_Rewards_Map(Date, Animal, Back, Rewards_Map);
       Log("Found:" & Rewards_Map.Length'Img );
     end if;
 
