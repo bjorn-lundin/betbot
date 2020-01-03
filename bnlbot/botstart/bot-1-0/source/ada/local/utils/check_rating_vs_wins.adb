@@ -16,6 +16,7 @@ with Calendar2;  use Calendar2;
 with Logging; use Logging;
 with Bot_Types;
 --with Bot_System_Number;
+with Markets;
 
 
 procedure Check_Rating_Vs_Wins is
@@ -89,7 +90,7 @@ begin
   Sql.Connect
     (Host     => "localhost",
      Port     => 5432,
-     Db_Name  => "dry",
+     Db_Name  => "bnl",
      Login    => "bnl",
      Password => "bnl");
   Log ("Connected to db");
@@ -103,16 +104,34 @@ begin
 
     declare
       Ok : Boolean := True;
-    --  Bet : Bets.Bet_Type;
+      Market : Markets.Market_Type;
+      Found : Boolean := False;
     begin
       Log("  -num markets " & Day.To_String & " " & Sim.Market_With_Data_List.Length'Img);
 
-      Loop_Market : for Market of Sim.Market_With_Data_List loop
+      Loop_Market : for M of Sim.Market_With_Data_List loop
+
+        if M.Markettype(1) = 'W' then
+          Race_Type := Win;
+        elsif M.Markettype(1) = 'P' then
+          Race_Type := Plc;
+        else
+          raise Constraint_Error with "bad racetype" & M.To_String;
+        end if;
+
+        Found := False;
+        case Race_Type is
+          when Win =>
+            Market := M;
+            Found := True;
+          when Plc =>
+            M.Corresponding_Place_Market(Market,Found );
+        end case;
 
          Ok := Market.Marketname_Ok and then Sim.Prices_Map.Length >= 8;
 
         if Ok then
-          Log("    -Treat market " & Market.To_String );
+         -- Log("    -Treat market " & Market.To_String );
 
           if Market.Markettype(1) = 'W' then
             Race_Type := Win;
