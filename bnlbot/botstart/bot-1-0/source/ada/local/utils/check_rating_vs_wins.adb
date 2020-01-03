@@ -177,15 +177,15 @@ begin
                 Did_Set(3) := True;
               end if;
 
-              if Price_Data(1) = Price_Data(2) then
+              if Price_Data(1) = Price_Data(2) and then Price_Data(1).Backprice > 0.0 then
                 Log("Price_Data(1) " & Price_Data(1).To_String);
                 raise Constraint_Error with "P(1) = P(2)";
               end if;
-              if Price_Data(2) = Price_Data(3) then
+              if Price_Data(2) = Price_Data(3) and then Price_Data(2).Backprice > 0.0 then
                 Log("Price_Data(2) " & Price_Data(2).To_String);
                 raise Constraint_Error with "P(2) = P(3)";
               end if;
-              if Price_Data(1) = Price_Data(3) then
+              if Price_Data(1) = Price_Data(3) and then Price_Data(1).Backprice > 0.0 then
                 Log("Price_Data(1) " & Price_Data(1).To_String);
                 raise Constraint_Error with "P(1) = P(3)";
               end if;
