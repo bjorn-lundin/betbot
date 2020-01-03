@@ -1132,24 +1132,27 @@ package body Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type;
                             Rewards : Boolean := True;
-                            Racetimes : Boolean := True) is
+                            Racetimes : Boolean := True;
+                            Race_Prices : Boolean := True) is
   begin
     Log("fill maps with Date " & Date.String_Date_ISO & " for animal " &  Animal'Img);
     Log("fill list with all valid marketids" );
     Read_All_Markets(Date, Animal, Market_With_Data_List);
     Log("Found:" & Market_With_Data_List.Length'Img );
 
-    Log("fill map with all pricets for a marketid ");
-    Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
-    Log("Found:" & Marketid_Pricets_Map.Length'Img );
+    if Race_Prices then
+      Log("fill map with all pricets for a marketid ");
+      Fill_Marketid_Pricets_Map(Market_With_Data_List, Date, Animal, Marketid_Pricets_Map);
+      Log("Found:" & Marketid_Pricets_Map.Length'Img );
 
-    Log("fill map with map of timestamp list for all marketids ");
-    Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
-                                       Marketid_Pricets_Map,
-                                       Date,
-                                       Animal,
-                                       Marketid_Timestamp_To_Prices_History_Map) ;
-    Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
+      Log("fill map with map of timestamp list for all marketids ");
+      Fill_Marketid_Runners_Pricets_Map (Market_With_Data_List,
+                                         Marketid_Pricets_Map,
+                                         Date,
+                                         Animal,
+                                         Marketid_Timestamp_To_Prices_History_Map) ;
+      Log("Found:" & Marketid_Timestamp_To_Prices_History_Map.Length'Img );
+    end if;
 
     Log("fill map winners ");
     Fill_Winners_Map(Market_With_Data_List, Date, Animal, Winners_Map );
