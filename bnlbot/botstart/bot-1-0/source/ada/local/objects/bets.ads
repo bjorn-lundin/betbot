@@ -6,6 +6,8 @@ with Ada.Containers.Doubly_Linked_Lists;
 with Runners;
 with Markets;
 with Sql;
+with Price_Histories;
+
 
 package Bets is
   function Profit_Today(Bet_Name : Betname_Type) return Fixed_Type ;
@@ -38,6 +40,7 @@ package Bets is
   procedure Check_Outcome ( Self   : in out Bet_Type ;
                             Runner : in     Runners.Runner_Type := Runners.Empty_Data) ;
 
+
   function Empty_Data return Bet_Type;
   package Lists is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
 
@@ -56,6 +59,8 @@ package Bets is
 
   procedure Reset_Sum_Laybets ;
   procedure Sum_Laybets(List : Lists.List; Threshold : Fixed_Type) ;
+
+
 
 
 end Bets;

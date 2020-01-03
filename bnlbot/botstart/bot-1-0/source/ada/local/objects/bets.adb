@@ -8,7 +8,6 @@ with Logging; use Logging;
 with Utils;
 with Bot_System_Number;
 with Bot_Svn_Info;
-with Price_Histories;
 with Rpc;
 
 package body Bets is
@@ -60,8 +59,7 @@ package body Bets is
     End_Date.Second      := 59;
     End_Date.Millisecond := 999;
 
-    Select_Profit_Today.Prepare(
-                                "select sum(PROFIT) " &
+    Select_Profit_Today.Prepare("select sum(PROFIT) " &
                                   "from ABETS " &
                                   "where STARTTS >= :STARTOFDAY " &
                                   "and STARTTS <= :ENDOFDAY " &
@@ -90,8 +88,7 @@ package body Bets is
     Abet : Table_Abets.Data_Type;
   begin
     T.Start;
-    Select_Exists.Prepare(
-                          "select * " &
+    Select_Exists.Prepare("select * " &
                             "from ABETS " &
                             "where MARKETID = :MARKETID " &
                             "and BETNAME = :BETNAME ");
@@ -495,8 +492,7 @@ package body Bets is
     -- check the real bets
     -- BET_STATUS='PRELIMINARY'
     T.Start;
-    Select_Real_Bets.Prepare(
-                             "select min(STARTTS) from ABETS where STATUS = 'PRELIMINARY' ");
+    Select_Real_Bets.Prepare("select min(STARTTS) from ABETS where STATUS = 'PRELIMINARY' ");
 
     Select_Real_Bets.Open_Cursor;
     Select_Real_Bets.Fetch(Eos(Abets));
@@ -723,8 +719,7 @@ package body Bets is
 
   begin
     T.Start;
-    Select_Is_Existing_Marketid_Selectionid.Prepare(
-                                                    "select * from ABETS where MARKETID = :MARKETID and SELECTIONID = :SELECTIONID");
+    Select_Is_Existing_Marketid_Selectionid.Prepare("select * from ABETS where MARKETID = :MARKETID and SELECTIONID = :SELECTIONID");
     Select_Is_Existing_Marketid_Selectionid.Set("MARKETID", Self.Marketid);
     Select_Is_Existing_Marketid_Selectionid.Set("SELECTIONID", Self.Selectionid);
 
@@ -754,6 +749,55 @@ package body Bets is
     end if;
 
   end Sum_Laybets;
+  ------------------------------------------------------------
+
+
+  procedure Check_Matched_No_Db(Self : in out Bet_Type;  List: in out Price_Histories.Lists.List) is
+  begin
+    Select_Ph.Prepare(
+                      "select * " &
+                        "from APRICESHISTORY " &
+                        "where MARKETID = :MARKETID " &
+                        "and SELECTIONID = :SELECTIONID " &
+                        "and PRICETS >= :PRICETS1 " &
+                        "and PRICETS <= :PRICETS2 " &
+                        "order by PRICETS"
+                     );
+
+    Select_Ph.Set("MARKETID", Self.Marketid);
+    Select_Ph.Set("SELECTIONID", Self.Selectionid);
+    Select_Ph.Set("PRICETS1", Self.Betplaced + (0,0,0,1,0)); -- 1 s
+    if Self.Match_Directly then
+      Select_Ph.Set("PRICETS2", Self.Betplaced + (0,0,0,2,0)); -- data 1s..2s from betplaced
+    else -- get the whole race, assume shorter than 9 days
+      Select_Ph.Set("PRICETS2", Self.Betplaced + (9,0,0,0,0)); -- data 1s .. 9 days from betplaced
+    end if;
+    Price_Histories.Read_List(Select_Ph,List);
+
+    for Ph of List loop
+      if Self.Side(1..4) = "BACK" then
+        if Ph.Backprice >= Self.Price and then -- Match ok
+          Ph.Backprice <= Fixed_Type(1000.0) then -- Match ok
+          Self.Pricematched := Ph.Backprice;
+          Move("MATCHED",Self.Status);
+        end if;
+      elsif Self.Side(1..3) = "LAY" then
+        if Ph.Layprice <= Self.Price and then -- Match ok
+          Ph.Layprice >= Fixed_Type(1.01) then
+          Self.Pricematched := Ph.Layprice;
+          Move("MATCHED",Self.Status);
+        end if;
+      end if;
+      exit when Self.Match_Directly or else -- match directly
+        Self.Status(1..7) = "MATCHED";     -- matched
+    end loop;
+    if Self.Status(1) /= 'M' then
+      Move("LAPSED",Self.Status);
+      Self.Pricematched := Fixed_Type(0.0);
+      Self.Profit := 0.0;
+    end if;
+  end Check_Matched_No_Db;
+  ----------------------------------
 
 
 end Bets;

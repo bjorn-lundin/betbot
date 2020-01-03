@@ -187,10 +187,10 @@ Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
 --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
 Race                            :          Text_Io.File_Type;
 --Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
-Start_Date                      :          Calendar2.Time_Type := (2019,4,19,0,0,0,0);
+Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
 One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
 Current_Date                    :          Calendar2.Time_Type := Start_Date;
-Stop_Date                       :          Calendar2.Time_Type := (2019,08,01,0,0,0,0);
+Stop_Date                       :          Calendar2.Time_Type := (2019,12,31,23,59,59,999);
 Cmd_Line                        :          Command_Line_Configuration;
 T                               :          Sql.Transaction_Type;
 begin
