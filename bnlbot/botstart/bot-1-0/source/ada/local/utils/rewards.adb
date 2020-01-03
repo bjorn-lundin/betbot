@@ -307,7 +307,7 @@ begin
           Cnt := Cnt + 1;
 
           declare
-            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards";
+            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards/back";
           begin
             if not Ad.Exists(Path) then
               Ad.Create_Directory(Path);
