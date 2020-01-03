@@ -253,7 +253,8 @@ package Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type;
                             Rewards : Boolean := True;
-                            Racetimes : Boolean := True) ;
+                            Racetimes : Boolean := True;
+                            Race_Prices : Boolean := True) ;
 
 
   procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
