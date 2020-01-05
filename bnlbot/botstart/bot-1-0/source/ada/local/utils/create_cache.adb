@@ -18,14 +18,14 @@ procedure Create_Cache is
   Current_Date : Time_Type := Date_Start - One_Day; -- 1 day
 
   Cmd_Line     : Command_Line_Configuration;
-  Ia_Start_Day     : aliased Integer := 0;
-  Ia_Start_Month   : aliased Integer := 0;
-  Ia_Start_Year    : aliased Integer := 0;
-  Ia_Stop_Day      : aliased Integer := 0;
-  Ia_Stop_Month    : aliased Integer := 0;
-  Ia_Stop_Year     : aliased Integer := 0;
+  Sa_Startdate     : aliased Gnat.Strings.String_Access;
+  Sa_Stopdate      : aliased Gnat.Strings.String_Access;
   Sa_Animal        : aliased Gnat.Strings.String_Access;
+  Ba_Rewards       : aliased Boolean := False;
+
   Animal           : Animal_Type := Horse;
+
+
   package Ev renames Ada.Environment_Variables;
   Db           : String (1..3) := (others => ' ');
 begin
@@ -36,67 +36,43 @@ begin
 
   Define_Switch
     (Cmd_Line,
+     Ba_Rewards'Access,
+     Long_Switch => "--rewards",
+     Help        => "create rewards too?");
+
+  Define_Switch
+    (Cmd_Line,
      Sa_Animal'Access,
      Long_Switch => "--animal=",
      Help        => "horse|hound|human");
-  Define_Switch
-    (Cmd_Line,
-     Ia_Start_Year'Access,
-     Long_Switch => "--startyear=",
-     Help        => "year of date");
 
   Define_Switch
     (Cmd_Line,
-     Ia_Start_Month'Access,
-     Long_Switch => "--startmonth=",
-     Help        => "month of date");
+     Sa_Startdate'Access,
+     Long_Switch => "--startdate=",
+     Help        => "2018-04-06");
 
   Define_Switch
     (Cmd_Line,
-     Ia_Start_Day'Access,
-     Long_Switch => "--startday=",
-     Help        => "day of date");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Stop_Year'Access,
-     Long_Switch => "--stopyear=",
-     Help        => "year of date");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Stop_Month'Access,
-     Long_Switch => "--stopmonth=",
-     Help        => "month of date");
-
-  Define_Switch
-    (Cmd_Line,
-     Ia_Stop_Day'Access,
-     Long_Switch => "--stopday=",
-     Help        => "day of date");
+     Sa_Stopdate'Access,
+     Long_Switch => "--stopdate=",
+     Help        => "2019-06-12");
 
   Getopt (Cmd_Line);  -- process the command line
 
 
-  Log("Sa_Animal.all  " & Sa_Animal.all);
-  Log("Ia_Start_Year " & Ia_Start_Year'Img);
-  Log("Ia_Start_Month" & Ia_Start_Month'Img);
-  Log("Ia_Start_Day  " & Ia_Start_Day'Img);
-  Log("Ia_Stop_Year  " & Ia_Stop_Year'Img);
-  Log("Ia_Stop_Month " & Ia_Stop_Month'Img);
-  Log("Ia_Stop_Day   " & Ia_Stop_Day'Img);
-
-  Date_Start.Year := Year_Type(Ia_Start_Year);
-  Date_Start.Month := Month_Type(Ia_Start_Month);
-  Date_Start.Day := Day_Type(Ia_Start_Day);
-
-  if Ia_Stop_Year > Integer(0) then
-    Date_Stop.Year := Year_Type(Ia_Stop_Year);
-    Date_Stop.Month := Month_Type(Ia_Stop_Month);
-    Date_Stop.Day := Day_Type(Ia_Stop_Day);
-  else
-    Date_Stop  := Calendar2.Clock;
+  if Sa_Startdate.all /= "" then
+    Date_Start := Calendar2.To_Time_Type(Sa_Startdate.all,"");
   end if;
+
+  if Sa_Stopdate.all /= "" then
+    Date_Stop := Calendar2.To_Time_Type(Sa_Stopdate.all,"");
+  end if;
+
+  Log("Sa_Animal.all  " & Sa_Animal.all);
+  Log("start_date '" & Sa_Startdate.all & "'");
+  Log("stop_date  '" & Sa_Stopdate.all & "'");
+  Log("Ba_Rewards     " & Ba_Rewards'Img);
 
   Current_Date := Date_Start; -- 1 day
 
@@ -109,7 +85,7 @@ begin
   elsif Sa_Animal.all = "human" then
     Animal := Human;
   end if;
-  Log ("animal2 " & Animal'Img);
+  Log ("animal " & Animal'Img);
 
   Sql.Connect
     (Host     => "192.168.1.20",
@@ -125,7 +101,7 @@ begin
     when Horse | Hound =>
       loop
         exit when Current_Date > Date_Stop;
-        Sim.Fill_Data_Maps (Current_Date, Animal => Animal, rewards => false, racetimes => false);
+        Sim.Fill_Data_Maps (Current_Date, Animal => Animal, Rewards => Ba_Rewards, Racetimes => False, Race_Prices => True);
         Current_Date := Current_Date + One_Day;
       end loop;
 

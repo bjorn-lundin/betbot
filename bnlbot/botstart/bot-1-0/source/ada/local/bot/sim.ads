@@ -163,7 +163,8 @@ package Sim is
                                 Animal        : in     Animal_Type;
                                 Win_Place_Map :    out Win_Place_Maps.Map);
 
---    package Place_Win_Maps is new Ada.Containers.Hashed_Maps (
+
+  --    package Place_Win_Maps is new Ada.Containers.Hashed_Maps (
 --           Marketid_Type,
 --           Marketid_Type,
 --           Ada.Strings.Hash,
@@ -234,6 +235,22 @@ package Sim is
                              Rm     :    out Rewards_Maps.Map);
   -- end rewards
 
+  -- start timestamp to timestamps win/place markets
+
+  package Wints_Placets_Maps is new Ada.Containers.Hashed_Maps (
+         Timestamp_String_Key_Type,
+         Timestamp_String_Key_Type,
+         Ada.Strings.Hash,
+         "=",
+         "=");
+
+  procedure Fill_Wints_Placets_Map (Date              : in     Calendar2.Time_Type;
+                                    Animal            : in     Animal_Type;
+                                    Wints_Placets_Map :    out Wints_Placets_Maps.Map);
+
+
+
+
 
   --average times for different races
   package Racetime_Maps is new Ada.Containers.Hashed_Maps
@@ -276,5 +293,6 @@ package Sim is
   Racetime_Map                             : Sim.Racetime_Maps.Map;
   Rewards_Map                              : Sim.Rewards_Maps.Map;
 
+  Wints_Placets_Map                        : Sim.Wints_Placets_Maps.Map;
 
 end Sim ;
