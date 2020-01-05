@@ -953,7 +953,7 @@ package body Sim is
                              Rm     :    out Rewards_Maps.Map) is
     Soside : String_Object:= Create(Side'Img);
 
-    Filename        : String := Date.String_Date_ISO & "/" & Soside.Lower_Case & "_rewards_map.dat";
+    Filename_Map        : String := Date.String_Date_ISO & "/" & Soside.Lower_Case & "_rewards_map.dat";
     package Serializer is new Disk_Serializer(Rewards_Maps.Map, Animal);
 
 --      package Fnames is new Ada.Containers.Doubly_Linked_Lists(Unbounded_String);
@@ -961,7 +961,7 @@ package body Sim is
       Market_Type     : String := "win";
   begin
     RM.Clear;
-    if not Serializer.File_Exists(Filename) then
+    if not Serializer.File_Exists(Filename_Map) then
 
       --for all markets this date
       -- put filename in list
@@ -1003,7 +1003,7 @@ package body Sim is
 
           while not Awk.End_Of_File loop
             Awk.Get_Line;
-            Log("Fill_Rewards_Map", Awk.Field(0)) ;
+           -- Log("Fill_Rewards_Map", Awk.Field(0)) ;
 
             if not Header_Seen then
               --treat headers, which col is what selectionid
@@ -1056,14 +1056,71 @@ package body Sim is
         end Scope_File;
 
       end loop Market_Loop;
-      Serializer.Write_To_Disk(Rm, Filename);
+      Serializer.Write_To_Disk(Rm, Filename_Map);
     else
-      Serializer.Read_From_Disk(Rm, Filename);
+      Serializer.Read_From_Disk(Rm, Filename_Map);
     end if;
   end Fill_Rewards_Map;
 
+  -------------------------------------------------------------
+  procedure Fill_Wints_Placets_Map (Date              : in     Calendar2.Time_Type;
+                                    Animal            : in     Animal_Type;
+                                    Wints_Placets_Map :    out Wints_Placets_Maps.Map) is
+    Place_Marketid  : Marketid_Type := (others => ' ');
+    Filename        : String := Date.String_Date_Iso & "/wints_placets_map.dat";
+    package Serializer is new Disk_Serializer(Wints_Placets_Maps.Map, Animal);
+    Plc_Found       : Boolean := False;
+  begin
+    Wints_Placets_Map.Clear;
+    if not Serializer.File_Exists(Filename) then
+
+      Loop_Market_Sim    : for Market of Sim.Market_With_Data_List loop
+
+        if Market.Markettype(1..3) = "WIN" then
+          begin
+            Place_Marketid := Sim.Win_Place_Map(Market.Marketid);
+            Plc_Found := Place_Marketid(1) /= ' ';
+          --  Log("Fill_Wints_Placets_Map", Market.Marketid & " -> " & Place_Marketid);
+          exception
+            when Constraint_Error => Plc_Found := False;
+          end ;
+
+          if Plc_Found then
+            declare
+              Plc_Map : Sim.Marketid_Pricets_Maps.Map := Sim.Marketid_Pricets_Map.Copy; -- make deep copy first
+            begin
+              Loop_Timestamp_Sim_Win : for Timestamp_Win of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+                begin
+                  Loop_Timestamp_Sim_Plc : for Timestamp_Plc of Plc_Map(Place_Marketid) loop
+                    -- find first plc than is larger than win
+                    if Timestamp_Plc > Timestamp_Win then
+                      begin
+                        Wints_Placets_Map.Insert(Timestamp_Win.To_String, Timestamp_Plc.To_String);
+                      exception
+                        when Constraint_Error => null;
+                      end;
+                      exit Loop_Timestamp_Sim_Plc;
+                    end if;
+                  end loop Loop_Timestamp_Sim_Plc;
+                exception
+                  when Constraint_Error => null;
+                end;
+              end loop Loop_Timestamp_Sim_Win;
+            exception
+              when Constraint_Error => null;
+            end;
+          end if;
+        end if;
+      end loop Loop_Market_Sim;
+
+      Serializer.Write_To_Disk(Wints_Placets_Map, Filename);
+    else
+      Serializer.Read_From_Disk(Wints_Placets_Map, Filename);
+    end if;
+  end Fill_Wints_Placets_Map;
 
 
+  -------------------------------------------------------------
 
   package body Disk_Serializer is
     --------------------------------------------------------
@@ -1185,10 +1242,11 @@ package body Sim is
       Log("Found:" & Racetime_Map.Length'Img );
     end if;
 
+    Log("fill map Wints/Placets timestamps ");
+    Fill_Wints_Placets_Map (Date, Animal, Wints_Placets_Map);
+    Log("Found:" & Wints_Placets_Map.Length'Img );
 
- --   Log("fill map Place/win markets ");
- --   Fill_Place_Win_Map(Date, Animal, Place_Win_Map);
- --   Log("Found:" & Place_Win_Map.Length'Img );
+
   end Fill_Data_Maps;
   ------------------------------------------------------------------
 

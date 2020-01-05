@@ -46,8 +46,6 @@ procedure Rewards is
     begin
       for Tmp of List loop
         if Tmp.Status(1..6) = "ACTIVE" then
-        -- Tmp.Backprice > Fixed_Type(1.0) and then
-        -- Tmp.Layprice < Fixed_Type(1_000.0)  then
           Idx := Idx +1;
         exit when Idx > Bra'Last;
         Bra(Idx) := Tmp;
