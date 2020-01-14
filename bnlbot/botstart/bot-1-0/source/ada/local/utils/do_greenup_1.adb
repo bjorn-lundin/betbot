@@ -466,7 +466,7 @@ begin
                           if R.Ph.Selectionid > 0 then
                             R.Plc.Profit := Sim.Rewards_Map(Plc_Market.Marketid)(R.Ph.Selectionid)(Closest_Timestamp_String)/0.95;
                             R.Plc.Marketid := Plc_Market.Marketid;
-                            R.Plc.Betplaced := Calendar2.To_Time_Type(Closest_Timestamp_String,"");
+                            R.Plc.Betplaced := Calendar2.To_Time_Type(Closest_Timestamp_String);
                             R.Plc.Pricematched := 1.0 + (R.Plc.Profit/Global_Back_Size);
                           end if;
                         exception

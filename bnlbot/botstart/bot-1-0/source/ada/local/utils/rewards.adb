@@ -1,18 +1,21 @@
 
-with Types; use Types;
-with Calendar2; use Calendar2;
-
-with Gnat; use Gnat;
-with Text_Io; use Text_Io;
+with Ada.Characters.Handling;
 with Ada.Directories;
-with Stacktrace;
---with Ada.Containers.Doubly_Linked_Lists;
-with Price_Histories;
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Environment_Variables;
+with Text_Io; use Text_Io;
+
+with Gnat; use Gnat;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
+
+with Types; use Types;
+with Calendar2; use Calendar2;
+
+with Stacktrace;
+--with Ada.Containers.Doubly_Linked_Lists;
+with Price_Histories;
 with Ini;
 with Logging; use Logging;
 with Sql;
@@ -175,33 +178,65 @@ begin
   end loop Loop_Ts_Check_Profit;
   return Profit;
 end Check_Profit;
+
+-------------------------------------------------------
+function Check_Profit_Lay (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
+  Is_Winner                       : Boolean := False;
+  use Bot_Types;
+  Profit                          : Profit_Type := 0.0;
+begin
+
+  for W of Sim.Winners_Map (Runner.Marketid) loop
+    if W.Selectionid = Runner.Selectionid then
+      Is_Winner := True;
+      exit;
+    end if;
+  end loop;
+
+  if Is_Winner then
+    return - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
+  end if;
+
+  Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
+    declare
+      List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
+      Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
+    begin
+
+      for J of List loop
+        if J.Selectionid = Runner.Selectionid and then
+          Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
+
+          -- if here , we are not winner
+          if J.Layprice <= Runner.Layprice then --match
+            Profit := Profit_Type(Global_Size);
+          end if;
+
+        end if;
+      end loop;
+    end;
+  end loop Loop_Ts_Check_Profit;
+  return Profit;
+end Check_Profit_Lay;
 ------------------------------------------------------
 
 
-Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
-Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
-Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
---Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
---Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
-Race                            :          Text_Io.File_Type;
---Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
-Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
-One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
-Current_Date                    :          Calendar2.Time_Type := Start_Date;
-Stop_Date                       :          Calendar2.Time_Type := (2019,12,31,23,59,59,999);
-Cmd_Line                        :          Command_Line_Configuration;
-T                               :          Sql.Transaction_Type;
+  Sa_Side                        : aliased  Gnat.Strings.String_Access;
+  Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
+  Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
+  Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
+  --Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
+  --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
+  Race                            :          Text_Io.File_Type;
+  --Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
+  Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
+  One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
+  Current_Date                    :          Calendar2.Time_Type := Start_Date;
+  Stop_Date                       :          Calendar2.Time_Type := (2019,12,31,23,59,59,999);
+  Cmd_Line                        :          Command_Line_Configuration;
+  T                               :          Sql.Transaction_Type;
+  Side : Bot_Types.Bet_Side_Type := Bot_Types.Back;
 begin
-
-
-  --    Text_Io.Put_Line (Calendar2.String_Interval(Stop_Date - Start_Date));
-  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (0*217,0,0,0,0) ));
-  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (1*217,0,0,0,0)));
-  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (2*217,0,0,0,0)));
-  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (3*217,0,0,0,0)));
-  --    Text_Io.Put_Line (Calendar2.String_Date(Start_Date + (4*217,0,0,0,0)));
-  --    return;
-
 
 
   Define_Switch
@@ -224,6 +259,12 @@ begin
 
   Define_Switch
     (Cmd_Line,
+     Sa_Side'Access,
+     Long_Switch => "--side=",
+     Help        => "back/lay, back is default");
+
+  Define_Switch
+    (Cmd_Line,
      Sa_Logfilename'Access,
      Long_Switch => "--logfile=",
      Help        => "name of log file");
@@ -241,6 +282,7 @@ begin
   Log("main", "start_date '" & Sa_Start_Date.all & "'");
   Log("main", "stop_date  '" & Sa_Stop_Date.all & "'");
   Log("main", "logfile    '" & Sa_Logfilename.all & "'");
+  Log("main", "side       '" & Sa_Side.all & "'");
   Log("main", "params stop");
 
 
@@ -262,13 +304,18 @@ begin
 
 
   if Sa_Start_Date.all /= "" then
-    Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all,"");
+    Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all);
   end if;
 
   if Sa_Stop_Date.all /= "" then
-    Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all,"");
+    Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all);
   end if;
 
+  if Sa_Side.all /= "" and then Ada.Characters.Handling.to_Lower(Sa_Side.all) = "lay" then
+    Side := Bot_Types.Lay;
+  else
+    Side := Bot_Types.Back;
+  end if;
 
   Current_Date := Start_Date;
 
@@ -305,7 +352,7 @@ begin
           Cnt := Cnt + 1;
 
           declare
-            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards/back";
+            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards/" & Ada.Characters.Handling.To_Lower(Side'Img);
           begin
             if not Ad.Exists(Path) then
               Ad.Create_Directory(Path);
@@ -334,6 +381,7 @@ begin
                 Bra                 : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
                 Delta_Time          : Calendar2.Interval_Type := (0, 0, 0, 0, 0);
                 Profit              : Bot_Types.Profit_Type := 0.0;
+                use Bot_Types;
               begin
                 --                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
                 To_Array(List => List, Bra => Bra);
@@ -363,7 +411,11 @@ begin
                       end if;
 
                       if Bra(I).Selectionid > 0 then
-                        Profit := Check_Profit (Bra (I),Timestamp_To_Prices_History_Map2);
+                        case Side is
+                          when Back => Profit := Check_Profit(Bra (I),Timestamp_To_Prices_History_Map2);
+                          when Lay  => Profit := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
+                        end case;
+
                       else
                         Profit := 0.0;
                       end if;
