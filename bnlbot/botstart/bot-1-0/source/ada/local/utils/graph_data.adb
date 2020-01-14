@@ -314,7 +314,8 @@ begin
          Port     => Ini.Get_Value("database","port", 5432),
          Db_Name  => Ini.Get_Value("database","name",""),
          Login    => Ini.Get_Value("database","username",""),
-         Password => Ini.Get_Value("database","password",""));
+         Password => Ini.Get_Value("database","password",""),
+         ssl_mode => "prefer");
   Debug("db Connected");
 
   T.Start;
