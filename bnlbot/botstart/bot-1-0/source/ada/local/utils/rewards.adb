@@ -304,11 +304,11 @@ begin
 
 
   if Sa_Start_Date.all /= "" then
-    Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all);
+    Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all,"");
   end if;
 
   if Sa_Stop_Date.all /= "" then
-    Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all);
+    Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all,"");
   end if;
 
   if Sa_Side.all /= "" and then Ada.Characters.Handling.to_Lower(Sa_Side.all) = "lay" then
