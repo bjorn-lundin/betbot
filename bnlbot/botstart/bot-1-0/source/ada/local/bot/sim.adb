@@ -998,8 +998,14 @@ package body Sim is
           Log("Fill_Rewards_Map", Filename) ;
 
           Awk.Set_Current (Computer_File);
-          Awk.Open (Separators => "|",
-                    Filename   => Filename);
+          begin
+            Awk.Open (Separators => "|", Filename   => Filename);
+          exception
+            when GNAT.AWK.File_Error =>
+              Log("Fill_Rewards_Map", "File not Found, skipping " &  Filename) ;
+              return;
+          end;
+
 
           while not Awk.End_Of_File loop
             Awk.Get_Line;
