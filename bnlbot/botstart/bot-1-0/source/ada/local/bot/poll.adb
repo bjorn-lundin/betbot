@@ -83,7 +83,8 @@ procedure Poll is
       when Horse_Back_1_28_02_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_002");
       when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2 => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_1 => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2 => return Process_Io.To_Process_Type("bet_placer_006");
 
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
@@ -888,7 +889,8 @@ procedure Poll is
                   end;
 
 
-                when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2  =>
+                when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_1  |
+                     Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2  =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
