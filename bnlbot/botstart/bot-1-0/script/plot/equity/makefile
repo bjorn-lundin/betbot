@@ -5,20 +5,63 @@
 ###############################################################################
 
 BET_NAMES_DRY := \
-PLC_x4_1.56_00.00_1.01_1_Pln \
-
-BET_NAMES_DRY := \
-PLC_x4_1.54_03.00_1.01_1_Pln \
-PLC_x4_1.38_03.00_1.01_1_Pln \
-
-
-#PLC_B2_1.28_02.00_1.01_1 \
-#PLC_B2_1.24_02.00_1.01_1 \
-#PLC_B2_1.26_02.00_1.01_1 \
-#PLC_B2_1.22_02.00_1.01_1
-
+DIFF_R1_R4_005.00_001.70_PLC_2 \
+DIFF_R1_R4_001.00_001.70_PLC_2 \
+DIFF_R1_R4_003.00_001.70_PLC_2 \
+DIFF_R1_R4_001.00_001.75_PLC_1 \
+DIFF_R1_R4_003.00_001.75_PLC_1 \
+DIFF_R1_R4_001.00_001.70_PLC_1 \
+DIFF_R1_R4_003.00_001.70_PLC_1 \
+DIFF_R1_R4_005.00_001.75_PLC_1 \
+DIFF_R1_R4_001.00_001.75_PLC_2 \
+DIFF_R1_R4_005.00_001.75_PLC_2 \
+DIFF_R1_R4_003.00_001.75_PLC_2 \
+DIFF_R1_R4_001.00_001.65_PLC_2 \
+DIFF_R1_R4_003.00_001.65_PLC_2 \
+DIFF_R1_R4_005.00_001.70_PLC_1 \
+DIFF_R1_R2_003.00_001.45_WIN_1 \
+DIFF_R1_R4_001.00_001.65_PLC_1 \
+DIFF_R1_R4_005.00_001.80_PLC_2 \
+DIFF_R1_R4_003.00_001.65_PLC_1 \
+DIFF_R1_R4_003.00_001.80_PLC_2 \
+DIFF_R1_R2_003.00_001.50_WIN_1 \
+DIFF_R1_R4_001.00_001.60_PLC_1 \
+DIFF_R1_R4_003.00_001.60_PLC_1 \
+DIFF_R1_R2_001.00_001.45_WIN_1 \
+DIFF_R1_R4_001.00_001.80_PLC_2 \
+DIFF_R1_R2_001.00_001.35_WIN_1 \
+DIFF_R1_R4_005.00_001.65_PLC_2 \
+DIFF_R1_R4_001.00_001.60_PLC_2 \
+DIFF_R1_R4_005.00_001.90_PLC_2 \
+DIFF_R1_R4_003.00_001.60_PLC_2 \
+DIFF_R1_R4_003.00_001.90_PLC_2 \
+DIFF_R1_R4_001.00_001.80_PLC_1 \
+DIFF_R1_R4_001.00_001.90_PLC_2 \
+DIFF_R1_R4_005.00_001.60_PLC_2 \
+DIFF_R1_R4_001.00_001.85_PLC_1 \
+DIFF_R1_R4_003.00_001.80_PLC_1 \
+DIFF_R1_R4_005.00_001.65_PLC_1 \
+DIFF_R1_R4_005.00_001.60_PLC_1 \
+DIFF_R1_R2_005.00_002.00_WIN_1 \
+DIFF_R1_R4_003.00_001.85_PLC_1 \
+DIFF_R1_R2_003.00_001.75_WIN_1 \
+DIFF_R1_R4_005.00_001.85_PLC_2 \
+DIFF_R1_R2_005.00_001.95_WIN_1 \
+DIFF_R1_R4_003.00_001.85_PLC_2 \
+DIFF_R1_R4_001.00_002.05_PLC_1 \
+DIFF_R1_R4_001.00_002.00_PLC_1 \
+DIFF_R1_R4_001.00_001.50_PLC_1 \
+DIFF_R1_R4_005.00_001.95_PLC_2 \
+DIFF_R1_R4_001.00_001.85_PLC_2 \
+DIFF_R1_R4_001.00_001.90_PLC_1 \
+DIFF_R1_R4_003.00_001.50_PLC_1 \
+DIFF_R1_R4_003.00_001.95_PLC_2 \
+DIFF_R1_R4_005.00_001.80_PLC_1 \
+DIFF_R1_R4_001.00_001.55_PLC_1
 
 BET_NAMES := $(BET_NAMES_DRY)
+
+
 
 DATS := $(foreach i,$(BET_NAMES), $(i).dat)
 PNGS := $(foreach i,$(BET_NAMES), $(i).png)
@@ -28,6 +71,8 @@ PNGS := $(foreach i,$(BET_NAMES), $(i).png)
 NUMBETS := $(shell echo $(BET_NAMES) | wc -w | tr -d '[:space:]')
 
 all  :  pngs png_top
+
+jmb : pngjmb
 
 dat : $(DATS)
 
@@ -81,7 +126,8 @@ png_top: $(DATS)
 #                                 --saldo=$(SALDO) > $*.dat
 
 %.dat:
-	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity  > $*.dat
+	$(BOT_TARGET)/bin/graph_data --betname=$* --equity > $*.dat
+#	$(BOT_TARGET)/bin/graph_data_ael --betname=$* --equity --side=LAY > $*.dat
 
 
 %.png: $(DATS)
@@ -89,6 +135,7 @@ png_top: $(DATS)
             -e "numbets ='$(NUMBETS)'" \
             -e "target_png='$*.png'" \
             -e "files='$*'" equity_many.gpl
+
 
 .PHONY : clean
 clean :

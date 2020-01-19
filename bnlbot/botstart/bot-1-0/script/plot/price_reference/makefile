@@ -1,8 +1,8 @@
-DBHOST:=192.168.1.20
+DBHOST:=localhost
 DBUSER:=bnl
 DBNAME:=bnl
 
-.PHONY : all 
+.PHONY : all
 
 all  : \
        win_back_heatmap.png win_back_heatmap_3d.png \
@@ -14,8 +14,8 @@ all  : \
        win_lay_back_back_heatmap.png  \
        win_lay_back_back_heatmap_3d.png \
        win_lay_lay_back_heatmap.png  \
-       win_lay_lay_back_heatmap_3d.png 
-        
+       win_lay_lay_back_heatmap_3d.png
+
 
 
 win_back_heatmap.png : heatmap.gpl win_back_plot_data.dat
