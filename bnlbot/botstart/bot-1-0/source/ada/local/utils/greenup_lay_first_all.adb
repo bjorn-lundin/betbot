@@ -13,13 +13,13 @@ with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2; use Calendar2;
-with Rpc;
+--with Rpc;
 --with Lock ;
 with Ini;
 with Logging; use Logging;
 with Bot_Svn_Info;
 with Utils; use Utils;
-with Table_Abets;
+--with Table_Abets;
 with Tics;
 with Sim;
 
@@ -32,8 +32,9 @@ with Bets;
 procedure Greenup_Lay_First_All is
 
   package Ev renames Ada.Environment_Variables;
-  use type Rpc.Result_Type;
+  --use type Rpc.Result_Type;
   use type Ada.Containers.Count_Type;
+  use type Tics.Tics_Type;
 
   Me              : constant String := "Greenup_Lay_First_All.";
 
@@ -44,9 +45,9 @@ procedure Greenup_Lay_First_All is
     Laybet    : Bets.Bet_Type;
     Backbet   : Bets.Bet_Type;
   end record;
-  use type Table_Abets.Data_Type;
+ -- use type Table_Abets.Data_Type;
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
-  subtype Delta_Tics_Type is Integer range 0 .. 350;
+  subtype Delta_Tics_Type is Tics.Tics_Type;
 
 
   -----------------------------------------------------------------
@@ -91,7 +92,7 @@ procedure Greenup_Lay_First_All is
     Eos                    : Boolean := False;
     Price_During_Race_List : Price_Histories.Lists.List;
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
-    Tic_Lay                : Integer := 0;
+    Tic_Lay                : Tics.Tics_Type := 1;
     Bet                    : Bet_Type;
     Lay_Bet_Name           : String_Object;
     Back_Bet_Name          : String_Object;
@@ -208,8 +209,11 @@ procedure Greenup_Lay_First_All is
       -- see if we meet stop_loss or greenup
       --there is no delay here since bet is placed in beginning of race
       for Race_Data of Price_During_Race_List loop
-        if Race_Data.Backprice > Fixed_Type(0.0) and then Race_Data.Layprice > Fixed_Type(0.0) and then   -- must be valid
-           Race_Data.Backprice < Fixed_Type(1000.0) and then Race_Data.Layprice < Fixed_Type(1000.0) then   -- must be valid
+        if Race_Data.Backprice > Fixed_Type(0.0)
+         -- and then Race_Data.Layprice > Fixed_Type(0.0)
+          and then Race_Data.Backprice < Fixed_Type(1000.0)
+         -- and then Race_Data.Layprice < Fixed_Type(1000.0)
+        then   -- must be valid
           if Race_Data.Pricets >= Price_Data.Pricets then
               if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
                 Move("M",Bet.Backbet.Status);
@@ -229,7 +233,7 @@ procedure Greenup_Lay_First_All is
     end if;
   end Run;
   ---------------------------------------------------------------------
-  use type Sql.Transaction_Status_Type;
+  --use type Sql.Transaction_Status_Type;
   ------------------------------ main start -------------------------------------
   Current_Date : Calendar2.Time_Type := Calendar2.Clock;
 
@@ -340,11 +344,14 @@ begin
     T.Start;
     Stm.Prepare(
                 "select P.* " &
-                  "from APRICES P, AMARKETS M, AEVENTS E " &
+                  "from APRICES P, AMARKETS M, AEVENTS E, ARUNNERS R" &
                   "where E.EVENTID=M.EVENTID " &
                   "and M.MARKETTYPE = 'WIN' " &
                   "and E.COUNTRYCODE in ('GB','IE') " &
                   "and P.MARKETID = M.MARKETID " &
+                  "and R.MARKETID = P.MARKETID " &
+                  "and R.SELECTIONID = P.SELECTIONID " &
+                  "and P.STATUS <> 'REMOVED' " &
                   "and E.EVENTTYPEID = 7 " &
                   "and P.LAYPRICE <= :MAX_LAYPRICE " &
                 --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
@@ -368,7 +375,7 @@ begin
           for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
             Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
-                Delta_Tics => Dtg,
+                Delta_Tics => Delta_Tics_Type(Dtg),
                 Lay_Size   => Lay_Size);
             Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
           end loop;

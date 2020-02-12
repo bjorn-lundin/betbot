@@ -441,7 +441,7 @@ package body Sql is
                      Db_Name    : in String  := "";
                      Login      : in String := "";
                      Password   : in String := "";
-                     SSL_Mode   : in String := "require") is
+                     SSL_Mode   : in String := "prefer") is
     Local_Status : Connection_Status_Type;
   begin
 

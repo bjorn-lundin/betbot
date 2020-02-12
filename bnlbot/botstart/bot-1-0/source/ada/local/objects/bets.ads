@@ -6,7 +6,6 @@ with Ada.Containers.Doubly_Linked_Lists;
 with Runners;
 with Markets;
 with Sql;
-with Price_Histories;
 
 
 package Bets is

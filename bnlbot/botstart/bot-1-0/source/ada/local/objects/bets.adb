@@ -9,6 +9,7 @@ with Utils;
 with Bot_System_Number;
 with Bot_Svn_Info;
 with Rpc;
+with Price_Histories;
 
 package body Bets is
   Me                  : constant String := "Bet.";

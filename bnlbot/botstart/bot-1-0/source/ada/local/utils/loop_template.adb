@@ -19,7 +19,7 @@ with Logging; use Logging;
 --with Bot_System_Number;
 
 
-procedure Loop_Template is
+procedure Check_New_Strategy is
 
   package EV renames Ada.Environment_Variables;
 
@@ -195,4 +195,4 @@ begin
   exception
    when E: others =>
       Stacktrace.Tracebackinfo(E);
-end Loop_Template ;
+end Check_New_Strategy ;
