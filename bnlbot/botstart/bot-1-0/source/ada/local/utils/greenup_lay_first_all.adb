@@ -344,7 +344,7 @@ begin
     T.Start;
     Stm.Prepare(
                 "select P.* " &
-                  "from APRICES P, AMARKETS M, AEVENTS E, ARUNNERS R" &
+                  "from APRICES P, AMARKETS M, AEVENTS E, ARUNNERS R " &
                   "where E.EVENTID=M.EVENTID " &
                   "and M.MARKETTYPE = 'WIN' " &
                   "and E.COUNTRYCODE in ('GB','IE') " &
@@ -354,9 +354,10 @@ begin
                   "and P.STATUS <> 'REMOVED' " &
                   "and E.EVENTTYPEID = 7 " &
                   "and P.LAYPRICE <= :MAX_LAYPRICE " &
-                --  "and P.LAYPRICE >= :MIN_LAYPRICE " &
+                  "and P.LAYPRICE >= :MIN_LAYPRICE " &
                   "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
-    Stm.Set("MAX_LAYPRICE",100.0);
+    Stm.Set("MAX_LAYPRICE",Layprice_High);
+    Stm.Set("MIN_LAYPRICE",Layprice_Low);
     Prices.Read_List(Stm, Price_List);
     T.Commit;
 
