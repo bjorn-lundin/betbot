@@ -40,9 +40,11 @@ project Adabot is
                     "create_cache.adb",
                     "race_length.adb",
                     "race_data.adb",
+                    "check_new_strategy",
                     "do_greenup_1.adb",
                     "show_race_lengths.adb",
                     "rewards.adb",
+                    "greenup_lay_first_all.adb",
                     "print_win_place_markets.adb",
                     "lay_and_back_after_progress.adb"
                    );

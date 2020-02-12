@@ -86,7 +86,7 @@ package Sql is
                       Db_Name    : in String  := "";
                       Login      : in String := "";
                       Password   : in String := "";
-                      SSL_Mode   : in String := "require"); --disable,allow,prefer,require,verify-ca,verify-full
+                      SSL_Mode   : in String := "prefer"); --disable,allow,prefer,require,verify-ca,verify-full
 
    function  Is_Session_Open return Boolean;
 
