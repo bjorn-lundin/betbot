@@ -333,10 +333,11 @@ begin
   Layprice_Low  := Fixed_Type'Value(Sa_Min_Layprice.all);
 
   declare
-    Stm         : Sql.Statement_Type;
-    T           : Sql.Transaction_Type;
-    Price_List  : Prices.Lists.List;
+    Stm                    : Sql.Statement_Type;
+    T                      : Sql.Transaction_Type;
+    Price_List             : Prices.Lists.List;
     Price_During_Race_List : Price_Histories.Lists.List;
+    Start                  : Calendar2.Time_Type := (2018,11,10,0,0,0,0);
   begin
     T.Start;
     Stm.Prepare(
@@ -352,9 +353,11 @@ begin
                   "and E.EVENTTYPEID = 7 " &
                   "and P.LAYPRICE <= :MAX_LAYPRICE " &
                   "and P.LAYPRICE >= :MIN_LAYPRICE " &
+                  "and M.STARTTS  >= :STARTDATE " &
                   "order by M.STARTTS, P.MARKETID, P.SELECTIONID ");
     Stm.Set("MAX_LAYPRICE",Layprice_High);
     Stm.Set("MIN_LAYPRICE",Layprice_Low);
+    Stm.Set("STARTDATE",Start);
     Prices.Read_List(Stm, Price_List);
     T.Commit;
 

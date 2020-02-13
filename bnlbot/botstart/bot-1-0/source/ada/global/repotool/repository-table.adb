@@ -693,22 +693,35 @@ package body Repository.Table is
         when I.Primary =>
           Put_Line("alter table " & Self.Name.Fix_String & " add constraint " & Self.Name.Fix_String & "P" & Utils.Trim(Index_Counter'Img) & " primary key (");
           Put_Line("  " & Idx.Columns.Fix_String);
-          Put_Line(");");
+          Put_Line(")");
+          Put_Line(";");
 
         when I.Unique =>
           Put_Line("create unique index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
-          Put_Line(");");
+          Put_Line(")");
+          if Self.Tablespace.Fix_String'Length > 0 then
+            Put_Line(" tablespace " & Self.Tablespace.Fix_String);
+          end if;
+          Put_Line(";");
 
         when I.Index =>
           Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
-          Put_Line(");");
+          Put_Line(")");
+          if Self.Tablespace.Fix_String'Length > 0 then
+            Put_Line(" tablespace " & Self.Tablespace.Fix_String);
+          end if;
+          Put_Line(";");
 
         when I.Functional =>
           Put_Line("create index " & Self.Name.Fix_String & "I" & Utils.Trim(Index_Counter'Img) & " on "  & Self.Name.Fix_String & " (");
           Put_Line("  " & Idx.Columns.Fix_String);
-          Put_Line(");");
+          Put_Line(")");
+          if Self.Tablespace.Fix_String'Length > 0 then
+            Put_Line(" tablespace " & Self.Tablespace.Fix_String);
+          end if;
+          Put_Line(";");
       end case;
 
       Put_Line("");
