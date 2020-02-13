@@ -677,6 +677,11 @@ package body Repository.Table is
       end loop;
       Put_Line(sDDL); --last part of sDDL might be a comment. Make sure the ';' is on new line
     end;
+
+    if Self.Tablespace.Fix_String'Length > 0 then
+      Put_Line(" tablespace " & Self.Tablespace.Fix_String);
+    end if;
+
     Put_Line(";");
     Put_Line("");
 
