@@ -86,11 +86,11 @@ procedure Greenup_Lay_First_All is
 
   procedure Run(Price_Data : in Prices.Price_Type;
                 Delta_Tics : in Delta_Tics_Type;
-                Lay_Size   : in Bet_Size_Type) is
+                Lay_Size   : in Bet_Size_Type;
+                Price_During_Race_List : in price_Histories.Lists.List) is
 
     Market                 : Markets.Market_Type;
     Eos                    : Boolean := False;
-    Price_During_Race_List : Price_Histories.Lists.List;
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
     Tic_Lay                : Tics.Tics_Type := 1;
     Bet                    : Bet_Type;
@@ -122,10 +122,6 @@ procedure Greenup_Lay_First_All is
     end if;
 
     -- Log(Me & "Run", "Market: " & Market.To_String);
-    Sim.Read_Marketid_Selectionid(Marketid    => Market.Marketid,
-                                  Selectionid => Price_Data.Selectionid,
-                                  Animal      => Horse,
-                                  List        => Price_During_Race_List) ;
 
     Runner.Marketid := Price_Data.Marketid;
     Runner.Selectionid := Price_Data.Selectionid;
@@ -340,6 +336,7 @@ begin
     Stm         : Sql.Statement_Type;
     T           : Sql.Transaction_Type;
     Price_List  : Prices.Lists.List;
+    Price_During_Race_List : Price_Histories.Lists.List;
   begin
     T.Start;
     Stm.Prepare(
@@ -373,11 +370,20 @@ begin
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
           T.Start;
           --for Dtg in Delta_Tics_Type'Range loop
+          Price_During_Race_List.Clear;
+          Log(Me, "start read list ");
+          Sim.Read_Marketid_Selectionid(Marketid    => Price.Marketid,
+                                        Selectionid => Price.Selectionid,
+                                        Animal      => Horse,
+                                        List        => Price_During_Race_List) ;
+          Log(Me, "stop read list ");
+
           for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
             Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
                 Delta_Tics => Delta_Tics_Type(Dtg),
-                Lay_Size   => Lay_Size);
+                Lay_Size   => Lay_Size,
+                Price_During_Race_List => Price_During_Race_List);
             Log(Me, "stop  Treat price: " & Dtg'Img  & " " & Price.To_String );
           end loop;
           T.Commit;
