@@ -58,7 +58,7 @@ procedure Greenup_Lay_First_All is
       if B.Side(1..4) = "BACK" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := True;
-          B.Profit := B.Size * (B.Price - 1.0);
+          B.Profit := B.Size * (B.Pricematched - 1.0);
         elsif R.Status(1..5) = "LOSER" then
           B.Betwon := False;
           B.Profit := -B.Size;
@@ -69,7 +69,7 @@ procedure Greenup_Lay_First_All is
       elsif B.Side(1..3) = "LAY" then
         if R.Status(1..6) = "WINNER" then
           B.Betwon := False;
-          B.Profit := -B.Size * (B.Price - 1.0);
+          B.Profit := -B.Size * (B.Pricematched - 1.0);
         elsif R.Status(1..5) = "LOSER" then
           B.Profit := B.Size;
           B.Betwon := True;
@@ -164,6 +164,7 @@ procedure Greenup_Lay_First_All is
                     Bet              => Bet.Laybet ) ;
 
       Move("M",Bet.Laybet.Status);
+      Bet.Laybet.Pricematched := Price_Data.Layprice;
 
       Check_Bet(Runner, Bet.Laybet);
 
@@ -198,8 +199,7 @@ procedure Greenup_Lay_First_All is
           if Race_Data.Pricets >= Price_Data.Pricets then
               if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
                 Move("M",Bet.Backbet.Status);
-                Move(F8_Image(Bet.Backbet.Price), Bet.Backbet.Inststatus);
-                Bet.Backbet.Price := Race_Data.Backprice;
+                Bet.Backbet.Pricematched := Race_Data.Backprice;
                 exit;
                 --                elsif Race_Data.Backprice <= Bet.Stop_Loss_Backbet.Price then -- a match
                 --                  Move("M",Bet.Stop_Loss_Backbet.Status);
