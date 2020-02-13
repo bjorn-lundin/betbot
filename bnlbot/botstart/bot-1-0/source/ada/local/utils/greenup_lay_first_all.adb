@@ -49,6 +49,8 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Tics.Tics_Type;
 
+  Global_Overshoot : Fixed_Type := 1.1;
+
 
   -----------------------------------------------------------------
   procedure Check_Bet ( R : in Runners.Runner_Type;
@@ -197,7 +199,9 @@ procedure Greenup_Lay_First_All is
          -- and then Race_Data.Layprice < Fixed_Type(1000.0)
         then   -- must be valid
           if Race_Data.Pricets >= Price_Data.Pricets then
-              if Race_Data.Backprice >= Bet.Backbet.Price then -- a match
+              if Race_Data.Backprice >= Bet.Backbet.Price  -- a match
+              and then Race_Data.Backprice <= Fixed_Type(Global_Overshoot * Bet.Backbet.Price) -- but only if it does not 'overshoot' too much
+            then -- a match
                 Move("M",Bet.Backbet.Status);
                 Bet.Backbet.Pricematched := Race_Data.Backprice;
                 exit;
