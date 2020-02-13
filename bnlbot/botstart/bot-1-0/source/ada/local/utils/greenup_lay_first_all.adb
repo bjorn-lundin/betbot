@@ -105,13 +105,23 @@ procedure Greenup_Lay_First_All is
   begin
       Log(Me & "Run", "start");
 
-    if Delta_Tics >= 10 then
-      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
-      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both));
-    else
-      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both));
-      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both));
+
+    if Price_Data.Layprice < 10.0 then
+      Move("00" & F8_Image(Price_Data.Layprice), Reference);
+    elsif  Price_Data.Layprice < 100.0 then
+      Move("0" & F8_Image(Price_Data.Layprice),  Reference);
+    elsif Price_Data.Layprice < 1000.0 then
+      Move(F8_Image(Price_Data.Layprice)      ,  Reference);
     end if;
+
+    if Delta_Tics >= 10 then
+      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+    else
+      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+    end if;
+
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     Market.Marketid := Price_Data.Marketid;
@@ -152,40 +162,16 @@ procedure Greenup_Lay_First_All is
                     Bet_Persistence  => Persist,
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Laybet ) ;
+
       Move("M",Bet.Laybet.Status);
 
-      if Delta_Tics >= 10 then
-        Move("tics="&Trim(Delta_Tics'Img,Both),Reference);
-      else
-        Move("tics=0"&Trim(Delta_Tics'Img,Both),Reference);
-      end if;
-
-      if Price_Data.Layprice < 10.0 then
-        Move("lay=000" & F8_Image(Price_Data.Layprice) & "," & Trim(Reference,Both),Reference);
-      elsif  Price_Data.Layprice < 100.0 then
-        Move("lay=00" & F8_Image(Price_Data.Layprice) & "," & Trim(Reference,Both),Reference);
-      elsif Price_Data.Layprice < 1000.0 then
-        Move("lay=0" & F8_Image(Price_Data.Layprice) & "," & Trim(Reference,Both),Reference);
-      else
-        Move("lay=" & F8_Image(Price_Data.Layprice) & "," & Trim(Reference,Both),Reference);
-      end if;
-
-      Move(Reference, Bet.Laybet.Reference);
       Check_Bet(Runner, Bet.Laybet);
 
       declare
         B_Price : Fixed_Type := Tics.Get_Tic_Price(Tic_Lay + Delta_Tics);
       begin
         Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
---          Log(Me & "Run", "Back_Size " & Back_Size'Img & " Lay_Size" & Lay_Size'Img &
---                " Price_Data.Layprice " & Price_Data.Layprice'Img   &
---                " Tic_Lay " & Tic_Lay'Img   &
---                " Delta_Tics " & Delta_Tics'Img   &
---                " B_Price " & B_Price'Img &
---                " Tics.Get_Tic_Price(Tic_Lay + Delta_Tics) " & Fixed_Type'Image(Tics.Get_Tic_Price(Tic_Lay + Delta_Tics))
---             );
       end;
-
 
       Move(Back_Bet_Name.Fix_String,Bn);
 
@@ -200,7 +186,6 @@ procedure Greenup_Lay_First_All is
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
-      Move(Reference,Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
       --there is no delay here since bet is placed in beginning of race
