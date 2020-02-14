@@ -107,18 +107,16 @@ procedure Greenup_Lay_First_All is
       Log(Me & "Run", "start");
 
     Market.Marketid := Price_Data.Marketid;
-    if not Market.Marketname_Ok then
-      return;
-    end if;
-
     Market.Read(Eos);
     if Eos then
       Log(Me & "Run", "no market found");
       return;
     end if;
 
-
-
+    if not Market.Marketname_Ok then
+      Log(Me & "Run", "bad market found - Name not Ok");
+      return;
+    end if;
 
     if Price_Data.Layprice < 10.0 then
       Move("00" & F8_Image(Price_Data.Layprice), Reference);
