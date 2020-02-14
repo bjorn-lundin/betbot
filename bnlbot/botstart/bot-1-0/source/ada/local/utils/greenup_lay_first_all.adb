@@ -113,7 +113,7 @@ procedure Greenup_Lay_First_All is
       return;
     end if;
 
-    if not Market.Marketname_Ok then
+    if not Market.Marketname_Ok2 then
       Log(Me & "Run", "bad market found - Name not Ok");
       return;
     end if;
@@ -127,11 +127,11 @@ procedure Greenup_Lay_First_All is
     end if;
 
     if Delta_Tics >= 10 then
-      Lay_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Lay_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     else
-      Lay_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Lay_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     end if;
 
 
