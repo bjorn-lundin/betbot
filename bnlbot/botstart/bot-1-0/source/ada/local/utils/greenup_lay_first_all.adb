@@ -103,9 +103,21 @@ procedure Greenup_Lay_First_All is
     Ln                     : Betname_Type := (others => ' ');
     Bn                     : Betname_Type := (others => ' ');
     Reference              : String(1..30) := (others  => ' ');
-
   begin
       Log(Me & "Run", "start");
+
+    Market.Marketid := Price_Data.Marketid;
+    if not Market.Marketname_Ok then
+      return;
+    end if;
+
+    Market.Read(Eos);
+    if Eos then
+      Log(Me & "Run", "no market found");
+      return;
+    end if;
+
+
 
 
     if Price_Data.Layprice < 10.0 then
@@ -117,21 +129,15 @@ procedure Greenup_Lay_First_All is
     end if;
 
     if Delta_Tics >= 10 then
-      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Lay_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     else
-      Lay_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Lay_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Back_Bet_Name.Set("OK_1_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     end if;
 
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
-    Market.Marketid := Price_Data.Marketid;
-    Market.Read(Eos);
-    if Eos then
-      Log(Me & "Run", "no market found");
-      return;
-    end if;
 
     -- Log(Me & "Run", "Market: " & Market.To_String);
 
