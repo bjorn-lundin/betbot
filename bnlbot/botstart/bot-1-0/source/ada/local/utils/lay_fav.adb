@@ -308,6 +308,9 @@ begin
           end;
         end if; -- Is_Win
       end loop Loop_Market;  -- marketid
+    exception
+      when E: others =>
+        Stacktrace.Tracebackinfo(E);
 
     end;
     Log("num bets laid" & Global_Bet_List.Length'Img);
