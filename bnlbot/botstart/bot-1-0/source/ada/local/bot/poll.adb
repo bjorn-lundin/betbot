@@ -83,8 +83,6 @@ procedure Poll is
       when Horse_Back_1_28_02_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_002");
       when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_1 => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2 => return Process_Io.To_Process_Type("bet_placer_006");
 
 --        when Horse_Back_1_10_07_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_001");
 --        when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
@@ -344,6 +342,7 @@ procedure Poll is
                     Match_Directly  => Match_Directly);
     end if;
   end Try_To_Make_Back_Bet_On_Diff;
+  pragma Unreferenced(Try_To_Make_Back_Bet_On_Diff);
   ------------------------------------------------------
 
 
@@ -625,7 +624,7 @@ procedure Poll is
     Price             : Prices.Price_Type;
     Has_Been_In_Play,
     In_Play           : Boolean := False;
-   -- First_Poll        : Boolean := True;
+  --  First_Poll        : Boolean := True;
     Best_Runners      : Best_Runners_Array_Type := (others => Prices.Empty_Data);
 
     Eos               : Boolean := False;
@@ -847,7 +846,7 @@ procedure Poll is
 
       if Best_Runners(1).Backprice >= Fixed_Type(1.01) then
         for I in Bet_Type'Range loop
-         -- Log("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
+        -- Log("Animal " & Animal'Img & " betname " & I'Img & " First_Poll " & First_Poll'Img);
           case Animal is
             when Horse =>
               case I is
@@ -888,43 +887,86 @@ procedure Poll is
                     end if;
                   end;
 
+                  --when Horse_Back_1_55_800m_Plc_1_01 =>
+                  --  declare
+                  --    Image      : String := I'Img;
+                  --    Do_Try_Bet : Boolean := True;
+                  --    use Markets;
+                --  begin
+                --    --  12345678901234567890
+                --    --  Back_1_10_20_1_4_WIN
+                --    if Utils.Position(Image, "PLC") > Integer(0) then
+                --      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                --      Match_Directly := False;
+                --    elsif Utils.Position(Image, "WIN") > Integer(0) then
+                --      Match_Directly := False;
+                --    end if;
+                --
+                --    if Do_Try_Bet then
+                --      case Markets_Array(Win).Market_Subtype is
+                --        when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+                --        when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+                --        when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+                --      end case;
+                --    end if;
+                --
+                --
+                --    if Do_Try_Bet and then
+                --      Has_Been_In_Play then
+                --      begin
+                --
+                --        Try_To_Make_Back_Bet_Distance_Left(Bettype         => I,
+                --                                           Br              => Best_Runners,
+                --                                           Winmarket       => Markets_Array(Win),
+                --                                           Plcmarket       => Markets_Array(Place),
+                --                                           Went_In_Play    => Ts_In_Play,
+                --                                           Match_Directly  => Match_Directly);
+                --      exception
+                --        when Constraint_Error =>
+                --          Log ("main - in poll-loop", "Constraint_Error - market in map? " & Markets_Array(Win).To_String);
+                --      end;
+                --
+                --    end if;
+                --  end;
+                --
 
-                when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_1  |
-                     Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2  =>
-                  declare
-                    M_Type     : Market_Type := Win;
-                    Image      : String := I'Img;
-                    Do_Try_Bet : Boolean := True;
-                    use Markets;
-                  begin
-                    --  12345678901234567890
-                    --  Back_1_10_20_1_4_WIN
-                    if Utils.Position(Image, "PLC") > Integer(0) then
-                      M_Type := Place;
-                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
-                      Match_Directly := False;
-                    elsif Utils.Position(Image, "WIN") > Integer(0) then
-                      M_Type         := Win;
-                      Match_Directly := False;
-                    end if;
 
-                    if Do_Try_Bet then
-                      case Markets_Array(Win).Market_Subtype is
-                        when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
-                        when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
-                        when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
-                      end case;
-                    end if;
-
-
-                    if Do_Try_Bet and then
-                      Has_Been_In_Play then
-                      Try_To_Make_Back_Bet_On_Diff(Bettype         => I,
-                                                   Br              => Best_Runners,
-                                                   Marketid        => Markets_Array(M_Type).Marketid,
-                                                   Match_Directly  => Match_Directly);
-                    end if;
-                  end;
+--                  when Horse_Back_Diff_R1_R4_005_00_001_70_Plc_1  |
+--                       Horse_Back_Diff_R1_R4_005_00_001_70_Plc_2  =>
+--                    declare
+--                      M_Type     : Market_Type := Win;
+--                      Image      : String := I'Img;
+--                      Do_Try_Bet : Boolean := True;
+--                      use Markets;
+--                    begin
+--                      --  12345678901234567890
+--                      --  Back_1_10_20_1_4_WIN
+--                      if Utils.Position(Image, "PLC") > Integer(0) then
+--                        M_Type := Place;
+--                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+--                        Match_Directly := False;
+--                      elsif Utils.Position(Image, "WIN") > Integer(0) then
+--                        M_Type         := Win;
+--                        Match_Directly := False;
+--                      end if;
+--
+--                      if Do_Try_Bet then
+--                        case Markets_Array(Win).Market_Subtype is
+--                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+--                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+--                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+--                        end case;
+--                      end if;
+--
+--
+--                      if Do_Try_Bet and then
+--                        Has_Been_In_Play then
+--                        Try_To_Make_Back_Bet_On_Diff(Bettype         => I,
+--                                                     Br              => Best_Runners,
+--                                                     Marketid        => Markets_Array(M_Type).Marketid,
+--                                                     Match_Directly  => Match_Directly);
+--                      end if;
+--                    end;
 
                 --when Horse_Back_1_55_800m_Plc_1_01 =>
                 --  declare
@@ -1013,7 +1055,7 @@ procedure Poll is
 
       end if; -- Best_Runner(1).Backodds >= 1.01
 
-    --  First_Poll := False;
+   --   First_Poll := False;
     end loop Poll_Loop;
 
   end Run;
