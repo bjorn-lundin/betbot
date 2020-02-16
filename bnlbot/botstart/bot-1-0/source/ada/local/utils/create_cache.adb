@@ -88,7 +88,7 @@ begin
   Log ("animal " & Animal'Img);
 
   Sql.Connect
-    (Host     => "192.168.1.20",
+    (Host     => "localhost",
      Port     => 5432,
      Db_Name  => Db,
      Login    => "bnl",
