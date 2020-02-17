@@ -50,7 +50,7 @@ procedure Lay_Fav is
   --    Global_Back_Size          : constant Fixed_Type := 100.0;
 
   Start         : Calendar2.Time_Type := Calendar2.Clock;
-
+  T             : Sql.Transaction_Type;
   function "<" (Left,Right : Price_Histories.Price_History_Type) return Boolean is
   begin
     return Left.Backprice < Right.Backprice;
@@ -242,6 +242,7 @@ begin
   Day_Loop : loop
 
     exit Day_Loop when Day >  End_Date;
+    T.Start;
     Sim.Fill_Data_Maps(Day, Horse,False,False,Race_Prices => True);
     Log("start process date " & Day.To_String);
 
@@ -347,7 +348,7 @@ begin
 
     Global_Bet_List.Clear;
     Day := Day + One_Day;
-
+    T.Commit;
   end loop Day_Loop;
   Sql.Close_Session;
   Log("Started : " & Start.To_String);
