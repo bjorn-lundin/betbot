@@ -267,11 +267,12 @@ begin
             First                           : Boolean := True;
           begin
             Loop_Timestamp : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-              --Log("Treat marketid '" & Market.Marketid & "' pricets " & Timestamp.To_String);
+              Log("Treat marketid '" & Market.Marketid & "' pricets " & Timestamp.To_String);
               declare
                 List : Price_Histories.Lists.List :=
                          Timestamp_To_Apriceshistory_Map(Timestamp.To_String);
               begin
+                Log("list.Length: " & List.Length'Img );
                 if First then
                   Enough_Runners := List.Length >= 8;
                   First := False;
