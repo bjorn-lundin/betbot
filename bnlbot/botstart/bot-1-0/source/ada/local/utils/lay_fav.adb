@@ -242,7 +242,7 @@ begin
   Day_Loop : loop
 
     exit Day_Loop when Day >  End_Date;
-    Sim.Fill_Data_Maps(Day, Horse,False,False,False);
+    Sim.Fill_Data_Maps(Day, Horse,False,False,Race_Prices => True);
     Log("start process date " & Day.To_String);
 
     declare
