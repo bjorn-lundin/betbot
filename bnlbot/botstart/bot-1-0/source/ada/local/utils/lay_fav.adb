@@ -22,6 +22,7 @@ with Markets;
 
 
 procedure Lay_Fav is
+    Me : String := "Lay_Fav";
 
   package Ev renames Ada.Environment_Variables;
 
@@ -110,7 +111,6 @@ procedure Lay_Fav is
     Ln                     : Betname_Type := (others => ' ');
   --  Bn                     : Betname_Type := (others => ' ');
   --  Reference              : String(1..30) := (others  => ' ');
-    Me : String := "Run";
   begin
     Log(Me & "Run", "start");
 
@@ -121,12 +121,27 @@ procedure Lay_Fav is
       return;
     end if;
 
-    if not Market.Marketname_Ok2 then
-      Log(Me & "Run", "bad market found - Name not Ok");
+    if Ia_Filter = 0 then
+      null;
+
+    elsif Ia_Filter = 1 then
+      if not Market.Marketname_Ok2 then
+        Log(Me & "Run", "bad market found - Name not Ok");
+        return;
+      end if;
+
+    elsif Ia_Filter = 2 then
+      if not Market.Marketname_Ok2 then
+        Log(Me & "Run", "bad market (2) found - Name not Ok");
+        return;
+      end if;
+
+    else
+      Log(Me & "Run", "bad filter, 0-2 ok:" & Ia_Filter'Img);
       return;
     end if;
 
-    Lay_Bet_Name.Set("LAY_FAV_" & Trim(Ia_Lay_Fav_No'Img,Both) & "_" & Trim(Ia_Filter'img,Both));
+    Lay_Bet_Name.Set("LAY_FAV_" & Trim(Ia_Lay_Fav_No'Img,Both) & "_" & Trim(Ia_Filter'Img,Both));
 
     Runner.Marketid :=  Br(Ia_Lay_Fav_No).Marketid;
     Runner.Selectionid := Br(Ia_Lay_Fav_No).Selectionid;
