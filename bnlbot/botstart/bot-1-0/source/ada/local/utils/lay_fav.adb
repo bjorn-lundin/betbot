@@ -33,6 +33,7 @@ procedure Lay_Fav is
 
   Ia_Lay_Fav_No : aliased Integer := 0;
   Ia_Filter     : aliased Integer := 0;
+  Ia_Max_Layprice     : aliased Integer := 0;
   -- Ia_Delta_Lay_At_Back_Price  : aliased Integer := 100;
   --  IA_Max_Lay_Price      : aliased Integer := 200;
 
@@ -141,7 +142,16 @@ procedure Lay_Fav is
       return;
     end if;
 
-    Lay_Bet_Name.Set("LAY_FAV_" & Trim(Ia_Lay_Fav_No'Img,Both) & "_" & Trim(Ia_Filter'Img,Both));
+    if  Br(Ia_Lay_Fav_No).Layprice >= Fixed_Type(Ia_Max_Layprice) then
+      Log(Me & "Run", "too high price, max is :" & Ia_Max_Layprice'Img);
+      return;
+    end if;
+
+    Lay_Bet_Name.Set("LAY_FAV_" &
+                       Trim(Ia_Lay_Fav_No'Img,Both) & "_" &
+                       Trim(Ia_Filter'Img,Both) & "_" &
+                       Trim(Ia_Max_Layprice'Img,Both)
+                    );
 
     Runner.Marketid :=  Br(Ia_Lay_Fav_No).Marketid;
     Runner.Selectionid := Br(Ia_Lay_Fav_No).Selectionid;
@@ -251,6 +261,14 @@ begin
      Ia_Filter'Access,
      Long_Switch => "--marketnamefilter=",
      Help        => "0,1,2");
+
+  Define_Switch
+    (Cmd_Line,
+     Ia_Max_Layprice'Access,
+     Long_Switch => "--maxlayprice=",
+     Help        => "integer");
+
+
 
   Getopt (Cmd_Line);  -- process the command line
 
