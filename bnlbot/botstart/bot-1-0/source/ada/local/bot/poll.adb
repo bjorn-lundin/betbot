@@ -84,15 +84,8 @@ procedure Poll is
       when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
       when Horse_Lay_Fav_2_0_12_Win            => return Process_Io.To_Process_Type("bet_placer_005");
---        when Horse_Back_1_28_02_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_002");
---        when Horse_Back_1_38_00_1_2_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_003");
---        when Horse_Back_1_56_00_1_4_Plc_1_01_Chs => return Process_Io.To_Process_Type("bet_placer_004");
---
---        when Horse_Lay_1_05_05_1_2_Win_2_15      => return Process_Io.To_Process_Type("bet_placer_005");
---        when Horse_Back_1_10_13_1_2_Win_1_01     => return Process_Io.To_Process_Type("bet_placer_006");
+      when Horse_Lay_Fav_9_0_30_Win            => return Process_Io.To_Process_Type("bet_placer_006");
 
---        when Horse_Back_1_10_07_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_001");
---        when Horse_Back_1_28_02_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_002");
 --        when Horse_Back_1_38_00_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_003");
 --        when Horse_Back_1_56_00_1_4_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_004");
     end case;
@@ -967,7 +960,7 @@ procedure Poll is
                   end;
 
 
-                when  Horse_Lay_Fav_2_0_12_Win =>
+                when  Horse_Lay_Fav_2_0_12_Win .. Horse_Lay_Fav_9_0_30_Win =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
