@@ -989,7 +989,7 @@ procedure Poll is
 
                     if Do_Try_Bet
                       and then First_Poll
-                      and then Has_Been_In_Play
+                      -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
                     then
                       Try_To_Lay_Favorite(Bettype         => I,
                                           Br              => Best_Runners,
