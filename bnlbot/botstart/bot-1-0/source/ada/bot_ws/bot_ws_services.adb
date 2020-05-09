@@ -23,6 +23,20 @@ with Ini;
 with Markets;
 
 
+--flowers
+with Ada.Characters;
+with Ada.Characters.Latin_1;
+
+with AWS;
+with AWS.SMTP;
+with AWS.SMTP.Authentication;
+with AWS.SMTP.Authentication.Plain;
+with AWS.SMTP.Client;
+with Ada.Directories;
+with GNAT.Sockets;
+with Ada.Environment_Variables;
+
+
 package body Bot_Ws_Services is
 
   Object : constant String := "Bot_Ws_Services.";
@@ -967,5 +981,53 @@ package body Bot_Ws_Services is
     
     end Get_Months;
   ----------------------------------------------------------
+  
+  
+  -- for moisture in flowers
+  
 
+  procedure Mail_Moisture_Report(Id : Integer; Moisture : Integer) is
+     T       : Calendar2.Time_Type := Calendar2.Clock;
+    use AWS;
+    Service : constant String := "Mail_Moisture_Report";
+    SMTP_Server_Name : constant String := "mailout.telia.com";
+    Status           : SMTP.Status;
+    Subject : String :="Dags att vattna blommorna";
+  begin
+    Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
+    declare
+      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+                                SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
+                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
+
+      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+                                  (SMTP_Server_Name,
+                                   Port       => 465,
+                                   Secure     => True);
+                                   --Credential => Auth'Unchecked_Access);
+      use Ada.Characters.Latin_1;
+      Msg : constant String := 
+          "Fuktnivå :" & Moisture'Img & "%" & Cr & Lf &
+          "tid : " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
+          "sent from: " & GNAT.Sockets.Host_Name ;
+
+      Receivers : constant SMTP.Recipients :=  (1=>
+                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com")
+                );
+    begin
+      SMTP.Client.Send(Server  => SMTP_Server,
+                       From    => SMTP.E_Mail ("Blomsterkollen", "betbot@lundin.duckdns.com"),
+                       To      => Receivers,
+                       Subject => Subject,
+                       Message => Msg,
+                       Status  => Status);
+      Log (Object & Service, "subject: " & Subject);
+      Log (Object & Service, "body: " & Msg);
+    end;
+    if not SMTP.Is_Ok (Status) then
+      Log (Object & Service, "Can't send message: " & SMTP.Status_Message (Status));
+    end if;
+  end Mail_Moisture_Report;
+  --------------------------------
+  
 end Bot_Ws_Services;

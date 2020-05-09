@@ -30,4 +30,9 @@ package Bot_Ws_Services is
   function Get_Months    (Username  : in String;
                           Context   : in String) return String ;
 
+
+
+  -- for moisture in flowers
+  procedure Mail_Moisture_Report(Id : Integer; Moisture : Integer) ;
+
 end Bot_Ws_Services;

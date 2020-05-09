@@ -318,6 +318,9 @@ procedure Bot_Web_Server is
           end if;
         end;
       end if;
+    elsif Context = "flower" then
+      Bot_Ws_Services.Mail_Moisture_Report(Id => 1, Moisture => 2);
+      return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
     else
       return Do_Service(Request, "Get");
     end if;
