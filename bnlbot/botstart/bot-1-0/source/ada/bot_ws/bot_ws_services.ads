@@ -1,8 +1,21 @@
 ------------------------------------------------------------------------------
+with Types; use Types;
 
 package Bot_Ws_Services is
 
   Stop_Process   : exception;
+
+
+  package Global is
+     Host           : Types.String_Object;
+     Port           : Natural := 0;
+     Login          : Types.String_Object;
+     Password       : Types.String_Object;
+     procedure Initialize ;
+  end Global;
+
+
+
 
   function Operator_Login(Username   : in String;
                           Password   : in String;
@@ -33,6 +46,6 @@ package Bot_Ws_Services is
 
 
   -- for moisture in flowers
-  procedure Mail_Moisture_Report(Id : Integer; Moisture : Integer) ;
+  function Mail_Moisture_Report(Id : String; Moisture : Integer_4) return Boolean;
 
 end Bot_Ws_Services;
