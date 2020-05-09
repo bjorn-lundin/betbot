@@ -32,7 +32,7 @@ with Lock;
 with Posix;
 with Bot_Svn_Info;
 with Binary_Semaphores;
-with Types;
+with Types; use Types;
 
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
@@ -52,30 +52,7 @@ procedure Bot_Web_Server is
 
   Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
 
-   package Global is
-     Host           : Types.String_Object;
-     Port           : Natural := 0;
-     Login          : Types.String_Object;
-     Password       : Types.String_Object;
-     procedure Initialize ;
-   end Global;
-
-   package body Global is
-     Is_Initialized : Boolean := False;
-     procedure Initialize is
-     begin
-       if not Is_Initialized then
-         Host.Set(Ini.Get_Value("database", "host", ""));
-         Port := Ini.Get_Value("database", "port", 5432);
-         Login.Set(Ini.Get_Value("database", "username", ""));
-         Password.Set(Ini.Get_Value("database", "password", ""));
-         Is_Initialized := True;
-       end if;
-     end Initialize;
-   end Global;
-   ----------------------------------------
-
-
+ 
   function Do_Service(Request : in AWS.Status.Data;
                       Method  : in String) return AWS.Response.Data is
     use Calendar2;
@@ -117,11 +94,11 @@ procedure Bot_Web_Server is
       
       
       Sql.Connect
-        (Host     => Global.Host.Fix_String,
-         Port     => Global.Port,
+        (Host     => Bot_Ws_Services.Global.Host.Fix_String,
+         Port     => Bot_Ws_Services.Global.Port,
          Db_Name  => Username,                                  -- bnl/jmb/msm
-         Login    => Global.Login.Fix_String, -- always bnl
-         Password => Global.Password.Fix_String);
+         Login    => Bot_Ws_Services.Global.Login.Fix_String, -- always bnl
+         Password => Bot_Ws_Services.Global.Password.Fix_String);
       
       if Context="logout" then
         Response := Aws.Response.Build (Application_JSON,
@@ -319,8 +296,18 @@ procedure Bot_Web_Server is
         end;
       end if;
     elsif Context = "flower" then
-      Bot_Ws_Services.Mail_Moisture_Report(Id => 1, Moisture => 2);
-      return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
+      declare
+        Chipid   : constant String := AWS.Parameters.Get(Params,"chipid");
+        Moisture : constant String := AWS.Parameters.Get(Params,"level");
+        Result   : Boolean := False;
+      begin        
+        Result := Bot_Ws_Services.Mail_Moisture_Report(Id => Chipid, Moisture => Integer_4'Value(Moisture));
+        if Result then 
+          return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
+        else
+          return AWS.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
+        end if;
+      end;          
     else
       return Do_Service(Request, "Get");
     end if;
@@ -345,7 +332,7 @@ procedure Bot_Web_Server is
     Message : Process_Io.Message_Type;
     Is_Time_To_Exit : Boolean := False;
     Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
-    use types;
+    --use Types;
   begin
     loop
       delay 2.0;
@@ -445,7 +432,7 @@ begin
   Logging.Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-  Global.Initialize;
+  Bot_Ws_Services.Global.Initialize;
 
   Logging.Log("Main", "AWS " & AWS.Version & " starting at port 9080" );
   AWS.Config.Set.Server_Name             (O => Config, Value => "BetBot");

@@ -8,8 +8,7 @@ with Ada.Containers;
 
 with Ada.Containers.Doubly_Linked_Lists;
 
-
-with Types; use Types;
+--with Types; use Types;
 with Bot_Types; use Bot_Types;
 with Sql;
 with Calendar2;
@@ -29,12 +28,15 @@ with Ada.Characters.Latin_1;
 
 with AWS;
 with AWS.SMTP;
-with AWS.SMTP.Authentication;
-with AWS.SMTP.Authentication.Plain;
+--with AWS.SMTP.Authentication;
+--with AWS.SMTP.Authentication.Plain;
 with AWS.SMTP.Client;
 with Ada.Directories;
 with GNAT.Sockets;
 with Ada.Environment_Variables;
+with Table_Freadings;
+with Table_Fsensors;
+
 
 
 package body Bot_Ws_Services is
@@ -58,7 +60,28 @@ package body Bot_Ws_Services is
   
   ------------------------------------------------------------------
 
+  Is_Initialized : Boolean := False;
+  
 
+  package body Global is
+    
+     procedure Initialize is
+     begin
+       if not Is_Initialized then
+         Host.Set(Ini.Get_Value("database", "host", ""));
+         Port := Ini.Get_Value("database", "port", 5432);
+         Login.Set(Ini.Get_Value("database", "username", ""));
+         Password.Set(Ini.Get_Value("database", "password", ""));
+         Is_Initialized := True;
+       end if;
+     end Initialize;
+   end Global;
+   ----------------------------------------
+  
+  
+  
+  
+  
   function Positive_Answer( Context : in String)  return String is
     Json_Reply      : Json_Value := Create_Object;
     Service         : constant String := "Positive_Answer";
@@ -984,49 +1007,114 @@ package body Bot_Ws_Services is
   
   
   -- for moisture in flowers
-  
+  -----------------------------------------------------  
 
-  procedure Mail_Moisture_Report(Id : Integer; Moisture : Integer) is
+  function Log_Data(Id : String; Moisture : Integer_4) return Boolean is
+    Service       : constant String := "MMR.Log_Data";
+    T             : Sql.Transaction_Type;
+    Freading_Data :  Table_Freadings.Data_Type;
+    Fsensor_Data  :  Table_Fsensors.Data_Type;
+    type Eos_Type is (Fsensor); --,Freading);
+    Eos           : array (Eos_Type'Range) of Boolean := (others => False);    
+    Result        : Boolean := False;
+    Now           : Calendar2.Time_Type := Calendar2.Clock;
+    use Calendar2;    
+  begin
+    if Sql.Is_Session_Open then
+      Logging.Log(Service, "was already connected, disconnect!");
+      Sql.Close_Session;
+      Logging.Log(Service, "did disconnect!");
+    end if;      
+      
+    Sql.Connect
+      (Host     => Global.Host.Fix_String,
+       Port     => Global.Port,
+       Db_Name  => "flowers",
+       Login    => Global.Login.Fix_String, -- always bnl
+       Password => Global.Password.Fix_String);
+    
+    Logging.Log(Service, "did connect to flowers");
+    T.Start;
+    Move(Id, Freading_Data.Macaddress);
+    Freading_Data.Created := Now;
+    Freading_Data.Reading := Moisture;
+    Freading_Data.Insert;
+    
+    Move(Id, Fsensor_Data.Macaddress);
+    Fsensor_Data.Read(Eos(Fsensor));
+    
+    if not Eos(Fsensor) then
+      Logging.Log(Service, Fsensor_Data.To_String);
+      if Moisture < Fsensor_Data.Threshold 
+        and then Now - Fsensor_Data.Lastnotify > (1,0,0,0,0) --one day ago
+      then
+        Result := True;
+        Fsensor_Data.Lastnotify := Now;
+        Fsensor_Data.Update_Withcheck;
+      else
+        Result := False;
+      end if;
+      Logging.Log(Service, "result " & Result'Img);
+    end if;
+        
+    T.Commit;
+    Sql.Close_Session;
+
+    return Result; 
+  end Log_Data;
+  -----------------------------------------------------  
+
+  Function Mail_Moisture_Report(Id : String; Moisture : Integer_4) return Boolean is
      T       : Calendar2.Time_Type := Calendar2.Clock;
     use AWS;
     Service : constant String := "Mail_Moisture_Report";
     SMTP_Server_Name : constant String := "mailout.telia.com";
     Status           : SMTP.Status;
-    Subject : String :="Dags att vattna blommorna";
+    Subject          : String :="Dags att vattna blommorna";
+    Should_Send_Mail : Boolean := False;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
-    declare
-      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
-                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
+    
+    Should_Send_Mail := Log_Data(Id,Moisture);
+    
+    if Should_Send_Mail then 
+      declare
+        -- Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+        --                            SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
+        --                                            "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
 
-      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
-                                  (SMTP_Server_Name,
-                                   Port       => 465,
-                                   Secure     => True);
-                                   --Credential => Auth'Unchecked_Access);
-      use Ada.Characters.Latin_1;
-      Msg : constant String := 
-          "Fuktnivå :" & Moisture'Img & "%" & Cr & Lf &
-          "tid : " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
-          "sent from: " & GNAT.Sockets.Host_Name ;
+        Smtp_Server : Smtp.Receiver := Smtp.Client.Initialize
+          (Smtp_Server_Name,
+           Port       => 465,
+           Secure     => True);
+        --Credential => Auth'Unchecked_Access);
+        use Ada.Characters.Latin_1;
+        Msg : constant String := 
+                "Fuktnivå :" & Moisture'Img & "%" & Cr & Lf &
+                "tid : " & Calendar2.String_Date_Time_Iso (T, " ", " ") & Cr & Lf &
+                "sent from: " & Gnat.Sockets.Host_Name ;
 
-      Receivers : constant SMTP.Recipients :=  (1=>
-                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com")
-                );
-    begin
-      SMTP.Client.Send(Server  => SMTP_Server,
-                       From    => SMTP.E_Mail ("Blomsterkollen", "betbot@lundin.duckdns.com"),
-                       To      => Receivers,
-                       Subject => Subject,
-                       Message => Msg,
-                       Status  => Status);
-      Log (Object & Service, "subject: " & Subject);
-      Log (Object & Service, "body: " & Msg);
-    end;
-    if not SMTP.Is_Ok (Status) then
-      Log (Object & Service, "Can't send message: " & SMTP.Status_Message (Status));
+        Receivers : constant Smtp.Recipients :=  (1 =>
+                                                    Smtp.E_Mail("B Lundin", "b.f.lundin@gmail.com")
+                                                 );
+      begin
+        Smtp.Client.Send(Server  => Smtp_Server,
+                         From    => Smtp.E_Mail ("Blomsterkollen", "betbot@lundin.duckdns.com"),
+                         To      => Receivers,
+                         Subject => Subject,
+                         Message => Msg,
+                         Status  => Status);
+        Log (Object & Service, "subject: " & Subject);
+        Log (Object & Service, "body: " & Msg);
+      end;
+      if not Smtp.Is_Ok (Status) then
+        Log (Object & Service, "Can't send message: " & Smtp.Status_Message (Status));
+      end if;
     end if;
+    return True;
+  exception
+    when others =>
+      return False;
   end Mail_Moisture_Report;
   --------------------------------
   
