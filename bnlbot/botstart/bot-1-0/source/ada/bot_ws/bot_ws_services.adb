@@ -1045,7 +1045,7 @@ package body Bot_Ws_Services is
     
     if not Eos(Fsensor) then
       Logging.Log(Service, Fsensor_Data.To_String);
-      if Moisture < Fsensor_Data.Threshold 
+      if Moisture > Fsensor_Data.Threshold -- reversed ratio . 1024 = dry, 550= wet. above ca 900 -> time to mail 
         and then Now - Fsensor_Data.Lastnotify > (1,0,0,0,0) --one day ago
       then
         Result := True;
