@@ -1009,7 +1009,7 @@ package body Bot_Ws_Services is
   -- for moisture in flowers
   -----------------------------------------------------  
 
-  function Log_Data(Id : String; Moisture : Integer_4) return Boolean is
+  function Log_Data(Id : String; Moisture : Integer_4;  Moisture_Pct : out integer_4) return Boolean is
     Service       : constant String := "MMR.Log_Data";
     T             : Sql.Transaction_Type;
     Freading_Data :  Table_Freadings.Data_Type;
@@ -1057,6 +1057,7 @@ package body Bot_Ws_Services is
       Logging.Log(Service, "result " & Result'Img);
     end if;
         
+    Moisture_Pct := Integer_4(100 * (1024 - Moisture)/ 1024);
     T.Commit;
     Sql.Close_Session;
 
@@ -1072,10 +1073,11 @@ package body Bot_Ws_Services is
     Status           : SMTP.Status;
     Subject          : String :="Dags att vattna blommorna";
     Should_Send_Mail : Boolean := False;
+    Moisture_Pct     :  Integer_4 := 0;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     
-    Should_Send_Mail := Log_Data(Id,Moisture);
+    Should_Send_Mail := Log_Data(Id, Moisture, Moisture_Pct);
     
     if Should_Send_Mail then 
       declare
@@ -1090,7 +1092,7 @@ package body Bot_Ws_Services is
         --Credential => Auth'Unchecked_Access);
         use Ada.Characters.Latin_1;
         Msg : constant String := 
-                "Fuktnivå :" & Moisture'Img & "%" & Cr & Lf &
+                "Fuktnivå :" & Moisture_Pct'Img & "%" & Cr & Lf &
                 "tid : " & Calendar2.String_Date_Time_Iso (T, " ", " ") & Cr & Lf &
                 "sent from: " & Gnat.Sockets.Host_Name ;
 
