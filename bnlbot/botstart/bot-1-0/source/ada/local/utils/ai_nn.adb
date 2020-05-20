@@ -13,12 +13,12 @@ with  Ada.Environment_Variables;
 
 with Ada.Strings ; use Ada.Strings;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with Table_Aprices;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
 
 with Ada.Containers.Doubly_Linked_Lists;
+with Table_Apriceshistory;
 
 
 procedure Ai_Nn is
@@ -42,8 +42,10 @@ procedure Ai_Nn is
 
 
   type R_Type is record
-    Runner : Table_Arunners.Data_Type;
-    Price  : Table_Aprices.Data_Type;
+    Runner  : Table_Arunners.Data_Type;
+  --  Price   : Table_Aprices.Data_Type;
+    History : Table_Apriceshistory.Data_Type;
+    Market  : Table_Amarkets.Data_Type;
   end record;
 
   package R_Pkg is new Ada.Containers.Doubly_Linked_Lists(R_Type);
@@ -68,41 +70,69 @@ procedure Ai_Nn is
 
   procedure Print(L  : R_Pkg.List ) is
     Cnt         : Integer_4 := 0;
+    Winners : array (1..3) of Integer_4 := (others => -1);
   begin
     -- winner but use placeindex instead to get 1-16 for nn and Python uses 0-based arrays
     for R of L loop
-      if R.Runner.Status(1) = 'W' then
-          Text_Io.Put(Integer_4'Image(R.Runner.Sortprio -1));
-          Text_Io.Put(",");
+      if R.Runner.Status(1) = 'W' then  -- fix for Place later on
+        Winners(1) := R.Runner.Sortprio -1;
+        Winners(2) := R.Runner.Sortprio -1;
+        Winners(3) := R.Runner.Sortprio -1;
         exit;
       end if;
     end loop;
 
     for R of L loop
       Cnt := Cnt + 1;
-
---      Text_Io.Put(R.Runner.Sortprio'Img); -- winner but use placeindex instead to get 1-16 for nn
---      Text_Io.Put(",");
-      Text_Io.Put(Float'Image(Float(R.Price.Backprice)/1000.0));
-      if Cnt < 16 then
+      if Cnt = 1 then
+        for I in Winners'Range loop
+          Text_Io.Put(Winners(I)'img);
+          Text_Io.Put(",");
+        end loop;
+        Text_Io.Put(R.Market.Markettype(1));
         Text_Io.Put(",");
-      end if;
-    end loop;
-
-    while Cnt < 16 loop
-      Cnt := Cnt + 1;
-
-      Text_Io.Put("0.0"); --No-one, fill up to 16
-
-      if Cnt < 16 then
+        Text_Io.Put(R.Market.Marketid);
         Text_Io.Put(",");
       end if;
 
+      Text_Io.Put(Float'Image(Float(R.History.Backprice)/1000.0));
+      if Cnt < 16 then
+        Text_Io.Put(",");
+      end if;
+
+      if R.Market.Numrunners < 16 then
+        if Cnt = R.Market.Numrunners then
+          loop
+            Text_Io.Put("0.0"); --No-one, fill up to 16
+            if Cnt < 15 then
+              Text_Io.Put(",");
+            end if;
+            Cnt := Cnt +1;
+            exit when Cnt = 16;
+          end loop;
+        end if;
+
+      elsif R.Market.Numrunners = 16 then
+        if Cnt > R.Market.Numrunners then
+          loop
+            Text_Io.Put("0.0"); --No-one, fill up to 16
+            if Cnt < 15 then
+              Text_Io.Put(",");
+            end if;
+            Cnt := Cnt +1;
+            exit when Cnt = 16;
+          end loop;
+        end if;
+      end if;
+
+
+
+      if Cnt = 16 then
+        Text_Io.Put_Line("");
+        Cnt := 0;
+      end if;
     end loop;
 
-    if Cnt = 16 then
-      Text_Io.Put_Line("");
-    end if;
 
   end Print;
 
@@ -114,29 +144,24 @@ procedure Ai_Nn is
     R_Data             : R_Type;
   begin
 
-    Select_Runner_With_Price.Prepare("select R.* " &
-                                       "from ARUNNERS R " &
-                                       "where R.STATUS <> 'REMOVED' " &
+    Select_Runner_With_Price.Prepare("select * " &
+                                       "from ARUNNERS R, APRICESHISTORY H, AMARKETS M " &
+                                       "where 1 = 1 " &
+                                       "and H.MARKETID = R.MARKETID " &
+                                       "and M.MARKETID = R.MARKETID " &
                                        "and R.MARKETID = :MARKETID " &
-                                       "order by R.SORTPRIO " );
+                                       "and H.SELECTIONID = R.SELECTIONID " &
+                                       "order by H.PRICETS, R.SORTPRIO " );
 
     Select_Runner_With_Price.Set("MARKETID", Market_Data.Marketid);
-
     Select_Runner_With_Price.Open_Cursor;
     loop
       Select_Runner_With_Price.Fetch(Eos);
       exit when Eos;
-      R_Data.Runner := Table_Arunners.Get(Select_Runner_With_Price);
-      R_Data.Price.Marketid    := R_Data.Runner.Marketid;
-      R_Data.Price.Selectionid := R_Data.Runner.Selectionid;
-      R_Data.Price.Read(Eos);
-
-      if Eos then
-        raise Constraint_Error with "no price " & R_Data.Price.To_String;
-      else
-        R_List.Append(R_Data);
-      end if;
-
+      R_Data.Runner  := Table_Arunners.Get(Select_Runner_With_Price);
+      R_Data.History := Table_Apriceshistory.Get(Select_Runner_With_Price);
+      R_Data.Market := Table_Amarkets.Get(Select_Runner_With_Price);
+      R_List.Append(R_Data);
     end loop;
     Select_Runner_With_Price.Close_Cursor;
     Print(R_List);
@@ -146,12 +171,13 @@ procedure Ai_Nn is
   procedure Get_Market_Data(Market_List  : in out Table_Amarkets.Amarkets_List_Pack2.List) is
 
   begin
-    -- if Global_Side = "BOTH" then
+
     if Ba_Train_Set then
       Select_Markets.Prepare( "select M.* " &
                                "from AMARKETS M " &
                                "where true " &
                                "and M.MARKETTYPE = 'WIN' " &
+                             --  "and M.MARKETID = '1.151516839' " &
                                "and M.NUMRUNNERS >= 8 " &
                                "and M.NUMRUNNERS <= 16 " &
                                "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
@@ -161,16 +187,13 @@ procedure Ai_Nn is
                                "from AMARKETS M " &
                                "where true " &
                                "and M.MARKETTYPE = 'WIN' " &
+                           --    "and M.MARKETID = '1.151516839' " &
                                "and M.NUMRUNNERS >= 8 " &
                                "and M.NUMRUNNERS <= 16 " &
                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
                                "order by M.STARTTS");
     end if;
 
-    -- Select_Runners.Set("SIDE", Global_Side);
-    --  end if;
-
-    -- Select_Runners.Set_Timestamp("STARTDATE", Global_Start_Date);
     Table_Amarkets.Read_List(Select_Markets, Market_List);
   end Get_Market_Data;
   ------------------------------------------------------
