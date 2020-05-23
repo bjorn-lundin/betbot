@@ -31,6 +31,7 @@ procedure Ai_Nn is
   Sa_Startdate        : aliased Gnat.Strings.String_Access;
   Sa_Side             : aliased Gnat.Strings.String_Access;
   Ba_Train_Set        : aliased Boolean := False;
+  Ba_Layprice        : aliased Boolean := False;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
   pragma Unreferenced(Global_Start_Date);
@@ -70,8 +71,17 @@ procedure Ai_Nn is
 
   procedure Print(L  : R_Pkg.List ) is
     Cnt         : Integer_4 := 0;
-    Winners : array (1..3) of Integer_4 := (others => -1);
+    Winners     : array (1..3) of Integer_4 := (others => -1);
+
+    F           : Text_Io.File_Type;
+    Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/";
+   -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
+    File_Created : Boolean := False;
+
   begin
+
+     Text_Io.Put_Line(Text_Io.Standard_Error,"length list" & L.Length'Img);
+
     -- winner but use placeindex instead to get 1-16 for nn and Python uses 0-based arrays
     for R of L loop
       if R.Runner.Status(1) = 'W' then  -- fix for Place later on
@@ -82,42 +92,47 @@ procedure Ai_Nn is
       end if;
     end loop;
 
+
     for R of L loop
       Cnt := Cnt + 1;
       if Cnt = 1 then
+        if not File_Created then
+          Text_Io.Put_Line(Text_Io.Standard_Error,"open '" & R.Market.Marketid & "'");
+          if Ba_Train_Set then
+            Text_Io.Create(F,Text_Io.Out_File, Path & "train/" & R.Market.Marketid & ".csv");
+          else
+            Text_Io.Create(F,Text_Io.Out_File, Path & "sample/" & R.Market.Marketid & ".csv");
+          end if;
+          File_Created := True;
+        end if;
+
         for I in Winners'Range loop
-          Text_Io.Put(Winners(I)'img);
-          Text_Io.Put(",");
+          Text_Io.Put(F, winners(I)'img);
+          Text_Io.Put(F, ",");
         end loop;
-        Text_Io.Put(R.Market.Markettype(1));
-        Text_Io.Put(",");
-        Text_Io.Put(R.Market.Marketid);
-        Text_Io.Put(",");
+        Text_Io.Put(F, R.Market.Markettype(1));
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, R.Market.Numrunners'Img);
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, R.Market.Marketid);
+        Text_Io.Put(F, ",");
+      end if;
+      if Ba_Layprice then
+        Text_Io.Put(F, Float'Image(Float(R.History.Layprice)/1000.0));
+      else
+        Text_Io.Put(F, Float'Image(Float(R.History.Backprice)/1000.0));
       end if;
 
-      Text_Io.Put(Float'Image(Float(R.History.Backprice)/1000.0));
       if Cnt < 16 then
-        Text_Io.Put(",");
+        Text_Io.Put(F, ",");
       end if;
 
       if R.Market.Numrunners < 16 then
         if Cnt = R.Market.Numrunners then
           loop
-            Text_Io.Put("0.0"); --No-one, fill up to 16
+            Text_Io.Put(F, "0.0"); --No-one, fill up to 16
             if Cnt < 15 then
-              Text_Io.Put(",");
-            end if;
-            Cnt := Cnt +1;
-            exit when Cnt = 16;
-          end loop;
-        end if;
-
-      elsif R.Market.Numrunners = 16 then
-        if Cnt > R.Market.Numrunners then
-          loop
-            Text_Io.Put("0.0"); --No-one, fill up to 16
-            if Cnt < 15 then
-              Text_Io.Put(",");
+              Text_Io.Put(F, ",");
             end if;
             Cnt := Cnt +1;
             exit when Cnt = 16;
@@ -125,14 +140,15 @@ procedure Ai_Nn is
         end if;
       end if;
 
-
-
       if Cnt = 16 then
-        Text_Io.Put_Line("");
+        Text_Io.Put_Line(F, "");
         Cnt := 0;
       end if;
     end loop;
 
+
+    Text_Io.Put_Line(Text_Io.Standard_Error,"close file");
+    Text_Io.Close(F);
 
   end Print;
 
@@ -164,7 +180,12 @@ procedure Ai_Nn is
       R_List.Append(R_Data);
     end loop;
     Select_Runner_With_Price.Close_Cursor;
-    Print(R_List);
+    if Integer(R_List.Length) > 1000 then
+      Print(R_List);
+    else
+      Text_Io.Put_Line(Text_Io.Standard_Error,Market_Data.Marketid & " had only" &  R_List.Length'Img & " lines");
+    end if;
+
   end Get_Runner_Data;
   ------------------------------------------------------
 
@@ -172,27 +193,26 @@ procedure Ai_Nn is
 
   begin
 
-    if Ba_Train_Set then
-      Select_Markets.Prepare( "select M.* " &
-                               "from AMARKETS M " &
-                               "where true " &
-                               "and M.MARKETTYPE = 'WIN' " &
-                             --  "and M.MARKETID = '1.151516839' " &
-                               "and M.NUMRUNNERS >= 8 " &
-                               "and M.NUMRUNNERS <= 16 " &
-                               "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
-                               "order by M.STARTTS");
-    else -- to verify with - just 10 %
-      Select_Markets.Prepare("select M.* " &
-                               "from AMARKETS M " &
-                               "where true " &
-                               "and M.MARKETTYPE = 'WIN' " &
-                           --    "and M.MARKETID = '1.151516839' " &
-                               "and M.NUMRUNNERS >= 8 " &
-                               "and M.NUMRUNNERS <= 16 " &
-                               "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
-                               "order by M.STARTTS");
-    end if;
+                       if Ba_Train_Set then
+                       Select_Markets.Prepare( "select M.* " &
+                                                 "from AMARKETS M " &
+                                                 "where true " &
+                                                 "and M.MARKETTYPE = 'WIN' " &
+                                                 "and M.NUMRUNNERS >= 8 " &
+                                                 "and M.NUMRUNNERS <= 16 " &
+                                               --  "and m.marketid = '1.151619897' " &
+                                                 "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
+                                                 "order by M.STARTTS");
+                       else -- to verify with - just 10 %
+                       Select_Markets.Prepare("select M.* " &
+                                                "from AMARKETS M " &
+                                                "where true " &
+                                                "and M.MARKETTYPE = 'WIN' " &
+                                                "and M.NUMRUNNERS >= 8 " &
+                                                "and M.NUMRUNNERS <= 16 " &
+                                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
+                                                "order by M.STARTTS");
+                       end if;
 
     Table_Amarkets.Read_List(Select_Markets, Market_List);
   end Get_Market_Data;
@@ -220,6 +240,11 @@ begin
      Long_Switch => "--trainset",
      Help        => "Trainset - otherwise sample set");
 
+ Define_Switch
+    (Cmd_Line,
+     Ba_Layprice'Access,
+     Long_Switch => "--layprice",
+     Help        => "Layprices - otherwise backprices");
 
 
   Getopt (Cmd_Line);  -- process the command line
