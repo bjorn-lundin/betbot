@@ -82,8 +82,11 @@ package Bot_Types is
 
    subtype Marketid_Type            is String(Table_Amarkets.Empty_Data.Marketid'range);
    subtype Marketname_Type          is String(Table_Amarkets.Empty_Data.Marketname'range);
+   subtype Markettype_Type          is String(Table_Amarkets.Empty_Data.Markettype'range);
+
    subtype Eventid_Type             is String(Table_Aevents.Empty_Data.Eventid'range);
    subtype Eventname_Type           is String(Table_Aevents.Empty_Data.Eventname'range);
+
    subtype Runnername_Type          is String(Table_Arunners.Empty_Data.Runnername'range);
    subtype Status_Type              is String(Table_Arunners.Empty_Data.Status'range);
    subtype Betname_Type             is String(Table_Abets.Empty_Data.Betname'range);
