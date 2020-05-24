@@ -19,6 +19,7 @@ with Table_Arunners;
 
 with Ada.Containers.Doubly_Linked_Lists;
 with Table_Apriceshistory;
+with Bot_Types;
 
 
 procedure Ai_Nn is
@@ -70,16 +71,78 @@ procedure Ai_Nn is
 
 
   procedure Print(L  : R_Pkg.List ) is
-    Cnt         : Integer_4 := 0;
+    Cnt         : Integer := 0;
     Winners     : array (1..3) of Integer_4 := (others => -1);
 
     F           : Text_Io.File_Type;
     Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/";
-   -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
-    File_Created : Boolean := False;
+    -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
+    Num_Real_Runners : Integer := 0;
+    Pricets     : Calendar2.Time_Type := Calendar2.Time_Type_First;
+
+    type Print_Data_Type is record
+      Backprice : Fixed_Type := 0.0;
+      Layprice  : Fixed_Type := 0.0;
+      Selectionid : Integer_4 := 0;
+      Sortprio : Integer_4 := 0;
+    end record;
+
+    Data        : array(1..16) of Print_Data_Type;
+    Marketid    : Bot_Types.Marketid_Type := (others => ' ');
+    Markettype  : Bot_Types.Markettype_Type := (others => ' ');
+
+    Current_Lowest : Fixed_Type := 1_000_000.0;
+    Leader_Selid   : Integer_4  := 0;
+    Leader_Pyhton  : Integer    := -1;  --number (idx) in python (zero-based) array
+
+
+    ------------------------------------------------
+    procedure Do_Print_Line(F : Text_Io.File_Type) is
+    begin
+
+      for I in Winners'Range loop
+        Text_Io.Put(F, Winners(I)'Img);
+        Text_Io.Put(F, ",");
+      end loop;
+
+      Text_Io.Put(F, Markettype(1));
+      Text_Io.Put(F, ",");
+      Text_Io.Put(F, Num_Real_Runners'Img);
+      Text_Io.Put(F, ",");
+      Text_Io.Put(F, Marketid);
+      Text_Io.Put(F, ",");
+
+      Text_Io.Put(F, Float'Image(Float(Current_Lowest)));
+      Text_Io.Put(F, ",");
+      Text_Io.Put(F, Leader_Selid'Img);
+      Text_Io.Put(F, ",");
+      Text_Io.Put(F, Leader_Pyhton'Img);
+      Text_Io.Put(F, ",");
+
+
+      for I in Data'Range loop
+        Text_Io.Put(F, Data(I).Selectionid'img);
+        Text_Io.Put(F, ",");
+      end loop;
+
+      for I in Data'Range loop
+        if Ba_Layprice then
+          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice)/1000.0));
+        else
+          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice)/1000.0));
+        end if;
+
+        if I = Data'Last then
+          Text_Io.Put_Line(F, "");
+        else
+          Text_Io.Put(F, ",");
+        end if;
+      end loop;
+    end Do_Print_Line;
+    ------------------------------------------------
+
 
   begin
-
      Text_Io.Put_Line(Text_Io.Standard_Error,"length list" & L.Length'Img);
 
     -- winner but use placeindex instead to get 1-16 for nn and Python uses 0-based arrays
@@ -88,64 +151,49 @@ procedure Ai_Nn is
         Winners(1) := R.Runner.Sortprio -1;
         Winners(2) := R.Runner.Sortprio -1;
         Winners(3) := R.Runner.Sortprio -1;
+        Pricets := R.History.Pricets;
+        Marketid := R.Runner.Marketid;
+        Markettype := R.Market.Markettype;
         exit;
       end if;
     end loop;
 
+    --count runners
+    for R of L loop
+      exit when Pricets /= R.History.Pricets;
+      Num_Real_Runners := Num_Real_Runners + 1;
+    end loop;
+
+    Text_Io.Put_Line(Text_Io.Standard_Error,"open '" & Marketid & "'");
+    if Ba_Train_Set then
+      Text_Io.Create(F,Text_Io.Out_File, Path & "train/" & Marketid & ".csv");
+    else
+      Text_Io.Create(F,Text_Io.Out_File, Path & "sample/" & Marketid & ".csv");
+    end if;
 
     for R of L loop
       Cnt := Cnt + 1;
-      if Cnt = 1 then
-        if not File_Created then
-          Text_Io.Put_Line(Text_Io.Standard_Error,"open '" & R.Market.Marketid & "'");
-          if Ba_Train_Set then
-            Text_Io.Create(F,Text_Io.Out_File, Path & "train/" & R.Market.Marketid & ".csv");
-          else
-            Text_Io.Create(F,Text_Io.Out_File, Path & "sample/" & R.Market.Marketid & ".csv");
-          end if;
-          File_Created := True;
-        end if;
 
-        for I in Winners'Range loop
-          Text_Io.Put(F, winners(I)'img);
-          Text_Io.Put(F, ",");
-        end loop;
-        Text_Io.Put(F, R.Market.Markettype(1));
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, R.Market.Numrunners'Img);
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, R.Market.Marketid);
-        Text_Io.Put(F, ",");
-      end if;
-      if Ba_Layprice then
-        Text_Io.Put(F, Float'Image(Float(R.History.Layprice)/1000.0));
-      else
-        Text_Io.Put(F, Float'Image(Float(R.History.Backprice)/1000.0));
+      Data(Cnt).Backprice := R.History.Backprice;
+      Data(Cnt).Layprice  := R.History.Layprice;
+      Data(Cnt).Selectionid := R.Runner.Selectionid;
+      Data(Cnt).Sortprio := R.Runner.Sortprio;
+
+      if Data(Cnt).Backprice > 0.0
+        and then Data(Cnt).Backprice < Current_Lowest then
+        Current_Lowest := Data(Cnt).Backprice;
+        Leader_Selid := Data(Cnt).Selectionid;
+        Leader_Pyhton := Cnt -1;  --number (idx) in python (zero-based) array
       end if;
 
-      if Cnt < 16 then
-        Text_Io.Put(F, ",");
-      end if;
-
-      if R.Market.Numrunners < 16 then
-        if Cnt = R.Market.Numrunners then
-          loop
-            Text_Io.Put(F, "0.0"); --No-one, fill up to 16
-            if Cnt < 15 then
-              Text_Io.Put(F, ",");
-            end if;
-            Cnt := Cnt +1;
-            exit when Cnt = 16;
-          end loop;
-        end if;
-      end if;
-
-      if Cnt = 16 then
-        Text_Io.Put_Line(F, "");
+      if Cnt = Num_Real_Runners then
+        Do_Print_Line(F);
         Cnt := 0;
+        Current_Lowest := 1_000_000.0;
+        Leader_Selid   := 0;
+        Leader_Pyhton  := -1;
       end if;
     end loop;
-
 
     Text_Io.Put_Line(Text_Io.Standard_Error,"close file");
     Text_Io.Close(F);
@@ -167,6 +215,7 @@ procedure Ai_Nn is
                                        "and M.MARKETID = R.MARKETID " &
                                        "and R.MARKETID = :MARKETID " &
                                        "and H.SELECTIONID = R.SELECTIONID " &
+                                       "and R.STATUS <> 'REMOVED' " &
                                        "order by H.PRICETS, R.SORTPRIO " );
 
     Select_Runner_With_Price.Set("MARKETID", Market_Data.Marketid);
