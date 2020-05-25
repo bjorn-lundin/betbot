@@ -1,22 +1,15 @@
-with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
-with Sql;
-with Calendar2; use Calendar2;
-with Logging;               use Logging;
-with Text_Io;
-with Ini;
+with Ada.Containers.Doubly_Linked_Lists;
 with  Ada.Environment_Variables;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
 with Ada.Strings ; use Ada.Strings;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with Stacktrace;
-with Table_Amarkets;
-with Table_Arunners;
+with Ada.Directories;
+with Text_Io;
 
-with Ada.Containers.Doubly_Linked_Lists;
-with Table_Apriceshistory;
+with Gnat.Command_Line; use Gnat.Command_Line;
+with Gnat.Strings;
 
 with Aws;
 with Aws.Headers;
@@ -27,6 +20,18 @@ pragma Elaborate_All (Aws.Headers);
 
 with Gnat; use Gnat;
 with Gnat.Awk;
+
+with Sql;
+with Calendar2; use Calendar2;
+with Logging;               use Logging;
+with Ini;
+with Types; use Types;
+with Stacktrace;
+with Table_Amarkets;
+with Table_Arunners;
+
+with Table_Apriceshistory;
+
 
 
 procedure Ai_Nn_Diff is
@@ -46,7 +51,7 @@ procedure Ai_Nn_Diff is
 
   Gdebug : Boolean := True;
 
-
+  Global_Profit : Float := 0.0;
 
   type R_Type is record
     Runner  : Table_Arunners.Data_Type;
@@ -57,6 +62,9 @@ procedure Ai_Nn_Diff is
   end record;
 
   package R_Pkg is new Ada.Containers.Doubly_Linked_Lists(R_Type);
+  package String_Object_List is new Ada.Containers.Doubly_Linked_Lists(String_Object);
+  File_List : String_Object_List.List;
+
 
   type Odds_Type is (Previous, Current, Diff);
   Odds : array(Odds_Type'Range,1..16) of Float := (others => (others => 0.0));
@@ -88,20 +96,20 @@ procedure Ai_Nn_Diff is
     Aws.Headers.Add (Http_Headers, "Accept", "application/json");
     Aws.Headers.Add (Http_Headers, "Content-Length", Data'Length'Img);
 
-    Log(Me  & "Get_JSON_Reply", "posting: " & Data);
+  --  Log(Me  & "Get_JSON_Reply", "posting: " & Data);
     Aws_Reply := Aws.Client.Post (Url          => "http://192.168.1.136:8080",
                                   Data         => Data,
                                   Content_Type => "application/json",
                                   Headers      => Http_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
-    Log(Me & "Get_JSON_Reply", "Got reply, check it ");
+--    Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 
     declare
       Reply : String := Aws.Response.Message_Body(Aws_Reply);
     begin
 
       if Reply /= "Post Timeout" then
-        Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
+       -- Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
         return Reply = "1";
       else
         Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
@@ -120,18 +128,42 @@ procedure Ai_Nn_Diff is
   ------------------------------------------------------------------------------
 
 
+  procedure Get_Files(Filename_List : in out  String_Object_List.List) is
+    Dir : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample";
+    use Ada.Directories;
+    My_Search : Search_Type;
+    My_Entry  : Directory_Entry_Type;
+  begin
+
+    Start_Search
+      (Search    => My_Search,
+       Directory => Dir,
+       Pattern   => "*.csv",
+       Filter    => (Ordinary_File => True, others => False));
+
+    loop
+      exit when not More_Entries (My_Search);
+      Get_Next_Entry (My_Search, My_Entry);
+      declare
+        S : String_Object := Create(Full_Name( My_Entry));
+      begin
+        Filename_List.Append(S);
+      end;
+    end loop;
+
+    End_Search (My_Search);
+  end Get_Files;
+  ----------------------------------------
 
 
-
-  procedure Parse_File is
+  procedure Parse_File(Filename : String) is
     Do_Bet        : Boolean := False;
     Computer_File : Awk.Session_Type;
     First         : Boolean := True;
     Cnt : Integer := 0;
   begin
     Awk.Set_Current (Computer_File);
-    Awk.Open (Separators => ",",
-              Filename   => Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample/1.167829004.csv");
+    Awk.Open (Separators => ",", Filename => Filename);
 
     while not Awk.End_Of_File loop
       Awk.Get_Line;
@@ -152,7 +184,7 @@ procedure Ai_Nn_Diff is
       begin
 
         for I in 1..16 loop
-          Odds(Current,I) := Float'Value(Awk.Field(Awk.Count(I+5)));
+          Odds(Current,I) := Float'Value(Awk.Field(Awk.Count(I+6)));
           Odds(Diff,I) := Odds(Current,I) - Odds(Previous,I);
           Append(Odds_Diff, Create(Odds(Diff,I)));
           Append(Odds_Curr, Create(Odds(Current,I)));
@@ -161,14 +193,42 @@ procedure Ai_Nn_Diff is
 
         Params.Set_Field (Field_Name => "odds", Field => Odds_Diff);
         Params.Set_Field (Field_Name => "curr", Field => Odds_Curr);
-        Params.Set_Field (Field_Name => "winner", Field => Create(Long_Long_Integer'Value(Awk.Field(1))));
 
-        if not First then
-          Do_Bet := Get_Json_Reply(Params);
-        else
-          First := False;
-        end if;
 
+        declare
+          Winner        : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(1));
+          Lowest_Selid  : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(8));
+          Lowest_Pidx   : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(9));
+          Lowest_Odds   : Float             := Float'Value(Awk.Field(7));
+          Profit        : Float             := 0.0;
+        begin
+
+
+          Params.Set_Field (Field_Name => "winner", Field => Create(Winner));
+          Params.Set_Field (Field_Name => "lowest_selid", Field => Create(Lowest_Selid));
+          Params.Set_Field (Field_Name => "lowest_pidx", Field => Create(Lowest_Pidx));
+          Params.Set_Field (Field_Name => "lowest_odds", Field => Create(Lowest_Odds));
+
+          if Fixed_Type'Value(Awk.Field(7)) > 1.0 then
+            if not First then
+              Do_Bet := Get_Json_Reply(Params);
+
+              if Do_Bet then
+                if  Winner = Lowest_Pidx then -- loss
+                  Profit := - 30.0 * (Lowest_Odds -1.0);
+                else
+                  Profit := 28.5;
+                end if;
+                Global_Profit := Global_Profit + Profit;
+                Log("Profit", Profit'Img & " / " & Global_Profit'Img);
+
+              end if;
+
+            else
+              First := False;
+            end if;
+          end if;
+        end;
       end;
 
       exit when Do_Bet;
@@ -240,7 +300,12 @@ begin
   Debug("db Connected");
 
   T.Start;
-  Parse_File;
+
+  Get_Files(Filename_List => File_List);
+  for F of File_List loop
+    Parse_File(F.Fix_String);
+  end loop;
+
   T.Commit;
   Sql.Close_Session;
 
