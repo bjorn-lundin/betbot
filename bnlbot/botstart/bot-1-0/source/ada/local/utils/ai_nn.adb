@@ -133,7 +133,9 @@ procedure Ai_Nn is
         end if;
 
         if I = Data'Last then
-          Text_Io.Put_Line(F, "");
+          -- put here anything after the last array
+          Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => ""));
+          Text_Io.Put_Line(F, "");  -- <-- last statement on this row
         else
           Text_Io.Put(F, ",");
         end if;
@@ -187,6 +189,7 @@ procedure Ai_Nn is
       end if;
 
       if Cnt = Num_Real_Runners then
+        Pricets := R.History.Pricets; -- update to this line's pricets
         Do_Print_Line(F);
         Cnt := 0;
         Current_Lowest := 1_000_000.0;

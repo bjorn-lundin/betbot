@@ -26,11 +26,15 @@ with Calendar2; use Calendar2;
 with Logging;               use Logging;
 with Ini;
 with Types; use Types;
+with Bot_Types;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
 
 with Table_Apriceshistory;
+with Bets;
+with Runners;
+with Markets;
 
 
 
@@ -86,17 +90,19 @@ procedure Ai_Nn_Diff is
 
 
 
-  function  Get_Json_Reply (Query : in Json_Value) return Boolean is
+  Procedure  Get_Json_Reply (Query : in Json_Value; Do_Bet : out Boolean) is
     Aws_Reply    : Aws.Response.Data;
     Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Data         : String := Query.Write;
     Me           : String := "Get_JSON_Reply";
     Post_Timeout :  exception;
   begin
+    Do_Bet := False;
+
     Aws.Headers.Add (Http_Headers, "Accept", "application/json");
     Aws.Headers.Add (Http_Headers, "Content-Length", Data'Length'Img);
 
-  --  Log(Me  & "Get_JSON_Reply", "posting: " & Data);
+    Log(Me  & "Get_JSON_Reply", "posting: " & Data);
     Aws_Reply := Aws.Client.Post (Url          => "http://192.168.1.136:8080",
                                   Data         => Data,
                                   Content_Type => "application/json",
@@ -110,7 +116,8 @@ procedure Ai_Nn_Diff is
 
       if Reply /= "Post Timeout" then
        -- Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
-        return Reply = "1";
+        Do_Bet := Reply = "1";
+
       else
         Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
         raise Post_Timeout ;
@@ -121,7 +128,6 @@ procedure Ai_Nn_Diff is
         Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
         Log(Me & "Get_JSON_Reply", "Bad reply" & Aws.Response.Message_Body(Aws_Reply));
         Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
-        return False;
     end;
 
   end Get_Json_Reply;
@@ -134,7 +140,7 @@ procedure Ai_Nn_Diff is
     My_Search : Search_Type;
     My_Entry  : Directory_Entry_Type;
   begin
-
+    Log("Get_Files", "start");
     Start_Search
       (Search    => My_Search,
        Directory => Dir,
@@ -150,18 +156,21 @@ procedure Ai_Nn_Diff is
         Filename_List.Append(S);
       end;
     end loop;
-
+    Log("Get_Files", "stop");
     End_Search (My_Search);
   end Get_Files;
   ----------------------------------------
 
 
   procedure Parse_File(Filename : String) is
-    Do_Bet        : Boolean := False;
-    Computer_File : Awk.Session_Type;
-    First         : Boolean := True;
-    Cnt : Integer := 0;
+    Do_Bet          : Boolean := False;
+    Computer_File   : Awk.Session_Type;
+    First           : Boolean := True;
+    Cnt             : Integer := 0;
+    Profit          : Float   := 0.0;
   begin
+
+    Log("Parse_File", Filename);
     Awk.Set_Current (Computer_File);
     Awk.Open (Separators => ",", Filename => Filename);
 
@@ -176,7 +185,6 @@ procedure Ai_Nn_Diff is
       end if;
       Cnt := Cnt +1;
 
-
       declare
         Params        : Json_Value := Create_Object;
         Odds_Diff     : Json_Array := Empty_Array;
@@ -184,35 +192,56 @@ procedure Ai_Nn_Diff is
       begin
 
         for I in 1..16 loop
-          Odds(Current,I) := Float'Value(Awk.Field(Awk.Count(I+6)));
-          Odds(Diff,I) := Odds(Current,I) - Odds(Previous,I);
+          Odds(Current,I)  := Float'Value(Awk.Field(Awk.Count(I+25)));
+          Odds(Diff,I)     := Odds(Current,I) - Odds(Previous,I);
+          Odds(Previous,I) := Odds(Current,I);
+        end loop;
+
+        for I in 1..16 loop
           Append(Odds_Diff, Create(Odds(Diff,I)));
           Append(Odds_Curr, Create(Odds(Current,I)));
-          Odds(Previous,I) := Odds(Current,I);
         end loop;
 
         Params.Set_Field (Field_Name => "odds", Field => Odds_Diff);
         Params.Set_Field (Field_Name => "curr", Field => Odds_Curr);
 
-
         declare
-          Winner        : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(1));
-          Lowest_Selid  : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(8));
-          Lowest_Pidx   : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(9));
-          Lowest_Odds   : Float             := Float'Value(Awk.Field(7));
-          Profit        : Float             := 0.0;
+          use Bot_Types;
+          Winner          : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(1));
+          Lowest_Selid    : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(8));
+          Lowest_Pidx     : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(9));
+          Lowest_Odds     : Float             := Float'Value(Awk.Field(7));
+          Ts              : Calendar2.Time_Type := Calendar2.To_Time_Type(Date_And_Time_Str => Awk.Field(42)) ;
+          Marketid        : Marketid_Type       := Awk.Field(6);
+          Laybet          : Bets.Bet_Type;
+          Runner          : Runners.Runner_Type;
+          Market          : Markets.Market_Type;
+          Betname         : Betname_Type      := (others => ' ');
         begin
-
 
           Params.Set_Field (Field_Name => "winner", Field => Create(Winner));
           Params.Set_Field (Field_Name => "lowest_selid", Field => Create(Lowest_Selid));
           Params.Set_Field (Field_Name => "lowest_pidx", Field => Create(Lowest_Pidx));
           Params.Set_Field (Field_Name => "lowest_odds", Field => Create(Lowest_Odds));
+          Params.Set_Field (Field_Name => "pricets", Field => Create(Ts.To_String));
 
-          if Fixed_Type'Value(Awk.Field(7)) > 1.0 then
+          if Fixed_Type'Value(Awk.Field(7)) > Fixed_Type(1.0) then
             if not First then
-              Do_Bet := Get_Json_Reply(Params);
-
+              Get_Json_Reply(Params,Do_Bet);
+--                if Do_Bet then
+--                  Betname(1..19) := "LAY_AI_0.0001_0.999";
+--                  Market.Marketid := Marketid;
+--                  Runner.Selectionid := Integer_4(Lowest_Selid);
+--
+--                  Laybet := Bets.Create(Name   => Betname,
+--                                        Side   => Lay,
+--                                        Size   => 30.0,
+--                                        Price  => Price_Type(Lowest_Odds),
+--                                        Placed => Ts,
+--                                        Runner => Runner,
+--                                        Market => Market);
+--                  Laybet.Insert_And_Nullify_Betwon;
+--                end if;
               if Do_Bet then
                 if  Winner = Lowest_Pidx then -- loss
                   Profit := - 30.0 * (Lowest_Odds -1.0);
@@ -220,12 +249,7 @@ procedure Ai_Nn_Diff is
                   Profit := 28.5;
                 end if;
                 Global_Profit := Global_Profit + Profit;
-                Log("Profit", Profit'Img & " / " & Global_Profit'Img);
-
               end if;
-
-            else
-              First := False;
             end if;
           end if;
         end;
@@ -234,8 +258,10 @@ procedure Ai_Nn_Diff is
       exit when Do_Bet;
      -- exit when cnt >= 5;
 
+      First := False;
     end loop;
     Awk.Close (Computer_File);
+    Log("Profit", Filename & " -> " & profit'Img & " / " & Global_Profit'Img);
 
   end Parse_File;
 
