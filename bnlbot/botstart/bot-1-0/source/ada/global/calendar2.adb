@@ -70,8 +70,10 @@ package body Calendar2 is
 
    -- Date_And_Time_Str => "YYYY-MM-DD HH:MM:SS.ZZZ"
   function To_Time_Type (Date_And_Time_Str : String) return Time_Type is
+  --reindex strings to start with 1
+    Date_Ts : String (1 .. Date_And_Time_Str'Last - Date_And_Time_Str'First + 1) := Date_And_Time_Str;
   begin
-    return To_Time_Type(Date_And_Time_Str(1..10),Date_And_Time_Str(12..23));
+    return To_Time_Type(Date_Ts(1..10), Date_Ts(12..23));
   end To_Time_Type;
 
 
