@@ -228,28 +228,28 @@ procedure Ai_Nn_Diff is
           if Fixed_Type'Value(Awk.Field(7)) > Fixed_Type(1.0) then
             if not First then
               Get_Json_Reply(Params,Do_Bet);
---                if Do_Bet then
---                  Betname(1..19) := "LAY_AI_0.0001_0.999";
---                  Market.Marketid := Marketid;
---                  Runner.Selectionid := Integer_4(Lowest_Selid);
---
---                  Laybet := Bets.Create(Name   => Betname,
---                                        Side   => Lay,
---                                        Size   => 30.0,
---                                        Price  => Price_Type(Lowest_Odds),
---                                        Placed => Ts,
---                                        Runner => Runner,
---                                        Market => Market);
---                  Laybet.Insert_And_Nullify_Betwon;
---                end if;
               if Do_Bet then
-                if  Winner = Lowest_Pidx then -- loss
+                Betname(1..19) := "LAY_AI_0.0001_0.999";
+                Market.Marketid := Marketid;
+                Runner.Selectionid := Integer_4(Lowest_Selid);
+
+                Laybet := Bets.Create(Name   => Betname,
+                                      Side   => Lay,
+                                      Size   => 30.0,
+                                      Price  => Price_Type(Lowest_Odds),
+                                      Placed => Ts,
+                                      Runner => Runner,
+                                      Market => Market);
+                Laybet.Insert_And_Nullify_Betwon;
+
+                if Winner = Lowest_Pidx then -- loss
                   Profit := - 30.0 * (Lowest_Odds -1.0);
                 else
                   Profit := 28.5;
                 end if;
                 Global_Profit := Global_Profit + Profit;
               end if;
+
             end if;
           end if;
         end;
