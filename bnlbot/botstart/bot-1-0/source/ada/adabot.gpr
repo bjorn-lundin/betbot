@@ -45,6 +45,7 @@ project Adabot is
                     "do_greenup_1.adb",
                     "show_race_lengths.adb",
                     "rewards.adb",
+                    "check_matched_sim_bets.adb",
                     "greenup_lay_first_all.adb",
                     "print_win_place_markets.adb",
                     "lay_and_back_after_progress.adb"
