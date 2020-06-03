@@ -1,5 +1,5 @@
 with Ada.Environment_Variables;
-with Ada.Containers;
+--with Ada.Containers;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with GNAT.Strings;
 
@@ -21,15 +21,15 @@ procedure Check_Matched_Sim_Bets is
   package EV renames Ada.Environment_Variables;
   Cmd_Line   : Command_Line_Configuration;
 
-  SA_Animal                     : aliased Gnat.Strings.String_Access;
-
+  Sa_Animal                      : aliased Gnat.Strings.String_Access;
+  B_Match_Directly               : aliased Boolean := False;
   Global_Animal                  : Animal_Type := Horse; --default
   Start             : Calendar2.Time_Type := Calendar2.Clock;
 
   Commission : constant Fixed_Type := 5.0 / 100.0;
 
   --  Enough_Runners : Boolean := False;
-  use type Ada.Containers.Count_Type;
+  --use type Ada.Containers.Count_Type;
   --Price   : Prices.Price_Type;
 
   Day      : Time_Type     := (2016, 3, 31, 00, 00, 00, 000);
@@ -49,6 +49,13 @@ begin
      SA_Animal'Access,
      Long_Switch => "--animal=",
      Help        => "horse|hound|human");
+
+Define_Switch
+    (Cmd_Line,
+     B_Match_Directly'Access,
+     Long_Switch => "--matchdirectly",
+     Help        => "match the bet with 2 secs of when it was put");
+
 
 
   Getopt (Cmd_Line);  -- process the command line
@@ -135,14 +142,19 @@ begin
                     Item_Loop : for Item of List loop
                       Do_Update := False;
                       if Item.Selectionid = Bet.Selectionid then
-                        if Bet.Status = (Bet.Status'Range => ' ') and then
-                          Bet.Betplaced + (0, 0, 0, 1, 0) <= Timestamp  and then   --matched within 2 secs of palce
-                          Timestamp <= Bet.Betplaced + (0, 0, 0, 2, 0) then
+                        if Bet.Status = (Bet.Status'Range => ' ')
+                          and then Bet.Betplaced + (0, 0, 0, 1, 0) <= Timestamp
+                          and then   --matched within 2 secs of palce
+                            (B_Match_Directly and then Timestamp <= Bet.Betplaced + (0, 0, 0, 2, 0))
+                        then
                           Log ("Treat marketid '" & Market.Marketid &
                                " selid" & Bet.Selectionid'Img &
                                " betid: " & Bet.Betid'Img &
                                " betplaced " & Bet.Betplaced.To_String &
                                " "  & Timestamp.To_String);
+
+
+                          Bet.Betwon:= Sim.Is_Race_Winner(Bet.Selectionid, Bet.Marketid);
 
                           -- is a match ?
                           if Bet.Side = "BACK" then
