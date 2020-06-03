@@ -174,9 +174,9 @@ Define_Switch
                               Bet.Status(1) := 'M';
                               Do_Update := True;
                               if Bet.Betwon then
-                                Bet.Profit := Bet.Sizematched;
+                                Bet.Profit := (1.0 - Commission) * Bet.Sizematched;
                               else
-                                Bet.Profit := -(1.0 - Commission) * Bet.Sizematched * (Bet.Pricematched - 1.0);
+                                Bet.Profit := - Bet.Sizematched * (Bet.Pricematched - 1.0);
                               end if;
                             end if;
                           end if;
