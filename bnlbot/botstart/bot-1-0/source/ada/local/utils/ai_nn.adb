@@ -11,8 +11,8 @@ with  Ada.Environment_Variables;
 --with Bot_Types;
 --with Utils; use Utils;
 
-with Ada.Strings ; use Ada.Strings;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+--with Ada.Strings ; use Ada.Strings;
+--with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
@@ -30,14 +30,14 @@ procedure Ai_Nn is
   Select_Markets        : Sql.Statement_Type;
 
   Sa_Startdate        : aliased Gnat.Strings.String_Access;
-  Sa_Side             : aliased Gnat.Strings.String_Access;
+--  Sa_Side             : aliased Gnat.Strings.String_Access;
   Ba_Train_Set        : aliased Boolean := False;
   Ba_Layprice        : aliased Boolean := False;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
   pragma Unreferenced(Global_Start_Date);
 
-  Global_Side          : String (1..4) := "BOTH";
+--  Global_Side          : String (1..4) := "BOTH";
 
   Gdebug : Boolean := True;
 
@@ -75,7 +75,8 @@ procedure Ai_Nn is
     Winners     : array (1..3) of Integer_4 := (others => -1);
 
     F           : Text_Io.File_Type;
-    Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/";
+    Path        : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/" else
+                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/") ;
     -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
     Num_Real_Runners : Integer := 0;
     Pricets     : Calendar2.Time_Type := Calendar2.Time_Type_First;
@@ -276,12 +277,6 @@ begin
 
   Define_Switch
     (Cmd_Line,
-     Sa_Side'Access,
-     Long_Switch => "--side=",
-     Help        => "side (LAY/BACK) - BOTH are default");
-
-  Define_Switch
-    (Cmd_Line,
      Sa_Startdate'Access,
      Long_Switch => "--startdate=",
      Help        => "startdate");
@@ -309,10 +304,6 @@ begin
       Global_Start_Date.Month := Month_Type'Value(S(6..7));
       Global_Start_Date.Day := Day_Type'Value(S(9..10));
     end;
-  end if;
-
-  if Sa_Side.all /= "" then
-    Move(Sa_Side.all, Global_Side);
   end if;
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
