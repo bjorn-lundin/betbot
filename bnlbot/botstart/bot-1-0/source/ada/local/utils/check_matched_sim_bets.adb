@@ -32,8 +32,8 @@ procedure Check_Matched_Sim_Bets is
   --use type Ada.Containers.Count_Type;
   --Price   : Prices.Price_Type;
 
-  Day      : Time_Type     := (2016, 3, 31, 00, 00, 00, 000);
-  End_Date : Time_Type     := (2017, 2, 27, 00, 00, 00, 000);
+  Day      : Time_Type     := (2018, 10, 31, 00, 00, 00, 000);
+  End_Date : Time_Type     := (2020,  3, 31, 00, 00, 00, 000);
   One_Day  : Interval_Type := (1, 0, 0, 0, 0);
 
 begin
@@ -142,7 +142,7 @@ Define_Switch
                     Item_Loop : for Item of List loop
                       Do_Update := False;
                       if Item.Selectionid = Bet.Selectionid then
-                        if Bet.Status = (Bet.Status'Range => ' ')
+                        if Bet.Status(1) = 'U'
                           and then Bet.Betplaced + (0, 0, 0, 1, 0) <= Timestamp
                           and then   --matched within 2 secs of palce
                             (B_Match_Directly and then Timestamp <= Bet.Betplaced + (0, 0, 0, 2, 0))
