@@ -29,10 +29,11 @@ procedure Ai_Nn is
   Select_Runner_With_Price        : Sql.Statement_Type;
   Select_Markets        : Sql.Statement_Type;
 
-  Sa_Startdate        : aliased Gnat.Strings.String_Access;
---  Sa_Side             : aliased Gnat.Strings.String_Access;
-  Ba_Train_Set        : aliased Boolean := False;
+  Sa_Startdate       : aliased Gnat.Strings.String_Access;
+--  Sa_Side             : aliased Gnat.Strings.String_Access;Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/"
+  Ba_Train_Set       : aliased Boolean := False;
   Ba_Layprice        : aliased Boolean := False;
+  Ia_Position        : aliased Integer := 0;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
   pragma Unreferenced(Global_Start_Date);
@@ -40,8 +41,6 @@ procedure Ai_Nn is
 --  Global_Side          : String (1..4) := "BOTH";
 
   Gdebug : Boolean := True;
-
-
 
   type R_Type is record
     Runner  : Table_Arunners.Data_Type;
@@ -75,8 +74,10 @@ procedure Ai_Nn is
     Winners     : array (1..3) of Integer_4 := (others => -1);
 
     F           : Text_Io.File_Type;
-    Path        : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/" else
-                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/") ;
+    Path1       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/lay/win/" else
+                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/") ;
+    Path2       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/lay/win/" else
+                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/") ;
     -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
     Num_Real_Runners : Integer := 0;
     Pricets     : Calendar2.Time_Type := Calendar2.Time_Type_First;
@@ -92,9 +93,12 @@ procedure Ai_Nn is
     Marketid    : Bot_Types.Marketid_Type := (others => ' ');
     Markettype  : Bot_Types.Markettype_Type := (others => ' ');
 
-    Current_Lowest : Fixed_Type := 1_000_000.0;
-    Leader_Selid   : Integer_4  := 0;
-    Leader_Pyhton  : Integer    := -1;  --number (idx) in python (zero-based) array
+    Lowest_2nd  : Fixed_Type := 1_000_000.0 +1.0;
+    Lowest_1st  : Fixed_Type := 1_000_000.0;
+    Selid_1st   : Integer_4  := 0;
+    Selid_2nd   : Integer_4  := 0;
+    Python_1st  : Integer    := -1;  --number (idx) in python (zero-based) array
+    Python_2nd  : Integer    := -1;  --number (idx) in python (zero-based) array
 
 
     ------------------------------------------------
@@ -113,13 +117,25 @@ procedure Ai_Nn is
       Text_Io.Put(F, Marketid);
       Text_Io.Put(F, ",");
 
-      Text_Io.Put(F, Float'Image(Float(Current_Lowest)));
-      Text_Io.Put(F, ",");
-      Text_Io.Put(F, Leader_Selid'Img);
-      Text_Io.Put(F, ",");
-      Text_Io.Put(F, Leader_Pyhton'Img);
-      Text_Io.Put(F, ",");
 
+      case Ia_Position is
+      when 1 =>
+        Text_Io.Put(F, Float'Image(Float(Lowest_1st)));
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, Selid_1st'Img);
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, Python_1st'Img);
+        Text_Io.Put(F, ",");
+      when 2 =>
+        Text_Io.Put(F, Float'Image(Float(Lowest_2nd)));
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, Selid_2nd'Img);
+        Text_Io.Put(F, ",");
+        Text_Io.Put(F, Python_2nd'Img);
+        Text_Io.Put(F, ",");
+      when others =>
+        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+      end case;
 
       for I in Data'Range loop
         Text_Io.Put(F, Data(I).Selectionid'img);
@@ -168,11 +184,24 @@ procedure Ai_Nn is
     end loop;
 
     Text_Io.Put_Line(Text_Io.Standard_Error,"open '" & Marketid & "'");
-    if Ba_Train_Set then
-      Text_Io.Create(F,Text_Io.Out_File, Path & "train/" & Marketid & ".csv");
-    else
-      Text_Io.Create(F,Text_Io.Out_File, Path & "sample/" & Marketid & ".csv");
-    end if;
+
+    case Ia_Position is
+      when 1 =>
+        if Ba_Train_Set then
+          Text_Io.Create(F,Text_Io.Out_File, Path1 & "train/" & Marketid & ".csv");
+        else
+          Text_Io.Create(F,Text_Io.Out_File, Path1 & "sample/" & Marketid & ".csv");
+        end if;
+      when 2 =>
+        if Ba_Train_Set then
+          Text_Io.Create(F,Text_Io.Out_File, Path2 & "train/" & Marketid & ".csv");
+        else
+          Text_Io.Create(F,Text_Io.Out_File, Path2 & "sample/" & Marketid & ".csv");
+        end if;
+      when others =>
+        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+    end case;
+
 
     for R of L loop
       Cnt := Cnt + 1;
@@ -182,22 +211,58 @@ procedure Ai_Nn is
       Data(Cnt).Selectionid := R.Runner.Selectionid;
       Data(Cnt).Sortprio := R.Runner.Sortprio;
 
-      if Data(Cnt).Backprice > 0.0
-        and then Data(Cnt).Backprice < Current_Lowest then
-        Current_Lowest := Data(Cnt).Backprice;
-        Leader_Selid := Data(Cnt).Selectionid;
-        Leader_Pyhton := Cnt -1;  --number (idx) in python (zero-based) array
-      end if;
+      case Ia_Position is
+      when 1 =>
+        if Data(Cnt).Backprice > 0.0
+          and then Data(Cnt).Backprice < Lowest_1st then
+          Lowest_1st := Data(Cnt).Backprice;
+          Selid_1st := Data(Cnt).Selectionid;
+          Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+        end if;
 
-      if Cnt = Num_Real_Runners then
-        Pricets := R.History.Pricets; -- update to this line's pricets
-        Do_Print_Line(F);
-        Cnt := 0;
-        Current_Lowest := 1_000_000.0;
-        Leader_Selid   := 0;
-        Leader_Pyhton  := -1;
-      end if;
+        if Cnt = Num_Real_Runners then
+          Pricets := R.History.Pricets; -- update to this line's pricets
+          Do_Print_Line(F);
+          Cnt := 0;
+          Lowest_1st := 1_000_000.0;
+          Selid_1st   := 0;
+          Python_1st  := -1;
+        end if;
+
+      when 2 =>
+        if Data(Cnt).Backprice > 0.0
+          and then Data(Cnt).Backprice < Lowest_1st
+        then
+          Lowest_1st := Data(Cnt).Backprice;
+          Selid_1st := Data(Cnt).Selectionid;
+          Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+        end if;
+
+        if Data(Cnt).Backprice > 0.0
+          and then Data(Cnt).Backprice >= Lowest_1st
+          and then Data(Cnt).Backprice < Lowest_2nd
+        then
+          Lowest_2nd := Data(Cnt).Backprice;
+          Selid_2nd := Data(Cnt).Selectionid;
+          Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
+        end if;
+
+        if Cnt = Num_Real_Runners then
+          Pricets := R.History.Pricets; -- update to this line's pricets
+          Do_Print_Line(F);
+          Cnt := 0;
+          Lowest_1st := 1_000_000.0;
+          Selid_1st   := 0;
+          Python_1st  := -1;
+          Lowest_2nd := 1_000_000.0 +1.0;
+          Selid_2nd   := 0;
+          Python_2nd  := -1;
+        end if;
+      when others =>
+        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+      end case;
     end loop;
+
 
     Text_Io.Put_Line(Text_Io.Standard_Error,"close file");
     Text_Io.Close(F);
@@ -246,26 +311,26 @@ procedure Ai_Nn is
 
   begin
 
-                       if Ba_Train_Set then
-                       Select_Markets.Prepare( "select M.* " &
-                                                 "from AMARKETS M " &
-                                                 "where true " &
-                                                 "and M.MARKETTYPE = 'WIN' " &
-                                                 "and M.NUMRUNNERS >= 8 " &
-                                                 "and M.NUMRUNNERS <= 16 " &
-                                               --  "and m.marketid = '1.151619897' " &
-                                                 "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
-                                                 "order by M.STARTTS");
-                       else -- to verify with - just 10 %
-                       Select_Markets.Prepare("select M.* " &
-                                                "from AMARKETS M " &
-                                                "where true " &
-                                                "and M.MARKETTYPE = 'WIN' " &
-                                                "and M.NUMRUNNERS >= 8 " &
-                                                "and M.NUMRUNNERS <= 16 " &
-                                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
-                                                "order by M.STARTTS");
-                       end if;
+    if Ba_Train_Set then
+      Select_Markets.Prepare( "select M.* " &
+                                "from AMARKETS M " &
+                                "where true " &
+                                "and M.MARKETTYPE = 'WIN' " &
+                                "and M.NUMRUNNERS >= 8 " &
+                                "and M.NUMRUNNERS <= 16 " &
+                              --  "and m.marketid = '1.151619897' " &
+                                "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
+                                "order by M.STARTTS");
+    else -- to verify with - just 10 %
+      Select_Markets.Prepare("select M.* " &
+                               "from AMARKETS M " &
+                               "where true " &
+                               "and M.MARKETTYPE = 'WIN' " &
+                               "and M.NUMRUNNERS >= 8 " &
+                               "and M.NUMRUNNERS <= 16 " &
+                               "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
+                               "order by M.STARTTS");
+    end if;
 
     Table_Amarkets.Read_List(Select_Markets, Market_List);
   end Get_Market_Data;
@@ -293,6 +358,11 @@ begin
      Long_Switch => "--layprice",
      Help        => "Layprices - otherwise backprices");
 
+ Define_Switch
+    (Cmd_Line,
+     Ia_Position'Access,
+     Long_Switch => "--position=",
+     Help        => "lay/back 1=leader, 2=2nd etc");
 
   Getopt (Cmd_Line);  -- process the command line
 
