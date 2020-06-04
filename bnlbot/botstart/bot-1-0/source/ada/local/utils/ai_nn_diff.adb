@@ -47,6 +47,7 @@ procedure Ai_Nn_Diff is
   Sa_Side             : aliased Gnat.Strings.String_Access;
   Ba_Train_Set        : aliased Boolean := False;
   Ba_Layprice         : aliased Boolean := False;
+  Ia_Position         : aliased Integer := 0;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
   pragma Unreferenced(Global_Start_Date);
@@ -135,23 +136,43 @@ procedure Ai_Nn_Diff is
 
 
   procedure Get_Files(Filename_List : in out  String_Object_List.List) is
-    Dir : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample";
+ --   Dir : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample";
+
+    Path1       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/lay/win/sample" else
+                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/sample") ;
+    Path2       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/lay/win/sample" else
+                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/sample") ;
+
+
+
     use Ada.Directories;
     My_Search : Search_Type;
     My_Entry  : Directory_Entry_Type;
   begin
     Log("Get_Files", "start");
+
+      case Ia_Position is
+      when 1 =>
     Start_Search
       (Search    => My_Search,
-       Directory => Dir,
+       Directory => Path1,
        Pattern   => "*.csv",
        Filter    => (Ordinary_File => True, others => False));
+      when 2 =>
+    Start_Search
+      (Search    => My_Search,
+       Directory => Path2,
+       Pattern   => "*.csv",
+       Filter    => (Ordinary_File => True, others => False));
+      when others =>
+        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+      end case;
 
     loop
       exit when not More_Entries (My_Search);
       Get_Next_Entry (My_Search, My_Entry);
       declare
-        S : String_Object := Create(Full_Name( My_Entry));
+        S : String_Object := Create(Full_Name(My_Entry));
       begin
         Filename_List.Append(S);
       end;
@@ -295,6 +316,13 @@ begin
      Ba_Layprice'Access,
      Long_Switch => "--layprice",
      Help        => "Layprices - otherwise backprices");
+
+ Define_Switch
+    (Cmd_Line,
+     Ia_Position'Access,
+     Long_Switch => "--position=",
+     Help        => "lay/back 1=leader, 2=2nd etc");
+
 
 
   Getopt (Cmd_Line);  -- process the command line
