@@ -238,6 +238,7 @@ procedure Ai_Nn_Diff is
           Runner          : Runners.Runner_Type;
           Market          : Markets.Market_Type;
           Betname         : Betname_Type      := (others => ' ');
+          Side            : Bet_Side_Type := Lay;
         begin
 
           Params.Set_Field (Field_Name => "winner", Field => Create(Winner));
@@ -250,12 +251,12 @@ procedure Ai_Nn_Diff is
             if not First then
               Get_Json_Reply(Params,Do_Bet);
               if Do_Bet then
-                Betname(1..20) := "BACK_AI_0.0001_0.999";
+                Betname(1..23) := "LAY_2nd_AI_0.0001_0.999";
                 Market.Marketid := Marketid;
                 Runner.Selectionid := Integer_4(Lowest_Selid);
 
                 Laybet := Bets.Create(Name   => Betname,
-                                      Side   => Back,
+                                      Side   => Side,
                                       Size   => 30.0,
                                       Price  => Price_Type(Lowest_Odds),
                                       Placed => Ts,
@@ -263,14 +264,24 @@ procedure Ai_Nn_Diff is
                                       Market => Market);
                 Laybet.Insert_And_Nullify_Betwon;
 
-                if Winner = Lowest_Pidx then -- loss
-                  Profit :=  0.95 * 30.0 * (Lowest_Odds -1.0);
-                else
-                  Profit := -30.0;
-                end if;
+                case Side is
+                  when Back =>
+                    if Winner = Lowest_Pidx then -- win
+                      Profit :=  0.95 * 30.0 * (Lowest_Odds -1.0);
+                    else
+                      Profit := -30.0;
+                    end if;
+
+                  when Lay =>
+                    if Winner = Lowest_Pidx then -- loss
+                      Profit :=  -30.0 * (Lowest_Odds -1.0);
+                    else
+                      Profit := 0.95 * 30.0;
+                    end if;
+                end case;
+
                 Global_Profit := Global_Profit + Profit;
               end if;
-
             end if;
           end if;
         end;
