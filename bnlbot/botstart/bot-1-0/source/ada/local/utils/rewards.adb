@@ -21,6 +21,7 @@ with Logging; use Logging;
 with Sql;
 with Sim;
 with Bot_Types; --use Bot_Types;
+with Ada.IO_Exceptions;
 
 procedure Rewards is
   package Ad renames Ada.Directories;
@@ -221,7 +222,7 @@ procedure Rewards is
   ------------------------------------------------------
 
 
-  Sa_Side                        : aliased  Gnat.Strings.String_Access;
+  Sa_Side                         : aliased  Gnat.Strings.String_Access;
   Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
   Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
   Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
@@ -235,7 +236,7 @@ procedure Rewards is
   Stop_Date                       :          Calendar2.Time_Type := (2020,3,31,23,59,59,999);
   Cmd_Line                        :          Command_Line_Configuration;
   T                               :          Sql.Transaction_Type;
-  Side : Bot_Types.Bet_Side_Type := Bot_Types.Back;
+  Side                            : Bot_Types.Bet_Side_Type := Bot_Types.Back;
 begin
 
 
@@ -441,10 +442,15 @@ begin
               end loop Loop_Ts; --  Timestamp
             end;
           exception
-            when File_Already_Exists =>
-              null;
+            when File_Already_Exists =>  null;
           end;
-          Text_Io.Close(Race);
+
+          begin
+            Text_Io.Close(Race);
+          exception
+            when Ada.Io_Exceptions.Status_Error =>  null;
+          end;
+
         end if; -- Market_type(1..3) = WIN
       end loop Market_Loop;
     end;
