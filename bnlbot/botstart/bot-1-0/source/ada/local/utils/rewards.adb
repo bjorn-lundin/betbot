@@ -50,175 +50,175 @@ procedure Rewards is
       for Tmp of List loop
         if Tmp.Status(1..6) = "ACTIVE" then
           Idx := Idx +1;
-        exit when Idx > Bra'Last;
-        Bra(Idx) := Tmp;
-      end if;
-    end loop;
-  end ;
+          exit when Idx > Bra'Last;
+          Bra(Idx) := Tmp;
+        end if;
+      end loop;
+    end ;
 
-end To_Array;
+  end To_Array;
 
------------------------------------------------------
-function To_Time(S2: String) return Calendar2.Time_Type is
-  Tmp : Time_Type;
-  S   : String (1 .. S2'Last - S2'First + 1) := S2;
-begin
-  -- '22-01-2013 11:09:06'
+  -----------------------------------------------------
+  function To_Time(S2: String) return Calendar2.Time_Type is
+    Tmp : Time_Type;
+    S   : String (1 .. S2'Last - S2'First + 1) := S2;
+  begin
+    -- '22-01-2013 11:09:06'
 
-  Tmp.Year  := Year_Type'Value (S (7 .. 10));
-  Tmp.Month := Month_Type'Value (S (4 .. 5));
-  Tmp.Day   := Day_Type'Value (S (1 .. 2));
+    Tmp.Year  := Year_Type'Value (S (7 .. 10));
+    Tmp.Month := Month_Type'Value (S (4 .. 5));
+    Tmp.Day   := Day_Type'Value (S (1 .. 2));
 
-  Tmp.Hour   := Hour_Type'Value (S (12 .. 13));
-  Tmp.Minute := Minute_Type'Value (S (15 .. 16));
-  if S'Length = 19 then
-    Tmp.Second := Second_Type'Value (S (18 .. 19));
-  else
-    Tmp.Second := 0;
-  end if;
-  return Tmp;
-end To_Time;
-pragma Unreferenced(To_Time);
------------------------------------------------------
+    Tmp.Hour   := Hour_Type'Value (S (12 .. 13));
+    Tmp.Minute := Minute_Type'Value (S (15 .. 16));
+    if S'Length = 19 then
+      Tmp.Second := Second_Type'Value (S (18 .. 19));
+    else
+      Tmp.Second := 0;
+    end if;
+    return Tmp;
+  end To_Time;
+  pragma Unreferenced(To_Time);
+  -----------------------------------------------------
 
-function Create_Marketname(S : String) return String is
-  Tmp : String := Trim(S,Both);
-begin
-  for I in Tmp'Range loop
-    case Tmp(I) is
+  function Create_Marketname(S : String) return String is
+    Tmp : String := Trim(S,Both);
+  begin
+    for I in Tmp'Range loop
+      case Tmp(I) is
       when ' ' => Tmp(I) := '_';
       when others => null;
-    end case;
-  end loop;
-  return Tmp;
-end Create_Marketname;
-pragma Unreferenced(Create_Marketname);
--------------------------------------------------------
+      end case;
+    end loop;
+    return Tmp;
+  end Create_Marketname;
+  pragma Unreferenced(Create_Marketname);
+  -------------------------------------------------------
 
-procedure Put (F : Text_Io.File_Type; S : String) is
-begin
-  Text_Io.Put(F,S);
-end Put;
+  procedure Put (F : Text_Io.File_Type; S : String) is
+  begin
+    Text_Io.Put(F,S);
+  end Put;
 
--------------------------------------------------------
+  -------------------------------------------------------
 
-procedure Put_Line (F : Text_Io.File_Type; S : String) is
-begin
-  Text_Io.Put_Line(F,S);
-end Put_Line;
+  procedure Put_Line (F : Text_Io.File_Type; S : String) is
+  begin
+    Text_Io.Put_Line(F,S);
+  end Put_Line;
 
--------------------------------------------
+  -------------------------------------------
 
-procedure Check_Odds (B : in Best_Runners_Array_Type; Seen_1_0x, More_Than_Limit : in out Boolean) is
-  Some_Under_Limit : Boolean := False;
-begin
-  for Runner of B loop
-    if not Seen_1_0x and then Runner.Backprice <= Fixed_Type(1.05) then
-      Seen_1_0x := True;
-    end if;
-  end loop;
-
-  if Seen_1_0x then
+  procedure Check_Odds (B : in Best_Runners_Array_Type; Seen_1_0x, More_Than_Limit : in out Boolean) is
+    Some_Under_Limit : Boolean := False;
+  begin
     for Runner of B loop
-      -- is any runners within 1.01 - 50 ? then All_more_than limit is false
-      if Fixed_Type (1.0) < Runner.Backprice and then Runner.Backprice < Fixed_Type (25.0) then
-        Some_Under_Limit := True;
+      if not Seen_1_0x and then Runner.Backprice <= Fixed_Type(1.05) then
+        Seen_1_0x := True;
       end if;
     end loop;
-    More_Than_Limit := not Some_Under_Limit;
-  end if;
-end Check_Odds;
 
--------------------------------------------------------
-function Check_Profit (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
-  Is_Winner                       : Boolean := False;
-  use Bot_Types;
-  Profit                          : Profit_Type := 0.0;
-begin
-
-  for W of Sim.Winners_Map (Runner.Marketid) loop
-    if W.Selectionid = Runner.Selectionid then
-      Is_Winner := True;
-      exit;
+    if Seen_1_0x then
+      for Runner of B loop
+        -- is any runners within 1.01 - 50 ? then All_more_than limit is false
+        if Fixed_Type (1.0) < Runner.Backprice and then Runner.Backprice < Fixed_Type (25.0) then
+          Some_Under_Limit := True;
+        end if;
+      end loop;
+      More_Than_Limit := not Some_Under_Limit;
     end if;
-  end loop;
+  end Check_Odds;
 
-  --simplification, but ok. betting on the wrong horse should be penalized, even if not matched
-  if not Is_Winner then
-    return - Profit_Type(Global_Size);
-  end if;
+  -------------------------------------------------------
+  function Check_Profit (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
+    Is_Winner                       : Boolean := False;
+    use Bot_Types;
+    Profit                          : Profit_Type := 0.0;
+  begin
 
-  Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
-    declare
-      List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
-      Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
-      Tmp                 : Profit_Type := 0.0;
-    begin
+    for W of Sim.Winners_Map (Runner.Marketid) loop
+      if W.Selectionid = Runner.Selectionid then
+        Is_Winner := True;
+        exit;
+      end if;
+    end loop;
 
-      for J of List loop
-        if J.Selectionid = Runner.Selectionid and then
-          Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
+    --simplification, but ok. betting on the wrong horse should be penalized, even if not matched
+    if not Is_Winner then
+      return - Profit_Type(Global_Size);
+    end if;
 
-          if J.Backprice >= Runner.Backprice then --match
-            if Is_Winner then
-              if  Runner.Backprice < 1.01 then
-                return 0.0;
+    Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
+      declare
+        List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
+        Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
+        Tmp                 : Profit_Type := 0.0;
+      begin
+
+        for J of List loop
+          if J.Selectionid = Runner.Selectionid and then
+            Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
+
+            if J.Backprice >= Runner.Backprice then --match
+              if Is_Winner then
+                if  Runner.Backprice < 1.01 then
+                  return 0.0;
+                else
+                  Tmp := Profit_Type(Global_Size) * Profit_Type (Runner.Backprice - 1.0) ;
+                  Profit := Tmp * Profit_Type (1.0 - Commission);
+                end if;
               else
-                Tmp := Profit_Type(Global_Size) * Profit_Type (Runner.Backprice - 1.0) ;
-                Profit := Tmp * Profit_Type (1.0 - Commission);
+                return - Profit_Type(Global_Size);
               end if;
-            else
-              return - Profit_Type(Global_Size);
             end if;
+
           end if;
+        end loop;
+      end;
+    end loop Loop_Ts_Check_Profit;
+    return Profit;
+  end Check_Profit;
 
-        end if;
-      end loop;
-    end;
-  end loop Loop_Ts_Check_Profit;
-  return Profit;
-end Check_Profit;
+  -------------------------------------------------------
+  function Check_Profit_Lay (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
+    Is_Winner                       : Boolean := False;
+    use Bot_Types;
+    Profit                          : Profit_Type := 0.0;
+  begin
 
--------------------------------------------------------
-function Check_Profit_Lay (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
-  Is_Winner                       : Boolean := False;
-  use Bot_Types;
-  Profit                          : Profit_Type := 0.0;
-begin
+    for W of Sim.Winners_Map (Runner.Marketid) loop
+      if W.Selectionid = Runner.Selectionid then
+        Is_Winner := True;
+        exit;
+      end if;
+    end loop;
 
-  for W of Sim.Winners_Map (Runner.Marketid) loop
-    if W.Selectionid = Runner.Selectionid then
-      Is_Winner := True;
-      exit;
+    if Is_Winner then
+      return - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
     end if;
-  end loop;
 
-  if Is_Winner then
-    return - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
-  end if;
+    Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
+      declare
+        List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
+        Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
+      begin
 
-  Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
-    declare
-      List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
-      Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
-    begin
+        for J of List loop
+          if J.Selectionid = Runner.Selectionid and then
+            Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
 
-      for J of List loop
-        if J.Selectionid = Runner.Selectionid and then
-          Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
+            -- if here , we are not winner
+            if J.Layprice <= Runner.Layprice then --match
+              Profit := Profit_Type(Global_Size);
+            end if;
 
-          -- if here , we are not winner
-          if J.Layprice <= Runner.Layprice then --match
-            Profit := Profit_Type(Global_Size);
           end if;
-
-        end if;
-      end loop;
-    end;
-  end loop Loop_Ts_Check_Profit;
-  return Profit;
-end Check_Profit_Lay;
-------------------------------------------------------
+        end loop;
+      end;
+    end loop Loop_Ts_Check_Profit;
+    return Profit;
+  end Check_Profit_Lay;
+  ------------------------------------------------------
 
 
   Sa_Side                        : aliased  Gnat.Strings.String_Access;
@@ -251,11 +251,11 @@ begin
      Long_Switch => "--stopdate=",
      Help        => "stop date eg 2019-12-21");
 
---    Define_Switch
---       (Cmd_Line,
---       Sa_Markettype'Access,
---       Long_Switch => "--markettype=",
---       Help        => "PLC/WIN");
+  --    Define_Switch
+  --       (Cmd_Line,
+  --       Sa_Markettype'Access,
+  --       Long_Switch => "--markettype=",
+  --       Help        => "PLC/WIN");
 
   Define_Switch
     (Cmd_Line,
@@ -303,7 +303,7 @@ begin
     Stop_Date := Calendar2.To_Time_Type(Sa_Stop_Date.all,"");
   end if;
 
-  if Sa_Side.all /= "" and then Ada.Characters.Handling.to_Lower(Sa_Side.all) = "lay" then
+  if Sa_Side.all /= "" and then Ada.Characters.Handling.To_Lower(Sa_Side.all) = "lay" then
     Side := Bot_Types.Lay;
   else
     Side := Bot_Types.Back;
@@ -321,7 +321,7 @@ begin
   Date_Loop : loop
     T.Start;
     Log("start fill maps");
---    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+    --    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
     Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse, Rewards => False, Racetimes => False);
     Log("start process maps");
     T.Commit;
@@ -340,97 +340,109 @@ begin
         end if;
 
         if True
-          --market.Markettype(1..3) = Mtype and then
+        --market.Markettype(1..3) = Mtype and then
 
         --if Market.Markettype(1..3) = "PLA" and then
         -- 8 <= Market.Numactiverunners and then
         --  Market.Numactiverunners <= 16 --and then
         --   Market.Marketname_Ok2
         then
-          First := True;
-          Cnt := Cnt + 1;
-
           declare
-            Path : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards/" & Ada.Characters.Handling.To_Lower(Side'Img);
+            File_Already_Exists : exception;
           begin
-            if not Ad.Exists(Path) then
-              Ad.Create_Directory(Path);
-            end if;
-       --   Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
+            First := True;
+            Cnt := Cnt + 1;
+
+            declare
+              Path     : String := Ev.Value("BOT_HISTORY") & "/data/ai/" & Race_Type & "/rewards/" & Ada.Characters.Handling.To_Lower(Side'Img);
+              Filename : String := Path & "/" & Market.Marketid & ".dat";
+            begin
+              if not Ad.Exists(Path) then
+                Ad.Create_Directory(Path);
+              end if;
+              --   Text_Io.Put_Line("marketid='" & Market.Marketid & "' " & Market.Startts.String_Date_Time_Iso & " " & Calendar2.Clock.String_Date_Time_Iso);
+
+              if Ad.Exists(Filename) then
+                raise File_Already_Exists with Filename;
+              end if;
 
 
-            Text_Io.Create(File => Race,
-                           Mode => Text_Io.Out_File,
-                           Name => Path & "/" & Market.Marketid & ".dat");
-          end;
-          -- list of timestamps in this market
-          declare
-            Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
-                                                Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
+              Text_Io.Create(File => Race,
+                             Mode => Text_Io.Out_File,
+                             Name => Path & "/" & Market.Marketid & ".dat");
+            end;
+            -- list of timestamps in this market
+            declare
+              Timestamp_To_Prices_History_Map : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                                                  Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
 
-            Timestamp_To_Prices_History_Map2 : Sim.Timestamp_To_Prices_History_Maps.Map :=
-                                                 Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
-            Have_Seen_1_0x                   : Boolean := False;
-            All_More_Than_Limit              : Boolean := True;
-            Last_Poll                        : Calendar2.Time_Type := Calendar2.Time_Type_First;
-          begin
-            Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
-              declare
-                List                : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map (Timestamp.To_String);
-                Bra                 : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
-                Delta_Time          : Calendar2.Interval_Type := (0, 0, 0, 0, 0);
-                Profit              : Bot_Types.Profit_Type := 0.0;
-                use Bot_Types;
-              begin
-                --                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
-                To_Array(List => List, Bra => Bra);
+              Timestamp_To_Prices_History_Map2 : Sim.Timestamp_To_Prices_History_Maps.Map :=
+                                                   Sim.Marketid_Timestamp_To_Prices_History_Map (Market.Marketid);
+              Have_Seen_1_0x                   : Boolean := False;
+              All_More_Than_Limit              : Boolean := True;
+              Last_Poll                        : Calendar2.Time_Type := Calendar2.Time_Type_First;
+            begin
+              Loop_Ts : for Timestamp of Sim.Marketid_Pricets_Map(Market.Marketid) loop
+                declare
+                  List                : Price_Histories.Lists.List := Timestamp_To_Prices_History_Map (Timestamp.To_String);
+                  Bra                 : Best_Runners_Array_Type := (others => Price_Histories.Empty_Data);
+                  Delta_Time          : Calendar2.Interval_Type := (0, 0, 0, 0, 0);
+                  Profit              : Bot_Types.Profit_Type := 0.0;
+                  use Bot_Types;
+                begin
+                  --                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
+                  To_Array(List => List, Bra => Bra);
 
-                if First then
-                  Put (Race, "Timestamp |");
-                  for I in Bra'Range loop
-                    Put(Race,Bra(I).Selectionid'Img);
-                    if I < Bra'Last then
-                      Put(Race,"|");
-                    else
-                      Put_Line(Race,"");
-                    end if;
-                  end loop;
-                  First := False;
-                else
-                  Delta_Time := Bra (1).Pricets - Last_Poll;
-                  Check_Odds (Bra, Have_Seen_1_0x, All_More_Than_Limit);
-                  exit Loop_Ts when Have_Seen_1_0x and then All_More_Than_Limit;
-
-                  if Delta_Time < (0, 0, 0, 2, 0) then -- don't bother when race not started
+                  if First then
+                    Put (Race, "Timestamp |");
                     for I in Bra'Range loop
-
-                      if I = 1 then
-                        Put (Race, Calendar2.String_Time (Date => Bra(I).Pricets, Milliseconds => True ) & "|");
-                        -- Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
-                      end if;
-
-                      if Bra(I).Selectionid > 0 then
-                        case Side is
-                          when Back => Profit := Check_Profit(Bra (I),Timestamp_To_Prices_History_Map2);
-                          when Lay  => Profit := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
-                        end case;
-
-                      else
-                        Profit := 0.0;
-                      end if;
-
-                      Put (Race, Profit'Img);
+                      Put(Race,Bra(I).Selectionid'Img);
                       if I < Bra'Last then
-                        Put (Race, "|");
+                        Put(Race,"|");
                       else
-                        Put_Line (Race, "");
+                        Put_Line(Race,"");
                       end if;
                     end loop;
+                    First := False;
+                  else
+                    Delta_Time := Bra (1).Pricets - Last_Poll;
+                    Check_Odds (Bra, Have_Seen_1_0x, All_More_Than_Limit);
+                    exit Loop_Ts when Have_Seen_1_0x and then All_More_Than_Limit;
+
+                    if Delta_Time < (0, 0, 0, 2, 0) then -- don't bother when race not started
+                      for I in Bra'Range loop
+
+                        if I = 1 then
+                          Put (Race, Calendar2.String_Time (Date => Bra(I).Pricets, Milliseconds => True ) & "|");
+                          -- Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
+                        end if;
+
+                        if Bra(I).Selectionid > 0 then
+                          case Side is
+                          when Back => Profit := Check_Profit(Bra (I),Timestamp_To_Prices_History_Map2);
+                          when Lay  => Profit := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
+                          end case;
+
+                        else
+                          Profit := 0.0;
+                        end if;
+
+                        Put (Race, Profit'Img);
+                        if I < Bra'Last then
+                          Put (Race, "|");
+                        else
+                          Put_Line (Race, "");
+                        end if;
+                      end loop;
+                    end if;
                   end if;
-                end if;
-                Last_Poll := Bra (1).Pricets;
-              end;
-            end loop Loop_Ts; --  Timestamp
+                  Last_Poll := Bra (1).Pricets;
+                end;
+              end loop Loop_Ts; --  Timestamp
+            end;
+          exception
+            when File_Already_Exists =>
+              null;
           end;
           Text_Io.Close(Race);
         end if; -- Market_type(1..3) = WIN
