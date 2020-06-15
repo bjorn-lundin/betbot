@@ -165,7 +165,7 @@ procedure Ai_Nn_Diff is
        Pattern   => "*.csv",
        Filter    => (Ordinary_File => True, others => False));
       when others =>
-        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
       end case;
 
     loop
