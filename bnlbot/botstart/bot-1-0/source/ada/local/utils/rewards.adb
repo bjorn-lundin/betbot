@@ -229,10 +229,10 @@ end Check_Profit_Lay;
   --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
   Race                            :          Text_Io.File_Type;
   --Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
-  Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
+  Start_Date                      :          Calendar2.Time_Type := (2018,11,1,0,0,0,0);
   One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date                    :          Calendar2.Time_Type := Start_Date;
-  Stop_Date                       :          Calendar2.Time_Type := (2019,12,31,23,59,59,999);
+  Stop_Date                       :          Calendar2.Time_Type := (2020,3,31,23,59,59,999);
   Cmd_Line                        :          Command_Line_Configuration;
   T                               :          Sql.Transaction_Type;
   Side : Bot_Types.Bet_Side_Type := Bot_Types.Back;
@@ -278,14 +278,6 @@ begin
   Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Sa_Logfilename.all & ".log");
   --  Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
-  Log("main", "params start");
-  Log("main", "start_date '" & Sa_Start_Date.all & "'");
-  Log("main", "stop_date  '" & Sa_Stop_Date.all & "'");
-  Log("main", "logfile    '" & Sa_Logfilename.all & "'");
-  Log("main", "side       '" & Sa_Side.all & "'");
-  Log("main", "params stop");
-
-
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log("main", "Connect Db " &
         Ini.Get_Value("database_home", "host", "")  & " " &
@@ -316,6 +308,13 @@ begin
   else
     Side := Bot_Types.Back;
   end if;
+
+  Log("main", "params start");
+  Log("main", "start_date '" & Sa_Start_Date.all & "'");
+  Log("main", "stop_date  '" & Sa_Stop_Date.all & "'");
+  Log("main", "logfile    '" & Sa_Logfilename.all & "'");
+  Log("main", "side       '" & Sa_Side.all & "'");
+  Log("main", "params stop");
 
   Current_Date := Start_Date;
 
