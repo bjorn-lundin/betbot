@@ -93,7 +93,7 @@ procedure Markets_Fetcher is
     Process  : Process_IO.Process_Type := ((others => ' '),(others => ' '));
   end record;
 
-  Data_Pollers : array (1..8) of Poll_Process := (
+  Data_Pollers : array (1..14) of Poll_Process := (
     1 => (True, (("poll_market_1  "), (others => ' '))),
     2 => (True, (("poll_market_2  "), (others => ' '))),
     3 => (True, (("poll_market_3  "), (others => ' '))),
@@ -101,7 +101,13 @@ procedure Markets_Fetcher is
     5 => (True, (("poll_market_5  "), (others => ' '))),
     6 => (True, (("poll_market_6  "), (others => ' '))),
     7 => (True, (("poll_market_7  "), (others => ' '))),
-    8 => (True, (("poll_market_8  "), (others => ' ')))
+    8 => (True, (("poll_market_8  "), (others => ' '))),
+    9 => (True, (("poll_market_9  "), (others => ' '))),
+   10 => (True, (("poll_market_10 "), (others => ' '))),
+   11 => (True, (("poll_market_11 "), (others => ' '))),
+   12 => (True, (("poll_market_12 "), (others => ' '))),
+   13 => (True, (("poll_market_13 "), (others => ' '))),
+   14 => (True, (("poll_market_14 "), (others => ' ')))
   );
   Race_Pollers : array (1..14) of Poll_Process := (
     1 => (True, (("poll_01        "), (others => ' '))),
