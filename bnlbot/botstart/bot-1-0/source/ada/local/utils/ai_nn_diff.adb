@@ -279,11 +279,9 @@ procedure Ai_Nn_Diff is
           end if;
         end;
       end;
+      First := False;
 
       exit when Do_Bet;
-      -- exit when cnt >= 5;
-
-      First := False;
     end loop;
     Awk.Close (Computer_File);
     Log("Profit", Filename & " -> " & Profit'Img & " / " & Global_Profit'Img);
