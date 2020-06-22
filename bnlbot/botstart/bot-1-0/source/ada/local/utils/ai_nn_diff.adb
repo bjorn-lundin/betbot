@@ -90,7 +90,7 @@ procedure Ai_Nn_Diff is
     Aws_Reply    : Aws.Response.Data;
     Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Data         : String := Query.Write;
-    Me           : String := "Get_JSON_Reply";
+    Me           : String := "main.";
     Post_Timeout :  exception;
   begin
     Do_Bet := False;
@@ -98,7 +98,7 @@ procedure Ai_Nn_Diff is
     Aws.Headers.Add (Http_Headers, "Accept", "application/json");
     Aws.Headers.Add (Http_Headers, "Content-Length", Data'Length'Img);
 
-    Log(Me  & "Get_JSON_Reply", "posting: " & Data);
+    Log(Me & "Get_JSON_Reply", "posting: " & Data);
     Aws_Reply := Aws.Client.Post (Url          => "http://192.168.1.136:8080",
                                   Data         => Data,
                                   Content_Type => "application/json",
@@ -113,6 +113,7 @@ procedure Ai_Nn_Diff is
       if Reply /= "Post Timeout" then
         -- Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
         Do_Bet := Reply = "1";
+        Log(Me & "Get_JSON_Reply", "Got reply: " & Do_Bet'Img & " -> " & Reply  );
 
       else
         Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
