@@ -134,7 +134,7 @@ procedure Ai_Nn is
         Text_Io.Put(F, Python_2nd'Img);
         Text_Io.Put(F, ",");
       when others =>
-        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
       end case;
 
       for I in Data'Range loop
@@ -199,7 +199,7 @@ procedure Ai_Nn is
           Text_Io.Create(F,Text_Io.Out_File, Path2 & "sample/" & Marketid & ".csv");
         end if;
       when others =>
-        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
     end case;
 
 
@@ -213,54 +213,77 @@ procedure Ai_Nn is
 
       case Ia_Position is
       when 1 =>
-        if Data(Cnt).Backprice > 0.0
-          and then Data(Cnt).Backprice < Lowest_1st then
-          Lowest_1st := Data(Cnt).Backprice;
-          Selid_1st := Data(Cnt).Selectionid;
-          Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+        if Ba_Layprice then
+          if Data(Cnt).Layprice > 0.0
+            and then Data(Cnt).Layprice < Lowest_1st then
+            Lowest_1st := Data(Cnt).Layprice;
+            Selid_1st := Data(Cnt).Selectionid;
+            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
+        else--back
+          if Data(Cnt).Backprice > 0.0
+            and then Data(Cnt).Backprice < Lowest_1st then
+            Lowest_1st := Data(Cnt).Backprice;
+            Selid_1st := Data(Cnt).Selectionid;
+            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
         end if;
 
-        if Cnt = Num_Real_Runners then
-          Pricets := R.History.Pricets; -- update to this line's pricets
-          Do_Print_Line(F);
-          Cnt := 0;
-          Lowest_1st := 1_000_000.0;
-          Selid_1st   := 0;
-          Python_1st  := -1;
-        end if;
 
       when 2 =>
-        if Data(Cnt).Backprice > 0.0
-          and then Data(Cnt).Backprice < Lowest_1st
-        then
-          Lowest_1st := Data(Cnt).Backprice;
-          Selid_1st := Data(Cnt).Selectionid;
-          Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+        if Ba_Layprice then
+
+          if Data(Cnt).Layprice > 0.0
+            and then Data(Cnt).Layprice < Lowest_1st
+          then
+            Lowest_1st := Data(Cnt).Layprice;
+            Selid_1st := Data(Cnt).Selectionid;
+            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
+
+          if Data(Cnt).Layprice > 0.0
+            and then Data(Cnt).Layprice >= Lowest_1st
+            and then Data(Cnt).Layprice < Lowest_2nd
+          then
+            Lowest_2nd := Data(Cnt).Layprice;
+            Selid_2nd := Data(Cnt).Selectionid;
+            Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
+        else --back
+          if Data(Cnt).Backprice > 0.0
+            and then Data(Cnt).Backprice < Lowest_1st
+          then
+            Lowest_1st := Data(Cnt).Backprice;
+            Selid_1st := Data(Cnt).Selectionid;
+            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
+
+          if Data(Cnt).Backprice > 0.0
+            and then Data(Cnt).Backprice >= Lowest_1st
+            and then Data(Cnt).Backprice < Lowest_2nd
+          then
+            Lowest_2nd := Data(Cnt).Backprice;
+            Selid_2nd := Data(Cnt).Selectionid;
+            Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
+          end if;
         end if;
 
-        if Data(Cnt).Backprice > 0.0
-          and then Data(Cnt).Backprice >= Lowest_1st
-          and then Data(Cnt).Backprice < Lowest_2nd
-        then
-          Lowest_2nd := Data(Cnt).Backprice;
-          Selid_2nd := Data(Cnt).Selectionid;
-          Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
-        end if;
-
-        if Cnt = Num_Real_Runners then
-          Pricets := R.History.Pricets; -- update to this line's pricets
-          Do_Print_Line(F);
-          Cnt := 0;
-          Lowest_1st := 1_000_000.0;
-          Selid_1st   := 0;
-          Python_1st  := -1;
-          Lowest_2nd := 1_000_000.0 +1.0;
-          Selid_2nd   := 0;
-          Python_2nd  := -1;
-        end if;
       when others =>
-        raise Constraint_Error with "bad positoin - not supported" & Ia_Position'Img;
+        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
       end case;
+
+      if Cnt = Num_Real_Runners then
+        Pricets := R.History.Pricets; -- update to this line's pricets
+        Do_Print_Line(F);
+        Cnt := 0;
+        Lowest_1st := 1_000_000.0;
+        Selid_1st   := 0;
+        Python_1st  := -1;
+        Lowest_2nd := 1_000_000.0 +1.0;
+        Selid_2nd   := 0;
+        Python_2nd  := -1;
+      end if;
+
     end loop;
 
 
