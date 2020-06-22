@@ -89,7 +89,9 @@ procedure Ai_Nn is
       Sortprio : Integer_4 := 0;
     end record;
 
-    Data        : array(1..16) of Print_Data_Type;
+    type Data_Type is array(1..16) of Print_Data_Type;
+    Old_Data    : Data_Type;
+    Data        : Data_Type;
     Marketid    : Bot_Types.Marketid_Type := (others => ' ');
     Markettype  : Bot_Types.Markettype_Type := (others => ' ');
 
@@ -148,11 +150,20 @@ procedure Ai_Nn is
         else
           Text_Io.Put(F, Float'Image(Float(Data(I).Backprice)/1000.0));
         end if;
+      end loop;
+
+      for I in Data'Range loop
+        if Ba_Layprice then
+          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)/1.0));
+        else
+          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)/1.0));
+        end if;
 
         if I = Data'Last then
           -- put here anything after the last array
           Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => ""));
           Text_Io.Put_Line(F, "");  -- <-- last statement on this row
+          Old_Data := Data;
         else
           Text_Io.Put(F, ",");
         end if;
