@@ -78,7 +78,6 @@ procedure Ai_Nn is
                                                  Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/") ;
     Path2       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/lay/win/" else
                                                  Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/") ;
-    -- Path        : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/back/win/";
     Num_Real_Runners : Integer := 0;
     Pricets     : Calendar2.Time_Type := Calendar2.Time_Type_First;
 
@@ -150,6 +149,7 @@ procedure Ai_Nn is
         else
           Text_Io.Put(F, Float'Image(Float(Data(I).Backprice)/1000.0));
         end if;
+        Text_Io.Put(F, ",");
       end loop;
 
       for I in Data'Range loop
