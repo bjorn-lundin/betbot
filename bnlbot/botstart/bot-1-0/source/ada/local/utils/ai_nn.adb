@@ -154,9 +154,9 @@ procedure Ai_Nn is
 
       for I in Data'Range loop
         if Ba_Layprice then
-          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)/1.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)/1000.0));
         else
-          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)/1.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)/1000.0));
         end if;
 
         if I = Data'Last then
