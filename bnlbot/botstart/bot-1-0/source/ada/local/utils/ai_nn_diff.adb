@@ -225,7 +225,7 @@ procedure Ai_Nn_Diff is
           Lowest_Selid    : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(8));
           Lowest_Pidx     : Long_Long_Integer := Long_Long_Integer'Value(Awk.Field(9));
           Lowest_Odds     : Float             := Float'Value(Awk.Field(7));
-          Ts              : Calendar2.Time_Type := Calendar2.To_Time_Type(Date_And_Time_Str => Awk.Field(42)) ;
+          Ts              : Calendar2.Time_Type := Calendar2.To_Time_Type(Date_And_Time_Str => Awk.Field(58)) ;
           Marketid        : Marketid_Type       := Awk.Field(6);
           Laybet          : Bets.Bet_Type;
           Runner          : Runners.Runner_Type;
