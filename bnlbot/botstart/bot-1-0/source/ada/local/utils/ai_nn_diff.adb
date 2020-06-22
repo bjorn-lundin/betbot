@@ -3,13 +3,13 @@ with  Ada.Environment_Variables;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 with Gnatcoll.Json; use Gnatcoll.Json;
 
-with Ada.Strings ; use Ada.Strings;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+--with Ada.Strings ; use Ada.Strings;
+--with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Ada.Directories;
 with Text_Io;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Gnat.Strings;
+--with Gnat.Strings;
 
 with Aws;
 with Aws.Headers;
@@ -43,16 +43,11 @@ procedure Ai_Nn_Diff is
   Cmd_Line              : Command_Line_Configuration;
   T                     : Sql.Transaction_Type;
 
-  Sa_Startdate        : aliased Gnat.Strings.String_Access;
-  Sa_Side             : aliased Gnat.Strings.String_Access;
-  Ba_Train_Set        : aliased Boolean := False;
   Ba_Layprice         : aliased Boolean := False;
   Ia_Position         : aliased Integer := 0;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
   pragma Unreferenced(Global_Start_Date);
-
-  Global_Side          : String (1..4) := "BOTH";
 
   Gdebug : Boolean := True;
 
@@ -91,7 +86,7 @@ procedure Ai_Nn_Diff is
 
 
 
-  Procedure  Get_Json_Reply (Query : in Json_Value; Do_Bet : out Boolean) is
+  procedure  Get_Json_Reply (Query : in Json_Value; Do_Bet : out Boolean) is
     Aws_Reply    : Aws.Response.Data;
     Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Data         : String := Query.Write;
@@ -109,14 +104,14 @@ procedure Ai_Nn_Diff is
                                   Content_Type => "application/json",
                                   Headers      => Http_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
---    Log(Me & "Get_JSON_Reply", "Got reply, check it ");
+    --    Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 
     declare
       Reply : String := Aws.Response.Message_Body(Aws_Reply);
     begin
 
       if Reply /= "Post Timeout" then
-       -- Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
+        -- Log(Me & "Get_JSON_Reply", "Got reply: " & Reply  );
         Do_Bet := Reply = "1";
 
       else
@@ -136,14 +131,12 @@ procedure Ai_Nn_Diff is
 
 
   procedure Get_Files(Filename_List : in out  String_Object_List.List) is
- --   Dir : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample";
+  --   Dir : String := Ev.Value("BOT_HISTORY") & "/data/ai/pong/lay/win/sample";
 
     Path1       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/lay/win/sample" else
-                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/sample") ;
+                               Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/sample") ;
     Path2       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/lay/win/sample" else
-                                                 Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/sample") ;
-
-
+                               Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/sample") ;
 
     use Ada.Directories;
     My_Search : Search_Type;
@@ -151,22 +144,22 @@ procedure Ai_Nn_Diff is
   begin
     Log("Get_Files", "start");
 
-      case Ia_Position is
+    case Ia_Position is
       when 1 =>
-    Start_Search
-      (Search    => My_Search,
-       Directory => Path1,
-       Pattern   => "*.csv",
-       Filter    => (Ordinary_File => True, others => False));
+        Start_Search
+          (Search    => My_Search,
+           Directory => Path1,
+           Pattern   => "*.csv",
+           Filter    => (Ordinary_File => True, others => False));
       when 2 =>
-    Start_Search
-      (Search    => My_Search,
-       Directory => Path2,
-       Pattern   => "*.csv",
-       Filter    => (Ordinary_File => True, others => False));
+        Start_Search
+          (Search    => My_Search,
+           Directory => Path2,
+           Pattern   => "*.csv",
+           Filter    => (Ordinary_File => True, others => False));
       when others =>
         raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
-      end case;
+    end case;
 
     loop
       exit when not More_Entries (My_Search);
@@ -223,7 +216,7 @@ procedure Ai_Nn_Diff is
           Append(Odds_Curr, Create(Odds(Current,I)));
         end loop;
 
-        Params.Set_Field (Field_Name => "odds", Field => Odds_Diff);
+        Params.Set_Field (Field_Name => "diff", Field => Odds_Diff);
         Params.Set_Field (Field_Name => "curr", Field => Odds_Curr);
 
         declare
@@ -288,39 +281,18 @@ procedure Ai_Nn_Diff is
       end;
 
       exit when Do_Bet;
-     -- exit when cnt >= 5;
+      -- exit when cnt >= 5;
 
       First := False;
     end loop;
     Awk.Close (Computer_File);
-    Log("Profit", Filename & " -> " & profit'Img & " / " & Global_Profit'Img);
+    Log("Profit", Filename & " -> " & Profit'Img & " / " & Global_Profit'Img);
 
   end Parse_File;
 
-
-
-
-  ----------------------------------
+ ----------------------------------
 
 begin
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Side'Access,
-     Long_Switch => "--side=",
-     Help        => "side (LAY/BACK) - BOTH are default");
-
-  Define_Switch
-    (Cmd_Line,
-     Sa_Startdate'Access,
-     Long_Switch => "--startdate=",
-     Help        => "startdate");
-
-  Define_Switch
-    (Cmd_Line,
-     Ba_Train_Set'Access,
-     Long_Switch => "--trainset",
-     Help        => "Trainset - otherwise sample set");
 
   Define_Switch
     (Cmd_Line,
@@ -328,29 +300,13 @@ begin
      Long_Switch => "--layprice",
      Help        => "Layprices - otherwise backprices");
 
- Define_Switch
+  Define_Switch
     (Cmd_Line,
      Ia_Position'Access,
      Long_Switch => "--position=",
      Help        => "lay/back 1=leader, 2=2nd etc");
 
-
-
   Getopt (Cmd_Line);  -- process the command line
-
-  if Sa_Startdate.all /= "" then
-    declare
-      S : String (1 .. Sa_Startdate.all'Length) := Sa_Startdate.all;
-    begin
-      Global_Start_Date.Year := Year_Type'Value(S(1..4));
-      Global_Start_Date.Month := Month_Type'Value(S(6..7));
-      Global_Start_Date.Day := Day_Type'Value(S(9..10));
-    end;
-  end if;
-
-  if Sa_Side.all /= "" then
-    Move(Sa_Side.all, Global_Side);
-  end if;
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
