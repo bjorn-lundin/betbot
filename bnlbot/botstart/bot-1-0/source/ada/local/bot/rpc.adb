@@ -196,6 +196,13 @@ package body RPC is
     Now : Calendar2.Time_Type := Calendar2.Clock;
     Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
   begin
+  
+    if Bot_name /= Login_Handler then
+      Log(Me & "Keep_Alive", "only login_handler may Keep_Alive, you are " & bot_name );
+      Result := True; -- so that we do't call logout next
+      return;
+    end if;  
+  
     if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
        Log(Me & "Keep_Alive", "bad time - logout");
 
