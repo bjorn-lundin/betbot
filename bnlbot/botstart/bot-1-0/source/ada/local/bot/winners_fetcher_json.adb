@@ -42,32 +42,32 @@ begin
       Sa_Par_Bot_User'access,
       Long_Switch => "--user=",
       Help        => "user of bot");
-    
+
     Define_Switch
         (Cmd_Line,
          Ba_Daemon'access,
          Long_Switch => "--daemon",
          Help        => "become daemon at startup");
     Getopt (Cmd_Line);  -- process the command line
-    
+
     Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
     Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
-         
+
     if Ba_Daemon then
       Posix.Daemonize;
     end if;
-    My_Lock.Take(EV.Value("BOT_NAME"));    
-    
+    My_Lock.Take(EV.Value("BOT_NAME"));
+
     Log(Me, "Login betfair");
     Rpc.Init(
             Username   => Ini.Get_Value("betfair","username",""),
             Password   => Ini.Get_Value("betfair","password",""),
-            Product_Id => Ini.Get_Value("betfair","product_id",""),  
+            Product_Id => Ini.Get_Value("betfair","product_id",""),
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
     );
     Rpc.Login;
-    
+
     Log (Me, "connect db");
     Sql.Connect
         (Host     => Ini.Get_Value("database","host",""),
@@ -76,7 +76,7 @@ begin
          Login    => Ini.Get_Value("database","username",""),
          Password => Ini.Get_Value("database","password",""));
     Log (Me, "connected to db");
-      
+
     Main_Loop : loop
       begin
         Log(Me, "Start receive");
@@ -98,12 +98,17 @@ begin
           Timeout := Long_Timeout; -- only first time fast ...
           Log(Me, "Timeout");
           Rpc.Keep_Alive(OK);
-          if not OK then
+        if not Ok then
+          begin
             Rpc.Login;
-          end if;
-          Markets.Check_Market_Status;                          -- updates markets status
-          Markets.Check_Unsettled_Markets(Has_Inserted_Winner); -- updates runner status
-          
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
+        end if;
+        Markets.Check_Market_Status;                          -- updates markets status
+        Markets.Check_Unsettled_Markets(Has_Inserted_Winner); -- updates runner status
+
           if Has_Inserted_Winner then
             declare
               NWANR   : Bot_Messages.New_Winners_Arrived_Notification_Record;
@@ -118,7 +123,7 @@ begin
       Now := Calendar2.Clock;
       --restart every day
       exit Main_Loop when Now.Hour = 01 and then Now.Minute <= 02;
-      
+
     end loop Main_Loop;
 
     Sql.Close_Session;

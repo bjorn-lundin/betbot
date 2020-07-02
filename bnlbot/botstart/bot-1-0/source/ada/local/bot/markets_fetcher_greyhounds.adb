@@ -356,9 +356,14 @@ begin
     end case;
 
     --check for stale token - send keepAlive, and re-login if bad
-    Rpc.Keep_Alive(OK);
-    if not OK then
-      Rpc.Login;
+    Rpc.Keep_Alive(Ok);
+    if not Ok then
+      begin
+        Rpc.Login;
+      exception
+        when Rpc.Login_Failed =>
+          Log(Me, "login failed, but will try again");
+      end;
     end if;
 
     UTC_Time_Stop  := UTC_Time_Start + Eleven_Seconds;

@@ -477,7 +477,13 @@ procedure Parse_Football_Live_Feed is
 --                Right_Bracket : Integer := 0;
 --                F : String := Awk.Field (Score_Field);
 --              begin
---                for M in F'Range loop
+--                for          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
+ M in F'Range loop
 --                  case F(M) is
 --                    when '[' => Left_Bracket := M;
 --                    when '-' => Dash := M;
@@ -501,7 +507,13 @@ procedure Parse_Football_Live_Feed is
 --                      Scores(Away) := Types.Integer_4'Value(F(Dash+1 ..  Right_Bracket-1));
 --                    end if;
 --                  end if;
---                end loop;
+--                end          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
+ loop;
 --                for H in Team_Field_Type'Range loop
 --                  D("Score " & H'Img & "=" & Scores(H)'Img );
 --                end loop;

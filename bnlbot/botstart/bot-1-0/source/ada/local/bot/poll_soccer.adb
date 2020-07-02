@@ -983,7 +983,12 @@ begin
         Timeout := 42.0;
         Rpc.Keep_Alive(OK);
         if not OK then
-          Rpc.Login;
+          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
         end if;
         Find_Markets;
     end;

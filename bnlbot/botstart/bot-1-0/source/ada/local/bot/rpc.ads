@@ -14,7 +14,13 @@ with Table_Astarttimes;
 package RPC is
 
   type Result_Type is (Ok, Timeout, Logged_Out);
-  JSON_Exception, POST_Timeout, GET_Timeout, Invalid_Session, Login_Failed, Bad_Reply: exception;
+  JSON_Exception,
+  Post_Timeout,
+  Get_Timeout,
+  Invalid_Session,
+  Login_Failed,
+  Data_Missing,
+  Bad_Reply: exception;
 
   procedure Login;
   procedure Logout;
