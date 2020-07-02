@@ -227,27 +227,27 @@ procedure Long_Poll_GH_Market is
                   BR             => Best_Runners,
                   Min_Lay_Price  =>  6.0,
                   Max_Lay_Price  =>  8.0);
-                  
+
       Lay_The_Bet_Between(Name   => "LAY_BETWEEN_6_00_10_00",
                   BR             => Best_Runners,
                   Min_Lay_Price  =>  6.0,
                   Max_Lay_Price  => 10.0);
-                  
+
       Lay_The_Bet_Between(Name   => "LAY_BETWEEN_6_00_12_00",
                   BR             => Best_Runners,
                   Min_Lay_Price  =>  6.0,
                   Max_Lay_Price  => 12.0);
-                  
+
       Lay_The_Bet_Between(Name   => "LAY_BETWEEN_8_00_10_00",
                   BR             => Best_Runners,
                   Min_Lay_Price  =>  8.0,
                   Max_Lay_Price  => 10.0);
-                  
+
       Lay_The_Bet_Between(Name   => "LAY_BETWEEN_8_00_12_00",
                   BR             => Best_Runners,
                   Min_Lay_Price  =>  8.0,
                   Max_Lay_Price  => 12.0);
-                  
+
       Lay_The_Bet_Between(Name   => "LAY_BETWEEN_10_00_12_00",
                   BR             => Best_Runners,
                   Min_Lay_Price  => 10.0,
@@ -367,7 +367,12 @@ begin
         Timeout := 30.0;
         Rpc.Keep_Alive(OK);
         if not OK then
-          Rpc.Login;
+          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
         end if;
        -- Collect_Data;
     end;

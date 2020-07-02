@@ -30,7 +30,7 @@ with Table_Arunners;
 
 
 procedure Bet_Checker is
-  package EV renames Ada.Environment_Variables;
+  package Ev renames Ada.Environment_Variables;
   Timeout         : Duration := 25.0;
   My_Lock         : Lock.Lock_Type;
   Msg             : Process_Io.Message_Type;
@@ -38,20 +38,22 @@ procedure Bet_Checker is
   Ba_Daemon       : aliased Boolean := False;
   Sa_Par_Bot_User : aliased Gnat.Strings.String_Access;
   Config          : Command_Line_Configuration;
-  OK              : Boolean := False;
+  Ok              : Boolean := False;
   Is_Time_To_Exit : Boolean := False;
   Now             : Calendar2.Time_Type := Calendar2.Clock;
 
   --------------------------------------------
   procedure Treat_Pending_Bets_In_Json_File is
-    Service : String := "Treat_Pending_Bets_In_Json_File";
+    Service     : String := "Treat_Pending_Bets_In_Json_File";
     use Gnatcoll.Json;
     use Ada.Directories;
-    Dir : String := EV.Value("BOT_HOME") & "/pending";
+    Dir         : String := Ev.Value("BOT_HOME") & "/pending";
     Dir_Ent     : Directory_Entry_Type;
     The_Search  : Search_Type;
-    JSON_Data   : JSON_Value;
-    T : Sql.Transaction_Type;
+    pragma Unreferenced(The_Search);
+
+    Json_Data   : Json_Value;
+    T           : Sql.Transaction_Type;
   begin
     Log(Me & Service , "Look for *.json in " & Dir);
     Start_Search(Search    => The_Search,
@@ -67,16 +69,16 @@ procedure Bet_Checker is
         Filename : String := Full_Name(Dir_Ent);
         Content  : String := Lock.Read_File(Filename);
         Bet      : Bets.Bet_Type;
-        Market : Markets.Market_Type;
-        Runner : Table_Arunners.Data_Type;
+        Market   : Markets.Market_Type;
+        Runner   : Table_Arunners.Data_Type;
         type Eos_Type is (Amarkets , Arunners, Abets);
-        Eos : array (Eos_Type'range) of Boolean := (others => False);
+        Eos      : array (Eos_Type'Range) of Boolean := (others => False);
       begin
         Log(Filename & " has content length" & Content'Length'Img);
         if Content'Length > 0 then
-          JSON_Data := Read(Content,"");
+          Json_Data := Read(Content,"");
 
-          Bet := Bets.From_JSON(JSON_Data);
+          Bet := Bets.From_Json(Json_Data);
 
           if Bet.Betid = 0 then
             Log(Me & Service, "bad bet, get fake betid");
@@ -85,19 +87,19 @@ procedure Bet_Checker is
 
           begin
             T.Start;
-              Market.Marketid := Bet.Marketid;
-              Market.Read(Eos(Amarkets) );
+            Market.Marketid := Bet.Marketid;
+            Market.Read(Eos(Amarkets) );
 
-              Runner.Marketid := Bet.Marketid;
-              Runner.Selectionid := Bet.Selectionid;
-              Runner.Read(Eos(Arunners) );
+            Runner.Marketid := Bet.Marketid;
+            Runner.Selectionid := Bet.Selectionid;
+            Runner.Read(Eos(Arunners) );
 
-              Bet.Startts       := Market.Startts;
-              Bet.Fullmarketname:= Market.Marketname;
-              Bet.Runnername    := Runner.Runnername;
+            Bet.Startts       := Market.Startts;
+            Bet.Fullmarketname:= Market.Marketname;
+            Bet.Runnername    := Runner.Runnername;
 
-              Bet.Insert_And_Nullify_Betwon;
-              Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
+            Bet.Insert_And_Nullify_Betwon;
+            Log(Me & "Place_Bet", Utils.Trim(Bet.Betname) & " inserted bet: " & Bet.To_String);
             T.Commit;
           exception
             when Sql.Duplicate_Index =>
@@ -113,7 +115,7 @@ procedure Bet_Checker is
                 Cancel_Succeeded : Boolean := False;
               begin
                 Cancel_Succeeded := Rpc.Cancel_Bet(Bet => Bet);
-                Log(Me & Service, "Cancel bet" & Bet.betid'Img & " succeeded: " & Cancel_Succeeded'Img);
+                Log(Me & Service, "Cancel bet" & Bet.Betid'Img & " succeeded: " & Cancel_Succeeded'Img);
                 if Cancel_Succeeded then
                   loop
                     begin
@@ -128,7 +130,7 @@ procedure Bet_Checker is
                     exception
                       when Sql.No_Such_Row =>
                         T.Rollback;
-                        Log(Me & Service, "Cancel bet" & Bet.betid'Img & " Trf_conflict : " & Bet.To_String);
+                        Log(Me & Service, "Cancel bet" & Bet.Betid'Img & " Trf_conflict : " & Bet.To_String);
                     end;
                   end loop;
                 end if;
@@ -149,46 +151,46 @@ procedure Bet_Checker is
 
 begin
   Define_Switch
-     (Config,
-      Sa_Par_Bot_User'access,
-      Long_Switch => "--user=",
-      Help        => "user of bot");
+    (Config,
+     Sa_Par_Bot_User'Access,
+     Long_Switch => "--user=",
+     Help        => "user of bot");
 
   Define_Switch
-     (Config,
-      Ba_Daemon'access,
-      "-d",
-      Long_Switch => "--daemon",
-      Help        => "become daemon at startup");
+    (Config,
+     Ba_Daemon'Access,
+     "-d",
+     Long_Switch => "--daemon",
+     Help        => "become daemon at startup");
   Getopt (Config);  -- process the command line
 
   if Ba_Daemon then
     Posix.Daemonize;
   end if;
 
-  Logging.Open(EV.Value("BOT_HOME") & "/log/" & EV.Value("BOT_NAME") & ".log");
-   --must take lock AFTER becoming a daemon ...
-   --The parent pid dies, and would release the lock...
-  My_Lock.Take(EV.Value("BOT_NAME"));
+  Logging.Open(Ev.Value("BOT_HOME") & "/log/" & Ev.Value("BOT_NAME") & ".log");
+  --must take lock AFTER becoming a daemon ...
+  --The parent pid dies, and would release the lock...
+  My_Lock.Take(Ev.Value("BOT_NAME"));
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
   Log(Me, "Connect Db");
   Sql.Connect
-        (Host     => Ini.Get_Value("database","host",""),
-         Port     => Ini.Get_Value("database","port", 5432),
-         Db_Name  => Ini.Get_Value("database","name",""),
-         Login    => Ini.Get_Value("database","username",""),
-         Password => Ini.Get_Value("database","password",""));
+    (Host     => Ini.Get_Value("database","host",""),
+     Port     => Ini.Get_Value("database","port", 5432),
+     Db_Name  => Ini.Get_Value("database","name",""),
+     Login    => Ini.Get_Value("database","username",""),
+     Password => Ini.Get_Value("database","password",""));
   Log(Me, "db Connected");
 
   Log(Me, "Login betfair");
   Rpc.Init(
-            Username   => Ini.Get_Value("betfair","username",""),
-            Password   => Ini.Get_Value("betfair","password",""),
-            Product_Id => Ini.Get_Value("betfair","product_id",""),
-            Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
-            App_Key    => Ini.Get_Value("betfair","appkey","")
+           Username   => Ini.Get_Value("betfair","username",""),
+           Password   => Ini.Get_Value("betfair","password",""),
+           Product_Id => Ini.Get_Value("betfair","product_id",""),
+           Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
+           App_Key    => Ini.Get_Value("betfair","appkey","")
           );
   Rpc.Login;
   Log(Me, "Login betfair done");
@@ -215,21 +217,26 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout start");
-          Rpc.Keep_Alive(OK);
-          if not OK then
+        Rpc.Keep_Alive(Ok);
+        if not Ok then
+          begin
             Rpc.Login;
-          end if;
-          Treat_Pending_Bets_In_Json_File;
-          Bets.Check_If_Bet_Accepted;
-          Bets.Check_Bets;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
+        end if;
+        Treat_Pending_Bets_In_Json_File;
+        Bets.Check_If_Bet_Accepted;
+        Bets.Check_Bets;
         Log(Me, "Timeout stop");
     end;
 
     Now := Calendar2.Clock;
     --restart every day
     Is_Time_To_Exit := Now.Hour = 01 and then
-                       Now.Minute = 00 and then
-                       Now.Second >= 50 ;
+      Now.Minute = 00 and then
+      Now.Second >= 50 ;
 
     exit Main_Loop when Is_Time_To_Exit;
 
@@ -256,7 +263,7 @@ exception
       Log("Message : " & Last_Exception_Messsage);
       Log(Last_Exception_Info);
       Log("addr2line" & " --functions --basenames --exe=" &
-           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+            Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
     end ;
 
     Log(Me, "Close log and die");

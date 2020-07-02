@@ -65,7 +65,7 @@ procedure Saldo_Fetcher is
     declare
       Auth : aliased constant SMTP.Authentication.Plain.Credential :=
                                 SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
-                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool                           
+                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
 
 -- old version                  SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
 --                                              "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
@@ -252,7 +252,12 @@ begin
         when Rpc.Logged_Out =>
           delay 2.0;
           Log(Me, "Logged_Out, will log in again");  --??
-          Rpc.Login;
+          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
         when Rpc.Timeout =>  delay 5.0;
       end case;
     end loop Ask;

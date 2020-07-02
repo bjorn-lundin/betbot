@@ -22,7 +22,9 @@ with Ada.Calendar.Time_Zones;
 package body RPC is
 
  package EV renames Ada.Environment_Variables;
- Me : constant String := "RPC.";
+  Me : constant String := "RPC.";
+
+  Login_Handler : constant String := "login_handler";
 
   No_Such_Field : exception;
 
@@ -61,7 +63,7 @@ package body RPC is
     --use Aws.Client;
     Now : Calendar2.Time_Type := Calendar2.Clock;
     fname : string := EV.Value("BOT_TARGET") & "/token.dat";
-    f : text_io.file_type; 
+    f : text_io.file_type;
     buffer : string(1..100) := (others => ' ');
     len : Natural := 0;
     Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
@@ -77,7 +79,7 @@ package body RPC is
        raise Login_Failed with "Not allowed to login before 12";
     end if;
 
-    if Ada.Directories.exists(fname) and Bot_name /= "login_handler" then
+    if Ada.Directories.exists(fname) and Bot_name /= Login_Handler then
       text_io.open(f,text_io.in_file,fname);
       text_io.get_line(f,buffer,len);
       text_io.close(f);
@@ -86,13 +88,13 @@ package body RPC is
       return;
     end if;
 
-    if Bot_name /= "login_handler" then 
+    if Bot_name /= Login_Handler then
        Log(Me & "Login", "'" & bot_name & "' -> not login_handler process - return");
       return;
     end if;
 
    -- ok - get a new token
-  
+
     Log(Me & "Login", "login_handler process - ok - get new token");
 
 
@@ -166,7 +168,7 @@ package body RPC is
     Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
   begin
 
-    if Bot_name /= "login_handler" then
+    if Bot_name /= Login_Handler then
       Log(Me & "Logout", "only login_handler may logout, you are " & bot_name );
       return;
     end if;
@@ -197,7 +199,7 @@ package body RPC is
     if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
        Log(Me & "Keep_Alive", "bad time - logout");
 
-       if Bot_name = "login_handler" and then Global_Token.Is_Set then
+       if Bot_name = Login_Handler and then Global_Token.Is_Set then
          Log(Me & "keep_alive"," logout");
          Logout;
        end if;
@@ -1359,11 +1361,18 @@ package body RPC is
               Field     => "id",
               Target    => DB_Event.Eventid,
               Found     => Found);
+    if not Found then
+      raise Data_Missing with "Did not find tag 'id'";
+    end if;
 
     Get_Value(Container => J_Event,
               Field     => "name",
               Target    => DB_Event.Eventname,
               Found     => Found);
+
+    if not Found then
+      raise Data_Missing with "Did not find tag 'name'";
+    end if;
 
     Get_Value(Container => J_Event,
               Field     => "countryCode",
@@ -1377,11 +1386,18 @@ package body RPC is
               Field     => "openDate",
               Target    => DB_Event.Opents,
               Found     => Found);
+    if not Found then
+      raise Data_Missing with "Did not find tag 'openDate'";
+    end if;
+
 
     Get_Value(Container => J_Event,
               Field     => "timezone",
               Target    => DB_Event.Timezone,
               Found     => Found);
+    if not Found then
+      raise Data_Missing with "Did not find tag 'timezone'";
+    end if;
 
     -- event_type !!
 --    Get_Value(Container => J_Event_Type,
@@ -1396,7 +1412,11 @@ package body RPC is
                 Field     => "id",
                 Target    => T,
                 Found     => Found);
-      DB_Event.Eventtypeid := Integer_4'Value(T);
+      Db_Event.Eventtypeid := Integer_4'Value(T);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'id'";
+      end if;
+
     end;
     Log(Me & Service, DB_Event.To_String);
     Log(Me & Service, "stop");
@@ -1702,6 +1722,10 @@ package body RPC is
                 Field     => "betId",
                 Target    => Bet_Id,
                 Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'betId'";
+      end if;
+
 
       Get_Value(Container => InstructionsItem,
                 Field     => "sizeMatched",
@@ -2004,6 +2028,9 @@ package body RPC is
               Field     => "marketName",
               Target    => DB_Market.Marketname,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'marketName'";
+      end if;
 
 
     Get_Value(Container => J_Market,
@@ -2021,6 +2048,9 @@ package body RPC is
               Field     => "marketStartTime",
               Target    =>  DB_Market.Startts,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'marketStartTime'";
+      end if;
 
 
     Get_Value(Container => J_Market,
@@ -2038,6 +2068,9 @@ package body RPC is
               Field     => "inplay",
               Target    => In_Play_Market,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'inplay'";
+      end if;
 
     -- update start, ie these fields are in Market_Book only
 
@@ -2045,36 +2078,57 @@ package body RPC is
               Field     => "numberOfWinners",
               Target    => DB_Market.Numwinners,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'numberOfWinners'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "totalAvailable",
               Target    => DB_Market.Totalavailable,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'totalAvailable'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "numberOfRunners",
               Target    => DB_Market.Numrunners,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'numberOfRunners'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "numberOfActiveRunners",
               Target    => DB_Market.Numactiverunners,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'numberOfActiveRunners'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "totalMatched",
               Target    => DB_Market.Totalmatched,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'totalMatched'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "status",
               Target    => DB_Market.Status,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'status'";
+      end if;
 
     Get_Value(Container => J_Market,
               Field     => "betDelay",
               Target    => DB_Market.Betdelay,
               Found     => Found);
+      if not Found then
+        raise Data_Missing with "Did not find tag 'betDelay'";
+      end if;
 
     Log(Me & Service, "In_Play_Market: " & In_Play_Market'Img & " " & DB_Market.To_String);
 --    Log(Me & Service, "stop");

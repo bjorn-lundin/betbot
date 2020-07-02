@@ -41,8 +41,8 @@ procedure Long_Poll_Market is
   Now             : Calendar2.Time_Type;
   Ok,
   Is_Time_To_Exit : Boolean := False;
-  Select_Open_Markets : Sql.Statement_Type; 
-  
+  Select_Open_Markets : Sql.Statement_Type;
+
   -------------------------------------------------------------
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Markets.Market_Type;
@@ -89,7 +89,7 @@ procedure Long_Poll_Market is
                           Market     => Market,
                           Price_List => Price_List,
                           In_Play    => In_Play);
-                          
+
     begin
       T.Start;
       Now := Calendar2.Clock;
@@ -117,8 +117,8 @@ procedure Long_Poll_Market is
   end Run;
   ---------------------------------------------------------------------
   use type Sql.Transaction_Status_Type;
-  
-    
+
+
   procedure Collect_Data is
     Market_List : Table_Amarkets.Amarkets_List_Pack2.List;
     T : Sql.Transaction_Type;
@@ -133,10 +133,10 @@ procedure Long_Poll_Market is
     for m of Market_List loop
       Market_Notification.Market_Id := m.Marketid;
       Run(Market_Notification);
-    end loop;  
+    end loop;
   end Collect_Data;
-  
-  
+
+
 ------------------------------ main start -------------------------------------
 
 begin
@@ -174,8 +174,8 @@ begin
   Log("Bot svn version:" & Bot_Svn_Info.Revision'Img);
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-  
-  
+
+
   Log(Me, "Connect Db");
   Sql.Connect
         (Host     => Ini.Get_Value("database", "host", ""),
@@ -200,8 +200,8 @@ begin
   Main_Loop : loop
 --    --notfy markets_fetcher that we are free
 --      Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
---      Bot_Messages.Send(Markets_Fetcher, Data);    
-  
+--      Bot_Messages.Send(Markets_Fetcher, Data);
+
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
@@ -215,7 +215,7 @@ begin
         when Bot_Messages.Market_Notification_Message    =>
           ----notfy markets_fetcher that we are busy
           --Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-          --Bot_Messages.Send(Markets_Fetcher, Data);    
+          --Bot_Messages.Send(Markets_Fetcher, Data);
           Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
@@ -225,9 +225,14 @@ begin
         Timeout := 55.0;
         Rpc.Keep_Alive(OK);
         if not OK then
-          Rpc.Login;
+          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
         end if;
-        Collect_Data;         
+        Collect_Data;
     end;
     Now := Calendar2.Clock;
 

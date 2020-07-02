@@ -45,7 +45,7 @@ procedure Poll_Market is
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
-  
+
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
     Market    : Markets.Market_Type;
@@ -97,7 +97,7 @@ procedure Poll_Market is
                             Market     => Market,
                             Price_List => Price_List,
                             In_Play    => In_Play);
-                            
+
       if Is_Data_Collector then
         for Price of Price_List loop
          Priceshistory_Data := (
@@ -219,8 +219,8 @@ begin
   Main_Loop : loop
     --notfy markets_fetcher that we are free
       Data := (Free => 1, Name => This_Process.Name , Node => This_Process.Node);
-      Bot_Messages.Send(Markets_Fetcher, Data);    
-  
+      Bot_Messages.Send(Markets_Fetcher, Data);
+
     begin
       Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
@@ -234,16 +234,21 @@ begin
         when Bot_Messages.Market_Notification_Message    =>
           --notfy markets_fetcher that we are busy
           Data := (Free => 0, Name => This_Process.Name , Node => This_Process.Node);
-          Bot_Messages.Send(Markets_Fetcher, Data);    
+          Bot_Messages.Send(Markets_Fetcher, Data);
           Run(Bot_Messages.Data(Msg));
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
       when Process_Io.Timeout =>
-        Rpc.Keep_Alive(OK);
-        if not OK then
-          Rpc.Login;
+        Rpc.Keep_Alive(Ok);
+        if not Ok then
+          begin
+            Rpc.Login;
+          exception
+            when Rpc.Login_Failed =>
+              Log(Me, "login failed, but will try again");
+          end;
         end if;
     end;
     Now := Calendar2.Clock;
