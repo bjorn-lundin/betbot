@@ -1009,7 +1009,11 @@ package body Bot_Ws_Services is
   -- for moisture in flowers
   -----------------------------------------------------  
 
-  function Log_Data(Id : String; Moisture : Integer_4;  Moisture_Pct : out integer_4) return Boolean is
+  function Log_Data(Id : String; 
+                    Moisture : Integer_4;
+                    Moisture_Pct : out integer_4;
+                    Sensor : in out String_Object) return Boolean is
+                    
     Service       : constant String := "MMR.Log_Data";
     T             : Sql.Transaction_Type;
     Freading_Data :  Table_Freadings.Data_Type;
@@ -1051,6 +1055,7 @@ package body Bot_Ws_Services is
         Result := True;
         Fsensor_Data.Lastnotify := Now;
         Fsensor_Data.Update_Withcheck;
+        Sensor.Set(Fsensor_Data.Potname);
       else
         Result := False;
       end if;
@@ -1073,11 +1078,12 @@ package body Bot_Ws_Services is
     Status           : SMTP.Status;
     Subject          : String :="Dags att vattna blommorna";
     Should_Send_Mail : Boolean := False;
-    Moisture_Pct     :  Integer_4 := 0;
+    Moisture_Pct     : Integer_4 := 0;
+    Sensorname       : String_Object;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     
-    Should_Send_Mail := Log_Data(Id, Moisture, Moisture_Pct);
+    Should_Send_Mail := Log_Data(Id, Moisture, Moisture_Pct, Sensorname);
     
     if Should_Send_Mail then 
       declare
@@ -1092,7 +1098,7 @@ package body Bot_Ws_Services is
         --Credential => Auth'Unchecked_Access);
         use Ada.Characters.Latin_1;
         Msg : constant String := 
-                "Fuktnivå :" & Moisture_Pct'Img & "%" & Cr & Lf &
+                "Fuktnivå :" & Moisture_Pct'Img & "% för blomma " & Sensorname.Fix_String & Cr & Lf &
                 "tid : " & Calendar2.String_Date_Time_Iso (T, " ", " ") & Cr & Lf &
                 "sent from: " & Gnat.Sockets.Host_Name ;
 

@@ -1,12 +1,15 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
---with Ada.Environment_Variables;
+with Ada.Environment_Variables;
+with Ada.Directories;
 with Logging; use Logging;
 with Aws;
 with Aws.Headers;
 --with Aws.Headers.Set;
+with Ada.Exceptions;
 with Aws.Response;
 with Aws.Client;
+with text_io;
 with Bot_Svn_Info;
 with Utils; use Utils;
 pragma Elaborate_All (AWS.Headers);
@@ -18,7 +21,7 @@ with Ada.Calendar.Time_Zones;
 
 package body RPC is
 
- --package EV renames Ada.Environment_Variables;
+ package EV renames Ada.Environment_Variables;
  Me : constant String := "RPC.";
 
   No_Such_Field : exception;
@@ -56,8 +59,43 @@ package body RPC is
     AWS_Reply    : Aws.Response.Data;
 --    Header : AWS.Headers.List;
     --use Aws.Client;
-
+    Now : Calendar2.Time_Type := Calendar2.Clock;
+    fname : string := EV.Value("BOT_TARGET") & "/token.dat";
+    f : text_io.file_type; 
+    buffer : string(1..100) := (others => ' ');
+    len : Natural := 0;
+    Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
   begin
+    if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
+       Log(Me & "Login", "Login failed - bad time");
+       begin
+         Ada.Directories.Delete_file(fname);
+         Log(Me & "Login", "deleted tokenfile");
+       exception
+         when others => null;
+       end;
+       raise Login_Failed with "Not allowed to login before 12";
+    end if;
+
+    if Ada.Directories.exists(fname) and Bot_name /= "login_handler" then
+      text_io.open(f,text_io.in_file,fname);
+      text_io.get_line(f,buffer,len);
+      text_io.close(f);
+      Global_Token.Set(buffer(1..len));
+      Log(Me & "Login", "use token from file");
+      return;
+    end if;
+
+    if Bot_name /= "login_handler" then 
+       Log(Me & "Login", "'" & bot_name & "' -> not login_handler process - return");
+      return;
+    end if;
+
+   -- ok - get a new token
+  
+    Log(Me & "Login", "login_handler process - ok - get new token");
+
+
     Aws.Headers.Add (Login_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
 
 -- curl -k -i -H "Accept: application/json" -H "X-Application: q0XW4VGRNoHuaszo" \
@@ -104,6 +142,11 @@ package body RPC is
           if JSON_Reply.Has_Field("token") then
             Global_Token.Set(Trim(JSON_Reply.Get("token")));
             Login_Ok := True;
+
+            text_io.create(f,text_io.out_file,fname);
+            text_io.put_line(f,Global_Token.Get);
+            text_io.close(f);
+            Log(Me & "Login", "wrote token to file");
           end if;
         end if;
       end if;
@@ -120,7 +163,14 @@ package body RPC is
   procedure Logout is
     Logout_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
+    Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
   begin
+
+    if Bot_name /= "login_handler" then
+      Log(Me & "Logout", "only login_handler may logout, you are " & bot_name );
+      return;
+    end if;
+
     Aws.Headers.Add (Logout_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
     Aws.Headers.Add (Logout_HTTP_Headers, "Accept", "application/json");
     Aws.Headers.Add (Logout_HTTP_Headers, "X-Authentication", Global_Token.Get);
@@ -141,7 +191,20 @@ package body RPC is
   procedure Keep_Alive(Result : out Boolean )is
     Keep_Alive_HTTP_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     AWS_Reply    : Aws.Response.Data;
+    Now : Calendar2.Time_Type := Calendar2.Clock;
+    Bot_Name : string := (if EV.Exists("BOT_NAME") then EV.Value("BOT_NAME") else "NONAME") ;
   begin
+    if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
+       Log(Me & "Keep_Alive", "bad time - logout");
+
+       if Bot_name = "login_handler" and then Global_Token.Is_Set then
+         Log(Me & "keep_alive"," logout");
+         Logout;
+       end if;
+      Result := False;
+      return;
+    end if;
+
     Result := True;
     Aws.Headers.Add (Keep_Alive_HTTP_Headers, "User-Agent", "AWS-BNL/1.0");
     Aws.Headers.Add (Keep_Alive_HTTP_Headers, "Accept", "application/json");
@@ -187,11 +250,21 @@ package body RPC is
       end if;
     exception
       when POST_Timeout => raise;
-      when others =>
+      when E: others =>
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply start *********************************");
          Log(Me & "Get_JSON_Reply", "Bad reply" & Aws.Response.Message_Body(AWS_Reply));
          Log(Me & "Get_JSON_Reply", "***********************  Bad reply stop  ********" );
-         raise Bad_Reply ;
+
+         declare
+           Last_Exception_Name     : constant String  := Ada.Exceptions.Exception_Name(E);
+           Last_Exception_Messsage : constant String  := Ada.Exceptions.Exception_Message(E);
+           Last_Exception_Info     : constant String  := Ada.Exceptions.Exception_Information(E);
+         begin
+          Log(Last_Exception_Name);
+          Log("Message : " & Last_Exception_Messsage);
+          Log(Last_Exception_Info);
+        end ;
+        raise Bad_Reply ;
   end Get_JSON_Reply;
   ------------------------------------------------------------------------------
 

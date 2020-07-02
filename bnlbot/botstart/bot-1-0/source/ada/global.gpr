@@ -35,6 +35,10 @@ project Global is
                                               "-fstack-check",
                                               "-gnata",
                                               "-gnatoU", -- -v
+                                              "-gnatw.o",  -- Warnings about unreferenced out parameters
+                                              "-gnatwu",   -- Activate warnings on unused entities
+                                              "-gnatwm",   -- Warnings about modified but unreferenced variables
+                                              "-gnatye",    -- require 'end procedurename'
                                               "-gnatwlaKW");
 
    for Object_Dir use Bot_Target & "/objects";
