@@ -16,6 +16,12 @@ package body Token is
     A_Token.App_Key    := To_Unbounded_String(App_Key);
   end Init;
   
+
+  function Is_Set(A_token : Token_Type) return Boolean is
+  begin
+    return A_Token.Token_Is_Set;
+  end Is_Set;
+
   --------------------------------------------------------
   function  Get(A_Token : Token_Type) return String is
   begin

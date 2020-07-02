@@ -29,7 +29,7 @@ package Token is
                   Vendor_Id  : in     String;
                   App_Key    : in     String) ;
   
-                  
+  function Is_Set(A_token : Token_Type) return Boolean;                
   function  Get (A_Token  :        Token_Type) return String;
   procedure Set (A_Token  : in out Token_Type; The_Token : String);
   procedure Unset (A_Token : in out Token_Type) ;

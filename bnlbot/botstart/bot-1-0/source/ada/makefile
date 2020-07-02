@@ -5,7 +5,7 @@
 ###############################################################################
 
 
-EXE_DIR_BOT     := $(BOT_TARGET)/bin
+#EXE_DIR_BOT     := $(BOT_TARGET)/bin
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
@@ -33,7 +33,8 @@ all : log
 log :
 	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
 
-race_time : $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT) repo $(TABLE_MAKE_FILE)
+#$(EXE_DIR_BOT)
+race_time : $(TARGET_ADA_INFO_SPEC) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS_OUTPUT) repo $(TABLE_MAKE_FILE)
 	gprbuild -p -P adabot race_time
 
 bot : adabot
@@ -50,8 +51,8 @@ $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 $(REPO_ENGINE) :
 	gprbuild -p -P adabot repo
     
-$(EXE_DIR_BOT) :
-	mkdir -p $(EXE_DIR_BOT)
+#$(EXE_DIR_BOT) :
+#	mkdir -p $(EXE_DIR_BOT)
 
 $(LOG_DIR_BOT) :
 	mkdir -p $(LOG_DIR_BOT)
@@ -63,11 +64,13 @@ $(PIPE_DIR_BOT) :
 $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
-adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
+#$(EXE_DIR_BOT)
+adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gprbuild -p -P adabot
 
-$(C_CONSTANTS_EXE) : $(EXE_DIR_BOT) $(C_CONSTANTS_SOURCE)
+#$(EXE_DIR_BOT)
+$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
 
 $(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)

@@ -1212,16 +1212,8 @@ begin
   Cfg := Config.Create(Ev.Value("BOT_HOME") & "/" & Sa_Par_Inifile.all);
   Log(Cfg.To_String);
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
-  Log(Me, "Connect Db");
-  Sql.Connect
-    (Host     => Ini.Get_Value("database", "host", ""),
-     Port     => Ini.Get_Value("database", "port", 5432),
-     Db_Name  => Ini.Get_Value("database", "name", ""),
-     Login    => Ini.Get_Value("database", "username", ""),
-     Password => Ini.Get_Value("database", "password", ""));
-  Log(Me, "db Connected");
 
-  Log(Me, "Login betfair");
+ Log(Me, "Login betfair");
   Rpc.Init (
             Username   => Ini.Get_Value("betfair", "username", ""),
             Password   => Ini.Get_Value("betfair", "password", ""),
@@ -1232,10 +1224,19 @@ begin
   Rpc.Login;
   Log(Me, "Login betfair done");
 
+
+  Log(Me, "Connect Db");
+  Sql.Connect
+    (Host     => Ini.Get_Value("database", "host", ""),
+     Port     => Ini.Get_Value("database", "port", 5432),
+     Db_Name  => Ini.Get_Value("database", "name", ""),
+     Login    => Ini.Get_Value("database", "username", ""),
+     Password => Ini.Get_Value("database", "password", ""));
+  Log(Me, "db Connected");
+
   if Cfg.Enabled then
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
-
 
   Sim.Fill_Race_Times(Horse, Sim.Racetime_Map);
 
@@ -1312,3 +1313,4 @@ exception
     Logging.Close;
     Posix.Do_Exit(0); -- terminate
 end Poll;
+
