@@ -32,6 +32,12 @@ case $HOSTNAME in
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
+
+  iMac.lan*)
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=GNAT
+    ;;
+
   HP-Mini*)    
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=LOCAL
