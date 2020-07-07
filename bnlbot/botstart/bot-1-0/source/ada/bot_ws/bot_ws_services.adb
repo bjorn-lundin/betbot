@@ -669,6 +669,7 @@ package body Bot_Ws_Services is
     use type  Ada.Containers.Count_Type;
   begin
     Start_Time_List.Clear;
+    Initiated := False;
 
     Rpc.Init(
              Username   => Ini.Get_Value("betfair","username",""),
@@ -681,7 +682,8 @@ package body Bot_Ws_Services is
     begin
       Rpc.Login;
     exception
-      when Rpc.Login_Failed => Log(Object & Service, "Start Rpc.Login_Failed ");
+      when Rpc.Login_Failed => Log(Object & Service, "Start Rpc.Login_Failed, give up ");
+                               return;     
       when Rpc.Post_Timeout => Log(Object & Service, "Start Rpc.Post_Timeout 1");
     end;
 
