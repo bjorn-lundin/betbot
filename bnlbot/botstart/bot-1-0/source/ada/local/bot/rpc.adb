@@ -62,7 +62,7 @@ package body Rpc is
     --    Header : AWS.Headers.List;
     --use Aws.Client;
     Now                : Calendar2.Time_Type := Calendar2.Clock;
-    Fname              : String := Ev.Value("BOT_TARGET") & "/token.dat";
+    Fname              : String := Ev.Value("BOT_HOME") & "/token.dat";
     F                  : Text_Io.File_Type;
     Buffer             : String(1..100) := (others => ' ');
     Len                : Natural := 0;
