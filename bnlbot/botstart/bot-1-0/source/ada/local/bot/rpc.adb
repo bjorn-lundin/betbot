@@ -25,6 +25,7 @@ package body Rpc is
   Me : constant String := "RPC.";
 
   Login_Handler : constant String := "login_handler";
+  Dry           : constant String := "dry";
 
   No_Such_Field : exception;
 
@@ -93,6 +94,16 @@ package body Rpc is
       Log(Me & "Login", "use token from file '" & Buffer(1..Len) & "'");
       return;
     end if;
+
+    if Bot_Name = Dry then
+      Text_Io.Open(F,Text_Io.In_File,"/bnlbot/botstart/user/bnl/token.dat");
+      Text_Io.Get_Line(F,Buffer,Len);
+      Text_Io.Close(F);
+      Global_Token.Set(Buffer(1..Len));
+      Log(Me & "Login", "use token from file (bnl) '" & Buffer(1..Len) & "'");
+      return;
+    end if;
+
 
     if Bot_Name /= Login_Handler then
       Log(Me & "Login", "'" & Bot_Name & "' -> not login_handler process - return");

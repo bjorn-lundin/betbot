@@ -428,7 +428,7 @@ package body Bets is
             exception
               when Sql.No_Such_Row =>
                 T.Rollback; -- let the other one do the update
-                exit;
+                exit Inner;
             end ;
           elsif Runner.Status(1..6) = "WINNER" then
             -- this one won
