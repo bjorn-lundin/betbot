@@ -197,6 +197,8 @@ procedure Saldo_Fetcher is
 ------------------------------ main start -------------------------------------
   Saldo : Balances.Balance_Type;
   Global_Enabled : Boolean := True;
+  cnt : integer := 0;
+  max integer := 120; -- 
 begin
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
   Global_Enabled := Ini.Get_Value("email","enabled",True);
@@ -245,6 +247,7 @@ begin
 
   if Global_Enabled then
     Ask : loop
+      cnt := cnt +1;
       Balance(Betfair_Result, Saldo );
       Log(Me, "Ask_Balance result : " & Betfair_Result'Img);
       case Betfair_Result is
@@ -260,6 +263,7 @@ begin
           end;
         when Rpc.Timeout =>  delay 5.0;
       end case;
+      exit when cnt >= max;      
     end loop Ask;
   else
     Log(Me, "sending mails not enabled in [email] section of login.ini");
