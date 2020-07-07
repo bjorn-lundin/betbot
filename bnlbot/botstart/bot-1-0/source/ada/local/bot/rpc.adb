@@ -70,13 +70,19 @@ package body Rpc is
   begin
     if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
       Log(Me & "Login", "Login failed - bad time");
-      begin
-        Ada.Directories.Delete_File(Fname);
-        Log(Me & "Login", "deleted tokenfile");
-      exception
-        when others => null;
-      end;
-      raise Login_Failed with "Not allowed to login before 12";
+
+      if Bot_Name /= Login_Handler then
+        raise Login_Failed with "Not allowed to login before 12";
+      else
+        if Ada.Directories.Exists(Fname)  then
+          begin
+            Ada.Directories.Delete_File(Fname);
+            Log(Me & "Login", "deleted tokenfile");
+          exception
+            when others => null;
+          end;
+        end if;
+      end if;
     end if;
 
     if Ada.Directories.Exists(Fname) and Bot_Name /= Login_Handler then
@@ -84,7 +90,7 @@ package body Rpc is
       Text_Io.Get_Line(F,Buffer,Len);
       Text_Io.Close(F);
       Global_Token.Set(Buffer(1..Len));
-      Log(Me & "Login", "use token from file");
+      Log(Me & "Login", "use token from file '" & Buffer(1..Len) & "'");
       return;
     end if;
 
