@@ -80,7 +80,14 @@ begin
             Vendor_Id  => Ini.Get_Value("betfair","vendor_id",""),
             App_Key    => Ini.Get_Value("betfair","appkey","")
           );
-  Rpc.Login;
+  begin
+    Log(Me, "start login");
+    Rpc.Login;
+    Log(Me, "stop login");
+  exception
+    when Rpc.Login_Failed =>
+      Log(Me, "Not allowed to login yet");
+  end;
   Log(Me, "Login betfair done");
   Log(Me, "Start main loop");
   Main_Loop : loop
@@ -97,7 +104,7 @@ begin
     exception
       when Process_Io.Timeout =>
 
-       begin   
+       begin
           Log(Me, "Timeout start");
           Rpc.Keep_Alive(OK);
           if not OK then
