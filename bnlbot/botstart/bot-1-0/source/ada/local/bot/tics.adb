@@ -92,9 +92,9 @@ package body Tics is
         end if;
       end loop;
 
+      Log("Get_Tic_Index", "try fixing bad float price " &  Price'Img);
       P := Min + D;
       loop
-        P := P + D;
         for I in Global_Odds_Table'Range loop
           if Global_Odds_Table(I) = P then
             Log("Get_Tic_Index", "fixed bad float - min/max " &  Min'Img & " / " & Max'Img);
@@ -103,6 +103,7 @@ package body Tics is
         end loop;
         exit when P > Max; --give up, and propagate exception
         Log("Get_Tic_Index", "fixing bad float p/min/max " &  P'Img &  Min'Img & " / " & Max'Img);
+        P := P + D;
       end loop;
       Log("Get_Tic_Index", "did not fix bad float min/max " &  Min'Img & " / " & Max'Img);
     end;
