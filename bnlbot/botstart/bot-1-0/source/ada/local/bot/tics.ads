@@ -20,5 +20,6 @@ package Tics is
   function Get_Nearest_Higher_Tic_Index(Price : Fixed_Type) return Tics_Type ;
 ------------------------------------------
   procedure Tic_Table;
-------------------------------------------
+  ------------------------------------------
+  procedure Test_Float_To_Fix_Conversion;
 end Tics;
