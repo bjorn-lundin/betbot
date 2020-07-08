@@ -456,7 +456,7 @@ begin
     end;
 
     Current_Date := Current_Date + One_Day;
-    exit when Current_Date = Stop_Date;
+    exit Date_Loop when Current_Date = Stop_Date;
 
   end loop Date_Loop;
   Sql.Close_Session;

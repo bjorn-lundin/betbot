@@ -58,6 +58,7 @@ project Adabot is
                     "check_rating_vs_wins.adb",
                     "ai_nn_diff.adb",
                     "ai_nn.adb",
+                    "test_float_to_fix.adb",
                  --    "telescope_server.adb",
                  --   "split_to_ai.adb",
                  --   "split_to_ai_mlrl.adb",

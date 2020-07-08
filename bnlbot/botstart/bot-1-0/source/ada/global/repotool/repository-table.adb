@@ -216,7 +216,7 @@ package body Repository.Table is
   end Reset;
 
   -------------------------------------------------------------------------------------
-  procedure Start_Element(Handler       : in out Reader;
+  overriding procedure Start_Element(Handler       : in out Reader;
                           Namespace_URI : Unicode.CES.Byte_Sequence := "";
                           Local_Name    : Unicode.CES.Byte_Sequence := "";
                           Qname         : Unicode.CES.Byte_Sequence := "";
@@ -297,7 +297,7 @@ package body Repository.Table is
       Feedback("Ada.Strings.Length_Error on Tag '" & The_Tag & "'");
   end Start_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
-  procedure End_Element(Handler       : in out Reader;
+  overriding procedure End_Element(Handler       : in out Reader;
                         Namespace_URI : Unicode.CES.Byte_Sequence := "";
                         Local_Name    : Unicode.CES.Byte_Sequence := "";
                         Qname         : Unicode.CES.Byte_Sequence := "") is
@@ -373,7 +373,7 @@ package body Repository.Table is
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
-  procedure Characters(Handler : in out Reader;
+  overriding  procedure Characters(Handler : in out Reader;
                        Ch      : Unicode.CES.Byte_Sequence := "") is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
     The_Value : constant String := Utils.Expand_File_Path(To_Iso_Latin_15(Ch));
@@ -3601,7 +3601,7 @@ package body Repository.Table is
     Put_Line("                                  Ch               : Unicode.CES.Byte_Sequence := " & Quote("") & ");");
     Put_Line("");
     Put_Line("  --------------------------------------------");
-    Put_Line("  procedure Start_Element(Handler       : in out " & Self.Name.Camel_Case & "_Reader;");
+    Put_Line("  overriding procedure Start_Element(Handler       : in out " & Self.Name.Camel_Case & "_Reader;");
     Put_Line("                          Namespace_URI : Unicode.CES.Byte_Sequence := " & Quote("") & ";");
     Put_Line("                          Local_Name    : Unicode.CES.Byte_Sequence := " & Quote("") & ";");
     Put_Line("                          Qname         : Unicode.CES.Byte_Sequence := " & Quote("") & ";");
@@ -3623,7 +3623,7 @@ package body Repository.Table is
     Put_Line("  --------------------------------------------");
     Put_Line("");
     Put_Line("  --------------------------------------------");
-    Put_Line("  procedure End_Element(Handler       : in out " & Self.Name.Camel_Case & "_Reader;");
+    Put_Line("  overriding procedure End_Element(Handler       : in out " & Self.Name.Camel_Case & "_Reader;");
     Put_Line("                        Namespace_URI : Unicode.CES.Byte_Sequence := " & Quote("") & ";");
     Put_Line("                        Local_Name    : Unicode.CES.Byte_Sequence := " & Quote("") & ";");
     Put_Line("                        Qname         : Unicode.CES.Byte_Sequence := " & Quote("") & ") is");
@@ -3646,7 +3646,7 @@ package body Repository.Table is
     Put_Line("");
 
     Put_Line("  --------------------------------------------");
-    Put_Line("  procedure Characters(Handler          : in out " & Self.Name.Camel_Case & "_Reader;");
+    Put_Line("  overriding procedure Characters(Handler          : in out " & Self.Name.Camel_Case & "_Reader;");
     Put_Line("                       Ch               : Unicode.CES.Byte_Sequence := " & Quote("") & ") is");
     Put_Line("    function To_Iso_Latin_15(Str : Unicode.CES.Byte_Sequence) return String is");
     Put_Line("      use Unicode.Encodings;");
