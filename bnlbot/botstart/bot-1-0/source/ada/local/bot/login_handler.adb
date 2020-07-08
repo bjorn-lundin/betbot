@@ -1,19 +1,13 @@
 with Ada.Exceptions;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
-with Ada.Directories;
-with Ada.Strings ; use Ada.Strings;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with Gnatcoll.Json;
+--with Ada.Strings ; use Ada.Strings;
+--with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
-with Bets;
-with Bot_System_Number;
 with Stacktrace;
 with Lock;
 --with Text_io;
-with Sql;
-with Bot_Messages;
 with Posix;
 with Logging; use Logging;
 with Process_Io;
@@ -25,8 +19,6 @@ with Calendar2;
 with Types; use Types;
 with Utils;
 
-with Markets;
-with Table_Arunners;
 
 
 procedure Login_Handler is

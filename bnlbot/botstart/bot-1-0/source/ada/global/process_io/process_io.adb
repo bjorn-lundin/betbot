@@ -187,27 +187,27 @@ package body Process_Io is
     Result(1..Left'Length)             := Left;
     Result(Left'Length+1..Result'Last) := Right;
     return Result;
-  end;
+  end "&";
   ----------------------------------------------------------
   function Integer_2_Type return Component_Descriptor is
   begin
     return new Component'(An_Integer_2,2);
-  end;
+  end Integer_2_Type;
   ----------------------------------------------------------
   function Integer_4_Type return Component_Descriptor is
   begin
     return new Component'(An_Integer_4,4);
-  end;
+  end Integer_4_Type;
   ----------------------------------------------------------
   function String_Type (Length : Positive) return Component_Descriptor is
   begin
     return new Component'(A_String,Length);
-  end;
+  end String_Type;
   ----------------------------------------------------------
   function Enumeration_Type return Component_Descriptor is
   begin
     return new Component'(Enumeration,1);
-  end;
+  end Enumeration_Type;
   ----------------------------------------------------------
   function This_Process return Process_Type is
   begin
@@ -244,7 +244,7 @@ package body Process_Io is
     select
       accept Stop_Timer do
         null;
-      end;
+      end Stop_Timer;
     or
       delay Time_Out_Time;
       loop
@@ -260,7 +260,7 @@ package body Process_Io is
       end loop;
       accept Stop_Timer do
         null;
-      end;
+      end Stop_Timer;
     end select;
   end Timer_Task;
   -----------------------------------------------------------
@@ -489,7 +489,7 @@ package body Process_Io is
   --end To_Pio_Name;
   ------------------------------------------------------------
 
-  
+
   function To_Process_Type(S : String ) return Process_Io.Process_Type is
     P :  Process_Io.Process_Type := ((others => ' '), (others => ' '));
   begin
@@ -498,8 +498,8 @@ package body Process_Io is
   end To_Process_Type;
   ----------------------------------------------------------
 
-    
-  
+
+
 --begin
 --  My_Process := Get_Process;
 end Process_Io;

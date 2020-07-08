@@ -50,8 +50,6 @@ procedure Bet_Checker is
     Dir         : String := Ev.Value("BOT_HOME") & "/pending";
     Dir_Ent     : Directory_Entry_Type;
     The_Search  : Search_Type;
-    pragma Unreferenced(The_Search);
-
     Json_Data   : Json_Value;
     T           : Sql.Transaction_Type;
   begin

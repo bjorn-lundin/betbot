@@ -37,6 +37,7 @@ project Global is
                                               "-gnatoU", -- -v
                                               "-gnatw.o",  -- Warnings about unreferenced out parameters
                                               "-gnatwu",   -- Activate warnings on unused entities
+                                              "-gnatyO",   -- overriding proc must be marked 'overriding'
                                               "-gnatwm",   -- Warnings about modified but unreferenced variables
                                               "-gnatye",    -- require 'end procedurename'
                                               "-gnatwlaKW");
