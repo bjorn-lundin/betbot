@@ -144,8 +144,8 @@ Define_Switch
                       if Item.Selectionid = Bet.Selectionid then
                         if Bet.Status(1) = 'U'
                           and then Bet.Betplaced + (0, 0, 0, 1, 0) <= Timestamp
-                          and then   --matched within 2 secs of palce
-                            (B_Match_Directly and then Timestamp <= Bet.Betplaced + (0, 0, 0, 2, 0))
+                         -- and then   --matched within 2 secs of palce
+                         --   (B_Match_Directly and then Timestamp <= Bet.Betplaced + (0, 0, 0, 2, 0))
                         then
                           Log ("Treat marketid '" & Market.Marketid &
                                " selid" & Bet.Selectionid'Img &
