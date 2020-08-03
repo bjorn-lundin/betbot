@@ -66,6 +66,8 @@ procedure Create_ok_Markets is
     Num_Samples : Integer_4 := 0;
   begin
     Select_Num_Samples.Prepare("select count('a') CNT from APRICESHISTORY where MARKETID = :MARKÉTID");
+    Select_Num_Samples.Set("MARKETID",Market.Marketid);
+
     Select_Num_Samples.Open_Cursor;
     Select_Num_Samples.Fetch(Eos);
     if not Eos then
