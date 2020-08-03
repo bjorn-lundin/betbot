@@ -84,7 +84,9 @@ procedure Create_ok_Markets is
                     Numrunners  => Market.Numrunners,
                     Ixxlupd     => Market.Ixxlupd,
                     Ixxluts     => Market. Ixxluts);
-     Ok_Market.Insert;
+      Ok_Market.Insert;
+    else
+      Debug ("Num_Samples" & Num_Samples'img & " num_runners" & Market.Numrunners'Img & " => " & Integer_4'Image( Num_Samples / Market.Numrunners)  );
     end if;
 
   end Insert_Into_Ok_If_Ok;
