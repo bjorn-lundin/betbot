@@ -65,7 +65,7 @@ procedure Create_ok_Markets is
     Eos       : Boolean := False;
     Num_Samples : Integer_4 := 0;
   begin
-    Select_Num_Samples.Prepare("select count('a') CNT from APRICESHISTORY where MARKETID = :MARKÉTID");
+    Select_Num_Samples.Prepare("select count('a') CNT from APRICESHISTORY where MARKETID = :MARKETID");
     Select_Num_Samples.Set("MARKETID",Market.Marketid);
 
     Select_Num_Samples.Open_Cursor;
@@ -73,6 +73,7 @@ procedure Create_ok_Markets is
     if not Eos then
       Select_Num_Samples.Get("CNT", Num_Samples);
     end if;
+    Select_Num_Samples.Close_Cursor;
 
     if Num_Samples / Market.Numrunners > 100 then
       Ok_Market := (
