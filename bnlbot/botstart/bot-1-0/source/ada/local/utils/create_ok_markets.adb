@@ -89,7 +89,7 @@ procedure Create_ok_Markets is
 
 
   Mlist  :  Table_Amarkets.Amarkets_List_Pack2.List;
-
+  C : Integer_4 := 0;
 begin
 
 
@@ -112,6 +112,11 @@ begin
   Get_Market_Data(Mlist);
 
   for M of Mlist loop
+    C := C +1;
+    if C rem 1000 = 0 then
+      Debug(C'Img & " / " & Mlist.length'Img);
+    end if;
+
     Insert_Into_Ok_If_Ok(M);
   end loop;
 
