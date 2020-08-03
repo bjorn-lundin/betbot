@@ -91,6 +91,8 @@ procedure Lay_At_Start3 is
                            Placed => P.Pricets,
                            Runner => Runner,
                            Market => Market);
+        Bet.Pricematched := Bet.Price;
+        Move("MATCHED", Bet.Status);
         Bet.Check_Outcome;
         Tot := Tot + Bet.Profit;
         Bet.Insert;

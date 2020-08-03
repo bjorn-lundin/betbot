@@ -153,7 +153,7 @@ package body Bets is
       return;
     end if;
 
-    Self.Runnername := The_Runner.Runnernamestripped;
+    --Self.Runnername := The_Runner.Runnernamestripped;
     if Self.Side(1..4) = "BACK" then
       if The_Runner.Status(1..6) = "WINNER" then
         Self.Betwon := True;
