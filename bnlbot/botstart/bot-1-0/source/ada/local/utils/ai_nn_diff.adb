@@ -261,7 +261,7 @@ procedure Ai_Nn_Diff is
                 case Side is
                   when Back =>
                     if Winner = Lowest_Pidx then -- win
-                      Profit :=  0.95 * 30.0 * (Lowest_Odds -1.0);
+                      Profit :=  0.98 * 30.0 * (Lowest_Odds -1.0);
                     else
                       Profit := -30.0;
                     end if;
@@ -270,7 +270,7 @@ procedure Ai_Nn_Diff is
                     if Winner = Lowest_Pidx then -- loss
                       Profit :=  -30.0 * (Lowest_Odds -1.0);
                     else
-                      Profit := 0.95 * 30.0;
+                      Profit := 0.98 * 30.0;
                     end if;
                 end case;
 

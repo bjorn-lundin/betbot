@@ -105,45 +105,45 @@ procedure Ai_Nn is
     ------------------------------------------------
     procedure Do_Print_Line(F : Text_Io.File_Type) is
     begin
-
+                                        --0-based idx
       for I in Winners'Range loop
-        Text_Io.Put(F, Winners(I)'Img);
+        Text_Io.Put(F, Winners(I)'Img);  --0-2
         Text_Io.Put(F, ",");
       end loop;
 
-      Text_Io.Put(F, Markettype(1));
+      Text_Io.Put(F, Markettype(1));      --3
       Text_Io.Put(F, ",");
-      Text_Io.Put(F, Num_Real_Runners'Img);
+      Text_Io.Put(F, Num_Real_Runners'Img);  --4
       Text_Io.Put(F, ",");
-      Text_Io.Put(F, Marketid);
+      Text_Io.Put(F, Marketid);             --5
       Text_Io.Put(F, ",");
 
 
       case Ia_Position is
       when 1 =>
-        Text_Io.Put(F, Float'Image(Float(Lowest_1st)));
+        Text_Io.Put(F, Float'Image(Float(Lowest_1st)));  --6
         Text_Io.Put(F, ",");
-        Text_Io.Put(F, Selid_1st'Img);
+        Text_Io.Put(F, Selid_1st'Img);           --7
         Text_Io.Put(F, ",");
-        Text_Io.Put(F, Python_1st'Img);
+        Text_Io.Put(F, Python_1st'Img);       --8
         Text_Io.Put(F, ",");
       when 2 =>
-        Text_Io.Put(F, Float'Image(Float(Lowest_2nd)));
+        Text_Io.Put(F, Float'Image(Float(Lowest_2nd))); --6
         Text_Io.Put(F, ",");
-        Text_Io.Put(F, Selid_2nd'Img);
+        Text_Io.Put(F, Selid_2nd'Img);    --7
         Text_Io.Put(F, ",");
-        Text_Io.Put(F, Python_2nd'Img);
+        Text_Io.Put(F, Python_2nd'Img);  --8
         Text_Io.Put(F, ",");
       when others =>
         raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
       end case;
 
       for I in Data'Range loop
-        Text_Io.Put(F, Data(I).Selectionid'img);
+        Text_Io.Put(F, Data(I).Selectionid'img);   --9-24
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop
+      for I in Data'Range loop  --25-40
         if Ba_Layprice then
           Text_Io.Put(F, Float'Image(Float(Data(I).Layprice)/1000.0));
         else
@@ -152,7 +152,7 @@ procedure Ai_Nn is
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop
+      for I in Data'Range loop   --41-56
         if Ba_Layprice then
           Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)/1000.0));
         else
@@ -161,7 +161,7 @@ procedure Ai_Nn is
 
         if I = Data'Last then
           -- put here anything after the last array
-          Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => ""));
+          Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => "")); --57
           Text_Io.Put_Line(F, "");  -- <-- last statement on this row
           Old_Data := Data;
         else
