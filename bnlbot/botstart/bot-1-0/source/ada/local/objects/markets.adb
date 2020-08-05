@@ -14,9 +14,9 @@ package body Markets is
   Select_Ongoing_Markets : Sql.Statement_Type;
 
   function Empty_Data return Market_Type is
-    ED : Market_Type;
+    Ed : Market_Type;
   begin
-    return ED;
+    return Ed;
   end Empty_Data;
 
   ----------------------------------------
@@ -29,13 +29,13 @@ package body Markets is
   begin
     T.Start;
     Find_Plc_Market.Prepare(
-                             "select MP.* from AMARKETS MW, AMARKETS MP " &
-                               "where MW.EVENTID = MP.EVENTID " &
-                               "and MW.STARTTS = MP.STARTTS " &
-                               "and MW.MARKETID = :WINMARKETID " &
-                               "and MP.MARKETTYPE = 'PLACE' " &
-                               "and MP.NUMWINNERS = :NUM " &
-                               "and MW.MARKETTYPE = 'WIN'");
+                            "select MP.* from AMARKETS MW, AMARKETS MP " &
+                              "where MW.EVENTID = MP.EVENTID " &
+                              "and MW.STARTTS = MP.STARTTS " &
+                              "and MW.MARKETID = :WINMARKETID " &
+                              "and MP.MARKETTYPE = 'PLACE' " &
+                              "and MP.NUMWINNERS = :NUM " &
+                              "and MW.MARKETTYPE = 'WIN'");
 
     Find_Plc_Market.Set("NUM", Integer_4(3));
     Find_Plc_Market.Set("WINMARKETID", Self.Marketid);
@@ -45,7 +45,7 @@ package body Markets is
       Place_Market := Markets.Get(Find_Plc_Market);
       Found := True;
     else
-    --  Log (Me & "Corresponding_Place_Market", "no PLACE market found");
+      --  Log (Me & "Corresponding_Place_Market", "no PLACE market found");
       Found := False;
     end if;
     Find_Plc_Market.Close_Cursor;
@@ -63,15 +63,15 @@ package body Markets is
   begin
     T.Start;
     Find_Win_Market.Prepare(
-                             "select MW.* from AMARKETS MW, AMARKETS MP " &
-                               "where MW.EVENTID = MP.EVENTID " &
-                               "and MW.STARTTS = MP.STARTTS " &
-                               "and MP.MARKETID = :PLACEMARKETID " &
-                               "and MP.MARKETTYPE = 'PLACE' " &
-                              -- "and MP.NUMWINNERS = :NUM " &
-                               "and MW.MARKETTYPE = 'WIN'");
+                            "select MW.* from AMARKETS MW, AMARKETS MP " &
+                              "where MW.EVENTID = MP.EVENTID " &
+                              "and MW.STARTTS = MP.STARTTS " &
+                              "and MP.MARKETID = :PLACEMARKETID " &
+                              "and MP.MARKETTYPE = 'PLACE' " &
+                            -- "and MP.NUMWINNERS = :NUM " &
+                              "and MW.MARKETTYPE = 'WIN'");
 
-   -- Find_Win_Market.Set("NUM", Integer_4(1));
+    -- Find_Win_Market.Set("NUM", Integer_4(1));
     Find_Win_Market.Set("PLACEMARKETID", Self.Marketid);
     Find_Win_Market.Open_Cursor;
     Find_Win_Market.Fetch (Eos);
@@ -79,7 +79,7 @@ package body Markets is
       Win_Market := Markets.Get(Find_Win_Market);
       Found := True;
     else
-    --  Log (Me & "Corresponding_Win_Market", "no WIN market found");
+      --  Log (Me & "Corresponding_Win_Market", "no WIN market found");
       Found := False;
     end if;
     Find_Win_Market.Close_Cursor;
@@ -96,23 +96,23 @@ package body Markets is
     New_Data : Market_Type;
   begin
     Table_Amarkets.Read_List(Stm,Old_List,Max);
-    for i of Old_List loop
+    for I of Old_List loop
       New_Data := (
-        Marketid         => i.Marketid,
-        Marketname       => i.Marketname,
-        Startts          => i.Startts,
-        Eventid          => i.Eventid,
-        Markettype       => i.Markettype,
-        Status           => i.Status,
-        Betdelay         => i.Betdelay,
-        Numwinners       => i.Numwinners,
-        Numrunners       => i.Numrunners,
-        Numactiverunners => i.Numactiverunners,
-        Totalmatched     => i.Totalmatched,
-        Totalavailable   => i.Totalavailable,
-        Ixxlupd          => i.Ixxlupd,
-        Ixxluts          => i.Ixxluts
-      );
+                   Marketid         => I.Marketid,
+                   Marketname       => I.Marketname,
+                   Startts          => I.Startts,
+                   Eventid          => I.Eventid,
+                   Markettype       => I.Markettype,
+                   Status           => I.Status,
+                   Betdelay         => I.Betdelay,
+                   Numwinners       => I.Numwinners,
+                   Numrunners       => I.Numrunners,
+                   Numactiverunners => I.Numactiverunners,
+                   Totalmatched     => I.Totalmatched,
+                   Totalavailable   => I.Totalavailable,
+                   Ixxlupd          => I.Ixxlupd,
+                   Ixxluts          => I.Ixxluts
+                  );
       List.Append(New_Data);
     end loop;
   end Read_List;
@@ -129,70 +129,70 @@ package body Markets is
   begin
     New_Data.Eventid := Data.Eventid;
     Table_Amarkets.Read_Eventid(Data, Old_List, Order, Max);
-    for i of Old_List loop
+    for I of Old_List loop
       New_Data := (
-        Marketid         => i.Marketid,
-        Marketname       => i.Marketname,
-        Startts          => i.Startts,
-        Eventid          => i.Eventid,
-        Markettype       => i.Markettype,
-        Status           => i.Status,
-        Betdelay         => i.Betdelay,
-        Numwinners       => i.Numwinners,
-        Numrunners       => i.Numrunners,
-        Numactiverunners => i.Numactiverunners,
-        Totalmatched     => i.Totalmatched,
-        Totalavailable   => i.Totalavailable,
-        Ixxlupd          => i.Ixxlupd,
-        Ixxluts          => i.Ixxluts
-      );
+                   Marketid         => I.Marketid,
+                   Marketname       => I.Marketname,
+                   Startts          => I.Startts,
+                   Eventid          => I.Eventid,
+                   Markettype       => I.Markettype,
+                   Status           => I.Status,
+                   Betdelay         => I.Betdelay,
+                   Numwinners       => I.Numwinners,
+                   Numrunners       => I.Numrunners,
+                   Numactiverunners => I.Numactiverunners,
+                   Totalmatched     => I.Totalmatched,
+                   Totalavailable   => I.Totalavailable,
+                   Ixxlupd          => I.Ixxlupd,
+                   Ixxluts          => I.Ixxluts
+                  );
       List.Append(New_Data);
     end loop;
   end Read_Eventid;
   ----------------------------------------
 
   procedure Check_Unsettled_Markets(Inserted_Winner : in out Boolean) is
-    T : Sql.Transaction_Type;
-    Db_Runner : Runners.Runner_Type;
+    T           : Sql.Transaction_Type;
+    Db_Runner   : Runners.Runner_Type;
     Runner_List : Runners.Lists.List;
     Market_List : Markets.Lists.List;
     type Eos_Type is ( Arunners);
-    Eos : array (Eos_Type'range) of Boolean := (others => False);
+    Eos         : array (Eos_Type'Range) of Boolean := (others => False);
   begin
     Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets start");
     Inserted_Winner := False;
     T.Start;
     Select_Unsettled_Markets.Prepare(
-      "select * from AMARKETS where MARKETID in ( " &
-          "select distinct(M.MARKETID) " &
-          "from AMARKETS M, ARUNNERS R " &
-          "where M.MARKETID = R.MARKETID " &
-          "and M.STATUS in ('SETTLED','CLOSED') " &
-          "and R.STATUS in ('', 'NOT_SET_YET') ) " &
-      "order by STARTTS" );
+                                     "select * from AMARKETS where MARKETID in ( " &
+                                       "select distinct(M.MARKETID) " &
+                                       "from AMARKETS M, ARUNNERS R " &
+                                       "where M.MARKETID = R.MARKETID " &
+                                       "and M.STATUS in ('SETTLED','CLOSED') " &
+                                       "and R.STATUS in ('', 'NOT_SET_YET') ) " &
+                                       "order by STARTTS" );
 
-      Markets.Read_List(Select_Unsettled_Markets, Market_List);
+    Markets.Read_List(Select_Unsettled_Markets, Market_List);
 
-      Market_Loop : for Market of Market_List loop
-        Rpc.Check_Market_Result(Market_Id   => Market.Marketid,
-                                Runner_List => Runner_List);
+    Market_Loop : for Market of Market_List loop
+      Rpc.Check_Market_Result(Market_Id   => Market.Marketid,
+                              Runner_List => Runner_List);
 
-        Runner_Loop : for List_Runner of Runner_List loop
-          Db_Runner := List_Runner;
-          Db_Runner.Read( Eos(Arunners));
-          if Eos(Arunners) then
-            Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Db_Runner.To_String);
-          else
-            Db_Runner.Status := List_Runner.Status;
-            if Db_Runner.Status(1..2) = "WI" then
-              Log (Me & "Check_Unsettled_Markets", "Got winner : " & Db_Runner.To_String);
-              Inserted_Winner := True;
-            end if;
-            Db_Runner.Update_Withcheck;
+      Runner_Loop      : for List_Runner of Runner_List loop
+        Db_Runner := List_Runner;
+        Db_Runner.Read( Eos(Arunners));
+        if Eos(Arunners) then
+          Log (Me & "Check_Unsettled_Markets", "missing runner in db !! " & Db_Runner.To_String);
+        else
+          Db_Runner.Status := List_Runner.Status;
+          if Db_Runner.Status(1..2) = "WI" then
+            Log (Me & "Check_Unsettled_Markets", "Got winner : " & Db_Runner.To_String);
+            Inserted_Winner := True;
           end if;
+          Db_Runner.Update_Withcheck;
+        end if;
 
-        end loop Runner_Loop;
-      end loop Market_Loop;
+      end loop Runner_Loop;
+    end loop Market_Loop;
     T.Commit;
     Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets stop");
   exception
@@ -201,10 +201,10 @@ package body Markets is
       Log (Me & "Check_Unsettled_Markets", "Check_Unsettled_Markets Duplicate index");
       Inserted_Winner := False;
   end Check_Unsettled_Markets;
- ---------------------------------------------------------------------------------
+  ---------------------------------------------------------------------------------
 
   procedure Check_Market_Status is
-    T : Sql.Transaction_Type;
+    T           : Sql.Transaction_Type;
     Market_List : Markets.Lists.List;
     Market      : Markets.Market_Type;
     Is_Changed  : Boolean        := False;
@@ -218,15 +218,15 @@ package body Markets is
           begin
             T.Start;
             Select_Ongoing_Markets.Prepare(
-              "select M.* from AMARKETS M " &
-              "where M.STATUS <> 'CLOSED' order by M.STARTTS");
+                                           "select M.* from AMARKETS M " &
+                                             "where M.STATUS <> 'CLOSED' order by M.STARTTS");
             Markets.Read_List(Select_Ongoing_Markets, Market_List);
 
-            for m of Market_List loop
+            for M of Market_List loop
               Log(Me & "Check_Market_Status", Market_List.Length'Img & " market left to check");
-              Market := m;
+              Market := M;
               Log(Me & "Check_Market_Status", "checking " & Market.Marketid); --Table_Amarkets.To_String(Market));
-              RPC.Market_Status_Is_Changed(Market, Is_Changed);
+              Rpc.Market_Status_Is_Changed(Market, Is_Changed);
 
               if Is_Changed then
                 Log(Me & "Check_Market_Status", "update market " & Market.To_String);
@@ -247,115 +247,128 @@ package body Markets is
     end case;
     Log(Me & "Check_Market_Status", "stop");
   end Check_Market_Status;
- ---------------------------------------------------------------------------------
+  ---------------------------------------------------------------------------------
 
-   function Marketname_Ok(Self : Market_Type) return Boolean is
-   begin
-      return
-             Self.Marketname(1.. 9) = "5f Hcap  "   or else
-             Self.Marketname(1.. 9) = "6f Hcap  "   or else
-             Self.Marketname(1.. 9) = "7f Hcap  "   or else
-             Self.Marketname(1.. 9) = "1m Hcap  "   or else
-             Self.Marketname(1..11) = "1m1f Hcap  " or else
-             Self.Marketname(1..11) = "1m2f Hcap  " or else
-             Self.Marketname(1..11) = "1m3f Hcap  " or else
-             Self.Marketname(1..11) = "1m4f Hcap  " or else
-             Self.Marketname(1..11) = "1m5f Hcap  " or else
-             Self.Marketname(1..11) = "1m6f Hcap  " or else
-             Self.Marketname(1..11) = "1m7f Hcap  " or else
-             Self.Marketname(1.. 9) = "2m Hcap  "   or else
-             Self.Marketname(1..11) = "2m1f Hcap  " or else
-             Self.Marketname(1..11) = "2m2f Hcap  " or else
-             Self.Marketname(1..11) = "2m3f Hcap  " or else
-             Self.Marketname(1..11) = "2m4f Hcap  " or else
-             Self.Marketname(1..11) = "2m5f Hcap  " or else
-             Self.Marketname(1..11) = "2m6f Hcap  " or else
-             Self.Marketname(1..11) = "2m7f Hcap  " or else
-             Self.Marketname(1.. 9) = "3m Hcap  "   or else
-             Self.Marketname(1..11) = "3m1f Hcap  " or else
-             Self.Marketname(1..11) = "3m2f Hcap  " or else
-             Self.Marketname(1..11) = "3m3f Hcap  " or else
-             Self.Marketname(1..11) = "3m4f Hcap  ";
-   end Marketname_Ok;
-   ------------------------------------------------------------
-   function Marketname_Ok2(Self : Market_Type) return Boolean is
-   begin
-      return
-             Self.Marketname(1..9)  = "5f Hcap  "   or else
-             Self.Marketname(1..9)  = "6f Hcap  "   or else
-             Self.Marketname(1..9)  = "7f Hcap  "   or else
-             Self.Marketname(1..9)  = "1m Hcap  "   or else
-             Self.Marketname(1..11) = "1m1f Hcap  " or else
-             Self.Marketname(1..11) = "1m2f Hcap  " or else
-             Self.Marketname(1..11) = "1m3f Hcap  " or else
-             Self.Marketname(1..11) = "1m4f Hcap  " or else
-             Self.Marketname(1..11) = "1m5f Hcap  " or else
-             Self.Marketname(1..11) = "1m6f Hcap  " or else
-             Self.Marketname(1..11) = "1m7f Hcap  " or else
-             Self.Marketname(1..9)  = "2m Hcap  "   or else
-             Self.Marketname(1..11) = "2m1f Hcap  " or else
-             Self.Marketname(1..11) = "2m2f Hcap  " or else
-             Self.Marketname(1..11) = "2m3f Hcap  " or else
-             Self.Marketname(1..11) = "2m4f Hcap  " or else
-             Self.Marketname(1..11) = "2m5f Hcap  " or else
-             Self.Marketname(1..11) = "2m6f Hcap  " or else
-             Self.Marketname(1..11) = "2m7f Hcap  " or else
-             Self.Marketname(1..9) = "3m Hcap  " or else
-             Self.Marketname(1..11) = "3m1f Hcap  " or else
-             Self.Marketname(1..11) = "3m2f Hcap  " or else
-             Self.Marketname(1..11) = "3m3f Hcap  " or else
-             Self.Marketname(1..11) = "3m4f Hcap  " or else
+  function Marketname_Ok(Self : Market_Type) return Boolean is
+  begin
+    return
+      Self.Marketname(1.. 9) = "5f Hcap  "   or else
+      Self.Marketname(1.. 9) = "6f Hcap  "   or else
+      Self.Marketname(1.. 9) = "7f Hcap  "   or else
+      Self.Marketname(1.. 9) = "1m Hcap  "   or else
+      Self.Marketname(1..11) = "1m1f Hcap  " or else
+      Self.Marketname(1..11) = "1m2f Hcap  " or else
+      Self.Marketname(1..11) = "1m3f Hcap  " or else
+      Self.Marketname(1..11) = "1m4f Hcap  " or else
+      Self.Marketname(1..11) = "1m5f Hcap  " or else
+      Self.Marketname(1..11) = "1m6f Hcap  " or else
+      Self.Marketname(1..11) = "1m7f Hcap  " or else
+      Self.Marketname(1.. 9) = "2m Hcap  "   or else
+      Self.Marketname(1..11) = "2m1f Hcap  " or else
+      Self.Marketname(1..11) = "2m2f Hcap  " or else
+      Self.Marketname(1..11) = "2m3f Hcap  " or else
+      Self.Marketname(1..11) = "2m4f Hcap  " or else
+      Self.Marketname(1..11) = "2m5f Hcap  " or else
+      Self.Marketname(1..11) = "2m6f Hcap  " or else
+      Self.Marketname(1..11) = "2m7f Hcap  " or else
+      Self.Marketname(1.. 9) = "3m Hcap  "   or else
+      Self.Marketname(1..11) = "3m1f Hcap  " or else
+      Self.Marketname(1..11) = "3m2f Hcap  " or else
+      Self.Marketname(1..11) = "3m3f Hcap  " or else
+      Self.Marketname(1..11) = "3m4f Hcap  ";
+  end Marketname_Ok;
+  ------------------------------------------------------------
+  function Marketname_Ok2(Self : Market_Type) return Boolean is
+  begin
+    return
+      Self.Marketname(1..9)  = "5f Hcap  "   or else
+      Self.Marketname(1..9)  = "6f Hcap  "   or else
+      Self.Marketname(1..9)  = "7f Hcap  "   or else
+      Self.Marketname(1..9)  = "1m Hcap  "   or else
+      Self.Marketname(1..11) = "1m1f Hcap  " or else
+      Self.Marketname(1..11) = "1m2f Hcap  " or else
+      Self.Marketname(1..11) = "1m3f Hcap  " or else
+      Self.Marketname(1..11) = "1m4f Hcap  " or else
+      Self.Marketname(1..11) = "1m5f Hcap  " or else
+      Self.Marketname(1..11) = "1m6f Hcap  " or else
+      Self.Marketname(1..11) = "1m7f Hcap  " or else
+      Self.Marketname(1..9)  = "2m Hcap  "   or else
+      Self.Marketname(1..11) = "2m1f Hcap  " or else
+      Self.Marketname(1..11) = "2m2f Hcap  " or else
+      Self.Marketname(1..11) = "2m3f Hcap  " or else
+      Self.Marketname(1..11) = "2m4f Hcap  " or else
+      Self.Marketname(1..11) = "2m5f Hcap  " or else
+      Self.Marketname(1..11) = "2m6f Hcap  " or else
+      Self.Marketname(1..11) = "2m7f Hcap  " or else
+      Self.Marketname(1..9) = "3m Hcap  " or else
+      Self.Marketname(1..11) = "3m1f Hcap  " or else
+      Self.Marketname(1..11) = "3m2f Hcap  " or else
+      Self.Marketname(1..11) = "3m3f Hcap  " or else
+      Self.Marketname(1..11) = "3m4f Hcap  " or else
 
-             Self.Marketname(1..13)  = "5f Hcap Chs  "   or else
-             Self.Marketname(1..13)  = "6f Hcap Chs  "   or else
-             Self.Marketname(1..13)  = "7f Hcap Chs  "   or else
-             Self.Marketname(1..13)  = "1m Hcap Chs  "   or else
-             Self.Marketname(1..15) = "1m1f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m2f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m3f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m4f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m5f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m6f Hcap Chs  " or else
-             Self.Marketname(1..15) = "1m7f Hcap Chs  " or else
-             Self.Marketname(1..13)  = "2m Hcap Chs  "   or else
-             Self.Marketname(1..15) = "2m1f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m2f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m3f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m4f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m5f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m6f Hcap Chs  " or else
-             Self.Marketname(1..15) = "2m7f Hcap Chs  " or else
-             Self.Marketname(1..13) = "3m Hcap Chs  " or else
-             Self.Marketname(1..15) = "3m1f Hcap Chs  " or else
-             Self.Marketname(1..15) = "3m2f Hcap Chs  " or else
-             Self.Marketname(1..15) = "3m3f Hcap Chs  " or else
-             Self.Marketname(1..15) = "3m4f Hcap Chs  " or else
+      Self.Marketname(1..13)  = "5f Hcap Chs  "   or else
+      Self.Marketname(1..13)  = "6f Hcap Chs  "   or else
+      Self.Marketname(1..13)  = "7f Hcap Chs  "   or else
+      Self.Marketname(1..13)  = "1m Hcap Chs  "   or else
+      Self.Marketname(1..15) = "1m1f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m2f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m3f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m4f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m5f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m6f Hcap Chs  " or else
+      Self.Marketname(1..15) = "1m7f Hcap Chs  " or else
+      Self.Marketname(1..13)  = "2m Hcap Chs  "   or else
+      Self.Marketname(1..15) = "2m1f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m2f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m3f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m4f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m5f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m6f Hcap Chs  " or else
+      Self.Marketname(1..15) = "2m7f Hcap Chs  " or else
+      Self.Marketname(1..13) = "3m Hcap Chs  " or else
+      Self.Marketname(1..15) = "3m1f Hcap Chs  " or else
+      Self.Marketname(1..15) = "3m2f Hcap Chs  " or else
+      Self.Marketname(1..15) = "3m3f Hcap Chs  " or else
+      Self.Marketname(1..15) = "3m4f Hcap Chs  " or else
 
-             Self.Marketname(1..13)  = "5f Hcap Hrd  "   or else
-             Self.Marketname(1..13)  = "6f Hcap Hrd  "   or else
-             Self.Marketname(1..13)  = "7f Hcap Hrd  "   or else
-             Self.Marketname(1..13)  = "1m Hcap Hrd  "   or else
-             Self.Marketname(1..15) = "1m1f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m2f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m3f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m4f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m5f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m6f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "1m7f Hcap Hrd  " or else
-             Self.Marketname(1..13)  = "2m Hcap Hrd  "   or else
-             Self.Marketname(1..15) = "2m1f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m2f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m3f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m4f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m5f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m6f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "2m7f Hcap Hrd  " or else
-             Self.Marketname(1..13) = "3m Hcap Hrd  " or else
-             Self.Marketname(1..15) = "3m1f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "3m2f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "3m3f Hcap Hrd  " or else
-             Self.Marketname(1..15) = "3m4f Hcap Hrd  ";
-   end Marketname_Ok2;
+      Self.Marketname(1..13)  = "5f Hcap Hrd  "   or else
+      Self.Marketname(1..13)  = "6f Hcap Hrd  "   or else
+      Self.Marketname(1..13)  = "7f Hcap Hrd  "   or else
+      Self.Marketname(1..13)  = "1m Hcap Hrd  "   or else
+      Self.Marketname(1..15) = "1m1f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m2f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m3f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m4f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m5f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m6f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "1m7f Hcap Hrd  " or else
+      Self.Marketname(1..13)  = "2m Hcap Hrd  "   or else
+      Self.Marketname(1..15) = "2m1f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m2f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m3f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m4f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m5f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m6f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "2m7f Hcap Hrd  " or else
+      Self.Marketname(1..13) = "3m Hcap Hrd  " or else
+      Self.Marketname(1..15) = "3m1f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "3m2f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "3m3f Hcap Hrd  " or else
+      Self.Marketname(1..15) = "3m4f Hcap Hrd  ";
+  end Marketname_Ok2;
+
+
+  function Marketname_Ok3(Self : Market_Type) return Boolean is
+  begin  -- for lay strategy 19-29 at start
+    return
+      Self.Marketname(1..9)  = "5f Hcap  "   or else
+      Self.Marketname(1..9)  = "6f Hcap  "   or else
+      Self.Marketname(1..9)  = "7f Hcap  "   or else
+      Self.Marketname(1..9)  = "1m Hcap  "   or else
+      Self.Marketname(1..11) = "1m1f Hcap  ";
+  end Marketname_Ok3;
+
+
 
 
   function Distance(Self : in out Market_Type) return Integer_4 is
@@ -378,13 +391,13 @@ package body Markets is
 
 
   function Distance_Name(Self : in out Market_Type) return Distancename_Type is
-    Idx : Integer := 0;
+    Idx  : Integer := 0;
     Name : Distancename_Type := (others => ' ');
   begin
     for I in Self.Marketname'Range loop
       case Self.Marketname(I) is
         when ' ' => Idx := I; exit;
-        when others => null;
+          when others => null;
       end case;
     end loop;
     Move(Self.Marketname(1 .. Idx-1), Name);

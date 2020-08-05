@@ -52,7 +52,7 @@ procedure Poll is
   type Market_Type is (Win, Place);
   type Best_Runners_Array_Type is array (1 .. 16) of Prices.Price_Type ;
 
-  --Global_Bet_Placer    : Integer := 0;
+  Global_Bet_Placer    : Integer := 0;
 
   Data            : Bot_Messages.Poll_State_Record ;
   This_Process    : Process_Io.Process_Type := Process_Io.This_Process;
@@ -79,33 +79,31 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Horse_Back_1_10_07_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_28_02_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_38_00_1_2_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_56_00_1_4_Plc_1_01     => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Lay_Fav_2_0_12_Win            => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Lay_Fav_9_0_30_Win            => return Process_Io.To_Process_Type("bet_placer_006");
+      when Horse_Back_1_10_07_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_001");
+      when Horse_Back_1_28_02_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_002");
+      when Horse_Back_1_38_00_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_003");
+      when Horse_Back_1_56_00_1_4_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_004");
+      when Horse_Lay_Fav_2_0_12_Win             => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Lay_Fav_9_0_30_Win             => return Process_Io.To_Process_Type("bet_placer_006");
+      when Horse_Lay_19_00_29_00_At_Start_1_Win =>
 
-        --        when Horse_Back_1_38_00_1_2_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_003");
-        --        when Horse_Back_1_56_00_1_4_Plc_1_01_Hrd => return Process_Io.To_Process_Type("bet_placer_004");
+        --if not reserved - get an anonymous one
+        Global_Bet_Placer := Global_Bet_Placer + 1;
+        -- we start 10 bet_placers
+        if Global_Bet_Placer > Integer(19) then
+          Global_Bet_Placer := 10;
+        end if;
+
+        if Global_Bet_Placer < Integer(10) then -- reserved above
+          Global_Bet_Placer := 10;
+        end if;
+
+        case Global_Bet_Placer is
+          when  10 ..  99 => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Global_Bet_Placer'Img, Both));
+    --        when 100 .. 999 => return Process_Io.To_Process_Type("bet_placer_"   & Trim(Global_Bet_Placer'Img, Both));
+          when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
+        end case;
     end case;
-    --      --if not reserved - get an anonymous one
-    --      Global_Bet_Placer := Global_Bet_Placer + 1;
-    --      -- we start 5 bet_placers
-    --      if Global_Bet_Placer > Integer(5) then
-    --        Global_Bet_Placer := 1;
-    --      end if;
-    --
-    --      if Global_Bet_Placer < Integer(4) then -- reserved above
-    --        Global_Bet_Placer := 4;
-    --      end if;
-    --
-    --      case Global_Bet_Placer is
-    --        when   4 ..   5 => return Process_Io.To_Process_Type("bet_placer_00" & Trim(Global_Bet_Placer'Img, Both));
-    --  --        when  10 ..  99 => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Global_Bet_Placer'Img, Both));
-    --  --        when 100 .. 999 => return Process_Io.To_Process_Type("bet_placer_"   & Trim(Global_Bet_Placer'Img, Both));
-    --        when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
-    --      end case;
 
   end Get_Bet_Placer;
 
@@ -266,6 +264,7 @@ procedure Poll is
 
       case Main_Bet is
       -- checks in calling proc - may be several bets
+        when Horse_Lay_19_00_29_00_At_Start_1_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -416,6 +415,82 @@ procedure Poll is
                  Match_Directly   => Match_Directly);
   end Try_To_Lay_Favorite;
   ------------------------------------------------------
+
+
+  procedure Try_To_Lay_At_Start(Bettype         : Config.Bet_Type;
+                                Br              : Best_Runners_Array_Type;
+                                Marketid        : Marketid_Type;
+                                Match_Directly  : Boolean := False) is
+
+    Max_Layprice : Fixed_Type;
+    Min_Layprice : Fixed_Type;
+    Filter       : Integer;
+    Image        : String := Bettype'Img;
+    Layprice     : Lay_Price_Type ;
+    Tic          : Tics.Tics_Type;
+    use type Tics.Tics_Type;
+  begin        --1         2         3         4
+    --  12345678901234567890123456789012345678901
+    --  Horse_Lay_19_00_29_00_At_Start_1
+    Max_Layprice := Fixed_Type'Value(Image(17..18) & "." & Image(20..21));
+    Min_Layprice := Fixed_Type'Value(Image(11..12) & "." & Image(14..15));
+    Filter  := Integer'Value(Image(32 .. 32));
+
+    case Filter is
+      when 0 => null; --no filter
+      when 1 =>
+        declare
+          M   : Markets.Market_Type;
+          Eos : Boolean := False;
+        begin
+          M.Marketid := Marketid;
+          M.Read(Eos);
+          if not Eos then
+            if not M.Marketname_Ok3 then -- only 5f,6f,7f,1m,1m1f Hcp versions
+              Log("Try_To_Lay_At_Start", "bad marketname - filter " & Filter'Img);
+              return;
+            end if;
+          else
+            Log("Try_To_Lay_At_Start", "market gone ! '" & Marketid & "'");
+            return;
+          end if;
+        end;
+      when others =>
+        Log("Try_To_Lay_At_Start", "Filter undefined, returning doing nothing" & Filter'Img);
+        return;
+    end case;
+
+
+    for R of Br loop
+
+      if Min_Layprice <= R.Layprice and then R.Layprice <= Max_Layprice
+        and then R.Backprice < Fixed_Type(10_000.0)  -- so it exists
+      then
+
+        --add 1 tic to cur price
+        Tic := Tics.Get_Tic_Index(R.Layprice);
+        Layprice := Lay_Price_Type(Tics.Get_Tic_Price(Tic +1));
+
+        if Layprice > Lay_Price_Type(Max_Layprice) then
+          Layprice := Lay_Price_Type(Max_Layprice);
+        end if;
+
+        --lay all wih startodds within range ... (call this
+
+        Send_Lay_Bet(Selectionid      => R.Selectionid,
+                     Main_Bet         => Bettype,
+                     Marketid         => Marketid,
+                     Max_Price        => Layprice,
+                     Match_Directly   => Match_Directly);
+      end if;
+
+    end loop;
+    Bets_Allowed(Bettype).Has_Betted := True;
+
+
+  end Try_To_Lay_At_Start;
+  ------------------------------------------------------
+
 
 
   procedure Try_To_Make_Back_Bet(Bettype         : Config.Bet_Type;
@@ -998,6 +1073,35 @@ procedure Poll is
                     end if;
                   end;
 
+
+                when  Horse_Lay_19_00_29_00_At_Start_1_Win =>
+                  declare
+                    M_Type     : Market_Type := Win;
+                    Image      : String := I'Img;
+                    Do_Try_Bet : Boolean := True;
+                    --use Markets;
+                  begin
+                    --  12345678901234567890
+                    --  Back_1_10_20_1_4_WIN
+                    if Utils.Position(Image, "PLC") > Integer(0) then
+                      M_Type := Place;
+                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                      Match_Directly := False;
+                    elsif Utils.Position(Image, "WIN") > Integer(0) then
+                      M_Type         := Win;
+                      Match_Directly := False;
+                    end if;
+
+                    if Do_Try_Bet
+                      and then First_Poll
+                    -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
+                    then
+                      Try_To_Lay_At_Start(Bettype         => I,
+                                          Br              => Best_Runners,
+                                          Marketid        => Markets_Array(M_Type).Marketid,
+                                          Match_Directly  => Match_Directly);
+                    end if;
+                  end;
 
                   --when Horse_Back_1_55_800m_Plc_1_01 =>
                   --  declare
