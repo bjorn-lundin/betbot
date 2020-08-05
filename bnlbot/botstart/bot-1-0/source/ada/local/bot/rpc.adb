@@ -68,6 +68,7 @@ package body Rpc is
     Buffer             : String(1..100) := (others => ' ');
     Len                : Natural := 0;
     Bot_Name           : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
+    Bot_User           : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;
   begin
     if Now.Hour < 12 or else (Now.Hour = 23 and Now.Minute > 30) then
       Log(Me & "Login", "Login failed - bad time");
@@ -95,7 +96,8 @@ package body Rpc is
       return;
     end if;
 
-    if Bot_Name = Dry then
+    if Bot_User = Dry then
+      Log(Me & "Login", "dry user, use bnl's token");
       Text_Io.Open(F,Text_Io.In_File,"/bnlbot/botstart/user/bnl/token.dat");
       Text_Io.Get_Line(F,Buffer,Len);
       Text_Io.Close(F);

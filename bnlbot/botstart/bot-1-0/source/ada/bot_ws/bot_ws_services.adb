@@ -1,4 +1,5 @@
- with Ada.Strings; use Ada.Strings;
+
+with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 --with Ada.Environment_Variables;
@@ -159,7 +160,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets.Prepare(
                             "select round(sum( " &
                               "    case when BETWON " &
-                              "       then abets.PROFIT * 0.95 " &
+                              "       then abets.PROFIT * 0.98 " &
                               "       else abets.PROFIT " &
                               "    end)::numeric,2) PROFIT, " &
                               "sum(SIZEMATCHED) SIZEMATCHED " &
@@ -171,7 +172,7 @@ package body Bot_Ws_Services is
     Select_Sum_Bets_Named.Prepare(
                                   "select " & "round(sum( " &
                                     "    case when BETWON " &
-                                    "       then abets.PROFIT * 0.95 " &
+                                    "       then abets.PROFIT * 0.98 " &
                                     "       else abets.PROFIT " &
                                     "    end)::numeric,2) PROFIT, " &
                                     "from ABETS " &
@@ -185,7 +186,7 @@ package body Bot_Ws_Services is
                                               "select BETNAME, " &
                                               "round(sum( " &
                                               "    case when BETWON " &
-                                              "       then abets.PROFIT * 0.95 " &
+                                              "       then abets.PROFIT * 0.98 " &
                                               "       else abets.PROFIT " &
                                               "    end)::numeric,2) PROFIT, " &
                                               "sum(SIZEMATCHED) SIZEMATCHED, count('a') CNT, " &
@@ -195,14 +196,14 @@ package body Bot_Ws_Services is
                                               "     round((100.0 * " &
                                               "     sum( " &
                                               "        case when betwon " &
-                                              "          then abets.profit*0.95 " &
+                                              "          then abets.profit*0.98 " &
                                               "          else abets.profit " &
                                               "        end)/sum(sizematched)),2) " &
                                               "    when 'LAY'  then " &
                                               "      round((100.0 * " &
                                               "      sum( " &
                                               "         case when betwon " &
-                                              "           then 0.95* (abets.profit/((pricematched-1) * sizematched)) " &
+                                              "           then 0.98* (abets.profit/((pricematched-1) * sizematched)) " &
                                               "           else       (abets.profit/((pricematched-1) * sizematched)) " &
                                               "         end))/sum(sizematched),2) " &
                                               "    else 0.0 " &
@@ -221,12 +222,12 @@ package body Bot_Ws_Services is
                                                "BETNAME, " &
                                                "round(sum( " &
                                                   "case when BETWON " &
-                                                     "then PROFIT * 0.95 " &
+                                                     "then PROFIT * 0.98 " &
                                                      "else PROFIT " &
                                                   "end),2) PROFIT2, " &
                                                "round((100.0 * sum( " &
                                                   "case when BETWON " &
-                                                     "then PROFIT * 0.95 " &
+                                                     "then PROFIT * 0.98 " &
                                                      "else PROFIT " &
                                                   "end)/ " &
                                                   "sum(SIZEMATCHED)),2) rate2 " &
@@ -247,12 +248,12 @@ package body Bot_Ws_Services is
                                                "BETNAME, " &
                                                "round(sum( " &
                                                   "case when BETWON " &
-                                                     "then PROFIT * 0.95 " &
+                                                     "then PROFIT * 0.98 " &
                                                      "else PROFIT " &
                                                   "end),2) PROFIT2, " &
                                                "round((100.0 * sum( " &
                                                   "case when BETWON " &
-                                                     "then PROFIT * 0.95 " &
+                                                     "then PROFIT * 0.98 " &
                                                      "else PROFIT " &
                                                   "end)/ " &
                                                   "sum(SIZEMATCHED)),2) rate2 " &
