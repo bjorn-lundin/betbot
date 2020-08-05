@@ -11,6 +11,7 @@ package Config is
                     Horse_Back_1_28_02_1_2_Plc_1_01,
                     Horse_Back_1_38_00_1_2_Plc_1_01,
                     Horse_Back_1_56_00_1_4_Plc_1_01,
+                    Horse_Lay_19_00_29_00_At_Start_1_Win,
                     Horse_Lay_Fav_2_0_12_Win,
                     Horse_Lay_Fav_9_0_30_Win
                  --   Horse_Back_1_55_500m_Plc_1_01,

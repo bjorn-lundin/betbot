@@ -22,6 +22,7 @@ package Markets is
 
   function Marketname_Ok(Self : Market_Type) return Boolean;
   function Marketname_Ok2(Self : Market_Type) return Boolean; -- allows Hrd and Chs as well
+  function Marketname_Ok3(Self : Market_Type) return Boolean; -- only 5f,6f,f7,1m, 1m1f - Hcp allowed
 
   function Distance(Self : in out Market_Type) return Integer_4;
   function Distance_Name(Self : in out Market_Type) return Distancename_Type;
