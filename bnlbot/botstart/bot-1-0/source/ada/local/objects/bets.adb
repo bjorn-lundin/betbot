@@ -578,7 +578,7 @@ package body Bets is
   end Check_Bets;
   ------------------------------------------------------------------------------
   procedure Check_If_Bet_Accepted is
-    T                 : Sql.Transaction_Type;
+    T                 : Sql.Transaction_Type with Warnings => Off;
     Bet_List          : Bets.Lists.List;
     Bet               : Bets.Bet_Type;
     Avg_Price_Matched : Bet_Price_Type := 0.0;

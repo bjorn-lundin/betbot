@@ -407,7 +407,7 @@ private
 
    --  procedure Initialize (Object : in out Private_Statement_Type) ;
    procedure Do_Initialize (Private_Statement : in out Private_Statement_Type) ;
-   procedure Finalize (Private_Statement : in out Private_Statement_Type) ;
+   overriding procedure Finalize (Private_Statement : in out Private_Statement_Type) ;
    procedure Associate (Private_Statement : in out Private_Statement_Type;
                         Bind_Varible      : String;
                         Idx               : Natural) ;
@@ -426,7 +426,7 @@ private
    end record;
    --  procedure Initialize (Statement : in out Statement_Type);
    procedure Do_Initialize (Statement : in out Statement_Type);
-   procedure Finalize (Statement : in out Statement_Type);
+   overriding procedure Finalize (Statement : in out Statement_Type);
 
    type Transaction_Type is new Limited_Controlled with record
       Status  : Transaction_Status_Type   := None;

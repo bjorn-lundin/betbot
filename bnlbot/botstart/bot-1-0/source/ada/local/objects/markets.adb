@@ -24,7 +24,7 @@ package body Markets is
   procedure Corresponding_Place_Market(Self         : in out Market_Type;
                                        Place_Market :    out Market_Type;
                                        Found        :    out Boolean) is
-    T   : Sql.Transaction_Type;
+    T   : Sql.Transaction_Type with Warnings => Off;
     Eos : Boolean := False;
   begin
     T.Start;
@@ -58,7 +58,7 @@ package body Markets is
   procedure Corresponding_Win_Market(Self       : in out Market_Type;
                                      Win_Market :    out Market_Type;
                                      Found      :    out Boolean) is
-    T   : Sql.Transaction_Type;
+    T   : Sql.Transaction_Type with Warnings => Off;
     Eos : Boolean := False;
   begin
     T.Start;

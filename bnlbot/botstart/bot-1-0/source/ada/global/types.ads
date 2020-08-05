@@ -56,7 +56,7 @@ package Types is
                  File : in Ada.Text_Io.File_Type := Ada.Text_Io.Standard_Output);
 
   function "<" ( Left, Right : String_Object) return Boolean;
-  function "=" ( Left, Right : String_Object) return Boolean;
+  overriding function "=" ( Left, Right : String_Object) return Boolean;
   function ">" ( Left, Right : String_Object) return Boolean;
   function Create (What : String) return String_Object;
 

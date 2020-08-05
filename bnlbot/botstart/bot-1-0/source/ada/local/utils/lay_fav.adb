@@ -104,7 +104,7 @@ procedure Lay_Fav is
     Eos                    : Boolean := False;
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
  --   Tic_Lay                : Tics.Tics_Type := 1;
-    Bet                    : Bets.bet_Type;
+    Bet                    : Bets.bet_Type with Warnings => Off;
     Lay_Bet_Name           : String_Object;
  --   Back_Bet_Name          : String_Object;
 
@@ -353,7 +353,7 @@ begin
     declare
       --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
-      T : Sql.Transaction_Type;
+      T : Sql.Transaction_Type with Warnings => Off;
     begin
       T.Start;
       for Bet of Global_Bet_List loop

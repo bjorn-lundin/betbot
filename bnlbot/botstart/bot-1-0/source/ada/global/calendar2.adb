@@ -55,7 +55,7 @@ package body Calendar2 is
       Days_Left := Days_Left - Days_In (Year, Month_Number);
     end loop;
     Day := Day_Type (Days_Left);
-  end;
+  end To_Month_And_Day;
 
   function Clock return Time_Type is
   begin

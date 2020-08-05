@@ -45,7 +45,7 @@ procedure Check_New_Strategy is
 
   Selmap : Sim.Selectionid_Maps.Map;
   Tsmap  : Sim.Timestamp_To_Reward_Maps.Map;
-  T      : Sql.Transaction_Type;
+  T      : Sql.Transaction_Type with Warnings => Off;
 begin
 
   if not Ev.Exists("BOT_NAME") then

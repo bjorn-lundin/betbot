@@ -15,13 +15,15 @@ with  Ada.Environment_Variables;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Okmarkets;
+with Table_Arunners;
+
 
 
 
 procedure Create_ok_Markets is
   package Ev renames Ada.Environment_Variables;
 --  Cmd_Line              : Command_Line_Configuration;
-  T                     : Sql.Transaction_Type;
+  T                     : Sql.Transaction_Type with Warnings => Off;
   Select_Markets        : Sql.Statement_Type;
   Select_Num_Samples    : Sql.Statement_Type;
 
@@ -61,12 +63,23 @@ procedure Create_ok_Markets is
   ------------------------------------------------------
 
   procedure Insert_Into_Ok_If_Ok(Market  : in out Table_Amarkets.Data_Type) is
-    Ok_Market : Table_Okmarkets.Data_Type;
-    Eos       : Boolean := False;
+    Ok_Market   : Table_Okmarkets.Data_Type;
+    Eos         : Boolean := False;
     Num_Samples : Integer_4 := 0;
+    Winner      : Table_Arunners.Data_Type;
   begin
-    Select_Num_Samples.Prepare("select count('a') CNT from APRICESHISTORY where MARKETID = :MARKETID");
-    Select_Num_Samples.Set("MARKETID",Market.Marketid);
+    Winner.Marketid := Market.Marketid;
+    Winner.Status(1..6) := "WINNER";
+    Winner.Read_One_Status( Order  => False, End_Of_Set =>  Eos);
+
+    if Eos then
+      return;
+    end if;
+
+    Select_Num_Samples.Prepare("select count('a') CNT from APRICESHISTORY " &
+                                 "where MARKETID = :MARKETID and SELECTIONID = :SELECTIONID");
+    Select_Num_Samples.Set("MARKETID", Market.Marketid);
+    Select_Num_Samples.Set("SELECTIONID", Winner.Selectionid);
 
     Select_Num_Samples.Open_Cursor;
     Select_Num_Samples.Fetch(Eos);
@@ -75,7 +88,7 @@ procedure Create_ok_Markets is
     end if;
     Select_Num_Samples.Close_Cursor;
 
-    if Num_Samples / Market.Numrunners > 100 then
+    if Num_Samples > 60 then
       Ok_Market := (
                     Marketid    => Market.Marketid,
                     Eventid     => Market.Eventid,
@@ -83,23 +96,20 @@ procedure Create_ok_Markets is
                     Numwinners  => Market.Numwinners,
                     Numrunners  => Market.Numrunners,
                     Ixxlupd     => Market.Ixxlupd,
-                    Ixxluts     => Market. Ixxluts);
+                    Ixxluts     => Market.Ixxluts);
       Ok_Market.Insert;
     else
-      Debug ("Num_Samples" & Num_Samples'img & " num_runners" & Market.Numrunners'Img & " => " & Integer_4'Image( Num_Samples / Market.Numrunners)  );
+      Debug ("Too few samples" & Num_Samples'Img);
     end if;
 
   end Insert_Into_Ok_If_Ok;
+  -----------------------------------------
 
-
-
-  Mlist  :  Table_Amarkets.Amarkets_List_Pack2.List;
-  C : Integer_4 := 0;
+  Mlist : Table_Amarkets.Amarkets_List_Pack2.List;
+  C     : Integer_4 := 0;
 begin
 
-
 --  Getopt (Cmd_Line);  -- process the command line
-
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 

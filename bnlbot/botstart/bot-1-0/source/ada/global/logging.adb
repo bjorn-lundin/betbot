@@ -174,7 +174,7 @@ package body Logging is
    end Close;
 
    ----------------------------------------------
-   procedure Finalize(D : in out Dummy_Type) is
+   overriding procedure Finalize(D : in out Dummy_Type) is
      pragma Warnings(Off,D);
    begin
      if Global_New_Log_File_On_Exit and then Text_Io.Is_Open(Global_File) then

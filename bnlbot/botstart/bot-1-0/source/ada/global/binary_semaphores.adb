@@ -6,12 +6,12 @@ package body Binary_Semaphores is
       procedure Release is
       begin
          In_Use := False;
-      end;
+      end Release;
       ---------------------------
       entry Seize when not In_Use is
       begin
          In_Use := True;
-      end;
+      end Seize;
       ---------------------------
    end Semaphore_Type;
 end Binary_Semaphores;

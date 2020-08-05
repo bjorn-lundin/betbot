@@ -106,7 +106,7 @@ package body Sql is
     end if;
   end Do_Initialize;
 
-  procedure Finalize (Statement : in out Statement_Type) is
+  overriding procedure Finalize (Statement : in out Statement_Type) is
   begin
     Free (Statement.Private_Statement);
   end Finalize;
@@ -124,7 +124,7 @@ package body Sql is
     Private_Statement.Cursor_Name (1) := 'C';
   end Do_Initialize;
 
-  procedure Finalize (Private_Statement : in out Private_Statement_Type) is
+  overriding procedure Finalize (Private_Statement : in out Private_Statement_Type) is
   begin
     null;
     -- Map.Release (Private_Statement.Parameter_Map);
@@ -742,7 +742,7 @@ package body Sql is
   --------------------------------------------------------------
   procedure Set_Transaction_Isolation_Level (Level : in Transaction_Isolation_Level_Type;
                                              Scope : in Transaction_Isolation_Level_Scope_Type) is
-    Local_Transaction   : Transaction_Type;
+    Local_Transaction   : Transaction_Type with Warnings => Off;
     Transaction_Setting : array (Transaction_Isolation_Level_Type'Range,
                                   Transaction_Isolation_Level_Scope_Type'Range) of Statement_Type;
   begin

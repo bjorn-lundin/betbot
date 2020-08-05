@@ -1107,7 +1107,7 @@ package body Repository.Table is
 
     ----------------- Start Set_All_Columns_But_Pk -------------------------------------
 
-    Non_Primary_Column_List : Columns_Type ;
+    Non_Primary_Column_List : Columns_Type with Warnings => Off ;
   begin
     Code_Debug(" -- Start Set_All_Columns_But_Pk");
 
@@ -1667,8 +1667,8 @@ package body Repository.Table is
     procedure Primary_Procs_Spec(Idx : I.Index_Type; Table_Name : String_Object) is
       All_Fields               : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type ; -- this need to be empty
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy  with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type with Warnings => Off; -- this need to be empty
     begin
     -- for pk's with several fields
       Code_Debug(" -- start Print_Def_Functions_Spec.Primary_Procs_Spec");
@@ -1932,7 +1932,7 @@ package body Repository.Table is
     procedure Index_Procs_Lists_Spec(Idx : I.Index_Type; Table_Name : String_Object) is
       Fields, All_Fields       : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
     begin
       Code_Debug(" -- start Print_Def_Functions_Lists_Spec.Index_Procs_Lists_Spec");
 
@@ -1987,7 +1987,7 @@ package body Repository.Table is
       Fields,
       All_Fields               : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
     begin
       Code_Debug(" -- start Print_Def_Functions_Lists_Spec.Unique_Procs_Lists_Spec");
       for Idx_Col of Idx.Column_List loop
@@ -2030,7 +2030,7 @@ package body Repository.Table is
 
     procedure Primary_Procs_Lists_Spec(Idx : I.Index_Type ; Table_Name : String_Object) is
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
       All_Fields, Fields       : String_Object;
     begin
       Code_Debug(" -- start Print_Def_Functions_Lists_Spec.Primary_Procs_Lists_Spec");
@@ -2279,9 +2279,9 @@ package body Repository.Table is
     procedure Index_Procs_Body(Idx : I.Index_Type ; Table_Name : String_Object) is
       use Text_Io;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_3        : C.Columns_Type; -- do not copy into this one !
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_3        : C.Columns_Type with Warnings => Off; -- do not copy into this one !
       All_Fields               : String_Object;
       Stm, Tmp                 : String_Object;
     begin
@@ -2498,9 +2498,9 @@ package body Repository.Table is
     procedure Unique_Procs_Body(Idx : I.Index_Type ; Table_Name : String_Object) is
       use Text_Io;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_3        : C.Columns_Type; -- do not copy into this one !
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_3        : C.Columns_Type with Warnings => Off; -- do not copy into this one !
       All_Fields               : String_Object;
       Stm, Tmp                 : String_Object;
     begin
@@ -2695,9 +2695,9 @@ package body Repository.Table is
       use Text_Io;
       All_Fields               : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_3        : C.Columns_Type; -- do not copy into this one !
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_3        : C.Columns_Type with Warnings => Off; -- do not copy into this one !
       Stm                      : String_Object;
     begin
     -- for pk's with several fields
@@ -3719,8 +3719,8 @@ package body Repository.Table is
     procedure Index_Procs_Lists_Body(Idx : I.Index_Type; Table_Name : String_Object) is
       Fields, All_Fields, Stm  : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type ;
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type with Warnings => Off;
     begin
       Code_Debug(" -- start Print_Def_Functions_Lists_Spec.Index_Procs_Lists_Body");
 
@@ -3838,8 +3838,8 @@ package body Repository.Table is
     procedure Unique_Procs_Lists_Body(Idx : I.Index_Type ; Table_Name : String_Object) is
       Fields, All_Fields, Stm  : String_Object;
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
-      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2        : C.Columns_Type ;
+      Idx_Column_List_1        : C.Columns_Type := Idx.Column_List.Copy with Warnings => Off;
+      Idx_Column_List_2        : C.Columns_Type with Warnings => Off;
     begin
       Code_Debug(" -- start Print_Def_Functions_Lists_Body.Unique_Procs_Lists_Body");
       for Idx_Col of Idx.Column_List loop
@@ -3948,7 +3948,7 @@ package body Repository.Table is
     procedure Primary_Procs_Lists_Body(Idx : I.Index_Type ; Table_Name : String_Object) is
       Index_Has_Several_Fields : Boolean        := Integer(Idx.Column_List.Length) > 1;
       Idx_Column_List_1          : C.Columns_Type := Idx.Column_List.Copy;
-      Idx_Column_List_2          : C.Columns_Type ; -- do not pre-fill
+      Idx_Column_List_2          : C.Columns_Type with Warnings => Off; -- do not pre-fill
       All_Fields, Fields, Stm    : String_Object;
     begin
 

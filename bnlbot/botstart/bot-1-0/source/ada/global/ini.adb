@@ -268,7 +268,7 @@ package body Ini is
 
   -- V9.4-6643 New procedure   -- 9.8-17902 rewritten
   procedure Load (File_Name : in String) is
-    File           : Text_Io.File_Type;
+    File           : Text_Io.File_Type with Warnings => Off;
     Line           : String(1..256);
     Last           : Integer;
     Current_Section: Section_Pointer_Type := null;
@@ -348,12 +348,12 @@ package body Ini is
   function Is_Loaded return Boolean is
   begin
     return Global_Is_Loaded;
-  end Is_Loaded; 
+  end Is_Loaded;
 
   procedure Save is
     S   : Section_Pointer_Type := Data.Section_List;
     V   : Variable_Pointer_Type;
-    File: Text_Io.File_Type;
+    File: Text_Io.File_Type with Warnings => Off;
   begin
 --    Text_Io.Put_Line ("saved to file : '" & To_String(Current_Ini_File) & "'");
     Text_Io.Create (File, Text_Io.Out_File, To_String(Current_Ini_File)); -- 9.8-17902
@@ -480,7 +480,7 @@ package body Ini is
 
 
   procedure Set_Value (Section: String; Variable: String; Value: String) is
-    S: Section_Pointer_Type := Find_Section (Section);
+    S: Section_Pointer_Type := Find_Section (Section) with Warnings => Off;
   begin
     if (S = null) then
       Define_Section (S, Section);
@@ -490,7 +490,7 @@ package body Ini is
 
 
   procedure Set_Value (Section: String; Variable: String; Value: Boolean) is
-    S: Section_Pointer_Type := Find_Section (Section);
+    S: Section_Pointer_Type := Find_Section (Section) with Warnings => Off;
   begin
     if (S = null) then
       Define_Section (S, Section);
@@ -500,7 +500,7 @@ package body Ini is
 
 
   procedure Set_Value (Section: String; Variable: String; Value: Integer) is
-    S: Section_Pointer_Type := Find_Section (Section);
+    S: Section_Pointer_Type := Find_Section (Section) with Warnings => Off;
   begin
     if (S = null) then
       Define_Section (S, Section);
@@ -512,7 +512,7 @@ package body Ini is
   procedure Set_Enumeration_Value (Section : String;
                                    Variable: String;
                                    Value   : Enumeration_Type) is
-    S: Section_Pointer_Type := Find_Section (Section);
+    S: Section_Pointer_Type := Find_Section (Section) with Warnings => Off;
   begin
     if (S = null) then
       Define_Section (S, Section);
