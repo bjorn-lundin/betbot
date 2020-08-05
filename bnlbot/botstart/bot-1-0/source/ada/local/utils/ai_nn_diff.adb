@@ -233,6 +233,7 @@ procedure Ai_Nn_Diff is
           Market          : Markets.Market_Type;
           Betname         : Betname_Type      := (others => ' ');
           Side            : Bet_Side_Type := Lay;
+          Eos             : Boolean := False;
         begin
 
           Params.Set_Field (Field_Name => "winner", Field => Create(Winner));
@@ -247,6 +248,7 @@ procedure Ai_Nn_Diff is
               if Do_Bet then
                 Betname(1..23) := "LAY_2nd_AI_0.0001_0.999";
                 Market.Marketid := Marketid;
+                Market.Read(Eos);
                 Runner.Selectionid := Integer_4(Lowest_Selid);
 
                 Laybet := Bets.Create(Name   => Betname,
@@ -256,23 +258,28 @@ procedure Ai_Nn_Diff is
                                       Placed => Ts,
                                       Runner => Runner,
                                       Market => Market);
-                Laybet.Insert_And_Nullify_Betwon;
 
                 case Side is
                   when Back =>
                     if Winner = Lowest_Pidx then -- win
                       Profit :=  0.98 * 30.0 * (Lowest_Odds -1.0);
+                      Laybet.Betwon := True;
                     else
                       Profit := -30.0;
+                      Laybet.Betwon := False;
                     end if;
 
                   when Lay =>
                     if Winner = Lowest_Pidx then -- loss
                       Profit :=  -30.0 * (Lowest_Odds -1.0);
+                      Laybet.Betwon := False;
                     else
                       Profit := 0.98 * 30.0;
+                      Laybet.Betwon := True;
                     end if;
                 end case;
+                Laybet.Profit := Fixed_Type(Profit);
+                Laybet.Insert;
 
                 Global_Profit := Global_Profit + Profit;
               end if;
