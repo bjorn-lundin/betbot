@@ -48,17 +48,6 @@ alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
 
 #alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
-alias stop_bet_placer_001='$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit'
-alias stop_bet_placer_002='$BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit'
-alias stop_bet_placer_003='$BOT_TARGET/bin/bot_send --receiver=bet_placer_003 --message=exit'
-alias stop_bet_placer_004='$BOT_TARGET/bin/bot_send --receiver=bet_placer_004 --message=exit'
-alias stop_bet_placer_005='$BOT_TARGET/bin/bot_send --receiver=bet_placer_005 --message=exit'
-alias stop_bet_placer_006='$BOT_TARGET/bin/bot_send --receiver=bet_placer_006 --message=exit'
-alias stop_bet_placer_007='$BOT_TARGET/bin/bot_send --receiver=bet_placer_007 --message=exit'
-alias stop_bet_placer_008='$BOT_TARGET/bin/bot_send --receiver=bet_placer_008 --message=exit'
-alias stop_bet_placer_009='$BOT_TARGET/bin/bot_send --receiver=bet_placer_009 --message=exit'
-alias stop_bet_placer_010='$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit'
-
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
                      
 alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
@@ -103,4 +92,38 @@ alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --m
 #}  < crp | awk '{print $9}'
 
                      
-                           
+
+alias stop_all_bet_placers'$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_003 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_004 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_005 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_006 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_011 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_012 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_013 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_014 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_015 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_016 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_017 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_018 --message=exit && \
+                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_019 --message=exit
+
+alias stop_bot_system=' . /bnlbot/botstart/bot.bash bnl; stop_all_bots ; . /bnlbot/botstart/bot.bash dry; stop_all_bots ; . /bnlbot/botstart/bot.bash jmb; stop_all_bots ; . /bnlbot/botstart/bot.bash msm; stop_all_bots ; . /bnlbot/botstart/bot.bash bnl'
+
+alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_02 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_03 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_04 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_05 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_06 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_07 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_08 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_09 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_10 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_11 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_12 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_13 --message=exit && \
+                 $BOT_TARGET/bin/bot_send --receiver=poll_14 --message=exit'
+
