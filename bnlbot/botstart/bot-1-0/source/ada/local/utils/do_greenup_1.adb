@@ -505,7 +505,7 @@ begin
     declare
       --        Profit, Sum, Sum_Winners, Sum_Losers  : array (Side_Type'range) of Fixed_Type   := (others => 0.0);
       --        Winners, Losers, Unmatched, Strange   : array (Side_Type'range) of Integer_4 := (others => 0);
-      T : Sql.Transaction_Type;
+      T : Sql.Transaction_Type with Warnings => Off;
       Eos : Boolean := False;
     begin
       T.Start;

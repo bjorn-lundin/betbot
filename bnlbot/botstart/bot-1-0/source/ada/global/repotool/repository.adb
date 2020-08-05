@@ -104,7 +104,7 @@ package body Repository is
 
   -------------------------------------------------------------------------------------
 
-  function To_String(Self : Config_Type) return String is
+  overriding function To_String(Self : Config_Type) return String is
     Tmp : Unbounded_String := Null_Unbounded_String;
   begin
     if Self.Is_Initialized then
@@ -120,7 +120,7 @@ package body Repository is
   end To_String;
   -------------------------------------------------------------------------------------
 
-  function To_String(Self : Item_Type) return String is
+  overriding function To_String(Self : Item_Type) return String is
   begin
     return "Directory:" & Self.Directory.Fix_String &
            " Pattern:"  & Self.Pattern.Fix_String &
@@ -128,12 +128,12 @@ package body Repository is
   end To_String;
 
   -------------------------------------------------------------------------------------
-  procedure Start_Element(Handler       : in out Reader;
-                          Namespace_URI : Unicode.CES.Byte_Sequence := "";
-                          Local_Name    : Unicode.CES.Byte_Sequence := "";
-                          Qname         : Unicode.CES.Byte_Sequence := "";
-                          Atts          : Sax.Attributes.Attributes'Class) is
-    pragma Unreferenced(Namespace_URI);
+  overriding procedure Start_Element(Handler       : in out Reader;
+                                     Namespace_Uri : Unicode.Ces.Byte_Sequence := "";
+                                     Local_Name    : Unicode.Ces.Byte_Sequence := "";
+                                     Qname         : Unicode.Ces.Byte_Sequence := "";
+                                     Atts          : Sax.Attributes.Attributes'Class) is
+    pragma Unreferenced(Namespace_Uri);
     pragma Unreferenced(Qname);
     pragma Unreferenced(Atts);
     The_Tag : constant String := Local_Name;
@@ -178,11 +178,11 @@ package body Repository is
         Feedback("Ada.Strings.Length_Error on Tag '" & The_Tag & "'");
   end Start_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
-  procedure End_Element(Handler       : in out Reader;
-                        Namespace_URI : Unicode.CES.Byte_Sequence := "";
-                        Local_Name    : Unicode.CES.Byte_Sequence := "";
-                        Qname         : Unicode.CES.Byte_Sequence := "") is
-    pragma Unreferenced(Namespace_URI);
+  overriding procedure End_Element(Handler       : in out Reader;
+                                   Namespace_Uri : Unicode.Ces.Byte_Sequence := "";
+                                   Local_Name    : Unicode.Ces.Byte_Sequence := "";
+                                   Qname         : Unicode.Ces.Byte_Sequence := "") is
+    pragma Unreferenced(Namespace_Uri);
     pragma Unreferenced(Qname);
     pragma Unreferenced(Handler);
     The_Tag : constant String := Local_Name;
@@ -212,8 +212,8 @@ package body Repository is
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
-  procedure Characters(Handler          : in out Reader;
-                       Ch               : Unicode.CES.Byte_Sequence := "") is
+  overriding procedure Characters(Handler          : in out Reader;
+                                  Ch               : Unicode.Ces.Byte_Sequence := "") is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
     The_Value : constant String := Utils.Expand_File_Path(To_Iso_Latin_15(Ch));
   begin
@@ -411,7 +411,7 @@ package body Repository is
                A_Big_Int |
                A_Long    |
                A_Short_Code  => return "default 1";
-          when A_Boolean     => return "default False"; 
+          when A_Boolean     => return "default False";
           when others        => return "";
         end case;
     end case;
@@ -432,7 +432,7 @@ package body Repository is
            A_Long    |
            A_Short_Code  => return "0";
       when A_Boolean => return "False"; --  -- boolean is not number in db 0/1
-           
+
       when A_Time    |
            A_Date    |
            A_Timestamp   => return "Time_Type_First";
@@ -465,7 +465,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Create_Table_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Tables : String_Object := String_Object(Self.All_Entities_Defined_Names(Tables));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Tbl  : Repository.Table.Table_Type ;
@@ -493,7 +493,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Drop_Table_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Tables : String_Object := String_Object(Self.All_Entities_Defined_Names(Tables));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Tbl  : Repository.Table.Table_Type ;
@@ -518,11 +518,11 @@ package body Repository is
       end;
     end loop;
   end Print_DDL_Drop_Table_For_All;
-  
+
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Create_View_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Views : String_Object := String_Object(Self.All_Entities_Defined_Names(Views));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Vw   : Repository.View.View_Type ;
@@ -550,7 +550,7 @@ package body Repository is
   ---------------------------------------------------------------------------------------------
   procedure Print_DDL_Drop_View_For_All(Self : in out Config_Type ; Database : Database_Type_Type) is
     All_Views : String_Object := String_Object(Self.All_Entities_Defined_Names(Views));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     Vw   : Repository.View.View_Type ;
@@ -589,7 +589,7 @@ package body Repository is
     Dir_Ent : Directory_Entry_Type;
     Search  : Search_Type;
   begin
-  
+
     Start_Search(Search    => Search,
                  Directory => Self.Item(Entity).Directory.Fix_String,
                  Pattern   => Self.Item(Entity).Pattern.Fix_String);
@@ -603,13 +603,13 @@ package body Repository is
     End_Search (Search => Search);
 
     A_Sorter.Sort(File_List);
-    
+
     for F of File_List loop
       Tmp.Append(F.Fix_String & " ");
     end loop;
     if Tmp.Fix_String /= "" then
       Tmp.Delete_Last_Char;
-    end if;  
+    end if;
     return Tmp;
   end All_Entities_Defined_Full_Path;
   ---------------------------------------------------------------------------------------------
@@ -617,17 +617,17 @@ package body Repository is
   function All_Entities_Defined_Names(Self : in out Config_Type; Entity : Config_Type_Type) return String_Object'class is
     Tmp   : String_Object;
     All_Entities : String_Object := String_Object(Self.All_Entities_Defined_Full_Path(Entity));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     package AD renames Ada.Directories;
-  begin  
+  begin
     if All_Entities.Fix_String /= "" then
       String_Split.Create (S          => Subs,
                            From       => All_Entities.Fix_String,
                            Separators => Seps,
                            Mode       => String_Split.Multiple);
-                                                    
+
       -- for each field in idx.columns loop
       for j in 1 .. String_Split.Slice_Count(Subs) loop
         declare
@@ -695,7 +695,7 @@ package body Repository is
     All_Clreqs : String_Object := String_Object(Self.All_Entities_Defined_Names(Clreqs));
 
     Engine : String := Ada.Command_Line.Command_Name;
-    Receipt_Prefix   : Character := Ada.Characters.Latin_1.HT; -- tab 
+    Receipt_Prefix   : Character := Ada.Characters.Latin_1.HT; -- tab
 
     --------------------------------------------------------------------------------
     procedure Print_Entity(Entity_Type : Entity_Type_Type; Entities : String_Object) is
@@ -708,7 +708,7 @@ package body Repository is
         when Ud4 => Put_Line("clreqs: \");
       end case;
       if Entities.Fix_String = "" then
-        return ; 
+        return ;
       end if;
       String_Split.Create (S          => Subs,
                            From       => Entities.Fix_String,
@@ -735,7 +735,7 @@ package body Repository is
       Entity, Database : String_Object;
     begin
       if Entities.Fix_String = "" then
-        return ; 
+        return ;
       end if;
       Database.Set(DB_Type'Img);
       case Entity_Type is
@@ -822,7 +822,7 @@ package body Repository is
   function List_Coded_Values(Self : in out Config_Type; Listing_Type : in Listing_Type_Type) return String_Object'class is
     Tmp   : String_Object;
     All_Entities : String_Object := String_Object(Self.All_Entities_Defined_Full_Path(Codes));
-    use Gnat; 
+    use Gnat;
     Subs : String_Split.Slice_Set;
     Seps : constant String := " ";
     package AD renames Ada.Directories;
@@ -844,7 +844,7 @@ package body Repository is
       begin
         Col.Create(Col_Name, Self);
         if Data_Type(Col.Type_Of) = A_Short_Code then
-          case Listing_Type is 
+          case Listing_Type is
             when Full => Tmp.Append( Full_File_Name & " ");
             when Name => Tmp.Append( Col_Name & " ");
           end case;
@@ -1393,7 +1393,7 @@ package body Repository is
         declare
           Name : String  := String_Split.Slice(Subs1, j);
           Tbl  : String_Object;
-          T_O  : Repository.Table.Table_Type;
+          T_O  : Repository.Table.Table_Type with Warnings => Off;
         begin
           Tbl.Set(Name);
           T_O.Create(Name,Self);
@@ -1524,7 +1524,7 @@ package body Repository is
     end Print_Xml_Ud4_Single_Spec;
     --++--++--++--++--++--++--++--++--++--++--
     procedure Print_Xml_Ud4_Spec(Clreq_Names : String_Object) is
-    
+
       procedure Do_Print(Tbl_Name : String_Object) is
       begin
 
@@ -1695,7 +1695,7 @@ package body Repository is
       for j in 1 .. String_Split.Slice_Count(Subs) loop
         declare
           Name : String  := String_Split.Slice(Subs, j);
-          Clq  : Repository.Table.Table_Type;
+          Clq  : Repository.Table.Table_Type with Warnings => Off;
           Elem_Count,
           Parent_Elem,
           Curr_Elem,
@@ -1893,7 +1893,7 @@ package body Repository is
   ----------------------------------------------------------------------------------
 
   procedure Make_C_Sharp_Class(Self : in out Config_Type; Clreq_Name : String_Object) is
-    Clq : Repository.Table.Table_Type;
+    Clq : Repository.Table.Table_Type with Warnings => Off;
     use Text_Io;
   begin
     Clq.Name.Set(Clreq_Name.Lower_Case);
@@ -2238,7 +2238,7 @@ package body Repository is
       for j in 1 .. String_Split.Slice_Count(Subs) loop
         declare
           Name : String  := String_Split.Slice(Subs, j);
-          Tbl  : Repository.Table.Table_Type ;
+          Tbl  : Repository.Table.Table_Type with Warnings => Off;
         begin
           Tbl.Name.Set(Name);
           Tbl.Create(Self);
@@ -2337,7 +2337,7 @@ package body Repository is
       for j in 1 .. String_Split.Slice_Count(Subs) loop
         declare
           Name : String  := String_Split.Slice(Subs, j);
-          Tbl  : Repository.Table.Table_Type ;
+          Tbl  : Repository.Table.Table_Type with Warnings => Off;
         begin
           Tbl.Name.Set(Name);
           Tbl.Create(Self);

@@ -181,7 +181,7 @@ package body Process_Io is
 --    null;
 --  end Check_For_Processes_To_Remove;
   ----------------------------------------------------------
-  function "&" (Left,Right: Data_Descriptor_Type) return Data_Descriptor_Type is
+  overriding function "&" (Left,Right: Data_Descriptor_Type) return Data_Descriptor_Type is
     Result: Data_Descriptor_Type(1..Left'Length+Right'Length);
   begin
     Result(1..Left'Length)             := Left;

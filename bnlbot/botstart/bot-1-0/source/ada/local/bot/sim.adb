@@ -208,6 +208,10 @@ package body Sim is
     Move(Side'Img, Side_String);
     Market.Marketid := Market_Id;
     Market.Read(Eos);
+    if Eos Then
+      raise Constraint_Error with "no such market " & Market.To_String;
+    end if;
+
     Bet_Id := Integer_8(Bot_System_Number.New_Number(Bot_System_Number.Betid));
     Move( "EXECUTION_COMPLETE", Order_Status);
     Move( "SUCCESS", Execution_Report_Status);
@@ -464,7 +468,7 @@ package body Sim is
   -----------------------------------------------------------------
 
   procedure Create_Bet_Data(Bet : in Bets.Bet_Type) is
-    F         : Text_Io.File_Type;
+    F         : Text_Io.File_Type with Warnings => Off;
     Indicator : String(1..3) := (others => ' ');
     Odds_Market : Markets.Market_Type ;
   begin
@@ -1153,7 +1157,7 @@ package body Sim is
     end File_Exists;
     ---------------------------------------------------------------
     procedure Write_To_Disk (Container : in Data_Type; Filename : in String) is
-      File         : Ada.Streams.Stream_IO.File_Type;
+      File         : Ada.Streams.Stream_IO.File_Type with Warnings => Off;
       Stream       : Ada.Streams.Stream_IO.Stream_Access;
       File_On_Disk : String := Path & Filename;
     --  Service : constant String := "Write_To_Disk";
@@ -1170,7 +1174,7 @@ package body Sim is
     end Write_To_Disk;
     --------------------------------------------------------
     procedure Read_From_Disk (Container : in out Data_Type; Filename : in String) is
-      File         : Ada.Streams.Stream_IO.File_Type;
+      File         : Ada.Streams.Stream_IO.File_Type with Warnings => Off;
       Stream       : Ada.Streams.Stream_IO.Stream_Access;
       File_On_Disk : String := Path & Filename;
       Service      : constant String := "Read_From_Disk";

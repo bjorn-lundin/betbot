@@ -73,7 +73,7 @@ procedure Ai_Nn is
     Cnt         : Integer := 0;
     Winners     : array (1..3) of Integer_4 := (others => -1);
 
-    F           : Text_Io.File_Type;
+    F           : Text_Io.File_Type with Warnings => Off;
     Path1       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/lay/win/" else
                                                  Ev.Value("BOT_HISTORY") & "/data/ai/pong/1st/back/win/") ;
     Path2       : String := (if Ba_Layprice then Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/lay/win/" else

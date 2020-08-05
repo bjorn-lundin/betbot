@@ -140,7 +140,7 @@ procedure Ai_Nn_Diff is
                                Ev.Value("BOT_HISTORY") & "/data/ai/pong/2nd/back/win/sample") ;
 
     use Ada.Directories;
-    My_Search : Search_Type;
+    My_Search : Search_Type with Warnings => Off;
     My_Entry  : Directory_Entry_Type;
   begin
     Log("Get_Files", "start");

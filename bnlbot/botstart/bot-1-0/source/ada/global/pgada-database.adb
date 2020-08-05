@@ -158,7 +158,7 @@ package body Pgada.Database is
                    Query      : in String;
                    Result     : out Result_Type)
    is
-      C_Query : Chars_Ptr := New_String (Query);
+      C_Query : Chars_Ptr := New_String (Query) with Warnings => Off;
    begin
       Result.Actual := Pq_Exec (Connection.Actual, C_Query);
       Interfaces.C.Strings.Free (C_Query);
@@ -204,7 +204,7 @@ package body Pgada.Database is
    -- Finalize --
    --------------
 
-   procedure Finalize (Connection : in out Connection_Type) is
+   overriding procedure Finalize (Connection : in out Connection_Type) is
    begin
       if Connection.Actual /= null then
          Finish (Connection);
@@ -215,7 +215,7 @@ package body Pgada.Database is
    -- Finalize --
    --------------
 
-   procedure Finalize (Result : in out Result_Type) is
+   overriding procedure Finalize (Result : in out Result_Type) is
 --      procedure Free is
 --        new Ada.Unchecked_Deallocation (Natural, Natural_Access);
    begin
@@ -443,14 +443,14 @@ package body Pgada.Database is
          Password   => To_String(Connection.Password)
      );
    end Login;
-   
+
    procedure Login(Connection : in out Connection_Type; Conn_Info : String) is
-     C_Conn_Info : Chars_Ptr := C_String_Or_Null (Conn_Info);
+     C_Conn_Info : Chars_Ptr := C_String_Or_Null (Conn_Info) with Warnings => Off;
    begin
      Connection.Actual := PQ_Connectdb (C_Conn_Info);
      Free(C_Conn_Info);
-   end Login;   
-   
+   end Login;
+
    procedure Set_Db_Login (Connection : in out Connection_Type;
                            Host       : in String  := "";
                            Port       : in Natural := 0;
@@ -476,7 +476,7 @@ package body Pgada.Database is
 --??      if Connection.Actual /= null then
 --??        Free(Connection.Actual);
 --??      end if;
-      
+
       Connection.Actual :=
         Pq_Set_Db_Login (C_Host, C_Port, C_Options, C_Tty, C_Db_Name,
                          C_Login, C_Password);
@@ -847,43 +847,43 @@ package body Pgada.Database is
       end;
    end Escape;
    ------------------
-   
+
    procedure Set_Host (Connection : in out Connection_Type; Host : String) is
    begin
      Connection.Host := To_Unbounded_String(Host);
    end Set_Host;
-   
+
    procedure Set_Port (Connection : in out Connection_Type; Port : Natural) is
    begin
      Connection.Port := Port;
    end Set_Port;
-   
+
    procedure Set_Options (Connection : in out Connection_Type; Options : String) is
    begin
      Connection.Options := To_Unbounded_String(Options);
    end Set_Options;
-   
+
    procedure Set_Tty (Connection : in out Connection_Type; Tty : String) is
    begin
      Connection.Tty := To_Unbounded_String(Tty);
    end Set_Tty;
-   
+
    procedure Set_Db_Name (Connection : in out Connection_Type; Db_Name : String) is
    begin
      Connection.Db_Name := To_Unbounded_String(Db_Name);
    end Set_Db_Name;
-   
+
 
    procedure Set_User (Connection : in out Connection_Type; User : String) is
    begin
      Connection.User := To_Unbounded_String(User);
    end Set_User;
-   
+
 
    procedure Set_Password (Connection : in out Connection_Type; Password : String) is
    begin
      Connection.Password := To_Unbounded_String(Password);
    end Set_Password;
-   
+
 end Pgada.Database;
 

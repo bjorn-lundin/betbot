@@ -6,7 +6,7 @@ with Gnat.Strings;
 with Text_Io; use Text_Io;
 with Logging;
 procedure Check_Bot_Running is
-  My_Lock    : Lock.Lock_Type;
+  My_Lock    : Lock.Lock_Type with Warnings => Off;
   Sa_Par_Bot : aliased Gnat.Strings.String_Access;
   Ba_Debug   : aliased Boolean := False;
   Config     : Command_Line_Configuration;
@@ -25,7 +25,7 @@ begin
      Long_Switch => "--debug",
      Help        => "Print stuff on stderr");
    Getopt (Config);  -- process the command line
-  
+
   if Sa_Par_Bot.all = "" then
     Display_Help (Config);
     return;
@@ -33,15 +33,15 @@ begin
   if Ba_Debug then
     Put_Line(Standard_Error, "get lock: '" & Sa_Par_Bot.all & "'");
   else
-    Logging.Set_Quiet(True);  
+    Logging.Set_Quiet(True);
   end if;
   My_Lock.Take(Sa_Par_Bot.all);
   if Ba_Debug then
     Put_Line(Standard_Error, "got lock - return SUCCESS (0)");
   end if;
 exception
-  when Lock.Lock_Error => 
-    Set_Exit_Status(Failure); 
+  when Lock.Lock_Error =>
+    Set_Exit_Status(Failure);
     if Ba_Debug then
       Put_Line(Standard_Error, "did NOT get lock - return FAILURE (1)");
     end if;

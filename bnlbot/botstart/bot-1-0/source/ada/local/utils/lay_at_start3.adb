@@ -24,7 +24,7 @@ with Bets;
 procedure Lay_At_Start3 is
   package Ev renames Ada.Environment_Variables;
   Cmd_Line              : Command_Line_Configuration;
-  T                     : Sql.Transaction_Type;
+  T                     : Sql.Transaction_Type with Warnings => Off;
   Select_Markets        : Sql.Statement_Type;
 
   Bet_Size           : Bet_Size_Type := 30.0;

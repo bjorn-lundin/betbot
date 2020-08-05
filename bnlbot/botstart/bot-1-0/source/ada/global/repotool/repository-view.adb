@@ -175,12 +175,12 @@ package body Repository.View is
   end Reset;
 
   -------------------------------------------------------------------------------------
-  procedure Start_Element(Handler       : in out Reader;
-                          Namespace_URI : Unicode.CES.Byte_Sequence := "";
-                          Local_Name    : Unicode.CES.Byte_Sequence := "";
-                          Qname         : Unicode.CES.Byte_Sequence := "";
-                          Atts          : Sax.Attributes.Attributes'Class) is
-    pragma Unreferenced(Namespace_URI);
+  overriding procedure Start_Element(Handler       : in out Reader;
+                                     Namespace_Uri : Unicode.Ces.Byte_Sequence := "";
+                                     Local_Name    : Unicode.Ces.Byte_Sequence := "";
+                                     Qname         : Unicode.Ces.Byte_Sequence := "";
+                                     Atts          : Sax.Attributes.Attributes'Class) is
+    pragma Unreferenced(Namespace_Uri);
     pragma Unreferenced(Qname);
     The_Tag : constant String := Local_Name;
   begin
@@ -290,11 +290,11 @@ package body Repository.View is
       Feedback("Ada.Strings.Length_Error on Tag '" & The_Tag & "'");
   end Start_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
-  procedure End_Element(Handler       : in out Reader;
-                        Namespace_URI : Unicode.CES.Byte_Sequence := "";
-                        Local_Name    : Unicode.CES.Byte_Sequence := "";
-                        Qname         : Unicode.CES.Byte_Sequence := "") is
-    pragma Unreferenced(Namespace_URI);
+  overriding procedure End_Element(Handler       : in out Reader;
+                                   Namespace_Uri : Unicode.Ces.Byte_Sequence := "";
+                                   Local_Name    : Unicode.Ces.Byte_Sequence := "";
+                                   Qname         : Unicode.Ces.Byte_Sequence := "") is
+    pragma Unreferenced(Namespace_Uri);
     pragma Unreferenced(Qname);
     The_Tag : constant String := Local_Name;
   begin
@@ -307,8 +307,8 @@ package body Repository.View is
   end End_Element;
   --++--++--++--++--++--++--++--++--++--++--++--++--++--
 
-  procedure Characters(Handler : in out Reader;
-                       Ch      : Unicode.CES.Byte_Sequence := "") is
+  overriding procedure Characters(Handler : in out Reader;
+                                  Ch      : Unicode.Ces.Byte_Sequence := "") is
     The_Tag   : constant String := To_String(Handler.Current_Tag);
     The_Value : constant String := Utils.Expand_File_Path(To_Iso_Latin_15(Ch));
   begin
@@ -363,7 +363,7 @@ package body Repository.View is
     Put_Line("");
     Put_Line("prompt 'creating view " & Self.Name.Fix_String & "';");
     Put_Line("create or replace view " & Self.Name.Fix_String & " ( " );
-    
+
     for Col of Self.Columns loop
       View_Def.Append("  " & Col.Name.Upper_Case & "," & Ascii.Lf);
     end loop;
@@ -419,7 +419,7 @@ package body Repository.View is
     end case;
 
     View_Def.Set("from");
-    case From_Source is 
+    case From_Source is
       when From            => View_Def.Append("  " & Self.From.Fix_String);
       when From_Oracle     => View_Def.Append("  " & Self.From_Oracle.Fix_String);
       when From_SqlServer  => View_Def.Append("  " & Self.From_SqlServer.Fix_String);
@@ -446,9 +446,9 @@ package body Repository.View is
     Put_Line("where TABLE_NAME = '" & Self.Name.Upper_Case & "') drop view " & Self.Name.Fix_String );
     Put_Line("go");
     Put_Line("");
-    
+
     Put_Line("create view " & Self.Name.Fix_String & " ( " );
-    
+
     for Col of Self.Columns loop
       View_Def.Append("  " & Col.Name.Upper_Case & "," & Ascii.Lf);
     end loop;
@@ -504,7 +504,7 @@ package body Repository.View is
     end case;
 
     View_Def.Set("from");
-    case From_Source is 
+    case From_Source is
       when From            => View_Def.Append("  " & Self.From.Fix_String);
       when From_Oracle     => View_Def.Append("  " & Self.From_Oracle.Fix_String);
       when From_SqlServer  => View_Def.Append("  " & Self.From_SqlServer.Fix_String);
@@ -531,10 +531,10 @@ package body Repository.View is
     Put_Line("begin;");
     Put_Line("drop view if exists " & Self.Name.Fix_String & ";" );
     Put_Line("commit;");
-    
+
     Put_Line("begin;");
     Put_Line("create view " & Self.Name.Fix_String & " ( " );
-    
+
     for Col of Self.Columns loop
       View_Def.Append("  " & Col.Name.Upper_Case & "," & Ascii.Lf);
     end loop;
@@ -561,7 +561,7 @@ package body Repository.View is
       end case;
 
       case As_Data_Source is  --Self.Original_Table.Upper_Case is empty if not from 'Table' element
-        when None          => 
+        when None          =>
           if Col.Original_Table.Upper_Case /= "" then
             View_Def.Append("  " & Col.Original_Table.Upper_Case & "." & Col.Name.Upper_Case);
           else
@@ -590,7 +590,7 @@ package body Repository.View is
     end case;
 
     View_Def.Set("from");
-    case From_Source is 
+    case From_Source is
       when From            => View_Def.Append("  " & Self.From.Fix_String);
       when From_Oracle     => View_Def.Append("  " & Self.From_Oracle.Fix_String);
       when From_SqlServer  => View_Def.Append("  " & Self.From_SqlServer.Fix_String);

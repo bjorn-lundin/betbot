@@ -79,8 +79,8 @@ package Pgada.Database is
    procedure Set_Password (Connection : in out Connection_Type; Password : String);
    procedure Login(Connection : in out Connection_Type) ;
    procedure Login(Connection : in out Connection_Type; Conn_Info : String);
-   
-   
+
+
    --  Query characteristics of an open connection
 
    type Connection_Status_Type is (Connection_Ok, Connection_Bad);
@@ -242,8 +242,8 @@ private
       User         : Unbounded_String  := Null_Unbounded_String;
       Password     : Unbounded_String  := Null_Unbounded_String;
    end record;
-   
-   procedure Finalize (Connection : in out Connection_Type);
+
+   overriding procedure Finalize (Connection : in out Connection_Type);
 
    type Natural_Access is access Natural;
 
@@ -253,7 +253,7 @@ private
       Encoding  : Encoding_Type := Utf_8;    --bnl
    end record;
   -- procedure Adjust (Result : in out Result_Type);
-   procedure Finalize (Result : in out Result_Type);
+   overriding procedure Finalize (Result : in out Result_Type);
 
 end Pgada.Database;
 

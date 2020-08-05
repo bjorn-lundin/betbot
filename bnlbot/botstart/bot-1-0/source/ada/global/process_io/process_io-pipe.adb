@@ -14,7 +14,7 @@ with Text_io; use Text_io;
 --with Calendar2;
 
 with Ada.Environment_Variables;
-    
+
 pragma Warnings(Off);
 -- This is probably platform specific.... AIX seems to be ok without...
 -- We REALLY want these, or the pipe stuff does not work...
@@ -277,7 +277,7 @@ package body Process_Io.Pipe is
   procedure Fill_Pipe_List(Pipe_List : in out Msg_List_Pack.List) is
     use Ada.Directories;
     Dir_Ent     : Directory_Entry_Type;
-    The_Search  : Search_Type;
+    The_Search  : Search_Type with Warnings => Off;
     Pipe_Data : Process_Io.Process_Type := ((others => ' '),(others => ' '));
   begin
       -- Search the directory in config file for table_*.xml

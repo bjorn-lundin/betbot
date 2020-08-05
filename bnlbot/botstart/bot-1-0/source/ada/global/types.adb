@@ -123,7 +123,7 @@ package body Types is
       return Left.Fix_String > Right.Fix_String;
   end ">";
   -----------------------------------------------------------
-  function "="( Left, Right : String_Object) return Boolean is
+  overriding function "="( Left, Right : String_Object) return Boolean is
   begin -- Sort new records in list with ascending string
       return Left.Fix_String = Right.Fix_String;
   end "=";
