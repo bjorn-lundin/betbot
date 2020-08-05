@@ -97,7 +97,11 @@ procedure Create_ok_Markets is
                     Numrunners  => Market.Numrunners,
                     Ixxlupd     => Market.Ixxlupd,
                     Ixxluts     => Market.Ixxluts);
-      Ok_Market.Insert;
+      Ok_Market.Read(Eos);
+      if Eos then
+        Ok_Market.Insert;
+        Debug ("inserted " & Ok_Market.To_String);
+      end if;
     else
       Debug ("Too few samples" & Num_Samples'Img);
     end if;
