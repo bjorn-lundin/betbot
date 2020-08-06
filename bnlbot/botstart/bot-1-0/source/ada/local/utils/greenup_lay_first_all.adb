@@ -119,7 +119,7 @@ procedure Greenup_Lay_First_All is
 
     if Price_Data.Layprice < 10.0 then
       Move("00" & F8_Image(Price_Data.Layprice), Reference);
-    elsif  Price_Data.Layprice < 100.0 then
+    elsif Price_Data.Layprice < 100.0 then
       Move("0" & F8_Image(Price_Data.Layprice),  Reference);
     elsif Price_Data.Layprice < 1000.0 then
       Move(F8_Image(Price_Data.Layprice)      ,  Reference);
@@ -167,7 +167,7 @@ procedure Greenup_Lay_First_All is
         Move("M",Bet.Laybet.Status);
         Bet.Laybet.Pricematched := Price_Data.Layprice;
         Bet.Laybet.Powerdays := Integer_4(Delta_Tics);
-        Move(F8_Image(Bet.Laybet.Price),Bet.Laybet.Reference);
+        Move(F8_Image(Price_Data.Layprice),Bet.Laybet.Reference);
 
         Check_Bet(Runner, Bet.Laybet);
       end if;
@@ -191,7 +191,7 @@ procedure Greenup_Lay_First_All is
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
       Bet.Backbet.Powerdays := Integer_4(Delta_Tics);
-      Move(F8_Image(Bet.Laybet.Price),Bet.Backbet.Reference);
+      Move(F8_Image(Price_Data.Layprice),Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
