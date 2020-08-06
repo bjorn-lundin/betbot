@@ -191,7 +191,7 @@ procedure Greenup_Lay_First_All is
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
       Bet.Backbet.Powerdays := Integer_4(Delta_Tics);
-      Move(F8_Image(Bet.Backbet.Price),Bet.Backbet.Reference);
+      Move(F8_Image(Bet.Laybet.Price),Bet.Backbet.Reference);
 
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
