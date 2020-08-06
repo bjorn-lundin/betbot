@@ -80,8 +80,9 @@ procedure Greenup_Lay_First_All is
           B.Betwon := True;
         end if;
       end if;
-      B.Insert;
     end if;
+    B.Insert;
+    Log("Check_Bet", "inserted " & B.To_String);
   end Check_Bet;
 
   -----------------------------------------------------------------
@@ -97,15 +98,12 @@ procedure Greenup_Lay_First_All is
     Runner                 : Runners.Runner_Type;--table_Arunners.Data_Type;
     Tic_Lay                : Tics.Tics_Type := 1;
     Bet                    : Bet_Type;
-    Lay_Bet_Name           : String_Object;
-    Back_Bet_Name          : String_Object;
-
+    Bet_Name               : String_Object;
     Back_Size              : Bet_Size_Type := 0.0;
-    Ln                     : Betname_Type := (others => ' ');
     Bn                     : Betname_Type := (others => ' ');
     Reference              : String(1..30) := (others  => ' ');
   begin
-      Log(Me & "Run", "start");
+    Log(Me & "Run", "start");
 
     Market.Marketid := Price_Data.Marketid;
     Market.Read(Eos);
@@ -115,7 +113,7 @@ procedure Greenup_Lay_First_All is
     end if;
 
     if not Market.Marketname_Ok3 then
-      Log(Me & "Run", "bad market found - Name not Ok");
+      Log(Me & "Run", "bad market found - Name not Ok "  & Trim(Market.Marketname,Both));
       return;
     end if;
 
@@ -128,16 +126,12 @@ procedure Greenup_Lay_First_All is
     end if;
 
     if Delta_Tics >= 10 then
-      Lay_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     else
-      Lay_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
-      Back_Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     end if;
 
-
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
-
     -- Log(Me & "Run", "Market: " & Market.To_String);
 
     Runner.Marketid := Price_Data.Marketid;
@@ -146,7 +140,7 @@ procedure Greenup_Lay_First_All is
 
     if Price_During_Race_List.Length > 10 then -- we are in a member of OKMARKETS
       if Eos then
-        Log(Me & "Run", "no runner found found  " & Runner.To_String);
+        Log(Me & "Run", "no runner found " & Runner.To_String);
         return;
       end if;
 
@@ -158,8 +152,8 @@ procedure Greenup_Lay_First_All is
       Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
       -- Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
       if First then  -- only insert 1 laybet for each runner. This proc is called multiple times
-        Move(Lay_Bet_Name.Fix_String,Ln);
-        Sim.Place_Bet(Bet_Name         => Ln,
+        Move(Bet_Name.Fix_String,Bn);
+        Sim.Place_Bet(Bet_Name         => Bn,
                       Market_Id        => Market.Marketid,
                       Side             => Lay,
                       Runner_Name      => Runner.Runnernamestripped,
@@ -173,6 +167,7 @@ procedure Greenup_Lay_First_All is
         Move("M",Bet.Laybet.Status);
         Bet.Laybet.Pricematched := Price_Data.Layprice;
         Bet.Laybet.Powerdays := Integer_4(Delta_Tics);
+        Move(F8_Image(Bet.Laybet.Price),Bet.Laybet.Reference);
 
         Check_Bet(Runner, Bet.Laybet);
       end if;
@@ -183,8 +178,7 @@ procedure Greenup_Lay_First_All is
         Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
       end;
 
-      Move(Back_Bet_Name.Fix_String,Bn);
-
+      Move(Bet_Name.Fix_String,Bn);
       Sim.Place_Bet(Bet_Name         => Bn,
                     Market_Id        => Market.Marketid,
                     Side             => Back,
@@ -197,6 +191,8 @@ procedure Greenup_Lay_First_All is
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
       Bet.Backbet.Powerdays := Integer_4(Delta_Tics);
+      Move(F8_Image(Bet.Backbet.Price),Bet.Backbet.Reference);
+
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
         if Race_Data.Backprice > Fixed_Type(0.0)
@@ -233,13 +229,9 @@ procedure Greenup_Lay_First_All is
   Sa_Logfilename  : aliased Gnat.Strings.String_Access;
   Ia_Min_Tic      : aliased Integer;
   Ia_Max_Tic      : aliased Integer;
-
-
   Lay_Size        : constant Bet_Size_Type := 100.0;
   Layprice_High   : Fixed_Type := 0.0;
   Layprice_Low    : Fixed_Type := 0.0;
-
-
 
 begin
   Log("1");
@@ -305,8 +297,6 @@ begin
 
   Log(Ia_Min_Tic'Img & Ia_Max_Tic'Img & " '" & Sa_Min_Layprice.all & "' '" & Sa_Max_Layprice.all & "'");
 
-
-
   if not Ev.Exists("BOT_NAME") then
     Ev.Set("BOT_NAME","greenup_lfa");
   end if;
@@ -370,17 +360,17 @@ begin
         end if;
 
         if Layprice_Low <= Price.Layprice and then Price.Layprice <= Layprice_High then
-          First := True;
           T.Start;
           --for Dtg in Delta_Tics_Type'Range loop
           Price_During_Race_List.Clear;
-          Log(Me, "start read list ");
+          Log(Me, "start read list " & Price.To_String);
           Sim.Read_Marketid_Selectionid(Marketid    => Price.Marketid,
                                         Selectionid => Price.Selectionid,
                                         Animal      => Horse,
                                         List        => Price_During_Race_List) ;
-          Log(Me, "stop read list ");
+          Log(Me, "stop read list " & Price.To_String);
 
+          First := True;
           for Dtg in Ia_Min_Tic .. Ia_Max_Tic loop
             Log(Me, "start Treat price: " & Dtg'Img  & " " & Price.To_String );
             Run(Price_Data => Price,
