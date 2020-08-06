@@ -49,7 +49,7 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Tics.Tics_Type;
 
-  Global_Overshoot : Fixed_Type := 1.1;
+  --Global_Overshoot : Fixed_Type := 1.1;
 
 
   -----------------------------------------------------------------
@@ -172,6 +172,7 @@ procedure Greenup_Lay_First_All is
 
         Move("M",Bet.Laybet.Status);
         Bet.Laybet.Pricematched := Price_Data.Layprice;
+        Bet.Laybet.Powerdays := Integer_4(Delta_Tics);
 
         Check_Bet(Runner, Bet.Laybet);
       end if;
@@ -195,7 +196,7 @@ procedure Greenup_Lay_First_All is
                     Bet_Placed       => Price_Data.Pricets,
                     Bet              => Bet.Backbet ) ;
       Move("U",Bet.Backbet.Status);
-
+      Bet.Backbet.Powerdays := Integer_4(Delta_Tics);
       -- see if we meet stop_loss or greenup
       for Race_Data of Price_During_Race_List loop
         if Race_Data.Backprice > Fixed_Type(0.0)
