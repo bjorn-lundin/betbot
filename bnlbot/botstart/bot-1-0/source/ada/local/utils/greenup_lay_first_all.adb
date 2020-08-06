@@ -114,7 +114,7 @@ procedure Greenup_Lay_First_All is
       return;
     end if;
 
-    if not Market.Marketname_Ok2 then
+    if not Market.Marketname_Ok3 then
       Log(Me & "Run", "bad market found - Name not Ok");
       return;
     end if;
