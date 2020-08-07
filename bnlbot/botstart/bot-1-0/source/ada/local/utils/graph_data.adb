@@ -224,7 +224,7 @@ procedure Graph_Data is
                                  "select B.BETPLACED, " &
                                    "round(( " &
                                    "    case when B.BETWON " &
-                                   "       then B.PROFIT * 0.95 " &
+                                   "       then B.PROFIT * 0.98 " &
                                    "       else B.PROFIT " &
                                    "    end)::numeric,2) PROFIT " &
                                    "from ABETS B " &
@@ -237,7 +237,7 @@ procedure Graph_Data is
                                  "select B.BETPLACED, " &
                                    "round(( " &
                                    "    case when B.BETWON " &
-                                   "       then B.PROFIT * 0.95 " &
+                                   "       then B.PROFIT * 0.98 " &
                                    "       else B.PROFIT " &
                                    "    end)::numeric,2) PROFIT " &
                                    "from ABETS B " &
@@ -343,8 +343,6 @@ begin
   if Sa_Side.all /= "" then
     Move(Sa_Side.all, Global_Side);
   end if;
-
-
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
 
