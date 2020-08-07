@@ -125,7 +125,6 @@ procedure Greenup_Lay_First_All is
       Move(F8_Image(Price_Data.Layprice)      ,  Reference);
     end if;
 
-    Bet_Name.Set("OK_FILTER2_GREENUP_LAY_FIRST_TICS_" & Trim(Reference,Both));
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
     -- Log(Me & "Run", "Market: " & Market.To_String);
@@ -145,23 +144,6 @@ procedure Greenup_Lay_First_All is
         return;
       end if;
 
-      Move(Bet_Name.Fix_String,Bn);
-      Sim.Place_Bet(Bet_Name         => Bn,
-                    Market_Id        => Market.Marketid,
-                    Side             => Lay,
-                    Runner_Name      => Runner.Runnernamestripped,
-                    Selection_Id     => Price_Data.Selectionid,
-                    Size             => Lay_Size,
-                    Price            => Bet_Price_Type(Price_Data.Layprice),
-                    Bet_Persistence  => Persist,
-                    Bet_Placed       => Price_Data.Pricets,
-                    Bet              => Bet.Laybet ) ;
-
-      Move("M",Bet.Laybet.Status);
-      Bet.Laybet.Pricematched := Price_Data.Layprice;
-      Move(F8_Image(Price_Data.Layprice),Bet.Laybet.Reference);
-
-      Check_Bet(Runner, Bet.Laybet);
 
       Tic_Lay := Tics.Get_Tic_Index(Price_Data.Layprice);
       -- Log(Me & "Run", "tic_lay " & Tic_Lay'img & " " & Price_Data.To_String);
@@ -173,7 +155,27 @@ procedure Greenup_Lay_First_All is
           Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
         end;
 
+       Bet_Name.Set("OK_FILTER2_GREENUP_LAY_FIRST_TICS_" & Trim(Reference,Both) & "_" &  Trim(Tic'Img,Both) );
+
         Move(Bet_Name.Fix_String,Bn);
+        Sim.Place_Bet(Bet_Name         => Bn,
+                      Market_Id        => Market.Marketid,
+                      Side             => Lay,
+                      Runner_Name      => Runner.Runnernamestripped,
+                      Selection_Id     => Price_Data.Selectionid,
+                      Size             => Lay_Size,
+                      Price            => Bet_Price_Type(Price_Data.Layprice),
+                      Bet_Persistence  => Persist,
+                      Bet_Placed       => Price_Data.Pricets,
+                      Bet              => Bet.Laybet ) ;
+
+        Move("M",Bet.Laybet.Status);
+        Bet.Laybet.Pricematched := Price_Data.Layprice;
+        Move(F8_Image(Price_Data.Layprice),Bet.Laybet.Reference);
+        Bet.Laybet.Powerdays := Integer_4(Tic);
+        Check_Bet(Runner, Bet.Laybet);
+
+
         Sim.Place_Bet(Bet_Name         => Bn,
                       Market_Id        => Market.Marketid,
                       Side             => Back,
