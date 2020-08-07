@@ -126,9 +126,9 @@ procedure Greenup_Lay_First_All is
     end if;
 
     if Delta_Tics >= 10 then
-      Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Bet_Name.Set("OK_F2_GREENUP_LAY_FIRST_TICS_" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     else
-      Bet_Name.Set("OK_2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
+      Bet_Name.Set("OK_F2_GREENUP_LAY_FIRST_TICS_0" & Trim(Delta_Tics'Img,Both) & "_" & Trim(Reference,Both));
     end if;
 
     -- Log(Me & "Run", "Treat market: " &  Price_Data.Marketid);
