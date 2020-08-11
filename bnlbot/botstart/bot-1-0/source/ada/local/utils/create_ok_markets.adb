@@ -6,19 +6,10 @@ with Calendar2; use Calendar2;
 with Text_Io;
 with Ini;
 with  Ada.Environment_Variables;
---with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
---with Bot_Types;
---with Utils; use Utils;
-
---with Ada.Strings ; use Ada.Strings;
---with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Okmarkets;
 with Table_Arunners;
-
-
-
 
 procedure Create_ok_Markets is
   package Ev renames Ada.Environment_Variables;
@@ -46,7 +37,6 @@ procedure Create_ok_Markets is
   end Print;
   -------------------------------
 
-
   procedure Get_Market_Data(Market_List  : in out Table_Amarkets.Amarkets_List_Pack2.List) is
 
   begin
@@ -55,7 +45,7 @@ procedure Create_ok_Markets is
                                 "from AMARKETS M " &
                                 "where true " &
                                 "and M.NUMRUNNERS >= 8 " &
-                                "and M.NUMRUNNERS <= 16 " & 
+                                "and M.NUMRUNNERS <= 16 " &
                                 --"and STARTTS::date > '2020-02-01' " &
                                 "order by M.STARTTS");
 
@@ -68,19 +58,19 @@ procedure Create_ok_Markets is
     Eos         : Boolean := False;
     Num_Samples : Integer_4 := 0;
     Winner      : Table_Arunners.Data_Type;
-    runner_List : table_arunners.Arunners_List_Pack2.list;
+    Runner_List : Table_Arunners.Arunners_List_Pack2.List;
   begin
     Winner.Marketid := Market.Marketid;
-    Winner.Status(1..6) := "WINNER";
-    
-    eos := True;
-    Winner.Read_Marketid_Status(runner_list);
-    for r of runner_list loop
-      if r.Status(1..6) = "WINNER" then
-         Winner := r;
-         eos := False;
-         exit;
-      end if; 
+    --Winner.Status(1..6) := "WINNER";
+
+    Eos := True;
+    Winner.Read_I1_Marketid(Runner_List);
+    for R of Runner_List loop
+      if R.Status(1..6) = "WINNER" then
+        Winner := R;
+        Eos := False;
+        exit;
+      end if;
     end loop;
 
 --does not WORK
@@ -100,7 +90,7 @@ procedure Create_ok_Markets is
     Select_Num_Samples.Fetch(Eos);
     if not Eos then
       Select_Num_Samples.Get("CNT", Num_Samples);
-  --    Debug (Market.Marketid &  Winner.Selectionid'img & " -> " & num_samples'img);
+      Debug (Market.Marketid & Winner.Selectionid'img & " -> " & num_samples'img);
     end if;
     Select_Num_Samples.Close_Cursor;
 
@@ -117,7 +107,7 @@ procedure Create_ok_Markets is
     --  Debug (Market.Marketid &  " -> " & eos'img);
       if Eos then
         Ok_Market.Insert;
---        Debug ("inserted " & Ok_Market.To_String);
+        Debug ("inserted " & Ok_Market.To_String);
       end if;
     -- else
     --   Debug ("Too few samples" & Num_Samples'Img & " eos: " & Eos'img & " -> " & Winner.To_String);
