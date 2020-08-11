@@ -41,7 +41,7 @@ greenup_lay_first_data.dat :
 	psql --host=$(DBHOST) \
     --username=$(DBUSER) \
     --tuples-only \
-    --command="select reference::float,powerdays, sum(profit) from abets where status = 'M' and BETNAME like 'OK_%' group by reference::float,powerdays order by reference::float,powerdays" \
+    --command="select reference::float,powerdays, sum(profit) from abets where status = 'M' and BETNAME like 'OK_F2%' group by reference::float,powerdays order by reference::float,powerdays" \
     --output=greenup_lay_first_data.dat $(DBNAME)
 
 .PHONY : clean
