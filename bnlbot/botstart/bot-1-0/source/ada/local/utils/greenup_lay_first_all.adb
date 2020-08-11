@@ -49,7 +49,7 @@ procedure Greenup_Lay_First_All is
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Tics.Tics_Type;
 
-  --Global_Overshoot : Fixed_Type := 1.1;
+  Global_Overshoot : Fixed_Type := 1.2;
 
 
   -----------------------------------------------------------------
@@ -155,7 +155,7 @@ procedure Greenup_Lay_First_All is
           Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
         end;
 
-       Bet_Name.Set("OK_FILTER2_GREENUP_LAY_FIRST_TICS_" & Trim(Reference,Both) & "_" &  Trim(Tic'Img,Both) );
+       Bet_Name.Set("OK_FILTER2_GREENUP3_LAY_FIRST_TICS_" & Trim(Reference,Both) & "_" &  Trim(Tic'Img,Both) );
 
         Move(Bet_Name.Fix_String,Bn);
         Sim.Place_Bet(Bet_Name         => Bn,
@@ -199,7 +199,7 @@ procedure Greenup_Lay_First_All is
           then   -- must be valid
             if Race_Data.Pricets + (0,0,0,1,0) >= Price_Data.Pricets then
               if Race_Data.Backprice >= Bet.Backbet.Price  -- a match
-              -- whey ?? and then Race_Data.Backprice <= Fixed_Type(Global_Overshoot * Bet.Backbet.Price) -- but only if it does not 'overshoot' too much
+                and then Race_Data.Backprice <= Fixed_Type(Global_Overshoot * Bet.Backbet.Price) -- but only if it does not 'overshoot' too much
               then -- a match
                 Move("M",Bet.Backbet.Status);
                 Bet.Backbet.Pricematched := Race_Data.Backprice;
@@ -322,7 +322,7 @@ begin
     T                      : Sql.Transaction_Type;
     Price_List             : Prices.Lists.List;
     Price_During_Race_List : Price_Histories.Lists.List;
-    Start                  : Calendar2.Time_Type := (2018,11,10,0,0,0,0);
+    Start                  : Calendar2.Time_Type := (2015,12,31,0,0,0,0);
   begin
     T.Start;
     Stm.Prepare(
