@@ -45,7 +45,7 @@ procedure Greenup_Lay_First_All is
     Laybet    : Bets.Bet_Type;
     Backbet   : Bets.Bet_Type;
   end record;
- -- use type Table_Abets.Data_Type;
+  -- use type Table_Abets.Data_Type;
   package Bet_List_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Type);
   subtype Delta_Tics_Type is Tics.Tics_Type;
 
@@ -87,11 +87,11 @@ procedure Greenup_Lay_First_All is
 
   -----------------------------------------------------------------
 
-  procedure Run(Price_Data : in Prices.Price_Type;
-                Min_Tic : in Delta_Tics_Type;
-                Max_Tic : in Delta_Tics_Type;
-                Lay_Size   : in Bet_Size_Type;
-                Price_During_Race_List : in price_Histories.Lists.List) is
+  procedure Run(Price_Data             : in Prices.Price_Type;
+                Min_Tic                : in Delta_Tics_Type;
+                Max_Tic                : in Delta_Tics_Type;
+                Lay_Size               : in Bet_Size_Type;
+                Price_During_Race_List : in Price_Histories.Lists.List) is
 
     Market                 : Markets.Market_Type;
     Eos                    : Boolean := False;
@@ -155,7 +155,7 @@ procedure Greenup_Lay_First_All is
           Back_Size := Lay_Size * Bet_Size_Type(Price_Data.Layprice/B_Price);
         end;
 
-       Bet_Name.Set("OK_FILTER2_GREENUP3_LAY_FIRST_TICS_" & Trim(Reference,Both) & "_" &  Trim(Tic'Img,Both) );
+        Bet_Name.Set("OK_FILTER2_GREENUP3_LAY_FIRST_TICS_" & Trim(Reference,Both) & "_" &  Trim(Tic'Img,Both) );
 
         Move(Bet_Name.Fix_String,Bn);
         Sim.Place_Bet(Bet_Name         => Bn,
@@ -385,9 +385,9 @@ begin
   Logging.Close;
 
 exception
---    when Lock.Lock_Error =>
---      Log(Me, "lock error, exit");
---      Logging.Close;
+    --    when Lock.Lock_Error =>
+    --      Log(Me, "lock error, exit");
+    --      Logging.Close;
 
   when E: others =>
     declare
