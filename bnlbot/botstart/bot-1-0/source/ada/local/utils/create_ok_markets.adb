@@ -46,7 +46,8 @@ procedure Create_ok_Markets is
                                 "where true " &
                                 "and M.NUMRUNNERS >= 8 " &
                                 "and M.NUMRUNNERS <= 16 " &
-                                --"and STARTTS::date > '2020-02-01' " &
+                                "and M.MARKETTYPE = 'WIN' " &
+                              --  "and STARTTS::date < '2017-01-01' " &
                                 "order by M.STARTTS");
 
     Table_Amarkets.Read_List(Select_Markets, Market_List);
@@ -90,7 +91,7 @@ procedure Create_ok_Markets is
     Select_Num_Samples.Fetch(Eos);
     if not Eos then
       Select_Num_Samples.Get("CNT", Num_Samples);
-      Debug (Market.Marketid & Winner.Selectionid'img & " -> " & num_samples'img);
+    --  Debug (Market.Marketid & Winner.Selectionid'img & " -> " & num_samples'img);
     end if;
     Select_Num_Samples.Close_Cursor;
 
