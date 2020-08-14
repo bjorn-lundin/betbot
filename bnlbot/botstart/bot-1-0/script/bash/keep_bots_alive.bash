@@ -87,21 +87,26 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
 
+  Start_Bot $BOT_USER login_handler login_handler
+  sleep 2
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
 
   Start_Bot $BOT_USER w_fetch_json winners_fetcher_json
 
   Start_Bot $BOT_USER bet_checker bet_checker
 
-  POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 "
+  POLLERS_LIST="poll_01 poll_02 poll_03 poll_04 poll_05 poll_06 poll_07 poll_08 poll_09 poll_10 poll_11 poll_12 poll_13 poll_14"
   for poller in $POLLERS_LIST ; do
     Start_Bot $BOT_USER $poller poll poll.ini
   done
 
   BET_PLACER_LIST="bet_placer_001 bet_placer_002 bet_placer_003 \
-                   bet_placer_004 bet_placer_005 bet_placer_006 "
-#bet_placer_015 \
-#                   bet_placer_016 bet_placer_017 bet_placer_018 "
+                   bet_placer_004 bet_placer_005 bet_placer_006 \
+                   bet_placer_010 bet_placer_011 bet_placer_012 \
+                   bet_placer_013 bet_placer_014 bet_placer_015 \
+                   bet_placer_016 bet_placer_017 bet_placer_018 \
+                   bet_placer_019 "
+
 
   for placer in $BET_PLACER_LIST ; do
     Start_Bot $BOT_USER $placer bet_placer bet_placer.ini
@@ -150,7 +155,10 @@ function Check_System_Bots_For_User () {
        DATA_COLLECTORS_LIST="poll_market_1 poll_market_2 \
                              poll_market_3 poll_market_4 \
                              poll_market_5 poll_market_6 \
-                             poll_market_7 poll_market_8"
+                             poll_market_7 poll_market_8 \
+                             poll_market_9 poll_market_10 \
+                             poll_market_11 poll_market_12 \
+                             poll_market_13 poll_market_14"
 
        for collector in $DATA_COLLECTORS_LIST ; do
          Start_Bot $BOT_USER $collector poll_market
@@ -380,6 +388,10 @@ esac
 if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
+
+TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
+TEMP=$(($TEMP/1000))
+echo "$(date -Is) $TEMP" >> $BOT_START/data/temperaturelog/$(date +%F)-temperature.dat
 
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
