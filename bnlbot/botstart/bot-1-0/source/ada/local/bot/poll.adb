@@ -83,19 +83,23 @@ procedure Poll is
       when Horse_Back_1_28_02_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_002");
       when Horse_Back_1_38_00_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_003");
       when Horse_Back_1_56_00_1_4_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Lay_Fav_2_0_12_Win             => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Lay_Fav_9_0_30_Win             => return Process_Io.To_Process_Type("bet_placer_006");
+      when Horse_Back_1_10_07_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_005");
+      when Horse_Back_1_28_02_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_006");
+      when Horse_Back_1_38_00_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_007");
+      when Horse_Back_1_56_00_1_4_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_008");
+      when Horse_Lay_Fav_2_0_12_Win             => return Process_Io.To_Process_Type("bet_placer_009");
+      when Horse_Lay_Fav_9_0_30_Win             => return Process_Io.To_Process_Type("bet_placer_010");
       when Horse_Lay_19_00_29_00_At_Start_1_Win =>
 
         --if not reserved - get an anonymous one
         Global_Bet_Placer := Global_Bet_Placer + 1;
         -- we start 10 bet_placers
-        if Global_Bet_Placer > Integer(19) then
-          Global_Bet_Placer := 10;
+        if Global_Bet_Placer > Integer(20) then
+          Global_Bet_Placer := 20;
         end if;
 
-        if Global_Bet_Placer < Integer(10) then -- reserved above
-          Global_Bet_Placer := 10;
+        if Global_Bet_Placer < Integer(11) then -- reserved above
+          Global_Bet_Placer := 11;
         end if;
 
         case Global_Bet_Placer is
@@ -282,8 +286,78 @@ procedure Poll is
 
   end Send_Lay_Bet;
 
-  ---------------------------------------------------------------------
-
+  --------------------------------------------------------------------
+--  not complete yet, too volatile
+--
+--    procedure Try_To_Greenup_Lay_At_Start(Bettype         : Config.Bet_Type;
+--                                  Br              : Best_Runners_Array_Type;
+--                                  Marketid        : Marketid_Type;
+--                                          Match_Directly  : Boolean := False) is
+--      Layprice  : Fixed_Type;
+--      Filter    : Integer;
+--      Image     : String := Bettype'Img;
+--      Backprice : Lay_Price_Type ;
+--      Delta_Tic : Tics.Tics_Type;
+--      use type Tics.Tics_Type;
+--    begin        --1         2         3         4
+--      --  12345678901234567890123456789012345678901
+--      --  Horse_Greenup_Lay_First_38_00_20_F2_Win
+--      Layprice  := Fixed_Type'Value(Image(25..26) & "." & Image(28..29));
+--      Delta_Tic := Tics.Tics_Type'Value(Image(31..32));
+--      Filter    := Integer'Value(Image(35..35));
+--
+--      case Filter is
+--        when 0 => null; --no filter
+--        when 2 =>
+--          declare
+--            M   : Markets.Market_Type;
+--            Eos : Boolean := False;
+--          begin
+--            M.Marketid := Marketid;
+--            M.Read(Eos);
+--            if not Eos then
+--              if not M.Marketname_Ok2 then -- only Hcp versions - all lengths
+--                Log("Try_To_Greenup_Lay_At_Start", "bad marketname - filter " & Filter'Img);
+--                return;
+--              end if;
+--            else
+--              Log("Try_To_Greenup_Lay_At_Start", "market gone ! '" & Marketid & "'");
+--              return;
+--            end if;
+--          end;
+--        when others =>
+--          Log("Try_To_Greenup_Lay_At_Start", "Filter undefined, returning doing nothing" & Filter'Img);
+--          return;
+--      end case;
+--
+--      for R of Br loop
+--
+--        if Layprice = R.Layprice
+--          and then R.Backprice < Fixed_Type(10_000.0)  -- so it exists
+--        then
+--
+--          --add delta_tic to cur price
+--          Tic := Tics.Get_Tic_Index(R.Layprice);
+--          Backprice := Lay_Price_Type(Tics.Get_Tic_Price(Tic + Delta_Tic));
+--          La yprice := Lay_Price_Type(Tics.Get_Tic_Price(Tic + 1));
+--
+--          if Layprice > Lay_Price_Type(Max_Layprice) then
+--            Layprice := Lay_Price_Type(Max_Layprice);
+--          end if;
+--
+--          --lay all wih startodds within range ... (call this
+--
+--          Send_Lay_Bet(Selectionid      => R.Selectionid,
+--                       Main_Bet         => Bettype,
+--                       Marketid         => Marketid,
+--                       Max_Price        => Layprice,
+--                       Match_Directly   => Match_Directly);
+--        end if;
+--
+--      end loop;
+--      Bets_Allowed(Bettype).Has_Betted := True;
+--
+--    end Try_To_Greenup_Lay_At_Start;
 
 
   procedure Try_To_Make_Back_Bet_On_Diff(Bettype         : Config.Bet_Type;
@@ -997,7 +1071,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Win_1_01 =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -1011,6 +1085,7 @@ procedure Poll is
                       Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
                       Match_Directly := False;
                     elsif Utils.Position(Image, "WIN") > Integer(0) then
+                      Do_Try_Bet := Markets_Array(Place).Numwinners >= Integer_4(3) ;
                       M_Type         := Win;
                       Match_Directly := False;
                     end if;
