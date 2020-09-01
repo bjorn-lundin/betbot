@@ -141,6 +141,36 @@ package body Rpc is
       Log(Me & "Login", "send Data   '" & Data & "'");
       Log(Me & "Login", "send appkey '" & Global_Token.Get_App_Key & "'");
 
+
+      Aws_Reply := Aws.Client.Post (Url          => "http://localhost:12345/certlogin",
+                                    Data         => Data,
+                                    Content_Type => "application/x-www-form-urlencoded",
+                                    Headers      => Login_Http_Headers,
+                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+      Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
+
+
+      if Json_Reply.Has_Field("loginStatus") then
+        if Json_Reply.Get("loginStatus") = "SUCCESS" then
+          if Json_Reply.Has_Field("sessionToken") then
+            Global_Token.Set(Trim(Json_Reply.Get("sessionToken")));
+            Login_Ok := True;
+
+            Text_Io.Create(F,Text_Io.Out_File,Fname);
+            Text_Io.Put_Line(F,Global_Token.Get);
+            Text_Io.Close(F);
+            Log(Me & "Login", "wrote token to file");
+
+            return;
+
+          end if;
+        end if;
+      end if;
+
+
+      -- old way - non cert
+
+
       Aws_Reply := Aws.Client.Post (Url          => "https://identitysso.betfair.se/api/login",
                                     Data         => Data,
                                     Content_Type => "application/x-www-form-urlencoded",
