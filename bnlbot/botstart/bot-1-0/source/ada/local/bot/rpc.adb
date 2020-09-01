@@ -143,42 +143,50 @@ package body Rpc is
       Log(Me & "Login", "send appkey '" & Global_Token.Get_App_Key & "'");
 
 
-      Aws_Reply := Aws.Client.Post (Url          => "http://localhost:12345/certlogin",
-                                    Data         => Data,
-                                    Content_Type => "application/x-www-form-urlencoded",
-                                    Headers      => Login_Http_Headers,
-                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
-      Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
-
-      begin
-        if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
-          Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
-                              Filename => "");
-          Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
-        else
-          Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
-          raise Post_Timeout ;
-        end if;
-      end;
+      begin -- try python server first for bot-login (non-interactive)
+        Aws_Reply := Aws.Client.Post (Url          => "http://localhost:12345/certlogin",
+                                      Data         => Data,
+                                      Content_Type => "application/x-www-form-urlencoded",
+                                      Headers      => Login_Http_Headers,
+                                      Timeouts     => Aws.Client.Timeouts (Each => 30.0));
 
 
-      if Json_Reply.Has_Field("loginStatus") then
-        if Json_Reply.Get("loginStatus") = "SUCCESS" then
-          if Json_Reply.Has_Field("sessionToken") then
-            Global_Token.Set(Trim(Json_Reply.Get("sessionToken")));
-            Login_Ok := True;
+        Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
 
-            Text_Io.Create(F,Text_Io.Out_File,Fname);
-            Text_Io.Put_Line(F,Global_Token.Get);
-            Text_Io.Close(F);
-            Log(Me & "Login", "wrote token to file");
+        begin
+          if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
+            Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
+                                Filename => "");
+            Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
+          else
+            Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+            raise Post_Timeout ;
+          end if;
+        end;
 
-            return;
 
+        if Json_Reply.Has_Field("loginStatus") then
+          if Json_Reply.Get("loginStatus") = "SUCCESS" then
+            if Json_Reply.Has_Field("sessionToken") then
+              Global_Token.Set(Trim(Json_Reply.Get("sessionToken")));
+              Login_Ok := True;
+
+              Text_Io.Create(F,Text_Io.Out_File,Fname);
+              Text_Io.Put_Line(F,Global_Token.Get);
+              Text_Io.Close(F);
+              Log(Me & "Login", "wrote token to file");
+
+              return;
+
+            end if;
           end if;
         end if;
-      end if;
 
+      exception
+        when Aws.Client.Connection_Error =>
+          Log(Me & "Login", "got Aws.Client.Connection_Error is python server up?");
+
+      end;
 
       -- old way - non cert
 
