@@ -20,7 +20,7 @@ class MyServer(BaseHTTPRequestHandler):
       if self.path == '/certlogin':
 
         content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
-        post_data = str(self.rfile.read(content_length)) # <--- Gets the data itself
+        post_data_raw = (self.rfile.read(content_length)) # <--- Gets the data itself
         #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
         #        str(self.path), str(self.headers), post_data.decode('utf-8'))
 
@@ -30,17 +30,21 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+        post_data = post_data.decode("utf-8")
         print('headers',self.headers)
         print('data',post_data)
 
 
 #payload = 'username=bnlbnl&password=@Bf@vinst@1'
-#headers = {'X-Application': 'SomeKey', 'Content-Type': 'application/x-www-form-urlencoded'}
+        headers = {'X-Application': self.headers['X-Application'],
+           'Content-Type': self.headers['Content-Type'],
+           'Accept': self.headers['Accept'],
+           'User-Agent': self.headers['User-Agent']}
 
         resp = requests.post('https://identitysso-cert.betfair.se/api/certlogin',
                              data=post_data,
                              cert=('client-2048.crt', 'client-2048.key'),
-                             headers=self.headers)
+                             headers=headers)
 
         if resp.status_code == 200:
            resp_json = resp.json()
