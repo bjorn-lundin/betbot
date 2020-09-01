@@ -24,7 +24,7 @@ class MyServer(BaseHTTPRequestHandler):
         #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
         #        str(self.path), str(self.headers), post_data.decode('utf-8'))
 
-        parsed_json = json.loads(post_data)
+       # parsed_json = json.loads(post_data)
         #print(json.dumps(parsed_json, indent=4, sort_keys=True))
 
         self.send_response(200)
@@ -47,12 +47,12 @@ class MyServer(BaseHTTPRequestHandler):
            print(resp_json)
 
            response = BytesIO()
-           response.write(bytes(str(resp_json), "utf-8"))
+           response.write(bytes(json.dumps(resp_json), "utf-8"))
            self.wfile.write(response.getvalue())
 
         else:
            print("Request failed.")
-           print(resp_json)
+           print(json.dumps(resp_json))
 
       else:
         response = BytesIO()
