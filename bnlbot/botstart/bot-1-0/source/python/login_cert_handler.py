@@ -8,7 +8,7 @@ import requests
 
 #hostName = "localhost"
 hostName = ""
-serverPort = 8080
+serverPort = 12345
 
 #########################################################################
 
@@ -30,7 +30,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-        post_data = post_data.decode("utf-8")
+        post_data = post_data_raw.decode("utf-8")
         print('headers',self.headers)
         print('data',post_data)
 
