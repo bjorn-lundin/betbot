@@ -133,6 +133,7 @@ package body Rpc is
       Data       : String :=  "username=" & Global_Token.Get_Username & "&" &
                      "password=" & Global_Token.Get_Password;
       Json_Reply : Json_Value := Create_Object;
+      Json_Reply2 : Json_Value := Create_Object;
       Login_Ok   : Boolean := False;
     begin
       Aws.Headers.Add (Login_Http_Headers, "Accept", "application/json");
@@ -148,6 +149,17 @@ package body Rpc is
                                     Headers      => Login_Http_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
       Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
+
+      begin
+        if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
+          Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
+                              Filename => "");
+          Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
+        else
+          Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+          raise Post_Timeout ;
+        end if;
+      end;
 
 
       if Json_Reply.Has_Field("loginStatus") then
@@ -179,19 +191,19 @@ package body Rpc is
       Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
       begin
         if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
-          Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
+          Json_Reply2 := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
                               Filename => "");
-          Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
+          Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply2.Write  );
         else
           Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
           raise Post_Timeout ;
         end if;
       end;
 
-      if Json_Reply.Has_Field("status") then
-        if Json_Reply.Get("status") = "SUCCESS" then
-          if Json_Reply.Has_Field("token") then
-            Global_Token.Set(Trim(Json_Reply.Get("token")));
+      if Json_Reply2.Has_Field("status") then
+        if Json_Reply2.Get("status") = "SUCCESS" then
+          if Json_Reply2.Has_Field("token") then
+            Global_Token.Set(Trim(Json_Reply2.Get("token")));
             Login_Ok := True;
 
             Text_Io.Create(F,Text_Io.Out_File,Fname);
