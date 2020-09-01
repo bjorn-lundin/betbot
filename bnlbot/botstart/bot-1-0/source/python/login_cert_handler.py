@@ -16,6 +16,9 @@ serverPort = 8080
 class MyServer(BaseHTTPRequestHandler):
 
     def do_POST(self):
+
+      if self.path == '/certlogin':
+
         content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
         #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
@@ -50,6 +53,11 @@ class MyServer(BaseHTTPRequestHandler):
            print(resp_json['sessionToken'])
         else:
            print("Request failed.")
+      else:
+        response = BytesIO()
+        response.write(bytes(str("bad url"), "utf-8"))
+        self.send_response(500)
+
 
 ##############################################################
 
