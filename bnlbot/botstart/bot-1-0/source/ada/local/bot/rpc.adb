@@ -153,8 +153,16 @@ package body Rpc is
 
         Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
 
+        declare
+          Reply : String := Aws.Response.Message_Body(Aws_Reply);
         begin
-          if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
+
+          if Reply(1..18) = "Post request error" then
+            Log(Me & "Get_JSON_Reply", "Got reply: " & Reply & " raising Aws.Client.Connection_Error"  );
+            raise Aws.Client.Connection_Error;
+          end if;
+
+          if Reply /= "Post Timeout" then
             Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
                                 Filename => "");
             Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
