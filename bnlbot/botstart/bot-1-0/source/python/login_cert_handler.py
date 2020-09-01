@@ -20,7 +20,7 @@ class MyServer(BaseHTTPRequestHandler):
       if self.path == '/certlogin':
 
         content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        post_data = str(self.rfile.read(content_length)) # <--- Gets the data itself
         #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
         #        str(self.path), str(self.headers), post_data.decode('utf-8'))
 
@@ -30,13 +30,8 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-        response = BytesIO()
-        if self.do_bet :
-            response.write(bytes(str("1"), "utf-8"))
-        else:
-            response.write(bytes(str("0"), "utf-8"))
-
-        self.wfile.write(response.getvalue())
+        print('headers',self.headers)
+        print('data',post_data)
 
 
 #payload = 'username=bnlbnl&password=@Bf@vinst@1'
@@ -49,10 +44,16 @@ class MyServer(BaseHTTPRequestHandler):
 
         if resp.status_code == 200:
            resp_json = resp.json()
-           print(resp_json['loginStatus'])
-           print(resp_json['sessionToken'])
+           print(resp_json)
+
+           response = BytesIO()
+           response.write(bytes(str(resp_json), "utf-8"))
+           self.wfile.write(response.getvalue())
+
         else:
            print("Request failed.")
+           print(resp_json)
+
       else:
         response = BytesIO()
         response.write(bytes(str("bad url"), "utf-8"))
