@@ -472,21 +472,25 @@ procedure Poll is
         return;
     end case;
 
-    --add 1 tic to cur price
-    Tic := Tics.Get_Tic_Index(Br(Lay_Num).Layprice);
-    Layprice := Lay_Price_Type(Tics.Get_Tic_Price(Tic +1));
+    --add 1 tic to cur price if ok
+    if Fixed_Type(1.01) <= Br(Lay_Num).Layprice and then Br(Lay_Num).Layprice < Fixed_Type(1000.0) then
+      Tic := Tics.Get_Tic_Index(Br(Lay_Num).Layprice);
+      Layprice := Lay_Price_Type(Tics.Get_Tic_Price(Tic +1));
 
-    if Layprice > Max_Layprice then
-      Layprice := Max_Layprice;
+      if Layprice > Max_Layprice then
+        Layprice := Max_Layprice;
+      end if;
+
+      -- lay The nth fav in WIN market...
+
+      Send_Lay_Bet(Selectionid      => Br(Lay_Num).Selectionid,
+                   Main_Bet         => Bettype,
+                   Marketid         => Marketid,
+                   Max_Price        => Layprice,
+                   Match_Directly   => Match_Directly);
+    else
+        Log("Try_To_Lay_Favorite", "bad layods #" & Lay_Num'Img & " " & Br(Lay_Num).To_String);
     end if;
-
-    -- lay The nth fav in WIN market...
-
-    Send_Lay_Bet(Selectionid      => Br(Lay_Num).Selectionid,
-                 Main_Bet         => Bettype,
-                 Marketid         => Marketid,
-                 Max_Price        => Layprice,
-                 Match_Directly   => Match_Directly);
   end Try_To_Lay_Favorite;
   ------------------------------------------------------
 
