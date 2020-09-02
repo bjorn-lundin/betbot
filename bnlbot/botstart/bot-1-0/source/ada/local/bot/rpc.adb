@@ -87,25 +87,33 @@ package body Rpc is
       end if;
     end if;
 
-    if Ada.Directories.Exists(Fname) and Bot_Name /= Login_Handler then
-      Text_Io.Open(F,Text_Io.In_File,Fname);
-      Text_Io.Get_Line(F,Buffer,Len);
-      Text_Io.Close(F);
-      Global_Token.Set(Buffer(1..Len));
-      Log(Me & "Login", "use token from file '" & Buffer(1..Len) & "'");
-      return;
-    end if;
 
     if Bot_User = Dry then
-      Log(Me & "Login", "dry user, use bnl's token");
-      Text_Io.Open(F,Text_Io.In_File,"/bnlbot/botstart/user/bnl/token.dat");
-      Text_Io.Get_Line(F,Buffer,Len);
-      Text_Io.Close(F);
-      Global_Token.Set(Buffer(1..Len));
-      Log(Me & "Login", "use token from file (bnl) '" & Buffer(1..Len) & "'");
-      return;
+      declare
+        Fname : String := "/bnlbot/botstart/user/bnl/token.dat";
+      begin
+        Log(Me & "Login", "dry user, use bnl's token");
+        if Ada.Directories.Exists(Fname) then
+          Text_Io.Open(F,Text_Io.In_File,Fname);
+          Text_Io.Get_Line(F,Buffer,Len);
+          Text_Io.Close(F);
+          Global_Token.Set(Buffer(1..Len));
+          Log(Me & "Login", "use token from file (bnl) '" & Buffer(1..Len) & "'");
+        else
+          Log(Me & "Login", "file does not exist: '" & fname & "'");
+        end if;
+      end;
+     return;
+    else
+      if Ada.Directories.Exists(Fname) and Bot_Name /= Login_Handler then
+        Text_Io.Open(F,Text_Io.In_File,Fname);
+        Text_Io.Get_Line(F,Buffer,Len);
+        Text_Io.Close(F);
+        Global_Token.Set(Buffer(1..Len));
+        Log(Me & "Login", "use token from file '" & Buffer(1..Len) & "'");
+        return;
+      end if;
     end if;
-
 
     if Bot_Name /= Login_Handler then
       Log(Me & "Login", "'" & Bot_Name & "' -> not login_handler process - return");
@@ -115,7 +123,6 @@ package body Rpc is
     -- ok - get a new token
 
     Log(Me & "Login", "login_handler process - ok - get new token");
-
 
     Aws.Headers.Add (Login_Http_Headers, "User-Agent", "AWS-BNL/1.0");
 
@@ -272,11 +279,35 @@ package body Rpc is
     Aws_Reply               : Aws.Response.Data;
     Now                     : Calendar2.Time_Type := Calendar2.Clock;
     Bot_Name                : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
+    Bot_User                : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;
+    Fname                   : String := (if Bot_User = Dry then "/bnlbot/botstart/user/bnl/token.dat" else ev.Value("BOT_HOME") & "/token.dat");
+    F                       : Text_Io.File_Type;
+    Buffer                  : String(1..100) := (others => ' ');
+    Len                     : Natural := 0;
+
   begin
 
     if Bot_Name /= Login_Handler then
       Log(Me & "Keep_Alive", "only login_handler may Keep_Alive, you are " & Bot_Name );
-      Result := True; -- so that we do't call logout next
+
+      if not Global_Token.Is_Set then
+        Log(Me & "Keep_Alive", "no token - return false" );
+        Result := False;
+        return;
+      end if;
+
+      -- check file and compare with what we got
+      if Ada.Directories.Exists(Fname) then
+        Text_Io.Open(F,Text_Io.In_File,Fname);
+        Text_Io.Get_Line(F,Buffer,Len);
+        Text_Io.Close(F);
+        Result := Global_Token.Get(1..5) = Buffer(1..5);
+        Log(Me & "Login", "result " & Result'Img & "'" & Global_Token.Get(1..5) & "' '" & Buffer(1..5) & "'");
+      else
+        Log(Me & "Login", "file does not exist: '" & Fname & "'");
+        Result := False;
+      end if;
+
       return;
     end if;
 
