@@ -157,7 +157,7 @@ package body Rpc is
           Reply : String := Aws.Response.Message_Body(Aws_Reply);
         begin
 
-          if Reply(1..18) = "Post request error" then
+          if Reply'Length >= 18 and then Reply(1..18) = "Post request error" then
             Log(Me & "Get_JSON_Reply", "Got reply: " & Reply & " raising Aws.Client.Connection_Error"  );
             raise Aws.Client.Connection_Error;
           end if;
