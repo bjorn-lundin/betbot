@@ -24,18 +24,23 @@ class MyServer(BaseHTTPRequestHandler):
         #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
         #        str(self.path), str(self.headers), post_data.decode('utf-8'))
 
-       # parsed_json = json.loads(post_data)
-        #print(json.dumps(parsed_json, indent=4, sort_keys=True))
+        #payload = 'username=bnlbnl&password=@Bf@vinst@1'
 
         self.send_response(200)
         self.end_headers()
 
         post_data = post_data_raw.decode("utf-8")
+
+        parsed_json = json.loads(post_data)
+        user = parsed_json['username']
+        cert_path = os.environ['BOT_START'] + '/user/' + user + '/certificates'
+
         print('headers',self.headers)
         print('data',post_data)
+        print(json.dumps(parsed_json, indent=4, sort_keys=True))
+        print('user', user)
+        print('cert_path', cert_path)
 
-
-#payload = 'username=bnlbnl&password=@Bf@vinst@1'
         headers = {'X-Application': self.headers['X-Application'],
            'Content-Type': self.headers['Content-Type'],
            'Accept': self.headers['Accept'],
@@ -43,7 +48,7 @@ class MyServer(BaseHTTPRequestHandler):
 
         resp = requests.post('https://identitysso-cert.betfair.se/api/certlogin',
                              data=post_data,
-                             cert=('client-2048.crt', 'client-2048.key'),
+                             cert=(cert_path + '/client-2048.crt', cert_path + '/client-2048.key'),
                              headers=headers)
 
         if resp.status_code == 200:
