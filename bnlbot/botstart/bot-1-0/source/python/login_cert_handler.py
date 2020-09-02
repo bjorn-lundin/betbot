@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import json
 import requests
-
+import os
 
 
 #hostName = "localhost"
@@ -71,6 +71,9 @@ webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
 logging.basicConfig(level=logging.DEBUG)
+
+pid = os.getpid()
+print('pid',pid)
 
 
 try:
