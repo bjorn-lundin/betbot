@@ -1404,14 +1404,6 @@ begin
   Log(Me, "Login betfair done");
 
 
-  Log(Me, "Connect Db");
-  Sql.Connect
-    (Host     => Ini.Get_Value("database", "host", ""),
-     Port     => Ini.Get_Value("database", "port", 5432),
-     Db_Name  => Ini.Get_Value("database", "name", ""),
-     Login    => Ini.Get_Value("database", "username", ""),
-     Password => Ini.Get_Value("database", "password", ""));
-  Log(Me, "db Connected");
 
   if Cfg.Enabled then
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
@@ -1440,7 +1432,21 @@ begin
             --notfy markets_fetcher that we are busy
             Data := (Free => 0, Name => Process_Io.This_Process.Name , Node => Process_Io.This_Process.Node);
             Bot_Messages.Send(Markets_Fetcher, Data);
+
+            Log(Me, "Connect Db");
+            Sql.Connect
+              (Host     => Ini.Get_Value("database", "host", ""),
+               Port     => Ini.Get_Value("database", "port", 5432),
+               Db_Name  => Ini.Get_Value("database", "name", ""),
+               Login    => Ini.Get_Value("database", "username", ""),
+               Password => Ini.Get_Value("database", "password", ""));
+            Log(Me, "db Connected");
+
             Run(Bot_Messages.Data(Msg));
+
+            Log(Me, "Close Db");
+            Sql.Close_Session;
+
           else
             Log(Me, "Poll is not enabled in poll.ini");
           end if;
@@ -1469,8 +1475,6 @@ begin
 
   end loop Main_Loop;
 
-  Log(Me, "Close Db");
-  Sql.Close_Session;
   Rpc.Logout;
   Logging.Close;
   Posix.Do_Exit(0); -- terminate
