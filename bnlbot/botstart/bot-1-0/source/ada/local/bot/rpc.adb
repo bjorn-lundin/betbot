@@ -302,9 +302,9 @@ package body Rpc is
         Text_Io.Get_Line(F,Buffer,Len);
         Text_Io.Close(F);
         Result := Global_Token.Get(1..5) = Buffer(1..5);
-        Log(Me & "Login", "result " & Result'Img & "'" & Global_Token.Get(1..5) & "' '" & Buffer(1..5) & "'");
+        Log(Me & "Keep_Alive", "result " & Result'Img & " start of tokens are '" & Global_Token.Get(1..5) & "' '" & Buffer(1..5) & "'");
       else
-        Log(Me & "Login", "file does not exist: '" & Fname & "'");
+        Log(Me & "Keep_Alive", "file does not exist: '" & Fname & "'");
         Result := False;
       end if;
 
