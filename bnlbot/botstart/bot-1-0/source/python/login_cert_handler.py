@@ -44,7 +44,7 @@ class MyServer(BaseHTTPRequestHandler):
         if cert_path_prefix is None :
            cert_path_prefix = '/bnlbot/botstart'
 
-        cert_path = os.environ['BOT_START'] + '/user/' + user + '/certificates'
+        cert_path = cert_path_prefix + '/user/' + user + '/certificates'
 
 
         if not os.path.exists(cert_path + '/client-2048.crt') :
