@@ -4,7 +4,7 @@ import logging
 import json
 import requests
 import os
-
+import os.path
 
 #hostName = "localhost"
 hostName = ""
@@ -26,20 +26,41 @@ class MyServer(BaseHTTPRequestHandler):
 
         #payload = 'username=bnlbnl&password=@Bf@vinst@1'
 
-        self.send_response(200)
-        self.end_headers()
+#        print('headers',self.headers)
 
         post_data = post_data_raw.decode("utf-8")
+        logging.info('post_data %s',post_data)
 
-        parsed_json = json.loads(post_data)
-        user = parsed_json['username']
+        user =''
+        if 'bnlbnl' in post_data:
+          user = 'bnl'
+        elif 'joakimbirgerson' in post_data:
+          user = 'jmb'
+        elif 'Grappe' in post_data:
+          user = 'msm'
+
+
+        cert_path_prefix = os.getenv('BOT_START')
+        if cert_path_prefix is None :
+           cert_path_prefix = '/bnlbot/botstart'
+
         cert_path = os.environ['BOT_START'] + '/user/' + user + '/certificates'
 
-        print('headers',self.headers)
-        print('data',post_data)
-        print(json.dumps(parsed_json, indent=4, sort_keys=True))
-        print('user', user)
-        print('cert_path', cert_path)
+
+        if not os.path.exists(cert_path + '/client-2048.crt') :
+           self.send_response(200)
+           self.end_headers()
+           response = BytesIO()
+           response.write(b'Post request error')
+           self.wfile.write(response.getvalue())
+           logging.warning("Post request error")
+           logging.warning('no certfile found')
+           return
+
+
+
+        logging.info('user %s', user)
+        logging.info('cert_path %s', cert_path)
 
         headers = {'X-Application': self.headers['X-Application'],
            'Content-Type': self.headers['Content-Type'],
@@ -51,23 +72,29 @@ class MyServer(BaseHTTPRequestHandler):
                              cert=(cert_path + '/client-2048.crt', cert_path + '/client-2048.key'),
                              headers=headers)
 
+        self.send_response(200)
+        self.end_headers()
+
         if resp.status_code == 200:
            resp_json = resp.json()
-           print(resp_json)
+           logging.info('resp_json %s', resp_json)
 
            response = BytesIO()
            response.write(bytes(json.dumps(resp_json), "utf-8"))
            self.wfile.write(response.getvalue())
 
         else:
-           print("Request failed.")
-           print(json.dumps(resp_json))
+           response = BytesIO()
+           response.write(b'Post request error')
+           self.wfile.write(response.getvalue())
+           logging.warning("Post request error")
+           logging.warning('resp_json', resp_json)
 
       else:
         response = BytesIO()
-        response.write(bytes(str("bad url"), "utf-8"))
+        response.write(b'bad url')
         self.send_response(500)
-
+        logging.error('Bad url %s', self.path)
 
 ##############################################################
 
@@ -75,7 +102,7 @@ class MyServer(BaseHTTPRequestHandler):
 webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename='/bnlbot/botstart/bot-1-0/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
 
 pid = os.getpid()
 print('pid',pid)
