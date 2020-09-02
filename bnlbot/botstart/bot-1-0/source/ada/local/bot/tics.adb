@@ -67,7 +67,7 @@ package body Tics is
 
     -- ok - did not find any -> bad float then
 
-    -- it has to be a valid value within min an max
+    -- it has to be a valid value within min and max
     declare
       P   : Fixed_Type;
       D   : Fixed_Type := 0.001 ;
