@@ -18,7 +18,7 @@ with Rpc;
 with Calendar2;
 with Types; use Types;
 with Utils;
-
+with Token;
 
 
 procedure Login_Handler is
@@ -73,6 +73,15 @@ begin
             App_Key    => Ini.Get_Value("betfair","appkey","")
           );
   begin
+    Log(Me, "start logout first");
+    begin
+      Rpc.Logout;
+      Log(Me, "logout ok");
+    exception
+      when Token.NOT_VALID_TOKEN =>
+        Log(Me, "logout failed");
+    end;
+
     Log(Me, "start login");
     Rpc.Login;
     Log(Me, "stop login");

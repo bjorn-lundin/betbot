@@ -93,22 +93,27 @@ alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --m
 
                      
 
-alias stop_all_bet_placers'$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_003 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_004 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_005 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_006 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_011 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_012 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_013 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_014 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_015 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_016 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_017 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_018 --message=exit && \
-                          '$BOT_TARGET/bin/bot_send --receiver=bet_placer_019 --message=exit
+alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_003 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_004 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_005 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_006 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_0076 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_008 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_009 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_010 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_011 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_012 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_013 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_014 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_015 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_016 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_017 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_018 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_019 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_020 --message=exit && \
+                            $BOT_TARGET/bin/bot_send --receiver=bet_placer_021 --message=exit'
 
 alias stop_bot_system=' . /bnlbot/botstart/bot.bash bnl; stop_all_bots ; . /bnlbot/botstart/bot.bash dry; stop_all_bots ; . /bnlbot/botstart/bot.bash jmb; stop_all_bots ; . /bnlbot/botstart/bot.bash msm; stop_all_bots ; . /bnlbot/botstart/bot.bash bnl'
 
