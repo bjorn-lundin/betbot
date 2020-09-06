@@ -85,6 +85,7 @@ package body Rpc is
           end;
         end if;
       end if;
+      return;
     end if;
 
 
@@ -250,11 +251,26 @@ package body Rpc is
     Logout_Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Aws_Reply           : Aws.Response.Data;
     Bot_Name            : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
+    Fname              : String := Ev.Value("BOT_HOME") & "/token.dat";
+   -- F                  : Text_Io.File_Type;
+   -- Buffer             : String(1..100) := (others => ' ');
+   -- Len                : Natural := 0;
+   -- Bot_User           : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;  
+
   begin
 
     if Bot_Name /= Login_Handler then
       Log(Me & "Logout", "only login_handler may logout, you are " & Bot_Name );
       return;
+    else
+      if Ada.Directories.Exists(Fname)  then
+          begin
+            Ada.Directories.Delete_File(Fname);
+            Log(Me & "Login", "deleted tokenfile");
+          exception
+            when others => null;
+          end;
+      end if;
     end if;
 
     Aws.Headers.Add (Logout_Http_Headers, "User-Agent", "AWS-BNL/1.0");
