@@ -1129,4 +1129,14 @@ package body Bot_Ws_Services is
   end Mail_Moisture_Report;
   --------------------------------
   
+  --air quality
+  
+  function Log_Air_Quality(Id : String) return Boolean is
+    Service : constant String := "Log_Air_Quality";
+  begin
+    Log (Object & Service, "not implemented yet, id: '" & id & "'");
+    return true;
+ end Log_Air_Quality;   
+  
+  
 end Bot_Ws_Services;
