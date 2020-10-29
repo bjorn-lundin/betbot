@@ -33,6 +33,8 @@ with Posix;
 with Bot_Svn_Info;
 with Binary_Semaphores;
 with Types; use Types;
+with Stacktrace;
+
 
 procedure Bot_Web_Server is
   package EV renames Ada.Environment_Variables;
@@ -310,16 +312,23 @@ procedure Bot_Web_Server is
       end;          
     elsif Context = "air" then
       declare
-        Chipid   : constant String := AWS.Parameters.Get(Params,"chipid");
-        Moisture : constant String := AWS.Parameters.Get(Params,"level");
-        Result   : Boolean := False;
+        Chipid        : constant String := Aws.Parameters.Get(Params,"chipid");
+        Temperature   : constant String := Aws.Parameters.Get(Params,"temp");
+        Pressure      : constant String := Aws.Parameters.Get(Params,"pressure");
+        Humidity      : constant String := Aws.Parameters.Get(Params,"humidity");
+        Gasresistance : constant String := Aws.Parameters.Get(Params,"gasresistance");
       begin        
-        Result := Bot_Ws_Services.Log_Air_Quality(Id => Chipid);
-        if Result then 
-          return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
-        else
-          return AWS.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
-        end if;
+        Bot_Ws_Services.Log_Air_Quality(Id            => Chipid,
+                                        Temperature   => Fixed_Type'Value(Temperature),
+                                        Pressure      => Integer_4'Value(Pressure),
+                                        Humidity      => Fixed_Type'Value(Humidity),
+                                        Gasresistance => Integer_4'Value(Gasresistance));
+                                        
+        return Aws.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
+      exception
+        when E: others =>
+          Stacktrace.Tracebackinfo(E);          
+          return Aws.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
       end;          
     else
       return Do_Service(Request, "Get");
