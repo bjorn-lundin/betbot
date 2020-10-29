@@ -308,6 +308,19 @@ procedure Bot_Web_Server is
           return AWS.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
         end if;
       end;          
+    elsif Context = "air" then
+      declare
+        Chipid   : constant String := AWS.Parameters.Get(Params,"chipid");
+        Moisture : constant String := AWS.Parameters.Get(Params,"level");
+        Result   : Boolean := False;
+      begin        
+        Result := Bot_Ws_Services.Log_Air_Quality(Id => Chipid);
+        if Result then 
+          return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
+        else
+          return AWS.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
+        end if;
+      end;          
     else
       return Do_Service(Request, "Get");
     end if;
