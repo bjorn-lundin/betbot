@@ -9,19 +9,6 @@ with Ada.Containers;
 
 with Ada.Containers.Doubly_Linked_Lists;
 
---with Types; use Types;
-with Bot_Types; use Bot_Types;
-with Sql;
-with Calendar2;
-with Rpc;
-with Utils;
-with Logging; use Logging;
-with Gnatcoll.Json; use Gnatcoll.Json;
-with Bets;
-with Table_Astarttimes;
-with Ini;
-with Markets;
-
 
 --flowers
 with Ada.Characters;
@@ -35,9 +22,23 @@ with AWS.SMTP.Client;
 with Ada.Directories;
 with GNAT.Sockets;
 with Ada.Environment_Variables;
+
+with Table_Airreadings;
 with Table_Freadings;
 with Table_Fsensors;
 
+--with Types; use Types;
+with Bot_Types; use Bot_Types;
+with Sql;
+with Calendar2;
+with Rpc;
+with Utils;
+with Logging; use Logging;
+with Gnatcoll.Json; use Gnatcoll.Json;
+with Bets;
+with Table_Astarttimes;
+with Ini;
+with Markets;
 
 
 package body Bot_Ws_Services is
@@ -1129,14 +1130,52 @@ package body Bot_Ws_Services is
   end Mail_Moisture_Report;
   --------------------------------
   
-  --air quality
   
-  function Log_Air_Quality(Id : String) return Boolean is
-    Service : constant String := "Log_Air_Quality";
+  -- for airquality
+  -----------------------------------------------------  
+
+  procedure Log_Air_Quality(Id : String; 
+                    Temperature : Fixed_Type;
+                    Pressure    : Integer_4;
+                    Humidity    : Fixed_Type;
+                    Gasresistance : Integer_4) is
+                    
+    Service       : constant String := ".Log_Air_Quality";
+    T             : Sql.Transaction_Type;
+    Airreading_Data    :  Table_Airreadings.Data_Type;
+    Now           : Calendar2.Time_Type := Calendar2.Clock;
+    use Calendar2;    
   begin
-    Log (Object & Service, "not implemented yet, id: '" & id & "'");
-    return true;
- end Log_Air_Quality;   
+    if Sql.Is_Session_Open then
+      Logging.Log(Service, "was already connected, disconnect!");
+      Sql.Close_Session;
+      Logging.Log(Service, "did disconnect!");
+    end if;      
+      
+    Sql.Connect
+      (Host     => Global.Host.Fix_String,
+       Port     => Global.Port,
+       Db_Name  => "flowers",
+       Login    => Global.Login.Fix_String, -- always bnl
+       Password => Global.Password.Fix_String);
+    
+    Logging.Log(Service, "did connect to flowers");
+    T.Start;
+    Move(Id, Airreading_Data.Macaddress);
+    Airreading_Data.Created := Now;
+    Airreading_Data.Temperature := Temperature;
+    Airreading_Data.Pressure := Pressure;
+    Airreading_Data.Humidity := Humidity;
+    Airreading_Data.Gasresistance := Gasresistance;
+    Airreading_Data.Insert;
+    
+    T.Commit;
+    Sql.Close_Session;
+
+  end Log_Air_Quality;
+  -----------------------------------------------------  
+  
+
   
   
 end Bot_Ws_Services;

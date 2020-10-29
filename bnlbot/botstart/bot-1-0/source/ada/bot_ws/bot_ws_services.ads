@@ -47,6 +47,14 @@ package Bot_Ws_Services is
 
   -- for moisture in flowers
   function Mail_Moisture_Report(Id : String; Moisture : Integer_4) return Boolean;
-  function Log_Air_Quality(Id : String) return Boolean;
+
+
+
+  procedure Log_Air_Quality(Id            : String;
+                            Temperature   : Fixed_Type;
+                            Pressure      : Integer_4;
+                            Humidity      : Fixed_Type;
+                            Gasresistance : Integer_4);
+
 
 end Bot_Ws_Services;
