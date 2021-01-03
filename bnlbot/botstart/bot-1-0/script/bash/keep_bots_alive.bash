@@ -76,6 +76,17 @@ function Check_Bots_For_User () {
   BOT_HOUR=$3
   BOT_MINUTE=$4
 
+  #don't make a mail for each user/proc if not allowed to start anyway
+  case $BOT_HOUR in
+      "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+      return 0
+    ;;
+    *)
+      :
+    ;;
+  esac
+
+
   . $BOT_START/bot.bash $BOT_USER
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
@@ -435,7 +446,7 @@ done
 
 case $HOUR  in
 
-  "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+  "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
    # do nothing
    ;;
   "12"| "13" | "14" | "15" | "16" | "17" | "18" | "19" | "20" | "21" | "22" | "23")
