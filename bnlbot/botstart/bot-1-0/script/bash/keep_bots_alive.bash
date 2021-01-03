@@ -26,6 +26,8 @@ export TZ
 [ -d /home/bnl/svn/botstart ] && export BOT_START=/home/bnl/svn/botstart
 [ -d /bnlbot/botstart ] && export BOT_START=/bnlbot/botstart
 
+date +"%Y-%m-%d %H:%M:%S" > ${BOT_START}/bot-1-0/script/bash/last_run_keeep_alive.dat
+
 #defaults. sets $BOT_SOURCE and $BOT_START
 . $BOT_START/bot.bash bnl
 
@@ -210,7 +212,7 @@ function Create_Plots () {
 
   . $BOT_START/bot.bash $USR
 
-
+  #echo "create plots"
   STRATEGIES=$(${BOT_TARGET}/bin/graph_data --print_strategies)
 
   #regenerate the graphs
@@ -280,9 +282,6 @@ function Create_Plots () {
   #move to user area and cleanup, and to web server
   rm *.dat
   cp *.png ${BOT_START}/user/${USR}/gui_related/
-  if [ ${USR} == "bnl" ] ; then
-    cp *.png ${BOT_START}/bot-1-0/source/ada/bot_ws/html/img/
-  fi
   rm *.png
   cd ${old_pwd}
 }
@@ -345,7 +344,13 @@ DAY=$(date +"%d")
 #bnl      13565 13563  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 #bnl      13573 13565  0 17:45 ?        00:00:00 /bin/bash /home/bnl/bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 
-NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -c keep_bots_alive.bash)
+#when in mecedit via nano
+#bnl@pibetbot:~ $ ps -ef | grep keep_bots_alive.bash
+#bnl      25954 24135  0 14:20 pts/0    00:00:00 /bin/sh /usr/bin/sensible-editor /bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+#bnl      25962 25954  0 14:20 pts/0    00:00:02 /bin/nano /bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
+#bnl      30625 25671  0 14:35 pts/2    00:00:00 grep --color=auto keep_bots_alive.bash
+
+NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -v sensible-editor | grep -c keep_bots_alive.bash)
 #echo "NUM_RUNNING: $NUM_RUNNING $(date)"
 
 if [ $NUM_RUNNING -gt 1 ] ; then
@@ -369,7 +374,7 @@ case $BOT_MACHINE_ROLE in
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
       if [ $HOUR == "12" ] ; then
-        if [ $MINUTE == "57" ] ; then
+        if [ $MINUTE == "24" ] ; then
           #Create_Plots $USR 7
           Create_Plots $USR 42
         fi
