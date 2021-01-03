@@ -33,7 +33,7 @@ with Bets;
 with Runners;
 with Markets;
 
-with Ada.Containers;
+--with Ada.Containers;
 
 with Sim;
 
@@ -52,7 +52,7 @@ procedure Ai_Nn_Diff_Db is
 
   --------------------------------------------
 
-  use type Ada.Containers.Count_Type;
+  --use type Ada.Containers.Count_Type;
   Price : Price_Histories.Price_History_Type;
 
   package Ev renames Ada.Environment_Variables;
@@ -143,6 +143,7 @@ procedure Ai_Nn_Diff_Db is
     end;
 
   end Get_Json_Reply;
+  pragma Unreferenced (Get_Json_Reply);
   ------------------------------------------------------------------------------
 
 begin

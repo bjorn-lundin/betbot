@@ -330,7 +330,7 @@ begin
                 Delta_Time          : Calendar2.Interval_Type := (0, 0, 0, 0, 0);
                 Profit_Back,
                 Profit_Lay          : Bot_Types.Profit_Type := 0.0;
-                use Bot_Types;
+                --use Bot_Types;
                 Reward              : Table_Arewards.Data_Type;
               begin
                 --                Text_Io.Put_Line("start loop " & Calendar2.Clock.String_Date_Time_Iso);
