@@ -203,7 +203,8 @@ procedure Bet_Placer is
     pragma Unreferenced(Betfair_Result);
     Saldo             : Balances.Balance_Type;
   begin
-    Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
+    Saldo.Exposure := 0.0 ;
+--    Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
     Outstanding := Integer_4(abs(Saldo.Exposure));
   end Check_Outstanding_Balance;
 
@@ -304,7 +305,8 @@ begin
     exception
       when Process_Io.Timeout =>
         Log(Me, "Timeout");
-        Check_Outstanding_Balance(Global_Currently_Outstanding);
+        -- always reurns 0 from 2020-12-31 to lessen RPC traffic
+        Check_Outstanding_Balance(Global_Currently_Outstanding); 
         Global_Keep_Alive_Counter := Global_Keep_Alive_Counter +1;
         if Global_Keep_Alive_Counter >= 10 then
           Rpc.Keep_Alive(Ok);

@@ -79,32 +79,15 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     case Bettype is
-      when Horse_Back_1_10_07_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_001");
-      when Horse_Back_1_28_02_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_002");
-      when Horse_Back_1_38_00_1_2_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_003");
-      when Horse_Back_1_56_00_1_4_Plc_1_01      => return Process_Io.To_Process_Type("bet_placer_004");
-      when Horse_Back_1_10_07_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_005");
-      when Horse_Back_1_28_02_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_006");
-      when Horse_Back_1_38_00_1_2_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_007");
-      when Horse_Back_1_56_00_1_4_Win_1_01      => return Process_Io.To_Process_Type("bet_placer_008");
-      when Horse_Lay_Fav_2_0_12_Win             => return Process_Io.To_Process_Type("bet_placer_009");
-      when Horse_Lay_Fav_9_0_30_Win             => return Process_Io.To_Process_Type("bet_placer_010");
-      when Horse_Lay_19_00_29_00_At_Start_1_Win =>
-
-        --if not reserved - get an anonymous one
         Global_Bet_Placer := Global_Bet_Placer + 1;
-        -- we start 10 bet_placers
+        -- we start 20 bet_placers
         if Global_Bet_Placer > Integer(20) then
-          Global_Bet_Placer := 20;
-        end if;
-
-        if Global_Bet_Placer < Integer(11) then -- reserved above
-          Global_Bet_Placer := 11;
+          Global_Bet_Placer := 1;
         end if;
 
         case Global_Bet_Placer is
+          when   1 ..   9 => return Process_Io.To_Process_Type("bet_placer_00" & Trim(Global_Bet_Placer'Img, Both));
           when  10 ..  99 => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Global_Bet_Placer'Img, Both));
-    --        when 100 .. 999 => return Process_Io.To_Process_Type("bet_placer_"   & Trim(Global_Bet_Placer'Img, Both));
           when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
         end case;
     end case;
@@ -724,8 +707,8 @@ procedure Poll is
   --      Image            : String := Bettype'Img;
   --      Max_Price        : String (1 .. 4) := (others => ' ');
   --    begin       -- 0         1         2         3
-  --  	      --  12345678901234567890123456789012345
-  --  	      --  HORSE_Lay_1_10_20_1_2_WIN_3_25
+  --	      --  12345678901234567890123456789012345
+  --	      --  HORSE_Lay_1_10_20_1_2_WIN_3_25
   --      Tmp(1) := Image(11);
   --      Tmp(2) := '.';
   --      Tmp(3..4) := Image(13..14);
@@ -744,7 +727,7 @@ procedure Poll is
   --        BR(Layed_Num).Layprice >= Fixed_Type(1.01) and then
   --        BR (Layed_Num).Backprice <  Fixed_Type (10_000.0) then  -- so it exists
   --
-  --  	      -- lay #2 or #3 in win market...
+  --	      -- lay #2 or #3 in win market...
   --
   --        Send_Lay_Bet (Selectionid     => BR (Layed_Num).Selectionid,
   --                      Main_Bet        => Bettype,
@@ -1075,7 +1058,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Win_1_01 =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Win_1_01_Chs =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
