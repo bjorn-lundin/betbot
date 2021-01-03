@@ -747,7 +747,7 @@ package body Bot_Ws_Services is
         OK         : Boolean := False;
       begin
         Market.Marketname := S.Marketname;
-        OK := Market.Marketname_Ok;
+        OK := Market.Marketname_Ok2(Allow_Chase => True, Allow_Hurdle => False);
 
         if OK then
           if not Arrow_Is_Printed and then Now <= S.Starttime then
@@ -1144,7 +1144,7 @@ package body Bot_Ws_Services is
     T             : Sql.Transaction_Type;
     Airreading_Data    :  Table_Airreadings.Data_Type;
     Now           : Calendar2.Time_Type := Calendar2.Clock;
-    use Calendar2;    
+    --use Calendar2;    
   begin
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");

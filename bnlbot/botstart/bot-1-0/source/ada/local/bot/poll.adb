@@ -78,21 +78,19 @@ procedure Poll is
   --------------------------------------------------------------
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
-    case Bettype is
-        Global_Bet_Placer := Global_Bet_Placer + 1;
-        -- we start 20 bet_placers
-        if Global_Bet_Placer > Integer(10) then
-          Global_Bet_Placer := 1;
-        end if;
+    Global_Bet_Placer := Global_Bet_Placer + 1;
+    -- we start 20 bet_placers
+    if Global_Bet_Placer > Integer(10) then
+      Global_Bet_Placer := 1;
+    end if;
 
-        case Global_Bet_Placer is
-          when   1 ..   9 => return Process_Io.To_Process_Type("bet_placer_00" & Trim(Global_Bet_Placer'Img, Both));
-          when  10 ..  99 => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Global_Bet_Placer'Img, Both));
-          when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
-        end case;
+    case Global_Bet_Placer is
+      when   1 ..   9 => return Process_Io.To_Process_Type("bet_placer_00" & Trim(Global_Bet_Placer'Img, Both));
+      when  10 ..  99 => return Process_Io.To_Process_Type("bet_placer_0"  & Trim(Global_Bet_Placer'Img, Both));
+      when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
     end case;
 
-  end Get_Bet_Placer;
+end Get_Bet_Placer;
 
   ----------------------------------------------------------
 
@@ -251,7 +249,7 @@ procedure Poll is
 
       case Main_Bet is
       -- checks in calling proc - may be several bets
-        when Horse_Lay_19_00_29_00_At_Start_1_Win => null;
+      -- when Horse_Lay_19_00_29_00_At_Start_1_Win => null;
         when others => Bets_Allowed(Main_Bet).Has_Betted := True;
       end case;
 
@@ -475,6 +473,7 @@ procedure Poll is
         Log("Try_To_Lay_Favorite", "bad layods #" & Lay_Num'Img & " " & Br(Lay_Num).To_String);
     end if;
   end Try_To_Lay_Favorite;
+  pragma Unreferenced(Try_To_Lay_Favorite);
   ------------------------------------------------------
 
 
@@ -550,6 +549,7 @@ procedure Poll is
 
 
   end Try_To_Lay_At_Start;
+  pragma Unreferenced(Try_To_Lay_At_Start);
   ------------------------------------------------------
 
 
@@ -1058,7 +1058,7 @@ procedure Poll is
           case Animal is
             when Horse =>
               case I is
-                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Win_1_01_Chs =>
+                when Horse_Back_1_10_07_1_2_Plc_1_01 .. Horse_Back_1_56_00_1_4_Plc_1_01_Chs =>
                   declare
                     M_Type     : Market_Type := Win;
                     Image      : String := I'Img;
@@ -1097,73 +1097,73 @@ procedure Poll is
                   end;
 
 
-                when  Horse_Lay_Fav_2_0_12_Win .. Horse_Lay_Fav_9_0_30_Win =>
-                  declare
-                    M_Type     : Market_Type := Win;
-                    Image      : String := I'Img;
-                    Do_Try_Bet : Boolean := True;
-                    --use Markets;
-                  begin
-                    --  12345678901234567890
-                    --  Back_1_10_20_1_4_WIN
-                    if Utils.Position(Image, "PLC") > Integer(0) then
-                      M_Type := Place;
-                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
-                      Match_Directly := False;
-                    elsif Utils.Position(Image, "WIN") > Integer(0) then
-                      M_Type         := Win;
-                      Match_Directly := False;
-                    end if;
-
-                    --                      if Do_Try_Bet then
-                    --                        case Markets_Array(Win).Market_Subtype is
-                    --                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
-                    --                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
-                    --                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
-                    --                        end case;
-                    --                      end if;
-
-
-                    if Do_Try_Bet
-                      and then First_Poll
-                    -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
-                    then
-                      Try_To_Lay_Favorite(Bettype         => I,
-                                          Br              => Best_Runners,
-                                          Marketid        => Markets_Array(M_Type).Marketid,
-                                          Match_Directly  => Match_Directly);
-                    end if;
-                  end;
-
-
-                when  Horse_Lay_19_00_29_00_At_Start_1_Win =>
-                  declare
-                    M_Type     : Market_Type := Win;
-                    Image      : String := I'Img;
-                    Do_Try_Bet : Boolean := True;
-                    --use Markets;
-                  begin
-                    --  12345678901234567890
-                    --  Back_1_10_20_1_4_WIN
-                    if Utils.Position(Image, "PLC") > Integer(0) then
-                      M_Type := Place;
-                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
-                      Match_Directly := False;
-                    elsif Utils.Position(Image, "WIN") > Integer(0) then
-                      M_Type         := Win;
-                      Match_Directly := False;
-                    end if;
-
-                    if Do_Try_Bet
-                      and then First_Poll
-                    -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
-                    then
-                      Try_To_Lay_At_Start(Bettype         => I,
-                                          Br              => Best_Runners,
-                                          Marketid        => Markets_Array(M_Type).Marketid,
-                                          Match_Directly  => Match_Directly);
-                    end if;
-                  end;
+--                  when  Horse_Lay_Fav_2_0_12_Win .. Horse_Lay_Fav_9_0_30_Win =>
+--                    declare
+--                      M_Type     : Market_Type := Win;
+--                      Image      : String := I'Img;
+--                      Do_Try_Bet : Boolean := True;
+--                      --use Markets;
+--                    begin
+--                      --  12345678901234567890
+--                      --  Back_1_10_20_1_4_WIN
+--                      if Utils.Position(Image, "PLC") > Integer(0) then
+--                        M_Type := Place;
+--                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+--                        Match_Directly := False;
+--                      elsif Utils.Position(Image, "WIN") > Integer(0) then
+--                        M_Type         := Win;
+--                        Match_Directly := False;
+--                      end if;
+--
+--                      --                      if Do_Try_Bet then
+--                      --                        case Markets_Array(Win).Market_Subtype is
+--                      --                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+--                      --                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+--                      --                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+--                      --                        end case;
+--                      --                      end if;
+--
+--
+--                      if Do_Try_Bet
+--                        and then First_Poll
+--                      -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
+--                      then
+--                        Try_To_Lay_Favorite(Bettype         => I,
+--                                            Br              => Best_Runners,
+--                                            Marketid        => Markets_Array(M_Type).Marketid,
+--                                            Match_Directly  => Match_Directly);
+--                      end if;
+--                    end;
+--
+--
+--                  when  Horse_Lay_19_00_29_00_At_Start_1_Win =>
+--                    declare
+--                      M_Type     : Market_Type := Win;
+--                      Image      : String := I'Img;
+--                      Do_Try_Bet : Boolean := True;
+--                      --use Markets;
+--                    begin
+--                      --  12345678901234567890
+--                      --  Back_1_10_20_1_4_WIN
+--                      if Utils.Position(Image, "PLC") > Integer(0) then
+--                        M_Type := Place;
+--                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+--                        Match_Directly := False;
+--                      elsif Utils.Position(Image, "WIN") > Integer(0) then
+--                        M_Type         := Win;
+--                        Match_Directly := False;
+--                      end if;
+--
+--                      if Do_Try_Bet
+--                        and then First_Poll
+--                      -- and then Has_Been_In_Play  since bet placed before race starts, it has NOT been in play
+--                      then
+--                        Try_To_Lay_At_Start(Bettype         => I,
+--                                            Br              => Best_Runners,
+--                                            Marketid        => Markets_Array(M_Type).Marketid,
+--                                            Match_Directly  => Match_Directly);
+--                      end if;
+--                    end;
 
                   --when Horse_Back_1_55_800m_Plc_1_01 =>
                   --  declare

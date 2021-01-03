@@ -278,7 +278,7 @@ package body Markets is
       Self.Marketname(1..11) = "3m4f Hcap  ";
   end Marketname_Ok;
   ------------------------------------------------------------
-  function Marketname_Ok2(Self : Market_Type) return Boolean is
+  function Marketname_Ok2(Self : Market_Type; Allow_Chase : Boolean := True; Allow_Hurdle : Boolean := True) return Boolean is
   begin
     return
       Self.Marketname(1..9)  = "5f Hcap  "   or else
@@ -300,61 +300,61 @@ package body Markets is
       Self.Marketname(1..11) = "2m5f Hcap  " or else
       Self.Marketname(1..11) = "2m6f Hcap  " or else
       Self.Marketname(1..11) = "2m7f Hcap  " or else
-      Self.Marketname(1..9) = "3m Hcap  " or else
+      Self.Marketname(1..9) = "3m Hcap  "    or else
       Self.Marketname(1..11) = "3m1f Hcap  " or else
       Self.Marketname(1..11) = "3m2f Hcap  " or else
       Self.Marketname(1..11) = "3m3f Hcap  " or else
       Self.Marketname(1..11) = "3m4f Hcap  " or else
 
-      Self.Marketname(1..13)  = "5f Hcap Chs  "   or else
-      Self.Marketname(1..13)  = "6f Hcap Chs  "   or else
-      Self.Marketname(1..13)  = "7f Hcap Chs  "   or else
-      Self.Marketname(1..13)  = "1m Hcap Chs  "   or else
-      Self.Marketname(1..15) = "1m1f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m2f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m3f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m4f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m5f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m6f Hcap Chs  " or else
-      Self.Marketname(1..15) = "1m7f Hcap Chs  " or else
-      Self.Marketname(1..13)  = "2m Hcap Chs  "   or else
-      Self.Marketname(1..15) = "2m1f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m2f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m3f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m4f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m5f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m6f Hcap Chs  " or else
-      Self.Marketname(1..15) = "2m7f Hcap Chs  " or else
-      Self.Marketname(1..13) = "3m Hcap Chs  " or else
-      Self.Marketname(1..15) = "3m1f Hcap Chs  " or else
-      Self.Marketname(1..15) = "3m2f Hcap Chs  " or else
-      Self.Marketname(1..15) = "3m3f Hcap Chs  " or else
-      Self.Marketname(1..15) = "3m4f Hcap Chs  " or else
+      (Self.Marketname(1..13)  = "5f Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..13)  = "6f Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..13)  = "7f Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..13)  = "1m Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m1f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m2f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m3f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m4f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m5f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m6f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "1m7f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..13)  = "2m Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m1f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m2f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m3f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m4f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m5f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m6f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "2m7f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..13)  = "3m Hcap Chs  "   and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "3m1f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "3m2f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "3m3f Hcap Chs  " and Allow_Chase) or else
+      (Self.Marketname(1..15)  = "3m4f Hcap Chs  " and Allow_Chase) or else
 
-      Self.Marketname(1..13)  = "5f Hcap Hrd  "   or else
-      Self.Marketname(1..13)  = "6f Hcap Hrd  "   or else
-      Self.Marketname(1..13)  = "7f Hcap Hrd  "   or else
-      Self.Marketname(1..13)  = "1m Hcap Hrd  "   or else
-      Self.Marketname(1..15) = "1m1f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m2f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m3f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m4f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m5f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m6f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "1m7f Hcap Hrd  " or else
-      Self.Marketname(1..13)  = "2m Hcap Hrd  "   or else
-      Self.Marketname(1..15) = "2m1f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m2f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m3f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m4f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m5f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m6f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "2m7f Hcap Hrd  " or else
-      Self.Marketname(1..13) = "3m Hcap Hrd  " or else
-      Self.Marketname(1..15) = "3m1f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "3m2f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "3m3f Hcap Hrd  " or else
-      Self.Marketname(1..15) = "3m4f Hcap Hrd  ";
+      (Self.Marketname(1..13)  = "5f Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..13)  = "6f Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..13)  = "7f Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..13)  = "1m Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m1f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m2f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m3f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m4f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m5f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m6f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "1m7f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..13)  = "2m Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m1f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m2f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m3f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m4f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m5f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m6f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "2m7f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..13)  = "3m Hcap Hrd  "   and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "3m1f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "3m2f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "3m3f Hcap Hrd  " and Allow_Hurdle) or else
+      (Self.Marketname(1..15)  = "3m4f Hcap Hrd  " and Allow_Hurdle);
   end Marketname_Ok2;
 
 
