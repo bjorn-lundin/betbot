@@ -81,7 +81,7 @@ procedure Poll is
     case Bettype is
         Global_Bet_Placer := Global_Bet_Placer + 1;
         -- we start 20 bet_placers
-        if Global_Bet_Placer > Integer(20) then
+        if Global_Bet_Placer > Integer(10) then
           Global_Bet_Placer := 1;
         end if;
 
