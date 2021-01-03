@@ -5,123 +5,168 @@
     <title>Bot Web Monitor</title>
     <meta name='viewport' content='width=device-width, initial-scale=1' />
    <!-- <link rel='stylesheet' href='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css' /> -->
-    <link rel="stylesheet" type="text/css" href="/css/local_fixes.css" title='local_fixes'/> 
+    <link rel="stylesheet" type="text/css" href="/css/local_fixes.css" title='local_fixes'/>
     <script src='//code.jquery.com/jquery-1.10.2.min.js'> </script>
   <!--
     <script src='//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js'></script>
     <script src='/js/b2.js'></script>
-  -->  
-    <script src='/js/monitor.js?v=0.4'> </script>
+  -->
+    <script src='/js/monitor.js?v=0.5'> </script>
   </head>
   <body>
-   
+
     <div class="row">
-      <div class="column left">    
-          <progress id='pb' value="22" max="100"></progress> 
+      <div class="column left">
+        <div id='tools'>
+          <form id='loginform'>
+            <label for="username">Username:</label><br>
+            <input type="text" id="bnl" name="bnl"><br>
+
+<!--            <input type='hidden' name='username' id='bnl' value='bnl'> -->
+         <!-- <button type="button" onclick="Do_Login()">Login</button> -->
+          </form>
+        </div>
+
+          <progress id='pb' value="22" max="100"></progress>
            <!-- dialog for today's races -->
           <div>
-            <p>Today's races</p>     
+            <p>Today's races</p>
             <div id='starttimes'></div>
           </div>
-          
+
           <hr/>
 
            <!-- dialog for today's total result -->
           <div id='today'></div>
           <hr/>
-      
-          <!-- page for todays bets -->   
+
+          <!-- page for todays bets -->
           <div>
-            <p>Today's bets</p>     
+            <p>Today's bets</p>
             <div id='sum_todays_bets'></div>
           </div>
           <hr/>
-      
-          <!-- page for  bets -->    
+
+          <!-- page for  bets -->
           <div>
-            <p>Last 7 day's bets</p>     
+            <p>Last 7 day's bets</p>
             <div id='sum_7_days_bets'></div>
           </div>
           <hr/>
-          
-          <!-- page for  bets -->    
+
+          <!-- page for  bets -->
           <div>
-            <p>This week's bets</p>     
+            <p>This week's bets</p>
             <div id='sum_thisweeks_bets'></div>
           </div>
           <hr/>
-          
-          <!-- page for  bets -->    
+
+          <!-- page for  bets -->
           <div>
-            <p>Total bets since 2018-11-01</p>     
+            <p>Total bets since 2018-11-01</p>
             <div id='sum_total_bets'></div>
-          </div> 
+          </div>
           <hr/>
       </div> <!-- div class left -->
-      
-      
+
+
     </div> <!-- div class row -->
 
     <div class="row">
-      <div class="column all">            
-          <!-- page for resultset -->    
+      <div class="column all">
+          <!-- page for resultset -->
           <div id='seven_days'>
             <img id='equity_png' src='/img/equity.png'/>
           </div>
-          
+
           <div id='forty_two_days'>
+            <h2>Hcap, Non-Chase, Non-Hurdles races</h2>
             <hr/>
-            <p>profit vs matched 42 days horse_back_1_28_02_1_2_plc_1_01</p> 
+            <p>profit vs matched 42 days horse_back_1_28_02_1_2_plc_1_01</p>
             <img id='profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01' src='/img/profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01.png'/>
             <hr/>
-            <p>avg price 42 days horse_back_1_28_02_1_2_plc_1_01</p> 
+            <p>avg price 42 days horse_back_1_28_02_1_2_plc_1_01</p>
             <img id='avg_price_42_horse_back_1_28_02_1_2_plc_1_01' src='/img/avg_price_42_horse_back_1_28_02_1_2_plc_1_01.png'/>
             <hr/>
-            <p>settled vs lapsed 42 days horse_back_1_28_02_1_2_plc_1_01</p> 
+            <p>settled vs lapsed 42 days horse_back_1_28_02_1_2_plc_1_01</p>
             <img id='settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01' src='/img/settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01.png'/>
             <hr/>
-            <p>profit vs matched 42 days horse_back_1_38_00_1_2_plc_1_01</p> 
+            <p>profit vs matched 42 days horse_back_1_38_00_1_2_plc_1_01</p>
             <img id='profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01' src='/img/profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01.png'/>
             <hr/>
-            <p>avg price 42 days horse_back_1_38_00_1_2_plc_1_01</p> 
+            <p>avg price 42 days horse_back_1_38_00_1_2_plc_1_01</p>
             <img id='avg_price_42_horse_back_1_38_00_1_2_plc_1_01' src='/img/avg_price_42_horse_back_1_38_00_1_2_plc_1_01.png'/>
             <hr/>
-            <p>settled vs lapsed 42 days horse_back_1_38_00_1_2_plc_1_01</p> 
+            <p>settled vs lapsed 42 days horse_back_1_38_00_1_2_plc_1_01</p>
             <img id='settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01' src='/img/settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01.png'/>
             <hr/>
-            <p>profit vs matched 42 days horse_back_1_10_07_1_2_plc_1_01</p> 
+            <p>profit vs matched 42 days horse_back_1_10_07_1_2_plc_1_01</p>
             <img id='profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01' src='/img/profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01.png'/>
             <hr/>
-            <p>avg price 42 days horse_back_1_10_07_1_2_plc_1_01</p> 
+            <p>avg price 42 days horse_back_1_10_07_1_2_plc_1_01</p>
             <img id='avg_price_42_horse_back_1_10_07_1_2_plc_1_01' src='/img/avg_price_42_horse_back_1_10_07_1_2_plc_1_01.png'/>
             <hr/>
-            <p>settled vs lapsed 42 days horse_back_1_10_07_1_2_plc_1_01</p> 
+            <p>settled vs lapsed 42 days horse_back_1_10_07_1_2_plc_1_01</p>
             <img id='settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01' src='/img/settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01.png'/>
             <hr/>
-            <p>profit vs matched 42 days horse_back_1_56_00_1_4_plc_1_01</p> 
+            <p>profit vs matched 42 days horse_back_1_56_00_1_4_plc_1_01</p>
             <img id='profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01' src='/img/profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01.png'/>
             <hr/>
-            <p>avg price 42 days horse_back_1_56_00_1_4_plc_1_01</p> 
+            <p>avg price 42 days horse_back_1_56_00_1_4_plc_1_01</p>
             <img id='avg_price_42_horse_back_1_56_00_1_4_plc_1_01' src='/img/avg_price_42_horse_back_1_56_00_1_4_plc_1_01.png'/>
             <hr/>
-            <p>settled vs lapsed 42 days horse_back_1_56_00_1_4_plc_1_01</p> 
+            <p>settled vs lapsed 42 days horse_back_1_56_00_1_4_plc_1_01</p>
             <img id='settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01' src='/img/settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01.png'/>
             <hr/>
+
+            <h2>Hcap, Chase races</h2>
+            <hr/>
+            <p>profit vs matched 42 days horse_back_1_28_02_1_2_plc_1_01_chs</p>
+            <img id='profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01_chs' src='/img/profit_vs_matched_42_horse_back_1_28_02_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>avg price 42 days horse_back_1_28_02_1_2_plc_1_01_chs</p>
+            <img id='avg_price_42_horse_back_1_28_02_1_2_plc_1_01_chs' src='/img/avg_price_42_horse_back_1_28_02_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>settled vs lapsed 42 days horse_back_1_28_02_1_2_plc_1_01_chs</p>
+            <img id='settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01_chs' src='/img/settled_vs_lapsed_42_horse_back_1_28_02_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>profit vs matched 42 days horse_back_1_38_00_1_2_plc_1_01_chs</p>
+            <img id='profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01_chs' src='/img/profit_vs_matched_42_horse_back_1_38_00_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>avg price 42 days horse_back_1_38_00_1_2_plc_1_01_chs</p>
+            <img id='avg_price_42_horse_back_1_38_00_1_2_plc_1_01_chs' src='/img/avg_price_42_horse_back_1_38_00_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>settled vs lapsed 42 days horse_back_1_38_00_1_2_plc_1_01_chs</p>
+            <img id='settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01_chs' src='/img/settled_vs_lapsed_42_horse_back_1_38_00_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>profit vs matched 42 days horse_back_1_10_07_1_2_plc_1_01_chs</p>
+            <img id='profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01_chs' src='/img/profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>avg price 42 days horse_back_1_10_07_1_2_plc_1_01_chs</p>
+            <img id='avg_price_42_horse_back_1_10_07_1_2_plc_1_01_chs' src='/img/avg_price_42_horse_back_1_10_07_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>settled vs lapsed 42 days horse_back_1_10_07_1_2_plc_1_01_chs</p>
+            <img id='settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01_chs' src='/img/settled_vs_lapsed_42_horse_back_1_10_07_1_2_plc_1_01_chs.png'/>
+            <hr/>
+            <p>profit vs matched 42 days horse_back_1_56_00_1_4_plc_1_01_chs</p>
+            <img id='profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01_chs' src='/img/profit_vs_matched_42_horse_back_1_56_00_1_4_plc_1_01_chs.png'/>
+            <hr/>
+            <p>avg price 42 days horse_back_1_56_00_1_4_plc_1_01_chs</p>
+            <img id='avg_price_42_horse_back_1_56_00_1_4_plc_1_01_chs' src='/img/avg_price_42_horse_back_1_56_00_1_4_plc_1_01_chs.png'/>
+            <hr/>
+            <p>settled vs lapsed 42 days horse_back_1_56_00_1_4_plc_1_01_chs</p>
+            <img id='settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01_chs' src='/img/settled_vs_lapsed_42_horse_back_1_56_00_1_4_plc_1_01_chs.png'/>
+            <hr/>
+
           </div>
-          
+
       </div> <!-- div class middle -->
     </div> <!-- div class row -->
-    
-    
-    
-    
-    <div id='tools'>   
-      <form id='loginform'>
-       <input type='hidden' name='username' id='bnl' value='bnl'>
-      <!-- <button type="button" onclick="Do_Login()">Login</button> -->
-      </form>
-    </div>    
-    
-    
+
+
+
+
+
+
   </body>
 </html>
