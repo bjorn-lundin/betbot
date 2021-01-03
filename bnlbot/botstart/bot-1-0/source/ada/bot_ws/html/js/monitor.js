@@ -5,7 +5,6 @@ var Cnt;
 //var URL="http://192.168.1.6:9080"
 var URL ="https://lundin.duckdns.org"
 var login_again;
-var user="bnl"
 
 //bnl
 $.makeTable = function (mydata) {
@@ -44,7 +43,7 @@ function Do_Ajax_Table(context) {
       data: {'context' : context,
              'dummy' : n },
       type: 'get',
-      async: 'true',
+      async: true,
       dataType: 'json',
       beforeSend: function() {
           // This callback function will trigger before data is sent
@@ -102,7 +101,7 @@ function Do_Ajax_Today() {
       data: {'context' : "todays_total",
              'dummy' : n },
       type: 'get',
-      async: 'true',
+      async: true,
       dataType: 'json',
       beforeSend: function() {
           // This callback function will trigger before data is sent
@@ -149,12 +148,49 @@ function Do_Page_Reload (user) {
 
   $('#equity_png').attr('src', '/' + user + '/equity.png' + '?' + unique);
 
+  // Get the <div> element with id forty_two_days"
+  var d = document.getElementById("forty_two_days");
+
+  // As long as <d> has a child node, remove it
+  while (d.hasChildNodes()) {
+    d.removeChild(d.firstChild);
+  }
+
   //  $('#profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01').attr('src', '/img/profit_vs_matched_42_horse_back_1_10_07_1_2_plc_1_01.png' + '?' + unique);
-  for (m = 0; i < markettypesLen; i++) {
-    for (t = 0; i < typesLen; i++) {
-      for (d = 0; i < daysLen; i++) {
-        for (o = 0; i < oddsLen; i++) {
-          $('#' + types[t] + days[d] + odds[o] + markettypes[m]).attr('src',  '/' + user + '/' + types[t] + days[d] + odds[o] + markettypes[m] + '.png?' + unique);
+  for (m = 0; m < markettypesLen; m++) {
+    var h2 = document.createElement("h2");
+    if (markettypes[m] == "" ) {
+      h2.innerText ="Hcap, Non-Chase, Non-Hurdles races";
+    } else if  (markettypes[m] == "_chs" ) {
+      h2.innerText ="Hcap, Chase, Non-Hurdles races";
+    }
+    $('#forty_two_days').append(h2);
+
+
+    for (t = 0 ; t < typesLen; t++) {
+      for (d = 0; d < daysLen; d++) {
+        for (o = 0; o < oddsLen; o++) {
+
+          var id=types[t] + days[d] + odds[o] + markettypes[m];
+          var src= '/' + user + '/' + id + '.png';
+          var u='?' + unique;
+
+          var div = document.createElement("DIV");
+          var h3 = document.createElement("h3");
+          h3.innerText = id;
+          div.append(h3);
+
+          var image = document.createElement("IMG");
+          image.alt = id;
+          image.setAttribute('class', 'photo');
+          image.src = src;
+
+          div.append(image);
+
+          var hr = document.createElement("hr");
+          div.append(hr);
+
+          $('#forty_two_days').append(div);
         }
       }
     }
@@ -163,7 +199,7 @@ function Do_Page_Reload (user) {
 
 ////////////////////////
 
-function Run_All {
+function Run_All () {
  // console.log("Run_All start");
   var pBar = document.getElementById('pb');
   Cnt = Cnt +1;
@@ -172,16 +208,18 @@ function Run_All {
  // console.log("Run_All" + Cnt + "-" + percent );
 
   if (Cnt == 100) {
-    console.log("Run_All start 1");
-    Do_Check_Login(user);
-    Do_Page_Reload(user); // get new graphs
-    Do_Ajax_Today(); // get todays earnings
-    Do_Ajax_Table('sum_todays_bets');  // and a list of bets
-    Do_Ajax_Table('sum_7_days_bets');  // and a list of bets
-    Do_Ajax_Table('sum_thisweeks_bets');  // and a list of bets
-    Do_Ajax_Table('sum_total_bets');  // and a list of bets
-    Do_Ajax_Table('starttimes');  // and a list of bets
-
+    var user = document.getElementById('username').value 
+    console.log("Run_All start 1 '" + user + "'");
+    keep_going = Do_Check_Login(user);
+    if (keep_going) {
+      Do_Page_Reload(user); // get new graphs
+      Do_Ajax_Today(); // get todays earnings
+      Do_Ajax_Table('sum_todays_bets');  // and a list of bets
+      Do_Ajax_Table('sum_7_days_bets');  // and a list of bets
+      Do_Ajax_Table('sum_thisweeks_bets');  // and a list of bets
+      Do_Ajax_Table('sum_total_bets');  // and a list of bets
+      Do_Ajax_Table('starttimes');  // and a list of bets
+    }
     Cnt = 0;
     console.log("Run_All stop 1");
   } else {
@@ -204,7 +242,7 @@ function Start_Timer () {
 function Do_Check_Login(user) {
   console.log("Do_Check_Login start");
   login_again = true;
-
+  res=false;
   var d = new Date();
   var n = d.getTime();
 
@@ -215,22 +253,23 @@ function Do_Check_Login(user) {
              'username' : user,
              'dummy' : n },
       type: 'get',
-      async: 'false',
+      async: false,
       dataType: 'json',
       beforeSend: function() {
           // This callback function will trigger before data is sent
-          console.log("Do_Check_Login.beforeSend");
+          console.log("Do_Check_Login-1.beforeSend");
       },
       complete: function() {
           // This callback function will trigger on data sent/received complete
-          console.log("Do_Check_Login.complete");
+          console.log("Do_Check_Login-1.complete");
       },
       success: function (reply) {
-          console.log("Do_Check_Login.success");
+          console.log("Do_Check_Login-1.success");
           login_again = false;
+          res = true;
       },
-      error: function (request,error,ex) {
-          console.log("Do_Check_Login.error " + error + ex);
+      error: function (request,error) {
+          console.log("Do_Check_Login-1.error " + error);
       }
   });
 
@@ -242,48 +281,50 @@ function Do_Check_Login(user) {
     $.ajax({url: URL,
         data: $('#loginform').serialize(),
         type: 'post',
-        async: 'false',
+        async: false,
         dataType: 'json',
         beforeSend: function() {
             // This callback function will trigger before data is sent
-            console.log("Do_Login.beforeSend");
+            console.log("Do_Login-2.beforeSend");
         },
         complete: function() {
             // This callback function will trigger on data sent/received complete
-            console.log("Do_Login.complete");
+            console.log("Do_Login-2.complete");
         },
         success: function (reply) {
-            console.log("success");
+            console.log("Do_login-2.success");
             if(reply.result == "OK") {
-               console.log("Do_Login success OK");
+               console.log("Do_Login-2 success OK");
+               res = true;
             } else {
-               console.log("Do_Login - success NOT OK");
+               console.log("Do_Login-2 - success NOT OK");
             }
         },
         error: function (request,error) {
-            console.log("Do_Login.error " + error);
+            console.log("Do_Login-2.error " + error);
         }
     });
   }
-  console.log("Do_Check_Login stop");
+  console.log("Do_Check_Login stop - return -> " + res);
+  return res;
 }
 
 /////////////////////////////
 
-function Do_Start(user) {
+function Do_Start() {
      //call by window.onload
-     console.log("onReady Start " + user);
+     console.log("onReady Start");
      login_again = true;
-     Cnt = 99;
+     Cnt = 96;
      //start timer ...
-     Start_Timer(user);
+     Start_Timer();
     // Do_Login();
-     console.log("onReady Stop " + user);
+     console.log("onReady Stop");
 }
 
 
 $(document).ready(function(){
-  Do_Start(user);
+  Do_Start();
 });
 
 
