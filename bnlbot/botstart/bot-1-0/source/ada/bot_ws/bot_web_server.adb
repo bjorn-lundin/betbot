@@ -58,7 +58,6 @@ procedure Bot_Web_Server is
   function Do_Service(Request : in AWS.Status.Data;
                       Method  : in String) return AWS.Response.Data is
     use Calendar2;
-
     Params     : constant AWS.Parameters.List := AWS.Status.Parameters(Request);
     Context    : constant String := AWS.Parameters.Get(Params,"context");
     Response   : AWS.Response.Data;
@@ -67,7 +66,6 @@ procedure Bot_Web_Server is
     Session_ID : AWS.Session.ID ;
    -- Username   : constant String := AWS.Session.Get(Session_ID, "username");
     Application_JSON : constant String := "application/json";
-
   begin
 
     if not AWS.Status.Has_Session(Request) then
@@ -85,6 +83,22 @@ procedure Bot_Web_Server is
       if Username = "" then
         Logging.Log(Service, "Username blank - needs login");
         return AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
+      
+      elsif Context="check_logged_in" then        
+        declare 
+          Params  : constant Aws.Parameters.List := Aws.Status.Parameters(Request);
+          Name    : constant String := Aws.Parameters.Get(Params,"username");
+        begin
+
+          Logging.Log(Service, "Method : Get" & " Context : '" & Context &
+                        "' Username-session: '" & Username & "'" & 
+                        "' Username-param: '" & Name & "'" );
+          if Username = Name then
+            return Aws.Response.Acknowledge (Status_Code => Aws.Messages.S200); -- OK, already logged in
+          else             
+            return Aws.Response.Acknowledge (Status_Code => Aws.Messages.S401); -- unauthorized
+          end if;
+        end;
       end if;
       
       

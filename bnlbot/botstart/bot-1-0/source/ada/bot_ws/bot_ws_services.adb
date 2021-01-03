@@ -119,21 +119,14 @@ package body Bot_Ws_Services is
                           Password    : in String;
                           Context     : in String) return String is
     Error_Message     : Unbounded_String := Null_Unbounded_String;
-    Is_Login_Ok       : Boolean := False;
     Service           : constant String := "Operator_Login";
   begin
     Log(Object & Service, "User '" & Username & "' Login");
-    if not Login_Os(Username,Password) then
-      Log(Object & Service, "User " & Username & " Login OS failed");
-      Error_Message := To_Unbounded_String("Login OS failed");
-      return Negative_Answer(Text => To_String(Error_Message), Context => Context);
-    else
-      Is_Login_Ok := True;
-    end if;
-
-    if Is_Login_Ok then
+    if Login_Os(Username,Password) then
       return Positive_Answer(Context => Context);
     else
+      Log(Object & Service, "User " & Username & " Login OS failed");
+      Error_Message := To_Unbounded_String("Login OS failed");
       return Negative_Answer(Text => To_String(Error_Message), Context => Context);
     end if;
   end Operator_Login;
