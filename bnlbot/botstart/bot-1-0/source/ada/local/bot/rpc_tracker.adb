@@ -69,9 +69,9 @@ begin
 
   Main_Loop : loop
     begin
-      Log(Me, "Start receive");
+    --  Log(Me, "Start receive");
       Process_Io.Receive(Msg, Timeout);
-      Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
+    --  Log(Me, "msg : "& Process_Io.Identity(Msg)'Img & " from " & Utils.Trim(Process_Io.Sender(Msg).Name));
       case Process_Io.Identity(Msg) is
         when Core_Messages.Exit_Message                  =>
           exit Main_Loop;
@@ -80,14 +80,14 @@ begin
           declare
             Rcm : Bot_Messages.Rpc_Called_Record := Bot_Messages.Data(Msg);
           begin   -- or do dbcall?
-           Log(Me, Rcm.Name & "|" & Rcm.Typ & "|" & Trim(Rcm.Data,right));
+           Log(Me, Rcm.Name & "|" & Rcm.Typ & "|" & Trim(Rcm.Data,right) & "|DATAPOINT" );
           end;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
       end case;
     exception
-      when Process_Io.Timeout =>
-        Log(Me, "Timeout");
+      when Process_Io.Timeout => null;
+        --Log(Me, "Timeout");
     end;
     Now := Calendar2.Clock;
 
