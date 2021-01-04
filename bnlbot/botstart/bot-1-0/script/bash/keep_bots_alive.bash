@@ -100,6 +100,8 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
 
+  Start_Bot $BOT_USER rpc_tracker rpc_tracker
+  sleep 2
   Start_Bot $BOT_USER login_handler login_handler
   sleep 2
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
@@ -156,6 +158,9 @@ function Check_System_Bots_For_User () {
   #MODE=$5
 
   IS_TESTER="false"
+
+  Start_Bot $BOT_USER rpc_tracker rpc_tracker 
+  sleep 2
 
   case $BOT_USER in
     dry)
