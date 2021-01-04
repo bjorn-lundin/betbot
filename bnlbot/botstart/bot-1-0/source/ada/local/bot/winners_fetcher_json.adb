@@ -109,16 +109,16 @@ begin
         Markets.Check_Market_Status;                          -- updates markets status
         Markets.Check_Unsettled_Markets(Has_Inserted_Winner); -- updates runner status
 
-          if Has_Inserted_Winner then
-            declare
-              NWANR   : Bot_Messages.New_Winners_Arrived_Notification_Record;
-              Receiver : Process_IO.Process_Type := ((others => ' '), (others => ' '));
-            begin
-              Move("bet_checker", Receiver.Name);
-              Log(Me, "Notifying 'bet_checker' of that new winners are arrived");
-              Bot_Messages.Send(Receiver, NWANR);
-            end;
-          end if;
+        if Has_Inserted_Winner then
+          declare
+            Nwanr    : Bot_Messages.New_Winners_Arrived_Notification_Record;
+            Receiver : Process_Io.Process_Type := ((others => ' '), (others => ' '));
+          begin
+            Move("bet_checker", Receiver.Name);
+            Log(Me, "Notifying 'bet_checker' of that new winners are arrived");
+            Bot_Messages.Send(Receiver, Nwanr);
+          end;
+        end if;
       end;
       Now := Calendar2.Clock;
       --restart every day

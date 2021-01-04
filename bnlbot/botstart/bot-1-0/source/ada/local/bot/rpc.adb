@@ -18,6 +18,8 @@ with Ada.Calendar.Time_Zones;
 --with Bot_System_Number;
 --with Sql;
 --with Ini;
+with Process_Io;
+with Bot_Messages;
 
 package body Rpc is
 
@@ -30,6 +32,8 @@ package body Rpc is
   No_Such_Field : exception;
 
   Global_Token : Token.Token_Type;
+
+  Rpc_Tracker : Process_Io.Process_Type :=(("rpc_tracker    "),(others => ' '));
   ---------------------------------
 
   procedure Init(Username   : in     String;
@@ -138,11 +142,11 @@ package body Rpc is
     --{"token":"","product":"q0XW4VGRNoHuaszo","status":"FAIL","error":"TEMPORARY_BAN_TOO_MANY_REQUESTS"}
 
     declare
-      Data       : String :=  "username=" & Global_Token.Get_Username & "&" &
-                     "password=" & Global_Token.Get_Password;
-      Json_Reply : Json_Value := Create_Object;
+      Data        : String :=  "username=" & Global_Token.Get_Username & "&" & "password=" & Global_Token.Get_Password;
+      Json_Reply  : Json_Value := Create_Object;
       Json_Reply2 : Json_Value := Create_Object;
-      Login_Ok   : Boolean := False;
+      Login_Ok    : Boolean := False;
+      Rpc_Track   : Bot_Messages.Rpc_Called_Record;
     begin
       Aws.Headers.Add (Login_Http_Headers, "Accept", "application/json");
       Aws.Headers.Add (Login_Http_Headers, "X-Application", Global_Token.Get_App_Key);
@@ -158,7 +162,10 @@ package body Rpc is
                                       Headers      => Login_Http_Headers,
                                       Timeouts     => Aws.Client.Timeouts (Each => 30.0));
 
-
+        Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+        Rpc_Track.Typ := "I";
+        Move(Data,Rpc_Track.Data, Drop => Right);
+        Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
         Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
 
         declare
@@ -179,7 +186,6 @@ package body Rpc is
             raise Post_Timeout ;
           end if;
         end;
-
 
         if Json_Reply.Has_Field("loginStatus") then
           if Json_Reply.Get("loginStatus") = "SUCCESS" then
@@ -212,6 +218,11 @@ package body Rpc is
                                     Content_Type => "application/x-www-form-urlencoded",
                                     Headers      => Login_Http_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+
+      Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+      Rpc_Track.Typ := "J";
+      Move(Data,Rpc_Track.Data, Drop => Right);
+      Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
       Log(Me & "Login", "reply'" & Aws.Response.Message_Body(Aws_Reply) & "'");
       begin
         if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
@@ -251,12 +262,13 @@ package body Rpc is
     Logout_Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
     Aws_Reply           : Aws.Response.Data;
     Bot_Name            : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
-    Fname              : String := Ev.Value("BOT_HOME") & "/token.dat";
+    Fname               : String := Ev.Value("BOT_HOME") & "/token.dat";
    -- F                  : Text_Io.File_Type;
    -- Buffer             : String(1..100) := (others => ' ');
    -- Len                : Natural := 0;
-   -- Bot_User           : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;  
+   -- Bot_User           : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;
 
+    Rpc_Track   : Bot_Messages.Rpc_Called_Record;
   begin
 
     if Bot_Name /= Login_Handler then
@@ -282,6 +294,11 @@ package body Rpc is
                                   Content_Type => "application/x-www-form-urlencoded",
                                   Headers      => Logout_Http_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+    Rpc_Track.Typ := "O";
+   -- no data Move(Data,Rpc_Track.Data, Drop => Right);
+    Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
+
     Log(Me & "Logout", Aws.Response.Message_Body(Aws_Reply));
 
     if Position( Aws.Response.Message_Body(Aws_Reply),"""status"":""SUCCESS""") > Integer(0) then
@@ -300,7 +317,7 @@ package body Rpc is
     F                       : Text_Io.File_Type;
     Buffer                  : String(1..100) := (others => ' ');
     Len                     : Natural := 0;
-
+    Rpc_Track               : Bot_Messages.Rpc_Called_Record;
   begin
 
     if Bot_Name /= Login_Handler then
@@ -348,6 +365,11 @@ package body Rpc is
                                   Content_Type => "application/x-www-form-urlencoded",
                                   Headers      => Keep_Alive_Http_Headers,
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+
+    Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+    Rpc_Track.Typ := "K";
+    -- no data Move(Data,Rpc_Track.Data, Drop => Right);
+    Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
     Log(Me & "Keep_Alive", Aws.Response.Message_Body(Aws_Reply));
 
     if Position( Aws.Response.Message_Body(Aws_Reply),"""status"":""FAIL""") > Integer(0) then
@@ -361,26 +383,38 @@ package body Rpc is
                             Url   : in     String) is
     Aws_Reply    : Aws.Response.Data;
     Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
+    Rpc_Track    : Bot_Messages.Rpc_Called_Record;
   begin
     Aws.Headers.Add (Http_Headers, "X-Authentication", Global_Token.Get);
     Aws.Headers.Add (Http_Headers, "X-Application", Global_Token.Get_App_Key);
     Aws.Headers.Add (Http_Headers, "Accept", "application/json");
     Log(Me  & "Get_JSON_Reply", "posting: " & Query.Write);
-    Aws_Reply := Aws.Client.Post (Url          => Url,
-                                  Data         => Query.Write,
-                                  Content_Type => "application/json",
-                                  Headers      => Http_Headers,
-                                  Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+    declare
+      S : String := Query.Write;
+    begin
+      Aws_Reply := Aws.Client.Post (Url          => Url,
+                                    Data         => S,
+                                    Content_Type => "application/json",
+                                    Headers      => Http_Headers,
+                                    Timeouts     => Aws.Client.Timeouts (Each => 30.0));
+      Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+      Rpc_Track.Typ := "D";
+      Move(S, Rpc_Track.Data, Drop => Right);
+      Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
+    end;
     Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 
-    if String'(Aws.Response.Message_Body(Aws_Reply)) /= "Post Timeout" then
-      Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
-                     Filename => "");
-      Log(Me & "Get_JSON_Reply", "Got reply: " & Reply.Write  );
-    else
-      Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
-      raise Post_Timeout ;
-    end if;
+    declare
+      R : String := Aws.Response.Message_Body(Aws_Reply);
+    begin
+      if R /= "Post Timeout" then
+        Reply := Read (Strm => R, Filename => "");
+        Log(Me & "Get_JSON_Reply", "Got reply: " & Reply.Write  );
+      else
+        Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+        raise Post_Timeout ;
+      end if;
+    end;
   exception
     when Post_Timeout => raise;
     when E: others =>
