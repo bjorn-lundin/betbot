@@ -20,6 +20,7 @@ project Adabot is
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
    System_Mains := ("repo.adb",
+                    "rpc_tracker.adb",
                     "bot_send.adb",
                     "poll.adb",
                     "race_time.adb",

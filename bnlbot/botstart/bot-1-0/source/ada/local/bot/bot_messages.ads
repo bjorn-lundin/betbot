@@ -15,6 +15,7 @@ package Bot_Messages is
   Place_Lay_Bet_Message : constant Process_io.Identity_Type := 2003;
   New_Bet_Placed_Notification_Message : constant Process_io.Identity_Type := 2004;
   Poll_State_Message : constant Process_io.Identity_Type := 2005;
+  Rpc_Called_Message : constant Process_io.Identity_Type := 2006;
 
 
   ----------------------------------------------------------------
@@ -229,6 +230,39 @@ package Bot_Messages is
                     Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
             renames Poll_State_Package.Send;
   ---------------------------------------------------------------------------
+
+  ----------------------------------------------------------------
+  type Rpc_Called_Record is record
+    Name : String(1 .. 15) := (others => ' ');
+    Typ  : String(1 ..  1) := (others => ' ');
+    Data : String(1 ..100) := (others => ' ');
+  end record;
+
+  for Rpc_Called_Record'alignment use 4;
+  for Rpc_Called_Record use record
+      Name at  0 range 0..8 *  15-1;
+      Typ  at 16 range 0..8 *   1-1;
+      Data at 20 range 0..8 * 100-1;
+  end record;
+  for Rpc_Called_Record'Size use 8*120;
+
+
+  package Rpc_Called_Package is new Process_Io.Generic_Io
+          (Identity        => Rpc_Called_Message,
+           Data_Type       => Rpc_Called_Record,
+           Data_Descriptor => (1 => Process_Io.String_Type(15),
+                               2 => Process_Io.String_Type(100)));
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  Rpc_Called_Record
+            renames Rpc_Called_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : Rpc_Called_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames Rpc_Called_Package.Send;
+  ---------------------------------------------------------------------------
+
 
 
 end Bot_Messages;
