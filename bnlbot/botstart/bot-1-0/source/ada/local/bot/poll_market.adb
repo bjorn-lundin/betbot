@@ -68,7 +68,7 @@ procedure Poll_Market is
 
     Ada.Streams.Stream_Io.Create
       (File => File,
-       Name => Path & '/' & Name,
+       Name => Path & '/' & Name & ".dat",
        Mode => Ada.Streams.Stream_Io.Out_File);
     Stream := Ada.Streams.Stream_Io.Stream (File);
     Prices.Lists.List'Write(Stream, Price_List);
