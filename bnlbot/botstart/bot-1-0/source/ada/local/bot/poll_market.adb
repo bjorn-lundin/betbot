@@ -24,6 +24,8 @@ with Prices;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
+with Ada.Streams;
+with Ada.Streams.Stream_IO;
 
 procedure Poll_Market is
   package EV renames Ada.Environment_Variables;
@@ -45,6 +47,35 @@ procedure Poll_Market is
   This_Process    : Process_Io.Process_Type := Process_IO.This_Process;
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
+
+  Global_Cnt : Natural := 0;
+
+  procedure Write_List_To_Shm(Typ : String;  Price_List : Prices.Lists.List) is
+    Path   : String := "/dev/shm/bot/" & (if Typ = "WIN" then "win" else "plc");
+    File   : Ada.Streams.Stream_Io.File_Type with Warnings => Off;
+    Stream : Ada.Streams.Stream_Io.Stream_Access;
+    Now    : Calendar2.Time_Type := Calendar2.Clock;
+    Name   : String := Now.String_Date_Time_Iso & Global_Cnt'Img;
+  begin
+    Global_Cnt := Global_Cnt +1;
+
+    for I in Name'Range loop
+      case Name(I) is
+        when ':' | ' ' | '.' | '-' => Name(I) := '_';
+        when others => null;
+      end case;
+    end loop;
+
+    Ada.Streams.Stream_Io.Create
+      (File => File,
+       Name => Path & '/' & Name,
+       Mode => Ada.Streams.Stream_Io.Out_File);
+    Stream := Ada.Streams.Stream_Io.Stream (File);
+    Prices.Lists.List'Write(Stream, Price_List);
+    Ada.Streams.Stream_Io.Close(File);
+  end Write_List_To_Shm;
+
+  ----------------------------------------------------
 
 
   procedure Run(Market_Notification : in Bot_Messages.Market_Notification_Record) is
@@ -97,6 +128,7 @@ procedure Poll_Market is
                             Market     => Market,
                             Price_List => Price_List,
                             In_Play    => In_Play);
+      Write_List_To_Shm(Market.Markettype(1..3), Price_List);
 
       if Is_Data_Collector then
         for Price of Price_List loop
@@ -113,6 +145,7 @@ procedure Poll_Market is
          );
          Priceshistory_List.Append(Priceshistory_Data);
         end loop;
+
       end if;
 
       exit Poll_Loop when Market.Status(1..4) /= "OPEN";

@@ -26,10 +26,13 @@ with Core_Messages;
 with Utils; use Utils;
 with Rpc ;
 with Bot_Svn_Info;
+with Ada.Directories;
 
 procedure Markets_Fetcher is
   package Ev renames Ada.Environment_Variables;
+  package Ad renames Ada.Directories;
   use type Sql.Transaction_Status_Type;
+
 
   Me : constant String := "Main.";
 
@@ -285,6 +288,20 @@ begin
   My_Lock.Take(Ev.Value("BOT_NAME"));
 
   Log(Me, "Login");
+
+  -- create shm dirs
+  if not Ad.Exists("/dev/shm/bot") then
+    Ad.Create_Directory("/dev/shm/bot" );
+  end if;
+
+  if not Ad.Exists("/dev/shm/bot/win") then
+    Ad.Create_Directory("/dev/shm/bot/win" );
+  end if;
+
+  if not Ad.Exists("/dev/shm/bot/plc") then
+    Ad.Create_Directory("/dev/shm/bot/plc" );
+  end if;
+
 
   Rpc.Init(
            Username   => Ini.Get_Value("betfair","username",""),

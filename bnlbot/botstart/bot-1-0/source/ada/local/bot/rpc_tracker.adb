@@ -19,7 +19,6 @@ with Core_Messages;
 with Bot_Svn_Info;
 with Rpc;
 with Ini;
-with Utils;
 
 procedure Rpc_Tracker is
   package Ev renames Ada.Environment_Variables;
