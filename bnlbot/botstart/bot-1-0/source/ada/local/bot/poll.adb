@@ -79,7 +79,7 @@ procedure Poll is
   function Get_Bet_Placer(Bettype : Config.Bet_Type) return Process_Io.Process_Type is
   begin
     Global_Bet_Placer := Global_Bet_Placer + 1;
-    -- we start 20 bet_placers
+    -- we start 10 bet_placers
     if Global_Bet_Placer > Integer(10) then
       Global_Bet_Placer := 1;
     end if;
