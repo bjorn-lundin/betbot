@@ -50,6 +50,7 @@ project Global is
                            "global",
                            "global/process_io",
                            "global/gnatcoll",
+                           "global/inotify",
                            "global/repotool",
                            "global/tables");
 
