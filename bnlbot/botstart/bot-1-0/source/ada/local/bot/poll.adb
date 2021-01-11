@@ -119,13 +119,14 @@ end Get_Bet_Placer;
     Receiver        : Process_Io.Process_Type := Get_Bet_Placer(Main_Bet);
     Local_Back_Size : Fixed_Type := Back_Size;
   begin
+
     declare
       -- only bet on allowed days
       Now : Time_Type := Clock;
       Day : Week_Day_Type := Week_Day_Of(Now);
     begin
-      if not Cfg.Allowed_Days(Day) then
-        Log("No bet layed, bad weekday" );
+      if not Cfg.Bet(Main_Bet).Allowed_Days(Day) then
+        Log("No bet layed, bad weekday for this bet" );
         return;
       end if;
     end;
@@ -205,8 +206,8 @@ end Get_Bet_Placer;
       Now : Time_Type := Clock;
       Day : Week_Day_Type := Week_Day_Of(Now);
     begin
-      if not Cfg.Allowed_Days(Day) then
-        Log("No bet layed, bad weekday" );
+      if not Cfg.Bet(Main_Bet).Allowed_Days(Day) then
+        Log("No bet layed, bad weekday for this bet" );
         return;
       end if;
     end;
@@ -858,6 +859,17 @@ end Get_Bet_Placer;
       Bets_Allowed(I).Max_Loss_Per_Day := Bet_Size_Type(Cfg.Bet(I).Max_Loss_Per_Day);
       Bets_Allowed(I).Max_Earnings_Per_Day := Bet_Size_Type(Cfg.Bet(I).Max_Earnings_Per_Day);
     end loop;
+
+    declare
+      -- only bet on allowed days
+      Now : Time_Type := Clock;
+      Day : Week_Day_Type := Week_Day_Of(Now);
+    begin
+      if not Cfg.Allowed_Days(Day) then
+        Log("No bet layed, bad weekday globally" );
+        return;
+      end if;
+    end;
 
     -- check if ok to bet and set bet size
     Rpc.Get_Balance(Betfair_Result => Betfair_Result, Saldo => Saldo);
