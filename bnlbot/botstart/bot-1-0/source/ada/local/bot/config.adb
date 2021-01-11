@@ -60,11 +60,12 @@ package body Config is
         use Ada.Strings.Fixed;
         Days : String := Ini.Get_Value(I'Img,"allowed_days","no");
         use Calendar2;
-        Zero : Natural := 0;
       begin
+        Cfg.Bet(I).Allowed_Days := (others => True); --default to ok if no entry
         if To_Lower(Days) /= "no" then
+          Cfg.Bet(I).Allowed_Days := (others => True); --default to NOT ok if entry
           for J in Week_Day_Type'Range loop
-            Cfg.Bet(I).Allowed_Days(J) := Index(To_Lower(Days), To_Lower(J'Img)(1..2)) > Zero;
+            Cfg.Bet(I).Allowed_Days(J) := To_Lower(J'Img)(1..2) = To_Lower(Days) ;
             Log(Me & Service, J'Img & " override " & I'Img & " Index(To_Lower(Days), To_Lower(j'Img)(1..2)) " &  Index(To_Lower(Days), To_Lower(J'Img(1..2)))'Img );
           end loop;
         end if;
@@ -104,9 +105,9 @@ package body Config is
       Days := Null_Unbounded_String;
       Append(Days, "<days>");
       for J in Week_Day_Type'Range loop
-        Append(Days, "<" & To_Lower(I'Img) & ">" &
+        Append(Days, "<" & To_Lower(J'Img) & ">" &
                  To_Lower(String'(Cfg.Bet(I).Allowed_Days(J)'Img)) &
-                 "</" & To_Lower(I'Img) & ">" );
+                 "</" & To_Lower(J'Img) & ">" );
       end loop;
       Append(Days, "</days>");
 
