@@ -32,6 +32,7 @@ package Config is
     Enabled                    : Boolean          := False;
     Chase_Allowed              : Boolean          := False;
     Hurdle_Allowed             : Boolean          := False;
+    Allowed_Days               : Allowed_Days_Array  := (others => False);
   end record;
 
   type Bet_Config_Array_Type is array(Bet_Type'Range) of Bet_Config_Type;
