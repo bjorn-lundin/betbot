@@ -39,11 +39,11 @@ package body Config is
       use Calendar2;
       Zero : Natural := 0;
     begin
-      Cfg.Allowed_Days := (others => False); --default to NOT ok
+      Cfg.Allowed_Days := (others => True); --default to ok
       if To_Lower(Days) /= "no" then
         for I in Week_Day_Type'Range loop
           Cfg.Allowed_Days(I) := Index(To_Lower(Days), To_Lower(I'Img)(1..2)) > Zero;
-          Log(Me & Service, I'Img & " To_Lower(J'Img)(1..2) in To_Lower(Days)" & Cfg.Allowed_Days(I)'img );
+          Log(Me & Service, I'Img & " To_Lower(J'Img)(1..2) in To_Lower(Days) " & To_Lower(I'Img)(1..2) & " in " & To_Lower(Days) & " " & Cfg.Allowed_Days(I)'img );
         end loop;
       else
         Cfg.Allowed_Days := (others => True); --ok if no entry
@@ -52,7 +52,7 @@ package body Config is
 
     -- override allowed days
     for I in Bet_Type'Range loop
-      Cfg.Bet(I).Allowed_Days := (others => False); --default to NOT ok
+      Cfg.Bet(I).Allowed_Days := (others => True); --default to ok
       declare
         use Ada.Characters.Handling;
         use Ada.Strings.Fixed;
@@ -62,13 +62,10 @@ package body Config is
       begin
         if To_Lower(Days) /= "no" then
           for J in Week_Day_Type'Range loop
-            Cfg.Bet(I).Allowed_Days(J) := Index(To_Lower(Days), To_Lower(I'Img)(1..2)) > Zero;
-            Log(Me & Service, J'Img & " override " & I'Img & " To_Lower(J'Img)(1..2) in To_Lower(Days)" & Cfg.Bet(I).Allowed_Days(J)'img );
+            Cfg.Bet(I).Allowed_Days(J) := Index(To_Lower(Days), To_Lower(J'Img)(1..2)) > Zero;
+            Log(Me & Service, J'Img & " override " & I'Img & " To_Lower(J'Img)(1..2) in To_Lower(Days)" & To_Lower(J'Img)(1..2) & " in " & To_Lower(Days) & " " & Cfg.Bet(I).Allowed_Days(J)'img );
           end loop;
-        else
-          Cfg.Bet(I).Allowed_Days := (others => True); -- ok if no entry
         end if;
-
       end;
     end loop;
 
