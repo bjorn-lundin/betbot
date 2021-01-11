@@ -1,4 +1,4 @@
-with Ada.Strings.Fixed;
+--with Ada.Strings.Fixed;
 with Logging; use Logging;
 with Ada.Characters.Handling;
 with Ini;
@@ -32,42 +32,40 @@ package body Config is
       Cfg.Bet(I).Hurdle_Allowed := Ini.Get_Value(I'Img,"hurdle",False);
     end loop;
 
+    Cfg.Allowed_Days := (others => False); --default to NOT ok
     declare
       use Ada.Characters.Handling;
-      use Ada.Strings.Fixed;
-      Days : String := Ini.Get_Value("global","allowed_days","al");
+     -- use Ada.Strings.Fixed;
+      Days : String := Ini.Get_Value("global","allowed_days","no");
       use Calendar2;
-      Zero : Natural := 0;
+   --   Zero : Natural := 0;
     begin
-      if To_Lower(Days) /= "al" then
-        for I in Week_Day_Type'Range loop
-          Cfg.Allowed_Days(I) := Index(To_Lower(Days), To_Lower(I'Img)(1..2)) > Zero;
-          Log(Me & Service, I'Img & " Index(To_Lower(Days), To_Lower(i'Img)(1..2))" &  Index(To_Lower(Days), To_Lower(I'Img(1..2)))'Img );
-
+      if To_Lower(Days) /= "no" then
+        for J in Week_Day_Type'Range loop
+          Cfg.Allowed_Days(J) := To_Lower(J'Img)(1..2) = To_Lower(Days) ;
+          Log(Me & Service, J'Img & " To_Lower(J'Img)(1..2) = To_Lower(Days)" &  To_Lower(J'Img)(1..2) & " <-> " & To_Lower(Days) );
         end loop;
       else
-        for I in Week_Day_Type'Range loop
-          Cfg.Allowed_Days(I) := Index(To_Lower(Days), "al") > Zero;
-        end loop;
+        Cfg.Allowed_Days := (others => True); --default to ok if no entry
       end if;
     end;
 
     -- override allowed days
-
     for I in Bet_Type'Range loop
+      Cfg.Bet(I).Allowed_Days := (others => False); --default to NOT ok
       declare
         use Ada.Characters.Handling;
-        use Ada.Strings.Fixed;
+   --     use Ada.Strings.Fixed;
         Days : String := Ini.Get_Value(I'Img,"allowed_days","no");
         use Calendar2;
       begin
-        Cfg.Bet(I).Allowed_Days := (others => True); --default to ok if no entry
         if To_Lower(Days) /= "no" then
-          Cfg.Bet(I).Allowed_Days := (others => True); --default to NOT ok if entry
           for J in Week_Day_Type'Range loop
             Cfg.Bet(I).Allowed_Days(J) := To_Lower(J'Img)(1..2) = To_Lower(Days) ;
-            Log(Me & Service, J'Img & " override " & I'Img & " Index(To_Lower(Days), To_Lower(j'Img)(1..2)) " &  Index(To_Lower(Days), To_Lower(J'Img(1..2)))'Img );
+            Log(Me & Service, J'Img & " override " & I'Img & " To_Lower(J'Img)(1..2) = To_Lower(Days)" &  To_Lower(J'Img)(1..2) & " <-> " & To_Lower(Days) );
           end loop;
+        else
+          Cfg.Bet(I).Allowed_Days := (others => True); --default to ok if no entry
         end if;
       end;
     end loop;
