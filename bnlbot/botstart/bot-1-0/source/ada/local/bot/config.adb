@@ -51,7 +51,27 @@ package body Config is
         end loop;
       end if;
     end;
-     return Cfg;
+
+    -- override allowed days
+
+    for I in Bet_Type'Range loop
+      declare
+        use Ada.Characters.Handling;
+        use Ada.Strings.Fixed;
+        Days : String := Ini.Get_Value(I'Img,"allowed_days","no");
+        use Calendar2;
+        Zero : Natural := 0;
+      begin
+        if To_Lower(Days) /= "no" then
+          for I in Week_Day_Type'Range loop
+            Cfg.Allowed_Days(I) := Index(To_Lower(Days), To_Lower(I'Img)(1..2)) > Zero;
+            Log(Me & Service, I'Img & "override Index(To_Lower(Days), To_Lower(i'Img)(1..2))" &  Index(To_Lower(Days), To_Lower(I'Img(1..2)))'Img );
+          end loop;
+        end if;
+      end;
+    end loop;
+
+    return Cfg;
   end Create;
   -------------------------------------------------------------
   function To_String(Cfg : Config_Type) return String is
