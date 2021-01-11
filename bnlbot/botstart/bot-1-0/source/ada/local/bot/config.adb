@@ -85,6 +85,7 @@ package body Config is
             "<max_total_loss_per_day>" & F8_Image(Cfg.Max_Total_Loss_Per_Day) & "</max_total_loss_per_day>" ;
     Part3 : String := "</config>";
     Days  : Unbounded_String := Null_Unbounded_String;
+    Days_In_Bet  : Unbounded_String := Null_Unbounded_String;
     Bets  : Unbounded_String := Null_Unbounded_String;
   begin
 
@@ -99,14 +100,14 @@ package body Config is
     Append(Bets, "<bets>");
     for I in Bet_Type'Range loop
 
-      Days := Null_Unbounded_String;
-      Append(Days, "<days>");
+      Days_In_Bet := Null_Unbounded_String;
+      Append(Days_In_Bet, "<days>");
       for J in Week_Day_Type'Range loop
-        Append(Days, "<" & To_Lower(J'Img) & ">" &
+        Append(Days_In_Bet, "<" & To_Lower(J'Img) & ">" &
                  To_Lower(String'(Cfg.Bet(I).Allowed_Days(J)'Img)) &
                  "</" & To_Lower(J'Img) & ">" );
       end loop;
-      Append(Days, "</days>");
+      Append(Days_In_Bet, "</days>");
 
 
       Append(Bets, "<" & To_Lower(I'Img) & ">" &
@@ -117,7 +118,7 @@ package body Config is
                "<enabled>" & Cfg.Bet(I).Enabled'Img & "</enabled>" &
                "<chase_allowed>" & Cfg.Bet(I).Chase_Allowed'Img & "</chase_allowed>" &
                "<hurdle_allowed>" & Cfg.Bet(I).Hurdle_Allowed'Img & "</hurdle_allowed>" &
-               Days &
+               Days_In_Bet &
              "</" & To_Lower(I'Img) & ">" );
     end loop;
     Append(Bets, "</bets>");
