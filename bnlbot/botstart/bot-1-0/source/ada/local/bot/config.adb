@@ -63,9 +63,9 @@ package body Config is
         Zero : Natural := 0;
       begin
         if To_Lower(Days) /= "no" then
-          for I in Week_Day_Type'Range loop
-            Cfg.Allowed_Days(I) := Index(To_Lower(Days), To_Lower(I'Img)(1..2)) > Zero;
-            Log(Me & Service, I'Img & "override Index(To_Lower(Days), To_Lower(i'Img)(1..2))" &  Index(To_Lower(Days), To_Lower(I'Img(1..2)))'Img );
+          for J in Week_Day_Type'Range loop
+            Cfg.Bet(i).Allowed_Days(J) := Index(To_Lower(Days), To_Lower(J'Img)(1..2)) > Zero;
+            Log(Me & Service, J'Img & " override " & I'Img & " Index(To_Lower(Days), To_Lower(j'Img)(1..2)) " &  Index(To_Lower(Days), To_Lower(J'Img(1..2)))'Img );
           end loop;
         end if;
       end;
@@ -108,6 +108,11 @@ package body Config is
                            "<enabled>" & Cfg.Bet(i).Enabled'Img & "</enabled>" &
                            "<chase_allowed>" & Cfg.Bet(i).Chase_Allowed'Img & "</chase_allowed>" &
                            "<hurdle_allowed>" & Cfg.Bet(i).Hurdle_Allowed'Img & "</hurdle_allowed>" &
+                          for J in Week_Day_Type'range loop
+                            Append(Days, "<" & To_Lower(i'Img) & ">" &
+                                         To_Lower(Cfg.Bets(I).Allowed_Days(J)'Img) &
+                                          "</" & To_Lower(i'Img) & ">" );
+                          end loop;
                         "</" & To_Lower(i'Img) & ">" );
         end loop;
         Append(Bets, "</bets>");
