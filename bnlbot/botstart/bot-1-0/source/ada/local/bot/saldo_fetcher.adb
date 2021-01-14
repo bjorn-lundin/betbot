@@ -110,13 +110,13 @@ procedure Saldo_Fetcher is
 
       Receivers : constant SMTP.Recipients :=  (
                   SMTP.E_Mail("Bj=F6rn Lundin", "b.f.lundin@gmail.com"),
-                  SMTP.E_Mail("Bj=F6rn Lundin", "bjorn.lundin@consafelogistics.com")
-                --  SMTP.E_Mail("Joakim Birgerson", "joakim.birgerson@gmail.com"),
-                --  SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
+              --    SMTP.E_Mail("Bj=F6rn Lundin", "bjorn.lundin@consafelogistics.com")
+                  SMTP.E_Mail("Joakim Birgerson", "joakim.birgerson@gmail.com"),
+                  SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
                 );
     begin
       SMTP.Client.Send(Server  => SMTP_Server,
-                       From    => SMTP.E_Mail ("Nonobet Betbot", "betbot@nonobet.com"),
+                       From    => SMTP.E_Mail ("bnl Betbot", "betbot@lundin.duckdns.org"),
                        To      => Receivers,
                        Subject => Subject,
                        Message => Msg,
@@ -160,12 +160,12 @@ procedure Saldo_Fetcher is
     Old_Saldo : Balances.Balance_Type ;
   begin
 
-  --  Rpc.Get_Balance(Betfair_Result,Saldo);
+    Rpc.Get_Balance(Betfair_Result,Saldo);
 
     if Betfair_Result = Rpc.Ok then
       Saldo.Baldate := Now;
       T.Start;
-    --  Insert_Saldo(Saldo);
+      Insert_Saldo(Saldo);
       Old_Saldo := Get_Old_Saldo;
       T.Commit;
       Mail_Saldo(Saldo, Old_Saldo);
