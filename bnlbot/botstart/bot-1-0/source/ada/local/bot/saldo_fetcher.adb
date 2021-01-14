@@ -58,14 +58,19 @@ procedure Saldo_Fetcher is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      Subject : constant String             := "BetBot Saldo Report";
      use AWS;
-     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
+--     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
+     SMTP_Server_Name : constant String := "mailout.telia.com"; --telia
      Status : SMTP.Status;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
+      --for Telia
       Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
-                                                "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
+                                SMTP.Authentication.Plain.Initialize ("a00751796",
+                                                "c994e08b");
+--        Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+--                                  SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
+--                                                  "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
 
 -- old version                  SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
 --                                              "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
@@ -73,7 +78,7 @@ procedure Saldo_Fetcher is
 
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
-                                   Port       => 2465,
+                                   Port       => 465,--2465,
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
@@ -105,8 +110,9 @@ procedure Saldo_Fetcher is
 
       Receivers : constant SMTP.Recipients :=  (
                   SMTP.E_Mail("Bj=F6rn Lundin", "b.f.lundin@gmail.com"),
-                  SMTP.E_Mail("Joakim Birgerson", "joakim.birgerson@gmail.com"),
-                  SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
+                  SMTP.E_Mail("Bj=F6rn Lundin", "bjorn.lundin@consafelogistics.com")
+                --  SMTP.E_Mail("Joakim Birgerson", "joakim.birgerson@gmail.com"),
+                --  SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
                 );
     begin
       SMTP.Client.Send(Server  => SMTP_Server,
@@ -154,12 +160,12 @@ procedure Saldo_Fetcher is
     Old_Saldo : Balances.Balance_Type ;
   begin
 
-    Rpc.Get_Balance(Betfair_Result,Saldo);
+  --  Rpc.Get_Balance(Betfair_Result,Saldo);
 
     if Betfair_Result = Rpc.Ok then
       Saldo.Baldate := Now;
       T.Start;
-      Insert_Saldo(Saldo);
+    --  Insert_Saldo(Saldo);
       Old_Saldo := Get_Old_Saldo;
       T.Commit;
       Mail_Saldo(Saldo, Old_Saldo);
