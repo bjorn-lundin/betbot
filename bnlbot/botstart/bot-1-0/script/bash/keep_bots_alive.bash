@@ -334,12 +334,13 @@ function check_stuck_markets_fetcher () {
 
 
   if [ "${this_sum}" == "${last_sum}" ] ; then
-    echo "do kill stuck markets_fetcher"
+    echo "do kill stuck markets_fetcher for $BOT_HOME"
     pid=$(cat ${pidfile} | cut -d'|' -f1)
-#    echo "killing pid $pid"
+    echo "killing pid $pid"
     kill -term $pid
     sleep 1
     kill -kill $pid
+    date > ${logfile}
   else
 #    echo "md5 is different"
     :
