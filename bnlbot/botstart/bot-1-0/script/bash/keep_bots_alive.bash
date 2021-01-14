@@ -157,6 +157,20 @@ function Check_System_Bots_For_User () {
   #INI_NAME=$4
   #MODE=$5
 
+
+  #don't make a mail for each user/proc if not allowed to start anyway
+  case $BOT_HOUR in
+      "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+
+      Start_Bot $BOT_USER bot_ws bot_web_server
+      return 0
+    ;;
+    *)
+      Start_Bot $BOT_USER bot_ws bot_web_server
+    ;;
+  esac
+
+
   IS_TESTER="false"
 
   Start_Bot $BOT_USER rpc_tracker rpc_tracker 
@@ -180,7 +194,7 @@ function Check_System_Bots_For_User () {
          Start_Bot $BOT_USER $collector poll_market
        done
 
-       Start_Bot $BOT_USER bot_ws bot_web_server
+     # done above  Start_Bot $BOT_USER bot_ws bot_web_server
     ;;
 
 #    ghd)
