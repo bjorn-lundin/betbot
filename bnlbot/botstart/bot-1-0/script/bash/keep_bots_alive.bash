@@ -424,7 +424,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com"
 
-DISK_LIST="sda root"
+DISK_LIST="sda1 sda3 root"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
