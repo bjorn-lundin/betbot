@@ -278,7 +278,7 @@ function Create_Plots () {
 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --startdate="2018-11-15" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --startdate="2018-11-01" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -306,6 +306,17 @@ function Create_Plots () {
 }
 
 function check_stuck_markets_fetcher () {
+  HOUR=$1
+  #don't make a mail for each user/proc if not allowed to start anyway
+  case $HOUR in
+      "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+      return 0
+    ;;
+    *)
+       :
+    ;;
+  esac
+
  #  return 0
   #check that marketfetcher is not stuck
   logfile=$BOT_HOME/log/markets_fetcher.log
@@ -340,7 +351,6 @@ function check_stuck_markets_fetcher () {
     kill -term $pid
     sleep 1
     kill -kill $pid
-    date > ${logfile}
   else
 #    echo "md5 is different"
     :
@@ -410,7 +420,7 @@ case $BOT_MACHINE_ROLE in
 
     for USR in $SYSTEM_USER_LIST ; do
       Check_System_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      check_stuck_markets_fetcher
+      check_stuck_markets_fetcher $HOUR
     done
 
   ;;
