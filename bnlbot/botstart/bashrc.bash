@@ -30,7 +30,7 @@ esac
 
 if [ $bits == "armv7l" ] ; then
   export ADA_ROOT=/usr/local/ada
-  export ADA_PROJECT_PATH=$ADA_ROOT/aws/sfs-aws-gpl-2016/share/gpr
+  export ADA_PROJECT_PATH=$ADA_ROOT/aws/fsf-aws2018-gpl/share/gpr
 #  export BOT_START=/bnlbot/botstart
 else
   export ADA_ROOT=/usr/local/ada/2017
