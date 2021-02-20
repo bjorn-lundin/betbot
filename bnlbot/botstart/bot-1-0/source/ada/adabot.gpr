@@ -11,8 +11,8 @@ project Adabot is
    for Source_Dirs use (AL & "/" & Sub_System,
                         AL & "/" & "objects",
                         AL & "/" & "utils",
-                        AL & "/inotify",
-                        AL & "/inotify/examples",
+--                        AL & "/inotify",
+--                        AL & "/inotify/examples",
                         BAWS);
 
    for Object_Dir use Global'Object_Dir & "/" & Sub_System;
@@ -37,9 +37,9 @@ project Adabot is
                     "stat_maker.adb",
                     "bot_web_server.adb",
                     "login_handler.adb",
-                    "check_bot_running.adb",
-                    "monitor.adb", -- inotify tester
-                    "monitor2.adb"  --inotify tester                    
+                    "check_bot_running.adb" --,
+  --                  "monitor.adb", -- inotify tester
+  --                  "monitor2.adb"  --inotify tester                    
                     );
 
    Stat_Mains   := (
@@ -95,7 +95,7 @@ project Adabot is
    package Compiler renames Global.Compiler;
    package Binder   renames Global.Binder;
    package Linker   renames Global.Linker;
-   package Ide      renames Global.Ide;
+--   package Ide      renames Global.Ide;
 
 
 end Adabot;

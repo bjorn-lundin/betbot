@@ -24,9 +24,9 @@ export REPO_ENGINE=$BOT_TARGET/bin/repo
 
 HOSTNAME=$(hostname)
 case $HOSTNAME in
-  pibetbot*)    
+  pibetbot*)
     export BOT_MACHINE_ROLE=PROD
-    export BOT_XML_SOURCE=LOCAL
+    export BOT_XML_SOURCE=LIB
     ;;
   imac*)
     export BOT_MACHINE_ROLE=SIM
@@ -38,15 +38,15 @@ case $HOSTNAME in
     export BOT_XML_SOURCE=GNAT
     ;;
 
-  HP-Mini*)    
+  HP-Mini*)
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=LOCAL
     ;;
-  prod*)    
+  prod*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
-  ip*)    
+  ip*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
@@ -58,11 +58,11 @@ case $HOSTNAME in
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     ;;
-  raspberrypi*)  
+  raspberrypi*)
     export BOT_MACHINE_ROLE=DISPLAY
     export BOT_XML_SOURCE=LOCAL
-    ;;    
-  *)  
+    ;;
+  *)
     export BOT_MACHINE_ROLE=$HOSTNAME
     ;;
 esac

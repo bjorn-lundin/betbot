@@ -1,11 +1,11 @@
---with "xmlada";
+with "xmlada";
 with "aws";
 
 project Global is
    for Languages use ("Ada");
 
-   XML_Sources := external ("BOT_XML_SOURCE");
-   type XML_Sources_Type is ("LOCAL", "GNAT");
+   type XML_Sources_Type is ("LOCAL", "GNAT", "LIB");
+   XML_Sources : XML_Sources_Type  := external ("BOT_XML_SOURCE");
 
    XML_Sources_Dir : XML_Sources_Type := XML_Sources;
 
@@ -55,7 +55,9 @@ project Global is
                            "global/tables");
 
       case XML_Sources_Dir is
-         when "GNAT" =>
+         when "LIB"  =>
+            for Source_Dirs use Common_Source_Dirs;
+         when "GNAT"  =>
             for Source_Dirs use Common_Source_Dirs;
          when "LOCAL" =>
             for Source_Dirs use Common_Source_Dirs & Xml_Source;
@@ -92,10 +94,10 @@ project Global is
    end Builder;
 
 
-   package Ide is
-      for Compiler_Command ("ada") use "gnatmake";
-      for Compiler_Command ("c") use "gcc";
-   end Ide;
+--   package Ide is
+--      for Compiler_Command ("ada") use "gnatmake";
+--      for Compiler_Command ("c") use "gcc";
+--   end Ide;
 
 
 end Global;
