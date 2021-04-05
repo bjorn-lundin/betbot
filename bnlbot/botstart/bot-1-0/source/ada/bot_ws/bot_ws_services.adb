@@ -848,7 +848,7 @@ package body Bot_Ws_Services is
       
         Select_Sum_Bets_Grouped_By_Week.Set("BETNAME", Utils.Trim(Betname));
               
-        Year_Loop : for Year in 2018 .. 2020 loop 
+        Year_Loop : for Year in 2018 .. 2022 loop 
           Week_Loop : for Week in 1 .. 53 loop           
         
             if (2018,11,15,0,0,0,0) <= Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) and then   
@@ -942,7 +942,7 @@ package body Bot_Ws_Services is
       
         Select_Sum_Bets_Grouped_By_Month.Set("BETNAME", Utils.Trim(Betname));
               
-        Year_Loop : for Year in 2018 .. 2020 loop 
+        Year_Loop : for Year in 2018 .. 2022 loop 
           Month_Loop : for Month in 1 .. 12 loop           
             Stop.Year := Year_Type(Year);
             Stop.Month := Month_Type(Month);
