@@ -58,19 +58,19 @@ procedure Saldo_Fetcher is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      Subject : constant String             := "BetBot Saldo Report";
      use AWS;
---     SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
-     SMTP_Server_Name : constant String := "mailout.telia.com"; --telia
+     SMTP_Server_Name : constant String := "email-smtp.eu-north-1.amazonaws.com";
+--     SMTP_Server_Name : constant String := "mailout.telia.com"; --telia
      Status : SMTP.Status;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
-      --for Telia
-      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                SMTP.Authentication.Plain.Initialize ("a00751796",
-                                                "c994e08b");
---        Auth : aliased constant SMTP.Authentication.Plain.Credential :=
---                                  SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
---                                                  "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
+--      --for Telia
+--      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+--                                SMTP.Authentication.Plain.Initialize ("a00751796",
+--                                                "c994e08b");
+        Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+                                  SMTP.Authentication.Plain.Initialize ("AKIA4CCYWRUF6WBFHS4O",
+                                                  "BOYbIW5ox8Vq9+6tUkqUpo4J7gy/a7u/tErewqGDFDWW"); -- fixed by java-tool
 
 -- old version                  SMTP.Authentication.Plain.Initialize ("AKIAJZDDS2DVUNB76S6A",
 --                                              "AhVJXW+YJRE/AMBPoUEOaCjAaWJWWRTDC8JoU039baJG");
@@ -78,7 +78,7 @@ procedure Saldo_Fetcher is
 
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
-                                   Port       => 465,--2465,
+                                   Port       => 587,
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
@@ -116,7 +116,7 @@ procedure Saldo_Fetcher is
                 );
     begin
       SMTP.Client.Send(Server  => SMTP_Server,
-                       From    => SMTP.E_Mail ("bnl Betbot", "betbot@lundin.duckdns.org"),
+                       From    => SMTP.E_Mail ("bnl Betbot", "b.f.lundin@gmail.com"),
                        To      => Receivers,
                        Subject => Subject,
                        Message => Msg,
