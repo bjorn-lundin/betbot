@@ -3,7 +3,9 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 public class SesSmtpCredentialGenerator {
-       private static final String KEY = "SsAPcDnRPnDPKn6v4WuwUiHGG3MqFx6xvBuaXvdj"; //  Replace with your AWS Secret Access Key.
+//       private static final String KEY = "SsAPcDnRPnDPKn6v4WuwUiHGG3MqFx6xvBuaXvdj"; //  Replace with your AWS Secret Access Key.
+       private static final String KEY = "BOYbIW5ox8Vq9+6tUkqUpo4J7gy/a7u/tErewqGDFDWW"; //  Replace with your AWS Secret Access Key.
+
        private static final String MESSAGE = "SendRawEmail"; // Used to generate the HMAC signature. Do not modify.
        private static final byte VERSION =  0x02; // Version number. Do not modify.
 
