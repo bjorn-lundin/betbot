@@ -5,15 +5,14 @@
 ###############################################################################
 
 
-#EXE_DIR_BOT     := $(BOT_TARGET)/bin
+EXE_DIR_BOT     := $(BOT_TARGET)/bin
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
 
 C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
-C_CONSTANTS_EXE_DIR := $(BOT_TARGET)/bin
-C_CONSTANTS_EXE    := $(C_CONSTANTS_EXE_DIR)/c_constants
+C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
 
 TABLES := $(BOT_CONFIG)/repository/tables/table_*.xml
 TERMS := $(BOT_CONFIG)/repository/terms/trm_*.xml
@@ -27,7 +26,7 @@ else
 endif
 
 
-.PHONY : all adabot log bot race_time ws
+.PHONY : all adabot log bot race_time ws dir
 
 all : log
 
@@ -45,6 +44,9 @@ ws :
 
 repo: $(REPO_ENGINE)
 
+dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
+
+
 $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 	$(REPO_ENGINE) --table_makefile > $(TABLE_MAKE_FILE)
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE) -f $(TABLE_MAKE_FILE)
@@ -52,8 +54,8 @@ $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 $(REPO_ENGINE) :
 	gprbuild -p -P adabot repo
 
-#$(EXE_DIR_BOT) :
-#	mkdir -p $(EXE_DIR_BOT)
+$(EXE_DIR_BOT) :
+	mkdir -p $(EXE_DIR_BOT)
 
 $(LOG_DIR_BOT) :
 	mkdir -p $(LOG_DIR_BOT)
@@ -66,15 +68,11 @@ $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 #$(EXE_DIR_BOT)
-adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
+adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gprbuild -p -P adabot
 
-$(C_CONSTANTS_EXE_DIR) :
-	mkdir -p $(C_CONSTANTS_EXE_DIR)
-
-#$(EXE_DIR_BOT)
-$(C_CONSTANTS_EXE) : $(C_CONSTANTS_EXE_DIR) $(C_CONSTANTS_SOURCE)
+$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
 
 $(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
