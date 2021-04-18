@@ -90,7 +90,7 @@ procedure Aws_Mail is
                 );
     begin
       SMTP.Client.Send(Server  => SMTP_Server,
-                       From    => SMTP.E_Mail ("Alarm Betbot", "b.f.lundin@gmail.com"),
+                       From    => SMTP.E_Mail ("Alarm Betbot", "betbotlundin@gmail.com"),
                        To      => Receivers,
                        Subject => Subject,
                        Message => Msg,
