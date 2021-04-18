@@ -42,7 +42,7 @@ project Global is
                                               "-gnatye",    -- require 'end procedurename'
                                               "-gnatwlaKW");
 
-   for Object_Dir use Bot_Target & "/objects";
+       for Object_Dir use Bot_Target & "/objects";
 
    Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
 

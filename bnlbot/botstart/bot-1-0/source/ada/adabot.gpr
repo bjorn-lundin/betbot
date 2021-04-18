@@ -22,6 +22,7 @@ project Adabot is
    Bot_Machine_Role : Bot_Machine_Role_Type := external ("BOT_MACHINE_ROLE","NOT_SET");
 
    System_Mains := ("repo.adb",
+                    --"age.adb",
                     "rpc_tracker.adb",
                     "bot_send.adb",
                     "poll.adb",
@@ -40,7 +41,7 @@ project Adabot is
                     "login_handler.adb",
                     "check_bot_running.adb" --,
   --                  "monitor.adb", -- inotify tester
-  --                  "monitor2.adb"  --inotify tester                    
+  --                  "monitor2.adb"  --inotify tester
                     );
 
    Stat_Mains   := (
@@ -55,6 +56,7 @@ project Adabot is
                     "check_matched_sim_bets.adb",
                     "greenup_lay_first_all.adb",
                     "print_win_place_markets.adb",
+                    "check_bet_on_2_3_4.adb",
                   --  "parse_football_live_feed.adb",
                   --  "test_bot_services.adb",
                   --  "pussel.adb",
