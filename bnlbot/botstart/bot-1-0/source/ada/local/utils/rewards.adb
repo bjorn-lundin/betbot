@@ -33,7 +33,7 @@ procedure Rewards is
   --    end "<";
   --    package Backprice_Sorter is new Price_Histories.Lists.Generic_Sorting("<");
   Global_Size : constant Bot_Types.Bet_Size_Type := 100.0;
-  Commission  : constant Fixed_Type := 5.0/100.0;
+  Commission  : constant Fixed_Type := 2.0/100.0;
 
   type Best_Runners_Array_Type is array (1..16) of Price_Histories.Price_History_Type;
 
@@ -233,7 +233,7 @@ procedure Rewards is
   Start_Date                      :          Calendar2.Time_Type := (2018,11,1,0,0,0,0);
   One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date                    :          Calendar2.Time_Type := Start_Date;
-  Stop_Date                       :          Calendar2.Time_Type := (2020,3,31,23,59,59,999);
+  Stop_Date                       :          Calendar2.Time_Type := (2021,3,31,23,59,59,999);
   Cmd_Line                        :          Command_Line_Configuration;
   T                               :          Sql.Transaction_Type;
   Side                            : Bot_Types.Bet_Side_Type := Bot_Types.Back;

@@ -16,6 +16,7 @@ package Bot_Messages is
   New_Bet_Placed_Notification_Message : constant Process_io.Identity_Type := 2004;
   Poll_State_Message : constant Process_io.Identity_Type := 2005;
   Rpc_Called_Message : constant Process_io.Identity_Type := 2006;
+  Poll_Available_Message : constant Process_io.Identity_Type := 2007;
 
 
   ----------------------------------------------------------------
@@ -251,7 +252,8 @@ package Bot_Messages is
           (Identity        => Rpc_Called_Message,
            Data_Type       => Rpc_Called_Record,
            Data_Descriptor => (1 => Process_Io.String_Type(15),
-                               2 => Process_Io.String_Type(100)));
+                               2 => Process_Io.String_Type(1),
+                               3 => Process_Io.String_Type(100)));
   --
   function  Data   (Message: Process_Io.Message_Type)
             return  Rpc_Called_Record
@@ -263,6 +265,37 @@ package Bot_Messages is
             renames Rpc_Called_Package.Send;
   ---------------------------------------------------------------------------
 
+  type Poll_Available_Record is record
+    Filename : String(1 .. 60) := (others => ' ');
+    Marketid : String(1 .. 11) := (others => ' ');
+    Typ      : String(1 ..  1) := (others => ' ');
+  end record;
+
+  for Poll_Available_Record'alignment use 4;
+  for Poll_Available_Record use record
+      Filename at  0 range 0..8 * 60-1;
+      Marketid at 60 range 0..8 * 11-1;
+      Typ      at 72 range 0..8 *  1-1;
+  end record;
+  for Poll_Available_Record'Size use 8*76;
+
+
+  package Poll_Available_Package is new Process_Io.Generic_Io
+          (Identity        => Poll_Available_Message,
+           Data_Type       => Poll_Available_Record,
+           Data_Descriptor => (1 => Process_Io.String_Type(60),
+                               2 => Process_Io.String_Type(11),
+                               3 => Process_Io.String_Type(1)));
+  --
+  function  Data   (Message: Process_Io.Message_Type)
+            return  Poll_Available_Record
+            renames Poll_Available_Package.Data;
+  --
+  procedure Send   (Receiver  : Process_Io.Process_Type;
+                    Data      : Poll_Available_Record;
+                    Connection: Process_Io.Connection_Type:=Process_Io.Permanent)
+            renames Poll_Available_Package.Send;
+  ---------------------------------------------------------------------------
 
 
 end Bot_Messages;
