@@ -127,7 +127,7 @@ function Check_Bots_For_User () {
   done
 
   if [ $BOT_HOUR == "23" ] ; then
-    if [ $BOT_MINUTE == "30" ] ; then
+    if [ $BOT_MINUTE == "00" ] ; then
       Start_Bot $BOT_USER saldo_fetcher saldo_fetcher
     fi
   fi

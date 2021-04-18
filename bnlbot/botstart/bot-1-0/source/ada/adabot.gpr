@@ -29,6 +29,7 @@ project Adabot is
                     "poll_market.adb",
                     "markets_fetcher.adb",
                     "saldo_fetcher.adb",
+                    "aws_mail.adb",
                     "winners_fetcher_json.adb",
                     "bet_placer.adb",
                     "bet_checker.adb",
