@@ -740,7 +740,7 @@ package body Bot_Ws_Services is
         OK         : Boolean := False;
       begin
         Market.Marketname := S.Marketname;
-        OK := Market.Marketname_Ok2(Allow_Chase => True, Allow_Hurdle => False);
+        OK := Market.Marketname_Ok2(Allow_Chase => False, Allow_Hurdle => False);
 
         if OK then
           if not Arrow_Is_Printed and then Now <= S.Starttime then
