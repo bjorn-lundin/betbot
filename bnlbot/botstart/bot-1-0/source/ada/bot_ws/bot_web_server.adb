@@ -347,7 +347,7 @@ procedure Bot_Web_Server is
     elsif Context = "co2" then
       declare
         Chipid        : constant String := Aws.Parameters.Get(Params,"chipid");
-        Co2level      : constant String := Aws.Parameters.Get(Params,"co2");
+        Co2level      : constant String := Aws.Parameters.Get(Params,"level");
       begin        
         Bot_Ws_Services.Log_C02 (Id    => Chipid,
                                  Level => Integer_4'Value(Co2level));
