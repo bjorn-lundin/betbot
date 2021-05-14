@@ -1169,6 +1169,43 @@ package body Bot_Ws_Services is
   -----------------------------------------------------  
   
 
+  procedure Log_C02 (Id    : String;
+                     Level : Integer_4) is
+                    
+    Service       : constant String := ".Log_Co2";
+    T             : Sql.Transaction_Type;
+    Airreading_Data    :  Table_Airreadings.Data_Type;
+    Now           : Calendar2.Time_Type := Calendar2.Clock;
+    --use Calendar2;    
+  begin
+    if Sql.Is_Session_Open then
+      Logging.Log(Service, "was already connected, disconnect!");
+      Sql.Close_Session;
+      Logging.Log(Service, "did disconnect!");
+    end if;      
+      
+    Sql.Connect
+      (Host     => Global.Host.Fix_String,
+       Port     => Global.Port,
+       Db_Name  => "flowers",
+       Login    => Global.Login.Fix_String, -- always bnl
+       Password => Global.Password.Fix_String);
+    
+    Logging.Log(Service, "did connect to flowers");
+    T.Start;
+    Move(Id, Airreading_Data.Macaddress);
+    Airreading_Data.Created := Now;
+    Airreading_Data.Temperature := 0.0;
+    Airreading_Data.Pressure := Level;
+    Airreading_Data.Humidity := 0.0;
+    Airreading_Data.Gasresistance := 0;
+    Airreading_Data.Insert;
+    
+    T.Commit;
+    Sql.Close_Session;
+
+  end Log_C02;
+  -----------------------------------------------------  
   
   
 end Bot_Ws_Services;

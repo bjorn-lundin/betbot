@@ -55,6 +55,9 @@ package Bot_Ws_Services is
                             Pressure      : Integer_4;
                             Humidity      : Fixed_Type;
                             Gasresistance : Integer_4);
+                            
+  procedure Log_C02 (Id    : String;
+                     Level : Integer_4);
 
 
 end Bot_Ws_Services;

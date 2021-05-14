@@ -344,6 +344,20 @@ procedure Bot_Web_Server is
           Stacktrace.Tracebackinfo(E);          
           return Aws.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
       end;          
+    elsif Context = "co2" then
+      declare
+        Chipid        : constant String := Aws.Parameters.Get(Params,"chipid");
+        Co2level      : constant String := Aws.Parameters.Get(Params,"co2");
+      begin        
+        Bot_Ws_Services.Log_C02 (Id    => Chipid,
+                                 Level => Integer_4'Value(Co2level));
+                                        
+        return Aws.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
+      exception
+        when E: others =>
+          Stacktrace.Tracebackinfo(E);          
+          return Aws.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
+      end;          
     else
       return Do_Service(Request, "Get");
     end if;
