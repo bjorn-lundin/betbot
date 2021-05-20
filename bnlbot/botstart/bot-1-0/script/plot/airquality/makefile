@@ -25,7 +25,7 @@ endif
 
 
 BET_NAMES_REAL := \
-temperature pressure humidity gasresistance
+temperature pressure humidity gasresistance log co2
 
 
 BET_NAMES := $(BET_NAMES_REAL)
@@ -75,6 +75,14 @@ PHONY : png
 #	@echo "done gnuplot $* - $@ - $<"
 
 
+log.dat:
+	psql --host=$(DBHOST)\
+    --username=$(DBUSER) \
+    --tuples-only \
+    --command="select CREATED, log(GASRESISTANCE) + 0.04* HUMIDITY as result from AIRREADINGS where MACADDRESS ='9691df' order by CREATED" \
+    --output=$@ $(DBNAME)
+
+
 temperature.dat:
 	psql --host=$(DBHOST)\
     --username=$(DBUSER) \
@@ -106,6 +114,15 @@ gasresistance.dat:
     --output=$@ $(DBNAME)
 
 
+co2.dat:
+	psql --host=$(DBHOST)\
+    --username=$(DBUSER) \
+    --tuples-only \
+    --command="select CREATED, PRESSURE from AIRREADINGS where MACADDRESS ='f80992' \
+                  and CREATED > '2021-05-14 18:00:00.000' order by CREATED" \
+    --output=$@ $(DBNAME)
+
+
 
 temperature.png: temperature.dat equity.gpl
 	gnuplot -e "db_name='$(DBNAME)'" \
@@ -133,6 +150,22 @@ gasresistance.png: gasresistance.dat equity.gpl
             -e "numbets ='0'" \
             -e "target_png='gasresistance.png'" \
             -e "files='gasresistance'" equity.gpl
+
+
+co2.png: co2.dat equity.gpl
+	gnuplot -e "db_name='$(DBNAME)'" \
+            -e "numbets ='0'" \
+            -e "target_png='co2.png'" \
+            -e "files='co2'" equity.gpl
+
+
+
+log.png: log.dat equity.gpl
+	gnuplot -e "db_name='$(DBNAME)'" \
+            -e "numbets ='0'" \
+            -e "target_png='log.png'" \
+            -e "files='log'" equity.gpl
+
 
 
 
