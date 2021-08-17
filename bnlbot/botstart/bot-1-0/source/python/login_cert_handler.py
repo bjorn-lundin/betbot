@@ -107,6 +107,9 @@ logging.basicConfig(filename='/bnlbot/botstart/bot-1-0/target/log/python_login_s
 pid = os.getpid()
 print('pid',pid)
 
+with open("/bnlbot/botstart/bot-1-0/target/befair_logon_daemon.pid", "w") as file1:
+    # Writing data to a file
+    file1.write(str(pid) + "\n")
 
 try:
    webServer.serve_forever()

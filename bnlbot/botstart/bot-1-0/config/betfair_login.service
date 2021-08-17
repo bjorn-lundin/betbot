@@ -1,0 +1,28 @@
+should reside as  /etc/systemd/system/betfair_login.service 
+use 
+sudo systemctl start betfair_login
+sudo systemctl enable betfair_login
+
+for start auto and run as bnl  and auto-restart if killed (kill from login_handler on timeout)
+
+
+[Unit]
+Description=Betfair login
+After=network-online.target
+Wants=network-online.target systemd-networkd-wait-online.service
+
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+User=bnl
+ExecStart=/bnlbot/botstart/bot-1-0/script/bash/betfair_login_daemon.bash
+
+
+[Install]
+WantedBy=multi-user.target
+
+
+

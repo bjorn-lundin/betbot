@@ -48,6 +48,7 @@ procedure Monitor is
       end if;
    end Handle_Move_Event;
 begin
-   Instance.Add_Watch (Path => "/dev/shm/bot/plc");
+  -- Instance.Add_Watch (Path => "/dev/shm/bot/plc", Mask => (Closed_Write => True, others => False));
+   Instance.Add_Watch (Path => "/tmp", Mask => (Closed_Write => True, others => False));
    Instance.Process_Events (Handle_Event'Access, Handle_Move_Event'Access);
 end Monitor;
