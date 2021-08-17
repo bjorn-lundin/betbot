@@ -177,12 +177,14 @@ package body Rpc is
             raise Aws.Client.Connection_Error;
           end if;
 
-          if Reply /= "Post Timeout" then
+          if Reply /= "Post Timeout" and then Reply /= "POST Timeout" then
             Json_Reply := Read (Strm     => Aws.Response.Message_Body(Aws_Reply),
                                 Filename => "");
             Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
           else
             Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
+            pragma compile_time_warning(true,"restart the python server here");
+ 
             raise Post_Timeout ;
           end if;
         end;

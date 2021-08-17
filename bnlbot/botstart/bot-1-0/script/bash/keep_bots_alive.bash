@@ -498,6 +498,7 @@ case $HOUR  in
       for RECIPENT in $MAIL_LIST ; do
         if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
           echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
+          echo "db seems to be down, psql does not get access to BNL" | $BOT_TARGET/bin/aws_mail --subject="is db up and running on $(hostname) ?"
           touch ${DB_ALARM_TODAY_FILE}
         fi
       done
