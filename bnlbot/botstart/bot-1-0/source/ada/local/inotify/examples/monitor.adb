@@ -14,6 +14,8 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 
+pragma Warnings(Off);
+
 with Ada.Command_Line;
 with Ada.Text_IO;
 
@@ -51,4 +53,6 @@ begin
   -- Instance.Add_Watch (Path => "/dev/shm/bot/plc", Mask => (Closed_Write => True, others => False));
    Instance.Add_Watch (Path => "/tmp", Mask => (Closed_Write => True, others => False));
    Instance.Process_Events (Handle_Event'Access, Handle_Move_Event'Access);
+pragma Warnings(On);
+
 end Monitor;

@@ -38,10 +38,10 @@ project Adabot is
                    -- "graph_data_ael.adb",
                     "stat_maker.adb",
                     "bot_web_server.adb",
-                    "login_handler.adb",
                     "check_bot_running.adb" ,
-                    "monitor.adb" --, -- inotify tester
+  --                  "monitor.adb" --, -- inotify tester
   --                  "monitor2.adb"  --inotify tester
+                    "login_handler.adb"
                     );
 
    Stat_Mains   := (
@@ -73,6 +73,7 @@ project Adabot is
                     "ai_nn.adb",
                     "create_ok_markets.adb",
                     "test_float_to_fix.adb",
+                    "test_json.adb",
                  --    "telescope_server.adb",
                  --   "split_to_ai.adb",
                  --   "split_to_ai_mlrl.adb",
