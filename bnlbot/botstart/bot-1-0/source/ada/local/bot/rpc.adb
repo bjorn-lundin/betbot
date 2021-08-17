@@ -20,6 +20,7 @@ with Ada.Calendar.Time_Zones;
 --with Ini;
 with Process_Io;
 with Bot_Messages;
+with Interfaces.C;
 
 package body Rpc is
 
@@ -59,7 +60,38 @@ package body Rpc is
   begin
     return Global_Token;
   end Get_Token;
+
   ------------------------------------------------------------------------------
+
+  procedure Kill_Python_Server is
+    use Interfaces;
+    -- int kill(pid_t pid, int sig);
+    type Pid_T is new C.Int;
+    function Kill(Pid : Pid_T ; Sig : C.Int) return C.Int ;
+    pragma Import(C, Kill, "kill");
+    Dummy : C.Int;
+    Sig_Term : constant C.Int := 15;
+    Pid : Pid_T := 0;
+    Filepath : String := (if Ev.Exists("BOT_TARGET") then Ev.Value("BOT_TARGEE") else "NONAME") ;
+    Filename : String := Filepath & "/befair_logon_daemon.pid" ;
+    F : Text_Io.File_Type;
+    Buffer : String(1..50);
+    Len : Natural := 0;
+  begin
+
+    Text_Io.Open(File => F,
+                 Mode => Text_Io.In_File,
+                 Name => Filename);
+
+    Text_Io.Get_Line(F,Buffer,Len);
+    Text_Io.Close(F);
+    Pid := Pid_T'Value(Buffer(1..Len));
+    Log(Me & "Kill_Python_Server", "killing pid" & Pid'img);
+    Dummy := Kill(Pid, Sig_Term);
+  end Kill_Python_Server;
+
+  -----------------------------------------------------------------------------
+
 
   procedure Login is
     Login_Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
@@ -183,8 +215,7 @@ package body Rpc is
             Log(Me & "Get_JSON_Reply", "Got reply: " & Json_Reply.Write  );
           else
             Log(Me & "Get_JSON_Reply", "Post Timeout -> Give up!");
-            pragma compile_time_warning(true,"restart the python server here");
- 
+            Kill_Python_Server;
             raise Post_Timeout ;
           end if;
         end;
