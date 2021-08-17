@@ -16,7 +16,7 @@ StartLimitBurst=5
 
 [Service]
 Restart=on-failure
-RestartSec=5s
+RestartSec=55s
 User=bnl
 ExecStart=/bnlbot/botstart/bot-1-0/script/bash/betfair_login_daemon.bash
 
