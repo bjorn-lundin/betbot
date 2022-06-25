@@ -128,7 +128,7 @@ procedure Poll_Market is
                             Market     => Market,
                             Price_List => Price_List,
                             In_Play    => In_Play);
-      Write_List_To_Shm(Market.Markettype(1..3), Price_List);
+    -- crashes  Write_List_To_Shm(Market.Markettype(1..3), Price_List);
 
       if Is_Data_Collector then
         for Price of Price_List loop
