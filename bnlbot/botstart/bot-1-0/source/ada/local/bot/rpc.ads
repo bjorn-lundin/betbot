@@ -114,7 +114,7 @@ package RPC is
                        Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
-                       Price            : in     Bet_Price_Type;
+                       Price            : in     String; --Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
                        Fill_Or_Kill     : in     Boolean := False;

@@ -59,16 +59,16 @@ $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 $(REPO_ENGINE) : $(C_GNATCOLL_SUPPORT_OUTPUT)
 	gprbuild -p -P adabot repo
 
-$(EXE_DIR_BOT) :
+$(EXE_DIR_BOT) : 
 	mkdir -p $(EXE_DIR_BOT)
 
-$(LOG_DIR_BOT) :
+$(LOG_DIR_BOT) : 
 	mkdir -p $(LOG_DIR_BOT)
 
-$(PIPE_DIR_BOT) :
+$(PIPE_DIR_BOT) : 
 	mkdir -p $(PIPE_DIR_BOT)
 
-$(OBJECT_DIR_BOT) :
+$(OBJECT_DIR_BOT) : 
 	mkdir -p $(OBJECT_DIR_BOT)
 
 .PHONY : $(TARGET_ADA_INFO_SPEC)
