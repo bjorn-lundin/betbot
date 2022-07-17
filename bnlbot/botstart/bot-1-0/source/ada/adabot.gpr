@@ -39,6 +39,7 @@ project Adabot is
                     "stat_maker.adb",
                     "bot_web_server.adb",
                     "check_bot_running.adb" ,
+                    "test_float.adb",   
   --                  "monitor.adb" --, -- inotify tester
   --                  "monitor2.adb"  --inotify tester
                     "login_handler.adb"
