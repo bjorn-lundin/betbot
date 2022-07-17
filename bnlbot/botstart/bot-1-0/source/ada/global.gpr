@@ -62,13 +62,13 @@ project Global is
         when "LIB"  =>
           case GNATCOLL_Sources is
             when "GNAT"  => for Source_Dirs use Common_Source_Dirs;
-            when "LOCAL" => for Source_Dirs use Common_Source_Dirs;
+            when "LOCAL" => for Source_Dirs use Common_Source_Dirs & Gnatcoll_Source;
           end case;  
           
         when "GNAT" =>
           case GNATCOLL_Sources is
             when "GNAT"  => for Source_Dirs use Common_Source_Dirs;
-            when "LOCAL" => for Source_Dirs use Common_Source_Dirs;
+            when "LOCAL" => for Source_Dirs use Common_Source_Dirs & Gnatcoll_Source;
           end case;  
           
         when "LOCAL" => 
@@ -99,7 +99,7 @@ project Global is
      when "lnx_x64" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "lnx_a32" =>
-       OS_Dependents_Linker_Switches := ("-lpq");
+       OS_Dependents_Linker_Switches := ("-lpq", Bot_Target & "/objects/gnat_support.o");
      when "drw_x64" =>
        OS_Dependents_Linker_Switches := ("-L/opt/local/lib/postgresql11", "-lpq", "-Wl,-no_pie");
    end case;
