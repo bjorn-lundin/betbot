@@ -1670,7 +1670,7 @@ package body Rpc is
                        Runner_Name      : in     Runnername_Type;
                        Selection_Id     : in     Integer_4;
                        Size             : in     Bet_Size_Type;
-                       Price            : in     Bet_Price_Type;
+                       Price            : in     String; --Bet_Price_Type;
                        Bet_Persistence  : in     Bet_Persistence_Type;
                        Match_Directly   : in     Integer_4 := 0;
                        Fill_Or_Kill     : in     Boolean := False;
@@ -1694,7 +1694,7 @@ package body Rpc is
     Bet_Id : Integer_8 := 0;
     Now    : Calendar2.Time_Type := Calendar2.Clock;
 
-    Price_String  : String         := F8_Image(Fixed_Type(Price)); -- 2 decimals only
+    Price_String  : String         := Price; --F8_Image(Fixed_Type(Price)); -- 2 decimals only
     Local_Price   : Bet_Price_Type := Bet_Price_Type'Value(Price_String); -- to avoid INVALID_BET_PRICE
 
     Size_String   : String         := F8_Image(Fixed_Type(Size)); -- 2 decimals only

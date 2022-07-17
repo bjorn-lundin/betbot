@@ -52,7 +52,7 @@ procedure Bet_Placer is
                       Selection_Id   : Integer_4;
                       Side           : Bet_Side_Type;
                       Size           : Bet_Size_Type;
-                      Price          : Bet_Price_Type;
+                      Price          : String;
                       Fill_Or_Kill   : Boolean ;
                       Match_Directly : Integer_4) is
 
@@ -66,7 +66,7 @@ procedure Bet_Placer is
     L_Size_Matched,
     Average_Price_Matched          : Float           := 0.0;
     Bet_Id                         : Integer_8       := 0;
-    Local_Price                    : Fixed_Type := Fixed_Type(Price);
+   -- Local_Price                    : Fixed_Type := Fixed_Type'value(Price);
     Local_Size                     : Fixed_Type := Fixed_Type(Size);
     Local_Side                     : String (1..4) := (others => ' ');
 
@@ -77,7 +77,7 @@ procedure Bet_Placer is
     Log("'" & Local_Side & "'");
     Log("'" & Market_Id & "'");
     Log("'" & Selection_Id'Img & "'");
-    Log("'" & Utils.F8_Image(Local_Price) & "'");
+    Log("'" & Price & "'");
     Log("'" & Utils.F8_Image(Local_Size) & "'");
 
     if Bet_Name(1..2) = "DR" then
@@ -88,7 +88,7 @@ procedure Bet_Placer is
       Move( "SUCCESS", Execution_Report_Error_Code);
       Move( "SUCCESS", Instruction_Report_Status);
       Move( "SUCCESS", Instruction_Report_Error_Code);
-      Average_Price_Matched := Float(Local_Price);
+      Average_Price_Matched := Float'value(Price);
       L_Size_Matched := Float(Local_Size);
 
       A_Bet := (
@@ -99,7 +99,7 @@ procedure Bet_Placer is
                 Selectionid    => Selection_Id,
                 Reference      => (others         => '-'),
                 Size           => Local_Size,
-                Price          => Local_Price,
+                Price          => Fixed_Type'value(Price),
                 Side           => Local_Side,
                 Betname        => Bet_Name,
                 Betwon         => False,
@@ -176,7 +176,7 @@ procedure Bet_Placer is
               Selection_Id   => Place_Back_Bet.Selection_Id,
               Side           => Back,
               Size           => Bet_Size_Type'Value(Place_Back_Bet.Size),
-              Price          => Bet_Price_Type'Value(Place_Back_Bet.Price),
+              Price          => Place_Back_Bet.Price,
               Match_Directly => Place_Back_Bet.Match_Directly,
               Fill_Or_Kill   => Place_Back_Bet.Fill_Or_Kill /= Ifalse
              ) ;
@@ -191,7 +191,7 @@ procedure Bet_Placer is
               Selection_Id   => Place_Lay_Bet.Selection_Id,
               Side           => Lay,
               Size           => Bet_Size_Type'Value(Place_Lay_Bet.Size),
-              Price          => Bet_Price_Type'Value(Place_Lay_Bet.Price),
+              Price          => Place_Lay_Bet.Price,
               Match_Directly => Place_Lay_Bet.Match_Directly,
               Fill_Or_Kill   => Place_Lay_Bet.Fill_Or_Kill /= Ifalse
              ) ;
