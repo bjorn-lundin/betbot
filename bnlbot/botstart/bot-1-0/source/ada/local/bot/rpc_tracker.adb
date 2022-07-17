@@ -79,7 +79,8 @@ begin
           declare
             Rcm : Bot_Messages.Rpc_Called_Record := Bot_Messages.Data(Msg);
           begin   -- or do dbcall?
-           Log(Me, Rcm.Name & "|" & Rcm.Typ & "|" & Trim(Rcm.Data,right) & "|DATAPOINT" );
+--               Log(Me, Rcm.Name & "|" & Rcm.Typ & "|" & Trim(Rcm.Data,right) & "|DATAPOINT" );
+               null; -- Disabled - just swallow it
           end;
         when others =>
           Log(Me, "Unhandled message identity: " & Process_Io.Identity(Msg)'Img);  --??
