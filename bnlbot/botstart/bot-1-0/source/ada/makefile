@@ -6,6 +6,7 @@
 
 
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
+OBJECT_DIR_BOT  := $(BOT_TARGET)/objects
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
@@ -13,6 +14,10 @@ PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
 C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
 C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
+
+C_GNATCOLL_SUPPORT_OUTPUT := $(OBJECT_DIR_BOT)/gnat_support.o
+C_GNATCOLL_SUPPORT_SOURCE := $(BOT_SOURCE)/c/gnat_support.c
+
 
 TABLES := $(BOT_CONFIG)/repository/tables/table_*.xml
 TERMS := $(BOT_CONFIG)/repository/terms/trm_*.xml
@@ -80,6 +85,12 @@ $(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
 
 $(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
+
+$(OBJECT_DIR_BOT) :
+	mkdir -p $(OBJECT_DIR_BOT)
+
+$(C_GNATCOLL_SUPPORT_OUTPUT) : $(OBJECT_DIR_BOT) $(C_GNATCOLL_SUPPORT_SOURCE)
+	gcc -c $(C_GNATCOLL_SUPPORT_SOURCE) -o $(C_GNATCOLL_SUPPORT_OUTPUT)
 
 clean:
 	gnatclean -P adabot
