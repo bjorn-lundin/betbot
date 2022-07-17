@@ -91,8 +91,8 @@ $(C_GNATCOLL_SUPPORT_OUTPUT) : $(OBJECT_DIR_BOT) $(C_GNATCOLL_SUPPORT_SOURCE)
 	gcc -c $(C_GNATCOLL_SUPPORT_SOURCE) -o $(C_GNATCOLL_SUPPORT_OUTPUT)
 
 clean:
-	gnatclean -P adabot
-	gnatclean -P global
+	#gnatclean -P adabot
+	#gnatclean -P global
 	cd $(BOT_SOURCE)/ada/global/tables && rm -f *
 	rm -rf $(BOT_TARGET)/bin
 	rm -rf $(BOT_TARGET)/objects
