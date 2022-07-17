@@ -1,8 +1,8 @@
 --with Text_Io;
 with Ada.Exceptions;
 with Ada.Command_Line;
-with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
-with Ada.Strings ; use Ada.Strings;
+--with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+--with Ada.Strings ; use Ada.Strings;
 with Ada.Environment_Variables;
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
@@ -76,8 +76,8 @@ begin
           exit Main_Loop;
           -- when Core_Messages.Enter_Console_Mode_Message    => Enter_Console;
         when Bot_Messages.Rpc_Called_Message =>
-          declare
-            Rcm : Bot_Messages.Rpc_Called_Record := Bot_Messages.Data(Msg);
+          --declare
+           -- Rcm : Bot_Messages.Rpc_Called_Record := Bot_Messages.Data(Msg);
           begin   -- or do dbcall?
 --               Log(Me, Rcm.Name & "|" & Rcm.Typ & "|" & Trim(Rcm.Data,right) & "|DATAPOINT" );
                null; -- Disabled - just swallow it
