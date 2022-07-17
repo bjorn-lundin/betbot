@@ -212,10 +212,10 @@ procedure Rewards3 is
   --Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
   --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
  -- Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
-  Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
+  Start_Date                      :          Calendar2.Time_Type := (2019,1,1,0,0,0,0);
   One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date                    :          Calendar2.Time_Type := Start_Date;
-  Stop_Date                       :          Calendar2.Time_Type := (2020,10,1,23,59,59,999);
+  Stop_Date                       :          Calendar2.Time_Type := (2021,1,1,0,0,0,0);
   Cmd_Line                        :          Command_Line_Configuration;
   T                               :          Sql.Transaction_Type;
 begin
@@ -307,8 +307,8 @@ begin
 
         if Market.Markettype(1..3) = "WIN"
           and then 8 <= Market.Numactiverunners
-          and then Market.Numactiverunners <= 16 --and then
-        --   Market.Marketname_Ok2
+              and then Market.Numactiverunners <= 16
+              and then Market.Marketname_Ok
         then
           Cnt := Cnt + 1;
 

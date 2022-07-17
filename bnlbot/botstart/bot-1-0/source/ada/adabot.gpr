@@ -73,7 +73,7 @@ project Adabot is
                     "ai_nn.adb",
                     "create_ok_markets.adb",
                     "test_float_to_fix.adb",
-                    "test_json.adb",
+                  --  "test_json.adb",
                  --    "telescope_server.adb",
                  --   "split_to_ai.adb",
                  --   "split_to_ai_mlrl.adb",
