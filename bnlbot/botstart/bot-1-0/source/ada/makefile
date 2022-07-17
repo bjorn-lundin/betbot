@@ -35,7 +35,7 @@ endif
 
 all : log
 
-log :
+log : dir
 	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
 
 #$(EXE_DIR_BOT)
@@ -47,16 +47,16 @@ bot : adabot
 ws :
 	gprbuild -p -P adabot bot_web_server
 
-repo: $(REPO_ENGINE)
+repo: $(REPO_ENGINE) 
 
-dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
+dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(OBJECT_DIR_BOT)
 
 
 $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 	$(REPO_ENGINE) --table_makefile > $(TABLE_MAKE_FILE)
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE) -f $(TABLE_MAKE_FILE)
 
-$(REPO_ENGINE) :
+$(REPO_ENGINE) : $(C_GNATCOLL_SUPPORT_OUTPUT)
 	gprbuild -p -P adabot repo
 
 $(EXE_DIR_BOT) :
@@ -76,7 +76,7 @@ $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 #$(EXE_DIR_BOT)
-adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC)
+adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(C_GNATCOLL_SUPPORT_OUTPUT)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gprbuild -p -P adabot
 
