@@ -99,7 +99,7 @@ project Global is
      when "lnx_x64" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "lnx_a32" =>
-       OS_Dependents_Linker_Switches := ("-lpq", Bot_Target & "/objects/gnat_support.o");
+       OS_Dependents_Linker_Switches := ("-lpq", Bot_Target & "/objects/gnatcoll_support.o");
      when "drw_x64" =>
        OS_Dependents_Linker_Switches := ("-L/opt/local/lib/postgresql11", "-lpq", "-Wl,-no_pie");
    end case;
