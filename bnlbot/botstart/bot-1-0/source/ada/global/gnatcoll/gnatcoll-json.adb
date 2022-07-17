@@ -1716,7 +1716,7 @@ package body GNATCOLL.JSON is
    ---------
    -- "=" --
    ---------
-
+overriding --bnl
    function "=" (Left, Right : JSON_Value) return Boolean is
       Found : Boolean;
    begin

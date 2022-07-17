@@ -303,6 +303,7 @@ package GNATCOLL.JSON is
    --  Return a deep clone of Val.  Any later change in Val or its fields
    --  (recursively) will have no impact on the resulting value.
 
+overriding --bnl
    function "=" (Left, Right : JSON_Value) return Boolean;
    --  Return whether Left and Right are structurally identical.
    --
