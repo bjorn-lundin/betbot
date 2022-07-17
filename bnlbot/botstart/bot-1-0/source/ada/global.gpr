@@ -5,9 +5,12 @@ project Global is
    for Languages use ("Ada");
 
    type XML_Sources_Type is ("LOCAL", "GNAT", "LIB");
+   type GNATCOLL_Sources_Type is ("LOCAL", "GNAT");
+   
    XML_Sources : XML_Sources_Type  := external ("BOT_XML_SOURCE");
+   GNATCOLL_Sources : GNATCOLL_Sources_Type  := external ("BOT_GNATCOLL_SOURCE");
 
-   XML_Sources_Dir : XML_Sources_Type := XML_Sources;
+   --XML_Sources_Dir : XML_Sources_Type := XML_Sources;
 
    Bot_Target := external ("BOT_TARGET", "BOT_TARGET_not_set");
    Bot_Source := external ("BOT_SOURCE", "BOT_SOURCE_not_set");
@@ -45,23 +48,39 @@ project Global is
        for Object_Dir use Bot_Target & "/objects";
 
    Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
+   Gnatcoll_Source := (Bot_Source & "/ada/global/gnatcoll");
 
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
-                           "global/gnatcoll",
+                        --   "global/gnatcoll",
                            "global/inotify",
                            "global/repotool",
                            "global/tables");
 
-      case XML_Sources_Dir is
-         when "LIB"  =>
-            for Source_Dirs use Common_Source_Dirs;
-         when "GNAT"  =>
-            for Source_Dirs use Common_Source_Dirs;
-         when "LOCAL" =>
-            for Source_Dirs use Common_Source_Dirs & Xml_Source;
+      case XML_Sources is
+        when "LIB"  =>
+          case GNATCOLL_Sources is
+            when "GNAT"  => for Source_Dirs use Common_Source_Dirs;
+            when "LOCAL" => for Source_Dirs use Common_Source_Dirs;
+          end case;  
+          
+        when "GNAT" =>
+          case GNATCOLL_Sources is
+            when "GNAT"  => for Source_Dirs use Common_Source_Dirs;
+            when "LOCAL" => for Source_Dirs use Common_Source_Dirs;
+          end case;  
+          
+        when "LOCAL" => 
+          case GNATCOLL_Sources is
+            when "GNAT"  => for Source_Dirs use Common_Source_Dirs & Xml_Source;
+            when "LOCAL" => for Source_Dirs use Common_Source_Dirs & Xml_Source & Gnatcoll_Source;
+          end case;  
+           
       end case;
+      
+      
+      
 
    package Compiler is
      for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");

@@ -95,7 +95,7 @@ procedure Create_ok_Markets is
     end if;
     Select_Num_Samples.Close_Cursor;
 
-    if Num_Samples > 60 then
+    if Num_Samples > 120 then
       Ok_Market := (
                     Marketid    => Market.Marketid,
                     Eventid     => Market.Eventid,

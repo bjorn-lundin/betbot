@@ -27,40 +27,55 @@ case $HOSTNAME in
   pibetbot*)
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=LIB
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
-  imac*)
+  *imac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=GNAT
+    ;;
+    
+  *iMac*)
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=GNAT
     ;;
 
-  iMac.lan*)
+  *iMac.lan*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=GNAT
     ;;
 
   HP-Mini*)
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=LOCAL
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   prod*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   ip*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   sebjlun*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   tp*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   raspberrypi*)
     export BOT_MACHINE_ROLE=DISPLAY
     export BOT_XML_SOURCE=LOCAL
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
   *)
     export BOT_MACHINE_ROLE=$HOSTNAME

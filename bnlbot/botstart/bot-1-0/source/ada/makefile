@@ -72,11 +72,14 @@ adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gprbuild -p -P adabot
 
-$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
+$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE) $(EXE_DIR_BOT)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
 
 $(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
 	$(C_CONSTANTS_EXE) > $(C_CONSTANTS_OUTPUT)
+
+$(EXE_DIR_BOT) :
+	mkdir -p $(EXE_DIR_BOT)
 
 clean:
 	gnatclean -P adabot
