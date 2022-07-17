@@ -15,8 +15,8 @@ C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
 C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
 
-C_GNATCOLL_SUPPORT_OUTPUT := $(OBJECT_DIR_BOT)/gnat_support.o
-C_GNATCOLL_SUPPORT_SOURCE := $(BOT_SOURCE)/c/gnat_support.c
+C_GNATCOLL_SUPPORT_OUTPUT := $(OBJECT_DIR_BOT)/gnatcoll_support.o
+C_GNATCOLL_SUPPORT_SOURCE := $(BOT_SOURCE)/c/gnatcoll_support.c
 
 
 TABLES := $(BOT_CONFIG)/repository/tables/table_*.xml
