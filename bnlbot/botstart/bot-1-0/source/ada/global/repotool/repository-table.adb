@@ -3411,7 +3411,7 @@ package body Repository.Table is
         when A_Char =>
           Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Utils.Trim(Data." & Col.Name.Camel_Case & "));");
         when A_Int .. A_Long | A_Short_Code =>
-          Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Long_Integer(Data." & Col.Name.Camel_Case & "));");
+          Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Long_Long_Integer(Data." & Col.Name.Camel_Case & "));");
         when A_Boolean =>
           Put_Line("    Json_Data.Set_Field(Field_Name => " & Quote(Col.Name.Lower_Case) & ", Field => Data." & Col.Name.Camel_Case & ");");
         when A_Float .. A_Double =>
@@ -3446,7 +3446,7 @@ package body Repository.Table is
         when A_Int | A_Long | A_Short_Code =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
-          Put_Line("        Tmp : Long_Integer := 0;");
+          Put_Line("        Tmp : Long_Long_Integer := 0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_4(Tmp);");
@@ -3456,7 +3456,7 @@ package body Repository.Table is
         when A_Big_Int =>
           Put_Line("    if JSON_Data.Has_Field(" & Quote(Col.Name.Lower_Case) & ") then");
           Put_Line("      declare");
-          Put_Line("        Tmp : Long_Integer := 0;");
+          Put_Line("        Tmp : Long_Long_Integer := 0;");
           Put_Line("      begin");
           Put_Line("        Tmp := JSON_Data.Get(" & Quote(Col.Name.Lower_Case) & ");");
           Put_Line("        Data." & Col.Name.Camel_Case & " := Integer_8(Tmp);");

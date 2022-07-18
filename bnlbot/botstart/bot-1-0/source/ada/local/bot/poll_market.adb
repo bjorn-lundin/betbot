@@ -74,7 +74,7 @@ procedure Poll_Market is
     Prices.Lists.List'Write(Stream, Price_List);
     Ada.Streams.Stream_Io.Close(File);
   end Write_List_To_Shm;
-  pragma Unreferenced(Write_List_To_Shm);
+
   ----------------------------------------------------
 
 

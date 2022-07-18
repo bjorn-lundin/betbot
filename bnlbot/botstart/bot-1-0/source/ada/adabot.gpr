@@ -39,7 +39,6 @@ project Adabot is
                     "stat_maker.adb",
                     "bot_web_server.adb",
                     "check_bot_running.adb" ,
-                    "test_float.adb",   
   --                  "monitor.adb" --, -- inotify tester
   --                  "monitor2.adb"  --inotify tester
                     "login_handler.adb"
@@ -74,7 +73,7 @@ project Adabot is
                     "ai_nn.adb",
                     "create_ok_markets.adb",
                     "test_float_to_fix.adb",
-                  --  "test_json.adb",
+                    "test_json.adb",
                  --    "telescope_server.adb",
                  --   "split_to_ai.adb",
                  --   "split_to_ai_mlrl.adb",

@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                             G N A T C O L L                              --
 --                                                                          --
---                     Copyright (C) 2011-2020, AdaCore                     --
+--                     Copyright (C) 2011-2012, AdaCore                     --
 --                                                                          --
 -- This library is free software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -25,19 +25,10 @@ private package GNATCOLL.JSON.Utility is
 
    JsonMimeType           : constant String := "application/json";
 
-   function Escape_Non_Print_Character (C : Wide_Wide_Character) return String;
+   function Escape_Non_Print_Character (C : Wide_Character) return String;
 
-   function Escape_String (Text : UTF8_XString)
-      return Ada.Strings.Unbounded.Unbounded_String;
-   --  Translates an UTF-8 encoded unbounded string into a JSON-escaped string
+   function Escape_String (Text : UTF8_Unbounded_String) return String;
 
-   function Un_Escape_String
-     (Text : String;
-      Low  : Natural;
-      High : Natural)
-      return UTF8_XString;
-   --  Translates a JSON-escaped string into an UTF-8 encoded unbounded string
-   --  Low represents the lower bound of the JSON string in Text
-   --  High represents the higher bound of the JSON string in Text
+   function Un_Escape_String (Text : String) return UTF8_Unbounded_String;
 
 end GNATCOLL.JSON.Utility;
