@@ -6,7 +6,6 @@
 
 
 EXE_DIR_BOT     := $(BOT_TARGET)/bin
-OBJECT_DIR_BOT  := $(BOT_TARGET)/objects
 LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
@@ -14,10 +13,6 @@ PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
 C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
 C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
-
-C_GNATCOLL_SUPPORT_OUTPUT := $(OBJECT_DIR_BOT)/gnatcoll_support.o
-C_GNATCOLL_SUPPORT_SOURCE := $(BOT_SOURCE)/c/gnatcoll_support.c
-
 
 TABLES := $(BOT_CONFIG)/repository/tables/table_*.xml
 TERMS := $(BOT_CONFIG)/repository/terms/trm_*.xml
@@ -35,7 +30,7 @@ endif
 
 all : log
 
-log : dir
+log :
 	$(MAKE) $(THE_TARGET) 2>&1 | tee make.log
 
 #$(EXE_DIR_BOT)
@@ -47,52 +42,45 @@ bot : adabot
 ws :
 	gprbuild -p -P adabot bot_web_server
 
-repo: $(REPO_ENGINE) 
+repo: $(REPO_ENGINE)
 
-dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(OBJECT_DIR_BOT)
+dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
 
 
 $(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
 	$(REPO_ENGINE) --table_makefile > $(TABLE_MAKE_FILE)
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE) -f $(TABLE_MAKE_FILE)
 
-$(REPO_ENGINE) : $(C_GNATCOLL_SUPPORT_OUTPUT)
+$(REPO_ENGINE) :
 	gprbuild -p -P adabot repo
 
-$(EXE_DIR_BOT) : 
+$(EXE_DIR_BOT) :
 	mkdir -p $(EXE_DIR_BOT)
 
-$(LOG_DIR_BOT) : 
+$(LOG_DIR_BOT) :
 	mkdir -p $(LOG_DIR_BOT)
 
-$(PIPE_DIR_BOT) : 
+$(PIPE_DIR_BOT) :
 	mkdir -p $(PIPE_DIR_BOT)
-
-$(OBJECT_DIR_BOT) : 
-	mkdir -p $(OBJECT_DIR_BOT)
 
 .PHONY : $(TARGET_ADA_INFO_SPEC)
 $(TARGET_ADA_INFO_SPEC):
 	$(BOT_SCRIPT)/bash/create_revision_info.bash $(TARGET_ADA_INFO_SPEC)
 
 #$(EXE_DIR_BOT)
-adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC) $(C_GNATCOLL_SUPPORT_OUTPUT)
+adabot : $(C_CONSTANTS_OUTPUT) $(TABLE_MAKE_FILE) $(TARGET_ADA_INFO_SPEC)
 	@echo "building on host $(HOSTNAME) with mode $(BOT_MODE) and role $(BOT_MACHINE_ROLE)"
 	gprbuild -p -P adabot
 
-$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE) $(EXE_DIR_BOT)
+$(C_CONSTANTS_EXE) : $(C_CONSTANTS_SOURCE)
 	gcc -o $(C_CONSTANTS_EXE) $(C_CONSTANTS_SOURCE)
 
 $(C_CONSTANTS_OUTPUT) : $(C_CONSTANTS_EXE)
 	$(C_CONSTANTS_EXE) > $(C_CONSTANTS_OUTPUT)
 
-
-$(C_GNATCOLL_SUPPORT_OUTPUT) : $(OBJECT_DIR_BOT) $(C_GNATCOLL_SUPPORT_SOURCE)
-	gcc -c $(C_GNATCOLL_SUPPORT_SOURCE) -o $(C_GNATCOLL_SUPPORT_OUTPUT)
-
 clean:
-	#gnatclean -P adabot
-	#gnatclean -P global
+	gnatclean -P adabot
+	gnatclean -P global
 	cd $(BOT_SOURCE)/ada/global/tables && rm -f *
 	rm -rf $(BOT_TARGET)/bin
 	rm -rf $(BOT_TARGET)/objects

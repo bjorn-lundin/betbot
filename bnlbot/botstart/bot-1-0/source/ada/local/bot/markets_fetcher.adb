@@ -421,7 +421,7 @@ begin
     Params.Set_Field (Field_Name => "maxResults",       Field => "999");
 
     Query_List_Market_Catalogue.Set_Field (Field_Name => "params",  Field => Params);
-    Query_List_Market_Catalogue.Set_Field (Field_Name => "id",      Field => integer'(15));          -- ???
+    Query_List_Market_Catalogue.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Query_List_Market_Catalogue.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketCatalogue");
     Query_List_Market_Catalogue.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -495,7 +495,7 @@ begin
           Params.Set_Field (Field_Name => "marketIds",       Field => One_Market_Id);
 
           Query_List_Market_Book.Set_Field (Field_Name => "params",  Field => Params);
-          Query_List_Market_Book.Set_Field (Field_Name => "id",      Field => integer'(15));   --?
+          Query_List_Market_Book.Set_Field (Field_Name => "id",      Field => 15);   --?
           Query_List_Market_Book.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
           Query_List_Market_Book.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 

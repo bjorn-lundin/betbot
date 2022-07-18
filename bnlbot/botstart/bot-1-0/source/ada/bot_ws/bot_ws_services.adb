@@ -641,7 +641,7 @@ package body Bot_Ws_Services is
         Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
         Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
         Bet.Set_Field (Field_Name => "sm",      Field => Float(Sizematched));
-        Bet.Set_Field (Field_Name => "count",   Field => Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "count",   Field => Long_Long_Integer(Count));
         Bet.Set_Field (Field_Name => "p/b",     Field => Float(Profit_Per_Bet));
         Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
         Append(Json_Bets, Bet);
