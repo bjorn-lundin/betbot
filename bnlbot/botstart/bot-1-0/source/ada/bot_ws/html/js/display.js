@@ -1,8 +1,9 @@
 
 var Timer;
 var Cnt;
-
-
+//var URL=https://lundin.duckdns.org
+//var URL=http://192.168.1.229:9080
+var URL=http://lundin.duckdns.org:9080
 
 //bnl
 $.makeTable = function (mydata) {
@@ -19,7 +20,7 @@ $.makeTable = function (mydata) {
               TableRow += "<td>" + val.slice(0,18) + "</td>";
             } else if (typeof val == "string" && key == "betplaced") {
               TableRow += "<td>" + val.slice(12,24) + "</td>";
-            } else {            
+            } else {
               TableRow += "<td>" + val + "</td>";
             }
         });
@@ -34,12 +35,12 @@ $.makeTable = function (mydata) {
 
 function Do_Ajax3() {
   var d = new Date();
-  var n = d.getTime(); 
+  var n = d.getTime();
 
-  $.ajax({url: 'https://lundin.duckdns.org',
+  $.ajax({url: URL,
       data: {'context' : "weekly_total",
              'dummy' : n },
-      type: 'get',                   
+      type: 'get',
       async: 'true',
       dataType: 'json',
       beforeSend: function() {
@@ -56,13 +57,13 @@ function Do_Ajax3() {
           console.log("Do_Ajax3.success");
           if(reply.result == "OK") {
              console.log("Do_Ajax3.success OK");
-             
-             
+
+
             // //fill the table
             var table = $.makeTable(reply.datatable);
             $('#weekly_totals').html(table).trigger('create')
-             
-             
+
+
           } else {
              console.log("Do_Ajax3.success NOT OK");
           }
@@ -70,18 +71,18 @@ function Do_Ajax3() {
       error: function (request,error) {
           console.log("Do_Ajax3.error " + error);
       }
-  });                   
+  });
 
 }
 
 function Do_Ajax2() {
   var d = new Date();
-  var n = d.getTime(); 
+  var n = d.getTime();
 
-  $.ajax({url: 'https://lundin.duckdns.org',
+  $.ajax({url: URL,
       data: {'context' : "todays_total",
              'dummy' : n },
-      type: 'get',                   
+      type: 'get',
       async: 'true',
       dataType: 'json',
       beforeSend: function() {
@@ -98,11 +99,11 @@ function Do_Ajax2() {
           console.log("Do_Ajax2.success");
           if(reply.result == "OK") {
              console.log(" Do_Ajax2.success OK");
-             
+
             // $('#todays_total').empty();
              $('#todays_total').text("Resultat:"+ reply.total + " kr" );
-             
-             
+
+
           } else {
              console.log("Do_Ajax2.success NOT OK");
           }
@@ -110,7 +111,7 @@ function Do_Ajax2() {
       error: function (request,error) {
           console.log("Do_Ajax2.error " + error);
       }
-  });                   
+  });
 
 }
 
@@ -118,10 +119,10 @@ function Run_All() {
   var pBar = document.getElementById('pb');
   //console.log("Run_All start");
   Cnt = Cnt +1;
-  
+
   var percent = Cnt ;
  // console.log("Run_All" + Cnt + "-" + percent );
-  
+
   if (Cnt == 100) {
     Do_Ajax2()
     Do_Ajax3()
@@ -142,9 +143,9 @@ function Start_Timer () {
 
 function Do_Login() {
 
- $.ajax({url: 'https://lundin.duckdns.org',
+ $.ajax({url: URL,
      data: $('#loginform').serialize(),
-     type: 'post',                   
+     type: 'post',
      async: 'true',
      dataType: 'json',
      beforeSend: function() {
@@ -161,7 +162,7 @@ function Do_Login() {
          console.log("success");
          if(reply.result == "OK") {
             console.log("Do_Login success OK");
-            Start_Timer()                         
+            Start_Timer()
          } else {
             console.log("Do_Login - success NOT OK");
          }
@@ -169,25 +170,26 @@ function Do_Login() {
      error: function (request,error) {
          console.log("Do_Login.error " + error);
      }
- });                   
+ });
 
 }
 
 function Do_Start() {
-     //call by window.onload 
+     //call by window.onload
      Cnt = 98;
      console.log("onReady Start");
-     document.getElementById("loginform").style.display="none";     
+     document.getElementById("loginform").style.display="none";
      //start timer ...
-     
+
      Do_Login();
-     
+
      console.log("onReady Stop");
 }
 
 
 $(document).ready(function(){
-  Do_Start();  
+  Do_Start();
 });
-  
+
+
 

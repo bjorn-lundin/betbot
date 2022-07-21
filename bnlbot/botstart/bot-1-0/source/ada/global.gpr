@@ -12,7 +12,7 @@ project Global is
    Bot_Target := external ("BOT_TARGET", "BOT_TARGET_not_set");
    Bot_Source := external ("BOT_SOURCE", "BOT_SOURCE_not_set");
 
-   type OS_Architecture_Type is ("lnx_x64","drw_x64","lnx_x86","lnx_a32");
+   type OS_Architecture_Type is ("lnx_x64","drw_x64","lnx_x86","lnx_a32", "lnx_a64");
    OS_Arch : OS_Architecture_Type := external ("OS_ARCHITECTURE");
 
 -- AdaBotRoot
@@ -80,6 +80,8 @@ project Global is
      when "lnx_x64" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "lnx_a32" =>
+       OS_Dependents_Linker_Switches := ("-lpq");
+     when "lnx_a64" =>
        OS_Dependents_Linker_Switches := ("-lpq");
      when "drw_x64" =>
        OS_Dependents_Linker_Switches := ("-L/opt/local/lib/postgresql11", "-lpq", "-Wl,-no_pie");

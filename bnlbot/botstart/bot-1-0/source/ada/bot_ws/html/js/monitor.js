@@ -1,9 +1,9 @@
 
 var Timer;
 var Cnt;
-//var URL="https://betbot.nonobet.com"
-//var URL="http://192.168.1.6:9080"
-var URL ="https://lundin.duckdns.org"
+//var URL="http://192.168.1.229:9080"
+//var URL ="https://lundin.duckdns.org"
+var URL ="http://lundin.duckdns.org:9080"
 var login_again;
 
 //bnl
