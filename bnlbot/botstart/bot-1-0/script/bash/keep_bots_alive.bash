@@ -1,4 +1,5 @@
 #!/bin/bash
+#exit
 
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash
@@ -450,7 +451,8 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 
 MAIL_LIST="b.f.lundin@gmail.com"
 
-DISK_LIST="sda1 sda3 root"
+#DISK_LIST="sda1 sda3 root"
+DISK_LIST="sda2"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')

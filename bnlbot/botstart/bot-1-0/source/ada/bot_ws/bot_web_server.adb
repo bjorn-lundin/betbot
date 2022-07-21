@@ -493,21 +493,30 @@ begin
   AWS.Config.Set.Reuse_Address           (O => Config, Value => True);
   AWS.Config.Set.WWW_Root                (O => Config, Value => Ev.Value("BOT_SOURCE") & "/ada/bot_ws/html");
 
+
+--  AWS.Server.Set_Security (WS, 
+--                       Certificate_Filename => "/etc/letsencrypt/live/lundin.duckdns.org/fullchain.pem");
+
+
   Logging.Log (Me, "WWW_Root: " & AWS.Config.WWW_Root (O => Config));
   if AD.Exists (Saved_Web_Sessions) then
     AWS.Session.Load(File_Name => Saved_Web_Sessions);
   end if;
+ Logging.Log (Me, "WWW_Root: 1");
 
   AWS.Server.Start (Web_Server     => WS,
                     Callback       => Service'Unrestricted_Access,
                     Config         => Config);
+ Logging.Log (Me, "WWW_Root: 2");
 
   AWS.Server.Log.Start (Web_Server => WS,
                         Split_Mode => Aws.Log.Daily,
                         Auto_Flush => True);
+ Logging.Log (Me, "WWW_Root: 3");
 
   AWS.Server.Log.Start_Error(Web_Server => WS,
                              Split_Mode => Aws.Log.Daily);
+ Logging.Log (Me, "WWW_Root: 4");
   Logging.Log("Main", "Log file name:" & AWS.Server.Log.Name (WS));
 
   declare -- prefill list at startup to always get whole day
