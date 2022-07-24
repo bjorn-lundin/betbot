@@ -1,5 +1,5 @@
 #!/bin/bash
-exit
+#exit
 
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash
