@@ -15,7 +15,8 @@ case "${OS}" in
         i686)    export OS_ARCHITECTURE=lnx_x86 ;;
         x86_64)  export OS_ARCHITECTURE=lnx_x64 ;;
         armv7l)  export OS_ARCHITECTURE=lnx_a32 ;;
-        *)       echo "not supported bits ${bits}" ; exit 1 ;;
+        aarch64) export OS_ARCHITECTURE=lnx_a64 ;;
+        *)       echo "not supported bits ${bits}" ; exit 0 ;;
       esac
     ;;
 
