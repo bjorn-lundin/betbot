@@ -21,20 +21,11 @@ exit
 
 [ -r /var/lock/bot ] && echo "/var/lock/bot exists" && exit 0
 
-LOGFILE="/tmp/kba.log"
-
-function log () {
-  echo "$@ $date" > $LOGFILE
-}
-
-
-log "start"
 
 TZ='Europe/Stockholm'
 export TZ
 [ -d /home/bnl/svn/botstart ] && export BOT_START=/home/bnl/svn/botstart
 [ -d /bnlbot/botstart ] && export BOT_START=/bnlbot/botstart
-[ -d /bnlbot/bnlbot/botstart ] && export BOT_START=/bnlbot/bnlbot/botstart
 
 date +"%Y-%m-%d %H:%M:%S" > ${BOT_START}/bot-1-0/script/bash/last_run_keeep_alive.dat
 
@@ -184,7 +175,7 @@ function Check_System_Bots_For_User () {
 
   IS_TESTER="false"
 
-  Start_Bot $BOT_USER rpc_tracker rpc_tracker 
+  Start_Bot $BOT_USER rpc_tracker rpc_tracker
   sleep 2
 
   case $BOT_USER in
@@ -448,5 +439,81 @@ TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
 TEMP=$(($TEMP/1000))
 echo "$(date -Is) $TEMP" >> $BOT_START/data/temperaturelog/$(date +%F)-temperature.dat
 
+PCT="/tmp/percent.tcl"
+echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
 
-log "stop"
+# check filling degree
+#1 kb blocks
+#90%
+export ALARM_SIZE=90
+DAY_FILE=$(date +"%F")
+ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
+
+MAIL_LIST="b.f.lundin@gmail.com"
+
+#DISK_LIST="sda1 sda3 root"
+DISK_LIST="sda2"
+
+for DISK in $DISK_LIST ; do
+  USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
+  DISK_SIZE=$( df  | grep $DISK | awk '{print $2}')
+  FS=$( df  | grep $DISK | awk '{print $1}')
+  PERCENTAGE=$(tclsh $PCT $USED_SIZE $DISK_SIZE)
+  for RECIPENT in $MAIL_LIST ; do
+   if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then
+     if [ ! -r ${ALARM_TODAY_FILE} ] ; then
+       df -h | mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)" $RECIPENT
+       df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
+       touch ${ALARM_TODAY_FILE}
+     fi
+   fi
+  done
+done
+
+#delete old alarmfiles
+
+ALARM_FILES=$(ls /tmp/alarm*  2>/dev/null)
+
+for f in $ALARM_FILES ; do
+  if [ $f != $ALARM_TODAY_FILE ] ; then
+    rm -f $f
+  fi
+done
+
+#db check
+
+case $HOUR  in
+
+  "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11")
+   # do nothing
+   ;;
+  "12"| "13" | "14" | "15" | "16" | "17" | "18" | "19" | "20" | "21" | "22" | "23")
+   # do checks
+
+    . $BOT_START/bot.bash bnl
+    psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
+    R=$?
+    DAY2_FILE=$(date +"%F")
+    DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
+
+    if [ $R != "0" ] ; then
+      for RECIPENT in $MAIL_LIST ; do
+        if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
+          echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
+          echo "db seems to be down, psql does not get access to BNL" | $BOT_TARGET/bin/aws_mail --subject="is db up and running on $(hostname) ?"
+          touch ${DB_ALARM_TODAY_FILE}
+        fi
+      done
+    fi
+
+    #delete old alarmfiles
+    DB_ALARM_FILES=$(ls /tmp/db_alarm*  2>/dev/null)
+
+    for f in $DB_ALARM_FILES ; do
+      if [ $f != $DB_ALARM_TODAY_FILE ] ; then
+        rm -f $f
+      fi
+    done
+  ;;
+esac
+
