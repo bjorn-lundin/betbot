@@ -32,6 +32,9 @@ TZ='Europe/Stockholm'
 export TZ
 [ -d /home/bnl/svn/botstart ] && export BOT_START=/home/bnl/svn/botstart
 [ -d /bnlbot/botstart ] && export BOT_START=/bnlbot/botstart
+[ -d /bnlbot/bnlbot/botstart ] && export BOT_START=/bnlbot/bnlbot/botstart
+
+log "BOT_START -  ${BOT_START}"
 
 date +"%Y-%m-%d %H:%M:%S" > ${BOT_START}/bot-1-0/script/bash/last_run_keeep_alive.dat
 
