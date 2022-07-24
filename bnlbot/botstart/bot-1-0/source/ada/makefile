@@ -10,6 +10,8 @@ LOG_DIR_BOT     := $(BOT_TARGET)/log
 TARGET_ADA_INFO_SPEC := $(BOT_SOURCE)/ada/local/bot/bot_svn_info.ads
 PIPE_DIR_BOT     := $(BOT_TARGET)/pipes
 
+TABLES_OUTPUT := $(BOT_SOURCE)/ada/global/tables
+
 C_CONSTANTS_OUTPUT := $(BOT_SOURCE)/ada/global/c_constants.ads
 C_CONSTANTS_SOURCE := $(BOT_SOURCE)/c/c_constants.c
 C_CONSTANTS_EXE    := $(BOT_TARGET)/bin/c_constants
@@ -47,11 +49,11 @@ repo: $(REPO_ENGINE)
 dir: $(EXE_DIR_BOT) $(LOG_DIR_BOT) $(PIPE_DIR_BOT)
 
 
-$(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS)
+$(TABLE_MAKE_FILE): $(REPO_ENGINE) $(TABLES) $(TERMS) $(XSDS) $(TABLES_OUTPUT)
 	$(REPO_ENGINE) --table_makefile > $(TABLE_MAKE_FILE)
 	cd $(BOT_SOURCE)/ada/global/tables && $(MAKE) -f $(TABLE_MAKE_FILE)
 
-$(REPO_ENGINE) :
+$(REPO_ENGINE) : $(TABLES_OUTPUT)
 	gprbuild -p -P adabot repo
 
 $(EXE_DIR_BOT) :
@@ -62,6 +64,9 @@ $(LOG_DIR_BOT) :
 
 $(PIPE_DIR_BOT) :
 	mkdir -p $(PIPE_DIR_BOT)
+
+$(TABLES_OUTPUT) :
+	mkdir -p $(TABLES_OUTPUT)
 
 .PHONY : $(TARGET_ADA_INFO_SPEC)
 $(TARGET_ADA_INFO_SPEC):
