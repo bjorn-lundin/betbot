@@ -21,6 +21,12 @@ exit
 
 [ -r /var/lock/bot ] && echo "/var/lock/bot exists" && exit 0
 
+function log () {
+  echo "$(date) : $1" >> /tmp/kba.log
+}
+
+log "start"
+
 
 TZ='Europe/Stockholm'
 export TZ
@@ -516,4 +522,7 @@ case $HOUR  in
     done
   ;;
 esac
+
+
+log "stop"
 
