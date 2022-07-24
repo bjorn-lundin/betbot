@@ -27,7 +27,7 @@
 
     <clreqs>
       <definitions>
-        <directory>$BOT_CONFIG/repository/requests</directory>
+        <directory>$BOT_CONFIG/repository/tables</directory>
         <pattern>req_*.xml</pattern>
         <prefix>req</prefix>
       </definitions>
