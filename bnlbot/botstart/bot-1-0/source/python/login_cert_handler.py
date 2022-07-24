@@ -102,12 +102,12 @@ class MyServer(BaseHTTPRequestHandler):
 webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
-logging.basicConfig(filename='/bnlbot/botstart/bot-1-0/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
+logging.basicConfig(filename='/bnlbot/bnlbot/botstart/bot-1-0/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
 
 pid = os.getpid()
 print('pid',pid)
 
-with open("/bnlbot/botstart/bot-1-0/target/befair_logon_daemon.pid", "w") as file1:
+with open("/bnlbot/bnlbot/botstart/bot-1-0/target/befair_logon_daemon.pid", "w") as file1:
     # Writing data to a file
     file1.write(str(pid) + "\n")
 

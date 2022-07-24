@@ -127,7 +127,7 @@ package body Rpc is
 
     if Bot_User = Dry then
       declare
-        Fname : String := "/bnlbot/botstart/user/bnl/token.dat";
+        Fname : String := "/bnlbot//bnlbot/botstart/user/bnl/token.dat";
       begin
         Log(Me & "Login", "dry user, use bnl's token");
         if Ada.Directories.Exists(Fname) then
