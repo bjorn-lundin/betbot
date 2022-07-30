@@ -32,19 +32,19 @@ case $HOSTNAME in
   *imac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
     
   *iMac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
 
   *iMac.lan*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
 
   HP-Mini*)
