@@ -38,7 +38,9 @@ proc Import {f} {
     puts "Bad : $f"
     puts "Information about it: $::errorInfo"
     puts "Information about it: $msg"
-  }  
+  } else {
+    Dbg "imported $f"
+  } 
 
 } 
 
@@ -58,15 +60,16 @@ proc Is_To_Be_Imported {f} {
 
   set Import 0
   switch -glob $f {
-    */bnl* {
+    */bnl_* {
             switch -glob $f {
               *apriceshistory* {set Import 0}
               *abets*          {set Import 0}
-              default          {set Import 1}
+              *aevents*        {set Import 0}
+              default          {set Import 0}
             }
     }
 
-    */dry* {
+    */dry_* {
             switch -glob $f {
               *apriceshistory* {set Import 1}
               *abets*          {set Import 0}
@@ -117,9 +120,9 @@ proc Traverse_Directories {f} {
 
 #Dbg "Start"
 set This_Pwd [pwd]
-Traverse_Directories [file join / data betbot data raw 2020 10 ]
-Traverse_Directories [file join / data betbot data raw 2020 11 ]
-Traverse_Directories [file join / data betbot data raw 2020 12 ]
+
+set YEAR [lindex $::argv 0]
+Traverse_Directories [file join / home bnl betfair_svn db_dumps $YEAR]
 cd $This_Pwd
 #Dbg "Stop"
 
