@@ -11,7 +11,7 @@
  $BOT_TARGET/bin/repo --postgresql=arunners      >> tbl.sql
 # $BOT_TARGET/bin/repo --postgresql=arunnersold   >> tbl.sql
  $BOT_TARGET/bin/repo --postgresql=astarttimes   >> tbl.sql
-
+$BOT_TARGET/bin/repo --postgresql=okmarkets   >> tbl.sql
 echo ""                                       >> tbl.sql
 echo "begin;"                                 >> tbl.sql
 echo "CREATE SEQUENCE bet_id_serial "         >> tbl.sql
