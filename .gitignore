@@ -8,3 +8,7 @@ bnlbot/botstart/bot-1-0/target/
 bnlbot/botstart/data/
 bnlbot/botstart/user/
 .DS_Store
+/atg
+/ppm
+/client
+
