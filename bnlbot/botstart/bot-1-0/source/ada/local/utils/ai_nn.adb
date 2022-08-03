@@ -350,8 +350,8 @@ procedure Ai_Nn is
                                 "from AMARKETS M " &
                                 "where true " &
                                 "and M.MARKETTYPE = 'WIN' " &
-                                "and M.NUMRUNNERS >= 8 " &
-                                "and M.NUMRUNNERS <= 16 " &
+                                "and M.NUMACTUALRUNNERS >= 8 " &
+                                "and M.NUMACTUALRUNNERS <= 16 " &
                               --  "and m.marketid = '1.151619897' " &
                                 "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
                                 "order by M.STARTTS");
@@ -360,8 +360,8 @@ procedure Ai_Nn is
                                "from AMARKETS M " &
                                "where true " &
                                "and M.MARKETTYPE = 'WIN' " &
-                               "and M.NUMRUNNERS >= 8 " &
-                               "and M.NUMRUNNERS <= 16 " &
+                               "and M.NUMACTUALRUNNERS >= 8 " &
+                               "and M.NUMACTUALRUNNERS <= 16 " &
                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
                                "order by M.STARTTS");
     end if;
