@@ -306,17 +306,20 @@ procedure Ai_Nn is
 
   --------------------------------------------------------
   procedure Get_Runner_Data(Market_Data : Table_Amarkets.Data_Type) is
-    Eos                : Boolean := False;
+    type Eos_Type is (history,market,runner);
+    Eos                : array(Eos_Type'range) of Boolean := (others => False);
     R_List             : R_Pkg.List;
     R_Data             : R_Type;
   begin
 
-    Select_Runner_With_Price.Prepare("select * " &
-                                       "from ARUNNERS R, APRICESHISTORY H, AMARKETS M " &
+    R_Data.Market.Marketid := Marketid;
+    R_Data.Market.Read(Eos(market));
+
+    Select_Runner_With_Price.Prepare("select H.* " &
+                                       "from ARUNNERS R, APRICESHISTORY H " &
                                        "where 1 = 1 " &
                                        "and H.MARKETID = R.MARKETID " &
-                                       "and M.MARKETID = R.MARKETID " &
-                                       "and R.MARKETID = :MARKETID " &
+                                       "and H.MARKETID = :MARKETID " &
                                        "and H.SELECTIONID = R.SELECTIONID " &
                                        "and R.STATUS <> 'REMOVED' " &
                                        "order by H.PRICETS, R.SORTPRIO " );
@@ -324,15 +327,16 @@ procedure Ai_Nn is
     Select_Runner_With_Price.Set("MARKETID", Market_Data.Marketid);
     Select_Runner_With_Price.Open_Cursor;
     loop
-      Select_Runner_With_Price.Fetch(Eos);
-      exit when Eos;
-      R_Data.Runner  := Table_Arunners.Get(Select_Runner_With_Price);
+      Select_Runner_With_Price.Fetch(Eos(History));
+      exit when Eos(History);
       R_Data.History := Table_Apriceshistory.Get(Select_Runner_With_Price);
-      R_Data.Market := Table_Amarkets.Get(Select_Runner_With_Price);
+      R_Data.Runner.Marketid := R_Data.History.Marketid;
+      R_Data.Runner.Selectionid := R_Data.History.Selectionid;
+      R_Data.Runner.Read(Eos(Runner));
       R_List.Append(R_Data);
     end loop;
     Select_Runner_With_Price.Close_Cursor;
-    if Integer(R_List.Length) > 1000 then
+    if Integer(R_List.Length) > 800 then
       Print(R_List);
     else
       Text_Io.Put_Line(Text_Io.Standard_Error,Market_Data.Marketid & " had only" &  R_List.Length'Img & " lines");
