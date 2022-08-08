@@ -1135,7 +1135,9 @@ package body Bot_Ws_Services is
                     
     Service       : constant String := ".Log_Air_Quality";
     T             : Sql.Transaction_Type;
+    pragma Warnings(Off,T);
     Airreading_Data    :  Table_Airreadings.Data_Type;
+    pragma Warnings(Off,Airreading_Data);
     Now           : Calendar2.Time_Type := Calendar2.Clock;
     --use Calendar2;    
   begin
@@ -1174,7 +1176,9 @@ package body Bot_Ws_Services is
                     
     Service       : constant String := ".Log_Co2";
     T             : Sql.Transaction_Type;
+    pragma Warnings(Off,T);
     Airreading_Data    :  Table_Airreadings.Data_Type;
+    pragma Warnings(Off,Airreading_Data);
     Now           : Calendar2.Time_Type := Calendar2.Clock;
     --use Calendar2;    
   begin
