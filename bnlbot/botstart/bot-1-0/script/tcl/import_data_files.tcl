@@ -33,25 +33,25 @@ proc Get_Time {} {
 #-----------------------------------------------------
 
 proc Import {f} {
-  
+
   if { [catch { exec zcat $f | psql --no-psqlrc bnl } msg] } {
     puts "Bad : $f"
     puts "Information about it: $::errorInfo"
     puts "Information about it: $msg"
   } else {
     Dbg "imported $f"
-  } 
+  }
 
-} 
+}
 
 
 proc Import_Zip {f} {
   Import $f
-} 
+}
 
 proc Import_Gz {f} {
   Import $f
-} 
+}
 
 
 
@@ -64,14 +64,14 @@ proc Is_To_Be_Imported {f} {
             switch -glob $f {
               *apriceshistory* {set Import 0}
               *abets*          {set Import 0}
-              *aevents*        {set Import 0}
-              default          {set Import 0}
+              *aevents*        {set Import 1}
+              default          {set Import 1}
             }
     }
 
     */dry_* {
             switch -glob $f {
-              *apriceshistory* {set Import 1}
+              *apriceshistory* {set Import 0}
               *abets*          {set Import 0}
               default          {set Import 0}
             }
@@ -90,25 +90,25 @@ proc Traverse_Directories {f} {
         if {[catch {cd $f} Result]} {
             Dbg $Result
             return
-        }        
+        }
         foreach g [glob -nocomplain *] {
 	        Traverse_Directories [file join [pwd] $g]
 	    }
-        
+
     } elseif {[file isfile $f]} {
       #  Dbg "found $f"
         set Is_To_Be_Imported_File [Is_To_Be_Imported $f]
-                               
-        if {$Is_To_Be_Imported_File } {  
+
+        if {$Is_To_Be_Imported_File } {
           set Is_Zip_File [string match *.zip $f]
           set Is_Gz_File  [string match  *.gz $f]
           if {$Is_Zip_File} {
             Import_Zip $f
           } elseif {$Is_Gz_File} {
             Import_Gz $f
-          } else { 
+          } else {
             Dbg "'$f' is neither a zip nor a gz"
-          } 
+          }
         }
     } else {
         Dbg "'$f' is neither a file nor a directory"
