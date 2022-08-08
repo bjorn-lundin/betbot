@@ -11,4 +11,6 @@ bnlbot/botstart/user/
 /atg
 /ppm
 /client
-/bot-1-0/history/
+bnlbot/botstart/bot-1-0/history/
+**nohup.out
+/data
