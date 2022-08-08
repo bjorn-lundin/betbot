@@ -7,6 +7,7 @@ with Calendar2; use Calendar2;
 with Text_Io;
 with Ini;
 with  Ada.Environment_Variables;
+with Ada.Directories;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
 --with Bot_Types;
 --with Utils; use Utils;
@@ -24,6 +25,7 @@ with Bot_Types;
 
 procedure Ai_Nn is
   package Ev renames Ada.Environment_Variables;
+  package AD renames Ada.Directories;
   Cmd_Line              : Command_Line_Configuration;
   T                     : Sql.Transaction_Type;
   Select_Runner_With_Price        : Sql.Statement_Type;
@@ -92,14 +94,15 @@ procedure Ai_Nn is
     Old_Data    : Data_Type;
     Data        : Data_Type;
     Marketid    : Bot_Types.Marketid_Type := (others => ' ');
-    Markettype  : Bot_Types.Markettype_Type := (others => ' ');
+  --  Markettype  : Bot_Types.Markettype_Type := (others => ' ');
+    Marketname  : Bot_Types.Marketname_Type := (others => ' ');
 
-    Lowest_2nd  : Fixed_Type := 1_000_000.0 +1.0;
-    Lowest_1st  : Fixed_Type := 1_000_000.0;
-    Selid_1st   : Integer_4  := 0;
-    Selid_2nd   : Integer_4  := 0;
-    Python_1st  : Integer    := -1;  --number (idx) in python (zero-based) array
-    Python_2nd  : Integer    := -1;  --number (idx) in python (zero-based) array
+    --  Lowest_2nd  : Fixed_Type := 1_000_000.0 +1.0;
+    --  Lowest_1st  : Fixed_Type := 1_000_000.0;
+    --  Selid_1st   : Integer_4  := 0;
+    --  Selid_2nd   : Integer_4  := 0;
+    --  Python_1st  : Integer    := -1;  --number (idx) in python (zero-based) array
+    --  Python_2nd  : Integer    := -1;  --number (idx) in python (zero-based) array
 
 
     ------------------------------------------------
@@ -111,57 +114,57 @@ procedure Ai_Nn is
         Text_Io.Put(F, ",");
       end loop;
 
-      Text_Io.Put(F, Markettype(1));      --3
-      Text_Io.Put(F, ",");
-      Text_Io.Put(F, Num_Real_Runners'Img);  --4
-      Text_Io.Put(F, ",");
-      Text_Io.Put(F, Marketid);             --5
-      Text_Io.Put(F, ",");
+      --  Text_Io.Put(F, Markettype(1));      --3
+      --  Text_Io.Put(F, ",");
+      --  Text_Io.Put(F, Num_Real_Runners'Img);  --4
+      --  Text_Io.Put(F, ",");
+      --  Text_Io.Put(F, Marketid);             --5
+      --  Text_Io.Put(F, ",");
 
 
-      case Ia_Position is
-      when 1 =>
-        Text_Io.Put(F, Float'Image(Float(Lowest_1st)));  --6
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, Selid_1st'Img);           --7
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, Python_1st'Img);       --8
-        Text_Io.Put(F, ",");
-      when 2 =>
-        Text_Io.Put(F, Float'Image(Float(Lowest_2nd))); --6
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, Selid_2nd'Img);    --7
-        Text_Io.Put(F, ",");
-        Text_Io.Put(F, Python_2nd'Img);  --8
-        Text_Io.Put(F, ",");
-      when others =>
-        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
-      end case;
+      --  case Ia_Position is
+      --  when 1 =>
+      --    Text_Io.Put(F, Float'Image(Float(Lowest_1st)));  --6
+      --    Text_Io.Put(F, ",");
+      --    Text_Io.Put(F, Selid_1st'Img);           --7
+      --    Text_Io.Put(F, ",");
+      --    Text_Io.Put(F, Python_1st'Img);       --8
+      --    Text_Io.Put(F, ",");
+      --  when 2 =>
+      --    Text_Io.Put(F, Float'Image(Float(Lowest_2nd))); --6
+      --    Text_Io.Put(F, ",");
+      --    Text_Io.Put(F, Selid_2nd'Img);    --7
+      --    Text_Io.Put(F, ",");
+      --    Text_Io.Put(F, Python_2nd'Img);  --8
+      --    Text_Io.Put(F, ",");
+      --  when others =>
+      --    raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
+      --  end case;
 
       for I in Data'Range loop
-        Text_Io.Put(F, Data(I).Selectionid'img);   --9-24
+        Text_Io.Put(F, Data(I).Selectionid'img);   --3-18
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop  --25-40
+      for I in Data'Range loop  --19-34
         if Ba_Layprice then
-          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice)/1000.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice)));
         else
-          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice)/1000.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice)));
         end if;
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop   --41-56
+      for I in Data'Range loop   --35-50
         if Ba_Layprice then
-          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)/1000.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)));
         else
-          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)/1000.0));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)));
         end if;
 
         if I = Data'Last then
           -- put here anything after the last array
-          Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => "")); --57
+          Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => "")); --51
           Text_Io.Put_Line(F, "");  -- <-- last statement on this row
           Old_Data := Data;
         else
@@ -178,12 +181,13 @@ procedure Ai_Nn is
     -- winner but use placeindex instead to get 1-16 for nn and Python uses 0-based arrays
     for R of L loop
       if R.Runner.Status(1) = 'W' then  -- fix for Place later on
-        Winners(1) := R.Runner.Sortprio -1;
-        Winners(2) := R.Runner.Sortprio -1;
-        Winners(3) := R.Runner.Sortprio -1;
+        Winners(1) := R.Runner.Selectionid;
+        Winners(2) := R.Runner.Selectionid;
+        Winners(3) := R.Runner.Selectionid;
         Pricets := R.History.Pricets;
         Marketid := R.Runner.Marketid;
-        Markettype := R.Market.Markettype;
+--        Markettype := R.Market.Markettype;
+        Marketname := R.Market.Marketname;
         exit;
       end if;
     end loop;
@@ -199,15 +203,43 @@ procedure Ai_Nn is
     case Ia_Position is
       when 1 =>
         if Ba_Train_Set then
-          Text_Io.Create(F,Text_Io.Out_File, Path1 & "train/" & Marketid & ".csv");
+          declare
+            Path : String :=  Path1 & "train/" & Marketname ;
+          begin
+            if not AD.Exists(Path) then
+              Ad.Create_Path(Path);
+            end if;
+            Text_Io.Create(F,Text_Io.Out_File, Path & "/" & Marketid & ".csv");
+          end;
         else
-          Text_Io.Create(F,Text_Io.Out_File, Path1 & "sample/" & Marketid & ".csv");
+          declare
+            Path : String :=  Path1 & "sample/" & Marketname ;
+          begin
+            if not AD.Exists(Path) then
+              Ad.Create_Path(Path);
+            end if;
+            Text_Io.Create(F,Text_Io.Out_File, Path & "/" & Marketid & ".csv");
+          end;
         end if;
       when 2 =>
         if Ba_Train_Set then
-          Text_Io.Create(F,Text_Io.Out_File, Path2 & "train/" & Marketid & ".csv");
+          declare
+            Path : String :=  Path2 & "train/" & Marketname ;
+          begin
+            if not AD.Exists(Path) then
+              Ad.Create_Path(Path);
+            end if;
+            Text_Io.Create(F,Text_Io.Out_File, Path & "/" & Marketid & ".csv");
+          end;
         else
-          Text_Io.Create(F,Text_Io.Out_File, Path2 & "sample/" & Marketid & ".csv");
+          declare
+            Path : String :=  Path2 & "sample/" & Marketname ;
+          begin
+            if not AD.Exists(Path) then
+              Ad.Create_Path(Path);
+            end if;
+            Text_Io.Create(F,Text_Io.Out_File, Path & "/" & Marketid & ".csv");
+          end;
         end if;
       when others =>
         raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
@@ -222,77 +254,77 @@ procedure Ai_Nn is
       Data(Cnt).Selectionid := R.Runner.Selectionid;
       Data(Cnt).Sortprio := R.Runner.Sortprio;
 
-      case Ia_Position is
-      when 1 =>
-        if Ba_Layprice then
-          if Data(Cnt).Layprice > 0.0
-            and then Data(Cnt).Layprice < Lowest_1st then
-            Lowest_1st := Data(Cnt).Layprice;
-            Selid_1st := Data(Cnt).Selectionid;
-            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-        else--back
-          if Data(Cnt).Backprice > 0.0
-            and then Data(Cnt).Backprice < Lowest_1st then
-            Lowest_1st := Data(Cnt).Backprice;
-            Selid_1st := Data(Cnt).Selectionid;
-            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-        end if;
-
-
-      when 2 =>
-        if Ba_Layprice then
-
-          if Data(Cnt).Layprice > 0.0
-            and then Data(Cnt).Layprice < Lowest_1st
-          then
-            Lowest_1st := Data(Cnt).Layprice;
-            Selid_1st := Data(Cnt).Selectionid;
-            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-
-          if Data(Cnt).Layprice > 0.0
-            and then Data(Cnt).Layprice >= Lowest_1st
-            and then Data(Cnt).Layprice < Lowest_2nd
-          then
-            Lowest_2nd := Data(Cnt).Layprice;
-            Selid_2nd := Data(Cnt).Selectionid;
-            Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-        else --back
-          if Data(Cnt).Backprice > 0.0
-            and then Data(Cnt).Backprice < Lowest_1st
-          then
-            Lowest_1st := Data(Cnt).Backprice;
-            Selid_1st := Data(Cnt).Selectionid;
-            Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-
-          if Data(Cnt).Backprice > 0.0
-            and then Data(Cnt).Backprice >= Lowest_1st
-            and then Data(Cnt).Backprice < Lowest_2nd
-          then
-            Lowest_2nd := Data(Cnt).Backprice;
-            Selid_2nd := Data(Cnt).Selectionid;
-            Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
-          end if;
-        end if;
-
-      when others =>
-        raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
-      end case;
+      --  case Ia_Position is
+      --  when 1 =>
+      --    if Ba_Layprice then
+      --      if Data(Cnt).Layprice > 0.0
+      --        and then Data(Cnt).Layprice < Lowest_1st then
+      --        Lowest_1st := Data(Cnt).Layprice;
+      --        Selid_1st := Data(Cnt).Selectionid;
+      --        Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --    else--back
+      --      if Data(Cnt).Backprice > 0.0
+      --        and then Data(Cnt).Backprice < Lowest_1st then
+      --        Lowest_1st := Data(Cnt).Backprice;
+      --        Selid_1st := Data(Cnt).Selectionid;
+      --        Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --    end if;
+      --
+      --
+      --  when 2 =>
+      --    if Ba_Layprice then
+      --
+      --      if Data(Cnt).Layprice > 0.0
+      --        and then Data(Cnt).Layprice < Lowest_1st
+      --      then
+      --        Lowest_1st := Data(Cnt).Layprice;
+      --        Selid_1st := Data(Cnt).Selectionid;
+      --        Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --
+      --      if Data(Cnt).Layprice > 0.0
+      --        and then Data(Cnt).Layprice >= Lowest_1st
+      --        and then Data(Cnt).Layprice < Lowest_2nd
+      --      then
+      --        Lowest_2nd := Data(Cnt).Layprice;
+      --        Selid_2nd := Data(Cnt).Selectionid;
+      --        Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --    else --back
+      --      if Data(Cnt).Backprice > 0.0
+      --        and then Data(Cnt).Backprice < Lowest_1st
+      --      then
+      --        Lowest_1st := Data(Cnt).Backprice;
+      --        Selid_1st := Data(Cnt).Selectionid;
+      --        Python_1st := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --
+      --      if Data(Cnt).Backprice > 0.0
+      --        and then Data(Cnt).Backprice >= Lowest_1st
+      --        and then Data(Cnt).Backprice < Lowest_2nd
+      --      then
+      --        Lowest_2nd := Data(Cnt).Backprice;
+      --        Selid_2nd := Data(Cnt).Selectionid;
+      --        Python_2nd := Cnt -1;  --number (idx) in python (zero-based) array
+      --      end if;
+      --    end if;
+      --
+      --  when others =>
+      --    raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
+      --  end case;
 
       if Cnt = Num_Real_Runners then
         Pricets := R.History.Pricets; -- update to this line's pricets
         Do_Print_Line(F);
         Cnt := 0;
-        Lowest_1st := 1_000_000.0;
-        Selid_1st   := 0;
-        Python_1st  := -1;
-        Lowest_2nd := 1_000_000.0 +1.0;
-        Selid_2nd   := 0;
-        Python_2nd  := -1;
+        --  Lowest_1st := 1_000_000.0;
+        --  Selid_1st   := 0;
+        --  Python_1st  := -1;
+        --  Lowest_2nd := 1_000_000.0 +1.0;
+        --  Selid_2nd   := 0;
+        --  Python_2nd  := -1;
       end if;
 
     end loop;
@@ -312,7 +344,7 @@ procedure Ai_Nn is
     R_Data             : R_Type;
   begin
 
-    R_Data.Market.Marketid := Marketid;
+    R_Data.Market.Marketid := Market_Data.Marketid;
     R_Data.Market.Read(Eos(market));
 
     Select_Runner_With_Price.Prepare("select H.* " &
@@ -336,7 +368,7 @@ procedure Ai_Nn is
       R_List.Append(R_Data);
     end loop;
     Select_Runner_With_Price.Close_Cursor;
-    if Integer(R_List.Length) > 800 then
+    if Integer(R_List.Length) > 500 then
       Print(R_List);
     else
       Text_Io.Put_Line(Text_Io.Standard_Error,Market_Data.Marketid & " had only" &  R_List.Length'Img & " lines");
@@ -354,8 +386,8 @@ procedure Ai_Nn is
                                 "from AMARKETS M " &
                                 "where true " &
                                 "and M.MARKETTYPE = 'WIN' " &
-                                "and M.NUMACTUALRUNNERS >= 8 " &
-                                "and M.NUMACTUALRUNNERS <= 16 " &
+                                "and M.NUMACTIVERUNNERS >= 8 " &
+                                "and M.NUMACTIVERUNNERS <= 16 " &
                               --  "and m.marketid = '1.151619897' " &
                                 "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
                                 "order by M.STARTTS");
@@ -364,8 +396,8 @@ procedure Ai_Nn is
                                "from AMARKETS M " &
                                "where true " &
                                "and M.MARKETTYPE = 'WIN' " &
-                               "and M.NUMACTUALRUNNERS >= 8 " &
-                               "and M.NUMACTUALRUNNERS <= 16 " &
+                               "and M.NUMACTIVERUNNERS >= 8 " &
+                               "and M.NUMACTIVERUNNERS <= 16 " &
                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
                                "order by M.STARTTS");
     end if;
@@ -384,7 +416,7 @@ begin
      Long_Switch => "--startdate=",
      Help        => "startdate");
 
-    Define_Switch
+  Define_Switch
     (Cmd_Line,
      Ba_Train_Set'Access,
      Long_Switch => "--trainset",
