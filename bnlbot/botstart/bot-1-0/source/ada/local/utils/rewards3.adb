@@ -170,7 +170,7 @@ procedure Rewards3 is
       end if;
     end loop;
 
-    if Is_Winner and Runner.Layprice > 1.0 then
+    if Is_Winner and Runner.Layprice > Fixed_Type'(1.0) then
       return - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
     end if;
 
@@ -184,7 +184,9 @@ procedure Rewards3 is
         then
           for J of List loop
             if J.Selectionid = Runner.Selectionid  then
-              if J.Layprice <= Runner.Layprice then --match
+              if J.Layprice <= Runner.Layprice 
+                and then J.Layprice > Fixed_Type'(0.0) 
+              then --match
                 if Is_Winner then 
                   Profit := - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
                 else
@@ -326,7 +328,7 @@ begin
                                  Timestamp,
                                  "BACK",
                                  Fixed_Type(Profit_Back),
-                                 <>,
+                                 (others => ' '),
                                  Timestamp
                                 );
                       Reward.Insert;
