@@ -104,9 +104,10 @@ procedure Rewards3 is
 
     if Seen_1_0x then
       for Runner of B loop
-        -- is any runners within 1.01 - 50 ? then All_more_than limit is false
+        -- is any runners within 1.01 - 25 ? then All_more_than limit is false
         if Fixed_Type (1.0) < Runner.Backprice and then Runner.Backprice < Fixed_Type (25.0) then
           Some_Under_Limit := True;
+          exit;
         end if;
       end loop;
       More_Than_Limit := not Some_Under_Limit;
@@ -115,9 +116,9 @@ procedure Rewards3 is
 
   -------------------------------------------------------
   function Check_Profit_Back (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
-    Is_Winner                       : Boolean := False;
+    Is_Winner   : Boolean := False;
     use Bot_Types;
-    Profit                          : Profit_Type := 0.0;
+    Profit      : Profit_Type := 0.0;
   begin
 
     for W of Sim.Winners_Map (Runner.Marketid) loop
@@ -134,30 +135,22 @@ procedure Rewards3 is
 
     Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
       declare
-        List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
-        Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
-        Tmp                 : Profit_Type := 0.0;
+        List  : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
+        Tmp   : Profit_Type := 0.0;
       begin
-
-        for J of List loop
-          if J.Selectionid = Runner.Selectionid and then
-            Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
-
-            if J.Backprice >= Runner.Backprice then --match
-              if Is_Winner then
-                if  Runner.Backprice < 1.01 then
-                  return 0.0;
-                else
+        if Timestamp > Runner.Pricets 
+          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0) -- check time +1s
+        then 
+          for J of List loop
+            if J.Selectionid = Runner.Selectionid then 
+              if J.Backprice >= Runner.Backprice then --match
                   Tmp := Profit_Type(Global_Size) * Profit_Type (Runner.Backprice - 1.0) ; -- or J.Backprice ? we are pessimistic
                   Profit := Tmp * Profit_Type (1.0 - Commission);
-                end if;
-              else
-                return - Profit_Type(Global_Size);
+                exit Loop_Ts_Check_Profit;
               end if;
-              exit Loop_Ts_Check_Profit;
             end if;
-          end if;
-        end loop;
+          end loop;
+        end if;
       end;
     end loop Loop_Ts_Check_Profit;
     return Profit;
@@ -165,9 +158,9 @@ procedure Rewards3 is
 
   -------------------------------------------------------
   function Check_Profit_Lay (Runner : Price_Histories.Price_History_Type; Ttphm :  Sim.Timestamp_To_Prices_History_Maps.Map) return Bot_Types.Profit_Type is
-    Is_Winner                       : Boolean := False;
+    Is_Winner   : Boolean := False;
     use Bot_Types;
-    Profit                          : Profit_Type := 0.0;
+    Profit      : Profit_Type := 0.0;
   begin
 
     for W of Sim.Winners_Map (Runner.Marketid) loop
@@ -177,49 +170,47 @@ procedure Rewards3 is
       end if;
     end loop;
 
-    if Is_Winner then
+    if Is_Winner and Runner.Layprice > 1.0 then
       return - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
     end if;
 
     Loop_Ts_Check_Profit : for Timestamp of Sim.Marketid_Pricets_Map (Runner.Marketid) loop
       declare
         List                : Price_Histories.Lists.List := Ttphm (Timestamp.To_String);
-        Delta_Time          : Calendar2.Interval_Type := Runner.Pricets - Timestamp;
       begin
 
-        for J of List loop
-          if J.Selectionid = Runner.Selectionid and then
-            Delta_Time >= (0, 0, 0, 1, 0) then -- check time +1s
-
-            -- if here , we are not winner
-            if J.Layprice <= Runner.Layprice then --match
-              Profit := Profit_Type(Global_Size) * Profit_Type (1.0 - Commission);
-              exit Loop_Ts_Check_Profit;
+        if Timestamp > Runner.Pricets 
+          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0)  -- check time +1s
+        then
+          for J of List loop
+            if J.Selectionid = Runner.Selectionid  then
+              if J.Layprice <= Runner.Layprice then --match
+                if Is_Winner then 
+                  Profit := - Profit_Type(Global_Size) * Profit_Type (Runner.Layprice - 1.0);
+                else
+                  Profit := Profit_Type(Global_Size) * Profit_Type (1.0 - Commission);
+                end if;
+                exit Loop_Ts_Check_Profit;
+              end if;
             end if;
-          end if;
-        end loop;
+          end loop;
+        end if;
       end;
     end loop Loop_Ts_Check_Profit;
     return Profit;
   end Check_Profit_Lay;
   ------------------------------------------------------
 
-
---  Sa_Side                        : aliased  Gnat.Strings.String_Access;
   Sa_Start_Date                   : aliased  Gnat.Strings.String_Access;
   Sa_Stop_Date                    : aliased  Gnat.Strings.String_Access;
   Sa_Logfilename                  : aliased  Gnat.Strings.String_Access;
-  --Sa_Markettype                   : aliased  Gnat.Strings.String_Access;
-  --Path                            :          String := Ev.Value("BOT_HISTORY") & "/data/ai/plc/rewards";
- -- Start_Date                      :          Calendar2.Time_Type := (2016,03,16,0,0,0,0);
   Start_Date                      :          Calendar2.Time_Type := (2018,8,1,0,0,0,0);
   One_Day                         : constant Calendar2.Interval_Type := (1,0,0,0,0);
   Current_Date                    :          Calendar2.Time_Type := Start_Date;
-  Stop_Date                       :          Calendar2.Time_Type := (2020,10,1,23,59,59,999);
+  Stop_Date                       :          Calendar2.Time_Type := (2023,10,1,23,59,59,999);
   Cmd_Line                        :          Command_Line_Configuration;
   T                               :          Sql.Transaction_Type;
 begin
-
 
   Define_Switch
     (Cmd_Line,
@@ -232,14 +223,6 @@ begin
      Sa_Stop_Date'Access,
      Long_Switch => "--stopdate=",
      Help        => "stop date eg 2019-12-21");
-
-  --    Define_Switch
-  --       (Cmd_Line,
-  --       Sa_Markettype'Access,
-  --       Long_Switch => "--markettype=",
-  --       Help        => "PLC/WIN");
-
-
 
   Define_Switch
     (Cmd_Line,
@@ -260,9 +243,7 @@ begin
   Log("main", "start_date '" & Sa_Start_Date.all & "'");
   Log("main", "stop_date  '" & Sa_Stop_Date.all & "'");
   Log("main", "logfile    '" & Sa_Logfilename.all & "'");
---  Log("main", "side       '" & Sa_Side.all & "'");
   Log("main", "params stop");
-
 
   Ini.Load(Ev.Value("BOT_HOME") & "/" & "login.ini");
   Log("main", "Connect Db " &
@@ -280,7 +261,6 @@ begin
      Password => Ini.Get_Value("database_home", "password", ""));
   Log("main", "db Connected");
 
-
   if Sa_Start_Date.all /= "" then
     Start_Date := Calendar2.To_Time_Type(Sa_Start_Date.all,"");
   end if;
@@ -290,11 +270,9 @@ begin
   end if;
 
   Current_Date := Start_Date;
-
   Date_Loop : loop
     T.Start;
-    Log("start fill maps");
-    --    Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse);
+    Log("start fill maps " & Calendar2.String_Date(Current_Date));
     Sim.Fill_Data_Maps(Current_Date, Bot_Types.Horse, Rewards => False, Racetimes => False);
     Log("start process maps");
 
@@ -302,13 +280,12 @@ begin
       Cnt       : Integer := 0;
     begin
       Market_Loop : for Market of Sim.Market_With_Data_List loop
-
         Log("start market " & Market.To_String);
 
         if Market.Markettype(1..3) = "WIN"
           and then 8 <= Market.Numactiverunners
-          and then Market.Numactiverunners <= 16 --and then
-        --   Market.Marketname_Ok2
+          and then Market.Numactiverunners <= 16 and then
+         Market.Marketname_Ok
         then
           Cnt := Cnt + 1;
 
@@ -342,7 +319,6 @@ begin
 
                 if Delta_Time < (0, 0, 0, 2, 0) then -- don't bother when race not started
                   for I in Bra'Range loop
-
                     if Bra(I).Selectionid > 0 then
                       Profit_Back := Check_Profit_Back(Bra (I),Timestamp_To_Prices_History_Map2);
                       Reward := (Market.Marketid,
@@ -350,18 +326,17 @@ begin
                                  Timestamp,
                                  "BACK",
                                  Fixed_Type(Profit_Back),
-                                 (others => 'z'),
+                                 <>,
                                  Timestamp
                                 );
-
                       Reward.Insert;
-                      Profit_Lay := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
 
+                      Profit_Lay := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
                       Reward.Profit := Fixed_Type(Profit_Lay);
                       Reward.Side := "LAY ";
                       Reward.Insert;
-                    end if;
 
+                    end if;
                   end loop;
                 end if;
                 Last_Poll := Bra (1).Pricets;
