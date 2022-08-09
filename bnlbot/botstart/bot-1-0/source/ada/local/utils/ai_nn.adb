@@ -352,8 +352,9 @@ procedure Ai_Nn is
     R_Data             : R_Type;
     Mkt                : Markets.Market_Type;
   begin
-    Mkt.Marketid :=  Market_Data.Marketid;
+    Mkt.Marketname := Market_Data.Marketname;
     if not Mkt.Marketname_Ok then
+    --  Debug("bad name: " & Mkt.Marketname );
       return;
     end if;
 
