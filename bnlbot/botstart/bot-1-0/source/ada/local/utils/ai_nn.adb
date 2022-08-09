@@ -2,21 +2,22 @@ with Ada.Environment_Variables;
 with Ada.Directories;
 with Ada.Containers.Doubly_Linked_Lists;
 --with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
-
 with Ada.Strings ; use Ada.Strings;
 with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+with Text_Io;
 
 with Gnat.Command_Line; use Gnat.Command_Line;
 with Gnat.Strings;
+
 with Types;    use Types;
 with Sql;
 with Calendar2; use Calendar2;
 --with Logging;               use Logging;
-with Text_Io;
 with Ini;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
+with Markets;
 
 with Table_Apriceshistory;
 with Bot_Types;
@@ -339,12 +340,9 @@ procedure Ai_Nn is
 
     end loop;
 
-
     Text_Io.Put_Line(Text_Io.Standard_Error,"close file");
     Text_Io.Close(F);
-
   end Print;
-
 
   --------------------------------------------------------
   procedure Get_Runner_Data(Market_Data : Table_Amarkets.Data_Type) is
@@ -352,7 +350,12 @@ procedure Ai_Nn is
     Eos                : array(Eos_Type'range) of Boolean := (others => False);
     R_List             : R_Pkg.List;
     R_Data             : R_Type;
+    Mkt                : Markets.Market_Type;
   begin
+    Mkt.Marketid :=  Market_Data.Marketid;
+    if not Mkt.Marketname_Ok then
+      return;
+    end if;
 
     R_Data.Market.Marketid := Market_Data.Marketid;
     R_Data.Market.Read(Eos(market));
