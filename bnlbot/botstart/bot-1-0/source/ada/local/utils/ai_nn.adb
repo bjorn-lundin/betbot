@@ -1,24 +1,23 @@
+with Ada.Environment_Variables;
+with Ada.Directories;
+with Ada.Containers.Doubly_Linked_Lists;
+--with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
+
+with Ada.Strings ; use Ada.Strings;
+with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
+
 with Gnat.Command_Line; use Gnat.Command_Line;
-with Types;    use Types;
 with Gnat.Strings;
+with Types;    use Types;
 with Sql;
 with Calendar2; use Calendar2;
 --with Logging;               use Logging;
 with Text_Io;
 with Ini;
-with  Ada.Environment_Variables;
-with Ada.Directories;
---with Ada.Strings.Unbounded ; use Ada.Strings.Unbounded;
---with Bot_Types;
---with Utils; use Utils;
-
---with Ada.Strings ; use Ada.Strings;
---with Ada.Strings.Fixed ; use Ada.Strings.Fixed;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
 
-with Ada.Containers.Doubly_Linked_Lists;
 with Table_Apriceshistory;
 with Bot_Types;
 
@@ -172,8 +171,20 @@ procedure Ai_Nn is
         end if;
       end loop;
     end Do_Print_Line;
-    ------------------------------------------------
+      ------------------------------------------------
 
+    function Fix_Path(p : string) return string is
+      lp : string := Trim(p,right);
+    begin
+      for i in lp'range loop
+        case lp(i) is
+          when ' ' => lp(i) := '_';
+          when others => null;
+        end case;  
+      end loop;
+      return lp;
+    end Fix_Path; 
+    ---------------------------------
 
   begin
      Text_Io.Put_Line(Text_Io.Standard_Error,"length list" & L.Length'Img);
@@ -204,7 +215,7 @@ procedure Ai_Nn is
       when 1 =>
         if Ba_Train_Set then
           declare
-            Path : String :=  Path1 & "train/" & Marketname ;
+            Path : String := Fix_Path(Path1 & "train/" & Marketname) ;
           begin
             if not AD.Exists(Path) then
               Ad.Create_Path(Path);
@@ -213,7 +224,7 @@ procedure Ai_Nn is
           end;
         else
           declare
-            Path : String :=  Path1 & "sample/" & Marketname ;
+            Path : String := Fix_Path(Path1 & "sample/" & Marketname);
           begin
             if not AD.Exists(Path) then
               Ad.Create_Path(Path);
@@ -224,7 +235,7 @@ procedure Ai_Nn is
       when 2 =>
         if Ba_Train_Set then
           declare
-            Path : String :=  Path2 & "train/" & Marketname ;
+            Path : String := Fix_Path(Path2 & "train/" & Marketname) ;
           begin
             if not AD.Exists(Path) then
               Ad.Create_Path(Path);
@@ -233,7 +244,7 @@ procedure Ai_Nn is
           end;
         else
           declare
-            Path : String :=  Path2 & "sample/" & Marketname ;
+            Path : String := Fix_Path(Path2 & "sample/" & Marketname) ;
           begin
             if not AD.Exists(Path) then
               Ad.Create_Path(Path);
@@ -244,7 +255,6 @@ procedure Ai_Nn is
       when others =>
         raise Constraint_Error with "bad position - not supported" & Ia_Position'Img;
     end case;
-
 
     for R of L loop
       Cnt := Cnt + 1;
