@@ -50,3 +50,4 @@ function create_dump () {
 [ -d /bnlbot/botstart/data ] && create_dump /bnlbot/botstart/data/db_dumps && exit 0
 [ -d /home/bnl/data ] && create_dump /home/bnl/data/db_dumps && exit 0
 [ -d /data ] && create_dump /data/db_dumps && exit 0
+[ -d /bnlbot/bnlbot/botstart/data ] && create_dump /bnlbot/bnlbot/botstart/data/db_dumps && exit 0
