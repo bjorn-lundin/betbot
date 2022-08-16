@@ -3,7 +3,7 @@ var Timer;
 var Cnt;
 //var URL=https://lundin.duckdns.org
 //var URL=http://192.168.1.229:9080
-var URL=http://lundin.duckdns.org:9080
+var URL="http://lundin.duckdns.org"
 
 //bnl
 $.makeTable = function (mydata) {
