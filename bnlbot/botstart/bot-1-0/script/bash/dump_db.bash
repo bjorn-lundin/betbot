@@ -18,7 +18,7 @@ function create_dump () {
   [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
 
   DB_LIST="bnl dry jmb msm"
-  TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets"
+  TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets abalances"
 
   for DBNAME in ${DB_LIST} ; do
     for TABLE in ${TABLE_LIST} ; do
@@ -29,8 +29,9 @@ function create_dump () {
       R=$?
       if [ $R -eq 0 ] ; then
         case ${TABLE} in
-          abets)  echo "null" > /dev/null ;;
-              *)  psql --no-psqlrc --dbname=${DBNAME} --command="truncate table ${TABLE}" ;;
+          abets)      echo "null" > /dev/null ;;
+          abalances)  echo "null" > /dev/null ;;
+                  *)  psql --no-psqlrc --dbname=${DBNAME} --command="truncate table ${TABLE}" ;;
         esac
       fi
     done
