@@ -63,16 +63,16 @@ proc Is_To_Be_Imported {f} {
     */bnl_* {
             switch -glob $f {
               *apriceshistory* {set Import 0}
-              *abets*          {set Import 1}
-              *aevents*        {set Import 0}
-              default          {set Import 0}
+              *abalance*       {set Import 0}
+              *abets*          {set Import 0}
+              default          {set Import 1}
             }
     }
 
     */dry_* {
             switch -glob $f {
-              *apriceshistory* {set Import 0}
-              *abets*          {set Import 0}
+              *apriceshistory* {set Import 1}
+              *abalance*       {set Import 0}
               default          {set Import 0}
             }
     }
@@ -122,7 +122,7 @@ proc Traverse_Directories {f} {
 set This_Pwd [pwd]
 
 set YEAR [lindex $::argv 0]
-Traverse_Directories [file join / bnlbot bnlbot botstart data db_dumps $YEAR]
+Traverse_Directories [file join / home bnl betfair data db_dumps $YEAR]
 cd $This_Pwd
 #Dbg "Stop"
 
