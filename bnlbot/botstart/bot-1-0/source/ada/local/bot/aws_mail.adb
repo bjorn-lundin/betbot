@@ -65,18 +65,28 @@ procedure Aws_Mail is
      T       : Calendar2.Time_Type := Calendar2.Clock;
      use AWS;
   --   SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
-     SMTP_Server_Name : constant String := "email-smtp.eu-north-1.amazonaws.com";
+  --   SMTP_Server_Name : constant String := "email-smtp.eu-north-1.amazonaws.com";
+     SMTP_Server_Name : constant String := "mailforward.nonodev.com";
      Status : SMTP.Status;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
     declare
-      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                  SMTP.Authentication.Plain.Initialize ("AKIA4CCYWRUF6WBFHS4O",
-                                                  "BOYbIW5ox8Vq9+6tUkqUpo4J7gy/a7u/tErewqGDFDWW"); -- fixed by java-tool
+--      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+--                                  SMTP.Authentication.Plain.Initialize ("AKIA4CCYWRUF6WBFHS4O",
+--                                                  "BOYbIW5ox8Vq9+6tUkqUpo4J7gy/a7u/tErewqGDFDWW"); -- fixed --by java-tool
+
+--      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+--                                  (SMTP_Server_Name,
+--                                   Port       => 465,
+--                                   Secure     => True,);
+    Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+                                  SMTP.Authentication.Plain.Initialize
+                                    ("betbot@nonobet.com", "rTrBJR+ADN");
+
 
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
-                                   Port       => 465,
+                                   Port       => 587,
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
