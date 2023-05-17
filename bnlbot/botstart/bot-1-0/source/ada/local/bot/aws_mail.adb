@@ -29,7 +29,7 @@ with Logging; use Logging;
 
 --with Process_IO;
 --with Core_Messages;
-with Text_io; use Text_io;
+with Text_Io; use Text_Io;
 
 procedure Aws_Mail is
   package EV renames Ada.Environment_Variables;
@@ -37,9 +37,9 @@ procedure Aws_Mail is
 
   Me : constant String := "Main.";
 
-  Sa_Par_Subject : aliased Gnat.Strings.String_Access;
+  Sa_Par_Subject  : aliased Gnat.Strings.String_Access;
   Cmd_Line        : Command_Line_Configuration;
----------------------------------------------------------
+  ---------------------------------------------------------
 
 
   function Get_From_Std_In return String is
@@ -62,49 +62,57 @@ procedure Aws_Mail is
 
 
   procedure Mail(Subject : String) is
-     T       : Calendar2.Time_Type := Calendar2.Clock;
-     use AWS;
-  --   SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
-  --   SMTP_Server_Name : constant String := "email-smtp.eu-north-1.amazonaws.com";
-     SMTP_Server_Name : constant String := "mailforward.nonodev.com";
-     Status : SMTP.Status;
+    T                : Calendar2.Time_Type := Calendar2.Clock;
+    use AWS;
+    --   SMTP_Server_Name : constant String := "email-smtp.eu-west-1.amazonaws.com";
+    --   SMTP_Server_Name : constant String := "email-smtp.eu-north-1.amazonaws.com";
+    SMTP_Server_Name : constant String := "mailforward.nonodev.com";
+    Status           : SMTP.Status;
   begin
+    Log("mail", "start set dir");
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
+
+
+    Log("mail", "start auth declare");
     declare
---      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
---                                  SMTP.Authentication.Plain.Initialize ("AKIA4CCYWRUF6WBFHS4O",
---                                                  "BOYbIW5ox8Vq9+6tUkqUpo4J7gy/a7u/tErewqGDFDWW"); -- fixed --by java-tool
+      Auth : aliased constant SMTP.Authentication.Plain.Credential :=
+               SMTP.Authentication.Plain.Initialize
+                 ("betbot@nonobet.com", "rTrBJR+ADN");
 
---      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
---                                  (SMTP_Server_Name,
---                                   Port       => 465,
---                                   Secure     => True,);
-    Auth : aliased constant SMTP.Authentication.Plain.Credential :=
-                                  SMTP.Authentication.Plain.Initialize
-                                    ("betbot@nonobet.com", "rTrBJR+ADN");
+      --  SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+      --                              (SMTP_Server_Name,
+      --                               Port       => 587,
+      --                               Secure     => True,
+      --                               Credential => Auth'Unchecked_Access);
 
-
-      SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
-                                  (SMTP_Server_Name,
-                                   Port       => 587,
-                                   Secure     => True,
-                                   Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
       Msg : constant String := Get_From_Std_In &
-          Cr & Lf &
-          "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
-          "sent from: " & GNAT.Sockets.Host_Name ;
+              Cr & Lf &
+              "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
+              "sent from: " & GNAT.Sockets.Host_Name ;
 
-      Receivers : constant SMTP.Recipients :=  (1=>
-                  SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com")
-                );
+      Receivers : constant SMTP.Recipients :=  (1 => SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
+                                                2 => SMTP.E_Mail("J Birgersson", "joakim@birgerson.com")
+                                               );
     begin
-      SMTP.Client.Send(Server  => SMTP_Server,
-                       From    => SMTP.E_Mail ("Alarm Betbot", "betbotlundin@gmail.com"),
-                       To      => Receivers,
-                       Subject => Subject,
-                       Message => Msg,
-                       Status  => Status);
+      Log("mail", "start Initialize");
+      declare
+        SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
+          (SMTP_Server_Name,
+--           Port       => 587,
+           Port       => 465,
+           Secure     => True,
+           Credential => Auth'Unchecked_Access);
+      begin
+        Log("mail", "start send");
+
+        SMTP.Client.Send(Server  => SMTP_Server,
+                         From    => SMTP.E_Mail ("Alarm Betbot", "betbot@nonobet.com"),
+                         To      => Receivers,
+                         Subject => Subject,
+                         Message => Msg,
+                         Status  => Status);
+      end;
       Log (Me & "Mail", "subject: " & Subject);
       Log (Me & "Mail", "body: " & Msg);
     end;
@@ -113,18 +121,18 @@ procedure Aws_Mail is
     end if;
   end Mail;
 
----------------------------------
+  ---------------------------------
 
------------------------------- main start -------------------------------------
+  ------------------------------ main start -------------------------------------
 begin
 
   Logging.Open(EV.Value("BOT_HOME") & "/log/aws_mailer.log");
 
   Define_Switch
-   (Cmd_Line,
-    Sa_Par_Subject'access,
-    Long_Switch => "--subject=",
-    Help        => "subject to mail");
+    (Cmd_Line,
+     Sa_Par_Subject'Access,
+     Long_Switch => "--subject=",
+     Help        => "subject to mail");
 
   Getopt (Cmd_Line);  -- process the command line
 
@@ -135,7 +143,7 @@ begin
 
 exception
   when Lock.Lock_Error =>
-      Posix.Do_Exit(0); -- terminate
+    Posix.Do_Exit(0); -- terminate
 
   when E: others =>
     declare
@@ -147,7 +155,7 @@ exception
       Log("Message : " & Last_Exception_Messsage);
       Log(Last_Exception_Info);
       Log("addr2line" & " --functions --basenames --exe=" &
-           Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
+            Ada.Command_Line.Command_Name & " " & Stacktrace.Pure_Hexdump(Last_Exception_Info));
     end ;
     Posix.Do_Exit(0); -- terminate
 end Aws_Mail;
