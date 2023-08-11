@@ -136,13 +136,19 @@ begin
 
    Debug("Connect Db");
    Sql.Connect
-     (Host     => Ini.Get_Value("database","host",""),
-      Port     => Ini.Get_Value("database","port", 5432),
-      Db_Name  => Ini.Get_Value("database","name",""),
-      Login    => Ini.Get_Value("database","username",""),
-      Password => Ini.Get_Value("database","password",""),
+     (Host     => Ini.Get_Value("database_home","host",""),
+      Port     => Ini.Get_Value("database_home","port", 5432),
+      Db_Name  => Ini.Get_Value("database_home","name",""),
+      Login    => Ini.Get_Value("database_home","username",""),
+      Password => Ini.Get_Value("database_home","password",""),
       Ssl_Mode => "prefer");
-   Debug("db Connected");
+  Debug("db Connected");
+
+
+  if not Ev.Exists("BOT_NAME") then
+    Ev.Set("BOT_NAME","create_ok_markets");
+  end if;
+
 
    T.Start;
    Get_Market_Data(Mlist);

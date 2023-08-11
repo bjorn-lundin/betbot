@@ -139,7 +139,8 @@ procedure Rewards3 is
         Tmp   : Profit_Type := 0.0;
       begin
         if Timestamp > Runner.Pricets 
-          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0) -- check time +1s
+          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0) -- check time within +1..2 sec
+          and then Timestamp - Runner.Pricets <= (0, 0, 0, 2, 0) 
         then 
           for J of List loop
             if J.Selectionid = Runner.Selectionid then 
@@ -180,7 +181,8 @@ procedure Rewards3 is
       begin
 
         if Timestamp > Runner.Pricets 
-          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0)  -- check time +1s
+          and then Timestamp - Runner.Pricets >= (0, 0, 0, 1, 0) -- check time within +1..2 sec
+          and then Timestamp - Runner.Pricets <= (0, 0, 0, 2, 0) 
         then
           for J of List loop
             if J.Selectionid = Runner.Selectionid  then

@@ -71,6 +71,7 @@ project Adabot is
                     "ai_nn_diff_db.adb",
                     "rewards3.adb",
                     "ai_nn.adb",
+                    "ai_nn_2.adb",
                     "create_ok_markets.adb",
                     "test_float_to_fix.adb",
                   --  "test_json.adb",

@@ -418,12 +418,11 @@ begin
                           -- Put (Race, Calendar2.String_Interval (Interval => Delta_Time, Days => False , Hours => False ) & "|");
                         end if;
 
-                        if Bra(I).Selectionid > 0 then
+                        if Bra (I).Selectionid > 0 then
                           case Side is
-                          when Back => Profit := Check_Profit(Bra (I),Timestamp_To_Prices_History_Map2);
-                          when Lay  => Profit := Check_Profit_Lay(Bra (I),Timestamp_To_Prices_History_Map2);
+                            when Back => Profit := Check_Profit (Bra (I), Timestamp_To_Prices_History_Map2);
+                            when Lay  => Profit := Check_Profit_Lay (Bra (I), Timestamp_To_Prices_History_Map2);
                           end case;
-
                         else
                           Profit := 0.0;
                         end if;

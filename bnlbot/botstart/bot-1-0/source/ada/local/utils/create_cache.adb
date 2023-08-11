@@ -69,6 +69,10 @@ begin
     Date_Stop := Calendar2.To_Time_Type(Sa_Stopdate.all,"");
   end if;
 
+
+  Logging.Open (Ev.Value ("BOT_HOME") & "/log/" &  Ev.Value ("BOT_NAME") & ".log");
+
+
   Log("Sa_Animal.all  " & Sa_Animal.all);
   Log("start_date '" & Sa_Startdate.all & "'");
   Log("stop_date  '" & Sa_Stopdate.all & "'");
@@ -101,7 +105,9 @@ begin
     when Horse | Hound =>
       loop
         exit when Current_Date > Date_Stop;
-        Sim.Fill_Data_Maps (Current_Date, Animal => Animal, Rewards => Ba_Rewards, Racetimes => False, Race_Prices => True);
+        Sim.Fill_Win_Place_Map(Current_Date, Animal, Sim.Win_Place_Map);
+
+      ---  Sim.Fill_Data_Maps (Current_Date, Animal => Animal, Rewards => Ba_Rewards, Racetimes => False, Race_Prices => True);
         Current_Date := Current_Date + One_Day;
       end loop;
 
@@ -113,6 +119,8 @@ begin
 
 
 exception
+  when Gnat.Command_Line.Exit_From_Command_Line => null;
+
   when E : others =>
     Stacktrace.Tracebackinfo (E);
 end Create_Cache;
