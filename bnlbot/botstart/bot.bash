@@ -79,6 +79,11 @@ case $HOSTNAME in
     export BOT_XML_SOURCE=LOCAL
     export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
+  w541)
+    export BOT_MACHINE_ROLE=SIM
+    export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
+    ;;
   *)
     export BOT_MACHINE_ROLE=$HOSTNAME
     ;;
