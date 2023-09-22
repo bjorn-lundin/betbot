@@ -72,6 +72,7 @@ project Adabot is
                     "rewards3.adb",
                     "ai_nn.adb",
                     "ai_nn_2.adb",
+                    "test_string_object",
                     "create_ok_markets.adb",
                     "test_float_to_fix.adb",
                   --  "test_json.adb",

@@ -17,6 +17,7 @@ with Ini;
 with Stacktrace;
 with Table_Amarkets;
 with Table_Arunners;
+with Table_Arewards;
 with Markets;
 
 with Table_Apriceshistory;
@@ -49,6 +50,8 @@ procedure Ai_Nn is
   --  Price   : Table_Aprices.Data_Type;
     History : Table_Apriceshistory.Data_Type;
     Market  : Table_Amarkets.Data_Type;
+    Back_Reward : Table_Arewards.Data_Type;
+    Lay_Reward : Table_Arewards.Data_Type;
   end record;
 
   package R_Pkg is new Ada.Containers.Doubly_Linked_Lists(R_Type);
@@ -88,10 +91,12 @@ procedure Ai_Nn is
       Layprice  : Fixed_Type := 0.0;
       Selectionid : Integer_4 := 0;
       Sortprio : Integer_4 := 0;
+      Back_Reward : Fixed_Type := 0.0;
+      Lay_Reward : Fixed_Type := 0.0;
     end record;
 
     type Data_Type is array(1..16) of Print_Data_Type;
-    Old_Data    : Data_Type;
+  --  Old_Data    : Data_Type;
     Data        : Data_Type;
     Marketid    : Bot_Types.Marketid_Type := (others => ' ');
   --  Markettype  : Bot_Types.Markettype_Type := (others => ' ');
@@ -110,8 +115,9 @@ procedure Ai_Nn is
     begin
                                         --0-based idx
       for I in Winners'Range loop
-        Text_Io.Put(F, Winners(I)'Img);  --0-2
+        Text_Io.Put(F, Winners(I)'Img);  --0-0
         Text_Io.Put(F, ",");
+        exit;
       end loop;
 
       --  Text_Io.Put(F, Markettype(1));      --3
@@ -142,11 +148,11 @@ procedure Ai_Nn is
       --  end case;
 
       for I in Data'Range loop
-        Text_Io.Put(F, Data(I).Selectionid'img);   --3-18
+        Text_Io.Put(F, Data(I).Selectionid'img);   --1-16
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop  --19-34
+      for I in Data'Range loop  --17-32
         if Ba_Layprice then
           Text_Io.Put(F, Float'Image(Float(Data(I).Layprice)));
         else
@@ -155,22 +161,41 @@ procedure Ai_Nn is
         Text_Io.Put(F, ",");
       end loop;
 
-      for I in Data'Range loop   --35-50
+      
+      for I in Data'Range loop   --33-48
         if Ba_Layprice then
-          Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Lay_Reward)));
         else
-          Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)));
+          Text_Io.Put(F, Float'Image(Float(Data(I).Back_Reward)));
         end if;
 
         if I = Data'Last then
           -- put here anything after the last array
           Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => "")); --51
           Text_Io.Put_Line(F, "");  -- <-- last statement on this row
-          Old_Data := Data;
         else
           Text_Io.Put(F, ",");
         end if;
       end loop;
+      
+      
+      
+      --  for I in Data'Range loop   --35-50
+      --    if Ba_Layprice then
+      --      Text_Io.Put(F, Float'Image(Float(Data(I).Layprice - Old_Data(I).Layprice)));
+      --    else
+      --      Text_Io.Put(F, Float'Image(Float(Data(I).Backprice - Old_Data(I).Backprice)));
+      --    end if;
+      --  
+      --    if I = Data'Last then
+      --      -- put here anything after the last array
+      --      Text_Io.Put(F, "," & Pricets.String_Date_Time_Iso(T => " ", Tz => "")); --51
+      --      Text_Io.Put_Line(F, "");  -- <-- last statement on this row
+      --      Old_Data := Data;
+      --    else
+      --      Text_Io.Put(F, ",");
+      --    end if;
+      --  end loop;
     end Do_Print_Line;
       ------------------------------------------------
 
@@ -264,6 +289,8 @@ procedure Ai_Nn is
       Data(Cnt).Layprice  := R.History.Layprice;
       Data(Cnt).Selectionid := R.Runner.Selectionid;
       Data(Cnt).Sortprio := R.Runner.Sortprio;
+      Data(Cnt).Back_Reward := R.Back_Reward.Profit;
+      Data(Cnt).Lay_Reward := R.Lay_Reward.Profit;
 
       --  case Ia_Position is
       --  when 1 =>
@@ -346,7 +373,7 @@ procedure Ai_Nn is
 
   --------------------------------------------------------
   procedure Get_Runner_Data(Market_Data : Table_Amarkets.Data_Type) is
-    type Eos_Type is (history,market,runner);
+    type Eos_Type is (history,market,Runner,Back_Reward,Lay_Reward);
     Eos                : array(Eos_Type'range) of Boolean := (others => False);
     R_List             : R_Pkg.List;
     R_Data             : R_Type;
@@ -379,6 +406,18 @@ procedure Ai_Nn is
       R_Data.Runner.Marketid := R_Data.History.Marketid;
       R_Data.Runner.Selectionid := R_Data.History.Selectionid;
       R_Data.Runner.Read(Eos(Runner));
+      R_Data.Back_Reward.Marketid := R_Data.History.Marketid;
+      R_Data.Back_Reward.Selectionid := R_Data.History.Selectionid;
+      R_Data.Back_Reward.Pricets := R_Data.History.Pricets;
+      R_Data.Back_Reward.Side := "BACK";
+      R_Data.Back_Reward.Read(Eos(Back_Reward));
+      
+      R_Data.Lay_Reward.Marketid := R_Data.History.Marketid;
+      R_Data.Lay_Reward.Selectionid := R_Data.History.Selectionid;
+      R_Data.Lay_Reward.Pricets := R_Data.History.Pricets;
+      R_Data.Lay_Reward.Side := "LAY ";
+      R_Data.Lay_Reward.Read(Eos(Lay_Reward));
+      
       R_List.Append(R_Data);
     end loop;
     Select_Runner_With_Price.Close_Cursor;

@@ -16,3 +16,7 @@ bnlbot/botstart/bot-1-0/history/
 /data
 /pg
 
+
+bnlbot/botstart/bot-1-0/source/ada/.clang-format
+
+bnlbot/botstart/bot-1-0/source/ada/.vscode/
