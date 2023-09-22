@@ -34,17 +34,19 @@ case $HOSTNAME in
     export BOT_XML_SOURCE=GNAT
     export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
-    
+
   *iMac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     export BOT_GNATCOLL_SOURCE=LOCAL
+    export ADA_PROJECT_PATH=/usr/share/gpr:/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
     ;;
 
   *iMac.lan*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     export BOT_GNATCOLL_SOURCE=LOCAL
+    export ADA_PROJECT_PATH=/usr/share/gpr:/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
     ;;
 
   HP-Mini*)
@@ -84,10 +86,10 @@ esac
 
 
 case $HOSTNAME in
-  ip*) 
+  ip*)
     export BOT_MODE=real
     ;;
-  prod*)    
+  prod*)
     export BOT_MODE=real
     ;;
     *)
