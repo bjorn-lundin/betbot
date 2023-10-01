@@ -420,12 +420,19 @@ case $BOT_MACHINE_ROLE in
           Create_Plots $USR 42
         fi
       fi
+      if [ $HOUR == "19" ] ; then
+        if [ $MINUTE == "10" ] ; then
+          #Create_Plots $USR 7
+          Create_Plots $USR 42
+        fi
+      fi
       if [ $HOUR == "23" ] ; then
         if [ $MINUTE == "01" ] ; then
           #Create_Plots $USR 7
           Create_Plots $USR 42
         fi
       fi
+
       # was lock in db held by dead? psql check_stuck_markets_fetcher
     done
 

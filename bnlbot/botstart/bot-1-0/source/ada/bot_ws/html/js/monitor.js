@@ -146,7 +146,7 @@ function Do_Page_Reload (user) {
   oddsLen = odds.length;
   markettypesLen = markettypes.length;
 
-  $('#equity_png').attr('src', '/' + user + '/equity.png' + '?' + unique);
+  $('#equity_png').attr('src', '/' + user + '/equity.png' + '?ts=' + unique);
 
   // Get the <div> element with id forty_two_days"
   var d = document.getElementById("forty_two_days");
@@ -173,7 +173,7 @@ function Do_Page_Reload (user) {
 
           var id=types[t] + days[d] + odds[o] + markettypes[m];
           var src= '/' + user + '/' + id + '.png';
-          var u='?' + unique;
+          var u='?ts=' + unique;
 
           var div = document.createElement("DIV");
           var h3 = document.createElement("h3");
