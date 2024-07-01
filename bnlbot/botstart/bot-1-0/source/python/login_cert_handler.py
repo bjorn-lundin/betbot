@@ -42,7 +42,7 @@ class MyServer(BaseHTTPRequestHandler):
 
         cert_path_prefix = os.getenv('BOT_START')
         if cert_path_prefix is None :
-           cert_path_prefix = '/bnlbot/botstart'
+           cert_path_prefix = '/bnlbot/bnlbot/botstart'
 
         cert_path = cert_path_prefix + '/user/' + user + '/certificates'
 

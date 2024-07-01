@@ -91,8 +91,8 @@ procedure Aws_Mail is
               "timestamp: " & Calendar2.String_Date_Time_ISO (T, " ", " ") & Cr & Lf &
               "sent from: " & GNAT.Sockets.Host_Name ;
 
-      Receivers : constant SMTP.Recipients :=  (1 => SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com"),
-                                                2 => SMTP.E_Mail("J Birgersson", "joakim@birgerson.com")
+      Receivers : constant SMTP.Recipients :=  (1 => SMTP.E_Mail("B Lundin", "b.f.lundin@gmail.com")
+                                                --2 => SMTP.E_Mail("J Birgersson", "joakim@birgerson.com")
                                                );
     begin
       Log("mail", "start Initialize");
@@ -102,6 +102,7 @@ procedure Aws_Mail is
 --           Port       => 587,
            Port       => 465,
            Secure     => True,
+           --Security   => smtp.starttls,
            Credential => Auth'Unchecked_Access);
       begin
         Log("mail", "start send");

@@ -11,6 +11,9 @@ with Table_Ateams;
 
 package Bot_Types is
 
+
+   subtype Long_Long_Integer is Long_Integer;
+
 --   subtype Bot_Name_Type is Unbounded_String;
 --   subtype Bot_Log_File_Name_Type is Unbounded_String;
    type Bet_Market_Type is (Place,

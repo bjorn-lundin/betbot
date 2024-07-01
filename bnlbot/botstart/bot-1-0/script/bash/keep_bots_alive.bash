@@ -22,6 +22,7 @@
 [ -r /var/lock/bot ] && echo "/var/lock/bot exists" && exit 0
 
 function log () {
+  echo "$(date) : $1"
   echo "$(date) : $1" >> /tmp/kba.log
 }
 
@@ -392,11 +393,16 @@ DAY=$(date +"%d")
 #bnl      30625 25671  0 14:35 pts/2    00:00:00 grep --color=auto keep_bots_alive.bash
 
 NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -v sensible-editor | grep -c keep_bots_alive.bash)
-#echo "NUM_RUNNING: $NUM_RUNNING $(date)"
+log "NUM_RUNNING: $NUM_RUNNING $(date)"
 
 if [ $NUM_RUNNING -gt 1 ] ; then
   exit 0
 fi
+
+
+log "BOT_MACHINE_ROLE - $BOT_MACHINE_ROLE"
+
+
 
 case $BOT_MACHINE_ROLE in
   PROD)
@@ -404,6 +410,7 @@ case $BOT_MACHINE_ROLE in
     if [ $HOUR == "02" ] ; then
       if [ $MINUTE == "01" ] ; then
         sudo service postgresql stop
+        sleep 10
         sudo reboot
       fi
     fi
@@ -468,7 +475,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 MAIL_LIST="b.f.lundin@gmail.com"
 
 #DISK_LIST="sda1 sda3 root"
-DISK_LIST="sda2"
+DISK_LIST="sda1"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
@@ -478,7 +485,7 @@ for DISK in $DISK_LIST ; do
   for RECIPENT in $MAIL_LIST ; do
    if [ $PERCENTAGE -gt $ALARM_SIZE ] ; then
      if [ ! -r ${ALARM_TODAY_FILE} ] ; then
-       df -h | mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)" $RECIPENT
+       #df -h | mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)" $RECIPENT
        df -h | $BOT_TARGET/bin/aws_mail --subject="disk ${FS} - ${DISK} almost full ( ${PERCENTAGE} %) on $(hostname)"
        touch ${ALARM_TODAY_FILE}
      fi
@@ -515,7 +522,7 @@ case $HOUR  in
     if [ $R != "0" ] ; then
       for RECIPENT in $MAIL_LIST ; do
         if [ ! -r ${DB_ALARM_TODAY_FILE} ] ; then
-          echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
+        #  echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
           echo "db seems to be down, psql does not get access to BNL" | $BOT_TARGET/bin/aws_mail --subject="is db up and running on $(hostname) ?"
           touch ${DB_ALARM_TODAY_FILE}
         fi

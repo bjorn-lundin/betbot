@@ -40,7 +40,8 @@ project Global is
                                               "-gnatyO",   -- overriding proc must be marked 'overriding'
                                               "-gnatwm",   -- Warnings about modified but unreferenced variables
                                               "-gnatye",    -- require 'end procedurename'
-                                              "-gnatwlaKW");
+                                              "-gnatwlaKW",
+                                              "-gnatwJ"); --allow obsolete constructs (text_io instead of ada.text_io)
 
        for Object_Dir use Bot_Target & "/objects";
 
@@ -49,8 +50,8 @@ project Global is
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
-                           "global/gnatcoll",
-                           "global/inotify",
+   --                           "global/gnatcoll",
+   --                        "global/inotify",
                            "global/repotool",
                            "global/tables");
 
@@ -68,7 +69,7 @@ project Global is
    end Compiler;
 
    package Binder is
-      for Default_Switches ("ada") use ("-E");
+      for Default_Switches ("ada") use ("-Es");
    end Binder;
 
    OS_Dependents_Linker_Switches := ();

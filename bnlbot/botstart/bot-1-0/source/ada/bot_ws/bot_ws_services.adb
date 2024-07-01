@@ -641,7 +641,7 @@ package body Bot_Ws_Services is
         Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
         Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
         Bet.Set_Field (Field_Name => "sm",      Field => Float(Sizematched));
-        Bet.Set_Field (Field_Name => "count",   Field => Long_Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "count",   Field => Long_Integer(Count));
         Bet.Set_Field (Field_Name => "p/b",     Field => Float(Profit_Per_Bet));
         Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
         Append(Json_Bets, Bet);
@@ -1079,18 +1079,20 @@ package body Bot_Ws_Services is
     Sensorname       : String_Object;
   begin
     Ada.Directories.Set_Directory(Ada.Environment_Variables.Value("BOT_CONFIG") & "/sslcert");
-    
+
     Should_Send_Mail := Log_Data(Id, Moisture, Moisture_Pct, Sensorname);
-    
-    if Should_Send_Mail then 
+
+    if Should_Send_Mail then
       declare
         -- Auth : aliased constant SMTP.Authentication.Plain.Credential :=
         --                            SMTP.Authentication.Plain.Initialize ("AKIAYGPN2VOGCGGBI4XE",
         --                                            "Ag9otCKVee7ObYIO0Np2A6avUmZfjIGAUupYkPOB1sQf"); -- fixed by java-tool
 
+
         Smtp_Server : Smtp.Receiver := Smtp.Client.Initialize
           (Smtp_Server_Name,
            Port       => 465,
+           --Security   => smtp.STARTTLS);
            Secure     => True);
         --Credential => Auth'Unchecked_Access);
         use Ada.Characters.Latin_1;

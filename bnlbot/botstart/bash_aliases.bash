@@ -3,7 +3,7 @@
 #bnl start
 
 case ${OS_ARCHITECTURE} in
-  lnx*) alias mc='. /usr/lib/mc/mc-wrapper.sh'
+  lnx*) alias mc='. /usr/libexec/mc/mc-wrapper.sh' 
   ;;
   drw*) alias mc='. /opt/local/libexec/mc/mc-wrapper.sh'
   ;;

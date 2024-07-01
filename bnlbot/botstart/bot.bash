@@ -29,6 +29,13 @@ case $HOSTNAME in
     export BOT_XML_SOURCE=LIB
     export BOT_GNATCOLL_SOURCE=LOCAL
     ;;
+
+  ibmtc)
+    export BOT_MACHINE_ROLE=PROD
+    export BOT_XML_SOURCE=GNAT
+    export BOT_GNATCOLL_SOURCE=LOCAL
+    ;;
+
   *imac*)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
@@ -42,48 +49,6 @@ case $HOSTNAME in
     export ADA_PROJECT_PATH=/usr/share/gpr:/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
     ;;
 
-  *iMac.lan*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    export ADA_PROJECT_PATH=/usr/share/gpr:/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
-    ;;
-
-  HP-Mini*)
-    export BOT_MACHINE_ROLE=PROD
-    export BOT_XML_SOURCE=LOCAL
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  prod*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  ip*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  sebjlun*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  tp*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  raspberrypi*)
-    export BOT_MACHINE_ROLE=DISPLAY
-    export BOT_XML_SOURCE=LOCAL
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-  w541)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
   *)
     export BOT_MACHINE_ROLE=$HOSTNAME
     ;;
@@ -97,6 +62,10 @@ case $HOSTNAME in
   prod*)
     export BOT_MODE=real
     ;;
+  ibmtc)
+    export BOT_MODE=real
+    ;;
+
     *)
     export BOT_MODE=simulation
     ;;

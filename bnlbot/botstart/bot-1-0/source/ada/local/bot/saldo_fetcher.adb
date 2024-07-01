@@ -87,6 +87,7 @@ procedure Saldo_Fetcher is
                                   (SMTP_Server_Name,
                                 --   Port       => 587,
                                    Port       => 465,
+                                 --  Security   => smtp.starttls,
                                    Secure     => True,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
@@ -118,7 +119,7 @@ procedure Saldo_Fetcher is
 
       Receivers : constant SMTP.Recipients :=  (
                   SMTP.E_Mail("Bj=F6rn Lundin", "b.f.lundin@gmail.com"),
-              --    SMTP.E_Mail("Bj=F6rn Lundin", "bjorn.lundin@consafelogistics.com")
+--                  SMTP.E_Mail("Bj=F6rn Lundin", "bjorn.lundin@consafelogistics.com")
                   SMTP.E_Mail("Joakim Birgerson", "joakim@birgerson.com"),
                   SMTP.E_Mail("Mats M=E5rtensson", "mats.g.martensson@gmail.com")
                 );
