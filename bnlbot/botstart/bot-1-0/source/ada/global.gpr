@@ -31,7 +31,7 @@ project Global is
 
 
    Platform_Independent_Compiler_Switches := ("-g",
-                                              "-gnat12",
+                                              "-gnat2022",
                                               "-fstack-check",
                                               "-gnata",
                                               "-gnatoU", -- -v
