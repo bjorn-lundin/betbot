@@ -1,5 +1,5 @@
 #!/bin/bash
-#exit
+#exit 0
 
 # should be run from a crontab like
 #* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash
@@ -19,9 +19,9 @@
 
 #exit 0
 
-[ -r /var/lock/bot ] && echo "/var/lock/bot exists" && exit 0
 
 function log () {
+  return ""
   echo "$(date) : $1"
   echo "$(date) : $1" >> /tmp/kba.log
 }
@@ -399,10 +399,7 @@ if [ $NUM_RUNNING -gt 1 ] ; then
   exit 0
 fi
 
-
 log "BOT_MACHINE_ROLE - $BOT_MACHINE_ROLE"
-
-
 
 case $BOT_MACHINE_ROLE in
   PROD)
