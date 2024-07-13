@@ -4,7 +4,10 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with Text_Io; use Text_io;
 with Types; use Types;
+with utils; use utils;
+with bot_types; use bot_types;
 
+with gnatcoll.json; use gnatcoll.json;
 
 procedure Test_String_Object is
 
@@ -49,31 +52,42 @@ procedure Test_String_Object is
                                                                900.00, 910.00, 920.00, 930.00, 940.00, 950.00, 960.00, 970.00, 980.00, 990.00,
                                                                1000.00);
 
-  
+
 begin
 
   --  Tmp.Set("1234_!#_!%&/()=?#_56_ABCDEF_ghij_klMN_OPQ");
-  --  
+  --
   --  Tmp.Put_Line(Fix);
   --  Tmp.Put_Line(Upper);
   --  Tmp.Put_Line(Lower);
   --  Tmp.Put_Line(Camel);
-  --  
+  --
   --  Put_Line("Delete_Last_Char");
   --  Tmp.Delete_Last_Char;
-  --  
-  --  
+  --
+  --
   --  Tmp.Put_Line(Fix);
   --  Tmp.Put_Line(Upper);
   --  Tmp.Put_Line(Lower);
   --  Tmp.Put_Line(Camel);
-  
-  
-  for Tic in Global_Odds_Table'range loop
-    Tmp.Append('"' & Trim(Global_Odds_Table(Tic)'image, Both) & '"' & ": " & Trim(Tic'Image, Both) & ", ");
-  end loop;
-  Put_Line(Tmp.Fix_String);  
-  
-  
-  
+
+
+--  for Tic in Global_Odds_Table'range loop
+--    Tmp.Append('"' & Trim(Global_Odds_Table(Tic)'image, Both) & '"' & ": " & Trim(Tic'Image, Both) & ", ");
+--  end loop;
+--  Put_Line(Tmp.Fix_String);
+
+
+  declare
+    Limit_Order  : Json_Value := Create_Object;
+    Size         :     Bet_Size_Type := 1.01;
+    Size_String   : String         := F8_Image(Fixed_Type(Size)); -- 2 decimals only
+    Local_Size    : Bet_Size_Type  := Bet_Size_Type'Value(Size_String); -- to avoid INVALID_BET_SIZE
+  begin
+
+    Limit_Order.Set_Field (Field_Name => "minFillSize", Field => Float(Local_Size));
+    text_io.put_line(limit_order.write);
+
+  end;
+
 end Test_String_Object;

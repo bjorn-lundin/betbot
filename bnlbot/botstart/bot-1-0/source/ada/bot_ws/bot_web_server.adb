@@ -386,9 +386,13 @@ procedure Bot_Web_Server is
   begin
     loop
       delay 2.0;
+      Logging.Log("Wait_terminate", "before seize");
       Semaphore.Seize;
+     Logging.Log("Wait_terminate", "after seize");
       begin
+        Logging.Log("Wait_terminate", "before receive");
         Process_Io.Receive( Message, Time_Out => 0.01);
+        Logging.Log("Wait_terminate", "after receive");
         case Process_Io.Identity (Message) is
           when Core_Messages.Exit_Message    =>
             Semaphore.Release;
@@ -401,6 +405,7 @@ procedure Bot_Web_Server is
         end case;
       exception
         when Process_Io.Timeout => null;
+          Logging.Log("Wait_terminate", "timeout");
       end;
       Semaphore.Release;
 
@@ -422,8 +427,9 @@ procedure Bot_Web_Server is
      URI    : constant String                    := AWS.Status.URI(Request);
      Req    : constant AWS.Status.Request_Method := AWS.Status.Method(Request);
   begin
+      Logging.Log("Service", "before size " &  Req'Img & " " & URI);
       Semaphore.Seize;
-      Logging.Log("Service", Req'Img & " " & URI);
+      Logging.Log("Service", "after seize " & Req'Img & " " & URI);
       case Req is
         when AWS.Status.GET  =>  Answer := Get(Request);
         when AWS.Status.POST =>  Answer := Post(Request);
@@ -433,13 +439,16 @@ procedure Bot_Web_Server is
       end case;
       AWS.Session.Save (File_Name => Saved_Web_Sessions);
       Semaphore.Release;
+      Logging.Log("Service", "after release 1 (normal)");
       return Answer;
   exception
     when Bot_Ws_Services.Stop_Process =>
       Semaphore.Release;
+      Logging.Log("Service", "after release 2 (stop)");
       raise;
     when E : others =>
       Semaphore.Release;
+      Logging.Log("Service", "after release 2 (others)");
       Text_Io.Put_Line(Ada.Exceptions.Exception_Information (E));
       return AWS.Response.Build
            (Content_Type => AWS.MIME.Text_Plain,
@@ -525,6 +534,7 @@ begin
     null;
   end;
 
+  Logging.Log("Main", "before wait terminate");
   Wait_Terminate;
   AWS.Server.Shutdown (WS);
   AWS.Server.Log.Stop      (Web_Server => WS);

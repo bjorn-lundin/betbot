@@ -57,16 +57,16 @@ package body Bot_Ws_Services is
   Global_Initiated                : Boolean := False;
   Global_Start_Time_List          : Table_Astarttimes.Astarttimes_List_Pack2.List;
 
-  
+
   package Betnames_List_Package is new Ada.Containers.Doubly_Linked_Lists(Bot_Types.Betname_Type);
-  
+
   ------------------------------------------------------------------
 
   Is_Initialized : Boolean := False;
-  
+
 
   package body Global is
-    
+
      procedure Initialize is
      begin
        if not Is_Initialized then
@@ -79,11 +79,11 @@ package body Bot_Ws_Services is
      end Initialize;
    end Global;
    ----------------------------------------
-  
-  
-  
-  
-  
+
+
+
+
+
   function Positive_Answer( Context : in String)  return String is
     Json_Reply      : Json_Value := Create_Object;
     Service         : constant String := "Positive_Answer";
@@ -209,8 +209,8 @@ package body Bot_Ws_Services is
                                               "and STATUS = 'SETTLED' " &
                                               "group by BETNAME,SIDE " &
                                               "order by BETNAME" );
-    
-    
+
+
     Select_Sum_Bets_Grouped_By_Week.Prepare(
                                              "select " &
                                                "BETNAME, " &
@@ -235,8 +235,8 @@ package body Bot_Ws_Services is
                                              "group by BETNAME " &
                                              "having max(STARTTS) > '2018-11-15' " &
                                              "order by BETNAME");
-    
-    
+
+
     Select_Sum_Bets_Grouped_By_Month.Prepare(
                                              "select " &
                                                "BETNAME, " &
@@ -261,9 +261,9 @@ package body Bot_Ws_Services is
                                              "group by BETNAME " &
                                              "having max(STARTTS) > '2018-11-15' " &
                                              "order by BETNAME");
-    
-    
-    Select_Distict_Betnames.Prepare(    
+
+
+    Select_Distict_Betnames.Prepare(
                                     "select " &
                                     "betname " &
                                     "from abets " &
@@ -355,18 +355,18 @@ package body Bot_Ws_Services is
             when 1 =>
               Passed_1st_First_Time := True;
               exit when Passed_1st_Second_Time ;
-              
+
               if Passed_1st_First_Time then
                 Passed_1st_Second_Time := True;
               end if;
-              
-              Date_This_Month_1st := Start;              
+
+              Date_This_Month_1st := Start;
             when others => null;
           end case ;
           Start := Start - (1,0,0,0,0);
         end loop;
         Stop := Date_This_Month_1st - (1,0,0,0,0);
-        
+
         Log(Object & Service, "start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
       end;
     else
@@ -384,7 +384,7 @@ package body Bot_Ws_Services is
 
     Select_Sum_Bets.Set("START", Start);
     Select_Sum_Bets.Set("STOP", Stop);
-    
+
     if not Total_Only then
       Select_Bets.Set("START", Start);
       Select_Bets.Set("STOP", Stop);
@@ -406,7 +406,7 @@ package body Bot_Ws_Services is
           Append(Json_Bets, Bet);
         end ;
       end loop;
-      Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);    
+      Json_Reply.Set_Field (Field_Name => "datatable", Field => Json_Bets);
     end if;
 
     Select_Sum_Bets.Open_Cursor;
@@ -415,7 +415,7 @@ package body Bot_Ws_Services is
       Select_Sum_Bets.Get("PROFIT",Total_Profit);
     end if;
     Select_Sum_Bets.Close_Cursor;
-    
+
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
     Json_Reply.Set_Field (Field_Name => "total", Field =>  Float(Total_Profit));
@@ -641,7 +641,7 @@ package body Bot_Ws_Services is
         Bet.Set_Field (Field_Name => "betname", Field => Utils.Trim(Betname));
         Bet.Set_Field (Field_Name => "profit",  Field => Float(Profit));
         Bet.Set_Field (Field_Name => "sm",      Field => Float(Sizematched));
-        Bet.Set_Field (Field_Name => "count",   Field => Long_Integer(Count));
+        Bet.Set_Field (Field_Name => "count",   Field => Long_Long_Integer(Count));
         Bet.Set_Field (Field_Name => "p/b",     Field => Float(Profit_Per_Bet));
         Bet.Set_Field (Field_Name => "ratio",   Field => Float(Ratio));
         Append(Json_Bets, Bet);
@@ -678,7 +678,7 @@ package body Bot_Ws_Services is
       Rpc.Login;
     exception
       when Rpc.Login_Failed => Log(Object & Service, "Start Rpc.Login_Failed, give up ");
-                               return;     
+                               return;
       when Rpc.Post_Timeout => Log(Object & Service, "Start Rpc.Post_Timeout 1");
     end;
 
@@ -751,13 +751,13 @@ package body Bot_Ws_Services is
           else
             Arrow := "---";
           end if;
-            
+
           Start_Time.Set_Field (Field_Name => "starttime",  Field => S.Starttime.String_Time(Seconds => False));
           Start_Time.Set_Field (Field_Name => "venue",      Field => S.Venue);
           Start_Time.Set_Field (Field_Name => "marketname", Field => S.Marketname);
           Start_Time.Set_Field (Field_Name => "next",       Field => Arrow);
           Append(Json_Start_Times, Start_Time);
-        end if;  
+        end if;
       end;
     end loop;
 
@@ -766,13 +766,13 @@ package body Bot_Ws_Services is
     return Json_Reply.Write;
 
   end Get_Starttimes;
-  
-  
-  procedure Get_Distinct_Betnames(Names : out Betnames_List_Package.List ) is 
+
+
+  procedure Get_Distinct_Betnames(Names : out Betnames_List_Package.List ) is
     End_Of_Set      : Boolean := False;
     Betname         : Betname_Type := (others => ' ');
   begin
-  
+
     Select_Distict_Betnames.Open_Cursor;
     loop
       Select_Distict_Betnames.Fetch(End_Of_Set);
@@ -781,40 +781,40 @@ package body Bot_Ws_Services is
       Names.Append(Betname);
     end loop;
     Select_Distict_Betnames.Close_Cursor;
-    
+
   end Get_Distinct_Betnames;
 
-  
+
   function Bet_Color( Name : String ) return String is
     Service : constant String := "Bet_Color";
   begin
-    if    Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01"     then return "Lavender" ; 
-    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_CHS" then return "Plum" ; 
-    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_HRD" then return "Orchid" ; 
-    elsif Name = "HORSE_BACK_1_10_13_1_2_WIN_1_01"     then return "LightPink" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumAquamarine" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "PaleGreen" ; 
-    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "Lime" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "DeepSkyBlue" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "Cornflowerblue" ; 
-    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Blue" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "Wheat" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_CHS" then return "RosyBrown" ; 
-    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "DarkGoldenrod" ; 
-    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "DeepPink" ; 
-    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "MediumVioletRed" ; 
-    elsif Name = "HORSE_BACK_1_55_800M_PLC_1_01"       then return "Orange" ; 
-    else    
-      Log(Object & Service, "bet '" & Name & "' has no color");    
-      return "Black" ; 
+    if    Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01"     then return "Lavender" ;
+    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_CHS" then return "Plum" ;
+    elsif Name = "HORSE_BACK_1_10_07_1_2_PLC_1_01_HRD" then return "Orchid" ;
+    elsif Name = "HORSE_BACK_1_10_13_1_2_WIN_1_01"     then return "LightPink" ;
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01"     then return "MediumAquamarine" ;
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_CHS" then return "PaleGreen" ;
+    elsif Name = "HORSE_BACK_1_28_02_1_2_PLC_1_01_HRD" then return "Lime" ;
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01"     then return "DeepSkyBlue" ;
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_CHS" then return "Cornflowerblue" ;
+    elsif Name = "HORSE_BACK_1_38_00_1_2_PLC_1_01_HRD" then return "Blue" ;
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01"     then return "Wheat" ;
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_CHS" then return "RosyBrown" ;
+    elsif Name = "HORSE_BACK_1_56_00_1_4_PLC_1_01_HRD" then return "DarkGoldenrod" ;
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_15"      then return "DeepPink" ;
+    elsif Name = "HORSE_LAY_1_05_05_1_2_WIN_2_40"      then return "MediumVioletRed" ;
+    elsif Name = "HORSE_BACK_1_55_800M_PLC_1_01"       then return "Orange" ;
+    else
+      Log(Object & Service, "bet '" & Name & "' has no color");
+      return "Black" ;
     end if;
   end Bet_Color;
-    
-  
-  
+
+
+
   ----------------------------------------------------------
   function Get_Weeks(Username  : in String;
-                     Context   : in String) return String is 
+                     Context   : in String) return String is
     --pragma Unreferenced(Username);
     Service : constant String := "Get_Weeks";
 
@@ -835,40 +835,40 @@ package body Bot_Ws_Services is
     Prepare_Bets;
     Get_Distinct_Betnames(Betname_List);
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
-    
+
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
-    Betnames_Loop  : for Betname of Betname_List loop 
+    Betnames_Loop  : for Betname of Betname_List loop
       declare
         Bet       : Json_Value   := Create_Object;
         Data      : Json_Array := Empty_Array;
         Profit    : Fixed_Type   := 0.0;
       begin
-      
+
         Select_Sum_Bets_Grouped_By_Week.Set("BETNAME", Utils.Trim(Betname));
-              
-        Year_Loop : for Year in 2018 .. 2022 loop 
-          Week_Loop : for Week in 1 .. 53 loop           
-        
-            if (2018,11,15,0,0,0,0) <= Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) and then   
+
+        Year_Loop : for Year in 2018 .. 2024 loop
+          Week_Loop : for Week in 1 .. 53 loop
+
+            if (2018,11,15,0,0,0,0) <= Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) and then
               Calendar2.To_Time(Year => Year_Type(Year), Week => Week_Type(Week), Day => Week_Day_Type'First) <= Stop then
-        
+
               Select_Sum_Bets_Grouped_By_Week.Set("YEAR", Integer_4(Year));
               Select_Sum_Bets_Grouped_By_Week.Set("WEEK", Integer_4(Week));
               declare
                 String_Week    : String(1..7) := (others => ' ');
               begin
                 Move(Utils.Trim(Year'Img) & "-" & Utils.Trim(Week'Img), String_Week);
-        
-                if String_Week(7) = ' ' then 
+
+                if String_Week(7) = ' ' then
                   String_Week(7) := String_Week(6);
                   String_Week(6) := '0';
                 end if;
-        
+
                 Select_Sum_Bets_Grouped_By_Week.Open_Cursor;
                 Select_Sum_Bets_Grouped_By_Week.Fetch(End_Of_Set);
-                if not End_Of_Set then 
+                if not End_Of_Set then
                    Select_Sum_Bets_Grouped_By_Week.Get("PROFIT2", Profit);
                 else
                   Profit := 0.0;
@@ -876,15 +876,15 @@ package body Bot_Ws_Services is
                 Select_Sum_Bets_Grouped_By_Week.Close_Cursor;
 
                 Append(Data,Create(Float(Profit)));
-                
-                if not Labels_Are_Appended then 
+
+                if not Labels_Are_Appended then
                   Append(Labels, Create(String_Week));
                 end if;
-                
+
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
                 Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
                 Bet.Set_Field (Field_Name => "hoverBackgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
-                
+
               end ;
             end if;
           end loop Week_Loop;
@@ -902,12 +902,12 @@ package body Bot_Ws_Services is
     T.Commit;
     Log(Object & Service, "Return " & Json_Reply.Write);
     return Json_Reply.Write;
-    
+
     end Get_Weeks;
   ----------------------------------------------------------
   ----------------------------------------------------------
   function Get_Months(Username  : in String;
-                     Context   : in String) return String is 
+                     Context   : in String) return String is
     --pragma Unreferenced(Username);
     Service : constant String := "Get_Months";
 
@@ -929,42 +929,42 @@ package body Bot_Ws_Services is
     Prepare_Bets;
     Get_Distinct_Betnames(Betname_List);
     Log(Object & Service, "Start " & Start.String_Date_And_Time & " Stop '" & Stop.String_Date_And_Time);
-    
+
     Json_Reply.Set_Field (Field_Name => "result",  Field => "OK");
     Json_Reply.Set_Field (Field_Name => "context", Field => Context);
 
-    Betnames_Loop  : for Betname of Betname_List loop 
+    Betnames_Loop  : for Betname of Betname_List loop
       declare
         Bet       : Json_Value   := Create_Object;
         Data      : Json_Array := Empty_Array;
         Profit    : Fixed_Type   := 0.0;
       begin
-      
+
         Select_Sum_Bets_Grouped_By_Month.Set("BETNAME", Utils.Trim(Betname));
-              
-        Year_Loop : for Year in 2018 .. 2022 loop 
-          Month_Loop : for Month in 1 .. 12 loop           
+
+        Year_Loop : for Year in 2018 .. 2024 loop
+          Month_Loop : for Month in 1 .. 12 loop
             Stop.Year := Year_Type(Year);
             Stop.Month := Month_Type(Month);
             Stop.Day := 1;
-        
+
             if Start < Stop and then Stop < Now then
-        
+
               Select_Sum_Bets_Grouped_By_Month.Set("YEAR", Integer_4(Year));
               Select_Sum_Bets_Grouped_By_Month.Set("MONTH", Integer_4(Month));
               declare
                 String_Month    : String(1..7) := (others => ' ');
               begin
                 Move(Utils.Trim(Year'Img) & "-" & Utils.Trim(Month'Img), String_Month);
-        
+
                 if String_Month(7) = ' ' then 
                   String_Month(7) := String_Month(6);
                   String_Month(6) := '0';
                 end if;
-        
+
                 Select_Sum_Bets_Grouped_By_Month.Open_Cursor;
                 Select_Sum_Bets_Grouped_By_Month.Fetch(End_Of_Set);
-                if not End_Of_Set then 
+                if not End_Of_Set then
                    Select_Sum_Bets_Grouped_By_Month.Get("PROFIT2", Profit);
                 else
                   Profit := 0.0;
@@ -972,15 +972,15 @@ package body Bot_Ws_Services is
                 Select_Sum_Bets_Grouped_By_Month.Close_Cursor;
 
                 Append(Data,Create(Float(Profit)));
-                
-                if not Labels_Are_Appended then 
+
+                if not Labels_Are_Appended then
                   Append(Labels, Create(String_Month));
                 end if;
-                
+
                 Bet.Set_Field (Field_Name => "label", Field => Utils.Trim(Betname));
                 Bet.Set_Field (Field_Name => "backgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
                 Bet.Set_Field (Field_Name => "hoverBackgroundColor", Field => Bet_Color(Utils.Trim(Betname)));
-                
+
               end ;
             end if;
           end loop Month_Loop;
@@ -998,55 +998,55 @@ package body Bot_Ws_Services is
     T.Commit;
     Log(Object & Service, "Return " & Json_Reply.Write);
     return Json_Reply.Write;
-    
+
     end Get_Months;
   ----------------------------------------------------------
-  
-  
-  -- for moisture in flowers
-  -----------------------------------------------------  
 
-  function Log_Data(Id : String; 
+
+  -- for moisture in flowers
+  ----------------------------------------------------
+
+  function Log_Data(Id : String;
                     Moisture : Integer_4;
                     Moisture_Pct : out integer_4;
                     Sensor : in out String_Object) return Boolean is
-                    
+
     Service       : constant String := "MMR.Log_Data";
     T             : Sql.Transaction_Type;
     Freading_Data :  Table_Freadings.Data_Type;
     Fsensor_Data  :  Table_Fsensors.Data_Type;
     type Eos_Type is (Fsensor); --,Freading);
-    Eos           : array (Eos_Type'Range) of Boolean := (others => False);    
+    Eos           : array (Eos_Type'Range) of Boolean := (others => False);
     Result        : Boolean := False;
     Now           : Calendar2.Time_Type := Calendar2.Clock;
-    use Calendar2;    
+    use Calendar2;
   begin
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");
       Sql.Close_Session;
       Logging.Log(Service, "did disconnect!");
-    end if;      
-      
+    end if;
+
     Sql.Connect
       (Host     => Global.Host.Fix_String,
        Port     => Global.Port,
        Db_Name  => "flowers",
        Login    => Global.Login.Fix_String, -- always bnl
        Password => Global.Password.Fix_String);
-    
+
     Logging.Log(Service, "did connect to flowers");
     T.Start;
     Move(Id, Freading_Data.Macaddress);
     Freading_Data.Created := Now;
     Freading_Data.Reading := Moisture;
     Freading_Data.Insert;
-    
+
     Move(Id, Fsensor_Data.Macaddress);
     Fsensor_Data.Read(Eos(Fsensor));
-    
+
     if not Eos(Fsensor) then
       Logging.Log(Service, Fsensor_Data.To_String);
-      if Moisture > Fsensor_Data.Threshold -- reversed ratio . 1024 = dry, 550= wet. above ca 900 -> time to mail 
+      if Moisture > Fsensor_Data.Threshold -- reversed ratio . 1024 = dry, 550= wet. above ca 900 -> time to mail
         and then Now - Fsensor_Data.Lastnotify > (1,0,0,0,0) --one day ago
       then
         Result := True;
@@ -1058,14 +1058,14 @@ package body Bot_Ws_Services is
       end if;
       Logging.Log(Service, "result " & Result'Img);
     end if;
-        
+
     Moisture_Pct := Integer_4(100 * (1024 - Moisture)/ 1024);
     T.Commit;
     Sql.Close_Session;
 
-    return Result; 
+    return Result;
   end Log_Data;
-  -----------------------------------------------------  
+  -----------------------------------------------------
 
   Function Mail_Moisture_Report(Id : String; Moisture : Integer_4) return Boolean is
      T       : Calendar2.Time_Type := Calendar2.Clock;
@@ -1124,38 +1124,38 @@ package body Bot_Ws_Services is
       return False;
   end Mail_Moisture_Report;
   --------------------------------
-  
-  
-  -- for airquality
-  -----------------------------------------------------  
 
-  procedure Log_Air_Quality(Id : String; 
+
+  -- for airquality
+  -----------------------------------------------------
+
+  procedure Log_Air_Quality(Id : String;
                     Temperature : Fixed_Type;
                     Pressure    : Integer_4;
                     Humidity    : Fixed_Type;
                     Gasresistance : Integer_4) is
-                    
+
     Service       : constant String := ".Log_Air_Quality";
     T             : Sql.Transaction_Type;
     pragma Warnings(Off,T);
     Airreading_Data    :  Table_Airreadings.Data_Type;
     pragma Warnings(Off,Airreading_Data);
     Now           : Calendar2.Time_Type := Calendar2.Clock;
-    --use Calendar2;    
+    --use Calendar2;
   begin
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");
       Sql.Close_Session;
       Logging.Log(Service, "did disconnect!");
-    end if;      
-      
+    end if;
+
     Sql.Connect
       (Host     => Global.Host.Fix_String,
        Port     => Global.Port,
        Db_Name  => "flowers",
        Login    => Global.Login.Fix_String, -- always bnl
        Password => Global.Password.Fix_String);
-    
+
     Logging.Log(Service, "did connect to flowers");
     T.Start;
     Move(Id, Airreading_Data.Macaddress);
@@ -1165,38 +1165,38 @@ package body Bot_Ws_Services is
     Airreading_Data.Humidity := Humidity;
     Airreading_Data.Gasresistance := Gasresistance;
     Airreading_Data.Insert;
-    
+
     T.Commit;
     Sql.Close_Session;
 
   end Log_Air_Quality;
-  -----------------------------------------------------  
-  
+  ----------------------------------------------------
+
 
   procedure Log_C02 (Id    : String;
                      Level : Integer_4) is
-                    
+
     Service       : constant String := ".Log_Co2";
     T             : Sql.Transaction_Type;
     pragma Warnings(Off,T);
     Airreading_Data    :  Table_Airreadings.Data_Type;
     pragma Warnings(Off,Airreading_Data);
     Now           : Calendar2.Time_Type := Calendar2.Clock;
-    --use Calendar2;    
+    --use Calendar2;
   begin
     if Sql.Is_Session_Open then
       Logging.Log(Service, "was already connected, disconnect!");
       Sql.Close_Session;
       Logging.Log(Service, "did disconnect!");
-    end if;      
-      
+    end if;
+
     Sql.Connect
       (Host     => Global.Host.Fix_String,
        Port     => Global.Port,
        Db_Name  => "flowers",
        Login    => Global.Login.Fix_String, -- always bnl
        Password => Global.Password.Fix_String);
-    
+
     Logging.Log(Service, "did connect to flowers");
     T.Start;
     Move(Id, Airreading_Data.Macaddress);
@@ -1206,12 +1206,12 @@ package body Bot_Ws_Services is
     Airreading_Data.Humidity := 0.0;
     Airreading_Data.Gasresistance := 0;
     Airreading_Data.Insert;
-    
+
     T.Commit;
     Sql.Close_Session;
 
   end Log_C02;
-  -----------------------------------------------------  
-  
-  
+  -----------------------------------------------------
+
+
 end Bot_Ws_Services;

@@ -32,6 +32,7 @@ project Global is
 
    Platform_Independent_Compiler_Switches := ("-g",
                                               "-gnat2022",
+                                              "-Os",      -- minimize size 
                                               "-fstack-check",
                                               "-gnata",
                                               "-gnatoU", -- -v
@@ -50,7 +51,7 @@ project Global is
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
-   --                           "global/gnatcoll",
+                              "global/gnatcoll",
    --                        "global/inotify",
                            "global/repotool",
                            "global/tables");
@@ -65,7 +66,7 @@ project Global is
       end case;
 
    package Compiler is
-     for Default_Switches ("ada") use Platform_Independent_Compiler_Switches & ("-O0");
+     for Default_Switches ("ada") use Platform_Independent_Compiler_Switches;
    end Compiler;
 
    package Binder is

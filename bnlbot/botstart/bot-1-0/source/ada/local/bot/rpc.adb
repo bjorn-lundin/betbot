@@ -431,15 +431,15 @@ package body Rpc is
                                     Headers      => Http_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
 
-      Log(Me & "Get_JSON_Reply", "have posted 1");
+--      Log(Me & "Get_JSON_Reply", "have posted 1");
       Move(Process_Io.This_Process.Name,Rpc_Track.Name);
-      Log(Me & "Get_JSON_Reply", "have posted 2");
+--      Log(Me & "Get_JSON_Reply", "have posted 2");
       Rpc_Track.Typ := "D";
-      Log(Me & "Get_JSON_Reply", "have posted 3");
+--      Log(Me & "Get_JSON_Reply", "have posted 3");
       Move(S, Rpc_Track.Data, Drop => Right);
-      Log(Me & "Get_JSON_Reply", "have posted 4"); 
+--      Log(Me & "Get_JSON_Reply", "have posted 4"); 
       Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
-      Log(Me & "Get_JSON_Reply", "have posted 5");
+--      Log(Me & "Get_JSON_Reply", "have posted 5");
     end;
     Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 
@@ -556,7 +556,7 @@ package body Rpc is
                       Field    : in     String;
                       Target   : in out Integer_4;
                       Found    :    out Boolean) is
-    Tmp : Long_Integer := 0 ;
+    Tmp : Long_Long_Integer := 0 ;
   begin
     if Container.Has_Field(Field) then
       Tmp := Container.Get(Field);
@@ -614,7 +614,7 @@ package body Rpc is
       Has_Error := True;
       Error := Reply.Get("error");
       if Error.Has_Field("code") then
-        Log(Me, "error.code " & Integer(Long_Integer'(Error.Get("code")))'Img);
+        Log(Me, "error.code " & Integer(Long_Long_Integer'(Error.Get("code")))'Img);
         if Error.Has_Field("data") then
           Data := Error.Get("data");
           if Data.Has_Field("APINGException") then
@@ -691,7 +691,7 @@ package body Rpc is
     Params.Set_Field     (Field_Name => "betIds",          Field => Bet_Ids);
     Params.Set_Field     (Field_Name => "placesDateRange", Field => Daterange);
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));   --?
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listCurrentOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -806,7 +806,7 @@ package body Rpc is
     Append (Market_Ids, Create(Market_Id));
     Params.Set_Field     (Field_Name => "marketIds", Field => Market_Ids);
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));   --?
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -946,7 +946,7 @@ package body Rpc is
 
           if Json_Runner.Has_Field("selectionId") then
             declare
-              I : Long_Integer := Json_Runner.Get("selectionId");
+              I : Long_Long_Integer := Json_Runner.Get("selectionId");
             begin
               Db_Runner.Selectionid := Integer_4(I);
             end;
@@ -1002,7 +1002,7 @@ package body Rpc is
     Append (Market_Ids, Create(Market.Marketid));
     Params.Set_Field     (Field_Name => "marketIds", Field => Market_Ids);
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));   --?
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1129,10 +1129,10 @@ package body Rpc is
     end if;
 
     if Result.Has_Field("betDelay") then
-      Is_Changed_Array(Betdelay) :=  Result.Get("betDelay") /= Long_Integer(Market.Betdelay);
+      Is_Changed_Array(Betdelay) :=  Result.Get("betDelay") /= Long_Long_Integer(Market.Betdelay);
       if Is_Changed_Array(Betdelay) then
         declare
-          Bet_Delay : Long_Integer := Result.Get("betDelay");
+          Bet_Delay : Long_Long_Integer := Result.Get("betDelay");
         begin
           Market.Betdelay := Integer_4(Bet_Delay);
         end;
@@ -1157,7 +1157,7 @@ package body Rpc is
     Betfair_Result := Ok;
     -- params is empty ...
     Query_Get_Account_Funds.Set_Field (Field_Name => "params",  Field => Params);
-    Query_Get_Account_Funds.Set_Field (Field_Name => "id",      Field => integer(15));          -- ???
+    Query_Get_Account_Funds.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Query_Get_Account_Funds.Set_Field (Field_Name => "method",  Field => "AccountAPING/v1.0/getAccountFunds");
     Query_Get_Account_Funds.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1223,7 +1223,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "betStatus",        Field => Bet_Status'Img);
     -- params is empty ...
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));          -- ???
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listClearedOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1295,7 +1295,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "instructions", Field => Instructions);
 
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));          -- ???
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/cancelOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1383,7 +1383,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "instructions", Field => Instructions);
 
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));          -- ???
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/cancelOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1642,7 +1642,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "marketIds",       Field => Market_Ids);
 
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));   --?
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);   --?
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketBook");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 
@@ -1727,8 +1727,8 @@ package body Rpc is
     Instruction.Set_Field (Field_Name => "limitOrder",  Field => Limit_Order);
     Instruction.Set_Field (Field_Name => "orderType",   Field => "LIMIT");
     Instruction.Set_Field (Field_Name => "side",        Field => Side'Img);
-    Instruction.Set_Field (Field_Name => "handicap",    Field => integer(0));
-    Instruction.Set_Field (Field_Name => "selectionId", Field => Long_Integer(Selection_Id));
+    Instruction.Set_Field (Field_Name => "handicap",    Field => 0);
+    Instruction.Set_Field (Field_Name => "selectionId", Field => Long_Long_Integer(Selection_Id));
 
 
 
@@ -1738,7 +1738,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "marketId",     Field => Trim(Market_Id));
 
     Json_Query.Set_Field (Field_Name => "params", Field => Params);
-    Json_Query.Set_Field (Field_Name => "id", Field => integer(16));
+    Json_Query.Set_Field (Field_Name => "id", Field => 16);
     Json_Query.Set_Field (Field_Name => "method",   Field      => "SportsAPING/v1.0/placeOrders");
     Json_Query.Set_Field (Field_Name => "jsonrpc",  Field      => "2.0");
 
@@ -2402,7 +2402,7 @@ package body Rpc is
     Params.Set_Field (Field_Name => "maxResults",       Field => "999");
 
     Json_Query.Set_Field (Field_Name => "params",  Field => Params);
-    Json_Query.Set_Field (Field_Name => "id",      Field => integer(15));          -- ???
+    Json_Query.Set_Field (Field_Name => "id",      Field => 15);          -- ???
     Json_Query.Set_Field (Field_Name => "method",  Field => "SportsAPING/v1.0/listMarketCatalogue");
     Json_Query.Set_Field (Field_Name => "jsonrpc", Field => "2.0");
 

@@ -53,7 +53,12 @@ procedure Bet_Checker is
     Json_Data   : Json_Value;
     T           : Sql.Transaction_Type;
   begin
-    Log(Me & Service , "Look for *.json in " & Dir);
+
+    if not Exists(Dir) then
+      Log(Me & Service , "creating directory:" & Dir);
+      Create_Directory(Dir);
+    end if;
+
     Start_Search(Search    => The_Search,
                  Directory => Dir,
                  Pattern   => "*.json");
