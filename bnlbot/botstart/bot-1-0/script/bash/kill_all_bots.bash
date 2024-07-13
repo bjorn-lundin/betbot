@@ -11,6 +11,8 @@ done
 
 sleep 1
 
+LIST=$(ps -ef | grep botstart/bot-1-0/target/bin | grep -v grep | awk  '{print $2}')
+
 for pid in $LIST ; do
   kill -kill $pid
 done
