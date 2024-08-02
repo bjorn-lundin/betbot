@@ -10,7 +10,22 @@ package Config is
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Back_1_28_02_1_2_Plc_1_01,
                     Horse_Back_1_38_00_1_2_Plc_1_01,
-                    Horse_Back_1_56_00_1_4_Plc_1_01 --,
+                    Horse_Back_1_56_00_1_4_Plc_1_01,
+                    Horse_Back_AI_Nfl_1_Hn_100_Lr_0p1_E_12_Plc,
+                    Horse_Back_AI_Nfl_2_Hn_100_Lr_0p5_E_6_Plc,
+                    Horse_Back_AI_Nfl_3_Hn_100_Lr_0p01_E_12_Plc,
+                    Horse_Back_AI_Nfl_4_Hn_200_Lr_0p05_E_8_Plc,
+                    Horse_Back_AI_Nfl_5_Hn_300_Lr_0p05_E_12_Plc
+
+
+--43851_Mo_10_Nfl_1_Hn_100_Lr_0.1_e_12
+--53726_mo_10_nfl_2_hn_100_lr_0.5_e_6
+--51372_mo_10_nfl_3_hn_100_lr_0.01_e_12
+--63254_mo_10_nfl_4_hn_200_lr_0.05_e_8
+--61355_mo_10_nfl_5_hn_300_lr_0.05_e_12
+
+
+
 --                      Horse_Back_1_10_07_1_2_Plc_1_01_Chs,
 --                      Horse_Back_1_28_02_1_2_Plc_1_01_Chs,
 --                      Horse_Back_1_38_00_1_2_Plc_1_01_Chs,
