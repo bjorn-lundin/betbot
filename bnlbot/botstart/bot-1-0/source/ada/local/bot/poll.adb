@@ -554,6 +554,41 @@ end Get_Bet_Placer;
   ------------------------------------------------------
 
 
+  procedure Try_To_Make_Back_Bet_Ai(Bettype         : Config.Bet_Type;
+                                 Br              : Best_Runners_Array_Type;
+                                 Marketid        : Marketid_Type;
+                                 Match_Directly  : Boolean := False) is
+
+    Max_Backprice_1 : Fixed_Type;
+    Min_Backprice_1 : Fixed_Type;
+    Backed_Num      : Integer;
+
+  begin
+    return;
+               --1         2       3
+    --  12345678901234567890123456789012345
+    --  Horse_Back_AI_30s_Left_Win
+
+    --if 30 sec left
+
+    Max_Backprice_1 := 80.0;
+    Min_Backprice_1 := 1.01;
+
+    if Min_Backprice_1 <= Br(Backed_Num).Backprice
+      and then Br(Backed_Num).Backprice <= Max_Backprice_1
+    then  -- so it exists
+      -- Back The leader in PLC market...
+
+      Send_Back_Bet(Selectionid     => Br(Backed_Num).Selectionid,
+                    Main_Bet        => Bettype,
+                    Marketid        => Marketid,
+                    Min_Price       => Back_Price_Type(Min_Backprice_1),
+                    Match_Directly  => Match_Directly);
+    end if;
+  end Try_To_Make_Back_Bet_ai;
+  ------------------------------------------------------
+
+
 
   procedure Try_To_Make_Back_Bet(Bettype         : Config.Bet_Type;
                                  Br              : Best_Runners_Array_Type;
@@ -845,7 +880,7 @@ end Get_Bet_Placer;
     Betfair_Result    : Rpc.Result_Type := Rpc.Result_Type'First;
     Saldo             : Balances.Balance_Type;
     Match_Directly    : Boolean := False;
-    -- Ts_In_Play        : Calendar2.Time_Type := Calendar2.Time_Type_First;
+    Ts_In_Play        : Calendar2.Time_Type := Calendar2.Time_Type_First;
   begin
     Log(Me & "Run", "Treat market: " &  Market_Notification.Market_Id);
     Market.Marketid := Market_Notification.Market_Id;
@@ -1026,7 +1061,7 @@ end Get_Bet_Placer;
         -- toggle the first time we see in-play=true
         -- makes us insensible to Betfair toggling bug
         Has_Been_In_Play := In_Play;
-        -- Ts_In_Play := Price_List.First_Element.Pricets;
+        Ts_In_Play := Price_List.First_Element.Pricets;
       end if;
 
       if not Has_Been_In_Play then
@@ -1108,6 +1143,32 @@ end Get_Bet_Placer;
                     end if;
                   end;
 
+                when Horse_Back_AI_30s_Left_Win .. Horse_Back_AI_30s_Left_Plc =>
+                  declare
+                    M_Type     : Market_Type := Win;
+                    Image      : String := I'Img;
+                    Do_Try_Bet : Boolean := True;
+                    use Markets;
+                  begin
+                    if Utils.Position(Image, "PLC") > Integer(0) then
+                      M_Type := Place;
+                      Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                      Match_Directly := True;
+                    elsif Utils.Position(Image, "WIN") > Integer(0) then
+                      Do_Try_Bet := Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                      M_Type         := Win;
+                      Match_Directly := True;
+                    end if;
+
+
+
+                      Try_To_Make_Back_Bet_AI(Bettype         => I,
+                                              Br              => Best_Runners,
+                                              Marketid        => Markets_Array(M_Type).Marketid,
+                                              Match_Directly  => Match_Directly);
+
+
+                  end;
 
 --                  when  Horse_Lay_Fav_2_0_12_Win .. Horse_Lay_Fav_9_0_30_Win =>
 --                    declare
