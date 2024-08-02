@@ -15,7 +15,7 @@ echo "CREATE SEQUENCE bet_id_serial "         >> tbl.sql
 echo "  INCREMENT 1"                          >> tbl.sql
 echo "  MINVALUE 1"                           >> tbl.sql
 echo "  MAXVALUE 9223372036854775807"         >> tbl.sql
-echo "  START 400000000001"                   >> tbl.sql
+echo "  START 600001"                   >> tbl.sql
 echo "  CACHE 1;"                             >> tbl.sql
 echo "                                      " >> tbl.sql
 echo "commit;                               " >> tbl.sql
