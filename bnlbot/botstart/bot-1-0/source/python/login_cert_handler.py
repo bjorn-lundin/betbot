@@ -284,6 +284,9 @@ class MyServer(BaseHTTPRequestHandler):
 
         response = BytesIO()
         #response.write(bytes(json.dumps(ai_response), "utf-8"))
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
         response.write(bytes(ai_response, "utf-8"))
         self.wfile.write(response.getvalue())
 
