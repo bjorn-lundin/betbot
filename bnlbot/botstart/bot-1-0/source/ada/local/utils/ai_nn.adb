@@ -39,7 +39,6 @@ procedure Ai_Nn is
   Ia_Position        : aliased Integer := 0;
 
   Global_Start_Date    : Time_Type := Time_Type_First;
-  pragma Unreferenced(Global_Start_Date);
 
 --  Global_Side          : String (1..4) := "BOTH";
 
@@ -441,6 +440,7 @@ procedure Ai_Nn is
                                 "and M.MARKETTYPE = 'WIN' " &
                                 "and M.NUMACTIVERUNNERS >= 8 " &
                                 "and M.NUMACTIVERUNNERS <= 16 " &
+                                "and M.STARTTS >= :STARTDATE " &
                               --  "and m.marketid = '1.151619897' " &
                                 "and M.EVENTID not like '%2' " & --use the ones that and with 2 as test sample
                                 "order by M.STARTTS");
@@ -451,10 +451,11 @@ procedure Ai_Nn is
                                "and M.MARKETTYPE = 'WIN' " &
                                "and M.NUMACTIVERUNNERS >= 8 " &
                                "and M.NUMACTIVERUNNERS <= 16 " &
+                                "and M.STARTTS >= :STARTDATE " &
                                "and M.EVENTID like '%2' " & --use the ones that and with 2 as test sample
                                "order by M.STARTTS");
     end if;
-
+    Select_Markets.Set("STARTDATE", Global_Start_Date);
     Table_Amarkets.Read_List(Select_Markets, Market_List);
   end Get_Market_Data;
   ------------------------------------------------------
@@ -495,8 +496,10 @@ begin
     begin
       Global_Start_Date.Year := Year_Type'Value(S(1..4));
       Global_Start_Date.Month := Month_Type'Value(S(6..7));
-      Global_Start_Date.Day := Day_Type'Value(S(9..10));
+      Global_Start_Date.Day := Day_Type'Value(S(9..10));      
     end;
+  else
+    Global_Start_Date := (2018,11,15,0,0,0,0);
   end if;
 
   Ini.Load(Ev.Value("BOT_HOME") & "/login.ini");
@@ -522,6 +525,9 @@ begin
   Sql.Close_Session;
 
 exception
+  when GNAT.COMMAND_LINE.EXIT_FROM_COMMAND_LINE => 
+    null;  
   when E: others =>
     Stacktrace.Tracebackinfo(E);
+    
 end Ai_Nn;
