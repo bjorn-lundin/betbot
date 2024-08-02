@@ -42,6 +42,7 @@ project Adabot is
                     "check_bot_running.adb" ,
   --                  "monitor.adb" --, -- inotify tester
   --                  "monitor2.adb"  --inotify tester
+                    "ai_utils.adb",
                     "login_handler.adb"
                     );
 
