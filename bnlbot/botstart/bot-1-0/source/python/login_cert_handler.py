@@ -15,17 +15,6 @@ serverPort = 12345
 
 class MyServer(BaseHTTPRequestHandler):
 
-    def do_treat_ai_request(self, post_data) :
-        pass
-        # interpret what pickcle to load
-        # read into nn
-        # ask nn with input arrays (as numpy array)
-        # create json response
-        # return json response
-
-
-
-
     def do_POST(self):
 
       if self.path == '/certlogin':
@@ -100,21 +89,6 @@ class MyServer(BaseHTTPRequestHandler):
            self.wfile.write(response.getvalue())
            logging.warning("Post request error")
            logging.warning('resp_json', resp_json)
-
-      elif self.path == '/AI':
-        # get the request from the betbot
-        content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
-        post_data_raw = (self.rfile.read(content_length)) # <--- Gets the data itself
-        #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-        #        str(self.path), str(self.headers), post_data.decode('utf-8'))
-        post_data = post_data_raw.decode("utf-8")
-        logging.info('post_data %s',post_data)
-
-        ai_response = do_treat_ai_request(post_data)
-
-        response = BytesIO()
-        response.write(bytes(json.dumps(ai_response), "utf-8"))
-        self.wfile.write(response.getvalue())
 
       else:
         response = BytesIO()
