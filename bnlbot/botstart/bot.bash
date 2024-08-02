@@ -46,7 +46,7 @@ case $HOSTNAME in
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
     export BOT_GNATCOLL_SOURCE=LOCAL
-    export ADA_PROJECT_PATH=/usr/share/gpr:/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
+    export ADA_PROJECT_PATH=/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
     ;;
 
   *)
