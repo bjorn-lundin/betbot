@@ -71,6 +71,7 @@ project Adabot is
                     "ai_nn_diff.adb",
                     "ai_nn_diff_db.adb",
                     "rewards3.adb",
+                    "ai_nn_price.adb",
                     "ai_nn.adb",
                     "ai_nn_2.adb",
                     "test_string_object",

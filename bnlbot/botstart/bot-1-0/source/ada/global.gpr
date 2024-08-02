@@ -48,10 +48,17 @@ project Global is
 
    Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
 
+-- need to move since newer gnatcoll gice float image as 1.009913954 instead of 1.01 - which BF refuses to use
+--/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnl.ads-bnl      
+--/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnljson.ads-bnl           
+--/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnljson.adb-bnl  
+--/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-json-utility-bnl.ads-bnl
+--/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-json-utility-bnl.adb-bnl
+
    Common_Source_Dirs := ( "local",
                            "global",
                            "global/process_io",
-                              "global/gnatcoll",
+                           "global/gnatcoll",   -- see above
    --                        "global/inotify",
                            "global/repotool",
                            "global/tables");
