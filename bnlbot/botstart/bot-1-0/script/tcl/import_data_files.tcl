@@ -122,7 +122,10 @@ proc Traverse_Directories {f} {
 set This_Pwd [pwd]
 
 set YEAR [lindex $::argv 0]
-Traverse_Directories [file join / home bnl betfair data db_dumps $YEAR]
+set MONTH [lindex $::argv 1]
+set DAY [lindex $::argv 2]
+
+Traverse_Directories [file join / home bnl betfair data db_dumps $YEAR $MONTH $DAY]
 cd $This_Pwd
 #Dbg "Stop"
 
