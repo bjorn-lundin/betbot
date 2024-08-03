@@ -75,7 +75,7 @@ begin
   Aws.Headers.Add (Http_Headers, "Accept", "application/json");
 
   Aws.Client.Set_Debug(On => True);
-  Aws_Reply := Aws.Client.Post (Url          => "http://192.168.1.8:12345/AI",
+  Aws_Reply := Aws.Client.Post (Url          => "http://127.0.0.1:12345/AI",
                                 Data         => Req.Write,
                                 Content_Type => "application/json",
                                 Headers      => Http_Headers,
