@@ -80,7 +80,10 @@ procedure Bet_Placer is
     Log("'" & Utils.F8_Image(Local_Price) & "'");
     Log("'" & Utils.F8_Image(Local_Size) & "'");
 
-    if Bet_Name(1..2) = "DR" then
+    pragma compile_time_warning(true, "remove when not testing AI anymore");
+    if Bet_Name(1..2) = "DR"
+      or else Bet_Name(1..13) = "HORSE_BACK_AI"
+    then
 
       Bet_Id := 0;
       Move( "EXECUTION_COMPLETE", Order_Status);
