@@ -102,11 +102,11 @@ class MyServer(BaseHTTPRequestHandler):
         #BASE = os.environ['BOT_TARGET']  no bot env here
         BASE = '/bnlbot/bnlbot/botstart/bot-1-0/target'
         # get the JSON into dict
-        print('post_data',post_data)
+#        print('post_data',post_data)
         rpc = json.loads(post_data)
 
-        print('json-loads',rpc)
-        print('json-loads input', rpc['params']['input'])
+#        print('json-loads',rpc)
+#        print('json-loads input', rpc['params']['input'])
 
         params = rpc['params']
 
@@ -128,12 +128,13 @@ class MyServer(BaseHTTPRequestHandler):
             # read into n
             with open( pickle_file, "rb" ) as f:
                 n = pickle.load(f)
-                print('loaded', pickle_file)
+                logging.info("Loaded pickle file: %s\n", pickle_file)
+
         except  :
             # Get current system exception
             ex_type, ex_value, ex_traceback = sys.exc_info()
-            print("Exception type : %s " % ex_type.__name__)
-            print("Exception message : %s" %ex_value)
+            logging.warning("Exception type : %s " % ex_type.__name__)
+            logging.warning("Exception message : %s" %ex_value)
 
             resp = {}
             resp['method'] = rpc['method']
@@ -148,10 +149,11 @@ class MyServer(BaseHTTPRequestHandler):
 
 
         inputs = (numpy.asfarray(params['input']) / 1000.0 * 0.99) + 0.01
-        print('inputs', inputs)
+        logging.info("input: %s\n", inputs)
+
         # ask n with input arrays (as numpy array)
         outputs = n.query(inputs)
-        print('outputs', outputs)
+        logging.info("output: %s\n", outputs)
 
         num_from_leader = params['numFromLeader']
 
@@ -160,25 +162,25 @@ class MyServer(BaseHTTPRequestHandler):
             cnt = num_from_leader
             while cnt > 0 :
                 #remove the current leader and go for next
-                print('cnt',cnt)
+#                print('cnt',cnt)
                 label = numpy.argmax(outputs)
-                print('reset label',label,' was outputs[label]' ,outputs[label])
+#                print('reset label',label,' was outputs[label]' ,outputs[label])
                 outputs[label] = 0.01
                 cnt = cnt -1
 
             label = numpy.argmax(outputs)
-            print('label_', label, 'outputs[label]', outputs[label])
+#            print('label_', label, 'outputs[label]', outputs[label])
 
 
         elif num_from_leader == 0 :
             # the index of the highest value corresponds to the label
             label = numpy.argmax(outputs)
-            print('label0', label, 'outputs[label]', outputs[label])
+#            print('label0', label, 'outputs[label]', outputs[label])
 
 
-        print('return', label, 'outputs[label]', outputs[label])
-        print('outputs', outputs)
-
+#        print('return', label, 'outputs[label]', outputs[label])
+#        print('outputs', outputs)
+        logging.info("output: %s\n", outputs)
 
         # create json response (as dict)
         resp = {}
@@ -198,19 +200,18 @@ class MyServer(BaseHTTPRequestHandler):
 
     def do_POST(self):
 
+
       if self.path == '/certlogin':
 
         content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
         post_data_raw = (self.rfile.read(content_length)) # <--- Gets the data itself
-        #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-        #        str(self.path), str(self.headers), post_data.decode('utf-8'))
 
         #payload = 'username=bnlbnl&password=@Bf@vinst@1'
 
-#        print('headers',self.headers)
-
         post_data = post_data_raw.decode("utf-8")
-        logging.info('post_data %s',post_data)
+
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
+              str(self.path), str(self.headers), post_data)
 
         user =''
         if 'bnlbnl' in post_data:
@@ -275,15 +276,14 @@ class MyServer(BaseHTTPRequestHandler):
         # get the request from the betbot
         content_length = int(self.headers['Content-Length'].strip()) # <--- Gets the size of data
         post_data_raw = (self.rfile.read(content_length)) # <--- Gets the data itself
-        #logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-        #        str(self.path), str(self.headers), post_data.decode('utf-8'))
         post_data = post_data_raw.decode("utf-8")
-        logging.info('post_data %s',post_data)
+
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
+              str(self.path), str(self.headers), post_data)
 
         ai_response = self.do_treat_ai_request(post_data)
 
         response = BytesIO()
-        #response.write(bytes(json.dumps(ai_response), "utf-8"))
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
