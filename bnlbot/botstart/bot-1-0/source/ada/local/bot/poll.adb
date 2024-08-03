@@ -329,8 +329,11 @@ end Get_Bet_Placer;
       Side := Back;
 
       for Unsorted_Runner of Br loop
-        Tic := Tics.Get_Tic_Index(Unsorted_Runner.Backprice);
-        Price := Tics.Get_Tic_Price(Tic -1);
+        Price := 0.0;
+        if Unsorted_Runner.Backprice > Price then
+          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Backprice);
+          Price := Tics.Get_Tic_Price(Tic -1);
+        end if;
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
 
@@ -339,8 +342,11 @@ end Get_Bet_Placer;
       Side := Lay;
 
       for Unsorted_Runner of Br loop
-        Tic := Tics.Get_Tic_Index(Unsorted_Runner.Layprice);
-        Price := Tics.Get_Tic_Price(Tic +1);
+        Price := 0.0;
+        if Unsorted_Runner.Layprice > Price then
+          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Layprice);
+          Price := Tics.Get_Tic_Price(Tic +1);
+        end if;
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
     end if;
@@ -352,6 +358,9 @@ end Get_Bet_Placer;
     Params.Set_Field (Field_Name => "epochs", Field => Long_Long_Integer'Value(Image(38..39)));
 
     Params.Set_Field (Field_Name => "input", Field => Odds);
+    Params.Set_Field (Field_Name => "marketid", Field => Marketid);
+    Params.Set_Field (Field_Name => "betname", Field => Trim(Image));
+
     Req.Set_Field (Field_Name => "params", Field => Params);
 
     Log("Try_To_Make_Back_Bet_ai", Req.Write);
@@ -359,10 +368,7 @@ end Get_Bet_Placer;
 
     Aws.Headers.Add (Http_Headers, "Accept", "application/json");
 
-    --Aws.Client.Set_Debug(On => True);
-    pragma Compile_Time_Warning(True, "use localhost later" );
-
-    Aws_Reply := Aws.Client.Post (Url          => "http://192.168.1.8:12345/AI",
+    Aws_Reply := Aws.Client.Post (Url          => "http://127.0.0.1:12345/AI",
                                   Data         => Req.Write,
                                   Content_Type => "application/json",
                                   Headers      => Http_Headers,
@@ -398,14 +404,14 @@ end Get_Bet_Placer;
           Send_Back_Bet(Selectionid     => Br(Integer(Idx)).Selectionid,
                         Main_Bet        => Bettype,
                         Marketid        => Marketid,
-                        Min_Price       => Back_Price_Type(1.01),
+                        Min_Price       => Back_Price_Type(Price),
                         Match_Directly  => Match_Directly);
 
         when Lay =>
           Send_Lay_Bet(Selectionid     => Br(Integer(Idx)).Selectionid,
                        Main_Bet        => Bettype,
                        Marketid        => Marketid,
-                       Max_Price       => Lay_Price_Type(10.0),
+                       Max_Price       => Lay_Price_Type(Price),
                        Match_Directly  => Match_Directly);
       end case;
     else
