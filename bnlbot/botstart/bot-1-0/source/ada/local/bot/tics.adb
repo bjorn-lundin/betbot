@@ -102,7 +102,7 @@ package body Tics is
           end if;
         end loop;
         exit when P > Max; --give up, and propagate exception
-        Log("Get_Tic_Index", "fixing bad float p/min/max " &  P'Img &  Min'Img & " / " & Max'Img);
+        -- Log("Get_Tic_Index", "fixing bad float p/min/max " &  P'Img &  Min'Img & " / " & Max'Img);
         P := P + D;
       end loop;
       Log("Get_Tic_Index", "did not fix bad float min/max " &  Min'Img & " / " & Max'Img);
