@@ -290,8 +290,8 @@ end Get_Bet_Placer;
     Price           : Fixed_Type;
 
     Image           : String := Bettype'Img;
-    Tic             : Tics.Tics_Type;
-    use type Tics.Tics_Type;
+    --Tic             : Tics.Tics_Type;
+    --use type Tics.Tics_Type;
 
     Req             : Json_Value := Create_Object;
     Reply           : Json_Value := Create_Object;
@@ -329,11 +329,11 @@ end Get_Bet_Placer;
       Side := Back;
 
       for Unsorted_Runner of Br loop
-        Price := 0.0;
-        if Unsorted_Runner.Backprice > Price then
-          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Backprice);
-          Price := Tics.Get_Tic_Price(Tic -1);
-        end if;
+        Price := Unsorted_Runner.Backprice;
+--        if Unsorted_Runner.Backprice > Price then
+--          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Backprice);
+--          Price := Tics.Get_Tic_Price(Tic -1);
+--        end if;
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
 
@@ -342,11 +342,11 @@ end Get_Bet_Placer;
       Side := Lay;
 
       for Unsorted_Runner of Br loop
-        Price := 0.0;
-        if Unsorted_Runner.Layprice > Price then
-          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Layprice);
-          Price := Tics.Get_Tic_Price(Tic +1);
-        end if;
+        Price := Unsorted_Runner.Layprice;
+--        if Unsorted_Runner.Layprice > Price then
+--          Tic := Tics.Get_Tic_Index(Unsorted_Runner.Layprice);
+--          Price := Tics.Get_Tic_Price(Tic +1);
+--        end if;
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
     end if;
@@ -378,8 +378,6 @@ end Get_Bet_Placer;
 
     Reply := Read (Strm => Aws.Response.Message_Body(Aws_Reply), Filename => "");
 
-
-
     if Reply.Has_Field("error") then
       Error := Reply.Get("error");
       if Error.Has_Field("message") then
@@ -393,7 +391,7 @@ end Get_Bet_Placer;
       Result := Reply.Get("result");
       if Result.Has_Field("bestRunner") then
         Idx:= Result.Get("bestRunner");
-        Idx := Idx +1;
+        Idx := Idx +1;  --convert 0-based idx to 1-based
       end if;
     end if;
 
