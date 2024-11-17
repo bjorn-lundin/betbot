@@ -223,7 +223,7 @@ end Get_Bet_Placer;
     end;
 
     if not Cfg.Bet(Main_Bet).Enabled then
-      Log("Not enbled bet in poll.ini " & Main_Bet'Img );
+      Log("Not enabled bet in poll.ini " & Main_Bet'Img );
       return;
     end if;
 
@@ -782,7 +782,7 @@ end Get_Bet_Placer;
                     end if;
                   end;
 
-                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_nfl_3_hn_300_lr_1p0_E_12_Plc =>
+                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_NFL_0_HN_300_LR_1p0_E_12_Win =>
                   if First_Poll then
                     declare
                       M_Type     : Market_Type := Win;
@@ -792,10 +792,10 @@ end Get_Bet_Placer;
                     begin
                       if Utils.Position(Image, "PLC") > Integer(0) then
                         M_Type := Place;
-                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners = Integer_4(3) ;
                         Match_Directly := True;
                       elsif Utils.Position(Image, "WIN") > Integer(0) then
-                        Do_Try_Bet := Markets_Array(Place).Numwinners >= Integer_4(3) ;
+                        Do_Try_Bet := Markets_Array(Place).Numwinners = Integer_4(3) ;
                         M_Type         := Win;
                         Match_Directly := True;
                       end if;

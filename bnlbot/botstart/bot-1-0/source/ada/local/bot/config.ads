@@ -19,7 +19,8 @@ package Config is
                     Horse_Back_AI_nfl_0_hn_300_lr_1p0_E_12_Plc,
                     Horse_Back_AI_nfl_1_hn_200_lr_1p0_E_12_Plc,
                     Horse_Back_AI_nfl_2_hn_300_lr_1p0_E_12_Plc,
-                    Horse_Back_AI_nfl_3_hn_300_lr_1p0_E_12_Plc
+                    Horse_Back_AI_nfl_3_hn_300_lr_1p0_E_12_Plc,
+                    Horse_Back_AI_NFL_0_HN_300_LR_1p0_E_12_Win
 
 
 
